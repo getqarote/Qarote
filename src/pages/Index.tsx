@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -47,6 +46,18 @@ const Index = () => {
     {
       name: "payment-processing",
       messages: 156,
+      consumers: 1,
+      status: "active"
+    },
+    {
+      name: "order-fulfillment",
+      messages: 524,
+      consumers: 2,
+      status: "active"
+    },
+    {
+      name: "audit-logs",
+      messages: 1890,
       consumers: 1,
       status: "active"
     }
@@ -186,43 +197,48 @@ const Index = () => {
               </Card>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Message Throughput Chart */}
-              <div className="lg:col-span-2">
-                <Card className="border-0 shadow-md bg-white/80 backdrop-blur-sm">
-                  <CardHeader>
-                    <CardTitle className="text-lg font-semibold text-gray-900">Message Throughput</CardTitle>
-                    <p className="text-sm text-gray-500">Real-time message flow over the last 24 hours</p>
-                  </CardHeader>
-                  <CardContent>
-                    <MetricsChart data={chartData} />
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Active Queues */}
-              <div>
-                <Card className="border-0 shadow-md bg-white/80 backdrop-blur-sm">
-                  <CardHeader>
+            {/* Active Queues - Full Width Section */}
+            <Card className="border-0 shadow-md bg-white/80 backdrop-blur-sm">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
                     <CardTitle className="text-lg font-semibold text-gray-900">Active Queues</CardTitle>
                     <p className="text-sm text-gray-500">Currently processing messages</p>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {queues.map((queue, index) => (
-                      <QueueCard key={queue.name} queue={queue} index={index} />
-                    ))}
-                  </CardContent>
-                </Card>
-              </div>
+                  </div>
+                  <Button variant="outline" size="sm">
+                    View All Queues
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {queues.map((queue, index) => (
+                    <QueueCard key={queue.name} queue={queue} index={index} />
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Message Throughput Chart */}
+              <Card className="border-0 shadow-md bg-white/80 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle className="text-lg font-semibold text-gray-900">Message Throughput</CardTitle>
+                  <p className="text-sm text-gray-500">Real-time message flow over the last 24 hours</p>
+                </CardHeader>
+                <CardContent>
+                  <MetricsChart data={chartData} />
+                </CardContent>
+              </Card>
+
+              {/* Connected Nodes */}
+              <ConnectedNodes />
             </div>
 
             {/* Bottom Row */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <ConnectedNodes />
-              <div className="space-y-6">
-                <RecentAlerts />
-                <ResourceUsage metrics={metrics} />
-              </div>
+              <RecentAlerts />
+              <ResourceUsage metrics={metrics} />
             </div>
           </div>
         </main>
