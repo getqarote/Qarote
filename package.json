@@ -5,23 +5,23 @@
   "private": true,
   "author": "La  Griffe",
   "license": "ISC",
-  "workspaces": [
-    "front-end",
-    "back-end"
-  ],
-  "scripts": {
-    "dev": "concurrently \"npm run dev:front\" \"npm run dev:back\"",
-    "dev:front": "npm run dev --workspace=front-end",
-    "dev:back": "npm run dev --workspace=back-end",
-    "build": "npm run build --workspaces",
-    "start": "npm run start --workspace=back-end"
-  },
   "keywords": [
     "rabbitmq",
     "dashboard",
     "monitoring"
   ],
-  "devDependencies": {
-    "concurrently": "^8.2.2"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/LaGriffe/rabbit-dash-board.git"
+  },
+  "workspaces": [
+    "front-end",
+    "back-end"
+  ],
+  "scripts": {
+    "dev:front": "npm run dev --workspace=front-end",
+    "dev:back": "npm run dev --workspace=back-end",
+    "build": "npm run build --workspaces",
+    "start": "npm run start --workspace=back-end"
   }
 }

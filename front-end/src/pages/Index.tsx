@@ -1,95 +1,169 @@
-
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
-import { MessageSquare, Clock, Activity, Server, Cpu, HardDrive, AlertTriangle, Zap } from "lucide-react";
+import {
+  MessageSquare,
+  Clock,
+  Activity,
+  Server,
+  Cpu,
+  HardDrive,
+  Zap,
+  RefreshCw,
+} from "lucide-react";
 import { MetricsChart } from "@/components/MetricsChart";
 import { QueueCard } from "@/components/QueueCard";
 import { ConnectionStatus } from "@/components/ConnectionStatus";
 import { RecentAlerts } from "@/components/RecentAlerts";
 import { ResourceUsage } from "@/components/ResourceUsage";
 import { ConnectedNodes } from "@/components/ConnectedNodes";
+import { AddServerForm } from "@/components/AddServerForm";
+import { useServerContext } from "@/contexts/ServerContext";
+import { useOverview, useQueues, useNodes } from "@/hooks/useApi";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const Index = () => {
-  const [metrics, setMetrics] = useState({
-    messagesPerSec: 15200,
-    activeQueues: 127,
-    avgLatency: 2.3,
-    queueDepth: 8450,
-    connectedNodes: 3,
-    totalMemory: 12.8,
-    cpuUsage: 45.2,
-    diskUsage: 67.8
-  });
+  const { selectedServerId } = useServerContext();
+  const {
+    data: overviewData,
+    isLoading: overviewLoading,
+    refetch: refetchOverview,
+  } = useOverview(selectedServerId || "");
+  const {
+    data: queuesData,
+    isLoading: queuesLoading,
+    refetch: refetchQueues,
+  } = useQueues(selectedServerId || "");
+  const {
+    data: nodesData,
+    isLoading: nodesLoading,
+    refetch: refetchNodes,
+  } = useNodes(selectedServerId || "");
 
-  const [queues] = useState([
-    {
-      name: "user-notifications",
-      messages: 1200,
-      consumers: 3,
-      status: "active"
-    },
-    {
-      name: "email-queue",
-      messages: 845,
-      consumers: 2,
-      status: "active"
-    },
-    {
-      name: "analytics-events",
-      messages: 2800,
-      consumers: 5,
-      status: "active"
-    },
-    {
-      name: "payment-processing",
-      messages: 156,
-      consumers: 1,
-      status: "active"
-    },
-    {
-      name: "order-fulfillment",
-      messages: 524,
-      consumers: 2,
-      status: "active"
-    },
-    {
-      name: "audit-logs",
-      messages: 1890,
-      consumers: 1,
-      status: "active"
-    }
+  const [chartData, setChartData] = useState([
+    { time: "00:00", messages: 0 },
+    { time: "04:00", messages: 0 },
+    { time: "08:00", messages: 0 },
+    { time: "12:00", messages: 0 },
+    { time: "16:00", messages: 0 },
+    { time: "20:00", messages: 0 },
   ]);
 
-  const chartData = [
-    { time: '00:00', messages: 12000 },
-    { time: '04:00', messages: 14500 },
-    { time: '08:00', messages: 11000 },
-    { time: '12:00', messages: 18500 },
-    { time: '16:00', messages: 16800 },
-    { time: '20:00', messages: 15200 },
-  ];
+  const overview = overviewData?.overview;
+  const queues = queuesData?.queues || [];
+  const nodes = useMemo(() => nodesData?.nodes || [], [nodesData?.nodes]);
 
+  // Calculate metrics from real data
+  const metrics = useMemo(() => {
+    const totalMessages = overview?.queue_totals?.messages || 0;
+    const totalQueues = overview?.object_totals?.queues || 0;
+    const publishRate = overview?.message_stats?.publish_details?.rate || 0;
+    const deliverRate = overview?.message_stats?.deliver_details?.rate || 0;
+
+    // Calculate total memory and CPU from nodes
+    const totalMemoryBytes = nodes.reduce(
+      (sum, node) => sum + (node.mem_used || 0),
+      0
+    );
+    const totalMemoryGB = totalMemoryBytes / (1024 * 1024 * 1024);
+    const avgCpuUsage =
+      nodes.length > 0
+        ? nodes.reduce(
+            (sum, node) => sum + (node.proc_used / node.proc_total) * 100,
+            0
+          ) / nodes.length
+        : 0;
+
+    return {
+      messagesPerSec: Math.round(publishRate + deliverRate),
+      activeQueues: totalQueues,
+      avgLatency: 2.3, // This would need specific latency metrics from RabbitMQ
+      queueDepth: totalMessages,
+      connectedNodes: nodes.length,
+      totalMemory: totalMemoryGB,
+      cpuUsage: avgCpuUsage,
+      diskUsage: 67.8, // This would need disk usage calculation from nodes
+    };
+  }, [overview, nodes]);
+
+  // Update chart data based on publish rate
   useEffect(() => {
-    // Simulate real-time updates
-    const interval = setInterval(() => {
-      setMetrics(prev => ({
-        messagesPerSec: prev.messagesPerSec + Math.floor(Math.random() * 200 - 100),
-        activeQueues: prev.activeQueues + Math.floor(Math.random() * 6 - 3),
-        avgLatency: Math.max(0.1, prev.avgLatency + (Math.random() * 0.4 - 0.2)),
-        queueDepth: Math.max(0, prev.queueDepth + Math.floor(Math.random() * 100 - 50)),
-        connectedNodes: prev.connectedNodes,
-        totalMemory: Math.max(1, prev.totalMemory + (Math.random() * 0.2 - 0.1)),
-        cpuUsage: Math.max(0, Math.min(100, prev.cpuUsage + (Math.random() * 4 - 2))),
-        diskUsage: Math.max(0, Math.min(100, prev.diskUsage + (Math.random() * 0.2 - 0.1)))
-      }));
-    }, 3000);
+    if (overview?.message_stats?.publish_details?.rate) {
+      const rate = overview.message_stats.publish_details.rate;
+      setChartData((prev) => {
+        const newData = [...prev];
+        newData.push({
+          time: new Date().toLocaleTimeString("en-US", {
+            hour12: false,
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+          messages: Math.round(rate * 60), // Convert per-second to per-minute
+        });
+        return newData.slice(-6); // Keep only last 6 data points
+      });
+    }
+  }, [overview?.message_stats?.publish_details?.rate]);
 
-    return () => clearInterval(interval);
-  }, []);
+  const handleRefresh = () => {
+    if (selectedServerId) {
+      refetchOverview();
+      refetchQueues();
+      refetchNodes();
+    }
+  };
+
+  const isLoading = overviewLoading || queuesLoading || nodesLoading;
+
+  if (!selectedServerId) {
+    return (
+      <SidebarProvider>
+        <div className="min-h-screen flex w-full bg-gradient-to-br from-slate-50 to-blue-50">
+          <AppSidebar />
+          <main className="flex-1 p-6 overflow-auto">
+            <div className="max-w-7xl mx-auto space-y-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <SidebarTrigger />
+                  <div>
+                    <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                      RabbitMQ Dashboard
+                    </h1>
+                    <p className="text-gray-500">
+                      Please configure a RabbitMQ server to get started
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <Card className="border-0 shadow-md bg-white/80 backdrop-blur-sm">
+                <CardContent className="p-6">
+                  <div className="text-center">
+                    <Server className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                      No RabbitMQ Server Configured
+                    </h2>
+                    <p className="text-gray-600 mb-4">
+                      Add a RabbitMQ server connection to start monitoring your
+                      queues and messages.
+                    </p>
+                    <AddServerForm
+                      trigger={
+                        <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
+                          Add Server
+                        </Button>
+                      }
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </main>
+        </div>
+      </SidebarProvider>
+    );
+  }
 
   return (
     <SidebarProvider>
@@ -108,56 +182,102 @@ const Index = () => {
                   <ConnectionStatus />
                 </div>
               </div>
-              <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
-                Refresh Data
-              </Button>
+              <div className="flex gap-3">
+                <AddServerForm />
+                <Button
+                  className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                  onClick={handleRefresh}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <RefreshCw className="h-4 w-4 animate-spin mr-2" />
+                  ) : null}
+                  Refresh Data
+                </Button>
+              </div>
             </div>
 
             {/* Primary Metrics Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <Card className="hover:shadow-lg transition-all duration-300 border-0 shadow-md bg-white/80 backdrop-blur-sm">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-600">Messages/sec</CardTitle>
+                  <CardTitle className="text-sm font-medium text-gray-600">
+                    Messages/sec
+                  </CardTitle>
                   <MessageSquare className="h-5 w-5 text-blue-600" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold text-gray-900">
-                    {metrics.messagesPerSec.toLocaleString()}
-                  </div>
-                  <p className="text-xs text-green-600 mt-1">↗ +12.5% from last hour</p>
+                  {isLoading ? (
+                    <Skeleton className="h-8 w-20" />
+                  ) : (
+                    <div className="text-3xl font-bold text-gray-900">
+                      {metrics.messagesPerSec.toLocaleString()}
+                    </div>
+                  )}
+                  <p className="text-xs text-green-600 mt-1">Real-time data</p>
                 </CardContent>
               </Card>
 
               <Card className="hover:shadow-lg transition-all duration-300 border-0 shadow-md bg-white/80 backdrop-blur-sm">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-600">Active Queues</CardTitle>
+                  <CardTitle className="text-sm font-medium text-gray-600">
+                    Active Queues
+                  </CardTitle>
                   <Activity className="h-5 w-5 text-green-600" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold text-gray-900">{metrics.activeQueues}</div>
-                  <p className="text-xs text-gray-500 mt-1">Across all vhosts</p>
+                  {isLoading ? (
+                    <Skeleton className="h-8 w-16" />
+                  ) : (
+                    <div className="text-3xl font-bold text-gray-900">
+                      {metrics.activeQueues}
+                    </div>
+                  )}
+                  <p className="text-xs text-gray-500 mt-1">
+                    Across all vhosts
+                  </p>
                 </CardContent>
               </Card>
 
               <Card className="hover:shadow-lg transition-all duration-300 border-0 shadow-md bg-white/80 backdrop-blur-sm">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-600">Queue Depth</CardTitle>
+                  <CardTitle className="text-sm font-medium text-gray-600">
+                    Queue Depth
+                  </CardTitle>
                   <Zap className="h-5 w-5 text-orange-600" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold text-gray-900">{metrics.queueDepth.toLocaleString()}</div>
-                  <p className="text-xs text-orange-600 mt-1">Total pending messages</p>
+                  {isLoading ? (
+                    <Skeleton className="h-8 w-20" />
+                  ) : (
+                    <div className="text-3xl font-bold text-gray-900">
+                      {metrics.queueDepth.toLocaleString()}
+                    </div>
+                  )}
+                  <p className="text-xs text-orange-600 mt-1">
+                    Total pending messages
+                  </p>
                 </CardContent>
               </Card>
 
               <Card className="hover:shadow-lg transition-all duration-300 border-0 shadow-md bg-white/80 backdrop-blur-sm">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-600">Avg Latency</CardTitle>
+                  <CardTitle className="text-sm font-medium text-gray-600">
+                    Avg Latency
+                  </CardTitle>
                   <Clock className="h-5 w-5 text-purple-600" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold text-gray-900">{metrics.avgLatency.toFixed(1)}ms</div>
-                  <p className="text-xs text-red-500 mt-1">↗ +0.2ms from baseline</p>
+                  {isLoading ? (
+                    <Skeleton className="h-8 w-16" />
+                  ) : (
+                    <div className="text-3xl font-bold text-gray-900">
+                      {metrics.avgLatency.toFixed(1)}ms
+                    </div>
+                  )}
+                  <p className="text-xs text-gray-500 mt-1">
+                    Estimated latency
+                  </p>
                 </CardContent>
               </Card>
             </div>
@@ -166,33 +286,61 @@ const Index = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <Card className="hover:shadow-lg transition-all duration-300 border-0 shadow-md bg-white/80 backdrop-blur-sm">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-600">Connected Nodes</CardTitle>
+                  <CardTitle className="text-sm font-medium text-gray-600">
+                    Connected Nodes
+                  </CardTitle>
                   <Server className="h-5 w-5 text-cyan-600" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-gray-900">{metrics.connectedNodes}</div>
-                  <p className="text-xs text-green-600 mt-1">All nodes healthy</p>
+                  {isLoading ? (
+                    <Skeleton className="h-6 w-8" />
+                  ) : (
+                    <div className="text-2xl font-bold text-gray-900">
+                      {metrics.connectedNodes}
+                    </div>
+                  )}
+                  <p className="text-xs text-green-600 mt-1">
+                    {nodes.every((node) => node.running)
+                      ? "All nodes healthy"
+                      : "Some issues detected"}
+                  </p>
                 </CardContent>
               </Card>
 
               <Card className="hover:shadow-lg transition-all duration-300 border-0 shadow-md bg-white/80 backdrop-blur-sm">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-600">CPU Usage</CardTitle>
+                  <CardTitle className="text-sm font-medium text-gray-600">
+                    CPU Usage
+                  </CardTitle>
                   <Cpu className="h-5 w-5 text-yellow-600" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-gray-900">{metrics.cpuUsage.toFixed(1)}%</div>
+                  {isLoading ? (
+                    <Skeleton className="h-6 w-16" />
+                  ) : (
+                    <div className="text-2xl font-bold text-gray-900">
+                      {metrics.cpuUsage.toFixed(1)}%
+                    </div>
+                  )}
                   <p className="text-xs text-gray-500 mt-1">Cluster average</p>
                 </CardContent>
               </Card>
 
               <Card className="hover:shadow-lg transition-all duration-300 border-0 shadow-md bg-white/80 backdrop-blur-sm">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-600">Memory Usage</CardTitle>
+                  <CardTitle className="text-sm font-medium text-gray-600">
+                    Memory Usage
+                  </CardTitle>
                   <HardDrive className="h-5 w-5 text-red-600" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-gray-900">{metrics.totalMemory.toFixed(1)} GB</div>
+                  {isLoading ? (
+                    <Skeleton className="h-6 w-20" />
+                  ) : (
+                    <div className="text-2xl font-bold text-gray-900">
+                      {metrics.totalMemory.toFixed(1)} GB
+                    </div>
+                  )}
                   <p className="text-xs text-gray-500 mt-1">Total allocated</p>
                 </CardContent>
               </Card>
@@ -201,8 +349,12 @@ const Index = () => {
             {/* Message Throughput Chart - Full Width */}
             <Card className="border-0 shadow-md bg-white/80 backdrop-blur-sm">
               <CardHeader>
-                <CardTitle className="text-lg font-semibold text-gray-900">Message Throughput</CardTitle>
-                <p className="text-sm text-gray-500">Real-time message flow over the last 24 hours</p>
+                <CardTitle className="text-lg font-semibold text-gray-900">
+                  Message Throughput
+                </CardTitle>
+                <p className="text-sm text-gray-500">
+                  Real-time message flow over the last 24 hours
+                </p>
               </CardHeader>
               <CardContent>
                 <MetricsChart data={chartData} />
@@ -214,8 +366,12 @@ const Index = () => {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
-                    <CardTitle className="text-lg font-semibold text-gray-900">Active Queues</CardTitle>
-                    <p className="text-sm text-gray-500">Currently processing messages</p>
+                    <CardTitle className="text-lg font-semibold text-gray-900">
+                      Active Queues
+                    </CardTitle>
+                    <p className="text-sm text-gray-500">
+                      Currently processing messages
+                    </p>
                   </div>
                   <Button variant="outline" size="sm">
                     View All Queues
@@ -223,11 +379,30 @@ const Index = () => {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {queues.map((queue, index) => (
-                    <QueueCard key={queue.name} queue={queue} index={index} />
-                  ))}
-                </div>
+                {queuesLoading ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    {Array.from({ length: 6 }).map((_, i) => (
+                      <div key={i} className="p-4 bg-gray-50 rounded-lg border">
+                        <Skeleton className="h-4 w-32 mb-2" />
+                        <Skeleton className="h-3 w-20 mb-1" />
+                        <Skeleton className="h-3 w-24" />
+                      </div>
+                    ))}
+                  </div>
+                ) : queues.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    {queues.slice(0, 6).map((queue, index) => (
+                      <QueueCard key={queue.name} queue={queue} index={index} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-500">
+                      No queues found on this server
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
 

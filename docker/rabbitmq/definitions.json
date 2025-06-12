@@ -1,0 +1,348 @@
+{
+  "rabbit_version": "3.12.0",
+  "rabbitmq_version": "3.12.0",
+  "product_name": "RabbitMQ",
+  "product_version": "3.12.0",
+  "users": [
+    {
+      "name": "admin",
+      "password_hash": "Vjyb8hfhvQfnA9tXYQzqgO64nq+oyIgrSYoSPq6pMSqQksDO",
+      "hashing_algorithm": "rabbit_password_hashing_sha256",
+      "tags": "administrator"
+    },
+    {
+      "name": "guest",
+      "password_hash": "Vjyb8hfhvQfnA9tXYQzqgO64nq+oyIgrSYoSPq6pMSqQksDO",
+      "hashing_algorithm": "rabbit_password_hashing_sha256",
+      "tags": "management"
+    },
+    {
+      "name": "producer",
+      "password_hash": "Vjyb8hfhvQfnA9tXYQzqgO64nq+oyIgrSYoSPq6pMSqQksDO",
+      "hashing_algorithm": "rabbit_password_hashing_sha256",
+      "tags": "producer"
+    },
+    {
+      "name": "consumer",
+      "password_hash": "Vjyb8hfhvQfnA9tXYQzqgO64nq+oyIgrSYoSPq6pMSqQksDO",
+      "hashing_algorithm": "rabbit_password_hashing_sha256",
+      "tags": "consumer"
+    }
+  ],
+  "vhosts": [
+    {
+      "name": "/"
+    },
+    {
+      "name": "/production"
+    },
+    {
+      "name": "/staging"
+    }
+  ],
+  "permissions": [
+    {
+      "user": "admin",
+      "vhost": "/",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    },
+    {
+      "user": "admin",
+      "vhost": "/production",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    },
+    {
+      "user": "admin",
+      "vhost": "/staging",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    },
+    {
+      "user": "guest",
+      "vhost": "/",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    },
+    {
+      "user": "producer",
+      "vhost": "/",
+      "configure": "",
+      "write": ".*",
+      "read": ""
+    },
+    {
+      "user": "consumer",
+      "vhost": "/",
+      "configure": "",
+      "write": "",
+      "read": ".*"
+    }
+  ],
+  "topic_permissions": [],
+  "parameters": [],
+  "global_parameters": [
+    {
+      "name": "cluster_name",
+      "value": "rabbit-dev-cluster"
+    }
+  ],
+  "policies": [
+    {
+      "vhost": "/",
+      "name": "ha-all",
+      "pattern": ".*",
+      "apply-to": "all",
+      "definition": {
+        "ha-mode": "all",
+        "ha-sync-mode": "automatic"
+      },
+      "priority": 0
+    }
+  ],
+  "exchanges": [
+    {
+      "name": "notifications.direct",
+      "vhost": "/",
+      "type": "direct",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "events.topic",
+      "vhost": "/",
+      "type": "topic",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "analytics.fanout",
+      "vhost": "/",
+      "type": "fanout",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "user.events",
+      "vhost": "/",
+      "type": "topic",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "system.alerts",
+      "vhost": "/",
+      "type": "direct",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    }
+  ],
+  "queues": [
+    {
+      "name": "email.notifications",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-message-ttl": 3600000,
+        "x-max-length": 10000
+      }
+    },
+    {
+      "name": "sms.notifications",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-message-ttl": 1800000,
+        "x-max-length": 5000
+      }
+    },
+    {
+      "name": "user.registration.events",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-dead-letter-exchange": "dlx.events"
+      }
+    },
+    {
+      "name": "user.login.events",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "order.processing",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-message-ttl": 7200000,
+        "x-max-length": 1000
+      }
+    },
+    {
+      "name": "payment.processing",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-message-ttl": 300000
+      }
+    },
+    {
+      "name": "analytics.clicks",
+      "vhost": "/",
+      "durable": false,
+      "auto_delete": false,
+      "arguments": {
+        "x-max-length": 50000
+      }
+    },
+    {
+      "name": "analytics.pageviews",
+      "vhost": "/",
+      "durable": false,
+      "auto_delete": false,
+      "arguments": {
+        "x-max-length": 100000
+      }
+    },
+    {
+      "name": "critical.alerts",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-message-ttl": 86400000
+      }
+    },
+    {
+      "name": "warning.alerts",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-message-ttl": 43200000
+      }
+    },
+    {
+      "name": "info.alerts",
+      "vhost": "/",
+      "durable": false,
+      "auto_delete": false,
+      "arguments": {
+        "x-message-ttl": 3600000,
+        "x-max-length": 1000
+      }
+    }
+  ],
+  "bindings": [
+    {
+      "source": "notifications.direct",
+      "vhost": "/",
+      "destination": "email.notifications",
+      "destination_type": "queue",
+      "routing_key": "email",
+      "arguments": {}
+    },
+    {
+      "source": "notifications.direct",
+      "vhost": "/",
+      "destination": "sms.notifications",
+      "destination_type": "queue",
+      "routing_key": "sms",
+      "arguments": {}
+    },
+    {
+      "source": "user.events",
+      "vhost": "/",
+      "destination": "user.registration.events",
+      "destination_type": "queue",
+      "routing_key": "user.registered",
+      "arguments": {}
+    },
+    {
+      "source": "user.events",
+      "vhost": "/",
+      "destination": "user.login.events",
+      "destination_type": "queue",
+      "routing_key": "user.login",
+      "arguments": {}
+    },
+    {
+      "source": "events.topic",
+      "vhost": "/",
+      "destination": "order.processing",
+      "destination_type": "queue",
+      "routing_key": "order.*",
+      "arguments": {}
+    },
+    {
+      "source": "events.topic",
+      "vhost": "/",
+      "destination": "payment.processing",
+      "destination_type": "queue",
+      "routing_key": "payment.*",
+      "arguments": {}
+    },
+    {
+      "source": "analytics.fanout",
+      "vhost": "/",
+      "destination": "analytics.clicks",
+      "destination_type": "queue",
+      "routing_key": "",
+      "arguments": {}
+    },
+    {
+      "source": "analytics.fanout",
+      "vhost": "/",
+      "destination": "analytics.pageviews",
+      "destination_type": "queue",
+      "routing_key": "",
+      "arguments": {}
+    },
+    {
+      "source": "system.alerts",
+      "vhost": "/",
+      "destination": "critical.alerts",
+      "destination_type": "queue",
+      "routing_key": "critical",
+      "arguments": {}
+    },
+    {
+      "source": "system.alerts",
+      "vhost": "/",
+      "destination": "warning.alerts",
+      "destination_type": "queue",
+      "routing_key": "warning",
+      "arguments": {}
+    },
+    {
+      "source": "system.alerts",
+      "vhost": "/",
+      "destination": "info.alerts",
+      "destination_type": "queue",
+      "routing_key": "info",
+      "arguments": {}
+    }
+  ]
+}

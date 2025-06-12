@@ -81,6 +81,7 @@ serverController.post(
         vhost: data.vhost,
       });
 
+      // Attempt to get the overview to validate connection
       await client.getOverview();
 
       const server = await prisma.rabbitMQServer.create({
