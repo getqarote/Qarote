@@ -115,6 +115,8 @@ export const AddServerForm = ({
         vhost: formData.vhost,
       });
 
+      console.log("Connection test result:", result);
+
       if (result.success) {
         setConnectionStatus({
           status: "success",

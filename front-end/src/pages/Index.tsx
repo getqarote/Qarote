@@ -21,7 +21,12 @@ import { ResourceUsage } from "@/components/ResourceUsage";
 import { ConnectedNodes } from "@/components/ConnectedNodes";
 import { AddServerForm } from "@/components/AddServerForm";
 import { useServerContext } from "@/contexts/ServerContext";
-import { useOverview, useQueues, useNodes } from "@/hooks/useApi";
+import {
+  useOverview,
+  useQueues,
+  useNodes,
+  useEnhancedMetrics,
+} from "@/hooks/useApi";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const Index = () => {
@@ -41,6 +46,11 @@ const Index = () => {
     isLoading: nodesLoading,
     refetch: refetchNodes,
   } = useNodes(selectedServerId || "");
+  const {
+    data: enhancedMetricsData,
+    isLoading: enhancedMetricsLoading,
+    refetch: refetchEnhancedMetrics,
+  } = useEnhancedMetrics(selectedServerId || "");
 
   const [chartData, setChartData] = useState([
     { time: "00:00", messages: 0 },
@@ -54,39 +64,22 @@ const Index = () => {
   const overview = overviewData?.overview;
   const queues = queuesData?.queues || [];
   const nodes = useMemo(() => nodesData?.nodes || [], [nodesData?.nodes]);
+  const enhancedMetrics = enhancedMetricsData?.metrics;
 
-  // Calculate metrics from real data
-  const metrics = useMemo(() => {
-    const totalMessages = overview?.queue_totals?.messages || 0;
-    const totalQueues = overview?.object_totals?.queues || 0;
-    const publishRate = overview?.message_stats?.publish_details?.rate || 0;
-    const deliverRate = overview?.message_stats?.deliver_details?.rate || 0;
-
-    // Calculate total memory and CPU from nodes
-    const totalMemoryBytes = nodes.reduce(
-      (sum, node) => sum + (node.mem_used || 0),
-      0
-    );
-    const totalMemoryGB = totalMemoryBytes / (1024 * 1024 * 1024);
-    const avgCpuUsage =
-      nodes.length > 0
-        ? nodes.reduce(
-            (sum, node) => sum + (node.proc_used / node.proc_total) * 100,
-            0
-          ) / nodes.length
-        : 0;
-
-    return {
-      messagesPerSec: Math.round(publishRate + deliverRate),
-      activeQueues: totalQueues,
-      avgLatency: 2.3, // This would need specific latency metrics from RabbitMQ
-      queueDepth: totalMessages,
-      connectedNodes: nodes.length,
-      totalMemory: totalMemoryGB,
-      cpuUsage: avgCpuUsage,
-      diskUsage: 67.8, // This would need disk usage calculation from nodes
-    };
-  }, [overview, nodes]);
+  // Use only server-calculated metrics
+  const metrics = {
+    messagesPerSec: Math.round(
+      (overview?.message_stats?.publish_details?.rate || 0) +
+        (overview?.message_stats?.deliver_details?.rate || 0)
+    ),
+    activeQueues: overview?.object_totals?.queues || 0,
+    avgLatency: enhancedMetrics?.avgLatency || 0,
+    queueDepth: overview?.queue_totals?.messages || 0,
+    connectedNodes: nodes.length,
+    totalMemory: enhancedMetrics?.totalMemoryGB || 0,
+    cpuUsage: enhancedMetrics?.avgCpuUsage || 0,
+    diskUsage: enhancedMetrics?.diskUsage || 0,
+  };
 
   // Update chart data based on publish rate
   useEffect(() => {

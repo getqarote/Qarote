@@ -1,115 +1,11 @@
-const API_BASE_URL = "http://localhost:3000/api";
-
-export interface ApiResponse<T> {
-  success?: boolean;
-  error?: string;
-  message?: string;
-  [key: string]: unknown;
+export interface RateDetail {
+  rate: number;
 }
 
-export interface Server {
-  id: string;
+export interface ExchangeType {
   name: string;
-  host: string;
-  port: number;
-  username: string;
-  vhost: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface QueueArguments {
-  [key: string]: unknown;
-  "x-max-length"?: number;
-}
-
-export interface EffectivePolicyDefinition {
-  "ha-mode"?: string;
-  "ha-sync-mode"?: string;
-  [key: string]: unknown;
-}
-
-export interface GarbageCollection {
-  fullsweep_after: number;
-  max_heap_size: number;
-  min_bin_vheap_size: number;
-  min_heap_size: number;
-  minor_gcs: number;
-}
-
-export interface QueueMessageStats {
-  publish_details?: RateDetail;
-  deliver_details?: RateDetail;
-  ack_details?: RateDetail;
-  [key: string]: unknown;
-}
-
-export interface Queue {
-  // Basic queue information
-  name: string;
-  vhost: string;
-  node: string;
-  type: string;
-  state: string;
-
-  // Queue configuration
-  arguments: QueueArguments;
-  auto_delete: boolean;
-  durable: boolean;
-  exclusive: boolean;
-
-  // Consumer information
-  consumers: number;
-  consumer_capacity: number;
-  consumer_utilisation: number;
-  exclusive_consumer_tag: string | null;
-  single_active_consumer_tag: string | null;
-
-  // Message counts
-  messages: number;
-  messages_details: RateDetail;
-  messages_ready: number;
-  messages_ready_details: RateDetail;
-  messages_ready_ram: number;
-  messages_unacknowledged: number;
-  messages_unacknowledged_details: RateDetail;
-  messages_unacknowledged_ram: number;
-  messages_paged_out: number;
-  messages_persistent: number;
-  messages_ram: number;
-
-  // Message bytes
-  message_bytes: number;
-  message_bytes_paged_out: number;
-  message_bytes_persistent: number;
-  message_bytes_ram: number;
-  message_bytes_ready: number;
-  message_bytes_unacknowledged: number;
-
-  // Memory and performance
-  memory: number;
-  reductions: number;
-  reductions_details: RateDetail;
-  garbage_collection: GarbageCollection;
-
-  // Timestamps
-  head_message_timestamp: string | null;
-  idle_since: string;
-
-  // High availability and clustering
-  policy: string | null;
-  operator_policy: string | null;
-  effective_policy_definition: EffectivePolicyDefinition | null;
-  slave_nodes: string[];
-  synchronised_slave_nodes: string[];
-  recoverable_slaves: string[] | null;
-
-  // Message stats (optional for backwards compatibility)
-  message_stats?: QueueMessageStats;
-  backing_queue_status?: {
-    mode: string;
-    [key: string]: unknown;
-  };
+  description: string;
+  enabled: boolean;
 }
 
 export interface AuthMechanism {
@@ -149,7 +45,7 @@ export interface MetricsGcQueueLength {
   channel_consumer_deleted: number;
 }
 
-export interface Node {
+export interface RabbitMQNode {
   // Basic node information
   name: string;
   type: string;
@@ -275,24 +171,32 @@ export interface Node {
   metrics_gc_queue_length: MetricsGcQueueLength;
 }
 
-export interface Alert {
-  id: string;
-  title: string;
-  description: string;
-  severity: "info" | "warning" | "error";
-  status: "active" | "acknowledged" | "resolved";
-  createdAt: string;
-  resolvedAt?: string | null;
-}
-
-export interface RateDetail {
-  rate: number;
-}
-
-export interface ExchangeType {
+export interface RabbitMQConnection {
   name: string;
-  description: string;
-  enabled: boolean;
+  node: string;
+  state: string;
+  user: string;
+  vhost: string;
+  protocol: string;
+  channels: number;
+  recv_cnt: number;
+  send_cnt: number;
+  recv_oct: number;
+  send_oct: number;
+}
+
+export interface RabbitMQChannel {
+  name: string;
+  node: string;
+  state: string;
+  user: string;
+  vhost: string;
+  number: number;
+  connection_details: {
+    name: string;
+    peer_port: number;
+    peer_host: string;
+  };
 }
 
 export interface SampleRetentionPolicies {
@@ -377,7 +281,7 @@ export interface ContextInfo {
   protocol?: string;
 }
 
-export interface Overview {
+export interface RabbitMQOverview {
   management_version: string;
   rates_mode: string;
   sample_retention_policies: SampleRetentionPolicies;
@@ -402,39 +306,113 @@ export interface Overview {
   contexts: ContextInfo[];
 }
 
-export interface Connection {
-  name: string;
-  node: string;
-  state: string;
-  user: string;
+export interface RabbitMQCredentials {
+  host: string;
+  port: number;
+  username: string;
+  password: string;
   vhost: string;
-  protocol: string;
-  channels: number;
-  recv_cnt: number;
-  send_cnt: number;
-  recv_oct: number;
-  send_oct: number;
 }
 
-export interface Channel {
+export interface QueueArguments {
+  [key: string]: unknown;
+  "x-max-length"?: number;
+}
+
+export interface EffectivePolicyDefinition {
+  "ha-mode"?: string;
+  "ha-sync-mode"?: string;
+  [key: string]: unknown;
+}
+
+export interface GarbageCollection {
+  fullsweep_after: number;
+  max_heap_size: number;
+  min_bin_vheap_size: number;
+  min_heap_size: number;
+  minor_gcs: number;
+}
+
+export interface QueueMessageStats {
+  publish_details?: RateDetail;
+  deliver_details?: RateDetail;
+  ack_details?: RateDetail;
+  [key: string]: unknown;
+}
+
+export interface RabbitMQQueue {
+  // Basic queue information
   name: string;
-  node: string;
-  state: string;
-  user: string;
   vhost: string;
-  number: number;
-  connection_details: {
-    name: string;
-    peer_port: number;
-    peer_host: string;
+  node: string;
+  type: string;
+  state: string;
+
+  // Queue configuration
+  arguments: QueueArguments;
+  auto_delete: boolean;
+  durable: boolean;
+  exclusive: boolean;
+
+  // Consumer information
+  consumers: number;
+  consumer_capacity: number;
+  consumer_utilisation: number;
+  exclusive_consumer_tag: string | null;
+  single_active_consumer_tag: string | null;
+
+  // Message counts
+  messages: number;
+  messages_details: RateDetail;
+  messages_ready: number;
+  messages_ready_details: RateDetail;
+  messages_ready_ram: number;
+  messages_unacknowledged: number;
+  messages_unacknowledged_details: RateDetail;
+  messages_unacknowledged_ram: number;
+  messages_paged_out: number;
+  messages_persistent: number;
+  messages_ram: number;
+
+  // Message bytes
+  message_bytes: number;
+  message_bytes_paged_out: number;
+  message_bytes_persistent: number;
+  message_bytes_ram: number;
+  message_bytes_ready: number;
+  message_bytes_unacknowledged: number;
+
+  // Memory and performance
+  memory: number;
+  reductions: number;
+  reductions_details: RateDetail;
+  garbage_collection: GarbageCollection;
+
+  // Timestamps
+  head_message_timestamp: string | null;
+  idle_since: string;
+
+  // High availability and clustering
+  policy: string | null;
+  operator_policy: string | null;
+  effective_policy_definition: EffectivePolicyDefinition | null;
+  slave_nodes: string[];
+  synchronised_slave_nodes: string[];
+  recoverable_slaves: string[] | null;
+
+  // Message stats (optional for backwards compatibility)
+  message_stats?: QueueMessageStats;
+  backing_queue_status?: {
+    mode: string;
+    [key: string]: unknown;
   };
 }
 
 export interface EnhancedMetrics {
-  overview: Overview;
-  nodes: Node[];
-  connections: Connection[];
-  channels: Channel[];
+  overview: RabbitMQOverview;
+  nodes: RabbitMQNode[];
+  connections: RabbitMQConnection[];
+  channels: RabbitMQChannel[];
   avgLatency: number;
   diskUsage: number;
   totalMemoryBytes: number;
@@ -442,126 +420,3 @@ export interface EnhancedMetrics {
   avgCpuUsage: number;
   calculatedAt: string;
 }
-
-class ApiClient {
-  private baseUrl: string;
-
-  constructor(baseUrl: string = API_BASE_URL) {
-    this.baseUrl = baseUrl;
-  }
-
-  private async request<T>(
-    endpoint: string,
-    options?: RequestInit
-  ): Promise<T> {
-    try {
-      const response = await fetch(`${this.baseUrl}${endpoint}`, {
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-        },
-        ...options,
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      console.error(`API request failed for ${endpoint}:`, error);
-      throw error;
-    }
-  }
-
-  // Server management
-  async getServers(): Promise<{ servers: Server[] }> {
-    return this.request<{ servers: Server[] }>("/servers");
-  }
-
-  async getServer(id: string): Promise<{ server: Server }> {
-    return this.request<{ server: Server }>(`/servers/${id}`);
-  }
-
-  async createServer(
-    server: Omit<Server, "id" | "createdAt" | "updatedAt"> & {
-      password: string;
-    }
-  ): Promise<{ server: Server }> {
-    return this.request<{ server: Server }>("/servers", {
-      method: "POST",
-      body: JSON.stringify(server),
-    });
-  }
-
-  async testConnection(credentials: {
-    host: string;
-    port: number;
-    username: string;
-    password: string;
-    vhost: string;
-  }): Promise<{
-    success: boolean;
-    message: string;
-    version?: string;
-    cluster_name?: string;
-  }> {
-    return this.request<{
-      success: boolean;
-      message: string;
-      version?: string;
-      cluster_name?: string;
-    }>("/servers/test-connection", {
-      method: "POST",
-      body: JSON.stringify(credentials),
-    });
-  }
-
-  // RabbitMQ data
-  async getOverview(serverId: string): Promise<{ overview: Overview }> {
-    return this.request<{ overview: Overview }>(
-      `/rabbitmq/servers/${serverId}/overview`
-    );
-  }
-
-  async getQueues(serverId: string): Promise<{ queues: Queue[] }> {
-    return this.request<{ queues: Queue[] }>(
-      `/rabbitmq/servers/${serverId}/queues`
-    );
-  }
-
-  async getNodes(serverId: string): Promise<{ nodes: Node[] }> {
-    return this.request<{ nodes: Node[] }>(
-      `/rabbitmq/servers/${serverId}/nodes`
-    );
-  }
-
-  async getEnhancedMetrics(
-    serverId: string
-  ): Promise<{ metrics: EnhancedMetrics }> {
-    return this.request<{ metrics: EnhancedMetrics }>(
-      `/rabbitmq/servers/${serverId}/metrics`
-    );
-  }
-
-  async getQueue(
-    serverId: string,
-    queueName: string
-  ): Promise<{ queue: Queue }> {
-    return this.request<{ queue: Queue }>(
-      `/rabbitmq/servers/${serverId}/queues/${encodeURIComponent(queueName)}`
-    );
-  }
-
-  // Alerts
-  async getAlerts(): Promise<{ alerts: Alert[] }> {
-    return this.request<{ alerts: Alert[] }>("/alerts");
-  }
-
-  async getRecentAlerts(): Promise<{ alerts: Alert[] }> {
-    return this.request<{ alerts: Alert[] }>("/alerts/recent/day");
-  }
-}
-
-export const apiClient = new ApiClient();

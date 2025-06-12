@@ -93,6 +93,16 @@ export const useQueue = (serverId: string, queueName: string) => {
   });
 };
 
+export const useEnhancedMetrics = (serverId: string) => {
+  return useQuery({
+    queryKey: [...queryKeys.overview(serverId), "enhanced"],
+    queryFn: () => apiClient.getEnhancedMetrics(serverId),
+    enabled: !!serverId,
+    staleTime: 5000, // 5 seconds
+    refetchInterval: 15000, // Refetch every 15 seconds
+  });
+};
+
 // Alerts hooks
 export const useAlerts = () => {
   return useQuery({

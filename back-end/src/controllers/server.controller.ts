@@ -72,6 +72,7 @@ serverController.post(
     const data = c.req.valid("json");
 
     try {
+      console.log("Creating server with data:", data);
       // Test connection before creating the server
       const client = new RabbitMQClient({
         host: data.host,
@@ -214,9 +215,11 @@ serverController.post(
   zValidator("json", RabbitMQCredentialsSchema),
   async (c) => {
     const credentials = c.req.valid("json");
+    console.log("Testing connection with credentials:", credentials);
 
     try {
       const client = new RabbitMQClient(credentials);
+      console.log("Created RabbitMQ client:", client);
       const overview = await client.getOverview();
 
       return c.json({

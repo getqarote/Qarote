@@ -3,6 +3,7 @@ import { zValidator } from "@hono/zod-validator";
 import prisma from "../core/prisma";
 import RabbitMQClient from "../core/rabbitmq";
 import { RabbitMQCredentialsSchema } from "../schemas/rabbitmq";
+import type { EnhancedMetrics } from "../types/rabbitmq";
 
 const rabbitmqController = new Hono();
 
@@ -269,6 +270,74 @@ rabbitmqController.post(
       return c.json(
         {
           error: "Failed to fetch nodes",
+          message: error instanceof Error ? error.message : "Unknown error",
+        },
+        500
+      );
+    }
+  }
+);
+
+// Get enhanced metrics including latency and disk usage for a specific server
+rabbitmqController.get("/servers/:id/metrics", async (c) => {
+  const id = c.req.param("id");
+
+  try {
+    const server = await prisma.rabbitMQServer.findUnique({
+      where: { id },
+    });
+
+    if (!server) {
+      return c.json({ error: "Server not found" }, 404);
+    }
+
+    const client = new RabbitMQClient({
+      host: server.host,
+      port: server.port,
+      username: server.username,
+      password: server.password,
+      vhost: server.vhost,
+    });
+
+    const metrics = await client.getMetrics();
+    return c.json({ metrics });
+  } catch (error) {
+    console.error(`Error fetching enhanced metrics for server ${id}:`, error);
+    return c.json(
+      {
+        error: "Failed to fetch enhanced metrics",
+        message: error instanceof Error ? error.message : "Unknown error",
+      },
+      500
+    );
+  }
+});
+
+// Test RabbitMQ connection with enhanced metrics
+rabbitmqController.post(
+  "/test-connection-with-metrics",
+  zValidator("json", RabbitMQCredentialsSchema),
+  async (c) => {
+    const credentials = c.req.valid("json");
+
+    try {
+      const client = new RabbitMQClient(credentials);
+      const metrics = await client.getMetrics();
+      return c.json({
+        success: true,
+        metrics: {
+          avgLatency: metrics.avgLatency,
+          diskUsage: metrics.diskUsage,
+          nodesCount: metrics.nodes?.length || 0,
+          connectionsCount: metrics.connections?.length || 0,
+          channelsCount: metrics.channels?.length || 0,
+        },
+      });
+    } catch (error) {
+      console.error("Error testing connection with metrics:", error);
+      return c.json(
+        {
+          error: "Failed to connect",
           message: error instanceof Error ? error.message : "Unknown error",
         },
         500

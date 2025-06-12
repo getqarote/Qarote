@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Cpu, HardDrive, Database } from "lucide-react";
 
@@ -23,22 +22,22 @@ export const ResourceUsage = ({ metrics }: ResourceUsageProps) => {
       value: metrics.cpuUsage,
       unit: "%",
       icon: Cpu,
-      color: "text-yellow-600"
+      color: "text-yellow-600",
     },
     {
       name: "Memory",
       value: metrics.totalMemory,
       unit: "GB",
       icon: HardDrive,
-      color: "text-blue-600"
+      color: "text-blue-600",
     },
     {
       name: "Disk Usage",
       value: metrics.diskUsage,
       unit: "%",
       icon: Database,
-      color: "text-purple-600"
-    }
+      color: "text-purple-600",
+    },
   ];
 
   return (
@@ -56,23 +55,27 @@ export const ResourceUsage = ({ metrics }: ResourceUsageProps) => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <resource.icon className={`w-4 h-4 ${resource.color}`} />
-                <span className="text-sm font-medium text-gray-700">{resource.name}</span>
+                <span className="text-sm font-medium text-gray-700">
+                  {resource.name}
+                </span>
               </div>
               <span className="text-sm font-bold text-gray-900">
-                {resource.value.toFixed(1)}{resource.unit}
+                {resource.value?.toFixed(1)}
+                {resource.unit}
               </span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div
                 className={`h-2 rounded-full transition-all duration-300 ${
-                  resource.unit === "%" 
+                  resource.unit === "%"
                     ? getUsageColor(resource.value)
                     : "bg-blue-500"
                 }`}
                 style={{
-                  width: resource.unit === "%" 
-                    ? `${Math.min(resource.value, 100)}%` 
-                    : `${Math.min((resource.value / 16) * 100, 100)}%`
+                  width:
+                    resource.unit === "%"
+                      ? `${Math.min(resource.value, 100)}%`
+                      : `${Math.min((resource.value / 16) * 100, 100)}%`,
                 }}
               />
             </div>
