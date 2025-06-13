@@ -19,8 +19,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Activity, MessageSquare, Clock, Server, Plus } from "lucide-react";
+import {
+  Activity,
+  MessageSquare,
+  Clock,
+  Server,
+  Plus,
+  LogOut,
+  User,
+} from "lucide-react";
 import { useServerContext } from "@/contexts/ServerContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { useLogout } from "@/hooks/useAuth";
 import { useServers } from "@/hooks/useApi";
 import { AddServerForm } from "@/components/AddServerForm";
 import { useLocation, Link } from "react-router-dom";
@@ -56,6 +66,8 @@ const menuItems = [
 export function AppSidebar() {
   const location = useLocation();
   const { selectedServerId, setSelectedServerId } = useServerContext();
+  const { user } = useAuth();
+  const logoutMutation = useLogout();
   const { data: serversData } = useServers();
   const servers = serversData?.servers || [];
   const selectedServer = servers.find(
@@ -166,8 +178,31 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-gray-100 p-4">
-        <div className="text-xs text-gray-500 text-center">
+      <SidebarFooter className="border-t border-gray-100 p-4 space-y-4">
+        {/* User section */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 text-sm">
+            <User className="w-4 h-4 text-gray-500" />
+            <div className="flex flex-col">
+              <span className="font-medium text-gray-700">
+                {user?.firstName} {user?.lastName}
+              </span>
+              <span className="text-xs text-gray-500">{user?.email}</span>
+            </div>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => logoutMutation.mutate()}
+            disabled={logoutMutation.isPending}
+            className="text-gray-500 hover:text-red-600 p-1"
+          >
+            <LogOut className="w-4 h-4" />
+          </Button>
+        </div>
+
+        {/* Server connection info */}
+        <div className="text-xs text-gray-500 text-center border-t border-gray-100 pt-3">
           {selectedServer ? (
             <div className="space-y-1">
               <p className="font-medium text-gray-700">Connected to:</p>

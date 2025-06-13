@@ -443,6 +443,39 @@ export interface EnhancedMetrics {
   calculatedAt: string;
 }
 
+// Authentication interfaces
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface RegisterRequest {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  companyName?: string;
+}
+
+export interface AuthResponse {
+  token: string;
+  user: {
+    id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    companyId?: string;
+  };
+}
+
+export interface User {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  companyId?: string;
+}
+
 class ApiClient {
   private baseUrl: string;
 
@@ -450,17 +483,31 @@ class ApiClient {
     this.baseUrl = baseUrl;
   }
 
+  private getAuthToken(): string | null {
+    return localStorage.getItem("auth_token");
+  }
+
   private async request<T>(
     endpoint: string,
     options?: RequestInit
   ): Promise<T> {
     try {
+      const token = this.getAuthToken();
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+
+      if (options?.headers) {
+        Object.assign(headers, options.headers);
+      }
+
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+
       const response = await fetch(`${this.baseUrl}${endpoint}`, {
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-        },
         ...options,
+        headers,
       });
 
       if (!response.ok) {
@@ -561,6 +608,42 @@ class ApiClient {
 
   async getRecentAlerts(): Promise<{ alerts: Alert[] }> {
     return this.request<{ alerts: Alert[] }>("/alerts/recent/day");
+  }
+
+  // Authentication
+  async login(
+    credentials: LoginRequest
+  ): Promise<{ user: User; token: string }> {
+    return this.request<{ user: User; token: string }>("/auth/login", {
+      method: "POST",
+      body: JSON.stringify(credentials),
+    });
+  }
+
+  async register(
+    userData: RegisterRequest
+  ): Promise<{ user: User; token: string }> {
+    return this.request<{ user: User; token: string }>("/auth/register", {
+      method: "POST",
+      body: JSON.stringify(userData),
+    });
+  }
+
+  async getProfile(): Promise<{ user: User }> {
+    return this.request<{ user: User }>("/auth/profile");
+  }
+
+  async updateProfile(userData: Partial<User>): Promise<{ user: User }> {
+    return this.request<{ user: User }>("/auth/profile", {
+      method: "PATCH",
+      body: JSON.stringify(userData),
+    });
+  }
+
+  async logout(): Promise<void> {
+    return this.request<void>("/auth/logout", {
+      method: "POST",
+    });
   }
 }
 
