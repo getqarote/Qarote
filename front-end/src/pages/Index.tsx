@@ -444,7 +444,7 @@ const Index = () => {
             {/* Bottom Row */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <RecentAlerts />
-              <ResourceUsage metrics={metrics} />
+              <ResourceUsage metrics={metrics} overview={overview} />
             </div>
           </div>
         </main>
