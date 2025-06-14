@@ -14,6 +14,7 @@ import userController from "./controllers/user.controller";
 import companyController from "./controllers/company.controller";
 
 import { corsMiddleware } from "./middlewares/cors";
+import { alertService } from "./services/alert.service";
 
 // Load environment variables
 dotenv.config();
@@ -54,6 +55,9 @@ async function startServer() {
     await prisma.$connect();
     console.log("Connected to database");
 
+    // Start the alert monitoring service
+    alertService.start();
+
     // Start the server
     serve(
       {
@@ -75,12 +79,14 @@ async function startServer() {
 // Handle graceful shutdown
 process.on("SIGINT", async () => {
   console.log("Shutting down server...");
+  alertService.stop();
   await prisma.$disconnect();
   process.exit(0);
 });
 
 process.on("SIGTERM", async () => {
   console.log("Shutting down server...");
+  alertService.stop();
   await prisma.$disconnect();
   process.exit(0);
 });

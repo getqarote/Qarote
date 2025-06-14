@@ -1,155 +1,537 @@
 import { Hono } from "hono";
-import { zValidator } from "@hono/zod-validator";
 import prisma from "../core/prisma";
-import { CreateAlertSchema, UpdateAlertSchema } from "../schemas/alerts";
+import { authenticate } from "../core/auth";
+import { zValidator } from "@hono/zod-validator";
+import {
+  createAlertRuleSchema,
+  updateAlertRuleSchema,
+  alertQuerySchema,
+  acknowledgeAlertSchema,
+} from "../schemas/alerts";
 
-const alertController = new Hono();
+const app = new Hono();
 
-// Get all alerts
-alertController.get("/", async (c) => {
-  const status = c.req.query("status");
-  const severity = c.req.query("severity");
+// Middleware to apply authentication to all routes
+app.use("*", authenticate);
 
-  try {
-    const whereClause: any = {};
+// Get all alert rules for the user's company
+app.get("/rules", async (c) => {
+  const user = c.get("user");
 
-    if (status) {
-      whereClause.status = status;
-    }
+  const alertRules = await prisma.alertRule.findMany({
+    where: {
+      companyId: user.companyId!,
+    },
+    include: {
+      server: {
+        select: {
+          id: true,
+          name: true,
+          host: true,
+        },
+      },
+      createdBy: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+        },
+      },
+      _count: {
+        select: {
+          alerts: {
+            where: {
+              status: {
+                in: ["ACTIVE", "ACKNOWLEDGED"],
+              },
+            },
+          },
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
 
-    if (severity) {
-      whereClause.severity = severity;
-    }
-
-    const alerts = await prisma.alert.findMany({
-      where: whereClause,
-      orderBy: { createdAt: "desc" },
-    });
-
-    return c.json({ alerts });
-  } catch (error) {
-    console.error("Error fetching alerts:", error);
-    return c.json({ error: "Failed to fetch alerts" }, 500);
-  }
+  return c.json(alertRules);
 });
 
-// Get a specific alert by ID
-alertController.get("/:id", async (c) => {
-  const id = c.req.param("id");
+// Get a specific alert rule
+app.get("/rules/:id", async (c) => {
+  const user = c.get("user");
+  const alertRuleId = c.req.param("id");
 
-  try {
-    const alert = await prisma.alert.findUnique({
-      where: { id },
-    });
+  const alertRule = await prisma.alertRule.findFirst({
+    where: {
+      id: alertRuleId,
+      companyId: user.companyId!,
+    },
+    include: {
+      server: {
+        select: {
+          id: true,
+          name: true,
+          host: true,
+        },
+      },
+      createdBy: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+        },
+      },
+      alerts: {
+        where: {
+          status: {
+            in: ["ACTIVE", "ACKNOWLEDGED"],
+          },
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+        take: 10,
+      },
+    },
+  });
 
-    if (!alert) {
-      return c.json({ error: "Alert not found" }, 404);
-    }
-
-    return c.json({ alert });
-  } catch (error) {
-    console.error(`Error fetching alert ${id}:`, error);
-    return c.json({ error: "Failed to fetch alert" }, 500);
+  if (!alertRule) {
+    return c.json({ error: "Alert rule not found" }, 404);
   }
+
+  return c.json(alertRule);
 });
 
-// Create a new alert
-alertController.post("/", zValidator("json", CreateAlertSchema), async (c) => {
+// Create a new alert rule
+app.post("/rules", zValidator("json", createAlertRuleSchema), async (c) => {
+  const user = c.get("user");
   const data = c.req.valid("json");
 
-  try {
-    const alert = await prisma.alert.create({
-      data,
-    });
+  // Verify the server belongs to the user's company
+  const server = await prisma.rabbitMQServer.findFirst({
+    where: {
+      id: data.serverId,
+      companyId: user.companyId!,
+    },
+  });
 
-    return c.json({ alert }, 201);
-  } catch (error) {
-    console.error("Error creating alert:", error);
-    return c.json({ error: "Failed to create alert" }, 500);
+  if (!server) {
+    return c.json({ error: "Server not found or access denied" }, 404);
   }
+
+  const alertRule = await prisma.alertRule.create({
+    data: {
+      ...data,
+      companyId: user.companyId!,
+      createdById: user.id,
+    },
+    include: {
+      server: {
+        select: {
+          id: true,
+          name: true,
+          host: true,
+        },
+      },
+      createdBy: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+        },
+      },
+    },
+  });
+
+  return c.json(alertRule, 201);
 });
 
-// Update an alert
-alertController.put(
-  "/:id",
-  zValidator("json", UpdateAlertSchema),
-  async (c) => {
-    const id = c.req.param("id");
-    const data = c.req.valid("json");
+// Update an alert rule
+app.put("/rules/:id", zValidator("json", updateAlertRuleSchema), async (c) => {
+  const user = c.get("user");
+  const alertRuleId = c.req.param("id");
+  const data = c.req.valid("json");
 
-    try {
-      // Check if alert exists
-      const existingAlert = await prisma.alert.findUnique({
-        where: { id },
-      });
+  // Verify the alert rule belongs to the user's company
+  const existingRule = await prisma.alertRule.findFirst({
+    where: {
+      id: alertRuleId,
+      companyId: user.companyId!,
+    },
+  });
 
-      if (!existingAlert) {
-        return c.json({ error: "Alert not found" }, 404);
-      }
+  if (!existingRule) {
+    return c.json({ error: "Alert rule not found" }, 404);
+  }
 
-      // If status is being changed to 'resolved', set resolvedAt
-      if (data.status === "resolved" && existingAlert.status !== "resolved") {
-        data.resolvedAt = new Date();
-      }
+  // If serverId is being updated, verify the new server belongs to the company
+  if (data.serverId && data.serverId !== existingRule.serverId) {
+    const server = await prisma.rabbitMQServer.findFirst({
+      where: {
+        id: data.serverId,
+        companyId: user.companyId!,
+      },
+    });
 
-      const alert = await prisma.alert.update({
-        where: { id },
-        data,
-      });
-
-      return c.json({ alert });
-    } catch (error) {
-      console.error(`Error updating alert ${id}:`, error);
-      return c.json({ error: "Failed to update alert" }, 500);
+    if (!server) {
+      return c.json({ error: "Server not found or access denied" }, 404);
     }
   }
-);
 
-// Delete an alert
-alertController.delete("/:id", async (c) => {
-  const id = c.req.param("id");
+  const alertRule = await prisma.alertRule.update({
+    where: { id: alertRuleId },
+    data,
+    include: {
+      server: {
+        select: {
+          id: true,
+          name: true,
+          host: true,
+        },
+      },
+      createdBy: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+        },
+      },
+    },
+  });
 
-  try {
-    // Check if alert exists
-    const existingAlert = await prisma.alert.findUnique({
-      where: { id },
+  return c.json(alertRule);
+});
+
+// Delete an alert rule
+app.delete("/rules/:id", async (c) => {
+  const user = c.get("user");
+  const alertRuleId = c.req.param("id");
+
+  // Verify the alert rule belongs to the user's company
+  const existingRule = await prisma.alertRule.findFirst({
+    where: {
+      id: alertRuleId,
+      companyId: user.companyId!,
+    },
+  });
+
+  if (!existingRule) {
+    return c.json({ error: "Alert rule not found" }, 404);
+  }
+
+  await prisma.alertRule.delete({
+    where: { id: alertRuleId },
+  });
+
+  return c.json({ message: "Alert rule deleted successfully" });
+});
+
+// Get all alerts for the user's company
+app.get("/", zValidator("query", alertQuerySchema), async (c) => {
+  const user = c.get("user");
+  const {
+    status,
+    severity,
+    serverId,
+    limit = 50,
+    offset = 0,
+  } = c.req.valid("query");
+
+  const where: any = {
+    companyId: user.companyId!,
+  };
+
+  if (status) {
+    where.status = Array.isArray(status) ? { in: status } : status;
+  }
+
+  if (severity) {
+    where.severity = Array.isArray(severity) ? { in: severity } : severity;
+  }
+
+  if (serverId) {
+    where.alertRule = {
+      serverId,
+    };
+  }
+
+  const [alerts, total] = await Promise.all([
+    prisma.alert.findMany({
+      where,
+      include: {
+        alertRule: {
+          include: {
+            server: {
+              select: {
+                id: true,
+                name: true,
+                host: true,
+              },
+            },
+          },
+        },
+        createdBy: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: Number(limit),
+      skip: Number(offset),
+    }),
+    prisma.alert.count({ where }),
+  ]);
+
+  return c.json({
+    alerts,
+    pagination: {
+      total,
+      limit: Number(limit),
+      offset: Number(offset),
+      hasMore: Number(offset) + Number(limit) < total,
+    },
+  });
+});
+
+// Get a specific alert
+app.get("/:id", async (c) => {
+  const user = c.get("user");
+  const alertId = c.req.param("id");
+
+  const alert = await prisma.alert.findFirst({
+    where: {
+      id: alertId,
+      companyId: user.companyId!,
+    },
+    include: {
+      alertRule: {
+        include: {
+          server: {
+            select: {
+              id: true,
+              name: true,
+              host: true,
+            },
+          },
+        },
+      },
+      createdBy: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+        },
+      },
+    },
+  });
+
+  if (!alert) {
+    return c.json({ error: "Alert not found" }, 404);
+  }
+
+  return c.json(alert);
+});
+
+// Acknowledge an alert
+app.post(
+  "/:id/acknowledge",
+  zValidator("json", acknowledgeAlertSchema),
+  async (c) => {
+    const user = c.get("user");
+    const alertId = c.req.param("id");
+    const { note } = c.req.valid("json");
+
+    // Verify the alert belongs to the user's company
+    const existingAlert = await prisma.alert.findFirst({
+      where: {
+        id: alertId,
+        companyId: user.companyId!,
+      },
     });
 
     if (!existingAlert) {
       return c.json({ error: "Alert not found" }, 404);
     }
 
-    await prisma.alert.delete({
-      where: { id },
-    });
+    if (existingAlert.status === "RESOLVED") {
+      return c.json({ error: "Cannot acknowledge a resolved alert" }, 400);
+    }
 
-    return c.json({ message: "Alert deleted successfully" });
-  } catch (error) {
-    console.error(`Error deleting alert ${id}:`, error);
-    return c.json({ error: "Failed to delete alert" }, 500);
-  }
-});
-
-// Get recent alerts (last 24 hours)
-alertController.get("/recent/day", async (c) => {
-  try {
-    const oneDayAgo = new Date();
-    oneDayAgo.setDate(oneDayAgo.getDate() - 1);
-
-    const alerts = await prisma.alert.findMany({
-      where: {
-        createdAt: {
-          gte: oneDayAgo,
+    const alert = await prisma.alert.update({
+      where: { id: alertId },
+      data: {
+        status: "ACKNOWLEDGED",
+        acknowledgedAt: new Date(),
+        // Note: you might want to add a note field to the Alert model
+      },
+      include: {
+        alertRule: {
+          include: {
+            server: {
+              select: {
+                id: true,
+                name: true,
+                host: true,
+              },
+            },
+          },
+        },
+        createdBy: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+          },
         },
       },
-      orderBy: { createdAt: "desc" },
     });
 
-    return c.json({ alerts });
-  } catch (error) {
-    console.error("Error fetching recent alerts:", error);
-    return c.json({ error: "Failed to fetch recent alerts" }, 500);
+    return c.json(alert);
   }
+);
+
+// Resolve an alert
+app.post(
+  "/:id/resolve",
+  zValidator("json", acknowledgeAlertSchema),
+  async (c) => {
+    const user = c.get("user");
+    const alertId = c.req.param("id");
+    const { note } = c.req.valid("json");
+
+    // Verify the alert belongs to the user's company
+    const existingAlert = await prisma.alert.findFirst({
+      where: {
+        id: alertId,
+        companyId: user.companyId!,
+      },
+    });
+
+    if (!existingAlert) {
+      return c.json({ error: "Alert not found" }, 404);
+    }
+
+    const alert = await prisma.alert.update({
+      where: { id: alertId },
+      data: {
+        status: "RESOLVED",
+        resolvedAt: new Date(),
+        // Note: you might want to add a note field to the Alert model
+      },
+      include: {
+        alertRule: {
+          include: {
+            server: {
+              select: {
+                id: true,
+                name: true,
+                host: true,
+              },
+            },
+          },
+        },
+        createdBy: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+          },
+        },
+      },
+    });
+
+    return c.json(alert);
+  }
+);
+
+// Get alert statistics for the user's company
+app.get("/stats/summary", async (c) => {
+  const user = c.get("user");
+
+  const [
+    totalAlerts,
+    activeAlerts,
+    acknowledgedAlerts,
+    resolvedAlerts,
+    criticalAlerts,
+    recentAlerts,
+  ] = await Promise.all([
+    prisma.alert.count({
+      where: { companyId: user.companyId! },
+    }),
+    prisma.alert.count({
+      where: {
+        companyId: user.companyId!,
+        status: "ACTIVE",
+      },
+    }),
+    prisma.alert.count({
+      where: {
+        companyId: user.companyId!,
+        status: "ACKNOWLEDGED",
+      },
+    }),
+    prisma.alert.count({
+      where: {
+        companyId: user.companyId!,
+        status: "RESOLVED",
+      },
+    }),
+    prisma.alert.count({
+      where: {
+        companyId: user.companyId!,
+        severity: "CRITICAL",
+        status: { in: ["ACTIVE", "ACKNOWLEDGED"] },
+      },
+    }),
+    prisma.alert.findMany({
+      where: {
+        companyId: user.companyId!,
+        createdAt: {
+          gte: new Date(Date.now() - 24 * 60 * 60 * 1000), // Last 24 hours
+        },
+      },
+      include: {
+        alertRule: {
+          include: {
+            server: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: 10,
+    }),
+  ]);
+
+  return c.json({
+    total: totalAlerts,
+    active: activeAlerts,
+    acknowledged: acknowledgedAlerts,
+    resolved: resolvedAlerts,
+    critical: criticalAlerts,
+    recent: recentAlerts,
+  });
 });
 
-export default alertController;
+export default app;

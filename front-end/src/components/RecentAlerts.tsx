@@ -1,68 +1,98 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertTriangle, Clock, Zap, Server } from "lucide-react";
-import { useRecentAlerts } from "@/hooks/useApi";
-import { Alert as ApiAlert } from "@/lib/api";
-
-// Helper function to format timestamp
-const formatTimestamp = (dateString: string) => {
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMinutes = Math.floor(diffMs / (1000 * 60));
-  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-  if (diffMinutes < 60) {
-    return `${diffMinutes} minute${diffMinutes !== 1 ? "s" : ""} ago`;
-  } else if (diffHours < 24) {
-    return `${diffHours} hour${diffHours !== 1 ? "s" : ""} ago`;
-  } else {
-    return `${diffDays} day${diffDays !== 1 ? "s" : ""} ago`;
-  }
-};
+import {
+  AlertTriangle,
+  Clock,
+  CheckCircle,
+  Server,
+  ArrowRight,
+} from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { apiClient, AlertInstance, AlertSeverity } from "@/lib/api";
+import { formatDistanceToNow } from "date-fns";
+import { Link } from "react-router-dom";
 
 export const RecentAlerts = () => {
-  const { data: alertsData, isLoading } = useRecentAlerts();
-  const alerts = alertsData?.alerts || [];
+  const { data: alertsResponse, isLoading } = useQuery({
+    queryKey: ["alerts", "recent"],
+    queryFn: () =>
+      apiClient.getAlerts({
+        limit: 3, // Only get 3 recent alerts
+        status: ["ACTIVE", "ACKNOWLEDGED"],
+      }),
+    staleTime: 10000, // 10 seconds
+    refetchInterval: 30000, // Refetch every 30 seconds
+  });
 
-  const getAlertIcon = (severity: string) => {
+  const alerts = alertsResponse?.alerts || [];
+
+  const getAlertIcon = (severity: AlertSeverity) => {
     switch (severity) {
-      case "warning":
+      case "CRITICAL":
+        return <AlertTriangle className="w-4 h-4 text-red-600" />;
+      case "HIGH":
+        return <AlertTriangle className="w-4 h-4 text-orange-600" />;
+      case "MEDIUM":
         return <AlertTriangle className="w-4 h-4 text-yellow-600" />;
-      case "error":
-        return <Zap className="w-4 h-4 text-red-600" />;
-      case "info":
+      case "LOW":
         return <Server className="w-4 h-4 text-blue-600" />;
       default:
         return <AlertTriangle className="w-4 h-4 text-gray-600" />;
     }
   };
 
-  const getAlertBadge = (severity: string) => {
+  const getAlertBadge = (severity: AlertSeverity) => {
     switch (severity) {
-      case "warning":
-        return <Badge className="bg-yellow-100 text-yellow-700">Warning</Badge>;
-      case "error":
-        return <Badge className="bg-red-100 text-red-700">Error</Badge>;
-      case "info":
-        return <Badge className="bg-blue-100 text-blue-700">Info</Badge>;
+      case "CRITICAL":
+        return <Badge className="bg-red-100 text-red-700">Critical</Badge>;
+      case "HIGH":
+        return <Badge className="bg-orange-100 text-orange-700">High</Badge>;
+      case "MEDIUM":
+        return <Badge className="bg-yellow-100 text-yellow-700">Medium</Badge>;
+      case "LOW":
+        return <Badge className="bg-blue-100 text-blue-700">Low</Badge>;
       default:
-        return <Badge variant="outline">{severity}</Badge>;
+        return <Badge className="bg-gray-100 text-gray-700">Unknown</Badge>;
+    }
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "ACTIVE":
+        return <AlertTriangle className="w-3 h-3 text-red-500" />;
+      case "ACKNOWLEDGED":
+        return <Clock className="w-3 h-3 text-yellow-500" />;
+      case "RESOLVED":
+        return <CheckCircle className="w-3 h-3 text-green-500" />;
+      default:
+        return <AlertTriangle className="w-3 h-3 text-gray-500" />;
     }
   };
 
   return (
     <Card className="border-0 shadow-md bg-white/80 backdrop-blur-sm">
       <CardHeader>
-        <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-          <AlertTriangle className="w-5 h-5 text-yellow-600" />
-          Recent Alerts
-        </CardTitle>
-        <p className="text-sm text-gray-500">
-          System notifications and warnings
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-yellow-600" />
+              Recent Alerts
+            </CardTitle>
+            <p className="text-sm text-gray-500">Latest system notifications</p>
+          </div>
+          <Link to="/alerts">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-blue-600 hover:text-blue-800"
+            >
+              View All
+              <ArrowRight className="w-4 h-4 ml-1" />
+            </Button>
+          </Link>
+        </div>
       </CardHeader>
       <CardContent className="space-y-3">
         {isLoading ? (
@@ -104,26 +134,36 @@ export const RecentAlerts = () => {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 text-xs text-gray-500">
                       <Clock className="w-3 h-3" />
-                      {formatTimestamp(alert.createdAt)}
+                      {formatDistanceToNow(new Date(alert.createdAt), {
+                        addSuffix: true,
+                      })}
                     </div>
                     {getAlertBadge(alert.severity)}
                   </div>
-                  <p className="text-xs text-gray-400 mt-1">
-                    Status: {alert.status}
-                    {alert.resolvedAt &&
-                      ` • Resolved ${formatTimestamp(alert.resolvedAt)}`}
-                  </p>
+                  <div className="flex items-center gap-2 text-xs text-gray-400 mt-1">
+                    {getStatusIcon(alert.status)}
+                    <span>Status: {alert.status}</span>
+                    {alert.alertRule?.server && (
+                      <>
+                        <span>•</span>
+                        <Server className="w-3 h-3" />
+                        <span>{alert.alertRule.server.name}</span>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
           ))
         ) : (
-          <div className="text-center py-8">
-            <AlertTriangle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-500">No recent alerts</p>
-            <p className="text-xs text-gray-400 mt-1">
-              All systems are running smoothly
-            </p>
+          <div className="text-center py-6">
+            <AlertTriangle className="h-8 w-8 text-gray-300 mx-auto mb-2" />
+            <p className="text-sm text-gray-500 mb-3">No recent alerts</p>
+            <Link to="/alerts">
+              <Button variant="outline" size="sm">
+                View All Alerts
+              </Button>
+            </Link>
           </div>
         )}
       </CardContent>

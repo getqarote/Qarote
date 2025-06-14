@@ -27,6 +27,7 @@ import {
   Plus,
   LogOut,
   User,
+  AlertTriangle,
 } from "lucide-react";
 import { useServerContext } from "@/contexts/ServerContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -60,6 +61,11 @@ const menuItems = [
     title: "Channels",
     url: "/channels",
     icon: MessageSquare,
+  },
+  {
+    title: "Alerts",
+    url: "/alerts",
+    icon: AlertTriangle,
   },
 ];
 
@@ -115,10 +121,12 @@ export function AppSidebar() {
                   <SelectItem key={server.id} value={server.id}>
                     <div className="flex items-center gap-2">
                       <Server className="h-3 w-3" />
-                      <span>{server.name}</span>
-                      <Badge variant="outline" className="text-xs ml-1">
-                        {server.host}:{server.port}
-                      </Badge>
+                      <div className="flex flex-col">
+                        <span className="font-medium">{server.host}</span>
+                        <span className="text-xs text-gray-500">
+                          {server.name}
+                        </span>
+                      </div>
                     </div>
                   </SelectItem>
                 ))}

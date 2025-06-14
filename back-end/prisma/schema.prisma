@@ -22,6 +22,38 @@ enum InvitationStatus {
   EXPIRED
 }
 
+enum AlertType {
+  QUEUE_DEPTH
+  MESSAGE_RATE
+  CONSUMER_COUNT
+  MEMORY_USAGE
+  DISK_USAGE
+  CONNECTION_COUNT
+  CHANNEL_COUNT
+  NODE_DOWN
+  EXCHANGE_ERROR
+}
+
+enum AlertSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum AlertStatus {
+  ACTIVE
+  ACKNOWLEDGED
+  RESOLVED
+}
+
+enum ComparisonOperator {
+  GREATER_THAN
+  LESS_THAN
+  EQUALS
+  NOT_EQUALS
+}
+
 model Company {
   id           String         @id @default(uuid())
   name         String
@@ -30,6 +62,8 @@ model Company {
   planType     String         @default("FREE") // FREE, PREMIUM, ENTERPRISE
   users        User[]
   servers      RabbitMQServer[]
+  alertRules   AlertRule[]
+  alerts       Alert[]
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
   invitations  Invitation[]
@@ -51,6 +85,7 @@ model User {
   invitations    Invitation[] @relation("InvitedUser")
   invitedBy      Invitation[] @relation("InvitingUser")
   alerts         Alert[]
+  alertRules     AlertRule[]
 }
 
 model Invitation {
@@ -71,18 +106,19 @@ model Invitation {
 }
 
 model RabbitMQServer {
-  id        String   @id @default(uuid())
-  name      String
-  host      String
-  port      Int
-  username  String
-  password  String
-  vhost     String   @default("/")
-  companyId String?
-  company   Company? @relation(fields: [companyId], references: [id], onDelete: SetNull)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  Queues    Queue[]
+  id         String      @id @default(uuid())
+  name       String
+  host       String
+  port       Int
+  username   String
+  password   String
+  vhost      String      @default("/")
+  companyId  String?
+  company    Company?    @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  Queues     Queue[]
+  alertRules AlertRule[]
 }
 
 model Queue {
@@ -117,14 +153,51 @@ model QueueMetric {
 }
 
 model Alert {
-  id          String   @id @default(uuid())
-  title       String
-  description String
-  severity    String   @default("info") // info, warning, error
-  status      String   @default("active") // active, acknowledged, resolved
-  createdById String?
-  createdBy   User?    @relation(fields: [createdById], references: [id], onDelete: SetNull)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  resolvedAt  DateTime?
+  id            String        @id @default(uuid())
+  title         String
+  description   String
+  severity      AlertSeverity
+  status        AlertStatus   @default(ACTIVE)
+  value         Float?        // The actual value that triggered the alert
+  threshold     Float?        // The threshold that was breached
+  
+  // Relations
+  alertRuleId   String?
+  alertRule     AlertRule?    @relation(fields: [alertRuleId], references: [id], onDelete: SetNull)
+  companyId     String
+  company       Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  createdById   String?
+  createdBy     User?         @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  
+  // Timestamps
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  resolvedAt    DateTime?
+  acknowledgedAt DateTime?
+}
+
+model AlertRule {
+  id          String             @id @default(cuid())
+  name        String
+  description String?
+  type        AlertType
+  threshold   Float
+  operator    ComparisonOperator
+  severity    AlertSeverity
+  enabled     Boolean            @default(true)
+  
+  // Relations
+  serverId    String
+  server      RabbitMQServer     @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  companyId   String
+  company     Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  createdById String
+  createdBy   User               @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  
+  // Metadata
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  
+  // Generated alerts
+  alerts      Alert[]
 }

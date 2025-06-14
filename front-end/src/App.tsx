@@ -12,6 +12,7 @@ import QueueDetail from "./pages/QueueDetail";
 import Connections from "./pages/Connections";
 import Exchanges from "./pages/Exchanges";
 import Channels from "./pages/Channels";
+import Alerts from "./pages/Alerts";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
 import NotFound from "./pages/NotFound";
@@ -77,6 +78,14 @@ const App = () => (
                 element={
                   <ProtectedRoute>
                     <Channels />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/alerts"
+                element={
+                  <ProtectedRoute>
+                    <Alerts />
                   </ProtectedRoute>
                 }
               />

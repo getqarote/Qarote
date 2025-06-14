@@ -471,8 +471,9 @@ export interface AuthResponse {
 export interface User {
   id: string;
   email: string;
-  firstName: string;
-  lastName: string;
+  firstName?: string;
+  lastName?: string;
+  role: string;
   companyId?: string;
 }
 
@@ -487,6 +488,138 @@ export interface TimeSeriesResponse {
   timeseries: TimeSeriesDataPoint[];
   timeRange: string;
   dataPoints: number;
+}
+
+// Alert Management Types
+export type AlertType =
+  | "QUEUE_DEPTH"
+  | "MESSAGE_RATE"
+  | "CONSUMER_COUNT"
+  | "MEMORY_USAGE"
+  | "DISK_USAGE"
+  | "CONNECTION_COUNT"
+  | "CHANNEL_COUNT"
+  | "NODE_DOWN"
+  | "EXCHANGE_ERROR";
+
+export type AlertSeverity = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+export type AlertStatus = "ACTIVE" | "ACKNOWLEDGED" | "RESOLVED";
+export type ComparisonOperator =
+  | "GREATER_THAN"
+  | "LESS_THAN"
+  | "EQUALS"
+  | "NOT_EQUALS";
+
+export interface AlertRule {
+  id: string;
+  name: string;
+  description?: string;
+  type: AlertType;
+  threshold: number;
+  operator: ComparisonOperator;
+  severity: AlertSeverity;
+  enabled: boolean;
+  serverId: string;
+  companyId: string;
+  createdById: string;
+  createdAt: string;
+  updatedAt: string;
+  server: {
+    id: string;
+    name: string;
+    host: string;
+  };
+  createdBy: {
+    id: string;
+    firstName?: string;
+    lastName?: string;
+    email: string;
+  };
+  _count?: {
+    alerts: number;
+  };
+  alerts?: AlertInstance[];
+}
+
+export interface AlertInstance {
+  id: string;
+  title: string;
+  description: string;
+  severity: AlertSeverity;
+  status: AlertStatus;
+  value?: number;
+  threshold?: number;
+  alertRuleId?: string;
+  companyId: string;
+  createdById?: string;
+  createdAt: string;
+  updatedAt: string;
+  resolvedAt?: string;
+  acknowledgedAt?: string;
+  alertRule?: {
+    id: string;
+    name: string;
+    server: {
+      id: string;
+      name: string;
+      host: string;
+    };
+  };
+  createdBy?: {
+    id: string;
+    firstName?: string;
+    lastName?: string;
+    email: string;
+  };
+}
+
+export interface AlertQuery {
+  status?: AlertStatus | AlertStatus[];
+  severity?: AlertSeverity | AlertSeverity[];
+  serverId?: string;
+  limit?: number;
+  offset?: number;
+}
+
+export interface AlertsResponse {
+  alerts: AlertInstance[];
+  pagination: {
+    total: number;
+    limit: number;
+    offset: number;
+    hasMore: boolean;
+  };
+}
+
+export interface AlertStats {
+  total: number;
+  active: number;
+  acknowledged: number;
+  resolved: number;
+  critical: number;
+  recent: AlertInstance[];
+}
+
+export interface CreateAlertRuleInput {
+  name: string;
+  description?: string;
+  type: AlertType;
+  threshold: number;
+  operator: ComparisonOperator;
+  severity: AlertSeverity;
+  enabled?: boolean;
+  serverId: string;
+}
+
+export interface UpdateAlertRuleInput {
+  name?: string;
+  description?: string;
+  type?: AlertType;
+  threshold?: number;
+  operator?: ComparisonOperator;
+  severity?: AlertSeverity;
+  enabled?: boolean;
+  serverId?: string;
 }
 
 class ApiClient {
@@ -623,11 +756,6 @@ class ApiClient {
     );
   }
 
-  // Alerts
-  async getAlerts(): Promise<{ alerts: Alert[] }> {
-    return this.request<{ alerts: Alert[] }>("/alerts");
-  }
-
   async getRecentAlerts(): Promise<{ alerts: Alert[] }> {
     return this.request<{ alerts: Alert[] }>("/alerts/recent/day");
   }
@@ -666,6 +794,103 @@ class ApiClient {
     return this.request<void>("/auth/logout", {
       method: "POST",
     });
+  }
+
+  // Alert Management API Methods
+  async getAlertRules(): Promise<AlertRule[]> {
+    return this.request<AlertRule[]>("/alerts/rules");
+  }
+
+  async getAlertRule(id: string): Promise<AlertRule> {
+    return this.request<AlertRule>(`/alerts/rules/${id}`);
+  }
+
+  async createAlertRule(data: CreateAlertRuleInput): Promise<AlertRule> {
+    return this.request<AlertRule>("/alerts/rules", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateAlertRule(
+    id: string,
+    data: UpdateAlertRuleInput
+  ): Promise<AlertRule> {
+    return this.request<AlertRule>(`/alerts/rules/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteAlertRule(id: string): Promise<{ message: string }> {
+    return this.request<{ message: string }>(`/alerts/rules/${id}`, {
+      method: "DELETE",
+    });
+  }
+
+  async getAlerts(query?: AlertQuery): Promise<AlertsResponse> {
+    const searchParams = new URLSearchParams();
+
+    if (query) {
+      if (query.status) {
+        if (Array.isArray(query.status)) {
+          query.status.forEach((status) =>
+            searchParams.append("status", status)
+          );
+        } else {
+          searchParams.append("status", query.status);
+        }
+      }
+
+      if (query.severity) {
+        if (Array.isArray(query.severity)) {
+          query.severity.forEach((severity) =>
+            searchParams.append("severity", severity)
+          );
+        } else {
+          searchParams.append("severity", query.severity);
+        }
+      }
+
+      if (query.serverId) {
+        searchParams.append("serverId", query.serverId);
+      }
+
+      if (query.limit) {
+        searchParams.append("limit", query.limit.toString());
+      }
+
+      if (query.offset) {
+        searchParams.append("offset", query.offset.toString());
+      }
+    }
+
+    const url = `/alerts${
+      searchParams.toString() ? `?${searchParams.toString()}` : ""
+    }`;
+    return this.request<AlertsResponse>(url);
+  }
+
+  async getAlert(id: string): Promise<AlertInstance> {
+    return this.request<AlertInstance>(`/alerts/${id}`);
+  }
+
+  async acknowledgeAlert(id: string, note?: string): Promise<AlertInstance> {
+    return this.request<AlertInstance>(`/alerts/${id}/acknowledge`, {
+      method: "POST",
+      body: JSON.stringify({ note }),
+    });
+  }
+
+  async resolveAlert(id: string, note?: string): Promise<AlertInstance> {
+    return this.request<AlertInstance>(`/alerts/${id}/resolve`, {
+      method: "POST",
+      body: JSON.stringify({ note }),
+    });
+  }
+
+  async getAlertStats(): Promise<AlertStats> {
+    return this.request<AlertStats>("/alerts/stats/summary");
   }
 }
 
