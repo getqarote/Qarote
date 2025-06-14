@@ -747,6 +747,20 @@ class ApiClient {
     );
   }
 
+  async purgeQueue(
+    serverId: string,
+    queueName: string
+  ): Promise<{ success: boolean; message: string; purged: number }> {
+    return this.request<{ success: boolean; message: string; purged: number }>(
+      `/rabbitmq/servers/${serverId}/queues/${encodeURIComponent(
+        queueName
+      )}/messages`,
+      {
+        method: "DELETE",
+      }
+    );
+  }
+
   async getTimeSeriesMetrics(
     serverId: string,
     timeRange: string = "24h"

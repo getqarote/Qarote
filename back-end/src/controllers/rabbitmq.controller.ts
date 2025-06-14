@@ -604,4 +604,96 @@ rabbitmqController.get("/servers/:id/metrics/timeseries", async (c) => {
   }
 });
 
+// Purge a queue (delete all messages) from a server (only if it belongs to user's company)
+rabbitmqController.delete(
+  "/servers/:id/queues/:queueName/messages",
+  async (c) => {
+    const id = c.req.param("id");
+    const queueName = c.req.param("queueName");
+    const user = c.get("user");
+
+    console.log(`Attempting to purge queue "${queueName}" for server ${id}`);
+
+    try {
+      const server = await prisma.rabbitMQServer.findUnique({
+        where: {
+          id,
+          companyId: user.companyId || null,
+        },
+      });
+
+      if (!server) {
+        console.error(`Server not found: ${id} for company ${user.companyId}`);
+        return c.json({ error: "Server not found or access denied" }, 404);
+      }
+
+      console.log(
+        `Server found: ${server.name} (${server.host}:${server.port})`
+      );
+
+      const client = new RabbitMQClient({
+        host: server.host,
+        port: server.port,
+        username: server.username,
+        password: server.password,
+        vhost: server.vhost,
+      });
+
+      console.log(
+        `Calling RabbitMQ purge for queue "${queueName}" on vhost "${server.vhost}"`
+      );
+      const result = await client.purgeQueue(queueName);
+      console.log(`Purge result:`, result);
+
+      // Update queue metrics in database after purge
+      const existingQueue = await prisma.queue.findFirst({
+        where: {
+          name: queueName,
+          serverId: id,
+        },
+      });
+
+      if (existingQueue) {
+        await prisma.queue.update({
+          where: { id: existingQueue.id },
+          data: {
+            messages: 0,
+            messagesReady: 0,
+            messagesUnack: 0,
+            lastFetched: new Date(),
+          },
+        });
+        console.log(
+          `Updated queue metrics in database for queue "${queueName}"`
+        );
+      } else {
+        console.log(
+          `Queue "${queueName}" not found in database, skipping metrics update`
+        );
+      }
+
+      return c.json({
+        success: true,
+        message: `Successfully purged ${
+          result.purged || 0
+        } messages from queue "${queueName}"`,
+        purged: result.purged || 0,
+      });
+    } catch (error) {
+      console.error(
+        `Error purging queue ${queueName} for server ${id}:`,
+        error
+      );
+      return c.json(
+        {
+          error: "Failed to purge queue",
+          message: error instanceof Error ? error.message : "Unknown error",
+          details: error instanceof Error ? error.stack : undefined,
+        },
+        500
+      );
+    }
+  }
+);
+
 export default rabbitmqController;

@@ -24,6 +24,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { AddServerForm } from "@/components/AddServerForm";
+import { PurgeQueueDialog } from "@/components/PurgeQueueDialog";
 import { useServerContext } from "@/contexts/ServerContext";
 import { useQueues } from "@/hooks/useApi";
 import { Queue } from "@/lib/api";
@@ -298,13 +299,11 @@ const Queues = () => {
                                 >
                                   View
                                 </Button>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="text-red-600 hover:text-red-700"
-                                >
-                                  Purge
-                                </Button>
+                                <PurgeQueueDialog
+                                  queueName={queue.name}
+                                  messageCount={queue.messages}
+                                  onSuccess={() => refetch()}
+                                />
                               </div>
                             </TableCell>
                           </TableRow>

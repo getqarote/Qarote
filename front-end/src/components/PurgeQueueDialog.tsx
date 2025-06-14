@@ -1,0 +1,147 @@
+import { useState } from "react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Trash2, AlertTriangle } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiClient } from "@/lib/api";
+import { useToast } from "@/hooks/use-toast";
+import { useServerContext } from "@/contexts/ServerContext";
+
+interface PurgeQueueDialogProps {
+  queueName: string;
+  messageCount: number;
+  trigger?: React.ReactNode;
+  onSuccess?: () => void;
+}
+
+export const PurgeQueueDialog = ({
+  queueName,
+  messageCount,
+  trigger,
+  onSuccess,
+}: PurgeQueueDialogProps) => {
+  const [open, setOpen] = useState(false);
+  const { selectedServerId } = useServerContext();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const purgeQueueMutation = useMutation({
+    mutationFn: async () => {
+      if (!selectedServerId) {
+        throw new Error("No server selected");
+      }
+      return apiClient.purgeQueue(selectedServerId, queueName);
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Queue Purged Successfully",
+        description: data.message,
+        variant: "default",
+      });
+
+      // Invalidate relevant queries to refresh data
+      queryClient.invalidateQueries({ queryKey: ["queues"] });
+      queryClient.invalidateQueries({ queryKey: ["queue"] });
+      queryClient.invalidateQueries({ queryKey: ["overview"] });
+
+      setOpen(false);
+      onSuccess?.();
+    },
+    onError: (error) => {
+      toast({
+        title: "Failed to Purge Queue",
+        description:
+          error instanceof Error
+            ? error.message
+            : "An unexpected error occurred",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handlePurge = () => {
+    purgeQueueMutation.mutate();
+  };
+
+  return (
+    <AlertDialog open={open} onOpenChange={setOpen}>
+      <AlertDialogTrigger asChild>
+        {trigger || (
+          <Button
+            size="sm"
+            variant="outline"
+            className="text-red-600 hover:text-red-700"
+          >
+            <Trash2 className="w-4 h-4 mr-1" />
+            Purge
+          </Button>
+        )}
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle className="flex items-center gap-2">
+            <AlertTriangle className="w-5 h-5 text-red-600" />
+            Purge Queue "{queueName}"?
+          </AlertDialogTitle>
+          <AlertDialogDescription className="space-y-3">
+            <p>
+              <strong>⚠️ This action cannot be undone!</strong>
+            </p>
+            <p>
+              You are about to permanently delete all messages from the queue:
+            </p>
+            <div className="p-3 bg-gray-50 rounded-lg border">
+              <div className="flex items-center justify-between">
+                <span className="font-medium">{queueName}</span>
+                <Badge variant="secondary">
+                  {messageCount.toLocaleString()} messages
+                </Badge>
+              </div>
+            </div>
+            <p className="text-sm text-gray-600">
+              All {messageCount.toLocaleString()} messages in this queue will be
+              permanently deleted. This operation will:
+            </p>
+            <ul className="text-sm text-gray-600 list-disc list-inside space-y-1">
+              <li>Remove all pending messages</li>
+              <li>Clear both ready and unacknowledged messages</li>
+              <li>Reset the queue message count to zero</li>
+              <li>Cannot be reversed once executed</li>
+            </ul>
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={handlePurge}
+            disabled={purgeQueueMutation.isPending}
+            className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+          >
+            {purgeQueueMutation.isPending ? (
+              <>
+                <div className="w-4 h-4 animate-spin rounded-full border-2 border-white border-t-transparent mr-2" />
+                Purging...
+              </>
+            ) : (
+              <>
+                <Trash2 className="w-4 h-4 mr-2" />
+                Yes, Purge Queue
+              </>
+            )}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+};

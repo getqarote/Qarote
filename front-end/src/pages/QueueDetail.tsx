@@ -19,6 +19,7 @@ import {
   Trash2,
   Send,
 } from "lucide-react";
+import { PurgeQueueDialog } from "@/components/PurgeQueueDialog";
 import { useServerContext } from "@/contexts/ServerContext";
 import { useQueue } from "@/hooks/useApi";
 import { Queue } from "@/lib/api";
@@ -140,13 +141,20 @@ const QueueDetail = () => {
                   <Send className="w-4 h-4" />
                   Send Message
                 </Button>
-                <Button
-                  variant="outline"
-                  className="flex items-center gap-2 text-red-600 hover:text-red-700"
-                >
-                  <Trash2 className="w-4 h-4" />
-                  Purge Queue
-                </Button>
+                <PurgeQueueDialog
+                  queueName={queueName}
+                  messageCount={queue?.messages || 0}
+                  onSuccess={() => refetch()}
+                  trigger={
+                    <Button
+                      variant="outline"
+                      className="flex items-center gap-2 text-red-600 hover:text-red-700"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      Purge Queue
+                    </Button>
+                  }
+                />
               </div>
             </div>
 

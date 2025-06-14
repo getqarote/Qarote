@@ -21,13 +21,14 @@ class RabbitMQClient {
     this.vhost = encodeURIComponent(credentials.vhost);
   }
 
-  private async request(endpoint: string) {
+  private async request(endpoint: string, options?: RequestInit) {
     try {
       const response = await fetch(`${this.baseUrl}${endpoint}`, {
         headers: {
           Authorization: this.authHeader,
           "Content-Type": "application/json",
         },
+        ...options,
       });
 
       if (!response.ok) {
@@ -36,7 +37,16 @@ class RabbitMQClient {
         );
       }
 
-      return response.json();
+      // Check if response has content
+      const contentType = response.headers.get("content-type");
+
+      if (contentType && contentType.includes("application/json")) {
+        return response.json();
+      } else {
+        // Some endpoints return text or empty responses
+        const text = await response.text();
+        return text ? { message: text } : {};
+      }
     } catch (error) {
       console.error(`Error fetching from RabbitMQ API (${endpoint}):`, error);
       throw error;
@@ -74,6 +84,42 @@ class RabbitMQClient {
 
   async getBindings() {
     return this.request(`/bindings/${this.vhost}`);
+  }
+
+  async purgeQueue(queueName: string): Promise<{ purged: number }> {
+    const encodedQueueName = encodeURIComponent(queueName);
+    try {
+      console.log(`Purging queue: ${queueName} (encoded: ${encodedQueueName})`);
+      console.log(
+        `Purge endpoint: /queues/${this.vhost}/${encodedQueueName}/contents`
+      );
+
+      const result = await this.request(
+        `/queues/${this.vhost}/${encodedQueueName}/contents`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      console.log(`Purge result:`, result);
+
+      // Handle different response formats from RabbitMQ
+      if (typeof result === "object" && result !== null) {
+        return { purged: result.purged || result.message_count || 0 };
+      } else if (typeof result === "string") {
+        // Try to extract message count from response text if possible
+        const messageCountMatch = result.match(/(\d+)/);
+        const purgedCount = messageCountMatch
+          ? parseInt(messageCountMatch[1])
+          : 0;
+        return { purged: purgedCount };
+      }
+
+      return { purged: 0 };
+    } catch (error) {
+      console.error(`Error purging queue "${queueName}":`, error);
+      throw error;
+    }
   }
 
   // Get comprehensive metrics for calculating latency and performance
