@@ -46,7 +46,10 @@ export const PurgeQueueDialog = ({
     onSuccess: (data) => {
       toast({
         title: "Queue Purged Successfully",
-        description: data.message,
+        description:
+          data.purged === -1
+            ? `All messages in queue "${queueName}" have been purged`
+            : `${data.purged} messages were purged from queue "${queueName}"`,
         variant: "default",
       });
 
@@ -104,14 +107,18 @@ export const PurgeQueueDialog = ({
             <div className="p-3 bg-gray-50 rounded-lg border">
               <div className="flex items-center justify-between">
                 <span className="font-medium">{queueName}</span>
-                <Badge variant="secondary">
-                  {messageCount.toLocaleString()} messages
-                </Badge>
+                {messageCount > 0 && (
+                  <Badge variant="secondary">
+                    {messageCount.toLocaleString()} messages
+                  </Badge>
+                )}
               </div>
             </div>
             <p className="text-sm text-gray-600">
-              All {messageCount.toLocaleString()} messages in this queue will be
-              permanently deleted. This operation will:
+              {messageCount > 0
+                ? `All ${messageCount.toLocaleString()} messages in this queue will be permanently deleted.`
+                : "All messages in this queue will be permanently deleted."}{" "}
+              This operation will:
             </p>
             <ul className="text-sm text-gray-600 list-disc list-inside space-y-1">
               <li>Remove all pending messages</li>

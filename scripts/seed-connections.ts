@@ -1,6 +1,6 @@
 /**
  * RabbitMQ Connection Simulation Script
- * 
+ *
  * This script creates multiple RabbitMQ connections to simulate a real-world environment
  * with producers, consumers, and idle connections for testing and demonstration purposes.
  */
@@ -189,7 +189,7 @@ async function createIdleConnection(name: string): Promise<void> {
     // Keep connection alive with periodic heartbeat checks
     const heartbeatInterval = setInterval(() => {
       try {
-        if (connection && 'connection' in connection && connection.connection) {
+        if (connection && "connection" in connection && connection.connection) {
           // Connection is still alive
           console.log(`Idle connection ${name} heartbeat`);
         } else {
@@ -330,22 +330,22 @@ process.on("SIGINT", async () => {
     // Close all channels
     for (const channel of channels) {
       try {
-        if (channel && typeof channel.close === 'function') {
+        if (channel && typeof channel.close === "function") {
           await channel.close();
         }
       } catch (error) {
-        console.error('Error closing channel:', error);
+        console.error("Error closing channel:", error);
       }
     }
 
     // Close all connections
     for (const connection of connections) {
       try {
-        if (connection && typeof connection.close === 'function') {
+        if (connection && typeof connection.close === "function") {
           await connection.close();
         }
       } catch (error) {
-        console.error('Error closing connection:', error);
+        console.error("Error closing connection:", error);
       }
     }
 
@@ -357,5 +357,4 @@ process.on("SIGINT", async () => {
   }
 });
 
-// Start the simulation
 main().catch(console.error);

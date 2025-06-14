@@ -674,10 +674,11 @@ rabbitmqController.delete(
 
       return c.json({
         success: true,
-        message: `Successfully purged ${
-          result.purged || 0
-        } messages from queue "${queueName}"`,
-        purged: result.purged || 0,
+        message:
+          result.purged === -1
+            ? `Successfully purged queue "${queueName}"`
+            : `Successfully purged ${result.purged} messages from queue "${queueName}"`,
+        purged: result.purged,
       });
     } catch (error) {
       console.error(

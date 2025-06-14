@@ -37,6 +37,10 @@ class RabbitMQClient {
         );
       }
 
+      console.log(
+        `Fetched ${endpoint} successfully: ${response.status} ${response.statusText}`
+      );
+
       // Check if response has content
       const contentType = response.headers.get("content-type");
 
@@ -94,28 +98,15 @@ class RabbitMQClient {
         `Purge endpoint: /queues/${this.vhost}/${encodedQueueName}/contents`
       );
 
-      const result = await this.request(
-        `/queues/${this.vhost}/${encodedQueueName}/contents`,
-        {
-          method: "DELETE",
-        }
-      );
+      await this.request(`/queues/${this.vhost}/${encodedQueueName}/contents`, {
+        method: "DELETE",
+      });
 
-      console.log(`Purge result:`, result);
+      console.log(`Queue "${queueName}" purged successfully (204 No Content)`);
 
-      // Handle different response formats from RabbitMQ
-      if (typeof result === "object" && result !== null) {
-        return { purged: result.purged || result.message_count || 0 };
-      } else if (typeof result === "string") {
-        // Try to extract message count from response text if possible
-        const messageCountMatch = result.match(/(\d+)/);
-        const purgedCount = messageCountMatch
-          ? parseInt(messageCountMatch[1])
-          : 0;
-        return { purged: purgedCount };
-      }
-
-      return { purged: 0 };
+      // RabbitMQ returns 204 No Content on successful purge
+      // We can't determine exact count, so return a success indicator
+      return { purged: -1 }; // -1 indicates successful purge without count
     } catch (error) {
       console.error(`Error purging queue "${queueName}":`, error);
       throw error;

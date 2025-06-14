@@ -490,5 +490,3 @@ if (command === "cleanup") {
 } else {
   main();
 }
-
-export { main, cleanup };
