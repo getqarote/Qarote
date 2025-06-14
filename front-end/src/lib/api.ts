@@ -414,6 +414,8 @@ export interface Connection {
   send_cnt: number;
   recv_oct: number;
   send_oct: number;
+  channelCount: number;
+  channelDetails: Channel[];
 }
 
 export interface Channel {
@@ -806,6 +808,32 @@ class ApiClient {
         body: JSON.stringify({ count, ackMode }),
       }
     );
+  }
+
+  async getConnections(serverId: string): Promise<{
+    success: boolean;
+    connections: Connection[];
+    totalConnections: number;
+    totalChannels: number;
+  }> {
+    return this.request<{
+      success: boolean;
+      connections: Connection[];
+      totalConnections: number;
+      totalChannels: number;
+    }>(`/rabbitmq/servers/${serverId}/connections`);
+  }
+
+  async getChannels(serverId: string): Promise<{
+    success: boolean;
+    channels: Channel[];
+    totalChannels: number;
+  }> {
+    return this.request<{
+      success: boolean;
+      channels: Channel[];
+      totalChannels: number;
+    }>(`/rabbitmq/servers/${serverId}/channels`);
   }
 
   async getTimeSeriesMetrics(

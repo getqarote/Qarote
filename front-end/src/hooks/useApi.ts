@@ -117,6 +117,27 @@ export const useBrowseMessages = (
   });
 };
 
+// Connections and Channels hooks
+export const useConnections = (serverId: string) => {
+  return useQuery({
+    queryKey: ["connections", serverId],
+    queryFn: () => apiClient.getConnections(serverId),
+    enabled: !!serverId,
+    staleTime: 5000, // 5 seconds
+    refetchInterval: 15000, // Refetch every 15 seconds
+  });
+};
+
+export const useChannels = (serverId: string) => {
+  return useQuery({
+    queryKey: ["channels", serverId],
+    queryFn: () => apiClient.getChannels(serverId),
+    enabled: !!serverId,
+    staleTime: 5000, // 5 seconds
+    refetchInterval: 15000, // Refetch every 15 seconds
+  });
+};
+
 // Alerts hooks
 export const useAlerts = () => {
   return useQuery({

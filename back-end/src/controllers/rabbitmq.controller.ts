@@ -848,4 +848,109 @@ rabbitmqController.post("/internal/seed-timeseries", async (c) => {
   }
 });
 
+// Get all connections for a specific server (only if it belongs to user's company)
+rabbitmqController.get("/servers/:id/connections", async (c) => {
+  const id = c.req.param("id");
+  const user = c.get("user");
+
+  try {
+    const server = await prisma.rabbitMQServer.findUnique({
+      where: {
+        id,
+        companyId: user.companyId || null,
+      },
+    });
+
+    if (!server) {
+      return c.json({ error: "Server not found or access denied" }, 404);
+    }
+
+    const client = new RabbitMQClient({
+      host: server.host,
+      port: server.port,
+      username: server.username,
+      password: server.password,
+      vhost: server.vhost,
+    });
+
+    const [connections, channels] = await Promise.all([
+      client.getConnections(),
+      client.getChannels(),
+    ]);
+
+    // Enrich connections with channel information
+    const enrichedConnections = connections.map((connection) => {
+      const connectionChannels = channels.filter(
+        (channel) => channel.connection_details?.name === connection.name
+      );
+
+      return {
+        ...connection,
+        channelCount: connectionChannels.length,
+        channelDetails: connectionChannels,
+      };
+    });
+
+    return c.json({
+      success: true,
+      connections: enrichedConnections,
+      totalConnections: connections.length,
+      totalChannels: channels.length,
+    });
+  } catch (error) {
+    console.error(`Error fetching connections for server ${id}:`, error);
+    return c.json(
+      {
+        error: "Failed to fetch connections",
+        message: error instanceof Error ? error.message : "Unknown error",
+      },
+      500
+    );
+  }
+});
+
+// Get all channels for a specific server (only if it belongs to user's company)
+rabbitmqController.get("/servers/:id/channels", async (c) => {
+  const id = c.req.param("id");
+  const user = c.get("user");
+
+  try {
+    const server = await prisma.rabbitMQServer.findUnique({
+      where: {
+        id,
+        companyId: user.companyId || null,
+      },
+    });
+
+    if (!server) {
+      return c.json({ error: "Server not found or access denied" }, 404);
+    }
+
+    const client = new RabbitMQClient({
+      host: server.host,
+      port: server.port,
+      username: server.username,
+      password: server.password,
+      vhost: server.vhost,
+    });
+
+    const channels = await client.getChannels();
+
+    return c.json({
+      success: true,
+      channels,
+      totalChannels: channels.length,
+    });
+  } catch (error) {
+    console.error(`Error fetching channels for server ${id}:`, error);
+    return c.json(
+      {
+        error: "Failed to fetch channels",
+        message: error instanceof Error ? error.message : "Unknown error",
+      },
+      500
+    );
+  }
+});
+
 export default rabbitmqController;
