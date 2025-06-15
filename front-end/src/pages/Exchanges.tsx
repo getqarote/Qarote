@@ -1,5 +1,7 @@
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
+import { AddServerForm } from "@/components/AddServerForm";
+import { NoServerConfigured } from "@/components/NoServerConfigured";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -36,7 +38,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Exchanges = () => {
-  const { selectedServerId } = useServerContext();
+  const { selectedServerId, hasServers } = useServerContext();
   const [expandedExchanges, setExpandedExchanges] = useState<Set<string>>(
     new Set()
   );
@@ -107,6 +109,26 @@ const Exchanges = () => {
       if (selectedExchangeType === "all") return true;
       return exchange.type === selectedExchangeType;
     }) || [];
+
+  if (!hasServers) {
+    return (
+      <SidebarProvider>
+        <div className="min-h-screen flex w-full bg-gradient-to-br from-slate-50 to-blue-50">
+          <AppSidebar />
+          <main className="flex-1 p-6 overflow-auto">
+            <div className="flex items-center gap-4">
+              <SidebarTrigger />
+            </div>
+            <NoServerConfigured
+              title="Exchanges"
+              subtitle="Connect to a RabbitMQ server to start managing exchanges"
+              description="Add a RabbitMQ server connection to manage exchanges and routing."
+            />
+          </main>
+        </div>
+      </SidebarProvider>
+    );
+  }
 
   if (!selectedServerId) {
     return (

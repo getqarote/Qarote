@@ -1,5 +1,7 @@
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
+import { AddServerForm } from "@/components/AddServerForm";
+import { NoServerConfigured } from "@/components/NoServerConfigured";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -32,7 +34,7 @@ import {
 } from "@/components/ui/collapsible";
 
 const Connections = () => {
-  const { selectedServerId } = useServerContext();
+  const { selectedServerId, hasServers } = useServerContext();
   const [expandedConnections, setExpandedConnections] = useState<Set<string>>(
     new Set()
   );
@@ -88,6 +90,26 @@ const Connections = () => {
         return "bg-gray-100 text-gray-800";
     }
   };
+
+  if (!hasServers) {
+    return (
+      <SidebarProvider>
+        <div className="min-h-screen flex w-full bg-gradient-to-br from-slate-50 to-blue-50">
+          <AppSidebar />
+          <main className="flex-1 p-6 overflow-auto">
+            <div className="flex items-center gap-4">
+              <SidebarTrigger />
+            </div>
+            <NoServerConfigured
+              title="Connections"
+              subtitle="Connect to a RabbitMQ server to start monitoring connections"
+              description="Add a RabbitMQ server connection to monitor connections and channels."
+            />
+          </main>
+        </div>
+      </SidebarProvider>
+    );
+  }
 
   if (!selectedServerId) {
     return (

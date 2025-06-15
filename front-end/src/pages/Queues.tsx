@@ -10,6 +10,7 @@ import { SendMessageDialog } from "@/components/SendMessageDialog";
 import { AddQueueForm } from "@/components/AddQueueForm";
 import { PurgeQueueDialog } from "@/components/PurgeQueueDialog";
 import { PrivacyNotice, DataStorageWarning } from "@/components/PrivacyNotice";
+import { NoServerConfigured } from "@/components/NoServerConfigured";
 import { useServerContext } from "@/contexts/ServerContext";
 import { useQueues } from "@/hooks/useApi";
 import { Queue } from "@/lib/api";
@@ -35,7 +36,11 @@ import { AddServerForm } from "@/components/AddServerForm";
 const Queues = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
-  const { selectedServerId } = useServerContext();
+  const {
+    selectedServerId,
+    hasServers,
+    isLoading: serversLoading,
+  } = useServerContext();
   const {
     data: queuesData,
     isLoading,
@@ -83,6 +88,26 @@ const Queues = () => {
       autoDelete: queue.auto_delete,
     };
   };
+
+  if (!hasServers) {
+    return (
+      <SidebarProvider>
+        <div className="min-h-screen flex w-full bg-gradient-to-br from-slate-50 to-blue-50">
+          <AppSidebar />
+          <main className="flex-1 p-6 overflow-auto">
+            <div className="flex items-center gap-4">
+              <SidebarTrigger />
+            </div>
+            <NoServerConfigured
+              title="Queue Management"
+              subtitle="Connect to a RabbitMQ server to start managing queues"
+              description="Add a RabbitMQ server connection to view and manage queues across your clusters."
+            />
+          </main>
+        </div>
+      </SidebarProvider>
+    );
+  }
 
   if (!selectedServerId) {
     return (

@@ -21,6 +21,7 @@ import { RecentAlerts } from "@/components/RecentAlerts";
 import { ResourceUsage } from "@/components/ResourceUsage";
 import { ConnectedNodes } from "@/components/ConnectedNodes";
 import { AddServerForm } from "@/components/AddServerForm";
+import { NoServerConfigured } from "@/components/NoServerConfigured";
 import { useServerContext } from "@/contexts/ServerContext";
 
 // Lazy load MetricsChart since it's a heavy charting component
@@ -40,7 +41,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 const Index = () => {
   const navigate = useNavigate();
-  const { selectedServerId } = useServerContext();
+  const { selectedServerId, hasServers } = useServerContext();
   const {
     data: overviewData,
     isLoading: overviewLoading,
@@ -128,6 +129,26 @@ const Index = () => {
   const isLoading =
     overviewLoading || queuesLoading || nodesLoading || timeSeriesLoading;
 
+  if (!hasServers) {
+    return (
+      <SidebarProvider>
+        <div className="min-h-screen flex w-full bg-gradient-to-br from-slate-50 to-blue-50">
+          <AppSidebar />
+          <main className="flex-1 p-6 overflow-auto">
+            <div className="flex items-center gap-4">
+              <SidebarTrigger />
+            </div>
+            <NoServerConfigured
+              title="RabbitMQ Dashboard"
+              subtitle="Welcome! Let's get started by adding your first RabbitMQ server"
+              description="Add a RabbitMQ server connection to start monitoring your queues and messages."
+            />
+          </main>
+        </div>
+      </SidebarProvider>
+    );
+  }
+
   if (!selectedServerId) {
     return (
       <SidebarProvider>
@@ -143,7 +164,7 @@ const Index = () => {
                       RabbitMQ Dashboard
                     </h1>
                     <p className="text-gray-500">
-                      Please configure a RabbitMQ server to get started
+                      Please select a RabbitMQ server to view the dashboard
                     </p>
                   </div>
                 </div>
@@ -153,19 +174,12 @@ const Index = () => {
                   <div className="text-center">
                     <Server className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                     <h2 className="text-xl font-semibold text-gray-900 mb-2">
-                      No RabbitMQ Server Configured
+                      Please Select a Server
                     </h2>
                     <p className="text-gray-600 mb-4">
-                      Add a RabbitMQ server connection to start monitoring your
-                      queues and messages.
+                      Choose a RabbitMQ server from the sidebar to view its
+                      dashboard.
                     </p>
-                    <AddServerForm
-                      trigger={
-                        <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
-                          Add Server
-                        </Button>
-                      }
-                    />
                   </div>
                 </CardContent>
               </Card>
