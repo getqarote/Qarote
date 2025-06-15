@@ -732,6 +732,26 @@ export interface PublishMessageResponse {
   payloadSize: number;
 }
 
+export interface CreateQueueRequest {
+  serverId: string;
+  name: string;
+  durable: boolean;
+  autoDelete: boolean;
+  exclusive: boolean;
+  arguments: Record<string, unknown>;
+  bindToExchange?: string;
+  routingKey: string;
+}
+
+export interface CreateQueueResponse {
+  success: boolean;
+  message: string;
+  queue: Queue;
+  bound: boolean;
+  exchange?: string;
+  routingKey?: string;
+}
+
 class ApiClient {
   private baseUrl: string;
 
@@ -767,7 +787,21 @@ class ApiClient {
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        // Try to parse error response
+        let errorMessage = `HTTP error! status: ${response.status}`;
+
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorData.error || errorMessage;
+        } catch (parseError) {
+          // If we can't parse the error response, use the generic error
+          console.warn(
+            `Could not parse error response for ${endpoint}:`,
+            parseError
+          );
+        }
+
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
@@ -1130,6 +1164,17 @@ class ApiClient {
       {
         method: "POST",
         body: JSON.stringify(publishData),
+      }
+    );
+  }
+
+  async createQueue(params: CreateQueueRequest): Promise<CreateQueueResponse> {
+    const { serverId, ...queueData } = params;
+    return this.request<CreateQueueResponse>(
+      `/rabbitmq/servers/${serverId}/queues`,
+      {
+        method: "POST",
+        body: JSON.stringify(queueData),
       }
     );
   }

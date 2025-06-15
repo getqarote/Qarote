@@ -83,9 +83,6 @@ export function SendMessageDialog({
     ) || [];
   const queues = queuesData?.queues || [];
 
-  console.log("Exchanges:", exchanges);
-  console.log("Queues:", queues);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 

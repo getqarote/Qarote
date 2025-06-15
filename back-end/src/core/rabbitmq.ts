@@ -408,6 +408,58 @@ class RabbitMQClient {
       body: JSON.stringify(publishData),
     });
   }
+
+  async createQueue(
+    queueName: string,
+    options: {
+      durable?: boolean;
+      autoDelete?: boolean;
+      exclusive?: boolean;
+      arguments?: { [key: string]: any };
+    } = {}
+  ): Promise<{ created: boolean }> {
+    const encodedQueueName = encodeURIComponent(queueName);
+    const endpoint = `/queues/${this.vhost}/${encodedQueueName}`;
+
+    const queueData = {
+      durable: options.durable ?? true,
+      auto_delete: options.autoDelete ?? false,
+      exclusive: options.exclusive ?? false,
+      arguments: options.arguments ?? {},
+    };
+
+    const result = await this.request(endpoint, {
+      method: "PUT",
+      body: JSON.stringify(queueData),
+    });
+
+    console.log("result from createQueue:", result);
+
+    return { created: true };
+  }
+
+  async bindQueue(
+    queueName: string,
+    exchangeName: string,
+    routingKey: string = "",
+    bindingArgs: { [key: string]: any } = {}
+  ): Promise<{ bound: boolean }> {
+    const encodedQueueName = encodeURIComponent(queueName);
+    const encodedExchangeName = encodeURIComponent(exchangeName);
+    const endpoint = `/bindings/${this.vhost}/e/${encodedExchangeName}/q/${encodedQueueName}`;
+
+    const bindingData = {
+      routing_key: routingKey,
+      arguments: bindingArgs,
+    };
+
+    await this.request(endpoint, {
+      method: "POST",
+      body: JSON.stringify(bindingData),
+    });
+
+    return { bound: true };
+  }
 }
 
 export default RabbitMQClient;

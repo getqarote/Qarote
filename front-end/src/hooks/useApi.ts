@@ -204,3 +204,18 @@ export const usePublishMessage = () => {
       apiClient.publishMessage(params),
   });
 };
+
+export const useCreateQueue = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (params: Parameters<typeof apiClient.createQueue>[0]) =>
+      apiClient.createQueue(params),
+    onSuccess: (_, variables) => {
+      // Invalidate queues list for the specific server
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.queues(variables.serverId),
+      });
+    },
+  });
+};

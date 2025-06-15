@@ -56,7 +56,7 @@ async function startServer() {
     console.log("Connected to database");
 
     // Start the alert monitoring service
-    alertService.start();
+    // alertService.start();
 
     // Start the server
     serve(
@@ -79,7 +79,7 @@ async function startServer() {
 // Handle graceful shutdown
 process.on("SIGINT", async () => {
   console.log("Shutting down server...");
-  alertService.stop();
+  // alertService.stop();
   await prisma.$disconnect();
   process.exit(0);
 });

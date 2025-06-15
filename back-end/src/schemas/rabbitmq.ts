@@ -46,7 +46,20 @@ export const PublishMessageSchema = z.object({
     .default({}),
 });
 
+// Schema for creating a new queue
+export const CreateQueueSchema = z.object({
+  name: z.string().min(1, "Queue name is required"),
+  durable: z.boolean().default(true),
+  autoDelete: z.boolean().default(false),
+  exclusive: z.boolean().default(false),
+  arguments: z.record(z.any()).default({}),
+  // Optional binding configuration
+  bindToExchange: z.string().optional(),
+  routingKey: z.string().default(""),
+});
+
 export type RabbitMQCredentials = z.infer<typeof RabbitMQCredentialsSchema>;
 export type CreateServerInput = z.infer<typeof CreateServerSchema>;
 export type UpdateServerInput = z.infer<typeof UpdateServerSchema>;
 export type PublishMessageInput = z.infer<typeof PublishMessageSchema>;
+export type CreateQueueInput = z.infer<typeof CreateQueueSchema>;

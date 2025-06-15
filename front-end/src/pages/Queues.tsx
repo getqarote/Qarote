@@ -7,6 +7,11 @@ import { Input } from "@/components/ui/input";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { SendMessageDialog } from "@/components/SendMessageDialog";
+import { AddQueueForm } from "@/components/AddQueueForm";
+import { PurgeQueueDialog } from "@/components/PurgeQueueDialog";
+import { useServerContext } from "@/contexts/ServerContext";
+import { useQueues } from "@/hooks/useApi";
+import { Queue } from "@/lib/api";
 import {
   Table,
   TableBody,
@@ -25,10 +30,6 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { AddServerForm } from "@/components/AddServerForm";
-import { PurgeQueueDialog } from "@/components/PurgeQueueDialog";
-import { useServerContext } from "@/contexts/ServerContext";
-import { useQueues } from "@/hooks/useApi";
-import { Queue } from "@/lib/api";
 
 const Queues = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -153,11 +154,15 @@ const Queues = () => {
                     </Button>
                   }
                 />
-                <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 flex items-center gap-2">
-                  <Plus className="w-4 h-4" />
-                  Add Queue
-                  <Badge className="ml-2 bg-white/20 text-white">PRO</Badge>
-                </Button>
+                <AddQueueForm
+                  serverId={selectedServerId}
+                  trigger={
+                    <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 flex items-center gap-2">
+                      <Plus className="w-4 h-4" />
+                      Add Queue
+                    </Button>
+                  }
+                />
               </div>
             </div>
 

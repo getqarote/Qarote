@@ -1,11 +1,13 @@
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import prisma from "../core/prisma";
 import RabbitMQClient from "../core/rabbitmq";
 import { authenticate } from "../core/auth";
 import {
   RabbitMQCredentialsSchema,
   PublishMessageSchema,
+  CreateQueueSchema,
 } from "../schemas/rabbitmq";
 import type { EnhancedMetrics } from "../types/rabbitmq";
 
@@ -1176,6 +1178,175 @@ rabbitmqController.post(
       return c.json(
         {
           error: "Failed to publish message",
+          message: error instanceof Error ? error.message : "Unknown error",
+        },
+        500
+      );
+    }
+  }
+);
+
+// Create a new queue
+rabbitmqController.post(
+  "/servers/:id/queues",
+  zValidator("json", CreateQueueSchema),
+  async (c) => {
+    const id = c.req.param("id");
+    const user = c.get("user");
+    const {
+      name,
+      durable,
+      autoDelete,
+      exclusive,
+      arguments: queueArgs,
+      bindToExchange,
+      routingKey,
+    } = c.req.valid("json");
+
+    try {
+      const server = await prisma.rabbitMQServer.findUnique({
+        where: {
+          id,
+          companyId: user.companyId || null,
+        },
+      });
+
+      if (!server) {
+        return c.json({ error: "Server not found or access denied" }, 404);
+      }
+
+      const client = new RabbitMQClient({
+        host: server.host,
+        port: server.port,
+        username: server.username,
+        password: server.password,
+        vhost: server.vhost,
+      });
+
+      // Check if queue already exists in RabbitMQ first
+      try {
+        const existingQueue = await client.getQueue(name);
+        console.log("existingQueue", existingQueue);
+
+        if (existingQueue) {
+          return c.json(
+            {
+              error: "QUEUE_ALREADY_EXISTS",
+              message: `Queue "${name}" already exists on RabbitMQ server`,
+            },
+            409
+          );
+        }
+      } catch (queueCheckError) {
+        // If getQueue throws an error, it means the queue doesn't exist, which is what we want
+        // Continue with queue creation
+      }
+
+      // Check if queue already exists in database
+      const existingQueueInDb = await prisma.queue.findFirst({
+        where: {
+          name,
+          vhost: server.vhost,
+          serverId: id,
+        },
+      });
+
+      console.log("existingQueueInDb", existingQueueInDb);
+
+      if (existingQueueInDb) {
+        return c.json(
+          {
+            error: "QUEUE_ALREADY_EXISTS",
+            message: `Queue "${name}" already exists in the database`,
+          },
+          409
+        );
+      }
+
+      // Create the queue
+      await client.createQueue(name, {
+        durable,
+        autoDelete,
+        exclusive,
+        arguments: queueArgs,
+      });
+
+      // Bind to exchange if specified (but not if it's empty string or "default" which represents default exchange)
+      if (
+        bindToExchange &&
+        bindToExchange.trim() !== "" &&
+        bindToExchange !== "default"
+      ) {
+        await client.bindQueue(name, bindToExchange, routingKey);
+      }
+
+      // Fetch the created queue details
+      const queueDetails = await client.getQueue(name);
+
+      // Store in database
+      const queueData = {
+        name: queueDetails.name,
+        vhost: queueDetails.vhost,
+        serverId: id,
+        messages: 0,
+        messagesReady: 0,
+        messagesUnack: 0,
+        lastFetched: new Date(),
+      };
+
+      await prisma.queue.create({
+        data: queueData,
+      });
+
+      const actuallyBound =
+        bindToExchange &&
+        bindToExchange.trim() !== "" &&
+        bindToExchange !== "default";
+
+      return c.json({
+        success: true,
+        message: `Queue "${name}" created successfully`,
+        queue: queueDetails,
+        bound: actuallyBound,
+        exchange: actuallyBound ? bindToExchange : undefined,
+        routingKey: actuallyBound ? routingKey : undefined,
+      });
+    } catch (error) {
+      console.error(`Error creating queue ${name} on server ${id}:`, error);
+
+      // Handle RabbitMQ errors
+      if (error instanceof Error) {
+        // Check for specific RabbitMQ error codes
+        if (
+          error.message.includes("405") ||
+          error.message.includes("precondition_failed")
+        ) {
+          return c.json(
+            {
+              error: "QUEUE_ALREADY_EXISTS",
+              message: `Queue "${name}" already exists on RabbitMQ server`,
+            },
+            409
+          );
+        }
+
+        if (
+          error.message.includes("404") &&
+          error.message.includes("not_found")
+        ) {
+          return c.json(
+            {
+              error: "EXCHANGE_NOT_FOUND",
+              message: `Exchange "${bindToExchange}" does not exist`,
+            },
+            404
+          );
+        }
+      }
+
+      return c.json(
+        {
+          error: "Failed to create queue",
           message: error instanceof Error ? error.message : "Unknown error",
         },
         500
