@@ -12,7 +12,15 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Loader2, Plus, CheckCircle, AlertCircle, Server } from "lucide-react";
+import {
+  Loader2,
+  Plus,
+  CheckCircle,
+  AlertCircle,
+  Server,
+  Eye,
+  EyeOff,
+} from "lucide-react";
 import { apiClient } from "@/lib/api";
 import { useServerContext } from "@/contexts/ServerContext";
 import { useQueryClient } from "@tanstack/react-query";
@@ -59,6 +67,7 @@ export const AddServerForm = ({
   const [errors, setErrors] = useState<
     Partial<Record<keyof AddServerFormData, string>>
   >({});
+  const [showPassword, setShowPassword] = useState(false);
 
   const validateForm = (): boolean => {
     const newErrors: Partial<Record<keyof AddServerFormData, string>> = {};
@@ -203,6 +212,7 @@ export const AddServerForm = ({
     });
     setErrors({});
     setConnectionStatus({ status: "idle" });
+    setShowPassword(false);
   };
 
   return (
@@ -316,14 +326,34 @@ export const AddServerForm = ({
 
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="guest"
-                value={formData.password}
-                onChange={(e) => handleInputChange("password", e.target.value)}
-                className={errors.password ? "border-red-500" : ""}
-              />
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="guest"
+                  value={formData.password}
+                  onChange={(e) =>
+                    handleInputChange("password", e.target.value)
+                  }
+                  className={`pr-10 ${errors.password ? "border-red-500" : ""}`}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4 text-gray-400" />
+                  ) : (
+                    <Eye className="h-4 w-4 text-gray-400" />
+                  )}
+                  <span className="sr-only">
+                    {showPassword ? "Hide password" : "Show password"}
+                  </span>
+                </Button>
+              </div>
               {errors.password && (
                 <p className="text-sm text-red-500">{errors.password}</p>
               )}
