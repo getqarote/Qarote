@@ -5,26 +5,14 @@ import { Badge } from "@/components/ui/badge";
 
 interface PrivacyNoticeProps {
   variant?: "default" | "compact" | "detailed";
-  showBadge?: boolean;
 }
 
-export function PrivacyNotice({
-  variant = "default",
-  showBadge = false,
-}: PrivacyNoticeProps) {
+export function PrivacyNotice({ variant = "default" }: PrivacyNoticeProps) {
   if (variant === "compact") {
     return (
       <div className="flex items-center gap-2 text-sm text-green-600 bg-green-50 px-3 py-2 rounded-lg border border-green-200">
         <ShieldCheck className="w-4 h-4 flex-shrink-0" />
         <span className="font-medium">Privacy Mode: No Data Stored</span>
-        {showBadge && (
-          <Badge
-            variant="outline"
-            className="text-green-600 border-green-300 bg-green-100 text-[10px] px-1.5 py-0.5 h-auto font-normal"
-          >
-            Read Only
-          </Badge>
-        )}
       </div>
     );
   }

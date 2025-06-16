@@ -227,7 +227,7 @@ export function AppSidebar() {
       <SidebarFooter className="border-t border-gray-100 p-4 space-y-4">
         {/* Privacy Status */}
         <div className="px-2">
-          <PrivacyNotice variant="compact" showBadge={true} />
+          <PrivacyNotice variant="compact" />
         </div>
 
         {/* User section */}
