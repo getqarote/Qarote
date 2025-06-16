@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import prisma from "../core/prisma";
 import { authenticate } from "../core/auth";
+import { requireAlertsEnabled } from "../core/alerts-feature-flag";
 import { zValidator } from "@hono/zod-validator";
 import {
   createAlertRuleSchema,
@@ -11,8 +12,9 @@ import {
 
 const app = new Hono();
 
-// Middleware to apply authentication to all routes
+// Middleware to apply authentication and feature flag check to all routes
 app.use("*", authenticate);
+app.use("*", requireAlertsEnabled());
 
 // Get all alert rules for the user's company
 app.get("/rules", async (c) => {

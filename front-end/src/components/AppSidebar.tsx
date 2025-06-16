@@ -162,6 +162,10 @@ export function AppSidebar() {
             <SidebarMenu>
               {menuItems.map((item) => {
                 const isActive = location.pathname === item.url;
+                const isAlertsItem = item.title === "Alerts";
+                // Always show "Soon" badge for Alerts, regardless of environment
+                const showComingSoon = isAlertsItem;
+
                 return (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton
@@ -178,6 +182,14 @@ export function AppSidebar() {
                       >
                         <item.icon className="w-4 h-4" />
                         <span className="font-medium">{item.title}</span>
+                        {showComingSoon && (
+                          <Badge
+                            variant="secondary"
+                            className="ml-auto text-xs bg-orange-100 text-orange-700 border-orange-200"
+                          >
+                            Soon
+                          </Badge>
+                        )}
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

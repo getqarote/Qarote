@@ -79,6 +79,12 @@ export const RecentAlerts = () => {
             <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
               <AlertTriangle className="w-5 h-5 text-yellow-600" />
               Recent Alerts
+              <Badge
+                variant="secondary"
+                className="ml-2 text-xs bg-orange-100 text-orange-700 border-orange-200"
+              >
+                Soon
+              </Badge>
             </CardTitle>
             <p className="text-sm text-gray-500">Latest system notifications</p>
           </div>

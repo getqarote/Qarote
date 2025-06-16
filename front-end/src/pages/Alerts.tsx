@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/select";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
+import ComingSoonPage from "@/components/ComingSoonPage";
 import {
   AlertTriangle,
   CheckCircle,
@@ -37,6 +38,7 @@ import {
   AlertSeverity,
 } from "@/lib/api";
 import { formatDistanceToNow } from "date-fns";
+import { isAlertsEnabled } from "@/lib/alerts-feature-flag";
 
 const AlertDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -53,7 +55,12 @@ const AlertDashboard: React.FC = () => {
   );
   const [searchTerm, setSearchTerm] = useState("");
 
+  // Check if alerts feature is enabled
+  const alertsEnabled = isAlertsEnabled();
+
   const loadData = useCallback(async () => {
+    if (!alertsEnabled) return;
+
     try {
       setLoading(true);
       const [alertsResponse, rulesResponse, statsResponse] = await Promise.all([
@@ -74,11 +81,32 @@ const AlertDashboard: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [statusFilter, severityFilter]);
+  }, [alertsEnabled, statusFilter, severityFilter]);
 
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  // If alerts are not enabled, show coming soon page
+  if (!alertsEnabled) {
+    return (
+      <SidebarProvider>
+        <AppSidebar />
+        <main className="flex-1">
+          <header className="border-b">
+            <div className="flex h-16 items-center px-4">
+              <SidebarTrigger />
+            </div>
+          </header>
+          <ComingSoonPage
+            title="Alerts Dashboard"
+            description="Monitor your RabbitMQ infrastructure with intelligent alerts and notifications. Get real-time insights into queue depths, connection issues, and system performance."
+            showBackButton={true}
+          />
+        </main>
+      </SidebarProvider>
+    );
+  }
 
   const handleAcknowledgeAlert = async (alertId: string) => {
     try {
