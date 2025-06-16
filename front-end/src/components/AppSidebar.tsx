@@ -30,6 +30,7 @@ import {
   AlertTriangle,
   Shield,
   Search,
+  FileText,
 } from "lucide-react";
 import { useServerContext } from "@/contexts/ServerContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -65,6 +66,12 @@ const menuItems = [
     title: "Exchanges",
     url: "/exchanges",
     icon: Activity,
+  },
+  {
+    title: "Logs",
+    url: "/logs",
+    icon: FileText,
+    isSoon: true,
   },
   {
     title: "Alerts",
@@ -171,8 +178,9 @@ export function AppSidebar() {
                 const isActive = location.pathname === item.url;
                 const isAlertsItem = item.title === "Alerts";
                 const isNewItem = item.isNew;
+                const isSoonItem = item.isSoon;
                 // Always show "Soon" badge for Alerts, regardless of environment
-                const showComingSoon = isAlertsItem;
+                const showComingSoon = isAlertsItem || isSoonItem;
 
                 return (
                   <SidebarMenuItem key={item.title}>
@@ -198,7 +206,7 @@ export function AppSidebar() {
                             Soon
                           </Badge>
                         )}
-                        {isNewItem && (
+                        {isNewItem && !isSoonItem && (
                           <Badge
                             variant="secondary"
                             className="ml-auto text-xs bg-green-100 text-green-700 border-green-200"

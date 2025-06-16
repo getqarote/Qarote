@@ -8,6 +8,8 @@ import { RabbitMQApiClient } from "./rabbitmq-client";
 import { AuthApiClient } from "./auth-client";
 import { AlertApiClient } from "./alert-client";
 import { CompanyApiClient } from "./company-client";
+import { LogsApiClient } from "./logs-client";
+import type { LogQuery, CreateLogRequest, LogExportRequest } from "./log-types";
 
 class ApiClient {
   private serverClient: ServerApiClient;
@@ -15,6 +17,7 @@ class ApiClient {
   private authClient: AuthApiClient;
   private alertClient: AlertApiClient;
   private companyClient: CompanyApiClient;
+  private logsClient: LogsApiClient;
 
   constructor(baseUrl?: string) {
     this.serverClient = new ServerApiClient(baseUrl);
@@ -22,6 +25,7 @@ class ApiClient {
     this.authClient = new AuthApiClient(baseUrl);
     this.alertClient = new AlertApiClient(baseUrl);
     this.companyClient = new CompanyApiClient(baseUrl);
+    this.logsClient = new LogsApiClient(baseUrl);
   }
 
   // Server methods
@@ -205,6 +209,43 @@ class ApiClient {
 
   async deleteCompanyData(companyId: string) {
     return this.companyClient.deleteCompanyData(companyId);
+  }
+
+  // Logs methods
+  async getLogs(query?: LogQuery) {
+    return this.logsClient.getLogs(query);
+  }
+
+  async getLog(id: string) {
+    return this.logsClient.getLog(id);
+  }
+
+  async createLog(data: CreateLogRequest) {
+    return this.logsClient.createLog(data);
+  }
+
+  async getLogStats(timeRange?: string) {
+    return this.logsClient.getLogStats(timeRange);
+  }
+
+  async exportLogs(request: LogExportRequest) {
+    return this.logsClient.exportLogs(request);
+  }
+
+  async getUserLogs(userId: string, limit?: number) {
+    return this.logsClient.getUserLogs(userId, limit);
+  }
+
+  async getServerLogs(serverId: string, limit?: number) {
+    return this.logsClient.getServerLogs(serverId, limit);
+  }
+
+  async getRecentActivity(limit?: number) {
+    return this.logsClient.getRecentActivity(limit);
+  }
+
+  async deleteLogs(olderThan: string) {
+    return this.logsClient.deleteLogs(olderThan);
   }
 }
 

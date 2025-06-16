@@ -12,6 +12,7 @@ import alertController from "./controllers/alert.controller";
 import authController from "./controllers/auth.controller";
 import userController from "./controllers/user.controller";
 import companyController from "./controllers/company.controller";
+import logsController from "./controllers/logs.controller";
 
 import { corsMiddleware } from "./middlewares/cors";
 import { alertService } from "./services/alert.service";
@@ -39,6 +40,7 @@ app.route("/api/alerts", alertController);
 app.route("/api/auth", authController);
 app.route("/api/users", userController);
 app.route("/api/companies", companyController);
+app.route("/api/logs", logsController);
 
 // Health check endpoint
 app.get("/livez", (c) =>
