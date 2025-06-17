@@ -1,10 +1,23 @@
 import prisma from "../core/prisma";
-import { AlertType, ComparisonOperator, AlertSeverity } from "@prisma/client";
+import {
+  AlertType,
+  ComparisonOperator,
+  AlertSeverity,
+  AlertRule,
+  RabbitMQServer,
+  Workspace,
+  User,
+} from "@prisma/client";
 
 interface MetricValue {
   value: number;
   timestamp: Date;
 }
+
+type AlertRuleWithRelations = AlertRule & {
+  server: RabbitMQServer;
+  workspace: Workspace;
+};
 
 export class AlertService {
   private isRunning = false;
@@ -81,7 +94,7 @@ export class AlertService {
   /**
    * Evaluate a specific alert rule
    */
-  private async evaluateAlertRule(rule: any): Promise<void> {
+  private async evaluateAlertRule(rule: AlertRuleWithRelations): Promise<void> {
     const currentValue = await this.getMetricValue(rule);
 
     if (currentValue === null) {
@@ -124,7 +137,9 @@ export class AlertService {
   /**
    * Get the current metric value for an alert rule
    */
-  private async getMetricValue(rule: any): Promise<MetricValue | null> {
+  private async getMetricValue(
+    rule: AlertRuleWithRelations
+  ): Promise<MetricValue | null> {
     const server = rule.server;
 
     try {
@@ -139,19 +154,19 @@ export class AlertService {
           return await this.getConsumerCountMetric(server.id);
 
         case AlertType.CONNECTION_COUNT:
-          return await this.getConnectionCountMetric(server);
+          return await this.getConnectionCountMetric(server.id);
 
         case AlertType.CHANNEL_COUNT:
-          return await this.getChannelCountMetric(server);
+          return await this.getChannelCountMetric(server.id);
 
         case AlertType.MEMORY_USAGE:
-          return await this.getMemoryUsageMetric(server);
+          return await this.getMemoryUsageMetric(server.id);
 
         case AlertType.DISK_USAGE:
-          return await this.getDiskUsageMetric(server);
+          return await this.getDiskUsageMetric(server.id);
 
         case AlertType.NODE_DOWN:
-          return await this.getNodeStatusMetric(server);
+          return await this.getNodeStatusMetric(server.id);
 
         default:
           console.warn(`Unsupported alert type: ${rule.type}`);
@@ -189,7 +204,7 @@ export class AlertService {
    * Create a new alert
    */
   private async createAlert(
-    rule: any,
+    rule: AlertRuleWithRelations,
     metricValue: MetricValue
   ): Promise<void> {
     await prisma.alert.create({
@@ -210,7 +225,7 @@ export class AlertService {
   /**
    * Auto-resolve alerts when conditions are no longer met
    */
-  private async autoResolveAlerts(rule: any): Promise<void> {
+  private async autoResolveAlerts(rule: AlertRuleWithRelations): Promise<void> {
     const activeAlerts = await prisma.alert.findMany({
       where: {
         alertRuleId: rule.id,

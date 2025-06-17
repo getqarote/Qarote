@@ -3,6 +3,7 @@ import { zValidator } from "@hono/zod-validator";
 import prisma from "../core/prisma";
 import RabbitMQClient from "../core/rabbitmq";
 import { RabbitMQCredentialsSchema } from "../schemas/rabbitmq";
+import { authenticate } from "../core/auth";
 
 const rabbitmqController = new Hono();
 
@@ -269,6 +270,218 @@ rabbitmqController.post(
       return c.json(
         {
           error: "Failed to fetch nodes",
+          message: error instanceof Error ? error.message : "Unknown error",
+        },
+        500
+      );
+    }
+  }
+);
+
+// Get metrics for a specific server
+rabbitmqController.get("/servers/:id/metrics", authenticate, async (c) => {
+  const id = c.req.param("id");
+  const user = c.get("user");
+
+  try {
+    // Verify the server belongs to the user's workspace
+    const server = await prisma.rabbitMQServer.findFirst({
+      where: {
+        id,
+        workspaceId: user.workspaceId!,
+      },
+    });
+
+    if (!server) {
+      return c.json({ error: "Server not found or access denied" }, 404);
+    }
+
+    // Get latest queue metrics for this server
+    const queueMetrics = await prisma.queueMetric.findMany({
+      where: {
+        queue: {
+          serverId: id,
+        },
+      },
+      include: {
+        queue: {
+          select: {
+            name: true,
+            vhost: true,
+          },
+        },
+      },
+      orderBy: {
+        timestamp: "desc",
+      },
+      take: 100, // Get latest 100 metrics
+    });
+
+    // Aggregate metrics by queue
+    const aggregatedMetrics = queueMetrics.reduce(
+      (acc, metric) => {
+        const queueKey = `${metric.queue.vhost}/${metric.queue.name}`;
+        if (!acc[queueKey]) {
+          acc[queueKey] = {
+            queueName: metric.queue.name,
+            vhost: metric.queue.vhost,
+            latestMetric: metric,
+            metrics: [],
+          };
+        }
+        acc[queueKey].metrics.push({
+          timestamp: metric.timestamp,
+          messages: metric.messages,
+          messagesReady: metric.messagesReady,
+          messagesUnack: metric.messagesUnack,
+          publishRate: metric.publishRate,
+          consumeRate: metric.consumeRate,
+        });
+        return acc;
+      },
+      {} as Record<
+        string,
+        {
+          queueName: string;
+          vhost: string;
+          latestMetric: (typeof queueMetrics)[0];
+          metrics: Array<{
+            timestamp: Date;
+            messages: number;
+            messagesReady: number;
+            messagesUnack: number;
+            publishRate: number;
+            consumeRate: number;
+          }>;
+        }
+      >
+    );
+
+    return c.json({
+      serverId: id,
+      serverName: server.name,
+      metrics: Object.values(aggregatedMetrics),
+    });
+  } catch (error) {
+    console.error(`Error fetching metrics for server ${id}:`, error);
+    return c.json(
+      {
+        error: "Failed to fetch metrics",
+        message: error instanceof Error ? error.message : "Unknown error",
+      },
+      500
+    );
+  }
+});
+
+// Get timeseries metrics for a specific server
+rabbitmqController.get(
+  "/servers/:id/metrics/timeseries",
+  authenticate,
+  async (c) => {
+    const id = c.req.param("id");
+    const user = c.get("user");
+    const timeRange = c.req.query("timeRange") || "1h"; // Default to 1 hour
+
+    try {
+      // Verify the server belongs to the user's workspace
+      const server = await prisma.rabbitMQServer.findFirst({
+        where: {
+          id,
+          workspaceId: user.workspaceId!,
+        },
+      });
+
+      if (!server) {
+        return c.json({ error: "Server not found or access denied" }, 404);
+      }
+
+      // Parse time range
+      let hoursBack = 1;
+      if (timeRange.endsWith("m")) {
+        hoursBack = parseInt(timeRange) / 60;
+      } else if (timeRange.endsWith("h")) {
+        hoursBack = parseInt(timeRange);
+      } else if (timeRange.endsWith("d")) {
+        hoursBack = parseInt(timeRange) * 24;
+      }
+
+      const startTime = new Date(Date.now() - hoursBack * 60 * 60 * 1000);
+
+      // Get timeseries data
+      const timeseriesData = await prisma.queueMetric.findMany({
+        where: {
+          queue: {
+            serverId: id,
+          },
+          timestamp: {
+            gte: startTime,
+          },
+        },
+        include: {
+          queue: {
+            select: {
+              name: true,
+              vhost: true,
+            },
+          },
+        },
+        orderBy: {
+          timestamp: "asc",
+        },
+      });
+
+      // Group by queue and format for charts
+      const groupedData = timeseriesData.reduce(
+        (acc, metric) => {
+          const queueKey = `${metric.queue.vhost}/${metric.queue.name}`;
+          if (!acc[queueKey]) {
+            acc[queueKey] = {
+              queueName: metric.queue.name,
+              vhost: metric.queue.vhost,
+              dataPoints: [],
+            };
+          }
+          acc[queueKey].dataPoints.push({
+            timestamp: metric.timestamp.getTime(),
+            messages: metric.messages,
+            messagesReady: metric.messagesReady,
+            messagesUnack: metric.messagesUnack,
+            publishRate: metric.publishRate || 0,
+            consumeRate: metric.consumeRate || 0,
+          });
+          return acc;
+        },
+        {} as Record<
+          string,
+          {
+            queueName: string;
+            vhost: string;
+            dataPoints: Array<{
+              timestamp: number;
+              messages: number;
+              messagesReady: number;
+              messagesUnack: number;
+              publishRate: number;
+              consumeRate: number;
+            }>;
+          }
+        >
+      );
+
+      return c.json({
+        serverId: id,
+        serverName: server.name,
+        timeRange,
+        startTime: startTime.toISOString(),
+        endTime: new Date().toISOString(),
+        queues: Object.values(groupedData),
+      });
+    } catch (error) {
+      console.error(`Error fetching timeseries for server ${id}:`, error);
+      return c.json(
+        {
+          error: "Failed to fetch timeseries data",
           message: error instanceof Error ? error.message : "Unknown error",
         },
         500

@@ -52,7 +52,9 @@ export const PublishMessageSchema = z.object({
       message_id: z.string().optional(),
       timestamp: z.number().optional(),
       type: z.string().optional(),
-      headers: z.record(z.any()).optional(),
+      headers: z
+        .record(z.union([z.string(), z.number(), z.boolean()]))
+        .optional(),
     })
     .default({}),
 });
@@ -63,7 +65,9 @@ export const CreateQueueSchema = z.object({
   durable: z.boolean().default(true),
   autoDelete: z.boolean().default(false),
   exclusive: z.boolean().default(false),
-  arguments: z.record(z.any()).default({}),
+  arguments: z
+    .record(z.union([z.string(), z.number(), z.boolean()]))
+    .default({}),
   // Optional binding configuration
   bindToExchange: z.string().optional(),
   routingKey: z.string().default(""),

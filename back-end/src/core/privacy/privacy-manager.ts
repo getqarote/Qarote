@@ -150,7 +150,7 @@ export class PrivacyManager {
   static async storeDataWithPrivacy(
     userId: string,
     dataType: DataType,
-    data: any
+    data: Record<string, unknown>
   ): Promise<boolean> {
     try {
       const canStore = await this.shouldStoreData(userId, dataType);
@@ -217,7 +217,12 @@ export class PrivacyManager {
   /**
    * Export user data for transparency
    */
-  static async exportUserData(userId: string): Promise<any> {
+  static async exportUserData(userId: string): Promise<{
+    privacySettings: PrivacySettings;
+    storedDataTypes: string[];
+    exportDate: Date;
+    note: string;
+  }> {
     try {
       const settings = await this.getPrivacySettings(userId);
 
@@ -242,7 +247,7 @@ export class PrivacyManager {
   static async logPrivacyAction(
     userId: string,
     action: string,
-    details: any
+    details: Record<string, unknown>
   ): Promise<void> {
     try {
       // Implement audit logging here
@@ -252,7 +257,7 @@ export class PrivacyManager {
         details,
         timestamp: new Date(),
       });
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Error logging privacy action:", error);
     }
   }

@@ -3,6 +3,7 @@ import prisma from "../core/prisma";
 import { authenticate } from "../core/auth";
 import { requireAlertsEnabled } from "../core/alerts-feature-flag";
 import { zValidator } from "@hono/zod-validator";
+import { Prisma } from "@prisma/client";
 import {
   createAlertRuleSchema,
   updateAlertRuleSchema,
@@ -244,7 +245,7 @@ app.get("/", zValidator("query", alertQuerySchema), async (c) => {
     offset = 0,
   } = c.req.valid("query");
 
-  const where: any = {
+  const where: Prisma.AlertWhereInput = {
     workspaceId: user.workspaceId!,
   };
 

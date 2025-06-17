@@ -11,7 +11,9 @@ export class EncryptionService {
   /**
    * Encrypt sensitive data
    */
-  static encryptSensitiveData(data: any): {
+  static encryptSensitiveData(
+    data: Record<string, unknown> | string | number
+  ): {
     encrypted: string;
     iv: string;
     tag: string;
@@ -42,7 +44,7 @@ export class EncryptionService {
     encrypted: string;
     iv: string;
     tag: string;
-  }): any {
+  }): Record<string, unknown> | string | number {
     try {
       const key = crypto.scryptSync(this.ENCRYPTION_KEY, "salt", 32);
       const iv = Buffer.from(encryptedData.iv, "hex");

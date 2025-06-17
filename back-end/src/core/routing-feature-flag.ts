@@ -1,3 +1,5 @@
+import { Context, Next } from "hono";
+
 /**
  * Routing Feature Flag
  *
@@ -30,7 +32,7 @@ export const getCurrentEnvironment = (): string => {
  * Returns 403 with appropriate message if disabled
  */
 export const requireRoutingEnabled = () => {
-  return async (c: any, next: any) => {
+  return async (c: Context, next: Next) => {
     if (!isRoutingEnabled()) {
       return c.json(
         {

@@ -1,4 +1,5 @@
 import prisma from "../prisma";
+import { Prisma } from "@prisma/client";
 import type { CacheStats, CleanupResult } from "./types";
 
 /**
@@ -24,7 +25,7 @@ export class TemporaryStorage {
 
   static async set(
     key: string,
-    value: any,
+    value: Prisma.InputJsonValue,
     ttlMinutes: number = 30
   ): Promise<void> {
     try {
@@ -54,7 +55,7 @@ export class TemporaryStorage {
     }
   }
 
-  static async get(key: string): Promise<any | null> {
+  static async get(key: string): Promise<Prisma.JsonValue | null> {
     try {
       const cached = await prisma.tempCache.findUnique({
         where: { key },
@@ -136,7 +137,7 @@ export class TemporaryStorage {
   static async setUserData(
     userId: string,
     dataType: string,
-    value: any,
+    value: Prisma.InputJsonValue,
     ttlMinutes: number = 30,
     identifier?: string
   ): Promise<void> {
@@ -226,7 +227,7 @@ export class TemporaryStorage {
     userId: string,
     dataType: string,
     identifier?: string
-  ): Promise<any | null> {
+  ): Promise<Prisma.JsonValue | null> {
     const key = this.generateKey(userId, dataType, identifier);
     return this.get(key);
   }
