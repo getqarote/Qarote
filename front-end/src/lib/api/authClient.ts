@@ -4,7 +4,17 @@
  */
 
 import { BaseApiClient } from "./baseClient";
-import { LoginRequest, RegisterRequest, User } from "./authTypes";
+import {
+  LoginRequest,
+  RegisterRequest,
+  User,
+  UserProfile,
+  UpdateProfileRequest,
+  UpdateCompanyRequest,
+  InviteUserRequest,
+  Company,
+  Invitation,
+} from "./authTypes";
 
 export class AuthApiClient extends BaseApiClient {
   async login(
@@ -25,13 +35,35 @@ export class AuthApiClient extends BaseApiClient {
     });
   }
 
-  async getProfile(): Promise<{ user: User }> {
-    return this.request<{ user: User }>("/auth/profile");
+  async getProfile(): Promise<{ profile: UserProfile }> {
+    return this.request<{ profile: UserProfile }>("/users/profile/me");
   }
 
-  async updateProfile(userData: Partial<User>): Promise<{ user: User }> {
-    return this.request<{ user: User }>("/auth/profile", {
-      method: "PATCH",
+  async updateProfile(userData: UpdateProfileRequest): Promise<{ user: User }> {
+    return this.request<{ user: User }>("/users/profile/me", {
+      method: "PUT",
+      body: JSON.stringify(userData),
+    });
+  }
+
+  async updateCompany(
+    companyData: UpdateCompanyRequest
+  ): Promise<{ company: Company }> {
+    return this.request<{ company: Company }>("/users/profile/company", {
+      method: "PUT",
+      body: JSON.stringify(companyData),
+    });
+  }
+
+  async getCompanyUsers(): Promise<{ users: User[] }> {
+    return this.request<{ users: User[] }>("/users/profile/company/users");
+  }
+
+  async inviteUser(
+    userData: InviteUserRequest
+  ): Promise<{ invitation: Invitation }> {
+    return this.request<{ invitation: Invitation }>("/users/invite", {
+      method: "POST",
       body: JSON.stringify(userData),
     });
   }

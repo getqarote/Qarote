@@ -34,4 +34,59 @@ export interface User {
   lastName?: string;
   role: string;
   companyId?: string;
+  isActive: boolean;
+  lastLogin?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Company {
+  id: string;
+  name: string;
+  contactEmail?: string;
+  logoUrl?: string;
+  planType: string;
+  storageMode: string;
+  retentionDays: number;
+  encryptData: boolean;
+  autoDelete: boolean;
+  consentGiven: boolean;
+  consentDate?: string;
+  createdAt: string;
+  updatedAt: string;
+  _count?: {
+    users: number;
+    servers: number;
+  };
+}
+
+export interface UserProfile extends User {
+  company?: Company;
+}
+
+export interface UpdateProfileRequest {
+  firstName?: string;
+  lastName?: string;
+}
+
+export interface UpdateCompanyRequest {
+  name?: string;
+  contactEmail?: string;
+  logoUrl?: string;
+  planType?: "FREE" | "PREMIUM" | "ENTERPRISE";
+}
+
+export interface InviteUserRequest {
+  email: string;
+  role: "ADMIN" | "USER" | "READONLY";
+}
+
+export interface Invitation {
+  id: string;
+  email: string;
+  role: string;
+  status: string;
+  token: string;
+  createdAt: string;
+  expiresAt: string;
 }

@@ -3,6 +3,7 @@ import { zValidator } from "@hono/zod-validator";
 import prisma from "../core/prisma";
 import { hashPassword, authenticate, authorize, SafeUser } from "../core/auth";
 import { UpdateUserSchema, UpdateProfileSchema } from "../schemas/user";
+import { UpdateCompanySchema } from "../schemas/company";
 import { InviteUserSchema } from "../schemas/auth";
 import { generateRandomToken } from "../core/auth";
 import { UserRole } from "@prisma/client";
@@ -359,6 +360,154 @@ userController.get("/invitations/company/:companyId", async (c) => {
       error
     );
     return c.json({ error: "Failed to fetch invitations" }, 500);
+  }
+});
+
+// Get current user's profile
+userController.get("/profile/me", async (c) => {
+  const user = c.get("user") as SafeUser;
+
+  try {
+    const profile = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        isActive: true,
+        lastLogin: true,
+        createdAt: true,
+        updatedAt: true,
+        company: {
+          select: {
+            id: true,
+            name: true,
+            contactEmail: true,
+            logoUrl: true,
+            planType: true,
+            storageMode: true,
+            retentionDays: true,
+            encryptData: true,
+            autoDelete: true,
+            consentGiven: true,
+            consentDate: true,
+            createdAt: true,
+            updatedAt: true,
+            _count: {
+              select: {
+                users: true,
+                servers: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!profile) {
+      return c.json({ error: "Profile not found" }, 404);
+    }
+
+    return c.json({ profile });
+  } catch (error) {
+    console.error(`Error fetching profile for user ${user.id}:`, error);
+    return c.json({ error: "Failed to fetch profile" }, 500);
+  }
+});
+
+// Update company information (company admin only)
+userController.put(
+  "/profile/company",
+  zValidator("json", UpdateCompanySchema),
+  async (c) => {
+    const data = c.req.valid("json");
+    const user = c.get("user") as SafeUser;
+
+    if (!user.companyId) {
+      return c.json({ error: "You are not associated with any company" }, 404);
+    }
+
+    // Only admin users can update company info
+    if (user.role !== UserRole.ADMIN) {
+      return c.json(
+        { error: "Only admin users can update company information" },
+        403
+      );
+    }
+
+    try {
+      const updatedCompany = await prisma.company.update({
+        where: { id: user.companyId },
+        data,
+        select: {
+          id: true,
+          name: true,
+          contactEmail: true,
+          logoUrl: true,
+          planType: true,
+          storageMode: true,
+          retentionDays: true,
+          encryptData: true,
+          autoDelete: true,
+          consentGiven: true,
+          consentDate: true,
+          createdAt: true,
+          updatedAt: true,
+          _count: {
+            select: {
+              users: true,
+              servers: true,
+            },
+          },
+        },
+      });
+
+      return c.json({ company: updatedCompany });
+    } catch (error) {
+      console.error(`Error updating company ${user.companyId}:`, error);
+      return c.json({ error: "Failed to update company information" }, 500);
+    }
+  }
+);
+
+// Get company users (admin only)
+userController.get("/profile/company/users", async (c) => {
+  const user = c.get("user") as SafeUser;
+
+  if (!user.companyId) {
+    return c.json({ error: "You are not associated with any company" }, 404);
+  }
+
+  // Only admin users can view company users
+  if (user.role !== UserRole.ADMIN) {
+    return c.json({ error: "Only admin users can view company users" }, 403);
+  }
+
+  try {
+    const users = await prisma.user.findMany({
+      where: { companyId: user.companyId },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        isActive: true,
+        lastLogin: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    return c.json({ users });
+  } catch (error) {
+    console.error(
+      `Error fetching company users for company ${user.companyId}:`,
+      error
+    );
+    return c.json({ error: "Failed to fetch company users" }, 500);
   }
 });
 

@@ -137,6 +137,20 @@ class ApiClient {
     return this.authClient.updateProfile(userData);
   }
 
+  async updateCompany(
+    companyData: Parameters<AuthApiClient["updateCompany"]>[0]
+  ) {
+    return this.authClient.updateCompany(companyData);
+  }
+
+  async getCompanyUsers() {
+    return this.authClient.getCompanyUsers();
+  }
+
+  async inviteUser(userData: Parameters<AuthApiClient["inviteUser"]>[0]) {
+    return this.authClient.inviteUser(userData);
+  }
+
   async logout() {
     return this.authClient.logout();
   }

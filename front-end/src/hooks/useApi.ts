@@ -255,3 +255,63 @@ export const useCreateQueue = () => {
     },
   });
 };
+
+// Profile hooks
+export const useProfile = () => {
+  const { isAuthenticated } = useAuth();
+
+  return useQuery({
+    queryKey: ["profile"],
+    queryFn: () => apiClient.getProfile(),
+    enabled: isAuthenticated,
+    staleTime: 30000, // 30 seconds
+  });
+};
+
+export const useUpdateProfile = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (userData: Parameters<typeof apiClient.updateProfile>[0]) =>
+      apiClient.updateProfile(userData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
+    },
+  });
+};
+
+export const useUpdateCompany = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (companyData: Parameters<typeof apiClient.updateCompany>[0]) =>
+      apiClient.updateCompany(companyData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
+      queryClient.invalidateQueries({ queryKey: ["companyUsers"] });
+    },
+  });
+};
+
+export const useCompanyUsers = () => {
+  const { isAuthenticated } = useAuth();
+
+  return useQuery({
+    queryKey: ["companyUsers"],
+    queryFn: () => apiClient.getCompanyUsers(),
+    enabled: isAuthenticated,
+    staleTime: 60000, // 1 minute
+  });
+};
+
+export const useInviteUser = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (userData: Parameters<typeof apiClient.inviteUser>[0]) =>
+      apiClient.inviteUser(userData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["companyUsers"] });
+    },
+  });
+};

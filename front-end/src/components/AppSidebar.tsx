@@ -86,6 +86,11 @@ const menuItems = [
     icon: AlertTriangle,
   },
   {
+    title: "Profile",
+    url: "/profile",
+    icon: User,
+  },
+  {
     title: "Privacy Settings",
     url: "/privacy-settings",
     icon: Shield,
