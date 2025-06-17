@@ -3,7 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
-import { User, Shield } from "lucide-react";
+import { User, Shield, MessageSquare } from "lucide-react";
 import {
   useProfile,
   useUpdateProfile,
@@ -24,6 +24,7 @@ import {
   WorkspaceFormState,
   InviteFormState,
 } from "@/components/profile";
+import { FeedbackForm } from "@/components/FeedbackForm";
 
 const Profile = () => {
   const { user } = useAuth();
@@ -165,11 +166,15 @@ const Profile = () => {
             </div>
 
             <Tabs defaultValue="personal" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-3">
+              <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="personal">Personal Info</TabsTrigger>
                 <TabsTrigger value="workspace">Workspace</TabsTrigger>
                 <TabsTrigger value="team" disabled={!isAdmin}>
                   Team {!isAdmin && <Shield className="h-4 w-4 ml-2" />}
+                </TabsTrigger>
+                <TabsTrigger value="feedback">
+                  <MessageSquare className="h-4 w-4 mr-2" />
+                  Send Feedback
                 </TabsTrigger>
               </TabsList>
 
@@ -210,6 +215,10 @@ const Profile = () => {
                   onInviteUser={handleInviteUser}
                   isInviting={inviteUserMutation.isPending}
                 />
+              </TabsContent>
+
+              <TabsContent value="feedback" className="space-y-6">
+                <FeedbackForm />
               </TabsContent>
             </Tabs>
           </div>

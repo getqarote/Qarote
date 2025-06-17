@@ -14,6 +14,7 @@ import userController from "./controllers/user.controller";
 import workspaceController from "./controllers/workspace.controller";
 import logsController from "./controllers/logs.controller";
 import routingController from "./controllers/routing.controller";
+import feedbackController from "./controllers/feedback.controller";
 
 import { corsMiddleware } from "./middlewares/cors";
 import { alertService } from "./services/alert.service";
@@ -43,6 +44,7 @@ app.route("/api/users", userController);
 app.route("/api/workspaces", workspaceController);
 app.route("/api/logs", logsController);
 app.route("/api/routing", routingController);
+app.route("/api/feedback", feedbackController);
 
 // Health check endpoint
 app.get("/livez", (c) =>

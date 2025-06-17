@@ -10,6 +10,7 @@ import { AlertApiClient } from "./alertClient";
 import { WorkspaceApiClient } from "./workspaceClient";
 import { LogsApiClient } from "./logsClient";
 import type { LogQuery, CreateLogRequest, LogExportRequest } from "./logTypes";
+import { FeedbackRequest } from "@/types/feedback";
 
 class ApiClient {
   private serverClient: ServerApiClient;
@@ -277,6 +278,38 @@ class ApiClient {
 
   async deleteLogs(olderThan: string) {
     return this.logsClient.deleteLogs(olderThan);
+  }
+
+  // Feedback methods
+  async submitFeedback(feedbackData: FeedbackRequest) {
+    // For now, we'll use a simple fetch until we create a proper feedback client
+    const token = localStorage.getItem("auth_token");
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
+
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`http://localhost:3000/api/feedback`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(feedbackData),
+    });
+
+    if (!response.ok) {
+      let errorMessage = `HTTP error! status: ${response.status}`;
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.message || errorData.error || errorMessage;
+      } catch (parseError) {
+        // If we can't parse the error response, use the generic error
+      }
+      throw new Error(errorMessage);
+    }
+
+    return await response.json();
   }
 }
 

@@ -25,6 +25,7 @@ const Logs = lazy(() => import("./pages/Logs"));
 const Alerts = lazy(() => import("./pages/Alerts"));
 const Profile = lazy(() => import("./pages/Profile"));
 const PrivacySettings = lazy(() => import("./pages/PrivacySettings"));
+const HelpSupport = lazy(() => import("./pages/HelpSupport"));
 const SignIn = lazy(() => import("./pages/SignIn"));
 const SignUp = lazy(() => import("./pages/SignUp"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -176,6 +177,16 @@ const App = () => (
                     <ProtectedRoute>
                       <Layout>
                         <PrivacySettings />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/help"
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <HelpSupport />
                       </Layout>
                     </ProtectedRoute>
                   }

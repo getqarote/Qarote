@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { Shield, ExternalLink } from "lucide-react";
+import { Shield, ExternalLink, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface LayoutProps {
@@ -17,7 +17,7 @@ export function Layout({ children }: LayoutProps) {
       <footer className="border-t bg-gray-50/80 backdrop-blur-sm ml-0 md:ml-64 transition-[margin] duration-200 ease-linear">
         <div className="max-w-5xl mx-auto px-6 py-6">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            {/* Left side - Privacy Settings */}
+            {/* Left side - Privacy Settings and Help */}
             <div className="flex items-center gap-4">
               <Link to="/privacy-settings">
                 <Button
@@ -27,6 +27,16 @@ export function Layout({ children }: LayoutProps) {
                 >
                   <Shield className="w-4 h-4" />
                   Privacy Settings
+                </Button>
+              </Link>
+              <Link to="/help">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-gray-600 hover:text-gray-900 gap-2"
+                >
+                  <HelpCircle className="w-4 h-4" />
+                  Help & Support
                 </Button>
               </Link>
             </div>

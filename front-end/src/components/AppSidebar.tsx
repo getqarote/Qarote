@@ -32,6 +32,7 @@ import {
   Search,
   FileText,
   GitBranch,
+  HelpCircle,
 } from "lucide-react";
 import { useServerContext } from "@/contexts/ServerContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -94,6 +95,11 @@ const menuItems = [
     title: "Privacy Settings",
     url: "/privacy-settings",
     icon: Shield,
+  },
+  {
+    title: "Help & Support",
+    url: "/help",
+    icon: HelpCircle,
   },
 ];
 

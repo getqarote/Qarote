@@ -54,6 +54,35 @@ enum ComparisonOperator {
   NOT_EQUALS
 }
 
+enum FeedbackType {
+  BUG
+  FEATURE
+  GENERAL
+  IMPROVEMENT
+}
+
+enum FeedbackCategory {
+  UI_UX
+  PERFORMANCE
+  SECURITY
+  FUNCTIONALITY
+  DOCUMENTATION
+  OTHER
+}
+
+enum FeedbackPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum FeedbackStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
 model Workspace {
   id           String         @id @default(uuid())
   name         String
@@ -73,6 +102,7 @@ model Workspace {
   servers      RabbitMQServer[]
   alertRules   AlertRule[]
   alerts       Alert[]
+  feedback     Feedback[]
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
   invitations  Invitation[]
@@ -95,6 +125,10 @@ model User {
   invitedBy      Invitation[] @relation("InvitingUser")
   alerts         Alert[]
   alertRules     AlertRule[]
+  
+  // Feedback relations
+  feedback       Feedback[]
+  feedbackResponses Feedback[] @relation("FeedbackResponses")
 }
 
 model Invitation {
@@ -214,6 +248,42 @@ model AlertRule {
   
   // Generated alerts
   alerts      Alert[]
+}
+
+model Feedback {
+  id          String           @id @default(uuid())
+  type        FeedbackType
+  category    FeedbackCategory
+  title       String           @db.VarChar(100)
+  description String           @db.Text
+  priority    FeedbackPriority @default(MEDIUM)
+  status      FeedbackStatus   @default(OPEN)
+  email       String?          @db.VarChar(255)
+  
+  // Metadata (stored as JSON for flexibility)
+  metadata    Json?
+  
+  // Relations
+  userId      String?
+  user        User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
+  workspaceId String?
+  workspace   Workspace?       @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
+  
+  // Response tracking
+  response       String?       @db.Text
+  respondedById  String?
+  respondedBy    User?         @relation("FeedbackResponses", fields: [respondedById], references: [id], onDelete: SetNull)
+  respondedAt    DateTime?
+  
+  // Timestamps
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  
+  @@index([status], name: "feedback_status_idx")
+  @@index([type], name: "feedback_type_idx")
+  @@index([priority], name: "feedback_priority_idx")
+  @@index([workspaceId], name: "feedback_workspace_idx")
+  @@index([createdAt], name: "feedback_created_at_idx")
 }
 
 model TempCache {
