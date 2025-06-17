@@ -1,30 +1,30 @@
-import { z } from 'zod';
-import { UserRole } from '@prisma/client';
+import { z } from "zod";
+import { UserRole } from "@prisma/client";
 
 // Schema for creating a user
 export const CreateUserSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  passwordHash: z.string().min(1, 'Password hash is required'),
-  firstName: z.string().min(1, 'First name is required'),
-  lastName: z.string().min(1, 'Last name is required'),
+  email: z.string().email("Invalid email address"),
+  passwordHash: z.string().min(1, "Password hash is required"),
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
   role: z.nativeEnum(UserRole).default(UserRole.USER),
-  companyId: z.string().uuid('Invalid company ID').optional(),
+  workspaceId: z.string().uuid("Invalid workspace ID").optional(),
   isActive: z.boolean().default(true),
 });
 
 // Schema for updating a user
 export const UpdateUserSchema = z.object({
-  firstName: z.string().min(1, 'First name is required').optional(),
-  lastName: z.string().min(1, 'Last name is required').optional(),
+  firstName: z.string().min(1, "First name is required").optional(),
+  lastName: z.string().min(1, "Last name is required").optional(),
   role: z.nativeEnum(UserRole).optional(),
   isActive: z.boolean().optional(),
-  companyId: z.string().uuid('Invalid company ID').nullable().optional(),
+  workspaceId: z.string().uuid("Invalid workspace ID").nullable().optional(),
 });
 
 // Schema for updating user profile (by the user themselves)
 export const UpdateProfileSchema = z.object({
-  firstName: z.string().min(1, 'First name is required').optional(),
-  lastName: z.string().min(1, 'Last name is required').optional(),
+  firstName: z.string().min(1, "First name is required").optional(),
+  lastName: z.string().min(1, "Last name is required").optional(),
 });
 
 // Types derived from schemas

@@ -46,7 +46,7 @@ export class PrivacyManager {
         where: { id: userId },
         select: {
           id: true,
-          company: {
+          workspace: {
             select: {
               planType: true,
               storageMode: true,
@@ -64,9 +64,9 @@ export class PrivacyManager {
         throw new Error("User not found");
       }
 
-      const company = user.company;
-      if (!company) {
-        // User without company gets strictest default settings
+      const workspace = user.workspace;
+      if (!workspace) {
+        // User without workspace gets strictest default settings
         return {
           userId,
           planType: "FREE",
@@ -80,13 +80,13 @@ export class PrivacyManager {
 
       return {
         userId,
-        planType: company.planType,
-        storageMode: company.storageMode as StorageMode,
-        retentionDays: company.retentionDays,
-        encryptData: company.encryptData,
-        autoDelete: company.autoDelete,
-        consentGiven: company.consentGiven,
-        consentDate: company.consentDate || undefined,
+        planType: workspace.planType,
+        storageMode: workspace.storageMode as StorageMode,
+        retentionDays: workspace.retentionDays,
+        encryptData: workspace.encryptData,
+        autoDelete: workspace.autoDelete,
+        consentGiven: workspace.consentGiven,
+        consentDate: workspace.consentDate || undefined,
       };
     } catch (error) {
       console.error("Error getting privacy settings:", error);
@@ -114,15 +114,15 @@ export class PrivacyManager {
     try {
       const user = await prisma.user.findUnique({
         where: { id: userId },
-        select: { companyId: true },
+        select: { workspaceId: true },
       });
 
-      if (!user?.companyId) {
-        throw new Error("User company not found");
+      if (!user?.workspaceId) {
+        throw new Error("User workspace not found");
       }
 
-      await prisma.company.update({
-        where: { id: user.companyId },
+      await prisma.workspace.update({
+        where: { id: user.workspaceId },
         data: {
           consentGiven,
           consentDate: consentGiven ? new Date() : null,
@@ -189,18 +189,18 @@ export class PrivacyManager {
         // Delete operational data while preserving account structure
         await tx.alert.deleteMany({
           where: {
-            companyId: {
+            workspaceId: {
               in: await tx.user
                 .findUnique({
                   where: { id: userId },
-                  select: { companyId: true },
+                  select: { workspaceId: true },
                 })
-                .then((u) => (u?.companyId ? [u.companyId] : [])),
+                .then((u) => (u?.workspaceId ? [u.workspaceId] : [])),
             },
           },
         });
 
-        // Note: We keep user account and company info for authentication
+        // Note: We keep user account and workspace info for authentication
         // but delete all operational/sensitive data
       });
 

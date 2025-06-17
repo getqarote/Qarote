@@ -78,7 +78,7 @@ export const CreateAlertSchema = z.object({
   description: z.string().min(1, "Description is required"),
   severity: z.enum(["LOW", "MEDIUM", "HIGH", "CRITICAL"]),
   status: z.enum(["ACTIVE", "ACKNOWLEDGED", "RESOLVED"]).default("ACTIVE"),
-  companyId: z.string(),
+  workspaceId: z.string(),
   alertRuleId: z.string().optional(),
   value: z.number().optional(),
   threshold: z.number().optional(),

@@ -55,8 +55,23 @@ export class AuthApiClient extends BaseApiClient {
     });
   }
 
+  // New workspace methods
+  async updateWorkspace(
+    workspaceData: UpdateCompanyRequest
+  ): Promise<{ workspace: Company }> {
+    return this.request<{ workspace: Company }>("/users/profile/workspace", {
+      method: "PUT",
+      body: JSON.stringify(workspaceData),
+    });
+  }
+
   async getCompanyUsers(): Promise<{ users: User[] }> {
     return this.request<{ users: User[] }>("/users/profile/company/users");
+  }
+
+  // New workspace users method
+  async getWorkspaceUsers(): Promise<{ users: User[] }> {
+    return this.request<{ users: User[] }>("/users/profile/workspace/users");
   }
 
   async inviteUser(

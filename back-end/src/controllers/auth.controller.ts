@@ -26,7 +26,7 @@ authController.post(
   "/register",
   zValidator("json", RegisterUserSchema),
   async (c) => {
-    const { email, password, firstName, lastName, companyName } =
+    const { email, password, firstName, lastName, workspaceName } =
       c.req.valid("json");
 
     try {
@@ -41,19 +41,19 @@ authController.post(
 
       const hashedPassword = await hashPassword(password);
 
-      // Create transaction to handle company creation and user registration
+      // Create transaction to handle workspace creation and user registration
       const result = await prisma.$transaction(async (tx) => {
-        let companyId = null;
+        let workspaceId = null;
 
-        // Create company if companyName is provided
-        if (companyName) {
-          const company = await tx.company.create({
+        // Create workspace if workspaceName is provided
+        if (workspaceName) {
+          const workspace = await tx.workspace.create({
             data: {
-              name: companyName,
+              name: workspaceName,
               contactEmail: email,
             },
           });
-          companyId = company.id;
+          workspaceId = workspace.id;
         }
 
         // Create user
@@ -63,8 +63,8 @@ authController.post(
             passwordHash: hashedPassword,
             firstName,
             lastName,
-            companyId,
-            role: companyId ? UserRole.ADMIN : UserRole.USER, // If creating a company, user is admin
+            workspaceId,
+            role: workspaceId ? UserRole.ADMIN : UserRole.USER, // If creating a workspace, user is admin
             lastLogin: new Date(),
           },
           select: {
@@ -73,7 +73,7 @@ authController.post(
             firstName: true,
             lastName: true,
             role: true,
-            companyId: true,
+            workspaceId: true,
             isActive: true,
             lastLogin: true,
             createdAt: true,
@@ -81,7 +81,7 @@ authController.post(
           },
         });
 
-        return { user, companyId };
+        return { user, workspaceId };
       });
 
       // Generate JWT token
@@ -89,14 +89,14 @@ authController.post(
         id: result.user.id,
         email: result.user.email,
         role: result.user.role,
-        companyId: result.user.companyId,
+        workspaceId: result.user.workspaceId,
       });
 
       return c.json(
         {
           user: result.user,
           token,
-          companyId: result.companyId,
+          workspaceId: result.workspaceId,
         },
         201
       );
@@ -143,7 +143,7 @@ authController.post("/login", zValidator("json", LoginSchema), async (c) => {
       id: user.id,
       email: user.email,
       role: user.role,
-      companyId: user.companyId,
+      workspaceId: user.workspaceId,
     });
 
     const safeUser: SafeUser = {
@@ -152,7 +152,7 @@ authController.post("/login", zValidator("json", LoginSchema), async (c) => {
       firstName: user.firstName,
       lastName: user.lastName,
       role: user.role,
-      companyId: user.companyId,
+      workspaceId: user.workspaceId,
       isActive: user.isActive,
       lastLogin: user.lastLogin,
       createdAt: user.createdAt,
@@ -171,8 +171,8 @@ authController.get("/me", authenticate, async (c) => {
   const user = c.get("user") as SafeUser;
 
   try {
-    // Get user with company information
-    const userWithCompany = await prisma.user.findUnique({
+    // Get user with workspace information
+    const userWithWorkspace = await prisma.user.findUnique({
       where: { id: user.id },
       select: {
         id: true,
@@ -180,12 +180,12 @@ authController.get("/me", authenticate, async (c) => {
         firstName: true,
         lastName: true,
         role: true,
-        companyId: true,
+        workspaceId: true,
         isActive: true,
         lastLogin: true,
         createdAt: true,
         updatedAt: true,
-        company: {
+        workspace: {
           select: {
             id: true,
             name: true,
@@ -197,11 +197,11 @@ authController.get("/me", authenticate, async (c) => {
       },
     });
 
-    if (!userWithCompany) {
+    if (!userWithWorkspace) {
       return c.json({ error: "User not found" }, 404);
     }
 
-    return c.json({ user: userWithCompany });
+    return c.json({ user: userWithWorkspace });
   } catch (error) {
     console.error("Get profile error:", error);
     return c.json({ error: "Failed to retrieve user profile" }, 500);
@@ -335,7 +335,7 @@ authController.post(
       // Find invitation by token
       const invitation = await prisma.invitation.findUnique({
         where: { token },
-        include: { company: true },
+        include: { workspace: true },
       });
 
       if (!invitation) {
@@ -367,11 +367,11 @@ authController.post(
       // Transaction to handle user creation/update and invitation acceptance
       const result = await prisma.$transaction(async (tx) => {
         if (user) {
-          // Update existing user's company
+          // Update existing user's workspace
           user = await tx.user.update({
             where: { id: user.id },
             data: {
-              companyId: invitation.companyId,
+              workspaceId: invitation.workspaceId,
               role: invitation.role,
             },
           });
@@ -390,7 +390,7 @@ authController.post(
               passwordHash: hashedPassword,
               firstName,
               lastName,
-              companyId: invitation.companyId,
+              workspaceId: invitation.workspaceId,
               role: invitation.role,
               lastLogin: new Date(),
             },
@@ -414,7 +414,7 @@ authController.post(
         id: result.id,
         email: result.email,
         role: result.role,
-        companyId: result.companyId,
+        workspaceId: result.workspaceId,
       });
 
       const safeUser: SafeUser = {
@@ -423,7 +423,7 @@ authController.post(
         firstName: result.firstName,
         lastName: result.lastName,
         role: result.role,
-        companyId: result.companyId,
+        workspaceId: result.workspaceId,
         isActive: result.isActive,
         lastLogin: result.lastLogin,
         createdAt: result.createdAt,
@@ -433,7 +433,7 @@ authController.post(
       return c.json({
         user: safeUser,
         token: authToken,
-        company: invitation.company,
+        workspace: invitation.workspace,
       });
     } catch (error) {
       console.error("Accept invitation error:", error);

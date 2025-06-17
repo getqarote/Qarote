@@ -163,30 +163,30 @@ const alertTemplates = [
 ];
 
 /**
- * Get or create a company and user for tessierhuort@gmail.com
+ * Get or create a workspace and user for tessierhuort@gmail.com
  */
-async function getTestCompanyAndUser() {
+async function getTestWorkspaceAndUser() {
   // Try to find existing user first
   let user = await prisma.user.findFirst({
     where: { email: "tessierhuort@gmail.com" },
-    include: { company: true },
+    include: { workspace: true },
   });
 
-  let company;
+  let workspace;
 
-  if (user && user.company) {
-    company = user.company;
-    console.log("📋 Using existing company and user");
+  if (user && user.workspace) {
+    workspace = user.workspace;
+    console.log("📋 Using existing workspace and user");
   } else {
-    // Create company for the user
-    company = await prisma.company.create({
+    // Create workspace for the user
+    workspace = await prisma.workspace.create({
       data: {
-        name: "Tessier Company",
+        name: "Tessier Workspace",
         contactEmail: "tessierhuort@gmail.com",
         planType: "PREMIUM",
       },
     });
-    console.log("✅ Created company: Tessier Company");
+    console.log("✅ Created workspace: Tessier Workspace");
 
     if (!user) {
       // Hash the password "MrffB!D$UPn254" for the user
@@ -199,38 +199,40 @@ async function getTestCompanyAndUser() {
           firstName: "Tessier",
           lastName: "Huort",
           role: "ADMIN",
-          companyId: company.id,
+          workspaceId: workspace.id,
         },
-        include: { company: true },
+        include: { workspace: true },
       });
       console.log("✅ Created user account");
     } else {
-      // Update existing user to belong to the new company
+      // Update existing user to belong to the new workspace
       user = await prisma.user.update({
         where: { id: user.id },
-        data: { companyId: company.id },
-        include: { company: true },
+        data: { workspaceId: workspace.id },
+        include: { workspace: true },
       });
-      console.log("✅ Updated user to belong to new company");
+      console.log("✅ Updated user to belong to new workspace");
     }
   }
 
-  return { company, user: user! };
+  return { workspace, user: user! };
 }
 
 /**
  * Create sample alert rules
  */
-async function createAlertRules(companyId: string, userId: string) {
+async function createAlertRules(workspaceId: string, userId: string) {
   console.log("🔄 Creating alert rules...");
 
-  // Get available servers for this company
+  // Get available servers for this workspace
   const servers = await prisma.rabbitMQServer.findMany({
-    where: { companyId },
+    where: { workspaceId },
   });
 
   if (servers.length === 0) {
-    console.log("⚠️  No servers found for company. Creating a test server...");
+    console.log(
+      "⚠️  No servers found for workspace. Creating a test server..."
+    );
 
     const testServer = await prisma.rabbitMQServer.create({
       data: {
@@ -240,7 +242,7 @@ async function createAlertRules(companyId: string, userId: string) {
         username: "admin",
         password: "admin123",
         vhost: "/",
-        companyId,
+        workspaceId,
       },
     });
 
@@ -257,7 +259,7 @@ async function createAlertRules(companyId: string, userId: string) {
         data: {
           ...template,
           serverId: server.id,
-          companyId,
+          workspaceId,
           createdById: userId,
         },
       });
@@ -273,7 +275,7 @@ async function createAlertRules(companyId: string, userId: string) {
  * Create sample alerts
  */
 async function createAlerts(
-  companyId: string,
+  workspaceId: string,
   userId: string,
   alertRules: any[]
 ) {
@@ -290,7 +292,7 @@ async function createAlerts(
       data: {
         ...template,
         alertRuleId: alertRule.id,
-        companyId,
+        workspaceId,
         createdById: userId,
         // Add some time variance
         createdAt: new Date(
@@ -318,7 +320,7 @@ async function createAlerts(
  * Create additional random alerts for testing pagination and filtering
  */
 async function createRandomAlerts(
-  companyId: string,
+  workspaceId: string,
   userId: string,
   alertRules: any[],
   count: number = 20
@@ -370,7 +372,7 @@ async function createRandomAlerts(
         value,
         threshold,
         alertRuleId: alertRule.id,
-        companyId,
+        workspaceId,
         createdById: userId,
         createdAt: new Date(
           Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000
@@ -398,28 +400,28 @@ async function main() {
     console.log("🚀 Starting alert system seeding...");
 
     // Get or create test data
-    const { company, user } = await getTestCompanyAndUser();
+    const { workspace, user } = await getTestWorkspaceAndUser();
 
     // Create alert rules
-    const alertRules = await createAlertRules(company.id, user.id);
+    const alertRules = await createAlertRules(workspace.id, user.id);
 
     // Create sample alerts
-    await createAlerts(company.id, user.id, alertRules);
+    await createAlerts(workspace.id, user.id, alertRules);
 
     // Create additional random alerts for testing
-    await createRandomAlerts(company.id, user.id, alertRules, 30);
+    await createRandomAlerts(workspace.id, user.id, alertRules, 30);
 
     console.log("🎉 Alert system seeding completed successfully!");
 
     // Print summary
     const alertCount = await prisma.alert.count({
-      where: { companyId: company.id },
+      where: { workspaceId: workspace.id },
     });
     const ruleCount = await prisma.alertRule.count({
-      where: { companyId: company.id },
+      where: { workspaceId: workspace.id },
     });
     const activeAlerts = await prisma.alert.count({
-      where: { companyId: company.id, status: AlertStatus.ACTIVE },
+      where: { workspaceId: workspace.id, status: AlertStatus.ACTIVE },
     });
 
     console.log(`
@@ -427,7 +429,7 @@ async function main() {
    - Alert Rules: ${ruleCount}
    - Total Alerts: ${alertCount}
    - Active Alerts: ${activeAlerts}
-   - Company: ${company.name}
+   - workspace: ${workspace.name}
    - User: ${user.email}
    
 🔐 Login Credentials:
@@ -449,25 +451,25 @@ async function cleanup() {
   try {
     console.log("🧹 Cleaning up alert data...");
 
-    const company = await prisma.company.findFirst({
+    const workspace = await prisma.workspace.findFirst({
       where: {
         OR: [
-          { name: "Test Company" },
-          { name: "Tessier Company" },
+          { name: "Test workspace" },
+          { name: "Tessier workspace" },
           { contactEmail: "tessierhuort@gmail.com" },
         ],
       },
     });
 
-    if (company) {
+    if (workspace) {
       // Delete alerts first (due to foreign keys)
       await prisma.alert.deleteMany({
-        where: { companyId: company.id },
+        where: { workspaceId: workspace.id },
       });
 
       // Delete alert rules
       await prisma.alertRule.deleteMany({
-        where: { companyId: company.id },
+        where: { workspaceId: workspace.id },
       });
 
       console.log("✅ Cleanup completed");

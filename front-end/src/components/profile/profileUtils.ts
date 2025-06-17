@@ -7,12 +7,15 @@ export interface ProfileFormState {
   lastName: string;
 }
 
-export interface CompanyFormState {
+export interface WorkspaceFormState {
   name: string;
   contactEmail: string;
   logoUrl: string;
   planType: "FREE" | "PREMIUM" | "ENTERPRISE";
 }
+
+// Legacy type alias for backwards compatibility
+export type CompanyFormState = WorkspaceFormState;
 
 export interface InviteFormState {
   email: string;

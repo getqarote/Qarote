@@ -60,7 +60,7 @@ export class AlertService {
         },
         include: {
           server: true,
-          company: true,
+          workspace: true,
         },
       });
 
@@ -201,7 +201,7 @@ export class AlertService {
         value: metricValue.value,
         threshold: rule.threshold,
         alertRuleId: rule.id,
-        companyId: rule.companyId,
+        workspaceId: rule.workspaceId,
         createdById: rule.createdById,
       },
     });

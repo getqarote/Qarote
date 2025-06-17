@@ -16,13 +16,13 @@ const app = new Hono();
 app.use("*", authenticate);
 app.use("*", requireAlertsEnabled());
 
-// Get all alert rules for the user's company
+// Get all alert rules for the user's workspace
 app.get("/rules", async (c) => {
   const user = c.get("user");
 
   const alertRules = await prisma.alertRule.findMany({
     where: {
-      companyId: user.companyId!,
+      workspaceId: user.workspaceId!,
     },
     include: {
       server: {
@@ -68,7 +68,7 @@ app.get("/rules/:id", async (c) => {
   const alertRule = await prisma.alertRule.findFirst({
     where: {
       id: alertRuleId,
-      companyId: user.companyId!,
+      workspaceId: user.workspaceId!,
     },
     include: {
       server: {
@@ -112,11 +112,11 @@ app.post("/rules", zValidator("json", createAlertRuleSchema), async (c) => {
   const user = c.get("user");
   const data = c.req.valid("json");
 
-  // Verify the server belongs to the user's company
+  // Verify the server belongs to the user's workspace
   const server = await prisma.rabbitMQServer.findFirst({
     where: {
       id: data.serverId,
-      companyId: user.companyId!,
+      workspaceId: user.workspaceId!,
     },
   });
 
@@ -127,7 +127,7 @@ app.post("/rules", zValidator("json", createAlertRuleSchema), async (c) => {
   const alertRule = await prisma.alertRule.create({
     data: {
       ...data,
-      companyId: user.companyId!,
+      workspaceId: user.workspaceId!,
       createdById: user.id,
     },
     include: {
@@ -158,11 +158,11 @@ app.put("/rules/:id", zValidator("json", updateAlertRuleSchema), async (c) => {
   const alertRuleId = c.req.param("id");
   const data = c.req.valid("json");
 
-  // Verify the alert rule belongs to the user's company
+  // Verify the alert rule belongs to the user's workspace
   const existingRule = await prisma.alertRule.findFirst({
     where: {
       id: alertRuleId,
-      companyId: user.companyId!,
+      workspaceId: user.workspaceId!,
     },
   });
 
@@ -170,12 +170,12 @@ app.put("/rules/:id", zValidator("json", updateAlertRuleSchema), async (c) => {
     return c.json({ error: "Alert rule not found" }, 404);
   }
 
-  // If serverId is being updated, verify the new server belongs to the company
+  // If serverId is being updated, verify the new server belongs to the workspace
   if (data.serverId && data.serverId !== existingRule.serverId) {
     const server = await prisma.rabbitMQServer.findFirst({
       where: {
         id: data.serverId,
-        companyId: user.companyId!,
+        workspaceId: user.workspaceId!,
       },
     });
 
@@ -214,11 +214,11 @@ app.delete("/rules/:id", async (c) => {
   const user = c.get("user");
   const alertRuleId = c.req.param("id");
 
-  // Verify the alert rule belongs to the user's company
+  // Verify the alert rule belongs to the user's workspace
   const existingRule = await prisma.alertRule.findFirst({
     where: {
       id: alertRuleId,
-      companyId: user.companyId!,
+      workspaceId: user.workspaceId!,
     },
   });
 
@@ -233,7 +233,7 @@ app.delete("/rules/:id", async (c) => {
   return c.json({ message: "Alert rule deleted successfully" });
 });
 
-// Get all alerts for the user's company
+// Get all alerts for the user's workspace
 app.get("/", zValidator("query", alertQuerySchema), async (c) => {
   const user = c.get("user");
   const {
@@ -245,7 +245,7 @@ app.get("/", zValidator("query", alertQuerySchema), async (c) => {
   } = c.req.valid("query");
 
   const where: any = {
-    companyId: user.companyId!,
+    workspaceId: user.workspaceId!,
   };
 
   if (status) {
@@ -314,7 +314,7 @@ app.get("/:id", async (c) => {
   const alert = await prisma.alert.findFirst({
     where: {
       id: alertId,
-      companyId: user.companyId!,
+      workspaceId: user.workspaceId!,
     },
     include: {
       alertRule: {
@@ -355,11 +355,11 @@ app.post(
     const alertId = c.req.param("id");
     const { note } = c.req.valid("json");
 
-    // Verify the alert belongs to the user's company
+    // Verify the alert belongs to the user's workspace
     const existingAlert = await prisma.alert.findFirst({
       where: {
         id: alertId,
-        companyId: user.companyId!,
+        workspaceId: user.workspaceId!,
       },
     });
 
@@ -414,11 +414,11 @@ app.post(
     const alertId = c.req.param("id");
     const { note } = c.req.valid("json");
 
-    // Verify the alert belongs to the user's company
+    // Verify the alert belongs to the user's workspace
     const existingAlert = await prisma.alert.findFirst({
       where: {
         id: alertId,
-        companyId: user.companyId!,
+        workspaceId: user.workspaceId!,
       },
     });
 
@@ -460,7 +460,7 @@ app.post(
   }
 );
 
-// Get alert statistics for the user's company
+// Get alert statistics for the user's workspace
 app.get("/stats/summary", async (c) => {
   const user = c.get("user");
 
@@ -473,36 +473,36 @@ app.get("/stats/summary", async (c) => {
     recentAlerts,
   ] = await Promise.all([
     prisma.alert.count({
-      where: { companyId: user.companyId! },
+      where: { workspaceId: user.workspaceId! },
     }),
     prisma.alert.count({
       where: {
-        companyId: user.companyId!,
+        workspaceId: user.workspaceId!,
         status: "ACTIVE",
       },
     }),
     prisma.alert.count({
       where: {
-        companyId: user.companyId!,
+        workspaceId: user.workspaceId!,
         status: "ACKNOWLEDGED",
       },
     }),
     prisma.alert.count({
       where: {
-        companyId: user.companyId!,
+        workspaceId: user.workspaceId!,
         status: "RESOLVED",
       },
     }),
     prisma.alert.count({
       where: {
-        companyId: user.companyId!,
+        workspaceId: user.workspaceId!,
         severity: "CRITICAL",
         status: { in: ["ACTIVE", "ACKNOWLEDGED"] },
       },
     }),
     prisma.alert.findMany({
       where: {
-        companyId: user.companyId!,
+        workspaceId: user.workspaceId!,
         createdAt: {
           gte: new Date(Date.now() - 24 * 60 * 60 * 1000), // Last 24 hours
         },

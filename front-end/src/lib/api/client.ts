@@ -143,8 +143,20 @@ class ApiClient {
     return this.authClient.updateCompany(companyData);
   }
 
+  // New workspace methods
+  async updateWorkspace(
+    workspaceData: Parameters<AuthApiClient["updateWorkspace"]>[0]
+  ) {
+    return this.authClient.updateWorkspace(workspaceData);
+  }
+
   async getCompanyUsers() {
     return this.authClient.getCompanyUsers();
+  }
+
+  // New workspace users method
+  async getWorkspaceUsers() {
+    return this.authClient.getWorkspaceUsers();
   }
 
   async inviteUser(userData: Parameters<AuthApiClient["inviteUser"]>[0]) {

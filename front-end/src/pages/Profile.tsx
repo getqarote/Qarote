@@ -8,31 +8,34 @@ import {
   useProfile,
   useUpdateProfile,
   useUpdateCompany,
+  useUpdateWorkspace,
   useCompanyUsers,
+  useWorkspaceUsers,
   useInviteUser,
 } from "@/hooks/useApi";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import {
   PersonalInfoTab,
-  CompanyInfoTab,
+  WorkspaceInfoTab,
   TeamTab,
   ProfileLoading,
   ProfileFormState,
-  CompanyFormState,
+  WorkspaceFormState,
   InviteFormState,
 } from "@/components/profile";
 
 const Profile = () => {
   const { user } = useAuth();
   const { data: profileData, isLoading: profileLoading } = useProfile();
-  const { data: companyUsersData, isLoading: usersLoading } = useCompanyUsers();
+  const { data: workspaceUsersData, isLoading: usersLoading } =
+    useWorkspaceUsers();
   const updateProfileMutation = useUpdateProfile();
-  const updateCompanyMutation = useUpdateCompany();
+  const updateWorkspaceMutation = useUpdateWorkspace();
   const inviteUserMutation = useInviteUser();
 
   const [editingProfile, setEditingProfile] = useState(false);
-  const [editingCompany, setEditingCompany] = useState(false);
+  const [editingWorkspace, setEditingWorkspace] = useState(false);
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
 
   // Profile form state
@@ -41,8 +44,8 @@ const Profile = () => {
     lastName: "",
   });
 
-  // Company form state
-  const [companyForm, setCompanyForm] = useState<CompanyFormState>({
+  // Workspace form state
+  const [workspaceForm, setWorkspaceForm] = useState<WorkspaceFormState>({
     name: "",
     contactEmail: "",
     logoUrl: "",
@@ -56,8 +59,8 @@ const Profile = () => {
   });
 
   const profile = profileData?.profile;
-  const company = profile?.company;
-  const companyUsers = companyUsersData?.users || [];
+  const workspace = profile?.workspace;
+  const workspaceUsers = workspaceUsersData?.users || [];
   const isAdmin = profile?.role === "ADMIN";
 
   // Initialize forms when profile data loads
@@ -68,15 +71,15 @@ const Profile = () => {
         lastName: profile.lastName || "",
       });
     }
-    if (company) {
-      setCompanyForm({
-        name: company.name || "",
-        contactEmail: company.contactEmail || "",
-        logoUrl: company.logoUrl || "",
-        planType: company.planType as "FREE" | "PREMIUM" | "ENTERPRISE",
+    if (workspace) {
+      setWorkspaceForm({
+        name: workspace.name || "",
+        contactEmail: workspace.contactEmail || "",
+        logoUrl: workspace.logoUrl || "",
+        planType: workspace.planType as "FREE" | "PREMIUM" | "ENTERPRISE",
       });
     }
-  }, [profile, company]);
+  }, [profile, workspace]);
 
   const handleUpdateProfile = async () => {
     try {
@@ -88,19 +91,27 @@ const Profile = () => {
     }
   };
 
-  const handleUpdateCompany = async () => {
+  const handleUpdateWorkspace = async () => {
     try {
-      await updateCompanyMutation.mutateAsync(companyForm);
-      setEditingCompany(false);
-      toast.success("Company information updated successfully");
+      await updateWorkspaceMutation.mutateAsync(workspaceForm);
+      setEditingWorkspace(false);
+      toast.success("Workspace information updated successfully");
     } catch (error) {
-      toast.error("Failed to update company information");
+      toast.error("Failed to update workspace information");
     }
   };
 
   const handleInviteUser = async () => {
+    if (!workspace?.id) {
+      toast.error("No workspace found");
+      return;
+    }
+
     try {
-      await inviteUserMutation.mutateAsync(inviteForm);
+      await inviteUserMutation.mutateAsync({
+        ...inviteForm,
+        workspaceId: workspace.id,
+      });
       setInviteDialogOpen(false);
       setInviteForm({ email: "", role: "USER" });
       toast.success("Invitation sent successfully");
@@ -156,7 +167,7 @@ const Profile = () => {
             <Tabs defaultValue="personal" className="space-y-6">
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="personal">Personal Info</TabsTrigger>
-                <TabsTrigger value="company">Company</TabsTrigger>
+                <TabsTrigger value="workspace">Workspace</TabsTrigger>
                 <TabsTrigger value="team" disabled={!isAdmin}>
                   Team {!isAdmin && <Shield className="h-4 w-4 ml-2" />}
                 </TabsTrigger>
@@ -174,23 +185,23 @@ const Profile = () => {
                 />
               </TabsContent>
 
-              <TabsContent value="company" className="space-y-6">
-                <CompanyInfoTab
-                  company={company}
+              <TabsContent value="workspace" className="space-y-6">
+                <WorkspaceInfoTab
+                  workspace={workspace}
                   isAdmin={isAdmin}
-                  editingCompany={editingCompany}
-                  companyForm={companyForm}
-                  setCompanyForm={setCompanyForm}
-                  setEditingCompany={setEditingCompany}
-                  onUpdateCompany={handleUpdateCompany}
-                  isUpdating={updateCompanyMutation.isPending}
+                  editingWorkspace={editingWorkspace}
+                  workspaceForm={workspaceForm}
+                  setWorkspaceForm={setWorkspaceForm}
+                  setEditingWorkspace={setEditingWorkspace}
+                  onUpdateWorkspace={handleUpdateWorkspace}
+                  isUpdating={updateWorkspaceMutation.isPending}
                 />
               </TabsContent>
 
               <TabsContent value="team" className="space-y-6">
                 <TeamTab
                   isAdmin={isAdmin}
-                  companyUsers={companyUsers}
+                  workspaceUsers={workspaceUsers}
                   usersLoading={usersLoading}
                   inviteDialogOpen={inviteDialogOpen}
                   setInviteDialogOpen={setInviteDialogOpen}

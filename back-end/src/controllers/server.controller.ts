@@ -14,16 +14,16 @@ const serverController = new Hono();
 // Apply authentication middleware to all routes
 serverController.use("*", authenticate);
 
-// Get all RabbitMQ servers (filtered by user's company)
+// Get all RabbitMQ servers (filtered by user's workspace)
 serverController.get("/", async (c) => {
   try {
     const user = c.get("user");
 
-    // Only return servers that belong to the user's company
-    // If user has no company, they can only see servers with no company (personal servers)
+    // Only return servers that belong to the user's workspace
+    // If user has no workspace, they can only see servers with no workspace (personal servers)
     const servers = await prisma.rabbitMQServer.findMany({
       where: {
-        companyId: user.companyId || null,
+        workspaceId: user.workspaceId || null,
       },
       select: {
         id: true,
@@ -39,7 +39,7 @@ serverController.get("/", async (c) => {
         sslClientKeyPath: true,
         createdAt: true,
         updatedAt: true,
-        companyId: true,
+        workspaceId: true,
         // Don't include password in response
       },
     });
@@ -61,7 +61,7 @@ serverController.get("/", async (c) => {
       },
       createdAt: server.createdAt,
       updatedAt: server.updatedAt,
-      companyId: server.companyId,
+      workspaceId: server.workspaceId,
     }));
 
     return c.json({ servers: transformedServers });
@@ -80,8 +80,8 @@ serverController.get("/:id", async (c) => {
     const server = await prisma.rabbitMQServer.findUnique({
       where: {
         id,
-        // Ensure the server belongs to the user's company
-        companyId: user.companyId || null,
+        // Ensure the server belongs to the user's workspace
+        workspaceId: user.workspaceId || null,
       },
       select: {
         id: true,
@@ -97,7 +97,7 @@ serverController.get("/:id", async (c) => {
         sslClientKeyPath: true,
         createdAt: true,
         updatedAt: true,
-        companyId: true,
+        workspaceId: true,
         // Don't include password in response
       },
     });
@@ -123,7 +123,7 @@ serverController.get("/:id", async (c) => {
       },
       createdAt: server.createdAt,
       updatedAt: server.updatedAt,
-      companyId: server.companyId,
+      workspaceId: server.workspaceId,
     };
 
     return c.json({ server: transformedServer });
@@ -169,8 +169,8 @@ serverController.post(
           sslCaCertPath: data.sslConfig?.caCertPath,
           sslClientCertPath: data.sslConfig?.clientCertPath,
           sslClientKeyPath: data.sslConfig?.clientKeyPath,
-          // Automatically assign server to user's company
-          companyId: user.companyId,
+          // Automatically assign server to user's workspace
+          workspaceId: user.workspaceId,
         },
       });
 
@@ -190,7 +190,7 @@ serverController.post(
               clientCertPath: server.sslClientCertPath,
               clientKeyPath: server.sslClientKeyPath,
             },
-            companyId: server.companyId,
+            workspaceId: server.workspaceId,
             createdAt: server.createdAt,
             updatedAt: server.updatedAt,
           },
@@ -220,11 +220,11 @@ serverController.put(
     const user = c.get("user");
 
     try {
-      // Check if server exists and belongs to user's company
+      // Check if server exists and belongs to user's workspace
       const existingServer = await prisma.rabbitMQServer.findUnique({
         where: {
           id,
-          companyId: user.companyId || null,
+          workspaceId: user.workspaceId || null,
         },
       });
 
@@ -287,11 +287,11 @@ serverController.delete("/:id", async (c) => {
   const user = c.get("user");
 
   try {
-    // Check if server exists and belongs to user's company
+    // Check if server exists and belongs to user's workspace
     const existingServer = await prisma.rabbitMQServer.findUnique({
       where: {
         id,
-        companyId: user.companyId || null,
+        workspaceId: user.workspaceId || null,
       },
     });
 

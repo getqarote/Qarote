@@ -13,7 +13,7 @@ interface JWTPayload {
   sub: string;
   email: string;
   role: UserRole;
-  companyId?: string | null;
+  workspaceId?: string | null;
   exp?: number;
   iat?: number;
   [key: string]: unknown;
@@ -26,7 +26,7 @@ export interface SafeUser {
   firstName: string | null;
   lastName: string | null;
   role: UserRole;
-  companyId: string | null;
+  workspaceId: string | null;
   isActive: boolean;
   lastLogin: Date | null;
   createdAt: Date;
@@ -51,13 +51,13 @@ export const generateToken = async (user: {
   id: string;
   email: string;
   role: UserRole;
-  companyId: string | null;
+  workspaceId: string | null;
 }): Promise<string> => {
   const payload: JWTPayload = {
     sub: user.id,
     email: user.email,
     role: user.role,
-    companyId: user.companyId,
+    workspaceId: user.workspaceId,
     exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7, // Default 7 days expiry
   };
 
@@ -91,7 +91,7 @@ export const extractUserFromToken = async (
         firstName: true,
         lastName: true,
         role: true,
-        companyId: true,
+        workspaceId: true,
         isActive: true,
         lastLogin: true,
         createdAt: true,
@@ -158,13 +158,13 @@ export const authorize = (allowedRoles: UserRole[]) => {
   };
 };
 
-// Company access check middleware
-export const checkCompanyAccess = async (
+// Workspace access check middleware
+export const checkWorkspaceAccess = async (
   c: Context,
   next: () => Promise<void>
 ) => {
   const user = c.get("user");
-  const companyId = c.req.param("companyId");
+  const workspaceId = c.req.param("id");
 
   if (!user) {
     return c.json(
@@ -173,18 +173,53 @@ export const checkCompanyAccess = async (
     );
   }
 
-  // Allow ADMIN users to access any company
+  // Allow ADMIN users to access any workspace
   if (user.role === UserRole.ADMIN) {
     await next();
     return;
   }
 
-  // Check if user belongs to the requested company
-  if (!user.companyId || user.companyId !== companyId) {
+  // Check if user belongs to the requested workspace
+  if (!user.workspaceId || user.workspaceId !== workspaceId) {
     return c.json(
       {
         error: "Forbidden",
-        message: "Cannot access resources for this company",
+        message: "Cannot access resources for this workspace",
+      },
+      403
+    );
+  }
+
+  await next();
+};
+
+// Company access check middleware (deprecated - use checkWorkspaceAccess)
+export const checkCompanyAccess = async (
+  c: Context,
+  next: () => Promise<void>
+) => {
+  const user = c.get("user");
+  const workspaceId = c.req.param("companyId"); // Legacy parameter name for backward compatibility
+
+  if (!user) {
+    return c.json(
+      { error: "Unauthorized", message: "Authentication required" },
+      401
+    );
+  }
+
+  // Allow ADMIN users to access any workspace
+  if (user.role === UserRole.ADMIN) {
+    await next();
+    return;
+  }
+
+  // Check if user belongs to the requested workspace
+  if (!user.workspaceId || user.workspaceId !== workspaceId) {
+    return c.json(
+      {
+        error: "Forbidden",
+        message: "Cannot access resources for this workspace",
       },
       403
     );

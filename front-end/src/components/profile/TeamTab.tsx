@@ -16,7 +16,8 @@ import { InviteUserDialog } from "./InviteUserDialog";
 
 interface TeamTabProps {
   isAdmin: boolean;
-  companyUsers: User[];
+  companyUsers?: User[]; // Made optional for backwards compatibility
+  workspaceUsers?: User[]; // New workspace users prop
   usersLoading: boolean;
   inviteDialogOpen: boolean;
   setInviteDialogOpen: (open: boolean) => void;
@@ -29,6 +30,7 @@ interface TeamTabProps {
 export const TeamTab = ({
   isAdmin,
   companyUsers,
+  workspaceUsers,
   usersLoading,
   inviteDialogOpen,
   setInviteDialogOpen,
@@ -37,6 +39,9 @@ export const TeamTab = ({
   onInviteUser,
   isInviting,
 }: TeamTabProps) => {
+  // Use workspace users if available, fallback to company users for backwards compatibility
+  const users = workspaceUsers || companyUsers || [];
+
   if (!isAdmin) {
     return null;
   }
@@ -66,7 +71,7 @@ export const TeamTab = ({
               <div key={i} className="h-12 bg-gray-200 rounded animate-pulse" />
             ))}
           </div>
-        ) : companyUsers.length > 0 ? (
+        ) : users.length > 0 ? (
           <Table>
             <TableHeader>
               <TableRow>
@@ -78,7 +83,7 @@ export const TeamTab = ({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {companyUsers.map((teamUser) => (
+              {users.map((teamUser) => (
                 <TableRow key={teamUser.id}>
                   <TableCell>
                     <div className="flex items-center gap-2">

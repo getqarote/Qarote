@@ -54,7 +54,7 @@ enum ComparisonOperator {
   NOT_EQUALS
 }
 
-model Company {
+model Workspace {
   id           String         @id @default(uuid())
   name         String
   contactEmail String?
@@ -89,8 +89,8 @@ model User {
   lastLogin      DateTime?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
-  companyId      String?
-  company        Company?  @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  workspaceId    String?
+  workspace      Workspace?  @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
   invitations    Invitation[] @relation("InvitedUser")
   invitedBy      Invitation[] @relation("InvitingUser")
   alerts         Alert[]
@@ -101,8 +101,8 @@ model Invitation {
   id             String           @id @default(uuid())
   email          String
   token          String           @unique
-  companyId      String
-  company        Company          @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  workspaceId    String
+  workspace      Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   invitedById    String
   invitedBy      User             @relation("InvitingUser", fields: [invitedById], references: [id], onDelete: Cascade)
   invitedUserId  String?
@@ -127,8 +127,8 @@ model RabbitMQServer {
   sslCaCertPath       String?
   sslClientCertPath   String?
   sslClientKeyPath    String?
-  companyId           String?
-  company             Company?    @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  workspaceId         String?
+  workspace           Workspace?    @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
   createdAt           DateTime    @default(now())
   updatedAt           DateTime    @updatedAt
   Queues              Queue[]
@@ -178,8 +178,8 @@ model Alert {
   // Relations
   alertRuleId   String?
   alertRule     AlertRule?    @relation(fields: [alertRuleId], references: [id], onDelete: SetNull)
-  companyId     String
-  company       Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  workspaceId   String
+  workspace     Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   createdById   String?
   createdBy     User?         @relation(fields: [createdById], references: [id], onDelete: SetNull)
   
@@ -203,8 +203,8 @@ model AlertRule {
   // Relations
   serverId    String
   server      RabbitMQServer     @relation(fields: [serverId], references: [id], onDelete: Cascade)
-  companyId   String
-  company     Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  workspaceId String
+  workspace   Workspace          @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   createdById String
   createdBy   User               @relation(fields: [createdById], references: [id], onDelete: Cascade)
   

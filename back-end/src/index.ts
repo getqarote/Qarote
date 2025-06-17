@@ -11,7 +11,7 @@ import rabbitmqController from "./controllers/rabbitmq.controller";
 import alertController from "./controllers/alert.controller";
 import authController from "./controllers/auth.controller";
 import userController from "./controllers/user.controller";
-import companyController from "./controllers/company.controller";
+import workspaceController from "./controllers/workspace.controller";
 import logsController from "./controllers/logs.controller";
 import routingController from "./controllers/routing.controller";
 
@@ -40,7 +40,7 @@ app.route("/api/rabbitmq", rabbitmqController);
 app.route("/api/alerts", alertController);
 app.route("/api/auth", authController);
 app.route("/api/users", userController);
-app.route("/api/companies", companyController);
+app.route("/api/workspaces", workspaceController);
 app.route("/api/logs", logsController);
 app.route("/api/routing", routingController);
 

@@ -13,7 +13,7 @@ export interface RegisterRequest {
   password: string;
   firstName: string;
   lastName: string;
-  companyName?: string;
+  workspaceName?: string;
 }
 
 export interface AuthResponse {
@@ -23,7 +23,7 @@ export interface AuthResponse {
     email: string;
     firstName: string;
     lastName: string;
-    companyId?: string;
+    workspaceId?: string;
   };
 }
 
@@ -33,14 +33,14 @@ export interface User {
   firstName?: string;
   lastName?: string;
   role: string;
-  companyId?: string;
+  workspaceId?: string;
   isActive: boolean;
   lastLogin?: string;
   createdAt: string;
   updatedAt: string;
 }
 
-export interface Company {
+export interface Workspace {
   id: string;
   name: string;
   contactEmail?: string;
@@ -60,8 +60,11 @@ export interface Company {
   };
 }
 
+// Legacy type alias for backwards compatibility
+export type Company = Workspace;
+
 export interface UserProfile extends User {
-  company?: Company;
+  workspace?: Workspace;
 }
 
 export interface UpdateProfileRequest {
@@ -69,16 +72,20 @@ export interface UpdateProfileRequest {
   lastName?: string;
 }
 
-export interface UpdateCompanyRequest {
+export interface UpdateWorkspaceRequest {
   name?: string;
   contactEmail?: string;
   logoUrl?: string;
   planType?: "FREE" | "PREMIUM" | "ENTERPRISE";
 }
 
+// Legacy type alias for backwards compatibility
+export type UpdateCompanyRequest = UpdateWorkspaceRequest;
+
 export interface InviteUserRequest {
   email: string;
   role: "ADMIN" | "USER" | "READONLY";
+  workspaceId: string;
 }
 
 export interface Invitation {

@@ -3,7 +3,7 @@ import { zValidator } from "@hono/zod-validator";
 import prisma from "../core/prisma";
 import { hashPassword, authenticate, authorize, SafeUser } from "../core/auth";
 import { UpdateUserSchema, UpdateProfileSchema } from "../schemas/user";
-import { UpdateCompanySchema } from "../schemas/company";
+import { UpdateWorkspaceSchema } from "../schemas/workspace";
 import { InviteUserSchema } from "../schemas/auth";
 import { generateRandomToken } from "../core/auth";
 import { UserRole } from "@prisma/client";
@@ -23,12 +23,12 @@ userController.get("/", authorize([UserRole.ADMIN]), async (c) => {
         firstName: true,
         lastName: true,
         role: true,
-        companyId: true,
+        workspaceId: true,
         isActive: true,
         lastLogin: true,
         createdAt: true,
         updatedAt: true,
-        company: {
+        workspace: {
           select: {
             id: true,
             name: true,
@@ -44,22 +44,22 @@ userController.get("/", authorize([UserRole.ADMIN]), async (c) => {
   }
 });
 
-// Get users in the same company (admin or company admin)
-userController.get("/company/:companyId", async (c) => {
-  const companyId = c.req.param("companyId");
+// Get users in the same workspace (admin or workspace admin)
+userController.get("/workspace/:workspaceId", async (c) => {
+  const workspaceId = c.req.param("workspaceId");
   const user = c.get("user") as SafeUser;
 
-  // Check if user has access to this company
-  if (user.role !== UserRole.ADMIN && user.companyId !== companyId) {
+  // Check if user has access to this workspace
+  if (user.role !== UserRole.ADMIN && user.workspaceId !== workspaceId) {
     return c.json(
-      { error: "Forbidden", message: "Cannot access users for this company" },
+      { error: "Forbidden", message: "Cannot access users for this workspace" },
       403
     );
   }
 
   try {
     const users = await prisma.user.findMany({
-      where: { companyId },
+      where: { workspaceId },
       select: {
         id: true,
         email: true,
@@ -75,12 +75,12 @@ userController.get("/company/:companyId", async (c) => {
 
     return c.json({ users });
   } catch (error) {
-    console.error(`Error fetching users for company ${companyId}:`, error);
+    console.error(`Error fetching users for workspace ${workspaceId}:`, error);
     return c.json({ error: "Failed to fetch users" }, 500);
   }
 });
 
-// Get a specific user by ID (admin or same company)
+// Get a specific user by ID (admin or same workspace)
 userController.get("/:id", async (c) => {
   const id = c.req.param("id");
   const currentUser = c.get("user") as SafeUser;
@@ -94,12 +94,12 @@ userController.get("/:id", async (c) => {
         firstName: true,
         lastName: true,
         role: true,
-        companyId: true,
+        workspaceId: true,
         isActive: true,
         lastLogin: true,
         createdAt: true,
         updatedAt: true,
-        company: {
+        workspace: {
           select: {
             id: true,
             name: true,
@@ -112,11 +112,11 @@ userController.get("/:id", async (c) => {
       return c.json({ error: "User not found" }, 404);
     }
 
-    // Only allow admins or users from the same company to access user details
+    // Only allow admins or users from the same workspace to access user details
     if (
       currentUser.role !== UserRole.ADMIN &&
       currentUser.id !== user.id &&
-      currentUser.companyId !== user.companyId
+      currentUser.workspaceId !== user.workspaceId
     ) {
       return c.json(
         { error: "Forbidden", message: "Cannot access this user" },
@@ -159,7 +159,7 @@ userController.put(
           firstName: true,
           lastName: true,
           role: true,
-          companyId: true,
+          workspaceId: true,
           isActive: true,
           lastLogin: true,
           createdAt: true,
@@ -193,7 +193,7 @@ userController.put(
           firstName: true,
           lastName: true,
           role: true,
-          companyId: true,
+          workspaceId: true,
           isActive: true,
           lastLogin: true,
           createdAt: true,
@@ -209,33 +209,36 @@ userController.put(
   }
 );
 
-// Invite a user to a company (admin or company admin)
+// Invite a user to a workspace (admin or workspace admin)
 userController.post(
   "/invite",
   zValidator("json", InviteUserSchema),
   async (c) => {
-    const { email, role, companyId } = c.req.valid("json");
+    const { email, role, workspaceId } = c.req.valid("json");
     const currentUser = c.get("user") as SafeUser;
 
-    // Check if user has access to this company
+    // Check if user has access to this workspace
     if (
       currentUser.role !== UserRole.ADMIN &&
-      currentUser.companyId !== companyId
+      currentUser.workspaceId !== workspaceId
     ) {
       return c.json(
-        { error: "Forbidden", message: "Cannot invite users to this company" },
+        {
+          error: "Forbidden",
+          message: "Cannot invite users to this workspace",
+        },
         403
       );
     }
 
     try {
-      // Check if company exists
-      const company = await prisma.company.findUnique({
-        where: { id: companyId },
+      // Check if workspace exists
+      const workspace = await prisma.workspace.findUnique({
+        where: { id: workspaceId },
       });
 
-      if (!company) {
-        return c.json({ error: "Company not found" }, 404);
+      if (!workspace) {
+        return c.json({ error: "Workspace not found" }, 404);
       }
 
       // Check if user already exists
@@ -247,7 +250,7 @@ userController.post(
       const existingInvitation = await prisma.invitation.findFirst({
         where: {
           email,
-          companyId,
+          workspaceId,
           status: "PENDING",
         },
       });
@@ -269,14 +272,14 @@ userController.post(
         data: {
           email,
           token,
-          companyId,
+          workspaceId,
           invitedById: currentUser.id,
           role,
           expiresAt,
           invitedUserId: existingUser?.id,
         },
         include: {
-          company: {
+          workspace: {
             select: {
               name: true,
             },
@@ -300,7 +303,7 @@ userController.post(
           invitation: {
             id: invitation.id,
             email: invitation.email,
-            companyName: invitation.company.name,
+            workspaceName: invitation.workspace.name,
             invitedBy: invitation.invitedBy.email,
             role: invitation.role,
             expiresAt: invitation.expiresAt,
@@ -319,17 +322,17 @@ userController.post(
   }
 );
 
-// Get pending invitations for a company (admin or company admin)
-userController.get("/invitations/company/:companyId", async (c) => {
-  const companyId = c.req.param("companyId");
+// Get pending invitations for a workspace (admin or workspace admin)
+userController.get("/invitations/workspace/:workspaceId", async (c) => {
+  const workspaceId = c.req.param("workspaceId");
   const user = c.get("user") as SafeUser;
 
-  // Check if user has access to this company
-  if (user.role !== UserRole.ADMIN && user.companyId !== companyId) {
+  // Check if user has access to this workspace
+  if (user.role !== UserRole.ADMIN && user.workspaceId !== workspaceId) {
     return c.json(
       {
         error: "Forbidden",
-        message: "Cannot access invitations for this company",
+        message: "Cannot access invitations for this workspace",
       },
       403
     );
@@ -338,7 +341,7 @@ userController.get("/invitations/company/:companyId", async (c) => {
   try {
     const invitations = await prisma.invitation.findMany({
       where: {
-        companyId,
+        workspaceId,
         status: "PENDING",
       },
       include: {
@@ -356,7 +359,7 @@ userController.get("/invitations/company/:companyId", async (c) => {
     return c.json({ invitations });
   } catch (error) {
     console.error(
-      `Error fetching invitations for company ${companyId}:`,
+      `Error fetching invitations for workspace ${workspaceId}:`,
       error
     );
     return c.json({ error: "Failed to fetch invitations" }, 500);
@@ -380,7 +383,7 @@ userController.get("/profile/me", async (c) => {
         lastLogin: true,
         createdAt: true,
         updatedAt: true,
-        company: {
+        workspace: {
           select: {
             id: true,
             name: true,
@@ -417,29 +420,32 @@ userController.get("/profile/me", async (c) => {
   }
 });
 
-// Update company information (company admin only)
+// Update workspace information (workspace admin only)
 userController.put(
-  "/profile/company",
-  zValidator("json", UpdateCompanySchema),
+  "/profile/workspace",
+  zValidator("json", UpdateWorkspaceSchema),
   async (c) => {
     const data = c.req.valid("json");
     const user = c.get("user") as SafeUser;
 
-    if (!user.companyId) {
-      return c.json({ error: "You are not associated with any company" }, 404);
+    if (!user.workspaceId) {
+      return c.json(
+        { error: "You are not associated with any workspace" },
+        404
+      );
     }
 
-    // Only admin users can update company info
+    // Only admin users can update workspace info
     if (user.role !== UserRole.ADMIN) {
       return c.json(
-        { error: "Only admin users can update company information" },
+        { error: "Only admin users can update workspace information" },
         403
       );
     }
 
     try {
-      const updatedCompany = await prisma.company.update({
-        where: { id: user.companyId },
+      const updatedWorkspace = await prisma.workspace.update({
+        where: { id: user.workspaceId },
         data,
         select: {
           id: true,
@@ -464,30 +470,30 @@ userController.put(
         },
       });
 
-      return c.json({ company: updatedCompany });
+      return c.json({ workspace: updatedWorkspace });
     } catch (error) {
-      console.error(`Error updating company ${user.companyId}:`, error);
-      return c.json({ error: "Failed to update company information" }, 500);
+      console.error(`Error updating workspace ${user.workspaceId}:`, error);
+      return c.json({ error: "Failed to update workspace information" }, 500);
     }
   }
 );
 
-// Get company users (admin only)
-userController.get("/profile/company/users", async (c) => {
+// Get workspace users (admin only)
+userController.get("/profile/workspace/users", async (c) => {
   const user = c.get("user") as SafeUser;
 
-  if (!user.companyId) {
-    return c.json({ error: "You are not associated with any company" }, 404);
+  if (!user.workspaceId) {
+    return c.json({ error: "You are not associated with any workspace" }, 404);
   }
 
-  // Only admin users can view company users
+  // Only admin users can view workspace users
   if (user.role !== UserRole.ADMIN) {
-    return c.json({ error: "Only admin users can view company users" }, 403);
+    return c.json({ error: "Only admin users can view workspace users" }, 403);
   }
 
   try {
     const users = await prisma.user.findMany({
-      where: { companyId: user.companyId },
+      where: { workspaceId: user.workspaceId },
       select: {
         id: true,
         email: true,
@@ -504,10 +510,10 @@ userController.get("/profile/company/users", async (c) => {
     return c.json({ users });
   } catch (error) {
     console.error(
-      `Error fetching company users for company ${user.companyId}:`,
+      `Error fetching workspace users for workspace ${user.workspaceId}:`,
       error
     );
-    return c.json({ error: "Failed to fetch company users" }, 500);
+    return c.json({ error: "Failed to fetch workspace users" }, 500);
   }
 });
 

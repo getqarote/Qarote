@@ -293,12 +293,39 @@ export const useUpdateCompany = () => {
   });
 };
 
+// Workspace hooks (new workspace API)
+export const useUpdateWorkspace = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (
+      workspaceData: Parameters<typeof apiClient.updateWorkspace>[0]
+    ) => apiClient.updateWorkspace(workspaceData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
+      queryClient.invalidateQueries({ queryKey: ["workspaceUsers"] });
+    },
+  });
+};
+
 export const useCompanyUsers = () => {
   const { isAuthenticated } = useAuth();
 
   return useQuery({
     queryKey: ["companyUsers"],
     queryFn: () => apiClient.getCompanyUsers(),
+    enabled: isAuthenticated,
+    staleTime: 60000, // 1 minute
+  });
+};
+
+// Workspace users hook (new workspace API)
+export const useWorkspaceUsers = () => {
+  const { isAuthenticated } = useAuth();
+
+  return useQuery({
+    queryKey: ["workspaceUsers"],
+    queryFn: () => apiClient.getWorkspaceUsers(),
     enabled: isAuthenticated,
     staleTime: 60000, // 1 minute
   });
@@ -312,6 +339,7 @@ export const useInviteUser = () => {
       apiClient.inviteUser(userData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["companyUsers"] });
+      queryClient.invalidateQueries({ queryKey: ["workspaceUsers"] });
     },
   });
 };

@@ -20,7 +20,7 @@ const SignUp: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [companyName, setCompanyName] = useState("");
+  const [workspaceName, setWorkspaceName] = useState("");
   const [passwordError, setPasswordError] = useState("");
 
   const { isAuthenticated } = useAuth();
@@ -67,7 +67,7 @@ const SignUp: React.FC = () => {
       password,
       firstName,
       lastName,
-      ...(companyName && { companyName }),
+      ...(workspaceName && { workspaceName }),
     };
 
     registerMutation.mutate(userData);
@@ -157,13 +157,13 @@ const SignUp: React.FC = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="companyName">Company name (optional)</Label>
+                <Label htmlFor="workspaceName">Workspace name (optional)</Label>
                 <Input
-                  id="companyName"
+                  id="workspaceName"
                   type="text"
-                  value={companyName}
-                  onChange={(e) => setCompanyName(e.target.value)}
-                  placeholder="Your company"
+                  value={workspaceName}
+                  onChange={(e) => setWorkspaceName(e.target.value)}
+                  placeholder="Your workspace"
                   disabled={registerMutation.isPending}
                 />
               </div>
