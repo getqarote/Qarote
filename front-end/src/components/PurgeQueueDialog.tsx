@@ -98,12 +98,12 @@ export const PurgeQueueDialog = ({
             Purge Queue "{queueName}"?
           </AlertDialogTitle>
           <AlertDialogDescription className="space-y-3">
-            <p>
+            <div>
               <strong>⚠️ This action cannot be undone!</strong>
-            </p>
-            <p>
+            </div>
+            <div>
               You are about to permanently delete all messages from the queue:
-            </p>
+            </div>
             <div className="p-3 bg-gray-50 rounded-lg border">
               <div className="flex items-center justify-between">
                 <span className="font-medium">{queueName}</span>
@@ -114,12 +114,12 @@ export const PurgeQueueDialog = ({
                 )}
               </div>
             </div>
-            <p className="text-sm text-gray-600">
+            <div className="text-sm text-gray-600">
               {messageCount > 0
                 ? `All ${messageCount.toLocaleString()} messages in this queue will be permanently deleted.`
                 : "All messages in this queue will be permanently deleted."}{" "}
               This operation will:
-            </p>
+            </div>
             <ul className="text-sm text-gray-600 list-disc list-inside space-y-1">
               <li>Remove all pending messages</li>
               <li>Clear both ready and unacknowledged messages</li>
