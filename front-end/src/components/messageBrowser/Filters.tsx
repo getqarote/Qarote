@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { RefreshCw, Filter, Search, Star, MessageSquare } from "lucide-react";
+import { Filter, Search, Star, MessageSquare } from "lucide-react";
 
 interface Queue {
   name: string;
@@ -27,7 +27,6 @@ interface MessageFiltersProps {
   filteredMessagesLength: number;
   totalMessagesLength: number;
   isLoadingMessages: boolean;
-  onRefresh: () => void;
 }
 
 export const MessageFilters = ({
@@ -41,7 +40,6 @@ export const MessageFilters = ({
   filteredMessagesLength,
   totalMessagesLength,
   isLoadingMessages,
-  onRefresh,
 }: MessageFiltersProps) => {
   return (
     <Card className="mb-6 border-0 shadow-lg bg-white/80 backdrop-blur-sm">
@@ -56,18 +54,6 @@ export const MessageFilters = ({
               Filter and search across your message queues
             </p>
           </div>
-          <Button
-            onClick={onRefresh}
-            disabled={isLoadingMessages}
-            className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
-          >
-            {isLoadingMessages ? (
-              <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-            ) : (
-              <RefreshCw className="h-4 w-4 mr-2" />
-            )}
-            Refresh
-          </Button>
         </div>
       </CardHeader>
       <CardContent>

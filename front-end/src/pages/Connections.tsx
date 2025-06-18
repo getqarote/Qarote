@@ -168,19 +168,6 @@ const Connections = () => {
                   </p>
                 </div>
               </div>
-              <Button
-                onClick={handleRefresh}
-                disabled={connectionsLoading || channelsLoading}
-                size="sm"
-                variant="outline"
-              >
-                <RefreshCw
-                  className={`w-4 h-4 mr-2 ${
-                    connectionsLoading || channelsLoading ? "animate-spin" : ""
-                  }`}
-                />
-                Refresh
-              </Button>
             </div>
 
             {/* Overview Cards */}
@@ -262,10 +249,6 @@ const Connections = () => {
                     <div className="text-red-600 mb-2">
                       Failed to load connections: {connectionsError.message}
                     </div>
-                    <Button onClick={handleRefresh} variant="outline" size="sm">
-                      <RefreshCw className="w-4 h-4 mr-2" />
-                      Retry
-                    </Button>
                   </div>
                 ) : connectionsLoading ? (
                   <div className="text-center py-8">

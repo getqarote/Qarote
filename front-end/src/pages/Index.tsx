@@ -241,16 +241,6 @@ const Index = () => {
                     </span>
                   </Button>
                 )}
-                <Button
-                  className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
-                  onClick={handleRefresh}
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <RefreshCw className="h-4 w-4 animate-spin mr-2" />
-                  ) : null}
-                  Refresh Data
-                </Button>
               </div>
             </div>
 
@@ -449,7 +439,6 @@ const Index = () => {
                       data={chartData}
                       onTimeRangeChange={handleTimeRangeChange}
                       selectedTimeRange={selectedTimeRange}
-                      onRefresh={refetchTimeSeries}
                       isLoading={timeSeriesLoading}
                     />
                   </Suspense>

@@ -91,7 +91,6 @@ const QueueDetail = () => {
                   <ConsumerDetails
                     consumersData={consumersData}
                     consumersLoading={consumersLoading}
-                    onRefetchConsumers={refetchConsumers}
                   />
                 </>
               ) : (

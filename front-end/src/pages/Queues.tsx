@@ -365,19 +365,6 @@ const Queues = () => {
                   <CardTitle className="text-lg font-semibold text-gray-900">
                     All Queues
                   </CardTitle>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => refetch()}
-                    disabled={isLoading}
-                  >
-                    {isLoading ? (
-                      <RefreshCw className="h-4 w-4 animate-spin mr-2" />
-                    ) : (
-                      <RefreshCw className="h-4 w-4 mr-2" />
-                    )}
-                    Refresh
-                  </Button>
                 </div>
               </CardHeader>
               <CardContent>

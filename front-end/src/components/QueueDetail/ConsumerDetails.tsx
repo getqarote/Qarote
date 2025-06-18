@@ -1,8 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Users, RefreshCw } from "lucide-react";
+import { Users } from "lucide-react";
 
 interface ConsumerDetailsProps {
   consumersData:
@@ -24,13 +23,11 @@ interface ConsumerDetailsProps {
       }
     | undefined;
   consumersLoading: boolean;
-  onRefetchConsumers: () => void;
 }
 
 export function ConsumerDetails({
   consumersData,
   consumersLoading,
-  onRefetchConsumers,
 }: ConsumerDetailsProps) {
   return (
     <Card className="border-0 shadow-md bg-white/80 backdrop-blur-sm">
@@ -40,14 +37,6 @@ export function ConsumerDetails({
             <Users className="w-5 h-5" />
             Active Consumers ({consumersData?.totalConsumers || 0})
           </CardTitle>
-          <Button onClick={onRefetchConsumers} size="sm" variant="outline">
-            <RefreshCw
-              className={`w-4 h-4 mr-2 ${
-                consumersLoading ? "animate-spin" : ""
-              }`}
-            />
-            Refresh
-          </Button>
         </div>
       </CardHeader>
       <CardContent>

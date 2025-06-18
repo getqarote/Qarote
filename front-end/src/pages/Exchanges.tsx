@@ -187,19 +187,6 @@ const Exchanges = () => {
                   </p>
                 </div>
               </div>
-              <Button
-                onClick={handleRefresh}
-                disabled={exchangesLoading}
-                size="sm"
-                variant="outline"
-              >
-                <RefreshCw
-                  className={`w-4 h-4 mr-2 ${
-                    exchangesLoading ? "animate-spin" : ""
-                  }`}
-                />
-                Refresh
-              </Button>
             </div>
 
             {/* Overview Cards */}
@@ -322,10 +309,6 @@ const Exchanges = () => {
                     <div className="text-red-600 mb-2">
                       Failed to load exchanges: {exchangesError.message}
                     </div>
-                    <Button onClick={handleRefresh} variant="outline" size="sm">
-                      <RefreshCw className="w-4 h-4 mr-2" />
-                      Retry
-                    </Button>
                   </div>
                 ) : exchangesLoading ? (
                   <div className="text-center py-8">

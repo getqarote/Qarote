@@ -74,7 +74,6 @@ const MessageBrowser = () => {
               filteredMessagesLength={filteredMessages.length}
               totalMessagesLength={messagesData.length}
               isLoadingMessages={isLoadingMessages}
-              onRefresh={loadMessages}
             />
 
             <MessageList

@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Clock, RefreshCw } from "lucide-react";
+import { Clock } from "lucide-react";
 
 export type TimeRange = "1m" | "10m" | "1h" | "8h" | "24h";
 
@@ -40,7 +40,6 @@ interface MetricsChartProps {
   }>;
   onTimeRangeChange?: (timeRange: TimeRange) => void;
   selectedTimeRange?: TimeRange;
-  onRefresh?: () => void;
   isLoading?: boolean;
 }
 
@@ -48,7 +47,6 @@ export const MetricsChart = ({
   data,
   onTimeRangeChange,
   selectedTimeRange = "24h",
-  onRefresh,
   isLoading = false,
 }: MetricsChartProps) => {
   const [localTimeRange, setLocalTimeRange] =
@@ -95,22 +93,6 @@ export const MetricsChart = ({
               ))}
             </SelectContent>
           </Select>
-          {onRefresh && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onRefresh}
-              disabled={isLoading}
-              className="flex items-center gap-2"
-            >
-              {isLoading ? (
-                <RefreshCw className="w-4 h-4 animate-spin" />
-              ) : (
-                <RefreshCw className="w-4 h-4" />
-              )}
-              Refresh
-            </Button>
-          )}
         </div>
       </div>
 
