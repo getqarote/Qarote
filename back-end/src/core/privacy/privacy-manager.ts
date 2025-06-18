@@ -28,7 +28,7 @@ export class PrivacyManager {
       const isTemporaryAllowed = settings.storageMode === StorageMode.TEMPORARY;
       const isHistoricalAllowed =
         settings.storageMode === StorageMode.HISTORICAL &&
-        (settings.planType === "PREMIUM" || settings.planType === "ENTERPRISE");
+        (settings.plan === "PREMIUM" || settings.plan === "ENTERPRISE");
 
       return isTemporaryAllowed || isHistoricalAllowed;
     } catch (error) {
@@ -48,7 +48,7 @@ export class PrivacyManager {
           id: true,
           workspace: {
             select: {
-              planType: true,
+              plan: true,
               storageMode: true,
               retentionDays: true,
               encryptData: true,
@@ -69,7 +69,7 @@ export class PrivacyManager {
         // User without workspace gets strictest default settings
         return {
           userId,
-          planType: "FREE",
+          plan: "FREE",
           storageMode: StorageMode.MEMORY_ONLY,
           retentionDays: 0,
           encryptData: true,
@@ -80,7 +80,7 @@ export class PrivacyManager {
 
       return {
         userId,
-        planType: workspace.planType,
+        plan: workspace.plan,
         storageMode: workspace.storageMode as StorageMode,
         retentionDays: workspace.retentionDays,
         encryptData: workspace.encryptData,
@@ -93,7 +93,7 @@ export class PrivacyManager {
       // Return strictest defaults on error
       return {
         userId,
-        planType: "FREE",
+        plan: "FREE",
         storageMode: StorageMode.MEMORY_ONLY,
         retentionDays: 0,
         encryptData: true,

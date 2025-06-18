@@ -13,6 +13,7 @@ import {
   UpdateWorkspaceSchema,
 } from "../schemas/workspace";
 import { UserRole } from "@prisma/client";
+import { validateDataExport } from "../services/plan-validation.service";
 
 const workspaceController = new Hono();
 
@@ -385,8 +386,34 @@ workspaceController.get(
     try {
       const id = c.req.param("id");
 
-      // Get all workspace data
+      // Get workspace to check plan
       const workspace = await prisma.workspace.findUnique({
+        where: { id },
+        select: { id: true, plan: true, name: true },
+      });
+
+      if (!workspace) {
+        return c.json({ error: "Workspace not found" }, 404);
+      }
+
+      // Validate plan allows data export
+      try {
+        validateDataExport(workspace.plan);
+      } catch (planError: any) {
+        return c.json(
+          {
+            error: planError.message,
+            code: "PLAN_RESTRICTION",
+            feature: "Data export",
+            currentPlan: workspace.plan,
+            requiredPlans: ["FREELANCE", "STARTUP", "BUSINESS"],
+          },
+          402
+        );
+      }
+
+      // Get all workspace data
+      const fullWorkspace = await prisma.workspace.findUnique({
         where: { id },
         include: {
           users: {
@@ -414,22 +441,22 @@ workspaceController.get(
         },
       });
 
-      if (!workspace) {
+      if (!fullWorkspace) {
         return c.json({ error: "Workspace not found" }, 404);
       }
 
       // Prepare export data
       const exportData = {
         workspace: {
-          id: workspace.id,
-          name: workspace.name,
-          planType: workspace.plan,
-          createdAt: workspace.createdAt,
+          id: fullWorkspace.id,
+          name: fullWorkspace.name,
+          planType: fullWorkspace.plan,
+          createdAt: fullWorkspace.createdAt,
         },
-        users: workspace.users,
-        servers: workspace.servers,
-        alerts: workspace.alerts,
-        alertRules: workspace.alertRules,
+        users: fullWorkspace.users,
+        servers: fullWorkspace.servers,
+        alerts: fullWorkspace.alerts,
+        alertRules: fullWorkspace.alertRules,
         exportedAt: new Date().toISOString(),
         exportedBy: c.get("user").id,
       };
@@ -438,7 +465,7 @@ workspaceController.get(
       c.header("Content-Type", "application/json");
       c.header(
         "Content-Disposition",
-        `attachment; filename="workspace-${workspace.name}-export-${
+        `attachment; filename="workspace-${fullWorkspace.name}-export-${
           new Date().toISOString().split("T")[0]
         }.json"`
       );

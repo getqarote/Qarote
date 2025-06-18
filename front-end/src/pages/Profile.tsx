@@ -77,7 +77,7 @@ const Profile = () => {
         name: workspace.name || "",
         contactEmail: workspace.contactEmail || "",
         logoUrl: workspace.logoUrl || "",
-        plan: workspace.plan as "FREE" | "PREMIUM" | "ENTERPRISE",
+        plan: workspace.plan,
       });
     }
   }, [profile, workspace]);

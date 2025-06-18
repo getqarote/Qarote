@@ -1,11 +1,31 @@
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
+import { z } from "zod";
 import prisma from "../core/prisma";
 import RabbitMQClient from "../core/rabbitmq";
-import { RabbitMQCredentialsSchema } from "../schemas/rabbitmq";
+import {
+  RabbitMQCredentialsSchema,
+  CreateQueueSchema,
+} from "../schemas/rabbitmq";
 import { authenticate } from "../core/auth";
+import {
+  validateQueueCreation,
+  validateMessageSending,
+} from "../services/plan-validation.service";
+import {
+  getWorkspacePlan,
+  getWorkspaceResourceCounts,
+  getMonthlyMessageCount,
+  planValidationMiddleware,
+} from "../middlewares/plan-validation";
 
 const rabbitmqController = new Hono();
+
+// Apply authentication middleware to all routes
+rabbitmqController.use("*", authenticate);
+
+// Apply plan validation middleware to all routes
+rabbitmqController.use("*", planValidationMiddleware());
 
 // Get overview for a specific server
 rabbitmqController.get("/servers/:id/overview", async (c) => {
@@ -609,5 +629,160 @@ rabbitmqController.get("/servers/:id/channels", authenticate, async (c) => {
     );
   }
 });
+
+// Create a new queue (with plan validation)
+rabbitmqController.post(
+  "/servers/:serverId/queues",
+  zValidator("json", CreateQueueSchema),
+  async (c) => {
+    const serverId = c.req.param("serverId");
+    const queueData = c.req.valid("json");
+    const user = c.get("user");
+
+    try {
+      // Get server to check workspace ownership
+      const server = await prisma.rabbitMQServer.findUnique({
+        where: { id: serverId },
+        select: { workspaceId: true },
+      });
+
+      if (!server) {
+        return c.json({ error: "Server not found" }, 404);
+      }
+
+      // Validate plan restrictions for queue creation
+      if (server.workspaceId) {
+        const [plan, resourceCounts] = await Promise.all([
+          getWorkspacePlan(server.workspaceId),
+          getWorkspaceResourceCounts(server.workspaceId),
+        ]);
+
+        validateQueueCreation(plan, resourceCounts.queues);
+      }
+
+      // Create the queue via RabbitMQ API
+      const rabbitMQServer = await prisma.rabbitMQServer.findUnique({
+        where: { id: serverId },
+      });
+
+      if (!rabbitMQServer) {
+        return c.json({ error: "Server not found" }, 404);
+      }
+
+      const client = new RabbitMQClient({
+        host: rabbitMQServer.host,
+        port: rabbitMQServer.port,
+        username: rabbitMQServer.username,
+        password: rabbitMQServer.password,
+        vhost: rabbitMQServer.vhost,
+      });
+
+      const result = await client.createQueue(queueData.name, {
+        durable: queueData.durable,
+        autoDelete: queueData.autoDelete,
+        arguments: queueData.arguments,
+      });
+
+      return c.json({
+        success: true,
+        message: "Queue created successfully",
+        queue: result,
+      });
+    } catch (error) {
+      console.error("Error creating queue:", error);
+      return c.json(
+        {
+          error: "Failed to create queue",
+          message: error instanceof Error ? error.message : "Unknown error",
+        },
+        500
+      );
+    }
+  }
+);
+
+// Send message to queue (with plan validation)
+rabbitmqController.post(
+  "/servers/:serverId/queues/:queueName/messages",
+  zValidator(
+    "json",
+    z.object({
+      message: z.string(),
+      properties: z
+        .object({
+          deliveryMode: z.number().optional(),
+          priority: z.number().optional(),
+          headers: z.record(z.any()).optional(),
+        })
+        .optional(),
+    })
+  ),
+  async (c) => {
+    const serverId = c.req.param("serverId");
+    const queueName = c.req.param("queueName");
+    const { message, properties } = c.req.valid("json");
+    const user = c.get("user");
+
+    try {
+      // Get server to check workspace ownership
+      const server = await prisma.rabbitMQServer.findUnique({
+        where: { id: serverId },
+        select: { workspaceId: true },
+      });
+
+      if (!server) {
+        return c.json({ error: "Server not found" }, 404);
+      }
+
+      // Validate plan restrictions for message sending
+      if (server.workspaceId) {
+        const [plan, monthlyMessageCount] = await Promise.all([
+          getWorkspacePlan(server.workspaceId),
+          getMonthlyMessageCount(server.workspaceId),
+        ]);
+
+        validateMessageSending(plan, monthlyMessageCount);
+      }
+
+      // Send the message via RabbitMQ API
+      const rabbitMQServer = await prisma.rabbitMQServer.findUnique({
+        where: { id: serverId },
+      });
+
+      if (!rabbitMQServer) {
+        return c.json({ error: "Server not found" }, 404);
+      }
+
+      const client = new RabbitMQClient({
+        host: rabbitMQServer.host,
+        port: rabbitMQServer.port,
+        username: rabbitMQServer.username,
+        password: rabbitMQServer.password,
+        vhost: rabbitMQServer.vhost,
+      });
+
+      // For now, we'll just return success. In a real implementation,
+      // you would use the RabbitMQ client to send the message
+      // TODO:
+      await client.publishMessage("exchange", queueName, message, properties);
+
+      return c.json({
+        success: true,
+        message: "Message sent successfully",
+        queueName,
+        messageLength: message.length,
+      });
+    } catch (error) {
+      console.error("Error sending message:", error);
+      return c.json(
+        {
+          error: "Failed to send message",
+          message: error instanceof Error ? error.message : "Unknown error",
+        },
+        500
+      );
+    }
+  }
+);
 
 export default rabbitmqController;

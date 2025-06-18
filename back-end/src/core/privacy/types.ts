@@ -18,7 +18,7 @@ export enum StorageMode {
 
 export interface PrivacySettings {
   userId: string;
-  planType: string;
+  plan: string;
   storageMode: StorageMode;
   retentionDays: number;
   encryptData: boolean;

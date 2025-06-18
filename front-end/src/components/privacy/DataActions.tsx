@@ -22,27 +22,42 @@ import {
 import { useToast } from "@/hooks/useToast";
 import { apiClient } from "@/lib/api";
 import { CompanyPrivacySettings } from "./types";
+import { WorkspacePlan, canUserExportData } from "@/lib/plans/planUtils";
 
 interface DataActionsProps {
   settings: CompanyPrivacySettings;
   isAdmin: boolean;
   workspaceId: string;
+  workspacePlan?: WorkspacePlan;
 }
 
 export function DataActions({
   settings,
   isAdmin,
   workspaceId,
+  workspacePlan = WorkspacePlan.FREE, // Default to FREE plan if not provided
 }: DataActionsProps) {
   const { toast } = useToast();
   const [exporting, setExporting] = useState(false);
   const [deleting, setDeleting] = useState(false);
+
+  const canExportData = canUserExportData(workspacePlan);
 
   const handleExportData = async () => {
     if (!isAdmin) {
       toast({
         title: "Permission Denied",
         description: "Only administrators can export company data",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!canExportData) {
+      toast({
+        title: "Feature Not Available",
+        description:
+          "Data export is available with Pro plans. Please upgrade to access this feature.",
         variant: "destructive",
       });
       return;
@@ -117,6 +132,11 @@ export function DataActions({
         <CardTitle className="flex items-center gap-2">
           <Download className="w-5 h-5" />
           Data Management
+          {!canExportData && (
+            <span className="px-2 py-0.5 bg-orange-500 text-white text-xs rounded-full font-bold">
+              Pro
+            </span>
+          )}
         </CardTitle>
         <CardDescription>
           Export or delete your workspace's stored data.
@@ -134,12 +154,20 @@ export function DataActions({
           <Button
             variant="outline"
             size="sm"
-            className="gap-2"
+            className={`gap-2 ${
+              !canExportData ? "opacity-60 cursor-not-allowed" : ""
+            }`}
             onClick={handleExportData}
-            disabled={!isAdmin || exporting || !hasStoredData}
+            disabled={!isAdmin || exporting || !hasStoredData || !canExportData}
+            title={!canExportData ? "Upgrade to export data" : undefined}
           >
             <Download className="w-4 h-4" />
             {exporting ? "Exporting..." : "Export Data"}
+            {!canExportData && (
+              <span className="ml-1 px-2 py-0.5 bg-orange-500 text-white text-xs rounded-full font-bold">
+                Pro
+              </span>
+            )}
           </Button>
 
           <AlertDialog>
@@ -191,6 +219,13 @@ export function DataActions({
         {!isAdmin && (
           <div className="text-sm text-gray-500 bg-gray-50 p-3 rounded-lg">
             🔒 Only administrators can export or delete workspace data.
+          </div>
+        )}
+
+        {!canExportData && isAdmin && (
+          <div className="text-sm text-gray-500 bg-orange-50 p-3 rounded-lg border border-orange-200">
+            💎 Data export is available with Pro plans. Data deletion is always
+            available for all users.
           </div>
         )}
       </CardContent>

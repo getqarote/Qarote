@@ -8,11 +8,20 @@ import {
   UpdateServerSchema,
   RabbitMQCredentialsSchema,
 } from "../schemas/rabbitmq";
+import { validateServerCreation } from "../services/plan-validation.service";
+import {
+  getWorkspacePlan,
+  getWorkspaceResourceCounts,
+  planValidationMiddleware,
+} from "../middlewares/plan-validation";
 
 const serverController = new Hono();
 
 // Apply authentication middleware to all routes
 serverController.use("*", authenticate);
+
+// Apply plan validation middleware to all routes
+serverController.use("*", planValidationMiddleware());
 
 // Get all RabbitMQ servers (filtered by user's workspace)
 serverController.get("/", async (c) => {
@@ -142,6 +151,16 @@ serverController.post(
     const user = c.get("user");
 
     try {
+      // Validate plan restrictions for server creation
+      if (user.workspaceId) {
+        const [plan, resourceCounts] = await Promise.all([
+          getWorkspacePlan(user.workspaceId),
+          getWorkspaceResourceCounts(user.workspaceId),
+        ]);
+
+        validateServerCreation(plan, resourceCounts.servers);
+      }
+
       console.log("Creating server with data:", data);
       // Test connection before creating the server
       const client = new RabbitMQClient({

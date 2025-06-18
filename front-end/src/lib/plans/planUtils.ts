@@ -9,6 +9,7 @@ export interface PlanFeatures {
   canAddQueue: boolean;
   canSendMessages: boolean;
   canAddServer: boolean;
+  canExportData: boolean;
   maxQueues?: number;
   maxServers?: number;
   maxUsers?: number;
@@ -23,6 +24,7 @@ export const PLAN_FEATURES: Record<WorkspacePlan, PlanFeatures> = {
     canAddQueue: false,
     canSendMessages: false,
     canAddServer: false,
+    canExportData: false,
     maxQueues: 0,
     maxServers: 1,
     maxUsers: 1,
@@ -35,6 +37,7 @@ export const PLAN_FEATURES: Record<WorkspacePlan, PlanFeatures> = {
     canAddQueue: true,
     canSendMessages: true,
     canAddServer: true,
+    canExportData: true,
     maxQueues: 10,
     maxServers: 3,
     maxUsers: 1,
@@ -47,6 +50,7 @@ export const PLAN_FEATURES: Record<WorkspacePlan, PlanFeatures> = {
     canAddQueue: true,
     canSendMessages: true,
     canAddServer: true,
+    canExportData: true,
     maxQueues: 50,
     maxServers: 10,
     maxUsers: 5,
@@ -59,6 +63,7 @@ export const PLAN_FEATURES: Record<WorkspacePlan, PlanFeatures> = {
     canAddQueue: true,
     canSendMessages: true,
     canAddServer: true,
+    canExportData: true,
     maxQueues: 200,
     maxServers: 50,
     maxUsers: 25,
@@ -83,6 +88,10 @@ export function canUserSendMessages(plan: WorkspacePlan): boolean {
 
 export function canUserAddServer(plan: WorkspacePlan): boolean {
   return getPlanFeatures(plan).canAddServer;
+}
+
+export function canUserExportData(plan: WorkspacePlan): boolean {
+  return getPlanFeatures(plan).canExportData;
 }
 
 export function getMessageLimitText(plan: WorkspacePlan): string {

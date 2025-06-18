@@ -7,11 +7,20 @@ import { UpdateWorkspaceSchema } from "../schemas/workspace";
 import { InviteUserSchema } from "../schemas/auth";
 import { generateRandomToken } from "../core/auth";
 import { UserRole } from "@prisma/client";
+import { validateUserInvitation } from "../services/plan-validation.service";
+import {
+  getWorkspacePlan,
+  getWorkspaceResourceCounts,
+  planValidationMiddleware,
+} from "../middlewares/plan-validation";
 
 const userController = new Hono();
 
 // All routes in this controller require authentication
 userController.use("*", authenticate);
+
+// Apply plan validation middleware to all routes
+userController.use("*", planValidationMiddleware());
 
 // Get all users (admin only)
 userController.get("/", authorize([UserRole.ADMIN]), async (c) => {
@@ -232,6 +241,14 @@ userController.post(
     }
 
     try {
+      // Validate plan restrictions for user invitation
+      const [plan, resourceCounts] = await Promise.all([
+        getWorkspacePlan(workspaceId),
+        getWorkspaceResourceCounts(workspaceId),
+      ]);
+
+      validateUserInvitation(plan, resourceCounts.users);
+
       // Check if workspace exists
       const workspace = await prisma.workspace.findUnique({
         where: { id: workspaceId },
