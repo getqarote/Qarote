@@ -3,10 +3,7 @@ import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import prisma from "../core/prisma";
 import RabbitMQClient from "../core/rabbitmq";
-import {
-  RabbitMQCredentialsSchema,
-  CreateQueueSchema,
-} from "../schemas/rabbitmq";
+import { CreateQueueSchema } from "../schemas/rabbitmq";
 import { authenticate } from "../core/auth";
 import {
   validateQueueCreation,
@@ -228,68 +225,45 @@ rabbitmqController.get("/servers/:id/queues/:queueName", async (c) => {
   }
 });
 
-// Direct RabbitMQ API access with provided credentials
-rabbitmqController.post(
-  "/direct/overview",
-  zValidator("json", RabbitMQCredentialsSchema),
+// Get consumers for a specific queue on a server
+rabbitmqController.get(
+  "/servers/:id/queues/:queueName/consumers",
   async (c) => {
-    const credentials = c.req.valid("json");
+    const id = c.req.param("id");
+    const queueName = c.req.param("queueName");
 
     try {
-      const client = new RabbitMQClient(credentials);
-      const overview = await client.getOverview();
-      return c.json({ overview });
+      const server = await prisma.rabbitMQServer.findUnique({
+        where: { id },
+      });
+
+      if (!server) {
+        return c.json({ error: "Server not found" }, 404);
+      }
+
+      const client = new RabbitMQClient({
+        host: server.host,
+        port: server.port,
+        username: server.username,
+        password: server.password,
+        vhost: server.vhost,
+      });
+
+      const consumers = await client.getQueueConsumers(queueName);
+      return c.json({
+        success: true,
+        consumers,
+        totalConsumers: consumers.length,
+        queueName,
+      });
     } catch (error) {
-      console.error("Error fetching overview:", error);
-      return c.json(
-        {
-          error: "Failed to fetch overview",
-          message: error instanceof Error ? error.message : "Unknown error",
-        },
-        500
+      console.error(
+        `Error fetching consumers for queue ${queueName} on server ${id}:`,
+        error
       );
-    }
-  }
-);
-
-rabbitmqController.post(
-  "/direct/queues",
-  zValidator("json", RabbitMQCredentialsSchema),
-  async (c) => {
-    const credentials = c.req.valid("json");
-
-    try {
-      const client = new RabbitMQClient(credentials);
-      const queues = await client.getQueues();
-      return c.json({ queues });
-    } catch (error) {
-      console.error("Error fetching queues:", error);
       return c.json(
         {
-          error: "Failed to fetch queues",
-          message: error instanceof Error ? error.message : "Unknown error",
-        },
-        500
-      );
-    }
-  }
-);
-
-rabbitmqController.post(
-  "/direct/nodes",
-  zValidator("json", RabbitMQCredentialsSchema),
-  async (c) => {
-    const credentials = c.req.valid("json");
-
-    try {
-      const client = new RabbitMQClient(credentials);
-      const nodes = await client.getNodes();
-      return c.json({ nodes });
-    } catch (error) {
-      console.error("Error fetching nodes:", error);
-      return c.json(
-        {
-          error: "Failed to fetch nodes",
+          error: "Failed to fetch queue consumers",
           message: error instanceof Error ? error.message : "Unknown error",
         },
         500
