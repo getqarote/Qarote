@@ -1,9 +1,16 @@
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { ArrowLeft, Send, Plus, Trash2 } from "lucide-react";
+import { ArrowLeft, Send, Plus, Trash2, Lock } from "lucide-react";
 import { PurgeQueueDialog } from "@/components/PurgeQueueDialog";
 import { SendMessageDialog } from "@/components/SendMessageDialog";
 import { AddQueueForm } from "@/components/AddQueueForm";
+import {
+  canUserAddQueue,
+  canUserSendMessages,
+  WorkspacePlan,
+} from "@/lib/plans/planUtils";
+import { useState } from "react";
+import PlanUpgradeModal from "@/components/plans/PlanUpgradeModal";
 
 interface QueueHeaderProps {
   queueName: string;
@@ -20,6 +27,25 @@ export function QueueHeader({
   onNavigateBack,
   onRefetch,
 }: QueueHeaderProps) {
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+
+  // Get user's workspace plan - for now we'll default to FREE
+  // TODO: Create workspace context to properly fetch workspace data
+  const workspacePlan = WorkspacePlan.FREE; // This should come from workspace context
+  const canAddQueue = canUserAddQueue(workspacePlan);
+  const canSendMessages = canUserSendMessages(workspacePlan);
+
+  const handleAddQueueClick = () => {
+    if (!canAddQueue) {
+      setShowUpgradeModal(true);
+    }
+  };
+
+  const handleSendMessageClick = () => {
+    if (!canSendMessages) {
+      setShowUpgradeModal(true);
+    }
+  };
   return (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-4">
@@ -41,25 +67,60 @@ export function QueueHeader({
         </div>
       </div>
       <div className="flex gap-3">
-        <SendMessageDialog
-          serverId={selectedServerId}
-          defaultRoutingKey={queueName}
-          trigger={
-            <Button variant="outline" className="flex items-center gap-2">
-              <Send className="w-4 h-4" />
-              Send Message
-            </Button>
-          }
-        />
-        <AddQueueForm
-          serverId={selectedServerId}
-          trigger={
-            <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 flex items-center gap-2">
-              <Plus className="w-4 h-4" />
-              Add Queue
-            </Button>
-          }
-        />
+        {/* Send Message Button with plan restrictions */}
+        {canSendMessages ? (
+          <SendMessageDialog
+            serverId={selectedServerId}
+            defaultRoutingKey={queueName}
+            trigger={
+              <Button variant="outline" className="flex items-center gap-2">
+                <Send className="w-4 h-4" />
+                Send Message
+              </Button>
+            }
+          />
+        ) : (
+          <Button
+            onClick={handleSendMessageClick}
+            disabled={true}
+            variant="outline"
+            className="flex items-center gap-2 opacity-60 cursor-not-allowed"
+            title="Upgrade to send messages"
+          >
+            <Lock className="w-4 h-4" />
+            Send Message
+            <span className="ml-1 px-2 py-0.5 bg-orange-500 text-white text-xs rounded-full font-bold">
+              Pro
+            </span>
+          </Button>
+        )}
+
+        {/* Add Queue Button with plan restrictions */}
+        {canAddQueue ? (
+          <AddQueueForm
+            serverId={selectedServerId}
+            trigger={
+              <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 flex items-center gap-2">
+                <Plus className="w-4 h-4" />
+                Add Queue
+              </Button>
+            }
+          />
+        ) : (
+          <Button
+            onClick={handleAddQueueClick}
+            disabled={true}
+            className="bg-gray-200 text-gray-400 cursor-not-allowed opacity-60 flex items-center gap-2"
+            title="Upgrade to add queues"
+          >
+            <Lock className="w-4 h-4" />
+            Add Queue
+            <span className="ml-1 px-2 py-0.5 bg-orange-500 text-white text-xs rounded-full font-bold">
+              Pro
+            </span>
+          </Button>
+        )}
+
         <PurgeQueueDialog
           queueName={queueName}
           messageCount={messageCount}
@@ -75,6 +136,14 @@ export function QueueHeader({
           }
         />
       </div>
+
+      {/* Plan Upgrade Modal */}
+      <PlanUpgradeModal
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+        feature="queue management"
+        currentPlan={workspacePlan}
+      />
     </div>
   );
 }
