@@ -56,7 +56,7 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
     const consumers = await this.getConsumers();
     return consumers.filter(
       (consumer) =>
-        consumer.queue?.name === queueName &&
+        consumer.queue?.name === encodedQueueName &&
         consumer.queue?.vhost === decodeURIComponent(this.vhost)
     );
   }

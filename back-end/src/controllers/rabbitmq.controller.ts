@@ -737,7 +737,7 @@ rabbitmqController.post(
 
       // For now, we'll just return success. In a real implementation,
       // you would use the RabbitMQ client to send the message
-      // TODO:
+      // TODO: add exchange handling
       await client.publishMessage("exchange", queueName, message, properties);
 
       return c.json({
@@ -751,6 +751,53 @@ rabbitmqController.post(
       return c.json(
         {
           error: "Failed to send message",
+          message: error instanceof Error ? error.message : "Unknown error",
+        },
+        500
+      );
+    }
+  }
+);
+
+// Purge queue messages (DELETE)
+rabbitmqController.delete(
+  "/servers/:serverId/queues/:queueName/messages",
+  async (c) => {
+    const serverId = c.req.param("serverId");
+    const queueName = c.req.param("queueName");
+
+    try {
+      const server = await prisma.rabbitMQServer.findUnique({
+        where: { id: serverId },
+      });
+
+      if (!server) {
+        return c.json({ error: "Server not found" }, 404);
+      }
+
+      const client = new RabbitMQClient({
+        host: server.host,
+        port: server.port,
+        username: server.username,
+        password: server.password,
+        vhost: server.vhost,
+      });
+
+      await client.purgeQueue(queueName);
+
+      return c.json({
+        success: true,
+        message: `Queue "${queueName}" purged successfully`,
+        purged: -1, // -1 indicates all messages were purged
+      });
+    } catch (error) {
+      console.error(
+        `Error purging queue ${queueName} on server ${serverId}:`,
+        error
+      );
+      return c.json(
+        {
+          error: "Failed to purge queue",
           message: error instanceof Error ? error.message : "Unknown error",
         },
         500
