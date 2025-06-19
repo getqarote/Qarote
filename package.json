@@ -25,7 +25,8 @@
     "start": "npm run start --workspace=back-end",
     "seed:connections": "npx tsx scripts/seed-connections.ts",
     "seed:messages": "npx tsx scripts/seed-messages.ts --skip-setup",
-    "seed:alerts": "npx tsx scripts/seed-alerts.ts"
+    "seed:alerts": "npx tsx scripts/seed-alerts.ts",
+    "seed:alerts:cleanup": "tsx scripts/seed-alerts.ts cleanup"
   },
   "devDependencies": {
     "@types/amqplib": "^0.10.7",

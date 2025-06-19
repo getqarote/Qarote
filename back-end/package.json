@@ -14,8 +14,6 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
-    "seed:alerts": "tsx ../scripts/seed-alerts.ts",
-    "seed:alerts:cleanup": "tsx ../scripts/seed-alerts.ts cleanup",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {

@@ -10,6 +10,7 @@ export interface PlanFeatures {
   canSendMessages: boolean;
   canAddServer: boolean;
   canExportData: boolean;
+  canAccessRouting: boolean;
   maxQueues?: number;
   maxServers?: number;
   maxUsers?: number;
@@ -25,6 +26,7 @@ export const PLAN_FEATURES: Record<WorkspacePlan, PlanFeatures> = {
     canSendMessages: false,
     canAddServer: false,
     canExportData: false,
+    canAccessRouting: false,
     maxQueues: 0,
     maxServers: 1,
     maxUsers: 1,
@@ -38,6 +40,7 @@ export const PLAN_FEATURES: Record<WorkspacePlan, PlanFeatures> = {
     canSendMessages: true,
     canAddServer: true,
     canExportData: true,
+    canAccessRouting: true,
     maxQueues: 10,
     maxServers: 3,
     maxUsers: 1,
@@ -51,6 +54,7 @@ export const PLAN_FEATURES: Record<WorkspacePlan, PlanFeatures> = {
     canSendMessages: true,
     canAddServer: true,
     canExportData: true,
+    canAccessRouting: true,
     maxQueues: 50,
     maxServers: 10,
     maxUsers: 5,
@@ -64,6 +68,7 @@ export const PLAN_FEATURES: Record<WorkspacePlan, PlanFeatures> = {
     canSendMessages: true,
     canAddServer: true,
     canExportData: true,
+    canAccessRouting: true,
     maxQueues: 200,
     maxServers: 50,
     maxUsers: 25,
@@ -144,4 +149,8 @@ export function getPlanColor(plan: WorkspacePlan): string {
     default:
       return "text-gray-600 bg-gray-100";
   }
+}
+
+export function canUserAccessRouting(plan: WorkspacePlan): boolean {
+  return getPlanFeatures(plan).canAccessRouting;
 }

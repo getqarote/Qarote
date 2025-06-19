@@ -21,15 +21,7 @@ import {
 } from "@/components/ui/select";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
-import ComingSoonPage from "@/components/ComingSoonPage";
-import {
-  AlertTriangle,
-  CheckCircle,
-  Clock,
-  Plus,
-  Search,
-  Filter,
-} from "lucide-react";
+import { AlertTriangle, CheckCircle, Clock, Plus, Search } from "lucide-react";
 import {
   apiClient,
   AlertInstance,
@@ -39,6 +31,8 @@ import {
   AlertSeverity,
 } from "@/lib/api";
 import { isAlertsEnabled } from "@/lib/alertsFeatureFlag";
+import PremiumPageWrapper from "@/components/PremiumPageWrapper";
+import { WorkspacePlan } from "@/lib/plans/planUtils";
 
 const AlertDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -86,27 +80,6 @@ const AlertDashboard: React.FC = () => {
   useEffect(() => {
     loadData();
   }, [loadData]);
-
-  // If alerts are not enabled, show coming soon page
-  if (!alertsEnabled) {
-    return (
-      <SidebarProvider>
-        <AppSidebar />
-        <main className="flex-1">
-          <header className="border-b">
-            <div className="flex h-16 items-center px-4">
-              <SidebarTrigger />
-            </div>
-          </header>
-          <ComingSoonPage
-            title="Alerts Dashboard"
-            description="Monitor your RabbitMQ infrastructure with intelligent alerts and notifications. Get real-time insights into queue depths, connection issues, and system performance."
-            showBackButton={true}
-          />
-        </main>
-      </SidebarProvider>
-    );
-  }
 
   const handleAcknowledgeAlert = async (alertId: string) => {
     try {
@@ -190,310 +163,331 @@ const AlertDashboard: React.FC = () => {
     );
   }
 
+  const workspacePlan = WorkspacePlan.FREE;
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-gradient-to-br from-slate-50 to-blue-50">
         <AppSidebar />
-        <main className="flex-1 p-6 overflow-auto">
-          <div className="max-w-7xl mx-auto space-y-6">
-            {/* Header */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <SidebarTrigger />
-                <div>
-                  <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                    Alert Dashboard
-                  </h1>
-                  <p className="text-gray-500">
-                    Monitor and manage your RabbitMQ alerts
-                  </p>
-                </div>
-              </div>
-              <Button onClick={() => navigate("/alerts/rules/new")}>
-                <Plus className="h-4 w-4 mr-2" />
-                Create Alert Rule
-              </Button>
-            </div>
 
-            {/* Stats Cards */}
-            {stats && (
-              <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium text-red-600">
-                      Active
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{stats.active}</div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium text-yellow-600">
-                      Acknowledged
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">
-                      {stats.acknowledged}
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium text-green-600">
-                      Resolved
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{stats.resolved}</div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium text-red-700">
-                      Critical
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{stats.critical}</div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium">Total</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{stats.total}</div>
-                  </CardContent>
-                </Card>
-              </div>
-            )}
-
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList>
-                <TabsTrigger value="alerts">Alerts</TabsTrigger>
-                <TabsTrigger value="rules">Alert Rules</TabsTrigger>
-              </TabsList>
-
-              {/* Filters */}
-              <div className="flex gap-4 my-4">
-                <div className="flex-1">
-                  <div className="relative">
-                    <Search className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                    <Input
-                      placeholder="Search alerts or rules..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10"
-                    />
+        <PremiumPageWrapper
+          workspacePlan={workspacePlan}
+          feature="Alerts Dashboard"
+          featureDescription="Monitor and manage RabbitMQ alerts with real-time statistics, rules, and actions."
+          requiredPlan="Freelance or higher"
+        >
+          <main className="flex-1 p-6 overflow-auto">
+            <div className="max-w-7xl mx-auto space-y-6">
+              {/* Header */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <SidebarTrigger />
+                  <div>
+                    <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                      Alert Dashboard
+                    </h1>
+                    <p className="text-gray-500">
+                      Monitor and manage your RabbitMQ alerts
+                    </p>
                   </div>
                 </div>
-                <Select
-                  value={statusFilter}
-                  onValueChange={(value) =>
-                    setStatusFilter(value as AlertStatus | "ALL")
-                  }
-                >
-                  <SelectTrigger className="w-40">
-                    <SelectValue placeholder="Status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ALL">All Status</SelectItem>
-                    <SelectItem value="ACTIVE">Active</SelectItem>
-                    <SelectItem value="ACKNOWLEDGED">Acknowledged</SelectItem>
-                    <SelectItem value="RESOLVED">Resolved</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Select
-                  value={severityFilter}
-                  onValueChange={(value) =>
-                    setSeverityFilter(value as AlertSeverity | "ALL")
-                  }
-                >
-                  <SelectTrigger className="w-40">
-                    <SelectValue placeholder="Severity" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ALL">All Severity</SelectItem>
-                    <SelectItem value="CRITICAL">Critical</SelectItem>
-                    <SelectItem value="HIGH">High</SelectItem>
-                    <SelectItem value="MEDIUM">Medium</SelectItem>
-                    <SelectItem value="LOW">Low</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Button onClick={() => navigate("/alerts/rules/new")}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Alert Rule
+                </Button>
               </div>
 
-              <TabsContent value="alerts">
-                <div className="space-y-4">
-                  {filteredAlerts.length === 0 ? (
-                    <Card>
-                      <CardContent className="py-8 text-center">
-                        <p className="text-gray-500">No alerts found</p>
-                      </CardContent>
-                    </Card>
-                  ) : (
-                    filteredAlerts.map((alert) => (
-                      <Card key={alert.id}>
-                        <CardHeader>
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              {getStatusIcon(alert.status)}
-                              <div>
-                                <CardTitle className="text-lg">
-                                  {alert.title}
-                                </CardTitle>
-                                <CardDescription>
-                                  {alert.description}
-                                </CardDescription>
+              {/* Stats Cards */}
+              {stats && (
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium text-red-600">
+                        Active
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">{stats.active}</div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium text-yellow-600">
+                        Acknowledged
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">
+                        {stats.acknowledged}
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium text-green-600">
+                        Resolved
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">{stats.resolved}</div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium text-red-700">
+                        Critical
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">{stats.critical}</div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">
+                        Total
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">{stats.total}</div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+
+              <Tabs value={activeTab} onValueChange={setActiveTab}>
+                <TabsList>
+                  <TabsTrigger value="alerts">Alerts</TabsTrigger>
+                  <TabsTrigger value="rules">Alert Rules</TabsTrigger>
+                </TabsList>
+
+                {/* Filters */}
+                <div className="flex gap-4 my-4">
+                  <div className="flex-1">
+                    <div className="relative">
+                      <Search className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                      <Input
+                        placeholder="Search alerts or rules..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-10"
+                      />
+                    </div>
+                  </div>
+                  <Select
+                    value={statusFilter}
+                    onValueChange={(value) =>
+                      setStatusFilter(value as AlertStatus | "ALL")
+                    }
+                  >
+                    <SelectTrigger className="w-40">
+                      <SelectValue placeholder="Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ALL">All Status</SelectItem>
+                      <SelectItem value="ACTIVE">Active</SelectItem>
+                      <SelectItem value="ACKNOWLEDGED">Acknowledged</SelectItem>
+                      <SelectItem value="RESOLVED">Resolved</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select
+                    value={severityFilter}
+                    onValueChange={(value) =>
+                      setSeverityFilter(value as AlertSeverity | "ALL")
+                    }
+                  >
+                    <SelectTrigger className="w-40">
+                      <SelectValue placeholder="Severity" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ALL">All Severity</SelectItem>
+                      <SelectItem value="CRITICAL">Critical</SelectItem>
+                      <SelectItem value="HIGH">High</SelectItem>
+                      <SelectItem value="MEDIUM">Medium</SelectItem>
+                      <SelectItem value="LOW">Low</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <TabsContent value="alerts">
+                  <div className="space-y-4">
+                    {filteredAlerts.length === 0 ? (
+                      <Card>
+                        <CardContent className="py-8 text-center">
+                          <p className="text-gray-500">No alerts found</p>
+                        </CardContent>
+                      </Card>
+                    ) : (
+                      filteredAlerts.map((alert) => (
+                        <Card key={alert.id}>
+                          <CardHeader>
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                {getStatusIcon(alert.status)}
+                                <div>
+                                  <CardTitle className="text-lg">
+                                    {alert.title}
+                                  </CardTitle>
+                                  <CardDescription>
+                                    {alert.description}
+                                  </CardDescription>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Badge
+                                  variant={getSeverityColor(alert.severity)}
+                                >
+                                  {alert.severity}
+                                </Badge>
+                                <Badge variant="outline">{alert.status}</Badge>
                               </div>
                             </div>
-                            <div className="flex items-center gap-2">
-                              <Badge variant={getSeverityColor(alert.severity)}>
-                                {alert.severity}
-                              </Badge>
-                              <Badge variant="outline">{alert.status}</Badge>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="flex items-center justify-between">
+                              <div className="text-sm text-gray-500">
+                                <p>
+                                  Server:{" "}
+                                  {alert.alertRule?.server.name || "Unknown"}
+                                </p>
+                                <p>
+                                  Created:{" "}
+                                  {formatDistanceToNow(
+                                    new Date(alert.createdAt),
+                                    {
+                                      addSuffix: true,
+                                    }
+                                  )}
+                                </p>
+                                {alert.value !== undefined &&
+                                  alert.threshold !== undefined && (
+                                    <p>
+                                      Value: {alert.value} / Threshold:{" "}
+                                      {alert.threshold}
+                                    </p>
+                                  )}
+                              </div>
+                              <div className="flex gap-2">
+                                {alert.status === "ACTIVE" && (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() =>
+                                      handleAcknowledgeAlert(alert.id)
+                                    }
+                                  >
+                                    Acknowledge
+                                  </Button>
+                                )}
+                                {(alert.status === "ACTIVE" ||
+                                  alert.status === "ACKNOWLEDGED") && (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleResolveAlert(alert.id)}
+                                  >
+                                    Resolve
+                                  </Button>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="flex items-center justify-between">
-                            <div className="text-sm text-gray-500">
-                              <p>
-                                Server:{" "}
-                                {alert.alertRule?.server.name || "Unknown"}
-                              </p>
-                              <p>
-                                Created:{" "}
-                                {formatDistanceToNow(
-                                  new Date(alert.createdAt),
-                                  {
-                                    addSuffix: true,
+                          </CardContent>
+                        </Card>
+                      ))
+                    )}
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="rules">
+                  <div className="space-y-4">
+                    {filteredRules.length === 0 ? (
+                      <Card>
+                        <CardContent className="py-8 text-center">
+                          <p className="text-gray-500">No alert rules found</p>
+                          <Button
+                            className="mt-4"
+                            onClick={() => navigate("/alerts/rules/new")}
+                          >
+                            Create Your First Alert Rule
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    ) : (
+                      filteredRules.map((rule) => (
+                        <Card key={rule.id}>
+                          <CardHeader>
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <CardTitle className="text-lg">
+                                  {rule.name}
+                                </CardTitle>
+                                <CardDescription>
+                                  {rule.description || "No description"}
+                                </CardDescription>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Badge
+                                  variant={getSeverityColor(rule.severity)}
+                                >
+                                  {rule.severity}
+                                </Badge>
+                                <Badge
+                                  variant={
+                                    rule.enabled ? "default" : "secondary"
                                   }
-                                )}
-                              </p>
-                              {alert.value !== undefined &&
-                                alert.threshold !== undefined && (
-                                  <p>
-                                    Value: {alert.value} / Threshold:{" "}
-                                    {alert.threshold}
-                                  </p>
-                                )}
+                                >
+                                  {rule.enabled ? "Enabled" : "Disabled"}
+                                </Badge>
+                              </div>
                             </div>
-                            <div className="flex gap-2">
-                              {alert.status === "ACTIVE" && (
+                          </CardHeader>
+                          <CardContent>
+                            <div className="flex items-center justify-between">
+                              <div className="text-sm text-gray-500">
+                                <p>Type: {rule.type.replace("_", " ")}</p>
+                                <p>Server: {rule.server.name}</p>
+                                <p>
+                                  Threshold: {rule.threshold} (
+                                  {rule.operator
+                                    .replace("_", " ")
+                                    .toLowerCase()}
+                                  )
+                                </p>
+                                {rule._count && (
+                                  <p>Active Alerts: {rule._count.alerts}</p>
+                                )}
+                              </div>
+                              <div className="flex gap-2">
                                 <Button
                                   variant="outline"
                                   size="sm"
                                   onClick={() =>
-                                    handleAcknowledgeAlert(alert.id)
+                                    navigate(`/alerts/rules/${rule.id}/edit`)
                                   }
                                 >
-                                  Acknowledge
+                                  Edit
                                 </Button>
-                              )}
-                              {(alert.status === "ACTIVE" ||
-                                alert.status === "ACKNOWLEDGED") && (
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  onClick={() => handleResolveAlert(alert.id)}
+                                  onClick={() =>
+                                    navigate(`/alerts/rules/${rule.id}`)
+                                  }
                                 >
-                                  Resolve
+                                  View
                                 </Button>
-                              )}
+                              </div>
                             </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))
-                  )}
-                </div>
-              </TabsContent>
-
-              <TabsContent value="rules">
-                <div className="space-y-4">
-                  {filteredRules.length === 0 ? (
-                    <Card>
-                      <CardContent className="py-8 text-center">
-                        <p className="text-gray-500">No alert rules found</p>
-                        <Button
-                          className="mt-4"
-                          onClick={() => navigate("/alerts/rules/new")}
-                        >
-                          Create Your First Alert Rule
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  ) : (
-                    filteredRules.map((rule) => (
-                      <Card key={rule.id}>
-                        <CardHeader>
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <CardTitle className="text-lg">
-                                {rule.name}
-                              </CardTitle>
-                              <CardDescription>
-                                {rule.description || "No description"}
-                              </CardDescription>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Badge variant={getSeverityColor(rule.severity)}>
-                                {rule.severity}
-                              </Badge>
-                              <Badge
-                                variant={rule.enabled ? "default" : "secondary"}
-                              >
-                                {rule.enabled ? "Enabled" : "Disabled"}
-                              </Badge>
-                            </div>
-                          </div>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="flex items-center justify-between">
-                            <div className="text-sm text-gray-500">
-                              <p>Type: {rule.type.replace("_", " ")}</p>
-                              <p>Server: {rule.server.name}</p>
-                              <p>
-                                Threshold: {rule.threshold} (
-                                {rule.operator.replace("_", " ").toLowerCase()})
-                              </p>
-                              {rule._count && (
-                                <p>Active Alerts: {rule._count.alerts}</p>
-                              )}
-                            </div>
-                            <div className="flex gap-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() =>
-                                  navigate(`/alerts/rules/${rule.id}/edit`)
-                                }
-                              >
-                                Edit
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() =>
-                                  navigate(`/alerts/rules/${rule.id}`)
-                                }
-                              >
-                                View
-                              </Button>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))
-                  )}
-                </div>
-              </TabsContent>
-            </Tabs>
-          </div>
-        </main>
+                          </CardContent>
+                        </Card>
+                      ))
+                    )}
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </div>
+          </main>
+        </PremiumPageWrapper>
       </div>
     </SidebarProvider>
   );
