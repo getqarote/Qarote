@@ -20,34 +20,125 @@ services:
       timeout: 5s
       retries: 5
 
-  rabbitmq:
+  rabbitmq-node1:
     image: rabbitmq:3.12-management-alpine
-    container_name: rabbit_dashboard_rabbitmq
-    # restart: unless-stopped
+    container_name: rabbit_dashboard_rabbitmq_node1
+    hostname: rabbitmq-node1
     environment:
       RABBITMQ_DEFAULT_USER: admin
       RABBITMQ_DEFAULT_PASS: admin123
       RABBITMQ_DEFAULT_VHOST: /
+      RABBITMQ_ERLANG_COOKIE: SWQOKODSQALRPCLNMEQG
+      RABBITMQ_NODE_NAME: rabbit@rabbitmq-node1
     ports:
       - "5672:5672" # AMQP port
       - "15672:15672" # Management UI port
     volumes:
-      - rabbitmq_data:/var/lib/rabbitmq
+      - rabbitmq_node1_data:/var/lib/rabbitmq
       - ./docker/rabbitmq/definitions.json:/etc/rabbitmq/definitions.json:ro
       - ./docker/rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
-      - ./docker/rabbitmq/populate-data.sh:/etc/rabbitmq/populate-data.sh:ro
+      - ./docker/rabbitmq/cluster-init.sh:/usr/local/bin/cluster-init.sh:ro
     networks:
       - rabbit_dashboard_network
+    command:
+      ["/usr/local/bin/cluster-init.sh", "rabbitmq-node1", "rabbitmq-node1"]
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 30s
       timeout: 10s
       retries: 5
 
+  rabbitmq-node2:
+    image: rabbitmq:3.12-management-alpine
+    container_name: rabbit_dashboard_rabbitmq_node2
+    hostname: rabbitmq-node2
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin123
+      RABBITMQ_DEFAULT_VHOST: /
+      RABBITMQ_ERLANG_COOKIE: SWQOKODSQALRPCLNMEQG
+      RABBITMQ_NODE_NAME: rabbit@rabbitmq-node2
+    ports:
+      - "5673:5672" # AMQP port
+      - "15673:15672" # Management UI port
+    volumes:
+      - rabbitmq_node2_data:/var/lib/rabbitmq
+      - ./docker/rabbitmq/definitions.json:/etc/rabbitmq/definitions.json:ro
+      - ./docker/rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+      - ./docker/rabbitmq/cluster-init.sh:/usr/local/bin/cluster-init.sh:ro
+    networks:
+      - rabbit_dashboard_network
+    depends_on:
+      - rabbitmq-node1
+    command:
+      ["/usr/local/bin/cluster-init.sh", "rabbitmq-node2", "rabbitmq-node1"]
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  rabbitmq-node3:
+    image: rabbitmq:3.12-management-alpine
+    container_name: rabbit_dashboard_rabbitmq_node3
+    hostname: rabbitmq-node3
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin123
+      RABBITMQ_DEFAULT_VHOST: /
+      RABBITMQ_ERLANG_COOKIE: SWQOKODSQALRPCLNMEQG
+      RABBITMQ_NODE_NAME: rabbit@rabbitmq-node3
+    ports:
+      - "5674:5672" # AMQP port
+      - "15674:15672" # Management UI port
+    volumes:
+      - rabbitmq_node3_data:/var/lib/rabbitmq
+      - ./docker/rabbitmq/definitions.json:/etc/rabbitmq/definitions.json:ro
+      - ./docker/rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+      - ./docker/rabbitmq/cluster-init.sh:/usr/local/bin/cluster-init.sh:ro
+    networks:
+      - rabbit_dashboard_network
+    depends_on:
+      - rabbitmq-node1
+      - rabbitmq-node2
+    command:
+      ["/usr/local/bin/cluster-init.sh", "rabbitmq-node3", "rabbitmq-node1"]
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # HAProxy Load Balancer for RabbitMQ Cluster
+  rabbitmq-haproxy:
+    image: haproxy:2.8-alpine
+    container_name: rabbit_dashboard_haproxy
+    ports:
+      - "5675:5672" # Load balanced AMQP port
+      - "15675:15672" # Load balanced Management UI port
+      - "8404:8404" # HAProxy stats page
+    volumes:
+      - ./docker/haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    networks:
+      - rabbit_dashboard_network
+    depends_on:
+      - rabbitmq-node1
+      - rabbitmq-node2
+      - rabbitmq-node3
+    healthcheck:
+      test: ["CMD", "haproxy", "-c", "-f", "/usr/local/etc/haproxy/haproxy.cfg"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
 volumes:
   postgres_data:
     driver: local
-  rabbitmq_data:
+  rabbitmq_node1_data:
+    driver: local
+  rabbitmq_node2_data:
+    driver: local
+  rabbitmq_node3_data:
     driver: local
 
 networks:
