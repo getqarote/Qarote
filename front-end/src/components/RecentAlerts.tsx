@@ -10,7 +10,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { apiClient, AlertInstance, AlertSeverity } from "@/lib/api";
+import { apiClient, AlertSeverity } from "@/lib/api";
 import { formatDistanceToNow } from "date-fns";
 import { Link } from "react-router-dom";
 
@@ -162,14 +162,14 @@ export const RecentAlerts = () => {
             </div>
           ))
         ) : (
-          <div className="text-center py-6">
-            <AlertTriangle className="h-8 w-8 text-gray-300 mx-auto mb-2" />
-            <p className="text-sm text-gray-500 mb-3">No recent alerts</p>
-            <Link to="/alerts">
-              <Button variant="outline" size="sm">
-                View All Alerts
-              </Button>
-            </Link>
+          <div className="flex flex-col items-center justify-center py-24 px-4">
+            <AlertTriangle className="h-12 w-12 text-gray-300 mb-3" />
+            <p className="text-sm text-gray-500 font-medium">
+              No recent alerts
+            </p>
+            <p className="text-xs text-gray-400 mt-1">
+              All systems are running normally
+            </p>
           </div>
         )}
       </CardContent>
