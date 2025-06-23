@@ -301,3 +301,109 @@ export interface TimeSeriesResponse {
   timeRange: string;
   dataPoints: number;
 }
+
+export interface NodeMemoryDetailsResponse {
+  node: NodeMemoryDetails;
+  planAccess: NodeMemoryPlanAccess;
+}
+
+export interface NodeMemoryDetails {
+  name: string;
+  running: boolean;
+  uptime: number;
+  immediate?: NodeMemoryImmediate;
+  advanced?: NodeMemoryAdvanced;
+  expert?: NodeMemoryExpert;
+  trends?: NodeMemoryTrends;
+  optimization?: NodeMemoryOptimization;
+}
+
+export interface NodeMemoryImmediate {
+  totalMemory: number;
+  usedMemory: number;
+  freeMemory: number;
+  memoryUsagePercentage: number;
+  memoryAlarm: boolean;
+  memoryCalculationStrategy: string;
+}
+
+export interface NodeMemoryAdvanced {
+  fileDescriptors: {
+    used: number;
+    total: number;
+    usagePercentage: number;
+  };
+  sockets: {
+    used: number;
+    total: number;
+    usagePercentage: number;
+  };
+  processes: {
+    used: number;
+    total: number;
+    usagePercentage: number;
+  };
+  garbageCollection: {
+    gcCount: number;
+    gcBytesReclaimed: number;
+    gcRate: number;
+  };
+}
+
+export interface NodeMemoryExpert {
+  ioMetrics: {
+    readCount: number;
+    readBytes: number;
+    readAvgTime: number;
+    writeCount: number;
+    writeBytes: number;
+    writeAvgTime: number;
+    syncCount: number;
+    syncAvgTime: number;
+  };
+  mnesia: {
+    ramTransactions: number;
+    diskTransactions: number;
+  };
+  messageStore: {
+    readCount: number;
+    writeCount: number;
+  };
+  queueIndex: {
+    readCount: number;
+    writeCount: number;
+  };
+  systemMetrics: {
+    runQueue: number;
+    processors: number;
+    contextSwitches: number;
+  };
+}
+
+export interface NodeMemoryTrends {
+  memoryUsageRate: number;
+  diskFreeRate: number;
+  fdUsageRate: number;
+  socketUsageRate: number;
+  processUsageRate: number;
+}
+
+export interface NodeMemoryOptimization {
+  overallHealth: "Good" | "Warning" | "Critical";
+  warnings: string[];
+  suggestions: string[];
+  recommendations: {
+    memoryTuning: boolean;
+    connectionOptimization: boolean;
+    fileDescriptorTuning: boolean;
+    processLimitIncrease: boolean;
+  };
+}
+
+export interface NodeMemoryPlanAccess {
+  hasBasic: boolean;
+  hasAdvanced: boolean;
+  hasExpert: boolean;
+  hasTrends: boolean;
+  hasOptimization: boolean;
+}

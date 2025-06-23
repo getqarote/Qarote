@@ -12,6 +12,12 @@ export interface PlanLimits {
   hasAdvancedMetrics: boolean;
   hasAdvancedAlerts: boolean;
   hasPrioritySupport: boolean;
+  // Node Memory Features
+  canViewBasicMemoryMetrics: boolean;
+  canViewAdvancedMemoryMetrics: boolean;
+  canViewExpertMemoryMetrics: boolean;
+  canViewMemoryTrends: boolean;
+  canViewMemoryOptimization: boolean;
 }
 
 export const PLAN_LIMITS: Record<WorkspacePlan, PlanLimits> = {
@@ -27,6 +33,12 @@ export const PLAN_LIMITS: Record<WorkspacePlan, PlanLimits> = {
     hasAdvancedMetrics: false,
     hasAdvancedAlerts: false,
     hasPrioritySupport: false,
+    // Memory Features - Immediate Value for everyone
+    canViewBasicMemoryMetrics: true,
+    canViewAdvancedMemoryMetrics: false,
+    canViewExpertMemoryMetrics: false,
+    canViewMemoryTrends: false,
+    canViewMemoryOptimization: false,
   },
   [WorkspacePlan.FREELANCE]: {
     canAddQueue: true,
@@ -40,6 +52,12 @@ export const PLAN_LIMITS: Record<WorkspacePlan, PlanLimits> = {
     hasAdvancedMetrics: true,
     hasAdvancedAlerts: false,
     hasPrioritySupport: false,
+    // Memory Features - Immediate Value for everyone
+    canViewBasicMemoryMetrics: true,
+    canViewAdvancedMemoryMetrics: false,
+    canViewExpertMemoryMetrics: false,
+    canViewMemoryTrends: false,
+    canViewMemoryOptimization: false,
   },
   [WorkspacePlan.STARTUP]: {
     canAddQueue: true,
@@ -53,6 +71,12 @@ export const PLAN_LIMITS: Record<WorkspacePlan, PlanLimits> = {
     hasAdvancedMetrics: true,
     hasAdvancedAlerts: true,
     hasPrioritySupport: false,
+    // Memory Features - Immediate Value + Advanced Features
+    canViewBasicMemoryMetrics: true,
+    canViewAdvancedMemoryMetrics: true,
+    canViewExpertMemoryMetrics: false,
+    canViewMemoryTrends: true,
+    canViewMemoryOptimization: true,
   },
   [WorkspacePlan.BUSINESS]: {
     canAddQueue: true,
@@ -66,6 +90,12 @@ export const PLAN_LIMITS: Record<WorkspacePlan, PlanLimits> = {
     hasAdvancedMetrics: true,
     hasAdvancedAlerts: true,
     hasPrioritySupport: true,
+    // Memory Features - All Features Available
+    canViewBasicMemoryMetrics: true,
+    canViewAdvancedMemoryMetrics: true,
+    canViewExpertMemoryMetrics: true,
+    canViewMemoryTrends: true,
+    canViewMemoryOptimization: true,
   },
 };
 
@@ -215,6 +245,77 @@ export function validateDataExport(plan: WorkspacePlan): void {
       "Data export",
       plan,
       "Freelance, Startup, or Business",
+      0,
+      0
+    );
+  }
+}
+
+// Memory Features Validation Functions
+export function validateBasicMemoryMetricsAccess(plan: WorkspacePlan): void {
+  const limits = getPlanLimits(plan);
+
+  if (!limits.canViewBasicMemoryMetrics) {
+    throw new PlanValidationError(
+      "Basic memory metrics access",
+      plan,
+      "All plans have access",
+      0,
+      0
+    );
+  }
+}
+
+export function validateAdvancedMemoryMetricsAccess(plan: WorkspacePlan): void {
+  const limits = getPlanLimits(plan);
+
+  if (!limits.canViewAdvancedMemoryMetrics) {
+    throw new PlanValidationError(
+      "Advanced memory metrics access",
+      plan,
+      "Startup or Business",
+      0,
+      0
+    );
+  }
+}
+
+export function validateExpertMemoryMetricsAccess(plan: WorkspacePlan): void {
+  const limits = getPlanLimits(plan);
+
+  if (!limits.canViewExpertMemoryMetrics) {
+    throw new PlanValidationError(
+      "Expert memory metrics access",
+      plan,
+      "Business",
+      0,
+      0
+    );
+  }
+}
+
+export function validateMemoryTrendsAccess(plan: WorkspacePlan): void {
+  const limits = getPlanLimits(plan);
+
+  if (!limits.canViewMemoryTrends) {
+    throw new PlanValidationError(
+      "Memory trends access",
+      plan,
+      "Startup or Business",
+      0,
+      0
+    );
+  }
+}
+
+export function validateMemoryOptimizationAccess(plan: WorkspacePlan): void {
+  const limits = getPlanLimits(plan);
+
+  if (!limits.canViewMemoryOptimization) {
+    throw new PlanValidationError(
+      "Memory optimization access",
+      plan,
+      "Startup or Business",
       0,
       0
     );

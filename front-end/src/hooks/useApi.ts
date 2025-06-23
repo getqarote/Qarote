@@ -95,6 +95,22 @@ export const useNodes = (serverId: string) => {
   });
 };
 
+export const useNodeMemoryDetails = (
+  serverId: string,
+  nodeName: string,
+  enabled: boolean = true
+) => {
+  const { isAuthenticated } = useAuth();
+
+  return useQuery({
+    queryKey: ["nodeMemoryDetails", serverId, nodeName],
+    queryFn: () => apiClient.getNodeMemoryDetails(serverId, nodeName),
+    enabled: !!serverId && !!nodeName && enabled && isAuthenticated,
+    staleTime: 10000, // 10 seconds
+    refetchInterval: 30000, // Refetch every 30 seconds
+  });
+};
+
 export const useQueue = (serverId: string, queueName: string) => {
   const { isAuthenticated } = useAuth();
 

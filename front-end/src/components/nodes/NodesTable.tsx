@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -16,10 +17,12 @@ import {
   AlertTriangle,
   XCircle,
   Info,
+  MemoryStick,
 } from "lucide-react";
 import { useNodes } from "@/hooks/useApi";
 import { Node } from "@/lib/api";
 import { useState } from "react";
+import { NodeMemoryDetails } from "./NodeMemoryDetails";
 
 interface NodesTableProps {
   serverId: string;
@@ -40,6 +43,9 @@ export const NodesTable = ({ serverId }: NodesTableProps) => {
 
   const [sortField, setSortField] = useState<SortField>("name");
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
+  const [selectedNodeForMemory, setSelectedNodeForMemory] = useState<
+    string | null
+  >(null);
 
   const formatBytes = (bytes: number) => {
     const gb = bytes / (1024 * 1024 * 1024);
@@ -217,6 +223,7 @@ export const NodesTable = ({ serverId }: NodesTableProps) => {
                   </SortableHeader>
                   <SortableHeader field="uptime">Uptime</SortableHeader>
                   <TableHead>Version</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -314,6 +321,17 @@ export const NodesTable = ({ serverId }: NodesTableProps) => {
                           </div>
                         </div>
                       </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setSelectedNodeForMemory(node.name)}
+                          className="flex items-center gap-1"
+                        >
+                          <MemoryStick className="h-3 w-3" />
+                          Memory Details
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   );
                 })}
@@ -332,6 +350,15 @@ export const NodesTable = ({ serverId }: NodesTableProps) => {
           </div>
         )}
       </CardContent>
+      {selectedNodeForMemory && (
+        <CardContent className="border-t bg-gray-50">
+          <NodeMemoryDetails
+            serverId={serverId}
+            nodeName={selectedNodeForMemory}
+            onClose={() => setSelectedNodeForMemory(null)}
+          />
+        </CardContent>
+      )}
     </Card>
   );
 };

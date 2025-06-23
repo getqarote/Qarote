@@ -18,6 +18,12 @@ export interface PlanFeatures {
   hasAdvancedMetrics: boolean;
   hasAdvancedAlerts: boolean;
   hasPrioritySupport: boolean;
+  // Node Memory Features
+  canViewBasicMemoryMetrics: boolean;
+  canViewAdvancedMemoryMetrics: boolean;
+  canViewExpertMemoryMetrics: boolean;
+  canViewMemoryTrends: boolean;
+  canViewMemoryOptimization: boolean;
 }
 
 export const PLAN_FEATURES: Record<WorkspacePlan, PlanFeatures> = {
@@ -34,6 +40,12 @@ export const PLAN_FEATURES: Record<WorkspacePlan, PlanFeatures> = {
     hasAdvancedMetrics: false,
     hasAdvancedAlerts: false,
     hasPrioritySupport: false,
+    // Memory Features - Immediate Value for everyone
+    canViewBasicMemoryMetrics: true,
+    canViewAdvancedMemoryMetrics: false,
+    canViewExpertMemoryMetrics: false,
+    canViewMemoryTrends: false,
+    canViewMemoryOptimization: false,
   },
   [WorkspacePlan.FREELANCE]: {
     canAddQueue: true,
@@ -48,6 +60,12 @@ export const PLAN_FEATURES: Record<WorkspacePlan, PlanFeatures> = {
     hasAdvancedMetrics: true,
     hasAdvancedAlerts: false,
     hasPrioritySupport: false,
+    // Memory Features - Immediate Value for everyone
+    canViewBasicMemoryMetrics: true,
+    canViewAdvancedMemoryMetrics: false,
+    canViewExpertMemoryMetrics: false,
+    canViewMemoryTrends: false,
+    canViewMemoryOptimization: false,
   },
   [WorkspacePlan.STARTUP]: {
     canAddQueue: true,
@@ -62,6 +80,12 @@ export const PLAN_FEATURES: Record<WorkspacePlan, PlanFeatures> = {
     hasAdvancedMetrics: true,
     hasAdvancedAlerts: true,
     hasPrioritySupport: false,
+    // Memory Features - Immediate Value + Advanced Features
+    canViewBasicMemoryMetrics: true,
+    canViewAdvancedMemoryMetrics: true,
+    canViewExpertMemoryMetrics: false,
+    canViewMemoryTrends: true,
+    canViewMemoryOptimization: true,
   },
   [WorkspacePlan.BUSINESS]: {
     canAddQueue: true,
@@ -76,6 +100,12 @@ export const PLAN_FEATURES: Record<WorkspacePlan, PlanFeatures> = {
     hasAdvancedMetrics: true,
     hasAdvancedAlerts: true,
     hasPrioritySupport: true,
+    // Memory Features - All Features Available
+    canViewBasicMemoryMetrics: true,
+    canViewAdvancedMemoryMetrics: true,
+    canViewExpertMemoryMetrics: true,
+    canViewMemoryTrends: true,
+    canViewMemoryOptimization: true,
   },
 };
 
@@ -176,4 +206,25 @@ export function getPlanColor(plan: WorkspacePlan): string {
 
 export function canUserAccessRouting(plan: WorkspacePlan): boolean {
   return getPlanFeatures(plan).canAccessRouting;
+}
+
+// Memory Features Access Control
+export function canUserViewBasicMemoryMetrics(plan: WorkspacePlan): boolean {
+  return getPlanFeatures(plan).canViewBasicMemoryMetrics;
+}
+
+export function canUserViewAdvancedMemoryMetrics(plan: WorkspacePlan): boolean {
+  return getPlanFeatures(plan).canViewAdvancedMemoryMetrics;
+}
+
+export function canUserViewExpertMemoryMetrics(plan: WorkspacePlan): boolean {
+  return getPlanFeatures(plan).canViewExpertMemoryMetrics;
+}
+
+export function canUserViewMemoryTrends(plan: WorkspacePlan): boolean {
+  return getPlanFeatures(plan).canViewMemoryTrends;
+}
+
+export function canUserViewMemoryOptimization(plan: WorkspacePlan): boolean {
+  return getPlanFeatures(plan).canViewMemoryOptimization;
 }

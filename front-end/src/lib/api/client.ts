@@ -125,6 +125,10 @@ class ApiClient {
     return this.rabbitmqClient.getTimeSeriesMetrics(serverId, timeRange);
   }
 
+  async getNodeMemoryDetails(serverId: string, nodeName: string) {
+    return this.rabbitmqClient.getNodeMemoryDetails(serverId, nodeName);
+  }
+
   // Authentication methods
   async login(credentials: Parameters<AuthApiClient["login"]>[0]) {
     return this.authClient.login(credentials);

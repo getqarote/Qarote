@@ -12,6 +12,7 @@ import {
   Connection,
   Channel,
   TimeSeriesResponse,
+  NodeMemoryDetailsResponse,
 } from "./rabbitmqTypes";
 import { Exchange, Binding, Consumer } from "./exchangeTypes";
 import {
@@ -123,6 +124,17 @@ export class RabbitMQApiClient extends BaseApiClient {
   async getNodes(serverId: string): Promise<{ nodes: Node[] }> {
     return this.request<{ nodes: Node[] }>(
       `/rabbitmq/servers/${serverId}/nodes`
+    );
+  }
+
+  async getNodeMemoryDetails(
+    serverId: string,
+    nodeName: string
+  ): Promise<NodeMemoryDetailsResponse> {
+    return this.request(
+      `/rabbitmq/servers/${serverId}/nodes/${encodeURIComponent(
+        nodeName
+      )}/memory`
     );
   }
 
