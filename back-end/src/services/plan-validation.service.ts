@@ -173,6 +173,10 @@ export function validateQueueCreation(
 ): void {
   const limits = getPlanLimits(plan);
 
+  console.log(
+    `validateQueueCreation: plan=${plan}, canAddQueue=${limits.canAddQueue}, currentCount=${currentQueueCount}, maxQueues=${limits.maxQueues}`
+  );
+
   if (!limits.canAddQueue) {
     throw new PlanValidationError(
       "Queue creation",
@@ -224,6 +228,10 @@ export function validateMessageSending(
   currentMonthlyMessages: number
 ): void {
   const limits = getPlanLimits(plan);
+
+  console.log(
+    `validateMessageSending: plan=${plan}, canSendMessages=${limits.canSendMessages}, currentMessages=${currentMonthlyMessages}, maxMessages=${limits.maxMessagesPerMonth}`
+  );
 
   if (!limits.canSendMessages) {
     throw new PlanValidationError(

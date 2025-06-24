@@ -9,7 +9,7 @@ import { AppSidebar } from "@/components/AppSidebar";
 import { SendMessageDialog } from "@/components/SendMessageDialog";
 import { AddQueueForm } from "@/components/AddQueueForm";
 import { PurgeQueueDialog } from "@/components/PurgeQueueDialog";
-import { PrivacyNotice, DataStorageWarning } from "@/components/PrivacyNotice";
+import { DataStorageWarning } from "@/components/PrivacyNotice";
 import { NoServerConfigured } from "@/components/NoServerConfigured";
 import { useServerContext } from "@/contexts/ServerContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -37,7 +37,6 @@ import {
   MessageSquare,
   Users,
   Database,
-  RefreshCw,
   Crown,
   Lock,
 } from "lucide-react";
