@@ -35,11 +35,43 @@ export interface UpdatePrivacySettingsRequest {
   consentGiven: boolean;
 }
 
+export interface PlanLimits {
+  canAddQueue: boolean;
+  canSendMessages: boolean;
+  canAddServer: boolean;
+  canExportData: boolean;
+  maxQueues: number;
+  maxServers: number;
+  maxUsers: number | null;
+  maxInvitations: number | null;
+  maxMessagesPerMonth: number | null;
+  hasAdvancedMetrics: boolean;
+  hasAdvancedAlerts: boolean;
+  hasPrioritySupport: boolean;
+  canInviteUsers: boolean;
+  userCostPerMonth?: number;
+  canViewBasicMemoryMetrics: boolean;
+  canViewAdvancedMemoryMetrics: boolean;
+  canViewExpertMemoryMetrics: boolean;
+  canViewMemoryTrends: boolean;
+  canViewMemoryOptimization: boolean;
+  supportedRabbitMqVersions: string[];
+}
+
+export interface PlanLimitsResponse {
+  plan: string;
+  limits: PlanLimits;
+}
+
 export class WorkspaceApiClient extends BaseApiClient {
   async getCurrentWorkspace(): Promise<{
     workspace: Workspace;
   }> {
     return this.request("/workspaces/current");
+  }
+
+  async getCurrentPlanLimits(): Promise<PlanLimitsResponse> {
+    return this.request("/workspaces/current/plan-limits");
   }
 
   async getWorkspacePrivacySettings(WorkspaceId: string): Promise<{

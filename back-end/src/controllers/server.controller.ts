@@ -8,7 +8,11 @@ import {
   UpdateServerSchema,
   RabbitMQCredentialsSchema,
 } from "../schemas/rabbitmq";
-import { validateServerCreation } from "../services/plan-validation.service";
+import {
+  validateServerCreation,
+  validateRabbitMqVersion,
+  extractMajorMinorVersion,
+} from "../services/plan-validation.service";
 import {
   getWorkspacePlan,
   getWorkspaceResourceCounts,
@@ -172,8 +176,16 @@ serverController.post(
         sslConfig: data.sslConfig,
       });
 
-      // Attempt to get the overview to validate connection
-      await client.getOverview();
+      // Attempt to get the overview to validate connection and detect version
+      const overview = await client.getOverview();
+      const rabbitMqVersion = overview.rabbitmq_version;
+      const majorMinorVersion = extractMajorMinorVersion(rabbitMqVersion);
+
+      // Validate RabbitMQ version against plan restrictions
+      if (user.workspaceId) {
+        const plan = await getWorkspacePlan(user.workspaceId);
+        validateRabbitMqVersion(plan, rabbitMqVersion);
+      }
 
       const server = await prisma.rabbitMQServer.create({
         data: {
@@ -188,6 +200,8 @@ serverController.post(
           sslCaCertPath: data.sslConfig?.caCertPath,
           sslClientCertPath: data.sslConfig?.clientCertPath,
           sslClientKeyPath: data.sslConfig?.clientKeyPath,
+          version: rabbitMqVersion, // Store full version
+          versionMajorMinor: majorMinorVersion, // Store major.minor for plan validation
           // Automatically assign server to user's workspace
           workspaceId: user.workspaceId,
         },

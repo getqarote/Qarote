@@ -21,6 +21,8 @@ export interface PlanLimits {
   canViewExpertMemoryMetrics: boolean;
   canViewMemoryTrends: boolean;
   canViewMemoryOptimization: boolean;
+  // RabbitMQ Version Support
+  supportedRabbitMqVersions: string[]; // Supported major.minor versions (e.g., ["3.12", "3.13", "4.0", "4.1"])
 }
 
 export const PLAN_LIMITS: Record<WorkspacePlan, PlanLimits> = {
@@ -44,6 +46,8 @@ export const PLAN_LIMITS: Record<WorkspacePlan, PlanLimits> = {
     canViewExpertMemoryMetrics: false,
     canViewMemoryTrends: false,
     canViewMemoryOptimization: false,
+    // RabbitMQ Version Support - FREE users can only connect to 3.12 LTS
+    supportedRabbitMqVersions: ["3.12"],
   },
   [WorkspacePlan.FREELANCE]: {
     canAddQueue: true,
@@ -66,6 +70,8 @@ export const PLAN_LIMITS: Record<WorkspacePlan, PlanLimits> = {
     canViewExpertMemoryMetrics: false,
     canViewMemoryTrends: false,
     canViewMemoryOptimization: false,
+    // RabbitMQ Version Support - FREELANCE users can only connect to 3.12 LTS
+    supportedRabbitMqVersions: ["3.12"],
   },
   [WorkspacePlan.STARTUP]: {
     canAddQueue: true,
@@ -88,6 +94,8 @@ export const PLAN_LIMITS: Record<WorkspacePlan, PlanLimits> = {
     canViewExpertMemoryMetrics: false,
     canViewMemoryTrends: true,
     canViewMemoryOptimization: true,
+    // RabbitMQ Version Support - STARTUP users can connect to all LTS versions
+    supportedRabbitMqVersions: ["3.12", "3.13", "4.0", "4.1"],
   },
   [WorkspacePlan.BUSINESS]: {
     canAddQueue: true,
@@ -110,6 +118,8 @@ export const PLAN_LIMITS: Record<WorkspacePlan, PlanLimits> = {
     canViewExpertMemoryMetrics: true,
     canViewMemoryTrends: true,
     canViewMemoryOptimization: true,
+    // RabbitMQ Version Support - BUSINESS users can connect to all LTS versions
+    supportedRabbitMqVersions: ["3.12", "3.13", "4.0", "4.1"],
   },
 };
 
@@ -119,10 +129,13 @@ export class PlanValidationError extends Error {
     public currentPlan: WorkspacePlan,
     public requiredPlan: string,
     public currentCount?: number,
-    public limit?: number
+    public limit?: number,
+    public details?: string // Additional details for the error
   ) {
     super(
-      `${feature} is not available on the ${currentPlan} plan. Upgrade to ${requiredPlan} plan.`
+      `${feature} is not available on the ${currentPlan} plan. Upgrade to ${requiredPlan} plan.${
+        details ? " " + details : ""
+      }`
     );
     this.name = "PlanValidationError";
   }
@@ -427,4 +440,46 @@ export function getInvitationLimitText(plan: WorkspacePlan): string {
   }
 
   return `Up to ${limits.maxInvitations} invitation${limits.maxInvitations === 1 ? "" : "s"}`;
+}
+
+/**
+ * Extract major.minor version from full RabbitMQ version string
+ * Examples: "3.12.10" -> "3.12", "4.0.1" -> "4.0", "4.1.0-rc.1" -> "4.1"
+ */
+export function extractMajorMinorVersion(fullVersion: string): string {
+  const versionMatch = fullVersion.match(/^(\d+\.\d+)/);
+  return versionMatch ? versionMatch[1] : fullVersion;
+}
+
+/**
+ * Validate if a RabbitMQ version is supported by the current plan
+ */
+export function validateRabbitMqVersion(
+  plan: WorkspacePlan,
+  rabbitMqVersion: string
+): void {
+  const limits = getPlanLimits(plan);
+  const majorMinorVersion = extractMajorMinorVersion(rabbitMqVersion);
+
+  if (!limits.supportedRabbitMqVersions.includes(majorMinorVersion)) {
+    const supportedVersionsStr = limits.supportedRabbitMqVersions.join(", ");
+    throw new PlanValidationError(
+      `RabbitMQ version ${majorMinorVersion}`,
+      plan,
+      plan === WorkspacePlan.FREE || plan === WorkspacePlan.FREELANCE
+        ? "Startup or Business"
+        : "a higher plan",
+      undefined,
+      undefined,
+      `Supported versions for ${plan} plan: ${supportedVersionsStr}`
+    );
+  }
+}
+
+/**
+ * Get all supported RabbitMQ versions for a given plan
+ */
+export function getSupportedRabbitMqVersions(plan: WorkspacePlan): string[] {
+  const limits = getPlanLimits(plan);
+  return limits.supportedRabbitMqVersions;
 }

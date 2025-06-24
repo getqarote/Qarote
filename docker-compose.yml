@@ -131,10 +131,11 @@ services:
       timeout: 10s
       retries: 3
 
-  rabbitmq-local:
+  # RabbitMQ 3.12 LTS - Available for all plans (FREE, FREELANCE, STARTUP, BUSINESS)
+  rabbitmq-3-12:
     image: rabbitmq:3.12-management-alpine
-    container_name: rabbit_dashboard_rabbitmq_local
-    hostname: rabbitmq-local
+    container_name: rabbit_dashboard_rabbitmq_3_12
+    hostname: rabbitmq-3-12
     environment:
       RABBITMQ_DEFAULT_USER: admin
       RABBITMQ_DEFAULT_PASS: admin123
@@ -143,8 +144,80 @@ services:
       - "5676:5672" # AMQP port
       - "15676:15672" # Management UI port
     volumes:
-      - rabbitmq_local_data:/var/lib/rabbitmq
+      - rabbitmq_3_12_data:/var/lib/rabbitmq
       - ./docker/rabbitmq/local-definitions.json:/etc/rabbitmq/definitions.json:ro
+      - ./docker/rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+    networks:
+      - rabbit_dashboard_network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # RabbitMQ 3.13 LTS - Available for STARTUP and BUSINESS plans only
+  rabbitmq-3-13:
+    image: rabbitmq:3.13-management-alpine
+    container_name: rabbit_dashboard_rabbitmq_3_13
+    hostname: rabbitmq-3-13
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin123
+      RABBITMQ_DEFAULT_VHOST: /
+    ports:
+      - "5677:5672" # AMQP port
+      - "15677:15672" # Management UI port
+    volumes:
+      - rabbitmq_3_13_data:/var/lib/rabbitmq
+      - ./docker/rabbitmq/local-definitions.json:/etc/rabbitmq/definitions.json:ro
+      - ./docker/rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+    networks:
+      - rabbit_dashboard_network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # RabbitMQ 4.0 LTS - Available for STARTUP and BUSINESS plans only
+  rabbitmq-4-0:
+    image: rabbitmq:4.0-management-alpine
+    container_name: rabbit_dashboard_rabbitmq_4_0
+    hostname: rabbitmq-4-0
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin123
+      RABBITMQ_DEFAULT_VHOST: /
+    ports:
+      - "5678:5672" # AMQP port
+      - "15678:15672" # Management UI port
+    volumes:
+      - rabbitmq_4_0_data:/var/lib/rabbitmq
+      - ./docker/rabbitmq/v4-definitions.json:/etc/rabbitmq/definitions.json:ro
+      - ./docker/rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+    networks:
+      - rabbit_dashboard_network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # RabbitMQ 4.1 LTS - Available for STARTUP and BUSINESS plans only
+  rabbitmq-4-1:
+    image: rabbitmq:4.1-management-alpine
+    container_name: rabbit_dashboard_rabbitmq_4_1
+    hostname: rabbitmq-4-1
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin123
+      RABBITMQ_DEFAULT_VHOST: /
+    ports:
+      - "5679:5672" # AMQP port
+      - "15679:15672" # Management UI port
+    volumes:
+      - rabbitmq_4_1_data:/var/lib/rabbitmq
+      - ./docker/rabbitmq/v4-definitions.json:/etc/rabbitmq/definitions.json:ro
       - ./docker/rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
     networks:
       - rabbit_dashboard_network
@@ -164,6 +237,14 @@ volumes:
   rabbitmq_node3_data:
     driver: local
   rabbitmq_local_data:
+    driver: local
+  rabbitmq_3_12_data:
+    driver: local
+  rabbitmq_3_13_data:
+    driver: local
+  rabbitmq_4_0_data:
+    driver: local
+  rabbitmq_4_1_data:
     driver: local
 
 networks:

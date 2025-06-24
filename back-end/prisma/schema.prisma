@@ -168,6 +168,8 @@ model RabbitMQServer {
   sslCaCertPath       String?
   sslClientCertPath   String?
   sslClientKeyPath    String?
+  version             String?     // RabbitMQ version (e.g., "3.12.10", "4.0.1")
+  versionMajorMinor   String?     // Major.Minor version for plan validation (e.g., "3.12", "4.0")
   workspaceId         String?
   workspace           Workspace?    @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
   createdAt           DateTime    @default(now())

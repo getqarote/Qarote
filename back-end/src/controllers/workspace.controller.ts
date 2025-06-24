@@ -13,7 +13,10 @@ import {
   UpdateWorkspaceSchema,
 } from "../schemas/workspace";
 import { UserRole } from "@prisma/client";
-import { validateDataExport } from "../services/plan-validation.service";
+import {
+  validateDataExport,
+  getPlanLimits,
+} from "../services/plan-validation.service";
 
 const workspaceController = new Hono();
 
@@ -558,5 +561,35 @@ workspaceController.delete(
     }
   }
 );
+
+// Get current plan limits
+workspaceController.get("/current/plan-limits", async (c) => {
+  const user = c.get("user");
+
+  if (!user.workspaceId) {
+    return c.json({ error: "You are not associated with any workspace" }, 404);
+  }
+
+  try {
+    const workspace = await prisma.workspace.findUnique({
+      where: { id: user.workspaceId },
+      select: { plan: true },
+    });
+
+    if (!workspace) {
+      return c.json({ error: "Workspace not found" }, 404);
+    }
+
+    const planLimits = getPlanLimits(workspace.plan);
+
+    return c.json({
+      plan: workspace.plan,
+      limits: planLimits,
+    });
+  } catch (error) {
+    console.error("Error fetching plan limits:", error);
+    return c.json({ error: "Failed to fetch plan limits" }, 500);
+  }
+});
 
 export default workspaceController;

@@ -20,6 +20,7 @@ import { Credentials } from "./Credentials";
 import { SSLConfiguration } from "./SSLConfiguration";
 import { ConnectionStatusDisplay } from "./ConnectionStatusDisplay";
 import { TestConnectionButton } from "./TestConnectionButton";
+import { RabbitMqVersionInfo } from "./RabbitMqVersionInfo";
 import { useAddServerForm } from "./useAddServerForm";
 import type { AddServerFormProps } from "./types";
 
@@ -125,7 +126,7 @@ export const AddServerForm = ({
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px] max-h-[90vh] flex flex-col">
+      <DialogContent className="sm:max-w-[700px] lg:max-w-[800px] max-h-[90vh] flex flex-col">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <Server className="h-5 w-5" />
@@ -139,6 +140,8 @@ export const AddServerForm = ({
 
         <div className="flex-1 overflow-y-auto px-6">
           <form onSubmit={handleSubmit} className="space-y-6">
+            <RabbitMqVersionInfo />
+
             <ServerDetails
               formData={formData}
               errors={errors}
@@ -157,7 +160,14 @@ export const AddServerForm = ({
               onSSLConfigChange={handleSSLConfigChange}
             />
 
-            <ConnectionStatusDisplay connectionStatus={connectionStatus} />
+            <ConnectionStatusDisplay
+              connectionStatus={connectionStatus}
+              onUpgrade={() => {
+                // Navigate to upgrade page or show upgrade modal
+                // For now, we'll just log - this can be enhanced later
+                console.log("Upgrade plan requested");
+              }}
+            />
           </form>
         </div>
 

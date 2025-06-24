@@ -1,31 +1,31 @@
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CheckCircle, AlertCircle } from "lucide-react";
+import { EnhancedErrorDisplay } from "@/components/EnhancedErrorDisplay";
 import type { ConnectionStatus } from "./types";
 
 interface ConnectionStatusDisplayProps {
   connectionStatus: ConnectionStatus;
+  onUpgrade?: () => void; // Callback for upgrade action
 }
 
 export const ConnectionStatusDisplay = ({
   connectionStatus,
+  onUpgrade,
 }: ConnectionStatusDisplayProps) => {
   if (connectionStatus.status === "idle") {
     return null;
   }
 
+  // Use enhanced error display for error status
+  if (connectionStatus.status === "error") {
+    const error = new Error(connectionStatus.message);
+    return <EnhancedErrorDisplay error={error} onUpgrade={onUpgrade} />;
+  }
+
+  // Success status
   return (
-    <Alert
-      className={
-        connectionStatus.status === "success"
-          ? "border-green-500"
-          : "border-red-500"
-      }
-    >
-      {connectionStatus.status === "success" ? (
-        <CheckCircle className="h-4 w-4 text-green-600" />
-      ) : (
-        <AlertCircle className="h-4 w-4 text-red-600" />
-      )}
+    <Alert className="border-green-500">
+      <CheckCircle className="h-4 w-4 text-green-600" />
       <AlertDescription>
         {connectionStatus.message}
         {connectionStatus.details && (

@@ -266,6 +266,10 @@ class ApiClient {
     return this.workspaceClient.getCurrentWorkspace();
   }
 
+  async getCurrentPlanLimits() {
+    return this.workspaceClient.getCurrentPlanLimits();
+  }
+
   async getWorspacePrivacySettings(companyId: string) {
     return this.workspaceClient.getWorkspacePrivacySettings(companyId);
   }
