@@ -14,6 +14,7 @@ import { PrimaryMetricsCards } from "@/components/PrimaryMetricsCards";
 import { SecondaryMetricsCards } from "@/components/SecondaryMetricsCards";
 import { MessageThroughputChart } from "@/components/MessageThroughputChart";
 import { ActiveQueuesSection } from "@/components/ActiveQueuesSection";
+import { PlanBadge } from "@/components/ui/PlanBadge";
 import { useServerContext } from "@/contexts/ServerContext";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useDashboardData } from "@/hooks/useDashboardData";
@@ -75,6 +76,7 @@ const Index = () => {
                     </p>
                   </div>
                 </div>
+                <PlanBadge workspacePlan={workspacePlan} />
               </div>
               <Card className="border-0 shadow-md bg-white/80 backdrop-blur-sm">
                 <CardContent className="p-6">
@@ -115,6 +117,7 @@ const Index = () => {
                 </div>
               </div>
               <div className="flex gap-3">
+                <PlanBadge workspacePlan={workspacePlan} />
                 <AddServerButton
                   workspacePlan={workspacePlan}
                   serverCount={serverCount}

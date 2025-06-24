@@ -33,9 +33,11 @@ import {
 import { isAlertsEnabled } from "@/lib/alertsFeatureFlag";
 import PremiumPageWrapper from "@/components/PremiumPageWrapper";
 import { WorkspacePlan } from "@/lib/plans/planUtils";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 
 const AlertDashboard: React.FC = () => {
   const navigate = useNavigate();
+  const { workspacePlan } = useWorkspace();
   const [alerts, setAlerts] = useState<AlertInstance[]>([]);
   const [alertRules, setAlertRules] = useState<AlertRule[]>([]);
   const [stats, setStats] = useState<AlertStats | null>(null);
@@ -162,8 +164,6 @@ const AlertDashboard: React.FC = () => {
       </SidebarProvider>
     );
   }
-
-  const workspacePlan = WorkspacePlan.FREE;
 
   return (
     <SidebarProvider>

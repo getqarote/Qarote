@@ -2,6 +2,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { AddServerForm } from "@/components/AddServerForm";
 import { NoServerConfigured } from "@/components/NoServerConfigured";
+import { PlanBadge } from "@/components/ui/PlanBadge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,7 @@ import {
 } from "lucide-react";
 import { useExchanges } from "@/hooks/useApi";
 import { useServerContext } from "@/contexts/ServerContext";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 import {
   Table,
   TableBody,
@@ -39,6 +41,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Exchanges = () => {
   const { selectedServerId, hasServers } = useServerContext();
+  const { workspacePlan } = useWorkspace();
   const [expandedExchanges, setExpandedExchanges] = useState<Set<string>>(
     new Set()
   );
@@ -187,6 +190,7 @@ const Exchanges = () => {
                   </p>
                 </div>
               </div>
+              <PlanBadge workspacePlan={workspacePlan} />
             </div>
 
             {/* Overview Cards */}
@@ -202,7 +206,7 @@ const Exchanges = () => {
                   <div className="text-2xl font-bold">
                     {exchangesLoading
                       ? "..."
-                      : exchangesData?.totalExchanges ?? 0}
+                      : (exchangesData?.totalExchanges ?? 0)}
                   </div>
                   <p className="text-xs text-muted-foreground">
                     Active exchanges
@@ -219,7 +223,7 @@ const Exchanges = () => {
                   <div className="text-2xl font-bold">
                     {exchangesLoading
                       ? "..."
-                      : exchangesData?.exchangeTypes?.direct ?? 0}
+                      : (exchangesData?.exchangeTypes?.direct ?? 0)}
                   </div>
                   <p className="text-xs text-muted-foreground">
                     Point-to-point routing
@@ -236,7 +240,7 @@ const Exchanges = () => {
                   <div className="text-2xl font-bold">
                     {exchangesLoading
                       ? "..."
-                      : exchangesData?.exchangeTypes?.fanout ?? 0}
+                      : (exchangesData?.exchangeTypes?.fanout ?? 0)}
                   </div>
                   <p className="text-xs text-muted-foreground">
                     Broadcast routing
@@ -253,7 +257,7 @@ const Exchanges = () => {
                   <div className="text-2xl font-bold">
                     {exchangesLoading
                       ? "..."
-                      : exchangesData?.exchangeTypes?.topic ?? 0}
+                      : (exchangesData?.exchangeTypes?.topic ?? 0)}
                   </div>
                   <p className="text-xs text-muted-foreground">
                     Pattern routing
@@ -272,7 +276,7 @@ const Exchanges = () => {
                   <div className="text-2xl font-bold">
                     {exchangesLoading
                       ? "..."
-                      : exchangesData?.totalBindings ?? 0}
+                      : (exchangesData?.totalBindings ?? 0)}
                   </div>
                   <p className="text-xs text-muted-foreground">
                     Exchange-queue bindings

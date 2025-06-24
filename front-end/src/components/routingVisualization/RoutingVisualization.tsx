@@ -41,6 +41,7 @@ import {
 } from "lucide-react";
 import PremiumPageWrapper from "../PremiumPageWrapper";
 import { WorkspacePlan } from "@/lib/plans/planUtils";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 
 // Mock data for demonstration
 const generateMockData = () => {
@@ -180,6 +181,7 @@ const generateMockData = () => {
 };
 
 export const RoutingVisualization: React.FC = () => {
+  const { workspacePlan } = useWorkspace();
   const [data, setData] = useState(generateMockData());
   const [messageFlows, setMessageFlows] = useState<MessageFlowType[]>([]);
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
@@ -430,8 +432,6 @@ export const RoutingVisualization: React.FC = () => {
       routingSuccessRate,
     };
   }, [filteredData, data.bindings, messageFlows]);
-
-  const workspacePlan = WorkspacePlan.FREE;
 
   return (
     <SidebarProvider>

@@ -2,6 +2,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { AddServerForm } from "@/components/AddServerForm";
 import { NoServerConfigured } from "@/components/NoServerConfigured";
+import { PlanBadge } from "@/components/ui/PlanBadge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,7 @@ import {
 } from "lucide-react";
 import { useConnections, useChannels } from "@/hooks/useApi";
 import { useServerContext } from "@/contexts/ServerContext";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 import {
   Table,
   TableBody,
@@ -35,6 +37,7 @@ import {
 
 const Connections = () => {
   const { selectedServerId, hasServers } = useServerContext();
+  const { workspacePlan } = useWorkspace();
   const [expandedConnections, setExpandedConnections] = useState<Set<string>>(
     new Set()
   );
@@ -168,6 +171,7 @@ const Connections = () => {
                   </p>
                 </div>
               </div>
+              <PlanBadge workspacePlan={workspacePlan} />
             </div>
 
             {/* Overview Cards */}
@@ -183,7 +187,7 @@ const Connections = () => {
                   <div className="text-2xl font-bold">
                     {connectionsLoading
                       ? "..."
-                      : connectionsData?.totalConnections ?? 0}
+                      : (connectionsData?.totalConnections ?? 0)}
                   </div>
                   <p className="text-xs text-muted-foreground">
                     Active client connections
@@ -200,7 +204,9 @@ const Connections = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
-                    {channelsLoading ? "..." : channelsData?.totalChannels ?? 0}
+                    {channelsLoading
+                      ? "..."
+                      : (channelsData?.totalChannels ?? 0)}
                   </div>
                   <p className="text-xs text-muted-foreground">
                     Active communication channels
@@ -220,13 +226,13 @@ const Connections = () => {
                     {connectionsLoading || channelsLoading
                       ? "..."
                       : connectionsData?.totalConnections &&
-                        connectionsData.totalConnections > 0
-                      ? Math.round(
-                          ((channelsData?.totalChannels ?? 0) /
-                            connectionsData.totalConnections) *
-                            10
-                        ) / 10
-                      : 0}
+                          connectionsData.totalConnections > 0
+                        ? Math.round(
+                            ((channelsData?.totalChannels ?? 0) /
+                              connectionsData.totalConnections) *
+                              10
+                          ) / 10
+                        : 0}
                   </div>
                   <p className="text-xs text-muted-foreground">
                     Channels per connection

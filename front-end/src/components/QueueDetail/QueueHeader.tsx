@@ -4,6 +4,7 @@ import { ArrowLeft, Send, Plus, Trash2, Lock } from "lucide-react";
 import { PurgeQueueDialog } from "@/components/PurgeQueueDialog";
 import { SendMessageDialog } from "@/components/SendMessageDialog";
 import { AddQueueForm } from "@/components/AddQueueForm";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 import {
   canUserAddQueue,
   canUserSendMessages,
@@ -28,10 +29,9 @@ export function QueueHeader({
   onRefetch,
 }: QueueHeaderProps) {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const { workspacePlan } = useWorkspace();
 
-  // Get user's workspace plan - for now we'll default to FREE
-  // TODO: Create workspace context to properly fetch workspace data
-  const workspacePlan = WorkspacePlan.FREE; // This should come from workspace context
+  // Use the actual workspace plan from context
   const canAddQueue = canUserAddQueue(workspacePlan);
   const canSendMessages = canUserSendMessages(workspacePlan);
 

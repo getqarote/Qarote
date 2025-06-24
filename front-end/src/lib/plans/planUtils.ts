@@ -192,15 +192,15 @@ export function getPlanDisplayName(plan: WorkspacePlan): string {
 export function getPlanColor(plan: WorkspacePlan): string {
   switch (plan) {
     case WorkspacePlan.FREE:
-      return "text-gray-600 bg-gray-100";
+      return "text-white bg-gray-600";
     case WorkspacePlan.FREELANCE:
-      return "text-blue-600 bg-blue-100";
+      return "text-white bg-blue-600";
     case WorkspacePlan.STARTUP:
-      return "text-green-600 bg-green-100";
+      return "text-white bg-green-600";
     case WorkspacePlan.BUSINESS:
-      return "text-purple-600 bg-purple-100";
+      return "text-white bg-purple-600";
     default:
-      return "text-gray-600 bg-gray-100";
+      return "text-white bg-gray-600";
   }
 }
 
