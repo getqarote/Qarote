@@ -485,6 +485,88 @@ export function validateRabbitMqVersion(
 }
 
 /**
+ * Check if a server has more queues than the plan allows
+ */
+export function isServerOverQueueLimit(
+  plan: WorkspacePlan,
+  queueCount: number
+): boolean {
+  const limits = getPlanLimits(plan);
+  return queueCount > limits.maxQueues;
+}
+
+/**
+ * Get warning message for over-limit server
+ */
+export function getOverLimitWarningMessage(
+  plan: WorkspacePlan,
+  queueCount: number,
+  serverName: string
+): string {
+  const limits = getPlanLimits(plan);
+  const overage = queueCount - limits.maxQueues;
+
+  return `The server "${serverName}" has ${queueCount} queues, which exceeds your ${plan} plan limit of ${limits.maxQueues} queues by ${overage}. You can view existing queues but cannot create new ones. Consider upgrading your plan to manage all queues.`;
+}
+
+/**
+ * Validate if queue creation is allowed on a server
+ */
+export function validateQueueCreationOnServer(
+  plan: WorkspacePlan,
+  currentQueueCount: number,
+  isServerOverLimit: boolean,
+  serverName: string
+): void {
+  // If server is flagged as over-limit, block all queue creation
+  if (isServerOverLimit) {
+    throw new PlanValidationError(
+      "queue creation",
+      plan,
+      "a higher plan",
+      undefined,
+      undefined,
+      `Server "${serverName}" exceeds your plan's queue limit. Please upgrade your plan to create new queues.`
+    );
+  }
+
+  // Standard plan validation
+  validateQueueCreation(plan, currentQueueCount);
+}
+
+/**
+ * Get upgrade recommendation for over-limit scenario
+ */
+export function getUpgradeRecommendationForOverLimit(
+  currentPlan: WorkspacePlan,
+  queueCount: number
+): { recommendedPlan: WorkspacePlan | null; message: string } {
+  // Find the lowest plan that can accommodate the queue count
+  const plans = [
+    WorkspacePlan.FREELANCE,
+    WorkspacePlan.STARTUP,
+    WorkspacePlan.BUSINESS,
+  ];
+
+  for (const plan of plans) {
+    if (plan === currentPlan) continue;
+
+    const limits = getPlanLimits(plan);
+    if (queueCount <= limits.maxQueues) {
+      return {
+        recommendedPlan: plan,
+        message: `Upgrade to ${plan} plan (supports up to ${limits.maxQueues} queues) to fully manage this server.`,
+      };
+    }
+  }
+
+  return {
+    recommendedPlan: WorkspacePlan.BUSINESS,
+    message: `Upgrade to BUSINESS plan for maximum queue capacity.`,
+  };
+}
+
+/**
  * Get all supported RabbitMQ versions for a given plan
  */
 export function getSupportedRabbitMqVersions(plan: WorkspacePlan): string[] {

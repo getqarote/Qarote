@@ -170,6 +170,12 @@ model RabbitMQServer {
   sslClientKeyPath    String?
   version             String?     // RabbitMQ version (e.g., "3.12.10", "4.0.1")
   versionMajorMinor   String?     // Major.Minor version for plan validation (e.g., "3.12", "4.0")
+  
+  // Plan validation fields
+  isOverQueueLimit    Boolean     @default(false) // True if server has more queues than plan allows
+  queueCountAtConnect Int?        // Number of queues when server was connected
+  overLimitWarningShown Boolean   @default(false) // True if warning has been shown to user
+  
   workspaceId         String?
   workspace           Workspace?    @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
   createdAt           DateTime    @default(now())

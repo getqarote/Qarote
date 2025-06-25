@@ -13,6 +13,7 @@ import {
   validateServerCreation,
   validateRabbitMqVersion,
   extractMajorMinorVersion,
+  isServerOverQueueLimit,
 } from "../services/plan-validation.service";
 import {
   getWorkspacePlan,
@@ -69,6 +70,9 @@ serverController.get("/", async (c) => {
         sslCaCertPath: true,
         sslClientCertPath: true,
         sslClientKeyPath: true,
+        isOverQueueLimit: true,
+        queueCountAtConnect: true,
+        overLimitWarningShown: true,
         createdAt: true,
         updatedAt: true,
         workspaceId: true,
@@ -92,6 +96,9 @@ serverController.get("/", async (c) => {
         clientCertPath: server.sslClientCertPath,
         clientKeyPath: server.sslClientKeyPath,
       },
+      isOverQueueLimit: server.isOverQueueLimit,
+      queueCountAtConnect: server.queueCountAtConnect,
+      overLimitWarningShown: server.overLimitWarningShown,
       createdAt: server.createdAt,
       updatedAt: server.updatedAt,
       workspaceId: server.workspaceId,
@@ -128,6 +135,9 @@ serverController.get("/:id", async (c) => {
         sslCaCertPath: true,
         sslClientCertPath: true,
         sslClientKeyPath: true,
+        isOverQueueLimit: true,
+        queueCountAtConnect: true,
+        overLimitWarningShown: true,
         createdAt: true,
         updatedAt: true,
         workspaceId: true,
@@ -154,6 +164,9 @@ serverController.get("/:id", async (c) => {
         clientCertPath: server.sslClientCertPath,
         clientKeyPath: server.sslClientKeyPath,
       },
+      isOverQueueLimit: server.isOverQueueLimit,
+      queueCountAtConnect: server.queueCountAtConnect,
+      overLimitWarningShown: server.overLimitWarningShown,
       createdAt: server.createdAt,
       updatedAt: server.updatedAt,
       workspaceId: server.workspaceId,
@@ -208,6 +221,27 @@ serverController.post(
         validateRabbitMqVersion(plan, rabbitMqVersion);
       }
 
+      // Check queue count for over-limit detection
+      let queueCount = 0;
+      let isOverLimit = false;
+
+      try {
+        const queues = await client.getQueues();
+        queueCount = queues.length;
+
+        // Check if this server exceeds the user's plan queue limit
+        if (user.workspaceId) {
+          const plan = await getWorkspacePlan(user.workspaceId);
+          isOverLimit = isServerOverQueueLimit(plan, queueCount);
+        }
+      } catch (queueError) {
+        console.warn(
+          "Could not fetch queues during server creation:",
+          queueError
+        );
+        // Continue with server creation even if queue fetch fails
+      }
+
       // Encrypt sensitive data before storing
       const server = await prisma.rabbitMQServer.create({
         data: {
@@ -224,6 +258,10 @@ serverController.post(
           sslClientKeyPath: data.sslConfig?.clientKeyPath,
           version: rabbitMqVersion, // Store full version
           versionMajorMinor: majorMinorVersion, // Store major.minor for plan validation
+          // Store over-limit information
+          isOverQueueLimit: isOverLimit,
+          queueCountAtConnect: queueCount,
+          overLimitWarningShown: false,
           // Automatically assign server to user's workspace
           workspaceId: user.workspaceId,
         },
@@ -397,5 +435,38 @@ serverController.post(
     }
   }
 );
+
+// Mark over-limit warning as shown for a server
+serverController.put("/:id/warning-shown", async (c) => {
+  const id = c.req.param("id");
+  const user = c.get("user");
+
+  try {
+    // Check if server exists and belongs to user's workspace
+    const existingServer = await prisma.rabbitMQServer.findUnique({
+      where: {
+        id,
+        workspaceId: user.workspaceId || null,
+      },
+    });
+
+    if (!existingServer) {
+      return c.json({ error: "Server not found or access denied" }, 404);
+    }
+
+    // Update warning shown status
+    await prisma.rabbitMQServer.update({
+      where: { id },
+      data: {
+        overLimitWarningShown: true,
+      },
+    });
+
+    return c.json({ message: "Warning status updated successfully" });
+  } catch (error) {
+    console.error(`Error updating warning status for server ${id}:`, error);
+    return c.json({ error: "Failed to update warning status" }, 500);
+  }
+});
 
 export default serverController;

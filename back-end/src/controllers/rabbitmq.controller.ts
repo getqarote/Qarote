@@ -7,13 +7,15 @@ import { CreateQueueSchema } from "../schemas/rabbitmq";
 import { authenticate } from "../core/auth";
 import { EncryptionService } from "../services/encryption.service";
 import {
-  validateQueueCreation,
   validateMessageSending,
   validateBasicMemoryMetricsAccess,
   validateAdvancedMemoryMetricsAccess,
   validateExpertMemoryMetricsAccess,
   validateMemoryTrendsAccess,
   validateMemoryOptimizationAccess,
+  validateQueueCreationOnServer,
+  getOverLimitWarningMessage,
+  getUpgradeRecommendationForOverLimit,
 } from "../services/plan-validation.service";
 import {
   getWorkspacePlan,
@@ -21,6 +23,7 @@ import {
   getMonthlyMessageCount,
   planValidationMiddleware,
 } from "../middlewares/plan-validation";
+import { RabbitMQOverview } from "@/types/rabbitmq";
 
 const rabbitmqController = new Hono();
 
@@ -48,17 +51,36 @@ function getDecryptedCredentials(server: Server) {
   };
 }
 
+interface OverviewResponse {
+  overview: RabbitMQOverview; // Use a more specific type if available
+  warning?: WarningInfo; // Optional warning information
+}
+
+// Define the warning type properly
+type WarningInfo = {
+  isOverLimit: boolean;
+  message: string;
+  currentQueueCount: number;
+  queueCountAtConnect: number | null;
+  upgradeRecommendation: string;
+  recommendedPlan: string | null;
+  warningShown: boolean | null;
+};
+
 // Get overview for a specific server
 rabbitmqController.get("/servers/:id/overview", async (c) => {
   const id = c.req.param("id");
   const user = c.get("user");
 
   try {
-    // Verify the server belongs to the user's workspace
+    // Verify the server belongs to the user's workspace and get over-limit info
     const server = await prisma.rabbitMQServer.findFirst({
       where: {
         id,
         workspaceId: user.workspaceId!,
+      },
+      include: {
+        workspace: true,
       },
     });
 
@@ -69,7 +91,40 @@ rabbitmqController.get("/servers/:id/overview", async (c) => {
     const client = new RabbitMQClient(getDecryptedCredentials(server));
 
     const overview = await client.getOverview();
-    return c.json({ overview });
+
+    // Prepare response with properly typed over-limit warning information
+    const response: OverviewResponse = {
+      overview,
+    };
+
+    // Add warning information if server is over the queue limit
+    if (server.isOverQueueLimit && server.workspace) {
+      // Get current queue count from the overview
+      const currentQueueCount = overview.object_totals?.queues || 0;
+
+      const warningMessage = getOverLimitWarningMessage(
+        server.workspace.plan,
+        currentQueueCount,
+        server.name
+      );
+
+      const upgradeRecommendation = getUpgradeRecommendationForOverLimit(
+        server.workspace.plan,
+        currentQueueCount
+      );
+
+      response.warning = {
+        isOverLimit: true,
+        message: warningMessage,
+        currentQueueCount: currentQueueCount,
+        queueCountAtConnect: server.queueCountAtConnect,
+        upgradeRecommendation: upgradeRecommendation.message,
+        recommendedPlan: upgradeRecommendation.recommendedPlan,
+        warningShown: server.overLimitWarningShown,
+      };
+    }
+
+    return c.json(response);
   } catch (error) {
     console.error(`Error fetching overview for server ${id}:`, error);
     return c.json(
@@ -88,11 +143,14 @@ rabbitmqController.get("/servers/:id/queues", async (c) => {
   const user = c.get("user");
 
   try {
-    // Verify the server belongs to the user's workspace
+    // Verify the server belongs to the user's workspace and get over-limit info
     const server = await prisma.rabbitMQServer.findFirst({
       where: {
         id,
         workspaceId: user.workspaceId!,
+      },
+      include: {
+        workspace: true,
       },
     });
 
@@ -163,7 +221,34 @@ rabbitmqController.get("/servers/:id/queues", async (c) => {
       }
     }
 
-    return c.json({ queues });
+    // Prepare response with over-limit warning information
+    const response: any = { queues };
+
+    // Add warning information if server is over the queue limit
+    if (server.isOverQueueLimit && server.workspace) {
+      const warningMessage = getOverLimitWarningMessage(
+        server.workspace.plan,
+        queues.length,
+        server.name
+      );
+
+      const upgradeRecommendation = getUpgradeRecommendationForOverLimit(
+        server.workspace.plan,
+        queues.length
+      );
+
+      response.warning = {
+        isOverLimit: true,
+        message: warningMessage,
+        currentQueueCount: queues.length,
+        queueCountAtConnect: server.queueCountAtConnect,
+        upgradeRecommendation: upgradeRecommendation.message,
+        recommendedPlan: upgradeRecommendation.recommendedPlan,
+        warningShown: server.overLimitWarningShown,
+      };
+    }
+
+    return c.json(response);
   } catch (error) {
     console.error(`Error fetching queues for server ${id}:`, error);
     return c.json(
@@ -556,10 +641,14 @@ rabbitmqController.post(
     const user = c.get("user");
 
     try {
-      // Get server to check workspace ownership
+      // Get server to check workspace ownership and over-limit status
       const server = await prisma.rabbitMQServer.findUnique({
         where: { id: serverId },
-        select: { workspaceId: true },
+        select: {
+          workspaceId: true,
+          isOverQueueLimit: true,
+          name: true,
+        },
       });
 
       if (!server) {
@@ -577,9 +666,16 @@ rabbitmqController.post(
       ]);
 
       console.log(
-        `Queue creation validation: Plan=${plan}, Current queues=${resourceCounts.queues}`
+        `Queue creation validation: Plan=${plan}, Current queues=${resourceCounts.queues}, Server over limit=${server.isOverQueueLimit}`
       );
-      validateQueueCreation(plan, resourceCounts.queues);
+
+      // Use enhanced validation that checks server over-limit status
+      validateQueueCreationOnServer(
+        plan,
+        resourceCounts.queues,
+        server.isOverQueueLimit || false,
+        server.name
+      );
 
       // Create the queue via RabbitMQ API
       const rabbitMQServer = await prisma.rabbitMQServer.findUnique({
