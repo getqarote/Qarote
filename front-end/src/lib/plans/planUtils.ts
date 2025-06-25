@@ -161,6 +161,24 @@ export function canUserAddQueueWithCount(
   return currentQueueCount < features.maxQueues;
 }
 
+export function canUserSendMessagesWithCount(
+  plan: WorkspacePlan,
+  currentMonthlyMessages: number
+): boolean {
+  const features = getPlanFeatures(plan);
+
+  if (!features.canSendMessages) {
+    return false;
+  }
+
+  // If maxMessagesPerMonth is undefined, it's unlimited
+  if (features.maxMessagesPerMonth === undefined) {
+    return true;
+  }
+
+  return currentMonthlyMessages < features.maxMessagesPerMonth;
+}
+
 export function getQueueLimitForPlan(plan: WorkspacePlan): number | undefined {
   return getPlanFeatures(plan).maxQueues;
 }
@@ -189,6 +207,12 @@ export function getMessageLimitText(plan: WorkspacePlan): string {
     return "Unlimited messages";
   }
   return `${features.maxMessagesPerMonth} messages/month`;
+}
+
+export function getMessageLimitForPlan(
+  plan: WorkspacePlan
+): number | undefined {
+  return getPlanFeatures(plan).maxMessagesPerMonth;
 }
 
 export function getServerLimitText(plan: WorkspacePlan): string {

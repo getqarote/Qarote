@@ -9,8 +9,8 @@ import { useServerContext } from "@/contexts/ServerContext";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useQueues, queryKeys } from "@/hooks/useApi";
 import {
-  canUserSendMessages,
   canUserAddQueueWithCount,
+  canUserSendMessagesWithCount,
 } from "@/lib/plans/planUtils";
 import PlanUpgradeModal from "@/components/plans/PlanUpgradeModal";
 import { QueueHeader } from "@/components/Queues/QueueHeader";
@@ -31,13 +31,23 @@ const Queues = () => {
   const queues = useMemo(() => queuesData?.queues || [], [queuesData?.queues]);
   const queueCount = queues.length;
 
+  // TODO: Replace with actual monthly message count from API
+  // For testing: uncomment one of the lines below to simulate different scenarios
+  // const monthlyMessageCount = 0; // Placeholder - need to implement API endpoint
+  const monthlyMessageCount = 105; // Temporary: simulate the 105 messages we just created
+  // const monthlyMessageCount = 95; // Test FREELANCE plan near limit (95/100)
+  // const monthlyMessageCount = 100; // Test FREELANCE plan at limit (100/100)
+  // const monthlyMessageCount = 950; // Test STARTUP plan near limit (950/1000)
+
   console.log("workspacePlan", workspacePlan);
 
   // Use the actual workspace plan from context and queue count
   const canAddQueue = workspaceLoading
     ? false
     : canUserAddQueueWithCount(workspacePlan, queueCount);
-  const canSendMessages = canUserSendMessages(workspacePlan);
+  const canSendMessages = workspaceLoading
+    ? false
+    : canUserSendMessagesWithCount(workspacePlan, monthlyMessageCount);
 
   const handleAddQueueClick = () => {
     if (canAddQueue) {
@@ -143,6 +153,7 @@ const Queues = () => {
                   selectedServerId={selectedServerId}
                   workspacePlan={workspacePlan}
                   queueCount={queueCount}
+                  monthlyMessageCount={monthlyMessageCount}
                   workspaceLoading={workspaceLoading}
                   canAddQueue={canAddQueue}
                   canSendMessages={canSendMessages}
@@ -158,6 +169,7 @@ const Queues = () => {
               <PlanRestrictions
                 workspacePlan={workspacePlan}
                 queueCount={queueCount}
+                monthlyMessageCount={monthlyMessageCount}
                 canAddQueue={canAddQueue}
                 canSendMessages={canSendMessages}
                 onUpgrade={() => setShowUpgradeModal(true)}

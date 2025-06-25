@@ -1,14 +1,14 @@
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { SendMessageDialog } from "@/components/SendMessageDialog";
+import { AddSendMessageButton } from "@/components/AddSendMessageButton";
 import { AddQueueButton } from "@/components/AddQueueButton";
-import { MessageSquare, Lock } from "lucide-react";
 import { WorkspacePlan } from "@/lib/plans/planUtils";
 
 interface QueueHeaderProps {
   selectedServerId: string;
   workspacePlan: WorkspacePlan;
   queueCount: number;
+  monthlyMessageCount: number;
   workspaceLoading: boolean;
   canAddQueue: boolean;
   canSendMessages: boolean;
@@ -21,6 +21,7 @@ export function QueueHeader({
   selectedServerId,
   workspacePlan,
   queueCount,
+  monthlyMessageCount,
   workspaceLoading,
   canAddQueue,
   canSendMessages,
@@ -31,33 +32,14 @@ export function QueueHeader({
   const actions = (
     <>
       {/* Send Message Button with plan restrictions */}
-      {canSendMessages ? (
-        <SendMessageDialog
-          serverId={selectedServerId}
-          mode="exchange"
-          onSuccess={onRefetch}
-          trigger={
-            <Button variant="outline" className="flex items-center gap-2">
-              <MessageSquare className="w-4 h-4" />
-              Send Message
-            </Button>
-          }
-        />
-      ) : (
-        <Button
-          onClick={onSendMessageClick}
-          disabled={true}
-          variant="outline"
-          className="flex items-center gap-2 opacity-60 cursor-not-allowed"
-          title="Upgrade to send messages"
-        >
-          <Lock className="w-4 h-4" />
-          Send Message
-          <span className="ml-1 px-2 py-0.5 bg-orange-500 text-white text-xs rounded-full font-bold">
-            Pro
-          </span>
-        </Button>
-      )}
+      <AddSendMessageButton
+        workspacePlan={workspacePlan}
+        monthlyMessageCount={monthlyMessageCount}
+        serverId={selectedServerId}
+        workspaceLoading={workspaceLoading}
+        onUpgradeClick={onSendMessageClick}
+        onSuccess={onRefetch}
+      />
 
       {/* Add Queue Button with plan restrictions */}
       <AddQueueButton

@@ -20,6 +20,13 @@ const QueueDetail = () => {
   const navigate = useNavigate();
   const { selectedServerId } = useServerContext();
 
+  // TODO: Replace with actual monthly message count from API
+  // For testing: uncomment one of the lines below to simulate different scenarios
+  const monthlyMessageCount = 105; // Test value - need to implement API endpoint
+  // const monthlyMessageCount = 95; // Test FREELANCE plan near limit (95/100)
+  // const monthlyMessageCount = 100; // Test FREELANCE plan at limit (100/100)
+  // const monthlyMessageCount = 950; // Test STARTUP plan near limit (950/1000)
+
   const {
     data: queueData,
     isLoading,
@@ -67,6 +74,7 @@ const QueueDetail = () => {
                 queueName={queueName}
                 selectedServerId={selectedServerId}
                 messageCount={queue?.messages || 0}
+                monthlyMessageCount={monthlyMessageCount}
                 onNavigateBack={handleNavigateBack}
                 onRefetch={refetch}
               />
