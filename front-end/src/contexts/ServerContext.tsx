@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useMemo,
+} from "react";
 import { useServers } from "@/hooks/useApi";
 
 interface ServerContextType {
@@ -24,16 +30,40 @@ interface ServerProviderProps {
 }
 
 export const ServerProvider: React.FC<ServerProviderProps> = ({ children }) => {
-  const [selectedServerId, setSelectedServerId] = useState<string | null>(null);
+  // Initialize from localStorage if available
+  const [selectedServerId, setSelectedServerId] = useState<string | null>(
+    () => {
+      if (typeof window !== "undefined") {
+        return localStorage.getItem("selectedServerId");
+      }
+      return null;
+    }
+  );
+
   const { data: serversResponse, isLoading } = useServers();
 
-  const servers = serversResponse?.servers || [];
+  const servers = useMemo(
+    () => serversResponse?.servers || [],
+    [serversResponse]
+  );
   const hasServers = servers.length > 0;
+
+  // Custom setter that also persists to localStorage
+  const handleSetSelectedServerId = (id: string | null) => {
+    setSelectedServerId(id);
+    if (typeof window !== "undefined") {
+      if (id) {
+        localStorage.setItem("selectedServerId", id);
+      } else {
+        localStorage.removeItem("selectedServerId");
+      }
+    }
+  };
 
   // Auto-select first server if none is selected and servers are available
   useEffect(() => {
     if (!selectedServerId && hasServers && servers.length > 0) {
-      setSelectedServerId(servers[0].id);
+      handleSetSelectedServerId(servers[0].id);
     }
   }, [selectedServerId, hasServers, servers]);
 
@@ -44,13 +74,13 @@ export const ServerProvider: React.FC<ServerProviderProps> = ({ children }) => {
       hasServers &&
       !servers.find((s) => s.id === selectedServerId)
     ) {
-      setSelectedServerId(servers.length > 0 ? servers[0].id : null);
+      handleSetSelectedServerId(servers.length > 0 ? servers[0].id : null);
     }
   }, [selectedServerId, servers, hasServers]);
 
   const value: ServerContextType = {
     selectedServerId,
-    setSelectedServerId,
+    setSelectedServerId: handleSetSelectedServerId,
     hasServers,
     isLoading,
     serverCount: servers.length,
