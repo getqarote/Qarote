@@ -7,7 +7,7 @@ import { PrismaClient } from "@prisma/client";
 import dotenv from "dotenv";
 
 import serverController from "./controllers/server.controller";
-import rabbitmqController from "./controllers/rabbitmq.controller";
+import rabbitmqController from "./controllers/rabbitmq";
 import alertController from "./controllers/alert.controller";
 import authController from "./controllers/auth.controller";
 import userController from "./controllers/user.controller";
