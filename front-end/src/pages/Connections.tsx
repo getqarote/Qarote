@@ -105,7 +105,6 @@ const Connections = () => {
             </div>
             <NoServerConfigured
               title="Connections"
-              subtitle="Connect to a RabbitMQ server to start monitoring connections"
               description="Add a RabbitMQ server connection to monitor connections and channels."
             />
           </main>

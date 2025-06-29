@@ -32,9 +32,8 @@ export const WelcomeEmail = ({
     BUSINESS: "Business",
   }[plan];
 
-  const dashboardUrl = `${frontendUrl}/dashboard`;
-  const docsUrl = `${frontendUrl}/docs`;
-  const supportUrl = `${frontendUrl}/support`;
+  const dashboardUrl = `${frontendUrl}`;
+  const supportUrl = `${frontendUrl}/help`;
 
   return (
     <Html>
@@ -137,10 +136,6 @@ export const WelcomeEmail = ({
 
             <Text style={paragraph}>
               If you need help getting started, check out our{" "}
-              <Link href={docsUrl} style={link}>
-                documentation
-              </Link>{" "}
-              or reach out to our{" "}
               <Link href={supportUrl} style={link}>
                 support team
               </Link>

@@ -100,7 +100,6 @@ const Queues = () => {
             </div>
             <NoServerConfigured
               title="Queue Management"
-              subtitle="Connect to a RabbitMQ server to start managing queues"
               description="Add a RabbitMQ server connection to view and manage queues across your clusters."
             />
           </main>

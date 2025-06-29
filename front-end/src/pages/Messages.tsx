@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { SidebarProvider } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +11,7 @@ import { useMessageStream } from "@/hooks/useMessageStream";
 import { useQueues } from "@/hooks/useApi";
 import { useServerContext } from "@/contexts/ServerContext";
 import { useMessageHistoryAccess } from "@/hooks/useMessageHistory";
+import { NoServerConfigured } from "@/components/NoServerConfigured";
 
 const MessageBrowser = () => {
   const { selectedServerId } = useServerContext();
@@ -53,23 +54,21 @@ const MessageBrowser = () => {
     setExpandedMessages(newExpanded);
   };
 
+  console.log("Selected Server ID:", selectedServerId);
+
   if (!selectedServerId) {
     return (
       <SidebarProvider>
         <div className="min-h-screen flex w-full bg-gradient-to-br from-slate-50 to-blue-50">
           <AppSidebar />
           <main className="flex-1 p-6 overflow-auto">
-            <div className="max-w-7xl mx-auto space-y-6">
-              <div className="text-center py-12">
-                <Server className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                <h2 className="text-2xl font-semibold text-gray-900 mb-2">
-                  No Server Selected
-                </h2>
-                <p className="text-gray-600">
-                  Please select a RabbitMQ server to browse messages.
-                </p>
-              </div>
+            <div className="flex items-center gap-4">
+              <SidebarTrigger />
             </div>
+            <NoServerConfigured
+              title="Message Browser"
+              description="Add a RabbitMQ server connection to browse messages."
+            />
           </main>
         </div>
       </SidebarProvider>

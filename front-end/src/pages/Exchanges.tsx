@@ -124,7 +124,6 @@ const Exchanges = () => {
             </div>
             <NoServerConfigured
               title="Exchanges"
-              subtitle="Connect to a RabbitMQ server to start managing exchanges"
               description="Add a RabbitMQ server connection to manage exchanges and routing."
             />
           </main>

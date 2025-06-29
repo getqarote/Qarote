@@ -48,7 +48,6 @@ const Index = () => {
             </div>
             <NoServerConfigured
               title="RabbitMQ Dashboard"
-              subtitle="Welcome! Let's get started by adding your first RabbitMQ server"
               description="Add a RabbitMQ server connection to start monitoring your queues and messages."
             />
           </main>

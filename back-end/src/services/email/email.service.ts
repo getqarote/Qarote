@@ -1,9 +1,10 @@
 import { WorkspacePlan } from "@prisma/client";
 import { Resend } from "resend";
 import { render } from "@react-email/render";
+import { getPlanLimits } from "../plan-validation.service";
 import { InvitationEmail } from "./templates/invitation-email";
 import { WelcomeEmail } from "./templates/welcome-email";
-import { getPlanLimits } from "../plan-validation.service";
+import { UpgradeConfirmationEmail } from "./templates/upgrade-confirmation-email";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -142,5 +143,45 @@ export async function sendWelcomeEmail(params: {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error occurred",
     };
+  }
+}
+
+export interface UpgradeConfirmationEmailParams {
+  to: string;
+  userName: string;
+  workspaceName: string;
+  plan: WorkspacePlan;
+  billingInterval: "monthly" | "yearly";
+}
+
+export async function sendUpgradeConfirmationEmail({
+  to,
+  userName,
+  workspaceName,
+  plan,
+  billingInterval,
+}: UpgradeConfirmationEmailParams) {
+  try {
+    const emailHtml = await render(
+      UpgradeConfirmationEmail({
+        userName,
+        workspaceName,
+        plan,
+        billingInterval,
+      })
+    );
+
+    const result = await resend.emails.send({
+      from: process.env.FROM_EMAIL || "noreply@rabbitscout.com",
+      to,
+      subject: `Welcome to ${plan} Plan - Upgrade Confirmed!`,
+      html: emailHtml,
+    });
+
+    console.log("Upgrade confirmation email sent:", result);
+    return result;
+  } catch (error) {
+    console.error("Failed to send upgrade confirmation email:", error);
+    throw error;
   }
 }

@@ -26,16 +26,21 @@ interface PlanCardProps {
   plan: WorkspacePlan;
   price: string;
   period: "month" | "year";
+  billingPeriod: "monthly" | "yearly";
   originalPrice?: string;
   isPopular?: boolean;
   isCurrentPlan?: boolean;
-  onUpgrade: (plan: WorkspacePlan) => void;
+  onUpgrade: (
+    plan: WorkspacePlan,
+    billingInterval: "monthly" | "yearly"
+  ) => void;
 }
 
 const PlanCard: React.FC<PlanCardProps> = ({
   plan,
   price,
   period,
+  billingPeriod,
   originalPrice,
   isPopular,
   isCurrentPlan,
@@ -268,7 +273,7 @@ const PlanCard: React.FC<PlanCardProps> = ({
         </div>
 
         <Button
-          onClick={() => onUpgrade(plan)}
+          onClick={() => onUpgrade(plan, billingPeriod)}
           className={`w-full ${isCurrentPlan ? "bg-gray-100 text-gray-600 cursor-not-allowed" : isPopular ? "bg-purple-600 hover:bg-purple-700" : "bg-blue-600 hover:bg-blue-700"}`}
           disabled={isCurrentPlan}
         >
@@ -285,7 +290,10 @@ const PlanCard: React.FC<PlanCardProps> = ({
 
 interface PlansPageProps {
   currentPlan?: WorkspacePlan;
-  onUpgrade?: (plan: WorkspacePlan) => void;
+  onUpgrade?: (
+    plan: WorkspacePlan,
+    billingInterval: "monthly" | "yearly"
+  ) => void;
 }
 
 export const PlansPage: React.FC<PlansPageProps> = ({
@@ -419,6 +427,7 @@ export const PlansPage: React.FC<PlansPageProps> = ({
                 price={currentPricing[plan].price}
                 originalPrice={currentPricing[plan].originalPrice}
                 period={billingPeriod === "monthly" ? "month" : "year"}
+                billingPeriod={billingPeriod}
                 isPopular={plan === WorkspacePlan.STARTUP}
                 isCurrentPlan={plan === currentPlan}
                 onUpgrade={onUpgrade}
@@ -785,7 +794,7 @@ export const PlansPage: React.FC<PlansPageProps> = ({
                 {Object.values(WorkspacePlan).map((plan) => (
                   <div key={plan} className="flex-1 max-w-[140px]">
                     <Button
-                      onClick={() => onUpgrade(plan)}
+                      onClick={() => onUpgrade(plan, billingPeriod)}
                       className={`w-full text-sm ${
                         plan === currentPlan
                           ? "bg-gray-100 text-gray-600 cursor-not-allowed"
@@ -975,13 +984,15 @@ export const PlansPage: React.FC<PlansPageProps> = ({
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
-                onClick={() => onUpgrade(WorkspacePlan.FREELANCE)}
+                onClick={() =>
+                  onUpgrade(WorkspacePlan.FREELANCE, billingPeriod)
+                }
                 className="bg-white text-blue-600 hover:bg-gray-100 px-8 py-3"
               >
                 Start Free Trial
               </Button>
               <Button
-                onClick={() => onUpgrade(WorkspacePlan.STARTUP)}
+                onClick={() => onUpgrade(WorkspacePlan.STARTUP, billingPeriod)}
                 variant="outline"
                 className="border-white text-white hover:bg-white hover:text-blue-600 px-8 py-3"
               >

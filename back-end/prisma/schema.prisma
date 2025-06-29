@@ -102,6 +102,29 @@ enum CaptureMethod {
   SHOVEL
 }
 
+enum SubscriptionStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  INCOMPLETE
+  INCOMPLETE_EXPIRED
+  TRIALING
+  UNPAID
+}
+
+enum PaymentStatus {
+  SUCCEEDED
+  PENDING
+  FAILED
+  CANCELED
+  REQUIRES_ACTION
+}
+
+enum BillingInterval {
+  MONTH
+  YEAR
+}
+
 model Workspace {
   id           String         @id @default(uuid())
   name         String
@@ -117,6 +140,10 @@ model Workspace {
   consentGiven    Boolean     @default(false)
   consentDate     DateTime?
   
+  // Stripe integration
+  stripeCustomerId      String?   @unique
+  stripeSubscriptionId  String?   @unique
+  
   users                    User[]
   servers                  RabbitMQServer[]
   alertRules               AlertRule[]
@@ -126,6 +153,11 @@ model Workspace {
   capturedMessages         CapturedMessage[]
   retentionPolicy          UserRetentionPolicy?
   messageCaptureConfigs    MessageCaptureConfig[]
+  
+  // Payment relations
+  subscription             Subscription?
+  payments                 Payment[]
+  
   createdAt                DateTime       @default(now())
   updatedAt                DateTime       @updatedAt
   invitations              Invitation[]
@@ -478,4 +510,121 @@ model MessageCaptureConfig {
   @@index([serverId], name: "capture_config_server_idx")
   @@index([enabled], name: "capture_config_enabled_idx")
   @@map("message_capture_config")
+}
+
+model Subscription {
+  id                    String             @id @default(uuid())
+  workspaceId           String             @unique
+  stripeSubscriptionId  String             @unique
+  stripePriceId         String
+  stripeCustomerId      String
+  
+  // Subscription details
+  plan                  WorkspacePlan
+  status                SubscriptionStatus
+  billingInterval       BillingInterval
+  
+  // Pricing
+  pricePerMonth         Decimal            @db.Decimal(10,2)
+  currency              String             @default("usd")
+  
+  // Billing periods
+  currentPeriodStart    DateTime
+  currentPeriodEnd      DateTime
+  
+  // Trial information
+  trialStart            DateTime?
+  trialEnd              DateTime?
+  
+  // Cancellation
+  cancelAtPeriodEnd     Boolean            @default(false)
+  canceledAt            DateTime?
+  cancelationReason     String?
+  
+  // Metadata
+  metadata              Json?
+  
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+  
+  // Relations
+  workspace             Workspace          @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  
+  @@index([stripeSubscriptionId], name: "subscription_stripe_id_idx")
+  @@index([workspaceId], name: "subscription_workspace_idx")
+  @@index([status], name: "subscription_status_idx")
+  @@map("subscriptions")
+}
+
+model Payment {
+  id                  String        @id @default(uuid())
+  workspaceId         String
+  stripePaymentId     String        @unique
+  stripeInvoiceId     String?
+  stripeChargeId      String?
+  
+  // Payment details
+  amount              Decimal       @db.Decimal(10,2)
+  currency            String        @default("usd")
+  status              PaymentStatus
+  
+  // Description and metadata
+  description         String?
+  plan                WorkspacePlan?
+  billingInterval     BillingInterval?
+  
+  // Billing period covered by this payment
+  periodStart         DateTime?
+  periodEnd           DateTime?
+  
+  // Payment processing
+  paymentMethodId     String?
+  paymentMethodType   String?       // card, bank_transfer, etc.
+  
+  // Failure information
+  failureCode         String?
+  failureMessage      String?
+  
+  // Receipt and invoice
+  receiptUrl          String?
+  invoiceUrl          String?
+  
+  // Metadata from Stripe
+  metadata            Json?
+  
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+  paidAt              DateTime?
+  
+  // Relations
+  workspace           Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  
+  @@index([workspaceId], name: "payment_workspace_idx")
+  @@index([status], name: "payment_status_idx")
+  @@index([stripePaymentId], name: "payment_stripe_id_idx")
+  @@index([createdAt], name: "payment_created_at_idx")
+  @@map("payments")
+}
+
+model StripeWebhookEvent {
+  id              String    @id @default(uuid())
+  stripeEventId   String    @unique
+  eventType       String
+  processed       Boolean   @default(false)
+  
+  // Event data
+  data            Json
+  
+  // Processing information
+  processedAt     DateTime?
+  errorMessage    String?
+  retryCount      Int       @default(0)
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  @@index([stripeEventId], name: "webhook_stripe_event_idx")
+  @@index([eventType], name: "webhook_event_type_idx")
+  @@index([processed], name: "webhook_processed_idx")
+  @@map("stripe_webhook_events")
 }

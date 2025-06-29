@@ -21,7 +21,6 @@ const Nodes = () => {
             </div>
             <NoServerConfigured
               title="RabbitMQ Nodes"
-              subtitle="No RabbitMQ servers configured"
               description="Add a RabbitMQ server connection to view cluster nodes and their metrics."
             />
           </main>

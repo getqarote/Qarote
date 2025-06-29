@@ -3,15 +3,24 @@ import { useNavigate } from "react-router-dom";
 import { WorkspacePlan } from "@/lib/plans/planUtils";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { loadStripe } from "@stripe/stripe-js";
+
+// Initialize Stripe
+const stripePromise = loadStripe(
+  import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || ""
+);
 
 export const usePlanUpgrade = () => {
   const [isUpgrading, setIsUpgrading] = useState(false);
   const navigate = useNavigate();
   const { workspace } = useWorkspace();
-  const { user } = useAuth();
+  const { user, token } = useAuth();
 
-  const handleUpgrade = async (targetPlan: WorkspacePlan) => {
-    if (!workspace || !user) {
+  const handleUpgrade = async (
+    targetPlan: WorkspacePlan,
+    billingInterval: "monthly" | "yearly" = "monthly"
+  ) => {
+    if (!workspace || !user || !token) {
       navigate("/auth/signin");
       return;
     }
@@ -19,25 +28,48 @@ export const usePlanUpgrade = () => {
     setIsUpgrading(true);
 
     try {
-      // For now, we'll just show a coming soon message
-      // In the future, this would integrate with a payment processor
-
       if (targetPlan === WorkspacePlan.FREE) {
-        // Handle free plan signup/downgrade
-        console.log("Switching to free plan");
+        // Handle free plan - redirect to customer portal for downgrades
+        const response = await fetch("/api/payments/portal", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (response.ok) {
+          const { url } = await response.json();
+          window.location.href = url;
+        } else {
+          throw new Error("Failed to create customer portal session");
+        }
         return;
       }
 
-      // For paid plans, show upgrade modal or redirect to payment
-      console.log(`Upgrading to ${targetPlan} plan`);
+      // Create Stripe checkout session for paid plans
+      const response = await fetch("/api/payments/checkout", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          plan: targetPlan,
+          billingInterval,
+          successUrl: `${window.location.origin}/profile?tab=plans&success=true`,
+          cancelUrl: `${window.location.origin}/plans`,
+        }),
+      });
 
-      // This would typically:
-      // 1. Open a payment modal (Stripe, PayPal, etc.)
-      // 2. Handle payment processing
-      // 3. Update the workspace plan on success
-      // 4. Show success message
+      if (!response.ok) {
+        throw new Error("Failed to create checkout session");
+      }
 
-      alert(`Upgrade to ${targetPlan} plan - Payment integration coming soon!`);
+      const { url } = await response.json();
+
+      // Redirect to Stripe Checkout
+      window.location.href = url;
     } catch (error) {
       console.error("Error upgrading plan:", error);
       alert("There was an error upgrading your plan. Please try again.");
@@ -46,8 +78,42 @@ export const usePlanUpgrade = () => {
     }
   };
 
+  const openCustomerPortal = async () => {
+    if (!workspace || !user || !token) {
+      navigate("/auth/signin");
+      return;
+    }
+
+    setIsUpgrading(true);
+
+    try {
+      const response = await fetch("/api/payments/portal", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to create customer portal session");
+      }
+
+      const { url } = await response.json();
+      window.location.href = url;
+    } catch (error) {
+      console.error("Error opening customer portal:", error);
+      alert(
+        "There was an error opening the customer portal. Please try again."
+      );
+    } finally {
+      setIsUpgrading(false);
+    }
+  };
+
   return {
     handleUpgrade,
+    openCustomerPortal,
     isUpgrading,
   };
 };
