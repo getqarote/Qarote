@@ -6,7 +6,6 @@ import type {
   MessageProperties,
   QueueCreateOptions,
   BindingArguments,
-  AckMode,
   PurgeQueueResult,
   PublishResult,
   CreateQueueResult,
@@ -104,52 +103,72 @@ export class RabbitMQQueueClient extends RabbitMQBaseClient {
     // Map our property names to RabbitMQ Management API property names
     const rabbitMQProperties: any = {};
 
-    // Always set delivery_mode
-    rabbitMQProperties.delivery_mode = properties.delivery_mode || 2;
+    try {
+      // Always set delivery_mode
+      rabbitMQProperties.delivery_mode = properties.delivery_mode || 2;
 
-    // Map other properties, filtering out undefined values
-    if (properties.priority !== undefined)
-      rabbitMQProperties.priority = properties.priority;
-    if (properties.headers) rabbitMQProperties.headers = properties.headers;
-    if (properties.expiration)
-      rabbitMQProperties.expiration = properties.expiration;
-    if (properties.app_id) rabbitMQProperties.app_id = properties.app_id;
-    if (properties.content_type)
-      rabbitMQProperties.content_type = properties.content_type;
-    if (properties.content_encoding)
-      rabbitMQProperties.content_encoding = properties.content_encoding;
-    if (properties.correlation_id)
-      rabbitMQProperties.correlation_id = properties.correlation_id;
-    if (properties.reply_to) rabbitMQProperties.reply_to = properties.reply_to;
-    if (properties.message_id)
-      rabbitMQProperties.message_id = properties.message_id;
-    if (properties.timestamp)
-      rabbitMQProperties.timestamp = properties.timestamp;
-    if (properties.type) rabbitMQProperties.type = properties.type;
+      // Map other properties, filtering out undefined values
+      if (properties.priority !== undefined)
+        rabbitMQProperties.priority = properties.priority;
+      if (properties.headers) rabbitMQProperties.headers = properties.headers;
+      if (properties.expiration)
+        rabbitMQProperties.expiration = properties.expiration;
+      if (properties.app_id) rabbitMQProperties.app_id = properties.app_id;
+      if (properties.content_type)
+        rabbitMQProperties.content_type = properties.content_type;
+      if (properties.content_encoding)
+        rabbitMQProperties.content_encoding = properties.content_encoding;
+      if (properties.correlation_id)
+        rabbitMQProperties.correlation_id = properties.correlation_id;
+      if (properties.reply_to)
+        rabbitMQProperties.reply_to = properties.reply_to;
+      if (properties.message_id)
+        rabbitMQProperties.message_id = properties.message_id;
+      if (properties.timestamp)
+        rabbitMQProperties.timestamp = properties.timestamp;
+      if (properties.type) rabbitMQProperties.type = properties.type;
 
-    const publishData = {
-      properties: rabbitMQProperties,
-      routing_key: routingKey,
-      payload: payload,
-      payload_encoding: "string",
-    };
+      const publishData = {
+        properties: rabbitMQProperties,
+        routing_key: routingKey,
+        payload: payload,
+        payload_encoding: "string",
+      };
 
-    logger.info(
-      "Publishing message with data:",
-      JSON.stringify(publishData, null, 2)
-    );
+      logger.info(
+        "Publishing message with data:",
+        JSON.stringify(publishData, null, 2)
+      );
 
-    const result = await this.request(endpoint, {
-      method: "POST",
-      body: JSON.stringify(publishData),
-    });
+      const result = await this.request(endpoint, {
+        method: "POST",
+        body: JSON.stringify(publishData),
+      });
 
-    logger.info(
-      "Publish result from RabbitMQ:",
-      JSON.stringify(result, null, 2)
-    );
+      logger.info(
+        "Publish result from RabbitMQ:",
+        JSON.stringify(result, null, 2)
+      );
 
-    return result;
+      return result;
+    } catch (error) {
+      logger.error(
+        `Error publishing message to exchange "${exchange}":`,
+        error
+      );
+
+      // Capture RabbitMQ error in Sentry
+      if (error instanceof Error) {
+        captureRabbitMQError(error, {
+          operation: "publishMessage",
+          exchange,
+          routingKey,
+          serverId: this.baseUrl,
+        });
+      }
+
+      throw error;
+    }
   }
 
   async createQueue(
@@ -166,14 +185,29 @@ export class RabbitMQQueueClient extends RabbitMQBaseClient {
       arguments: options.arguments ?? {},
     };
 
-    const result = await this.request(endpoint, {
-      method: "PUT",
-      body: JSON.stringify(queueData),
-    });
+    try {
+      const result = await this.request(endpoint, {
+        method: "PUT",
+        body: JSON.stringify(queueData),
+      });
 
-    logger.info("result from createQueue:", result);
+      logger.info("result from createQueue:", result);
 
-    return { created: true };
+      return { created: true };
+    } catch (error) {
+      logger.error(`Error creating queue "${queueName}":`, error);
+
+      // Capture RabbitMQ error in Sentry
+      if (error instanceof Error) {
+        captureRabbitMQError(error, {
+          operation: "createQueue",
+          queueName,
+          serverId: this.baseUrl,
+        });
+      }
+
+      throw error;
+    }
   }
 
   async bindQueue(
@@ -191,11 +225,30 @@ export class RabbitMQQueueClient extends RabbitMQBaseClient {
       arguments: bindingArgs,
     };
 
-    await this.request(endpoint, {
-      method: "POST",
-      body: JSON.stringify(bindingData),
-    });
+    try {
+      await this.request(endpoint, {
+        method: "POST",
+        body: JSON.stringify(bindingData),
+      });
 
-    return { bound: true };
+      return { bound: true };
+    } catch (error) {
+      logger.error(
+        `Error binding queue "${queueName}" to exchange "${exchangeName}":`,
+        error
+      );
+
+      // Capture RabbitMQ error in Sentry
+      if (error instanceof Error) {
+        captureRabbitMQError(error, {
+          operation: "bindQueue",
+          queueName,
+          exchange: exchangeName,
+          serverId: this.baseUrl,
+        });
+      }
+
+      throw error;
+    }
   }
 }

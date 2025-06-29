@@ -1,4 +1,6 @@
 import { RabbitMQBaseClient } from "./BaseClient";
+import { logger } from "../logger";
+import { captureRabbitMQError } from "../sentry";
 import type {
   RabbitMQOverview,
   RabbitMQQueue,
@@ -10,54 +12,235 @@ import type {
   RabbitMQConsumer,
 } from "@/types/rabbitmq";
 
-/**
- * RabbitMQ API methods for data retrieval
- */
 export class RabbitMQApiClient extends RabbitMQBaseClient {
   async getOverview(): Promise<RabbitMQOverview> {
-    return this.request("/overview");
+    try {
+      logger.debug("Fetching RabbitMQ overview");
+      const overview = await this.request("/overview");
+      logger.debug("RabbitMQ overview fetched successfully");
+      return overview;
+    } catch (error) {
+      logger.error("Failed to fetch RabbitMQ overview:", error);
+
+      if (error instanceof Error) {
+        captureRabbitMQError(error, {
+          operation: "getOverview",
+          serverId: this.baseUrl,
+        });
+      }
+
+      throw error;
+    }
   }
 
   async getQueues(): Promise<RabbitMQQueue[]> {
-    return this.request(`/queues/${this.vhost}`);
+    try {
+      logger.debug("Fetching RabbitMQ queues", { vhost: this.vhost });
+      const queues = await this.request(`/queues/${this.vhost}`);
+      logger.debug("RabbitMQ queues fetched successfully", {
+        count: queues?.length || 0,
+      });
+      return queues;
+    } catch (error) {
+      logger.error("Failed to fetch RabbitMQ queues:", error);
+
+      if (error instanceof Error) {
+        captureRabbitMQError(error, {
+          operation: "getQueues",
+          serverId: this.baseUrl,
+        });
+      }
+
+      throw error;
+    }
   }
 
   async getNodes(): Promise<RabbitMQNode[]> {
-    return this.request("/nodes");
+    try {
+      logger.debug("Fetching RabbitMQ nodes");
+      const nodes = await this.request("/nodes");
+      logger.debug("RabbitMQ nodes fetched successfully", {
+        count: nodes?.length || 0,
+      });
+      return nodes;
+    } catch (error) {
+      logger.error("Failed to fetch RabbitMQ nodes:", error);
+
+      if (error instanceof Error) {
+        captureRabbitMQError(error, {
+          operation: "getNodes",
+          serverId: this.baseUrl,
+        });
+      }
+
+      throw error;
+    }
   }
 
   async getQueue(queueName: string): Promise<RabbitMQQueue> {
-    const encodedQueueName = encodeURIComponent(queueName);
-    return this.request(`/queues/${this.vhost}/${encodedQueueName}`);
+    try {
+      logger.debug("Fetching RabbitMQ queue", { queueName });
+      const encodedQueueName = encodeURIComponent(queueName);
+      const queue = await this.request(
+        `/queues/${this.vhost}/${encodedQueueName}`
+      );
+      logger.debug("RabbitMQ queue fetched successfully", { queueName });
+      return queue;
+    } catch (error) {
+      logger.error("Failed to fetch RabbitMQ queue:", { error, queueName });
+
+      if (error instanceof Error) {
+        captureRabbitMQError(error, {
+          operation: "getQueue",
+          queueName,
+          serverId: this.baseUrl,
+        });
+      }
+
+      throw error;
+    }
   }
 
   async getConnections(): Promise<RabbitMQConnection[]> {
-    return this.request("/connections");
+    try {
+      logger.debug("Fetching RabbitMQ connections");
+      const connections = await this.request("/connections");
+      logger.debug("RabbitMQ connections fetched successfully", {
+        count: connections?.length || 0,
+      });
+      return connections;
+    } catch (error) {
+      logger.error("Failed to fetch RabbitMQ connections:", error);
+
+      if (error instanceof Error) {
+        captureRabbitMQError(error, {
+          operation: "getConnections",
+          serverId: this.baseUrl,
+        });
+      }
+
+      throw error;
+    }
   }
 
   async getChannels(): Promise<RabbitMQChannel[]> {
-    return this.request("/channels");
+    try {
+      logger.debug("Fetching RabbitMQ channels");
+      const channels = await this.request("/channels");
+      logger.debug("RabbitMQ channels fetched successfully", {
+        count: channels?.length || 0,
+      });
+      return channels;
+    } catch (error) {
+      logger.error("Failed to fetch RabbitMQ channels:", error);
+
+      if (error instanceof Error) {
+        captureRabbitMQError(error, {
+          operation: "getChannels",
+          serverId: this.baseUrl,
+        });
+      }
+
+      throw error;
+    }
   }
 
   async getExchanges(): Promise<RabbitMQExchange[]> {
-    return this.request(`/exchanges/${this.vhost}`);
+    try {
+      logger.debug("Fetching RabbitMQ exchanges");
+      const exchanges = await this.request(`/exchanges/${this.vhost}`);
+      logger.debug("RabbitMQ exchanges fetched successfully", {
+        count: exchanges?.length || 0,
+      });
+      return exchanges;
+    } catch (error) {
+      logger.error("Failed to fetch RabbitMQ exchanges:", error);
+
+      if (error instanceof Error) {
+        captureRabbitMQError(error, {
+          operation: "getExchanges",
+          serverId: this.baseUrl,
+        });
+      }
+
+      throw error;
+    }
   }
 
   async getBindings(): Promise<RabbitMQBinding[]> {
-    return this.request(`/bindings/${this.vhost}`);
+    try {
+      logger.debug("Fetching RabbitMQ bindings");
+      const bindings = await this.request(`/bindings/${this.vhost}`);
+      logger.debug("RabbitMQ bindings fetched successfully", {
+        count: bindings?.length || 0,
+      });
+      return bindings;
+    } catch (error) {
+      logger.error("Failed to fetch RabbitMQ bindings:", error);
+
+      if (error instanceof Error) {
+        captureRabbitMQError(error, {
+          operation: "getBindings",
+          serverId: this.baseUrl,
+        });
+      }
+
+      throw error;
+    }
   }
 
   async getConsumers(): Promise<RabbitMQConsumer[]> {
-    return this.request("/consumers");
+    try {
+      logger.debug("Fetching RabbitMQ consumers");
+      const consumers = await this.request("/consumers");
+      logger.debug("RabbitMQ consumers fetched successfully", {
+        count: consumers?.length || 0,
+      });
+      return consumers;
+    } catch (error) {
+      logger.error("Failed to fetch RabbitMQ consumers:", error);
+
+      if (error instanceof Error) {
+        captureRabbitMQError(error, {
+          operation: "getConsumers",
+          serverId: this.baseUrl,
+        });
+      }
+
+      throw error;
+    }
   }
 
   async getQueueConsumers(queueName: string): Promise<RabbitMQConsumer[]> {
-    const encodedQueueName = encodeURIComponent(queueName);
-    const consumers = await this.getConsumers();
-    return consumers.filter(
-      (consumer) =>
-        consumer.queue?.name === encodedQueueName &&
-        consumer.queue?.vhost === decodeURIComponent(this.vhost)
-    );
+    try {
+      logger.debug("Fetching RabbitMQ queue consumers", { queueName });
+      const encodedQueueName = encodeURIComponent(queueName);
+      const consumers = await this.getConsumers();
+      const queueConsumers = consumers.filter(
+        (consumer) =>
+          consumer.queue?.name === encodedQueueName &&
+          consumer.queue?.vhost === decodeURIComponent(this.vhost)
+      );
+      logger.debug("RabbitMQ queue consumers fetched successfully", {
+        queueName,
+        count: queueConsumers.length,
+      });
+      return queueConsumers;
+    } catch (error) {
+      logger.error("Failed to fetch RabbitMQ queue consumers:", {
+        error,
+        queueName,
+      });
+
+      if (error instanceof Error) {
+        captureRabbitMQError(error, {
+          operation: "getQueueConsumers",
+          queueName,
+          serverId: this.baseUrl,
+        });
+      }
+
+      throw error;
+    }
   }
 }

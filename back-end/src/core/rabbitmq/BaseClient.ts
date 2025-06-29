@@ -1,8 +1,23 @@
 import type { RabbitMQCredentials, SSLConfig } from "@/types/rabbitmq";
 import { logger } from "../logger";
+import { captureRabbitMQError } from "../sentry";
 
 /**
- * Base RabbitMQ client with connection management and request handling
+ * Base RabbitMQ Client
+ *
+ * Provides foundational HTTP client functionality for RabbitMQ Management API.
+ *
+ * Features:
+ * - HTTP/HTTPS connection management
+ * - Authentication handling (Basic Auth)
+ * - SSL/TLS configuration support
+ * - Request/response processing
+ *
+ * Monitoring:
+ * - Sentry error tracking for connection failures
+ * - API response error tracking
+ * - Network-level error detection
+ * - SSL/TLS connection monitoring
  */
 export class RabbitMQBaseClient {
   protected baseUrl: string;
@@ -46,9 +61,17 @@ export class RabbitMQBaseClient {
       const response = await fetch(`${this.baseUrl}${endpoint}`, fetchOptions);
 
       if (!response.ok) {
-        throw new Error(
+        const error = new Error(
           `RabbitMQ API error: ${response.status} ${response.statusText}`
         );
+
+        // Capture API error in Sentry
+        captureRabbitMQError(error, {
+          operation: "api_request",
+          serverId: this.baseUrl,
+        });
+
+        throw error;
       }
 
       logger.info(
@@ -66,8 +89,19 @@ export class RabbitMQBaseClient {
         return text ? { message: text } : {};
       }
     } catch (error) {
-      logger.error(error);
       logger.error(`Error fetching from RabbitMQ API (${endpoint}):`, error);
+
+      // Capture network/connection error in Sentry if not already captured
+      if (
+        error instanceof Error &&
+        !error.message.includes("RabbitMQ API error:")
+      ) {
+        captureRabbitMQError(error, {
+          operation: "api_connection",
+          serverId: this.baseUrl,
+        });
+      }
+
       throw error;
     }
   }

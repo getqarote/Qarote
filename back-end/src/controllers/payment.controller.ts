@@ -17,7 +17,7 @@ const app = new Hono();
 
 // Schema for creating checkout session
 const CreateCheckoutSessionSchema = z.object({
-  plan: z.nativeEnum(WorkspacePlan),
+  plan: z.enum(WorkspacePlan),
   billingInterval: z.enum(["monthly", "yearly"]),
   successUrl: z.string().url().optional(),
   cancelUrl: z.string().url().optional(),

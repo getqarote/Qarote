@@ -85,6 +85,9 @@ export function captureRabbitMQError(
   context: {
     serverId?: string;
     queueName?: string;
+    exchange?: string;
+    routingKey?: string;
+    messageId?: string;
     operation?: string;
   }
 ) {

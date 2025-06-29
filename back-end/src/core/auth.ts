@@ -5,7 +5,7 @@ import { UserRole } from "@prisma/client";
 import { prisma } from "./prisma";
 
 // Environment variables
-const JWT_SECRET = process.env.JWT_SECRET || "secret-key-change-in-production";
+const JWT_SECRET = process.env.JWT_SECRET!;
 
 // JWT Token interfaces
 interface JWTPayload {
