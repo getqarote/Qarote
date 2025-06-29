@@ -1,6 +1,5 @@
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
-import { z } from "zod/v4";
 import { streamSSE } from "hono/streaming";
 import { prisma } from "@/core/prisma";
 import { authenticate } from "@/core/auth";
@@ -14,6 +13,7 @@ import {
 } from "@/middlewares/plan-validation";
 import { validateMessageSending } from "@/services/plan-validation.service";
 import { createRabbitMQClient, createErrorResponse } from "./shared";
+import { publishMessageToQueueSchema } from "@/schemas/rabbitmq";
 
 const messagesController = new Hono();
 
@@ -27,30 +27,7 @@ messagesController.use("*", planValidationMiddleware());
  */
 messagesController.post(
   "/servers/:serverId/queues/:queueName/messages",
-  zValidator(
-    "json",
-    z.object({
-      message: z.string(),
-      exchange: z.string().optional().default(""), // Default exchange for direct queue publishing
-      routingKey: z.string().optional(), // Optional routing key, defaults to queue name
-      properties: z
-        .object({
-          deliveryMode: z.number().optional(),
-          priority: z.number().optional(),
-          headers: z.record(z.string(), z.any()).optional(),
-          expiration: z.string().optional(),
-          appId: z.string().optional(),
-          contentType: z.string().optional(),
-          contentEncoding: z.string().optional(),
-          correlationId: z.string().optional(),
-          replyTo: z.string().optional(),
-          messageId: z.string().optional(),
-          timestamp: z.number().optional(),
-          type: z.string().optional(),
-        })
-        .optional(),
-    })
-  ),
+  zValidator("json", publishMessageToQueueSchema),
   async (c) => {
     const serverId = c.req.param("serverId");
     const queueName = c.req.param("queueName");

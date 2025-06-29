@@ -1,6 +1,5 @@
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
-import { z } from "zod/v4";
 import { UserRole } from "@prisma/client";
 import { prisma } from "@/core/prisma";
 import { logger } from "@/core/logger";
@@ -8,6 +7,7 @@ import { authenticate, authorize, checkWorkspaceAccess } from "@/core/auth";
 import {
   CreateWorkspaceSchema,
   UpdateWorkspaceSchema,
+  updateWorkspacePrivacySchema,
 } from "@/schemas/workspace";
 import {
   validateDataExport,
@@ -325,16 +325,7 @@ workspaceController.get("/:id/privacy", checkWorkspaceAccess, async (c) => {
 workspaceController.put(
   "/:id/privacy",
   authorize([UserRole.ADMIN]),
-  zValidator(
-    "json",
-    z.object({
-      storageMode: z.enum(["MEMORY_ONLY", "TEMPORARY", "HISTORICAL"]),
-      retentionDays: z.number().min(0).max(365),
-      encryptData: z.boolean(),
-      autoDelete: z.boolean(),
-      consentGiven: z.boolean(),
-    })
-  ),
+  zValidator("json", updateWorkspacePrivacySchema),
   async (c) => {
     try {
       const id = c.req.param("id");

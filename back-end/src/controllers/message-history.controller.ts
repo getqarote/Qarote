@@ -1,9 +1,12 @@
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
-import { z } from "zod/v4";
 import { prisma } from "@/core/prisma";
 import { authenticate } from "@/core/auth";
 import { logger } from "@/core/logger";
+import {
+  messageHistorySearchSchema,
+  messageHistoryStatsSchema,
+} from "@/schemas/message-history";
 import {
   PlanValidationError,
   getPlanLimits,
@@ -14,37 +17,10 @@ const messageHistoryController = new Hono();
 // Apply authentication middleware
 messageHistoryController.use("*", authenticate);
 
-// Schema for message history search
-const MessageHistorySearchSchema = z.object({
-  serverId: z.string().min(1),
-  queueName: z.string().optional(),
-  startDate: z
-    .string()
-    .optional()
-    .refine((val) => !val || !isNaN(Date.parse(val)), {
-      message: "Invalid start date format",
-    }),
-  endDate: z
-    .string()
-    .optional()
-    .refine((val) => !val || !isNaN(Date.parse(val)), {
-      message: "Invalid end date format",
-    }),
-  content: z.string().optional(),
-  routingKey: z.string().optional(),
-  exchange: z.string().optional(),
-  limit: z.coerce.number().min(1).max(1000).default(50),
-  offset: z.coerce.number().min(0).default(0),
-  sortBy: z
-    .enum(["timestamp", "queue_name", "routing_key", "exchange"])
-    .default("timestamp"),
-  sortOrder: z.enum(["asc", "desc"]).default("desc"),
-});
-
 // Get message history with advanced search
 messageHistoryController.get(
   "/search",
-  zValidator("query", MessageHistorySearchSchema),
+  zValidator("query", messageHistorySearchSchema),
   async (c) => {
     const user = c.get("user");
     const {
@@ -137,14 +113,7 @@ messageHistoryController.get(
 // Get message history statistics
 messageHistoryController.get(
   "/stats",
-  zValidator(
-    "query",
-    z.object({
-      serverId: z.string().min(1),
-      queueName: z.string().optional(),
-      days: z.coerce.number().min(1).max(365).default(7),
-    })
-  ),
+  zValidator("query", messageHistoryStatsSchema),
   async (c) => {
     const user = c.get("user");
     const { serverId, queueName, days } = c.req.valid("query");

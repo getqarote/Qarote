@@ -3,11 +3,11 @@ import { UserRole } from "@prisma/client";
 
 // Schema for creating a user
 export const CreateUserSchema = z.object({
-  email: z.string().email("Invalid email address"),
+  email: z.email("Invalid email address"),
   passwordHash: z.string().min(1, "Password hash is required"),
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
-  role: z.nativeEnum(UserRole).default(UserRole.USER),
+  role: z.enum(UserRole).default(UserRole.USER),
   workspaceId: z.string().uuid("Invalid workspace ID"),
   isActive: z.boolean().default(true),
 });
@@ -16,7 +16,7 @@ export const CreateUserSchema = z.object({
 export const UpdateUserSchema = z.object({
   firstName: z.string().min(1, "First name is required").optional(),
   lastName: z.string().min(1, "Last name is required").optional(),
-  role: z.nativeEnum(UserRole).optional(),
+  role: z.enum(UserRole).optional(),
   isActive: z.boolean().optional(),
   workspaceId: z.string().uuid("Invalid workspace ID").optional(),
 });

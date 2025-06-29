@@ -86,8 +86,34 @@ export const CreateQueueSchema = z.object({
   routingKey: z.string().default(""),
 });
 
+// Schema for publishing a message to a queue (alternative to exchange publishing)
+export const publishMessageToQueueSchema = z.object({
+  message: z.string(),
+  exchange: z.string().optional().default(""), // Default exchange for direct queue publishing
+  routingKey: z.string().optional(), // Optional routing key, defaults to queue name
+  properties: z
+    .object({
+      deliveryMode: z.number().optional(),
+      priority: z.number().optional(),
+      headers: z.record(z.string(), z.any()).optional(),
+      expiration: z.string().optional(),
+      appId: z.string().optional(),
+      contentType: z.string().optional(),
+      contentEncoding: z.string().optional(),
+      correlationId: z.string().optional(),
+      replyTo: z.string().optional(),
+      messageId: z.string().optional(),
+      timestamp: z.number().optional(),
+      type: z.string().optional(),
+    })
+    .optional(),
+});
+
 export type RabbitMQCredentials = z.infer<typeof RabbitMQCredentialsSchema>;
 export type CreateServerInput = z.infer<typeof CreateServerSchema>;
 export type UpdateServerInput = z.infer<typeof UpdateServerSchema>;
 export type PublishMessageInput = z.infer<typeof PublishMessageSchema>;
+export type PublishMessageToQueueInput = z.infer<
+  typeof publishMessageToQueueSchema
+>;
 export type CreateQueueInput = z.infer<typeof CreateQueueSchema>;

@@ -1,11 +1,11 @@
 import { randomBytes } from "node:crypto";
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
-import { z } from "zod/v4";
 import { prisma } from "@/core/prisma";
 import { authenticate } from "@/core/auth";
 import { sendInvitationEmail } from "@/services/email/email.service";
 import { logger } from "@/core/logger";
+import { inviteUserSchema } from "@/schemas/invitation";
 import {
   validateUserInvitation,
   calculateMonthlyCostForUsers,
@@ -38,16 +38,6 @@ const getUserDisplayName = (user: {
   }
   return user.email;
 };
-
-// Schema for invitation request
-const inviteUserSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  role: z.enum(["USER", "ADMIN"]).default("USER"),
-  message: z
-    .string()
-    .optional()
-    .describe("Optional personal message from inviter"),
-});
 
 /**
  * GET /invitations - Get all pending invitations for workspace (requires auth)

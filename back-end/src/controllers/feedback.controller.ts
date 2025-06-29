@@ -1,43 +1,13 @@
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
-import { z } from "zod/v4";
 import { prisma } from "@/core/prisma";
 import { authenticate, authorize, SafeUser } from "@/core/auth";
 import { isSuperAdmin } from "@/core/superAdmin";
 import { UserRole } from "@prisma/client";
 import { logger } from "@/core/logger";
+import { submitFeedbackSchema, updateFeedbackSchema } from "@/schemas/feedback";
 
 const feedbackController = new Hono();
-
-// Validation schemas
-const submitFeedbackSchema = z.object({
-  type: z.enum(["BUG", "FEATURE", "GENERAL", "IMPROVEMENT"]),
-  category: z.enum([
-    "UI_UX",
-    "PERFORMANCE",
-    "SECURITY",
-    "FUNCTIONALITY",
-    "DOCUMENTATION",
-    "OTHER",
-  ]),
-  title: z.string().min(5).max(100),
-  description: z.string().min(10).max(1000),
-  priority: z.enum(["LOW", "MEDIUM", "HIGH"]).default("MEDIUM"),
-  email: z.string().email().optional(),
-  metadata: z
-    .object({
-      url: z.string(),
-      userAgent: z.string(),
-      viewport: z.string(),
-      timestamp: z.string(),
-    })
-    .optional(),
-});
-
-const updateFeedbackSchema = z.object({
-  status: z.enum(["OPEN", "IN_PROGRESS", "RESOLVED", "CLOSED"]).optional(),
-  response: z.string().max(2000).optional(),
-});
 
 // Submit feedback (authenticated users)
 feedbackController.post(

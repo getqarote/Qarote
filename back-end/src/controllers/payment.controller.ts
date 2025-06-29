@@ -1,6 +1,5 @@
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
-import { z } from "zod/v4";
 import { authMiddleware } from "@/middlewares/auth";
 import { prisma } from "@/core/prisma";
 import { StripeService } from "@/services/stripe.service";
@@ -12,30 +11,18 @@ import {
   PaymentStatus,
   BillingInterval,
 } from "@prisma/client";
+import {
+  createCheckoutSessionSchema,
+  stripeWebhookSchema,
+} from "@/schemas/payment";
 
 const app = new Hono();
-
-// Schema for creating checkout session
-const CreateCheckoutSessionSchema = z.object({
-  plan: z.enum(WorkspacePlan),
-  billingInterval: z.enum(["monthly", "yearly"]),
-  successUrl: z.string().url().optional(),
-  cancelUrl: z.string().url().optional(),
-});
-
-// Schema for webhook verification
-const StripeWebhookSchema = z.object({
-  type: z.string(),
-  data: z.object({
-    object: z.any(),
-  }),
-});
 
 // Create checkout session for subscription
 app.post(
   "/checkout",
   authMiddleware,
-  zValidator("json", CreateCheckoutSessionSchema),
+  zValidator("json", createCheckoutSessionSchema),
   async (c) => {
     const { plan, billingInterval, successUrl, cancelUrl } =
       c.req.valid("json");
