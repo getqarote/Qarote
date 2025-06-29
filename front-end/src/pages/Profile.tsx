@@ -3,7 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
-import { User, Shield, MessageSquare } from "lucide-react";
+import { User, Shield, MessageSquare, Crown } from "lucide-react";
 import {
   useProfile,
   useUpdateProfile,
@@ -24,6 +24,7 @@ import {
   TeamTab,
   EnhancedTeamTab,
   ProfileLoading,
+  PlansSummaryTab,
   ProfileFormState,
   WorkspaceFormState,
   InviteFormState,
@@ -223,9 +224,13 @@ const Profile = () => {
             </div>
 
             <Tabs defaultValue="personal" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="grid w-full grid-cols-5">
                 <TabsTrigger value="personal">Personal Info</TabsTrigger>
                 <TabsTrigger value="workspace">Workspace</TabsTrigger>
+                <TabsTrigger value="plans">
+                  <Crown className="h-4 w-4 mr-2" />
+                  Plans
+                </TabsTrigger>
                 <TabsTrigger value="team" disabled={!isAdmin}>
                   Team {!isAdmin && <Shield className="h-4 w-4 ml-2" />}
                 </TabsTrigger>
@@ -258,6 +263,10 @@ const Profile = () => {
                   onUpdateWorkspace={handleUpdateWorkspace}
                   isUpdating={updateWorkspaceMutation.isPending}
                 />
+              </TabsContent>
+
+              <TabsContent value="plans" className="space-y-6">
+                <PlansSummaryTab currentPlan={workspacePlan} />
               </TabsContent>
 
               <TabsContent value="team" className="space-y-6">

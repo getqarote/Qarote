@@ -72,7 +72,7 @@ export function LiveMessagesTab({
     if (isStreamingMode) {
       console.log("User stopping message stream");
       setIsStreamingMode(false);
-      disconnect();
+      //   disconnect();
     } else {
       console.log("User starting message stream");
       setIsStreamingMode(true);

@@ -194,7 +194,7 @@ export function useMessageStream({
     });
     lastConnectAttemptRef.current = now;
 
-    disconnect(); // Clean up any existing connection
+    // disconnect(); // Clean up any existing connection
     setIsConnecting(true);
     setError(null);
 
@@ -203,11 +203,11 @@ export function useMessageStream({
     abortControllerRef.current = abortController;
 
     // Set connection timeout
-    connectionTimeoutRef.current = setTimeout(() => {
-      console.log("useMessageStream: Connection timeout");
-      setError("Connection timeout after 30 seconds");
-      disconnect();
-    }, CONNECTION_TIMEOUT);
+    // connectionTimeoutRef.current = setTimeout(() => {
+    //   console.log("useMessageStream: Connection timeout");
+    //   setError("Connection timeout after 30 seconds");
+    //   disconnect();
+    // }, CONNECTION_TIMEOUT);
 
     const params = new URLSearchParams({
       count: count.toString(),
@@ -311,10 +311,10 @@ export function useMessageStream({
     }
 
     // Set a timeout to abort the connection attempt if it takes too long
-    connectionTimeoutRef.current = setTimeout(() => {
-      console.warn("Connection attempt timed out");
-      disconnect();
-    }, CONNECTION_TIMEOUT);
+    // connectionTimeoutRef.current = setTimeout(() => {
+    //   console.warn("Connection attempt timed out");
+    //   disconnect();
+    // }, CONNECTION_TIMEOUT);
   }, [queueName, serverId, count, token, disconnect]);
 
   const clearMessages = useCallback(() => {
@@ -340,20 +340,20 @@ export function useMessageStream({
   }, [enabled, queueName, serverId, connect, disconnect]);
 
   // Disconnect when queue or server changes
-  useEffect(() => {
-    return () => {
-      if (isConnectedRef.current || isConnectingRef.current) {
-        disconnect();
-      }
-    };
-  }, [queueName, serverId, disconnect]);
+  //   useEffect(() => {
+  //     return () => {
+  //       if (isConnectedRef.current || isConnectingRef.current) {
+  //         disconnect();
+  //       }
+  //     };
+  //   }, [queueName, serverId, disconnect]);
 
   // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      disconnect();
-    };
-  }, [disconnect]);
+  //   useEffect(() => {
+  //     return () => {
+  //       disconnect();
+  //     };
+  //   }, [disconnect]);
 
   useEffect(() => {
     const handleBeforeUnload = () => {
