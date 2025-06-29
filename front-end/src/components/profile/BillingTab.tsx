@@ -1,9 +1,4 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import logger from "../../lib/logger";
 import {
   CreditCard,
   Download,
@@ -17,6 +12,11 @@ import {
   RefreshCw,
   Circle,
 } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import logger from "@/lib/logger";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePlanUpgrade } from "@/hooks/usePlanUpgrade";
 import { getPlanDisplayName, WorkspacePlan } from "@/lib/plans/planUtils";

@@ -16,7 +16,7 @@ import {
   getPlanFeatures,
   getPlanDisplayName,
 } from "@/lib/plans/planUtils";
-import { usePlanFeatures, usePlanUpgrade } from "@/hooks/usePlanUpgrade";
+import { usePlanUpgrade } from "@/hooks/usePlanUpgrade";
 
 interface PlansSummaryTabProps {
   currentPlan: WorkspacePlan;

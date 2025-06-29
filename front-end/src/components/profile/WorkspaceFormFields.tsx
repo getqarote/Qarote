@@ -1,12 +1,6 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
 import { WorkspaceFormState } from "./profileUtils";
 
 interface WorkspaceFormFieldsProps {
@@ -68,57 +62,6 @@ export const WorkspaceFormFields = ({
           ) : (
             <p className="text-sm p-2 border rounded-md bg-muted">
               {workspace.contactEmail || "Not set"}
-            </p>
-          )}
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="logoUrl">Logo URL</Label>
-          {editingWorkspace && isAdmin ? (
-            <Input
-              id="logoUrl"
-              type="url"
-              value={workspaceForm.logoUrl}
-              onChange={(e) =>
-                setWorkspaceForm({
-                  ...workspaceForm,
-                  logoUrl: e.target.value,
-                })
-              }
-            />
-          ) : (
-            <p className="text-sm p-2 border rounded-md bg-muted">
-              {workspace.logoUrl || "Not set"}
-            </p>
-          )}
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="plan">Plan Type</Label>
-          {editingWorkspace && isAdmin ? (
-            <Select
-              value={workspaceForm.plan}
-              onValueChange={(value) =>
-                setWorkspaceForm({
-                  ...workspaceForm,
-                  plan: value as "FREE" | "FREELANCE" | "STARTUP" | "BUSINESS",
-                })
-              }
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="FREE">Free</SelectItem>
-                <SelectItem value="FREELANCE">Freelance</SelectItem>
-                <SelectItem value="STARTUP">Startup</SelectItem>
-                <SelectItem value="BUSINESS">Business</SelectItem>
-              </SelectContent>
-            </Select>
-          ) : (
-            <p className="text-sm p-2 border rounded-md bg-muted">
-              {workspace.plan}
             </p>
           )}
         </div>

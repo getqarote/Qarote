@@ -37,7 +37,7 @@ const MessageBrowser = () => {
 
   const messageStream = useMessageStream({
     queueName: selectedQueue,
-    serverId: selectedServerId || "",
+    serverId: selectedServerId,
     enabled:
       isStreamingMode &&
       !!selectedQueue &&

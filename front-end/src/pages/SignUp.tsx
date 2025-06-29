@@ -157,12 +157,13 @@ const SignUp: React.FC = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="workspaceName">Workspace name (optional)</Label>
+                <Label htmlFor="workspaceName">Workspace name</Label>
                 <Input
                   id="workspaceName"
                   type="text"
                   value={workspaceName}
                   onChange={(e) => setWorkspaceName(e.target.value)}
+                  required
                   placeholder="Your workspace"
                   disabled={registerMutation.isPending}
                 />
