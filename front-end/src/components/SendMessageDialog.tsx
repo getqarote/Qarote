@@ -101,7 +101,7 @@ function LabelWithTooltip({
 
 interface SendMessageDialogProps {
   trigger?: React.ReactNode;
-  serverId?: string;
+  serverId: string;
   defaultExchange?: string;
   defaultRoutingKey?: string;
   queueName?: string; // For direct queue publishing

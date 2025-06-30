@@ -31,9 +31,7 @@ const MessageBrowser = () => {
   const queues = useMemo(() => queuesData?.queues || [], [queuesData?.queues]);
 
   // Check if user has access to message history
-  const { data: historyAccess } = useMessageHistoryAccess(
-    selectedServerId || undefined
-  );
+  const { data: historyAccess } = useMessageHistoryAccess(selectedServerId);
 
   const messageStream = useMessageStream({
     queueName: selectedQueue,

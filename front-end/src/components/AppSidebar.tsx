@@ -199,7 +199,7 @@ export function AppSidebar() {
 
           {servers.length > 0 ? (
             <Select
-              value={selectedServerId || ""}
+              value={selectedServerId}
               onValueChange={setSelectedServerId}
             >
               <SelectTrigger className="w-full text-sm">

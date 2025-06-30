@@ -5,12 +5,10 @@ import { useServer, useOverview } from "@/hooks/useApi";
 
 export const ConnectionStatus = () => {
   const { selectedServerId } = useServerContext();
-  const { data: serverData, isLoading: serverLoading } = useServer(
-    selectedServerId || ""
-  );
-  const { data: overviewData, isLoading: overviewLoading } = useOverview(
-    selectedServerId || ""
-  );
+  const { data: serverData, isLoading: serverLoading } =
+    useServer(selectedServerId);
+  const { data: overviewData, isLoading: overviewLoading } =
+    useOverview(selectedServerId);
 
   if (!selectedServerId) {
     return (

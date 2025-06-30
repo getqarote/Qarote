@@ -156,14 +156,12 @@ export function useMessageHistoryStats(
 }
 
 // Hook to check if user has access to message history
-export function useMessageHistoryAccess(serverId?: string) {
+export function useMessageHistoryAccess(serverId: string) {
   const { token } = useAuth();
 
   return useQuery({
     queryKey: ["messageHistoryAccess", serverId],
     queryFn: async () => {
-      if (!serverId) return { canAccessMessageHistory: false };
-
       const response = await fetch(
         `http://localhost:3000/api/message-history/stats?serverId=${serverId}&days=1`,
         {

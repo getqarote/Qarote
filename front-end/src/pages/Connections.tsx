@@ -1,11 +1,4 @@
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/AppSidebar";
-import { AddServerForm } from "@/components/AddServerForm";
-import { NoServerConfigured } from "@/components/NoServerConfigured";
-import { PlanBadge } from "@/components/ui/PlanBadge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { useState } from "react";
 import {
   Network,
   Users,
@@ -14,26 +7,22 @@ import {
   Server,
   ArrowUpDown,
   Zap,
-  Eye,
   Link,
 } from "lucide-react";
-import { useConnections, useChannels } from "@/hooks/useApi";
-import { useServerContext } from "@/contexts/ServerContext";
-import { useWorkspace } from "@/contexts/WorkspaceContext";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { useState } from "react";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/AppSidebar";
+import { NoServerConfigured } from "@/components/NoServerConfigured";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { PlanBadge } from "@/components/ui/PlanBadge";
+import { Badge } from "@/components/ui/badge";
+import { useServerContext } from "@/contexts/ServerContext";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
+import { useConnections, useChannels } from "@/hooks/useApi";
 
 const Connections = () => {
   const { selectedServerId, hasServers } = useServerContext();
@@ -46,20 +35,10 @@ const Connections = () => {
     data: connectionsData,
     isLoading: connectionsLoading,
     error: connectionsError,
-    refetch: refetchConnections,
-  } = useConnections(selectedServerId || "");
+  } = useConnections(selectedServerId);
 
-  const {
-    data: channelsData,
-    isLoading: channelsLoading,
-    error: channelsError,
-    refetch: refetchChannels,
-  } = useChannels(selectedServerId || "");
-
-  const handleRefresh = () => {
-    refetchConnections();
-    refetchChannels();
-  };
+  const { data: channelsData, isLoading: channelsLoading } =
+    useChannels(selectedServerId);
 
   const toggleConnection = (connectionName: string) => {
     const newExpanded = new Set(expandedConnections);

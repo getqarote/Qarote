@@ -24,7 +24,6 @@ import { Loader2, Mail, Users, Building } from "lucide-react";
 import { useToast } from "@/hooks/useToast";
 import { apiClient } from "@/lib/api/client";
 import { useAcceptInvitation } from "@/hooks/useAuth";
-import { User, Workspace } from "@/lib/api/authTypes";
 import {
   acceptInvitationSchema,
   type AcceptInvitationFormData,

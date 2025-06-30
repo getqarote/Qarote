@@ -47,7 +47,7 @@ import { addQueueSchema, type AddQueueFormData } from "@/schemas/forms";
 
 interface AddQueueFormProps {
   trigger?: React.ReactNode;
-  serverId?: string;
+  serverId: string;
   onSuccess?: () => void; // Callback for successful queue creation
 }
 
@@ -78,7 +78,7 @@ export function AddQueueForm({
   });
 
   // Fetch exchanges for binding options
-  const { data: exchangesData } = useExchanges(serverId || "");
+  const { data: exchangesData } = useExchanges(serverId);
   const exchanges = exchangesData?.exchanges || [];
 
   const onSubmit = (data: AddQueueFormData) => {

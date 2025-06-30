@@ -53,7 +53,7 @@ const Exchanges = () => {
     isLoading: exchangesLoading,
     error: exchangesError,
     refetch: refetchExchanges,
-  } = useExchanges(selectedServerId || "");
+  } = useExchanges(selectedServerId);
 
   const handleRefresh = () => {
     refetchExchanges();

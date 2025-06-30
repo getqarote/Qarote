@@ -10,7 +10,7 @@ import { Link } from "react-router-dom";
 
 export const ConnectedNodes = () => {
   const { selectedServerId } = useServerContext();
-  const { data: nodesData, isLoading } = useNodes(selectedServerId || "");
+  const { data: nodesData, isLoading } = useNodes(selectedServerId);
 
   const nodes = nodesData?.nodes || [];
 
