@@ -90,9 +90,37 @@ const SignIn: React.FC = () => {
                 {loginMutation.isError && (
                   <Alert variant="destructive">
                     <AlertDescription>
-                      {loginMutation.error instanceof Error
-                        ? loginMutation.error.message
-                        : "Failed to sign in. Please check your credentials."}
+                      {(() => {
+                        const error = loginMutation.error;
+                        if (error instanceof Error) {
+                          const message = error.message;
+                          if (message.includes("Email not verified")) {
+                            return (
+                              <div>
+                                <div className="font-medium mb-2">
+                                  Email not verified
+                                </div>
+                                <p className="text-sm mb-3">
+                                  Please verify your email address before
+                                  logging in. Check your inbox for a
+                                  verification email.
+                                </p>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => navigate("/verify-email")}
+                                  className="bg-white text-red-700 border-red-300 hover:bg-red-50"
+                                >
+                                  Go to verification page
+                                </Button>
+                              </div>
+                            );
+                          }
+                          return message;
+                        }
+                        return "Failed to sign in. Please check your credentials.";
+                      })()}
                     </AlertDescription>
                   </Alert>
                 )}

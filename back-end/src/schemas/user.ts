@@ -25,6 +25,7 @@ export const UpdateUserSchema = z.object({
 export const UpdateProfileSchema = z.object({
   firstName: z.string().min(1, "First name is required").optional(),
   lastName: z.string().min(1, "Last name is required").optional(),
+  email: z.email("Invalid email address").optional(),
 });
 
 // Types derived from schemas

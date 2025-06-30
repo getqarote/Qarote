@@ -15,6 +15,7 @@ import {
 } from "@/middlewares/plan-validation";
 import { isDevelopment } from "@/config";
 import { EncryptionService } from "@/services/encryption.service";
+import { EmailVerificationService } from "@/services/email/email-verification.service";
 
 const userController = new Hono();
 
@@ -195,24 +196,105 @@ userController.put(
     const user = c.get("user") as SafeUser;
 
     try {
-      const updatedUser = await prisma.user.update({
-        where: { id: user.id },
-        data,
-        select: {
-          id: true,
-          email: true,
-          firstName: true,
-          lastName: true,
-          role: true,
-          workspaceId: true,
-          isActive: true,
-          lastLogin: true,
-          createdAt: true,
-          updatedAt: true,
-        },
-      });
+      // Handle email change separately if provided
+      if (data.email && data.email !== user.email) {
+        // Check if the new email is already in use
+        const existingUser = await prisma.user.findUnique({
+          where: { email: data.email },
+        });
 
-      return c.json({ user: updatedUser });
+        if (existingUser) {
+          return c.json({ error: "Email already in use" }, 400);
+        }
+
+        // Set pending email and generate verification token
+        await prisma.user.update({
+          where: { id: user.id },
+          data: {
+            pendingEmail: data.email,
+          },
+        });
+
+        // Generate and send verification email
+        try {
+          const verificationToken =
+            await EmailVerificationService.generateVerificationToken({
+              userId: user.id,
+              email: data.email,
+              type: "EMAIL_CHANGE",
+            });
+
+          const emailResult =
+            await EmailVerificationService.sendVerificationEmail(
+              data.email,
+              verificationToken,
+              "EMAIL_CHANGE",
+              user.firstName || "User"
+            );
+
+          if (!emailResult.success) {
+            logger.error(
+              "Failed to send email change verification:",
+              emailResult.error
+            );
+            return c.json({ error: "Failed to send verification email" }, 500);
+          }
+        } catch (emailError) {
+          logger.error("Failed to send email change verification:", emailError);
+          return c.json({ error: "Failed to send verification email" }, 500);
+        }
+
+        // Remove email from the update data since we're handling it separately
+        const { email: _, ...updateData } = data;
+
+        // Update other profile fields (excluding email)
+        const updatedUser = await prisma.user.update({
+          where: { id: user.id },
+          data: updateData,
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+            role: true,
+            workspaceId: true,
+            isActive: true,
+            emailVerified: true,
+            pendingEmail: true,
+            lastLogin: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        });
+
+        return c.json({
+          user: updatedUser,
+          message:
+            "Profile updated. Please check your new email to verify the change.",
+        });
+      } else {
+        // No email change, update normally
+        const updatedUser = await prisma.user.update({
+          where: { id: user.id },
+          data,
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+            role: true,
+            workspaceId: true,
+            isActive: true,
+            emailVerified: true,
+            pendingEmail: true,
+            lastLogin: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        });
+
+        return c.json({ user: updatedUser });
+      }
     } catch (error) {
       logger.error(`Error updating profile for user ${user.id}:`, error);
       return c.json({ error: "Failed to update profile" }, 500);

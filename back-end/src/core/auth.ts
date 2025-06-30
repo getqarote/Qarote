@@ -25,6 +25,8 @@ export interface SafeUser {
   role: UserRole;
   workspaceId: string;
   isActive: boolean;
+  emailVerified?: boolean;
+  pendingEmail?: string | null;
   lastLogin: Date | null;
   createdAt: Date;
   updatedAt: Date;

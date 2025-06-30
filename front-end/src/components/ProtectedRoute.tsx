@@ -1,6 +1,7 @@
 import React from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { EmailVerificationBanner } from "@/components/EmailVerificationBanner";
 import { Loader2 } from "lucide-react";
 
 interface ProtectedRouteProps {
@@ -28,8 +29,13 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     return <Navigate to="/auth/sign-in" state={{ from: location }} replace />;
   }
 
-  // Render the protected content
-  return <>{children}</>;
+  // Render the protected content with email verification banner
+  return (
+    <>
+      {/* <EmailVerificationBanner className="mx-4 mt-4" /> */}
+      {children}
+    </>
+  );
 };
 
 export default ProtectedRoute;

@@ -7,6 +7,7 @@ import { BaseApiClient } from "./baseClient";
 import {
   LoginRequest,
   RegisterRequest,
+  RegisterResponse,
   User,
   UserProfile,
   UpdateProfileRequest,
@@ -33,10 +34,8 @@ export class AuthApiClient extends BaseApiClient {
     });
   }
 
-  async register(
-    userData: RegisterRequest
-  ): Promise<{ user: User; token: string }> {
-    return this.request<{ user: User; token: string }>("/auth/register", {
+  async register(userData: RegisterRequest): Promise<RegisterResponse> {
+    return this.request<RegisterResponse>("/auth/register", {
       method: "POST",
       body: JSON.stringify(userData),
     });
@@ -154,5 +153,50 @@ export class AuthApiClient extends BaseApiClient {
         }),
       }
     );
+  }
+
+  // Email verification methods
+  async verifyEmail(token: string): Promise<{
+    message: string;
+    user: User;
+    type: string;
+  }> {
+    return this.request<{
+      message: string;
+      user: User;
+      type: string;
+    }>("/auth/verify-email", {
+      method: "POST",
+      body: JSON.stringify({ token }),
+    });
+  }
+
+  async resendVerificationEmail(
+    type: "SIGNUP" | "EMAIL_CHANGE" = "SIGNUP"
+  ): Promise<{
+    message: string;
+  }> {
+    return this.request<{
+      message: string;
+    }>("/auth/resend-verification", {
+      method: "POST",
+      body: JSON.stringify({ type }),
+    });
+  }
+
+  async getVerificationStatus(): Promise<{
+    emailVerified: boolean;
+    emailVerifiedAt: string | null;
+    pendingEmail: string | null;
+    hasPendingSignupVerification: boolean;
+    hasPendingEmailChange: boolean;
+  }> {
+    return this.request<{
+      emailVerified: boolean;
+      emailVerifiedAt: string | null;
+      pendingEmail: string | null;
+      hasPendingSignupVerification: boolean;
+      hasPendingEmailChange: boolean;
+    }>("/auth/verification-status");
   }
 }

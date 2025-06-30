@@ -210,6 +210,19 @@ class ApiClient {
     return this.authClient.acceptInvitation(token);
   }
 
+  // Email verification methods
+  async verifyEmail(token: string) {
+    return this.authClient.verifyEmail(token);
+  }
+
+  async resendVerificationEmail(type: "SIGNUP" | "EMAIL_CHANGE" = "SIGNUP") {
+    return this.authClient.resendVerificationEmail(type);
+  }
+
+  async getVerificationStatus() {
+    return this.authClient.getVerificationStatus();
+  }
+
   async acceptInvitationWithRegistration(
     token: string,
     registrationData: Parameters<

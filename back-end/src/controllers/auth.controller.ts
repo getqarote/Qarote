@@ -21,6 +21,7 @@ import {
 } from "@/schemas/auth";
 import { sendWelcomeEmail } from "@/services/email/email.service";
 import { EncryptionService } from "@/services/encryption.service";
+import { EmailVerificationService } from "@/services/email/email-verification.service";
 import { isDevelopment } from "@/config";
 
 const authController = new Hono();
@@ -67,7 +68,7 @@ authController.post(
           throw new Error("Workspace name is required for registration");
         }
 
-        // Create user
+        // Create user (with email verification disabled initially)
         const user = await tx.user.create({
           data: {
             email,
@@ -76,6 +77,7 @@ authController.post(
             lastName,
             workspaceId,
             role: UserRole.ADMIN, // User is admin of their workspace
+            emailVerified: false, // New users must verify their email
             lastLogin: new Date(),
           },
           select: {
@@ -86,6 +88,7 @@ authController.post(
             role: true,
             workspaceId: true,
             isActive: true,
+            emailVerified: true,
             lastLogin: true,
             createdAt: true,
             updatedAt: true,
@@ -95,15 +98,38 @@ authController.post(
         return { user, workspaceId };
       });
 
-      // Generate JWT token
-      const token = await generateToken({
-        id: result.user.id,
-        email: result.user.email,
-        role: result.user.role,
-        workspaceId: result.user.workspaceId,
-      });
+      // Generate and send email verification token
+      try {
+        const verificationToken =
+          await EmailVerificationService.generateVerificationToken({
+            userId: result.user.id,
+            email: result.user.email,
+            type: "SIGNUP",
+          });
 
-      // Send welcome email for new workspace owners
+        const emailResult =
+          await EmailVerificationService.sendVerificationEmail(
+            result.user.email,
+            verificationToken,
+            "SIGNUP",
+            result.user.firstName || "User"
+          );
+
+        if (!emailResult.success) {
+          logger.error(
+            "Failed to send verification email during registration:",
+            emailResult.error
+          );
+        }
+      } catch (emailError) {
+        logger.error(
+          "Failed to send verification email during registration:",
+          emailError
+        );
+        // Don't fail the registration if email verification fails
+      }
+
+      // Send welcome email for new workspace owners (optional, after verification)
       if (result.workspaceId && workspaceName) {
         try {
           const workspace = await prisma.workspace.findUnique({
@@ -128,11 +154,12 @@ authController.post(
         }
       }
 
+      // Return success without token - user must verify email first
       return c.json(
         {
-          user: result.user,
-          token,
-          workspaceId: result.workspaceId,
+          message:
+            "Registration successful. Please check your email to verify your account before logging in.",
+          email: result.user.email,
         },
         201
       );
@@ -159,6 +186,18 @@ authController.post("/login", zValidator("json", LoginSchema), async (c) => {
 
     if (!user.isActive) {
       return c.json({ error: "Account is inactive" }, 403);
+    }
+
+    // Check if email is verified
+    if (!user.emailVerified) {
+      return c.json(
+        {
+          error: "Email not verified",
+          message:
+            "Please verify your email address before logging in. Check your inbox for a verification email.",
+        },
+        403
+      );
     }
 
     // Check password
@@ -190,6 +229,7 @@ authController.post("/login", zValidator("json", LoginSchema), async (c) => {
       role: user.role,
       workspaceId: user.workspaceId,
       isActive: user.isActive,
+      emailVerified: user.emailVerified,
       lastLogin: user.lastLogin,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
@@ -225,6 +265,9 @@ authController.get("/me", authenticate, async (c) => {
         role: true,
         workspaceId: true,
         isActive: true,
+        emailVerified: true,
+        emailVerifiedAt: true,
+        pendingEmail: true,
         lastLogin: true,
         createdAt: true,
         updatedAt: true,
@@ -248,6 +291,121 @@ authController.get("/me", authenticate, async (c) => {
   } catch (error) {
     logger.error("Get profile error:", error);
     return c.json({ error: "Failed to retrieve user profile" }, 500);
+  }
+});
+
+// Email verification endpoints
+authController.post("/verify-email", async (c) => {
+  try {
+    const body = await c.req.json();
+    const { token } = body;
+
+    if (!token) {
+      return c.json({ error: "Verification token is required" }, 400);
+    }
+
+    const result = await EmailVerificationService.verifyToken(token);
+
+    if (!result.success) {
+      return c.json({ error: result.error }, 400);
+    }
+
+    // Include updated user info in response
+    const updatedUser = await prisma.user.findUnique({
+      where: { id: result.user!.id },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        workspaceId: true,
+        isActive: true,
+        emailVerified: true,
+        emailVerifiedAt: true,
+        lastLogin: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    return c.json({
+      message: "Email verified successfully",
+      user: updatedUser,
+      type: result.type,
+    });
+  } catch (error) {
+    logger.error("Email verification error:", error);
+    return c.json({ error: "Failed to verify email" }, 500);
+  }
+});
+
+// Resend verification email
+authController.post("/resend-verification", authenticate, async (c) => {
+  const user = c.get("user") as SafeUser;
+
+  try {
+    const body = await c.req.json();
+    const { type = "SIGNUP" } = body;
+
+    if (type !== "SIGNUP" && type !== "EMAIL_CHANGE") {
+      return c.json({ error: "Invalid verification type" }, 400);
+    }
+
+    const result = await EmailVerificationService.resendVerificationEmail(
+      user.id,
+      type
+    );
+
+    if (!result.success) {
+      return c.json({ error: result.error }, 400);
+    }
+
+    return c.json({
+      message: "Verification email sent successfully",
+    });
+  } catch (error) {
+    logger.error("Resend verification error:", error);
+    return c.json({ error: "Failed to resend verification email" }, 500);
+  }
+});
+
+// Check verification status
+authController.get("/verification-status", authenticate, async (c) => {
+  const user = c.get("user") as SafeUser;
+
+  try {
+    const userInfo = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: {
+        emailVerified: true,
+        emailVerifiedAt: true,
+        pendingEmail: true,
+      },
+    });
+
+    if (!userInfo) {
+      return c.json({ error: "User not found" }, 404);
+    }
+
+    const hasPendingSignupVerification =
+      await EmailVerificationService.hasPendingVerification(user.id, "SIGNUP");
+    const hasPendingEmailChange =
+      await EmailVerificationService.hasPendingVerification(
+        user.id,
+        "EMAIL_CHANGE"
+      );
+
+    return c.json({
+      emailVerified: userInfo.emailVerified,
+      emailVerifiedAt: userInfo.emailVerifiedAt,
+      pendingEmail: userInfo.pendingEmail,
+      hasPendingSignupVerification,
+      hasPendingEmailChange,
+    });
+  } catch (error) {
+    logger.error("Verification status error:", error);
+    return c.json({ error: "Failed to get verification status" }, 500);
   }
 });
 

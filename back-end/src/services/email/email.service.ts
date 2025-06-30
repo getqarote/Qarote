@@ -1,22 +1,3 @@
-/**
- * Email Service
- *
- * Handles transactional email sending using Resend and React Email templates.
- *
- * Features:
- * - Invitation emails for workspace collaboration
- * - Welcome emails for new user onboarding
- * - Upgrade confirmation emails for plan changes
- * - React Email templates with plan-specific content
- *
- * Monitoring:
- * - Sentry error tracking for email delivery failures
- * - Structured logging with pino
- * - Email delivery metrics and success tracking
- * - Error categorization by email type
- * - Context setting for email tracking and debugging
- */
-
 import { WorkspacePlan } from "@prisma/client";
 import { Resend } from "resend";
 import { render } from "@react-email/render";
@@ -26,6 +7,7 @@ import { getPlanLimits } from "../plan-validation.service";
 import { InvitationEmail } from "./templates/invitation-email";
 import { WelcomeEmail } from "./templates/welcome-email";
 import { UpgradeConfirmationEmail } from "./templates/upgrade-confirmation-email";
+import { EmailVerification } from "./templates/email-verification";
 import { emailConfig } from "@/config";
 
 const resend = new Resend(emailConfig.resendApiKey);
@@ -355,5 +337,126 @@ export async function sendUpgradeConfirmationEmail({
     });
 
     throw error;
+  }
+}
+
+export interface SendVerificationEmailParams {
+  to: string;
+  userName?: string;
+  verificationToken: string;
+  type: "SIGNUP" | "EMAIL_CHANGE";
+}
+
+/**
+ * Send an email verification email using Resend and React Email templates
+ */
+export async function sendVerificationEmail(
+  params: SendVerificationEmailParams
+): Promise<EmailResult> {
+  const { to, userName, verificationToken, type } = params;
+
+  try {
+    logger.info("Sending verification email", {
+      to,
+      userName,
+      type,
+    });
+
+    // Validate email service configuration
+    if (!emailConfig.resendApiKey) {
+      throw new Error("RESEND_API_KEY environment variable is not set");
+    }
+
+    const verificationUrl = `${emailConfig.frontendUrl}/verify-email?token=${verificationToken}`;
+    const expiryHours = 24;
+
+    // Render the React email template to HTML
+    const email = EmailVerification({
+      email: to,
+      userName,
+      verificationUrl,
+      type,
+      frontendUrl: emailConfig.frontendUrl,
+      expiryHours,
+    });
+    const emailHtml = await render(email);
+
+    const subject =
+      type === "SIGNUP"
+        ? "Please verify your email address - RabbitScout"
+        : "Verify your new email address - RabbitScout";
+
+    // Send the email using Resend
+    const { data, error } = await resend.emails.send({
+      from: emailConfig.fromEmail,
+      to,
+      subject,
+      html: emailHtml,
+    });
+
+    if (error) {
+      logger.error("Failed to send verification email:", error);
+
+      // Capture email error in Sentry
+      Sentry.withScope((scope) => {
+        scope.setTag("component", "email");
+        scope.setTag("email_type", "verification");
+        scope.setContext("email_operation", {
+          operation: "sendVerificationEmail",
+          to,
+          userName,
+          type,
+          error: error.message,
+        });
+        Sentry.captureException(
+          new Error(`Email sending failed: ${error.message}`)
+        );
+      });
+
+      return {
+        success: false,
+        error: error.message || "Failed to send email",
+      };
+    }
+
+    // Set Sentry context for email tracking
+    setSentryContext("email_sent", {
+      type: "verification",
+      subType: type,
+      messageId: data?.id,
+      to,
+      userName,
+    });
+
+    logger.info("Verification email sent successfully", {
+      messageId: data?.id,
+      to,
+      type,
+    });
+
+    return {
+      success: true,
+      messageId: data?.id,
+    };
+  } catch (error) {
+    logger.error("Error sending verification email:", error);
+
+    // Capture email error in Sentry
+    Sentry.withScope((scope) => {
+      scope.setTag("component", "email");
+      scope.setTag("email_type", "verification");
+      scope.setContext("email_operation", {
+        operation: "sendVerificationEmail",
+        to,
+        userName,
+        type,
+      });
+      Sentry.captureException(error);
+    });
+
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error occurred",
+    };
   }
 }

@@ -167,10 +167,16 @@ model User {
   id             String    @id @default(uuid())
   email          String    @unique
   passwordHash   String
-  firstName      String?
-  lastName       String?
+  firstName       String
+  lastName       String
   role           UserRole  @default(USER)
   isActive       Boolean   @default(true)
+  
+  // Email verification
+  emailVerified  Boolean   @default(false)
+  emailVerifiedAt DateTime?
+  pendingEmail   String?   // For email change requests
+  
   lastLogin      DateTime?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
@@ -184,6 +190,9 @@ model User {
   // Feedback relations
   feedback       Feedback[]
   feedbackResponses Feedback[] @relation("FeedbackResponses")
+  
+  // Email verification tokens
+  emailVerificationTokens EmailVerificationToken[]
 }
 
 model Invitation {
@@ -201,6 +210,20 @@ model Invitation {
   expiresAt      DateTime
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
+}
+
+model EmailVerificationToken {
+  id             String   @id @default(uuid())
+  token          String   @unique
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  email          String   // The email address to verify (current or pending)
+  type           String   // "SIGNUP" or "EMAIL_CHANGE"
+  expiresAt      DateTime
+  createdAt      DateTime @default(now())
+  
+  @@index([userId])
+  @@index([token])
 }
 
 model RabbitMQServer {

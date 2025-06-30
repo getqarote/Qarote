@@ -48,12 +48,12 @@ const SignUp: React.FC = () => {
     },
   });
 
-  // Handle successful registration redirect
+  // Only redirect if user is already authenticated (shouldn't happen on signup page)
   useEffect(() => {
-    if (registerMutation.isSuccess && isAuthenticated) {
+    if (isAuthenticated) {
       navigate(from, { replace: true });
     }
-  }, [registerMutation.isSuccess, isAuthenticated, navigate, from]);
+  }, [isAuthenticated, navigate, from]);
 
   const onSubmit = (data: SignUpFormData) => {
     const userData = {
@@ -94,186 +94,211 @@ const SignUp: React.FC = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="space-y-4"
-              >
-                {registerMutation.isError && (
-                  <Alert variant="destructive">
-                    <AlertDescription>
-                      {registerMutation.error instanceof Error
-                        ? registerMutation.error.message
-                        : "Failed to create account. Please try again."}
-                    </AlertDescription>
-                  </Alert>
-                )}
-
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="firstName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>First name</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="John"
-                            disabled={registerMutation.isPending}
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="lastName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Last name</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="Doe"
-                            disabled={registerMutation.isPending}
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email address</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="email"
-                          placeholder="john@example.com"
-                          disabled={registerMutation.isPending}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="workspaceName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Workspace name</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Your workspace"
-                          disabled={registerMutation.isPending}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Password</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="password"
-                          placeholder="Create a password"
-                          disabled={registerMutation.isPending}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="confirmPassword"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Confirm password</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="password"
-                          placeholder="Confirm your password"
-                          disabled={registerMutation.isPending}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="acceptTerms"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                          disabled={registerMutation.isPending}
-                        />
-                      </FormControl>
-                      <div className="space-y-1 leading-none">
-                        <FormLabel className="text-sm font-normal">
-                          I agree to the{" "}
-                          <Link
-                            to="/terms-of-service"
-                            className="font-medium text-blue-600 hover:text-blue-500 underline"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            Terms of Service
-                          </Link>{" "}
-                          and the{" "}
-                          <Link
-                            to="/privacy-policy"
-                            className="font-medium text-blue-600 hover:text-blue-500 underline"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            Privacy Policy
-                          </Link>
-                          .
-                        </FormLabel>
-                        <FormMessage />
-                      </div>
-                    </FormItem>
-                  )}
-                />
-
-                <Button
-                  type="submit"
-                  className="w-full"
-                  disabled={
-                    registerMutation.isPending || !form.formState.isValid
-                  }
+            {registerMutation.isSuccess ? (
+              <Alert className="border-green-200 bg-green-50">
+                <AlertDescription className="text-green-800">
+                  <div className="font-medium mb-2">
+                    Account created successfully!
+                  </div>
+                  <p className="text-sm mb-3">
+                    We've sent a verification email to your address. Please
+                    check your inbox and click the verification link to activate
+                    your account and access the dashboard.
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => navigate("/auth/sign-in")}
+                      className="bg-white border-green-300 text-green-700 hover:bg-green-100"
+                    >
+                      Go to Sign In
+                    </Button>
+                  </div>
+                </AlertDescription>
+              </Alert>
+            ) : (
+              <Form {...form}>
+                <form
+                  onSubmit={form.handleSubmit(onSubmit)}
+                  className="space-y-4"
                 >
-                  {registerMutation.isPending
-                    ? "Creating account..."
-                    : "Create account"}
-                </Button>
-              </form>
-            </Form>
+                  {registerMutation.isError && (
+                    <Alert variant="destructive">
+                      <AlertDescription>
+                        {registerMutation.error instanceof Error
+                          ? registerMutation.error.message
+                          : "Failed to create account. Please try again."}
+                      </AlertDescription>
+                    </Alert>
+                  )}
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="firstName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>First name</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="John"
+                              disabled={registerMutation.isPending}
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="lastName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Last name</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="Doe"
+                              disabled={registerMutation.isPending}
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email address</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="email"
+                            placeholder="john@example.com"
+                            disabled={registerMutation.isPending}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="workspaceName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Workspace name</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Your workspace"
+                            disabled={registerMutation.isPending}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Password</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="password"
+                            placeholder="Create a password"
+                            disabled={registerMutation.isPending}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="confirmPassword"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Confirm password</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="password"
+                            placeholder="Confirm your password"
+                            disabled={registerMutation.isPending}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="acceptTerms"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                            disabled={registerMutation.isPending}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel className="text-sm font-normal">
+                            I agree to the{" "}
+                            <Link
+                              to="/terms-of-service"
+                              className="font-medium text-blue-600 hover:text-blue-500 underline"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              Terms of Service
+                            </Link>{" "}
+                            and the{" "}
+                            <Link
+                              to="/privacy-policy"
+                              className="font-medium text-blue-600 hover:text-blue-500 underline"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              Privacy Policy
+                            </Link>
+                            .
+                          </FormLabel>
+                          <FormMessage />
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+
+                  <Button
+                    type="submit"
+                    className="w-full"
+                    disabled={
+                      registerMutation.isPending || !form.formState.isValid
+                    }
+                  >
+                    {registerMutation.isPending
+                      ? "Creating account..."
+                      : "Create account"}
+                  </Button>
+                </form>
+              </Form>
+            )}
           </CardContent>
         </Card>
       </div>

@@ -5,7 +5,7 @@ export function initSentry() {
   // Only initialize Sentry in production or when explicitly enabled
   if (
     import.meta.env.MODE !== "production" &&
-    !import.meta.env.VITE_SENTRY_ENABLED
+    import.meta.env.VITE_SENTRY_ENABLED === "false"
   ) {
     return;
   }

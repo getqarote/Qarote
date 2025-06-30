@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { User } from "@/lib/api";
 import { setSentryUser } from "@/lib/sentry";
-import logger from "../lib/logger";
+import logger from "@/lib/logger";
 
 interface AuthContextType {
   user: User | null;
@@ -10,6 +10,7 @@ interface AuthContextType {
   isLoading: boolean;
   login: (token: string, user: User) => void;
   logout: () => void;
+  updateUser: (user: User) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -78,6 +79,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     localStorage.removeItem("auth_user");
   };
 
+  const updateUser = (newUser: User) => {
+    setUser(newUser);
+    localStorage.setItem("auth_user", JSON.stringify(newUser));
+
+    // Update Sentry user context
+    setSentryUser({
+      id: newUser.id,
+      workspaceId: newUser.workspaceId,
+      email: newUser.email,
+    });
+  };
+
   const value: AuthContextType = {
     user,
     token,
@@ -85,6 +98,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     isLoading,
     login,
     logout,
+    updateUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -2,6 +2,7 @@ import { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { Shield, ExternalLink, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { EmailVerificationBanner } from "@/components/EmailVerificationBanner";
 
 interface LayoutProps {
   children: ReactNode;
@@ -10,6 +11,9 @@ interface LayoutProps {
 export function Layout({ children }: LayoutProps) {
   return (
     <div className="min-h-screen flex flex-col">
+      {/* Email verification banner */}
+      {/* <EmailVerificationBanner className="ml-0 md:ml-64 mx-4 mt-4 transition-[margin] duration-200 ease-linear" /> */}
+
       {/* Main content */}
       <div className="flex-1">{children}</div>
 

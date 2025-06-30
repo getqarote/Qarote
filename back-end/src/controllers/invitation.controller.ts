@@ -1,4 +1,3 @@
-import { randomBytes } from "node:crypto";
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { prisma } from "@/core/prisma";
@@ -13,13 +12,9 @@ import {
   getInvitationLimitText,
   PlanValidationError,
 } from "@/services/plan-validation.service";
+import { EncryptionService } from "@/services/encryption.service";
 
 const invitationController = new Hono();
-
-// Helper function to generate random token
-const generateInvitationToken = (): string => {
-  return randomBytes(32).toString("hex");
-};
 
 // Helper function to get user display name
 const getUserDisplayName = (user: {
@@ -201,7 +196,7 @@ invitationController.post(
       }
 
       // Generate invitation token
-      const invitationToken = generateInvitationToken();
+      const invitationToken = EncryptionService.generateEncryptionKey();
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + 7); // Expires in 7 days
 

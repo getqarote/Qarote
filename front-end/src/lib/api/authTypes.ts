@@ -16,6 +16,11 @@ export interface RegisterRequest {
   workspaceName?: string;
 }
 
+export interface RegisterResponse {
+  message: string;
+  email: string;
+}
+
 export interface AuthResponse {
   token: string;
   user: {
@@ -35,6 +40,9 @@ export interface User {
   role: string;
   workspaceId?: string;
   isActive: boolean;
+  emailVerified?: boolean;
+  emailVerifiedAt?: string;
+  pendingEmail?: string;
   lastLogin?: string;
   createdAt: string;
   updatedAt: string;

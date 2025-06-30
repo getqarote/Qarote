@@ -17,16 +17,12 @@ export const useLogin = () => {
 };
 
 export const useRegister = () => {
-  const { login } = useAuth();
-
   return useMutation({
     mutationFn: async (userData: RegisterRequest) => {
       const response = await apiClient.register(userData);
       return response;
     },
-    onSuccess: (data) => {
-      login(data.token, data.user);
-    },
+    // No onSuccess callback - user must verify email before logging in
   });
 };
 

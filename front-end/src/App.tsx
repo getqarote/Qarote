@@ -33,6 +33,7 @@ const HelpSupport = lazy(() => import("./pages/HelpSupport"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const SignIn = lazy(() => import("./pages/SignIn"));
 const SignUp = lazy(() => import("./pages/SignUp"));
+const VerifyEmail = lazy(() => import("./pages/VerifyEmail"));
 const AcceptInvitation = lazy(() => import("./pages/AcceptInvitation"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
@@ -72,6 +73,7 @@ const AppCore = () => (
                       </PublicRoute>
                     }
                   />
+                  <Route path="/verify-email" element={<VerifyEmail />} />
                   <Route
                     path="/invite/:token"
                     element={
