@@ -14,7 +14,11 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "seed:test": "tsx scripts/seed-test-data.ts",
+    "seed:users": "tsx scripts/seed-test-data.ts --type=users",
+    "seed:limits": "tsx scripts/seed-test-data.ts --type=limits",
+    "seed:email": "tsx scripts/seed-test-data.ts --type=email",
+    "seed:clean": "tsx scripts/seed-test-data.ts --type=clean"
   },
   "dependencies": {
     "@hono/node-server": "^1.14.4",

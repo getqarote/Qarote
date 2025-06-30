@@ -4,6 +4,61 @@ This folder contains utility scripts for the RabbitMQ Dashboard project.
 
 ## Scripts
 
+### Test Data Seeding Scripts
+
+Comprehensive test data seeding scripts to quickly test UX bottlenecks and plan validation across different user scenarios.
+
+#### 🚀 Quick Start
+
+```bash
+# Seed all test scenarios
+tsx scripts/seed-test-data.ts
+
+# Or seed specific types
+tsx scripts/seed-test-data.ts --type=users
+tsx scripts/seed-test-data.ts --type=limits
+tsx scripts/seed-test-data.ts --type=email
+```
+
+#### 📋 Test Scenarios
+
+**1. Main User Scenarios (`seed-test-users.ts`)**
+
+- Solo Developer (FREE): 1 user, 1 server, 1 queue
+- Freelancer Studio (FREELANCE): 2 users, 2 servers, 8 queues
+- TechStart Inc (STARTUP): 5 users, 6 servers, 35 queues
+- Enterprise Corp (BUSINESS): 11 users, 25 servers, 150 queues
+
+**2. Plan Limit Tests (`seed-limit-tests.ts`)**
+
+- Users at exact plan limits
+- Users over limits (legacy scenarios)
+- Users near limits
+- Heavy usage scenarios
+
+**3. Email Verification Tests (`seed-email-verification-tests.ts`)**
+
+- Unverified users (fresh and old signups)
+- Users with pending email changes
+- Expired verification tokens
+- Team member verification states
+
+#### 📊 Test Credentials
+
+All test users use password: `password123`
+
+**Quick Access:**
+
+- `free@test.com` - FREE plan user
+- `freelancer@test.com` - FREELANCE plan user
+- `admin@techstart.com` - STARTUP team admin
+- `admin@enterprise.com` - BUSINESS enterprise admin
+- `unverified.fresh@test.com` - Needs email verification
+
+See full documentation in individual script files for complete testing guide.
+
+---
+
 ### populate-rabbitmq-data.ts
 
 Populates RabbitMQ with sample data for testing and demonstration purposes.
