@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Card,
   CardContent,
@@ -11,12 +12,19 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { useLogin } from "@/hooks/useAuth";
 import { useAuth } from "@/contexts/AuthContext";
+import { signInSchema, type SignInFormData } from "@/schemas/forms";
 
 const SignIn: React.FC = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const { isAuthenticated } = useAuth();
   const loginMutation = useLogin();
   const location = useLocation();
@@ -25,6 +33,15 @@ const SignIn: React.FC = () => {
   // Get the page the user was trying to access
   const from = location.state?.from?.pathname || "/";
 
+  // Initialize form with react-hook-form
+  const form = useForm<SignInFormData>({
+    resolver: zodResolver(signInSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
+
   // Handle successful login redirect
   useEffect(() => {
     if (loginMutation.isSuccess && isAuthenticated) {
@@ -32,16 +49,10 @@ const SignIn: React.FC = () => {
     }
   }, [loginMutation.isSuccess, isAuthenticated, navigate, from]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!email || !password) {
-      return;
-    }
-
+  const onSubmit = (data: SignInFormData) => {
     loginMutation.mutate({
-      email,
-      password,
+      email: data.email,
+      password: data.password,
     });
   };
 
@@ -71,51 +82,68 @@ const SignIn: React.FC = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {loginMutation.isError && (
-                <Alert variant="destructive">
-                  <AlertDescription>
-                    {loginMutation.error instanceof Error
-                      ? loginMutation.error.message
-                      : "Failed to sign in. Please check your credentials."}
-                  </AlertDescription>
-                </Alert>
-              )}
-
-              <div className="space-y-2">
-                <Label htmlFor="email">Email address</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  placeholder="Enter your email"
-                  disabled={loginMutation.isPending}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  placeholder="Enter your password"
-                  disabled={loginMutation.isPending}
-                />
-              </div>
-
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={loginMutation.isPending || !email || !password}
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-4"
               >
-                {loginMutation.isPending ? "Signing in..." : "Sign in"}
-              </Button>
-            </form>
+                {loginMutation.isError && (
+                  <Alert variant="destructive">
+                    <AlertDescription>
+                      {loginMutation.error instanceof Error
+                        ? loginMutation.error.message
+                        : "Failed to sign in. Please check your credentials."}
+                    </AlertDescription>
+                  </Alert>
+                )}
+
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email address</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="email"
+                          placeholder="Enter your email"
+                          disabled={loginMutation.isPending}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Password</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="password"
+                          placeholder="Enter your password"
+                          disabled={loginMutation.isPending}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={loginMutation.isPending || !form.formState.isValid}
+                >
+                  {loginMutation.isPending ? "Signing in..." : "Sign in"}
+                </Button>
+              </form>
+            </Form>
           </CardContent>
         </Card>
       </div>

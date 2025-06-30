@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Card,
   CardContent,
@@ -9,13 +11,24 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Loader2, Mail, Users, Building } from "lucide-react";
 import { useToast } from "@/hooks/useToast";
 import { apiClient } from "@/lib/api/client";
 import { useAcceptInvitation } from "@/hooks/useAuth";
 import { User, Workspace } from "@/lib/api/authTypes";
+import {
+  acceptInvitationSchema,
+  type AcceptInvitationFormData,
+} from "@/schemas/forms";
 
 interface InvitationDetails {
   id: string;
@@ -46,14 +59,16 @@ const AcceptInvitation = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    password: "",
-    confirmPassword: "",
+  // Initialize form with react-hook-form
+  const form = useForm<AcceptInvitationFormData>({
+    resolver: zodResolver(acceptInvitationSchema),
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      password: "",
+      confirmPassword: "",
+    },
   });
-
-  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
   // Fetch invitation details
   useEffect(() => {
@@ -85,44 +100,17 @@ const AcceptInvitation = () => {
     fetchInvitationDetails();
   }, [token]);
 
-  const validateForm = () => {
-    const errors: Record<string, string> = {};
-
-    if (!formData.firstName.trim()) {
-      errors.firstName = "First name is required";
-    }
-
-    if (!formData.lastName.trim()) {
-      errors.lastName = "Last name is required";
-    }
-
-    if (!formData.password) {
-      errors.password = "Password is required";
-    } else if (formData.password.length < 8) {
-      errors.password = "Password must be at least 8 characters";
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      errors.confirmPassword = "Passwords do not match";
-    }
-
-    setFormErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!validateForm() || !token) {
+  const onSubmit = (data: AcceptInvitationFormData) => {
+    if (!token) {
       return;
     }
 
     acceptInvitationMutation.mutate(
       {
         token,
-        password: formData.password,
-        firstName: formData.firstName,
-        lastName: formData.lastName,
+        password: data.password,
+        firstName: data.firstName,
+        lastName: data.lastName,
       },
       {
         onSuccess: () => {
@@ -140,14 +128,6 @@ const AcceptInvitation = () => {
         },
       }
     );
-  };
-
-  const handleInputChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    // Clear error for this field when user starts typing
-    if (formErrors[field]) {
-      setFormErrors((prev) => ({ ...prev, [field]: "" }));
-    }
   };
 
   if (loading) {
@@ -231,100 +211,111 @@ const AcceptInvitation = () => {
             </Alert>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="firstName">First Name</Label>
-                <Input
-                  id="firstName"
-                  value={formData.firstName}
-                  onChange={(e) =>
-                    handleInputChange("firstName", e.target.value)
-                  }
-                  placeholder="John"
-                  disabled={acceptInvitationMutation.isPending}
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="firstName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>First Name</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="John"
+                          disabled={acceptInvitationMutation.isPending}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-                {formErrors.firstName && (
-                  <p className="text-sm text-red-500">{formErrors.firstName}</p>
-                )}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="lastName">Last Name</Label>
-                <Input
-                  id="lastName"
-                  value={formData.lastName}
-                  onChange={(e) =>
-                    handleInputChange("lastName", e.target.value)
-                  }
-                  placeholder="Doe"
-                  disabled={acceptInvitationMutation.isPending}
+                <FormField
+                  control={form.control}
+                  name="lastName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Last Name</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Doe"
+                          disabled={acceptInvitationMutation.isPending}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-                {formErrors.lastName && (
-                  <p className="text-sm text-red-500">{formErrors.lastName}</p>
-                )}
               </div>
-            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={invitation?.email || ""}
-                disabled
-                className="bg-gray-50"
+              <div className="space-y-2">
+                <FormLabel>Email</FormLabel>
+                <Input
+                  type="email"
+                  value={invitation?.email || ""}
+                  disabled
+                  className="bg-gray-50"
+                />
+              </div>
+
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        placeholder="Enter your password"
+                        disabled={acceptInvitationMutation.isPending}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                value={formData.password}
-                onChange={(e) => handleInputChange("password", e.target.value)}
-                placeholder="Enter your password"
-                disabled={acceptInvitationMutation.isPending}
+              <FormField
+                control={form.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Confirm Password</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        placeholder="Confirm your password"
+                        disabled={acceptInvitationMutation.isPending}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-              {formErrors.password && (
-                <p className="text-sm text-red-500">{formErrors.password}</p>
-              )}
-            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
-              <Input
-                id="confirmPassword"
-                type="password"
-                value={formData.confirmPassword}
-                onChange={(e) =>
-                  handleInputChange("confirmPassword", e.target.value)
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={
+                  acceptInvitationMutation.isPending || !form.formState.isValid
                 }
-                placeholder="Confirm your password"
-                disabled={acceptInvitationMutation.isPending}
-              />
-              {formErrors.confirmPassword && (
-                <p className="text-sm text-red-500">
-                  {formErrors.confirmPassword}
-                </p>
-              )}
-            </div>
-
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={acceptInvitationMutation.isPending}
-            >
-              {acceptInvitationMutation.isPending ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  Creating Account...
-                </>
-              ) : (
-                "Accept Invitation & Create Account"
-              )}
-            </Button>
-          </form>
+              >
+                {acceptInvitationMutation.isPending ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    Creating Account...
+                  </>
+                ) : (
+                  "Accept Invitation & Create Account"
+                )}
+              </Button>
+            </form>
+          </Form>
 
           <div className="text-center">
             <p className="text-sm text-gray-500">

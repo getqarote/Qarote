@@ -1,9 +1,10 @@
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { MessageSquare, Bug, Lightbulb, HelpCircle, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import logger from "../lib/logger";
 import {
   Select,
@@ -19,10 +20,19 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { useToast } from "@/hooks/useToast";
 import { useAuth } from "@/contexts/AuthContext";
 import { apiClient } from "@/lib/api";
 import type { FeedbackRequest } from "@/types/feedback";
+import { feedbackSchema, type FeedbackFormData } from "@/schemas/forms";
 
 interface FeedbackFormProps {
   onSuccess?: () => void;
@@ -79,42 +89,31 @@ export function FeedbackForm({ onSuccess, className }: FeedbackFormProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState<Partial<FeedbackRequest>>({
-    type: undefined,
-    category: undefined,
-    title: "",
-    description: "",
-    priority: "MEDIUM",
-    email: user?.email || "",
+
+  // Initialize form with react-hook-form
+  const form = useForm<FeedbackFormData>({
+    resolver: zodResolver(feedbackSchema),
+    defaultValues: {
+      type: undefined,
+      category: undefined,
+      title: "",
+      description: "",
+      priority: "MEDIUM",
+      email: user?.email || "",
+    },
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (
-      !formData.type ||
-      !formData.category ||
-      !formData.title ||
-      !formData.description
-    ) {
-      toast({
-        title: "Missing Information",
-        description: "Please fill in all required fields",
-        variant: "destructive",
-      });
-      return;
-    }
-
+  const onSubmit = async (data: FeedbackFormData) => {
     setIsSubmitting(true);
 
     try {
       const feedbackData: FeedbackRequest = {
-        type: formData.type,
-        category: formData.category,
-        title: formData.title.trim(),
-        description: formData.description.trim(),
-        priority: formData.priority || "MEDIUM",
-        email: formData.email?.trim() || undefined,
+        type: data.type,
+        category: data.category,
+        title: data.title.trim(),
+        description: data.description.trim(),
+        priority: data.priority || "MEDIUM",
+        email: data.email?.trim() || undefined,
         metadata: {
           url: window.location.href,
           userAgent: navigator.userAgent,
@@ -132,7 +131,7 @@ export function FeedbackForm({ onSuccess, className }: FeedbackFormProps) {
       });
 
       // Reset form
-      setFormData({
+      form.reset({
         type: undefined,
         category: undefined,
         title: "",
@@ -167,153 +166,193 @@ export function FeedbackForm({ onSuccess, className }: FeedbackFormProps) {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Feedback Type */}
-          <div className="space-y-3">
-            <Label className="text-sm font-medium">
-              What type of feedback do you have? *
-            </Label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {feedbackTypes.map((type) => {
-                const Icon = type.icon;
-                return (
-                  <div
-                    key={type.value}
-                    className={`relative cursor-pointer rounded-lg border p-4 transition-all hover:border-gray-300 ${
-                      formData.type === type.value
-                        ? "border-blue-500 bg-blue-50"
-                        : "border-gray-200 bg-white"
-                    }`}
-                    onClick={() =>
-                      setFormData({ ...formData, type: type.value })
-                    }
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            {/* Feedback Type */}
+            <FormField
+              control={form.control}
+              name="type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium">
+                    What type of feedback do you have? *
+                  </FormLabel>
+                  <FormControl>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {feedbackTypes.map((type) => {
+                        const Icon = type.icon;
+                        return (
+                          <div
+                            key={type.value}
+                            className={`relative cursor-pointer rounded-lg border p-4 transition-all hover:border-gray-300 ${
+                              field.value === type.value
+                                ? "border-blue-500 bg-blue-50"
+                                : "border-gray-200 bg-white"
+                            }`}
+                            onClick={() => field.onChange(type.value)}
+                          >
+                            <div className="flex items-start gap-3">
+                              <Icon
+                                className={`w-5 h-5 ${type.color} mt-0.5`}
+                              />
+                              <div className="flex-1">
+                                <h4 className="font-medium text-sm">
+                                  {type.label}
+                                </h4>
+                                <p className="text-xs text-gray-500 mt-1">
+                                  {type.description}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Category */}
+            <FormField
+              control={form.control}
+              name="category"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Category *</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
                   >
-                    <div className="flex items-start gap-3">
-                      <Icon className={`w-5 h-5 ${type.color} mt-0.5`} />
-                      <div className="flex-1">
-                        <h4 className="font-medium text-sm">{type.label}</h4>
-                        <p className="text-xs text-gray-500 mt-1">
-                          {type.description}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a category" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {categories.map((category) => (
+                        <SelectItem key={category.value} value={category.value}>
+                          {category.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          {/* Category */}
-          <div className="space-y-2">
-            <Label htmlFor="category">Category *</Label>
-            <Select
-              value={formData.category}
-              onValueChange={(value) =>
-                setFormData({
-                  ...formData,
-                  category: value as FeedbackRequest["category"],
-                })
-              }
+            {/* Title */}
+            <FormField
+              control={form.control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Title *</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Brief summary of your feedback"
+                      maxLength={100}
+                      {...field}
+                    />
+                  </FormControl>
+                  <p className="text-xs text-gray-500">
+                    {field.value?.length || 0}/100 characters
+                  </p>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Description */}
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description *</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Provide detailed information about your feedback. For bugs, please include steps to reproduce."
+                      rows={4}
+                      maxLength={1000}
+                      {...field}
+                    />
+                  </FormControl>
+                  <p className="text-xs text-gray-500">
+                    {field.value?.length || 0}/1000 characters
+                  </p>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Priority */}
+            <FormField
+              control={form.control}
+              name="priority"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Priority</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {priorities.map((priority) => (
+                        <SelectItem key={priority.value} value={priority.value}>
+                          <div className="flex flex-col">
+                            <span>{priority.label}</span>
+                            <span className="text-xs text-gray-500">
+                              {priority.description}
+                            </span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Email (optional) */}
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email (optional)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="email"
+                      placeholder="your@email.com"
+                      {...field}
+                    />
+                  </FormControl>
+                  <p className="text-xs text-gray-500">
+                    We'll only use this to follow up on your feedback if needed
+                  </p>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <Button
+              type="submit"
+              disabled={isSubmitting || !form.formState.isValid}
+              className="w-full"
             >
-              <SelectTrigger>
-                <SelectValue placeholder="Select a category" />
-              </SelectTrigger>
-              <SelectContent>
-                {categories.map((category) => (
-                  <SelectItem key={category.value} value={category.value}>
-                    {category.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Title */}
-          <div className="space-y-2">
-            <Label htmlFor="title">Title *</Label>
-            <Input
-              id="title"
-              placeholder="Brief summary of your feedback"
-              value={formData.title}
-              onChange={(e) =>
-                setFormData({ ...formData, title: e.target.value })
-              }
-              maxLength={100}
-            />
-            <p className="text-xs text-gray-500">
-              {formData.title?.length || 0}/100 characters
-            </p>
-          </div>
-
-          {/* Description */}
-          <div className="space-y-2">
-            <Label htmlFor="description">Description *</Label>
-            <Textarea
-              id="description"
-              placeholder="Provide detailed information about your feedback. For bugs, please include steps to reproduce."
-              value={formData.description}
-              onChange={(e) =>
-                setFormData({ ...formData, description: e.target.value })
-              }
-              rows={4}
-              maxLength={1000}
-            />
-            <p className="text-xs text-gray-500">
-              {formData.description?.length || 0}/1000 characters
-            </p>
-          </div>
-
-          {/* Priority */}
-          <div className="space-y-2">
-            <Label htmlFor="priority">Priority</Label>
-            <Select
-              value={formData.priority}
-              onValueChange={(value) =>
-                setFormData({
-                  ...formData,
-                  priority: value as FeedbackRequest["priority"],
-                })
-              }
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {priorities.map((priority) => (
-                  <SelectItem key={priority.value} value={priority.value}>
-                    <div className="flex flex-col">
-                      <span>{priority.label}</span>
-                      <span className="text-xs text-gray-500">
-                        {priority.description}
-                      </span>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Email (optional) */}
-          <div className="space-y-2">
-            <Label htmlFor="email">Email (optional)</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="your@email.com"
-              value={formData.email}
-              onChange={(e) =>
-                setFormData({ ...formData, email: e.target.value })
-              }
-            />
-            <p className="text-xs text-gray-500">
-              We'll only use this to follow up on your feedback if needed
-            </p>
-          </div>
-
-          <Button type="submit" disabled={isSubmitting} className="w-full">
-            {isSubmitting ? "Submitting..." : "Submit Feedback"}
-          </Button>
-        </form>
+              {isSubmitting ? "Submitting..." : "Submit Feedback"}
+            </Button>
+          </form>
+        </Form>
       </CardContent>
     </Card>
   );

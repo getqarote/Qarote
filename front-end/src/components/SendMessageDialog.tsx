@@ -1,6 +1,16 @@
 import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import logger from "../lib/logger";
 import {
   Dialog,
@@ -51,6 +61,7 @@ import {
   queryKeys,
 } from "@/hooks/useApi";
 import { useToast } from "@/hooks/useToast";
+import { sendMessageSchema, type SendMessageFormData } from "@/schemas/forms";
 
 interface LabelWithTooltipProps {
   htmlFor: string;
@@ -108,11 +119,6 @@ export function SendMessageDialog({
   onSuccess,
 }: SendMessageDialogProps) {
   const [open, setOpen] = useState(false);
-  const [exchange, setExchange] = useState(defaultExchange);
-  const [routingKey, setRoutingKey] = useState(defaultRoutingKey);
-  const [payload, setPayload] = useState(
-    JSON.stringify({ message: "Hello World!", timestamp: Date.now() }, null, 2)
-  );
   const [isPropertiesExpanded, setIsPropertiesExpanded] = useState(false);
 
   // Routing error state
@@ -127,22 +133,34 @@ export function SendMessageDialog({
     };
   } | null>(null);
 
-  // Message properties
-  const [deliveryMode, setDeliveryMode] = useState("2"); // Persistent by default
-  const [priority, setPriority] = useState("");
-  const [expiration, setExpiration] = useState("");
-  const [contentType, setContentType] = useState("application/json");
-  const [contentEncoding, setContentEncoding] = useState("none");
-  const [correlationId, setCorrelationId] = useState("");
-  const [replyTo, setReplyTo] = useState("");
-  const [messageId, setMessageId] = useState("");
-  const [appId, setAppId] = useState("");
-  const [messageType, setMessageType] = useState("");
-  const [headers, setHeaders] = useState("");
-
   const publishMutation = usePublishMessage();
   const queryClient = useQueryClient();
   const { toast } = useToast();
+
+  // Initialize form with react-hook-form
+  const form = useForm<SendMessageFormData>({
+    resolver: zodResolver(sendMessageSchema),
+    defaultValues: {
+      exchange: defaultExchange,
+      routingKey: defaultRoutingKey,
+      payload: JSON.stringify(
+        { message: "Hello World!", timestamp: Date.now() },
+        null,
+        2
+      ),
+      deliveryMode: "2",
+      priority: "",
+      expiration: "",
+      contentType: "application/json",
+      contentEncoding: "none",
+      correlationId: "",
+      replyTo: "",
+      messageId: "",
+      appId: "",
+      messageType: "",
+      headers: "",
+    },
+  });
 
   // Fetch exchanges and queues for selection
   const { data: exchangesData } = useExchanges(serverId);
@@ -155,9 +173,7 @@ export function SendMessageDialog({
     ) || [];
   const queues = queuesData?.queues || [];
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
+  const onSubmit = async (data: SendMessageFormData) => {
     if (!serverId) {
       return;
     }
@@ -166,18 +182,18 @@ export function SendMessageDialog({
     if (mode === "queue" && !queueName) {
       return;
     }
-    if (mode === "exchange" && !exchange) {
+    if (mode === "exchange" && !data.exchange) {
       return;
     }
-    if (!payload) {
+    if (!data.payload) {
       return;
     }
 
     // Parse headers if provided
     let parsedHeaders = {};
-    if (headers.trim()) {
+    if (data.headers?.trim()) {
       try {
-        parsedHeaders = JSON.parse(headers);
+        parsedHeaders = JSON.parse(data.headers);
       } catch (error) {
         logger.error("Invalid headers JSON:", error);
         return;
@@ -198,17 +214,18 @@ export function SendMessageDialog({
       type?: string;
       headers?: Record<string, unknown>;
     } = {};
-    if (deliveryMode) properties.deliveryMode = parseInt(deliveryMode);
-    if (priority) properties.priority = parseInt(priority);
-    if (expiration) properties.expiration = expiration;
-    if (contentType) properties.contentType = contentType;
-    if (contentEncoding && contentEncoding !== "none")
-      properties.contentEncoding = contentEncoding;
-    if (correlationId) properties.correlationId = correlationId;
-    if (replyTo) properties.replyTo = replyTo;
-    if (messageId) properties.messageId = messageId;
-    if (appId) properties.appId = appId;
-    if (messageType) properties.type = messageType;
+    if (data.deliveryMode)
+      properties.deliveryMode = parseInt(data.deliveryMode);
+    if (data.priority) properties.priority = parseInt(data.priority);
+    if (data.expiration) properties.expiration = data.expiration;
+    if (data.contentType) properties.contentType = data.contentType;
+    if (data.contentEncoding && data.contentEncoding !== "none")
+      properties.contentEncoding = data.contentEncoding;
+    if (data.correlationId) properties.correlationId = data.correlationId;
+    if (data.replyTo) properties.replyTo = data.replyTo;
+    if (data.messageId) properties.messageId = data.messageId;
+    if (data.appId) properties.appId = data.appId;
+    if (data.messageType) properties.type = data.messageType;
     if (Object.keys(parsedHeaders).length > 0)
       properties.headers = parsedHeaders;
 
@@ -218,9 +235,9 @@ export function SendMessageDialog({
         {
           serverId,
           queueName,
-          message: payload,
-          exchange: exchange || "", // Use default exchange if not specified
-          routingKey: routingKey || queueName, // Use queue name as routing key if not specified
+          message: data.payload,
+          exchange: data.exchange || "", // Use default exchange if not specified
+          routingKey: data.routingKey || queueName, // Use queue name as routing key if not specified
           properties:
             Object.keys(properties).length > 0 ? properties : undefined,
         },
@@ -289,15 +306,15 @@ export function SendMessageDialog({
           },
         }
       );
-    } else if (mode === "exchange" && exchange) {
+    } else if (mode === "exchange" && data.exchange) {
       // Exchange publishing (now supported)
       publishMutation.mutate(
         {
           serverId,
-          queueName: routingKey || "", // Use routing key as queue name for exchange publishing
-          message: payload,
-          exchange,
-          routingKey,
+          queueName: data.routingKey || "", // Use routing key as queue name for exchange publishing
+          message: data.payload,
+          exchange: data.exchange,
+          routingKey: data.routingKey,
           properties:
             Object.keys(properties).length > 0 ? properties : undefined,
         },
@@ -378,36 +395,36 @@ export function SendMessageDialog({
   };
 
   const resetForm = () => {
-    setPayload(
-      JSON.stringify(
+    form.reset({
+      exchange: defaultExchange,
+      routingKey: defaultRoutingKey,
+      payload: JSON.stringify(
         { message: "Hello World!", timestamp: Date.now() },
         null,
         2
-      )
-    );
-    setExchange(defaultExchange);
-    setRoutingKey(defaultRoutingKey);
+      ),
+      deliveryMode: "2",
+      priority: "",
+      expiration: "",
+      contentType: "application/json",
+      contentEncoding: "none",
+      correlationId: "",
+      replyTo: "",
+      messageId: "",
+      appId: "",
+      messageType: "",
+      headers: "",
+    });
     setIsPropertiesExpanded(false);
-    setDeliveryMode("2");
-    setPriority("");
-    setExpiration("");
-    setContentType("application/json");
-    setContentEncoding("none");
-    setCorrelationId("");
-    setReplyTo("");
-    setMessageId("");
-    setAppId("");
-    setMessageType("");
-    setHeaders("");
     setRoutingError(null); // Clear routing errors
   };
 
   // Helper function to apply suggested routing settings
   const applySuggestedSettings = (suggestion: string) => {
     if (suggestion.includes("default exchange")) {
-      setExchange("");
+      form.setValue("exchange", "");
       if (queueName) {
-        setRoutingKey(queueName);
+        form.setValue("routingKey", queueName);
       }
       setRoutingError(null);
       toast({
@@ -418,7 +435,7 @@ export function SendMessageDialog({
     } else if (suggestion.includes("routing key")) {
       // Auto-suggest common routing keys based on available queues
       if (queues.length > 0) {
-        setRoutingKey(queues[0].name);
+        form.setValue("routingKey", queues[0].name);
         toast({
           title: "Settings applied",
           description: `Set routing key to "${queues[0].name}" (first available queue)`,
@@ -459,8 +476,9 @@ export function SendMessageDialog({
 
   const formatPayload = () => {
     try {
-      const parsed = JSON.parse(payload);
-      setPayload(JSON.stringify(parsed, null, 2));
+      const currentPayload = form.getValues("payload");
+      const parsed = JSON.parse(currentPayload);
+      form.setValue("payload", JSON.stringify(parsed, null, 2));
     } catch (error) {
       // If it's not valid JSON, leave it as is
     }
@@ -560,124 +578,155 @@ export function SendMessageDialog({
             </Alert>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Exchange and Routing Key */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <LabelWithTooltip
-                  htmlFor="exchange"
-                  label="Exchange *"
-                  tooltip="The exchange to publish the message to. Exchanges route messages to queues based on routing rules and exchange type (direct, fanout, topic, headers)."
-                />
-                <Select value={exchange} onValueChange={setExchange} required>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select an exchange..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {exchanges.length > 0 ? (
-                      exchanges.map((ex) => (
-                        <SelectItem
-                          key={ex.name || "(Default)"}
-                          value={ex.name || "(Default)"}
-                        >
-                          <div className="flex items-center gap-2">
-                            <div
-                              className={`w-2 h-2 rounded-full ${
-                                ex.type === "direct"
-                                  ? "bg-green-500"
-                                  : ex.type === "fanout"
-                                    ? "bg-blue-500"
-                                    : ex.type === "topic"
-                                      ? "bg-orange-500"
-                                      : ex.type === "headers"
-                                        ? "bg-purple-500"
-                                        : "bg-gray-500"
-                              }`}
-                            />
-                            <span className="font-medium">
-                              {ex.name || "(Default)"}
-                            </span>
-                            <Badge variant="outline" className="text-xs">
-                              {ex.type}
-                            </Badge>
-                          </div>
-                        </SelectItem>
-                      ))
-                    ) : (
-                      <SelectItem value="__no_exchanges__" disabled>
-                        No exchanges available
-                      </SelectItem>
-                    )}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <LabelWithTooltip
-                  htmlFor="routingKey"
-                  label="Routing Key"
-                  tooltip="Determines how messages are routed to queues. For direct exchanges, use exact queue names. For topic exchanges, use patterns with wildcards (* for one word, # for multiple words)."
-                  side="left"
-                />
-                <div className="flex gap-2">
-                  <Input
-                    id="routingKey"
-                    value={routingKey}
-                    onChange={(e) => setRoutingKey(e.target.value)}
-                    placeholder="e.g., user.created, logs.info"
-                    list="routingKeySuggestions"
-                    className="flex-1"
-                  />
-                  {(() => {
-                    const selectedExchange = exchanges.find(
-                      (ex) => ex.name === exchange
-                    );
-                    if (
-                      selectedExchange?.type === "direct" &&
-                      queues.length > 0
-                    ) {
-                      return (
-                        <Select onValueChange={setRoutingKey}>
-                          <SelectTrigger className="w-[120px]">
-                            <SelectValue placeholder="Quick select" />
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              {/* Exchange and Routing Key */}
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="exchange"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        <LabelWithTooltip
+                          htmlFor="exchange"
+                          label="Exchange *"
+                          tooltip="The exchange to publish the message to. Exchanges route messages to queues based on routing rules and exchange type (direct, fanout, topic, headers)."
+                        />
+                      </FormLabel>
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                        required
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select an exchange..." />
                           </SelectTrigger>
-                          <SelectContent>
-                            {queues.slice(0, 10).map((queue) => (
-                              <SelectItem key={queue.name} value={queue.name}>
-                                {queue.name}
+                        </FormControl>
+                        <SelectContent>
+                          {exchanges.length > 0 ? (
+                            exchanges.map((ex) => (
+                              <SelectItem
+                                key={ex.name || "(Default)"}
+                                value={ex.name || "(Default)"}
+                              >
+                                <div className="flex items-center gap-2">
+                                  <div
+                                    className={`w-2 h-2 rounded-full ${
+                                      ex.type === "direct"
+                                        ? "bg-green-500"
+                                        : ex.type === "fanout"
+                                          ? "bg-blue-500"
+                                          : ex.type === "topic"
+                                            ? "bg-orange-500"
+                                            : ex.type === "headers"
+                                              ? "bg-purple-500"
+                                              : "bg-gray-500"
+                                    }`}
+                                  />
+                                  <span className="font-medium">
+                                    {ex.name || "(Default)"}
+                                  </span>
+                                  <Badge variant="outline" className="text-xs">
+                                    {ex.type}
+                                  </Badge>
+                                </div>
                               </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      );
-                    }
-                    return null;
-                  })()}
-                </div>
-                <datalist id="routingKeySuggestions">
-                  {/* Suggestions from queue names */}
-                  {queues.slice(0, 10).map((queue) => (
-                    <option key={queue.name} value={queue.name} />
-                  ))}
-                  {/* Common routing key patterns */}
-                  <option value="user.created" />
-                  <option value="user.updated" />
-                  <option value="user.deleted" />
-                  <option value="order.created" />
-                  <option value="order.updated" />
-                  <option value="notification.email" />
-                  <option value="notification.sms" />
-                  <option value="logs.info" />
-                  <option value="logs.error" />
-                  <option value="events.system" />
-                </datalist>
+                            ))
+                          ) : (
+                            <SelectItem value="__no_exchanges__" disabled>
+                              No exchanges available
+                            </SelectItem>
+                          )}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="routingKey"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        <LabelWithTooltip
+                          htmlFor="routingKey"
+                          label="Routing Key"
+                          tooltip="Determines how messages are routed to queues. For direct exchanges, use exact queue names. For topic exchanges, use patterns with wildcards (* for one word, # for multiple words)."
+                          side="left"
+                        />
+                      </FormLabel>
+                      <div className="flex gap-2">
+                        <FormControl>
+                          <Input
+                            {...field}
+                            placeholder="e.g., user.created, logs.info"
+                            list="routingKeySuggestions"
+                            className="flex-1"
+                          />
+                        </FormControl>
+                        {(() => {
+                          const exchangeValue = form.watch("exchange");
+                          const selectedExchange = exchanges.find(
+                            (ex) => ex.name === exchangeValue
+                          );
+                          if (
+                            selectedExchange?.type === "direct" &&
+                            queues.length > 0
+                          ) {
+                            return (
+                              <Select onValueChange={field.onChange}>
+                                <SelectTrigger className="w-[120px]">
+                                  <SelectValue placeholder="Quick select" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {queues.slice(0, 10).map((queue) => (
+                                    <SelectItem
+                                      key={queue.name}
+                                      value={queue.name}
+                                    >
+                                      {queue.name}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            );
+                          }
+                          return null;
+                        })()}
+                      </div>
+                      <datalist id="routingKeySuggestions">
+                        {/* Suggestions from queue names */}
+                        {queues.slice(0, 10).map((queue) => (
+                          <option key={queue.name} value={queue.name} />
+                        ))}
+                        {/* Common routing key patterns */}
+                        <option value="user.created" />
+                        <option value="user.updated" />
+                        <option value="user.deleted" />
+                        <option value="order.created" />
+                        <option value="order.updated" />
+                        <option value="notification.email" />
+                        <option value="notification.sms" />
+                        <option value="logs.info" />
+                        <option value="logs.error" />
+                        <option value="events.system" />
+                      </datalist>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
-            </div>
 
-            {/* Exchange Type Info */}
-            {exchange &&
-              (() => {
+              {/* Exchange Type Info */}
+              {(() => {
+                const exchangeValue = form.watch("exchange");
+                if (!exchangeValue) return null;
+
                 const selectedExchange = exchanges.find(
-                  (ex) => ex.name === exchange
+                  (ex) => ex.name === exchangeValue
                 );
                 if (!selectedExchange) return null;
 
@@ -750,322 +799,436 @@ export function SendMessageDialog({
                 );
               })()}
 
-            {/* Message Payload */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <LabelWithTooltip
-                  htmlFor="payload"
-                  label="Message Payload *"
-                  tooltip="The actual content of your message. Can be JSON, XML, plain text, or any format. Make sure the Content Type property matches your payload format."
-                />
+              {/* Message Payload */}
+              <FormField
+                control={form.control}
+                name="payload"
+                render={({ field }) => (
+                  <FormItem>
+                    <div className="flex items-center justify-between">
+                      <FormLabel>
+                        <LabelWithTooltip
+                          htmlFor="payload"
+                          label="Message Payload *"
+                          tooltip="The actual content of your message. Can be JSON, XML, plain text, or any format. Make sure the Content Type property matches your payload format."
+                        />
+                      </FormLabel>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={formatPayload}
+                      >
+                        Format JSON
+                      </Button>
+                    </div>
+                    <FormControl>
+                      <Textarea
+                        {...field}
+                        placeholder="Enter your message payload..."
+                        className="min-h-[120px] font-mono text-sm"
+                        required
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <Separator />
+
+              {/* Advanced Properties */}
+              <Collapsible
+                open={isPropertiesExpanded}
+                onOpenChange={setIsPropertiesExpanded}
+              >
+                <CollapsibleTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="flex items-center justify-between w-full p-0 h-auto"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Settings className="h-4 w-4" />
+                      Message Properties
+                      <Badge variant="secondary" className="text-xs">
+                        Optional
+                      </Badge>
+                    </div>
+                    {isPropertiesExpanded ? (
+                      <ChevronDown className="h-4 w-4" />
+                    ) : (
+                      <ChevronRight className="h-4 w-4" />
+                    )}
+                  </Button>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="space-y-4 pt-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="deliveryMode"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>
+                            <LabelWithTooltip
+                              htmlFor="deliveryMode"
+                              label="Delivery Mode"
+                              tooltip="Set the delivery mode for the message. Persistent messages are saved to disk and survive broker restarts. Transient messages are kept in memory and may be lost if the broker crashes."
+                            />
+                          </FormLabel>
+                          <Select
+                            value={field.value}
+                            onValueChange={field.onChange}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="1">Transient (1)</SelectItem>
+                              <SelectItem value="2">Persistent (2)</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="priority"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>
+                            <LabelWithTooltip
+                              htmlFor="priority"
+                              label="Priority (0-255)"
+                              tooltip="Message priority level from 0 (lowest) to 255 (highest). Higher priority messages are delivered before lower priority ones. Note: Priority queues must be declared with x-max-priority argument."
+                              side="left"
+                            />
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              type="number"
+                              min="0"
+                              max="255"
+                              placeholder="0"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="contentType"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>
+                            <LabelWithTooltip
+                              htmlFor="contentType"
+                              label="Content Type"
+                              tooltip="MIME type of the message body (e.g., application/json, text/plain, application/xml). Helps consumers understand how to process the message payload."
+                            />
+                          </FormLabel>
+                          <Select
+                            value={field.value}
+                            onValueChange={field.onChange}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select content type..." />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="application/json">
+                                application/json
+                              </SelectItem>
+                              <SelectItem value="text/plain">
+                                text/plain
+                              </SelectItem>
+                              <SelectItem value="application/xml">
+                                application/xml
+                              </SelectItem>
+                              <SelectItem value="text/xml">text/xml</SelectItem>
+                              <SelectItem value="application/octet-stream">
+                                application/octet-stream
+                              </SelectItem>
+                              <SelectItem value="text/html">
+                                text/html
+                              </SelectItem>
+                              <SelectItem value="text/csv">text/csv</SelectItem>
+                              <SelectItem value="application/pdf">
+                                application/pdf
+                              </SelectItem>
+                              <SelectItem value="image/png">
+                                image/png
+                              </SelectItem>
+                              <SelectItem value="image/jpeg">
+                                image/jpeg
+                              </SelectItem>
+                              <SelectItem value="application/protobuf">
+                                application/protobuf
+                              </SelectItem>
+                              <SelectItem value="application/avro">
+                                application/avro
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="contentEncoding"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>
+                            <LabelWithTooltip
+                              htmlFor="contentEncoding"
+                              label="Content Encoding"
+                              tooltip="Encoding method used for the message body (e.g., gzip, deflate, base64). Indicates compression or encoding applied to the payload."
+                              side="left"
+                            />
+                          </FormLabel>
+                          <Select
+                            value={field.value}
+                            onValueChange={field.onChange}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select encoding (optional)..." />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="none">None</SelectItem>
+                              <SelectItem value="gzip">gzip</SelectItem>
+                              <SelectItem value="deflate">deflate</SelectItem>
+                              <SelectItem value="base64">base64</SelectItem>
+                              <SelectItem value="compress">compress</SelectItem>
+                              <SelectItem value="br">brotli (br)</SelectItem>
+                              <SelectItem value="identity">identity</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="expiration"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>
+                            <LabelWithTooltip
+                              htmlFor="expiration"
+                              label="Expiration (ms)"
+                              tooltip="Time-to-live (TTL) for the message in milliseconds. After this time, the message will be discarded if not consumed. Use 0 or leave empty for no expiration."
+                            />
+                          </FormLabel>
+                          <FormControl>
+                            <Input {...field} placeholder="60000" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="messageType"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>
+                            <LabelWithTooltip
+                              htmlFor="messageType"
+                              label="Message Type"
+                              tooltip="Application-specific message type identifier (e.g., order.created, user.updated). Helps consumers route and process messages based on their type."
+                              side="left"
+                            />
+                          </FormLabel>
+                          <FormControl>
+                            <Input {...field} placeholder="order.created" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="correlationId"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>
+                            <LabelWithTooltip
+                              htmlFor="correlationId"
+                              label="Correlation ID"
+                              tooltip="Unique identifier to correlate request and response messages. Essential for request-reply patterns and distributed tracing."
+                            />
+                          </FormLabel>
+                          <FormControl>
+                            <Input {...field} placeholder="req-123456" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="replyTo"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>
+                            <LabelWithTooltip
+                              htmlFor="replyTo"
+                              label="Reply To"
+                              tooltip="Queue name where reply messages should be sent. Used in request-reply messaging patterns to specify the callback queue."
+                              side="left"
+                            />
+                          </FormLabel>
+                          <FormControl>
+                            <Input {...field} placeholder="response.queue" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="messageId"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>
+                            <LabelWithTooltip
+                              htmlFor="messageId"
+                              label="Message ID"
+                              tooltip="Unique identifier for this specific message. Useful for message deduplication, logging, and tracking message flow through your system."
+                            />
+                          </FormLabel>
+                          <FormControl>
+                            <Input {...field} placeholder="msg-123456" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <FormField
+                    control={form.control}
+                    name="appId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          <LabelWithTooltip
+                            htmlFor="appId"
+                            label="Application ID"
+                            tooltip="Identifier of the application that published the message. Useful for monitoring, debugging, and routing decisions based on the source application."
+                          />
+                        </FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="my-app-v1.0" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="headers"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          <LabelWithTooltip
+                            htmlFor="headers"
+                            label="Custom Headers (JSON)"
+                            tooltip="Additional metadata for your message as key-value pairs in JSON format. Headers can be used for routing decisions, filtering, and passing application-specific data."
+                          />
+                        </FormLabel>
+                        <FormControl>
+                          <Textarea
+                            {...field}
+                            placeholder='{"x-custom-header": "value", "x-retry-count": 3}'
+                            className="font-mono text-sm"
+                            rows={3}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </CollapsibleContent>
+              </Collapsible>
+
+              {/* Error/Success Messages */}
+              {publishMutation.isError && (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>
+                    {publishMutation.error?.message || "Failed to send message"}
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              {publishMutation.isSuccess && (
+                <Alert className="border-green-200 bg-green-50 text-green-800">
+                  <CheckCircle className="h-4 w-4" />
+                  <AlertDescription>
+                    Message sent successfully to exchange "
+                    {form.getValues("exchange")}"
+                    {form.getValues("routingKey") &&
+                      ` with routing key "${form.getValues("routingKey")}"`}
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              {/* Actions */}
+              <div className="flex justify-end gap-2 pt-4">
                 <Button
                   type="button"
                   variant="outline"
-                  size="sm"
-                  onClick={formatPayload}
+                  onClick={() => setOpen(false)}
                 >
-                  Format JSON
+                  Cancel
                 </Button>
-              </div>
-              <Textarea
-                id="payload"
-                value={payload}
-                onChange={(e) => setPayload(e.target.value)}
-                placeholder="Enter your message payload..."
-                className="min-h-[120px] font-mono text-sm"
-                required
-              />
-            </div>
-
-            <Separator />
-
-            {/* Advanced Properties */}
-            <Collapsible
-              open={isPropertiesExpanded}
-              onOpenChange={setIsPropertiesExpanded}
-            >
-              <CollapsibleTrigger asChild>
                 <Button
-                  type="button"
-                  variant="ghost"
-                  className="flex items-center justify-between w-full p-0 h-auto"
+                  type="submit"
+                  disabled={
+                    publishMutation.isPending ||
+                    !form.watch("exchange") ||
+                    !form.watch("payload")
+                  }
+                  className="gap-2"
                 >
-                  <div className="flex items-center gap-2">
-                    <Settings className="h-4 w-4" />
-                    Message Properties
-                    <Badge variant="secondary" className="text-xs">
-                      Optional
-                    </Badge>
-                  </div>
-                  {isPropertiesExpanded ? (
-                    <ChevronDown className="h-4 w-4" />
+                  {publishMutation.isPending ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      Sending...
+                    </>
                   ) : (
-                    <ChevronRight className="h-4 w-4" />
+                    <>
+                      <Send className="h-4 w-4" />
+                      Send Message
+                    </>
                   )}
                 </Button>
-              </CollapsibleTrigger>
-              <CollapsibleContent className="space-y-4 pt-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <LabelWithTooltip
-                      htmlFor="deliveryMode"
-                      label="Delivery Mode"
-                      tooltip="Set the delivery mode for the message. Persistent messages are saved to disk and survive broker restarts. Transient messages are kept in memory and may be lost if the broker crashes."
-                    />
-                    <Select
-                      value={deliveryMode}
-                      onValueChange={setDeliveryMode}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="1">Transient (1)</SelectItem>
-                        <SelectItem value="2">Persistent (2)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <LabelWithTooltip
-                      htmlFor="priority"
-                      label="Priority (0-255)"
-                      tooltip="Message priority level from 0 (lowest) to 255 (highest). Higher priority messages are delivered before lower priority ones. Note: Priority queues must be declared with x-max-priority argument."
-                      side="left"
-                    />
-                    <Input
-                      id="priority"
-                      type="number"
-                      min="0"
-                      max="255"
-                      value={priority}
-                      onChange={(e) => setPriority(e.target.value)}
-                      placeholder="0"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <LabelWithTooltip
-                      htmlFor="contentType"
-                      label="Content Type"
-                      tooltip="MIME type of the message body (e.g., application/json, text/plain, application/xml). Helps consumers understand how to process the message payload."
-                    />
-                    <Select value={contentType} onValueChange={setContentType}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select content type..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="application/json">
-                          application/json
-                        </SelectItem>
-                        <SelectItem value="text/plain">text/plain</SelectItem>
-                        <SelectItem value="application/xml">
-                          application/xml
-                        </SelectItem>
-                        <SelectItem value="text/xml">text/xml</SelectItem>
-                        <SelectItem value="application/octet-stream">
-                          application/octet-stream
-                        </SelectItem>
-                        <SelectItem value="text/html">text/html</SelectItem>
-                        <SelectItem value="text/csv">text/csv</SelectItem>
-                        <SelectItem value="application/pdf">
-                          application/pdf
-                        </SelectItem>
-                        <SelectItem value="image/png">image/png</SelectItem>
-                        <SelectItem value="image/jpeg">image/jpeg</SelectItem>
-                        <SelectItem value="application/protobuf">
-                          application/protobuf
-                        </SelectItem>
-                        <SelectItem value="application/avro">
-                          application/avro
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <LabelWithTooltip
-                      htmlFor="contentEncoding"
-                      label="Content Encoding"
-                      tooltip="Encoding method used for the message body (e.g., gzip, deflate, base64). Indicates compression or encoding applied to the payload."
-                      side="left"
-                    />
-                    <Select
-                      value={contentEncoding}
-                      onValueChange={setContentEncoding}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select encoding (optional)..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">None</SelectItem>
-                        <SelectItem value="gzip">gzip</SelectItem>
-                        <SelectItem value="deflate">deflate</SelectItem>
-                        <SelectItem value="base64">base64</SelectItem>
-                        <SelectItem value="compress">compress</SelectItem>
-                        <SelectItem value="br">brotli (br)</SelectItem>
-                        <SelectItem value="identity">identity</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <LabelWithTooltip
-                      htmlFor="expiration"
-                      label="Expiration (ms)"
-                      tooltip="Time-to-live (TTL) for the message in milliseconds. After this time, the message will be discarded if not consumed. Use 0 or leave empty for no expiration."
-                    />
-                    <Input
-                      id="expiration"
-                      value={expiration}
-                      onChange={(e) => setExpiration(e.target.value)}
-                      placeholder="60000"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <LabelWithTooltip
-                      htmlFor="messageType"
-                      label="Message Type"
-                      tooltip="Application-specific message type identifier (e.g., order.created, user.updated). Helps consumers route and process messages based on their type."
-                      side="left"
-                    />
-                    <Input
-                      id="messageType"
-                      value={messageType}
-                      onChange={(e) => setMessageType(e.target.value)}
-                      placeholder="order.created"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <LabelWithTooltip
-                      htmlFor="correlationId"
-                      label="Correlation ID"
-                      tooltip="Unique identifier to correlate request and response messages. Essential for request-reply patterns and distributed tracing."
-                    />
-                    <Input
-                      id="correlationId"
-                      value={correlationId}
-                      onChange={(e) => setCorrelationId(e.target.value)}
-                      placeholder="req-123456"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <LabelWithTooltip
-                      htmlFor="replyTo"
-                      label="Reply To"
-                      tooltip="Queue name where reply messages should be sent. Used in request-reply messaging patterns to specify the callback queue."
-                      side="left"
-                    />
-                    <Input
-                      id="replyTo"
-                      value={replyTo}
-                      onChange={(e) => setReplyTo(e.target.value)}
-                      placeholder="response.queue"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <LabelWithTooltip
-                      htmlFor="messageId"
-                      label="Message ID"
-                      tooltip="Unique identifier for this specific message. Useful for message deduplication, logging, and tracking message flow through your system."
-                    />
-                    <Input
-                      id="messageId"
-                      value={messageId}
-                      onChange={(e) => setMessageId(e.target.value)}
-                      placeholder="msg-123456"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <LabelWithTooltip
-                    htmlFor="appId"
-                    label="Application ID"
-                    tooltip="Identifier of the application that published the message. Useful for monitoring, debugging, and routing decisions based on the source application."
-                  />
-                  <Input
-                    id="appId"
-                    value={appId}
-                    onChange={(e) => setAppId(e.target.value)}
-                    placeholder="my-app-v1.0"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <LabelWithTooltip
-                    htmlFor="headers"
-                    label="Custom Headers (JSON)"
-                    tooltip="Additional metadata for your message as key-value pairs in JSON format. Headers can be used for routing decisions, filtering, and passing application-specific data."
-                  />
-                  <Textarea
-                    id="headers"
-                    value={headers}
-                    onChange={(e) => setHeaders(e.target.value)}
-                    placeholder='{"x-custom-header": "value", "x-retry-count": 3}'
-                    className="font-mono text-sm"
-                    rows={3}
-                  />
-                </div>
-              </CollapsibleContent>
-            </Collapsible>
-
-            {/* Error/Success Messages */}
-            {publishMutation.isError && (
-              <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                  {publishMutation.error?.message || "Failed to send message"}
-                </AlertDescription>
-              </Alert>
-            )}
-
-            {publishMutation.isSuccess && (
-              <Alert className="border-green-200 bg-green-50 text-green-800">
-                <CheckCircle className="h-4 w-4" />
-                <AlertDescription>
-                  Message sent successfully to exchange "{exchange}"
-                  {routingKey && ` with routing key "${routingKey}"`}
-                </AlertDescription>
-              </Alert>
-            )}
-
-            {/* Actions */}
-            <div className="flex justify-end gap-2 pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setOpen(false)}
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={publishMutation.isPending || !exchange || !payload}
-                className="gap-2"
-              >
-                {publishMutation.isPending ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    Sending...
-                  </>
-                ) : (
-                  <>
-                    <Send className="h-4 w-4" />
-                    Send Message
-                  </>
-                )}
-              </Button>
-            </div>
-          </form>
+              </div>
+            </form>
+          </Form>
         </TooltipProvider>
       </DialogContent>
     </Dialog>

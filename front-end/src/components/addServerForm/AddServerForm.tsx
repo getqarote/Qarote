@@ -1,7 +1,17 @@
 import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { DialogFooter } from "@/components/ui/dialog";
-import logger from "../../lib/logger";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import logger from "@/lib/logger";
 import {
   Dialog,
   DialogContent,
@@ -15,6 +25,7 @@ import { apiClient } from "@/lib/api";
 import { useServerContext } from "@/contexts/ServerContext";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/hooks/useApi";
+import { addServerSchema, type AddServerFormData } from "@/schemas/forms";
 
 import { ServerDetails } from "./ServerDetails";
 import { Credentials } from "./Credentials";
@@ -22,8 +33,7 @@ import { SSLConfiguration } from "./SSLConfiguration";
 import { ConnectionStatusDisplay } from "./ConnectionStatusDisplay";
 import { TestConnectionButton } from "./TestConnectionButton";
 import { RabbitMqVersionInfo } from "./RabbitMqVersionInfo";
-import { useAddServerForm } from "./useAddServerForm";
-import type { AddServerFormProps } from "./types";
+import type { AddServerFormProps, ConnectionStatus } from "./types";
 
 export const AddServerForm = ({
   onServerAdded,
@@ -37,47 +47,129 @@ export const AddServerForm = ({
   const { setSelectedServerId } = useServerContext();
   const queryClient = useQueryClient();
   const [internalIsOpen, setInternalIsOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isTestingConnection, setIsTestingConnection] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>({
+    status: "idle",
+  });
 
   // Use controlled or internal state for dialog open state
   const isOpen =
     controlledIsOpen !== undefined ? controlledIsOpen : internalIsOpen;
   const setIsOpen = controlledOnOpenChange || setInternalIsOpen;
 
-  const {
-    formData,
-    errors,
-    connectionStatus,
-    isLoading,
-    isTestingConnection,
-    setIsLoading,
-    setConnectionStatus,
-    setFormData,
-    setErrors,
-    validateForm,
-    handleInputChange,
-    handleSSLConfigChange,
-    testConnection,
-    resetForm,
-  } = useAddServerForm({ server, mode });
+  // Initialize form with react-hook-form
+  const form = useForm<AddServerFormData>({
+    resolver: zodResolver(addServerSchema),
+    defaultValues: {
+      name: server?.name || "",
+      host: server?.host || "",
+      port: server?.port || 15672,
+      username: server?.username || "guest",
+      password: "", // Don't prefill password for security
+      vhost: server?.vhost || "/",
+      sslConfig: server?.sslConfig || {
+        enabled: false,
+        verifyPeer: true,
+        caCertPath: "",
+        clientCertPath: "",
+        clientKeyPath: "",
+      },
+    },
+  });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // Reset form when server changes (for edit mode)
+  useEffect(() => {
+    if (mode === "edit" && server) {
+      form.reset({
+        name: server.name,
+        host: server.host,
+        port: server.port,
+        username: server.username,
+        password: "",
+        vhost: server.vhost,
+        sslConfig: server.sslConfig || {
+          enabled: false,
+          verifyPeer: true,
+          caCertPath: "",
+          clientCertPath: "",
+          clientKeyPath: "",
+        },
+      });
+      setConnectionStatus({ status: "idle" });
+    }
+  }, [server, mode, form]);
 
-    if (!validateForm()) return;
+  const testConnection = async () => {
+    const isValid = await form.trigger();
+    if (!isValid) return;
 
+    const formData = form.getValues();
+    setIsTestingConnection(true);
+    setConnectionStatus({ status: "idle" });
+
+    try {
+      const result = await apiClient.testConnection({
+        host: formData.host,
+        port: formData.port,
+        username: formData.username,
+        password: formData.password,
+        vhost: formData.vhost,
+        sslConfig: {
+          enabled: formData.sslConfig.enabled || false,
+          verifyPeer: formData.sslConfig.verifyPeer || true,
+          caCertPath: formData.sslConfig.caCertPath || "",
+          clientCertPath: formData.sslConfig.clientCertPath || "",
+          clientKeyPath: formData.sslConfig.clientKeyPath || "",
+        },
+      });
+
+      if (result.success) {
+        setConnectionStatus({
+          status: "success",
+          message: "Connection successful!",
+          details: {
+            version: result.version,
+            cluster_name: result.cluster_name,
+          },
+        });
+      } else {
+        setConnectionStatus({
+          status: "error",
+          message: result.message || "Connection failed",
+        });
+      }
+    } catch (error) {
+      setConnectionStatus({
+        status: "error",
+        message:
+          error instanceof Error ? error.message : "Connection test failed",
+      });
+    } finally {
+      setIsTestingConnection(false);
+    }
+  };
+
+  const onSubmit = async (data: AddServerFormData) => {
     setIsLoading(true);
 
     try {
       if (mode === "edit" && server) {
         // Update existing server
         const result = await apiClient.updateServer(server.id, {
-          name: formData.name,
-          host: formData.host,
-          port: formData.port,
-          username: formData.username,
-          password: formData.password,
-          vhost: formData.vhost,
-          sslConfig: formData.sslConfig,
+          name: data.name,
+          host: data.host,
+          port: data.port,
+          username: data.username,
+          password: data.password,
+          vhost: data.vhost,
+          sslConfig: {
+            enabled: data.sslConfig.enabled || false,
+            verifyPeer: data.sslConfig.verifyPeer || true,
+            caCertPath: data.sslConfig.caCertPath || "",
+            clientCertPath: data.sslConfig.clientCertPath || "",
+            clientKeyPath: data.sslConfig.clientKeyPath || "",
+          },
         });
 
         // Invalidate servers query to refresh the server list
@@ -91,13 +183,19 @@ export const AddServerForm = ({
       } else {
         // Create new server
         const result = await apiClient.createServer({
-          name: formData.name,
-          host: formData.host,
-          port: formData.port,
-          username: formData.username,
-          password: formData.password,
-          vhost: formData.vhost,
-          sslConfig: formData.sslConfig,
+          name: data.name,
+          host: data.host,
+          port: data.port,
+          username: data.username,
+          password: data.password,
+          vhost: data.vhost,
+          sslConfig: {
+            enabled: data.sslConfig.enabled || false,
+            verifyPeer: data.sslConfig.verifyPeer || true,
+            caCertPath: data.sslConfig.caCertPath || "",
+            clientCertPath: data.sslConfig.clientCertPath || "",
+            clientKeyPath: data.sslConfig.clientKeyPath || "",
+          },
         });
 
         // Set this as the selected server (only for new servers)
@@ -114,8 +212,8 @@ export const AddServerForm = ({
       }
 
       // Reset form and status
+      form.reset();
       setConnectionStatus({ status: "idle" });
-      setErrors({});
     } catch (error) {
       setConnectionStatus({
         status: "error",
@@ -129,6 +227,11 @@ export const AddServerForm = ({
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const resetForm = () => {
+    form.reset();
+    setConnectionStatus({ status: "idle" });
   };
 
   return (
@@ -175,36 +278,27 @@ export const AddServerForm = ({
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto px-6">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <RabbitMqVersionInfo />
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <RabbitMqVersionInfo />
 
-            <ServerDetails
-              formData={formData}
-              errors={errors}
-              onInputChange={handleInputChange}
-            />
+              <ServerDetails form={form} />
 
-            <Credentials
-              formData={formData}
-              errors={errors}
-              onInputChange={handleInputChange}
-            />
+              <Credentials form={form} />
 
-            {/* SSL Configuration */}
-            <SSLConfiguration
-              sslConfig={formData.sslConfig}
-              onSSLConfigChange={handleSSLConfigChange}
-            />
+              {/* SSL Configuration */}
+              <SSLConfiguration form={form} />
 
-            <ConnectionStatusDisplay
-              connectionStatus={connectionStatus}
-              onUpgrade={() => {
-                // Navigate to upgrade page or show upgrade modal
-                // For now, we'll just log - this can be enhanced later
-                logger.info("Upgrade plan requested");
-              }}
-            />
-          </form>
+              <ConnectionStatusDisplay
+                connectionStatus={connectionStatus}
+                onUpgrade={() => {
+                  // Navigate to upgrade page or show upgrade modal
+                  // For now, we'll just log - this can be enhanced later
+                  logger.info("Upgrade plan requested");
+                }}
+              />
+            </form>
+          </Form>
         </div>
 
         <DialogFooter className="flex gap-2 flex-shrink-0">
@@ -215,7 +309,7 @@ export const AddServerForm = ({
           />
           <Button
             type="submit"
-            onClick={handleSubmit}
+            onClick={form.handleSubmit(onSubmit)}
             disabled={isLoading || isTestingConnection}
             className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
           >
