@@ -1,63 +1,66 @@
 import { Lock, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AddQueueForm } from "@/components/AddQueueForm";
-import { canUserAddQueueWithCount, WorkspacePlan } from "@/lib/plans/planUtils";
+import { WorkspacePlan } from "@/types/plans";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
+import { usePlanData } from "@/hooks/usePlan";
 
 interface AddQueueButtonProps {
-  workspacePlan: WorkspacePlan;
-  queueCount: number;
   serverId: string;
-  workspaceLoading: boolean;
   onUpgradeClick: () => void;
   onSuccess?: () => void;
 }
 
 export const AddQueueButton = ({
-  workspacePlan,
-  queueCount,
   serverId,
-  workspaceLoading,
   onUpgradeClick,
   onSuccess,
 }: AddQueueButtonProps) => {
-  const canAddQueue = workspaceLoading
-    ? false
-    : canUserAddQueueWithCount(workspacePlan, queueCount);
+  const {
+    workspacePlan,
+    canAddQueue,
+    isLoading: workspaceLoading,
+  } = useWorkspace();
+  const { usage } = usePlanData();
+  const queueUsage = usage?.queues || {
+    current: 0,
+    limit: 1,
+    percentage: 0,
+    canAdd: false,
+  };
 
   const getQueueButtonConfig = () => {
     if (workspaceLoading || canAddQueue) return null;
 
     switch (workspacePlan) {
-      case "FREE":
+      case WorkspacePlan.FREE:
         return {
           text: "Add Queue",
           badge: "Pro",
           badgeColor: "bg-orange-500",
           title: "Upgrade to add queues",
         };
-      case "DEVELOPER":
+      case WorkspacePlan.DEVELOPER:
         return {
           text: "Add Queue",
-          badge: `${queueCount}/10`,
+          badge: `${queueUsage.current}/${queueUsage.limit || 10}`,
           badgeColor: "bg-blue-500",
-          title:
-            "You've reached your queue limit (10). Upgrade to add more queues.",
+          title: "You've reached your queue limit. Upgrade to add more queues.",
         };
-      case "STARTUP":
+      case WorkspacePlan.STARTUP:
         return {
           text: "Add Queue",
-          badge: `${queueCount}/50`,
+          badge: `${queueUsage.current}/${queueUsage.limit || 50}`,
           badgeColor: "bg-purple-500",
-          title:
-            "You've reached your queue limit (50). Upgrade to add more queues.",
+          title: "You've reached your queue limit. Upgrade to add more queues.",
         };
-      case "BUSINESS":
+      case WorkspacePlan.BUSINESS:
         return {
           text: "Add Queue",
-          badge: `${queueCount}/200`,
+          badge: `${queueUsage.current}/${queueUsage.limit || 200}`,
           badgeColor: "bg-green-500",
           title:
-            "You've reached your queue limit (200). Contact support for enterprise solutions.",
+            "You've reached your queue limit. Contact support for enterprise solutions.",
         };
       default:
         return {

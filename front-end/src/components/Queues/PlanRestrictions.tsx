@@ -1,5 +1,5 @@
 import { Crown, MessageSquare, X } from "lucide-react";
-import { WorkspacePlan } from "@/lib/plans/planUtils";
+import { WorkspacePlan } from "@/types/plans";
 
 interface PlanRestrictionsProps {
   workspacePlan: WorkspacePlan;

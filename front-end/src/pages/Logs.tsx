@@ -31,7 +31,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import PremiumPageWrapper from "@/components/PremiumPageWrapper";
-import { WorkspacePlan } from "@/lib/plans/planUtils";
+import { WorkspacePlan } from "@/types/plans";
 
 // Mock data for demonstration (this will be replaced with API calls in the future)
 const mockLogs = [

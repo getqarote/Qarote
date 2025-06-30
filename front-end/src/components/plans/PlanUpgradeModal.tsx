@@ -1,13 +1,10 @@
 import React from "react";
 import { X, Check, Zap } from "lucide-react";
 import logger from "../../lib/logger";
-import {
-  WorkspacePlan,
-  getPlanDisplayName,
-  getPlanFeatures,
-  getMessageLimitText,
-  getServerLimitText,
-} from "@/lib/plans/planUtils";
+import { WorkspacePlan } from "@/types/plans";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
+import { useQuery } from "@tanstack/react-query";
+import { apiClient } from "@/lib/api";
 
 interface PlanUpgradeModalProps {
   isOpen: boolean;
@@ -22,26 +19,40 @@ const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
   currentPlan,
   feature,
 }) => {
+  const { planData } = useWorkspace();
+
+  // Fetch all plans data
+  const { data: allPlansData } = useQuery({
+    queryKey: ["plans", "all"],
+    queryFn: () => apiClient.getAllPlans(),
+  });
+
   if (!isOpen) return null;
 
-  const plans = [
+  const plans = allPlansData?.plans?.filter(
+    (p) => p.plan !== WorkspacePlan.FREE
+  ) || [
+    // Fallback data if API call fails
     {
       plan: WorkspacePlan.DEVELOPER,
-      price: "$49",
-      period: "month",
-      popular: false,
+      displayName: "Developer",
+      monthlyPrice: 4900,
+      maxServers: 2,
+      maxMessagesPerMonth: 100,
     },
     {
       plan: WorkspacePlan.STARTUP,
-      price: "$99",
-      period: "month",
-      popular: true,
+      displayName: "Startup",
+      monthlyPrice: 9900,
+      maxServers: 10,
+      maxMessagesPerMonth: 1000,
     },
     {
       plan: WorkspacePlan.BUSINESS,
-      price: "$249",
-      period: "month",
-      popular: false,
+      displayName: "Business",
+      monthlyPrice: 19900,
+      maxServers: undefined,
+      maxMessagesPerMonth: undefined,
     },
   ];
 
@@ -55,7 +66,7 @@ const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
             </h2>
             <p className="text-gray-600 mt-1">
               To use {feature}, you need to upgrade from the{" "}
-              {getPlanDisplayName(currentPlan)} plan
+              {planData?.planFeatures?.displayName || currentPlan} plan
             </p>
           </div>
           <button
@@ -68,17 +79,18 @@ const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
 
         <div className="p-6">
           <div className="grid md:grid-cols-3 gap-6">
-            {plans.map(({ plan, price, period, popular }) => {
-              const features = getPlanFeatures(plan);
+            {plans.map((planData, index) => {
+              const isPopular = planData.plan === WorkspacePlan.STARTUP;
+              const price = `$${Math.floor(planData.monthlyPrice / 100)}`;
 
               return (
                 <div
-                  key={plan}
+                  key={planData.plan}
                   className={`border rounded-lg p-6 relative ${
-                    popular ? "border-blue-500 bg-blue-50" : "border-gray-200"
+                    isPopular ? "border-blue-500 bg-blue-50" : "border-gray-200"
                   }`}
                 >
-                  {popular && (
+                  {isPopular && (
                     <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
                       <span className="bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-medium">
                         Most Popular
@@ -88,13 +100,13 @@ const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
 
                   <div className="text-center mb-6">
                     <h3 className="text-xl font-bold text-gray-900">
-                      {getPlanDisplayName(plan)}
+                      {planData.displayName}
                     </h3>
                     <div className="mt-2">
                       <span className="text-3xl font-bold text-gray-900">
                         {price}
                       </span>
-                      <span className="text-gray-600">/{period}</span>
+                      <span className="text-gray-600">/month</span>
                     </div>
                   </div>
 
@@ -102,28 +114,32 @@ const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
                     <li className="flex items-center">
                       <Check className="w-4 h-4 text-green-500 mr-2" />
                       <span className="text-sm text-gray-700">
-                        {features.maxQueues} queues
+                        {planData.maxQueues || "Unlimited"} queues
                       </span>
                     </li>
                     <li className="flex items-center">
                       <Check className="w-4 h-4 text-green-500 mr-2" />
                       <span className="text-sm text-gray-700">
-                        {getServerLimitText(plan)}
+                        {planData.maxServers
+                          ? `${planData.maxServers} servers`
+                          : "Unlimited servers"}
                       </span>
                     </li>
                     <li className="flex items-center">
                       <Check className="w-4 h-4 text-green-500 mr-2" />
                       <span className="text-sm text-gray-700">
-                        {features.maxUsers} team members
+                        {planData.maxUsers || "Unlimited"} team members
                       </span>
                     </li>
                     <li className="flex items-center">
                       <Check className="w-4 h-4 text-green-500 mr-2" />
                       <span className="text-sm text-gray-700">
-                        {getMessageLimitText(plan)}
+                        {planData.maxMessagesPerMonth
+                          ? `${planData.maxMessagesPerMonth.toLocaleString()} messages/month`
+                          : "Unlimited messages"}
                       </span>
                     </li>
-                    {features.hasAdvancedMetrics && (
+                    {planData.hasAdvancedMetrics && (
                       <li className="flex items-center">
                         <Check className="w-4 h-4 text-green-500 mr-2" />
                         <span className="text-sm text-gray-700">
@@ -131,7 +147,7 @@ const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
                         </span>
                       </li>
                     )}
-                    {features.hasAdvancedAlerts && (
+                    {planData.hasAdvancedAlerts && (
                       <li className="flex items-center">
                         <Check className="w-4 h-4 text-green-500 mr-2" />
                         <span className="text-sm text-gray-700">
@@ -139,7 +155,7 @@ const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
                         </span>
                       </li>
                     )}
-                    {features.hasPrioritySupport && (
+                    {planData.hasPrioritySupport && (
                       <li className="flex items-center">
                         <Check className="w-4 h-4 text-green-500 mr-2" />
                         <span className="text-sm text-gray-700">
@@ -151,17 +167,18 @@ const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
 
                   <button
                     className={`w-full py-2 px-4 rounded-lg font-medium transition-colors ${
-                      popular
+                      isPopular
                         ? "bg-blue-600 hover:bg-blue-700 text-white"
                         : "bg-gray-100 hover:bg-gray-200 text-gray-900"
                     }`}
                     onClick={() => {
                       // Handle upgrade - you can integrate with your payment system
-                      logger.info(`Upgrading to ${plan}`);
+                      logger.info(`Upgrading to ${planData.plan}`);
+                      onClose();
                     }}
                   >
                     <Zap className="w-4 h-4 inline-block mr-2" />
-                    Upgrade to {getPlanDisplayName(plan)}
+                    Upgrade to {planData.displayName}
                   </button>
                 </div>
               );

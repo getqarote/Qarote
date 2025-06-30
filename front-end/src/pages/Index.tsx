@@ -118,9 +118,6 @@ const Index = () => {
               <div className="flex gap-3">
                 <PlanBadge workspacePlan={workspacePlan} />
                 <AddServerButton
-                  workspacePlan={workspacePlan}
-                  serverCount={serverCount}
-                  workspaceLoading={workspaceLoading}
                   onUpgradeClick={() => setShowUpgradeModal(true)}
                 />
               </div>

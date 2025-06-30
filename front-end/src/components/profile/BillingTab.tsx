@@ -19,7 +19,8 @@ import { Separator } from "@/components/ui/separator";
 import logger from "@/lib/logger";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePlanUpgrade } from "@/hooks/usePlanUpgrade";
-import { getPlanDisplayName, WorkspacePlan } from "@/lib/plans/planUtils";
+import { WorkspacePlan } from "@/types/plans";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 
 interface Subscription {
   id: string;
@@ -94,6 +95,7 @@ const getStatusColor = (status: string) => {
 
 export const BillingTab: React.FC = () => {
   const { token } = useAuth();
+  const { planData } = useWorkspace();
   const { openCustomerPortal, isUpgrading } = usePlanUpgrade();
 
   const [subscription, setSubscription] = useState<Subscription | null>(null);
@@ -224,7 +226,8 @@ export const BillingTab: React.FC = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-lg font-semibold">
-                    {getPlanDisplayName(subscription.plan)} Plan
+                    {planData?.planFeatures?.displayName || subscription.plan}{" "}
+                    Plan
                   </h3>
                   <p className="text-sm text-gray-600">
                     {formatCurrency(

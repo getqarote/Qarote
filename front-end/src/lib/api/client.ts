@@ -10,6 +10,7 @@ import { AlertApiClient } from "./alertClient";
 import { WorkspaceApiClient } from "./workspaceClient";
 import { LogsApiClient } from "./logsClient";
 import { FeedbackApiClient } from "./feedbackClient";
+import { PlanApiClient } from "./planClient";
 import type { LogQuery, CreateLogRequest, LogExportRequest } from "./logTypes";
 import type { FeedbackFilters, UpdateFeedbackRequest } from "./feedbackClient";
 import type { FeedbackRequest } from "@/types/feedback";
@@ -22,6 +23,7 @@ class ApiClient {
   private workspaceClient: WorkspaceApiClient;
   private logsClient: LogsApiClient;
   private feedbackClient: FeedbackApiClient;
+  private planClient: PlanApiClient;
 
   constructor(baseUrl?: string) {
     this.serverClient = new ServerApiClient(baseUrl);
@@ -31,6 +33,7 @@ class ApiClient {
     this.workspaceClient = new WorkspaceApiClient(baseUrl);
     this.logsClient = new LogsApiClient(baseUrl);
     this.feedbackClient = new FeedbackApiClient(baseUrl);
+    this.planClient = new PlanApiClient(baseUrl);
   }
 
   // Server methods
@@ -386,6 +389,19 @@ class ApiClient {
 
   async getFeedbackStats(workspaceId?: string) {
     return this.feedbackClient.getFeedbackStats(workspaceId);
+  }
+
+  // Plan methods
+  async getAllPlans() {
+    return this.planClient.getAllPlans();
+  }
+
+  async getCurrentPlan() {
+    return this.planClient.getCurrentPlan();
+  }
+
+  async getPlan(plan: Parameters<PlanApiClient["getPlan"]>[0]) {
+    return this.planClient.getPlan(plan);
   }
 }
 

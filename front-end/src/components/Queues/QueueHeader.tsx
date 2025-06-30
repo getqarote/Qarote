@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { AddSendMessageButton } from "@/components/AddSendMessageButton";
 import { AddQueueButton } from "@/components/AddQueueButton";
-import { WorkspacePlan } from "@/lib/plans/planUtils";
+import { WorkspacePlan } from "@/types/plans";
 
 interface QueueHeaderProps {
   selectedServerId: string;
@@ -33,20 +33,14 @@ export function QueueHeader({
     <>
       {/* Send Message Button with plan restrictions */}
       <AddSendMessageButton
-        workspacePlan={workspacePlan}
-        monthlyMessageCount={monthlyMessageCount}
         serverId={selectedServerId}
-        workspaceLoading={workspaceLoading}
         onUpgradeClick={onSendMessageClick}
         onSuccess={onRefetch}
       />
 
       {/* Add Queue Button with plan restrictions */}
       <AddQueueButton
-        workspacePlan={workspacePlan}
-        queueCount={queueCount}
         serverId={selectedServerId}
-        workspaceLoading={workspaceLoading}
         onUpgradeClick={onAddQueueClick}
         onSuccess={onRefetch}
       />

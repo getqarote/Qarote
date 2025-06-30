@@ -1,60 +1,52 @@
 import { Lock, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SendMessageDialog } from "@/components/SendMessageDialog";
-import {
-  canUserSendMessagesWithCount,
-  WorkspacePlan,
-} from "@/lib/plans/planUtils";
+import { WorkspacePlan } from "@/types/plans";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 
 interface AddSendMessageButtonProps {
-  workspacePlan: WorkspacePlan;
-  monthlyMessageCount: number;
   serverId: string;
-  workspaceLoading: boolean;
   onUpgradeClick: () => void;
   onSuccess?: () => void;
 }
 
 export const AddSendMessageButton = ({
-  workspacePlan,
-  monthlyMessageCount,
   serverId,
-  workspaceLoading,
   onUpgradeClick,
   onSuccess,
 }: AddSendMessageButtonProps) => {
-  const canSendMessages = workspaceLoading
-    ? false
-    : canUserSendMessagesWithCount(workspacePlan, monthlyMessageCount);
+  const { workspacePlan, canSendMessages, planData, isPlanLoading } =
+    useWorkspace();
+
+  const monthlyMessageCount = planData?.usage.messages.current || 0;
+  const messageLimit = planData?.usage.messages.limit;
 
   const getMessageButtonConfig = () => {
-    if (workspaceLoading || canSendMessages) return null;
+    if (isPlanLoading || canSendMessages) return null;
 
     switch (workspacePlan) {
-      case "FREE":
+      case WorkspacePlan.FREE:
         return {
           text: "Send Message",
           badge: "Pro",
           badgeColor: "bg-orange-500",
           title: "Upgrade to send messages",
         };
-      case "DEVELOPER":
+      case WorkspacePlan.DEVELOPER:
         return {
           text: "Send Message",
-          badge: `${monthlyMessageCount}/100`,
+          badge: `${monthlyMessageCount}/${messageLimit || 100}`,
           badgeColor: "bg-blue-500",
-          title:
-            "You've reached your monthly message limit (100). Upgrade to send more messages.",
+          title: `You've reached your monthly message limit (${messageLimit}). Upgrade to send more messages.`,
         };
-      case "STARTUP":
+      case WorkspacePlan.STARTUP:
         return {
           text: "Send Message",
-          badge: `${monthlyMessageCount}/1000`,
+          badge: `${monthlyMessageCount}/${messageLimit || 1000}`,
           badgeColor: "bg-purple-500",
-          title:
-            "You've reached your monthly message limit (1,000). Upgrade to send more messages.",
+          title: `You've reached your monthly message limit (${messageLimit}). Upgrade to send more messages.`,
         };
-      case "BUSINESS":
+      case WorkspacePlan.BUSINESS:
         // Business plan has unlimited messages, so this shouldn't show
         return null;
       default:

@@ -9,10 +9,6 @@ import { useServerContext } from "@/contexts/ServerContext";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useQueues, queryKeys, useMonthlyMessageCount } from "@/hooks/useApi";
 import logger from "../lib/logger";
-import {
-  canUserAddQueueWithCount,
-  canUserSendMessagesWithCount,
-} from "@/lib/plans/planUtils";
 import PlanUpgradeModal from "@/components/plans/PlanUpgradeModal";
 import { QueueHeader } from "@/components/Queues/QueueHeader";
 import { PlanRestrictions } from "@/components/Queues/PlanRestrictions";
@@ -22,7 +18,12 @@ import { QueueTable } from "@/components/Queues/QueueTable";
 const Queues = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { workspacePlan, isLoading: workspaceLoading } = useWorkspace();
+  const {
+    workspacePlan,
+    canAddQueue,
+    canSendMessages,
+    isLoading: workspaceLoading,
+  } = useWorkspace();
   const [searchTerm, setSearchTerm] = useState("");
   const [restrictionsDismissed, setRestrictionsDismissed] = useState(false);
   const { selectedServerId, hasServers } = useServerContext();
@@ -36,16 +37,6 @@ const Queues = () => {
 
   // Use real monthly message count from API
   const monthlyMessageCount = monthlyMessageData?.monthlyMessageCount || 0;
-
-  // Use the actual workspace plan from context and queue count
-  const canAddQueue =
-    workspaceLoading || messageCountLoading
-      ? false
-      : canUserAddQueueWithCount(workspacePlan, queueCount);
-  const canSendMessages =
-    workspaceLoading || messageCountLoading
-      ? false
-      : canUserSendMessagesWithCount(workspacePlan, monthlyMessageCount);
 
   const handleAddQueueClick = () => {
     if (canAddQueue) {

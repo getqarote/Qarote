@@ -1,13 +1,6 @@
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useNodeMemoryDetails } from "@/hooks/useApi";
 import {
-  canUserViewAdvancedMemoryMetrics,
-  canUserViewExpertMemoryMetrics,
-  canUserViewMemoryTrends,
-  canUserViewMemoryOptimization,
-  getPlanDisplayName,
-} from "@/lib/plans/planUtils";
-import {
   Card,
   CardContent,
   CardDescription,
@@ -41,7 +34,7 @@ export function NodeMemoryDetails({
   nodeName,
   onClose,
 }: NodeMemoryDetailsProps) {
-  const { workspacePlan } = useWorkspace();
+  const { workspacePlan, planData } = useWorkspace();
   const {
     data,
     isLoading: loading,
@@ -50,6 +43,13 @@ export function NodeMemoryDetails({
   } = useNodeMemoryDetails(serverId, nodeName);
 
   const error = queryError ? (queryError as Error).message : null;
+
+  // Get plan features for memory access control
+  const planFeatures = planData?.planFeatures;
+  const canViewAdvanced = planFeatures?.canViewAdvancedMemoryMetrics || false;
+  const canViewExpert = planFeatures?.canViewExpertMemoryMetrics || false;
+  const canViewTrends = planFeatures?.canViewMemoryTrends || false;
+  const canViewOptimization = planFeatures?.canViewMemoryOptimization || false;
 
   const handleRefresh = () => {
     refetch();
@@ -110,7 +110,7 @@ export function NodeMemoryDetails({
             {feature} requires {requiredPlan} plan
           </p>
           <p className="text-xs text-gray-500">
-            Current plan: {getPlanDisplayName(workspacePlan)}
+            Current plan: {planFeatures?.displayName || workspacePlan}
           </p>
         </div>
       </CardContent>
@@ -211,45 +211,25 @@ export function NodeMemoryDetails({
               <Info className="h-4 w-4 mr-2" />
               Immediate Value
             </TabsTrigger>
-            <TabsTrigger
-              value="advanced"
-              disabled={!canUserViewAdvancedMemoryMetrics(workspacePlan)}
-            >
+            <TabsTrigger value="advanced" disabled={!canViewAdvanced}>
               <TrendingUp className="h-4 w-4 mr-2" />
               Advanced
-              {!canUserViewAdvancedMemoryMetrics(workspacePlan) && (
-                <Lock className="h-3 w-3 ml-1" />
-              )}
+              {!canViewAdvanced && <Lock className="h-3 w-3 ml-1" />}
             </TabsTrigger>
-            <TabsTrigger
-              value="expert"
-              disabled={!canUserViewExpertMemoryMetrics(workspacePlan)}
-            >
+            <TabsTrigger value="expert" disabled={!canViewExpert}>
               <Zap className="h-4 w-4 mr-2" />
               Expert
-              {!canUserViewExpertMemoryMetrics(workspacePlan) && (
-                <Lock className="h-3 w-3 ml-1" />
-              )}
+              {!canViewExpert && <Lock className="h-3 w-3 ml-1" />}
             </TabsTrigger>
-            <TabsTrigger
-              value="trends"
-              disabled={!canUserViewMemoryTrends(workspacePlan)}
-            >
+            <TabsTrigger value="trends" disabled={!canViewTrends}>
               <TrendingUp className="h-4 w-4 mr-2" />
               Trends
-              {!canUserViewMemoryTrends(workspacePlan) && (
-                <Lock className="h-3 w-3 ml-1" />
-              )}
+              {!canViewTrends && <Lock className="h-3 w-3 ml-1" />}
             </TabsTrigger>
-            <TabsTrigger
-              value="optimization"
-              disabled={!canUserViewMemoryOptimization(workspacePlan)}
-            >
+            <TabsTrigger value="optimization" disabled={!canViewOptimization}>
               <TrendingDown className="h-4 w-4 mr-2" />
               Optimization
-              {!canUserViewMemoryOptimization(workspacePlan) && (
-                <Lock className="h-3 w-3 ml-1" />
-              )}
+              {!canViewOptimization && <Lock className="h-3 w-3 ml-1" />}
             </TabsTrigger>
           </TabsList>
 
@@ -363,8 +343,7 @@ export function NodeMemoryDetails({
 
           {/* Advanced Tab - Startup and Business plans */}
           <TabsContent value="advanced" className="space-y-4">
-            {canUserViewAdvancedMemoryMetrics(workspacePlan) &&
-            data.node.advanced ? (
+            {canViewAdvanced && data.node.advanced ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {/* File Descriptors */}
                 <Card>
@@ -498,8 +477,7 @@ export function NodeMemoryDetails({
 
           {/* Expert Tab - Business plan only */}
           <TabsContent value="expert" className="space-y-4">
-            {canUserViewExpertMemoryMetrics(workspacePlan) &&
-            data.node.expert ? (
+            {canViewExpert && data.node.expert ? (
               <div className="space-y-4">
                 {/* I/O Metrics */}
                 <Card>
@@ -628,7 +606,7 @@ export function NodeMemoryDetails({
 
           {/* Trends Tab - Startup and Business plans */}
           <TabsContent value="trends" className="space-y-4">
-            {canUserViewMemoryTrends(workspacePlan) && data.node.trends ? (
+            {canViewTrends && data.node.trends ? (
               <Card>
                 <CardHeader>
                   <CardTitle className="text-base">
@@ -647,8 +625,8 @@ export function NodeMemoryDetails({
                           data.node.trends.memoryUsageRate > 0
                             ? "text-red-600"
                             : data.node.trends.memoryUsageRate < 0
-                            ? "text-green-600"
-                            : "text-gray-600"
+                              ? "text-green-600"
+                              : "text-gray-600"
                         }`}
                       >
                         {data.node.trends.memoryUsageRate > 0 ? (
@@ -699,8 +677,7 @@ export function NodeMemoryDetails({
 
           {/* Optimization Tab - Startup and Business plans */}
           <TabsContent value="optimization" className="space-y-4">
-            {canUserViewMemoryOptimization(workspacePlan) &&
-            data.node.optimization ? (
+            {canViewOptimization && data.node.optimization ? (
               <div className="space-y-4">
                 {/* Overall Health */}
                 <Card>

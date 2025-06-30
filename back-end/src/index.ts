@@ -23,6 +23,7 @@ import feedbackController from "./controllers/feedback.controller";
 import invitationController from "./controllers/invitation.controller";
 import paymentController from "./controllers/payment.controller";
 import { messageHistoryController } from "./controllers/message-history.controller";
+import { planController } from "./controllers/plan.controller";
 
 import { corsMiddleware } from "./middlewares/cors";
 // import { alertService } from "./services/alert.service";
@@ -50,6 +51,7 @@ app.route("/api/feedback", feedbackController);
 app.route("/api/invitations", invitationController);
 app.route("/api/payments", paymentController);
 app.route("/api/message-history", messageHistoryController);
+app.route("/api/plans", planController);
 
 app.get("/livez", (c) =>
   c.json({ status: "ok", message: "RabbitMQ Dashboard API" })

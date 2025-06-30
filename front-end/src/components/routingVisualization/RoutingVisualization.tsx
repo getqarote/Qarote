@@ -41,7 +41,7 @@ import {
   Activity,
 } from "lucide-react";
 import PremiumPageWrapper from "../PremiumPageWrapper";
-import { WorkspacePlan } from "@/lib/plans/planUtils";
+import { WorkspacePlan } from "@/types/plans";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 
 // Mock data for demonstration

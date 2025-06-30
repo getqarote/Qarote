@@ -1,54 +1,54 @@
 import { Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AddServerForm } from "@/components/AddServerForm";
-import {
-  canUserAddServerWithCount,
-  WorkspacePlan,
-} from "@/lib/plans/planUtils";
+import { WorkspacePlan } from "@/types/plans";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
+import { usePlanData, useUsageStats } from "@/hooks/usePlan";
 
 interface AddServerButtonProps {
-  workspacePlan: WorkspacePlan;
-  serverCount: number;
-  workspaceLoading: boolean;
   onUpgradeClick: () => void;
 }
 
-export const AddServerButton = ({
-  workspacePlan,
-  serverCount,
-  workspaceLoading,
-  onUpgradeClick,
-}: AddServerButtonProps) => {
-  const canAddServer = workspaceLoading
-    ? false
-    : canUserAddServerWithCount(workspacePlan, serverCount);
+export const AddServerButton = ({ onUpgradeClick }: AddServerButtonProps) => {
+  const {
+    workspacePlan,
+    canAddServer,
+    isLoading: workspaceLoading,
+  } = useWorkspace();
+  const { usage } = usePlanData();
+  const serverUsage = usage?.servers || {
+    current: 0,
+    limit: 1,
+    percentage: 0,
+    canAdd: false,
+  };
 
   const getServerButtonConfig = () => {
     if (workspaceLoading || canAddServer) return null;
 
     switch (workspacePlan) {
-      case "FREE":
+      case WorkspacePlan.FREE:
         return {
           text: "Add Server",
           badge: "Pro",
           badgeColor: "bg-orange-500",
           title: "Upgrade to add servers",
         };
-      case "DEVELOPER":
+      case WorkspacePlan.DEVELOPER:
         return {
           text: "Add Server",
-          badge: `${serverCount}/2`,
+          badge: `${serverUsage.current}/${serverUsage.limit || 2}`,
           badgeColor: "bg-blue-500",
           title:
-            "You've reached your server limit (2). Upgrade to add more servers.",
+            "You've reached your server limit. Upgrade to add more servers.",
         };
-      case "STARTUP":
+      case WorkspacePlan.STARTUP:
         return {
           text: "Add Server",
-          badge: `${serverCount}/5`,
+          badge: `${serverUsage.current}/${serverUsage.limit || 5}`,
           badgeColor: "bg-purple-500",
           title:
-            "You've reached your server limit (5). Upgrade to add more servers.",
+            "You've reached your server limit. Upgrade to add more servers.",
         };
       default:
         return {

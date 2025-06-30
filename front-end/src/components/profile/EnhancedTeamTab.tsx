@@ -15,7 +15,8 @@ import { User } from "@/lib/api/authTypes";
 import { InvitationWithInviter } from "@/lib/api/authTypes";
 import { InviteFormState, formatDate, getRoleColor } from "./profileUtils";
 import { InviteUserDialog } from "./InviteUserDialogEnhanced";
-import { WorkspacePlan, getPlanFeatures } from "@/lib/plans/planUtils";
+import { WorkspacePlan } from "@/types/plans";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 
 interface EnhancedTeamTabProps {
   isAdmin: boolean;
@@ -52,10 +53,11 @@ export const EnhancedTeamTab = ({
   workspacePlan,
   canInviteMoreUsers,
 }: EnhancedTeamTabProps) => {
-  const planFeatures = getPlanFeatures(workspacePlan);
+  const { planData } = useWorkspace();
+  const planFeatures = planData?.planFeatures;
   const totalUsers = workspaceUsers.length;
   const pendingInvitations = invitations.length;
-  const maxUsers = planFeatures.maxUsers;
+  const maxUsers = planFeatures?.maxUsers;
 
   if (!isAdmin) {
     return (

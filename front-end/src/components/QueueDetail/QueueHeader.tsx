@@ -4,7 +4,6 @@ import { ArrowLeft, Send, Trash2, Lock } from "lucide-react";
 import { PurgeQueueDialog } from "@/components/PurgeQueueDialog";
 import { SendMessageDialog } from "@/components/SendMessageDialog";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
-import { canUserSendMessagesWithCount } from "@/lib/plans/planUtils";
 import { useState } from "react";
 import PlanUpgradeModal from "@/components/plans/PlanUpgradeModal";
 
@@ -26,12 +25,7 @@ export function QueueHeader({
   onRefetch,
 }: QueueHeaderProps) {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const { workspacePlan, isLoading: workspaceLoading } = useWorkspace();
-
-  // Use the actual workspace plan from context with message count restrictions
-  const canSendMessages = workspaceLoading
-    ? false
-    : canUserSendMessagesWithCount(workspacePlan, monthlyMessageCount);
+  const { canSendMessages, workspacePlan, isPlanLoading } = useWorkspace();
 
   const handleSendMessageClick = () => {
     if (!canSendMessages) {

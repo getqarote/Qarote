@@ -1,15 +1,12 @@
 import React from "react";
 import { Crown, Zap } from "lucide-react";
-import {
-  WorkspacePlan,
-  canUserAccessRouting,
-  getPlanDisplayName,
-} from "@/lib/plans/planUtils";
+import { WorkspacePlan } from "@/types/plans";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 import PlanUpgradeModal from "@/components/plans/PlanUpgradeModal";
 
 interface PremiumPageWrapperProps {
   children: React.ReactNode;
-  workspacePlan: WorkspacePlan;
+  workspacePlan?: WorkspacePlan; // Make optional since we can get from context
   feature: string;
   featureDescription: string;
   requiredPlan?: string;
@@ -18,13 +15,21 @@ interface PremiumPageWrapperProps {
 
 const PremiumPageWrapper: React.FC<PremiumPageWrapperProps> = ({
   children,
-  workspacePlan,
+  workspacePlan: propPlan,
   feature,
   featureDescription,
   requiredPlan = "Developer or higher",
 }) => {
   const [showUpgradeModal, setShowUpgradeModal] = React.useState(false);
-  const hasAccess = canUserAccessRouting(workspacePlan);
+  const {
+    canAccessRouting,
+    workspacePlan: contextPlan,
+    planData,
+  } = useWorkspace();
+
+  // Use prop plan if provided, otherwise use context plan
+  const plan = propPlan || contextPlan;
+  const hasAccess = canAccessRouting;
 
   if (hasAccess) {
     return <>{children}</>;
@@ -35,7 +40,7 @@ const PremiumPageWrapper: React.FC<PremiumPageWrapperProps> = ({
     <MainContentBlurWrapper
       feature={feature}
       featureDescription={featureDescription}
-      workspacePlan={workspacePlan}
+      workspacePlan={plan}
       requiredPlan={requiredPlan}
       showUpgradeModal={showUpgradeModal}
       setShowUpgradeModal={setShowUpgradeModal}
@@ -63,6 +68,7 @@ const MainContentBlurWrapper: React.FC<{
   showUpgradeModal,
   setShowUpgradeModal,
 }) => {
+  const { planData } = useWorkspace();
   // Clone children and look for main elements to blur
   const processChildren = (element: React.ReactNode): React.ReactNode => {
     if (React.isValidElement(element)) {
@@ -98,7 +104,7 @@ const MainContentBlurWrapper: React.FC<{
                   {/* Current Plan Badge */}
                   <div className="inline-flex items-center gap-2 px-3 py-1 bg-gray-100 rounded-full text-sm font-medium text-gray-700 mb-4">
                     <Crown className="w-4 h-4 text-yellow-500" />
-                    {getPlanDisplayName(workspacePlan)} Plan
+                    {planData?.planFeatures?.displayName || workspacePlan} Plan
                   </div>
 
                   {/* Description */}

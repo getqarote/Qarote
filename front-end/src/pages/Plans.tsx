@@ -14,13 +14,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  WorkspacePlan,
-  getPlanFeatures,
-  PLAN_FEATURES,
-} from "@/lib/plans/planUtils";
+import { WorkspacePlan } from "@/types/plans";
 import { usePlanUpgrade } from "@/hooks/usePlanUpgrade";
+import { apiClient } from "@/lib/api";
+import { useQuery } from "@tanstack/react-query";
 
 interface PlanCardProps {
   plan: WorkspacePlan;
@@ -36,6 +33,14 @@ interface PlanCardProps {
   ) => void;
 }
 
+// Hook to fetch all plans data
+const useAllPlans = () => {
+  return useQuery({
+    queryKey: ["plans", "all"],
+    queryFn: () => apiClient.getAllPlans(),
+  });
+};
+
 const PlanCard: React.FC<PlanCardProps> = ({
   plan,
   price,
@@ -46,7 +51,14 @@ const PlanCard: React.FC<PlanCardProps> = ({
   isCurrentPlan,
   onUpgrade,
 }) => {
-  const features = getPlanFeatures(plan);
+  const { data: plansData } = useAllPlans();
+
+  // Find the plan features for this specific plan
+  const planFeatures = plansData?.plans.find((p) => p.plan === plan);
+
+  if (!planFeatures) {
+    return <div>Loading plan details...</div>;
+  }
 
   const planConfig = {
     [WorkspacePlan.FREE]: {
@@ -87,32 +99,34 @@ const PlanCard: React.FC<PlanCardProps> = ({
       items: [
         {
           name: "RabbitMQ Servers",
-          value: features.maxServers
-            ? `Up to ${features.maxServers}`
-            : features.canAddServer
+          value: planFeatures.maxServers
+            ? `Up to ${planFeatures.maxServers}`
+            : planFeatures.canAddServer
               ? "Unlimited"
               : "1 server",
-          included: features.canAddServer,
+          included: planFeatures.canAddServer,
         },
         {
           name: "Message Queues",
-          value: features.maxQueues
-            ? `Up to ${features.maxQueues}`
+          value: planFeatures.maxQueues
+            ? `Up to ${planFeatures.maxQueues}`
             : "Unlimited",
-          included: features.canAddQueue,
+          included: planFeatures.canAddQueue,
         },
         {
           name: "Monthly Messages",
-          value: features.maxMessagesPerMonth
-            ? `${features.maxMessagesPerMonth.toLocaleString()}`
-            : features.canSendMessages
+          value: planFeatures.maxMessagesPerMonth
+            ? `${planFeatures.maxMessagesPerMonth.toLocaleString()}`
+            : planFeatures.canSendMessages
               ? "Unlimited"
               : "View only",
-          included: features.canSendMessages,
+          included: planFeatures.canSendMessages,
         },
         {
           name: "Team Members",
-          value: features.maxUsers ? `Up to ${features.maxUsers}` : "Unlimited",
+          value: planFeatures.maxUsers
+            ? `Up to ${planFeatures.maxUsers}`
+            : "Unlimited",
           included: true,
         },
       ],
@@ -123,22 +137,22 @@ const PlanCard: React.FC<PlanCardProps> = ({
         {
           name: "Message Routing",
           value: "Full routing capabilities",
-          included: features.canAccessRouting,
+          included: planFeatures.canAccessRouting,
         },
         {
           name: "Data Export",
           value: "Export all data",
-          included: features.canExportData,
+          included: planFeatures.canExportData,
         },
         {
           name: "Advanced Metrics",
           value: "Detailed analytics",
-          included: features.hasAdvancedMetrics,
+          included: planFeatures.hasAdvancedMetrics,
         },
         {
           name: "Smart Alerts",
           value: "AI-powered alerts",
-          included: features.hasAdvancedAlerts,
+          included: planFeatures.hasAdvancedAlerts,
         },
       ],
     },
@@ -148,27 +162,27 @@ const PlanCard: React.FC<PlanCardProps> = ({
         {
           name: "Basic Memory Metrics",
           value: "Memory usage overview",
-          included: features.canViewBasicMemoryMetrics,
+          included: planFeatures.canViewBasicMemoryMetrics,
         },
         {
           name: "Advanced Memory Analysis",
           value: "Detailed memory insights",
-          included: features.canViewAdvancedMemoryMetrics,
+          included: planFeatures.canViewAdvancedMemoryMetrics,
         },
         {
           name: "Expert Memory Diagnostics",
           value: "Deep memory analysis",
-          included: features.canViewExpertMemoryMetrics,
+          included: planFeatures.canViewExpertMemoryMetrics,
         },
         {
           name: "Memory Trends",
           value: "Historical memory data",
-          included: features.canViewMemoryTrends,
+          included: planFeatures.canViewMemoryTrends,
         },
         {
           name: "Memory Optimization",
           value: "Auto-optimization tips",
-          included: features.canViewMemoryOptimization,
+          included: planFeatures.canViewMemoryOptimization,
         },
       ],
     },
@@ -183,7 +197,7 @@ const PlanCard: React.FC<PlanCardProps> = ({
         {
           name: "Priority Support",
           value: "24/7 priority support",
-          included: features.hasPrioritySupport,
+          included: planFeatures.hasPrioritySupport,
         },
       ],
     },

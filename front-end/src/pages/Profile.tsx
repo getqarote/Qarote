@@ -31,10 +31,12 @@ import {
   InviteFormState,
 } from "@/components/profile";
 import { FeedbackForm } from "@/components/FeedbackForm";
-import { WorkspacePlan, getPlanFeatures } from "@/lib/plans/planUtils";
+import { WorkspacePlan } from "@/types/plans";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 
 const Profile = () => {
   const { user } = useAuth();
+  const { planData, workspacePlan } = useWorkspace();
   const { data: profileData, isLoading: profileLoading } = useProfile();
   const { data: workspaceUsersData, isLoading: usersLoading } =
     useWorkspaceUsers();
@@ -76,16 +78,14 @@ const Profile = () => {
   const invitations = invitationsData?.invitations || [];
   const isAdmin = profile?.role === "ADMIN";
 
-  // Plan-based access control
-  const workspacePlan =
-    (workspace?.plan as WorkspacePlan) || WorkspacePlan.FREE;
-  const planFeatures = getPlanFeatures(workspacePlan);
+  // Plan-based access control - use data from WorkspaceContext
+  const planFeatures = planData?.planFeatures;
   const currentUserCount = workspaceUsers.length;
   const pendingInvitationCount = invitations.length;
 
   // Check if user can invite more users based on plan limits
   const canInviteMoreUsers = () => {
-    if (!planFeatures.maxUsers) return true; // Unlimited
+    if (!planFeatures?.maxUsers) return true; // Unlimited
     return currentUserCount + pendingInvitationCount < planFeatures.maxUsers;
   };
 

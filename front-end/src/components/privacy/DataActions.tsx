@@ -23,26 +23,26 @@ import {
 import { useToast } from "@/hooks/useToast";
 import { apiClient } from "@/lib/api";
 import { CompanyPrivacySettings } from "./types";
-import { WorkspacePlan, canUserExportData } from "@/lib/plans/planUtils";
+import { WorkspacePlan } from "@/types/plans";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 
 interface DataActionsProps {
   settings: CompanyPrivacySettings;
   isAdmin: boolean;
   workspaceId: string;
-  workspacePlan?: WorkspacePlan;
+  workspacePlan?: WorkspacePlan; // Keep optional for backward compatibility
 }
 
 export function DataActions({
   settings,
   isAdmin,
   workspaceId,
-  workspacePlan = WorkspacePlan.FREE, // Default to FREE plan if not provided
+  workspacePlan: propPlan,
 }: DataActionsProps) {
   const { toast } = useToast();
+  const { canExportData } = useWorkspace();
   const [exporting, setExporting] = useState(false);
   const [deleting, setDeleting] = useState(false);
-
-  const canExportData = canUserExportData(workspacePlan);
 
   const handleExportData = async () => {
     if (!isAdmin) {

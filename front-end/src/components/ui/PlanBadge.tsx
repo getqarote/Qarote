@@ -1,21 +1,24 @@
 import { Crown } from "lucide-react";
-import {
-  WorkspacePlan,
-  getPlanDisplayName,
-  getPlanColor,
-} from "@/lib/plans/planUtils";
+import { WorkspacePlan } from "@/types/plans";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 
 interface PlanBadgeProps {
-  workspacePlan: WorkspacePlan;
+  workspacePlan?: WorkspacePlan;
   size?: "sm" | "md" | "lg";
   showIcon?: boolean;
 }
 
 export function PlanBadge({
-  workspacePlan,
+  workspacePlan: propPlan,
   size = "md",
   showIcon = true,
 }: PlanBadgeProps) {
+  const { workspacePlan: contextPlan, planData } = useWorkspace();
+
+  // Use prop plan if provided, otherwise use context plan
+  const plan = propPlan || contextPlan;
+  const planFeatures = planData?.planFeatures;
+
   const sizeClasses = {
     sm: "px-2 py-1 text-xs",
     md: "px-3 py-1 text-sm",
@@ -28,12 +31,16 @@ export function PlanBadge({
     lg: "w-5 h-5",
   };
 
+  // Get display name and color from backend data, with fallbacks
+  const displayName = planFeatures?.displayName || plan || "Free";
+  const color = planFeatures?.color || "text-white bg-gray-600";
+
   return (
     <div
-      className={`flex items-center gap-2 ${getPlanColor(workspacePlan)} rounded-full ${sizeClasses[size]} font-medium shadow-sm border border-white/20 backdrop-blur-sm`}
+      className={`flex items-center gap-2 ${color} rounded-full ${sizeClasses[size]} font-medium shadow-sm border border-white/20 backdrop-blur-sm`}
     >
       {showIcon && <Crown className={`${iconSizes[size]} text-yellow-500`} />}
-      <span>{getPlanDisplayName(workspacePlan)}</span>
+      <span>{displayName}</span>
     </div>
   );
 }

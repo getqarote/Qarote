@@ -33,7 +33,7 @@ import {
 } from "@/lib/api";
 import { isAlertsEnabled } from "@/lib/alertsFeatureFlag";
 import PremiumPageWrapper from "@/components/PremiumPageWrapper";
-import { WorkspacePlan } from "@/lib/plans/planUtils";
+import { WorkspacePlan } from "@/types/plans";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 
 const AlertDashboard: React.FC = () => {

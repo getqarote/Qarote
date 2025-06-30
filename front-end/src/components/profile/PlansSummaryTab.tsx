@@ -11,12 +11,9 @@ import {
   Server,
   TrendingUp,
 } from "lucide-react";
-import {
-  WorkspacePlan,
-  getPlanFeatures,
-  getPlanDisplayName,
-} from "@/lib/plans/planUtils";
+import { WorkspacePlan } from "@/types/plans";
 import { usePlanUpgrade } from "@/hooks/usePlanUpgrade";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 
 interface PlansSummaryTabProps {
   currentPlan: WorkspacePlan;
@@ -28,7 +25,38 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
   className = "",
 }) => {
   const { handleUpgrade } = usePlanUpgrade();
-  const currentFeatures = getPlanFeatures(currentPlan);
+  const { planData } = useWorkspace();
+  const currentFeatures = planData?.planFeatures;
+
+  // Helper function to get plan display name
+  const getPlanDisplayName = (plan: WorkspacePlan): string => {
+    switch (plan) {
+      case WorkspacePlan.FREE:
+        return "Free";
+      case WorkspacePlan.DEVELOPER:
+        return "Developer";
+      case WorkspacePlan.STARTUP:
+        return "Startup";
+      case WorkspacePlan.BUSINESS:
+        return "Business";
+      default:
+        return "Unknown";
+    }
+  };
+
+  // Helper function to get next plan
+  const getNextPlan = (plan: WorkspacePlan): WorkspacePlan | null => {
+    switch (plan) {
+      case WorkspacePlan.FREE:
+        return WorkspacePlan.DEVELOPER;
+      case WorkspacePlan.DEVELOPER:
+        return WorkspacePlan.STARTUP;
+      case WorkspacePlan.STARTUP:
+        return WorkspacePlan.BUSINESS;
+      default:
+        return null;
+    }
+  };
 
   const planBenefits = {
     [WorkspacePlan.FREE]: {

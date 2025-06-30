@@ -23,3 +23,7 @@ export { AlertApiClient } from "./alertClient";
 export { WorkspaceApiClient } from "./workspaceClient";
 export { LogsApiClient } from "./logsClient";
 export { BaseApiClient } from "./baseClient";
+export { PlanApiClient } from "./planClient";
+
+// Export plan types
+export type * from "./planClient";
