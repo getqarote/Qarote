@@ -39,22 +39,18 @@ export function NodeMemoryDetails({
     data,
     isLoading: loading,
     error: queryError,
-    refetch,
   } = useNodeMemoryDetails(serverId, nodeName);
 
   const error = queryError ? (queryError as Error).message : null;
 
   // Get plan features for memory access control
-  const planFeatures = planData?.planFeatures;
-  const canViewAdvanced = planFeatures?.canViewAdvancedMemoryMetrics || false;
-  const canViewExpert = planFeatures?.canViewExpertMemoryMetrics || false;
-  const canViewTrends = planFeatures?.canViewMemoryTrends || false;
-  const canViewOptimization = planFeatures?.canViewMemoryOptimization || false;
+  const planFeatures = planData.planFeatures;
+  const canViewAdvanced = planFeatures.canViewAdvancedMemoryMetrics || false;
+  const canViewExpert = planFeatures.canViewExpertMemoryMetrics || false;
+  const canViewTrends = planFeatures.canViewMemoryTrends || false;
+  const canViewOptimization = planFeatures.canViewMemoryOptimization || false;
 
-  const handleRefresh = () => {
-    refetch();
-  };
-
+  // TODO: from backend
   const formatBytes = (bytes: number): string => {
     const units = ["B", "KB", "MB", "GB", "TB"];
     let size = bytes;
@@ -68,6 +64,7 @@ export function NodeMemoryDetails({
     return `${size.toFixed(2)} ${units[unitIndex]}`;
   };
 
+  // TODO: from backend
   const formatUptime = (seconds: number): string => {
     const days = Math.floor(seconds / 86400);
     const hours = Math.floor((seconds % 86400) / 3600);
@@ -110,7 +107,7 @@ export function NodeMemoryDetails({
             {feature} requires {requiredPlan} plan
           </p>
           <p className="text-xs text-gray-500">
-            Current plan: {planFeatures?.displayName || workspacePlan}
+            Current plan: {planFeatures.displayName || workspacePlan}
           </p>
         </div>
       </CardContent>
@@ -158,10 +155,6 @@ export function NodeMemoryDetails({
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>{error}</AlertDescription>
           </Alert>
-          <Button onClick={handleRefresh} className="mt-4" variant="outline">
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Retry
-          </Button>
         </CardContent>
       </Card>
     );

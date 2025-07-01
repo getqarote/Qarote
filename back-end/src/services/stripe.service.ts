@@ -4,9 +4,13 @@ import { logger } from "@/core/logger";
 import { Sentry, setSentryContext } from "@/core/sentry";
 import { stripeConfig } from "@/config";
 
-if (!stripeConfig.secretKey) {
-  throw new Error("STRIPE_SECRET_KEY environment variable is required");
-}
+// Export types for use in controllers
+export type Event = Stripe.Event;
+export type Session = Stripe.Checkout.Session;
+export type Subscription = Stripe.Subscription;
+export type Invoice = Stripe.Invoice;
+export type PaymentIntent = Stripe.PaymentIntent;
+export type Customer = Stripe.Customer;
 
 export const stripe = new Stripe(stripeConfig.secretKey, {
   apiVersion: "2025-02-24.acacia",
@@ -424,18 +428,16 @@ export class StripeService {
     }
   }
 
-  static async constructWebhookEvent(payload: string, signature: string) {
+  static async constructWebhookEvent(
+    payload: string,
+    signature: string
+  ): Promise<Event> {
     try {
       const webhookSecret = stripeConfig.webhookSecret;
-      if (!webhookSecret) {
-        throw new Error(
-          "STRIPE_WEBHOOK_SECRET environment variable is required"
-        );
-      }
 
       logger.info("Constructing Stripe webhook event");
 
-      const event = await stripe.webhooks.constructEvent(
+      const event = stripe.webhooks.constructEvent(
         payload,
         signature,
         webhookSecret
@@ -492,5 +494,35 @@ export class StripeService {
       if (prices.yearly === stripePriceId) return "yearly";
     }
     return null;
+  }
+
+  /**
+   * Extract customer ID from Stripe session object
+   * Handles both string and object formats
+   */
+  static extractCustomerId(session: any): string | null {
+    return typeof session.customer === "string"
+      ? session.customer
+      : session.customer?.id || null;
+  }
+
+  /**
+   * Extract subscription ID from Stripe session object
+   * Handles both string and object formats
+   */
+  static extractSubscriptionId(session: any): string | null {
+    return typeof session.subscription === "string"
+      ? session.subscription
+      : session.subscription?.id || null;
+  }
+
+  /**
+   * Extract customer ID from subscription or invoice object
+   * Handles both string and object formats
+   */
+  static extractCustomerIdFromObject(obj: any): string | null {
+    return typeof obj.customer === "string"
+      ? obj.customer
+      : obj.customer?.id || null;
   }
 }

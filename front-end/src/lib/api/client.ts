@@ -11,6 +11,7 @@ import { WorkspaceApiClient } from "./workspaceClient";
 import { LogsApiClient } from "./logsClient";
 import { FeedbackApiClient } from "./feedbackClient";
 import { PlanApiClient } from "./planClient";
+import { PaymentApiClient } from "./paymentClient";
 import type { LogQuery, CreateLogRequest, LogExportRequest } from "./logTypes";
 import type { FeedbackFilters, UpdateFeedbackRequest } from "./feedbackClient";
 import type { FeedbackRequest } from "@/types/feedback";
@@ -24,6 +25,7 @@ class ApiClient {
   private logsClient: LogsApiClient;
   private feedbackClient: FeedbackApiClient;
   private planClient: PlanApiClient;
+  private paymentClient: PaymentApiClient;
 
   constructor(baseUrl?: string) {
     this.serverClient = new ServerApiClient(baseUrl);
@@ -34,6 +36,7 @@ class ApiClient {
     this.logsClient = new LogsApiClient(baseUrl);
     this.feedbackClient = new FeedbackApiClient(baseUrl);
     this.planClient = new PlanApiClient(baseUrl);
+    this.paymentClient = new PaymentApiClient(baseUrl);
   }
 
   // Server methods
@@ -402,6 +405,33 @@ class ApiClient {
 
   async getPlan(plan: Parameters<PlanApiClient["getPlan"]>[0]) {
     return this.planClient.getPlan(plan);
+  }
+
+  // Payment methods
+  async createCheckoutSession(
+    data: Parameters<PaymentApiClient["createCheckoutSession"]>[0]
+  ) {
+    return this.paymentClient.createCheckoutSession(data);
+  }
+
+  async createPortalSession() {
+    return this.paymentClient.createPortalSession();
+  }
+
+  async getSubscription() {
+    return this.paymentClient.getSubscription();
+  }
+
+  async getPaymentHistory(limit?: number, offset?: number) {
+    return this.paymentClient.getPaymentHistory(limit, offset);
+  }
+
+  async cancelSubscription() {
+    return this.paymentClient.cancelSubscription();
+  }
+
+  async reactivateSubscription() {
+    return this.paymentClient.reactivateSubscription();
   }
 }
 

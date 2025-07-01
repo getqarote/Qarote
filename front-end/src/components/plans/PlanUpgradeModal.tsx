@@ -1,9 +1,9 @@
-import React from "react";
-import { X, Check, Zap } from "lucide-react";
-import logger from "../../lib/logger";
+import React, { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { X, Check, Zap, Loader2 } from "lucide-react";
 import { WorkspacePlan } from "@/types/plans";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
-import { useQuery } from "@tanstack/react-query";
+import logger from "@/lib/logger";
 import { apiClient } from "@/lib/api";
 
 interface PlanUpgradeModalProps {
@@ -20,6 +20,8 @@ const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
   feature,
 }) => {
   const { planData } = useWorkspace();
+  const [isUpgrading, setIsUpgrading] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   // Fetch all plans data
   const { data: allPlansData } = useQuery({
@@ -27,34 +29,44 @@ const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
     queryFn: () => apiClient.getAllPlans(),
   });
 
+  const handleUpgrade = async (targetPlan: WorkspacePlan) => {
+    try {
+      setError(null);
+      setIsUpgrading(targetPlan);
+
+      logger.info(`Starting upgrade to ${targetPlan}`);
+
+      // Create Stripe checkout session
+      const response = await apiClient.createCheckoutSession({
+        plan: targetPlan,
+        billingInterval: "monthly", // Default to monthly, could be made configurable
+      });
+
+      // Redirect to Stripe checkout
+      window.location.href = response.url;
+    } catch (error) {
+      logger.error("Failed to create checkout session:", error);
+      setError("Failed to start upgrade process. Please try again.");
+      setIsUpgrading(null);
+    }
+  };
+
   if (!isOpen) return null;
 
-  const plans = allPlansData?.plans?.filter(
-    (p) => p.plan !== WorkspacePlan.FREE
-  ) || [
-    // Fallback data if API call fails
-    {
-      plan: WorkspacePlan.DEVELOPER,
-      displayName: "Developer",
-      monthlyPrice: 4900,
-      maxServers: 2,
-      maxMessagesPerMonth: 100,
-    },
-    {
-      plan: WorkspacePlan.STARTUP,
-      displayName: "Startup",
-      monthlyPrice: 9900,
-      maxServers: 10,
-      maxMessagesPerMonth: 1000,
-    },
-    {
-      plan: WorkspacePlan.BUSINESS,
-      displayName: "Business",
-      monthlyPrice: 19900,
-      maxServers: undefined,
-      maxMessagesPerMonth: undefined,
-    },
-  ];
+  if (!allPlansData) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-lg p-6">
+          <div className="flex items-center">
+            <Loader2 className="w-6 h-6 animate-spin mr-3" />
+            <span>Loading plans...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const plans = allPlansData.plans.filter((p) => p.plan !== WorkspacePlan.FREE);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -66,7 +78,7 @@ const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
             </h2>
             <p className="text-gray-600 mt-1">
               To use {feature}, you need to upgrade from the{" "}
-              {planData?.planFeatures?.displayName || currentPlan} plan
+              {planData.planFeatures.displayName || currentPlan} plan
             </p>
           </div>
           <button
@@ -78,8 +90,14 @@ const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
         </div>
 
         <div className="p-6">
+          {error && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-red-800 text-sm">{error}</p>
+            </div>
+          )}
+
           <div className="grid md:grid-cols-3 gap-6">
-            {plans.map((planData, index) => {
+            {plans.map((planData) => {
               const isPopular = planData.plan === WorkspacePlan.STARTUP;
               const price = `$${Math.floor(planData.monthlyPrice / 100)}`;
 
@@ -166,19 +184,25 @@ const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
                   </ul>
 
                   <button
-                    className={`w-full py-2 px-4 rounded-lg font-medium transition-colors ${
+                    className={`w-full py-2 px-4 rounded-lg font-medium transition-colors flex items-center justify-center ${
                       isPopular
-                        ? "bg-blue-600 hover:bg-blue-700 text-white"
-                        : "bg-gray-100 hover:bg-gray-200 text-gray-900"
+                        ? "bg-blue-600 hover:bg-blue-700 text-white disabled:bg-blue-400"
+                        : "bg-gray-100 hover:bg-gray-200 text-gray-900 disabled:bg-gray-50 disabled:text-gray-400"
                     }`}
-                    onClick={() => {
-                      // Handle upgrade - you can integrate with your payment system
-                      logger.info(`Upgrading to ${planData.plan}`);
-                      onClose();
-                    }}
+                    onClick={() => handleUpgrade(planData.plan)}
+                    disabled={isUpgrading !== null}
                   >
-                    <Zap className="w-4 h-4 inline-block mr-2" />
-                    Upgrade to {planData.displayName}
+                    {isUpgrading === planData.plan ? (
+                      <>
+                        <Loader2 className="w-4 h-4 inline-block mr-2 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <Zap className="w-4 h-4 inline-block mr-2" />
+                        Upgrade to {planData.displayName}
+                      </>
+                    )}
                   </button>
                 </div>
               );

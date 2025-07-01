@@ -24,6 +24,10 @@ export { WorkspaceApiClient } from "./workspaceClient";
 export { LogsApiClient } from "./logsClient";
 export { BaseApiClient } from "./baseClient";
 export { PlanApiClient } from "./planClient";
+export { PaymentApiClient } from "./paymentClient";
 
 // Export plan types
 export type * from "./planClient";
+
+// Export payment types
+export type * from "./paymentClient";

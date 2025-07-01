@@ -8,9 +8,12 @@ const envSchema = z.object({
   // Server Configuration
   NODE_ENV: z
     .enum(["development", "test", "production"])
-    .default("development"),
-  PORT: z.coerce.number().int().positive().default(3000),
-  HOST: z.string().default("localhost"),
+    .describe("development"),
+  PORT: z.coerce.number().int().positive().describe("3000"),
+  HOST: z.string().describe("localhost"),
+
+  // Logging
+  LOG_LEVEL: z.enum(["error", "warn", "info", "debug"]).describe("info"),
 
   // Security
   JWT_SECRET: z.string().min(1, "JWT_SECRET is required"),
@@ -24,38 +27,34 @@ const envSchema = z.object({
   }),
 
   // CORS
-  CORS_ORIGIN: z.string().default("*"),
+  CORS_ORIGIN: z.string().describe("*"),
 
   // Email Configuration
-  RESEND_API_KEY: z.string().optional(),
-  FROM_EMAIL: z.email().default("noreply@rabbitscout.com"),
+  RESEND_API_KEY: z.string(),
+  FROM_EMAIL: z.email().describe("noreply@rabbitscout.com"),
   FRONTEND_URL: z.url("FRONTEND_URL must be a valid URL"),
 
   // Stripe Configuration
-  STRIPE_SECRET_KEY: z.string().optional(),
-  STRIPE_WEBHOOK_SECRET: z.string().optional(),
+  STRIPE_SECRET_KEY: z.string().describe("sk_test_... or sk_live_..."),
+  STRIPE_WEBHOOK_SECRET: z.string().describe("sk_test_... or sk_live_..."),
 
   // Stripe Price IDs
-  STRIPE_DEVELOPER_MONTHLY_PRICE_ID: z.string().optional(),
-  STRIPE_DEVELOPER_YEARLY_PRICE_ID: z.string().optional(),
-  STRIPE_STARTUP_MONTHLY_PRICE_ID: z.string().optional(),
-  STRIPE_STARTUP_YEARLY_PRICE_ID: z.string().optional(),
-  STRIPE_BUSINESS_MONTHLY_PRICE_ID: z.string().optional(),
-  STRIPE_BUSINESS_YEARLY_PRICE_ID: z.string().optional(),
-
-  // Logging
-  LOG_LEVEL: z.enum(["error", "warn", "info", "debug"]).default("info"),
+  STRIPE_DEVELOPER_MONTHLY_PRICE_ID: z.string(),
+  STRIPE_DEVELOPER_YEARLY_PRICE_ID: z.string(),
+  STRIPE_STARTUP_MONTHLY_PRICE_ID: z.string(),
+  STRIPE_STARTUP_YEARLY_PRICE_ID: z.string(),
+  STRIPE_BUSINESS_MONTHLY_PRICE_ID: z.string(),
+  STRIPE_BUSINESS_YEARLY_PRICE_ID: z.string(),
 
   // Sentry Configuration
-  SENTRY_DSN: z.string().optional(),
-  SENTRY_ENABLED: z.coerce.boolean().default(false),
-  SENTRY_RELEASE: z.string().optional(),
+  SENTRY_DSN: z.string(),
+  SENTRY_ENABLED: z.coerce.boolean(),
 
   // NPM package version (for Sentry releases)
-  npm_package_version: z.string().optional(),
+  npm_package_version: z.string().describe("1.0.0"),
 
   // Feature Flags (for backwards compatibility)
-  NODE_TLS_REJECT_UNAUTHORIZED: z.string().optional(),
+  NODE_TLS_REJECT_UNAUTHORIZED: z.string().describe("1 or 0"),
 });
 
 // Parse and validate environment variables
@@ -140,9 +139,7 @@ export const sentryConfig = {
   dsn: config.SENTRY_DSN,
   enabled: config.SENTRY_ENABLED,
   environment: config.NODE_ENV,
-  release:
-    config.SENTRY_RELEASE ||
-    `rabbit-scout-backend@${config.npm_package_version || "unknown"}`,
+  release: `rabbit-scout-backend@${config.npm_package_version || "unknown"}`,
   tracesSampleRate: isProduction() ? 0.1 : 1.0,
   profilesSampleRate: isProduction() ? 0.05 : 1.0,
 } as const;

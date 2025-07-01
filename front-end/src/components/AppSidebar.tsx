@@ -117,7 +117,7 @@ const menuItems = [
 export function AppSidebar() {
   const location = useLocation();
   const { selectedServerId, setSelectedServerId } = useServerContext();
-  const { workspacePlan, canAddServer } = useWorkspace();
+  const { workspacePlan } = useWorkspace();
   const { user } = useAuth();
   const logoutMutation = useLogout();
   const { data: serversData } = useServers();

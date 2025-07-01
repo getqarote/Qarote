@@ -2,20 +2,31 @@ import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { authMiddleware } from "@/middlewares/auth";
 import { prisma } from "@/core/prisma";
-import { StripeService } from "@/services/stripe.service";
-import { sendUpgradeConfirmationEmail } from "@/services/email/email.service";
 import { logger } from "@/core/logger";
+import {
+  StripeService,
+  Event,
+  Session,
+  Subscription,
+  Invoice,
+  Customer,
+  PaymentIntent,
+} from "@/services/stripe.service";
+import {
+  sendUpgradeConfirmationEmail,
+  sendTrialEndingEmail,
+  sendPaymentActionRequiredEmail,
+  sendUpcomingInvoiceEmail,
+} from "@/services/email/email.service";
 import {
   WorkspacePlan,
   SubscriptionStatus,
   PaymentStatus,
   BillingInterval,
 } from "@prisma/client";
-import {
-  createCheckoutSessionSchema,
-  stripeWebhookSchema,
-} from "@/schemas/payment";
+import { createCheckoutSessionSchema } from "@/schemas/payment";
 import { emailConfig } from "@/config";
+import { getUserDisplayName } from "./shared";
 
 const app = new Hono();
 
@@ -25,13 +36,8 @@ app.post(
   authMiddleware,
   zValidator("json", createCheckoutSessionSchema),
   async (c) => {
-    const { plan, billingInterval, successUrl, cancelUrl } =
-      c.req.valid("json");
     const user = c.get("user");
-
-    if (!user.workspaceId) {
-      return c.json({ error: "User workspace not found" }, 404);
-    }
+    const { plan, billingInterval } = c.req.valid("json");
 
     // Get workspace
     const workspace = await prisma.workspace.findUnique({
@@ -52,7 +58,7 @@ app.post(
       if (!customerId) {
         const customer = await StripeService.createCustomer({
           email: user.email,
-          name: `${user.firstName} ${user.lastName}`.trim(),
+          name: getUserDisplayName(user),
           workspaceId: workspace.id,
         });
         customerId = customer.id;
@@ -69,10 +75,8 @@ app.post(
         workspaceId: workspace.id,
         plan,
         billingInterval,
-        successUrl:
-          successUrl ||
-          `${emailConfig.frontendUrl}/profile?tab=plans&success=true`,
-        cancelUrl: cancelUrl || `${emailConfig.frontendUrl}/plans`,
+        successUrl: `${emailConfig.frontendUrl}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancelUrl: `${emailConfig.frontendUrl}/payment/cancelled`,
         customerEmail: user.email,
       });
 
@@ -87,10 +91,6 @@ app.post(
 // Create customer portal session
 app.post("/portal", authMiddleware, async (c) => {
   const user = c.get("user");
-
-  if (!user?.workspaceId) {
-    return c.json({ error: "User workspace not found" }, 404);
-  }
 
   const workspace = await prisma.workspace.findUnique({
     where: { id: user.workspaceId },
@@ -117,10 +117,6 @@ app.post("/portal", authMiddleware, async (c) => {
 app.get("/subscription", authMiddleware, async (c) => {
   const user = c.get("user");
 
-  if (!user?.workspaceId) {
-    return c.json({ error: "User workspace not found" }, 404);
-  }
-
   try {
     const subscription = await prisma.subscription.findUnique({
       where: { workspaceId: user.workspaceId },
@@ -142,10 +138,6 @@ app.get("/payments", authMiddleware, async (c) => {
   const user = c.get("user");
   const limit = parseInt(c.req.query("limit") || "20");
   const offset = parseInt(c.req.query("offset") || "0");
-
-  if (!user?.workspaceId) {
-    return c.json({ error: "User workspace not found" }, 404);
-  }
 
   try {
     const payments = await prisma.payment.findMany({
@@ -190,11 +182,10 @@ app.post("/webhook", async (c) => {
       data: {
         stripeEventId: event.id,
         eventType: event.type,
-        data: event.data as any,
+        data: JSON.stringify(event.data),
       },
     });
 
-    // Process the event
     await processStripeWebhook(event);
 
     return c.json({ received: true });
@@ -204,7 +195,7 @@ app.post("/webhook", async (c) => {
   }
 });
 
-async function processStripeWebhook(event: any) {
+async function processStripeWebhook(event: Event) {
   switch (event.type) {
     case "checkout.session.completed":
       await handleCheckoutSessionCompleted(event.data.object);
@@ -219,6 +210,10 @@ async function processStripeWebhook(event: any) {
       await handleSubscriptionDeleted(event.data.object);
       break;
 
+    case "customer.subscription.trial_will_end":
+      await handleTrialWillEnd(event.data.object);
+      break;
+
     case "invoice.payment_succeeded":
       await handlePaymentSucceeded(event.data.object);
       break;
@@ -227,12 +222,28 @@ async function processStripeWebhook(event: any) {
       await handlePaymentFailed(event.data.object);
       break;
 
+    case "invoice.payment_action_required":
+      await handlePaymentActionRequired(event.data.object);
+      break;
+
+    case "invoice.upcoming":
+      await handleUpcomingInvoice(event.data.object);
+      break;
+
+    case "payment_intent.payment_failed":
+      await handlePaymentIntentFailed(event.data.object);
+      break;
+
+    case "customer.updated":
+      await handleCustomerUpdated(event.data.object);
+      break;
+
     default:
       logger.info(`Unhandled event type: ${event.type}`);
   }
 }
 
-async function handleCheckoutSessionCompleted(session: any) {
+async function handleCheckoutSessionCompleted(session: Session) {
   const workspaceId = session.metadata?.workspaceId;
   const plan = session.metadata?.plan as WorkspacePlan;
   const billingInterval = session.metadata?.billingInterval;
@@ -243,13 +254,17 @@ async function handleCheckoutSessionCompleted(session: any) {
   }
 
   try {
+    // Use static methods for extraction
+    const customerId = StripeService.extractCustomerId(session);
+    const subscriptionId = StripeService.extractSubscriptionId(session);
+
     // Update workspace plan and Stripe customer ID
     await prisma.workspace.update({
       where: { id: workspaceId },
       data: {
         plan,
-        stripeCustomerId: session.customer,
-        stripeSubscriptionId: session.subscription,
+        stripeCustomerId: customerId,
+        stripeSubscriptionId: subscriptionId,
       },
     });
 
@@ -267,8 +282,7 @@ async function handleCheckoutSessionCompleted(session: any) {
     if (workspace?.users[0]) {
       await sendUpgradeConfirmationEmail({
         to: workspace.users[0].email,
-        userName:
-          `${workspace.users[0].firstName} ${workspace.users[0].lastName}`.trim(),
+        userName: getUserDisplayName(workspace.users[0]),
         workspaceName: workspace.name,
         plan,
         billingInterval: billingInterval as "monthly" | "yearly",
@@ -281,10 +295,15 @@ async function handleCheckoutSessionCompleted(session: any) {
   }
 }
 
-async function handleSubscriptionChange(subscription: any) {
-  const customerId = subscription.customer;
-
+async function handleSubscriptionChange(subscription: Subscription) {
   try {
+    const customerId = StripeService.extractCustomerIdFromObject(subscription);
+
+    if (!customerId) {
+      logger.error("Missing customer ID in subscription");
+      return;
+    }
+
     const workspace = await prisma.workspace.findUnique({
       where: { stripeCustomerId: customerId },
     });
@@ -350,10 +369,15 @@ async function handleSubscriptionChange(subscription: any) {
   }
 }
 
-async function handleSubscriptionDeleted(subscription: any) {
-  const customerId = subscription.customer;
-
+async function handleSubscriptionDeleted(subscription: Subscription) {
   try {
+    const customerId = StripeService.extractCustomerIdFromObject(subscription);
+
+    if (!customerId) {
+      logger.error("Missing customer ID in subscription deletion");
+      return;
+    }
+
     const workspace = await prisma.workspace.findUnique({
       where: { stripeCustomerId: customerId },
     });
@@ -386,10 +410,15 @@ async function handleSubscriptionDeleted(subscription: any) {
   }
 }
 
-async function handlePaymentSucceeded(invoice: any) {
-  const customerId = invoice.customer;
-
+async function handlePaymentSucceeded(invoice: Invoice) {
   try {
+    const customerId = StripeService.extractCustomerIdFromObject(invoice);
+
+    if (!customerId) {
+      logger.error("Missing customer ID in payment succeeded");
+      return;
+    }
+
     const workspace = await prisma.workspace.findUnique({
       where: { stripeCustomerId: customerId },
     });
@@ -407,7 +436,10 @@ async function handlePaymentSucceeded(invoice: any) {
     await prisma.payment.create({
       data: {
         workspaceId: workspace.id,
-        stripePaymentId: invoice.payment_intent,
+        stripePaymentId:
+          typeof invoice.payment_intent === "string"
+            ? invoice.payment_intent
+            : invoice.payment_intent?.id || `invoice_${invoice.id}`,
         stripeInvoiceId: invoice.id,
         amount: invoice.amount_paid,
         currency: invoice.currency,
@@ -419,8 +451,10 @@ async function handlePaymentSucceeded(invoice: any) {
         periodEnd: subscription?.currentPeriodEnd,
         receiptUrl: invoice.hosted_invoice_url,
         invoiceUrl: invoice.invoice_pdf,
-        paidAt: new Date(invoice.status_transitions.paid_at * 1000),
-        metadata: invoice.metadata,
+        paidAt: invoice.status_transitions?.paid_at
+          ? new Date(invoice.status_transitions.paid_at * 1000)
+          : new Date(),
+        metadata: invoice.metadata || undefined,
       },
     });
 
@@ -432,10 +466,15 @@ async function handlePaymentSucceeded(invoice: any) {
   }
 }
 
-async function handlePaymentFailed(invoice: any) {
-  const customerId = invoice.customer;
-
+async function handlePaymentFailed(invoice: Invoice) {
   try {
+    const customerId = StripeService.extractCustomerIdFromObject(invoice);
+
+    if (!customerId) {
+      logger.error("Missing customer ID in payment failed");
+      return;
+    }
+
     const workspace = await prisma.workspace.findUnique({
       where: { stripeCustomerId: customerId },
     });
@@ -453,7 +492,10 @@ async function handlePaymentFailed(invoice: any) {
     await prisma.payment.create({
       data: {
         workspaceId: workspace.id,
-        stripePaymentId: invoice.payment_intent,
+        stripePaymentId:
+          typeof invoice.payment_intent === "string"
+            ? invoice.payment_intent
+            : invoice.payment_intent?.id || `invoice_${invoice.id}`,
         stripeInvoiceId: invoice.id,
         amount: invoice.amount_due,
         currency: invoice.currency,
@@ -461,9 +503,9 @@ async function handlePaymentFailed(invoice: any) {
         description: invoice.description || `${subscription?.plan} Plan`,
         plan: subscription?.plan,
         billingInterval: subscription?.billingInterval,
-        failureCode: invoice.last_finalization_error?.code,
-        failureMessage: invoice.last_finalization_error?.message,
-        metadata: invoice.metadata,
+        failureCode: invoice.last_finalization_error?.code || null,
+        failureMessage: invoice.last_finalization_error?.message || null,
+        metadata: invoice.metadata || undefined,
       },
     });
 
@@ -472,6 +514,272 @@ async function handlePaymentFailed(invoice: any) {
     );
   } catch (error) {
     logger.error("Error handling payment failed:", error);
+  }
+}
+
+async function handleTrialWillEnd(subscription: Subscription) {
+  try {
+    const customerId = StripeService.extractCustomerIdFromObject(subscription);
+
+    if (!customerId) {
+      logger.error("Missing customer ID in trial will end");
+      return;
+    }
+
+    const workspace = await prisma.workspace.findUnique({
+      where: { stripeCustomerId: customerId },
+      include: {
+        users: { where: { role: "ADMIN" }, take: 1 },
+      },
+    });
+
+    if (!workspace?.users[0]) {
+      logger.error(`Workspace not found for trial ending: ${customerId}`);
+      return;
+    }
+
+    // Send trial ending email notification
+    if (subscription.trial_end && workspace.plan !== WorkspacePlan.FREE) {
+      const trialEndDate = new Date(
+        subscription.trial_end * 1000
+      ).toLocaleDateString();
+
+      const emailResult = await sendTrialEndingEmail({
+        to: workspace.users[0].email,
+        name: getUserDisplayName(workspace.users[0]),
+        workspaceName: workspace.name,
+        plan: workspace.plan as "DEVELOPER" | "STARTUP" | "BUSINESS",
+        trialEndDate,
+      });
+
+      if (!emailResult.success) {
+        logger.error("Failed to send trial ending email", {
+          workspaceId: workspace.id,
+          error: emailResult.error,
+        });
+      }
+    }
+
+    logger.info(`Trial ending notification sent for workspace ${workspace.id}`);
+  } catch (error) {
+    logger.error("Error handling trial will end:", error);
+  }
+}
+
+async function handlePaymentActionRequired(invoice: Invoice) {
+  try {
+    const customerId = StripeService.extractCustomerIdFromObject(invoice);
+
+    if (!customerId) {
+      logger.error("Missing customer ID in payment action required");
+      return;
+    }
+
+    const workspace = await prisma.workspace.findUnique({
+      where: { stripeCustomerId: customerId },
+      include: {
+        users: { where: { role: "ADMIN" }, take: 1 },
+      },
+    });
+
+    if (!workspace?.users[0]) {
+      logger.error(`Workspace not found for payment action: ${customerId}`);
+      return;
+    }
+
+    // Create notification record
+    // TODO: Implement notification system
+    logger.warn(`Payment action required for workspace ${workspace.id}`, {
+      invoiceId: invoice.id,
+      invoiceUrl: invoice.hosted_invoice_url,
+      amount: invoice.amount_due,
+      userId: workspace.users[0].id,
+    });
+
+    // Send payment action required email
+    if (invoice.hosted_invoice_url && workspace.plan !== WorkspacePlan.FREE) {
+      const emailResult = await sendPaymentActionRequiredEmail({
+        to: workspace.users[0].email,
+        name: getUserDisplayName(workspace.users[0]),
+        workspaceName: workspace.name,
+        plan: workspace.plan as "DEVELOPER" | "STARTUP" | "BUSINESS",
+        invoiceUrl: invoice.hosted_invoice_url,
+        amount: (invoice.amount_due / 100).toFixed(2),
+        currency: invoice.currency,
+      });
+
+      if (!emailResult.success) {
+        logger.error("Failed to send payment action required email", {
+          workspaceId: workspace.id,
+          error: emailResult.error,
+        });
+      }
+    }
+
+    logger.info(
+      `Payment action required notification sent for workspace ${workspace.id}`
+    );
+  } catch (error) {
+    logger.error("Error handling payment action required:", error);
+  }
+}
+
+async function handleUpcomingInvoice(invoice: Invoice) {
+  try {
+    const customerId = StripeService.extractCustomerIdFromObject(invoice);
+
+    if (!customerId) {
+      logger.error("Missing customer ID in upcoming invoice");
+      return;
+    }
+
+    const workspace = await prisma.workspace.findUnique({
+      where: { stripeCustomerId: customerId },
+      include: {
+        users: { where: { role: "ADMIN" }, take: 1 },
+      },
+    });
+
+    if (!workspace?.users[0]) {
+      logger.error(`Workspace not found for upcoming invoice: ${customerId}`);
+      return;
+    }
+
+    // Only send notification for substantial amounts (> $10)
+    if (invoice.amount_due > 1000) {
+      // TODO: Implement notification system
+      logger.info(`Upcoming invoice for workspace ${workspace.id}`, {
+        invoiceId: invoice.id,
+        amount: invoice.amount_due,
+        dueDate: invoice.due_date,
+        userId: workspace.users[0].id,
+      });
+
+      // Send upcoming invoice email
+      if (workspace.plan !== WorkspacePlan.FREE) {
+        const invoiceDate = new Date().toLocaleDateString();
+        const nextBillingDate = invoice.due_date
+          ? new Date(invoice.due_date * 1000).toLocaleDateString()
+          : new Date(
+              Date.now() + 30 * 24 * 60 * 60 * 1000
+            ).toLocaleDateString(); // Default to 30 days from now
+
+        const emailResult = await sendUpcomingInvoiceEmail({
+          to: workspace.users[0].email,
+          name: getUserDisplayName(workspace.users[0]),
+          workspaceName: workspace.name,
+          plan: workspace.plan as "DEVELOPER" | "STARTUP" | "BUSINESS",
+          amount: (invoice.amount_due / 100).toFixed(2),
+          currency: invoice.currency,
+          invoiceDate,
+          nextBillingDate,
+        });
+
+        if (!emailResult.success) {
+          logger.error("Failed to send upcoming invoice email", {
+            workspaceId: workspace.id,
+            error: emailResult.error,
+          });
+        }
+      }
+    }
+
+    logger.info(
+      `Upcoming invoice notification sent for workspace ${workspace.id}: $${invoice.amount_due / 100}`
+    );
+  } catch (error) {
+    logger.error("Error handling upcoming invoice:", error);
+  }
+}
+
+async function handlePaymentIntentFailed(paymentIntent: PaymentIntent) {
+  try {
+    const customerId = StripeService.extractCustomerIdFromObject(paymentIntent);
+
+    if (!customerId) {
+      logger.error("Missing customer ID in payment intent failed");
+      return;
+    }
+
+    const workspace = await prisma.workspace.findUnique({
+      where: { stripeCustomerId: customerId },
+      include: {
+        users: { where: { role: "ADMIN" }, take: 1 },
+      },
+    });
+
+    if (!workspace?.users[0]) {
+      logger.error(
+        `Workspace not found for payment intent failed: ${customerId}`
+      );
+      return;
+    }
+
+    // Create failed payment record
+    await prisma.payment.create({
+      data: {
+        workspaceId: workspace.id,
+        stripePaymentId: paymentIntent.id,
+        stripeInvoiceId: null,
+        amount: paymentIntent.amount,
+        currency: paymentIntent.currency,
+        status: PaymentStatus.FAILED,
+        description: paymentIntent.description || "Payment attempt",
+        failureCode: paymentIntent.last_payment_error?.code || null,
+        failureMessage: paymentIntent.last_payment_error?.message || null,
+        metadata: paymentIntent.metadata || undefined,
+      },
+    });
+
+    // TODO: Implement notification system
+    logger.error(`Payment intent failed for workspace ${workspace.id}`, {
+      paymentIntentId: paymentIntent.id,
+      failureCode: paymentIntent.last_payment_error?.code,
+      failureMessage: paymentIntent.last_payment_error?.message,
+      userId: workspace.users[0].id,
+      amount: paymentIntent.amount,
+    });
+
+    logger.info(
+      `Payment intent failed for workspace ${workspace.id}: $${paymentIntent.amount / 100}`
+    );
+  } catch (error) {
+    logger.error("Error handling payment intent failed:", error);
+  }
+}
+
+async function handleCustomerUpdated(customer: Customer) {
+  try {
+    const workspace = await prisma.workspace.findUnique({
+      where: { stripeCustomerId: customer.id },
+    });
+
+    if (!workspace) {
+      logger.error(`Workspace not found for customer update: ${customer.id}`);
+      return;
+    }
+
+    // Update any cached customer information if needed
+    // This is mainly for keeping customer email/name in sync
+    if (customer.email) {
+      const adminUser = await prisma.user.findFirst({
+        where: {
+          workspaceId: workspace.id,
+          role: "ADMIN",
+        },
+      });
+
+      if (adminUser && adminUser.email !== customer.email) {
+        logger.warn(
+          `Customer email changed for workspace ${workspace.id}: ${adminUser.email} -> ${customer.email}`
+        );
+        // Optionally update the admin user's email or log the discrepancy
+      }
+    }
+
+    logger.info(`Customer updated for workspace ${workspace.id}`);
+  } catch (error) {
+    logger.error("Error handling customer updated:", error);
   }
 }
 

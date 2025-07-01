@@ -14,16 +14,9 @@ import {
   PlanValidationError,
 } from "@/services/plan-validation.service";
 import { EncryptionService } from "@/services/encryption.service";
+import { getUserDisplayName } from "./shared";
 
 const invitationController = new Hono();
-
-// Helper function to get user display name
-const getUserDisplayName = (user: {
-  firstName: string;
-  lastName: string;
-}): string => {
-  return `${user.firstName} ${user.lastName}`;
-};
 
 /**
  * GET /invitations - Get all pending invitations for workspace (requires auth)

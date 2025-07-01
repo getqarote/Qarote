@@ -32,7 +32,7 @@ export async function verifyServerAccess(
   serverId: string,
   workspaceId: string,
   includeWorkspace = false
-): Promise<any> {
+): Promise<RabbitMQServer> {
   const server = await prisma.rabbitMQServer.findFirst({
     where: {
       id: serverId,
@@ -76,4 +76,11 @@ export function createErrorResponse(
     },
     statusCode
   );
+}
+
+export function getUserDisplayName(user: {
+  firstName: string;
+  lastName: string;
+}): string {
+  return `${user.firstName} ${user.lastName}`;
 }
