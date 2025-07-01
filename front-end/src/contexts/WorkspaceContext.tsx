@@ -102,7 +102,7 @@ export const WorkspaceProvider: React.FC<WorkspaceProviderProps> = ({
   }, [isAuthenticated, user]);
 
   const fetchPlan = useCallback(async () => {
-    if (!isAuthenticated || !user) {
+    if (!isAuthenticated || !user?.workspaceId) {
       return;
     }
 
@@ -110,7 +110,7 @@ export const WorkspaceProvider: React.FC<WorkspaceProviderProps> = ({
     setPlanError(null);
 
     try {
-      const response = await apiClient.getCurrentPlan();
+      const response = await apiClient.getCurrentPlan(user.workspaceId);
       setPlanData(response);
     } catch (err) {
       const errorMessage =

@@ -13,6 +13,7 @@ import {
   X,
 } from "lucide-react";
 import { apiClient } from "@/lib/api";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 import type { CurrentPlanResponse } from "@/lib/api/planClient";
 
 interface RabbitMqVersionInfoProps {
@@ -25,10 +26,12 @@ export const RabbitMqVersionInfo = ({
   const [isExpanded, setIsExpanded] = useState(true);
   const [isManagementAlertDismissed, setIsManagementAlertDismissed] =
     useState(false);
+  const { workspace: currentWorkspace } = useWorkspace();
 
   const { data: planData, isLoading } = useQuery<CurrentPlanResponse>({
-    queryKey: ["current-plan"],
-    queryFn: () => apiClient.getCurrentPlan(),
+    queryKey: ["current-plan", currentWorkspace?.id],
+    queryFn: () => apiClient.getCurrentPlan(currentWorkspace!.id),
+    enabled: !!currentWorkspace?.id,
   });
 
   if (isLoading || !planData) {

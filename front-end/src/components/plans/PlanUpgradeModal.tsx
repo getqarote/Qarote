@@ -19,14 +19,15 @@ const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
   currentPlan,
   feature,
 }) => {
-  const { planData } = useWorkspace();
+  const { planData, workspace } = useWorkspace();
   const [isUpgrading, setIsUpgrading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   // Fetch all plans data
   const { data: allPlansData } = useQuery({
-    queryKey: ["plans", "all"],
-    queryFn: () => apiClient.getAllPlans(),
+    queryKey: ["plans", "all", workspace?.id],
+    queryFn: () => apiClient.getAllPlans(workspace!.id),
+    enabled: !!workspace?.id,
   });
 
   const handleUpgrade = async (targetPlan: WorkspacePlan) => {

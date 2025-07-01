@@ -18,6 +18,7 @@ import { WorkspacePlan } from "@/types/plans";
 import { usePlanUpgrade } from "@/hooks/usePlanUpgrade";
 import { apiClient } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 
 interface PlanCardProps {
   plan: WorkspacePlan;
@@ -35,9 +36,12 @@ interface PlanCardProps {
 
 // Hook to fetch all plans data
 const useAllPlans = () => {
+  const { workspace } = useWorkspace();
+
   return useQuery({
-    queryKey: ["plans", "all"],
-    queryFn: () => apiClient.getAllPlans(),
+    queryKey: ["plans", "all", workspace?.id],
+    queryFn: () => apiClient.getAllPlans(workspace!.id),
+    enabled: !!workspace?.id,
   });
 };
 

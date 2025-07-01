@@ -92,14 +92,14 @@ export class PlanApiClient extends BaseApiClient {
   /**
    * Get all available plans with their features
    */
-  async getAllPlans(): Promise<AllPlansResponse> {
-    return this.request<AllPlansResponse>("/workspaces/plans");
+  async getAllPlans(workspaceId: string): Promise<AllPlansResponse> {
+    return this.request<AllPlansResponse>(`/workspaces/${workspaceId}/plans`);
   }
 
   /**
    * Get current user's plan features and usage
    */
-  async getCurrentPlan(): Promise<CurrentPlanResponse> {
-    return this.request<CurrentPlanResponse>("/workspaces/current/plan");
+  async getCurrentPlan(workspaceId: string): Promise<CurrentPlanResponse> {
+    return this.request<CurrentPlanResponse>(`/workspaces/${workspaceId}/plan`);
   }
 }

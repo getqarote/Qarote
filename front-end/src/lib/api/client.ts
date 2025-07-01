@@ -391,12 +391,12 @@ class ApiClient {
   }
 
   // Plan methods
-  async getAllPlans() {
-    return this.planClient.getAllPlans();
+  async getAllPlans(workspaceId: string) {
+    return this.planClient.getAllPlans(workspaceId);
   }
 
-  async getCurrentPlan() {
-    return this.planClient.getCurrentPlan();
+  async getCurrentPlan(workspaceId: string) {
+    return this.planClient.getCurrentPlan(workspaceId);
   }
 
   // Payment methods
