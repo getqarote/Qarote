@@ -112,8 +112,8 @@ app.post("/accept", zValidator("json", AcceptInvitationSchema), async (c) => {
         });
       } catch (emailError) {
         logger.error(
-          "Failed to send welcome email during invitation acceptance:",
-          emailError
+          { error: emailError },
+          "Failed to send welcome email during invitation acceptance"
         );
         // Don't fail the invitation acceptance if email fails
       }
@@ -139,7 +139,7 @@ app.post("/accept", zValidator("json", AcceptInvitationSchema), async (c) => {
       workspace: invitation.workspace,
     });
   } catch (error) {
-    logger.error("Accept invitation error:", error);
+    logger.error({ error }, "Accept invitation error");
     if (error instanceof Error) {
       return c.json({ error: error.message }, 400);
     }

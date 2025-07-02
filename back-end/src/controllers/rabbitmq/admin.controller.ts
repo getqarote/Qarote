@@ -61,7 +61,7 @@ adminController.get(
         ),
       });
     } catch (error) {
-      logger.error("Error fetching active streams:", error);
+      logger.error({ error }, "Error fetching active streams");
       return createErrorResponse(
         c,
         error,
@@ -97,7 +97,7 @@ adminController.post(
         remainingStreams,
       });
     } catch (error) {
-      logger.error("Error stopping all user streams:", error);
+      logger.error({ error }, "Error stopping all user streams");
       return createErrorResponse(c, error, 500, "Failed to stop all streams");
     }
   }
@@ -121,7 +121,7 @@ adminController.get(
         timestamp: new Date().toISOString(),
       });
     } catch (error) {
-      logger.error("Error fetching stream health:", error);
+      logger.error({ error }, "Error fetching stream health");
       return createErrorResponse(
         c,
         error,

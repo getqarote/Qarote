@@ -92,7 +92,7 @@ export class RabbitMQClient extends RabbitMQApiClient {
         channels
       );
     } catch (error) {
-      logger.error("Error fetching comprehensive metrics:", error);
+      logger.error({ error }, "Error fetching comprehensive metrics");
 
       // Capture RabbitMQ error in Sentry
       if (error instanceof Error) {

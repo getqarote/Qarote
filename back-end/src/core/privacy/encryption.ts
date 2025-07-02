@@ -33,7 +33,7 @@ export class EncryptionService {
         tag: cipher.getAuthTag().toString("hex"),
       };
     } catch (error) {
-      logger.error("Encryption error:", error);
+      logger.error({ error }, "Encryption error");
       throw new Error("Failed to encrypt data");
     }
   }
@@ -62,7 +62,7 @@ export class EncryptionService {
 
       return JSON.parse(decrypted);
     } catch (error) {
-      logger.error("Decryption error:", error);
+      logger.error({ error }, "Decryption error");
       throw new Error("Failed to decrypt data");
     }
   }

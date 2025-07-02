@@ -23,7 +23,7 @@ infrastructureController.get("/servers/:id/nodes", async (c) => {
     const nodes = await client.getNodes();
     return c.json({ nodes });
   } catch (error) {
-    logger.error(`Error fetching nodes for server ${id}:`, error);
+    logger.error({ error, id }, "Error fetching nodes for server");
     return createErrorResponse(c, error, 500, "Failed to fetch nodes");
   }
 });

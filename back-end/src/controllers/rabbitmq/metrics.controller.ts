@@ -32,7 +32,7 @@ metricsController.get("/servers/:id/metrics", async (c) => {
       metrics: enhancedMetrics,
     });
   } catch (error) {
-    logger.error(`Error fetching metrics for server ${id}:`, error);
+    logger.error({ error, id }, "Error fetching metrics for server");
     return createErrorResponse(c, error, 500, "Failed to fetch metrics");
   }
 });
@@ -171,7 +171,7 @@ metricsController.get("/servers/:id/metrics/timeseries", async (c) => {
       aggregatedThroughput,
     });
   } catch (error) {
-    logger.error(`Error fetching timeseries for server ${id}:`, error);
+    logger.error({ error, id }, "Error fetching timeseries for server");
     return createErrorResponse(
       c,
       error,

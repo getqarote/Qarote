@@ -33,7 +33,7 @@ export class EncryptionService {
 
       return decrypted;
     } catch (error) {
-      logger.error("Decryption failed:", error);
+      logger.error({ error }, "Decryption failed");
       throw new Error("Failed to decrypt sensitive data");
     }
   }

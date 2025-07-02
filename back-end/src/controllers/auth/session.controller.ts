@@ -87,7 +87,7 @@ app.post("/login", zValidator("json", LoginSchema), async (c) => {
 
     return c.json({ user: safeUser, token });
   } catch (error) {
-    logger.error("Login error:", error);
+    logger.error({ error }, "Login error");
     return c.json({ error: "Failed to log in" }, 500);
   }
 });
@@ -132,7 +132,7 @@ app.get("/me", authenticate, async (c) => {
 
     return c.json({ user: userWithWorkspace });
   } catch (error) {
-    logger.error("Get profile error:", error);
+    logger.error({ error }, "Get profile error");
     return c.json({ error: "Failed to retrieve user profile" }, 500);
   }
 });

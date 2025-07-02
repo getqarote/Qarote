@@ -63,7 +63,7 @@ app.post(
 
       return c.json({ url: session.url });
     } catch (error) {
-      logger.error("Error creating checkout session:", error);
+      logger.error({ error }, "Error creating checkout session");
       return c.json({ error: "Failed to create checkout session" }, 500);
     }
   }
@@ -89,7 +89,7 @@ app.post("/portal", authMiddleware, async (c) => {
 
     return c.json({ url: session.url });
   } catch (error) {
-    logger.error("Error creating portal session:", error);
+    logger.error({ error }, "Error creating portal session");
     return c.json({ error: "Failed to create portal session" }, 500);
   }
 });

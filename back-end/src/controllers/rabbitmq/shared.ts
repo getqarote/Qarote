@@ -68,7 +68,7 @@ export function createErrorResponse(
   statusCode: 400 | 404 | 500 = 500,
   defaultMessage = "Unknown error occurred"
 ) {
-  logger.error("Controller error:", error);
+  logger.error({ error }, "Controller error");
   return c.json(
     {
       error: defaultMessage,

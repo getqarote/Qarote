@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { CheckCircle, ArrowRight } from "lucide-react";
+import { CheckCircle, ArrowRight, CreditCard } from "lucide-react";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useQueryClient } from "@tanstack/react-query";
 import logger from "@/lib/logger";
@@ -8,7 +8,7 @@ import logger from "@/lib/logger";
 const PaymentSuccess: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { refetch, refetchPlan } = useWorkspace();
+  const { refetch, refetchPlan, planData } = useWorkspace();
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -31,6 +31,13 @@ const PaymentSuccess: React.FC = () => {
 
   const sessionId = searchParams.get("session_id");
 
+  // Log session ID for debugging but don't display it
+  useEffect(() => {
+    if (sessionId) {
+      logger.info("Payment completed successfully", { sessionId });
+    }
+  }, [sessionId]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-lg shadow-lg max-w-md w-full p-8 text-center">
@@ -45,10 +52,17 @@ const PaymentSuccess: React.FC = () => {
           </p>
         </div>
 
-        {sessionId && (
-          <div className="mb-6 p-3 bg-gray-50 rounded-lg">
-            <p className="text-sm text-gray-600">
-              Session ID: <span className="font-mono text-xs">{sessionId}</span>
+        {/* Show plan information instead of session ID */}
+        {planData && (
+          <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+            <div className="flex items-center justify-center mb-2">
+              <CreditCard className="w-5 h-5 text-green-600 mr-2" />
+              <span className="font-medium text-green-800">
+                {planData.workspace.plan} Plan Activated
+              </span>
+            </div>
+            <p className="text-sm text-green-600">
+              Welcome to your enhanced Rabbit Scout experience!
             </p>
           </div>
         )}
@@ -58,7 +72,7 @@ const PaymentSuccess: React.FC = () => {
             onClick={() => navigate("/queues")}
             className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg font-medium transition-colors flex items-center justify-center"
           >
-            Go to Dashboard
+            Explore Your Dashboard
             <ArrowRight className="w-4 h-4 ml-2" />
           </button>
 
@@ -66,8 +80,14 @@ const PaymentSuccess: React.FC = () => {
             onClick={() => navigate("/workspace/billing")}
             className="w-full bg-gray-100 hover:bg-gray-200 text-gray-900 py-2 px-4 rounded-lg font-medium transition-colors"
           >
-            View Billing
+            Manage Subscription
           </button>
+        </div>
+
+        <div className="mt-6 pt-4 border-t border-gray-200">
+          <p className="text-xs text-gray-500">
+            Need help? Contact our support team
+          </p>
         </div>
       </div>
     </div>

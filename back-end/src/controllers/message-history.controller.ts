@@ -104,7 +104,7 @@ messageHistoryController.get(
         );
       }
 
-      logger.error("Error searching message history:", error);
+      logger.error({ error }, "Error searching message history");
       return c.json({ error: "Internal server error" }, 500);
     }
   }
@@ -194,7 +194,7 @@ messageHistoryController.get(
         );
       }
 
-      logger.error("Error getting message history stats:", error);
+      logger.error({ error }, "Error getting message history stats");
       return c.json({ error: "Internal server error" }, 500);
     }
   }

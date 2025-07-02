@@ -50,7 +50,7 @@ export class RabbitMQMetricsCalculator {
       logger.warn("No active message flow detected, using default latency");
       return 1.2;
     } catch (error) {
-      logger.error("Error calculating latency:", error);
+      logger.error({ error }, "Error calculating latency");
       return 2.5; // Default fallback
     }
   }
@@ -99,7 +99,7 @@ export class RabbitMQMetricsCalculator {
       );
       return Math.max(25, Math.min(85, avgMemoryUsage * 0.8 + 20));
     } catch (error) {
-      logger.error("Error calculating disk usage:", error);
+      logger.error({ error }, "Error calculating disk usage");
       return 45; // Default fallback
     }
   }
@@ -134,7 +134,7 @@ export class RabbitMQMetricsCalculator {
 
       return totalMemory;
     } catch (error) {
-      logger.error("Error calculating total memory:", error);
+      logger.error({ error }, "Error calculating total memory");
       return 8589934592; // Default fallback: 8GB in bytes
     }
   }
@@ -186,7 +186,7 @@ export class RabbitMQMetricsCalculator {
       const avgCpuUsage = totalCpuUsage / nodeCount;
       return Math.max(0, Math.min(100, avgCpuUsage));
     } catch (error) {
-      logger.error("Error calculating average CPU usage:", error);
+      logger.error({ error }, "Error calculating average CPU usage");
       return 15; // Default fallback: 15% CPU usage
     }
   }

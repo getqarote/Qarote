@@ -97,14 +97,14 @@ app.post("/register", zValidator("json", RegisterUserSchema), async (c) => {
 
       if (!emailResult.success) {
         logger.error(
-          "Failed to send verification email during registration:",
-          emailResult.error
+          { error: emailResult.error },
+          "Failed to send verification email during registration"
         );
       }
     } catch (emailError) {
       logger.error(
-        "Failed to send verification email during registration:",
-        emailError
+        { error: emailError },
+        "Failed to send verification email during registration"
       );
       // Don't fail the registration if email verification fails
     }
@@ -127,8 +127,8 @@ app.post("/register", zValidator("json", RegisterUserSchema), async (c) => {
         }
       } catch (emailError) {
         logger.error(
-          "Failed to send welcome email during registration:",
-          emailError
+          { error: emailError },
+          "Failed to send welcome email during registration"
         );
         // Don't fail the registration if email fails
       }
@@ -144,7 +144,7 @@ app.post("/register", zValidator("json", RegisterUserSchema), async (c) => {
       201
     );
   } catch (error) {
-    logger.error("Registration error:", error);
+    logger.error({ error }, "Registration error");
     return c.json({ error: "Failed to register user" }, 500);
   }
 });

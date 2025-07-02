@@ -20,7 +20,7 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
       logger.debug("RabbitMQ overview fetched successfully");
       return overview;
     } catch (error) {
-      logger.error("Failed to fetch RabbitMQ overview:", error);
+      logger.error({ error }, "Failed to fetch RabbitMQ overview");
 
       if (error instanceof Error) {
         captureRabbitMQError(error, {
@@ -42,7 +42,7 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
       });
       return queues;
     } catch (error) {
-      logger.error("Failed to fetch RabbitMQ queues:", error);
+      logger.error({ error }, "Failed to fetch RabbitMQ queues");
 
       if (error instanceof Error) {
         captureRabbitMQError(error, {
@@ -64,7 +64,7 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
       });
       return nodes;
     } catch (error) {
-      logger.error("Failed to fetch RabbitMQ nodes:", error);
+      logger.error({ error }, "Failed to fetch RabbitMQ nodes");
 
       if (error instanceof Error) {
         captureRabbitMQError(error, {
@@ -110,7 +110,7 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
       });
       return connections;
     } catch (error) {
-      logger.error("Failed to fetch RabbitMQ connections:", error);
+      logger.error({ error }, "Failed to fetch RabbitMQ connections");
 
       if (error instanceof Error) {
         captureRabbitMQError(error, {
@@ -132,7 +132,7 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
       });
       return channels;
     } catch (error) {
-      logger.error("Failed to fetch RabbitMQ channels:", error);
+      logger.error({ error }, "Failed to fetch RabbitMQ channels");
 
       if (error instanceof Error) {
         captureRabbitMQError(error, {
@@ -154,7 +154,7 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
       });
       return exchanges;
     } catch (error) {
-      logger.error("Failed to fetch RabbitMQ exchanges:", error);
+      logger.error({ error }, "Failed to fetch RabbitMQ exchanges");
 
       if (error instanceof Error) {
         captureRabbitMQError(error, {
@@ -176,7 +176,7 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
       });
       return bindings;
     } catch (error) {
-      logger.error("Failed to fetch RabbitMQ bindings:", error);
+      logger.error({ error }, "Failed to fetch RabbitMQ bindings");
 
       if (error instanceof Error) {
         captureRabbitMQError(error, {
@@ -198,7 +198,7 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
       });
       return consumers;
     } catch (error) {
-      logger.error("Failed to fetch RabbitMQ consumers:", error);
+      logger.error({ error }, "Failed to fetch RabbitMQ consumers");
 
       if (error instanceof Error) {
         captureRabbitMQError(error, {

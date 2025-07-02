@@ -20,7 +20,7 @@ app.get("/subscription", authMiddleware, async (c) => {
 
     return c.json({ subscription });
   } catch (error) {
-    logger.error("Error fetching subscription:", error);
+    logger.error({ error }, "Error fetching subscription");
     return c.json({ error: "Failed to fetch subscription" }, 500);
   }
 });
@@ -53,7 +53,7 @@ app.get("/payments", authMiddleware, async (c) => {
       },
     });
   } catch (error) {
-    logger.error("Error fetching payments:", error);
+    logger.error({ error }, "Error fetching payments");
     return c.json({ error: "Failed to fetch payments" }, 500);
   }
 });

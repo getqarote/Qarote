@@ -15,6 +15,7 @@ app.post("/webhook", async (c) => {
 
   try {
     const body = await c.req.text();
+
     const event = await StripeService.constructWebhookEvent(body, signature);
 
     // Store webhook event
@@ -30,7 +31,7 @@ app.post("/webhook", async (c) => {
 
     return c.json({ received: true });
   } catch (error) {
-    logger.error("Webhook error:", error);
+    logger.error({ error }, "Webhook error");
     return c.json({ error: "Webhook processing failed" }, 400);
   }
 });

@@ -86,7 +86,7 @@ export class AlertService {
         }
       }
     } catch (error) {
-      logger.error("Error in evaluateAllAlerts:", error);
+      logger.error({ error }, "Error in evaluateAllAlerts");
     }
   }
 
@@ -320,7 +320,7 @@ export class AlertService {
         timestamp: new Date(),
       };
     } catch (error) {
-      logger.error("Error getting connection count:", error);
+      logger.error({ error }, "Error getting connection count");
       return null;
     }
   }

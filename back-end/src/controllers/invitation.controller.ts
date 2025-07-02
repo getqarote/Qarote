@@ -74,7 +74,7 @@ invitationController.get("/", authenticate, async (c) => {
       count: invitations.length,
     });
   } catch (error) {
-    logger.error("Error fetching invitations:", error);
+    logger.error({ error }, "Error fetching invitations");
     return c.json({ error: "Failed to fetch invitations" }, 500);
   }
 });
@@ -240,7 +240,7 @@ invitationController.post(
         },
       });
     } catch (error) {
-      logger.error("Error sending invitation:", error);
+      logger.error({ error }, "Error sending invitation");
       return c.json({ error: "Failed to send invitation" }, 500);
     }
   }
@@ -295,7 +295,7 @@ invitationController.delete(
         message: "Invitation revoked successfully",
       });
     } catch (error) {
-      logger.error("Error revoking invitation:", error);
+      logger.error({ error }, "Error revoking invitation");
       return c.json({ error: "Failed to revoke invitation" }, 500);
     }
   }
@@ -410,7 +410,7 @@ invitationController.post("/:token/accept", async (c) => {
       },
     });
   } catch (error) {
-    logger.error("Error accepting invitation:", error);
+    logger.error({ error }, "Error accepting invitation");
     return c.json({ error: "Failed to accept invitation" }, 500);
   }
 });
@@ -468,7 +468,7 @@ invitationController.get("/:token", async (c) => {
       },
     });
   } catch (error) {
-    logger.error("Error fetching invitation details:", error);
+    logger.error({ error }, "Error fetching invitation details");
     return c.json({ error: "Failed to fetch invitation details" }, 500);
   }
 });

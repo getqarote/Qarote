@@ -47,7 +47,7 @@ app.post("/verify-email", async (c) => {
       type: result.type,
     });
   } catch (error) {
-    logger.error("Email verification error:", error);
+    logger.error({ error }, "Email verification error");
     return c.json({ error: "Failed to verify email" }, 500);
   }
 });
@@ -77,7 +77,7 @@ app.post("/resend-verification", authenticate, async (c) => {
       message: "Verification email sent successfully",
     });
   } catch (error) {
-    logger.error("Resend verification error:", error);
+    logger.error({ error }, "Resend verification error");
     return c.json({ error: "Failed to resend verification email" }, 500);
   }
 });
@@ -116,7 +116,7 @@ app.get("/verification-status", authenticate, async (c) => {
       hasPendingEmailChange,
     });
   } catch (error) {
-    logger.error("Verification status error:", error);
+    logger.error({ error }, "Verification status error");
     return c.json({ error: "Failed to get verification status" }, 500);
   }
 });

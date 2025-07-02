@@ -262,7 +262,7 @@ queuesController.post(
       };
       return c.json(response);
     } catch (error) {
-      logger.error("Error creating queue:", error);
+      logger.error({ error }, "Error creating queue");
       return createErrorResponse(c, error, 500, "Failed to create queue");
     }
   }

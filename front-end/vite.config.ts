@@ -38,8 +38,6 @@ export default defineConfig(({ mode }) => ({
           "vendor-icons": ["lucide-react"],
           // Form and validation
           "vendor-forms": ["react-hook-form", "@hookform/resolvers"],
-          // Payment processing
-          "vendor-payments": ["@stripe/stripe-js"],
           // Date and time utilities
           "vendor-utils": [
             "date-fns",

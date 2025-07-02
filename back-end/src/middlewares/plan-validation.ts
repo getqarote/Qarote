@@ -116,7 +116,7 @@ export async function getMonthlyMessageCount(
 
     return messageCount?.count || 0;
   } catch (error) {
-    logger.error("Error fetching monthly message count:", error);
+    logger.error({ error }, "Error fetching monthly message count");
     return 0;
   }
 }
@@ -153,7 +153,7 @@ export async function incrementMonthlyMessageCount(
 
     return messageCount.count;
   } catch (error) {
-    logger.error("Error incrementing monthly message count:", error);
+    logger.error({ error }, "Error incrementing monthly message count");
     throw new Error("Failed to increment message count");
   }
 }

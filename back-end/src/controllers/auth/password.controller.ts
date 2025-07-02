@@ -58,7 +58,7 @@ app.post(
         ...(isDevelopment() ? { token: resetToken } : {}),
       });
     } catch (error) {
-      logger.error("Password reset request error:", error);
+      logger.error({ error }, "Password reset request error");
       return c.json({ error: "Failed to process password reset request" }, 500);
     }
   }
@@ -76,7 +76,7 @@ app.post(
       // For this example, we'll just return a success message
       return c.json({ message: "Password has been reset successfully" });
     } catch (error) {
-      logger.error("Password reset error:", error);
+      logger.error({ error }, "Password reset error");
       return c.json({ error: "Failed to reset password" }, 500);
     }
   }
@@ -126,7 +126,7 @@ app.post(
 
       return c.json({ message: "Password updated successfully" });
     } catch (error) {
-      logger.error("Password change error:", error);
+      logger.error({ error }, "Password change error");
       return c.json({ error: "Failed to change password" }, 500);
     }
   }

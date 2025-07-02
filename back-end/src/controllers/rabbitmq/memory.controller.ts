@@ -28,7 +28,10 @@ memoryController.get("/servers/:id/nodes/:nodeName/memory", async (c) => {
   const user = c.get("user");
 
   try {
-    logger.info(`Fetching memory details for node ${nodeName} on server ${id}`);
+    logger.info(
+      { nodeName, serverId: id },
+      "Fetching memory details for node on server"
+    );
 
     // Verify the server belongs to the user's workspace
     const server = await prisma.rabbitMQServer.findFirst({
@@ -267,8 +270,8 @@ memoryController.get("/servers/:id/nodes/:nodeName/memory", async (c) => {
     });
   } catch (error) {
     logger.error(
-      `Error fetching memory details for node ${nodeName} on server ${id}:`,
-      error
+      { error, nodeName, serverId: id },
+      "Error fetching memory details for node on server"
     );
     return createErrorResponse(
       c,

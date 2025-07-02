@@ -191,7 +191,7 @@ export class RabbitMQQueueClient extends RabbitMQBaseClient {
         body: JSON.stringify(queueData),
       });
 
-      logger.info("result from createQueue:", result);
+      logger.info({ result }, "result from createQueue");
 
       return { created: true };
     } catch (error) {

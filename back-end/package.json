@@ -18,7 +18,17 @@
     "seed:users": "tsx scripts/seed-test-data.ts --type=users",
     "seed:limits": "tsx scripts/seed-test-data.ts --type=limits",
     "seed:email": "tsx scripts/seed-test-data.ts --type=email",
-    "seed:clean": "tsx scripts/seed-test-data.ts --type=clean"
+    "seed:clean": "tsx scripts/seed-test-data.ts --type=clean",
+    "setup-stripe": "tsx scripts/setup-stripe.ts",
+    "stripe:create": "tsx scripts/setup-stripe.ts create",
+    "stripe:list": "tsx scripts/setup-stripe.ts list",
+    "stripe:clean": "tsx scripts/setup-stripe.ts clean",
+    "stripe:verify": "tsx scripts/setup-stripe.ts verify",
+    "stripe:webhook": "tsx scripts/setup-stripe.ts webhook",
+    "stripe:mode": "tsx scripts/setup-stripe.ts mode",
+    "stripe:test": "tsx scripts/setup-stripe.ts test",
+    "stripe:login": "stripe login",
+    "stripe:login-live": "stripe login --live"
   },
   "dependencies": {
     "@hono/node-server": "^1.14.4",

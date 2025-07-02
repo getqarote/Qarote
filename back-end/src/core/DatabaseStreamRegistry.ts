@@ -227,7 +227,7 @@ class DatabaseStreamRegistry {
         duration: now - stream.startTime.getTime(),
       }));
     } catch (error) {
-      logger.error("Error fetching active streams:", error);
+      logger.error({ error }, "Error fetching active streams");
       return [];
     }
   }
@@ -266,7 +266,7 @@ class DatabaseStreamRegistry {
         where: { status: "ACTIVE" },
       });
     } catch (error) {
-      logger.error("Error counting active streams:", error);
+      logger.error({ error }, "Error counting active streams");
       return 0;
     }
   }
@@ -286,7 +286,7 @@ class DatabaseStreamRegistry {
         {} as Record<string, StreamInfo[]>
       );
     } catch (error) {
-      logger.error("Error grouping streams by server:", error);
+      logger.error({ error }, "Error grouping streams by server");
       return {};
     }
   }
@@ -310,7 +310,7 @@ class DatabaseStreamRegistry {
         );
       }
     } catch (error) {
-      logger.error("Error updating heartbeat:", error);
+      logger.error({ error }, "Error updating heartbeat");
     }
   }
 
@@ -353,7 +353,7 @@ class DatabaseStreamRegistry {
         logger.info(`Cleaned up ${cleanedUp} stale streams`);
       }
     } catch (error) {
-      logger.error("Error cleaning up stale streams:", error);
+      logger.error({ error }, "Error cleaning up stale streams");
     }
   }
 
@@ -418,7 +418,7 @@ class DatabaseStreamRegistry {
         myInstanceId: this.serverInstanceId,
       };
     } catch (error) {
-      logger.error("Error getting health stats:", error);
+      logger.error({ error }, "Error getting health stats");
       return null;
     }
   }
@@ -441,7 +441,7 @@ class DatabaseStreamRegistry {
         `DatabaseStreamRegistry cleanup complete: stopped ${stoppedCount} streams`
       );
     } catch (error) {
-      logger.error("Error during DatabaseStreamRegistry cleanup:", error);
+      logger.error({ error }, "Error during DatabaseStreamRegistry cleanup");
     }
   }
 }

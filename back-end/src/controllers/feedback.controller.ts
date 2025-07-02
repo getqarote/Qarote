@@ -54,7 +54,7 @@ feedbackController.post(
         feedback,
       });
     } catch (error) {
-      logger.error("Error submitting feedback:", error);
+      logger.error({ error }, "Error submitting feedback");
       return c.json({ error: "Failed to submit feedback" }, 500);
     }
   }
@@ -135,7 +135,7 @@ feedbackController.get(
         },
       });
     } catch (error) {
-      logger.error("Error fetching feedback:", error);
+      logger.error({ error }, "Error fetching feedback");
       return c.json({ error: "Failed to fetch feedback" }, 500);
     }
   }
@@ -191,7 +191,7 @@ feedbackController.get(
 
       return c.json({ feedback });
     } catch (error) {
-      logger.error("Error fetching feedback:", error);
+      logger.error({ error }, "Error fetching feedback");
       return c.json({ error: "Failed to fetch feedback" }, 500);
     }
   }
@@ -263,7 +263,7 @@ feedbackController.put(
         feedback,
       });
     } catch (error) {
-      logger.error("Error updating feedback:", error);
+      logger.error({ error }, "Error updating feedback");
       return c.json({ error: "Failed to update feedback" }, 500);
     }
   }
@@ -329,7 +329,7 @@ feedbackController.get(
 
       return c.json({ stats });
     } catch (error) {
-      logger.error("Error fetching feedback stats:", error);
+      logger.error({ error }, "Error fetching feedback stats");
       return c.json({ error: "Failed to fetch feedback stats" }, 500);
     }
   }
@@ -358,7 +358,7 @@ feedbackController.delete(
 
       return c.json({ message: "Feedback deleted successfully" });
     } catch (error) {
-      logger.error("Error deleting feedback:", error);
+      logger.error({ error }, "Error deleting feedback");
       return c.json({ error: "Failed to delete feedback" }, 500);
     }
   }

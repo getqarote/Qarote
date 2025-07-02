@@ -41,7 +41,7 @@ workspaceController.get(
 
       return c.json({ plans: allPlans });
     } catch (error) {
-      logger.error("Error fetching plan information:", error);
+      logger.error({ error }, "Error fetching plan information");
       return c.json({ error: "Failed to fetch plan information" }, 500);
     }
   }
@@ -177,7 +177,7 @@ workspaceController.get("/:id/plan", checkWorkspaceAccess, async (c) => {
 
     return c.json(response);
   } catch (error) {
-    logger.error("Error fetching current plan:", error);
+    logger.error({ error }, "Error fetching current plan");
     return c.json({ error: "Failed to fetch plan information" }, 500);
   }
 });
@@ -202,7 +202,7 @@ workspaceController.get("/", authorize([UserRole.ADMIN]), async (c) => {
 
     return c.json({ workspaces });
   } catch (error) {
-    logger.error("Error fetching workspaces:", error);
+    logger.error({ error }, "Error fetching workspaces");
     return c.json({ error: "Failed to fetch workspaces" }, 500);
   }
 });
@@ -230,7 +230,10 @@ workspaceController.get("/current", async (c) => {
 
     return c.json({ workspace });
   } catch (error) {
-    logger.error(`Error fetching workspace ${user.workspaceId}:`, error);
+    logger.error(
+      { error, workspaceId: user.workspaceId },
+      "Error fetching workspace"
+    );
     return c.json({ error: "Failed to fetch workspace" }, 500);
   }
 });
@@ -250,8 +253,8 @@ workspaceController.get("/current/monthly-message-count", async (c) => {
     });
   } catch (error) {
     logger.error(
-      `Error fetching monthly message count for workspace ${user.workspaceId}:`,
-      error
+      { error, workspaceId: user.workspaceId },
+      "Error fetching monthly message count for workspace"
     );
     return c.json({ error: "Failed to fetch monthly message count" }, 500);
   }
@@ -289,7 +292,7 @@ workspaceController.get("/:id", async (c) => {
 
     return c.json({ workspace });
   } catch (error) {
-    logger.error(`Error fetching workspace ${id}:`, error);
+    logger.error({ error, id }, "Error fetching workspace");
     return c.json({ error: "Failed to fetch workspace" }, 500);
   }
 });
@@ -309,7 +312,7 @@ workspaceController.post(
 
       return c.json({ workspace }, 201);
     } catch (error) {
-      logger.error("Error creating workspace:", error);
+      logger.error({ error }, "Error creating workspace");
       return c.json({ error: "Failed to create workspace" }, 500);
     }
   }
@@ -334,7 +337,7 @@ workspaceController.put(
 
       return c.json({ workspace });
     } catch (error) {
-      logger.error(`Error updating workspace ${id}:`, error);
+      logger.error({ error, id }, "Error updating workspace");
       return c.json({ error: "Failed to update workspace" }, 500);
     }
   }
@@ -356,7 +359,7 @@ workspaceController.delete(
 
       return c.json({ message: "Workspace deleted successfully" });
     } catch (error) {
-      logger.error(`Error deleting workspace ${id}:`, error);
+      logger.error({ error, id }, "Error deleting workspace");
       return c.json({ error: "Failed to delete workspace" }, 500);
     }
   }
@@ -430,7 +433,7 @@ workspaceController.get("/:id/stats", checkWorkspaceAccess, async (c) => {
 
     return c.json({ stats });
   } catch (error) {
-    logger.error(`Error fetching stats for workspace ${id}:`, error);
+    logger.error({ error, id }, "Error fetching stats for workspace");
     return c.json({ error: "Failed to fetch workspace statistics" }, 500);
   }
 });
@@ -461,8 +464,8 @@ workspaceController.get("/:id/privacy", checkWorkspaceAccess, async (c) => {
     return c.json({ privacy: workspace });
   } catch (error) {
     logger.error(
-      `Error fetching privacy settings for workspace ${c.req.param("id")}:`,
-      error
+      { error, id: c.req.param("id") },
+      "Error fetching privacy settings for workspace"
     );
     return c.json({ error: "Failed to fetch privacy settings" }, 500);
   }
@@ -526,8 +529,8 @@ workspaceController.put(
       return c.json({ privacy: updatedWorkspace });
     } catch (error) {
       logger.error(
-        `Error updating privacy settings for workspace ${c.req.param("id")}:`,
-        error
+        { error, id: c.req.param("id") },
+        "Error updating privacy settings for workspace"
       );
       return c.json({ error: "Failed to update privacy settings" }, 500);
     }
@@ -633,8 +636,8 @@ workspaceController.get(
       return c.json(exportData);
     } catch (error) {
       logger.error(
-        `Error exporting data for workspace ${c.req.param("id")}:`,
-        error
+        { error, id: c.req.param("id") },
+        "Error exporting data for workspace"
       );
       return c.json({ error: "Failed to export workspace data" }, 500);
     }
@@ -709,8 +712,8 @@ workspaceController.delete(
       });
     } catch (error) {
       logger.error(
-        `Error deleting data for workspace ${c.req.param("id")}:`,
-        error
+        { error, id: c.req.param("id") },
+        "Error deleting data for workspace"
       );
       return c.json({ error: "Failed to delete workspace data" }, 500);
     }

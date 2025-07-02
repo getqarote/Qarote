@@ -51,7 +51,7 @@ userController.get("/", authorize([UserRole.ADMIN]), async (c) => {
 
     return c.json({ users });
   } catch (error) {
-    logger.error("Error fetching users:", error);
+    logger.error({ error }, "Error fetching users");
     return c.json({ error: "Failed to fetch users" }, 500);
   }
 });
@@ -240,7 +240,10 @@ userController.put(
             return c.json({ error: "Failed to send verification email" }, 500);
           }
         } catch (emailError) {
-          logger.error("Failed to send email change verification:", emailError);
+          logger.error(
+            { error: emailError },
+            "Failed to send email change verification"
+          );
           return c.json({ error: "Failed to send verification email" }, 500);
         }
 
@@ -415,7 +418,7 @@ userController.post(
         201
       );
     } catch (error) {
-      logger.error("Error inviting user:", error);
+      logger.error({ error }, "Error inviting user");
       return c.json({ error: "Failed to invite user" }, 500);
     }
   }

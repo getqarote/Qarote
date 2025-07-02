@@ -89,7 +89,7 @@ serverController.get("/", async (c) => {
 
     return c.json({ servers: transformedServers });
   } catch (error) {
-    logger.error("Error fetching servers:", error);
+    logger.error({ error }, "Error fetching servers");
     return c.json({ error: "Failed to fetch servers" }, 500);
   }
 });
@@ -157,7 +157,7 @@ serverController.get("/:id", async (c) => {
 
     return c.json({ server: transformedServer });
   } catch (error) {
-    logger.error(`Error fetching server ${id}:`, error);
+    logger.error({ error, id }, "Error fetching server");
     return c.json({ error: "Failed to fetch server" }, 500);
   }
 });
@@ -180,7 +180,7 @@ serverController.post(
 
       validateServerCreation(plan, resourceCounts.servers);
 
-      logger.info("Creating server with data:", data);
+      logger.info({ data }, "Creating server with data");
 
       // Test connection before creating the server (use plain text for testing)
       const client = new RabbitMQClient({
@@ -267,7 +267,7 @@ serverController.post(
         201
       );
     } catch (error) {
-      logger.error("Error creating server:", error);
+      logger.error({ error }, "Error creating server");
       return c.json(
         {
           error: "Failed to create server",
@@ -339,7 +339,7 @@ serverController.put(
         },
       });
     } catch (error) {
-      logger.error(`Error updating server ${id}:`, error);
+      logger.error({ error, id }, "Error updating server");
       return c.json(
         {
           error: "Failed to update server",
@@ -375,7 +375,7 @@ serverController.delete("/:id", authorize([UserRole.ADMIN]), async (c) => {
 
     return c.json({ message: "Server deleted successfully" });
   } catch (error) {
-    logger.error(`Error deleting server ${id}:`, error);
+    logger.error({ error, id }, "Error deleting server");
     return c.json({ error: "Failed to delete server" }, 500);
   }
 });
@@ -387,11 +387,11 @@ serverController.post(
   zValidator("json", RabbitMQCredentialsSchema),
   async (c) => {
     const credentials = c.req.valid("json");
-    logger.info("Testing connection with credentials:", credentials);
+    logger.info({ credentials }, "Testing connection with credentials");
 
     try {
       const client = new RabbitMQClient(credentials);
-      logger.info("Created RabbitMQ client:", client);
+      logger.info({ client }, "Created RabbitMQ client");
       const overview = await client.getOverview();
 
       return c.json({
@@ -401,7 +401,7 @@ serverController.post(
         cluster_name: overview.cluster_name,
       });
     } catch (error) {
-      logger.error("Connection test failed:", error);
+      logger.error({ error }, "Connection test failed");
       return c.json(
         {
           success: false,
@@ -445,7 +445,7 @@ serverController.put(
 
       return c.json({ message: "Warning status updated successfully" });
     } catch (error) {
-      logger.error(`Error updating warning status for server ${id}:`, error);
+      logger.error({ error, id }, "Error updating warning status for server");
       return c.json({ error: "Failed to update warning status" }, 500);
     }
   }

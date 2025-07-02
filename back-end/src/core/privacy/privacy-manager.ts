@@ -33,7 +33,7 @@ export class PrivacyManager {
 
       return isTemporaryAllowed || isHistoricalAllowed;
     } catch (error) {
-      logger.error("Error checking data storage permission:", error);
+      logger.error({ error }, "Error checking data storage permission");
       return false; // Fail-safe: no storage
     }
   }
@@ -90,7 +90,7 @@ export class PrivacyManager {
         consentDate: workspace.consentDate || undefined,
       };
     } catch (error) {
-      logger.error("Error getting privacy settings:", error);
+      logger.error({ error }, "Error getting privacy settings");
       // Return strictest defaults on error
       return {
         userId,
@@ -140,7 +140,7 @@ export class PrivacyManager {
 
       return true;
     } catch (error) {
-      logger.error("Error updating consent:", error);
+      logger.error({ error }, "Error updating consent");
       return false;
     }
   }
@@ -176,7 +176,7 @@ export class PrivacyManager {
 
       return true;
     } catch (error) {
-      logger.error("Error storing data with privacy:", error);
+      logger.error({ error }, "Error storing data with privacy");
       return false;
     }
   }
@@ -210,7 +210,7 @@ export class PrivacyManager {
       );
       return true;
     } catch (error) {
-      logger.error("Error deleting user data:", error);
+      logger.error({ error }, "Error deleting user data");
       return false;
     }
   }
@@ -237,7 +237,7 @@ export class PrivacyManager {
         note: "This export includes all data we store about you. Most operational data is accessed in real-time and not stored.",
       };
     } catch (error) {
-      logger.error("Error exporting user data:", error);
+      logger.error({ error }, "Error exporting user data");
       throw new Error("Failed to export user data");
     }
   }
@@ -259,7 +259,7 @@ export class PrivacyManager {
         timestamp: new Date(),
       });
     } catch (error: unknown) {
-      logger.error("Error logging privacy action:", error);
+      logger.error({ error }, "Error logging privacy action");
     }
   }
 }

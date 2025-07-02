@@ -60,9 +60,7 @@ messagesController.post(
         getMonthlyMessageCount(server.workspaceId),
       ]);
 
-      logger.info(
-        `Message sending validation: Plan=${plan}, Monthly messages=${monthlyMessageCount}`
-      );
+      logger.info({ plan, monthlyMessageCount }, "Message sending validation");
       validateMessageSending(plan, monthlyMessageCount);
 
       // Send the message via RabbitMQ API
@@ -179,7 +177,7 @@ messagesController.post(
         messageLength: message.length,
       });
     } catch (error) {
-      logger.error("Error sending message:", error);
+      logger.error({ error }, "Error sending message");
       return createErrorResponse(c, error, 500, "Failed to send message");
     }
   }
@@ -224,7 +222,8 @@ messagesController.get(
         const streamId = `${user.id}:${serverId}:${queueName}:${Date.now()}`;
 
         logger.info(
-          `SSE stream started for queue: ${queueName}, server: ${serverId}, user: ${user.id}, streamId: ${streamId}`
+          { queueName, serverId, userId: user.id, streamId },
+          "SSE stream started for queue"
         );
 
         // Enhanced cleanup function
@@ -244,7 +243,8 @@ messagesController.get(
           }
 
           logger.info(
-            `SSE stream ended for queue: ${queueName}, streamId: ${streamId}, duration: ${duration}ms, messages sent: ${messageIndex}`
+            { queueName, streamId, duration, messagesSent: messageIndex },
+            "SSE stream ended for queue"
           );
         };
 
@@ -260,7 +260,8 @@ messagesController.get(
         // Handle client disconnect/abort
         stream.onAbort = async () => {
           logger.info(
-            `SSE stream aborted by client for queue: ${queueName}, streamId: ${streamId}`
+            { queueName, streamId },
+            "SSE stream aborted by client for queue"
           );
           await streamRegistry.stop(streamId);
         };
@@ -269,7 +270,8 @@ messagesController.get(
         const maxDuration = 30 * 60 * 1000; // 30 minutes
         const maxDurationTimeout = setTimeout(async () => {
           logger.info(
-            `SSE stream max duration reached for queue: ${queueName}, streamId: ${streamId}`
+            { queueName, streamId },
+            "SSE stream max duration reached for queue"
           );
           await streamRegistry.stop(streamId);
         }, maxDuration);
@@ -297,7 +299,7 @@ messagesController.get(
         };
 
         const streamMessages = async () => {
-          logger.info(`isActive: ${isActive}`);
+          logger.info({ isActive }, "Stream active status");
           if (!isActive) return;
 
           try {
@@ -315,9 +317,9 @@ messagesController.get(
             const queue = await client.getQueue(queueName);
             const currentMessageCount = queue.messages || 0;
 
-            logger.info(`currentMessageCount: ${currentMessageCount}`);
-            logger.info(`lastMessageCount: ${lastMessageCount}`);
-            logger.info(`messageIndex: ${messageIndex}`);
+            logger.info({ currentMessageCount }, "Current message count");
+            logger.info({ lastMessageCount }, "Last message count");
+            logger.info({ messageIndex }, "Message index");
 
             // If there are new messages or this is the first check
             if (
@@ -332,7 +334,8 @@ messagesController.get(
               );
 
               logger.info(
-                `Fetched ${messages.length} messages from queue: ${queueName}`
+                { messageCount: messages.length, queueName },
+                "Fetched messages from queue"
               );
 
               // Send each message as SSE event
@@ -393,7 +396,7 @@ messagesController.get(
               event: "heartbeat",
             });
           } catch (error: unknown) {
-            logger.error("Error in SSE stream:", error);
+            logger.error({ error }, "Error in SSE stream");
             // If we can't write to the stream, the client has likely disconnected
             const errorObj = error as Error;
             if (
@@ -403,7 +406,8 @@ messagesController.get(
               errorObj.message?.includes("disconnected")
             ) {
               logger.info(
-                `Client disconnected during streaming for queue: ${queueName}`
+                { queueName },
+                "Client disconnected during streaming for queue"
               );
               cleanup();
               return;
@@ -422,7 +426,8 @@ messagesController.get(
                 });
               } catch (writeError) {
                 logger.info(
-                  `Failed to write error to stream, client likely disconnected: ${writeError}`
+                  { error: writeError },
+                  "Failed to write error to stream, client likely disconnected"
                 );
                 cleanup();
               }
@@ -450,7 +455,7 @@ messagesController.get(
         };
       });
     } catch (error) {
-      logger.error(`Error browsing messages for queue ${queueName}:`, error);
+      logger.error({ error, queueName }, "Error browsing messages for queue");
       return createErrorResponse(c, error, 500, "Failed to browse messages");
     }
   }
@@ -489,7 +494,8 @@ messagesController.post(
       const totalActiveStreams = await streamRegistry.getActiveStreamCount();
 
       logger.info(
-        `Stop stream requested for user: ${user.id}, server: ${serverId}, queue: ${queueName} - Stopped ${stoppedCount} streams`
+        { userId: user.id, serverId, queueName, stoppedCount },
+        "Stop stream requested"
       );
 
       return c.json({
@@ -499,7 +505,7 @@ messagesController.post(
         activeStreams: totalActiveStreams,
       });
     } catch (error) {
-      logger.error("Error processing stream stop:", error);
+      logger.error({ error }, "Error processing stream stop");
       return createErrorResponse(
         c,
         error,
