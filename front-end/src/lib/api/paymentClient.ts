@@ -46,6 +46,66 @@ export interface PaymentHistoryResponse {
   };
 }
 
+export interface BillingOverviewResponse {
+  workspace: {
+    id: string;
+    name: string;
+    plan: WorkspacePlan;
+  };
+  subscription: {
+    id: string;
+    status: string;
+    stripeCustomerId: string;
+    stripeSubscriptionId: string;
+    createdAt: string;
+    updatedAt: string;
+  } | null;
+  stripeSubscription: {
+    id: string;
+    status: string;
+    current_period_start: number;
+    current_period_end: number;
+    items: {
+      data: Array<{
+        price: {
+          unit_amount: number;
+          recurring: {
+            interval: string;
+          };
+        };
+      }>;
+    };
+  } | null;
+  upcomingInvoice: {
+    amount_due: number;
+    period_end: number;
+    lines: {
+      data: Array<{
+        description: string;
+      }>;
+    };
+  } | null;
+  paymentMethod: {
+    card: {
+      last4: string;
+      brand: string;
+    };
+  } | null;
+  currentUsage: {
+    servers: number;
+    users: number;
+    queues: number;
+    messagesThisMonth: number;
+  };
+  recentPayments: Array<{
+    id: string;
+    amount: number;
+    status: string;
+    description: string;
+    createdAt: string;
+  }>;
+}
+
 export class PaymentApiClient extends BaseApiClient {
   constructor(baseUrl?: string) {
     super(baseUrl);
@@ -89,5 +149,21 @@ export class PaymentApiClient extends BaseApiClient {
     return this.request<PaymentHistoryResponse>(
       `/payments/payments?limit=${limit}&offset=${offset}`
     );
+  }
+
+  /**
+   * Get comprehensive billing overview including usage, subscription, and payment details
+   */
+  async getBillingOverview(): Promise<BillingOverviewResponse> {
+    return this.request<BillingOverviewResponse>("/payments/billing/overview");
+  }
+
+  /**
+   * Create a billing portal session for subscription management
+   */
+  async createBillingPortalSession(): Promise<{ url: string }> {
+    return this.request<{ url: string }>("/payments/billing/portal", {
+      method: "POST",
+    });
   }
 }

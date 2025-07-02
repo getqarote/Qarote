@@ -28,6 +28,7 @@ const Logs = lazy(() => import("./pages/Logs"));
 const Alerts = lazy(() => import("./pages/Alerts"));
 const Profile = lazy(() => import("./pages/Profile"));
 const Plans = lazy(() => import("./pages/Plans"));
+const Billing = lazy(() => import("./pages/Billing"));
 const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
 const PaymentCancelled = lazy(() => import("./pages/PaymentCancelled"));
 const PrivacySettings = lazy(() => import("./pages/PrivacySettings"));
@@ -206,6 +207,16 @@ const AppCore = () => (
                       <ProtectedRoute>
                         <Layout>
                           <Plans />
+                        </Layout>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/payments/billing"
+                    element={
+                      <ProtectedRoute>
+                        <Layout>
+                          <Billing />
                         </Layout>
                       </ProtectedRoute>
                     }

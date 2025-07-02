@@ -417,6 +417,14 @@ class ApiClient {
   async getPaymentHistory(limit?: number, offset?: number) {
     return this.paymentClient.getPaymentHistory(limit, offset);
   }
+
+  async getBillingOverview() {
+    return this.paymentClient.getBillingOverview();
+  }
+
+  async createBillingPortalSession() {
+    return this.paymentClient.createBillingPortalSession();
+  }
 }
 
 export const apiClient = new ApiClient();

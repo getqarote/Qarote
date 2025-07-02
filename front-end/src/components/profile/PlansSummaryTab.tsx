@@ -255,9 +255,11 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
                   Manage your subscription
                 </p>
               </div>
-              <Button variant="ghost" size="sm" className="text-blue-600">
-                Manage
-              </Button>
+              <Link to="/payments/billing">
+                <Button variant="ghost" size="sm" className="text-blue-600">
+                  Manage
+                </Button>
+              </Link>
             </div>
           </CardContent>
         </Card>

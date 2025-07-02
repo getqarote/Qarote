@@ -1,239 +1,170 @@
-# Stripe Payment Integration Implementation
-
-This document describes the complete implementation of the Stripe payment integration for the Rabbit Scout application.
+# Stripe Payment Integration - Implementation Summary
 
 ## Overview
 
-We have successfully implemented a complete Stripe payment flow that allows users to upgrade their workspace plan from Free to paid tiers (Startup, Growth, Enterprise). The implementation includes:
+Successfully integrated Stripe payment processing into the Rabbit Scout SaaS application, enabling users to subscribe to monthly/yearly plans, manage their subscription, and view payment history.
 
-1. **Frontend Payment Modal**: Interactive plan upgrade modal with Stripe checkout integration
-2. **Backend Payment API**: Secure payment processing with Stripe
-3. **Success/Cancellation Pages**: User-friendly feedback after payment flow
-4. **Security**: Admin-only authorization and data protection
+## Backend Implementation
 
-## Architecture
+### Database Schema (Prisma)
 
-### Frontend Components
+- **Subscription Model**: Tracks user subscriptions with Stripe integration
+- **Payment Model**: Records payment history and transaction details
+- **StripeWebhookEvent Model**: Logs webhook events for audit and debugging
+- **Workspace Model**: Extended with Stripe customer ID and subscription fields
 
-#### 1. PlanUpgradeModal (`front-end/src/components/plans/PlanUpgradeModal.tsx`)
+### Services
 
-- **Purpose**: Displays available plans and initiates Stripe checkout
-- **Features**:
-  - Fetches plan data from backend API
-  - Shows loading states during checkout creation
-  - Error handling with user-friendly messages
-  - Disabled state while processing to prevent double-clicks
-  - Responsive design with plan comparison
+1. **Stripe Service** (`/back-end/src/services/stripe.service.ts`)
+   - Stripe API integration with proper TypeScript types
+   - Checkout session creation for plan upgrades
+   - Customer portal access for subscription management
+   - Subscription and payment history retrieval
+   - Webhook event construction and validation
 
-#### 2. PaymentSuccess (`front-end/src/pages/PaymentSuccess.tsx`)
+2. **Email Service** (`/back-end/src/services/email.service.ts`)
+   - Resend integration for transactional emails
+   - React Email template for upgrade confirmations
+   - Error handling and fallback mechanisms
 
-- **Purpose**: Success page shown after successful payment
-- **Features**:
-  - Displays success confirmation
-  - Shows Stripe session ID for reference
-  - Automatically refreshes workspace data to reflect new plan
-  - Navigation options to dashboard or billing
+### Controllers
 
-#### 3. PaymentCancelled (`front-end/src/pages/PaymentCancelled.tsx`)
+- **Payment Controller** (`/back-end/src/controllers/payment.controller.ts`)
+  - `/api/payments/checkout` - Create Stripe checkout sessions
+  - `/api/payments/portal` - Access customer portal
+  - `/api/payments/subscription` - Get current subscription details
+  - `/api/payments/history` - Retrieve payment history with pagination
+  - `/api/payments/webhook` - Handle Stripe webhook events
 
-- **Purpose**: Cancellation page shown when user cancels payment
-- **Features**:
-  - Clear messaging about cancelled payment
-  - Options to retry payment or return to dashboard
+### Middleware
 
-### Backend API
+- **Auth Middleware** (`/back-end/src/middlewares/auth.ts`)
+  - JWT token validation
+  - User and workspace context injection
+  - Error handling for authentication failures
 
-#### 1. Payment Controller (`back-end/src/controllers/payment.controller.ts`)
+## Frontend Implementation
 
-- **Endpoints**:
-  - `POST /payment/checkout` - Create Stripe checkout session
-  - `POST /payment/portal` - Create customer portal session
-  - `GET /payment/subscription` - Get current subscription details
-  - `GET /payment/payments` - Get payment history
-  - `POST /payment/cancel` - Cancel subscription
-  - `POST /payment/reactivate` - Reactivate cancelled subscription
+### Components
 
-#### 2. Payment API Client (`front-end/src/lib/api/paymentClient.ts`)
+1. **BillingTab** (`/front-end/src/components/profile/BillingTab.tsx`)
+   - Current subscription display
+   - Payment history with pagination
+   - Customer portal access
+   - Responsive design with loading states
 
-- **Purpose**: Frontend client for payment API communication
-- **Methods**:
-  - `createCheckoutSession()` - Start upgrade flow
-  - `createPortalSession()` - Access billing portal
-  - `getSubscription()` - Get subscription status
-  - `getPaymentHistory()` - View payment history
-  - `cancelSubscription()` - Cancel subscription
-  - `reactivateSubscription()` - Reactivate subscription
+### Hooks
 
-## Flow Implementation
+1. **usePlanUpgrade** (`/front-end/src/hooks/usePlanUpgrade.ts`)
+   - Stripe checkout integration
+   - Customer portal redirection
+   - Plan upgrade/downgrade logic
+   - Error handling and loading states
 
-### 1. Upgrade Flow
+### Dependencies
 
-```
-User clicks "Upgrade" → Modal opens → User selects plan →
-Frontend calls createCheckoutSession API → Backend creates Stripe session →
-User redirected to Stripe checkout → Payment processed →
-User redirected to success/cancel page → Workspace data refreshed
-```
-
-### 2. URL Routes
-
-- **Success**: `/payment/success?session_id={CHECKOUT_SESSION_ID}`
-- **Cancel**: `/payment/cancelled`
-
-### 3. Security Features
-
-- **Authentication**: All payment endpoints require user authentication
-- **Authorization**: Only admin users can modify payment settings
-- **Data Protection**: Sensitive payment data is handled by Stripe
-- **Workspace Isolation**: Users can only access their workspace data
+- `@stripe/stripe-js` for frontend Stripe integration
+- Proper TypeScript definitions and error handling
 
 ## Configuration
 
-### Environment Variables Required
+### Environment Variables
+
+#### Backend (`.env`)
 
 ```bash
 # Stripe Configuration
-STRIPE_SECRET_KEY=sk_test_...
-STRIPE_WEBHOOK_SECRET=whsec_...
+STRIPE_SECRET_KEY="sk_test_..."
+STRIPE_WEBHOOK_SECRET="whsec_..."
 
-# Frontend URL for redirects
-FRONTEND_URL=http://localhost:8080
+# Stripe Price IDs (create in Stripe Dashboard)
+STRIPE_FREELANCE_MONTHLY_PRICE_ID="price_freelance_monthly"
+STRIPE_FREELANCE_YEARLY_PRICE_ID="price_freelance_yearly"
+STRIPE_STARTUP_MONTHLY_PRICE_ID="price_startup_monthly"
+STRIPE_STARTUP_YEARLY_PRICE_ID="price_startup_yearly"
+STRIPE_BUSINESS_MONTHLY_PRICE_ID="price_business_monthly"
+STRIPE_BUSINESS_YEARLY_PRICE_ID="price_business_yearly"
+
+# Email Configuration
+RESEND_API_KEY="re_..."
 ```
 
-### Stripe Configuration
-
-- **Checkout Mode**: Subscription
-- **Payment Methods**: Card
-- **Trial Period**: 14 days (configurable)
-- **Promotion Codes**: Disabled by default
-
-## Integration Points
-
-### 1. WorkspaceContext Integration
-
-- The payment success page automatically refreshes workspace data
-- Plan changes are immediately reflected across the application
-- Query cache is invalidated to ensure fresh data
-
-### 2. Plan Validation Integration
-
-- Backend validates plan limits and features
-- Frontend shows appropriate upgrade prompts based on current plan
-- Real-time plan feature checks throughout the application
-
-### 3. Security Middleware Integration
-
-- All payment endpoints use the security middleware
-- Admin-only operations are properly protected
-- Audit logging for payment-related actions
-
-## Testing the Implementation
-
-### Manual Testing Steps
-
-1. **Start Development Servers**:
-
-   ```bash
-   npm run dev --prefix front-end   # Port 8080
-   npm run dev --prefix back-end    # Port 3000
-   ```
-
-2. **Test Upgrade Flow**:
-   - Navigate to application in browser
-   - Go to Queues page
-   - Try to add a queue (should show upgrade modal for Free plan)
-   - Click "Upgrade to Startup" (or other plan)
-   - Should redirect to Stripe checkout (test mode)
-
-3. **Test Success Flow**:
-   - Complete payment in Stripe test mode
-   - Should redirect to `/payment/success`
-   - Workspace data should refresh automatically
-
-4. **Test Cancellation Flow**:
-   - Start upgrade flow
-   - Cancel on Stripe checkout page
-   - Should redirect to `/payment/cancelled`
-
-### API Testing
-
-Use the following curl commands to test the payment API:
+#### Frontend (`.env`)
 
 ```bash
-# Create checkout session (requires authentication)
-curl -X POST http://localhost:3000/api/payment/checkout \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
-  -d '{"plan": "STARTUP", "billingInterval": "monthly"}'
-
-# Get subscription status
-curl -X GET http://localhost:3000/api/payment/subscription \
-  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+VITE_STRIPE_PUBLISHABLE_KEY="pk_test_..."
 ```
 
-## Error Handling
+## Features Implemented
 
-### Frontend Error Handling
+### ✅ Payment Processing
 
-- **Network Errors**: Displays user-friendly error messages
-- **Validation Errors**: Shows specific field-level errors
-- **Loading States**: Prevents duplicate requests with loading indicators
-- **Timeout Handling**: Graceful handling of slow API responses
+- Stripe Checkout integration for plan subscriptions
+- Support for monthly and yearly billing intervals
+- Secure payment processing with SCA compliance
 
-### Backend Error Handling
+### ✅ Subscription Management
 
-- **Stripe Errors**: Proper error mapping and user-friendly messages
-- **Validation Errors**: Detailed validation error responses
-- **Authentication Errors**: Clear authorization failure messages
-- **Database Errors**: Safe error handling without exposing internals
+- Customer portal access for self-service
+- Plan upgrades and downgrades
+- Subscription cancellation handling
+- Automatic subscription status updates via webhooks
 
-## Security Considerations
+### ✅ Payment History
 
-### Data Protection
+- Paginated payment history display
+- Payment status tracking (paid, failed, pending)
+- Receipt and invoice links
+- Currency formatting and localization
 
-- **PCI Compliance**: All payment data handled by Stripe
-- **No Storage**: No payment information stored in application database
-- **Encryption**: All API communications use HTTPS
-- **Token Security**: JWT tokens for API authentication
+### ✅ Email Notifications
 
-### Access Control
+- Upgrade confirmation emails using React Email templates
+- Resend integration for reliable delivery
+- Professional HTML email formatting
 
-- **Authentication Required**: All payment endpoints require valid JWT
-- **Admin Only**: Sensitive operations restricted to admin users
-- **Workspace Isolation**: Users can only access their workspace data
-- **Rate Limiting**: Protection against abuse and spam
+### ✅ Error Handling
 
-## Future Enhancements
+- Comprehensive error handling throughout the payment flow
+- User-friendly error messages
+- Fallback mechanisms for failed operations
 
-### Potential Improvements
+### ✅ Security
 
-1. **Subscription Management**: Advanced subscription modification features
-2. **Usage Tracking**: Real-time usage metrics and billing alerts
-3. **Multiple Payment Methods**: Support for additional payment methods
-4. **Enterprise Features**: Custom pricing and enterprise-specific features
-5. **Analytics**: Payment and subscription analytics dashboard
-6. **Webhooks**: Advanced webhook handling for subscription events
+- Webhook signature verification
+- Secure environment variable handling
+- JWT-based authentication for all payment endpoints
 
-### Monitoring and Observability
+## Next Steps
 
-1. **Payment Metrics**: Track conversion rates and failed payments
-2. **Error Monitoring**: Sentry integration for payment-related errors
-3. **Audit Logging**: Comprehensive logging of payment actions
-4. **Performance Monitoring**: API response times and reliability
+### Required Setup
 
-## Conclusion
+1. **Stripe Dashboard Configuration**
+   - Create products and prices for each plan
+   - Set up webhook endpoints pointing to `/api/payments/webhook`
+   - Configure webhook events: `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`, `invoice.payment_succeeded`, `invoice.payment_failed`
 
-The Stripe payment integration is now fully implemented and ready for production use. The implementation follows security best practices, provides excellent user experience, and integrates seamlessly with the existing application architecture.
+2. **Environment Variables**
+   - Set all required Stripe and Resend API keys
+   - Update price IDs with actual Stripe price IDs
 
-Key benefits:
+3. **Database Migration**
+   - Run `prisma migrate dev` to apply payment-related schema changes
+   - Ensure PostgreSQL extensions are available if needed
 
-- ✅ Secure payment processing with Stripe
-- ✅ User-friendly upgrade flow
-- ✅ Proper error handling and loading states
-- ✅ Automatic plan synchronization
-- ✅ Admin-only security controls
-- ✅ Comprehensive API coverage
-- ✅ Mobile-responsive design
-- ✅ Production-ready implementation
+### Optional Enhancements
 
-The system is now ready for users to upgrade their plans and access premium features.
+- Usage-based billing and metering
+- Dunning management for failed payments
+- Advanced analytics and reporting
+- Multi-currency support
+- Promotional codes and discounts
+
+## Testing
+
+- ✅ TypeScript compilation successful
+- ✅ All imports and dependencies resolved
+- ✅ No linting errors
+- ✅ Build process completes successfully
+
+The Stripe payment integration is now complete and ready for testing with actual Stripe test keys and webhook configuration.
