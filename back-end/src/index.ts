@@ -32,7 +32,7 @@ const prisma = new PrismaClient();
 
 const app = new Hono();
 
-// app.use(honoLogger());
+app.use(honoLogger());
 app.use("*", corsMiddleware);
 app.use("*", prettyJSON());
 app.use("*", secureHeaders());
@@ -79,7 +79,7 @@ async function startServer() {
       }
     );
   } catch (error) {
-    logger.error({ error }, "Failed to start server");
+    logger.error("Failed to start server:", error);
     await prisma.$disconnect();
     process.exit(1);
   }

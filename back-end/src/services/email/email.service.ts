@@ -97,7 +97,7 @@ export class EmailService {
       });
 
       if (error) {
-        logger.error({ error }, "Failed to send invitation email");
+        logger.error("Failed to send invitation email:", error);
 
         // Capture email error in Sentry
         Sentry.withScope((scope) => {
@@ -142,7 +142,7 @@ export class EmailService {
         messageId: data?.id,
       };
     } catch (error) {
-      logger.error({ error }, "Error sending invitation email");
+      logger.error("Error sending invitation email:", error);
 
       // Capture email error in Sentry
       Sentry.withScope((scope) => {
@@ -205,7 +205,7 @@ export class EmailService {
       });
 
       if (error) {
-        logger.error({ error }, "Failed to send welcome email");
+        logger.error("Failed to send welcome email:", error);
 
         // Capture email error in Sentry
         Sentry.withScope((scope) => {
@@ -251,7 +251,7 @@ export class EmailService {
         messageId: data?.id,
       };
     } catch (error) {
-      logger.error({ error }, "Error sending welcome email");
+      logger.error("Error sending welcome email:", error);
 
       // Capture email error in Sentry
       Sentry.withScope((scope) => {
@@ -326,7 +326,7 @@ export class EmailService {
 
       return result;
     } catch (error) {
-      logger.error({ error }, "Failed to send upgrade confirmation email");
+      logger.error("Failed to send upgrade confirmation email:", error);
 
       // Capture email error in Sentry
       Sentry.withScope((scope) => {
@@ -390,7 +390,7 @@ export class EmailService {
       });
 
       if (error) {
-        logger.error({ error }, "Failed to send verification email");
+        logger.error("Failed to send verification email:", error);
 
         // Capture email error in Sentry
         Sentry.withScope((scope) => {
@@ -434,7 +434,7 @@ export class EmailService {
         messageId: data?.id,
       };
     } catch (error) {
-      logger.error({ error }, "Error sending verification email");
+      logger.error("Error sending verification email:", error);
 
       // Capture email error in Sentry
       Sentry.withScope((scope) => {
@@ -515,7 +515,7 @@ export class EmailService {
       });
 
       if (error) {
-        logger.error({ error }, "Failed to send trial ending email");
+        logger.error("Failed to send trial ending email:", error);
 
         // Capture email error in Sentry
         Sentry.withScope((scope) => {
@@ -561,7 +561,7 @@ export class EmailService {
         messageId: data?.id,
       };
     } catch (error) {
-      logger.error({ error }, "Error sending trial ending email");
+      logger.error("Error sending trial ending email:", error);
 
       // Capture email error in Sentry
       Sentry.withScope((scope) => {
@@ -633,7 +633,7 @@ export class EmailService {
       });
 
       if (error) {
-        logger.error({ error }, "Failed to send payment action required email");
+        logger.error("Failed to send payment action required email:", error);
 
         // Capture email error in Sentry
         Sentry.withScope((scope) => {
@@ -678,7 +678,7 @@ export class EmailService {
         messageId: data?.id,
       };
     } catch (error) {
-      logger.error({ error }, "Error sending payment action required email");
+      logger.error("Error sending payment action required email:", error);
 
       // Capture email error in Sentry
       Sentry.withScope((scope) => {
@@ -780,7 +780,7 @@ export class EmailService {
       });
 
       if (error) {
-        logger.error({ error }, "Failed to send upcoming invoice email");
+        logger.error("Failed to send upcoming invoice email:", error);
 
         // Capture email error in Sentry
         Sentry.withScope((scope) => {
@@ -825,7 +825,7 @@ export class EmailService {
         messageId: data?.id,
       };
     } catch (error) {
-      logger.error({ error }, "Error sending upcoming invoice email");
+      logger.error("Error sending upcoming invoice email:", error);
 
       // Capture email error in Sentry
       Sentry.withScope((scope) => {

@@ -391,13 +391,13 @@ class ApiClient {
   }
 
   // Plan methods
-  async getAllPlans(workspaceId: string) {
-    return this.planClient.getAllPlans(workspaceId);
-  }
+  // async getAllPlans(workspaceId: string) {
+  //   return this.planClient.getAllPlans(workspaceId);
+  // }
 
-  async getCurrentPlan(workspaceId: string) {
-    return this.planClient.getCurrentPlan(workspaceId);
-  }
+  // async getCurrentPlan(workspaceId: string) {
+  //   return this.planClient.getCurrentPlan(workspaceId);
+  // }
 
   // Payment methods
   async createCheckoutSession(

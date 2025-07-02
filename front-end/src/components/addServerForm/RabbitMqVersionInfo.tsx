@@ -30,7 +30,7 @@ export const RabbitMqVersionInfo = ({
 
   const { data: planData, isLoading } = useQuery<CurrentPlanResponse>({
     queryKey: ["current-plan", currentWorkspace?.id],
-    queryFn: () => apiClient.getCurrentPlan(currentWorkspace!.id),
+    queryFn: () => apiClient.getCurrentPlan(),
     enabled: !!currentWorkspace?.id,
   });
 

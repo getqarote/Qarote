@@ -70,7 +70,7 @@ export class StripeService {
     workspaceId,
   }: CreateCustomerParams) {
     try {
-      logger.info({ email, workspaceId }, "Creating Stripe customer");
+      logger.info("Creating Stripe customer", { email, workspaceId });
 
       const customer = await stripe.customers.create({
         email,
@@ -87,24 +87,18 @@ export class StripeService {
         workspaceId,
       });
 
-      logger.info(
-        {
-          customerId: customer.id,
-          workspaceId,
-        },
-        "Stripe customer created successfully"
-      );
+      logger.info("Stripe customer created successfully", {
+        customerId: customer.id,
+        workspaceId,
+      });
 
       return customer;
     } catch (error) {
-      logger.error(
-        {
-          error,
-          email,
-          workspaceId,
-        },
-        "Failed to create Stripe customer"
-      );
+      logger.error("Failed to create Stripe customer", {
+        error,
+        email,
+        workspaceId,
+      });
 
       // Capture payment error in Sentry
       Sentry.withScope((scope) => {
@@ -136,15 +130,12 @@ export class StripeService {
         throw new Error("Cannot create checkout session for FREE plan");
       }
 
-      logger.info(
-        {
-          workspaceId,
-          plan,
-          billingInterval,
-          customerEmail,
-        },
-        "Creating Stripe checkout session"
-      );
+      logger.info("Creating Stripe checkout session", {
+        workspaceId,
+        plan,
+        billingInterval,
+        customerEmail,
+      });
 
       const priceId = STRIPE_PRICE_IDS[plan][billingInterval];
 
@@ -191,26 +182,20 @@ export class StripeService {
         priceId,
       });
 
-      logger.info(
-        {
-          sessionId: session.id,
-          workspaceId,
-          plan,
-        },
-        "Stripe checkout session created successfully"
-      );
+      logger.info("Stripe checkout session created successfully", {
+        sessionId: session.id,
+        workspaceId,
+        plan,
+      });
 
       return session;
     } catch (error) {
-      logger.error(
-        {
-          error,
-          workspaceId,
-          plan,
-          billingInterval,
-        },
-        "Failed to create Stripe checkout session"
-      );
+      logger.error("Failed to create Stripe checkout session", {
+        error,
+        workspaceId,
+        plan,
+        billingInterval,
+      });
 
       // Capture payment error in Sentry
       Sentry.withScope((scope) => {
@@ -232,30 +217,24 @@ export class StripeService {
 
   static async createPortalSession(customerId: string, returnUrl: string) {
     try {
-      logger.info({ customerId }, "Creating Stripe portal session");
+      logger.info("Creating Stripe portal session", { customerId });
 
       const session = await stripe.billingPortal.sessions.create({
         customer: customerId,
         return_url: returnUrl,
       });
 
-      logger.info(
-        {
-          sessionId: session.id,
-          customerId,
-        },
-        "Stripe portal session created successfully"
-      );
+      logger.info("Stripe portal session created successfully", {
+        sessionId: session.id,
+        customerId,
+      });
 
       return session;
     } catch (error) {
-      logger.error(
-        {
-          error,
-          customerId,
-        },
-        "Failed to create Stripe portal session"
-      );
+      logger.error("Failed to create Stripe portal session", {
+        error,
+        customerId,
+      });
 
       // Capture payment error in Sentry
       Sentry.withScope((scope) => {
@@ -274,27 +253,21 @@ export class StripeService {
 
   static async getSubscription(subscriptionId: string) {
     try {
-      logger.info({ subscriptionId }, "Retrieving Stripe subscription");
+      logger.info("Retrieving Stripe subscription", { subscriptionId });
 
       const subscription = await stripe.subscriptions.retrieve(subscriptionId);
 
-      logger.info(
-        {
-          subscriptionId,
-          status: subscription.status,
-        },
-        "Stripe subscription retrieved successfully"
-      );
+      logger.info("Stripe subscription retrieved successfully", {
+        subscriptionId,
+        status: subscription.status,
+      });
 
       return subscription;
     } catch (error) {
-      logger.error(
-        {
-          error,
-          subscriptionId,
-        },
-        "Failed to retrieve Stripe subscription"
-      );
+      logger.error("Failed to retrieve Stripe subscription", {
+        error,
+        subscriptionId,
+      });
 
       // Capture payment error in Sentry
       Sentry.withScope((scope) => {
@@ -313,13 +286,10 @@ export class StripeService {
 
   static async cancelSubscription(subscriptionId: string, atPeriodEnd = true) {
     try {
-      logger.info(
-        {
-          subscriptionId,
-          atPeriodEnd,
-        },
-        "Canceling Stripe subscription"
-      );
+      logger.info("Canceling Stripe subscription", {
+        subscriptionId,
+        atPeriodEnd,
+      });
 
       const subscription = await stripe.subscriptions.update(subscriptionId, {
         cancel_at_period_end: atPeriodEnd,
@@ -332,23 +302,17 @@ export class StripeService {
         status: subscription.status,
       });
 
-      logger.info(
-        {
-          subscriptionId,
-          status: subscription.status,
-        },
-        "Stripe subscription canceled successfully"
-      );
+      logger.info("Stripe subscription canceled successfully", {
+        subscriptionId,
+        status: subscription.status,
+      });
 
       return subscription;
     } catch (error) {
-      logger.error(
-        {
-          error,
-          subscriptionId,
-        },
-        "Failed to cancel Stripe subscription"
-      );
+      logger.error("Failed to cancel Stripe subscription", {
+        error,
+        subscriptionId,
+      });
 
       // Capture payment error in Sentry
       Sentry.withScope((scope) => {
@@ -368,13 +332,10 @@ export class StripeService {
 
   static async updateSubscription(subscriptionId: string, newPriceId: string) {
     try {
-      logger.info(
-        {
-          subscriptionId,
-          newPriceId,
-        },
-        "Updating Stripe subscription"
-      );
+      logger.info("Updating Stripe subscription", {
+        subscriptionId,
+        newPriceId,
+      });
 
       const subscription = await stripe.subscriptions.retrieve(subscriptionId);
 
@@ -399,25 +360,19 @@ export class StripeService {
         status: updatedSubscription.status,
       });
 
-      logger.info(
-        {
-          subscriptionId,
-          newPriceId,
-          status: updatedSubscription.status,
-        },
-        "Stripe subscription updated successfully"
-      );
+      logger.info("Stripe subscription updated successfully", {
+        subscriptionId,
+        newPriceId,
+        status: updatedSubscription.status,
+      });
 
       return updatedSubscription;
     } catch (error) {
-      logger.error(
-        {
-          error,
-          subscriptionId,
-          newPriceId,
-        },
-        "Failed to update Stripe subscription"
-      );
+      logger.error("Failed to update Stripe subscription", {
+        error,
+        subscriptionId,
+        newPriceId,
+      });
 
       // Capture payment error in Sentry
       Sentry.withScope((scope) => {
@@ -437,7 +392,7 @@ export class StripeService {
 
   static async getPaymentHistory(customerId: string, limit = 100) {
     try {
-      logger.info({ customerId, limit }, "Retrieving Stripe payment history");
+      logger.info("Retrieving Stripe payment history", { customerId, limit });
 
       const invoices = await stripe.invoices.list({
         customer: customerId,
@@ -445,23 +400,17 @@ export class StripeService {
         status: "paid",
       });
 
-      logger.info(
-        {
-          customerId,
-          invoiceCount: invoices.data.length,
-        },
-        "Stripe payment history retrieved successfully"
-      );
+      logger.info("Stripe payment history retrieved successfully", {
+        customerId,
+        invoiceCount: invoices.data.length,
+      });
 
       return invoices;
     } catch (error) {
-      logger.error(
-        {
-          error,
-          customerId,
-        },
-        "Failed to retrieve Stripe payment history"
-      );
+      logger.error("Failed to retrieve Stripe payment history", {
+        error,
+        customerId,
+      });
 
       // Capture payment error in Sentry
       Sentry.withScope((scope) => {
@@ -501,17 +450,14 @@ export class StripeService {
         created: event.created,
       });
 
-      logger.info(
-        {
-          eventType: event.type,
-          eventId: event.id,
-        },
-        "Stripe webhook event constructed successfully"
-      );
+      logger.info("Stripe webhook event constructed successfully", {
+        eventType: event.type,
+        eventId: event.id,
+      });
 
       return event;
     } catch (error) {
-      logger.error({ error }, "Failed to construct Stripe webhook event");
+      logger.error("Failed to construct Stripe webhook event", { error });
 
       // Capture webhook error in Sentry
       Sentry.withScope((scope) => {

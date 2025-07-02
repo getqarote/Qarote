@@ -18,7 +18,6 @@ app.post("/webhook", async (c) => {
 
     const event = await StripeService.constructWebhookEvent(body, signature);
 
-    // Store webhook event
     await prisma.stripeWebhookEvent.create({
       data: {
         stripeEventId: event.id,

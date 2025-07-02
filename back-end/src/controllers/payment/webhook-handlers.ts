@@ -69,7 +69,7 @@ export async function handleCheckoutSessionCompleted(session: Session) {
 
     logger.info(`Workspace ${workspaceId} upgraded to ${plan}`);
   } catch (error) {
-    logger.error({ error }, "Error handling checkout session completed");
+    logger.error("Error handling checkout session completed:", error);
   }
 }
 
@@ -143,7 +143,7 @@ export async function handleSubscriptionChange(subscription: Subscription) {
       `Subscription updated for workspace ${workspace.id}: ${plan} (${subscription.status})`
     );
   } catch (error) {
-    logger.error({ error }, "Error handling subscription change");
+    logger.error("Error handling subscription change:", error);
   }
 }
 
@@ -184,7 +184,7 @@ export async function handleSubscriptionDeleted(subscription: Subscription) {
       `Subscription canceled for workspace ${workspace.id}, downgraded to FREE`
     );
   } catch (error) {
-    logger.error({ error }, "Error handling subscription deletion");
+    logger.error("Error handling subscription deletion:", error);
   }
 }
 
@@ -244,7 +244,7 @@ export async function handleTrialWillEnd(subscription: Subscription) {
 
     logger.info(`Trial ending notification sent for workspace ${workspace.id}`);
   } catch (error) {
-    logger.error({ error }, "Error handling trial will end");
+    logger.error("Error handling trial will end:", error);
   }
 }
 
@@ -300,7 +300,7 @@ export async function handlePaymentSucceeded(invoice: Invoice) {
       `Payment recorded for workspace ${workspace.id}: $${invoice.amount_paid / 100}`
     );
   } catch (error) {
-    logger.error({ error }, "Error handling payment succeeded");
+    logger.error("Error handling payment succeeded:", error);
   }
 }
 
@@ -351,7 +351,7 @@ export async function handlePaymentFailed(invoice: Invoice) {
       `Payment failed for workspace ${workspace.id}: $${invoice.amount_due / 100}`
     );
   } catch (error) {
-    logger.error({ error }, "Error handling payment failed");
+    logger.error("Error handling payment failed:", error);
   }
 }
 
@@ -409,7 +409,7 @@ export async function handlePaymentActionRequired(invoice: Invoice) {
       `Payment action required notification sent for workspace ${workspace.id}`
     );
   } catch (error) {
-    logger.error({ error }, "Error handling payment action required");
+    logger.error("Error handling payment action required:", error);
   }
 }
 
@@ -489,7 +489,7 @@ export async function handleUpcomingInvoice(invoice: Invoice) {
       `Upcoming invoice notification sent for workspace ${workspace.id}: $${invoice.amount_due / 100}`
     );
   } catch (error) {
-    logger.error({ error }, "Error handling upcoming invoice");
+    logger.error("Error handling upcoming invoice:", error);
   }
 }
 
@@ -545,7 +545,7 @@ export async function handlePaymentIntentFailed(paymentIntent: PaymentIntent) {
       `Payment intent failed for workspace ${workspace.id}: $${paymentIntent.amount / 100}`
     );
   } catch (error) {
-    logger.error({ error }, "Error handling payment intent failed");
+    logger.error("Error handling payment intent failed:", error);
   }
 }
 
@@ -580,6 +580,6 @@ export async function handleCustomerUpdated(customer: Customer) {
 
     logger.info(`Customer updated for workspace ${workspace.id}`);
   } catch (error) {
-    logger.error({ error }, "Error handling customer updated");
+    logger.error("Error handling customer updated:", error);
   }
 }
