@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import logger from "@/lib/logger";
-import { useAuth } from "@/contexts/AuthContext";
+import { apiClient } from "@/lib/api";
 import { usePlanUpgrade } from "@/hooks/usePlanUpgrade";
 import { WorkspacePlan } from "@/types/plans";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
@@ -26,9 +26,7 @@ interface Subscription {
   id: string;
   plan: WorkspacePlan;
   status: string;
-  billingInterval: "MONTH" | "YEAR";
-  pricePerMonth: number;
-  currency: string;
+  billingInterval: string;
   currentPeriodStart: string;
   currentPeriodEnd: string;
   cancelAtPeriodEnd: boolean;
@@ -41,15 +39,14 @@ interface Payment {
   currency: string;
   status: string;
   description: string;
+  paidAt: string;
+  receiptUrl?: string;
+  // Fields used in the UI but may not be returned by API
   plan?: string;
-  billingInterval?: string;
   periodStart?: string;
   periodEnd?: string;
-  receiptUrl?: string;
-  invoiceUrl?: string;
-  paidAt?: string;
-  createdAt: string;
   failureMessage?: string;
+  invoiceUrl?: string;
 }
 
 interface PaginationInfo {
@@ -94,7 +91,6 @@ const getStatusColor = (status: string) => {
 };
 
 export const BillingTab: React.FC = () => {
-  const { token } = useAuth();
   const { planData } = useWorkspace();
   const { openCustomerPortal, isUpgrading } = usePlanUpgrade();
 
@@ -111,66 +107,42 @@ export const BillingTab: React.FC = () => {
 
   const fetchSubscription = useCallback(async () => {
     try {
-      const response = await fetch("/api/payments/subscription", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setSubscription(data.subscription);
-      }
+      const data = await apiClient.getSubscription();
+      setSubscription(data.subscription);
     } catch (error) {
       logger.error("Error fetching subscription:", error);
     }
-  }, [token]);
+  }, []);
 
-  const fetchPayments = useCallback(
-    async (offset = 0, append = false) => {
-      try {
-        if (!append) setLoading(true);
-        else setLoadingMore(true);
+  const fetchPayments = useCallback(async (offset = 0, append = false) => {
+    try {
+      if (!append) setLoading(true);
+      else setLoadingMore(true);
 
-        const response = await fetch(
-          `/api/payments/payments?limit=20&offset=${offset}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+      const data = await apiClient.getPaymentHistory(20, offset);
 
-        if (response.ok) {
-          const data = await response.json();
-
-          if (append) {
-            setPayments((prev) => [...prev, ...data.payments]);
-          } else {
-            setPayments(data.payments);
-          }
-
-          setPagination(data.pagination);
-        }
-      } catch (error) {
-        logger.error("Error fetching payments:", error);
-      } finally {
-        setLoading(false);
-        setLoadingMore(false);
+      if (append) {
+        setPayments((prev) => [...prev, ...data.payments]);
+      } else {
+        setPayments(data.payments);
       }
-    },
-    [token]
-  );
+
+      setPagination(data.pagination);
+    } catch (error) {
+      logger.error("Error fetching payments:", error);
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  }, []);
 
   useEffect(() => {
     const loadData = async () => {
-      if (token) {
-        await fetchSubscription();
-        await fetchPayments();
-      }
+      await fetchSubscription();
+      await fetchPayments();
     };
     loadData();
-  }, [token, fetchSubscription, fetchPayments]);
+  }, [fetchSubscription, fetchPayments]);
 
   const loadMorePayments = () => {
     if (pagination.hasMore && !loadingMore) {
@@ -230,13 +202,23 @@ export const BillingTab: React.FC = () => {
                     Plan
                   </h3>
                   <p className="text-sm text-gray-600">
-                    {formatCurrency(
-                      subscription.pricePerMonth,
-                      subscription.currency
+                    {planData?.planFeatures ? (
+                      <>
+                        {formatCurrency(
+                          subscription.billingInterval === "yearly" ||
+                            subscription.billingInterval === "YEAR"
+                            ? planData.planFeatures.yearlyPrice
+                            : planData.planFeatures.monthlyPrice,
+                          "usd"
+                        )}
+                        {subscription.billingInterval === "yearly" ||
+                        subscription.billingInterval === "YEAR"
+                          ? "/year"
+                          : "/month"}
+                      </>
+                    ) : (
+                      `${subscription.plan} Plan`
                     )}
-                    {subscription.billingInterval === "MONTH"
-                      ? "/month"
-                      : "/year"}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -340,7 +322,7 @@ export const BillingTab: React.FC = () => {
                         {payment.description || `${payment.plan} Plan`}
                       </h4>
                       <p className="text-sm text-gray-600">
-                        {formatDate(payment.paidAt || payment.createdAt)}
+                        {formatDate(payment.paidAt)}
                         {payment.periodStart && payment.periodEnd && (
                           <span className="ml-2">
                             ({formatDate(payment.periodStart)} -{" "}

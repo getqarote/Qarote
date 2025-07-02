@@ -417,14 +417,6 @@ class ApiClient {
   async getPaymentHistory(limit?: number, offset?: number) {
     return this.paymentClient.getPaymentHistory(limit, offset);
   }
-
-  async cancelSubscription() {
-    return this.paymentClient.cancelSubscription();
-  }
-
-  async reactivateSubscription() {
-    return this.paymentClient.reactivateSubscription();
-  }
 }
 
 export const apiClient = new ApiClient();

@@ -286,17 +286,3 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
     </div>
   );
 };
-
-function getNextPlan(currentPlan: WorkspacePlan): WorkspacePlan | null {
-  const planOrder = [
-    WorkspacePlan.FREE,
-    WorkspacePlan.DEVELOPER,
-    WorkspacePlan.STARTUP,
-    WorkspacePlan.BUSINESS,
-  ];
-
-  const currentIndex = planOrder.indexOf(currentPlan);
-  return currentIndex < planOrder.length - 1
-    ? planOrder[currentIndex + 1]
-    : null;
-}

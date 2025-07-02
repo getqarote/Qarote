@@ -8,6 +8,8 @@ import { WorkspacePlan } from "@/types/plans";
 export interface CreateCheckoutSessionRequest {
   plan: WorkspacePlan;
   billingInterval: "monthly" | "yearly";
+  successUrl?: string;
+  cancelUrl?: string;
 }
 
 export interface CreateCheckoutSessionResponse {
@@ -55,7 +57,7 @@ export class PaymentApiClient extends BaseApiClient {
   async createCheckoutSession(
     data: CreateCheckoutSessionRequest
   ): Promise<CreateCheckoutSessionResponse> {
-    return this.request<CreateCheckoutSessionResponse>("/payment/checkout", {
+    return this.request<CreateCheckoutSessionResponse>("/payments/checkout", {
       method: "POST",
       body: JSON.stringify(data),
     });
@@ -65,7 +67,7 @@ export class PaymentApiClient extends BaseApiClient {
    * Create a Stripe customer portal session for subscription management
    */
   async createPortalSession(): Promise<{ url: string }> {
-    return this.request<{ url: string }>("/payment/portal", {
+    return this.request<{ url: string }>("/payments/portal", {
       method: "POST",
     });
   }
@@ -74,7 +76,7 @@ export class PaymentApiClient extends BaseApiClient {
    * Get current subscription details
    */
   async getSubscription(): Promise<SubscriptionResponse> {
-    return this.request<SubscriptionResponse>("/payment/subscription");
+    return this.request<SubscriptionResponse>("/payments/subscription");
   }
 
   /**
@@ -85,25 +87,7 @@ export class PaymentApiClient extends BaseApiClient {
     offset = 0
   ): Promise<PaymentHistoryResponse> {
     return this.request<PaymentHistoryResponse>(
-      `/payment/payments?limit=${limit}&offset=${offset}`
+      `/payments/payments?limit=${limit}&offset=${offset}`
     );
-  }
-
-  /**
-   * Cancel subscription at period end
-   */
-  async cancelSubscription(): Promise<{ success: boolean }> {
-    return this.request<{ success: boolean }>("/payment/cancel", {
-      method: "POST",
-    });
-  }
-
-  /**
-   * Reactivate a cancelled subscription
-   */
-  async reactivateSubscription(): Promise<{ success: boolean }> {
-    return this.request<{ success: boolean }>("/payment/reactivate", {
-      method: "POST",
-    });
   }
 }
