@@ -169,13 +169,43 @@ export class EmailVerificationService {
       // Handle different verification types
       if (type === "SIGNUP") {
         // Update user's email verification status
-        await prisma.user.update({
+        const updatedUser = await prisma.user.update({
           where: { id: user.id },
           data: {
             emailVerified: true,
             emailVerifiedAt: new Date(),
           },
+          include: {
+            workspace: {
+              select: {
+                name: true,
+                plan: true,
+              },
+            },
+          },
         });
+
+        // Send welcome email after successful email verification
+        try {
+          await EmailService.sendWelcomeEmail({
+            to: updatedUser.email,
+            name: updatedUser.firstName || updatedUser.email,
+            workspaceName: updatedUser.workspace.name,
+            plan: updatedUser.workspace.plan,
+          });
+
+          logger.info("Welcome email sent after email verification", {
+            userId: updatedUser.id,
+            email: updatedUser.email,
+            workspaceName: updatedUser.workspace.name,
+          });
+        } catch (emailError) {
+          logger.error(
+            { error: emailError, userId: updatedUser.id },
+            "Failed to send welcome email after email verification"
+          );
+          // Don't fail the verification if welcome email fails
+        }
       } else if (type === "EMAIL_CHANGE") {
         // Update user's email to the new verified email
         await prisma.user.update({

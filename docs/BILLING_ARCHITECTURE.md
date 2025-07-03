@@ -25,6 +25,7 @@ The billing system uses two distinct data models:
 - **Payment**: Records individual transaction history (immutable log)
 
 This separation provides:
+
 - Clean data modeling with single responsibility
 - Efficient queries for current state vs historical data
 - Scalable payment history without affecting subscription performance
@@ -61,12 +62,13 @@ model Subscription {
   cancelationReason    String?
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
-  
+
   workspace            Workspace @relation(fields: [workspaceId], references: [id])
 }
 ```
 
 **Key Fields:**
+
 - `stripeSubscriptionId`: Links to Stripe subscription
 - `status`: Current subscription state
 - `cancelAtPeriodEnd`: Whether cancellation is scheduled
@@ -88,12 +90,13 @@ model Payment {
   failureReason    String?
   receiptUrl       String?
   createdAt        DateTime @default(now())
-  
+
   workspace        Workspace @relation(fields: [workspaceId], references: [id])
 }
 ```
 
 **Key Fields:**
+
 - `stripeInvoiceId`: Links to Stripe invoice
 - `amount`: Payment amount in cents
 - `status`: Payment outcome
@@ -102,11 +105,13 @@ model Payment {
 ## API Endpoints
 
 ### Billing Overview
+
 ```
 GET /api/payments/billing/overview
 ```
 
 Returns comprehensive billing information including:
+
 - Current subscription status
 - Upcoming invoice details
 - Payment method information
@@ -114,6 +119,7 @@ Returns comprehensive billing information including:
 - Recent payment history
 
 **Response:**
+
 ```json
 {
   "workspace": {
@@ -126,20 +132,29 @@ Returns comprehensive billing information including:
     "currentPeriodEnd": "2025-08-01T00:00:00Z",
     "cancelAtPeriodEnd": false
   },
-  "stripeSubscription": { /* Stripe subscription object */ },
-  "upcomingInvoice": { /* Next invoice details */ },
-  "paymentMethod": { /* Payment method details */ },
+  "stripeSubscription": {
+    /* Stripe subscription object */
+  },
+  "upcomingInvoice": {
+    /* Next invoice details */
+  },
+  "paymentMethod": {
+    /* Payment method details */
+  },
   "currentUsage": {
     "servers": 3,
     "users": 5,
     "queues": 12,
     "messagesThisMonth": 1250
   },
-  "recentPayments": [ /* Last 5 payments */ ]
+  "recentPayments": [
+    /* Last 5 payments */
+  ]
 }
 ```
 
 ### Subscription Details
+
 ```
 GET /api/payments/billing/subscription
 ```
@@ -147,6 +162,7 @@ GET /api/payments/billing/subscription
 Returns current subscription information.
 
 ### Payment History
+
 ```
 GET /api/payments/billing/payments?limit=20&offset=0
 ```
@@ -154,11 +170,13 @@ GET /api/payments/billing/payments?limit=20&offset=0
 Returns paginated payment history with metadata.
 
 ### Cancel Subscription
+
 ```
 POST /api/payments/billing/cancel
 ```
 
 **Request Body:**
+
 ```json
 {
   "cancelImmediately": false,
@@ -168,6 +186,7 @@ POST /api/payments/billing/cancel
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -181,6 +200,7 @@ POST /api/payments/billing/cancel
 ```
 
 ### Update Payment Method
+
 ```
 POST /api/payments/billing/payment-method
 ```
@@ -188,6 +208,7 @@ POST /api/payments/billing/payment-method
 Updates the default payment method for the subscription.
 
 ### Billing Portal Access
+
 ```
 POST /api/payments/billing/portal
 ```
@@ -203,22 +224,25 @@ Centralized service for all Stripe API interactions:
 ```typescript
 class StripeService {
   // Subscription management
-  static async getSubscription(id: string, expand?: string[])
-  static async cancelSubscriptionAdvanced(id: string, options: CancelOptions)
-  static async updateSubscriptionPaymentMethod(subscriptionId: string, paymentMethodId: string)
-  
+  static async getSubscription(id: string, expand?: string[]);
+  static async cancelSubscriptionAdvanced(id: string, options: CancelOptions);
+  static async updateSubscriptionPaymentMethod(
+    subscriptionId: string,
+    paymentMethodId: string
+  );
+
   // Invoice handling
-  static async getUpcomingInvoice(subscriptionId: string)
-  
+  static async getUpcomingInvoice(subscriptionId: string);
+
   // Customer portal
-  static async createPortalSession(customerId: string, returnUrl: string)
-  
+  static async createPortalSession(customerId: string, returnUrl: string);
+
   // Payment methods
-  static async getPaymentMethod(paymentMethodId: string)
-  
+  static async getPaymentMethod(paymentMethodId: string);
+
   // Utility methods
-  static extractCustomerId(session: Session): string
-  static extractSubscriptionId(session: Session): string
+  static extractCustomerId(session: Session): string;
+  static extractSubscriptionId(session: Session): string;
 }
 ```
 
@@ -246,11 +270,11 @@ The system handles the following Stripe webhook events:
 
 ```typescript
 // webhook-handlers.ts
-export async function handleCheckoutSessionCompleted(session: Session)
-export async function handleSubscriptionChange(subscription: Subscription)
-export async function handleSubscriptionDeleted(subscription: Subscription)
-export async function handlePaymentSucceeded(invoice: Invoice)
-export async function handlePaymentFailed(invoice: Invoice)
+export async function handleCheckoutSessionCompleted(session: Session);
+export async function handleSubscriptionChange(subscription: Subscription);
+export async function handleSubscriptionDeleted(subscription: Subscription);
+export async function handlePaymentSucceeded(invoice: Invoice);
+export async function handlePaymentFailed(invoice: Invoice);
 ```
 
 ### Data Synchronization
@@ -264,16 +288,19 @@ Webhooks ensure data consistency between Stripe and the application:
 ## Security & Compliance
 
 ### Authentication
+
 - All billing endpoints require user authentication
 - Workspace-level data isolation
 - Role-based access control
 
 ### Data Protection
+
 - Sensitive payment data stored only in Stripe
 - PCI compliance through Stripe's infrastructure
 - Minimal PII storage in application database
 
 ### Webhook Security
+
 - Stripe webhook signature verification
 - Idempotency handling for duplicate events
 - Secure endpoint configuration
@@ -281,6 +308,7 @@ Webhooks ensure data consistency between Stripe and the application:
 ## Error Handling
 
 ### API Errors
+
 ```typescript
 // Standard error response format
 {
@@ -302,7 +330,10 @@ Webhooks ensure data consistency between Stripe and the application:
 Structured logging using the logger service:
 
 ```typescript
-logger.info({ workspaceId, action: "subscription_cancel" }, "Subscription canceled");
+logger.info(
+  { workspaceId, action: "subscription_cancel" },
+  "Subscription canceled"
+);
 logger.error({ error, context }, "Billing operation failed");
 logger.warn({ subscriptionId }, "Stripe sync failed");
 ```
@@ -316,7 +347,7 @@ logger.warn({ subscriptionId }, "Stripe sync failed");
 const response = await apiClient.cancelSubscription({
   cancelImmediately: false,
   reason: "too_expensive",
-  feedback: "Looking for a cheaper alternative"
+  feedback: "Looking for a cheaper alternative",
 });
 
 // Get billing overview
@@ -328,16 +359,14 @@ console.log(billing.currentUsage.servers); // Current server count
 
 ```typescript
 // Process Stripe webhook
-app.post('/webhook/stripe', async (c) => {
-  const event = stripe.webhooks.constructEvent(
-    body, signature, webhookSecret
-  );
-  
+app.post("/webhook/stripe", async (c) => {
+  const event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
+
   switch (event.type) {
-    case 'customer.subscription.updated':
+    case "customer.subscription.updated":
       await handleSubscriptionChange(event.data.object);
       break;
-    case 'invoice.payment_succeeded':
+    case "invoice.payment_succeeded":
       await handlePaymentSucceeded(event.data.object);
       break;
   }
@@ -347,21 +376,25 @@ app.post('/webhook/stripe', async (c) => {
 ## Best Practices
 
 ### Data Consistency
+
 - Always update local data when Stripe data changes
 - Use webhooks as the source of truth for billing events
 - Implement idempotency for webhook processing
 
 ### Performance
+
 - Cache frequently accessed billing data
 - Use database indexes on foreign keys
 - Paginate payment history queries
 
 ### Monitoring
+
 - Monitor webhook delivery success rates
 - Track payment failure patterns
 - Alert on subscription churn events
 
 ### Testing
+
 - Use Stripe test mode for development
 - Mock webhook events for unit tests
 - Validate error handling scenarios
@@ -369,6 +402,7 @@ app.post('/webhook/stripe', async (c) => {
 ## Future Enhancements
 
 ### Planned Features
+
 - Multi-currency support
 - Usage-based billing
 - Custom billing cycles
@@ -376,6 +410,7 @@ app.post('/webhook/stripe', async (c) => {
 - Advanced analytics dashboard
 
 ### Scalability Considerations
+
 - Implement caching layer for billing data
 - Consider read replicas for analytics queries
 - Archive old payment records
@@ -393,6 +428,7 @@ app.post('/webhook/stripe', async (c) => {
 ## Support
 
 For billing-related issues:
+
 1. Check Stripe dashboard for payment details
 2. Review application logs for error context
 3. Verify webhook delivery in Stripe

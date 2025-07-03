@@ -5,7 +5,6 @@ import { prisma } from "@/core/prisma";
 import { logger } from "@/core/logger";
 import { hashPassword } from "@/core/auth";
 import { RegisterUserSchema } from "@/schemas/auth";
-import { EmailService } from "@/services/email/email.service";
 import { EmailVerificationService } from "@/services/email/email-verification.service";
 
 const app = new Hono();
@@ -29,25 +28,15 @@ app.post("/register", zValidator("json", RegisterUserSchema), async (c) => {
 
     // Create transaction to handle workspace creation and user registration
     const result = await prisma.$transaction(async (tx) => {
-      let workspaceId: string;
-
-      // Create workspace if workspaceName is provided
-      // TODO: workspaceName should be required
-      if (workspaceName) {
-        const workspace = await tx.workspace.create({
-          data: {
-            name: workspaceName,
-            contactEmail: email,
-            consentGiven: acceptTerms || false,
-            consentDate: acceptTerms ? new Date() : null,
-          },
-        });
-        workspaceId = workspace.id;
-      } else {
-        // For now, throw an error if no workspace name is provided
-        // In the future, we might want to handle this differently
-        throw new Error("Workspace name is required for registration");
-      }
+      const workspace = await tx.workspace.create({
+        data: {
+          name: workspaceName,
+          contactEmail: email,
+          consentGiven: acceptTerms || false,
+          consentDate: acceptTerms ? new Date() : null,
+        },
+      });
+      const workspaceId = workspace.id;
 
       // Create user (with email verification disabled initially)
       const user = await tx.user.create({
@@ -92,7 +81,7 @@ app.post("/register", zValidator("json", RegisterUserSchema), async (c) => {
         result.user.email,
         verificationToken,
         "SIGNUP",
-        result.user.firstName || "User"
+        result.user.firstName
       );
 
       if (!emailResult.success) {
@@ -109,31 +98,6 @@ app.post("/register", zValidator("json", RegisterUserSchema), async (c) => {
       // Don't fail the registration if email verification fails
     }
 
-    // Send welcome email for new workspace owners (optional, after verification)
-    if (result.workspaceId && workspaceName) {
-      try {
-        const workspace = await prisma.workspace.findUnique({
-          where: { id: result.workspaceId },
-          select: { name: true, plan: true },
-        });
-
-        if (workspace) {
-          await EmailService.sendWelcomeEmail({
-            to: result.user.email,
-            name: result.user.firstName || result.user.email,
-            workspaceName: workspace.name,
-            plan: workspace.plan,
-          });
-        }
-      } catch (emailError) {
-        logger.error(
-          { error: emailError },
-          "Failed to send welcome email during registration"
-        );
-        // Don't fail the registration if email fails
-      }
-    }
-
     // Return success without token - user must verify email first
     return c.json(
       {
@@ -144,7 +108,7 @@ app.post("/register", zValidator("json", RegisterUserSchema), async (c) => {
       201
     );
   } catch (error) {
-    logger.error({ error }, "Registration error");
+    logger.error(error, "Registration error");
     return c.json({ error: "Failed to register user" }, 500);
   }
 });

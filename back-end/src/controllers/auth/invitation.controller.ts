@@ -5,7 +5,6 @@ import { prisma } from "@/core/prisma";
 import { logger } from "@/core/logger";
 import { hashPassword, generateToken, SafeUser } from "@/core/auth";
 import { AcceptInvitationSchema } from "@/schemas/auth";
-import { EmailService } from "@/services/email/email.service";
 
 const app = new Hono();
 
@@ -100,24 +99,6 @@ app.post("/accept", zValidator("json", AcceptInvitationSchema), async (c) => {
       role: result.role,
       workspaceId: result.workspaceId,
     });
-
-    // Send welcome email for newly created users
-    if (isNewUser) {
-      try {
-        await EmailService.sendWelcomeEmail({
-          to: result.email,
-          name: result.firstName || result.email,
-          workspaceName: invitation.workspace.name,
-          plan: invitation.workspace.plan,
-        });
-      } catch (emailError) {
-        logger.error(
-          { error: emailError },
-          "Failed to send welcome email during invitation acceptance"
-        );
-        // Don't fail the invitation acceptance if email fails
-      }
-    }
 
     const safeUser: SafeUser = {
       id: result.id,
