@@ -9,7 +9,7 @@ const envSchema = z.object({
   NODE_ENV: z
     .enum(["development", "test", "production"])
     .describe("development"),
-  PORT: z.coerce.number().int().positive().describe("3000"),
+  PORT: z.coerce.number().int().positive(),
   HOST: z.string().describe("localhost"),
 
   // Logging
