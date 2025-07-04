@@ -7,7 +7,7 @@ import {
   Invoice,
   Customer,
   PaymentIntent,
-} from "@/services/stripe.service";
+} from "@/services/stripe/stripe.service";
 import { EmailService } from "@/services/email/email.service";
 import {
   getWorkspaceResourceCounts,

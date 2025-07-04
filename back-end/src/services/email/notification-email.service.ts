@@ -56,8 +56,6 @@ export class NotificationEmailService {
     const { to, name, workspaceName, plan, trialEndDate, currentUsage } =
       params;
 
-    CoreEmailService.validateConfig();
-
     const { frontendUrl } = CoreEmailService.getConfig();
 
     // Render the React email template
@@ -140,8 +138,6 @@ export class NotificationEmailService {
       nextBillingDate,
       usageReport,
     } = params;
-
-    CoreEmailService.validateConfig();
 
     const { frontendUrl } = CoreEmailService.getConfig();
 

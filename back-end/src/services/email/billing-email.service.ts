@@ -1,6 +1,6 @@
 import { WorkspacePlan } from "@prisma/client";
 import { UpgradeConfirmationEmail } from "./templates/upgrade-confirmation-email";
-import { CoreEmailService, EmailResult } from "./core-email.service";
+import { CoreEmailService } from "./core-email.service";
 
 export interface UpgradeConfirmationEmailParams {
   to: string;

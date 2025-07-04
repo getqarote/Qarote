@@ -3,7 +3,7 @@ import { zValidator } from "@hono/zod-validator";
 import { authMiddleware } from "@/middlewares/auth";
 import { prisma } from "@/core/prisma";
 import { logger } from "@/core/logger";
-import { StripeService } from "@/services/stripe.service";
+import { StripeService } from "@/services/stripe/stripe.service";
 import { WorkspacePlan } from "@prisma/client";
 import { createCheckoutSessionSchema } from "@/schemas/payment";
 import { emailConfig } from "@/config";

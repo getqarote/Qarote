@@ -1,9 +1,9 @@
-import { Resend } from "resend";
+import type { ReactElement } from "react";
 import { render } from "@react-email/render";
+import { Resend } from "resend";
 import { logger } from "@/core/logger";
 import { Sentry, setSentryContext } from "@/core/sentry";
 import { emailConfig } from "@/config";
-import type { ReactElement } from "react";
 
 export interface EmailResult {
   success: boolean;
@@ -114,24 +114,6 @@ export class CoreEmailService {
     }
   }
 
-  /**
-   * Validate email configuration
-   */
-  static validateConfig(): void {
-    if (!emailConfig.resendApiKey) {
-      throw new Error("RESEND_API_KEY environment variable is not set");
-    }
-    if (!emailConfig.fromEmail) {
-      throw new Error("FROM_EMAIL environment variable is not set");
-    }
-    if (!emailConfig.frontendUrl) {
-      throw new Error("FRONTEND_URL environment variable is not set");
-    }
-  }
-
-  /**
-   * Get email configuration
-   */
   static getConfig() {
     return {
       frontendUrl: emailConfig.frontendUrl,
