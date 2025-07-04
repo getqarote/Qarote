@@ -84,6 +84,13 @@ export async function handleSubscriptionChange(subscription: Subscription) {
 
     const workspace = await prisma.workspace.findUnique({
       where: { stripeCustomerId: customerId },
+      include: {
+        users: {
+          where: { role: "ADMIN" },
+          take: 1,
+        },
+        subscription: true,
+      },
     });
 
     if (!workspace) {
@@ -102,20 +109,36 @@ export async function handleSubscriptionChange(subscription: Subscription) {
       return;
     }
 
+    // Check if this is a renewal after cancellation
+    const existingSubscription = workspace.subscription;
+    const isRenewalAfterCancel =
+      existingSubscription &&
+      existingSubscription.status === SubscriptionStatus.CANCELED &&
+      existingSubscription.canceledAt &&
+      subscription.status === "active";
+
+    // Prepare subscription update data
+    const subscriptionUpdateData = {
+      status: subscription.status.toUpperCase() as SubscriptionStatus,
+      plan,
+      billingInterval: billingInterval.toUpperCase() as BillingInterval,
+      currentPeriodStart: new Date(subscription.current_period_start * 1000),
+      currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+      cancelAtPeriodEnd: subscription.cancel_at_period_end,
+      canceledAt: subscription.canceled_at
+        ? new Date(subscription.canceled_at * 1000)
+        : null,
+      // Set renewal tracking fields if this is a renewal after cancellation
+      ...(isRenewalAfterCancel && {
+        isRenewalAfterCancel: true,
+        previousCancelDate: existingSubscription.canceledAt,
+      }),
+    };
+
     // Update or create subscription record
     await prisma.subscription.upsert({
       where: { workspaceId: workspace.id },
-      update: {
-        status: subscription.status.toUpperCase() as SubscriptionStatus,
-        plan,
-        billingInterval: billingInterval.toUpperCase() as BillingInterval,
-        currentPeriodStart: new Date(subscription.current_period_start * 1000),
-        currentPeriodEnd: new Date(subscription.current_period_end * 1000),
-        cancelAtPeriodEnd: subscription.cancel_at_period_end,
-        canceledAt: subscription.canceled_at
-          ? new Date(subscription.canceled_at * 1000)
-          : null,
-      },
+      update: subscriptionUpdateData,
       create: {
         workspaceId: workspace.id,
         stripeSubscriptionId: subscription.id,
@@ -137,10 +160,35 @@ export async function handleSubscriptionChange(subscription: Subscription) {
         where: { id: workspace.id },
         data: { plan },
       });
+
+      // Send welcome back email if this is a renewal after cancellation
+      if (isRenewalAfterCancel && workspace.users[0]) {
+        try {
+          await EmailService.sendWelcomeBackEmail({
+            to: workspace.users[0].email,
+            userName: getUserDisplayName(workspace.users[0]),
+            workspaceName: workspace.name,
+            plan,
+            billingInterval: billingInterval as "monthly" | "yearly",
+            previousCancelDate: existingSubscription.canceledAt?.toISOString(),
+          });
+
+          logger.info(
+            `Welcome back email sent for workspace ${workspace.id} - user renewed after cancellation`
+          );
+        } catch (emailError) {
+          logger.error("Failed to send welcome back email:", {
+            workspaceId: workspace.id,
+            error: emailError,
+          });
+        }
+      }
     }
 
     logger.info(
-      `Subscription updated for workspace ${workspace.id}: ${plan} (${subscription.status})`
+      `Subscription updated for workspace ${workspace.id}: ${plan} (${subscription.status})${
+        isRenewalAfterCancel ? " - RENEWAL AFTER CANCELLATION" : ""
+      }`
     );
   } catch (error) {
     logger.error("Error handling subscription change:", error);
@@ -172,6 +220,8 @@ export async function handleSubscriptionDeleted(subscription: Subscription) {
         data: {
           status: SubscriptionStatus.CANCELED,
           canceledAt: new Date(),
+          // Reset renewal tracking when subscription is deleted
+          isRenewalAfterCancel: false,
         },
       }),
       prisma.workspace.update({

@@ -364,7 +364,7 @@ class StripeSetup {
 
     try {
       execSync(
-        "stripe listen --forward-to localhost:3001/api/payments/webhook",
+        "stripe listen --forward-to localhost:3000/api/payments/webhook",
         { stdio: "inherit" }
       );
     } catch (error) {

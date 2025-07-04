@@ -9,6 +9,7 @@ export {
 export {
   BillingEmailService,
   UpgradeConfirmationEmailParams,
+  WelcomeBackEmailParams,
 } from "./billing-email.service";
 export {
   NotificationEmailService,
@@ -35,6 +36,7 @@ export class EmailService {
   // Billing emails
   static sendUpgradeConfirmationEmail =
     BillingEmailService.sendUpgradeConfirmationEmail;
+  static sendWelcomeBackEmail = BillingEmailService.sendWelcomeBackEmail;
 
   // Notification emails
   static sendTrialEndingEmail = NotificationEmailService.sendTrialEndingEmail;

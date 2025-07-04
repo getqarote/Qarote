@@ -564,6 +564,10 @@ model Subscription {
   canceledAt            DateTime?
   cancelationReason     String?
   
+  // Renewal tracking
+  isRenewalAfterCancel  Boolean            @default(false)
+  previousCancelDate    DateTime?
+  
   // Metadata
   metadata              Json?
   

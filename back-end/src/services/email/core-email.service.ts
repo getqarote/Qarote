@@ -8,7 +8,7 @@ import { emailConfig } from "@/config";
 export interface EmailResult {
   success: boolean;
   messageId?: string;
-  error?: string;
+  error?: string | null;
 }
 
 export interface BaseEmailParams {

@@ -5,6 +5,7 @@ import { apiClient } from "@/lib/api";
 import logger from "@/lib/logger";
 import { BillingOverviewResponse } from "@/lib/api/paymentClient";
 import { usePlanUpgrade } from "@/hooks/usePlanUpgrade";
+import { WorkspacePlan } from "@/types/plans";
 import {
   BillingHeader,
   BillingLayout,
@@ -77,35 +78,59 @@ const Billing: React.FC = () => {
     }
   };
 
+  const handleRenewSubscription = async () => {
+    try {
+      // Determine the plan to renew based on subscription history
+      const planToRenew =
+        billingData?.subscription?.plan || WorkspacePlan.DEVELOPER;
+      const data = await apiClient.renewSubscription(planToRenew, "monthly");
+      window.location.href = data.url;
+    } catch (error) {
+      logger.error("Failed to renew subscription:", error);
+    }
+  };
+
+  // Determine if the subscription was canceled
+  const subscriptionCanceled =
+    billingData?.workspace.plan === WorkspacePlan.FREE &&
+    billingData?.subscription?.status === "CANCELED" &&
+    !!billingData?.subscription?.canceledAt;
+
+  // Get the last plan they had before canceling
+  const lastPlan = subscriptionCanceled
+    ? billingData?.subscription?.plan
+    : undefined;
+
   return (
     <BillingLayout isLoading={isLoading} error={!!error || !billingData}>
       {billingData && (
         <>
           <BillingHeader />
 
-          {billingData.subscription && (
-            <SubscriptionManagement
-              currentPlan={billingData.workspace.plan}
-              onOpenBillingPortal={handleOpenBillingPortal}
-              onUpgrade={handleUpgrade}
-              onCancelSubscription={handleCancelSubscription}
-              periodEnd={
-                billingData.stripeSubscription?.current_period_end
-                  ? new Date(
-                      billingData.stripeSubscription.current_period_end * 1000
-                    ).toISOString()
-                  : undefined
-              }
-              isLoading={isLoading}
-              cancelAtPeriodEnd={
-                (billingData.stripeSubscription as ExtendedStripeSubscription)
-                  ?.cancel_at_period_end ||
-                (billingData.subscription as ExtendedSubscription)
-                  ?.cancelAtPeriodEnd ||
-                false
-              }
-            />
-          )}
+          <SubscriptionManagement
+            currentPlan={billingData.workspace.plan}
+            onOpenBillingPortal={handleOpenBillingPortal}
+            onUpgrade={handleUpgrade}
+            onRenewSubscription={handleRenewSubscription}
+            onCancelSubscription={handleCancelSubscription}
+            periodEnd={
+              billingData.stripeSubscription?.current_period_end
+                ? new Date(
+                    billingData.stripeSubscription.current_period_end * 1000
+                  ).toISOString()
+                : undefined
+            }
+            isLoading={isLoading}
+            cancelAtPeriodEnd={
+              (billingData.stripeSubscription as ExtendedStripeSubscription)
+                ?.cancel_at_period_end ||
+              (billingData.subscription as ExtendedSubscription)
+                ?.cancelAtPeriodEnd ||
+              false
+            }
+            subscriptionCanceled={subscriptionCanceled}
+            lastPlan={lastPlan}
+          />
 
           <RecentPayments recentPayments={billingData.recentPayments} />
         </>

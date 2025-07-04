@@ -431,6 +431,13 @@ class ApiClient {
   ) {
     return this.paymentClient.cancelSubscription(data);
   }
+
+  async renewSubscription(
+    plan: Parameters<PaymentApiClient["renewSubscription"]>[0],
+    billingInterval?: Parameters<PaymentApiClient["renewSubscription"]>[1]
+  ) {
+    return this.paymentClient.renewSubscription(plan, billingInterval);
+  }
 }
 
 export const apiClient = new ApiClient();

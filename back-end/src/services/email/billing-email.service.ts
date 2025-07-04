@@ -1,6 +1,8 @@
+import React from "react";
 import { WorkspacePlan } from "@prisma/client";
+import { CoreEmailService, EmailResult } from "./core-email.service";
 import { UpgradeConfirmationEmail } from "./templates/upgrade-confirmation-email";
-import { CoreEmailService } from "./core-email.service";
+import { WelcomeBackEmail } from "./templates/welcome-back-email";
 
 export interface UpgradeConfirmationEmailParams {
   to: string;
@@ -8,6 +10,15 @@ export interface UpgradeConfirmationEmailParams {
   workspaceName: string;
   plan: WorkspacePlan;
   billingInterval: "monthly" | "yearly";
+}
+
+export interface WelcomeBackEmailParams {
+  to: string;
+  userName: string;
+  workspaceName: string;
+  plan: WorkspacePlan;
+  billingInterval: "monthly" | "yearly";
+  previousCancelDate?: string;
 }
 
 /**
@@ -19,10 +30,10 @@ export class BillingEmailService {
    */
   static async sendUpgradeConfirmationEmail(
     params: UpgradeConfirmationEmailParams
-  ): Promise<any> {
+  ): Promise<EmailResult> {
     const { to, userName, workspaceName, plan, billingInterval } = params;
 
-    const template = UpgradeConfirmationEmail({
+    const template = React.createElement(UpgradeConfirmationEmail, {
       userName,
       workspaceName,
       plan,
@@ -43,9 +54,47 @@ export class BillingEmailService {
     });
 
     // Return the result in the expected format for backward compatibility
-    return {
-      data: { id: result.messageId },
-      error: result.success ? null : { message: result.error },
-    };
+    return result;
+  }
+
+  /**
+   * Send welcome back email for renewed subscriptions
+   */
+  static async sendWelcomeBackEmail(
+    params: WelcomeBackEmailParams
+  ): Promise<EmailResult> {
+    const {
+      to,
+      userName,
+      workspaceName,
+      plan,
+      billingInterval,
+      previousCancelDate,
+    } = params;
+
+    const template = React.createElement(WelcomeBackEmail, {
+      userName,
+      workspaceName,
+      plan,
+      billingInterval,
+      previousCancelDate,
+    });
+
+    const result = await CoreEmailService.sendEmail({
+      to,
+      subject: `🎉 Welcome Back to Rabbit Scout - ${plan} Plan Renewed!`,
+      template,
+      emailType: "welcome_back",
+      context: {
+        userName,
+        workspaceName,
+        plan,
+        billingInterval,
+        previousCancelDate,
+      },
+    });
+
+    // Return the result in the expected format for backward compatibility
+    return result;
   }
 }

@@ -246,7 +246,7 @@ Checks that all required environment variables are set and prices exist.
 npm run setup-stripe webhook
 ```
 
-Forwards webhooks to `localhost:3001/api/payments/webhook`.
+Forwards webhooks to `localhost:3000/api/payments/webhook`.
 
 ### Show Help
 
@@ -263,7 +263,7 @@ Displays all available commands and usage examples.
 Use the Stripe CLI for local development:
 
 ```bash
-stripe listen --forward-to localhost:3001/api/payments/webhook
+stripe listen --forward-to localhost:3000/api/payments/webhook
 ```
 
 The CLI will output a webhook signing secret - add this to your `.env`:
@@ -326,7 +326,7 @@ stripe login
 **"Webhook events not received"**
 
 - Ensure webhook forwarding is running: `npm run setup-stripe webhook`
-- Check that your server is running on port 3001
+- Check that your server is running on port 3000
 - Verify webhook secret is set in `.env`
 
 ### Environment Variables Missing

@@ -57,6 +57,10 @@ export interface BillingOverviewResponse {
     status: string;
     stripeCustomerId: string;
     stripeSubscriptionId: string;
+    plan: WorkspacePlan;
+    canceledAt: string | null;
+    isRenewalAfterCancel: boolean;
+    previousCancelDate: string | null;
     createdAt: string;
     updatedAt: string;
   } | null;
@@ -198,5 +202,19 @@ export class PaymentApiClient extends BaseApiClient {
         body: JSON.stringify(data),
       }
     );
+  }
+
+  /**
+   * Renew/reactivate subscription (redirect to checkout or billing portal)
+   */
+  async renewSubscription(
+    plan: WorkspacePlan,
+    billingInterval: "monthly" | "yearly" = "monthly"
+  ): Promise<{ url: string }> {
+    // Use the checkout flow to renew with the same plan
+    return this.createCheckoutSession({
+      plan,
+      billingInterval,
+    });
   }
 }
