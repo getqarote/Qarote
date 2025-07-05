@@ -1,5 +1,5 @@
 import { WorkspacePlan } from "@prisma/client";
-import { getPlanFeatures } from "../plan.service";
+import { getPlanFeatures } from "../plan/plan.service";
 import { InvitationEmail } from "./templates/invitation-email";
 import { WelcomeEmail } from "./templates/welcome-email";
 import { EmailVerification } from "./templates/email-verification";

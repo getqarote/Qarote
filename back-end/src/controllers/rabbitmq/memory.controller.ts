@@ -1,29 +1,17 @@
 import { Hono } from "hono";
 import { prisma } from "@/core/prisma";
-import { authenticate } from "@/core/auth";
-import { planValidationMiddleware } from "@/middlewares/plan-validation";
 import { logger } from "@/core/logger";
-// import {
-//   validateBasicMemoryMetricsAccess,
-//   validateAdvancedMemoryMetricsAccess,
-//   validateExpertMemoryMetricsAccess,
-//   validateMemoryTrendsAccess,
-//   validateMemoryOptimizationAccess,
-// } from "@/services/plan.service";
-import { createRabbitMQClient, createErrorResponse } from "./shared";
 import {
   validateAdvancedMemoryMetricsAccess,
   validateBasicMemoryMetricsAccess,
   validateExpertMemoryMetricsAccess,
   validateMemoryOptimizationAccess,
   validateMemoryTrendsAccess,
-} from "@/services/plan.service";
+} from "@/services/plan/plan.service";
+import { createErrorResponse } from "../shared";
+import { createRabbitMQClient } from "./shared";
 
 const memoryController = new Hono();
-
-// Apply authentication and plan validation middleware
-memoryController.use("*", authenticate);
-memoryController.use("*", planValidationMiddleware());
 
 /**
  * Get detailed memory metrics for a specific node for a specific server (ALL USERS)

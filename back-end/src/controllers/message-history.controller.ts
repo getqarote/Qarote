@@ -7,7 +7,10 @@ import {
   messageHistorySearchSchema,
   messageHistoryStatsSchema,
 } from "@/schemas/message-history";
-import { PlanValidationError, getPlanFeatures } from "@/services/plan.service";
+import {
+  PlanValidationError,
+  getPlanFeatures,
+} from "@/services/plan/plan.service";
 
 const messageHistoryController = new Hono();
 

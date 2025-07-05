@@ -1,9 +1,7 @@
-import { Context } from "hono";
 import { RabbitMQServer } from "@prisma/client";
 import { prisma } from "@/core/prisma";
 import { RabbitMQClient } from "@/core/rabbitmq/Client";
 import { EncryptionService } from "@/services/encryption.service";
-import { logger } from "@/core/logger";
 
 /**
  * Helper function to decrypt server credentials for RabbitMQ client
@@ -33,6 +31,7 @@ export async function verifyServerAccess(
   workspaceId: string,
   includeWorkspace = false
 ): Promise<any> {
+  // TODO: remove any
   const server = await prisma.rabbitMQServer.findFirst({
     where: {
       id: serverId,
@@ -57,23 +56,4 @@ export async function createRabbitMQClient(
 ): Promise<RabbitMQClient> {
   const server = await verifyServerAccess(serverId, workspaceId);
   return new RabbitMQClient(getDecryptedCredentials(server));
-}
-
-/**
- * Standard error response for controllers
- */
-export function createErrorResponse(
-  c: Context,
-  error: unknown,
-  statusCode: 400 | 404 | 500 = 500,
-  defaultMessage = "Unknown error occurred"
-) {
-  logger.error({ error }, "Controller error");
-  return c.json(
-    {
-      error: defaultMessage,
-      message: error instanceof Error ? error.message : "Unknown error",
-    },
-    statusCode
-  );
 }

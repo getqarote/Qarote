@@ -11,10 +11,10 @@ import {
 } from "@/core/auth";
 import { LoginSchema } from "@/schemas/auth";
 
-const app = new Hono();
+const sessionController = new Hono();
 
 // User login
-app.post("/login", zValidator("json", LoginSchema), async (c) => {
+sessionController.post("/login", zValidator("json", LoginSchema), async (c) => {
   const { email, password } = c.req.valid("json");
 
   try {
@@ -93,7 +93,7 @@ app.post("/login", zValidator("json", LoginSchema), async (c) => {
 });
 
 // Get current user profile
-app.get("/me", authenticate, async (c) => {
+sessionController.get("/me", authenticate, async (c) => {
   const user = c.get("user") as SafeUser;
 
   try {
@@ -137,4 +137,4 @@ app.get("/me", authenticate, async (c) => {
   }
 });
 
-export default app;
+export default sessionController;

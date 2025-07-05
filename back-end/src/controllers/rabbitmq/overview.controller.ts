@@ -1,23 +1,14 @@
 import { Hono } from "hono";
-import { authenticate } from "@/core/auth";
-import { planValidationMiddleware } from "@/middlewares/plan-validation";
 import { logger } from "@/core/logger";
 import {
   getOverLimitWarningMessage,
   getUpgradeRecommendationForOverLimit,
-} from "@/services/plan.service";
-import {
-  createRabbitMQClient,
-  createErrorResponse,
-  verifyServerAccess,
-} from "./shared";
+} from "@/services/plan/plan.service";
+import { createRabbitMQClient, verifyServerAccess } from "./shared";
 import { OverviewResponse } from "@/types/Overview";
+import { createErrorResponse } from "../shared";
 
 const overviewController = new Hono();
-
-// Apply authentication and plan validation middleware
-overviewController.use("*", authenticate);
-overviewController.use("*", planValidationMiddleware());
 
 /**
  * Get overview for a specific server (ALL USERS)

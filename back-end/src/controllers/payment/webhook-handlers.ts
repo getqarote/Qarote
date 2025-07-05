@@ -1,3 +1,9 @@
+import {
+  WorkspacePlan,
+  SubscriptionStatus,
+  PaymentStatus,
+  BillingInterval,
+} from "@prisma/client";
 import { prisma } from "@/core/prisma";
 import { logger } from "@/core/logger";
 import {
@@ -10,15 +16,9 @@ import {
 } from "@/services/stripe/stripe.service";
 import { EmailService } from "@/services/email/email.service";
 import {
-  getWorkspaceResourceCounts,
   getMonthlyMessageCount,
-} from "@/middlewares/plan-validation";
-import {
-  WorkspacePlan,
-  SubscriptionStatus,
-  PaymentStatus,
-  BillingInterval,
-} from "@prisma/client";
+  getWorkspaceResourceCounts,
+} from "@/services/plan/plan.service";
 import { getUserDisplayName } from "../shared";
 
 export async function handleCheckoutSessionCompleted(session: Session) {

@@ -2,25 +2,21 @@ import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { streamSSE } from "hono/streaming";
 import { prisma } from "@/core/prisma";
-import { authenticate, authorize } from "@/core/auth";
+import { authorize } from "@/core/auth";
 import { UserRole } from "@prisma/client";
 import { logger } from "@/core/logger";
 import { streamRegistry } from "@/core/DatabaseStreamRegistry";
-import { planValidationMiddleware } from "@/middlewares/plan-validation";
 import {
-  getWorkspacePlan,
   getMonthlyMessageCount,
+  getWorkspacePlan,
   incrementMonthlyMessageCount,
-} from "@/middlewares/plan-validation";
-import { validateMessageSending } from "@/services/plan.service";
-import { createRabbitMQClient, createErrorResponse } from "./shared";
+  validateMessageSending,
+} from "@/services/plan/plan.service";
+import { createRabbitMQClient } from "./shared";
 import { publishMessageToQueueSchema } from "@/schemas/rabbitmq";
+import { createErrorResponse } from "../shared";
 
 const messagesController = new Hono();
-
-// Apply authentication and plan validation middleware
-messagesController.use("*", authenticate);
-messagesController.use("*", planValidationMiddleware());
 
 /**
  * Send message to queue for a specific server (ADMIN ONLY - sensitive operation)

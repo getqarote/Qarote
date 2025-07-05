@@ -3,13 +3,15 @@ import { UserRole } from "@prisma/client";
 import { prisma } from "@/core/prisma";
 import { logger } from "@/core/logger";
 import { authorize, checkWorkspaceAccess } from "@/core/auth";
-import { validateDataExport } from "@/services/plan.service";
+import { validateDataExport } from "@/services/plan/plan.service";
+import { strictRateLimiter } from "@/middlewares/security";
 
 const dataRoutes = new Hono();
 
 // Export all workspace data (ADMIN ONLY)
 dataRoutes.get(
   "/:id/export",
+  strictRateLimiter,
   authorize([UserRole.ADMIN]),
   checkWorkspaceAccess,
   async (c) => {

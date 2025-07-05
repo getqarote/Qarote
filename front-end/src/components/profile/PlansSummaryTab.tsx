@@ -3,15 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
-import {
-  ArrowRight,
-  Crown,
-  Zap,
-  Users,
-  Server,
-  TrendingUp,
-  Loader2,
-} from "lucide-react";
+import { Crown, Zap, Users, Server, TrendingUp, Loader2 } from "lucide-react";
 import { WorkspacePlan } from "@/types/plans";
 import { usePlanUpgrade } from "@/hooks/usePlanUpgrade";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
@@ -126,12 +118,6 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
                 </p>
               </div>
             </div>
-            <Link to="/plans">
-              <Button variant="outline" size="sm">
-                View All Plans
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </Link>
           </div>
         </CardHeader>
         <CardContent>

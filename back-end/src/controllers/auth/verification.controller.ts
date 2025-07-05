@@ -1,13 +1,13 @@
 import { Hono } from "hono";
 import { prisma } from "@/core/prisma";
 import { logger } from "@/core/logger";
-import { authenticate, SafeUser } from "@/core/auth";
+import { authenticate } from "@/core/auth";
 import { EmailVerificationService } from "@/services/email/email-verification.service";
 
-const app = new Hono();
+const verificationController = new Hono();
 
 // Email verification endpoints
-app.post("/verify-email", async (c) => {
+verificationController.post("/verify-email", async (c) => {
   try {
     const body = await c.req.json();
     const { token } = body;
@@ -53,8 +53,8 @@ app.post("/verify-email", async (c) => {
 });
 
 // Resend verification email
-app.post("/resend-verification", authenticate, async (c) => {
-  const user = c.get("user") as SafeUser;
+verificationController.post("/resend-verification", authenticate, async (c) => {
+  const user = c.get("user");
 
   try {
     const body = await c.req.json();
@@ -83,8 +83,8 @@ app.post("/resend-verification", authenticate, async (c) => {
 });
 
 // Check verification status
-app.get("/verification-status", authenticate, async (c) => {
-  const user = c.get("user") as SafeUser;
+verificationController.get("/verification-status", authenticate, async (c) => {
+  const user = c.get("user");
 
   try {
     const userInfo = await prisma.user.findUnique({
@@ -121,4 +121,4 @@ app.get("/verification-status", authenticate, async (c) => {
   }
 });
 
-export default app;
+export default verificationController;

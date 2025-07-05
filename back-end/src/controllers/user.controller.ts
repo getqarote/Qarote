@@ -1,21 +1,22 @@
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { prisma } from "@/core/prisma";
-import { authenticate, authorize, SafeUser } from "@/core/auth";
+import { authenticate, authorize } from "@/core/auth";
 import { UpdateUserSchema, UpdateProfileSchema } from "@/schemas/user";
 import { UpdateWorkspaceSchema } from "@/schemas/workspace";
 import { InviteUserSchema } from "@/schemas/auth";
 import { UserRole } from "@prisma/client";
-import { validateUserInvitation } from "@/services/plan.service";
-import { logger } from "@/core/logger";
 import {
   getWorkspacePlan,
   getWorkspaceResourceCounts,
-  planValidationMiddleware,
-} from "@/middlewares/plan-validation";
+  validateUserInvitation,
+} from "@/services/plan/plan.service";
+import { logger } from "@/core/logger";
+import { planValidationMiddleware } from "@/middlewares/plan-validation";
 import { isDevelopment } from "@/config";
 import { EncryptionService } from "@/services/encryption.service";
 import { EmailVerificationService } from "@/services/email/email-verification.service";
+import { strictRateLimiter } from "@/middlewares/security";
 
 const userController = new Hono();
 
@@ -59,7 +60,7 @@ userController.get("/", authorize([UserRole.ADMIN]), async (c) => {
 // Get users in the same workspace (admin or workspace admin)
 userController.get("/workspace/:workspaceId", async (c) => {
   const workspaceId = c.req.param("workspaceId");
-  const user = c.get("user") as SafeUser;
+  const user = c.get("user");
 
   // Check if user has access to this workspace
   if (user.role !== UserRole.ADMIN && user.workspaceId !== workspaceId) {
@@ -95,7 +96,7 @@ userController.get("/workspace/:workspaceId", async (c) => {
 // Get a specific user by ID (admin or same workspace)
 userController.get("/:id", async (c) => {
   const id = c.req.param("id");
-  const currentUser = c.get("user") as SafeUser;
+  const currentUser = c.get("user");
 
   try {
     const user = await prisma.user.findUnique({
@@ -146,6 +147,7 @@ userController.get("/:id", async (c) => {
 // Update a user (admin only)
 userController.put(
   "/:id",
+  strictRateLimiter,
   authorize([UserRole.ADMIN]),
   zValidator("json", UpdateUserSchema),
   async (c) => {
@@ -190,10 +192,11 @@ userController.put(
 // Update own profile (any authenticated user)
 userController.put(
   "/profile/me",
+  strictRateLimiter,
   zValidator("json", UpdateProfileSchema),
   async (c) => {
     const data = c.req.valid("json");
-    const user = c.get("user") as SafeUser;
+    const user = c.get("user");
 
     try {
       // Handle email change separately if provided
@@ -311,7 +314,7 @@ userController.post(
   zValidator("json", InviteUserSchema),
   async (c) => {
     const { email, role, workspaceId } = c.req.valid("json");
-    const currentUser = c.get("user") as SafeUser;
+    const currentUser = c.get("user");
 
     // Check if user has access to this workspace
     if (
@@ -427,7 +430,7 @@ userController.post(
 // Get pending invitations for a workspace (admin or workspace admin)
 userController.get("/invitations/workspace/:workspaceId", async (c) => {
   const workspaceId = c.req.param("workspaceId");
-  const user = c.get("user") as SafeUser;
+  const user = c.get("user");
 
   // Check if user has access to this workspace
   if (user.role !== UserRole.ADMIN && user.workspaceId !== workspaceId) {
@@ -470,7 +473,7 @@ userController.get("/invitations/workspace/:workspaceId", async (c) => {
 
 // Get current user's profile
 userController.get("/profile/me", async (c) => {
-  const user = c.get("user") as SafeUser;
+  const user = c.get("user");
 
   try {
     const profile = await prisma.user.findUnique({
@@ -528,7 +531,7 @@ userController.put(
   zValidator("json", UpdateWorkspaceSchema),
   async (c) => {
     const data = c.req.valid("json");
-    const user = c.get("user") as SafeUser;
+    const user = c.get("user");
 
     // Only admin users can update workspace info
     if (user.role !== UserRole.ADMIN) {
@@ -575,7 +578,7 @@ userController.put(
 
 // Get workspace users (admin only)
 userController.get("/profile/workspace/users", async (c) => {
-  const user = c.get("user") as SafeUser;
+  const user = c.get("user");
 
   // Only admin users can view workspace users
   if (user.role !== UserRole.ADMIN) {

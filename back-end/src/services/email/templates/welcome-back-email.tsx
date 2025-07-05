@@ -11,7 +11,7 @@ import {
   Hr,
 } from "@react-email/components";
 import { emailConfig } from "@/config";
-import { getPlanFeatures } from "@/services/plan.service";
+import { getPlanFeatures } from "@/services/plan/plan.service";
 
 interface WelcomeBackEmailProps {
   userName: string;

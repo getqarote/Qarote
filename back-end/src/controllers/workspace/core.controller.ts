@@ -8,7 +8,7 @@ import {
   CreateWorkspaceSchema,
   UpdateWorkspaceSchema,
 } from "@/schemas/workspace";
-import { getMonthlyMessageCount } from "@/middlewares/plan-validation";
+import { getMonthlyMessageCount } from "@/services/plan/plan.service";
 
 const coreRoutes = new Hono();
 

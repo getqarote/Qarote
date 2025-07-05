@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { authenticate } from "@/core/auth";
 import { requireLogsEnabled } from "@/core/feature-flag/logs-feature-flag";
+import { strictRateLimiter } from "@/middlewares/security";
 
 const app = new Hono();
 
@@ -64,7 +65,7 @@ app.get("/stats", async (c) => {
 });
 
 // Export logs
-app.post("/export", async (c) => {
+app.post("/export", strictRateLimiter, async (c) => {
   return c.json(
     {
       error: "Not implemented",

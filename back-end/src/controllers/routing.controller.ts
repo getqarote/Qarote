@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { authenticate } from "@/core/auth";
 import { requireRoutingEnabled } from "@/core/feature-flag/routing-feature-flag";
+import { strictRateLimiter } from "@/middlewares/security";
 
 const app = new Hono();
 
@@ -98,7 +99,7 @@ app.post("/test-routing", async (c) => {
 });
 
 // Export routing diagram
-app.post("/export", async (c) => {
+app.post("/export", strictRateLimiter, async (c) => {
   return c.json(
     {
       error: "Not implemented",

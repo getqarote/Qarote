@@ -492,7 +492,7 @@ import {
   getPlanDisplayName,
 } from "@/services/plan.service";
 
-const features = getUnifiedPlanFeatures(plan);
+const features = getPlanFeaturesplan);
 const canAdd = features.canAddQueue;
 const name = features.displayName;
 ```

@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
-import { authenticate, authorize } from "@/core/auth";
+import { authorize } from "@/core/auth";
 import { UserRole } from "@prisma/client";
 import { CreateQueueSchema } from "@/schemas/rabbitmq";
 import { logger } from "@/core/logger";
@@ -8,18 +8,11 @@ import { prisma } from "@/core/prisma";
 import {
   getOverLimitWarningMessage,
   getUpgradeRecommendationForOverLimit,
-  validateQueueCreationOnServer,
-} from "@/services/plan.service";
-import {
   getWorkspacePlan,
   getWorkspaceResourceCounts,
-} from "@/middlewares/plan-validation";
-import { planValidationMiddleware } from "@/middlewares/plan-validation";
-import {
-  createRabbitMQClient,
-  createErrorResponse,
-  verifyServerAccess,
-} from "./shared";
+  validateQueueCreationOnServer,
+} from "@/services/plan/plan.service";
+import { createRabbitMQClient, verifyServerAccess } from "./shared";
 import {
   QueueConsumersResponse,
   QueueCreationResponse,
@@ -27,12 +20,9 @@ import {
   QueuesResponse,
   SingleQueueResponse,
 } from "@/types/Queue";
+import { createErrorResponse } from "../shared";
 
 const queuesController = new Hono();
-
-// Apply authentication and plan validation middleware
-queuesController.use("*", authenticate);
-queuesController.use("*", planValidationMiddleware());
 
 /**
  * Get all queues for a specific server (ALL USERS)

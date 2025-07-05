@@ -3,7 +3,7 @@ import { UserRole, WorkspacePlan } from "@prisma/client";
 import { prisma } from "@/core/prisma";
 import { logger } from "@/core/logger";
 import { authorize } from "@/core/auth";
-import { PLAN_FEATURES, getUnifiedPlanFeatures } from "@/services/plan.service";
+import { PLAN_FEATURES, getPlanFeatures } from "@/services/plan/plan.service";
 
 const planRoutes = new Hono();
 
@@ -79,7 +79,7 @@ planRoutes.get("/current/plan", async (c) => {
     });
 
     // Get plan features
-    const planFeatures = getUnifiedPlanFeatures(workspace.plan);
+    const planFeatures = getPlanFeatures(workspace.plan);
 
     // Calculate usage percentages and limits
     const usage = {

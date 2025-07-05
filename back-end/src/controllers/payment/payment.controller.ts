@@ -1,20 +1,23 @@
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
-import { authMiddleware } from "@/middlewares/auth";
 import { prisma } from "@/core/prisma";
 import { logger } from "@/core/logger";
+import { authenticate } from "@/core/auth";
 import { StripeService } from "@/services/stripe/stripe.service";
 import { WorkspacePlan } from "@prisma/client";
 import { createCheckoutSessionSchema } from "@/schemas/payment";
 import { emailConfig } from "@/config";
+import { strictRateLimiter } from "@/middlewares/security";
 import { getUserDisplayName } from "../shared";
 
-const app = new Hono();
+const paymentController = new Hono();
+
+paymentController.use("*", authenticate);
+paymentController.use("*", strictRateLimiter);
 
 // Create checkout session for subscription
-app.post(
+paymentController.post(
   "/checkout",
-  authMiddleware,
   zValidator("json", createCheckoutSessionSchema),
   async (c) => {
     const user = c.get("user");
@@ -70,7 +73,7 @@ app.post(
 );
 
 // Create customer portal session
-app.post("/portal", authMiddleware, async (c) => {
+paymentController.post("/portal", async (c) => {
   const user = c.get("user");
 
   const workspace = await prisma.workspace.findUnique({
@@ -94,4 +97,4 @@ app.post("/portal", authMiddleware, async (c) => {
   }
 });
 
-export default app;
+export default paymentController;

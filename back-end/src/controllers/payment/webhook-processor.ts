@@ -1,5 +1,5 @@
-import { Event } from "@/services/stripe/stripe.service";
 import { logger } from "@/core/logger";
+import { Event } from "@/services/stripe/stripe.service";
 import {
   handleCheckoutSessionCompleted,
   handleSubscriptionChange,

@@ -1,8 +1,4 @@
 import { Context, Next } from "hono";
-import { authenticate as coreAuthenticate } from "@/core/auth";
-
-// Re-export the core authenticate function as middleware
-export const authMiddleware = coreAuthenticate;
 
 export const requireRole = (role: string) => {
   return async (c: Context, next: Next) => {

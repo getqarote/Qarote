@@ -2,12 +2,7 @@ import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { prisma } from "@/core/prisma";
 import { logger } from "@/core/logger";
-import {
-  hashPassword,
-  comparePassword,
-  authenticate,
-  SafeUser,
-} from "@/core/auth";
+import { hashPassword, comparePassword, authenticate } from "@/core/auth";
 import {
   PasswordResetRequestSchema,
   PasswordResetSchema,
@@ -15,12 +10,15 @@ import {
 } from "@/schemas/auth";
 import { EncryptionService } from "@/services/encryption.service";
 import { isDevelopment } from "@/config";
+import { strictRateLimiter } from "@/middlewares/security";
 
-const app = new Hono();
+const passwordController = new Hono();
 
 // Password reset request
-app.post(
+passwordController.post(
   "/password-reset/request",
+  authenticate,
+  strictRateLimiter,
   zValidator("json", PasswordResetRequestSchema),
   async (c) => {
     const { email } = c.req.valid("json");
@@ -65,7 +63,7 @@ app.post(
 );
 
 // Password reset
-app.post(
+passwordController.post(
   "/password-reset",
   zValidator("json", PasswordResetSchema),
   async (c) => {
@@ -83,13 +81,14 @@ app.post(
 );
 
 // Change password (authenticated)
-app.post(
+passwordController.post(
   "/password-change",
   authenticate,
+  strictRateLimiter,
   zValidator("json", PasswordChangeSchema),
   async (c) => {
     const { currentPassword, newPassword } = c.req.valid("json");
-    const user = c.get("user") as SafeUser;
+    const user = c.get("user");
 
     try {
       // Get user with password hash
@@ -132,4 +131,4 @@ app.post(
   }
 );
 
-export default app;
+export default passwordController;

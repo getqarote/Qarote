@@ -11,7 +11,7 @@ import { logger } from "@/core/logger";
 import { serverConfig } from "@/config";
 
 import serverController from "@/controllers/server.controller";
-import rabbitmqController from "@/controllers/rabbitmq";
+import rabbitmqController from "@/controllers/rabbitmq.controller";
 import alertController from "@/controllers/alert.controller";
 import authController from "@/controllers/auth.controller";
 import userController from "@/controllers/user.controller";
@@ -24,6 +24,11 @@ import paymentController from "@/controllers/payment.controller";
 import { messageHistoryController } from "@/controllers/message-history.controller";
 
 import { corsMiddleware } from "@/middlewares/cors";
+import {
+  requestIdMiddleware,
+  performanceMonitoring,
+  standardRateLimiter,
+} from "@/middlewares/security";
 // import { alertService } from "./services/alert.service";
 // import { TemporaryStorage } from "./core/privacy";
 import { streamRegistry } from "@/core/DatabaseStreamRegistry";
@@ -32,11 +37,16 @@ const prisma = new PrismaClient();
 
 const app = new Hono();
 
+// Core middlewares - applied to all routes
 app.use(honoLogger());
+app.use("*", requestIdMiddleware);
+app.use("*", performanceMonitoring);
 app.use("*", corsMiddleware);
 app.use("*", prettyJSON());
 app.use("*", secureHeaders());
+app.use("*", standardRateLimiter);
 
+// endpoint routes
 app.route("/api/servers", serverController);
 app.route("/api/rabbitmq", rabbitmqController);
 app.route("/api/alerts", alertController);

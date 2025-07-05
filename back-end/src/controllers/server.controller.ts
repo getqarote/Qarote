@@ -1,33 +1,25 @@
 import { Hono } from "hono";
+import { UserRole } from "@prisma/client";
 import { zValidator } from "@hono/zod-validator";
 import { prisma } from "@/core/prisma";
 import RabbitMQClient from "@/core/rabbitmq";
 import { authenticate, authorize } from "@/core/auth";
-import { UserRole } from "@prisma/client";
-import { EncryptionService } from "@/services/encryption.service";
 import { logger } from "@/core/logger";
+import { EncryptionService } from "@/services/encryption.service";
+import {
+  extractMajorMinorVersion,
+  getWorkspacePlan,
+  getWorkspaceResourceCounts,
+  isServerOverQueueLimit,
+  validateRabbitMqVersion,
+  validateServerCreation,
+} from "@/services/plan/plan.service";
 import {
   CreateServerSchema,
   UpdateServerSchema,
   RabbitMQCredentialsSchema,
 } from "@/schemas/rabbitmq";
-// import {
-//   validateServerCreation,
-//   validateRabbitMqVersion,
-//   extractMajorMinorVersion,
-//   isServerOverQueueLimit,
-// } from "@/services/plan-features.service";
-import {
-  getWorkspacePlan,
-  getWorkspaceResourceCounts,
-  planValidationMiddleware,
-} from "@/middlewares/plan-validation";
-import {
-  extractMajorMinorVersion,
-  isServerOverQueueLimit,
-  validateRabbitMqVersion,
-  validateServerCreation,
-} from "@/services/plan.service";
+import { planValidationMiddleware } from "@/middlewares/plan-validation";
 
 const serverController = new Hono();
 

@@ -1,15 +1,10 @@
 import { Hono } from "hono";
 import { prisma } from "@/core/prisma";
-import { authenticate } from "@/core/auth";
 import { logger } from "@/core/logger";
-import { planValidationMiddleware } from "@/middlewares/plan-validation";
-import { createRabbitMQClient, createErrorResponse } from "./shared";
+import { createRabbitMQClient } from "./shared";
+import { createErrorResponse } from "../shared";
 
 const metricsController = new Hono();
-
-// Apply authentication and plan validation middleware
-metricsController.use("*", authenticate);
-metricsController.use("*", planValidationMiddleware());
 
 /**
  * Get metrics for a specific server (ALL USERS)
@@ -28,7 +23,6 @@ metricsController.get("/servers/:id/metrics", async (c) => {
 
     return c.json({
       serverId: id,
-      // serverName: server.name,
       metrics: enhancedMetrics,
     });
   } catch (error) {

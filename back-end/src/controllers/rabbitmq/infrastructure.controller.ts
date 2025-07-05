@@ -1,14 +1,9 @@
 import { Hono } from "hono";
-import { authenticate } from "@/core/auth";
-import { planValidationMiddleware } from "@/middlewares/plan-validation";
 import { logger } from "@/core/logger";
-import { createRabbitMQClient, createErrorResponse } from "./shared";
+import { createRabbitMQClient } from "./shared";
+import { createErrorResponse } from "../shared";
 
 const infrastructureController = new Hono();
-
-// Apply authentication and plan validation middleware
-infrastructureController.use("*", authenticate);
-infrastructureController.use("*", planValidationMiddleware());
 
 /**
  * Get all nodes for a specific server

@@ -1,13 +1,16 @@
 import { Hono } from "hono";
-import { authMiddleware } from "@/middlewares/auth";
+import { authenticate } from "@/core/auth";
 import { prisma } from "@/core/prisma";
 import { logger } from "@/core/logger";
 import { StripeService } from "@/services/stripe/stripe.service";
+import { strictRateLimiter } from "@/middlewares/security";
 
-const app = new Hono();
+const billingController = new Hono();
+
+billingController.use("*", authenticate);
 
 // Get comprehensive billing overview
-app.get("/billing/overview", authMiddleware, async (c) => {
+billingController.get("/billing/overview", async (c) => {
   const user = c.get("user");
 
   try {
@@ -114,7 +117,7 @@ app.get("/billing/overview", authMiddleware, async (c) => {
 });
 
 // Get subscription details
-app.get("/billing/subscription", authMiddleware, async (c) => {
+billingController.get("/billing/subscription", async (c) => {
   const user = c.get("user");
 
   try {
@@ -134,7 +137,7 @@ app.get("/billing/subscription", authMiddleware, async (c) => {
 });
 
 // Get payment history
-app.get("/billing/payments", authMiddleware, async (c) => {
+billingController.get("/billing/payments", async (c) => {
   const user = c.get("user");
   const limit = parseInt(c.req.query("limit") || "20");
   const offset = parseInt(c.req.query("offset") || "0");
@@ -167,7 +170,7 @@ app.get("/billing/payments", authMiddleware, async (c) => {
 });
 
 // Update payment method
-app.post("/billing/payment-method", authMiddleware, async (c) => {
+billingController.post("/billing/payment-method", async (c) => {
   const user = c.get("user");
   const { paymentMethodId } = await c.req.json();
 
@@ -202,7 +205,7 @@ app.post("/billing/payment-method", authMiddleware, async (c) => {
 });
 
 // Get billing portal URL
-app.post("/billing/portal", authMiddleware, async (c) => {
+billingController.post("/billing/portal", async (c) => {
   const user = c.get("user");
 
   try {
@@ -230,7 +233,7 @@ app.post("/billing/portal", authMiddleware, async (c) => {
 });
 
 // Cancel subscription
-app.post("/billing/cancel", authMiddleware, async (c) => {
+billingController.post("/billing/cancel", strictRateLimiter, async (c) => {
   const user = c.get("user");
   const { cancelImmediately = false, reason, feedback } = await c.req.json();
 
@@ -323,4 +326,4 @@ app.post("/billing/cancel", authMiddleware, async (c) => {
   }
 });
 
-export default app;
+export default billingController;
