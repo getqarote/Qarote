@@ -12,9 +12,15 @@ import { LogsApiClient } from "./logsClient";
 import { FeedbackApiClient } from "./feedbackClient";
 import { PlanApiClient } from "./planClient";
 import { PaymentApiClient } from "./paymentClient";
+import { PasswordApiClient } from "./passwordClient";
 import type { LogQuery, CreateLogRequest, LogExportRequest } from "./logTypes";
 import type { FeedbackFilters, UpdateFeedbackRequest } from "./feedbackClient";
 import type { FeedbackRequest } from "@/types/feedback";
+import type {
+  PasswordChangeRequest,
+  PasswordResetRequest,
+  PasswordReset,
+} from "./passwordClient";
 
 class ApiClient {
   private serverClient: ServerApiClient;
@@ -26,6 +32,7 @@ class ApiClient {
   private feedbackClient: FeedbackApiClient;
   private planClient: PlanApiClient;
   private paymentClient: PaymentApiClient;
+  private passwordClient: PasswordApiClient;
 
   constructor(baseUrl?: string) {
     this.serverClient = new ServerApiClient(baseUrl);
@@ -37,6 +44,7 @@ class ApiClient {
     this.feedbackClient = new FeedbackApiClient(baseUrl);
     this.planClient = new PlanApiClient(baseUrl);
     this.paymentClient = new PaymentApiClient(baseUrl);
+    this.passwordClient = new PasswordApiClient(baseUrl);
   }
 
   // Server methods
@@ -437,6 +445,19 @@ class ApiClient {
     billingInterval?: Parameters<PaymentApiClient["renewSubscription"]>[1]
   ) {
     return this.paymentClient.renewSubscription(plan, billingInterval);
+  }
+
+  // Password management methods
+  async changePassword(data: PasswordChangeRequest) {
+    return this.passwordClient.changePassword(data);
+  }
+
+  async requestPasswordReset(data: PasswordResetRequest) {
+    return this.passwordClient.requestPasswordReset(data);
+  }
+
+  async resetPassword(data: PasswordReset) {
+    return this.passwordClient.resetPassword(data);
   }
 }
 

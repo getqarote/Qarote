@@ -3,26 +3,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
-import { User, Shield, MessageSquare, Crown } from "lucide-react";
-import logger from "../lib/logger";
-import {
-  useProfile,
-  useUpdateProfile,
-  useUpdateCompany,
-  useUpdateWorkspace,
-  useCompanyUsers,
-  useWorkspaceUsers,
-  useInviteUser,
-  useInvitations,
-  useSendInvitation,
-  useRevokeInvitation,
-} from "@/hooks/useApi";
-import { useAuth } from "@/contexts/AuthContext";
-import { toast } from "sonner";
 import {
   PersonalInfoTab,
   WorkspaceInfoTab,
-  TeamTab,
   EnhancedTeamTab,
   ProfileLoading,
   PlansSummaryTab,
@@ -30,12 +13,24 @@ import {
   WorkspaceFormState,
   InviteFormState,
 } from "@/components/profile";
+import { User, Shield, MessageSquare, Crown } from "lucide-react";
+import { toast } from "sonner";
+import logger from "@/lib/logger";
+import {
+  useProfile,
+  useUpdateProfile,
+  useUpdateWorkspace,
+  useWorkspaceUsers,
+  useInviteUser,
+  useInvitations,
+  useSendInvitation,
+  useRevokeInvitation,
+  useChangePassword,
+} from "@/hooks/useApi";
 import { FeedbackForm } from "@/components/FeedbackForm";
-import { WorkspacePlan } from "@/types/plans";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 
 const Profile = () => {
-  const { user } = useAuth();
   const { planData, workspacePlan } = useWorkspace();
   const { data: profileData, isLoading: profileLoading } = useProfile();
   const { data: workspaceUsersData, isLoading: usersLoading } =
@@ -44,9 +39,9 @@ const Profile = () => {
     useInvitations();
   const updateProfileMutation = useUpdateProfile();
   const updateWorkspaceMutation = useUpdateWorkspace();
-  const inviteUserMutation = useInviteUser(); // Keep for backwards compatibility
   const sendInvitationMutation = useSendInvitation();
   const revokeInvitationMutation = useRevokeInvitation();
+  const changePasswordMutation = useChangePassword();
 
   const [editingProfile, setEditingProfile] = useState(false);
   const [editingWorkspace, setEditingWorkspace] = useState(false);
@@ -114,6 +109,21 @@ const Profile = () => {
       toast.success("Profile updated successfully");
     } catch (error) {
       toast.error("Failed to update profile");
+    }
+  };
+
+  const handlePasswordChange = async (data: {
+    currentPassword: string;
+    newPassword: string;
+  }) => {
+    try {
+      await changePasswordMutation.mutateAsync(data);
+      toast.success("Password changed successfully");
+    } catch (error) {
+      console.error("Password change error:", error);
+      const errorMessage = extractErrorMessage(error);
+      toast.error(errorMessage);
+      throw error; // Re-throw to let the form handle it
     }
   };
 
@@ -249,7 +259,9 @@ const Profile = () => {
                   setProfileForm={setProfileForm}
                   setEditingProfile={setEditingProfile}
                   onUpdateProfile={handleUpdateProfile}
+                  onPasswordChange={handlePasswordChange}
                   isUpdating={updateProfileMutation.isPending}
+                  isChangingPassword={changePasswordMutation.isPending}
                 />
               </TabsContent>
 

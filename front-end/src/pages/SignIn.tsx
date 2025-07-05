@@ -172,6 +172,16 @@ const SignIn: React.FC = () => {
                 </Button>
               </form>
             </Form>
+
+            {/* Forgot Password Link */}
+            <div className="mt-4 text-center">
+              <Link
+                to="/forgot-password"
+                className="text-sm text-muted-foreground hover:text-primary transition-colors"
+              >
+                Forgot your password?
+              </Link>
+            </div>
           </CardContent>
         </Card>
       </div>

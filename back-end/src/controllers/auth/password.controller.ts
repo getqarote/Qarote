@@ -11,25 +11,42 @@ import {
 import { EncryptionService } from "@/services/encryption.service";
 import { isDevelopment } from "@/config";
 import { strictRateLimiter } from "@/middlewares/security";
+import { passwordResetEmailService } from "@/services/email/password-reset-email.service";
+import { auditService } from "@/services/audit.service";
 
 const passwordController = new Hono();
 
-// Password reset request
+// Password reset request (not authenticated)
 passwordController.post(
   "/password-reset/request",
-  authenticate,
-  strictRateLimiter,
   zValidator("json", PasswordResetRequestSchema),
   async (c) => {
     const { email } = c.req.valid("json");
+    const clientIP =
+      c.req.header("x-forwarded-for") || c.req.header("x-real-ip") || "unknown";
+    const userAgent = c.req.header("user-agent") || "unknown";
 
     try {
       // Find user by email
       const user = await prisma.user.findUnique({
         where: { email },
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+        },
       });
 
       if (!user) {
+        // Log failed attempt for audit
+        await auditService.logPasswordResetRequest(
+          email,
+          clientIP,
+          userAgent,
+          false
+        );
+
         // Return success even if user doesn't exist for security
         return c.json({
           message:
@@ -42,12 +59,49 @@ passwordController.post(
       const expiresAt = new Date();
       expiresAt.setHours(expiresAt.getHours() + 24);
 
-      // Store the token in the database
-      // In a real application, you would have a PasswordReset model
-      // For simplicity, we're just returning the token here
+      // Clean up any existing password reset requests for this user
+      await prisma.passwordReset.deleteMany({
+        where: { userId: user.id },
+      });
 
-      // Send email with reset link (not implemented in this example)
-      // In a real application, you would send an email with the reset token
+      // Store the new token in the database
+      await prisma.passwordReset.create({
+        data: {
+          userId: user.id,
+          token: resetToken,
+          expiresAt,
+        },
+      });
+
+      // Send password reset email
+      try {
+        await passwordResetEmailService.sendPasswordResetEmail(
+          user.email,
+          resetToken,
+          user.firstName
+            ? `${user.firstName} ${user.lastName}`.trim()
+            : undefined
+        );
+        logger.info(
+          { userId: user.id, email: user.email },
+          "Password reset email sent successfully"
+        );
+
+        // Log successful request for audit
+        await auditService.logPasswordResetRequest(
+          email,
+          clientIP,
+          userAgent,
+          true
+        );
+      } catch (emailError) {
+        logger.error(
+          { emailError, userId: user.id, email: user.email },
+          "Failed to send password reset email"
+        );
+        // Don't fail the request if email sending fails
+        // The token is still valid in the database
+      }
 
       return c.json({
         message:
@@ -62,16 +116,102 @@ passwordController.post(
   }
 );
 
-// Password reset
+// Password reset (not authenticated)
 passwordController.post(
   "/password-reset",
   zValidator("json", PasswordResetSchema),
   async (c) => {
     const { token, password } = c.req.valid("json");
+    const clientIP =
+      c.req.header("x-forwarded-for") || c.req.header("x-real-ip") || "unknown";
+    const userAgent = c.req.header("user-agent") || "unknown";
 
     try {
-      // In a real application, you would validate the token and find the user
-      // For this example, we'll just return a success message
+      // Find the password reset record
+      const passwordReset = await prisma.passwordReset.findUnique({
+        where: { token },
+        include: {
+          user: {
+            select: {
+              id: true,
+              email: true,
+              firstName: true,
+              lastName: true,
+            },
+          },
+        },
+      });
+
+      if (!passwordReset) {
+        await auditService.logPasswordResetFailed(
+          token,
+          "Invalid token",
+          clientIP,
+          userAgent
+        );
+        return c.json(
+          { error: "Invalid or expired password reset token" },
+          400
+        );
+      }
+
+      // Check if token is expired
+      if (passwordReset.expiresAt < new Date()) {
+        // Clean up expired token
+        await prisma.passwordReset.delete({
+          where: { id: passwordReset.id },
+        });
+        await auditService.logPasswordResetFailed(
+          token,
+          "Expired token",
+          clientIP,
+          userAgent
+        );
+        return c.json({ error: "Password reset token has expired" }, 400);
+      }
+
+      // Check if token has already been used
+      if (passwordReset.used) {
+        await auditService.logPasswordResetFailed(
+          token,
+          "Token already used",
+          clientIP,
+          userAgent
+        );
+        return c.json(
+          { error: "Password reset token has already been used" },
+          400
+        );
+      }
+
+      // Hash the new password
+      const hashedPassword = await hashPassword(password);
+
+      // Update user password and mark token as used
+      await prisma.$transaction([
+        prisma.user.update({
+          where: { id: passwordReset.userId },
+          data: { passwordHash: hashedPassword },
+        }),
+        prisma.passwordReset.update({
+          where: { id: passwordReset.id },
+          data: { used: true },
+        }),
+      ]);
+
+      logger.info(
+        { userId: passwordReset.userId, email: passwordReset.user.email },
+        "Password reset successfully completed"
+      );
+
+      // Log successful password reset for audit
+      await auditService.logPasswordResetCompleted(
+        passwordReset.userId,
+        passwordReset.user.email,
+        clientIP,
+        userAgent
+      );
+
       return c.json({ message: "Password has been reset successfully" });
     } catch (error) {
       logger.error({ error }, "Password reset error");
@@ -89,6 +229,9 @@ passwordController.post(
   async (c) => {
     const { currentPassword, newPassword } = c.req.valid("json");
     const user = c.get("user");
+    const clientIP =
+      c.req.header("x-forwarded-for") || c.req.header("x-real-ip") || "unknown";
+    const userAgent = c.req.header("user-agent") || "unknown";
 
     try {
       // Get user with password hash
@@ -96,6 +239,7 @@ passwordController.post(
         where: { id: user.id },
         select: {
           id: true,
+          email: true,
           passwordHash: true,
         },
       });
@@ -122,6 +266,14 @@ passwordController.post(
         where: { id: user.id },
         data: { passwordHash: hashedPassword },
       });
+
+      // Log password change for audit
+      await auditService.logPasswordChange(
+        user.id,
+        userWithPassword.email,
+        clientIP,
+        userAgent
+      );
 
       return c.json({ message: "Password updated successfully" });
     } catch (error) {

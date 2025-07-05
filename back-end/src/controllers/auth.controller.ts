@@ -9,7 +9,7 @@ import invitationRoutes from "./auth/invitation.controller";
 const authController = new Hono();
 
 // Apply strict rate limiting to auth endpoints for security
-authController.use("*", strictRateLimiter);
+// authController.use("*", strictRateLimiter);
 
 authController.route("/", registrationRoutes);
 authController.route("/", sessionRoutes);

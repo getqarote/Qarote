@@ -8,4 +8,5 @@ export { InviteUserDialog } from "./InviteUserDialog";
 export { InviteUserDialog as InviteUserDialogEnhanced } from "./InviteUserDialogEnhanced";
 export { ProfileLoading } from "./ProfileLoading";
 export { PlansSummaryTab } from "./PlansSummaryTab";
+export { PasswordChangeForm } from "./PasswordChangeForm";
 export * from "./profileUtils";

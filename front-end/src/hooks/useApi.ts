@@ -304,16 +304,26 @@ export const useUpdateProfile = () => {
   });
 };
 
-export const useUpdateCompany = () => {
-  const queryClient = useQueryClient();
-
+// Password change hook
+export const useChangePassword = () => {
   return useMutation({
-    mutationFn: (companyData: Parameters<typeof apiClient.updateCompany>[0]) =>
-      apiClient.updateCompany(companyData),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["profile"] });
-      queryClient.invalidateQueries({ queryKey: ["companyUsers"] });
-    },
+    mutationFn: (data: Parameters<typeof apiClient.changePassword>[0]) =>
+      apiClient.changePassword(data),
+  });
+};
+
+// Password reset hooks
+export const useRequestPasswordReset = () => {
+  return useMutation({
+    mutationFn: (data: Parameters<typeof apiClient.requestPasswordReset>[0]) =>
+      apiClient.requestPasswordReset(data),
+  });
+};
+
+export const useResetPassword = () => {
+  return useMutation({
+    mutationFn: (data: Parameters<typeof apiClient.resetPassword>[0]) =>
+      apiClient.resetPassword(data),
   });
 };
 
