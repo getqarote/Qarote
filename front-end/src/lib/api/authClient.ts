@@ -199,4 +199,31 @@ export class AuthApiClient extends BaseApiClient {
       hasPendingEmailChange: boolean;
     }>("/auth/verification-status");
   }
+
+  // Email change methods
+  async requestEmailChange(data: {
+    newEmail: string;
+    password: string;
+  }): Promise<{
+    message: string;
+    pendingEmail: string;
+  }> {
+    return this.request<{
+      message: string;
+      pendingEmail: string;
+    }>("/auth/email-change/request", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async cancelEmailChange(): Promise<{
+    message: string;
+  }> {
+    return this.request<{
+      message: string;
+    }>("/auth/email-change/cancel", {
+      method: "POST",
+    });
+  }
 }

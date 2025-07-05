@@ -237,6 +237,17 @@ class ApiClient {
     return this.authClient.getVerificationStatus();
   }
 
+  // Email change methods
+  async requestEmailChange(
+    data: Parameters<AuthApiClient["requestEmailChange"]>[0]
+  ) {
+    return this.authClient.requestEmailChange(data);
+  }
+
+  async cancelEmailChange() {
+    return this.authClient.cancelEmailChange();
+  }
+
   async acceptInvitationWithRegistration(
     token: string,
     registrationData: Parameters<

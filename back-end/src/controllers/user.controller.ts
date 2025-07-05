@@ -232,7 +232,7 @@ userController.put(
               data.email,
               verificationToken,
               "EMAIL_CHANGE",
-              user.firstName || "User"
+              user.firstName
             );
 
           if (!emailResult.success) {

@@ -13,13 +13,13 @@ export const RegisterUserSchema = z.object({
 
 // Schema for user login
 export const LoginSchema = z.object({
-  email: z.string().email("Invalid email address"),
+  email: z.email("Invalid email address"),
   password: z.string().min(1, "Password is required"),
 });
 
 // Schema for password reset request
 export const PasswordResetRequestSchema = z.object({
-  email: z.string().email("Invalid email address"),
+  email: z.email("Invalid email address"),
 });
 
 // Schema for password reset
@@ -34,11 +34,17 @@ export const PasswordChangeSchema = z.object({
   newPassword: z.string().min(8, "New password must be at least 8 characters"),
 });
 
+// Schema for email change request
+export const EmailChangeRequestSchema = z.object({
+  newEmail: z.string().email("Invalid email address"),
+  password: z.string().min(1, "Password is required for email change"),
+});
+
 // Schema for account invitation
 export const InviteUserSchema = z.object({
   email: z.email("Invalid email address"),
   role: z.enum(UserRole).default(UserRole.USER),
-  workspaceId: z.string().uuid("Invalid workspace ID"),
+  workspaceId: z.uuid("Invalid workspace ID"),
 });
 
 // Schema for accepting an invitation
@@ -60,5 +66,6 @@ export type PasswordResetRequestInput = z.infer<
 >;
 export type PasswordResetInput = z.infer<typeof PasswordResetSchema>;
 export type PasswordChangeInput = z.infer<typeof PasswordChangeSchema>;
+export type EmailChangeRequestInput = z.infer<typeof EmailChangeRequestSchema>;
 export type InviteUserInput = z.infer<typeof InviteUserSchema>;
 export type AcceptInvitationInput = z.infer<typeof AcceptInvitationSchema>;

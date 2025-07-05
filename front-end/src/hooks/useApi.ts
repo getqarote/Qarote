@@ -312,6 +312,44 @@ export const useChangePassword = () => {
   });
 };
 
+// Email change hooks
+export const useRequestEmailChange = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: Parameters<typeof apiClient.requestEmailChange>[0]) =>
+      apiClient.requestEmailChange(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
+      queryClient.invalidateQueries({ queryKey: ["verificationStatus"] });
+    },
+  });
+};
+
+export const useCancelEmailChange = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => apiClient.cancelEmailChange(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
+      queryClient.invalidateQueries({ queryKey: ["verificationStatus"] });
+    },
+  });
+};
+
+// Email verification status hook
+export const useVerificationStatus = () => {
+  const { isAuthenticated } = useAuth();
+
+  return useQuery({
+    queryKey: ["verificationStatus"],
+    queryFn: () => apiClient.getVerificationStatus(),
+    enabled: isAuthenticated,
+    staleTime: 60000, // 1 minute
+  });
+};
+
 // Password reset hooks
 export const useRequestPasswordReset = () => {
   return useMutation({

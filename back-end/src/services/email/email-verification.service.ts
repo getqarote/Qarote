@@ -64,12 +64,16 @@ export class EmailVerificationService {
         tokenLength: token.length,
       });
 
+      console.log("email", email);
+
       const result = await EmailService.sendVerificationEmail({
         to: email,
         userName,
         verificationToken: token,
         type,
       });
+
+      console.log("Email sent result:", result);
 
       if (!result.success) {
         logger.error("Failed to send verification email", {
@@ -94,7 +98,7 @@ export class EmailVerificationService {
       logger.error("Error in sendVerificationEmail", {
         email,
         type,
-        error: error instanceof Error ? error.message : "Unknown error",
+        error,
       });
 
       return {

@@ -26,6 +26,9 @@ import {
   useSendInvitation,
   useRevokeInvitation,
   useChangePassword,
+  useRequestEmailChange,
+  useCancelEmailChange,
+  useVerificationStatus,
 } from "@/hooks/useApi";
 import { FeedbackForm } from "@/components/FeedbackForm";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
@@ -37,11 +40,14 @@ const Profile = () => {
     useWorkspaceUsers();
   const { data: invitationsData, isLoading: invitationsLoading } =
     useInvitations();
+  const { data: verificationStatusData } = useVerificationStatus();
   const updateProfileMutation = useUpdateProfile();
   const updateWorkspaceMutation = useUpdateWorkspace();
   const sendInvitationMutation = useSendInvitation();
   const revokeInvitationMutation = useRevokeInvitation();
   const changePasswordMutation = useChangePassword();
+  const requestEmailChangeMutation = useRequestEmailChange();
+  const cancelEmailChangeMutation = useCancelEmailChange();
 
   const [editingProfile, setEditingProfile] = useState(false);
   const [editingWorkspace, setEditingWorkspace] = useState(false);
@@ -121,6 +127,33 @@ const Profile = () => {
       toast.success("Password changed successfully");
     } catch (error) {
       console.error("Password change error:", error);
+      const errorMessage = extractErrorMessage(error);
+      toast.error(errorMessage);
+      throw error; // Re-throw to let the form handle it
+    }
+  };
+
+  const handleEmailChangeRequest = async (data: {
+    newEmail: string;
+    password: string;
+  }) => {
+    try {
+      await requestEmailChangeMutation.mutateAsync(data);
+      toast.success("Verification email sent to your new email address");
+    } catch (error) {
+      console.error("Email change request error:", error);
+      const errorMessage = extractErrorMessage(error);
+      toast.error(errorMessage);
+      throw error; // Re-throw to let the form handle it
+    }
+  };
+
+  const handleCancelEmailChange = async () => {
+    try {
+      await cancelEmailChangeMutation.mutateAsync();
+      toast.success("Email change request cancelled");
+    } catch (error) {
+      console.error("Cancel email change error:", error);
       const errorMessage = extractErrorMessage(error);
       toast.error(errorMessage);
       throw error; // Re-throw to let the form handle it
@@ -260,8 +293,13 @@ const Profile = () => {
                   setEditingProfile={setEditingProfile}
                   onUpdateProfile={handleUpdateProfile}
                   onPasswordChange={handlePasswordChange}
+                  onEmailChangeRequest={handleEmailChangeRequest}
+                  onCancelEmailChange={handleCancelEmailChange}
+                  verificationStatus={verificationStatusData}
                   isUpdating={updateProfileMutation.isPending}
                   isChangingPassword={changePasswordMutation.isPending}
+                  isRequestingEmailChange={requestEmailChangeMutation.isPending}
+                  isCancellingEmailChange={cancelEmailChangeMutation.isPending}
                 />
               </TabsContent>
 
