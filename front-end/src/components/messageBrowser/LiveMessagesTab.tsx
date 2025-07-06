@@ -1,24 +1,16 @@
 import { useMemo } from "react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import logger from "../../lib/logger";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Wifi, WifiOff, Activity } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Play, Square, Wifi, WifiOff, Activity, Info } from "lucide-react";
 import {
   LiveMessageFilters,
   MessageList,
   formatPayload,
   getPayloadType,
 } from "@/components/MessageBrowser";
-import { UseMessageStreamReturn } from "@/hooks/useMessageStream";
+import logger from "@/lib/logger";
 import { Queue } from "@/lib/api/types";
+import { UseMessageStreamReturn } from "@/hooks/useMessageStream";
 
 interface LiveMessagesTabProps {
   selectedQueue: string;

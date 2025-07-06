@@ -22,7 +22,6 @@ import {
   FileText,
 } from "lucide-react";
 import { useBrowseMessages } from "@/hooks/useApi";
-import { RabbitMQMessage } from "@/lib/api";
 
 interface MessageBrowserProps {
   queueName: string;

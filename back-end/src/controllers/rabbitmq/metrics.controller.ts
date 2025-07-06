@@ -157,7 +157,6 @@ metricsController.get("/servers/:id/metrics/timeseries", async (c) => {
 
     return c.json({
       serverId: id,
-      // serverName: server.name,
       timeRange,
       startTime: startTime.toISOString(),
       endTime: new Date().toISOString(),

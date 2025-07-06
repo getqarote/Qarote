@@ -234,6 +234,7 @@ export const strictRateLimiter = createRateLimiter(
   5, // 10 requests max
   (c) => {
     const user = c.get("user");
+    console.log(user);
     return `${user.id}:${c.req.method}:sensitive`;
   }
 );

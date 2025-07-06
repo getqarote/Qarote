@@ -8,6 +8,7 @@ import { strictRateLimiter } from "@/middlewares/security";
 const billingController = new Hono();
 
 billingController.use("*", authenticate);
+billingController.use("*", strictRateLimiter);
 
 // Get comprehensive billing overview
 billingController.get("/billing/overview", async (c) => {

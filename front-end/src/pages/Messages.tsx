@@ -1,18 +1,18 @@
 import { useState, useMemo } from "react";
+import { Zap, History } from "lucide-react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Server, Zap, History } from "lucide-react";
 import { MessageBrowserHeader } from "@/components/MessageBrowser";
 import { LiveMessagesTab } from "@/components/MessageBrowser/LiveMessagesTab";
 import { MessageHistoryTab } from "@/components/MessageBrowser/MessageHistoryTab";
+import { NoServerConfigured } from "@/components/NoServerConfigured";
+import { useServerContext } from "@/contexts/ServerContext";
 import { useMessageStream } from "@/hooks/useMessageStream";
 import { useQueues } from "@/hooks/useApi";
-import { useServerContext } from "@/contexts/ServerContext";
 import { useMessageHistoryAccess } from "@/hooks/useMessageHistory";
-import { NoServerConfigured } from "@/components/NoServerConfigured";
-import logger from "../lib/logger";
+import logger from "@/lib/logger";
 
 const MessageBrowser = () => {
   const { selectedServerId } = useServerContext();

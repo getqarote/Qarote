@@ -1,13 +1,13 @@
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
+import { WorkspacePlan } from "@prisma/client";
 import { prisma } from "@/core/prisma";
 import { logger } from "@/core/logger";
 import { authenticate } from "@/core/auth";
 import { StripeService } from "@/services/stripe/stripe.service";
-import { WorkspacePlan } from "@prisma/client";
 import { createCheckoutSessionSchema } from "@/schemas/payment";
-import { emailConfig } from "@/config";
 import { strictRateLimiter } from "@/middlewares/security";
+import { emailConfig } from "@/config";
 import { getUserDisplayName } from "../shared";
 
 const paymentController = new Hono();

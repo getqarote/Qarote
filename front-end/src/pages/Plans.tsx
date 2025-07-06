@@ -10,6 +10,7 @@ import {
   TrendingUp,
   Shield,
   Headphones,
+  ArrowLeft,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +20,7 @@ import { usePlanUpgrade } from "@/hooks/usePlanUpgrade";
 import { apiClient } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
+import { useNavigate } from "react-router-dom";
 
 interface PlanCardProps {
   plan: WorkspacePlan;
@@ -321,6 +323,7 @@ export const PlansPage: React.FC<PlansPageProps> = ({
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">(
     "monthly"
   );
+  const navigate = useNavigate();
 
   const planPricing = {
     monthly: {
@@ -343,10 +346,23 @@ export const PlansPage: React.FC<PlansPageProps> = ({
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       {/* Hero Section */}
       <div className="pt-16 pb-12 px-4">
-        <div className="max-w-7xl mx-auto text-center">
-          <h1 className="text-5xl font-bold text-gray-900 mb-6">
-            Choose the right plan for your team
-          </h1>
+        <div className="max-w-7xl mx-auto">
+          {/* Back Navigation */}
+          <div className="mb-8">
+            <Button
+              variant="ghost"
+              onClick={() => navigate("/profile")}
+              className="text-gray-600 hover:text-gray-900 p-2 -ml-2"
+            >
+              <ArrowLeft className="w-5 h-5 mr-2" />
+              Back to Profile
+            </Button>
+          </div>
+          
+          <div className="text-center">
+            <h1 className="text-5xl font-bold text-gray-900 mb-6">
+              Choose the right plan for your team
+            </h1>
           <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
             Scale your RabbitMQ monitoring with plans designed for teams of all
             sizes. From individual developers to enterprise teams, we have you
@@ -430,6 +446,7 @@ export const PlansPage: React.FC<PlansPageProps> = ({
             {billingPeriod === "yearly" && (
               <Badge className="bg-green-100 text-green-800">Save 20%</Badge>
             )}
+          </div>
           </div>
         </div>
       </div>

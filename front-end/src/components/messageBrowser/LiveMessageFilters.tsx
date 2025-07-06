@@ -8,7 +8,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  Star,
   MessageSquare,
   Play,
   Square,
@@ -63,10 +62,7 @@ export const LiveMessageFilters = ({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">
-                <div className="flex items-center gap-2">
-                  <Star className="h-4 w-4 text-yellow-500" />
-                  All Queues
-                </div>
+                <div className="flex items-center gap-2">Select a queue</div>
               </SelectItem>
               {queues.map((queue) => (
                 <SelectItem key={queue.name} value={queue.name}>
