@@ -22,7 +22,7 @@ const envSchema = z.object({
     .min(32, "ENCRYPTION_KEY must be at least 32 characters"),
 
   // Database
-  DATABASE_URL: z.string().startsWith("postgresql://", {
+  DATABASE_URL: z.string().startsWith("postgres://", {
     message: "DATABASE_URL must start with 'postgres://'",
   }),
 

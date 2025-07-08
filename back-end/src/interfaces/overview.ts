@@ -1,4 +1,4 @@
-import { RabbitMQOverview } from "./Rabbitmq";
+import { RabbitMQOverview } from "./rabbitmq";
 
 /**
  * Warning information type for plan validation responses

@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { UserRole } from "@prisma/client";
 import { zValidator } from "@hono/zod-validator";
 import { prisma } from "@/core/prisma";
-import RabbitMQClient from "@/core/rabbitmq";
+import { RabbitMQClient } from "@/core/rabbitmq";
 import { authenticate, authorize } from "@/core/auth";
 import { logger } from "@/core/logger";
 import { EncryptionService } from "@/services/encryption.service";

@@ -1,10 +1,12 @@
-import type { RabbitMQCredentials, EnhancedMetrics } from "@/types/Rabbitmq";
+import type {
+  RabbitMQCredentials,
+  EnhancedMetrics,
+} from "@/interfaces/rabbitmq";
 import type {
   RabbitMQMessage,
   MessageProperties,
   QueueCreateOptions,
   BindingArguments,
-  AckMode,
   PurgeQueueResult,
   PublishResult,
   CreateQueueResult,

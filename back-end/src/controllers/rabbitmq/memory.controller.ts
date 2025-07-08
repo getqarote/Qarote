@@ -8,6 +8,7 @@ import {
   validateMemoryOptimizationAccess,
   validateMemoryTrendsAccess,
 } from "@/services/plan/plan.service";
+import { RabbitMQNode } from "@/interfaces/rabbitmq";
 import { createErrorResponse } from "../shared";
 import { createRabbitMQClient } from "./shared";
 
@@ -50,7 +51,7 @@ memoryController.get("/servers/:id/nodes/:nodeName/memory", async (c) => {
 
     const client = await createRabbitMQClient(id, user.workspaceId);
     const nodes = await client.getNodes();
-    const node = nodes.find((n) => n.name === nodeName);
+    const node = nodes.find((n: RabbitMQNode) => n.name === nodeName);
 
     if (!node) {
       return c.json({ error: "Node not found" }, 404);

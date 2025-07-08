@@ -1,0 +1,38 @@
+{
+  "scripts": {
+    "dokku": {
+      "predeploy": "npm run db:generate --workspace=back-end && npm run db:migrate --workspace=back-end"
+    }
+  },
+  "healthchecks": {
+    "web": [
+      {
+        "type": "liveness",
+        "name": "web liveness check",
+        "description": "Ongoing livez check for web process",
+        "path": "/livez",
+        "attempts": 3,
+        "timeout": 5,
+        "wait": 10
+      },
+      {
+        "type": "readiness",
+        "name": "web readiness check",
+        "description": "Check if the web process is ready to serve traffic",
+        "path": "/readyz",
+        "attempts": 3,
+        "timeout": 5,
+        "wait": 10
+      },
+      {
+        "type": "startup",
+        "name": "web startup check",
+        "description": "Check if the web process is responding during startup",
+        "path": "/health",
+        "attempts": 5,
+        "timeout": 10,
+        "wait": 5
+      }
+    ]
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "name": "rabbit-scout-infrastructure",
+  "version": "1.0.0",
+  "description": "Pure Dokku infrastructure for Rabbit Scout",
+  "scripts": {
+    "build": "tsc",
+    "setup": "tsx scripts/setup-server.ts",
+    "setup:staging": "tsx scripts/setup-server.ts staging",
+    "setup:production": "tsx scripts/setup-server.ts production",
+    "deploy:staging": "tsx scripts/deploy.ts staging all",
+    "deploy:staging:backend": "tsx scripts/deploy.ts staging backend",
+    "deploy:staging:frontend": "tsx scripts/deploy.ts staging frontend",
+    "deploy:production": "tsx scripts/deploy.ts production all",
+    "deploy:production:backend": "tsx scripts/deploy.ts production backend",
+    "deploy:production:frontend": "tsx scripts/deploy.ts production frontend",
+    "status:staging": "tsx scripts/status.ts staging",
+    "status:production": "tsx scripts/status.ts production",
+    "logs:staging": "tsx scripts/logs.ts staging",
+    "logs:production": "tsx scripts/logs.ts production",
+    "backup:staging": "tsx scripts/backup.ts staging",
+    "backup:production": "tsx scripts/backup.ts production",
+    "scale:staging": "tsx scripts/scale.ts staging",
+    "scale:production": "tsx scripts/scale.ts production",
+    "destroy:staging": "tsx scripts/destroy.ts staging",
+    "destroy:production": "tsx scripts/destroy.ts production",
+    "maintenance": "tsx scripts/maintenance.ts"
+  },
+  "keywords": [
+    "dokku",
+    "deployment",
+    "infrastructure",
+    "cloudflare",
+    "postgres"
+  ],
+  "author": "Rabbit Scout Team",
+  "license": "MIT",
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "commander": "^11.1.0",
+    "dotenv": "^16.3.1",
+    "inquirer": "^9.2.12"
+  },
+  "devDependencies": {
+    "@types/inquirer": "^9.0.7",
+    "@types/node": "^20.10.0",
+    "tsx": "^4.6.0",
+    "typescript": "^5.3.0",
+    "wrangler": "^3.0.0"
+  }
+}

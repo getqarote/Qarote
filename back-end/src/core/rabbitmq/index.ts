@@ -5,9 +5,6 @@
  * a clean modular structure under the 200-line rule.
  */
 
-// Main client
-// export { RabbitMQClient } from "./Client";
-
 // Specialized clients for advanced usage
 export { RabbitMQBaseClient } from "./BaseClient";
 export { RabbitMQApiClient } from "./ApiClient";
@@ -27,5 +24,5 @@ export type {
   BindQueueResult,
 } from "./types";
 
-// Default export for backward compatibility
-export { RabbitMQClient as default } from "./Client";
+// Main RabbitMQ client that combines all functionality
+export { RabbitMQClient } from "./RabbitClient";

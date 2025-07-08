@@ -1,4 +1,4 @@
-import type { RabbitMQCredentials, SSLConfig } from "@/types/Rabbitmq";
+import type { RabbitMQCredentials, SSLConfig } from "@/interfaces/rabbitmq";
 import { logger } from "../logger";
 import { captureRabbitMQError } from "../sentry";
 

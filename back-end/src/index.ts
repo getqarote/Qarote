@@ -22,6 +22,7 @@ import feedbackController from "@/controllers/feedback.controller";
 import invitationController from "@/controllers/invitation.controller";
 import paymentController from "@/controllers/payment.controller";
 import { messageHistoryController } from "@/controllers/message-history.controller";
+import healthcheckController from "@/controllers/healthcheck.controller";
 
 import { corsMiddleware } from "@/middlewares/cors";
 import {
@@ -39,11 +40,11 @@ const app = new Hono();
 
 // Core middlewares - applied to all routes
 app.use(honoLogger());
+app.use("*", prettyJSON());
+app.use("*", secureHeaders());
 app.use("*", requestIdMiddleware);
 app.use("*", performanceMonitoring);
 app.use("*", corsMiddleware);
-app.use("*", prettyJSON());
-app.use("*", secureHeaders());
 app.use("*", standardRateLimiter);
 
 // endpoint routes
@@ -59,10 +60,7 @@ app.route("/api/feedback", feedbackController);
 app.route("/api/invitations", invitationController);
 app.route("/api/payments", paymentController);
 app.route("/api/message-history", messageHistoryController);
-
-app.get("/livez", (c) =>
-  c.json({ status: "ok", message: "RabbitMQ Dashboard API" })
-);
+app.route("/", healthcheckController);
 
 const { port, host } = serverConfig;
 

@@ -10,7 +10,7 @@ import type {
   RabbitMQExchange,
   RabbitMQBinding,
   RabbitMQConsumer,
-} from "@/types/Rabbitmq";
+} from "@/interfaces/rabbitmq";
 
 export class RabbitMQApiClient extends RabbitMQBaseClient {
   async getOverview(): Promise<RabbitMQOverview> {

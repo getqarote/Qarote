@@ -1,0 +1,83 @@
+name: Deploy to Staging
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "back-end/**"
+      - ".github/workflows/deploy-staging.yml"
+  workflow_dispatch: # Allow manual triggers
+
+jobs:
+  deploy-staging:
+    name: Deploy Backend to Staging
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🔍 Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Full history for proper git operations
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: |
+            back-end/package-lock.json
+            infrastructure/package-lock.json
+
+      - name: 📦 Install infrastructure dependencies
+        run: |
+          cd infrastructure
+          npm ci
+
+      - name: 🔑 Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.DOKKU_SSH_PRIVATE_KEY }}
+
+      - name: 🏗️ Add SSH known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.DOKKU_HOST }} >> ~/.ssh/known_hosts
+
+      - name: 📝 Create staging environment file
+        run: |
+          cd infrastructure/environments/staging
+          cat > .env << 'EOF'
+          DOKKU_HOST=${{ secrets.DOKKU_HOST }}
+          DOMAIN_BACKEND=${{ secrets.DOMAIN_BACKEND }}
+          DOMAIN_FRONTEND=${{ secrets.DOMAIN_FRONTEND }}
+          JWT_SECRET=${{ secrets.JWT_SECRET }}
+          ENCRYPTION_KEY=${{ secrets.ENCRYPTION_KEY }}
+          CORS_ORIGIN=${{ secrets.CORS_ORIGIN }}
+          FRONTEND_URL=${{ secrets.FRONTEND_URL }}
+          DATABASE_URL=${{ secrets.DATABASE_URL }}
+          RESEND_API_KEY=${{ secrets.RESEND_API_KEY }}
+          FROM_EMAIL=${{ secrets.FROM_EMAIL }}
+          STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY }}
+          STRIPE_WEBHOOK_SECRET=${{ secrets.STRIPE_WEBHOOK_SECRET }}
+          STRIPE_DEVELOPER_MONTHLY_PRICE_ID=${{ secrets.STRIPE_DEVELOPER_MONTHLY_PRICE_ID }}
+          STRIPE_DEVELOPER_YEARLY_PRICE_ID=${{ secrets.STRIPE_DEVELOPER_YEARLY_PRICE_ID }}
+          STRIPE_STARTUP_MONTHLY_PRICE_ID=${{ secrets.STRIPE_STARTUP_MONTHLY_PRICE_ID }}
+          STRIPE_STARTUP_YEARLY_PRICE_ID=${{ secrets.STRIPE_STARTUP_YEARLY_PRICE_ID }}
+          STRIPE_BUSINESS_MONTHLY_PRICE_ID=${{ secrets.STRIPE_BUSINESS_MONTHLY_PRICE_ID }}
+          STRIPE_BUSINESS_YEARLY_PRICE_ID=${{ secrets.STRIPE_BUSINESS_YEARLY_PRICE_ID }}
+          VITE_STRIPE_PUBLISHABLE_KEY=${{ secrets.VITE_STRIPE_PUBLISHABLE_KEY }}
+          SENTRY_DSN=${{ secrets.SENTRY_DSN }}
+          SENTRY_ENABLED=${{ secrets.SENTRY_ENABLED }}
+          EOF
+
+      - name: 🚀 Deploy to staging
+        run: |
+          cd infrastructure
+          npm run deploy:staging:backend
+
+      - name: ✅ Deployment complete
+        run: |
+          echo "🎉 Deployment to staging completed successfully!"
+          echo "🔍 Backend URL: https://${{ secrets.DOMAIN_BACKEND }}"
+          echo "📝 Commit: ${{ github.sha }}"
+          echo "🗄️ Database migrations: ✅ Completed"

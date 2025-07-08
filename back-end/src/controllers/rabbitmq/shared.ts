@@ -1,6 +1,6 @@
 import { RabbitMQServer } from "@prisma/client";
 import { prisma } from "@/core/prisma";
-import { RabbitMQClient } from "@/core/rabbitmq/Client";
+import { RabbitMQClient } from "@/core/rabbitmq/RabbitClient";
 import { EncryptionService } from "@/services/encryption.service";
 
 /**
