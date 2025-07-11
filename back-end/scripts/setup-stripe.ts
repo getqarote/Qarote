@@ -31,7 +31,7 @@ class StripeSetup {
   async run() {
     const command = process.argv[2] || "create";
 
-    console.log("🚀 Rabbit Scout - Stripe Setup\n");
+    console.log("🚀 RabbitHQ - Stripe Setup\n");
 
     try {
       switch (command) {
@@ -239,7 +239,7 @@ class StripeSetup {
     this.checkStripeCli();
     this.checkLogin();
 
-    console.log("🧹 Cleaning up Rabbit Scout test products...\n");
+    console.log("🧹 Cleaning up RabbitHQ test products...\n");
 
     try {
       // List products with metadata
@@ -251,7 +251,7 @@ class StripeSetup {
       if (products.data) {
         const testProducts = products.data.filter(
           (p: any) =>
-            p.metadata?.created_by === "rabbit_scout" ||
+            p.metadata?.created_by === "rabbit_hq" ||
             p.name?.includes("Developer Plan") ||
             p.name?.includes("Startup Plan") ||
             p.name?.includes("Business Plan")
@@ -432,7 +432,7 @@ class StripeSetup {
 
   private showHelp() {
     console.log(`
-🎯 Stripe Setup for Rabbit Scout
+🎯 Stripe Setup for RabbitHQ
 
 Usage: npm run setup-stripe [command]
 

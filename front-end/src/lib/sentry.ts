@@ -61,13 +61,13 @@ export function initSentry() {
     },
 
     // Set release information
-    release: `rabbit-scout-frontend@${import.meta.env.VITE_APP_VERSION}`,
+    release: `rabbithq-frontend@${import.meta.env.VITE_APP_VERSION}`,
 
     // Configure tags
     initialScope: {
       tags: {
         component: "frontend",
-        service: "rabbit-scout-front",
+        service: "rabbithq-front",
       },
     },
   });

@@ -41,7 +41,7 @@ export const TrialEndingEmail = ({
       <Head />
       <Preview>
         Your {planDisplayName} trial ends soon - upgrade to continue using
-        RabbitScout
+        RabbitHQ
       </Preview>
       <Body style={main}>
         <Container style={container}>
@@ -51,10 +51,10 @@ export const TrialEndingEmail = ({
               src={`${frontendUrl}/icon_rabbit.svg`}
               width="50"
               height="50"
-              alt="RabbitScout"
+              alt="RabbitHQ"
               style={logo}
             />
-            <Text style={headerText}>RabbitScout</Text>
+            <Text style={headerText}>RabbitHQ</Text>
           </Section>
 
           {/* Main Content */}
@@ -164,7 +164,7 @@ export const TrialEndingEmail = ({
 
             <Hr style={hr} />
 
-            <Text style={signature}>The RabbitScout Team</Text>
+            <Text style={signature}>The RabbitHQ Team</Text>
           </Section>
 
           {/* Footer */}
@@ -176,7 +176,7 @@ export const TrialEndingEmail = ({
 
             <Text style={footerText}>
               <Link href={frontendUrl} style={footerLink}>
-                RabbitScout
+                RabbitHQ
               </Link>{" "}
               - Monitor and manage your RabbitMQ clusters with ease.
             </Text>

@@ -134,7 +134,7 @@ export function AppSidebar() {
             <MessageSquare className="w-4 h-4 text-white" />
           </div>
           <div>
-            <h2 className="font-bold text-gray-900">Rabbit Scout</h2>
+            <h2 className="font-bold text-gray-900">RabbitHQ</h2>
             <p className="text-xs text-gray-500">The next GUI for RabbitMQ</p>
           </div>
         </div>

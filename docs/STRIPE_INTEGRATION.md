@@ -2,7 +2,7 @@
 
 ## Overview
 
-Successfully integrated Stripe payment processing into the Rabbit Scout SaaS application, enabling users to subscribe to monthly/yearly plans, manage their subscription, and view payment history.
+Successfully integrated Stripe payment processing into the RabbitHQ SaaS application, enabling users to subscribe to monthly/yearly plans, manage their subscription, and view payment history.
 
 ## Backend Implementation
 

@@ -57,7 +57,7 @@ export function initSentry() {
     initialScope: {
       tags: {
         component: "backend",
-        service: "rabbit-scout-api",
+        service: "rabbithq-api",
       },
     },
   });

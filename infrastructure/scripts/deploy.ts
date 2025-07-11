@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 
 /**
- * Rabbit Scout Pure Dokku Deployment Script
+ * Rabbit HQ Pure Dokku Deployment Script
  * Deploy backend to Dokku and frontend to Cloudflare Pages
  */
 
@@ -17,6 +17,7 @@ import {
   validateEnvironment,
   getAppNames,
   Paths,
+  isRunningInCI,
   type Environment,
   type EnvConfig,
 } from "./utils.js";
@@ -56,19 +57,33 @@ async function deployBackend(
   // Add SSH key to dokku user for Git operations
   Logger.info("Ensuring SSH key is added to dokku user...");
   try {
-    const sshKeyPath = path.join(process.env.HOME || "", ".ssh", "id_rsa.pub");
-    const publicKey = await fs.readFile(sshKeyPath, "utf-8");
+    // Skip key addition in CI environment (GitHub Actions)
+    if (isRunningInCI()) {
+      // In CI, the SSH key is already available via ssh-agent
+      Logger.info(
+        "Running in CI environment with SSH agent, skipping key file operations"
+      );
+    } else {
+      // For local development, add the key from file
+      const sshKeyPath = path.join(
+        process.env.HOME || "",
+        ".ssh",
+        "id_rsa_deploy.pub"
+      );
+      const publicKey = await fs.readFile(sshKeyPath, "utf-8");
 
-    await sshCommand(
-      config.DOKKU_HOST,
-      `echo '${publicKey.trim()}' | sudo dokku ssh-keys:add admin`
-    );
+      await sshCommand(
+        config.DOKKU_HOST,
+        `echo '${publicKey.trim()}' | sudo dokku ssh-keys:add admin`
+      );
 
-    Logger.success("SSH key added to dokku user successfully");
+      Logger.success("SSH key added to dokku user successfully");
+    }
   } catch (error) {
     Logger.warning(
       "SSH key might already be added to dokku user, continuing..."
     );
+    Logger.warning(String(error));
   }
 
   // Create app if it doesn't exist
@@ -192,17 +207,17 @@ async function deployBackend(
   );
 
   if (sslStatusResult.stdout.includes("not-found")) {
+    Logger.info("Setting email for Let's Encrypt...");
+    await sshCommand(
+      config.DOKKU_HOST,
+      `dokku letsencrypt:set ${backendApp} email tessierhuort@gmail.com`
+    );
+
     // Configure Let's Encrypt SSL
     Logger.info("Setting up SSL certificate (first time)...");
     await sshCommand(
       config.DOKKU_HOST,
       `dokku letsencrypt:enable ${backendApp}`
-    );
-
-    Logger.info("Setting email for Let's Encrypt...");
-    await sshCommand(
-      config.DOKKU_HOST,
-      `dokku letsencrypt:set ${backendApp} email tessierhuort@gmail.com`
     );
 
     Logger.info("Adding automatic SSL certificate renewal cron job...");
@@ -270,21 +285,36 @@ async function deployBackend(
   );
 
   // Push to deploy using regular git push
-  const sshKeyPath = path.join(process.env.HOME || "", ".ssh", "id_rsa");
-  const gitSshCommand = `ssh -i ${sshKeyPath}`;
-
   Logger.info("Pushing backend code to Dokku...");
+
+  // Configure Git SSH command based on environment
+  let gitEnv = { ...process.env };
+
+  if (!isRunningInCI()) {
+    // For local development, use the specific key file
+    const sshKeyPath = path.join(
+      process.env.HOME || "",
+      ".ssh",
+      "id_rsa_deploy"
+    );
+    gitEnv.GIT_SSH_COMMAND = `ssh -i ${sshKeyPath} -o StrictHostKeyChecking=no`;
+    Logger.info("Using local SSH key for Git operations");
+  } else {
+    // In CI, use the SSH agent that's already configured
+    gitEnv.GIT_SSH_COMMAND = `ssh -o StrictHostKeyChecking=no`;
+    Logger.info("Using SSH agent for Git operations (CI environment)");
+  }
+
   const pushResult = await executeCommand(
     "git",
     ["push", `dokku-${environment}`, "main:master", "--force"],
     {
       stdio: "inherit",
-      env: {
-        ...process.env,
-        GIT_SSH_COMMAND: gitSshCommand,
-      },
+      env: gitEnv,
     }
   );
+
+  console.log(pushResult);
 
   if (pushResult.exitCode !== 0) {
     throw new Error("Failed to deploy backend application");
@@ -358,7 +388,7 @@ async function deployFrontend(
         "deploy",
         "dist",
         "--project-name",
-        `rabbit-scout-${environment}`,
+        `rabbithq-${environment}`,
         "--compatibility-date",
         "2024-01-01",
       ],

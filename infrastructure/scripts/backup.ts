@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 
 /**
- * Rabbit Scout Backup Script
+ * RabbitHQ Backup Script
  * Backup PostgreSQL database
  */
 
@@ -74,7 +74,7 @@ async function createBackup(options: BackupOptions): Promise<void> {
         .replace(/[:.]/g, "-")
         .split("T")[1]
         .split("-")[0];
-    const backupFileName = `rabbit-scout-${environment}-${timestamp}.sql${compress ? ".gz" : ""}`;
+    const backupFileName = `rabbithq-${environment}-${timestamp}.sql${compress ? ".gz" : ""}`;
     const localBackupPath = path.join(backupDir, backupFileName);
     const remoteBackupPath = `/tmp/${backupFileName}`;
 
@@ -256,7 +256,7 @@ async function listBackups(): Promise<void> {
     const files = await fs.readdir(backupDir);
     const backupFiles = files.filter(
       (file) =>
-        (file.startsWith("rabbit-scout-") && file.endsWith(".sql")) ||
+        (file.startsWith("rabbithq-") && file.endsWith(".sql")) ||
         file.endsWith(".sql.gz")
     );
 

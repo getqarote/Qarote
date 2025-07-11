@@ -91,7 +91,7 @@ export const UpgradeConfirmationEmail = ({
             src={`${baseUrl}/icon_rabbit.svg`}
             width="50"
             height="50"
-            alt="Rabbit Scout"
+            alt="RabbitHQ"
             style={logo}
           />
 
@@ -152,7 +152,7 @@ export const UpgradeConfirmationEmail = ({
             <Button style={supportButton} href={`${baseUrl}/help`}>
               Get Support
             </Button>
-            <Button style={supportButton} href="mailto:support@rabbitscout.com">
+            <Button style={supportButton} href="mailto:support@rabbithq.com">
               Contact Us
             </Button>
           </Section>
@@ -160,7 +160,7 @@ export const UpgradeConfirmationEmail = ({
           <Text style={footer}>
             Happy monitoring!
             <br />
-            The Rabbit Scout Team
+            The RabbitHQ Team
           </Text>
         </Container>
       </Body>

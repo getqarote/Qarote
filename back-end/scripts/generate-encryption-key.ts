@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Generate a secure encryption key for the RabbitMQ Scout application
+ * Generate a secure encryption key for the RabbitHQ application
  *
  * Usage: npx tsx scripts/generate-encryption-key.ts
  */

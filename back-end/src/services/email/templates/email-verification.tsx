@@ -37,8 +37,8 @@ export const EmailVerification = ({
   const greeting = userName ? `Hi ${userName},` : "Hello,";
 
   const mainText = isSignup
-    ? "Thank you for signing up for RabbitScout! To complete your registration and access your account, please verify your email address by clicking the button below."
-    : "You've requested to change your email address on RabbitScout. To confirm this change, please verify your new email address by clicking the button below.";
+    ? "Thank you for signing up for RabbitHQ! To complete your registration and access your account, please verify your email address by clicking the button below."
+    : "You've requested to change your email address on RabbitHQ. To confirm this change, please verify your new email address by clicking the button below.";
 
   const supportUrl = `${frontendUrl}/help`;
 
@@ -47,7 +47,7 @@ export const EmailVerification = ({
       <Head />
       <Preview>
         {isSignup
-          ? "Verify your email to get started with RabbitScout"
+          ? "Verify your email to get started with RabbitHQ"
           : "Confirm your new email address"}
       </Preview>
       <Body style={main}>
@@ -58,10 +58,10 @@ export const EmailVerification = ({
               src={`${frontendUrl}/icon_rabbit.svg`}
               width="50"
               height="50"
-              alt="RabbitScout"
+              alt="RabbitHQ"
               style={logo}
             />
-            <Text style={headerText}>RabbitScout</Text>
+            <Text style={headerText}>RabbitHQ</Text>
           </Section>
 
           {/* Main Content */}
@@ -113,18 +113,18 @@ export const EmailVerification = ({
               </Text>
             )}
 
-            <Text style={signature}>The RabbitScout Team</Text>
+            <Text style={signature}>The RabbitHQ Team</Text>
           </Section>
 
           {/* Footer */}
           <Section style={footer}>
             <Text style={footerText}>
-              © 2024 RabbitScout. All rights reserved.
+              © 2024 RabbitHQ. All rights reserved.
             </Text>
             <Text style={footerText}>
               You received this email because you{" "}
               {isSignup ? "signed up for" : "requested to change your email on"}{" "}
-              RabbitScout.
+              RabbitHQ.
             </Text>
           </Section>
         </Container>

@@ -2,7 +2,7 @@
 
 ## Overview
 
-The SSE (Server-Sent Events) Stream Registry provides robust, production-ready tracking and management of active SSE streams for RabbitMQ queue message browsing in the Rabbit Scout SaaS dashboard. This system ensures reliable stream management across multiple server instances using PostgreSQL as the persistent registry.
+The SSE (Server-Sent Events) Stream Registry provides robust, production-ready tracking and management of active SSE streams for RabbitMQ queue message browsing in the RabbitHQ SaaS dashboard. This system ensures reliable stream management across multiple server instances using PostgreSQL as the persistent registry.
 
 ## Key Features
 

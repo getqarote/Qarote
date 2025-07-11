@@ -2,7 +2,7 @@
 
 ## Overview
 
-The "Welcome Back" feature automatically detects when users renew their subscription after canceling and sends them a personalized welcome back email. This helps re-engage returning customers and acknowledges their decision to give Rabbit Scout another chance.
+The "Welcome Back" feature automatically detects when users renew their subscription after canceling and sends them a personalized welcome back email. This helps re-engage returning customers and acknowledges their decision to give RabbitHQ another chance.
 
 ## How It Works
 
@@ -53,7 +53,7 @@ model Subscription {
 The welcome back email includes:
 
 - Personalized greeting acknowledging their return
-- Thank you message for giving Rabbit Scout another chance
+- Thank you message for giving RabbitHQ another chance
 - Current plan features and benefits
 - Information about what's new since they left
 - Clear call-to-action to access their dashboard

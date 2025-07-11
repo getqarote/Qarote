@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Plans & Pricing feature provides a modern, comprehensive SaaS-style pricing page and plan management system for Rabbit Scout. This feature is designed to help users understand the different subscription tiers, their features, and provide easy upgrade paths.
+The Plans & Pricing feature provides a modern, comprehensive SaaS-style pricing page and plan management system for RabbitHQ. This feature is designed to help users understand the different subscription tiers, their features, and provide easy upgrade paths.
 
 ## Features Implemented
 

@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Rabbit Scout billing system is designed to handle subscription management, payment processing, and billing analytics through a robust integration with Stripe. This document outlines the architecture, data models, API endpoints, and key concepts.
+The RabbitHQ billing system is designed to handle subscription management, payment processing, and billing analytics through a robust integration with Stripe. This document outlines the architecture, data models, API endpoints, and key concepts.
 
 ## Table of Contents
 

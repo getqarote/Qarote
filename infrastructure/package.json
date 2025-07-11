@@ -1,7 +1,7 @@
 {
-  "name": "rabbit-scout-infrastructure",
+  "name": "rabbithq-infrastructure",
   "version": "1.0.0",
-  "description": "Pure Dokku infrastructure for Rabbit Scout",
+  "description": "Pure Dokku infrastructure for RabbitHQ",
   "scripts": {
     "build": "tsc",
     "setup": "tsx scripts/setup-server.ts",
@@ -32,7 +32,7 @@
     "cloudflare",
     "postgres"
   ],
-  "author": "Rabbit Scout Team",
+  "author": "RabbitHQ Team",
   "license": "MIT",
   "dependencies": {
     "chalk": "^5.3.0",

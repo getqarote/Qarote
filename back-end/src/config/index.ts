@@ -31,7 +31,7 @@ const envSchema = z.object({
 
   // Email Configuration
   RESEND_API_KEY: z.string(),
-  FROM_EMAIL: z.email().describe("noreply@rabbitscout.com"),
+  FROM_EMAIL: z.email().describe("noreply@rabbithq.com"),
   FRONTEND_URL: z.url("FRONTEND_URL must be a valid URL"),
 
   // Stripe Configuration
@@ -139,7 +139,7 @@ export const sentryConfig = {
   dsn: config.SENTRY_DSN,
   enabled: config.SENTRY_ENABLED,
   environment: config.NODE_ENV,
-  release: `rabbit-scout-backend@${config.npm_package_version || "unknown"}`,
+  release: `rabbithq-backend@${config.npm_package_version || "unknown"}`,
   tracesSampleRate: isProduction() ? 0.1 : 1.0,
   profilesSampleRate: isProduction() ? 0.05 : 1.0,
 } as const;

@@ -108,7 +108,7 @@ export const WelcomeBackEmail = ({
               </Text>
               <Text style={{ margin: "10px 0 0 0" }}>
                 Your feedback and loyalty mean the world to us. We've been
-                working hard to improve Rabbit Scout based on user feedback like
+                working hard to improve RabbitHQ based on user feedback like
                 yours.
               </Text>
             </Section>
@@ -211,10 +211,10 @@ export const WelcomeBackEmail = ({
             style={{ textAlign: "center", color: "#666", fontSize: "14px" }}
           >
             <Text>
-              Welcome back to the Rabbit Scout family!
+              Welcome back to the RabbitHQ family!
               <br />
               <Link href={frontendUrl} style={{ color: "#667eea" }}>
-                Rabbit Scout
+                RabbitHQ
               </Link>{" "}
               |{" "}
               <Link

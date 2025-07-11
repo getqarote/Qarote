@@ -43,9 +43,7 @@ export const InvitationEmail = ({
   return (
     <Html>
       <Head />
-      <Preview>
-        You've been invited to join {workspaceName} on RabbitScout
-      </Preview>
+      <Preview>You've been invited to join {workspaceName} on RabbitHQ</Preview>
       <Body style={main}>
         <Container style={container}>
           <Section style={logoContainer}>
@@ -53,17 +51,17 @@ export const InvitationEmail = ({
               src={`${frontendUrl}/icon_rabbit.svg`}
               width="48"
               height="48"
-              alt="RabbitScout"
+              alt="RabbitHQ"
               style={logo}
             />
           </Section>
 
           <Section style={content}>
-            <Text style={heading}>You're invited to RabbitScout!</Text>
+            <Text style={heading}>You're invited to RabbitHQ!</Text>
 
             <Text style={paragraph}>
               <strong>{inviterName}</strong> ({inviterEmail}) has invited you to
-              join <strong>{workspaceName}</strong> on RabbitScout.
+              join <strong>{workspaceName}</strong> on RabbitHQ.
             </Text>
 
             <Section style={inviteDetailsContainer}>
@@ -98,8 +96,8 @@ export const InvitationEmail = ({
             <Hr style={hr} />
 
             <Text style={footer}>
-              RabbitScout helps you monitor and manage your RabbitMQ clusters
-              with ease. This invitation will expire in 7 days.
+              RabbitHQ helps you monitor and manage your RabbitMQ clusters with
+              ease. This invitation will expire in 7 days.
             </Text>
 
             <Text style={footerNote}>

@@ -1,6 +1,6 @@
-# Rabbit Scout Documentation
+# RabbitHQ Documentation
 
-Welcome to the Rabbit Scout documentation! This directory contains comprehensive guides and technical documentation for the Rabbit Scout platform - a powerful RabbitMQ monitoring and management solution.
+Welcome to the RabbitHQ documentation! This directory contains comprehensive guides and technical documentation for the RabbitHQ platform - a powerful RabbitMQ monitoring and management solution.
 
 ## 📚 Documentation Index
 
@@ -34,7 +34,7 @@ Welcome to the Rabbit Scout documentation! This directory contains comprehensive
 
 ## 🚀 Quick Start
 
-If you're new to Rabbit Scout, we recommend starting with these documents:
+If you're new to RabbitHQ, we recommend starting with these documents:
 
 1. **[Configuration Guide](./CONFIG.md)** - Set up your environment
 2. **[RabbitMQ Integration](./RABBITMQ.md)** - Connect to your RabbitMQ servers

@@ -2,7 +2,7 @@
 
 ## Overview
 
-The `useMessageStream` hook provides real-time SSE (Server-Sent Events) streaming for RabbitMQ queue message browsing in the Rabbit Scout dashboard. It handles connection management, message streaming, and critical cleanup operations to ensure reliable resource management.
+The `useMessageStream` hook provides real-time SSE (Server-Sent Events) streaming for RabbitMQ queue message browsing in the RabbitHQ dashboard. It handles connection management, message streaming, and critical cleanup operations to ensure reliable resource management.
 
 ## Key Features
 

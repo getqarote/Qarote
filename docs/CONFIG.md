@@ -47,7 +47,7 @@ All environment variables are validated according to the schema in `config/index
 - `CORS_ORIGIN` - CORS origin (defaults to "\*")
 - `LOG_LEVEL` - Logging level (error/warn/info/debug, defaults to "info")
 - `RESEND_API_KEY` - Email service API key
-- `FROM_EMAIL` - Email sender address (defaults to "noreply@rabbitscout.com")
+- `FROM_EMAIL` - Email sender address (defaults to "noreply@rabbithq.com")
 - `SENTRY_DSN` - Sentry error tracking DSN
 - `SENTRY_ENABLED` - Enable Sentry in development (defaults to false)
 - `STRIPE_SECRET_KEY` - Stripe payment processor key

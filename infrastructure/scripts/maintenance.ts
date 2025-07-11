@@ -217,7 +217,7 @@ async function checkMaintenanceStatus(
 // CLI Setup
 program
   .name("maintenance")
-  .description("Manage maintenance mode for Rabbit Scout environments")
+  .description("Manage maintenance mode for RabbitHQ environments")
   .version("1.0.0");
 
 program

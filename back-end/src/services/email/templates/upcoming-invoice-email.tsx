@@ -64,10 +64,10 @@ export const UpcomingInvoiceEmail = ({
               src={`${frontendUrl}/icon_rabbit.svg`}
               width="50"
               height="50"
-              alt="RabbitScout"
+              alt="RabbitHQ"
               style={logo}
             />
-            <Text style={headerText}>RabbitScout</Text>
+            <Text style={headerText}>RabbitHQ</Text>
           </Section>
 
           {/* Main Content */}
@@ -221,11 +221,11 @@ export const UpcomingInvoiceEmail = ({
             <Hr style={hr} />
 
             <Text style={paragraph}>
-              Thank you for choosing RabbitScout to monitor your RabbitMQ
+              Thank you for choosing RabbitHQ to monitor your RabbitMQ
               infrastructure! 🐰
             </Text>
 
-            <Text style={signature}>The RabbitScout Team</Text>
+            <Text style={signature}>The RabbitHQ Team</Text>
           </Section>
 
           {/* Footer */}
@@ -237,7 +237,7 @@ export const UpcomingInvoiceEmail = ({
 
             <Text style={footerText}>
               <Link href={frontendUrl} style={footerLink}>
-                RabbitScout
+                RabbitHQ
               </Link>{" "}
               - Monitor and manage your RabbitMQ clusters with ease.
             </Text>

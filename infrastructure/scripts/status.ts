@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 
 /**
- * Rabbit Scout Status Check Script
+ * RabbitHQ Status Check Script
  * Check the status of deployed applications
  */
 
@@ -140,7 +140,7 @@ async function checkFrontendStatus(
   console.log("🌐 Frontend Application Status:");
   console.log(`   URL: https://${config.DOMAIN_FRONTEND}`);
   console.log(`   Platform: Cloudflare Pages`);
-  console.log(`   Project: rabbit-scout-${environment}`);
+  console.log(`   Project: rabbithq-${environment}`);
 
   // Test frontend accessibility
   try {

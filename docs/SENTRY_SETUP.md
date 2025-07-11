@@ -1,6 +1,6 @@
 # Sentry Integration Setup
 
-This document describes the Sentry integration for error monitoring and performance tracking in the Rabbit Scout application.
+This document describes the Sentry integration for error monitoring and performance tracking in the RabbitHQ application.
 
 ## Environment Variables
 
@@ -10,7 +10,7 @@ This document describes the Sentry integration for error monitoring and performa
 # Sentry Configuration
 SENTRY_DSN=your_backend_sentry_dsn_here
 SENTRY_ENABLED=true  # Set to enable Sentry in development
-SENTRY_RELEASE=rabbit-scout-backend@1.0.0  # Optional: release version
+SENTRY_RELEASE=rabbithq-backend@1.0.0  # Optional: release version
 ```
 
 ### Frontend (.env)
@@ -19,7 +19,7 @@ SENTRY_RELEASE=rabbit-scout-backend@1.0.0  # Optional: release version
 # Sentry Configuration
 VITE_SENTRY_DSN=your_frontend_sentry_dsn_here
 VITE_SENTRY_ENABLED=true  # Set to enable Sentry in development
-VITE_SENTRY_RELEASE=rabbit-scout-frontend@1.0.0  # Optional: release version
+VITE_SENTRY_RELEASE=rabbithq-frontend@1.0.0  # Optional: release version
 VITE_APP_VERSION=1.0.0  # Fallback for release tracking
 ```
 
@@ -70,10 +70,10 @@ VITE_APP_VERSION=1.0.0  # Fallback for release tracking
 
    ```bash
    # Backend
-   SENTRY_RELEASE=rabbit-scout-backend@$(git rev-parse --short HEAD)
+   SENTRY_RELEASE=rabbithq-backend@$(git rev-parse --short HEAD)
 
    # Frontend
-   VITE_SENTRY_RELEASE=rabbit-scout-frontend@$(git rev-parse --short HEAD)
+   VITE_SENTRY_RELEASE=rabbithq-frontend@$(git rev-parse --short HEAD)
    ```
 
 ### 4. Release Tracking (Optional)
@@ -125,8 +125,8 @@ throw new Error("Test Sentry integration");
 
 Once configured, you can monitor your application at:
 
-- Backend: `https://[your-org].sentry.io/projects/rabbit-scout-backend/`
-- Frontend: `https://[your-org].sentry.io/projects/rabbit-scout-frontend/`
+- Backend: `https://[your-org].sentry.io/projects/rabbithq-backend/`
+- Frontend: `https://[your-org].sentry.io/projects/rabbithq-frontend/`
 
 ## Troubleshooting
 

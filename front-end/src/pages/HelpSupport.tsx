@@ -117,16 +117,15 @@ export function HelpSupport() {
 
   const handleEmailCopy = async () => {
     try {
-      await navigator.clipboard.writeText("support@rabbitscout.io");
+      await navigator.clipboard.writeText("support@rabbithq.io");
       toast({
         title: "Email copied!",
-        description:
-          "support@rabbitscout.io has been copied to your clipboard.",
+        description: "support@rabbithq.io has been copied to your clipboard.",
       });
     } catch (error) {
       toast({
         title: "Copy failed",
-        description: "Please manually copy: support@rabbitscout.io",
+        description: "Please manually copy: support@rabbithq.io",
         variant: "destructive",
       });
     }
@@ -252,11 +251,11 @@ export function HelpSupport() {
                     <p className="text-sm font-medium">General Support</p>
                     <div className="flex items-center gap-2">
                       <a
-                        href="mailto:support@rabbitscout.io?subject=RabbitScout Support Request"
+                        href="mailto:support@rabbithq.io?subject=RabbitHQ Support Request"
                         className="text-sm text-blue-600 hover:text-blue-700"
                         onClick={handleEmailClick}
                       >
-                        support@rabbitscout.io
+                        support@rabbithq.io
                       </a>
                       <Button
                         variant="outline"

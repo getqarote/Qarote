@@ -358,95 +358,99 @@ export const PlansPage: React.FC<PlansPageProps> = ({
               Back to Profile
             </Button>
           </div>
-          
+
           <div className="text-center">
             <h1 className="text-5xl font-bold text-gray-900 mb-6">
               Choose the right plan for your team
             </h1>
-          <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-            Scale your RabbitMQ monitoring with plans designed for teams of all
-            sizes. From individual developers to enterprise teams, we have you
-            covered.
-          </p>
+            <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+              Scale your RabbitMQ monitoring with plans designed for teams of
+              all sizes. From individual developers to enterprise teams, we have
+              you covered.
+            </p>
 
-          {/* Feature Highlights */}
-          <div className="grid md:grid-cols-4 gap-6 mb-12 max-w-4xl mx-auto">
-            <div className="flex flex-col items-center p-4">
-              <div className="bg-blue-100 p-3 rounded-full mb-3">
-                <Zap className="w-6 h-6 text-blue-600" />
+            {/* Feature Highlights */}
+            <div className="grid md:grid-cols-4 gap-6 mb-12 max-w-4xl mx-auto">
+              <div className="flex flex-col items-center p-4">
+                <div className="bg-blue-100 p-3 rounded-full mb-3">
+                  <Zap className="w-6 h-6 text-blue-600" />
+                </div>
+                <h3 className="font-semibold text-gray-900 mb-1">
+                  Real-time Monitoring
+                </h3>
+                <p className="text-sm text-gray-600 text-center">
+                  Monitor your RabbitMQ servers with millisecond precision
+                </p>
               </div>
-              <h3 className="font-semibold text-gray-900 mb-1">
-                Real-time Monitoring
-              </h3>
-              <p className="text-sm text-gray-600 text-center">
-                Monitor your RabbitMQ servers with millisecond precision
-              </p>
-            </div>
-            <div className="flex flex-col items-center p-4">
-              <div className="bg-purple-100 p-3 rounded-full mb-3">
-                <TrendingUp className="w-6 h-6 text-purple-600" />
+              <div className="flex flex-col items-center p-4">
+                <div className="bg-purple-100 p-3 rounded-full mb-3">
+                  <TrendingUp className="w-6 h-6 text-purple-600" />
+                </div>
+                <h3 className="font-semibold text-gray-900 mb-1">
+                  Smart Analytics
+                </h3>
+                <p className="text-sm text-gray-600 text-center">
+                  AI-powered insights and memory optimization tips
+                </p>
               </div>
-              <h3 className="font-semibold text-gray-900 mb-1">
-                Smart Analytics
-              </h3>
-              <p className="text-sm text-gray-600 text-center">
-                AI-powered insights and memory optimization tips
-              </p>
-            </div>
-            <div className="flex flex-col items-center p-4">
-              <div className="bg-green-100 p-3 rounded-full mb-3">
-                <Shield className="w-6 h-6 text-green-600" />
+              <div className="flex flex-col items-center p-4">
+                <div className="bg-green-100 p-3 rounded-full mb-3">
+                  <Shield className="w-6 h-6 text-green-600" />
+                </div>
+                <h3 className="font-semibold text-gray-900 mb-1">
+                  Enterprise Security
+                </h3>
+                <p className="text-sm text-gray-600 text-center">
+                  SOC 2 compliant with enterprise-grade encryption
+                </p>
               </div>
-              <h3 className="font-semibold text-gray-900 mb-1">
-                Enterprise Security
-              </h3>
-              <p className="text-sm text-gray-600 text-center">
-                SOC 2 compliant with enterprise-grade encryption
-              </p>
-            </div>
-            <div className="flex flex-col items-center p-4">
-              <div className="bg-orange-100 p-3 rounded-full mb-3">
-                <Headphones className="w-6 h-6 text-orange-600" />
+              <div className="flex flex-col items-center p-4">
+                <div className="bg-orange-100 p-3 rounded-full mb-3">
+                  <Headphones className="w-6 h-6 text-orange-600" />
+                </div>
+                <h3 className="font-semibold text-gray-900 mb-1">
+                  24/7 Support
+                </h3>
+                <p className="text-sm text-gray-600 text-center">
+                  Expert support when you need it most
+                </p>
               </div>
-              <h3 className="font-semibold text-gray-900 mb-1">24/7 Support</h3>
-              <p className="text-sm text-gray-600 text-center">
-                Expert support when you need it most
-              </p>
             </div>
-          </div>
 
-          {/* Billing Toggle */}
-          <div className="flex items-center justify-center gap-4 mb-12">
-            <span
-              className={`text-sm font-medium ${billingPeriod === "monthly" ? "text-gray-900" : "text-gray-500"}`}
-            >
-              Monthly
-            </span>
-            <button
-              onClick={() =>
-                setBillingPeriod(
-                  billingPeriod === "monthly" ? "yearly" : "monthly"
-                )
-              }
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                billingPeriod === "yearly" ? "bg-blue-600" : "bg-gray-200"
-              }`}
-            >
+            {/* Billing Toggle */}
+            <div className="flex items-center justify-center gap-4 mb-12">
               <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                  billingPeriod === "yearly" ? "translate-x-6" : "translate-x-1"
+                className={`text-sm font-medium ${billingPeriod === "monthly" ? "text-gray-900" : "text-gray-500"}`}
+              >
+                Monthly
+              </span>
+              <button
+                onClick={() =>
+                  setBillingPeriod(
+                    billingPeriod === "monthly" ? "yearly" : "monthly"
+                  )
+                }
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  billingPeriod === "yearly" ? "bg-blue-600" : "bg-gray-200"
                 }`}
-              />
-            </button>
-            <span
-              className={`text-sm font-medium ${billingPeriod === "yearly" ? "text-gray-900" : "text-gray-500"}`}
-            >
-              Yearly
-            </span>
-            {billingPeriod === "yearly" && (
-              <Badge className="bg-green-100 text-green-800">Save 20%</Badge>
-            )}
-          </div>
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    billingPeriod === "yearly"
+                      ? "translate-x-6"
+                      : "translate-x-1"
+                  }`}
+                />
+              </button>
+              <span
+                className={`text-sm font-medium ${billingPeriod === "yearly" ? "text-gray-900" : "text-gray-500"}`}
+              >
+                Yearly
+              </span>
+              {billingPeriod === "yearly" && (
+                <Badge className="bg-green-100 text-green-800">Save 20%</Badge>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -895,8 +899,7 @@ export const PlansPage: React.FC<PlansPageProps> = ({
               What our customers say
             </h2>
             <p className="text-gray-600">
-              Don't just take our word for it - hear from teams using Rabbit
-              Scout
+              Don't just take our word for it - hear from teams using RabbitHQ
             </p>
           </div>
 
@@ -904,7 +907,7 @@ export const PlansPage: React.FC<PlansPageProps> = ({
             {[
               {
                 quote:
-                  "Rabbit Scout transformed how we monitor our RabbitMQ infrastructure. The memory insights alone saved us thousands in optimization costs.",
+                  "RabbitHQ transformed how we monitor our RabbitMQ infrastructure. The memory insights alone saved us thousands in optimization costs.",
                 author: "Sarah Chen",
                 role: "Senior DevOps Engineer",
                 company: "TechCorp",
@@ -1014,8 +1017,8 @@ export const PlansPage: React.FC<PlansPageProps> = ({
               Ready to supercharge your RabbitMQ monitoring?
             </h2>
             <p className="text-blue-100 mb-6 text-lg">
-              Join thousands of teams already using Rabbit Scout to optimize
-              their message infrastructure.
+              Join thousands of teams already using RabbitHQ to optimize their
+              message infrastructure.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button

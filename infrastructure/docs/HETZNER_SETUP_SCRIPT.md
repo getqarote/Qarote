@@ -706,4 +706,4 @@ cpx31 → ccx33 → ccx53 (CPU-optimized)
 
 ---
 
-_This script provides enterprise-grade, idempotent infrastructure automation with optimal security, performance, and cost-effectiveness for the Rabbit Scout platform. The idempotent design ensures safe operation - you can run the setup script multiple times without fear of conflicts or duplicated resources._
+_This script provides enterprise-grade, idempotent infrastructure automation with optimal security, performance, and cost-effectiveness for the RabbitHQ platform. The idempotent design ensures safe operation - you can run the setup script multiple times without fear of conflicts or duplicated resources._

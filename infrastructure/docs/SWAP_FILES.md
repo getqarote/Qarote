@@ -1,4 +1,4 @@
-# Swap Files in Rabbit Scout Infrastructure
+# Swap Files in RabbitHQ Infrastructure
 
 This document explains the swap file configuration in our Dokku server setup and why it's essential for database and application servers.
 

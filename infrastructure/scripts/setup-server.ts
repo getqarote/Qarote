@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 
 /**
- * Rabbit Scout Server Setup Script
+ * RabbitHQ Server Setup Script
  * This script sets up Dokku on servers or creates them via Hetzner Cloud API
  */
 

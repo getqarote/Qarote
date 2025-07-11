@@ -1,6 +1,6 @@
-# Rabbit Scout Infrastructure - Pure Dokku
+# RabbitHQ Infrastructure - Pure Dokku
 
-This directory contains a **pure Dokku** deployment setup for Rabbit Scout with:
+This directory contains a **pure Dokku** deployment setup for RabbitHQ with:
 
 - **Backend**: Dokku-based deployments (Node.js + PostgreSQL)
 - **Frontend**: Cloudflare Pages (global CDN, excellent performance)
@@ -414,10 +414,10 @@ For issues or questions:
 
 ```bash
 # Staging: Local database
-DATABASE_URL=postgres://username:password@localhost:5432/rabbit-scout
+DATABASE_URL=postgres://username:password@localhost:5432/rabbithq
 
 # Production: External database server
-DATABASE_URL=postgres://username:password@db-server-ip:5432/rabbit-scout
+DATABASE_URL=postgres://username:password@db-server-ip:5432/rabbithq
 ```
 
 The production setup ensures:

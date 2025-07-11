@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 
 /**
- * Rabbit Scout Scale Script
+ * RabbitHQ Scale Script
  * Scale application processes
  */
 

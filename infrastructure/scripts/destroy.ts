@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 
 /**
- * Rabbit Scout Destroy Script
+ * RabbitHQ Destroy Script
  * Remove applications and databases (BE CAREFUL!)
  */
 
@@ -169,13 +169,13 @@ async function destroyFrontend(environment: Environment): Promise<void> {
   console.log(
     "1. Go to Cloudflare Pages dashboard: https://dash.cloudflare.com/pages"
   );
-  console.log(`2. Find project: rabbit-scout-${environment}`);
+  console.log(`2. Find project: rabbithq-${environment}`);
   console.log("3. Click on the project");
   console.log("4. Go to Settings > General");
   console.log('5. Scroll down and click "Delete project"');
   console.log("");
   console.log("Alternatively, use Wrangler CLI:");
-  console.log(`   wrangler pages project delete rabbit-scout-${environment}`);
+  console.log(`   wrangler pages project delete rabbithq-${environment}`);
   console.log("");
 }
 
@@ -266,7 +266,7 @@ async function destroyResources(options: DestroyOptions): Promise<void> {
       `   • Environment files: infrastructure/environments/${environment}/.env`
     );
     console.log(
-      `   • Backup files: infrastructure/backups/rabbit-scout-${environment}-*`
+      `   • Backup files: infrastructure/backups/rabbithq-${environment}-*`
     );
     console.log("");
 

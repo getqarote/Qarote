@@ -54,10 +54,10 @@ export const PaymentActionRequiredEmail = ({
               src={`${frontendUrl}/icon_rabbit.svg`}
               width="50"
               height="50"
-              alt="RabbitScout"
+              alt="RabbitHQ"
               style={logo}
             />
-            <Text style={headerText}>RabbitScout</Text>
+            <Text style={headerText}>RabbitHQ</Text>
           </Section>
 
           {/* Main Content */}
@@ -170,7 +170,7 @@ export const PaymentActionRequiredEmail = ({
 
             <Hr style={hr} />
 
-            <Text style={signature}>The RabbitScout Team</Text>
+            <Text style={signature}>The RabbitHQ Team</Text>
           </Section>
 
           {/* Footer */}
@@ -182,7 +182,7 @@ export const PaymentActionRequiredEmail = ({
 
             <Text style={footerText}>
               <Link href={frontendUrl} style={footerLink}>
-                RabbitScout
+                RabbitHQ
               </Link>{" "}
               - Monitor and manage your RabbitMQ clusters with ease.
             </Text>

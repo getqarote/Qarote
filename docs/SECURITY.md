@@ -1,4 +1,4 @@
-# RabbitMQ Scout Security Implementation
+# RabbitHQ Security Implementation
 
 ## 🔐 Server Credentials Encryption
 

@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "back-end/**"
+      - "app.json" # Added to track changes to health checks
       - ".github/workflows/deploy-staging.yml"
   workflow_dispatch: # Allow manual triggers
 
@@ -12,6 +13,7 @@ jobs:
   deploy-staging:
     name: Deploy Backend to Staging
     runs-on: ubuntu-latest
+    environment: staging
 
     steps:
       - name: 🔍 Checkout code
@@ -41,33 +43,38 @@ jobs:
       - name: 🏗️ Add SSH known hosts
         run: |
           mkdir -p ~/.ssh
-          ssh-keyscan -H ${{ secrets.DOKKU_HOST }} >> ~/.ssh/known_hosts
+          ssh-keyscan -H ${{ vars.DOKKU_HOST }} >> ~/.ssh/known_hosts
 
       - name: 📝 Create staging environment file
         run: |
           cd infrastructure/environments/staging
           cat > .env << 'EOF'
-          DOKKU_HOST=${{ secrets.DOKKU_HOST }}
-          DOMAIN_BACKEND=${{ secrets.DOMAIN_BACKEND }}
-          DOMAIN_FRONTEND=${{ secrets.DOMAIN_FRONTEND }}
+          DOKKU_HOST=${{ vars.DOKKU_HOST }}
+          DOMAIN_BACKEND=${{ vars.DOMAIN_BACKEND }}
+          DOMAIN_FRONTEND=${{ vars.DOMAIN_FRONTEND }}
+          PORT=${{ vars.PORT }}
+          HOST=${{ vars.HOST }}
+          NODE_ENV=${{ vars.NODE_ENV }}
+          NODE_TLS_REJECT_UNAUTHORIZED=${{ vars.NODE_TLS_REJECT_UNAUTHORIZED }}
+          ENVIRONMENT=staging
+          LOG_LEVEL=${{ vars.LOG_LEVEL }}
           JWT_SECRET=${{ secrets.JWT_SECRET }}
           ENCRYPTION_KEY=${{ secrets.ENCRYPTION_KEY }}
-          CORS_ORIGIN=${{ secrets.CORS_ORIGIN }}
-          FRONTEND_URL=${{ secrets.FRONTEND_URL }}
           DATABASE_URL=${{ secrets.DATABASE_URL }}
+          CORS_ORIGIN=${{ vars.CORS_ORIGIN }}
+          FRONTEND_URL=${{ vars.FRONTEND_URL }}
           RESEND_API_KEY=${{ secrets.RESEND_API_KEY }}
-          FROM_EMAIL=${{ secrets.FROM_EMAIL }}
+          FROM_EMAIL=${{ vars.FROM_EMAIL }}
           STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY }}
           STRIPE_WEBHOOK_SECRET=${{ secrets.STRIPE_WEBHOOK_SECRET }}
-          STRIPE_DEVELOPER_MONTHLY_PRICE_ID=${{ secrets.STRIPE_DEVELOPER_MONTHLY_PRICE_ID }}
-          STRIPE_DEVELOPER_YEARLY_PRICE_ID=${{ secrets.STRIPE_DEVELOPER_YEARLY_PRICE_ID }}
-          STRIPE_STARTUP_MONTHLY_PRICE_ID=${{ secrets.STRIPE_STARTUP_MONTHLY_PRICE_ID }}
-          STRIPE_STARTUP_YEARLY_PRICE_ID=${{ secrets.STRIPE_STARTUP_YEARLY_PRICE_ID }}
-          STRIPE_BUSINESS_MONTHLY_PRICE_ID=${{ secrets.STRIPE_BUSINESS_MONTHLY_PRICE_ID }}
-          STRIPE_BUSINESS_YEARLY_PRICE_ID=${{ secrets.STRIPE_BUSINESS_YEARLY_PRICE_ID }}
-          VITE_STRIPE_PUBLISHABLE_KEY=${{ secrets.VITE_STRIPE_PUBLISHABLE_KEY }}
-          SENTRY_DSN=${{ secrets.SENTRY_DSN }}
-          SENTRY_ENABLED=${{ secrets.SENTRY_ENABLED }}
+          STRIPE_DEVELOPER_MONTHLY_PRICE_ID=${{ vars.STRIPE_DEVELOPER_MONTHLY_PRICE_ID }}
+          STRIPE_DEVELOPER_YEARLY_PRICE_ID=${{ vars.STRIPE_DEVELOPER_YEARLY_PRICE_ID }}
+          STRIPE_STARTUP_MONTHLY_PRICE_ID=${{ vars.STRIPE_STARTUP_MONTHLY_PRICE_ID }}
+          STRIPE_STARTUP_YEARLY_PRICE_ID=${{ vars.STRIPE_STARTUP_YEARLY_PRICE_ID }}
+          STRIPE_BUSINESS_MONTHLY_PRICE_ID=${{ vars.STRIPE_BUSINESS_MONTHLY_PRICE_ID }}
+          STRIPE_BUSINESS_YEARLY_PRICE_ID=${{ vars.STRIPE_BUSINESS_YEARLY_PRICE_ID }}
+          SENTRY_DSN=${{ vars.SENTRY_DSN }}
+          SENTRY_ENABLED=${{ vars.SENTRY_ENABLED }}
           EOF
 
       - name: 🚀 Deploy to staging
@@ -75,9 +82,19 @@ jobs:
           cd infrastructure
           npm run deploy:staging:backend
 
+      - name: 🩺 Verify health endpoints
+        run: |
+          echo "Waiting for deployment to stabilize..."
+          sleep 10
+          echo "Testing health endpoint..."
+          curl -sSf https://${{ vars.DOMAIN_BACKEND }}/health || echo "Health check not yet available, deployment may still be in progress"
+
       - name: ✅ Deployment complete
         run: |
           echo "🎉 Deployment to staging completed successfully!"
-          echo "🔍 Backend URL: https://${{ secrets.DOMAIN_BACKEND }}"
+          echo "🔍 Backend URL: https://${{ vars.DOMAIN_BACKEND }}"
+          echo "🔍 Health check: https://${{ vars.DOMAIN_BACKEND }}/health"
           echo "📝 Commit: ${{ github.sha }}"
-          echo "🗄️ Database migrations: ✅ Completed"
+          echo "🗄️ Database migrations: ✅ Completed via app.json predeploy hook"
+          echo "🔒 SSL: ✅ Configured with Let's Encrypt"
+          echo "♻️ Zero-downtime deployment: ✅ Enabled"

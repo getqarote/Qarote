@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 
 /**
- * Rabbit Scout Logs Script
+ * RabbitHQ Logs Script
  * View application logs
  */
 

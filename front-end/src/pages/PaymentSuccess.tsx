@@ -62,7 +62,7 @@ const PaymentSuccess: React.FC = () => {
               </span>
             </div>
             <p className="text-sm text-green-600">
-              Welcome to your enhanced Rabbit Scout experience!
+              Welcome to your enhanced RabbitHQ experience!
             </p>
           </div>
         )}

@@ -57,14 +57,14 @@
   ```bash
   SENTRY_DSN=your_backend_sentry_dsn
   SENTRY_ENABLED=true  # for development
-  SENTRY_RELEASE=rabbit-scout-backend@version
+  SENTRY_RELEASE=rabbithq-backend@version
   ```
 
 - **✅ Frontend Environment Variables**:
   ```bash
   VITE_SENTRY_DSN=your_frontend_sentry_dsn
   VITE_SENTRY_ENABLED=true  # for development
-  VITE_SENTRY_RELEASE=rabbit-scout-frontend@version
+  VITE_SENTRY_RELEASE=rabbithq-frontend@version
   VITE_APP_VERSION=1.0.0
   ```
 
@@ -131,8 +131,8 @@
 
    ```bash
    # In CI/CD pipeline
-   SENTRY_RELEASE=rabbit-scout-backend@$(git rev-parse --short HEAD)
-   VITE_SENTRY_RELEASE=rabbit-scout-frontend@$(git rev-parse --short HEAD)
+   SENTRY_RELEASE=rabbithq-backend@$(git rev-parse --short HEAD)
+   VITE_SENTRY_RELEASE=rabbithq-frontend@$(git rev-parse --short HEAD)
    ```
 
 3. **Set Production Environment Variables**:

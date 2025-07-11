@@ -39,7 +39,7 @@ export const WelcomeEmail = ({
     <Html>
       <Head />
       <Preview>
-        Welcome to RabbitScout, {name}! Your workspace is ready to go.
+        Welcome to RabbitHQ, {name}! Your workspace is ready to go.
       </Preview>
       <Body style={main}>
         <Container style={container}>
@@ -49,20 +49,20 @@ export const WelcomeEmail = ({
               src={`${frontendUrl}/icon_rabbit.svg`}
               width="50"
               height="50"
-              alt="RabbitScout"
+              alt="RabbitHQ"
               style={logo}
             />
-            <Text style={headerText}>RabbitScout</Text>
+            <Text style={headerText}>RabbitHQ</Text>
           </Section>
 
           {/* Main Content */}
           <Section style={content}>
-            <Text style={title}>Welcome to RabbitScout!</Text>
+            <Text style={title}>Welcome to RabbitHQ!</Text>
 
             <Text style={paragraph}>Hi {name},</Text>
 
             <Text style={paragraph}>
-              Welcome to RabbitScout! Your workspace{" "}
+              Welcome to RabbitHQ! Your workspace{" "}
               <strong>{workspaceName}</strong> has been successfully set up on
               the <strong>{planDisplayName}</strong> plan.
             </Text>
@@ -146,19 +146,19 @@ export const WelcomeEmail = ({
 
             <Text style={paragraph}>Happy monitoring! 🐰</Text>
 
-            <Text style={signature}>The RabbitScout Team</Text>
+            <Text style={signature}>The RabbitHQ Team</Text>
           </Section>
 
           {/* Footer */}
           <Section style={footer}>
             <Text style={footerText}>
-              You're receiving this email because you just created a RabbitScout
+              You're receiving this email because you just created a RabbitHQ
               account.
             </Text>
 
             <Text style={footerText}>
               <Link href={frontendUrl} style={footerLink}>
-                RabbitScout
+                RabbitHQ
               </Link>{" "}
               - Monitor and manage your RabbitMQ clusters with ease.
             </Text>

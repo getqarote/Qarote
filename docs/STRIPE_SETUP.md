@@ -1,10 +1,10 @@
-# Stripe Setup Guide for Rabbit Scout
+# Stripe Setup Guide for RabbitHQ
 
-This guide covers how to set up Stripe payments for Rabbit Scout, including automated product/price creation and webhook configuration.
+This guide covers how to set up Stripe payments for RabbitHQ, including automated product/price creation and webhook configuration.
 
 ## Overview
 
-Rabbit Scout uses Stripe for subscription billing with three tiers:
+RabbitHQ uses Stripe for subscription billing with three tiers:
 
 - **Developer Plan**: $49/month or $390/year (20% discount)
 - **Startup Plan**: $99/month or $792/year (20% discount)
@@ -153,19 +153,19 @@ If you prefer manual setup or need to customize the configuration:
 
 - Name: "Developer Plan"
 - Description: "Perfect for individual developers and small teams"
-- Metadata: `plan=developer`, `created_by=rabbit_scout`
+- Metadata: `plan=developer`, `created_by=rabbithq`
 
 **Startup Plan**
 
 - Name: "Startup Plan"
 - Description: "Ideal for growing startups and medium teams"
-- Metadata: `plan=startup`, `created_by=rabbit_scout`
+- Metadata: `plan=startup`, `created_by=rabbithq`
 
 **Business Plan**
 
 - Name: "Business Plan"
 - Description: "Enterprise-grade solution for large organizations"
-- Metadata: `plan=business`, `created_by=rabbit_scout`
+- Metadata: `plan=business`, `created_by=rabbithq`
 
 ### 2. Create Prices
 

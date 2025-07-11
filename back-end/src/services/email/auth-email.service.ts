@@ -65,7 +65,7 @@ export class AuthEmailService {
 
     return CoreEmailService.sendEmail({
       to,
-      subject: `You're invited to join ${workspaceName} on RabbitScout`,
+      subject: `You're invited to join ${workspaceName} on RabbitHQ`,
       template,
       emailType: "invitation",
       context: {
@@ -96,7 +96,7 @@ export class AuthEmailService {
 
     return CoreEmailService.sendEmail({
       to,
-      subject: `Welcome to RabbitScout, ${name}!`,
+      subject: `Welcome to RabbitHQ, ${name}!`,
       template,
       emailType: "welcome",
       context: {
@@ -133,8 +133,8 @@ export class AuthEmailService {
 
     const subject =
       type === "SIGNUP"
-        ? "Please verify your email address - RabbitScout"
-        : "Verify your new email address - RabbitScout";
+        ? "Please verify your email address - RabbitHQ"
+        : "Verify your new email address - RabbitHQ";
 
     return CoreEmailService.sendEmail({
       to,
