@@ -7,7 +7,7 @@ import {
   MessageList,
   formatPayload,
   getPayloadType,
-} from "@/components/MessageBrowser";
+} from "@/components/BrowseMessagesComponent";
 import logger from "@/lib/logger";
 import { Queue } from "@/lib/api/types";
 import { UseMessageStreamReturn } from "@/hooks/useMessageStream";

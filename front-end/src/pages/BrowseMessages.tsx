@@ -4,9 +4,11 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { MessageBrowserHeader } from "@/components/MessageBrowser";
-import { LiveMessagesTab } from "@/components/MessageBrowser/LiveMessagesTab";
-import { MessageHistoryTab } from "@/components/MessageBrowser/MessageHistoryTab";
+import {
+  MessageBrowserHeader,
+  LiveMessagesTab,
+  MessageHistoryTab,
+} from "@/components/BrowseMessagesComponent";
 import { NoServerConfigured } from "@/components/NoServerConfigured";
 import { useServerContext } from "@/contexts/ServerContext";
 import { useMessageStream } from "@/hooks/useMessageStream";
@@ -14,7 +16,7 @@ import { useQueues } from "@/hooks/useApi";
 import { useMessageHistoryAccess } from "@/hooks/useMessageHistory";
 import logger from "@/lib/logger";
 
-const MessageBrowser = () => {
+const BrowseMessages = () => {
   const { selectedServerId } = useServerContext();
   const [selectedQueue, setSelectedQueue] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState("");
@@ -147,4 +149,4 @@ const MessageBrowser = () => {
   );
 };
 
-export default MessageBrowser;
+export default BrowseMessages;

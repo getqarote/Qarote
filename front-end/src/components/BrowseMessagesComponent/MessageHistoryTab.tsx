@@ -36,7 +36,7 @@ import {
   MessageList,
   formatPayload,
   getPayloadType,
-} from "@/components/MessageBrowser";
+} from "@/components/BrowseMessagesComponent";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface MessageHistoryTabProps {

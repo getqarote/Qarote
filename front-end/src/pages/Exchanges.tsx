@@ -1,6 +1,6 @@
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
-import { AddServerForm } from "@/components/AddServerForm";
+import { AddServerForm } from "@/components/AddServerFormComponent";
 import { NoServerConfigured } from "@/components/NoServerConfigured";
 import { PlanBadge } from "@/components/ui/PlanBadge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

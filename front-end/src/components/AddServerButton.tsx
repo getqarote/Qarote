@@ -1,9 +1,9 @@
 import { Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { AddServerForm } from "@/components/AddServerForm";
+import { AddServerForm } from "@/components/AddServerFormComponent";
 import { WorkspacePlan } from "@/types/plans";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
-import { usePlanData, useUsageStats } from "@/hooks/usePlan";
+import { usePlanData } from "@/hooks/usePlan";
 
 interface AddServerButtonProps {
   onUpgradeClick: () => void;

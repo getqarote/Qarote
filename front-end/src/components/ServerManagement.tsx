@@ -30,7 +30,7 @@ import {
 import { Server } from "@/lib/api/types";
 import { useServers } from "@/hooks/useApi";
 import { useDeleteServer } from "@/hooks/useServerMutations";
-import { AddServerForm } from "@/components/AddServerForm/AddServerForm";
+import { AddServerForm } from "@/components/AddServerFormComponent";
 import { useServerContext } from "@/contexts/ServerContext";
 import { toast } from "sonner";
 
