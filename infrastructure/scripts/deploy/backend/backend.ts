@@ -1,40 +1,23 @@
-#!/usr/bin/env tsx
-
 /**
- * Rabbit HQ Pure Dokku Deployment Script
- * Deploy backend to Dokku and frontend to Cloudflare Pages
+ * Backend deployment to Dokku
  */
-
-import { Command } from "commander";
-import { promises as fs } from "fs";
-import * as path from "path";
+import fs from "node:fs/promises";
 import {
   Logger,
   executeCommand,
   sshCommand,
   checkDokkuConnection,
-  loadEnvConfig,
-  loadFrontendEnvConfig,
-  validateEnvironment,
   getAppNames,
-  Paths,
   isRunningInCI,
+  Paths,
   type Environment,
   type EnvConfig,
-  type FrontendEnvConfig,
-} from "./utils.js";
-
-type Component = "all" | "backend" | "frontend";
-
-interface DeployOptions {
-  environment: Environment;
-  component: Component;
-}
+} from "../../utils";
 
 /**
  * Deploy backend to Dokku
  */
-async function deployBackend(
+export async function deployBackend(
   config: EnvConfig,
   environment: Environment
 ): Promise<void> {
@@ -67,12 +50,7 @@ async function deployBackend(
       );
     } else {
       // For local development, add the key from file
-      const sshKeyPath = path.join(
-        process.env.HOME || "",
-        ".ssh",
-        "id_rsa_deploy.pub"
-      );
-      const publicKey = await fs.readFile(sshKeyPath, "utf-8");
+      const publicKey = await fs.readFile(Paths.sshKeyPublicPath, "utf-8");
 
       await sshCommand(
         config.DOKKU_HOST,
@@ -98,6 +76,29 @@ async function deployBackend(
     await sshCommand(config.DOKKU_HOST, `dokku apps:create ${backendApp}`);
   }
 
+  await setupDatabase(config, environment, backendApp, postgresDb);
+  await configureEnvironment(config, backendApp, environment);
+  await configureDomain(config, backendApp);
+  await configureSsl(config, backendApp);
+  await configureHealthChecks(config, backendApp);
+  await deployCode(config, environment, backendApp);
+
+  Logger.success("Backend deployed successfully!");
+  Logger.info(`Backend URL: https://${config.DOMAIN_BACKEND}`);
+  Logger.info(
+    "Database migrations run automatically during deployment via app.json predeploy hook!"
+  );
+}
+
+/**
+ * Set up database for the application
+ */
+async function setupDatabase(
+  config: EnvConfig,
+  environment: Environment,
+  backendApp: string,
+  postgresDb: string
+): Promise<void> {
   // For staging, link to existing database instead of creating new one
   if (environment === "staging") {
     // Check if database link exists
@@ -131,7 +132,16 @@ async function deployBackend(
       );
     }
   }
+}
 
+/**
+ * Configure environment variables for the application
+ */
+async function configureEnvironment(
+  config: EnvConfig,
+  backendApp: string,
+  environment: Environment
+): Promise<void> {
   // Configure environment variables
   Logger.info("Configuring environment variables...");
 
@@ -180,7 +190,15 @@ async function deployBackend(
     config.DOKKU_HOST,
     `dokku config:set ${backendApp} ${envVars.join(" ")}`
   );
+}
 
+/**
+ * Configure domain for the application
+ */
+async function configureDomain(
+  config: EnvConfig,
+  backendApp: string
+): Promise<void> {
   // Check if domain is already configured
   Logger.info(`Checking domain configuration...`);
   const domainResult = await sshCommand(
@@ -200,7 +218,15 @@ async function deployBackend(
       `Domain ${config.DOMAIN_BACKEND} already configured, skipping setup`
     );
   }
+}
 
+/**
+ * Configure SSL for the application
+ */
+async function configureSsl(
+  config: EnvConfig,
+  backendApp: string
+): Promise<void> {
   // Check if Let's Encrypt is already configured
   Logger.info("Checking SSL certificate status...");
   const sslStatusResult = await sshCommand(
@@ -227,7 +253,44 @@ async function deployBackend(
   } else {
     Logger.info("SSL certificate already configured, skipping setup");
   }
+}
 
+/**
+ * Configure health checks for the application
+ */
+async function configureHealthChecks(
+  config: EnvConfig,
+  backendApp: string
+): Promise<void> {
+  // Configure health checks before deployment
+  Logger.info("Configuring health checks for zero-downtime deployment...");
+  await sshCommand(
+    config.DOKKU_HOST,
+    `dokku checks:set ${backendApp} web /health`
+  );
+
+  // Configure health check timeouts and parameters
+  const healthCheckVars = [
+    "DOKKU_CHECKS_WAIT=10", // Wait 10 seconds before first check
+    "DOKKU_CHECKS_TIMEOUT=10", // 10 second timeout per check
+    "DOKKU_CHECKS_ATTEMPTS=5", // Try 5 times before giving up
+    "DOKKU_WAIT_TO_RETIRE=60", // Wait 60 seconds before retiring old container
+  ];
+
+  await sshCommand(
+    config.DOKKU_HOST,
+    `dokku config:set ${backendApp} ${healthCheckVars.join(" ")}`
+  );
+}
+
+/**
+ * Deploy code to Dokku
+ */
+async function deployCode(
+  config: EnvConfig,
+  environment: Environment,
+  backendApp: string
+): Promise<void> {
   // Deploy the app using regular git push from back-end directory
   Logger.info("Deploying backend application...");
 
@@ -266,40 +329,12 @@ async function deployBackend(
 
   Logger.info("Dokku remote configured successfully");
 
-  // Configure health checks before deployment
-  Logger.info("Configuring health checks for zero-downtime deployment...");
-  await sshCommand(
-    config.DOKKU_HOST,
-    `dokku checks:set ${backendApp} web /health`
-  );
-
-  // Configure health check timeouts and parameters
-  const healthCheckVars = [
-    "DOKKU_CHECKS_WAIT=10", // Wait 10 seconds before first check
-    "DOKKU_CHECKS_TIMEOUT=10", // 10 second timeout per check
-    "DOKKU_CHECKS_ATTEMPTS=5", // Try 5 times before giving up
-    "DOKKU_WAIT_TO_RETIRE=60", // Wait 60 seconds before retiring old container
-  ];
-
-  await sshCommand(
-    config.DOKKU_HOST,
-    `dokku config:set ${backendApp} ${healthCheckVars.join(" ")}`
-  );
-
-  // Push to deploy using regular git push
-  Logger.info("Pushing backend code to Dokku...");
-
   // Configure Git SSH command based on environment
   let gitEnv = { ...process.env };
 
   if (!isRunningInCI()) {
     // For local development, use the specific key file
-    const sshKeyPath = path.join(
-      process.env.HOME || "",
-      ".ssh",
-      "id_rsa_deploy"
-    );
-    gitEnv.GIT_SSH_COMMAND = `ssh -i ${sshKeyPath} -o StrictHostKeyChecking=no`;
+    gitEnv.GIT_SSH_COMMAND = `ssh -i ${Paths.sshKeyPath} -o StrictHostKeyChecking=no`;
     Logger.info("Using local SSH key for Git operations");
   } else {
     // In CI, use the SSH agent that's already configured
@@ -323,206 +358,4 @@ async function deployBackend(
   }
 
   Logger.info("Backend application deployed successfully!");
-
-  Logger.success("Backend deployed successfully!");
-  Logger.info(`Backend URL: https://${config.DOMAIN_BACKEND}`);
-  Logger.info(
-    "Database migrations run automatically during deployment via app.json predeploy hook!"
-  );
-}
-
-/**
- * Deploy frontend to Cloudflare Pages
- */
-async function deployFrontend(
-  backendConfig: EnvConfig,
-  environment: Environment
-): Promise<void> {
-  Logger.info("Deploying frontend to Cloudflare Pages...");
-
-  // Load frontend-specific configuration
-  const frontendConfig = await loadFrontendEnvConfig(environment);
-
-  // Check if wrangler is installed
-  try {
-    await executeCommand("wrangler", ["--version"]);
-  } catch {
-    Logger.error("Wrangler CLI not found. Installing...");
-    await executeCommand("npm", ["install", "-g", "wrangler"], {
-      stdio: "inherit",
-    });
-  }
-
-  // Check Cloudflare authentication
-  if (isRunningInCI()) {
-    // In CI environment, use the ci-wrangler-login.sh script
-    Logger.info("Running in CI environment, using CI Wrangler login script...");
-
-    const loginScript = path.join(Paths.scriptDir, "ci-wrangler-login.sh");
-    const loginResult = await executeCommand(loginScript, [], {
-      stdio: "inherit",
-    });
-
-    if (loginResult.exitCode !== 0) {
-      Logger.error(
-        "Failed to authenticate with Cloudflare. Make sure CLOUDFLARE_API_TOKEN is set in your CI environment."
-      );
-      process.exit(1);
-    }
-  } else {
-    // For local environment, check if already authenticated
-    const whoamiResult = await executeCommand("wrangler", ["whoami"]);
-    if (whoamiResult.exitCode !== 0) {
-      Logger.error("Please login to Cloudflare first:");
-      Logger.error("wrangler login");
-      process.exit(1);
-    }
-  }
-
-  const frontendDir = path.join(Paths.projectRoot, "front-end");
-  process.chdir(frontendDir);
-
-  // Install dependencies
-  Logger.info("Installing frontend dependencies...");
-  await executeCommand("npm", ["install"], { stdio: "inherit" });
-
-  // Create environment file for build
-  const envContent = [
-    `VITE_API_URL=${frontendConfig.VITE_API_URL}`,
-    `VITE_SENTRY_DSN=${frontendConfig.VITE_SENTRY_DSN}`,
-    `VITE_SENTRY_ENABLED=${frontendConfig.VITE_SENTRY_ENABLED}`,
-    `VITE_APP_VERSION=${frontendConfig.VITE_APP_VERSION}`,
-  ].join("\n");
-
-  await fs.writeFile(".env", envContent);
-
-  try {
-    // Build the application
-    Logger.info("Building frontend application...");
-    await executeCommand("npm", ["run", "build"], { stdio: "inherit" });
-
-    // Deploy to Cloudflare Pages
-    Logger.info("Deploying to Cloudflare Pages...");
-    await executeCommand(
-      "wrangler",
-      [
-        "pages",
-        "deploy",
-        "dist",
-        "--project-name",
-        `rabbithq-${environment}`,
-        "--compatibility-date",
-        "2024-01-01",
-      ],
-      { stdio: "inherit" }
-    );
-
-    Logger.success("Frontend deployed successfully!");
-    Logger.info(`Frontend URL: https://${backendConfig.DOMAIN_FRONTEND}`);
-  } finally {
-    // Clean up
-    try {
-      await fs.unlink(".env");
-    } catch {
-      // Ignore if file doesn't exist
-    }
-  }
-}
-
-/**
- * Main deployment function
- */
-async function deploy(options: DeployOptions): Promise<void> {
-  const { environment, component } = options;
-
-  Logger.info(`Starting deployment for ${environment} environment...`);
-
-  // Load configuration
-  const config = await loadEnvConfig(environment);
-
-  try {
-    switch (component) {
-      case "all":
-        await deployBackend(config, environment);
-        await deployFrontend(config, environment);
-        break;
-      case "backend":
-        await deployBackend(config, environment);
-        break;
-      case "frontend":
-        await deployFrontend(config, environment);
-        break;
-      default:
-        throw new Error(
-          `Invalid component: ${component}\nValid components: all, backend, frontend`
-        );
-    }
-
-    Logger.success("Deployment completed successfully! 🎉");
-
-    // Display deployment summary
-    console.log("");
-    console.log("🎯 Deployment Summary:");
-    console.log(`   Environment: ${environment}`);
-    console.log(`   Backend:     https://${config.DOMAIN_BACKEND}`);
-    console.log(`   Frontend:    https://${config.DOMAIN_FRONTEND}`);
-    console.log("");
-    console.log("🔍 Next steps:");
-    console.log(`   • Check status: npm run status:${environment}`);
-    console.log(`   • View logs:    npm run logs:${environment}`);
-    console.log(
-      `   • Test API:     curl https://${config.DOMAIN_BACKEND}/health`
-    );
-    console.log("");
-    Logger.success("Happy deploying! 🚀");
-  } catch (error) {
-    Logger.error(
-      `Deployment failed: ${error instanceof Error ? error.message : String(error)}`
-    );
-    process.exit(1);
-  }
-}
-
-/**
- * Main program
- */
-const program = new Command();
-
-program
-  .name("deploy")
-  .description("Deploy backend to Dokku and frontend to Cloudflare Pages")
-  .argument("<environment>", "Environment (staging, production)")
-  .argument(
-    "[component]",
-    "Component to deploy (all, backend, frontend)",
-    "all"
-  )
-  .action(async (env: string, comp: string) => {
-    try {
-      const environment = validateEnvironment(env);
-      const component = comp as Component;
-
-      if (!["all", "backend", "frontend"].includes(component)) {
-        throw new Error(
-          `Invalid component: ${component}\nValid components: all, backend, frontend`
-        );
-      }
-
-      await deploy({ environment, component });
-    } catch (error) {
-      Logger.error(error instanceof Error ? error.message : String(error));
-      process.exit(1);
-    }
-  });
-
-program.on("--help", () => {
-  console.log("");
-  console.log("Examples:");
-  console.log("  $ npm run deploy:staging");
-  console.log("  $ npm run deploy:production backend");
-  console.log("  $ tsx scripts/deploy.ts staging frontend");
-});
-
-if (import.meta.url === `file://${process.argv[1]}`) {
-  program.parse(process.argv);
 }

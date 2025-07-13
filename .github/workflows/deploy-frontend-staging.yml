@@ -23,23 +23,18 @@ jobs:
         with:
           node-version: 22
           cache: "npm"
-          cache-dependency-path: |
-            package-lock.json
-            infrastructure/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
-        run: npm ci
         working-directory: front-end
-
-      - name: Install deployment dependencies
         run: npm ci
-        working-directory: infrastructure
 
-      - name: Install Wrangler
-        run: npm install -g wrangler
+      - name: Build frontend
+        working-directory: front-end
+        run: npm run build
 
-      - name: Deploy Frontend to Cloudflare Pages
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-        run: npm run deploy:staging frontend
-        working-directory: infrastructure
+      - name: Publish to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          command: pages deploy front-end/dist --project-name=rabbithq-staging --branch=main

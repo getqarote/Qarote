@@ -44,6 +44,8 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
 
+console.log("Initializing application");
+
 const AppCore = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>

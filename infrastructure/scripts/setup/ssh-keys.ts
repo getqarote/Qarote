@@ -5,23 +5,8 @@
  * This script adds the main SSH key to both users on existing servers
  */
 
-import { promises as fs } from "fs";
-import * as path from "path";
-import { Logger, executeCommand } from "./utils.js";
-
-/**
- * Get the main SSH key path
- */
-function getMainKeyPath(): string {
-  return path.join(process.env.HOME || "", ".ssh", "id_rsa");
-}
-
-/**
- * Get the main SSH key public path
- */
-function getMainKeyPubPath(): string {
-  return path.join(process.env.HOME || "", ".ssh", "id_rsa.pub");
-}
+import fs from "node:fs/promises";
+import { Logger, executeCommand, Paths } from "../utils";
 
 /**
  * Add main SSH key to both users on a server
@@ -29,8 +14,8 @@ function getMainKeyPubPath(): string {
 async function setupSSHKeysOnServer(serverIp: string): Promise<void> {
   Logger.info(`Setting up SSH keys on server: ${serverIp}`);
 
-  const sshKeyPath = getMainKeyPath();
-  const mainKeyPubPath = getMainKeyPubPath();
+  const sshKeyPath = Paths.sshKeyPath;
+  const mainKeyPubPath = Paths.sshKeyPublicPath;
 
   try {
     // Read the public key

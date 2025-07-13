@@ -1,4 +1,4 @@
 environments/.env
 
-environments/staging/frontend.env
-environments/production/frontend.env
+environments/staging/.frontend.env
+environments/production/.frontend.env

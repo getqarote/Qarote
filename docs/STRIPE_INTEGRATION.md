@@ -91,10 +91,6 @@ RESEND_API_KEY="re_..."
 
 #### Frontend (`.env`)
 
-```bash
-VITE_STRIPE_PUBLISHABLE_KEY="pk_test_..."
-```
-
 ## Features Implemented
 
 ### ✅ Payment Processing

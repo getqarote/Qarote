@@ -80,7 +80,7 @@ jobs:
       - name: 🚀 Deploy to staging
         run: |
           cd infrastructure
-          npm run deploy:staging:backend
+          npm run deploy:backend:staging
 
       - name: 🩺 Verify health endpoints
         run: |
