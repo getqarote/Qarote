@@ -1,17 +1,20 @@
-name: Deploy to Staging
+name: Deploy Backend to Dokku Staging
+
+env:
+  APP_NAME: rabbit-hq-staging
 
 on:
   push:
     branches: [main]
     paths:
       - "back-end/**"
-      - "app.json" # Added to track changes to health checks
-      - ".github/workflows/deploy-staging.yml"
-  workflow_dispatch: # Allow manual triggers
+      - "app.json"
+      - ".github/workflows/deploy-backend-staging.yml"
+  workflow_dispatch:
 
 jobs:
   deploy-backend:
-    name: Deploy Backend to Hetzner Dokku - Staging
+    name: Deploy Backend to Dokku - Staging
     runs-on: ubuntu-latest
     environment: staging
 
@@ -21,21 +24,7 @@ jobs:
         with:
           fetch-depth: 0 # Full history for proper git operations
 
-      - name: 🔧 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: "npm"
-          cache-dependency-path: |
-            back-end/package-lock.json
-            infrastructure/package-lock.json
-
-      - name: 📦 Install infrastructure dependencies
-        run: |
-          cd infrastructure
-          npm ci
-
-      - name: 🔑 Setup SSH
+      - name: 🔑 Setup SSH for database configuration
         uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.DOKKU_SSH_PRIVATE_KEY }}
@@ -45,47 +34,64 @@ jobs:
           mkdir -p ~/.ssh
           ssh-keyscan -H ${{ vars.DOKKU_HOST }} >> ~/.ssh/known_hosts
 
-      - name: 📝 Create staging environment file
+      # should be done once
+      - name: 📝 Configure Environment Variables
         run: |
-          cd infrastructure/environments/staging
-          cat > .env << 'EOF'
-          DOKKU_HOST=${{ vars.DOKKU_HOST }}
-          DOMAIN_BACKEND=${{ vars.DOMAIN_BACKEND }}
-          DOMAIN_FRONTEND=${{ vars.DOMAIN_FRONTEND }}
-          PORT=${{ vars.PORT }}
-          HOST=${{ vars.HOST }}
-          NODE_ENV=${{ vars.NODE_ENV }}
-          NODE_TLS_REJECT_UNAUTHORIZED=${{ vars.NODE_TLS_REJECT_UNAUTHORIZED }}
-          ENVIRONMENT=staging
-          LOG_LEVEL=${{ vars.LOG_LEVEL }}
-          JWT_SECRET=${{ secrets.JWT_SECRET }}
-          ENCRYPTION_KEY=${{ secrets.ENCRYPTION_KEY }}
-          DATABASE_URL=${{ secrets.DATABASE_URL }}
-          CORS_ORIGIN=${{ vars.CORS_ORIGIN }}
-          FRONTEND_URL=${{ vars.FRONTEND_URL }}
-          RESEND_API_KEY=${{ secrets.RESEND_API_KEY }}
-          FROM_EMAIL=${{ vars.FROM_EMAIL }}
-          STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY }}
-          STRIPE_WEBHOOK_SECRET=${{ secrets.STRIPE_WEBHOOK_SECRET }}
-          STRIPE_DEVELOPER_MONTHLY_PRICE_ID=${{ vars.STRIPE_DEVELOPER_MONTHLY_PRICE_ID }}
-          STRIPE_DEVELOPER_YEARLY_PRICE_ID=${{ vars.STRIPE_DEVELOPER_YEARLY_PRICE_ID }}
-          STRIPE_STARTUP_MONTHLY_PRICE_ID=${{ vars.STRIPE_STARTUP_MONTHLY_PRICE_ID }}
-          STRIPE_STARTUP_YEARLY_PRICE_ID=${{ vars.STRIPE_STARTUP_YEARLY_PRICE_ID }}
-          STRIPE_BUSINESS_MONTHLY_PRICE_ID=${{ vars.STRIPE_BUSINESS_MONTHLY_PRICE_ID }}
-          STRIPE_BUSINESS_YEARLY_PRICE_ID=${{ vars.STRIPE_BUSINESS_YEARLY_PRICE_ID }}
-          SENTRY_DSN=${{ vars.SENTRY_DSN }}
-          SENTRY_ENABLED=${{ vars.SENTRY_ENABLED }}
-          EOF
+          ssh dokku@${{ vars.DOKKU_HOST }} config:set ${{ env.APP_NAME }} \
+            DOMAIN_BACKEND=${{ vars.DOMAIN_BACKEND }} \
+            DOMAIN_FRONTEND=${{ vars.DOMAIN_FRONTEND }} \
+            PORT=${{ vars.PORT }} \
+            HOST=${{ vars.HOST }} \
+            NODE_ENV=${{ vars.NODE_ENV }} \
+            ENVIRONMENT=staging \
+            NODE_TLS_REJECT_UNAUTHORIZED=${{ vars.NODE_TLS_REJECT_UNAUTHORIZED }} \
+            LOG_LEVEL=${{ vars.LOG_LEVEL }} \
+            JWT_SECRET=${{ secrets.JWT_SECRET }} \
+            ENCRYPTION_KEY=${{ secrets.ENCRYPTION_KEY }} \
+            CORS_ORIGIN=${{ vars.CORS_ORIGIN }} \
+            FRONTEND_URL=${{ vars.FRONTEND_URL }} \
+            RESEND_API_KEY=${{ secrets.RESEND_API_KEY }} \
+            FROM_EMAIL=${{ vars.FROM_EMAIL }} \
+            STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY }} \
+            STRIPE_WEBHOOK_SECRET=${{ secrets.STRIPE_WEBHOOK_SECRET }} \
+            STRIPE_DEVELOPER_MONTHLY_PRICE_ID=${{ vars.STRIPE_DEVELOPER_MONTHLY_PRICE_ID }} \
+            STRIPE_DEVELOPER_YEARLY_PRICE_ID=${{ vars.STRIPE_DEVELOPER_YEARLY_PRICE_ID }} \
+            STRIPE_STARTUP_MONTHLY_PRICE_ID=${{ vars.STRIPE_STARTUP_MONTHLY_PRICE_ID }} \
+            STRIPE_STARTUP_YEARLY_PRICE_ID=${{ vars.STRIPE_STARTUP_YEARLY_PRICE_ID }} \
+            STRIPE_BUSINESS_MONTHLY_PRICE_ID=${{ vars.STRIPE_BUSINESS_MONTHLY_PRICE_ID }} \
+            STRIPE_BUSINESS_YEARLY_PRICE_ID=${{ vars.STRIPE_BUSINESS_YEARLY_PRICE_ID }} \
+            SENTRY_DSN=${{ vars.SENTRY_DSN }} \
+            SENTRY_ENABLED=${{ vars.SENTRY_ENABLED }}
 
-      - name: 🚀 Deploy to staging
+      # Deploy the application
+      - name: 🐳 Deploy to Dokku
+        uses: dokku/github-action@master
+        with:
+          git_remote_url: "ssh://dokku@${{ vars.DOKKU_HOST }}:22/${{ env.APP_NAME }}"
+          ssh_private_key: ${{ secrets.DOKKU_SSH_PRIVATE_KEY }}
+          git_push_flags: "--force"
+
+      # - name: 🔄 Restart application to pick up new variables
+      #   run: |
+      #     ssh dokku@${vars.DOKKU_HOST }} ps:restart ${nv.APP_NAME }}
+
+      ## - name: 🔒 Configure SSL
+      #   run: |
+      #     ssh dokku@$ vars.DOKKU_HOST letsencrypt:set ${env.APP_NAME }} email tessierhuort@gmail.com
+      #     ssh dokku@$ vars.DOKKU_HOST letsencrypt:enable ${env.APP_NAME }}
+
+      - name: 🔍 Debug Dokku Environment
         run: |
-          cd infrastructure
-          npm run deploy:backend:staging
+          echo "Checking environment variables in Dokku..."
+          ssh dokku@${{ vars.DOKKU_HOST }} config:show ${{ env.APP_NAME }}
+          echo "-----------------------------------------------"
+          echo "Checking if app is running..."
+          ssh dokku@${{ vars.DOKKU_HOST }} ps:report ${{ env.APP_NAME }}
 
       - name: 🩺 Verify health endpoints
         run: |
           echo "Waiting for deployment to stabilize..."
-          sleep 10
+          sleep 30
           echo "Testing health endpoint..."
           curl -sSf https://${{ vars.DOMAIN_BACKEND }}/health || echo "Health check not yet available, deployment may still be in progress"
 
@@ -95,6 +101,3 @@ jobs:
           echo "🔍 Backend URL: https://${{ vars.DOMAIN_BACKEND }}"
           echo "🔍 Health check: https://${{ vars.DOMAIN_BACKEND }}/health"
           echo "📝 Commit: ${{ github.sha }}"
-          echo "🗄️ Database migrations: ✅ Completed via app.json predeploy hook"
-          echo "🔒 SSL: ✅ Configured with Let's Encrypt"
-          echo "♻️ Zero-downtime deployment: ✅ Enabled"

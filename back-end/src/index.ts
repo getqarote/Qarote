@@ -87,7 +87,7 @@ async function startServer() {
       }
     );
   } catch (error) {
-    logger.error("Failed to start server:", error);
+    logger.error(error, "Failed to start server");
     await prisma.$disconnect();
     process.exit(1);
   }
