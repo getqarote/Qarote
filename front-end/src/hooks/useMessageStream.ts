@@ -215,7 +215,7 @@ export function useMessageStream({
     });
 
     // Use the correct backend URL with port 3000
-    const url = `http://localhost:3000/api/rabbitmq/servers/${serverId}/queues/${encodeURIComponent(queueName)}/messages/browse?${params}`;
+    const url = `${import.meta.env.BASE_URL}/api/rabbitmq/servers/${serverId}/queues/${encodeURIComponent(queueName)}/messages/browse?${params}`;
 
     try {
       // Use fetchEventSource with proper authentication
@@ -363,7 +363,7 @@ export function useMessageStream({
         // Use fetch with keepalive for reliable cleanup on page unload
         if (queueName && serverId && token) {
           fetch(
-            `http://localhost:3000/api/rabbitmq/servers/${serverId}/queues/${encodeURIComponent(queueName)}/messages/browse/stop`,
+            `${import.meta.env.BASE_URL}/api/rabbitmq/servers/${serverId}/queues/${encodeURIComponent(queueName)}/messages/browse/stop`,
             {
               method: "POST",
               headers: {

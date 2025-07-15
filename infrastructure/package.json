@@ -16,8 +16,6 @@
     "setup": "tsx scripts/setup-server.ts",
     "setup:staging": "tsx scripts/setup-server.ts staging",
     "setup:production": "tsx scripts/setup-server.ts production",
-    "deploy:backend:staging": "tsx scripts/deploy/backend/index.ts staging",
-    "deploy:backend:production": "tsx scripts/deploy/backend./index.ts production",
     "status:staging": "tsx scripts/status.ts staging",
     "status:production": "tsx scripts/status.ts production",
     "logs:staging": "tsx scripts/logs.ts staging",
@@ -40,7 +38,6 @@
     "@types/inquirer": "^9.0.7",
     "@types/node": "^20.10.0",
     "tsx": "^4.6.0",
-    "typescript": "^5.3.0",
-    "wrangler": "^3.0.0"
+    "typescript": "^5.3.0"
   }
 }

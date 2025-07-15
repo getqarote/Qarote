@@ -1,7 +1,7 @@
 import log from "loglevel";
 
 // Configure log level based on environment
-if (import.meta.env.DEV) {
+if (import.meta.env.MODE === "development") {
   // In development, show all logs including debug
   log.setLevel("debug");
 } else {
@@ -17,7 +17,7 @@ log.methodFactory = function (methodName, logLevel, loggerName) {
 
   return function (message, ...args) {
     // Add timestamp in development for better debugging
-    if (import.meta.env.DEV) {
+    if (import.meta.env.MODE === "development") {
       const timestamp = new Date().toISOString().substr(11, 12);
       rawMethod(`[${timestamp}] ${message}`, ...args);
     } else {

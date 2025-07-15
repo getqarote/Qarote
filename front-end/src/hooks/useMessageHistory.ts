@@ -88,7 +88,7 @@ export function useMessageHistory(params: MessageHistorySearchParams) {
       });
 
       const response = await fetch(
-        `http://localhost:3000/api/message-history/search?${searchParams}`,
+        `${import.meta.env.BASE_URL}/api/message-history/search?${searchParams}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -131,7 +131,7 @@ export function useMessageHistoryStats(
       }
 
       const response = await fetch(
-        `http://localhost:3000/api/message-history/stats?${searchParams}`,
+        `${import.meta.env.BASE_URL}/api/message-history/stats?${searchParams}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -163,7 +163,7 @@ export function useMessageHistoryAccess(serverId: string) {
     queryKey: ["messageHistoryAccess", serverId],
     queryFn: async () => {
       const response = await fetch(
-        `http://localhost:3000/api/message-history/stats?serverId=${serverId}&days=1`,
+        `${import.meta.env.BASE_URL}/api/message-history/stats?serverId=${serverId}&days=1`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
