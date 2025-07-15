@@ -5,12 +5,12 @@ import { captureAPIError } from "../sentry";
  * Core HTTP client with authentication and error handling
  */
 
-const API_BASE_URL = import.meta.env.BASE_URL + "/api";
+const API_API_URL = import.meta.env.VITE_API_URL + "/api";
 
 export abstract class BaseApiClient {
   protected baseUrl: string;
 
-  constructor(baseUrl: string = API_BASE_URL) {
+  constructor(baseUrl: string = API_API_URL) {
     this.baseUrl = baseUrl;
   }
 
