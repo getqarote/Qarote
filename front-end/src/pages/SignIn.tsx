@@ -182,6 +182,24 @@ const SignIn: React.FC = () => {
                 Forgot your password?
               </Link>
             </div>
+
+            {/* Legal Links */}
+            <div className="mt-6 text-center text-sm text-muted-foreground">
+              <div className="flex justify-center gap-4 mt-2">
+                <Link
+                  to="/terms-of-service"
+                  className="hover:text-primary transition-colors"
+                >
+                  Terms of Service
+                </Link>
+                <Link
+                  to="/privacy-policy"
+                  className="hover:text-primary transition-colors"
+                >
+                  Privacy Policy
+                </Link>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>

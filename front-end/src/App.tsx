@@ -32,6 +32,8 @@ const Billing = lazy(() => import("./pages/Billing"));
 const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
 const PaymentCancelled = lazy(() => import("./pages/PaymentCancelled"));
 const PrivacySettings = lazy(() => import("./pages/PrivacySettings"));
+const TermsOfService = lazy(() => import("./pages/public/TermsOfService"));
+const PrivacyPolicy = lazy(() => import("./pages/public/PrivacyPolicy"));
 const HelpSupport = lazy(() => import("./pages/HelpSupport"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const SignIn = lazy(() => import("./pages/SignIn"));
@@ -43,8 +45,6 @@ const AcceptInvitation = lazy(() => import("./pages/AcceptInvitation"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
-
-console.log("Initializing application");
 
 const AppCore = () => (
   <QueryClientProvider client={queryClient}>
@@ -81,6 +81,11 @@ const AppCore = () => (
                     }
                   />
                   <Route path="/verify-email" element={<VerifyEmail />} />
+                  <Route
+                    path="/terms-of-service"
+                    element={<TermsOfService />}
+                  />
+                  <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                   <Route
                     path="/forgot-password"
                     element={
@@ -310,7 +315,7 @@ const AppCore = () => (
 // Wrap the app with Sentry error boundary and profiling
 const App = withSentryProfiling(
   SentryErrorBoundary(AppCore, {
-    fallback: ({ error, resetError }) => (
+    fallback: ({ resetError }) => (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center space-y-4 p-8">
           <h1 className="text-2xl font-bold text-destructive">
