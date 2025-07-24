@@ -352,11 +352,10 @@ export interface RabbitMQOverview {
 }
 
 export interface SSLConfig {
-  enabled: boolean;
   verifyPeer: boolean;
-  caCertPath?: string;
-  clientCertPath?: string;
-  clientKeyPath?: string;
+  caCertContent?: string;
+  clientCertContent?: string;
+  clientKeyContent?: string;
 }
 
 export interface RabbitMQCredentials {
@@ -365,6 +364,7 @@ export interface RabbitMQCredentials {
   username: string;
   password: string;
   vhost: string;
+  useHttps: boolean;
   sslConfig?: SSLConfig;
 }
 

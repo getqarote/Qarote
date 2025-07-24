@@ -46,18 +46,15 @@ serverController.get("/", async (c) => {
         port: true,
         username: true,
         vhost: true,
+        useHttps: true,
         sslEnabled: true,
         sslVerifyPeer: true,
-        sslCaCertPath: true,
-        sslClientCertPath: true,
-        sslClientKeyPath: true,
         isOverQueueLimit: true,
         queueCountAtConnect: true,
         overLimitWarningShown: true,
         createdAt: true,
         updatedAt: true,
         workspaceId: true,
-        // Don't include password in response
       },
     });
 
@@ -70,12 +67,9 @@ serverController.get("/", async (c) => {
       port: server.port,
       username: EncryptionService.decrypt(server.username), // Decrypt for display
       vhost: server.vhost,
+      useHttps: server.useHttps,
       sslConfig: {
-        enabled: server.sslEnabled,
         verifyPeer: server.sslVerifyPeer,
-        caCertPath: server.sslCaCertPath,
-        clientCertPath: server.sslClientCertPath,
-        clientKeyPath: server.sslClientKeyPath,
       },
       isOverQueueLimit: server.isOverQueueLimit,
       queueCountAtConnect: server.queueCountAtConnect,
@@ -111,18 +105,15 @@ serverController.get("/:id", async (c) => {
         port: true,
         username: true,
         vhost: true,
+        useHttps: true,
         sslEnabled: true,
         sslVerifyPeer: true,
-        sslCaCertPath: true,
-        sslClientCertPath: true,
-        sslClientKeyPath: true,
         isOverQueueLimit: true,
         queueCountAtConnect: true,
         overLimitWarningShown: true,
         createdAt: true,
         updatedAt: true,
         workspaceId: true,
-        // Don't include password in response
       },
     });
 
@@ -138,12 +129,9 @@ serverController.get("/:id", async (c) => {
       port: server.port,
       username: EncryptionService.decrypt(server.username), // Decrypt for display
       vhost: server.vhost,
+      useHttps: server.useHttps,
       sslConfig: {
-        enabled: server.sslEnabled,
         verifyPeer: server.sslVerifyPeer,
-        caCertPath: server.sslCaCertPath,
-        clientCertPath: server.sslClientCertPath,
-        clientKeyPath: server.sslClientKeyPath,
       },
       isOverQueueLimit: server.isOverQueueLimit,
       queueCountAtConnect: server.queueCountAtConnect,
@@ -187,6 +175,7 @@ serverController.post(
         username: data.username,
         password: data.password,
         vhost: data.vhost,
+        useHttps: data.useHttps,
         sslConfig: data.sslConfig,
       });
 
@@ -225,11 +214,18 @@ serverController.post(
           username: EncryptionService.encrypt(data.username), // Encrypt username
           password: EncryptionService.encrypt(data.password), // Encrypt password
           vhost: data.vhost,
-          sslEnabled: data.sslConfig?.enabled || false,
+          useHttps: data.useHttps,
+          sslEnabled: !!data.sslConfig, // SSL is enabled if SSL config is provided
           sslVerifyPeer: data.sslConfig?.verifyPeer || true,
-          sslCaCertPath: data.sslConfig?.caCertPath,
-          sslClientCertPath: data.sslConfig?.clientCertPath,
-          sslClientKeyPath: data.sslConfig?.clientKeyPath,
+          sslCaCertContent: data.sslConfig?.caCertContent
+            ? EncryptionService.encrypt(data.sslConfig.caCertContent)
+            : null,
+          sslClientCertContent: data.sslConfig?.clientCertContent
+            ? EncryptionService.encrypt(data.sslConfig.clientCertContent)
+            : null,
+          sslClientKeyContent: data.sslConfig?.clientKeyContent
+            ? EncryptionService.encrypt(data.sslConfig.clientKeyContent)
+            : null,
           version: rabbitMqVersion, // Store full version
           versionMajorMinor: majorMinorVersion, // Store major.minor for plan validation
           // Store over-limit information
@@ -250,12 +246,9 @@ serverController.post(
             port: server.port,
             username: data.username, // Return original (not encrypted) for UI
             vhost: server.vhost,
+            useHttps: server.useHttps,
             sslConfig: {
-              enabled: server.sslEnabled,
               verifyPeer: server.sslVerifyPeer,
-              caCertPath: server.sslCaCertPath,
-              clientCertPath: server.sslClientCertPath,
-              clientKeyPath: server.sslClientKeyPath,
             },
             workspaceId: server.workspaceId,
             createdAt: server.createdAt,
@@ -306,7 +299,8 @@ serverController.put(
         data.port ||
         data.username ||
         data.password ||
-        data.vhost
+        data.vhost ||
+        data.useHttps !== undefined
       ) {
         const client = new RabbitMQClient({
           host: data.host || existingServer.host,
@@ -314,14 +308,54 @@ serverController.put(
           username: data.username || existingServer.username,
           password: data.password || existingServer.password,
           vhost: data.vhost || existingServer.vhost,
+          useHttps: data.useHttps ?? existingServer.useHttps,
+          sslConfig: data.sslConfig || {
+            verifyPeer: existingServer.sslVerifyPeer,
+            caCertContent: existingServer.sslCaCertContent
+              ? EncryptionService.decrypt(existingServer.sslCaCertContent)
+              : undefined,
+            clientCertContent: existingServer.sslClientCertContent
+              ? EncryptionService.decrypt(existingServer.sslClientCertContent)
+              : undefined,
+            clientKeyContent: existingServer.sslClientKeyContent
+              ? EncryptionService.decrypt(existingServer.sslClientKeyContent)
+              : undefined,
+          },
         });
 
         await client.getOverview();
       }
 
+      // Prepare update data with proper encryption
+      const updateData: any = {};
+
+      if (data.name !== undefined) updateData.name = data.name;
+      if (data.host !== undefined) updateData.host = data.host;
+      if (data.port !== undefined) updateData.port = data.port;
+      if (data.username !== undefined)
+        updateData.username = EncryptionService.encrypt(data.username);
+      if (data.password !== undefined)
+        updateData.password = EncryptionService.encrypt(data.password);
+      if (data.vhost !== undefined) updateData.vhost = data.vhost;
+      if (data.useHttps !== undefined) updateData.useHttps = data.useHttps;
+
+      if (data.sslConfig !== undefined) {
+        updateData.sslEnabled = !!data.sslConfig;
+        updateData.sslVerifyPeer = data.sslConfig?.verifyPeer || true;
+        updateData.sslCaCertContent = data.sslConfig?.caCertContent
+          ? EncryptionService.encrypt(data.sslConfig.caCertContent)
+          : null;
+        updateData.sslClientCertContent = data.sslConfig?.clientCertContent
+          ? EncryptionService.encrypt(data.sslConfig.clientCertContent)
+          : null;
+        updateData.sslClientKeyContent = data.sslConfig?.clientKeyContent
+          ? EncryptionService.encrypt(data.sslConfig.clientKeyContent)
+          : null;
+      }
+
       const server = await prisma.rabbitMQServer.update({
         where: { id },
-        data,
+        data: updateData,
       });
 
       return c.json({
@@ -330,8 +364,12 @@ serverController.put(
           name: server.name,
           host: server.host,
           port: server.port,
-          username: server.username,
+          username: EncryptionService.decrypt(server.username), // Decrypt for display
           vhost: server.vhost,
+          useHttps: server.useHttps,
+          sslConfig: {
+            verifyPeer: server.sslVerifyPeer,
+          },
           createdAt: server.createdAt,
           updatedAt: server.updatedAt,
         },

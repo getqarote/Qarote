@@ -90,13 +90,15 @@ export const addServerSchema = z.object({
   username: z.string().min(1, "Username is required"),
   password: z.string().min(1, "Password is required"),
   vhost: z.string().default("/"),
-  sslConfig: z.object({
-    enabled: z.boolean().default(false),
-    verifyPeer: z.boolean().default(true),
-    caCertPath: z.string().default(""),
-    clientCertPath: z.string().default(""),
-    clientKeyPath: z.string().default(""),
-  }),
+  useHttps: z.boolean(),
+  sslConfig: z
+    .object({
+      verifyPeer: z.boolean().default(true),
+      caCertContent: z.string().optional(),
+      clientCertContent: z.string().optional(),
+      clientKeyContent: z.string().optional(),
+    })
+    .optional(),
 });
 
 export type AddServerFormData = z.infer<typeof addServerSchema>;

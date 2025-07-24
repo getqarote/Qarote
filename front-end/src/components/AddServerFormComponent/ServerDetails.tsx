@@ -1,5 +1,6 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import {
   FormControl,
   FormField,
@@ -60,13 +61,21 @@ export const ServerDetails = ({ form }: ServerDetailsProps) => {
                   type="number"
                   placeholder="15672"
                   {...field}
-                  onChange={(e) =>
-                    field.onChange(parseInt(e.target.value) || 0)
-                  }
+                  onChange={(e) => {
+                    const port = parseInt(e.target.value) || 0;
+                    field.onChange(port);
+
+                    // Auto-detect HTTPS based on common HTTPS ports
+                    if ([443, 15671, 8443, 9443].includes(port)) {
+                      form.setValue("useHttps", true);
+                    } else if ([80, 15672, 8080, 9090].includes(port)) {
+                      form.setValue("useHttps", false);
+                    }
+                  }}
                 />
               </FormControl>
               <div className="text-xs text-muted-foreground mt-1">
-                Default: 15672 (not the AMQP port 5672)
+                Default: 15672 (HTTP) or 15671 (HTTPS)
               </div>
               <FormMessage />
             </FormItem>
@@ -75,18 +84,34 @@ export const ServerDetails = ({ form }: ServerDetailsProps) => {
 
         <FormField
           control={form.control}
-          name="vhost"
+          name="useHttps"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>Virtual Host</FormLabel>
+            <FormItem className="flex items-center space-x-3 space-y-0 mt-8">
               <FormControl>
-                <Input placeholder="/" {...field} />
+                <Switch
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
               </FormControl>
-              <FormMessage />
+              <FormLabel className="text-sm font-medium">Use HTTPS</FormLabel>
             </FormItem>
           )}
         />
       </div>
+
+      <FormField
+        control={form.control}
+        name="vhost"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Virtual Host</FormLabel>
+            <FormControl>
+              <Input placeholder="/" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
     </div>
   );
 };

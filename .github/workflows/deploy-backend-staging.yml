@@ -44,7 +44,6 @@ jobs:
             HOST=${{ vars.HOST }} \
             NODE_ENV=${{ vars.NODE_ENV }} \
             ENVIRONMENT=staging \
-            NODE_TLS_REJECT_UNAUTHORIZED=${{ vars.NODE_TLS_REJECT_UNAUTHORIZED }} \
             LOG_LEVEL=${{ vars.LOG_LEVEL }} \
             JWT_SECRET=${{ secrets.JWT_SECRET }} \
             ENCRYPTION_KEY=${{ secrets.ENCRYPTION_KEY }} \

@@ -1,9 +1,8 @@
 export interface SSLConfig {
-  enabled: boolean;
   verifyPeer: boolean;
-  caCertPath?: string;
-  clientCertPath?: string;
-  clientKeyPath?: string;
+  caCertContent?: string;
+  clientCertContent?: string;
+  clientKeyContent?: string;
 }
 
 export interface AddServerFormData {
@@ -13,7 +12,8 @@ export interface AddServerFormData {
   username: string;
   password: string;
   vhost: string;
-  sslConfig: SSLConfig;
+  useHttps: boolean;
+  sslConfig?: SSLConfig;
 }
 
 export interface ConnectionStatus {
@@ -32,6 +32,7 @@ export interface Server {
   port: number;
   username: string;
   vhost: string;
+  useHttps: boolean;
   sslConfig?: SSLConfig;
 }
 

@@ -50,6 +50,7 @@ export class ServerApiClient extends BaseApiClient {
     username: string;
     password: string;
     vhost: string;
+    useHttps: boolean;
     sslConfig?: SSLConfig;
   }): Promise<{
     success: boolean;

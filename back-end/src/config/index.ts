@@ -52,9 +52,6 @@ const envSchema = z.object({
 
   // NPM package version (for Sentry releases)
   npm_package_version: z.string().describe("1.0.0"),
-
-  // Feature Flags (for backwards compatibility)
-  NODE_TLS_REJECT_UNAUTHORIZED: z.string().describe("1 or 0"),
 });
 
 // Parse and validate environment variables

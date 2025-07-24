@@ -1,17 +1,11 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { Loader2, Plus, Server, Edit } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { DialogFooter } from "@/components/ui/dialog";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import logger from "@/lib/logger";
+import { Form } from "@/components/ui/form";
 import {
   Dialog,
   DialogContent,
@@ -20,10 +14,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Loader2, Plus, Server, Edit } from "lucide-react";
+import logger from "@/lib/logger";
 import { apiClient } from "@/lib/api";
 import { useServerContext } from "@/contexts/ServerContext";
-import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/hooks/useApi";
 import { addServerSchema, type AddServerFormData } from "@/schemas/forms";
 
@@ -68,12 +61,12 @@ export const AddServerForm = ({
       username: server?.username || "guest",
       password: "", // Don't prefill password for security
       vhost: server?.vhost || "/",
+      useHttps: server?.useHttps || false,
       sslConfig: server?.sslConfig || {
-        enabled: false,
         verifyPeer: true,
-        caCertPath: "",
-        clientCertPath: "",
-        clientKeyPath: "",
+        caCertContent: undefined,
+        clientCertContent: undefined,
+        clientKeyContent: undefined,
       },
     },
   });
@@ -88,12 +81,12 @@ export const AddServerForm = ({
         username: server.username,
         password: "",
         vhost: server.vhost,
+        useHttps: server.useHttps || false,
         sslConfig: server.sslConfig || {
-          enabled: false,
           verifyPeer: true,
-          caCertPath: "",
-          clientCertPath: "",
-          clientKeyPath: "",
+          caCertContent: undefined,
+          clientCertContent: undefined,
+          clientKeyContent: undefined,
         },
       });
       setConnectionStatus({ status: "idle" });
@@ -115,13 +108,15 @@ export const AddServerForm = ({
         username: formData.username,
         password: formData.password,
         vhost: formData.vhost,
-        sslConfig: {
-          enabled: formData.sslConfig.enabled || false,
-          verifyPeer: formData.sslConfig.verifyPeer || true,
-          caCertPath: formData.sslConfig.caCertPath || "",
-          clientCertPath: formData.sslConfig.clientCertPath || "",
-          clientKeyPath: formData.sslConfig.clientKeyPath || "",
-        },
+        useHttps: formData.useHttps,
+        sslConfig: formData.sslConfig
+          ? {
+              verifyPeer: formData.sslConfig.verifyPeer || true,
+              caCertContent: formData.sslConfig.caCertContent,
+              clientCertContent: formData.sslConfig.clientCertContent,
+              clientKeyContent: formData.sslConfig.clientKeyContent,
+            }
+          : undefined,
       });
 
       if (result.success) {
@@ -156,20 +151,23 @@ export const AddServerForm = ({
     try {
       if (mode === "edit" && server) {
         // Update existing server
-        const result = await apiClient.updateServer(server.id, {
+        await apiClient.updateServer(server.id, {
           name: data.name,
           host: data.host,
           port: data.port,
           username: data.username,
           password: data.password,
           vhost: data.vhost,
-          sslConfig: {
-            enabled: data.sslConfig.enabled || false,
-            verifyPeer: data.sslConfig.verifyPeer || true,
-            caCertPath: data.sslConfig.caCertPath || "",
-            clientCertPath: data.sslConfig.clientCertPath || "",
-            clientKeyPath: data.sslConfig.clientKeyPath || "",
-          },
+          useHttps: data.useHttps,
+          sslConfig:
+            data.useHttps && data.sslConfig
+              ? {
+                  verifyPeer: data.sslConfig.verifyPeer || true,
+                  caCertContent: data.sslConfig.caCertContent,
+                  clientCertContent: data.sslConfig.clientCertContent,
+                  clientKeyContent: data.sslConfig.clientKeyContent,
+                }
+              : undefined,
         });
 
         // Invalidate servers query to refresh the server list
@@ -189,13 +187,16 @@ export const AddServerForm = ({
           username: data.username,
           password: data.password,
           vhost: data.vhost,
-          sslConfig: {
-            enabled: data.sslConfig.enabled || false,
-            verifyPeer: data.sslConfig.verifyPeer || true,
-            caCertPath: data.sslConfig.caCertPath || "",
-            clientCertPath: data.sslConfig.clientCertPath || "",
-            clientKeyPath: data.sslConfig.clientKeyPath || "",
-          },
+          useHttps: data.useHttps,
+          sslConfig:
+            data.useHttps && data.sslConfig
+              ? {
+                  verifyPeer: data.sslConfig.verifyPeer || true,
+                  caCertContent: data.sslConfig.caCertContent,
+                  clientCertContent: data.sslConfig.clientCertContent,
+                  clientKeyContent: data.sslConfig.clientKeyContent,
+                }
+              : undefined,
         });
 
         // Set this as the selected server (only for new servers)

@@ -10,17 +10,9 @@ import { AlertApiClient } from "./alertClient";
 import { WorkspaceApiClient } from "./workspaceClient";
 import { LogsApiClient } from "./logsClient";
 import { FeedbackApiClient } from "./feedbackClient";
-import { PlanApiClient } from "./planClient";
-import { PaymentApiClient } from "./paymentClient";
-import { PasswordApiClient } from "./passwordClient";
 import type { LogQuery, CreateLogRequest, LogExportRequest } from "./logTypes";
-import type { FeedbackFilters, UpdateFeedbackRequest } from "./feedbackClient";
 import type { FeedbackRequest } from "@/types/feedback";
-import type {
-  PasswordChangeRequest,
-  PasswordResetRequest,
-  PasswordReset,
-} from "./passwordClient";
+import type { FeedbackFilters, UpdateFeedbackRequest } from "./feedbackClient";
 
 class ApiClient {
   private serverClient: ServerApiClient;
@@ -30,9 +22,6 @@ class ApiClient {
   private workspaceClient: WorkspaceApiClient;
   private logsClient: LogsApiClient;
   private feedbackClient: FeedbackApiClient;
-  private planClient: PlanApiClient;
-  private paymentClient: PaymentApiClient;
-  private passwordClient: PasswordApiClient;
 
   constructor(baseUrl?: string) {
     this.serverClient = new ServerApiClient(baseUrl);
@@ -42,9 +31,6 @@ class ApiClient {
     this.workspaceClient = new WorkspaceApiClient(baseUrl);
     this.logsClient = new LogsApiClient(baseUrl);
     this.feedbackClient = new FeedbackApiClient(baseUrl);
-    this.planClient = new PlanApiClient(baseUrl);
-    this.paymentClient = new PaymentApiClient(baseUrl);
-    this.passwordClient = new PasswordApiClient(baseUrl);
   }
 
   // Server methods
@@ -112,10 +98,6 @@ class ApiClient {
     );
   }
 
-  async stopMessageStreaming(serverId: string, queueName: string) {
-    return this.rabbitmqClient.stopMessageStreaming(serverId, queueName);
-  }
-
   async publishMessage(
     params: Parameters<RabbitMQApiClient["publishMessage"]>[0]
   ) {
@@ -150,12 +132,8 @@ class ApiClient {
     return this.rabbitmqClient.getQueueConsumers(serverId, queueName);
   }
 
-  async getTimeSeriesMetrics(serverId: string, timeRange: string = "1h") {
+  async getTimeSeriesMetrics(serverId: string, timeRange?: string) {
     return this.rabbitmqClient.getTimeSeriesMetrics(serverId, timeRange);
-  }
-
-  async getNodeMemoryDetails(serverId: string, nodeName: string) {
-    return this.rabbitmqClient.getNodeMemoryDetails(serverId, nodeName);
   }
 
   // Authentication methods
@@ -199,65 +177,6 @@ class ApiClient {
 
   async inviteUser(userData: Parameters<AuthApiClient["inviteUser"]>[0]) {
     return this.authClient.inviteUser(userData);
-  }
-
-  // New invitation methods
-  async getInvitations() {
-    return this.authClient.getInvitations();
-  }
-
-  async sendInvitation(
-    invitationData: Parameters<AuthApiClient["sendInvitation"]>[0]
-  ) {
-    return this.authClient.sendInvitation(invitationData);
-  }
-
-  async revokeInvitation(invitationId: string) {
-    return this.authClient.revokeInvitation(invitationId);
-  }
-
-  async getInvitationDetails(token: string) {
-    return this.authClient.getInvitationDetails(token);
-  }
-
-  async acceptInvitation(token: string) {
-    return this.authClient.acceptInvitation(token);
-  }
-
-  // Email verification methods
-  async verifyEmail(token: string) {
-    return this.authClient.verifyEmail(token);
-  }
-
-  async resendVerificationEmail(type: "SIGNUP" | "EMAIL_CHANGE" = "SIGNUP") {
-    return this.authClient.resendVerificationEmail(type);
-  }
-
-  async getVerificationStatus() {
-    return this.authClient.getVerificationStatus();
-  }
-
-  // Email change methods
-  async requestEmailChange(
-    data: Parameters<AuthApiClient["requestEmailChange"]>[0]
-  ) {
-    return this.authClient.requestEmailChange(data);
-  }
-
-  async cancelEmailChange() {
-    return this.authClient.cancelEmailChange();
-  }
-
-  async acceptInvitationWithRegistration(
-    token: string,
-    registrationData: Parameters<
-      AuthApiClient["acceptInvitationWithRegistration"]
-    >[1]
-  ) {
-    return this.authClient.acceptInvitationWithRegistration(
-      token,
-      registrationData
-    );
   }
 
   async logout() {
@@ -317,10 +236,6 @@ class ApiClient {
   // Company methods
   async getCurrentWorkspace() {
     return this.workspaceClient.getCurrentWorkspace();
-  }
-
-  async getCurrentWorkspaceMonthlyMessageCount() {
-    return this.workspaceClient.getCurrentWorkspaceMonthlyMessageCount();
   }
 
   async getWorspacePrivacySettings(companyId: string) {
@@ -407,68 +322,6 @@ class ApiClient {
 
   async getFeedbackStats(workspaceId?: string) {
     return this.feedbackClient.getFeedbackStats(workspaceId);
-  }
-
-  // Plan methods
-  async getAllPlans() {
-    return this.planClient.getAllPlans();
-  }
-
-  async getCurrentPlan() {
-    return this.planClient.getCurrentPlan();
-  }
-
-  // Payment methods
-  async createCheckoutSession(
-    data: Parameters<PaymentApiClient["createCheckoutSession"]>[0]
-  ) {
-    return this.paymentClient.createCheckoutSession(data);
-  }
-
-  async createPortalSession() {
-    return this.paymentClient.createPortalSession();
-  }
-
-  async getSubscription() {
-    return this.paymentClient.getSubscription();
-  }
-
-  async getPaymentHistory(limit?: number, offset?: number) {
-    return this.paymentClient.getPaymentHistory(limit, offset);
-  }
-
-  async getBillingOverview() {
-    return this.paymentClient.getBillingOverview();
-  }
-
-  async createBillingPortalSession() {
-    return this.paymentClient.createBillingPortalSession();
-  }
-
-  async cancelSubscription(
-    data: Parameters<PaymentApiClient["cancelSubscription"]>[0]
-  ) {
-    return this.paymentClient.cancelSubscription(data);
-  }
-
-  async renewSubscription(
-    plan: Parameters<PaymentApiClient["renewSubscription"]>[0],
-    billingInterval?: Parameters<PaymentApiClient["renewSubscription"]>[1]
-  ) {
-    return this.paymentClient.renewSubscription(plan, billingInterval);
-  }
-
-  // Password management methods
-  async changePassword(data: PasswordChangeRequest) {
-    return this.passwordClient.changePassword(data);
-  }
-
-  async requestPasswordReset(data: PasswordResetRequest) {
-    return this.passwordClient.requestPasswordReset(data);
-  }
-
-  async resetPassword(data: PasswordReset) {
-    return this.passwordClient.resetPassword(data);
   }
 }
 

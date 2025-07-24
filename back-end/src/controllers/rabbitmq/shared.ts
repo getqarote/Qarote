@@ -13,12 +13,10 @@ export function getDecryptedCredentials(server: RabbitMQServer) {
     username: EncryptionService.decrypt(server.username),
     password: EncryptionService.decrypt(server.password),
     vhost: server.vhost,
+    useHttps: server.useHttps,
     sslConfig: {
-      enabled: server.sslEnabled || false,
-      verifyPeer: server.sslVerifyPeer || true,
-      caCertPath: server.sslCaCertPath || undefined,
-      clientCertPath: server.sslClientCertPath || undefined,
-      clientKeyPath: server.sslClientKeyPath || undefined,
+      enabled: server.sslEnabled,
+      verifyPeer: server.sslVerifyPeer,
     },
   };
 }

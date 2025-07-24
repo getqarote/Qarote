@@ -11,11 +11,10 @@ export interface ApiResponse<T> {
 }
 
 export interface SSLConfig {
-  enabled: boolean;
   verifyPeer: boolean;
-  caCertPath?: string;
-  clientCertPath?: string;
-  clientKeyPath?: string;
+  caCertContent?: string;
+  clientCertContent?: string;
+  clientKeyContent?: string;
 }
 
 export interface Server {
@@ -25,6 +24,7 @@ export interface Server {
   port: number;
   username: string;
   vhost: string;
+  useHttps: boolean;
   sslConfig?: SSLConfig;
   createdAt: string;
   updatedAt: string;

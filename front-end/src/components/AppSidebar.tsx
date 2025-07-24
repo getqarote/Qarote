@@ -114,6 +114,26 @@ const menuItems = [
   },
 ];
 
+// Helper function to shorten hostnames
+const shortenHost = (host: string, maxLength: number = 25) => {
+  if (host.length <= maxLength) return host;
+
+  // For CloudAMQP hosts, show the meaningful part
+  if (host.includes(".cloudamqp.com")) {
+    const parts = host.split(".");
+    return `${parts[0]}...cloudamqp.com`;
+  }
+
+  // For other cloud providers
+  if (host.includes(".amazonaws.com")) {
+    const parts = host.split(".");
+    return `${parts[0]}...aws`;
+  }
+
+  // For other hosts, truncate with ellipsis
+  return `${host.substring(0, maxLength - 3)}...`;
+};
+
 export function AppSidebar() {
   const location = useLocation();
   const { selectedServerId, setSelectedServerId } = useServerContext();
@@ -167,16 +187,45 @@ export function AppSidebar() {
               onValueChange={setSelectedServerId}
             >
               <SelectTrigger className="w-full text-sm">
-                <SelectValue placeholder="Select a server..." />
+                <SelectValue placeholder="Select a server...">
+                  {selectedServerId &&
+                    servers.find((s) => s.id === selectedServerId) && (
+                      <div className="flex items-center gap-2 w-full min-w-0">
+                        <Server className="h-3 w-3 flex-shrink-0" />
+                        <div className="flex flex-col min-w-0 flex-1">
+                          <span
+                            className="truncate font-medium"
+                            title={
+                              servers.find((s) => s.id === selectedServerId)
+                                ?.host
+                            }
+                          >
+                            {shortenHost(
+                              servers.find((s) => s.id === selectedServerId)
+                                ?.host || ""
+                            )}
+                          </span>
+                          <span className="text-xs text-gray-500 truncate">
+                            {
+                              servers.find((s) => s.id === selectedServerId)
+                                ?.name
+                            }
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                </SelectValue>
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="min-w-[300px]">
                 {servers.map((server) => (
                   <SelectItem key={server.id} value={server.id}>
-                    <div className="flex items-center gap-2">
-                      <Server className="h-3 w-3" />
-                      <div className="flex flex-col">
-                        <span className="font-medium">{server.host}</span>
-                        <span className="text-xs text-gray-500">
+                    <div className="flex items-center gap-2 w-full min-w-0">
+                      <Server className="h-3 w-3 flex-shrink-0" />
+                      <div className="flex flex-col min-w-0 flex-1">
+                        <span className="font-medium" title={server.host}>
+                          {shortenHost(server.host)}
+                        </span>
+                        <span className="text-xs text-gray-500 truncate">
                           {server.name}
                         </span>
                       </div>

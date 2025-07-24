@@ -2,7 +2,6 @@ import { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { Shield, ExternalLink, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { EmailVerificationBanner } from "@/components/EmailVerificationBanner";
 
 interface LayoutProps {
   children: ReactNode;

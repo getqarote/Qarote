@@ -26,7 +26,6 @@ export interface EnvConfig {
   NODE_ENV: string;
   ENVIRONMENT: string;
   LOG_LEVEL: string;
-  NODE_TLS_REJECT_UNAUTHORIZED: string;
 
   // Authentication & Security
   JWT_SECRET: string;
@@ -125,7 +124,6 @@ export async function loadEnvConfig(
     "NODE_ENV",
     "ENVIRONMENT",
     "LOG_LEVEL",
-    "NODE_TLS_REJECT_UNAUTHORIZED",
     "JWT_SECRET",
     "ENCRYPTION_KEY",
     "FRONTEND_URL",
