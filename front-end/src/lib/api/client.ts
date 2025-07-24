@@ -10,6 +10,8 @@ import { AlertApiClient } from "./alertClient";
 import { WorkspaceApiClient } from "./workspaceClient";
 import { LogsApiClient } from "./logsClient";
 import { FeedbackApiClient } from "./feedbackClient";
+import { PlanApiClient } from "./planClient";
+import { PaymentApiClient } from "./paymentClient";
 import type { LogQuery, CreateLogRequest, LogExportRequest } from "./logTypes";
 import type { FeedbackRequest } from "@/types/feedback";
 import type { FeedbackFilters, UpdateFeedbackRequest } from "./feedbackClient";
@@ -22,6 +24,8 @@ class ApiClient {
   private workspaceClient: WorkspaceApiClient;
   private logsClient: LogsApiClient;
   private feedbackClient: FeedbackApiClient;
+  private planClient: PlanApiClient;
+  private paymentClient: PaymentApiClient;
 
   constructor(baseUrl?: string) {
     this.serverClient = new ServerApiClient(baseUrl);
@@ -31,6 +35,8 @@ class ApiClient {
     this.workspaceClient = new WorkspaceApiClient(baseUrl);
     this.logsClient = new LogsApiClient(baseUrl);
     this.feedbackClient = new FeedbackApiClient(baseUrl);
+    this.planClient = new PlanApiClient(baseUrl);
+    this.paymentClient = new PaymentApiClient(baseUrl);
   }
 
   // Server methods
@@ -322,6 +328,55 @@ class ApiClient {
 
   async getFeedbackStats(workspaceId?: string) {
     return this.feedbackClient.getFeedbackStats(workspaceId);
+  }
+
+  // Plan methods
+  async getAllPlans() {
+    return this.planClient.getAllPlans();
+  }
+
+  async getCurrentPlan() {
+    return this.planClient.getCurrentPlan();
+  }
+
+  // Payment methods
+  async createCheckoutSession(
+    data: Parameters<PaymentApiClient["createCheckoutSession"]>[0]
+  ) {
+    return this.paymentClient.createCheckoutSession(data);
+  }
+
+  async createPortalSession() {
+    return this.paymentClient.createPortalSession();
+  }
+
+  async getSubscription() {
+    return this.paymentClient.getSubscription();
+  }
+
+  async getPaymentHistory(limit?: number, offset?: number) {
+    return this.paymentClient.getPaymentHistory(limit, offset);
+  }
+
+  async getBillingOverview() {
+    return this.paymentClient.getBillingOverview();
+  }
+
+  async createBillingPortalSession() {
+    return this.paymentClient.createBillingPortalSession();
+  }
+
+  async cancelSubscription(
+    data: Parameters<PaymentApiClient["cancelSubscription"]>[0]
+  ) {
+    return this.paymentClient.cancelSubscription(data);
+  }
+
+  async renewSubscription(
+    plan: Parameters<PaymentApiClient["renewSubscription"]>[0],
+    billingInterval?: Parameters<PaymentApiClient["renewSubscription"]>[1]
+  ) {
+    return this.paymentClient.renewSubscription(plan, billingInterval);
   }
 }
 
