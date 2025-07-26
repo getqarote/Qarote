@@ -18,13 +18,15 @@ import {
 } from "lucide-react";
 import { useNodes } from "@/hooks/useApi";
 import { Node } from "@/lib/api";
+import { RabbitMQPermissionError } from "@/components/RabbitMQPermissionError";
+import { isRabbitMQAuthError } from "@/types/apiErrors";
 
 interface NodeDetailCardsProps {
   serverId: string;
 }
 
 export const NodeDetailCards = ({ serverId }: NodeDetailCardsProps) => {
-  const { data: nodesData, isLoading } = useNodes(serverId);
+  const { data: nodesData, isLoading, error } = useNodes(serverId);
   const nodes = nodesData?.nodes || [];
 
   const formatBytes = (bytes: number) => {
@@ -137,6 +139,17 @@ export const NodeDetailCards = ({ serverId }: NodeDetailCardsProps) => {
           </div>
         </CardContent>
       </Card>
+    );
+  }
+
+  // Handle RabbitMQ authorization errors
+  if (error && isRabbitMQAuthError(error)) {
+    return (
+      <RabbitMQPermissionError
+        requiredPermission={error.requiredPermission}
+        message={error.message}
+        title="Cannot View Node Details"
+      />
     );
   }
 

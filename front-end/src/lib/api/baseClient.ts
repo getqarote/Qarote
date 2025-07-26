@@ -1,5 +1,6 @@
 import logger from "../logger";
 import { captureAPIError } from "../sentry";
+import { parseApiError } from "@/types/apiErrors";
 /**
  * Base API Client
  * Core HTTP client with authentication and error handling
@@ -43,11 +44,18 @@ export abstract class BaseApiClient {
 
       if (!response.ok) {
         // Try to parse error response
+        let errorData: unknown;
         let errorMessage = `HTTP error! status: ${response.status}`;
 
         try {
-          const errorData = await response.json();
-          errorMessage = errorData.message || errorData.error || errorMessage;
+          errorData = await response.json();
+          if (typeof errorData === "object" && errorData !== null) {
+            const data = errorData as Record<string, unknown>;
+            errorMessage =
+              (data.message as string) ||
+              (data.error as string) ||
+              errorMessage;
+          }
         } catch (parseError) {
           // If we can't parse the error response, use the generic error
           logger.warn(
@@ -56,7 +64,9 @@ export abstract class BaseApiClient {
           );
         }
 
-        throw new Error(errorMessage);
+        // Parse and throw the appropriate error type
+        const apiError = parseApiError(errorData || errorMessage);
+        throw apiError;
       }
 
       const data = await response.json();

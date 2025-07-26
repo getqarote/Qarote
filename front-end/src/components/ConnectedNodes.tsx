@@ -1,16 +1,14 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
-import { Server, Wifi, HardDrive, Cpu, ExternalLink } from "lucide-react";
+import { Server, Wifi, HardDrive, Cpu } from "lucide-react";
 import { useServerContext } from "@/contexts/ServerContext";
 import { useNodes } from "@/hooks/useApi";
 import { Node } from "@/lib/api";
-import { Link } from "react-router-dom";
 
 export const ConnectedNodes = () => {
   const { selectedServerId } = useServerContext();
-  const { data: nodesData, isLoading } = useNodes(selectedServerId);
+  const { data: nodesData, isLoading } = useNodes(selectedServerId || "");
 
   const nodes = nodesData?.nodes || [];
 
@@ -62,25 +60,13 @@ export const ConnectedNodes = () => {
   return (
     <Card className="border-0 shadow-md bg-white/80 backdrop-blur-sm">
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-              <Server className="h-5 w-5" />
-              Connected Nodes ({nodes.length})
-            </CardTitle>
-            <p className="text-sm text-gray-500">
-              RabbitMQ cluster node status and metrics
-            </p>
-          </div>
-          {nodes.length > 0 && (
-            <Button asChild variant="outline" size="sm">
-              <Link to="/nodes" className="flex items-center gap-2">
-                Details
-                <ExternalLink className="h-3 w-3" />
-              </Link>
-            </Button>
-          )}
-        </div>
+        <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+          <Server className="h-5 w-5" />
+          Connected Nodes ({nodes.length})
+        </CardTitle>
+        <p className="text-sm text-gray-500">
+          RabbitMQ cluster node status and metrics
+        </p>
       </CardHeader>
       <CardContent>
         {isLoading ? (
@@ -124,16 +110,13 @@ export const ConnectedNodes = () => {
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2 mt-3">
+                  <div className="grid grid-cols-3 gap-2 mt-3">
                     <div className="text-center p-2 bg-blue-50 rounded">
                       <HardDrive className="h-4 w-4 text-blue-600 mx-auto mb-1" />
                       <div className="text-xs font-medium">
-                        {formatBytes(node.mem_used)} /{" "}
-                        {formatBytes(node.mem_limit)}
+                        {formatBytes(node.mem_used)}
                       </div>
-                      <div className="text-xs text-gray-500">
-                        RabbitMQ Memory
-                      </div>
+                      <div className="text-xs text-gray-500">Memory</div>
                     </div>
 
                     <div className="text-center p-2 bg-green-50 rounded">
@@ -150,14 +133,6 @@ export const ConnectedNodes = () => {
                         {formatBytes(node.disk_free)}
                       </div>
                       <div className="text-xs text-gray-500">Disk Free</div>
-                    </div>
-
-                    <div className="text-center p-2 bg-orange-50 rounded">
-                      <HardDrive className="h-4 w-4 text-orange-600 mx-auto mb-1" />
-                      <div className="text-xs font-medium">
-                        {formatBytes(node.mem_limit * 2.5)}
-                      </div>
-                      <div className="text-xs text-gray-500">Est. System</div>
                     </div>
                   </div>
                 </div>

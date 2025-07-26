@@ -75,7 +75,7 @@ export const ServerDetails = ({ form }: ServerDetailsProps) => {
                 />
               </FormControl>
               <div className="text-xs text-muted-foreground mt-1">
-                Default: 15672 (HTTP) or 15671 (HTTPS)
+                HTTP: 15672, 80, 8080 • HTTPS: 15671, 443, 8443
               </div>
               <FormMessage />
             </FormItem>

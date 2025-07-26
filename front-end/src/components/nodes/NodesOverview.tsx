@@ -12,13 +12,19 @@ import {
   Activity,
 } from "lucide-react";
 import { useNodes, useEnhancedMetrics } from "@/hooks/useApi";
+import { RabbitMQPermissionError } from "@/components/RabbitMQPermissionError";
+import { isRabbitMQAuthError } from "@/types/apiErrors";
 
 interface NodesOverviewProps {
   serverId: string;
 }
 
 export const NodesOverview = ({ serverId }: NodesOverviewProps) => {
-  const { data: nodesData, isLoading: nodesLoading } = useNodes(serverId);
+  const {
+    data: nodesData,
+    isLoading: nodesLoading,
+    error: nodesError,
+  } = useNodes(serverId);
   const { data: metricsData, isLoading: metricsLoading } =
     useEnhancedMetrics(serverId);
 
@@ -124,6 +130,17 @@ export const NodesOverview = ({ serverId }: NodesOverviewProps) => {
     );
   }
 
+  // Handle RabbitMQ authorization errors
+  if (nodesError && isRabbitMQAuthError(nodesError)) {
+    return (
+      <RabbitMQPermissionError
+        requiredPermission={nodesError.requiredPermission}
+        message={nodesError.message}
+        title="Cannot View Cluster Overview"
+      />
+    );
+  }
+
   return (
     <Card className="border-0 shadow-md bg-white/80 backdrop-blur-sm">
       <CardHeader>
@@ -176,8 +193,8 @@ export const NodesOverview = ({ serverId }: NodesOverviewProps) => {
                 clusterHealth === 100
                   ? "bg-green-500"
                   : clusterHealth >= 80
-                  ? "bg-yellow-500"
-                  : "bg-red-500"
+                    ? "bg-yellow-500"
+                    : "bg-red-500"
               }`}
               style={{ width: `${clusterHealth}%` }}
             />

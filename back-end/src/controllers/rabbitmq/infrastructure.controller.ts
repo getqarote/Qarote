@@ -19,6 +19,21 @@ infrastructureController.get("/servers/:id/nodes", async (c) => {
     return c.json({ nodes });
   } catch (error) {
     logger.error({ error, id }, "Error fetching nodes for server");
+
+    // Check if this is a 401 Unauthorized error from RabbitMQ API
+    if (error instanceof Error && error.message.includes("401")) {
+      return c.json(
+        {
+          error: "insufficient_permissions",
+          message:
+            "User does not have 'monitor' permissions to view node information. Please contact your RabbitMQ administrator to grant the necessary permissions.",
+          code: "RABBITMQ_INSUFFICIENT_PERMISSIONS",
+          requiredPermission: "monitor",
+        },
+        403 // Use 403 Forbidden to indicate authorization issue
+      );
+    }
+
     return createErrorResponse(c, error, 500, "Failed to fetch nodes");
   }
 });

@@ -23,6 +23,8 @@ import { useNodes } from "@/hooks/useApi";
 import { Node } from "@/lib/api";
 import { useState } from "react";
 import { NodeMemoryDetails } from "./NodeMemoryDetails";
+import { RabbitMQPermissionError } from "@/components/RabbitMQPermissionError";
+import { isRabbitMQAuthError } from "@/types/apiErrors";
 
 interface NodesTableProps {
   serverId: string;
@@ -38,7 +40,7 @@ type SortField =
 type SortDirection = "asc" | "desc";
 
 export const NodesTable = ({ serverId }: NodesTableProps) => {
-  const { data: nodesData, isLoading } = useNodes(serverId);
+  const { data: nodesData, isLoading, error } = useNodes(serverId);
   const nodes = nodesData?.nodes || [];
 
   const [sortField, setSortField] = useState<SortField>("name");
@@ -188,6 +190,17 @@ export const NodesTable = ({ serverId }: NodesTableProps) => {
           </div>
         </CardContent>
       </Card>
+    );
+  }
+
+  // Handle RabbitMQ authorization errors
+  if (error && isRabbitMQAuthError(error)) {
+    return (
+      <RabbitMQPermissionError
+        requiredPermission={error.requiredPermission}
+        message={error.message}
+        title="Cannot View Node Information"
+      />
     );
   }
 
