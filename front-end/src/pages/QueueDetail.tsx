@@ -1,12 +1,24 @@
 import { useParams, useNavigate } from "react-router-dom";
+import { useState } from "react";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { useToast } from "@/hooks/useToast";
 import { useServerContext } from "@/contexts/ServerContext";
 import {
   useQueue,
   useQueueConsumers,
   useMonthlyMessageCount,
+  useDeleteQueue,
 } from "@/hooks/useApi";
 
 // Queue Detail Components
@@ -23,6 +35,8 @@ const QueueDetail = () => {
   const { queueName } = useParams<{ queueName: string }>();
   const navigate = useNavigate();
   const { selectedServerId } = useServerContext();
+  const { toast } = useToast();
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const { data: monthlyMessageData } = useMonthlyMessageCount();
   // Use real monthly message count from API
@@ -37,9 +51,43 @@ const QueueDetail = () => {
   const { data: consumersData, isLoading: consumersLoading } =
     useQueueConsumers(selectedServerId, queueName);
 
+  const deleteQueueMutation = useDeleteQueue();
+
   const queue = queueData?.queue;
 
   const handleNavigateBack = () => navigate("/queues");
+
+  const handleDeleteQueue = async () => {
+    if (!selectedServerId || !queueName) return;
+
+    try {
+      await deleteQueueMutation.mutateAsync({
+        serverId: selectedServerId,
+        queueName,
+        options: { if_unused: true, if_empty: true },
+      });
+
+      toast({
+        title: "Success",
+        description: `Queue "${queueName}" has been deleted successfully`,
+      });
+
+      setDeleteDialogOpen(false);
+      navigate("/queues");
+    } catch (error) {
+      console.error("Failed to delete queue:", error);
+      toast({
+        title: "Error",
+        description:
+          error instanceof Error ? error.message : "Failed to delete queue",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const confirmDeleteQueue = () => {
+    setDeleteDialogOpen(true);
+  };
 
   if (!selectedServerId || !queueName) {
     return (
@@ -75,6 +123,7 @@ const QueueDetail = () => {
                 monthlyMessageCount={monthlyMessageCount}
                 onNavigateBack={handleNavigateBack}
                 onRefetch={refetch}
+                onDeleteQueue={confirmDeleteQueue}
               />
 
               {isLoading ? (
@@ -109,6 +158,36 @@ const QueueDetail = () => {
             </div>
           </main>
         </div>
+
+        {/* Delete Confirmation Dialog */}
+        <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Delete Queue</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to delete the queue "{queueName}"? This
+                action cannot be undone and will permanently remove the queue
+                and all its messages.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setDeleteDialogOpen(false)}
+                disabled={deleteQueueMutation.isPending}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={handleDeleteQueue}
+                disabled={deleteQueueMutation.isPending}
+              >
+                {deleteQueueMutation.isPending ? "Deleting..." : "Delete Queue"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </SidebarProvider>
     </TooltipProvider>
   );

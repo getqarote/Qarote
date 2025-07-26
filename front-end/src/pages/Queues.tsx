@@ -8,7 +8,7 @@ import { NoServerConfigured } from "@/components/NoServerConfigured";
 import { useServerContext } from "@/contexts/ServerContext";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useQueues, queryKeys, useMonthlyMessageCount } from "@/hooks/useApi";
-import logger from "../lib/logger";
+import logger from "@/lib/logger";
 import PlanUpgradeModal from "@/components/plans/PlanUpgradeModal";
 import { QueueHeader } from "@/components/Queues/QueueHeader";
 import { PlanRestrictions } from "@/components/Queues/PlanRestrictions";

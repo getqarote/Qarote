@@ -14,6 +14,7 @@ interface QueueHeaderProps {
   monthlyMessageCount: number;
   onNavigateBack: () => void;
   onRefetch: () => void;
+  onDeleteQueue?: () => void;
 }
 
 export function QueueHeader({
@@ -23,6 +24,7 @@ export function QueueHeader({
   monthlyMessageCount,
   onNavigateBack,
   onRefetch,
+  onDeleteQueue,
 }: QueueHeaderProps) {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const { canSendMessages, workspacePlan, isPlanLoading } = useWorkspace();
@@ -121,6 +123,19 @@ export function QueueHeader({
             </Button>
           }
         />
+
+        {/* Delete Queue Button */}
+        {onDeleteQueue && (
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={onDeleteQueue}
+            className="flex items-center gap-2"
+          >
+            <Trash2 className="w-4 h-4" />
+            Delete Queue
+          </Button>
+        )}
       </div>
 
       {/* Plan Upgrade Modal */}

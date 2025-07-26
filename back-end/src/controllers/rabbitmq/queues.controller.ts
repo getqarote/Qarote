@@ -207,6 +207,7 @@ queuesController.post(
           workspaceId: true,
           isOverQueueLimit: true,
           name: true,
+          vhost: true, // Add vhost to the select
         },
       });
 
@@ -243,6 +244,47 @@ queuesController.post(
         autoDelete: queueData.autoDelete,
         arguments: queueData.arguments,
       });
+
+      // 🔧 NEW: Immediately store the queue in the database
+      const newQueueData = {
+        name: queueData.name,
+        vhost: server.vhost || "/", // Use server vhost or default
+        messages: 0, // New queue starts with 0 messages
+        messagesReady: 0,
+        messagesUnack: 0,
+        lastFetched: new Date(),
+        serverId: serverId,
+      };
+
+      // Check if queue already exists in database (unlikely but safe)
+      const existingQueue = await prisma.queue.findFirst({
+        where: {
+          name: queueData.name,
+          serverId: serverId,
+        },
+      });
+
+      let queueRecord;
+      if (!existingQueue) {
+        // Create new queue record
+        queueRecord = await prisma.queue.create({
+          data: newQueueData,
+        });
+
+        // Add initial metrics record
+        await prisma.queueMetric.create({
+          data: {
+            queueId: queueRecord.id,
+            messages: 0,
+            messagesReady: 0,
+            messagesUnack: 0,
+            publishRate: 0,
+            consumeRate: 0,
+          },
+        });
+
+        logger.info(`Queue ${queueData.name} stored in database with id ${queueRecord.id}`);
+      }
 
       const response: QueueCreationResponse = {
         success: true,
@@ -285,6 +327,86 @@ queuesController.delete(
         error
       );
       return createErrorResponse(c, error, 500, "Failed to purge queue");
+    }
+  }
+);
+
+/**
+ * Delete a queue from a specific server (ADMIN ONLY - dangerous operation)
+ * DELETE /servers/:serverId/queues/:queueName
+ */
+queuesController.delete(
+  "/servers/:serverId/queues/:queueName",
+  authorize([UserRole.ADMIN]),
+  async (c) => {
+    const serverId = c.req.param("serverId");
+    const queueName = c.req.param("queueName");
+    const user = c.get("user");
+
+    try {
+      const url = new URL(c.req.url);
+      const ifUnused = url.searchParams.get("if_unused") === "true";
+      const ifEmpty = url.searchParams.get("if_empty") === "true";
+
+      // First, find the queue to ensure it exists and belongs to this workspace
+      const existingQueue = await prisma.queue.findFirst({
+        where: {
+          name: queueName,
+          serverId: serverId,
+          server: {
+            workspaceId: user.workspaceId, // Ensure workspace ownership
+          },
+        },
+      });
+
+      if (!existingQueue) {
+        logger.warn(
+          `Queue ${queueName} not found in database for server ${serverId}`
+        );
+      }
+
+      // Delete from RabbitMQ first (this is the source of truth)
+      const client = await createRabbitMQClient(serverId, user.workspaceId);
+      await client.deleteQueue(queueName, {
+        if_unused: ifUnused,
+        if_empty: ifEmpty,
+      });
+
+      // Only delete from database if we found the queue
+      if (existingQueue) {
+        // Delete related metrics first (foreign key constraint)
+        await prisma.queueMetric.deleteMany({
+          where: {
+            queueId: existingQueue.id,
+          },
+        });
+
+        // Then delete the queue itself using the unique ID
+        await prisma.queue.delete({
+          where: {
+            id: existingQueue.id,
+          },
+        });
+
+        logger.info(
+          `Queue ${queueName} deleted from database with id ${existingQueue.id}`
+        );
+      } else {
+        logger.info(
+          `Queue ${queueName} was deleted from RabbitMQ but not found in local database`
+        );
+      }
+
+      return c.json({
+        success: true,
+        message: `Queue "${queueName}" deleted successfully`,
+      });
+    } catch (error) {
+      logger.error(
+        `Error deleting queue ${queueName} on server ${serverId}:`,
+        error
+      );
+      return createErrorResponse(c, error, 500, "Failed to delete queue");
     }
   }
 );

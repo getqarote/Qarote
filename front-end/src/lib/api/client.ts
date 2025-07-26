@@ -93,6 +93,17 @@ class ApiClient {
     return this.rabbitmqClient.purgeQueue(serverId, queueName);
   }
 
+  async deleteQueue(
+    serverId: string,
+    queueName: string,
+    options: {
+      if_unused?: boolean;
+      if_empty?: boolean;
+    } = {}
+  ) {
+    return this.rabbitmqClient.deleteQueue(serverId, queueName, options);
+  }
+
   async browseQueueMessages(
     serverId: string,
     queueName: string,

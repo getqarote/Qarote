@@ -339,4 +339,48 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
       throw error;
     }
   }
+
+  async deleteQueue(
+    queueName: string,
+    options: {
+      if_unused?: boolean;
+      if_empty?: boolean;
+    } = {}
+  ): Promise<void> {
+    try {
+      logger.debug("Deleting RabbitMQ queue", { queueName, options });
+
+      const encodedQueueName = encodeURIComponent(queueName);
+
+      // Build query parameters
+      const queryParams = new URLSearchParams();
+      if (options.if_unused !== undefined) {
+        queryParams.append("if-unused", options.if_unused.toString());
+      }
+      if (options.if_empty !== undefined) {
+        queryParams.append("if-empty", options.if_empty.toString());
+      }
+
+      const queryString = queryParams.toString();
+      const url = `/queues/${this.vhost}/${encodedQueueName}${queryString ? `?${queryString}` : ""}`;
+
+      await this.request(url, {
+        method: "DELETE",
+      });
+
+      logger.debug("RabbitMQ queue deleted successfully", { queueName });
+    } catch (error) {
+      logger.error({ error, queueName }, "Failed to delete RabbitMQ queue");
+
+      if (error instanceof Error) {
+        captureRabbitMQError(error, {
+          operation: "deleteQueue",
+          queueName: queueName,
+          serverId: this.baseUrl,
+        });
+      }
+
+      throw error;
+    }
+  }
 }

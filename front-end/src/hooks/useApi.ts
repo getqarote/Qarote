@@ -324,6 +324,32 @@ export const useCreateQueue = () => {
   });
 };
 
+export const useDeleteQueue = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      serverId,
+      queueName,
+      options,
+    }: {
+      serverId: string;
+      queueName: string;
+      options?: Parameters<typeof apiClient.deleteQueue>[2];
+    }) => apiClient.deleteQueue(serverId, queueName, options),
+    onSuccess: (_, variables) => {
+      // Invalidate queues list for the specific server
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.queues(variables.serverId),
+      });
+      // Also invalidate the specific queue data
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.queue(variables.serverId, variables.queueName),
+      });
+    },
+  });
+};
+
 // Profile hooks
 export const useProfile = () => {
   const { isAuthenticated } = useAuth();

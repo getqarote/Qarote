@@ -89,6 +89,30 @@ export class RabbitMQApiClient extends BaseApiClient {
     );
   }
 
+  async deleteQueue(
+    serverId: string,
+    queueName: string,
+    options: {
+      if_unused?: boolean;
+      if_empty?: boolean;
+    } = {}
+  ): Promise<{ success: boolean; message: string }> {
+    const queryParams = new URLSearchParams();
+    if (options.if_unused !== undefined) {
+      queryParams.append("if_unused", options.if_unused.toString());
+    }
+    if (options.if_empty !== undefined) {
+      queryParams.append("if_empty", options.if_empty.toString());
+    }
+
+    const queryString = queryParams.toString();
+    const url = `/rabbitmq/servers/${serverId}/queues/${encodeURIComponent(queueName)}${queryString ? `?${queryString}` : ""}`;
+
+    return this.request<{ success: boolean; message: string }>(url, {
+      method: "DELETE",
+    });
+  }
+
   // Message Management
   async browseQueueMessages(
     serverId: string,
