@@ -7,6 +7,7 @@ import metricsController from "./rabbitmq/metrics.controller";
 import infrastructureController from "./rabbitmq/infrastructure.controller";
 import memoryController from "./rabbitmq/memory.controller";
 import adminController from "./rabbitmq/admin.controller";
+import vhostController from "./rabbitmq/vhost.controller";
 import { planValidationMiddleware } from "@/middlewares/plan-validation";
 
 const rabbitmqController = new Hono();
@@ -23,5 +24,6 @@ rabbitmqController.route("/", metricsController);
 rabbitmqController.route("/", infrastructureController);
 rabbitmqController.route("/", memoryController);
 rabbitmqController.route("/", adminController);
+rabbitmqController.route("/", vhostController);
 
 export default rabbitmqController;

@@ -35,10 +35,10 @@ import {
   GitBranch,
   HelpCircle,
   Settings,
+  Database,
 } from "lucide-react";
 import { useServerContext } from "@/contexts/ServerContext";
 import { useAuth } from "@/contexts/AuthContext";
-import { isSuperAdmin } from "@/lib/auth/superAdmin";
 import { useLogout } from "@/hooks/useAuth";
 import { useServers } from "@/hooks/useApi";
 import { AddServerForm } from "@/components/AddServerFormComponent";
@@ -79,6 +79,12 @@ const menuItems = [
     title: "Exchanges",
     url: "/exchanges",
     icon: Activity,
+  },
+  {
+    title: "Virtual Hosts",
+    url: "/vhosts",
+    icon: Database,
+    adminOnly: true,
   },
   {
     title: "Routing",
@@ -260,79 +266,59 @@ export function AppSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {menuItems.map((item) => {
-                const isActive = location.pathname === item.url;
-                const isAlertsItem = item.title === "Alerts";
-                const isNewItem = item.isNew;
-                const isSoonItem = item.isSoon;
-                // Always show "Soon" badge for Alerts, regardless of environment
-                const showComingSoon = isAlertsItem || isSoonItem;
+              {menuItems
+                .filter((item) => {
+                  // Filter admin-only items for non-admin users
+                  if (item.adminOnly && user?.role !== "ADMIN") {
+                    return false;
+                  }
+                  return true;
+                })
+                .map((item) => {
+                  const isActive = location.pathname === item.url;
+                  const isAlertsItem = item.title === "Alerts";
+                  const isNewItem = item.isNew;
+                  const isSoonItem = item.isSoon;
+                  // Always show "Soon" badge for Alerts, regardless of environment
+                  const showComingSoon = isAlertsItem || isSoonItem;
 
-                return (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton
-                      asChild
-                      className={`w-full justify-start transition-all duration-200 ${
-                        isActive
-                          ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-700 hover:to-blue-700"
-                          : "hover:bg-gray-100 text-gray-700"
-                      }`}
-                    >
-                      <Link
-                        to={item.url}
-                        className="flex items-center gap-3 px-3 py-2 rounded-lg"
+                  return (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton
+                        asChild
+                        className={`w-full justify-start transition-all duration-200 ${
+                          isActive
+                            ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-700 hover:to-blue-700"
+                            : "hover:bg-gray-100 text-gray-700"
+                        }`}
                       >
-                        <item.icon className="w-4 h-4" />
-                        <span className="font-medium">{item.title}</span>
-                        {showComingSoon && (
-                          <Badge
-                            variant="secondary"
-                            className="ml-auto text-xs bg-orange-100 text-orange-700 border-orange-200"
-                          >
-                            Soon
-                          </Badge>
-                        )}
-                        {isNewItem && !isSoonItem && (
-                          <Badge
-                            variant="secondary"
-                            className="ml-auto text-xs bg-green-100 text-green-700 border-green-200"
-                          >
-                            New
-                          </Badge>
-                        )}
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
-
-              {/* Super Admin Dashboard - Only visible to creator */}
-              {isSuperAdmin(user) && (
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    asChild
-                    className={`w-full justify-start transition-all duration-200 ${
-                      location.pathname === "/admin"
-                        ? "bg-gradient-to-r from-red-600 to-orange-600 text-white hover:from-red-700 hover:to-orange-700"
-                        : "hover:bg-gray-100 text-gray-700"
-                    }`}
-                  >
-                    <Link
-                      to="/admin"
-                      className="flex items-center gap-3 px-3 py-2 rounded-lg"
-                    >
-                      <Settings className="w-4 h-4" />
-                      <span className="font-medium">Admin</span>
-                      <Badge
-                        variant="secondary"
-                        className="ml-auto text-xs bg-red-100 text-red-800 border-red-200"
-                      >
-                        Creator
-                      </Badge>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              )}
+                        <Link
+                          to={item.url}
+                          className="flex items-center gap-3 px-3 py-2 rounded-lg"
+                        >
+                          <item.icon className="w-4 h-4" />
+                          <span className="font-medium">{item.title}</span>
+                          {showComingSoon && (
+                            <Badge
+                              variant="secondary"
+                              className="ml-auto text-xs bg-orange-100 text-orange-700 border-orange-200"
+                            >
+                              Soon
+                            </Badge>
+                          )}
+                          {isNewItem && !isSoonItem && (
+                            <Badge
+                              variant="secondary"
+                              className="ml-auto text-xs bg-green-100 text-green-700 border-green-200"
+                            >
+                              New
+                            </Badge>
+                          )}
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

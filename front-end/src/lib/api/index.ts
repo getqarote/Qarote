@@ -14,6 +14,7 @@ export type * from "./messageTypes";
 export type * from "./authTypes";
 export type * from "./alertTypes";
 export type * from "./logTypes";
+export type * from "./vhostTypes";
 
 // Export individual clients for advanced usage
 export { ServerApiClient } from "./serverClient";

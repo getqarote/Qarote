@@ -474,3 +474,94 @@ export interface Metrics {
   avgCpuUsage: number;
   calculatedAt: string;
 }
+
+// VHost Management Types
+export interface RabbitMQVHost {
+  name: string;
+  description?: string;
+  tags?: string[];
+  default_queue_type?: string;
+  tracing?: boolean;
+  metadata?: {
+    description?: string;
+    tags?: string[];
+  };
+  cluster_state?: Record<string, "running" | "stopped">;
+  recv_oct?: number;
+  recv_oct_details?: RateDetail;
+  send_oct?: number;
+  send_oct_details?: RateDetail;
+  messages?: number;
+  messages_ready?: number;
+  messages_unacknowledged?: number;
+  messages_details?: RateDetail;
+  messages_ready_details?: RateDetail;
+  messages_unacknowledged_details?: RateDetail;
+}
+
+export interface VHostPermissions {
+  user: string;
+  vhost: string;
+  configure: string;
+  write: string;
+  read: string;
+}
+
+export interface VHostLimits {
+  max_connections?: number;
+  max_queues?: number;
+  max_message_ttl?: number;
+  max_queue_length?: number;
+  max_connection_duration?: number;
+}
+
+export interface VHostTopicPermissions {
+  user: string;
+  vhost: string;
+  exchange: string;
+  write: string;
+  read: string;
+}
+
+export interface CreateVHostRequest {
+  name: string;
+  description?: string;
+  tags?: string[];
+  tracing?: boolean;
+}
+
+export interface UpdateVHostRequest {
+  description?: string;
+  tags?: string[];
+  tracing?: boolean;
+}
+
+export interface SetVHostPermissionsRequest {
+  user: string;
+  configure: string;
+  write: string;
+  read: string;
+}
+
+export interface SetVHostLimitRequest {
+  value: number;
+}
+
+export interface VHostStats {
+  name: string;
+  messages: number;
+  messages_ready: number;
+  messages_unacknowledged: number;
+  message_stats?: {
+    publish?: number;
+    publish_details?: RateDetail;
+    deliver?: number;
+    deliver_details?: RateDetail;
+    ack?: number;
+    ack_details?: RateDetail;
+  };
+  recv_oct: number;
+  recv_oct_details: RateDetail;
+  send_oct: number;
+  send_oct_details: RateDetail;
+}

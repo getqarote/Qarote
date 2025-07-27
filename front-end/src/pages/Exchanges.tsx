@@ -56,14 +56,9 @@ const Exchanges = () => {
     data: exchangesData,
     isLoading: exchangesLoading,
     error: exchangesError,
-    refetch: refetchExchanges,
   } = useExchanges(selectedServerId);
 
   const deleteExchangeMutation = useDeleteExchange();
-
-  const handleRefresh = () => {
-    refetchExchanges();
-  };
 
   const handleDeleteExchange = async (exchangeName: string) => {
     if (!selectedServerId) return;
@@ -96,16 +91,6 @@ const Exchanges = () => {
   const confirmDeleteExchange = (exchangeName: string) => {
     setExchangeToDelete(exchangeName);
     setDeleteDialogOpen(true);
-  };
-
-  const toggleExchange = (exchangeName: string) => {
-    const newExpanded = new Set(expandedExchanges);
-    if (newExpanded.has(exchangeName)) {
-      newExpanded.delete(exchangeName);
-    } else {
-      newExpanded.add(exchangeName);
-    }
-    setExpandedExchanges(newExpanded);
   };
 
   const getExchangeIcon = (type: string) => {
@@ -229,8 +214,8 @@ const Exchanges = () => {
                 </div>
               </div>
               <div className="flex items-center gap-4">
-                <CreateExchangeDialog serverId={selectedServerId} />
                 <PlanBadge workspacePlan={workspacePlan} />
+                <CreateExchangeDialog serverId={selectedServerId} />
               </div>
             </div>
 

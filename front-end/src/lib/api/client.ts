@@ -179,6 +179,82 @@ class ApiClient {
     return this.rabbitmqClient.getTimeSeriesMetrics(serverId, timeRange);
   }
 
+  // VHost Management (Admin Only)
+  async getVHosts(serverId: string) {
+    return this.rabbitmqClient.getVHosts(serverId);
+  }
+
+  async getVHost(serverId: string, vhostName: string) {
+    return this.rabbitmqClient.getVHost(serverId, vhostName);
+  }
+
+  async createVHost(
+    serverId: string,
+    data: Parameters<RabbitMQApiClient["createVHost"]>[1]
+  ) {
+    return this.rabbitmqClient.createVHost(serverId, data);
+  }
+
+  async updateVHost(
+    serverId: string,
+    vhostName: string,
+    data: Parameters<RabbitMQApiClient["updateVHost"]>[2]
+  ) {
+    return this.rabbitmqClient.updateVHost(serverId, vhostName, data);
+  }
+
+  async deleteVHost(serverId: string, vhostName: string) {
+    return this.rabbitmqClient.deleteVHost(serverId, vhostName);
+  }
+
+  async setVHostPermissions(
+    serverId: string,
+    vhostName: string,
+    username: string,
+    permissions: Parameters<RabbitMQApiClient["setVHostPermissions"]>[3]
+  ) {
+    return this.rabbitmqClient.setVHostPermissions(
+      serverId,
+      vhostName,
+      username,
+      permissions
+    );
+  }
+
+  async deleteVHostPermissions(
+    serverId: string,
+    vhostName: string,
+    username: string
+  ) {
+    return this.rabbitmqClient.deleteVHostPermissions(
+      serverId,
+      vhostName,
+      username
+    );
+  }
+
+  async setVHostLimit(
+    serverId: string,
+    vhostName: string,
+    limitType: string,
+    data: Parameters<RabbitMQApiClient["setVHostLimit"]>[3]
+  ) {
+    return this.rabbitmqClient.setVHostLimit(
+      serverId,
+      vhostName,
+      limitType,
+      data
+    );
+  }
+
+  async deleteVHostLimit(
+    serverId: string,
+    vhostName: string,
+    limitType: string
+  ) {
+    return this.rabbitmqClient.deleteVHostLimit(serverId, vhostName, limitType);
+  }
+
   // Authentication methods
   async login(credentials: Parameters<AuthApiClient["login"]>[0]) {
     return this.authClient.login(credentials);

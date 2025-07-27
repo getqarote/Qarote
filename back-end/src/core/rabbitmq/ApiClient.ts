@@ -10,6 +10,14 @@ import type {
   RabbitMQExchange,
   RabbitMQBinding,
   RabbitMQConsumer,
+  RabbitMQVHost,
+  VHostPermissions,
+  VHostLimits,
+  VHostTopicPermissions,
+  CreateVHostRequest,
+  UpdateVHostRequest,
+  SetVHostPermissionsRequest,
+  SetVHostLimitRequest,
 } from "@/types/rabbitmq";
 
 export class RabbitMQApiClient extends RabbitMQBaseClient {
@@ -376,6 +384,469 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
         captureRabbitMQError(error, {
           operation: "deleteQueue",
           queueName: queueName,
+          serverId: this.baseUrl,
+        });
+      }
+
+      throw error;
+    }
+  }
+
+  // VHost Management Methods
+  async getVHosts(): Promise<RabbitMQVHost[]> {
+    try {
+      logger.debug("Fetching RabbitMQ VHosts");
+      const vhosts = await this.request("/vhosts");
+      logger.debug("RabbitMQ VHosts fetched successfully", {
+        count: vhosts?.length || 0,
+      });
+      return vhosts;
+    } catch (error) {
+      logger.error({ error }, "Failed to fetch RabbitMQ VHosts");
+
+      if (error instanceof Error) {
+        captureRabbitMQError(error, {
+          operation: "getVHosts",
+          serverId: this.baseUrl,
+        });
+      }
+
+      throw error;
+    }
+  }
+
+  async getVHost(vhostName: string): Promise<RabbitMQVHost> {
+    try {
+      const encodedVHostName = encodeURIComponent(vhostName);
+      logger.debug("Fetching RabbitMQ VHost", { vhostName });
+      const vhost = await this.request(`/vhosts/${encodedVHostName}`);
+      logger.debug("RabbitMQ VHost fetched successfully", { vhostName });
+      return vhost;
+    } catch (error) {
+      logger.error({ error, vhostName }, "Failed to fetch RabbitMQ VHost");
+
+      if (error instanceof Error) {
+        captureRabbitMQError(error, {
+          operation: "getVHost",
+          serverId: this.baseUrl,
+        });
+      }
+
+      throw error;
+    }
+  }
+
+  async createVHost(data: CreateVHostRequest): Promise<void> {
+    try {
+      const encodedVHostName = encodeURIComponent(data.name);
+      logger.debug("Creating RabbitMQ VHost", { name: data.name });
+
+      await this.request(`/vhosts/${encodedVHostName}`, {
+        method: "PUT",
+        body: JSON.stringify({
+          description: data.description,
+          tags: data.tags,
+          tracing: data.tracing,
+        }),
+      });
+
+      logger.debug("RabbitMQ VHost created successfully", { name: data.name });
+    } catch (error) {
+      logger.error(
+        { error, vhostName: data.name },
+        "Failed to create RabbitMQ VHost"
+      );
+
+      if (error instanceof Error) {
+        captureRabbitMQError(error, {
+          operation: "createVHost",
+
+          serverId: this.baseUrl,
+        });
+      }
+
+      throw error;
+    }
+  }
+
+  async updateVHost(
+    vhostName: string,
+    data: UpdateVHostRequest
+  ): Promise<void> {
+    try {
+      const encodedVHostName = encodeURIComponent(vhostName);
+      logger.debug("Updating RabbitMQ VHost", { vhostName });
+
+      await this.request(`/vhosts/${encodedVHostName}`, {
+        method: "PUT",
+        body: JSON.stringify(data),
+      });
+
+      logger.debug("RabbitMQ VHost updated successfully", { vhostName });
+    } catch (error) {
+      logger.error({ error, vhostName }, "Failed to update RabbitMQ VHost");
+
+      if (error instanceof Error) {
+        captureRabbitMQError(error, {
+          operation: "updateVHost",
+
+          serverId: this.baseUrl,
+        });
+      }
+
+      throw error;
+    }
+  }
+
+  async deleteVHost(vhostName: string): Promise<void> {
+    try {
+      const encodedVHostName = encodeURIComponent(vhostName);
+      logger.debug("Deleting RabbitMQ VHost", { vhostName });
+
+      await this.request(`/vhosts/${encodedVHostName}`, {
+        method: "DELETE",
+      });
+
+      logger.debug("RabbitMQ VHost deleted successfully", { vhostName });
+    } catch (error) {
+      logger.error({ error, vhostName }, "Failed to delete RabbitMQ VHost");
+
+      if (error instanceof Error) {
+        captureRabbitMQError(error, {
+          operation: "deleteVHost",
+
+          serverId: this.baseUrl,
+        });
+      }
+
+      throw error;
+    }
+  }
+
+  // VHost Permissions Management
+  async getVHostPermissions(vhostName: string): Promise<VHostPermissions[]> {
+    try {
+      const encodedVHostName = encodeURIComponent(vhostName);
+      logger.debug("Fetching VHost permissions", { vhostName });
+      const permissions = await this.request(
+        `/vhosts/${encodedVHostName}/permissions`
+      );
+      logger.debug("VHost permissions fetched successfully", {
+        vhostName,
+        count: permissions?.length || 0,
+      });
+      return permissions;
+    } catch (error) {
+      logger.error({ error, vhostName }, "Failed to fetch VHost permissions");
+
+      if (error instanceof Error) {
+        captureRabbitMQError(error, {
+          operation: "getVHostPermissions",
+
+          serverId: this.baseUrl,
+        });
+      }
+
+      throw error;
+    }
+  }
+
+  async setUserPermissions(
+    vhostName: string,
+    username: string,
+    permissions: SetVHostPermissionsRequest
+  ): Promise<void> {
+    try {
+      const encodedVHostName = encodeURIComponent(vhostName);
+      const encodedUsername = encodeURIComponent(username);
+      logger.debug("Setting user permissions", { vhostName, username });
+
+      await this.request(
+        `/permissions/${encodedVHostName}/${encodedUsername}`,
+        {
+          method: "PUT",
+          body: JSON.stringify({
+            configure: permissions.configure,
+            write: permissions.write,
+            read: permissions.read,
+          }),
+        }
+      );
+
+      logger.debug("User permissions set successfully", {
+        vhostName,
+        username,
+      });
+    } catch (error) {
+      logger.error(
+        { error, vhostName, username },
+        "Failed to set user permissions"
+      );
+
+      if (error instanceof Error) {
+        captureRabbitMQError(error, {
+          operation: "setUserPermissions",
+
+          serverId: this.baseUrl,
+        });
+      }
+
+      throw error;
+    }
+  }
+
+  async deleteUserPermissions(
+    vhostName: string,
+    username: string
+  ): Promise<void> {
+    try {
+      const encodedVHostName = encodeURIComponent(vhostName);
+      const encodedUsername = encodeURIComponent(username);
+      logger.debug("Deleting user permissions", { vhostName, username });
+
+      await this.request(
+        `/permissions/${encodedVHostName}/${encodedUsername}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      logger.debug("User permissions deleted successfully", {
+        vhostName,
+        username,
+      });
+    } catch (error) {
+      logger.error(
+        { error, vhostName, username },
+        "Failed to delete user permissions"
+      );
+
+      if (error instanceof Error) {
+        captureRabbitMQError(error, {
+          operation: "deleteUserPermissions",
+
+          serverId: this.baseUrl,
+        });
+      }
+
+      throw error;
+    }
+  }
+
+  // VHost Limits Management
+  async getVHostLimits(vhostName: string): Promise<VHostLimits> {
+    try {
+      const encodedVHostName = encodeURIComponent(vhostName);
+      logger.debug("Fetching VHost limits", { vhostName });
+      const limits = await this.request(`/vhosts/${encodedVHostName}/limits`);
+      logger.debug("VHost limits fetched successfully", { vhostName });
+      return limits;
+    } catch (error) {
+      logger.error({ error, vhostName }, "Failed to fetch VHost limits");
+
+      if (error instanceof Error) {
+        captureRabbitMQError(error, {
+          operation: "getVHostLimits",
+
+          serverId: this.baseUrl,
+        });
+      }
+
+      throw error;
+    }
+  }
+
+  async setVHostLimit(
+    vhostName: string,
+    limitType: string,
+    data: SetVHostLimitRequest
+  ): Promise<void> {
+    try {
+      const encodedVHostName = encodeURIComponent(vhostName);
+      logger.debug("Setting VHost limit", {
+        vhostName,
+        limitType,
+        value: data.value,
+      });
+
+      await this.request(`/vhosts/${encodedVHostName}/limits/${limitType}`, {
+        method: "PUT",
+        body: JSON.stringify({ value: data.value }),
+      });
+
+      logger.debug("VHost limit set successfully", { vhostName, limitType });
+    } catch (error) {
+      logger.error(
+        { error, vhostName, limitType },
+        "Failed to set VHost limit"
+      );
+
+      if (error instanceof Error) {
+        captureRabbitMQError(error, {
+          operation: "setVHostLimit",
+
+          serverId: this.baseUrl,
+        });
+      }
+
+      throw error;
+    }
+  }
+
+  async deleteVHostLimit(vhostName: string, limitType: string): Promise<void> {
+    try {
+      const encodedVHostName = encodeURIComponent(vhostName);
+      logger.debug("Deleting VHost limit", { vhostName, limitType });
+
+      await this.request(`/vhosts/${encodedVHostName}/limits/${limitType}`, {
+        method: "DELETE",
+      });
+
+      logger.debug("VHost limit deleted successfully", {
+        vhostName,
+        limitType,
+      });
+    } catch (error) {
+      logger.error(
+        { error, vhostName, limitType },
+        "Failed to delete VHost limit"
+      );
+
+      if (error instanceof Error) {
+        captureRabbitMQError(error, {
+          operation: "deleteVHostLimit",
+
+          serverId: this.baseUrl,
+        });
+      }
+
+      throw error;
+    }
+  }
+
+  // VHost Topic Permissions Management
+  async getVHostTopicPermissions(
+    vhostName: string
+  ): Promise<VHostTopicPermissions[]> {
+    try {
+      const encodedVHostName = encodeURIComponent(vhostName);
+      logger.debug("Fetching VHost topic permissions", { vhostName });
+      const permissions = await this.request(
+        `/vhosts/${encodedVHostName}/topic-permissions`
+      );
+      logger.debug("VHost topic permissions fetched successfully", {
+        vhostName,
+        count: permissions?.length || 0,
+      });
+      return permissions;
+    } catch (error) {
+      logger.error(
+        { error, vhostName },
+        "Failed to fetch VHost topic permissions"
+      );
+
+      if (error instanceof Error) {
+        captureRabbitMQError(error, {
+          operation: "getVHostTopicPermissions",
+
+          serverId: this.baseUrl,
+        });
+      }
+
+      throw error;
+    }
+  }
+
+  async setUserTopicPermissions(
+    vhostName: string,
+    username: string,
+    exchange: string,
+    writePattern: string,
+    readPattern: string
+  ): Promise<void> {
+    try {
+      const encodedVHostName = encodeURIComponent(vhostName);
+      const encodedUsername = encodeURIComponent(username);
+      const encodedExchange = encodeURIComponent(exchange);
+      logger.debug("Setting user topic permissions", {
+        vhostName,
+        username,
+        exchange,
+      });
+
+      await this.request(
+        `/topic-permissions/${encodedVHostName}/${encodedUsername}/${encodedExchange}`,
+        {
+          method: "PUT",
+          body: JSON.stringify({
+            write: writePattern,
+            read: readPattern,
+          }),
+        }
+      );
+
+      logger.debug("User topic permissions set successfully", {
+        vhostName,
+        username,
+        exchange,
+      });
+    } catch (error) {
+      logger.error(
+        { error, vhostName, username, exchange },
+        "Failed to set user topic permissions"
+      );
+
+      if (error instanceof Error) {
+        captureRabbitMQError(error, {
+          operation: "setUserTopicPermissions",
+
+          exchange: exchange,
+          serverId: this.baseUrl,
+        });
+      }
+
+      throw error;
+    }
+  }
+
+  async deleteUserTopicPermissions(
+    vhostName: string,
+    username: string,
+    exchange: string
+  ): Promise<void> {
+    try {
+      const encodedVHostName = encodeURIComponent(vhostName);
+      const encodedUsername = encodeURIComponent(username);
+      const encodedExchange = encodeURIComponent(exchange);
+      logger.debug("Deleting user topic permissions", {
+        vhostName,
+        username,
+        exchange,
+      });
+
+      await this.request(
+        `/topic-permissions/${encodedVHostName}/${encodedUsername}/${encodedExchange}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      logger.debug("User topic permissions deleted successfully", {
+        vhostName,
+        username,
+        exchange,
+      });
+    } catch (error) {
+      logger.error(
+        { error, vhostName, username, exchange },
+        "Failed to delete user topic permissions"
+      );
+
+      if (error instanceof Error) {
+        captureRabbitMQError(error, {
+          operation: "deleteUserTopicPermissions",
+
+          exchange: exchange,
           serverId: this.baseUrl,
         });
       }

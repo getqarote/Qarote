@@ -24,6 +24,16 @@ import {
   CreateQueueRequest,
   CreateQueueResponse,
 } from "./messageTypes";
+import {
+  VHost,
+  VHostsResponse,
+  VHostDetailsResponse,
+  VHostActionResponse,
+  CreateVHostRequest,
+  UpdateVHostRequest,
+  SetVHostPermissionsRequest,
+  SetVHostLimitRequest,
+} from "./vhostTypes";
 
 export class RabbitMQApiClient extends BaseApiClient {
   // Overview and Metrics
@@ -326,6 +336,123 @@ export class RabbitMQApiClient extends BaseApiClient {
       `/rabbitmq/servers/${serverId}/queues/${encodeURIComponent(
         queueName
       )}/consumers`
+    );
+  }
+
+  // VHost Management (Admin Only)
+  async getVHosts(serverId: string): Promise<VHostsResponse> {
+    return this.request<VHostsResponse>(`/rabbitmq/servers/${serverId}/vhosts`);
+  }
+
+  async getVHost(
+    serverId: string,
+    vhostName: string
+  ): Promise<VHostDetailsResponse> {
+    return this.request<VHostDetailsResponse>(
+      `/rabbitmq/servers/${serverId}/vhosts/${encodeURIComponent(vhostName)}`
+    );
+  }
+
+  async createVHost(
+    serverId: string,
+    data: CreateVHostRequest
+  ): Promise<VHostActionResponse> {
+    return this.request<VHostActionResponse>(
+      `/rabbitmq/servers/${serverId}/vhosts`,
+      {
+        method: "POST",
+        body: JSON.stringify(data),
+      }
+    );
+  }
+
+  async updateVHost(
+    serverId: string,
+    vhostName: string,
+    data: UpdateVHostRequest
+  ): Promise<VHostActionResponse> {
+    return this.request<VHostActionResponse>(
+      `/rabbitmq/servers/${serverId}/vhosts/${encodeURIComponent(vhostName)}`,
+      {
+        method: "PUT",
+        body: JSON.stringify(data),
+      }
+    );
+  }
+
+  async deleteVHost(
+    serverId: string,
+    vhostName: string
+  ): Promise<VHostActionResponse> {
+    return this.request<VHostActionResponse>(
+      `/rabbitmq/servers/${serverId}/vhosts/${encodeURIComponent(vhostName)}`,
+      {
+        method: "DELETE",
+      }
+    );
+  }
+
+  async setVHostPermissions(
+    serverId: string,
+    vhostName: string,
+    username: string,
+    permissions: SetVHostPermissionsRequest
+  ): Promise<VHostActionResponse> {
+    return this.request<VHostActionResponse>(
+      `/rabbitmq/servers/${serverId}/vhosts/${encodeURIComponent(
+        vhostName
+      )}/permissions/${encodeURIComponent(username)}`,
+      {
+        method: "PUT",
+        body: JSON.stringify(permissions),
+      }
+    );
+  }
+
+  async deleteVHostPermissions(
+    serverId: string,
+    vhostName: string,
+    username: string
+  ): Promise<VHostActionResponse> {
+    return this.request<VHostActionResponse>(
+      `/rabbitmq/servers/${serverId}/vhosts/${encodeURIComponent(
+        vhostName
+      )}/permissions/${encodeURIComponent(username)}`,
+      {
+        method: "DELETE",
+      }
+    );
+  }
+
+  async setVHostLimit(
+    serverId: string,
+    vhostName: string,
+    limitType: string,
+    data: SetVHostLimitRequest
+  ): Promise<VHostActionResponse> {
+    return this.request<VHostActionResponse>(
+      `/rabbitmq/servers/${serverId}/vhosts/${encodeURIComponent(
+        vhostName
+      )}/limits/${limitType}`,
+      {
+        method: "PUT",
+        body: JSON.stringify(data),
+      }
+    );
+  }
+
+  async deleteVHostLimit(
+    serverId: string,
+    vhostName: string,
+    limitType: string
+  ): Promise<VHostActionResponse> {
+    return this.request<VHostActionResponse>(
+      `/rabbitmq/servers/${serverId}/vhosts/${encodeURIComponent(
+        vhostName
+      )}/limits/${limitType}`,
+      {
+        method: "DELETE",
+      }
     );
   }
 }
