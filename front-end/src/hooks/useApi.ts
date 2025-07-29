@@ -136,29 +136,6 @@ export const useMetrics = (serverId: string) => {
   });
 };
 
-export const useBrowseMessages = (
-  serverId: string,
-  queueName: string,
-  count: number = 10
-) => {
-  const { isAuthenticated } = useAuth();
-
-  return useQuery({
-    queryKey: ["browseMessages", serverId, queueName, count],
-    queryFn: () => apiClient.browseQueueMessages(serverId, queueName, count),
-    enabled: !!serverId && !!queueName && isAuthenticated,
-    refetchOnWindowFocus: false,
-    staleTime: 30000, // 30 seconds
-  });
-};
-
-export const useStopMessageStreaming = () => {
-  return useMutation({
-    mutationFn: (params: { serverId: string; queueName: string }) =>
-      apiClient.stopMessageStreaming(params.serverId, params.queueName),
-  });
-};
-
 // Connections and Channels hooks
 export const useConnections = (serverId: string) => {
   const { isAuthenticated } = useAuth();

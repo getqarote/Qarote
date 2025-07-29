@@ -90,18 +90,6 @@ enum FeedbackStatus {
   CLOSED
 }
 
-enum StreamStatus {
-  ACTIVE
-  STOPPING
-  STOPPED
-}
-
-enum CaptureMethod {
-  FIREHOSE
-  TRACING
-  SHOVEL
-}
-
 enum SubscriptionStatus {
   ACTIVE
   PAST_DUE
@@ -152,7 +140,6 @@ model Workspace {
   monthlyMessageCounts     MonthlyMessageCount[]
   capturedMessages         CapturedMessage[]
   retentionPolicy          UserRetentionPolicy?
-  messageCaptureConfigs    MessageCaptureConfig[]
   
   // Payment relations
   subscription             Subscription?
@@ -277,7 +264,6 @@ model RabbitMQServer {
   Queues                  Queue[]
   alertRules              AlertRule[]
   capturedMessages        CapturedMessage[]
-  messageCaptureConfigs   MessageCaptureConfig[]
 }
 
 model Queue {
@@ -427,29 +413,6 @@ model MonthlyMessageCount {
   @@map("monthly_message_counts")
 }
 
-model ActiveStream {
-  id              String       @id // Unique stream ID
-  userId          String       // User who owns the stream
-  serverId        String       // RabbitMQ server ID
-  queueName       String       // Queue being streamed
-  serverInstance  String       // Which backend server instance is handling this
-  startTime       DateTime     @default(now())
-  lastHeartbeat   DateTime     @default(now())
-  status          StreamStatus @default(ACTIVE)
-  
-  // Optional metadata
-  connectionInfo  Json?        // Store connection details if needed
-  
-  // Indexes for performance
-  @@index([userId], name: "active_stream_user_idx")
-  @@index([serverId], name: "active_stream_server_idx")
-  @@index([serverInstance], name: "active_stream_instance_idx")
-  @@index([status], name: "active_stream_status_idx")
-  @@index([lastHeartbeat], name: "active_stream_heartbeat_idx")
-  @@index([userId, serverId, queueName], name: "active_stream_composite_idx") // For fast lookups
-  @@map("active_streams")
-}
-
 model CapturedMessage {
   id                  BigInt    @id @default(autoincrement())
   workspaceId         String
@@ -522,40 +485,6 @@ model UserRetentionPolicy {
   @@index([workspaceId], name: "user_retention_workspace_idx")
   @@index([autoCleanup, updatedAt], name: "user_retention_cleanup_idx")
   @@map("user_retention_policies")
-}
-
-model MessageCaptureConfig {
-  id                  String        @id @default(uuid())
-  workspaceId         String
-  serverId            String
-  enabled             Boolean       @default(false)
-  captureMethod       CaptureMethod @default(FIREHOSE)
-  
-  // Filtering options
-  queuePatterns       String[]      @default(["*"])
-  excludeQueues       String[]      @default([])
-  minMessageSize      Int           @default(0)
-  maxMessageSize      Int           @default(10485760) // 10MB
-  
-  // Capture settings
-  sampleRate          Decimal       @default(1.0) @db.Decimal(3,2)
-  capturePayload      Boolean       @default(true)
-  captureHeaders      Boolean       @default(true)
-  captureProperties   Boolean       @default(true)
-  
-  createdAt           DateTime      @default(now())
-  updatedAt           DateTime      @updatedAt
-  
-  // Relations
-  workspace           Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  server              RabbitMQServer @relation(fields: [serverId], references: [id], onDelete: Cascade)
-  
-  // Constraints
-  @@unique([workspaceId, serverId], name: "capture_config_workspace_server_unique")
-  @@index([workspaceId], name: "capture_config_workspace_idx")
-  @@index([serverId], name: "capture_config_server_idx")
-  @@index([enabled], name: "capture_config_enabled_idx")
-  @@map("message_capture_config")
 }
 
 model Subscription {

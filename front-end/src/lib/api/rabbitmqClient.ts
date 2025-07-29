@@ -18,7 +18,6 @@ import {
 } from "./rabbitmqTypes";
 import { Exchange, Binding, Consumer } from "./exchangeTypes";
 import {
-  BrowseMessagesResponse,
   PublishMessageRequest,
   PublishMessageResponse,
   CreateQueueRequest,
@@ -179,37 +178,6 @@ export class RabbitMQApiClient extends BaseApiClient {
   }
 
   // Message Management
-  async browseQueueMessages(
-    serverId: string,
-    queueName: string,
-    count: number = 10,
-    ackMode: string = "ack_requeue_true"
-  ): Promise<BrowseMessagesResponse> {
-    return this.request<BrowseMessagesResponse>(
-      `/rabbitmq/servers/${serverId}/queues/${encodeURIComponent(
-        queueName
-      )}/browse`,
-      {
-        method: "POST",
-        body: JSON.stringify({ count, ackMode }),
-      }
-    );
-  }
-
-  async stopMessageStreaming(
-    serverId: string,
-    queueName: string
-  ): Promise<{ success: boolean; message: string }> {
-    return this.request<{ success: boolean; message: string }>(
-      `/rabbitmq/servers/${serverId}/queues/${encodeURIComponent(
-        queueName
-      )}/messages/browse/stop`,
-      {
-        method: "POST",
-      }
-    );
-  }
-
   async publishMessage(
     params: PublishMessageRequest
   ): Promise<PublishMessageResponse> {

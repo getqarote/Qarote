@@ -60,12 +60,6 @@ const menuItems = [
     icon: MessageSquare,
   },
   {
-    title: "Browser",
-    url: "/messages",
-    icon: Search,
-    isNew: true,
-  },
-  {
     title: "Connections",
     url: "/connections",
     icon: Clock,
@@ -283,7 +277,7 @@ export function AppSidebar() {
                 .map((item) => {
                   const isActive = location.pathname === item.url;
                   const isAlertsItem = item.title === "Alerts";
-                  const isNewItem = item.isNew;
+                  const isNewItem = item.isNew || false;
                   const isSoonItem = item.isSoon;
                   // Always show "Soon" badge for Alerts, regardless of environment
                   const showComingSoon = isAlertsItem || isSoonItem;

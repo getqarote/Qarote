@@ -116,24 +116,6 @@ class ApiClient {
     return this.rabbitmqClient.getQueuePauseStatus(serverId, queueName);
   }
 
-  async browseQueueMessages(
-    serverId: string,
-    queueName: string,
-    count?: number,
-    ackMode?: string
-  ) {
-    return this.rabbitmqClient.browseQueueMessages(
-      serverId,
-      queueName,
-      count,
-      ackMode
-    );
-  }
-
-  async stopMessageStreaming(serverId: string, queueName: string) {
-    return this.rabbitmqClient.stopMessageStreaming(serverId, queueName);
-  }
-
   async publishMessage(
     params: Parameters<RabbitMQApiClient["publishMessage"]>[0]
   ) {

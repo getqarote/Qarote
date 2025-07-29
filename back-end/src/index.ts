@@ -32,7 +32,6 @@ import {
 } from "@/middlewares/security";
 // import { alertService } from "./services/alert.service";
 // import { TemporaryStorage } from "./core/privacy";
-import { streamRegistry } from "@/core/DatabaseStreamRegistry";
 
 const prisma = new PrismaClient();
 
@@ -97,7 +96,6 @@ process.on("SIGINT", async () => {
   logger.info("Shutting down server...");
   // alertService.stop();
   await prisma.$disconnect();
-  await streamRegistry.cleanup();
   process.exit(0);
 });
 
@@ -105,7 +103,6 @@ process.on("SIGTERM", async () => {
   logger.info("Shutting down server...");
   // alertService.stop();
   await prisma.$disconnect();
-  await streamRegistry.cleanup();
   process.exit(0);
 });
 

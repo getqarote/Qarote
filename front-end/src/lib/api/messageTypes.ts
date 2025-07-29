@@ -27,12 +27,6 @@ export interface RabbitMQMessage {
   message_count: number;
 }
 
-export interface BrowseMessagesResponse {
-  messages: RabbitMQMessage[];
-  count: number;
-  queueName: string;
-}
-
 export interface PublishMessageRequest {
   serverId: string;
   queueName: string;

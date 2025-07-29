@@ -1,11 +1,9 @@
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
-import { streamSSE } from "hono/streaming";
 import { prisma } from "@/core/prisma";
 import { authorize } from "@/core/auth";
 import { UserRole } from "@prisma/client";
 import { logger } from "@/core/logger";
-import { streamRegistry } from "@/core/DatabaseStreamRegistry";
 import {
   getMonthlyMessageCount,
   getWorkspacePlan,
@@ -43,12 +41,22 @@ messagesController.post(
       });
 
       if (!server) {
-        return c.json({ error: "Server not found" }, 404);
+        return createErrorResponse(
+          c,
+          new Error("Server not found or access denied"),
+          404,
+          "Server not found or you don't have access to it"
+        );
       }
 
       // Validate plan restrictions for message sending
       if (!server.workspaceId) {
-        return c.json({ error: "Server workspace not found" }, 400);
+        return createErrorResponse(
+          c,
+          new Error("Server workspace not found"),
+          500,
+          "Server configuration error"
+        );
       }
 
       const [plan, monthlyMessageCount] = await Promise.all([
@@ -69,33 +77,28 @@ messagesController.post(
       // Convert properties to match RabbitMQ client expectations
       const publishProperties = properties
         ? (() => {
-            const props: any = {};
-
-            // Only include properties that are not undefined
+            const converted: any = {};
             if (properties.deliveryMode !== undefined)
-              props.delivery_mode = properties.deliveryMode;
+              converted.delivery_mode = properties.deliveryMode;
             if (properties.priority !== undefined)
-              props.priority = properties.priority;
-            if (properties.headers !== undefined)
-              props.headers = properties.headers;
-            if (properties.expiration !== undefined)
-              props.expiration = properties.expiration;
-            if (properties.appId !== undefined) props.app_id = properties.appId;
-            if (properties.contentType !== undefined)
-              props.content_type = properties.contentType;
-            if (properties.contentEncoding !== undefined)
-              props.content_encoding = properties.contentEncoding;
-            if (properties.correlationId !== undefined)
-              props.correlation_id = properties.correlationId;
-            if (properties.replyTo !== undefined)
-              props.reply_to = properties.replyTo;
-            if (properties.messageId !== undefined)
-              props.message_id = properties.messageId;
-            if (properties.timestamp !== undefined)
-              props.timestamp = properties.timestamp;
-            if (properties.type !== undefined) props.type = properties.type;
-
-            return Object.keys(props).length > 0 ? props : undefined;
+              converted.priority = properties.priority;
+            if (properties.headers) converted.headers = properties.headers;
+            if (properties.expiration)
+              converted.expiration = properties.expiration;
+            if (properties.appId) converted.app_id = properties.appId;
+            if (properties.contentType)
+              converted.content_type = properties.contentType;
+            if (properties.contentEncoding)
+              converted.content_encoding = properties.contentEncoding;
+            if (properties.correlationId)
+              converted.correlation_id = properties.correlationId;
+            if (properties.replyTo) converted.reply_to = properties.replyTo;
+            if (properties.messageId)
+              converted.message_id = properties.messageId;
+            if (properties.timestamp)
+              converted.timestamp = properties.timestamp;
+            if (properties.type) converted.type = properties.type;
+            return converted;
           })()
         : undefined;
 
@@ -151,12 +154,12 @@ messagesController.post(
               possibleCauses: [
                 "Queue does not exist",
                 "Exchange does not exist",
-                "No binding between exchange and queue with the specified routing key",
-                "Queue was deleted after binding was created",
+                "No binding between exchange and queue",
+                "Routing key mismatch",
               ],
             },
           },
-          400
+          422
         );
       }
 
@@ -175,339 +178,6 @@ messagesController.post(
     } catch (error) {
       logger.error({ error }, "Error sending message");
       return createErrorResponse(c, error, 500, "Failed to send message");
-    }
-  }
-);
-
-/**
- * Browse messages from a specific queue (with SSE support) (ALL USERS)
- * GET /servers/:serverId/queues/:queueName/messages/browse
- */
-messagesController.get(
-  "/servers/:serverId/queues/:queueName/messages/browse",
-  async (c) => {
-    const serverId = c.req.param("serverId");
-    const queueName = c.req.param("queueName");
-    const count = parseInt(c.req.query("count") || "20");
-    const user = c.get("user");
-
-    try {
-      // Verify the server belongs to the user's workspace
-      await createRabbitMQClient(serverId, user.workspaceId);
-
-      // Set proper SSE headers
-      c.header("Content-Type", "text/event-stream");
-      c.header("Cache-Control", "no-cache");
-      c.header("Connection", "keep-alive");
-      c.header("Access-Control-Allow-Origin", "*");
-      c.header(
-        "Access-Control-Allow-Headers",
-        "Authorization, Content-Type, Accept, Cache-Control"
-      );
-      c.header("Access-Control-Allow-Methods", "GET, OPTIONS");
-
-      // For SSE streaming using Hono's streamSSE helper
-      return streamSSE(c, async (stream) => {
-        let messageIndex = 0;
-        let lastMessageCount = 0;
-        let isActive = true;
-        let intervalId: NodeJS.Timeout | null = null;
-        const startTime = new Date();
-
-        // Create unique stream ID
-        const streamId = `${user.id}:${serverId}:${queueName}:${Date.now()}`;
-
-        logger.info(
-          { queueName, serverId, userId: user.id, streamId },
-          "SSE stream started for queue"
-        );
-
-        // Enhanced cleanup function
-        const cleanup = () => {
-          if (!isActive) return; // Prevent double cleanup
-
-          isActive = false;
-          const duration = Date.now() - startTime.getTime();
-
-          if (intervalId) {
-            clearInterval(intervalId);
-            intervalId = null;
-          }
-
-          if (maxDurationTimeout) {
-            clearTimeout(maxDurationTimeout);
-          }
-
-          logger.info(
-            { queueName, streamId, duration, messagesSent: messageIndex },
-            "SSE stream ended for queue"
-          );
-        };
-
-        // Register stream in database registry
-        await streamRegistry.register(
-          streamId,
-          cleanup,
-          user.id,
-          serverId,
-          queueName
-        );
-
-        // Handle client disconnect/abort
-        stream.onAbort = async () => {
-          logger.info(
-            { queueName, streamId },
-            "SSE stream aborted by client for queue"
-          );
-          await streamRegistry.stop(streamId);
-        };
-
-        // Set a maximum connection duration (30 minutes) to prevent indefinite connections
-        const maxDuration = 30 * 60 * 1000; // 30 minutes
-        const maxDurationTimeout = setTimeout(async () => {
-          logger.info(
-            { queueName, streamId },
-            "SSE stream max duration reached for queue"
-          );
-          await streamRegistry.stop(streamId);
-        }, maxDuration);
-
-        // Handle immediate client disconnection detection by checking connection state
-        const checkConnectionHealth = async () => {
-          if (!isActive) return;
-
-          try {
-            // Send a heartbeat immediately to detect disconnected clients
-            await stream.writeSSE({
-              data: JSON.stringify({
-                type: "heartbeat",
-                timestamp: new Date().toISOString(),
-              }),
-              event: "heartbeat",
-            });
-          } catch (error) {
-            logger.info(
-              `Client connection lost for queue: ${queueName}`,
-              error
-            );
-            cleanup();
-          }
-        };
-
-        const streamMessages = async () => {
-          logger.info({ isActive }, "Stream active status");
-          if (!isActive) return;
-
-          try {
-            // Check connection health first
-            await checkConnectionHealth();
-            if (!isActive) return;
-
-            // Create client for this iteration
-            const client = await createRabbitMQClient(
-              serverId,
-              user.workspaceId
-            );
-
-            // Get current queue info to check for new messages
-            const queue = await client.getQueue(queueName);
-            const currentMessageCount = queue.messages || 0;
-
-            logger.info({ currentMessageCount }, "Current message count");
-            logger.info({ lastMessageCount }, "Last message count");
-            logger.info({ messageIndex }, "Message index");
-
-            // If there are new messages or this is the first check
-            if (
-              currentMessageCount !== lastMessageCount ||
-              messageIndex === 0
-            ) {
-              // Browse messages from the queue using Management API with ack_requeue_true
-              // This allows us to peek at messages without consuming them
-              const messages = await client.getMessages(
-                queueName,
-                Math.min(count, 50)
-              );
-
-              logger.info(
-                { messageCount: messages.length, queueName },
-                "Fetched messages from queue"
-              );
-
-              // Send each message as SSE event
-              for (const message of messages) {
-                if (!isActive) break;
-
-                const eventData = {
-                  id: messageIndex++,
-                  queueName,
-                  serverId,
-                  timestamp: new Date().toISOString(),
-                  message: {
-                    payload: message.payload,
-                    properties: message.properties,
-                    routingKey: message.routing_key,
-                    exchange: message.exchange,
-                    messageCount: message.message_count,
-                    redelivered: message.redelivered,
-                  },
-                };
-
-                await stream.writeSSE({
-                  data: JSON.stringify(eventData),
-                  id: messageIndex.toString(),
-                });
-              }
-
-              // Send queue stats update
-              const statsData = {
-                type: "stats",
-                queueName,
-                serverId,
-                timestamp: new Date().toISOString(),
-                stats: {
-                  messages: queue.messages,
-                  messages_ready: queue.messages_ready,
-                  messages_unacknowledged: queue.messages_unacknowledged,
-                  consumers: queue.consumers,
-                  publishRate: queue.message_stats?.publish_details?.rate || 0,
-                  consumeRate: queue.message_stats?.deliver_details?.rate || 0,
-                },
-              };
-
-              await stream.writeSSE({
-                data: JSON.stringify(statsData),
-                event: "stats",
-              });
-
-              lastMessageCount = currentMessageCount;
-            }
-
-            // Send heartbeat to keep connection alive (this will also help detect disconnects)
-            await stream.writeSSE({
-              data: JSON.stringify({
-                type: "heartbeat",
-                timestamp: new Date().toISOString(),
-              }),
-              event: "heartbeat",
-            });
-          } catch (error: unknown) {
-            logger.error({ error }, "Error in SSE stream");
-            // If we can't write to the stream, the client has likely disconnected
-            const errorObj = error as Error;
-            if (
-              errorObj.name === "AbortError" ||
-              errorObj.message?.includes("aborted") ||
-              errorObj.message?.includes("closed") ||
-              errorObj.message?.includes("disconnected")
-            ) {
-              logger.info(
-                { queueName },
-                "Client disconnected during streaming for queue"
-              );
-              cleanup();
-              return;
-            }
-
-            if (isActive) {
-              try {
-                await stream.writeSSE({
-                  data: JSON.stringify({
-                    type: "error",
-                    error:
-                      error instanceof Error ? error.message : "Unknown error",
-                    timestamp: new Date().toISOString(),
-                  }),
-                  event: "error",
-                });
-              } catch (writeError) {
-                logger.info(
-                  { error: writeError },
-                  "Failed to write error to stream, client likely disconnected"
-                );
-                cleanup();
-              }
-            }
-          }
-        };
-
-        // Send initial data
-        await streamMessages();
-
-        // Set up interval for polling (every 2 seconds)
-        intervalId = setInterval(async () => {
-          if (isActive) {
-            await streamMessages();
-          } else {
-            if (intervalId) clearInterval(intervalId);
-          }
-        }, 2000);
-
-        // Cleanup interval when stream is closed
-        stream.onAbort = () => {
-          isActive = false;
-          if (intervalId) clearInterval(intervalId);
-          cleanup();
-        };
-      });
-    } catch (error) {
-      logger.error({ error, queueName }, "Error browsing messages for queue");
-      return createErrorResponse(c, error, 500, "Failed to browse messages");
-    }
-  }
-);
-
-/**
- * Stop streaming messages from a specific queue (ALL USERS)
- * POST /servers/:serverId/queues/:queueName/messages/browse/stop
- */
-messagesController.post(
-  "/servers/:serverId/queues/:queueName/messages/browse/stop",
-  async (c) => {
-    const serverId = c.req.param("serverId");
-    const queueName = c.req.param("queueName");
-    const user = c.get("user");
-
-    try {
-      // Verify the server belongs to the user's workspace
-      await createRabbitMQClient(serverId, user.workspaceId);
-
-      // Find and stop streams for this specific user/server/queue combination
-      const userStreams = await streamRegistry.getUserStreams(user.id);
-      // TODO: not a big fan of filtering by serverId and queueName here, better to use it in getUserStreams
-      const matchingStreams = userStreams.filter(
-        (stream) =>
-          stream.serverId === serverId && stream.queueName === queueName
-      );
-
-      let stoppedCount = 0;
-      for (const stream of matchingStreams) {
-        if (await streamRegistry.stop(stream.id)) {
-          stoppedCount++;
-        }
-      }
-
-      const totalActiveStreams = await streamRegistry.getActiveStreamCount();
-
-      logger.info(
-        { userId: user.id, serverId, queueName, stoppedCount },
-        "Stop stream requested"
-      );
-
-      return c.json({
-        success: true,
-        message: `Stream stop signal processed - stopped ${stoppedCount} active streams`,
-        stoppedStreams: stoppedCount,
-        activeStreams: totalActiveStreams,
-      });
-    } catch (error) {
-      logger.error({ error }, "Error processing stream stop");
-      return createErrorResponse(
-        c,
-        error,
-        500,
-        "Failed to process stream stop"
-      );
     }
   }
 );
