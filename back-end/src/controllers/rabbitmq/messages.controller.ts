@@ -1,8 +1,8 @@
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
+import { UserRole } from "@prisma/client";
 import { prisma } from "@/core/prisma";
 import { authorize } from "@/core/auth";
-import { UserRole } from "@prisma/client";
 import { logger } from "@/core/logger";
 import {
   getMonthlyMessageCount,
@@ -10,9 +10,9 @@ import {
   incrementMonthlyMessageCount,
   validateMessageSending,
 } from "@/services/plan/plan.service";
-import { createRabbitMQClient } from "./shared";
 import { publishMessageToQueueSchema } from "@/schemas/rabbitmq";
 import { createErrorResponse } from "../shared";
+import { createRabbitMQClient } from "./shared";
 
 const messagesController = new Hono();
 

@@ -22,6 +22,28 @@ services:
       timeout: 5s
       retries: 5
 
+  # Redis for connection management and distributed coordination
+  redis:
+    image: redis:7.2-alpine
+    container_name: rabbit_dashboard_redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass redispassword123
+    environment:
+      - REDIS_PASSWORD=redispassword123
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - rabbit_dashboard_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    sysctls:
+      - net.core.somaxconn=65535
+
   rabbitmq-node1:
     image: rabbitmq:3.12-management-alpine
     container_name: rabbit_dashboard_rabbitmq_node1
@@ -231,6 +253,8 @@ services:
 
 volumes:
   postgres_data:
+    driver: local
+  redis_data:
     driver: local
   rabbitmq_node1_data:
     driver: local

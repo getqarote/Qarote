@@ -448,7 +448,7 @@ model CapturedMessage {
   // Timestamps
   messageTimestamp    DateTime? // From message properties
   publishedAt         DateTime  @default(now())
-  consumedAt          DateTime  @default(now())
+  consumedAt          DateTime? // Set when message is actually consumed/acked
   capturedAt          DateTime  @default(now())
   
   // Partitioning key

@@ -10,10 +10,10 @@ export { RabbitMQBaseClient } from "./BaseClient";
 export { RabbitMQApiClient } from "./ApiClient";
 export {
   RabbitMQAmqpClient,
-  RabbitMQAmqpClientFactory,
   type AMQPConnectionConfig,
   type QueuePauseState,
 } from "./AmqpClient";
+export { RabbitMQAmqpClientFactory } from "./AmqpFactory";
 export { RabbitMQQueueClient } from "./QueueClient";
 export { RabbitMQMetricsCalculator } from "./MetricsCalculator";
 

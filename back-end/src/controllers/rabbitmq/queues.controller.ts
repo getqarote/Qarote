@@ -19,10 +19,7 @@ import {
 } from "./shared";
 import {
   RabbitMQAmqpClient,
-  RabbitMQAmqpClientFactory,
-  type QueuePauseState,
 } from "@/core/rabbitmq/AmqpClient";
-import { EncryptionService } from "@/services/encryption.service";
 import {
   QueueConsumersResponse,
   QueueBindingsResponse,

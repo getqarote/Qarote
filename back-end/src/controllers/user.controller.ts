@@ -88,7 +88,10 @@ userController.get("/workspace/:workspaceId", async (c) => {
 
     return c.json({ users });
   } catch (error) {
-    logger.error(`Error fetching users for workspace ${workspaceId}:`, error);
+    logger.error(
+      { error },
+      `Error fetching users for workspace ${workspaceId}`
+    );
     return c.json({ error: "Failed to fetch users" }, 500);
   }
 });
@@ -139,7 +142,7 @@ userController.get("/:id", async (c) => {
 
     return c.json({ user });
   } catch (error) {
-    logger.error(`Error fetching user ${id}:`, error);
+    logger.error({ error }, `Error fetching user ${id}`);
     return c.json({ error: "Failed to fetch user" }, 500);
   }
 });
@@ -183,7 +186,7 @@ userController.put(
 
       return c.json({ user });
     } catch (error) {
-      logger.error(`Error updating user ${id}:`, error);
+      logger.error({ error }, `Error updating user ${id}`);
       return c.json({ error: "Failed to update user" }, 500);
     }
   }
@@ -237,8 +240,8 @@ userController.put(
 
           if (!emailResult.success) {
             logger.error(
-              "Failed to send email change verification:",
-              emailResult.error
+              { error: emailResult.error },
+              "Failed to send email change verification"
             );
             return c.json({ error: "Failed to send verification email" }, 500);
           }
@@ -302,7 +305,7 @@ userController.put(
         return c.json({ user: updatedUser });
       }
     } catch (error) {
-      logger.error(`Error updating profile for user ${user.id}:`, error);
+      logger.error({ error }, `Error updating profile for user ${user.id}`);
       return c.json({ error: "Failed to update profile" }, 500);
     }
   }
@@ -464,8 +467,8 @@ userController.get("/invitations/workspace/:workspaceId", async (c) => {
     return c.json({ invitations });
   } catch (error) {
     logger.error(
-      `Error fetching invitations for workspace ${workspaceId}:`,
-      error
+      { error },
+      `Error fetching invitations for workspace ${workspaceId}`
     );
     return c.json({ error: "Failed to fetch invitations" }, 500);
   }
@@ -520,7 +523,7 @@ userController.get("/profile/me", async (c) => {
 
     return c.json({ profile });
   } catch (error) {
-    logger.error(`Error fetching profile for user ${user.id}:`, error);
+    logger.error({ error }, `Error fetching profile for user ${user.id}`);
     return c.json({ error: "Failed to fetch profile" }, 500);
   }
 });
@@ -570,7 +573,7 @@ userController.put(
 
       return c.json({ workspace: updatedWorkspace });
     } catch (error) {
-      logger.error(`Error updating workspace ${user.workspaceId}:`, error);
+      logger.error({ error }, `Error updating workspace ${user.workspaceId}`);
       return c.json({ error: "Failed to update workspace information" }, 500);
     }
   }
@@ -604,8 +607,8 @@ userController.get("/profile/workspace/users", async (c) => {
     return c.json({ users });
   } catch (error) {
     logger.error(
-      `Error fetching workspace users for workspace ${user.workspaceId}:`,
-      error
+      { error },
+      `Error fetching workspace users for workspace ${user.workspaceId}`
     );
     return c.json({ error: "Failed to fetch workspace users" }, 500);
   }

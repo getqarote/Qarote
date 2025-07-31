@@ -112,7 +112,7 @@ registrationController.post(
         201
       );
     } catch (error) {
-      logger.error(error, "Registration error");
+      logger.error({ error }, "Registration error");
       return c.json({ error: "Failed to register user" }, 500);
     }
   }

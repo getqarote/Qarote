@@ -11,6 +11,7 @@ const envSchema = z.object({
     .describe("development"),
   PORT: z.coerce.number().int().positive(),
   HOST: z.string().describe("localhost"),
+  NODE_ID: z.string().describe("Unique identifier for this node"),
 
   // Logging
   LOG_LEVEL: z.enum(["error", "warn", "info", "debug"]).describe("info"),
@@ -24,6 +25,10 @@ const envSchema = z.object({
   // Database
   DATABASE_URL: z.string().startsWith("postgres://", {
     message: "DATABASE_URL must start with 'postgres://'",
+  }),
+
+  REDIS_URL: z.string().startsWith("redis://", {
+    message: "REDIS_URL must start with 'redis://'",
   }),
 
   // CORS
@@ -96,6 +101,10 @@ export const authConfig = {
 
 export const databaseConfig = {
   url: config.DATABASE_URL,
+} as const;
+
+export const redisConfig = {
+  url: config.REDIS_URL,
 } as const;
 
 export const corsConfig = {

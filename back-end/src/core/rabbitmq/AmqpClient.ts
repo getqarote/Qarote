@@ -1,6 +1,7 @@
-import * as amqp from "amqplib";
+import amqp from "amqplib";
 import { logger } from "@/core/logger";
 import { captureRabbitMQError } from "@/core/sentry";
+import { RabbitMQAmqpClientFactory } from "./AmqpFactory";
 
 export interface AMQPConnectionConfig {
   protocol: "amqp" | "amqps";
@@ -23,84 +24,6 @@ export interface QueuePauseState {
   resumedAt?: Date;
   pausedConsumers: string[];
   serverId?: string; // Track which server this relates to
-}
-
-/**
- * Factory class to create AMQP clients for different RabbitMQ servers
- * Handles dynamic connection creation based on server configuration
- */
-export class RabbitMQAmqpClientFactory {
-  private static clients = new Map<string, RabbitMQAmqpClient>();
-
-  /**
-   * Create an AMQP client for a specific RabbitMQ server
-   */
-  static async createClient(serverConfig: {
-    id: string;
-    name: string;
-    host: string;
-    port: number;
-    amqpPort: number;
-    username: string;
-    password: string;
-    vhost: string;
-    sslEnabled: boolean;
-  }): Promise<RabbitMQAmqpClient> {
-    const config: AMQPConnectionConfig = {
-      protocol: serverConfig.sslEnabled ? "amqps" : "amqp",
-      hostname: serverConfig.host,
-      port: serverConfig.amqpPort, // Use AMQP port for the connection
-      username: serverConfig.username,
-      password: serverConfig.password,
-      vhost: serverConfig.vhost || "/",
-      heartbeat: 60,
-      connectionTimeout: 30000,
-      serverId: serverConfig.id,
-      serverName: serverConfig.name,
-    };
-
-    // Check if we already have a client for this server
-    const existingClient = this.clients.get(serverConfig.id);
-    if (existingClient && existingClient.isConnectionActive()) {
-      return existingClient;
-    }
-
-    console.log(config);
-
-    // Create new client
-    const client = new RabbitMQAmqpClient(config);
-    this.clients.set(serverConfig.id, client);
-
-    return client;
-  }
-
-  /**
-   * Get existing client for a server
-   */
-  static getClient(serverId: string): RabbitMQAmqpClient | null {
-    return this.clients.get(serverId) || null;
-  }
-
-  /**
-   * Remove client from cache (when disconnected)
-   */
-  static removeClient(serverId: string): void {
-    this.clients.delete(serverId);
-  }
-
-  /**
-   * Cleanup all clients
-   */
-  static async cleanupAll(): Promise<void> {
-    const cleanupPromises = Array.from(this.clients.values()).map((client) =>
-      client
-        .cleanup()
-        .catch((error) => logger.warn("Error cleaning up AMQP client:", error))
-    );
-
-    await Promise.all(cleanupPromises);
-    this.clients.clear();
-  }
 }
 
 /**
@@ -199,7 +122,10 @@ export class RabbitMQAmqpClient {
 
         // Remove from factory cache on error
         if (this.config.serverId) {
-          RabbitMQAmqpClientFactory.removeClient(this.config.serverId);
+          RabbitMQAmqpClientFactory.removeClient(this.config.serverId).catch(
+            (err) =>
+              logger.warn("Failed to remove client from Redis on error:", err)
+          );
         }
       });
 
@@ -212,7 +138,10 @@ export class RabbitMQAmqpClient {
 
         // Remove from factory cache on close
         if (this.config.serverId) {
-          RabbitMQAmqpClientFactory.removeClient(this.config.serverId);
+          RabbitMQAmqpClientFactory.removeClient(this.config.serverId).catch(
+            (err) =>
+              logger.warn("Failed to remove client from Redis on close:", err)
+          );
         }
       });
 
@@ -293,9 +222,6 @@ export class RabbitMQAmqpClient {
       } catch (error) {
         throw new Error(`Queue "${queueName}" does not exist`);
       }
-
-      // Get current consumers (for informational purposes)
-      const existingConsumers: string[] = [];
 
       // Create a blocking consumer with high priority that will consume but not ack messages
       // This effectively pauses the queue by preventing other consumers from processing
@@ -448,6 +374,23 @@ export class RabbitMQAmqpClient {
   }
 
   /**
+   * Create a queue with specified options
+   */
+  async createQueue(
+    queueName: string,
+    options: amqp.Options.AssertQueue = {}
+  ): Promise<void> {
+    await this.ensureConnection();
+
+    if (!this.channel) {
+      throw new Error("No AMQP channel available");
+    }
+
+    await this.channel.assertQueue(queueName, options);
+    logger.info(`Created queue: ${queueName}`, { options });
+  }
+
+  /**
    * Create a basic consumer for testing
    */
   async createConsumer(
@@ -485,6 +428,50 @@ export class RabbitMQAmqpClient {
     this.consumers.delete(consumerTag);
 
     logger.info(`Cancelled consumer: ${consumerTag}`);
+  }
+
+  /**
+   * Acknowledge a message
+   */
+  async acknowledgeMessage(msg: amqp.ConsumeMessage): Promise<void> {
+    if (!this.channel) {
+      throw new Error("No AMQP channel available for acknowledgment");
+    }
+
+    try {
+      this.channel.ack(msg);
+      logger.debug(`Message acknowledged`, {
+        deliveryTag: msg.fields.deliveryTag,
+        consumerTag: msg.fields.consumerTag,
+      });
+    } catch (error) {
+      logger.error({ error }, "Failed to acknowledge message");
+      throw error;
+    }
+  }
+
+  /**
+   * Negative acknowledge a message (reject and requeue)
+   */
+  async negativeAcknowledgeMessage(
+    msg: amqp.ConsumeMessage,
+    requeue: boolean = false
+  ): Promise<void> {
+    if (!this.channel) {
+      throw new Error("No AMQP channel available for negative acknowledgment");
+    }
+
+    try {
+      this.channel.nack(msg, false, requeue);
+      logger.debug(`Message negative acknowledged`, {
+        deliveryTag: msg.fields.deliveryTag,
+        consumerTag: msg.fields.consumerTag,
+        requeue,
+      });
+    } catch (error) {
+      logger.error({ error }, "Failed to negative acknowledge message");
+      throw error;
+    }
   }
 
   /**

@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { authenticate } from "@/core/auth";
+import { planValidationMiddleware } from "@/middlewares/plan-validation";
 import overviewController from "./rabbitmq/overview.controller";
 import queuesController from "./rabbitmq/queues.controller";
 import messagesController from "./rabbitmq/messages.controller";
@@ -9,7 +10,6 @@ import memoryController from "./rabbitmq/memory.controller";
 import adminController from "./rabbitmq/admin.controller";
 import vhostController from "./rabbitmq/vhost.controller";
 import usersController from "./rabbitmq/users.controller";
-import { planValidationMiddleware } from "@/middlewares/plan-validation";
 
 const rabbitmqController = new Hono();
 
