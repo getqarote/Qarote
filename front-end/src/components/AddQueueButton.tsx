@@ -84,7 +84,7 @@ export const AddQueueButton = ({
         serverId={serverId}
         onSuccess={onSuccess}
         trigger={
-          <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 flex items-center gap-2">
+          <Button className="btn-primary flex items-center gap-2">
             <Plus className="w-4 h-4" />
             Add Queue
           </Button>

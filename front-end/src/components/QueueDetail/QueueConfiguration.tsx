@@ -9,7 +9,7 @@ interface QueueConfigurationProps {
 
 export function QueueConfiguration({ queue }: QueueConfigurationProps) {
   return (
-    <Card className="border-0 shadow-md bg-white/80 backdrop-blur-sm">
+    <Card className="border-0 shadow-md bg-card-unified backdrop-blur-sm">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Settings className="w-5 h-5" />

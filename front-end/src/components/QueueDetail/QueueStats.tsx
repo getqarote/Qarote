@@ -28,7 +28,7 @@ export function QueueStats({ queue }: QueueStatsProps) {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      <Card className="border-0 shadow-md bg-white/80 backdrop-blur-sm">
+      <Card className="border-0 shadow-md bg-card-unified backdrop-blur-sm">
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -40,7 +40,7 @@ export function QueueStats({ queue }: QueueStatsProps) {
         </CardContent>
       </Card>
 
-      <Card className="border-0 shadow-md bg-white/80 backdrop-blur-sm">
+      <Card className="border-0 shadow-md bg-card-unified backdrop-blur-sm">
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -54,7 +54,7 @@ export function QueueStats({ queue }: QueueStatsProps) {
         </CardContent>
       </Card>
 
-      <Card className="border-0 shadow-md bg-white/80 backdrop-blur-sm">
+      <Card className="border-0 shadow-md bg-card-unified backdrop-blur-sm">
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -68,7 +68,7 @@ export function QueueStats({ queue }: QueueStatsProps) {
         </CardContent>
       </Card>
 
-      <Card className="border-0 shadow-md bg-white/80 backdrop-blur-sm">
+      <Card className="border-0 shadow-md bg-card-unified backdrop-blur-sm">
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>

@@ -88,7 +88,7 @@ export default function UsersPage() {
       <SidebarProvider>
         <div className="flex min-h-screen w-full">
           <AppSidebar />
-          <main className="flex-1 p-6">
+          <main className="main-content">
             <div className="container mx-auto">
               <Alert>
                 <AlertCircle className="h-4 w-4" />
@@ -126,7 +126,7 @@ export default function UsersPage() {
       <SidebarProvider>
         <div className="flex min-h-screen w-full">
           <AppSidebar />
-          <main className="flex-1 p-6">
+          <main className="main-content">
             <div className="container mx-auto">
               <Alert>
                 <AlertCircle className="h-4 w-4" />
@@ -159,7 +159,7 @@ export default function UsersPage() {
       <SidebarProvider>
         <div className="flex min-h-screen w-full">
           <AppSidebar />
-          <main className="flex-1 p-6">
+          <main className="main-content">
             <div className="container mx-auto">
               <Alert>
                 <AlertCircle className="h-4 w-4" />
@@ -189,15 +189,22 @@ export default function UsersPage() {
 
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen w-full">
+      <div className="page-layout">
         <AppSidebar />
-        <main className="flex-1 p-6">
-          <div className="max-w-6xl mx-auto space-y-6">
+        <main className="main-content">
+          <div className="content-container">
             {/* Header */}
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <SidebarTrigger className="mr-2" />
-                <h1 className="text-2xl font-bold">Users</h1>
+              <div className="flex items-center gap-4">
+                <SidebarTrigger />
+                <div>
+                  <h1 className="title-page">
+                    Users
+                  </h1>
+                  <p className="text-gray-500">
+                    Manage RabbitMQ users and their access permissions
+                  </p>
+                </div>
                 <Badge variant="secondary" className="ml-2">
                   {users.length}
                 </Badge>
@@ -452,7 +459,7 @@ export default function UsersPage() {
                         !newUserName.trim() ||
                         !newUserPassword.trim()
                       }
-                      className="bg-green-600 hover:bg-green-700"
+                      className="btn-primary"
                     >
                       {createUserMutation.isPending ? "Adding..." : "Add user"}
                     </Button>

@@ -65,8 +65,8 @@ export default {
       },
       borderRadius: {
         lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        md: "calc(var(--radius) - 1px)",
+        sm: "calc(var(--radius) - 2px)",
       },
       keyframes: {
         "accordion-down": {
@@ -90,8 +90,20 @@ export default {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
       },
+      backgroundImage: {
+        "gradient-page":
+          "linear-gradient(to bottom right, rgb(254 215 170), rgb(254 202 202))", // from-orange-50 to-red-50
+        "gradient-button":
+          "linear-gradient(to right, rgb(234 88 12), rgb(220 38 38))", // from-orange-600 to-red-600
+        "gradient-button-hover":
+          "linear-gradient(to right, rgb(194 65 12), rgb(185 28 28))", // from-orange-700 to-red-700
+        "gradient-title":
+          "linear-gradient(to right, rgb(234 88 12), rgb(220 38 38))", // from-orange-600 to-red-600
+      },
+      backgroundColor: {
+        "card-unified": "rgb(252 250 246)", // Unified card background color
+      },
     },
   },
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
   plugins: [require("tailwindcss-animate")],
 } satisfies Config;

@@ -37,7 +37,6 @@ export function QueueHeader({
   const { data: pauseStatus, refetch: refetchPauseStatus } =
     useQueuePauseStatus(selectedServerId, queueName);
 
-
   const handleSendMessageClick = () => {
     if (!canSendMessages) {
       setShowUpgradeModal(true);
@@ -59,12 +58,10 @@ export function QueueHeader({
           className="flex items-center gap-2"
         >
           <ArrowLeft className="w-4 h-4" />
-          Back to Queues
+          Back
         </Button>
         <div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-            {queueName}
-          </h1>
+          <h1 className="title-page">{queueName}</h1>
           <p className="text-gray-600 mt-1">Queue details and management</p>
         </div>
       </div>

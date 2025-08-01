@@ -343,7 +343,7 @@ export const PlansPage: React.FC<PlansPageProps> = ({
   const currentPricing = planPricing[billingPeriod];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <div className="min-h-screen page-layout">
       {/* Hero Section */}
       <div className="pt-16 pb-12 px-4">
         <div className="max-w-7xl mx-auto">
@@ -355,7 +355,7 @@ export const PlansPage: React.FC<PlansPageProps> = ({
               className="text-gray-600 hover:text-gray-900 p-2 -ml-2"
             >
               <ArrowLeft className="w-5 h-5 mr-2" />
-              Back to Profile
+              Back
             </Button>
           </div>
 

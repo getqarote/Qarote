@@ -18,7 +18,7 @@ const PublicRoute: React.FC<PublicRouteProps> = ({ children }) => {
   // Show loading state while checking authentication
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-900 via-blue-800 to-purple-800">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-page">
         <div className="flex flex-col items-center gap-4">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
           <p className="text-white/80 text-sm">Loading...</p>

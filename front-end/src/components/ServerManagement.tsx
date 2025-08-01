@@ -137,17 +137,12 @@ function ServerCard({ server, onServerUpdated }: ServerCardProps) {
   return (
     <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
       <div className="flex items-center gap-3">
-        <div className="p-2 bg-blue-100 rounded-lg">
-          <ServerIcon className="h-4 w-4 text-blue-600" />
+        <div className="p-2 bg-white-100 rounded-lg">
+          <ServerIcon className="h-4 w-4 text-orange-600" />
         </div>
         <div>
           <div className="flex items-center gap-2">
             <h4 className="font-medium">{server.name}</h4>
-            {server.sslConfig?.enabled && (
-              <Badge variant="secondary" className="text-xs">
-                SSL
-              </Badge>
-            )}
           </div>
           <p className="text-sm text-gray-500">
             {server.username}@{server.host}:{server.port} ({server.vhost})

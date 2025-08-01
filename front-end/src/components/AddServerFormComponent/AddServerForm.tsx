@@ -254,7 +254,7 @@ export const AddServerForm = ({
       {controlledIsOpen === undefined && (
         <DialogTrigger asChild>
           {trigger || (
-            <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
+            <Button className="btn-primary">
               <Plus className="h-4 w-4 mr-2" />
               Add Server
             </Button>
@@ -283,7 +283,7 @@ export const AddServerForm = ({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto px-6">
+        <div className="flex-1 overflow-y-auto px-6 pb-8">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <RabbitMqVersionInfo />
@@ -307,7 +307,7 @@ export const AddServerForm = ({
           </Form>
         </div>
 
-        <DialogFooter className="flex gap-2 flex-shrink-0">
+        <DialogFooter className="flex gap-2 flex-shrink-0 pt-6 border-t border-gray-200">
           <TestConnectionButton
             onTestConnection={testConnection}
             isTestingConnection={isTestingConnection}
@@ -317,7 +317,7 @@ export const AddServerForm = ({
             type="submit"
             onClick={form.handleSubmit(onSubmit)}
             disabled={isLoading || isTestingConnection}
-            className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+            className="btn-primary"
           >
             {isLoading ? (
               <Loader2 className="h-4 w-4 animate-spin mr-2" />

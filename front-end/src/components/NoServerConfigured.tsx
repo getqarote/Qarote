@@ -13,10 +13,10 @@ export function NoServerConfigured({
   description,
 }: NoServerConfiguredProps) {
   return (
-    <div className="max-w-7xl mx-auto space-y-6">
+    <div className="content-container-large">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+          <h1 className="title-page">
             {title}
           </h1>
           <p className="text-gray-500">
@@ -24,7 +24,7 @@ export function NoServerConfigured({
           </p>
         </div>
       </div>
-      <Card className="border-0 shadow-md bg-white/80 backdrop-blur-sm">
+      <Card className="border-0 shadow-md bg-card-unified backdrop-blur-sm">
         <CardContent className="p-6">
           <div className="text-center">
             <Server className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -34,7 +34,7 @@ export function NoServerConfigured({
             <p className="text-gray-600 mb-4">{description}</p>
             <AddServerForm
               trigger={
-                <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
+                <Button className="btn-primary">
                   Add Server
                 </Button>
               }

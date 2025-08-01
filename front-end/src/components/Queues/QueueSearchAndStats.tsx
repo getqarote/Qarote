@@ -23,7 +23,7 @@ export function QueueSearchAndStats({
             placeholder="Search queues by name or vhost..."
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="pl-10 bg-white/80 backdrop-blur-sm"
+            className="pl-10 bg-card-unified backdrop-blur-sm"
           />
         </div>
       </div>

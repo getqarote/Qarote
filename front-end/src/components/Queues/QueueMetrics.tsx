@@ -11,7 +11,7 @@ export function QueueMetrics({ queues }: QueueMetricsProps) {
 
   return (
     <div className="flex gap-4">
-      <Card className="border-0 shadow-md bg-white/80 backdrop-blur-sm">
+      <Card className="border-0 shadow-md bg-card-unified backdrop-blur-sm">
         <CardContent className="p-4">
           <div className="flex items-center gap-3">
             <Database className="w-5 h-5 text-blue-600" />
@@ -22,7 +22,7 @@ export function QueueMetrics({ queues }: QueueMetricsProps) {
           </div>
         </CardContent>
       </Card>
-      <Card className="border-0 shadow-md bg-white/80 backdrop-blur-sm">
+      <Card className="border-0 shadow-md bg-card-unified backdrop-blur-sm">
         <CardContent className="p-4">
           <div className="flex items-center gap-3">
             <MessageSquare className="w-5 h-5 text-green-600" />

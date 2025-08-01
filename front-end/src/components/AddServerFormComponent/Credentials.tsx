@@ -31,7 +31,11 @@ export const Credentials = ({ form }: CredentialsProps) => {
             <FormItem>
               <FormLabel>Username</FormLabel>
               <FormControl>
-                <Input placeholder="guest" {...field} />
+                <Input
+                  placeholder="guest"
+                  {...field}
+                  className="focus:ring-2 focus:ring-orange-200 focus:border-orange-400 focus:ring-offset-0"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -50,6 +54,7 @@ export const Credentials = ({ form }: CredentialsProps) => {
                     type={showPassword ? "text" : "password"}
                     placeholder="guest"
                     {...field}
+                    className="focus:ring-2 focus:ring-orange-200 focus:border-orange-400 focus:ring-offset-0"
                   />
                   <Button
                     type="button"

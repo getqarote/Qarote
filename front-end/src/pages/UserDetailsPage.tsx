@@ -128,9 +128,9 @@ export default function UserDetailsPage() {
   if (user?.role !== "ADMIN") {
     return (
       <SidebarProvider>
-        <div className="flex min-h-screen w-full">
+        <div className="page-layout">
           <AppSidebar />
-          <main className="flex-1 p-6">
+          <main className="main-content">
             <div className="container mx-auto">
               <Alert>
                 <AlertCircle className="h-4 w-4" />
@@ -149,9 +149,9 @@ export default function UserDetailsPage() {
   if (!currentServerId) {
     return (
       <SidebarProvider>
-        <div className="flex min-h-screen w-full">
+        <div className="page-layout">
           <AppSidebar />
-          <main className="flex-1 p-6">
+          <main className="main-content">
             <div className="container mx-auto">
               <Alert>
                 <AlertCircle className="h-4 w-4" />
@@ -169,7 +169,7 @@ export default function UserDetailsPage() {
   if (isLoading) {
     return (
       <SidebarProvider>
-        <div className="flex min-h-screen w-full">
+        <div className="page-layout">
           <AppSidebar />
           <main className="flex-1">
             <PageLoader />
@@ -182,9 +182,9 @@ export default function UserDetailsPage() {
   if (error) {
     return (
       <SidebarProvider>
-        <div className="flex min-h-screen w-full">
+        <div className="page-layout">
           <AppSidebar />
-          <main className="flex-1 p-6">
+          <main className="main-content">
             <div className="container mx-auto">
               <Alert>
                 <AlertCircle className="h-4 w-4" />
@@ -205,9 +205,9 @@ export default function UserDetailsPage() {
   if (!userDetails) {
     return (
       <SidebarProvider>
-        <div className="flex min-h-screen w-full">
+        <div className="page-layout">
           <AppSidebar />
-          <main className="flex-1 p-6">
+          <main className="main-content">
             <div className="container mx-auto">
               <Alert>
                 <AlertCircle className="h-4 w-4" />
@@ -253,9 +253,9 @@ export default function UserDetailsPage() {
 
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen w-full">
+      <div className="page-layout">
         <AppSidebar />
-        <main className="flex-1 p-6">
+        <main className="main-content">
           <div className="max-w-6xl mx-auto space-y-8">
             {/* Header */}
             <div className="flex items-center justify-between">
@@ -268,9 +268,9 @@ export default function UserDetailsPage() {
                   className="mr-2 flex items-center gap-1"
                 >
                   <ArrowLeft className="h-4 w-4" />
-                  <span className="text-sm">Back to users</span>
+                  <span className="text-sm">Back</span>
                 </Button>
-                <h1 className="text-2xl font-bold">User / {decodedUsername}</h1>
+                <h1 className="title-page">User / {decodedUsername}</h1>
               </div>
               <ConnectionStatus />
             </div>
@@ -423,7 +423,7 @@ export default function UserDetailsPage() {
                     </div>
                     <div>
                       <Button
-                        className="bg-green-600 hover:bg-green-700"
+                        className="btn-primary"
                         onClick={handleSetPermissions}
                         disabled={setPermissionsMutation.isPending}
                       >
@@ -563,7 +563,7 @@ export default function UserDetailsPage() {
                     </div>
                     <div>
                       <Button
-                        className="bg-green-600 hover:bg-green-700"
+                        className="btn-primary"
                         onClick={handleUpdateUser}
                         disabled={updateUserMutation.isPending}
                       >

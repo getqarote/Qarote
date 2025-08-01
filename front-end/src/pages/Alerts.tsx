@@ -153,9 +153,9 @@ const AlertDashboard: React.FC = () => {
   // if (loading) {
   //   return (
   //     <SidebarProvider>
-  //       <div className="min-h-screen flex w-full bg-gradient-to-br from-slate-50 to-blue-50">
+  //       <div className="page-layout">
   //         <AppSidebar />
-  //         <main className="flex-1 p-6 overflow-auto">
+  //         <main className="main-content-scrollable">
   //           <div className="max-w-7xl mx-auto">
   //             <div className="flex justify-center p-8">Loading...</div>
   //           </div>
@@ -167,7 +167,7 @@ const AlertDashboard: React.FC = () => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-gradient-to-br from-slate-50 to-blue-50">
+      <div className="page-layout">
         <AppSidebar />
 
         <PremiumPageWrapper
@@ -176,14 +176,14 @@ const AlertDashboard: React.FC = () => {
           featureDescription="Monitor and manage RabbitMQ alerts with real-time statistics, rules, and actions."
           requiredPlan="Developer or higher"
         >
-          <main className="flex-1 p-6 overflow-auto">
-            <div className="max-w-7xl mx-auto space-y-6">
+          <main className="main-content-scrollable">
+            <div className="content-container-large">
               {/* Header */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <SidebarTrigger />
                   <div>
-                    <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                    <h1 className="title-page">
                       Alert Dashboard
                     </h1>
                     <p className="text-gray-500">

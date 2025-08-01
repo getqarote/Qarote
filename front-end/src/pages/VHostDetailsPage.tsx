@@ -76,7 +76,7 @@ export default function VHostDetailsPage() {
       <SidebarProvider>
         <div className="flex min-h-screen w-full">
           <AppSidebar />
-          <main className="flex-1 p-6">
+          <main className="main-content">
             <div className="container mx-auto">
               <Alert>
                 <AlertCircle className="h-4 w-4" />
@@ -97,7 +97,7 @@ export default function VHostDetailsPage() {
       <SidebarProvider>
         <div className="flex min-h-screen w-full">
           <AppSidebar />
-          <main className="flex-1 p-6">
+          <main className="main-content">
             <div className="container mx-auto">
               <Alert>
                 <AlertCircle className="h-4 w-4" />
@@ -130,7 +130,7 @@ export default function VHostDetailsPage() {
       <SidebarProvider>
         <div className="flex min-h-screen w-full">
           <AppSidebar />
-          <main className="flex-1 p-6">
+          <main className="main-content">
             <div className="container mx-auto">
               <Alert>
                 <AlertCircle className="h-4 w-4" />
@@ -153,7 +153,7 @@ export default function VHostDetailsPage() {
       <SidebarProvider>
         <div className="flex min-h-screen w-full">
           <AppSidebar />
-          <main className="flex-1 p-6">
+          <main className="main-content">
             <div className="container mx-auto">
               <Alert>
                 <AlertCircle className="h-4 w-4" />
@@ -168,9 +168,9 @@ export default function VHostDetailsPage() {
 
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen w-full">
+      <div className="page-layout">
         <AppSidebar />
-        <main className="flex-1 p-6">
+        <main className="main-content">
           <div className="max-w-6xl mx-auto space-y-8">
             {/* Header */}
             <div className="flex items-center justify-between">
@@ -183,9 +183,9 @@ export default function VHostDetailsPage() {
                   className="mr-2 flex items-center gap-1"
                 >
                   <ArrowLeft className="h-4 w-4" />
-                  <span className="text-sm">Back to vhosts</span>
+                  <span className="text-sm">Back</span>
                 </Button>
-                <h1 className="text-2xl font-bold">
+                <h1 className="title-page">
                   Virtual host / {decodedVHostName}
                 </h1>
               </div>
@@ -355,9 +355,7 @@ export default function VHostDetailsPage() {
                       />
                     </div>
                     <div>
-                      <Button className="bg-green-600 hover:bg-green-700">
-                        Set permission
-                      </Button>
+                      <Button className="btn-primary">Set permission</Button>
                     </div>
                   </div>
                 </CardContent>
@@ -391,9 +389,7 @@ export default function VHostDetailsPage() {
                       />
                     </div>
                     <div>
-                      <Button className="bg-green-600 hover:bg-green-700">
-                        Set limits
-                      </Button>
+                      <Button className="btn-primary">Set limits</Button>
                     </div>
                   </div>
                 </CardContent>

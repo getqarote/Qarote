@@ -84,9 +84,9 @@ const Queues = () => {
   if (!hasServers) {
     return (
       <SidebarProvider>
-        <div className="min-h-screen flex w-full bg-gradient-to-br from-slate-50 to-blue-50">
+        <div className="page-layout">
           <AppSidebar />
-          <main className="flex-1 p-6 overflow-auto">
+          <main className="main-content-scrollable">
             <div className="flex items-center gap-4">
               <SidebarTrigger />
             </div>
@@ -103,15 +103,15 @@ const Queues = () => {
   if (!selectedServerId) {
     return (
       <SidebarProvider>
-        <div className="min-h-screen flex w-full bg-gradient-to-br from-slate-50 to-blue-50">
+        <div className="page-layout">
           <AppSidebar />
-          <main className="flex-1 p-6 overflow-auto">
-            <div className="max-w-7xl mx-auto space-y-6">
+          <main className="main-content-scrollable">
+            <div className="content-container-large">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <SidebarTrigger />
                   <div>
-                    <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                    <h1 className="title-page">
                       Queue Management
                     </h1>
                     <p className="text-gray-500">
@@ -129,10 +129,10 @@ const Queues = () => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-gradient-to-br from-slate-50 to-blue-50">
+      <div className="page-layout">
         <AppSidebar />
-        <main className="flex-1 p-6 overflow-auto">
-          <div className="max-w-7xl mx-auto space-y-6">
+        <main className="main-content-scrollable">
+          <div className="content-container-large">
             {/* Header */}
             <div className="flex items-center gap-4">
               <SidebarTrigger />

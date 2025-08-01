@@ -7,7 +7,7 @@ export function LoadingSkeleton() {
       {Array.from({ length: 8 }).map((_, i) => (
         <Card
           key={i}
-          className="border-0 shadow-md bg-white/80 backdrop-blur-sm"
+          className="border-0 shadow-md bg-card-unified backdrop-blur-sm"
         >
           <CardContent className="p-6">
             <Skeleton className="h-12 w-full mb-2" />

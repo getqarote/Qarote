@@ -171,13 +171,20 @@ export const PersonalInfoTab = ({
                   <X className="h-4 w-4 mr-2" />
                   Cancel
                 </Button>
-                <Button onClick={onUpdateProfile} disabled={isUpdating}>
+                <Button
+                  onClick={onUpdateProfile}
+                  disabled={isUpdating}
+                  className="btn-primary"
+                >
                   <Save className="h-4 w-4 mr-2" />
                   Save Changes
                 </Button>
               </>
             ) : (
-              <Button onClick={() => setEditingProfile(true)}>
+              <Button
+                onClick={() => setEditingProfile(true)}
+                className="btn-primary"
+              >
                 <Edit className="h-4 w-4 mr-2" />
                 Edit Profile
               </Button>

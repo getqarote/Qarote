@@ -1,5 +1,4 @@
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import {
   FormControl,
@@ -18,7 +17,6 @@ interface ServerDetailsProps {
 export const ServerDetails = ({ form }: ServerDetailsProps) => {
   return (
     <div className="space-y-4">
-      <Label className="text-base font-medium">Server Details</Label>
       <div className="grid grid-cols-2 gap-4">
         <FormField
           control={form.control}
@@ -111,7 +109,7 @@ export const ServerDetails = ({ form }: ServerDetailsProps) => {
           control={form.control}
           name="useHttps"
           render={({ field }) => (
-            <FormItem className="flex items-center space-x-3 space-y-0 mt-8">
+            <FormItem className="flex items-center justify-center space-x-3 space-y-0">
               <FormControl>
                 <Switch
                   checked={field.value}

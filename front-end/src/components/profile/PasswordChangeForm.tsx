@@ -239,7 +239,11 @@ export const PasswordChangeForm: React.FC<PasswordChangeFormProps> = ({
           </Alert>
 
           {/* Submit Button */}
-          <Button type="submit" className="w-full" disabled={isLoading}>
+          <Button
+            type="submit"
+            className="w-full btn-primary"
+            disabled={isLoading}
+          >
             {isLoading ? "Changing Password..." : "Change Password"}
           </Button>
         </form>

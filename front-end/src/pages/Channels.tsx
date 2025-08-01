@@ -6,15 +6,15 @@ import { MessageSquare } from "lucide-react";
 const Channels = () => {
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-gradient-to-br from-slate-50 to-blue-50">
+      <div className="page-layout">
         <AppSidebar />
-        <main className="flex-1 p-6 overflow-auto">
-          <div className="max-w-7xl mx-auto space-y-6">
+        <main className="main-content-scrollable">
+          <div className="content-container-large">
             {/* Header */}
             <div className="flex items-center gap-4">
               <SidebarTrigger />
               <div>
-                <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                <h1 className="title-page">
                   Channels
                 </h1>
                 <p className="text-gray-500">
@@ -24,7 +24,7 @@ const Channels = () => {
             </div>
 
             {/* Coming Soon Card */}
-            <Card className="border-0 shadow-md bg-white/80 backdrop-blur-sm">
+            <Card className="border-0 shadow-md bg-card">
               <CardContent className="p-12">
                 <div className="text-center">
                   <MessageSquare className="h-16 w-16 text-gray-400 mx-auto mb-4" />

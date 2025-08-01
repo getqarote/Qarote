@@ -19,7 +19,7 @@ export const BillingLayout: React.FC<BillingLayoutProps> = ({
       <SidebarProvider>
         <div className="min-h-screen flex w-full bg-gradient-to-br from-slate-50 to-blue-50">
           <AppSidebar />
-          <main className="flex-1 p-6 overflow-auto">
+          <main className="main-content-scrollable">
             <div className="container mx-auto px-4 py-8">
               <div className="animate-pulse space-y-6">
                 <div className="h-8 bg-gray-200 rounded w-1/4"></div>
@@ -41,7 +41,7 @@ export const BillingLayout: React.FC<BillingLayoutProps> = ({
       <SidebarProvider>
         <div className="min-h-screen flex w-full bg-gradient-to-br from-slate-50 to-blue-50">
           <AppSidebar />
-          <main className="flex-1 p-6 overflow-auto">
+          <main className="main-content-scrollable">
             <div className="container mx-auto px-4 py-8">
               <div className="text-center">
                 <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
@@ -63,7 +63,7 @@ export const BillingLayout: React.FC<BillingLayoutProps> = ({
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-gradient-to-br from-slate-50 to-blue-50">
         <AppSidebar />
-        <main className="flex-1 p-6 overflow-auto">
+        <main className="main-content-scrollable">
           <div className="container mx-auto px-4 py-8 space-y-8">
             {children}
           </div>

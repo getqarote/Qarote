@@ -31,7 +31,7 @@ export function QueueTiming({ queue }: QueueTimingProps) {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <Card className="border-0 shadow-md bg-white/80 backdrop-blur-sm">
+      <Card className="border-0 shadow-md bg-card-unified backdrop-blur-sm">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Clock className="w-5 h-5" />
@@ -54,7 +54,7 @@ export function QueueTiming({ queue }: QueueTimingProps) {
         </CardContent>
       </Card>
 
-      <Card className="border-0 shadow-md bg-white/80 backdrop-blur-sm">
+      <Card className="border-0 shadow-md bg-card-unified backdrop-blur-sm">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Activity className="w-5 h-5" />

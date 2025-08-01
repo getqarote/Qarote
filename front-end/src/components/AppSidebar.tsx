@@ -153,10 +153,10 @@ export function AppSidebar() {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   return (
-    <Sidebar className="border-r-0 bg-white/90 backdrop-blur-sm">
+    <Sidebar className="border-r-0 bg-sidebar backdrop-blur-sm">
       <SidebarHeader className="border-b border-gray-100 p-6">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-blue-600 rounded-lg flex items-center justify-center">
+          <div className="w-8 h-8 bg-gradient-to-br from-orange-600 to-red-600 rounded-lg flex items-center justify-center">
             <MessageSquare className="w-4 h-4 text-white" />
           </div>
           <div>
@@ -277,7 +277,6 @@ export function AppSidebar() {
                 .map((item) => {
                   const isActive = location.pathname === item.url;
                   const isAlertsItem = item.title === "Alerts";
-                  const isNewItem = item.isNew || false;
                   const isSoonItem = item.isSoon;
                   // Always show "Soon" badge for Alerts, regardless of environment
                   const showComingSoon = isAlertsItem || isSoonItem;
@@ -288,7 +287,7 @@ export function AppSidebar() {
                         asChild
                         className={`w-full justify-start transition-all duration-200 ${
                           isActive
-                            ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-700 hover:to-blue-700"
+                            ? "bg-gradient-to-r from-orange-600 to-red-600 text-white hover:from-orange-700 hover:to-red-700"
                             : "hover:bg-gray-100 text-gray-700"
                         }`}
                       >
@@ -304,14 +303,6 @@ export function AppSidebar() {
                               className="ml-auto text-xs bg-orange-100 text-orange-700 border-orange-200"
                             >
                               Soon
-                            </Badge>
-                          )}
-                          {isNewItem && !isSoonItem && (
-                            <Badge
-                              variant="secondary"
-                              className="ml-auto text-xs bg-green-100 text-green-700 border-green-200"
-                            >
-                              New
                             </Badge>
                           )}
                         </Link>

@@ -139,6 +139,7 @@ export const EnhancedTeamTab = ({
               onClick={() => setInviteDialogOpen(true)}
               disabled={!canInviteMoreUsers}
               size="sm"
+              className="btn-primary"
             >
               <UserPlus className="h-4 w-4 mr-2" />
               Invite User
@@ -286,6 +287,7 @@ export const EnhancedTeamTab = ({
                             onRevokeInvitation(invitation.id, invitation.email)
                           }
                           disabled={isRevoking}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
                         >
                           <X className="h-4 w-4" />
                         </Button>

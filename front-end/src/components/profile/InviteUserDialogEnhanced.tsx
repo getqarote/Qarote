@@ -140,6 +140,7 @@ export const InviteUserDialog = ({
                 !inviteForm.role ||
                 !canInvite
               }
+              className="btn-primary"
             >
               {isInviting ? "Sending..." : "Send Invitation"}
             </Button>

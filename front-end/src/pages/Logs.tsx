@@ -191,7 +191,7 @@ const Logs = () => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-gradient-to-br from-slate-50 to-blue-50">
+      <div className="page-layout">
         <AppSidebar />
 
         <PremiumPageWrapper
@@ -296,7 +296,7 @@ const Logs = () => {
 
             {/* Filters Section */}
             <div className="p-6">
-              <Card className="mb-6 border-0 shadow-lg bg-white/80 backdrop-blur-sm">
+              <Card className="mb-6 border-0 shadow-lg bg-card">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Filter className="h-5 w-5 text-indigo-600" />
@@ -389,7 +389,7 @@ const Logs = () => {
               </Card>
 
               {/* Logs List */}
-              <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
+              <Card className="border-0 shadow-lg bg-card">
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <CardTitle className="flex items-center gap-2">

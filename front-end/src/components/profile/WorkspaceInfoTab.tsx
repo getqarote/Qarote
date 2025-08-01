@@ -94,13 +94,20 @@ export const WorkspaceInfoTab = ({
                   <X className="h-4 w-4 mr-2" />
                   Cancel
                 </Button>
-                <Button onClick={onUpdateWorkspace} disabled={isUpdating}>
+                <Button
+                  onClick={onUpdateWorkspace}
+                  disabled={isUpdating}
+                  className="btn-primary"
+                >
                   <Save className="h-4 w-4 mr-2" />
                   Save Changes
                 </Button>
               </>
             ) : (
-              <Button onClick={() => setEditingWorkspace(true)}>
+              <Button
+                onClick={() => setEditingWorkspace(true)}
+                className="btn-primary"
+              >
                 <Edit className="h-4 w-4 mr-2" />
                 Edit Workspace
               </Button>

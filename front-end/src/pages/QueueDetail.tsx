@@ -99,10 +99,10 @@ const QueueDetail = () => {
   if (!selectedServerId || !queueName) {
     return (
       <SidebarProvider>
-        <div className="min-h-screen flex w-full bg-gradient-to-br from-slate-50 to-blue-50">
+        <div className="page-layout">
           <AppSidebar />
-          <main className="flex-1 p-6 overflow-auto">
-            <div className="max-w-7xl mx-auto space-y-6">
+          <main className="main-content-scrollable">
+            <div className="content-container-large">
               <NotFound
                 title="Queue Not Found"
                 description="Please select a server and queue to view details."
@@ -118,10 +118,10 @@ const QueueDetail = () => {
   return (
     <TooltipProvider>
       <SidebarProvider>
-        <div className="min-h-screen flex w-full bg-gradient-to-br from-slate-50 to-blue-50">
+        <div className="page-layout">
           <AppSidebar />
-          <main className="flex-1 p-6 overflow-auto">
-            <div className="max-w-7xl mx-auto space-y-6">
+          <main className="main-content-scrollable">
+            <div className="content-container-large">
               {/* Header */}
               <QueueHeader
                 queueName={queueName}

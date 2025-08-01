@@ -140,9 +140,9 @@ const Exchanges = () => {
   if (!hasServers) {
     return (
       <SidebarProvider>
-        <div className="min-h-screen flex w-full bg-gradient-to-br from-slate-50 to-blue-50">
+        <div className="page-layout">
           <AppSidebar />
-          <main className="flex-1 p-6 overflow-auto">
+          <main className="main-content-scrollable">
             <div className="flex items-center gap-4">
               <SidebarTrigger />
             </div>
@@ -159,14 +159,14 @@ const Exchanges = () => {
   if (!selectedServerId) {
     return (
       <SidebarProvider>
-        <div className="min-h-screen flex w-full bg-gradient-to-br from-slate-50 to-blue-50">
+        <div className="page-layout">
           <AppSidebar />
-          <main className="flex-1 p-6 overflow-auto">
-            <div className="max-w-7xl mx-auto space-y-6">
+          <main className="main-content-scrollable">
+            <div className="content-container-large">
               <div className="flex items-center gap-4">
                 <SidebarTrigger />
                 <div>
-                  <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                  <h1 className="title-page">
                     Exchanges
                   </h1>
                   <p className="text-gray-500">
@@ -174,7 +174,7 @@ const Exchanges = () => {
                   </p>
                 </div>
               </div>
-              <Card className="border-0 shadow-md bg-white/80 backdrop-blur-sm">
+              <Card className="border-0 shadow-md bg-card">
                 <CardContent className="p-12">
                   <div className="text-center">
                     <Server className="h-16 w-16 text-gray-400 mx-auto mb-4" />
@@ -196,16 +196,16 @@ const Exchanges = () => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-gradient-to-br from-slate-50 to-blue-50">
+      <div className="page-layout">
         <AppSidebar />
-        <main className="flex-1 p-6 overflow-auto">
-          <div className="max-w-7xl mx-auto space-y-6">
+        <main className="main-content-scrollable">
+          <div className="content-container-large">
             {/* Header */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <SidebarTrigger />
                 <div>
-                  <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                  <h1 className="title-page">
                     Exchanges
                   </h1>
                   <p className="text-gray-500">
@@ -221,7 +221,7 @@ const Exchanges = () => {
 
             {/* Overview Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-              <Card className="border-0 shadow-md bg-white/80 backdrop-blur-sm">
+              <Card className="border-0 shadow-md bg-card">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">
                     Total Exchanges
@@ -240,7 +240,7 @@ const Exchanges = () => {
                 </CardContent>
               </Card>
 
-              <Card className="border-0 shadow-md bg-white/80 backdrop-blur-sm">
+              <Card className="border-0 shadow-md bg-card">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Direct</CardTitle>
                   <GitBranch className="h-4 w-4 text-blue-600" />
@@ -257,7 +257,7 @@ const Exchanges = () => {
                 </CardContent>
               </Card>
 
-              <Card className="border-0 shadow-md bg-white/80 backdrop-blur-sm">
+              <Card className="border-0 shadow-md bg-card">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Fanout</CardTitle>
                   <Radio className="h-4 w-4 text-green-600" />
@@ -274,7 +274,7 @@ const Exchanges = () => {
                 </CardContent>
               </Card>
 
-              <Card className="border-0 shadow-md bg-white/80 backdrop-blur-sm">
+              <Card className="border-0 shadow-md bg-card">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Topic</CardTitle>
                   <Share2 className="h-4 w-4 text-purple-600" />
@@ -291,7 +291,7 @@ const Exchanges = () => {
                 </CardContent>
               </Card>
 
-              <Card className="border-0 shadow-md bg-white/80 backdrop-blur-sm">
+              <Card className="border-0 shadow-md bg-card">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">
                     Total Bindings
@@ -312,7 +312,7 @@ const Exchanges = () => {
             </div>
 
             {/* Exchanges Table */}
-            <Card className="border-0 shadow-md bg-white/80 backdrop-blur-sm">
+            <Card className="border-0 shadow-md bg-card">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-2">

@@ -66,7 +66,7 @@ export const QueueDepthsChart = ({
           <p className="font-medium text-gray-900">
             {originalQueue?.name || label}
           </p>
-          <p className="text-blue-600">
+          <p className="text-orange-600">
             Messages: {payload[0].value.toLocaleString()}
           </p>
           {originalQueue?.vhost && originalQueue.vhost !== "/" && (
@@ -81,10 +81,10 @@ export const QueueDepthsChart = ({
   };
 
   return (
-    <Card className="border-0 shadow-md bg-white/80 backdrop-blur-sm">
+    <Card className="border-0 shadow-md bg-card-unified backdrop-blur-sm">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-xl font-semibold text-gray-800">
-          <BarChart3 className="h-5 w-5 text-purple-600" />
+          <BarChart3 className="h-5 w-5 text-orange-600" />
           Queue Depths
         </CardTitle>
         <p className="text-sm text-gray-600">
@@ -94,7 +94,7 @@ export const QueueDepthsChart = ({
       <CardContent>
         {isLoading ? (
           <div className="h-80 flex items-center justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
           </div>
         ) : queues.length === 0 ? (
           <div className="h-80 flex items-center justify-center">
@@ -133,8 +133,8 @@ export const QueueDepthsChart = ({
                 />
                 <defs>
                   <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#8b5cf6" />
-                    <stop offset="100%" stopColor="#a855f7" />
+                    <stop offset="0%" stopColor="rgb(234 88 12)" />
+                    <stop offset="100%" stopColor="rgb(220 38 38)" />
                   </linearGradient>
                 </defs>
               </BarChart>

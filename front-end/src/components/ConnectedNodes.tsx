@@ -63,7 +63,7 @@ export const ConnectedNodes = ({
   };
 
   return (
-    <Card className="border-0 shadow-md bg-white/80 backdrop-blur-sm">
+    <Card className="border-0 shadow-md bg-card-unified backdrop-blur-sm">
       <CardHeader>
         <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
           <Server className="h-5 w-5" />

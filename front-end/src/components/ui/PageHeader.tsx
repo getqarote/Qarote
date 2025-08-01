@@ -25,7 +25,7 @@ export function PageHeader({
       <div className="flex items-center gap-4">
         {showSidebarTrigger && <SidebarTrigger />}
         <div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+          <h1 className="title-page">
             {title}
           </h1>
           {subtitle && <p className="text-gray-600 mt-1">{subtitle}</p>}

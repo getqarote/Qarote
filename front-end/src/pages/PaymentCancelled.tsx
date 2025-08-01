@@ -21,7 +21,7 @@ const PaymentCancelled: React.FC = () => {
         <div className="space-y-3">
           <button
             onClick={() => navigate("/plans")}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg font-medium transition-colors flex items-center justify-center"
+            className="w-full btn-primary py-2 px-4 rounded-lg font-medium transition-colors flex items-center justify-center"
           >
             <CreditCard className="w-4 h-4 mr-2" />
             Try Again

@@ -44,9 +44,9 @@ const Index = () => {
   if (!hasServers) {
     return (
       <SidebarProvider>
-        <div className="min-h-screen flex w-full bg-gradient-to-br from-slate-50 to-blue-50">
+        <div className="page-layout">
           <AppSidebar />
-          <main className="flex-1 p-6 overflow-auto">
+          <main className="main-content-scrollable">
             <div className="flex items-center gap-4">
               <SidebarTrigger />
             </div>
@@ -63,17 +63,15 @@ const Index = () => {
   if (!selectedServerId) {
     return (
       <SidebarProvider>
-        <div className="min-h-screen flex w-full bg-gradient-to-br from-slate-50 to-blue-50">
+        <div className="page-layout">
           <AppSidebar />
-          <main className="flex-1 p-6 overflow-auto">
-            <div className="max-w-7xl mx-auto space-y-6">
+          <main className="main-content-scrollable">
+            <div className="content-container-large">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <SidebarTrigger />
                   <div>
-                    <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                      RabbitMQ Dashboard
-                    </h1>
+                    <h1 className="title-page">RabbitMQ Dashboard</h1>
                     <p className="text-gray-500">
                       Please select a RabbitMQ server to view the dashboard
                     </p>
@@ -81,7 +79,7 @@ const Index = () => {
                 </div>
                 <PlanBadge workspacePlan={workspacePlan} />
               </div>
-              <Card className="border-0 shadow-md bg-white/80 backdrop-blur-sm">
+              <Card className="border-0 shadow-md bg-card">
                 <CardContent className="p-6">
                   <div className="text-center">
                     <Server className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -104,18 +102,16 @@ const Index = () => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-gradient-to-br from-slate-50 to-blue-50">
+      <div className="page-layout">
         <AppSidebar />
-        <main className="flex-1 p-6 overflow-auto">
-          <div className="max-w-7xl mx-auto space-y-6">
+        <main className="main-content-scrollable">
+          <div className="content-container-large">
             {/* Header */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <SidebarTrigger />
                 <div>
-                  <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                    Dashboard
-                  </h1>
+                  <h1 className="title-page">Dashboard</h1>
                   <ConnectionStatus />
                 </div>
               </div>

@@ -70,7 +70,7 @@ const PaymentSuccess: React.FC = () => {
         <div className="space-y-3">
           <button
             onClick={() => navigate("/queues")}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg font-medium transition-colors flex items-center justify-center"
+            className="w-full btn-primary py-2 px-4 rounded-lg font-medium transition-colors flex items-center justify-center"
           >
             Explore Your Dashboard
             <ArrowRight className="w-4 h-4 ml-2" />

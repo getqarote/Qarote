@@ -200,7 +200,7 @@ export const CompactEmailChangeForm: React.FC<CompactEmailChangeFormProps> = ({
             type="submit"
             disabled={isLoading}
             size="sm"
-            className="w-full"
+            className="w-full btn-primary"
           >
             {isLoading ? (
               <>

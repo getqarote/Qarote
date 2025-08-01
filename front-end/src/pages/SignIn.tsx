@@ -57,17 +57,17 @@ const SignIn: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-900 via-blue-800 to-purple-800 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-900 via-orange-800 to-red-800 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <h2 className="mt-6 text-3xl font-extrabold text-white">
             Sign in to your account
           </h2>
-          <p className="mt-2 text-sm text-blue-100">
+          <p className="mt-2 text-sm text-orange-100">
             Or{" "}
             <Link
               to="/auth/sign-up"
-              className="font-medium text-blue-300 hover:text-blue-200 transition-colors"
+              className="font-medium text-orange-300 hover:text-orange-200 transition-colors"
             >
               create a new account
             </Link>

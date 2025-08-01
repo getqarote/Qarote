@@ -21,7 +21,6 @@ import {
   useUpdateProfile,
   useUpdateWorkspace,
   useWorkspaceUsers,
-  useInviteUser,
   useInvitations,
   useSendInvitation,
   useRevokeInvitation,
@@ -226,9 +225,9 @@ const Profile = () => {
   if (profileLoading) {
     return (
       <SidebarProvider>
-        <div className="min-h-screen flex w-full bg-gradient-to-br from-slate-50 to-blue-50">
+        <div className="page-layout">
           <AppSidebar />
-          <main className="flex-1 p-6 overflow-auto">
+          <main className="main-content-scrollable">
             <ProfileLoading />
           </main>
         </div>
@@ -239,9 +238,9 @@ const Profile = () => {
   if (!profile) {
     return (
       <SidebarProvider>
-        <div className="min-h-screen flex w-full bg-gradient-to-br from-slate-50 to-blue-50">
+        <div className="page-layout">
           <AppSidebar />
-          <main className="flex-1 p-6 overflow-auto">
+          <main className="main-content-scrollable">
             <div className="container mx-auto p-6">
               <Alert>
                 <AlertDescription>
@@ -257,14 +256,16 @@ const Profile = () => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-gradient-to-br from-slate-50 to-blue-50">
+      <div className="page-layout">
         <AppSidebar />
-        <main className="flex-1 p-6 overflow-auto">
+        <main className="main-content-scrollable">
           <div className="container mx-auto p-6 space-y-6">
             <div className="flex items-center gap-3">
               <SidebarTrigger />
               <User className="h-8 w-8" />
-              <h1 className="text-3xl font-bold">Profile</h1>
+              <h1 className="title-page">
+                Profile
+              </h1>
             </div>
 
             <Tabs defaultValue="personal" className="space-y-6">
