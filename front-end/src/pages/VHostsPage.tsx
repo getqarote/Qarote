@@ -188,9 +188,7 @@ export default function VHostsPage() {
               <div className="flex items-center gap-4">
                 <SidebarTrigger />
                 <div>
-                  <h1 className="title-page">
-                    Virtual Hosts
-                  </h1>
+                  <h1 className="title-page">Virtual Hosts</h1>
                   <p className="text-gray-500">
                     Manage RabbitMQ virtual hosts and namespace isolation
                   </p>
@@ -270,7 +268,7 @@ export default function VHostsPage() {
                               {vhost.name}
                             </div>
                           </TableCell>
-                          <TableCell>admin</TableCell>
+                          <TableCell>{vhost.permissionCount || 0}</TableCell>
                           <TableCell>{vhost.messages_ready || 0}</TableCell>
                           <TableCell>
                             {vhost.messages_unacknowledged || 0}

@@ -256,7 +256,7 @@ export default function VHostDetailsPage() {
                 <CardTitle className="text-lg">
                   Permissions{" "}
                   <Badge variant="secondary" className="ml-2">
-                    2
+                    {vhostData?.vhost?.permissions?.length || 0}
                   </Badge>
                 </CardTitle>
               </CardHeader>
@@ -273,30 +273,32 @@ export default function VHostDetailsPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      <TableRow>
-                        <TableCell className="font-medium">admin</TableCell>
-                        <TableCell>.*</TableCell>
-                        <TableCell>.*</TableCell>
-                        <TableCell>.*</TableCell>
-                        <TableCell>
-                          <Button variant="outline" size="sm">
-                            CLEAR
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell className="font-medium">
-                          {decodedVHostName}
-                        </TableCell>
-                        <TableCell>.*</TableCell>
-                        <TableCell>.*</TableCell>
-                        <TableCell>.*</TableCell>
-                        <TableCell>
-                          <Button variant="outline" size="sm">
-                            CLEAR
-                          </Button>
-                        </TableCell>
-                      </TableRow>
+                      {vhostData?.vhost?.permissions?.length ? (
+                        vhostData.vhost.permissions.map((permission, index) => (
+                          <TableRow key={index}>
+                            <TableCell className="font-medium">
+                              {permission.user}
+                            </TableCell>
+                            <TableCell>{permission.configure}</TableCell>
+                            <TableCell>{permission.write}</TableCell>
+                            <TableCell>{permission.read}</TableCell>
+                            <TableCell>
+                              <Button variant="outline" size="sm">
+                                CLEAR
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      ) : (
+                        <TableRow>
+                          <TableCell
+                            colSpan={5}
+                            className="text-center text-muted-foreground"
+                          >
+                            No permissions set for this virtual host
+                          </TableCell>
+                        </TableRow>
+                      )}
                     </TableBody>
                   </Table>
                 </div>
