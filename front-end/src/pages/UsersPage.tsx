@@ -9,6 +9,12 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { PageLoader } from "@/components/PageLoader";
 import { ConnectionStatus } from "@/components/ConnectionStatus";
 import { NoServerConfigured } from "@/components/NoServerConfigured";
@@ -23,6 +29,7 @@ import {
 import { useServerContext } from "@/contexts/ServerContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { apiClient } from "@/lib/api";
+import { formatTagsDisplay } from "@/lib/formatTags";
 import { RabbitMQUser } from "@/lib/api/userTypes";
 import { CreateUserModal } from "@/components/users/CreateUserModal";
 import { DeleteUserModal } from "@/components/users/DeleteUserModal";
@@ -188,316 +195,369 @@ export default function UsersPage() {
   });
 
   return (
-    <SidebarProvider>
-      <div className="page-layout">
-        <AppSidebar />
-        <main className="main-content">
-          <div className="content-container">
-            {/* Header */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <SidebarTrigger />
-                <div>
-                  <h1 className="title-page">
-                    Users
-                  </h1>
-                  <p className="text-gray-500">
-                    Manage RabbitMQ users and their access permissions
-                  </p>
+    <TooltipProvider>
+      <SidebarProvider>
+        <div className="page-layout">
+          <AppSidebar />
+          <main className="main-content">
+            <div className="content-container">
+              {/* Header */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <SidebarTrigger />
+                  <div>
+                    <h1 className="title-page">Users</h1>
+                    <p className="text-gray-500">
+                      Manage RabbitMQ users and their access permissions
+                    </p>
+                  </div>
+                  <Badge variant="secondary" className="ml-2">
+                    {users.length}
+                  </Badge>
                 </div>
-                <Badge variant="secondary" className="ml-2">
-                  {users.length}
-                </Badge>
+                <ConnectionStatus />
               </div>
-              <ConnectionStatus />
-            </div>
 
-            {/* Filter */}
-            <div className="flex items-center gap-4">
-              <Input
-                placeholder="Filter regex"
-                value={filterRegex}
-                onChange={(e) => setFilterRegex(e.target.value)}
-                className="max-w-xs"
-              />
-              <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                <span>+/-</span>
+              {/* Filter */}
+              <div className="flex items-center gap-4">
+                <Input
+                  placeholder="Filter regex"
+                  value={filterRegex}
+                  onChange={(e) => setFilterRegex(e.target.value)}
+                  className="max-w-xs"
+                />
+                <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                  <span>+/-</span>
+                </div>
               </div>
-            </div>
 
-            {/* Users Table */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Users</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="border rounded-lg">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="w-[200px]">
-                          <div className="flex items-center gap-1">
-                            Name
-                            <ChevronUp className="h-3 w-3" />
-                          </div>
-                        </TableHead>
-                        <TableHead>Tags</TableHead>
-                        <TableHead>Can access virtual hosts</TableHead>
-                        <TableHead>Has password</TableHead>
-                        <TableHead className="w-[100px]">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredUsers.map((user) => (
-                        <TableRow
-                          key={user.name}
-                          className="cursor-pointer hover:bg-muted/50"
-                          onClick={() =>
-                            navigate(`/users/${encodeURIComponent(user.name)}`)
-                          }
-                        >
-                          <TableCell className="font-medium">
-                            <div className="flex items-center gap-2">
-                              <User className="h-4 w-4" />
-                              {user.name}
-                            </div>
-                          </TableCell>
-                          <TableCell>{user.tags || "-"}</TableCell>
-                          <TableCell>-</TableCell>
-                          <TableCell>
-                            <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                          </TableCell>
-                          <TableCell>
+              {/* Users Table */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Users</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="border rounded-lg">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-[200px]">
                             <div className="flex items-center gap-1">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  navigate(
-                                    `/users/${encodeURIComponent(user.name)}`
-                                  );
-                                }}
-                                className="h-8 w-8 p-0"
-                              >
-                                <Edit className="h-3 w-3" />
-                              </Button>
-                              {user.name !== "admin" && (
+                              Name
+                              <ChevronUp className="h-3 w-3" />
+                            </div>
+                          </TableHead>
+                          <TableHead>Tags</TableHead>
+                          <TableHead>Can access virtual hosts</TableHead>
+                          <TableHead>Has password</TableHead>
+                          <TableHead className="w-[100px]">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredUsers.map((user) => (
+                          <TableRow
+                            key={user.name}
+                            className="cursor-pointer hover:bg-muted/50"
+                            onClick={() =>
+                              navigate(
+                                `/users/${encodeURIComponent(user.name)}`
+                              )
+                            }
+                          >
+                            <TableCell className="font-medium">
+                              <div className="flex items-center gap-2">
+                                <User className="h-4 w-4" />
+                                {user.name}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              {formatTagsDisplay(user.tags)}
+                            </TableCell>
+                            <TableCell>-</TableCell>
+                            <TableCell>
+                              <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-1">
                                 <Button
                                   variant="ghost"
                                   size="sm"
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    setDeleteUser(user);
+                                    navigate(
+                                      `/users/${encodeURIComponent(user.name)}`
+                                    );
                                   }}
-                                  className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+                                  className="h-8 w-8 p-0"
                                 >
-                                  <Trash2 className="h-3 w-3" />
+                                  <Edit className="h-3 w-3" />
                                 </Button>
-                              )}
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Add User Form */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Add user</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 gap-6 max-w-lg">
-                  <div>
-                    <label
-                      htmlFor="user-name"
-                      className="block text-sm font-medium mb-2"
-                    >
-                      Username
-                    </label>
-                    <Input
-                      id="user-name"
-                      value={newUserName}
-                      onChange={(e) => setNewUserName(e.target.value)}
-                      placeholder="briceth"
-                      className="w-full"
-                    />
+                                {user.name !== "admin" && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setDeleteUser(user);
+                                    }}
+                                    className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+                                  >
+                                    <Trash2 className="h-3 w-3" />
+                                  </Button>
+                                )}
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
                   </div>
+                </CardContent>
+              </Card>
 
-                  <div>
-                    <label
-                      htmlFor="user-password"
-                      className="block text-sm font-medium mb-2"
-                    >
-                      Password
-                    </label>
-                    <Input
-                      id="user-password"
-                      type="password"
-                      value={newUserPassword}
-                      onChange={(e) => setNewUserPassword(e.target.value)}
-                      placeholder="••••••"
-                      className="w-full"
-                    />
-                  </div>
+              {/* Add User Form */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Add user</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 gap-6 max-w-lg">
+                    <div>
+                      <label
+                        htmlFor="user-name"
+                        className="block text-sm font-medium mb-2"
+                      >
+                        Username
+                      </label>
+                      <Input
+                        id="user-name"
+                        value={newUserName}
+                        onChange={(e) => setNewUserName(e.target.value)}
+                        placeholder="briceth"
+                        className="w-full"
+                      />
+                    </div>
 
-                  <div>
-                    <label
-                      htmlFor="user-tags"
-                      className="block text-sm font-medium mb-2"
-                    >
-                      Tags
-                    </label>
-                    <Input
-                      id="user-tags"
-                      value={newUserTags}
-                      onChange={(e) => setNewUserTags(e.target.value)}
-                      placeholder="policymaker, monitoring, management"
-                      className="w-full"
-                    />
-                    <div className="mt-2 text-sm text-muted-foreground">
-                      <span
-                        className="font-medium cursor-pointer hover:text-foreground transition-colors"
+                    <div>
+                      <label
+                        htmlFor="user-password"
+                        className="block text-sm font-medium mb-2"
+                      >
+                        Password
+                      </label>
+                      <Input
+                        id="user-password"
+                        type="password"
+                        value={newUserPassword}
+                        onChange={(e) => setNewUserPassword(e.target.value)}
+                        placeholder="••••••"
+                        className="w-full"
+                      />
+                    </div>
+
+                    <div>
+                      <label
+                        htmlFor="user-tags"
+                        className="block text-sm font-medium mb-2"
+                      >
+                        Tags
+                      </label>
+                      <Input
+                        id="user-tags"
+                        value={newUserTags}
+                        onChange={(e) => setNewUserTags(e.target.value)}
+                        placeholder="policymaker, monitoring, management"
+                        className="w-full"
+                      />
+                      <div className="mt-2 text-sm text-muted-foreground">
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span
+                              className="font-medium cursor-pointer hover:text-foreground transition-colors"
+                              onClick={() => {
+                                const tag = "administrator";
+                                if (newUserTags.trim()) {
+                                  setNewUserTags(newUserTags + ", " + tag);
+                                } else {
+                                  setNewUserTags(tag);
+                                }
+                              }}
+                            >
+                              Administrator
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>
+                              Full management access to all RabbitMQ features
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>{" "}
+                        |{" "}
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span
+                              className="font-medium cursor-pointer hover:text-foreground transition-colors"
+                              onClick={() => {
+                                const tag = "policymaker";
+                                if (newUserTags.trim()) {
+                                  setNewUserTags(newUserTags + ", " + tag);
+                                } else {
+                                  setNewUserTags(tag);
+                                }
+                              }}
+                            >
+                              Policymaker
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>
+                              Can set policies and manage
+                              vhosts/exchanges/queues
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>{" "}
+                        |{" "}
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span
+                              className="font-medium cursor-pointer hover:text-foreground transition-colors"
+                              onClick={() => {
+                                const tag = "monitoring";
+                                if (newUserTags.trim()) {
+                                  setNewUserTags(newUserTags + ", " + tag);
+                                } else {
+                                  setNewUserTags(tag);
+                                }
+                              }}
+                            >
+                              Monitoring
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Read-only access for monitoring and metrics</p>
+                          </TooltipContent>
+                        </Tooltip>{" "}
+                        |{" "}
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span
+                              className="font-medium cursor-pointer hover:text-foreground transition-colors"
+                              onClick={() => {
+                                const tag = "management";
+                                if (newUserTags.trim()) {
+                                  setNewUserTags(newUserTags + ", " + tag);
+                                } else {
+                                  setNewUserTags(tag);
+                                }
+                              }}
+                            >
+                              Management
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Access to the management UI and HTTP API</p>
+                          </TooltipContent>
+                        </Tooltip>{" "}
+                        |{" "}
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span
+                              className="font-medium cursor-pointer hover:text-foreground transition-colors"
+                              onClick={() => {
+                                const tag = "impersonator";
+                                if (newUserTags.trim()) {
+                                  setNewUserTags(newUserTags + ", " + tag);
+                                } else {
+                                  setNewUserTags(tag);
+                                }
+                              }}
+                            >
+                              Impersonator
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Can impersonate other users for connections</p>
+                          </TooltipContent>
+                        </Tooltip>{" "}
+                        |{" "}
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span
+                              className="font-medium cursor-pointer hover:text-foreground transition-colors"
+                              onClick={() => {
+                                setNewUserTags("");
+                              }}
+                            >
+                              None
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Regular user with no special privileges</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
+                    </div>
+
+                    <div>
+                      <Button
                         onClick={() => {
-                          const tag = "administrator";
-                          if (newUserTags.trim()) {
-                            setNewUserTags(newUserTags + ", " + tag);
-                          } else {
-                            setNewUserTags(tag);
+                          if (!newUserName.trim() || !newUserPassword.trim()) {
+                            toast.error("Username and password are required");
+                            return;
                           }
+                          createUserMutation.mutate({
+                            username: newUserName.trim(),
+                            password: newUserPassword,
+                            tags: newUserTags.trim() || undefined,
+                          });
                         }}
+                        disabled={
+                          createUserMutation.isPending ||
+                          !newUserName.trim() ||
+                          !newUserPassword.trim()
+                        }
+                        className="btn-primary"
                       >
-                        Administrator
-                      </span>{" "}
-                      |{" "}
-                      <span
-                        className="font-medium cursor-pointer hover:text-foreground transition-colors"
-                        onClick={() => {
-                          const tag = "policymaker";
-                          if (newUserTags.trim()) {
-                            setNewUserTags(newUserTags + ", " + tag);
-                          } else {
-                            setNewUserTags(tag);
-                          }
-                        }}
-                      >
-                        Policymaker
-                      </span>{" "}
-                      |{" "}
-                      <span
-                        className="font-medium cursor-pointer hover:text-foreground transition-colors"
-                        onClick={() => {
-                          const tag = "monitoring";
-                          if (newUserTags.trim()) {
-                            setNewUserTags(newUserTags + ", " + tag);
-                          } else {
-                            setNewUserTags(tag);
-                          }
-                        }}
-                      >
-                        Monitoring
-                      </span>{" "}
-                      |{" "}
-                      <span
-                        className="font-medium cursor-pointer hover:text-foreground transition-colors"
-                        onClick={() => {
-                          const tag = "management";
-                          if (newUserTags.trim()) {
-                            setNewUserTags(newUserTags + ", " + tag);
-                          } else {
-                            setNewUserTags(tag);
-                          }
-                        }}
-                      >
-                        Management
-                      </span>{" "}
-                      |{" "}
-                      <span
-                        className="font-medium cursor-pointer hover:text-foreground transition-colors"
-                        onClick={() => {
-                          const tag = "impersonator";
-                          if (newUserTags.trim()) {
-                            setNewUserTags(newUserTags + ", " + tag);
-                          } else {
-                            setNewUserTags(tag);
-                          }
-                        }}
-                      >
-                        Impersonator
-                      </span>{" "}
-                      |{" "}
-                      <span
-                        className="font-medium cursor-pointer hover:text-foreground transition-colors"
-                        onClick={() => {
-                          setNewUserTags("");
-                        }}
-                      >
-                        None
-                      </span>
+                        {createUserMutation.isPending
+                          ? "Adding..."
+                          : "Add user"}
+                      </Button>
                     </div>
                   </div>
+                </CardContent>
+              </Card>
 
-                  <div>
-                    <Button
-                      onClick={() => {
-                        if (!newUserName.trim() || !newUserPassword.trim()) {
-                          toast.error("Username and password are required");
-                          return;
-                        }
-                        createUserMutation.mutate({
-                          username: newUserName.trim(),
-                          password: newUserPassword,
-                          tags: newUserTags.trim() || undefined,
-                        });
-                      }}
-                      disabled={
-                        createUserMutation.isPending ||
-                        !newUserName.trim() ||
-                        !newUserPassword.trim()
-                      }
-                      className="btn-primary"
-                    >
-                      {createUserMutation.isPending ? "Adding..." : "Add user"}
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Modals */}
-            <CreateUserModal
-              isOpen={showCreateModal}
-              onClose={() => {
-                setShowCreateModal(false);
-                setNewUserName("");
-                setNewUserPassword("");
-                setNewUserTags("");
-              }}
-              serverId={currentServerId}
-              initialName={newUserName}
-              onSuccess={() => {
-                setNewUserName("");
-                setNewUserPassword("");
-                setNewUserTags("");
-              }}
-            />
-
-            {deleteUser && (
-              <DeleteUserModal
-                isOpen={true}
-                onClose={() => setDeleteUser(null)}
-                user={deleteUser}
-                onConfirm={() => deleteUserMutation.mutate(deleteUser.name)}
-                isLoading={deleteUserMutation.isPending}
+              {/* Modals */}
+              <CreateUserModal
+                isOpen={showCreateModal}
+                onClose={() => {
+                  setShowCreateModal(false);
+                  setNewUserName("");
+                  setNewUserPassword("");
+                  setNewUserTags("");
+                }}
+                serverId={currentServerId}
+                initialName={newUserName}
+                onSuccess={() => {
+                  setNewUserName("");
+                  setNewUserPassword("");
+                  setNewUserTags("");
+                }}
               />
-            )}
-          </div>
-        </main>
-      </div>
-    </SidebarProvider>
+
+              {deleteUser && (
+                <DeleteUserModal
+                  isOpen={true}
+                  onClose={() => setDeleteUser(null)}
+                  user={deleteUser}
+                  onConfirm={() => deleteUserMutation.mutate(deleteUser.name)}
+                  isLoading={deleteUserMutation.isPending}
+                />
+              )}
+            </div>
+          </main>
+        </div>
+      </SidebarProvider>
+    </TooltipProvider>
   );
 }

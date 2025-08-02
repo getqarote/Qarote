@@ -22,6 +22,7 @@ import { ConnectionStatus } from "@/components/ConnectionStatus";
 import { useServerContext } from "@/contexts/ServerContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { apiClient } from "@/lib/api";
+import { formatTagsDisplay } from "@/lib/formatTags";
 import { DeleteUserModal } from "@/components/users/DeleteUserModal";
 import { toast } from "sonner";
 
@@ -287,7 +288,7 @@ export default function UserDetailsPage() {
                       Tags
                     </div>
                     <div className="text-lg font-medium">
-                      {userDetails.tags || "-"}
+                      {formatTagsDisplay(userDetails.tags)}
                     </div>
                   </div>
                   <div>
