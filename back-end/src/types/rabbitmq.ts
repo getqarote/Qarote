@@ -391,6 +391,15 @@ export interface RabbitMQCredentials {
 export interface QueueArguments {
   [key: string]: unknown;
   "x-max-length"?: number;
+  "x-max-priority"?: number;
+  "x-overflow"?: string;
+  "x-message-ttl"?: number;
+  "x-expires"?: number;
+  "x-max-length-bytes"?: number;
+  "x-dead-letter-exchange"?: string;
+  "x-dead-letter-routing-key"?: string;
+  "x-single-active-consumer"?: boolean;
+  "x-queue-type"?: string;
 }
 
 export interface EffectivePolicyDefinition {
@@ -408,10 +417,31 @@ export interface GarbageCollection {
 }
 
 export interface QueueMessageStats {
+  // Core message operations
+  publish?: number;
   publish_details?: RateDetail;
+  deliver?: number;
   deliver_details?: RateDetail;
+  deliver_no_ack?: number;
+  deliver_no_ack_details?: RateDetail;
+  ack?: number;
   ack_details?: RateDetail;
-  [key: string]: unknown;
+  confirm?: number;
+  confirm_details?: RateDetail;
+  get?: number;
+  get_details?: RateDetail;
+  get_no_ack?: number;
+  get_no_ack_details?: RateDetail;
+  deliver_get?: number;
+  deliver_get_details?: RateDetail;
+  redeliver?: number;
+  redeliver_details?: RateDetail;
+  reject?: number;
+  reject_details?: RateDetail;
+  return_unroutable?: number;
+  return_unroutable_details?: RateDetail;
+  drop_unroutable?: number;
+  drop_unroutable_details?: RateDetail;
 }
 
 export interface RabbitMQQueue {

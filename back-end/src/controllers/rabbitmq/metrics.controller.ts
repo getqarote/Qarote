@@ -1,11 +1,7 @@
 import { Hono } from "hono";
 import { prisma } from "@/core/prisma";
 import { logger } from "@/core/logger";
-import {
-  canUserAccessMessageHistory,
-  getMetricsRetentionDays,
-  getMaxTimeRangeForPlan,
-} from "@/services/plan/plan.service";
+import { canUserAccessMessageHistory } from "@/services/plan/plan.service";
 import { createErrorResponse } from "../shared";
 import { createRabbitMQClient } from "./shared";
 
@@ -53,9 +49,9 @@ metricsController.get("/servers/:id/metrics", async (c) => {
 /**
  * Get live message rates data for a specific server (ALL USERS)
  * Returns real-time message operation rates from RabbitMQ overview API
- * GET /servers/:id/metrics/timeseries
+ * GET /servers/:id/metrics/rates
  */
-metricsController.get("/servers/:id/metrics/timeseries", async (c) => {
+metricsController.get("/servers/:id/metrics/rates", async (c) => {
   const id = c.req.param("id");
   const user = c.get("user");
 
@@ -80,7 +76,6 @@ metricsController.get("/servers/:id/metrics/timeseries", async (c) => {
     }
 
     const plan = server.workspace.plan;
-    const allowedTimeRanges = getMaxTimeRangeForPlan(plan);
     const currentTimestamp = new Date();
 
     // Fetch live data from RabbitMQ
@@ -140,7 +135,6 @@ metricsController.get("/servers/:id/metrics/timeseries", async (c) => {
       aggregatedThroughput,
       metadata: {
         plan,
-        allowedTimeRanges,
         updateInterval: "real-time",
         dataPoints: timePoints,
       },
@@ -167,7 +161,6 @@ metricsController.get("/servers/:id/metrics/timeseries", async (c) => {
         },
         metadata: {
           plan: null,
-          allowedTimeRanges: [],
           updateInterval: "real-time",
           dataPoints: 0,
         },
@@ -182,6 +175,136 @@ metricsController.get("/servers/:id/metrics/timeseries", async (c) => {
     );
   }
 });
+
+/**
+ * Get live message rates data for a specific queue (ALL USERS)
+ * Returns real-time message operation rates from RabbitMQ queue API
+ * GET /servers/:id/queues/:queueName/metrics/rates
+ */
+metricsController.get(
+  "/servers/:id/queues/:queueName/metrics/rates",
+  async (c) => {
+    const id = c.req.param("id");
+    const queueName = c.req.param("queueName");
+    const user = c.get("user");
+
+    try {
+      // Verify the server belongs to the user's workspace
+      const server = await prisma.rabbitMQServer.findFirst({
+        where: {
+          id,
+          workspaceId: user.workspaceId,
+        },
+        include: {
+          workspace: {
+            select: {
+              plan: true,
+            },
+          },
+        },
+      });
+
+      if (!server || !server.workspace) {
+        return c.json({ error: "Server not found or access denied" }, 404);
+      }
+
+      const plan = server.workspace.plan;
+      const currentTimestamp = new Date();
+
+      // Fetch queue-specific data from RabbitMQ
+      const client = await createRabbitMQClient(id, user.workspaceId);
+
+      // Decode queue name in case it contains special characters
+      const decodedQueueName = decodeURIComponent(queueName);
+      const queue = await client.getQueue(decodedQueueName);
+
+      logger.info(
+        `Fetched live rates data for queue ${decodedQueueName} from server ${id}`
+      );
+
+      // Extract message operation rates from queue.message_stats
+      const messageStats = queue.message_stats || {};
+
+      // Create live rates data structure based on what's available in queue message_stats
+      // All these fields are now properly typed in the QueueMessageStats interface
+      const liveRates = {
+        timestamp: currentTimestamp.getTime(),
+        queueName: decodedQueueName,
+        rates: {
+          // Core message operations (available in QueueMessageStats)
+          publish: messageStats.publish_details?.rate || 0,
+          deliver: messageStats.deliver_details?.rate || 0,
+          ack: messageStats.ack_details?.rate || 0,
+
+          // Additional operations (available at queue level according to RabbitMQ API docs)
+          deliver_get: messageStats.deliver_get_details?.rate || 0,
+          confirm: messageStats.confirm_details?.rate || 0,
+          get: messageStats.get_details?.rate || 0,
+          get_no_ack: messageStats.get_no_ack_details?.rate || 0,
+          redeliver: messageStats.redeliver_details?.rate || 0,
+          reject: messageStats.reject_details?.rate || 0,
+          return_unroutable: messageStats.return_unroutable_details?.rate || 0,
+
+          // Disk operations are not available at queue level (only at server overview level)
+          disk_reads: 0,
+          disk_writes: 0,
+        },
+      };
+
+      const response = {
+        serverId: id,
+        queueName: decodedQueueName,
+        dataSource: "queue_live_rates",
+        timestamp: currentTimestamp.toISOString(),
+        liveRates,
+        metadata: {
+          plan,
+          updateInterval: "real-time",
+        },
+      };
+
+      return c.json(response);
+    } catch (error) {
+      logger.error(
+        { error, id, queueName },
+        "Error fetching live rates data for queue"
+      );
+
+      // Check if this is a 401 Unauthorized error from RabbitMQ API
+      if (error instanceof Error && error.message.includes("401")) {
+        // Return successful response with permission status instead of error
+        return c.json({
+          serverId: id,
+          queueName: decodeURIComponent(queueName),
+          dataSource: "permission_denied",
+          timestamp: new Date().toISOString(),
+          liveRates: {
+            timestamp: Date.now(),
+            queueName: decodeURIComponent(queueName),
+            rates: {},
+          },
+          permissionStatus: {
+            hasPermission: false,
+            requiredPermission: "monitor",
+            message:
+              "User does not have 'monitor' permissions to view metrics data. Please contact your RabbitMQ administrator to grant the necessary permissions.",
+          },
+          metadata: {
+            plan: null,
+            updateInterval: "real-time",
+          },
+        });
+      }
+
+      return createErrorResponse(
+        c,
+        error,
+        500,
+        "Failed to fetch live rates data for queue"
+      );
+    }
+  }
+);
 
 /**
  * Get historical data for a specific server (requires appropriate plan)

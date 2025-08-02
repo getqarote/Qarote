@@ -65,6 +65,36 @@ export function QueueConfiguration({ queue }: QueueConfigurationProps) {
             </div>
           </div>
         </div>
+
+        {/* Queue Arguments Section */}
+        {/* {queue.arguments && Object.keys(queue.arguments).length > 0 && ( */}
+        <div className="pt-4 border-t">
+          <h4 className="text-sm font-medium text-gray-900 mb-3">Arguments</h4>
+          <div className="space-y-2">
+            {Object.entries(queue.arguments)
+              .filter(([, value]) => value !== undefined && value !== null)
+              .map(([key, value]) => (
+                <div key={key} className="flex items-center justify-between">
+                  <span className="text-sm font-mono text-gray-600">
+                    {key}:
+                  </span>
+                  <Badge
+                    variant={key.startsWith("x-") ? "secondary" : "outline"}
+                    className="font-mono"
+                  >
+                    {typeof value === "boolean"
+                      ? value
+                        ? "true"
+                        : "false"
+                      : typeof value === "number"
+                        ? value.toString()
+                        : String(value)}
+                  </Badge>
+                </div>
+              ))}
+          </div>
+        </div>
+        {/* )} */}
       </CardContent>
     </Card>
   );

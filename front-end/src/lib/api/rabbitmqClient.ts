@@ -58,7 +58,17 @@ export class RabbitMQApiClient extends BaseApiClient {
 
   async getTimeSeriesMetrics(serverId: string): Promise<LiveRatesResponse> {
     return this.request<LiveRatesResponse>(
-      `/rabbitmq/servers/${serverId}/metrics/timeseries`
+      `/rabbitmq/servers/${serverId}/metrics/rates`
+    );
+  }
+
+  async getQueueLiveRates(
+    serverId: string,
+    queueName: string
+  ): Promise<LiveRatesResponse> {
+    const encodedQueueName = encodeURIComponent(queueName);
+    return this.request<LiveRatesResponse>(
+      `/rabbitmq/servers/${serverId}/queues/${encodedQueueName}/metrics/rates`
     );
   }
 

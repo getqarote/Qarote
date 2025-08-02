@@ -20,6 +20,7 @@ import {
   useQueueBindings,
   useMonthlyMessageCount,
   useDeleteQueue,
+  useQueueLiveRates,
 } from "@/hooks/useApi";
 
 // Queue Detail Components
@@ -32,6 +33,7 @@ import { ConsumerDetails } from "@/components/QueueDetail/ConsumerDetails";
 import { QueueBindings } from "@/components/QueueDetail/QueueBindings";
 import { NotFound } from "@/components/QueueDetail/NotFound";
 import { LoadingSkeleton } from "@/components/QueueDetail/LoadingSkeleton";
+import { LiveRatesChart } from "@/components/LiveRatesChart";
 
 const QueueDetail = () => {
   const { queueName } = useParams<{ queueName: string }>();
@@ -57,6 +59,9 @@ const QueueDetail = () => {
     selectedServerId,
     queueName
   );
+
+  const { data: queueLiveRatesData, isLoading: liveRatesLoading } =
+    useQueueLiveRates(selectedServerId || "", queueName || "");
 
   const deleteQueueMutation = useDeleteQueue();
 
@@ -149,6 +154,13 @@ const QueueDetail = () => {
 
                   {/* Additional Details */}
                   <QueueTiming queue={queue} />
+
+                  {/* Live Rates Chart */}
+                  <LiveRatesChart
+                    liveRates={queueLiveRatesData?.liveRates}
+                    isLoading={liveRatesLoading}
+                    error={null}
+                  />
 
                   {/* Consumer Details Section */}
                   <ConsumerDetails

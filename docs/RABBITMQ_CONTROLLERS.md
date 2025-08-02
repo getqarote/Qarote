@@ -43,7 +43,7 @@ Message handling and streaming:
 Performance metrics and monitoring:
 
 - `GET /servers/:id/metrics` - Get server metrics
-- `GET /servers/:id/metrics/timeseries` - Get timeseries metrics with historical data
+- `GET /servers/:id/metrics/rates` - Get timeseries metrics with historical data
 
 ### 📁 `infrastructure.controller.ts`
 

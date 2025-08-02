@@ -49,36 +49,20 @@ export function MessageStatistics({ queue }: MessageStatisticsProps) {
         </div>
         <div className="pt-4 border-t">
           <div className="grid grid-cols-2 gap-4">
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600">Publish Rate</span>
-              <Tooltip>
-                <TooltipTrigger>
-                  <HelpCircle className="w-4 h-4 text-gray-400 cursor-help" />
-                </TooltipTrigger>
-                <TooltipContent>
-                  <div className="text-xs">
-                    Average rate of messages published to the queue.
-                  </div>
-                </TooltipContent>
-              </Tooltip>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600">Deliver Rate</span>
-              <Tooltip>
-                <TooltipTrigger>
-                  <HelpCircle className="w-4 h-4 text-gray-400 cursor-help" />
-                </TooltipTrigger>
-                <TooltipContent>
-                  <div className="text-xs">
-                    Average rate of messages delivered to consumers.
-                  </div>
-                </TooltipContent>
-              </Tooltip>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-4 mt-2">
             <div>
-              <p className="text-sm text-gray-600">Publish Rate</p>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-sm text-gray-600">Publish Rate</span>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <HelpCircle className="w-4 h-4 text-gray-400 cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <div className="text-xs">
+                      Average rate of messages published to the queue.
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
               <p className="text-lg font-semibold">
                 {queue.message_stats?.publish_details?.rate?.toFixed(2) ||
                   "0.00"}{" "}
@@ -86,7 +70,19 @@ export function MessageStatistics({ queue }: MessageStatisticsProps) {
               </p>
             </div>
             <div>
-              <p className="text-sm text-gray-600">Deliver Rate</p>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-sm text-gray-600">Deliver Rate</span>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <HelpCircle className="w-4 h-4 text-gray-400 cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <div className="text-xs">
+                      Average rate of messages delivered to consumers.
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
               <p className="text-lg font-semibold">
                 {queue.message_stats?.deliver_details?.rate?.toFixed(2) ||
                   "0.00"}{" "}

@@ -10,6 +10,8 @@ export const queryKeys = {
   queues: (serverId: string) => ["queues", serverId] as const,
   queue: (serverId: string, queueName: string) =>
     ["queue", serverId, queueName] as const,
+  queueLiveRates: (serverId: string, queueName: string) =>
+    ["queueLiveRates", serverId, queueName] as const,
   nodes: (serverId: string) => ["nodes", serverId] as const,
   alerts: ["alerts"] as const,
   recentAlerts: ["alerts", "recent"] as const,
@@ -283,6 +285,18 @@ export const useTimeSeriesMetrics = (serverId: string) => {
     queryKey: ["liveRates", serverId],
     queryFn: () => apiClient.getTimeSeriesMetrics(serverId),
     enabled: !!serverId && isAuthenticated,
+    staleTime: 5000, // 5 seconds
+    refetchInterval: 5000, // Refresh every 5 seconds for live data
+  });
+};
+
+export const useQueueLiveRates = (serverId: string, queueName: string) => {
+  const { isAuthenticated } = useAuth();
+
+  return useQuery({
+    queryKey: queryKeys.queueLiveRates(serverId, queueName),
+    queryFn: () => apiClient.getQueueLiveRates(serverId, queueName),
+    enabled: !!serverId && !!queueName && isAuthenticated,
     staleTime: 5000, // 5 seconds
     refetchInterval: 5000, // Refresh every 5 seconds for live data
   });

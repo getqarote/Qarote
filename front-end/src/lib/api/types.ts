@@ -34,6 +34,15 @@ export interface Server {
 export interface QueueArguments {
   [key: string]: unknown;
   "x-max-length"?: number;
+  "x-max-priority"?: number;
+  "x-overflow"?: string;
+  "x-message-ttl"?: number;
+  "x-expires"?: number;
+  "x-max-length-bytes"?: number;
+  "x-dead-letter-exchange"?: string;
+  "x-dead-letter-routing-key"?: string;
+  "x-single-active-consumer"?: boolean;
+  "x-queue-type"?: string;
 }
 
 export interface EffectivePolicyDefinition {

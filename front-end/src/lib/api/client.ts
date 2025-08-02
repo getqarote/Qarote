@@ -173,8 +173,12 @@ class ApiClient {
     return this.rabbitmqClient.getQueueBindings(serverId, queueName);
   }
 
-  async getTimeSeriesMetrics(serverId: string, timeRange?: string) {
-    return this.rabbitmqClient.getTimeSeriesMetrics(serverId, timeRange);
+  async getTimeSeriesMetrics(serverId: string) {
+    return this.rabbitmqClient.getTimeSeriesMetrics(serverId);
+  }
+
+  async getQueueLiveRates(serverId: string, queueName: string) {
+    return this.rabbitmqClient.getQueueLiveRates(serverId, queueName);
   }
 
   // VHost Management (Admin Only)
