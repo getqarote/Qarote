@@ -96,7 +96,7 @@ export const CompactEmailChangeForm: React.FC<CompactEmailChangeFormProps> = ({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 flex flex-col h-full">
       {/* Current Email Status */}
       <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
         <div className="flex items-center gap-2">
@@ -148,82 +148,108 @@ export const CompactEmailChangeForm: React.FC<CompactEmailChangeFormProps> = ({
 
       {/* Email Change Form - Only show if no pending change */}
       {!hasPendingEmailChange && (
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="newEmail" className="text-sm">
-              New Email Address
-            </Label>
-            <Input
-              id="newEmail"
-              type="email"
-              value={formData.newEmail}
-              onChange={(e) =>
-                setFormData({ ...formData, newEmail: e.target.value })
-              }
-              placeholder="Enter new email address"
-              disabled={isLoading}
-              className="h-9"
-            />
-            {errors.newEmail && (
-              <p className="text-xs text-destructive">{errors.newEmail}</p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="emailPassword" className="text-sm">
-              Current Password
-            </Label>
-            <div className="relative">
-              <Input
-                id="emailPassword"
-                type={showPassword ? "text" : "password"}
-                value={formData.password}
-                onChange={(e) =>
-                  setFormData({ ...formData, password: e.target.value })
-                }
-                placeholder="Enter current password"
-                disabled={isLoading}
-                className="h-9 pr-10"
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="absolute right-0 top-0 h-9 px-3"
-                onClick={togglePasswordVisibility}
-                disabled={isLoading}
-              >
-                {showPassword ? (
-                  <EyeOff className="h-3 w-3" />
-                ) : (
-                  <Eye className="h-3 w-3" />
-                )}
-              </Button>
-            </div>
-            {errors.password && (
-              <p className="text-xs text-destructive">{errors.password}</p>
-            )}
-          </div>
-
-          <Button
-            type="submit"
-            disabled={isLoading}
-            size="sm"
-            className="w-full btn-primary"
+        <div className="flex-1 flex flex-col">
+          <form
+            onSubmit={handleSubmit}
+            className="flex flex-col h-full space-y-4"
           >
-            {isLoading ? (
-              <>
-                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-2" />
-                Requesting...
-              </>
-            ) : (
-              <>
-                <Mail className="h-3 w-3 mr-2" />
-                Request Email Change
-              </>
-            )}
-          </Button>
-        </form>
+            <div className="flex-1 space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="newEmail" className="text-sm">
+                  New Email Address
+                </Label>
+                <Input
+                  id="newEmail"
+                  type="email"
+                  value={formData.newEmail}
+                  onChange={(e) =>
+                    setFormData({ ...formData, newEmail: e.target.value })
+                  }
+                  placeholder="Enter new email address"
+                  disabled={isLoading}
+                  className="h-9"
+                />
+                {errors.newEmail && (
+                  <p className="text-xs text-destructive">{errors.newEmail}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="emailPassword" className="text-sm">
+                  Current Password
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="emailPassword"
+                    type={showPassword ? "text" : "password"}
+                    value={formData.password}
+                    onChange={(e) =>
+                      setFormData({ ...formData, password: e.target.value })
+                    }
+                    placeholder="Enter current password"
+                    disabled={isLoading}
+                    className="h-9 pr-10"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-0 top-0 h-9 px-3"
+                    onClick={togglePasswordVisibility}
+                    disabled={isLoading}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-3 w-3" />
+                    ) : (
+                      <Eye className="h-3 w-3" />
+                    )}
+                  </Button>
+                </div>
+                {errors.password && (
+                  <p className="text-xs text-destructive">{errors.password}</p>
+                )}
+              </div>
+            </div>
+
+            <Button
+              type="submit"
+              disabled={isLoading}
+              size="sm"
+              className="w-full"
+              style={{
+                background: isLoading
+                  ? "#9ca3af"
+                  : "linear-gradient(135deg, #f97316 0%, #dc2626 100%)",
+                color: "white",
+                border: "none",
+              }}
+              onMouseEnter={(e) => {
+                if (!isLoading) {
+                  e.currentTarget.style.background =
+                    "linear-gradient(135deg, #ea580c 0%, #b91c1c 100%)";
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isLoading) {
+                  e.currentTarget.style.background =
+                    "linear-gradient(135deg, #f97316 0%, #dc2626 100%)";
+                }
+              }}
+            >
+              {isLoading ? (
+                <>
+                  <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-2" />
+                  Requesting...
+                </>
+              ) : (
+                <>
+                  <Mail className="h-3 w-3 mr-2" />
+                  Request Email Change
+                </>
+              )}
+            </Button>
+          </form>
+        </div>
       )}
     </div>
   );

@@ -177,7 +177,11 @@ export function CreateVHostModal({
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={createVHostMutation.isPending}>
+              <Button
+                type="submit"
+                disabled={createVHostMutation.isPending}
+                className="btn-primary text-white"
+              >
                 {createVHostMutation.isPending ? "Creating..." : "Create"}
               </Button>
             </DialogFooter>

@@ -92,139 +92,171 @@ export const CompactPasswordChangeForm: React.FC<
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      {/* Current Password */}
-      <div className="space-y-2">
-        <Label htmlFor="currentPassword" className="text-sm">
-          Current Password
-        </Label>
-        <div className="relative">
-          <Input
-            id="currentPassword"
-            type={showPasswords.current ? "text" : "password"}
-            value={formData.currentPassword}
-            onChange={(e) =>
-              setFormData({ ...formData, currentPassword: e.target.value })
-            }
-            placeholder="Enter current password"
-            disabled={isLoading}
-            className="pr-10"
-          />
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="absolute right-0 top-0 h-full px-3"
-            onClick={() => togglePasswordVisibility("current")}
-            disabled={isLoading}
-          >
-            {showPasswords.current ? (
-              <EyeOff className="h-4 w-4" />
-            ) : (
-              <Eye className="h-4 w-4" />
+    <div className="flex flex-col h-full">
+      <form onSubmit={handleSubmit} className="flex flex-col h-full space-y-4">
+        <div className="flex-1 space-y-4">
+          {/* Current Password */}
+          <div className="space-y-2">
+            <Label htmlFor="currentPassword" className="text-sm">
+              Current Password
+            </Label>
+            <div className="relative">
+              <Input
+                id="currentPassword"
+                type={showPasswords.current ? "text" : "password"}
+                value={formData.currentPassword}
+                onChange={(e) =>
+                  setFormData({ ...formData, currentPassword: e.target.value })
+                }
+                placeholder="Enter current password"
+                disabled={isLoading}
+                className="pr-10"
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="absolute right-0 top-0 h-full px-3"
+                onClick={() => togglePasswordVisibility("current")}
+                disabled={isLoading}
+              >
+                {showPasswords.current ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
+            {errors.currentPassword && (
+              <p className="text-xs text-destructive">
+                {errors.currentPassword}
+              </p>
             )}
-          </Button>
-        </div>
-        {errors.currentPassword && (
-          <p className="text-xs text-destructive">{errors.currentPassword}</p>
-        )}
-      </div>
+          </div>
 
-      {/* New Password */}
-      <div className="space-y-2">
-        <Label htmlFor="newPassword" className="text-sm">
-          New Password
-        </Label>
-        <div className="relative">
-          <Input
-            id="newPassword"
-            type={showPasswords.new ? "text" : "password"}
-            value={formData.newPassword}
-            onChange={(e) =>
-              setFormData({ ...formData, newPassword: e.target.value })
-            }
-            placeholder="Enter new password"
-            disabled={isLoading}
-            className="pr-10"
-          />
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="absolute right-0 top-0 h-full px-3"
-            onClick={() => togglePasswordVisibility("new")}
-            disabled={isLoading}
-          >
-            {showPasswords.new ? (
-              <EyeOff className="h-4 w-4" />
-            ) : (
-              <Eye className="h-4 w-4" />
+          {/* New Password */}
+          <div className="space-y-2">
+            <Label htmlFor="newPassword" className="text-sm">
+              New Password
+            </Label>
+            <div className="relative">
+              <Input
+                id="newPassword"
+                type={showPasswords.new ? "text" : "password"}
+                value={formData.newPassword}
+                onChange={(e) =>
+                  setFormData({ ...formData, newPassword: e.target.value })
+                }
+                placeholder="Enter new password"
+                disabled={isLoading}
+                className="pr-10"
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="absolute right-0 top-0 h-full px-3"
+                onClick={() => togglePasswordVisibility("new")}
+                disabled={isLoading}
+              >
+                {showPasswords.new ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
+            {errors.newPassword && (
+              <p className="text-xs text-destructive">{errors.newPassword}</p>
             )}
-          </Button>
-        </div>
-        {errors.newPassword && (
-          <p className="text-xs text-destructive">{errors.newPassword}</p>
-        )}
-      </div>
+          </div>
 
-      {/* Confirm Password */}
-      <div className="space-y-2">
-        <Label htmlFor="confirmPassword" className="text-sm">
-          Confirm New Password
-        </Label>
-        <div className="relative">
-          <Input
-            id="confirmPassword"
-            type={showPasswords.confirm ? "text" : "password"}
-            value={formData.confirmPassword}
-            onChange={(e) =>
-              setFormData({ ...formData, confirmPassword: e.target.value })
-            }
-            placeholder="Confirm new password"
-            disabled={isLoading}
-            className="pr-10"
-          />
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="absolute right-0 top-0 h-full px-3"
-            onClick={() => togglePasswordVisibility("confirm")}
-            disabled={isLoading}
-          >
-            {showPasswords.confirm ? (
-              <EyeOff className="h-4 w-4" />
-            ) : (
-              <Eye className="h-4 w-4" />
+          {/* Confirm Password */}
+          <div className="space-y-2">
+            <Label htmlFor="confirmPassword" className="text-sm">
+              Confirm New Password
+            </Label>
+            <div className="relative">
+              <Input
+                id="confirmPassword"
+                type={showPasswords.confirm ? "text" : "password"}
+                value={formData.confirmPassword}
+                onChange={(e) =>
+                  setFormData({ ...formData, confirmPassword: e.target.value })
+                }
+                placeholder="Confirm new password"
+                disabled={isLoading}
+                className="pr-10"
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="absolute right-0 top-0 h-full px-3"
+                onClick={() => togglePasswordVisibility("confirm")}
+                disabled={isLoading}
+              >
+                {showPasswords.confirm ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
+            {errors.confirmPassword && (
+              <p className="text-xs text-destructive">
+                {errors.confirmPassword}
+              </p>
             )}
-          </Button>
+          </div>
+
+          {/* Password Requirements */}
+          <Alert className="py-2">
+            <Shield className="h-3 w-3" />
+            <AlertDescription className="text-xs">
+              Password must be at least 8 characters long and include a mix of
+              letters, numbers, and symbols.
+            </AlertDescription>
+          </Alert>
         </div>
-        {errors.confirmPassword && (
-          <p className="text-xs text-destructive">{errors.confirmPassword}</p>
-        )}
-      </div>
 
-      {/* Password Requirements */}
-      <Alert className="py-2">
-        <Shield className="h-3 w-3" />
-        <AlertDescription className="text-xs">
-          Password must be at least 8 characters long and include a mix of
-          letters, numbers, and symbols.
-        </AlertDescription>
-      </Alert>
-
-      {/* Submit Button */}
-      <Button type="submit" disabled={isLoading} className="w-full" size="sm">
-        {isLoading ? (
-          <>
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-            Changing Password...
-          </>
-        ) : (
-          "Change Password"
-        )}
-      </Button>
-    </form>
+        {/* Submit Button */}
+        <Button
+          type="submit"
+          disabled={isLoading}
+          className="w-full"
+          size="sm"
+          style={{
+            background: isLoading
+              ? "#9ca3af"
+              : "linear-gradient(135deg, #f97316 0%, #dc2626 100%)",
+            color: "white",
+            border: "none",
+          }}
+          onMouseEnter={(e) => {
+            if (!isLoading) {
+              e.currentTarget.style.background =
+                "linear-gradient(135deg, #ea580c 0%, #b91c1c 100%)";
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (!isLoading) {
+              e.currentTarget.style.background =
+                "linear-gradient(135deg, #f97316 0%, #dc2626 100%)";
+            }
+          }}
+        >
+          {isLoading ? (
+            <>
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+              Changing Password...
+            </>
+          ) : (
+            "Change Password"
+          )}
+        </Button>
+      </form>
+    </div>
   );
 };
 
