@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams, useNavigate } from "react-router-dom";
 import { AlertCircle, ArrowLeft } from "lucide-react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
@@ -34,6 +34,7 @@ export default function VHostDetailsPage() {
   const { selectedServerId } = useServerContext();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -69,6 +70,132 @@ export default function VHostDetailsPage() {
       toast.error(error.message || "Failed to delete virtual host");
     },
   });
+
+  // Fetch users for the permission form
+  const { data: usersData } = useQuery({
+    queryKey: ["users", currentServerId],
+    queryFn: () => apiClient.getUsers(currentServerId!),
+    enabled: !!currentServerId,
+  });
+
+  // Set permissions mutation
+  const setPermissionsMutation = useMutation({
+    mutationFn: () =>
+      apiClient.setVHostPermissions(
+        currentServerId!,
+        decodedVHostName,
+        selectedUser,
+        {
+          username: selectedUser,
+          configure: configureRegexp,
+          write: writeRegexp,
+          read: readRegexp,
+        }
+      ),
+    onSuccess: () => {
+      toast.success("Permissions set successfully");
+      // Refetch vhost data to update permissions list
+      queryClient.invalidateQueries({
+        queryKey: ["vhost", currentServerId, decodedVHostName],
+      });
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Failed to set permissions");
+    },
+  });
+
+  // Set limits mutation
+  const setLimitsMutation = useMutation({
+    mutationFn: async () => {
+      const promises = [];
+      if (maxConnections) {
+        promises.push(
+          apiClient.setVHostLimit(
+            currentServerId!,
+            decodedVHostName,
+            "max-connections",
+            {
+              value: parseInt(maxConnections),
+              limitType: "max-connections" as const,
+            }
+          )
+        );
+      }
+      if (maxQueues) {
+        promises.push(
+          apiClient.setVHostLimit(
+            currentServerId!,
+            decodedVHostName,
+            "max-queues",
+            {
+              value: parseInt(maxQueues),
+              limitType: "max-queues" as const,
+            }
+          )
+        );
+      }
+      await Promise.all(promises);
+    },
+    onSuccess: () => {
+      toast.success("Limits set successfully");
+      setMaxConnections("");
+      setMaxQueues("");
+      // Refetch vhost data to update limits
+      queryClient.invalidateQueries({
+        queryKey: ["vhost", currentServerId, decodedVHostName],
+      });
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Failed to set limits");
+    },
+  });
+
+  // Clear permissions mutation
+  const clearPermissionsMutation = useMutation({
+    mutationFn: (username: string) =>
+      apiClient.deleteVHostPermissions(
+        currentServerId!,
+        decodedVHostName,
+        username
+      ),
+    onSuccess: () => {
+      toast.success("Permissions cleared successfully");
+      queryClient.invalidateQueries({
+        queryKey: ["vhost", currentServerId, decodedVHostName],
+      });
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Failed to clear permissions");
+    },
+  });
+
+  // Set default user when users are loaded
+  useEffect(() => {
+    if (usersData?.users?.length && !selectedUser) {
+      setSelectedUser(usersData.users[0].name);
+    }
+  }, [usersData, selectedUser]);
+
+  // Handle form submissions
+  const handleSetPermissions = () => {
+    if (!selectedUser || !configureRegexp || !writeRegexp || !readRegexp) {
+      toast.error("Please fill in all permission fields");
+      return;
+    }
+    setPermissionsMutation.mutate();
+  };
+
+  const handleSetLimits = () => {
+    if (!maxConnections && !maxQueues) {
+      toast.error("Please set at least one limit");
+      return;
+    }
+    setLimitsMutation.mutate();
+  };
+
+  const handleClearPermissions = (username: string) => {
+    clearPermissionsMutation.mutate(username);
+  };
 
   // Redirect non-admin users
   if (user?.role !== "ADMIN") {
@@ -195,32 +322,32 @@ export default function VHostDetailsPage() {
             {/* Message stats */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Message stats</CardTitle>
+                <CardTitle className="text-lg">Virtual host stats</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-3 gap-8">
                   <div>
                     <div className="text-sm text-muted-foreground mb-1">
-                      Ready
+                      Queues
                     </div>
                     <div className="text-lg font-medium">
-                      {vhost.messages_ready || 0}
+                      {vhost.stats?.queueCount || 0}
                     </div>
                   </div>
                   <div>
                     <div className="text-sm text-muted-foreground mb-1">
-                      Unacked
+                      Exchanges
                     </div>
                     <div className="text-lg font-medium">
-                      {vhost.messages_unacknowledged || 0}
+                      {vhost.stats?.exchangeCount || 0}
                     </div>
                   </div>
                   <div>
                     <div className="text-sm text-muted-foreground mb-1">
-                      Total
+                      Total Messages
                     </div>
                     <div className="text-lg font-medium">
-                      {vhost.messages || 0}
+                      {vhost.stats?.totalMessages || 0}
                     </div>
                   </div>
                 </div>
@@ -238,13 +365,17 @@ export default function VHostDetailsPage() {
                     <div className="text-sm text-muted-foreground mb-1">
                       Max connections
                     </div>
-                    <div className="text-lg font-medium">-</div>
+                    <div className="text-lg font-medium">
+                      {vhost.limits?.[0]?.value?.["max-connections"] || "-"}
+                    </div>
                   </div>
                   <div>
                     <div className="text-sm text-muted-foreground mb-1">
                       Max queues
                     </div>
-                    <div className="text-lg font-medium">-</div>
+                    <div className="text-lg font-medium">
+                      {vhost.limits?.[0]?.value?.["max-queues"] || "-"}
+                    </div>
                   </div>
                 </div>
               </CardContent>
@@ -283,8 +414,17 @@ export default function VHostDetailsPage() {
                             <TableCell>{permission.write}</TableCell>
                             <TableCell>{permission.read}</TableCell>
                             <TableCell>
-                              <Button variant="outline" size="sm">
-                                CLEAR
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() =>
+                                  handleClearPermissions(permission.user)
+                                }
+                                disabled={clearPermissionsMutation.isPending}
+                              >
+                                {clearPermissionsMutation.isPending
+                                  ? "Clearing..."
+                                  : "CLEAR"}
                               </Button>
                             </TableCell>
                           </TableRow>
@@ -323,7 +463,11 @@ export default function VHostDetailsPage() {
                         value={selectedUser}
                         onChange={(e) => setSelectedUser(e.target.value)}
                       >
-                        <option value="admin">admin</option>
+                        {usersData?.users?.map((user) => (
+                          <option key={user.name} value={user.name}>
+                            {user.name}
+                          </option>
+                        )) || <option value="admin">admin</option>}
                       </select>
                     </div>
                     <div>
@@ -357,7 +501,15 @@ export default function VHostDetailsPage() {
                       />
                     </div>
                     <div>
-                      <Button className="btn-primary">Set permission</Button>
+                      <Button
+                        className="btn-primary"
+                        onClick={handleSetPermissions}
+                        disabled={setPermissionsMutation.isPending}
+                      >
+                        {setPermissionsMutation.isPending
+                          ? "Setting..."
+                          : "Set permission"}
+                      </Button>
                     </div>
                   </div>
                 </CardContent>
@@ -375,6 +527,8 @@ export default function VHostDetailsPage() {
                         Max connections
                       </label>
                       <Input
+                        type="number"
+                        min="0"
                         value={maxConnections}
                         onChange={(e) => setMaxConnections(e.target.value)}
                         placeholder="Leave empty for no limit"
@@ -385,13 +539,23 @@ export default function VHostDetailsPage() {
                         Max queues
                       </label>
                       <Input
+                        type="number"
+                        min="0"
                         value={maxQueues}
                         onChange={(e) => setMaxQueues(e.target.value)}
                         placeholder="Leave empty for no limit"
                       />
                     </div>
                     <div>
-                      <Button className="btn-primary">Set limits</Button>
+                      <Button
+                        className="btn-primary"
+                        onClick={handleSetLimits}
+                        disabled={setLimitsMutation.isPending}
+                      >
+                        {setLimitsMutation.isPending
+                          ? "Setting..."
+                          : "Set limits"}
+                      </Button>
                     </div>
                   </div>
                 </CardContent>

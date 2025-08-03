@@ -668,7 +668,7 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
     try {
       const encodedVHostName = encodeURIComponent(vhostName);
       logger.debug("Fetching VHost limits", { vhostName });
-      const limits = await this.request(`/vhosts/${encodedVHostName}/limits`);
+      const limits = await this.request(`/vhost-limits/${encodedVHostName}`);
       logger.debug("VHost limits fetched successfully", { vhostName });
       return limits;
     } catch (error) {
@@ -699,7 +699,7 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
         value: data.value,
       });
 
-      await this.request(`/vhosts/${encodedVHostName}/limits/${limitType}`, {
+      await this.request(`/vhost-limits/${encodedVHostName}/${limitType}`, {
         method: "PUT",
         body: JSON.stringify({ value: data.value }),
       });

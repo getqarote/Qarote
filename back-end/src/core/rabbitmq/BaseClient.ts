@@ -33,17 +33,17 @@ export class RabbitMQBaseClient {
   protected sslConfig?: SSLConfig;
 
   constructor(credentials: RabbitMQCredentials) {
-    logger.debug(
-      {
-        host: credentials.host,
-        port: credentials.port,
-        username: credentials.username,
-        vhost: credentials.vhost,
-        useHttps: credentials.useHttps,
-        sslConfig: credentials.sslConfig,
-      },
-      "Initializing RabbitMQBaseClient with credentials"
-    );
+    // logger.debug(
+    //   {
+    //     host: credentials.host,
+    //     port: credentials.port,
+    //     username: credentials.username,
+    //     vhost: credentials.vhost,
+    //     useHttps: credentials.useHttps,
+    //     sslConfig: credentials.sslConfig,
+    //   },
+    //   "Initializing RabbitMQBaseClient with credentials"
+    // );
     const protocol = credentials.useHttps ? "https" : "http";
     this.baseUrl = `${protocol}://${credentials.host}:${credentials.port}/api`;
 

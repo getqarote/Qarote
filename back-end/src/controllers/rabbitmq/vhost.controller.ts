@@ -6,37 +6,17 @@ import { logger } from "@/core/logger";
 import { createRabbitMQClient, verifyServerAccess } from "./shared";
 import { createErrorResponse } from "../shared";
 import { z } from "zod";
+import {
+  CreateVHostSchema,
+  SetLimitSchema,
+  SetPermissionSchema,
+  UpdateVHostSchema,
+} from "@/schemas/vhost";
 
 const vhostController = new Hono();
 
 // All vhost operations require ADMIN role
 vhostController.use("*", authorize([UserRole.ADMIN]));
-
-/**
- * VHost schemas for validation
- */
-const CreateVHostSchema = z.object({
-  name: z.string().min(1, "VHost name is required"),
-  description: z.string().optional(),
-  tracing: z.boolean().default(false),
-});
-
-const UpdateVHostSchema = z.object({
-  description: z.string().optional(),
-  tracing: z.boolean().optional(),
-});
-
-const SetPermissionSchema = z.object({
-  username: z.string().min(1, "Username is required"),
-  configure: z.string().default(".*"),
-  write: z.string().default(".*"),
-  read: z.string().default(".*"),
-});
-
-const SetLimitSchema = z.object({
-  value: z.number().min(0, "Limit value must be non-negative"),
-  limitType: z.enum(["max-connections", "max-queues", "max-channels"]),
-});
 
 /**
  * Get all virtual hosts for a server (ADMIN ONLY)
@@ -51,7 +31,10 @@ vhostController.get("/servers/:serverId/vhosts", async (c) => {
     await verifyServerAccess(serverId, user.workspaceId);
 
     const client = await createRabbitMQClient(serverId, user.workspaceId);
-    const vhosts = await client.getVHosts();
+    const [vhosts, allQueues] = await Promise.all([
+      client.getVHosts(),
+      client.getQueues().catch(() => []),
+    ]);
 
     // Enhance vhost data with additional details
     const enhancedVHosts = await Promise.all(
@@ -62,8 +45,26 @@ vhostController.get("/servers/:serverId/vhosts", async (c) => {
             client.getVHostLimits(vhost.name).catch(() => ({})),
           ]);
 
+          // Calculate message stats by aggregating queue data for this vhost
+          const vhostQueues = allQueues.filter((q) => q.vhost === vhost.name);
+          const messageStats = vhostQueues.reduce(
+            (acc, queue) => ({
+              messages: acc.messages + (queue.messages || 0),
+              messages_ready: acc.messages_ready + (queue.messages_ready || 0),
+              messages_unacknowledged:
+                acc.messages_unacknowledged +
+                (queue.messages_unacknowledged || 0),
+            }),
+            { messages: 0, messages_ready: 0, messages_unacknowledged: 0 }
+          );
+
           return {
             ...vhost,
+            messages: vhost.messages ?? messageStats.messages,
+            messages_ready: vhost.messages_ready ?? messageStats.messages_ready,
+            messages_unacknowledged:
+              vhost.messages_unacknowledged ??
+              messageStats.messages_unacknowledged,
             permissions: permissions || [],
             limits: limits || {},
             permissionCount: (permissions || []).length,
@@ -73,6 +74,9 @@ vhostController.get("/servers/:serverId/vhosts", async (c) => {
           logger.warn(`Failed to get details for vhost ${vhost.name}:`, error);
           return {
             ...vhost,
+            messages: vhost.messages || 0,
+            messages_ready: vhost.messages_ready || 0,
+            messages_unacknowledged: vhost.messages_unacknowledged || 0,
             permissions: [],
             limits: {},
             permissionCount: 0,
@@ -107,28 +111,33 @@ vhostController.get("/servers/:serverId/vhosts/:vhostName", async (c) => {
 
     const client = await createRabbitMQClient(serverId, user.workspaceId);
 
-    const [vhost, permissions, limits, queues, exchanges, connections] =
-      await Promise.all([
-        client.getVHost(vhostName),
-        client.getVHostPermissions(vhostName).catch(() => []),
-        client.getVHostLimits(vhostName).catch(() => ({})),
-        client.getQueues().catch(() => []),
-        client.getExchanges().catch(() => []),
-        client.getConnections().catch(() => []),
-      ]);
+    const [
+      vhost,
+      permissions,
+      limits,
+      allQueues,
+      allExchanges,
+      allConnections,
+    ] = await Promise.all([
+      client.getVHost(vhostName),
+      client.getVHostPermissions(vhostName).catch(() => []),
+      client.getVHostLimits(vhostName).catch(() => ({})),
+      client.getQueues().catch(() => []),
+      client.getExchanges().catch(() => []),
+      client.getConnections().catch(() => []),
+    ]);
+
+    // Filter by vhost
+    const queues = allQueues.filter((q) => q.vhost === vhostName);
+    const exchanges = allExchanges.filter((e) => e.vhost === vhostName);
+    const connections = allConnections.filter((c) => c.vhost === vhostName);
 
     const stats = {
       queueCount: queues.length,
       exchangeCount: exchanges.length,
       connectionCount: connections.length,
-      totalMessages: queues.reduce(
-        (sum: number, q: any) => sum + (q.messages || 0),
-        0
-      ),
-      totalConsumers: queues.reduce(
-        (sum: number, q: any) => sum + (q.consumers || 0),
-        0
-      ),
+      totalMessages: queues.reduce((sum, q) => sum + (q.messages || 0), 0),
+      totalConsumers: queues.reduce((sum, q) => sum + (q.consumers || 0), 0),
     };
 
     return c.json({
@@ -138,9 +147,6 @@ vhostController.get("/servers/:serverId/vhosts/:vhostName", async (c) => {
         permissions: permissions || [],
         limits: limits || {},
         stats,
-        queues: queues.slice(0, 10), // Limit for performance
-        exchanges: exchanges.slice(0, 10),
-        connections: connections.slice(0, 10),
       },
     });
   } catch (error) {
