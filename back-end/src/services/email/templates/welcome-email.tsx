@@ -250,7 +250,7 @@ const buttonSection = {
 };
 
 const button = {
-  backgroundColor: "#3b82f6",
+  background: "linear-gradient(to right, rgb(234, 88, 12), rgb(220, 38, 38))",
   borderRadius: "6px",
   color: "#ffffff",
   fontSize: "16px",

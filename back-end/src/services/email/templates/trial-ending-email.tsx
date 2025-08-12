@@ -294,7 +294,7 @@ const buttonSection = {
 };
 
 const button = {
-  backgroundColor: "#dc2626",
+  background: "linear-gradient(to right, rgb(234, 88, 12), rgb(220, 38, 38))",
   borderRadius: "6px",
   color: "#ffffff",
   fontSize: "16px",

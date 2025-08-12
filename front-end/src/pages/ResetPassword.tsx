@@ -146,7 +146,7 @@ export const ResetPassword: React.FC = () => {
           <CardContent>
             <Button
               onClick={() => navigate("/auth/sign-in")}
-              className="w-full"
+              className="w-full bg-gradient-button hover:bg-gradient-button-hover"
             >
               Continue to Sign In
             </Button>
@@ -288,7 +288,7 @@ export const ResetPassword: React.FC = () => {
             {/* Submit Button */}
             <Button
               type="submit"
-              className="w-full"
+              className="w-full bg-gradient-button hover:bg-gradient-button-hover"
               disabled={resetPasswordMutation.isPending}
             >
               {resetPasswordMutation.isPending ? (

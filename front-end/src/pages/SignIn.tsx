@@ -165,7 +165,7 @@ const SignIn: React.FC = () => {
 
                 <Button
                   type="submit"
-                  className="w-full"
+                  className="w-full bg-gradient-button hover:bg-gradient-button-hover"
                   disabled={loginMutation.isPending || !form.formState.isValid}
                 >
                   {loginMutation.isPending ? "Signing in..." : "Sign in"}

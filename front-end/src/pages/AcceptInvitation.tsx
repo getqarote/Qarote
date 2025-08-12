@@ -152,7 +152,7 @@ const AcceptInvitation = () => {
           <CardContent>
             <Button
               onClick={() => navigate("/auth/sign-in")}
-              className="w-full"
+              className="w-full bg-gradient-button hover:bg-gradient-button-hover"
             >
               Go to Sign In
             </Button>
@@ -299,7 +299,7 @@ const AcceptInvitation = () => {
 
               <Button
                 type="submit"
-                className="w-full"
+                className="w-full bg-gradient-button hover:bg-gradient-button-hover"
                 disabled={
                   acceptInvitationMutation.isPending || !form.formState.isValid
                 }
