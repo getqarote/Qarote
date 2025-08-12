@@ -27,7 +27,7 @@ const UserDetails = lazy(() => import("./pages/UserDetailsPage"));
 // const Channels = lazy(() => import("./pages/Channels"));
 // const Routing = lazy(() => import("./pages/Routing"));
 // const Logs = lazy(() => import("./pages/Logs"));
-const Alerts = lazy(() => import("./pages/Alerts"));
+// const Alerts = lazy(() => import("./pages/Alerts"));
 const Profile = lazy(() => import("./pages/Profile"));
 const Plans = lazy(() => import("./pages/Plans"));
 const Billing = lazy(() => import("./pages/Billing"));
@@ -237,7 +237,7 @@ const AppCore = () => (
                       </ProtectedRoute>
                     }
                   /> */}
-                  <Route
+                  {/* <Route
                     path="/alerts"
                     element={
                       <ProtectedRoute>
@@ -246,7 +246,7 @@ const AppCore = () => (
                         </Layout>
                       </ProtectedRoute>
                     }
-                  />
+                  /> */}
                   <Route
                     path="/profile"
                     element={

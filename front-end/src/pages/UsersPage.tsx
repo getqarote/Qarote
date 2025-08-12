@@ -1,7 +1,14 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams, useNavigate } from "react-router-dom";
-import { User, AlertCircle, Trash2, Edit, ChevronUp } from "lucide-react";
+import {
+  User,
+  AlertCircle,
+  Trash2,
+  Edit,
+  ChevronUp,
+  Server,
+} from "lucide-react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Button } from "@/components/ui/button";
@@ -9,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PlanBadge } from "@/components/ui/PlanBadge";
 import {
   Tooltip,
   TooltipContent,
@@ -27,6 +35,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useServerContext } from "@/contexts/ServerContext";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { apiClient } from "@/lib/api";
 import { formatTagsDisplay, formatVhostsDisplay } from "@/lib/formatTags";
@@ -38,6 +47,7 @@ import { toast } from "sonner";
 export default function UsersPage() {
   const { serverId } = useParams<{ serverId: string }>();
   const { selectedServerId, hasServers } = useServerContext();
+  const { workspacePlan } = useWorkspace();
   const { user } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -117,10 +127,13 @@ export default function UsersPage() {
   if (user?.role !== "ADMIN") {
     return (
       <SidebarProvider>
-        <div className="flex min-h-screen w-full">
+        <div className="page-layout">
           <AppSidebar />
-          <main className="main-content">
-            <div className="container mx-auto">
+          <main className="main-content-scrollable">
+            <div className="content-container-large">
+              <div className="flex items-center gap-4">
+                <SidebarTrigger />
+              </div>
               <Alert>
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
@@ -139,12 +152,15 @@ export default function UsersPage() {
   if (!hasServers) {
     return (
       <SidebarProvider>
-        <div className="flex min-h-screen w-full">
+        <div className="page-layout">
           <AppSidebar />
-          <main className="flex-1">
+          <main className="main-content-scrollable">
+            <div className="flex items-center gap-4">
+              <SidebarTrigger />
+            </div>
             <NoServerConfigured
-              title="No Server Selected"
-              description="Please configure and select a RabbitMQ server to manage users."
+              title="Users"
+              description="Add a RabbitMQ server connection to manage users and their access permissions."
             />
           </main>
         </div>
@@ -155,16 +171,32 @@ export default function UsersPage() {
   if (!currentServerId) {
     return (
       <SidebarProvider>
-        <div className="flex min-h-screen w-full">
+        <div className="page-layout">
           <AppSidebar />
-          <main className="main-content">
-            <div className="container mx-auto">
-              <Alert>
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                  Please select a server to view users.
-                </AlertDescription>
-              </Alert>
+          <main className="main-content-scrollable">
+            <div className="content-container-large">
+              <div className="flex items-center gap-4">
+                <SidebarTrigger />
+                <div>
+                  <h1 className="title-page">Users</h1>
+                  <p className="text-gray-500">
+                    Manage RabbitMQ users and their access permissions
+                  </p>
+                </div>
+              </div>
+              <Card className="border-0 shadow-md bg-card">
+                <CardContent className="p-12">
+                  <div className="text-center">
+                    <Server className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                    <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+                      No Server Selected
+                    </h2>
+                    <p className="text-gray-600">
+                      Please select a RabbitMQ server to manage users.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </main>
         </div>
@@ -175,9 +207,12 @@ export default function UsersPage() {
   if (isLoading) {
     return (
       <SidebarProvider>
-        <div className="flex min-h-screen w-full">
+        <div className="page-layout">
           <AppSidebar />
-          <main className="flex-1">
+          <main className="main-content-scrollable">
+            <div className="flex items-center gap-4">
+              <SidebarTrigger />
+            </div>
             <PageLoader />
           </main>
         </div>
@@ -188,10 +223,13 @@ export default function UsersPage() {
   if (error) {
     return (
       <SidebarProvider>
-        <div className="flex min-h-screen w-full">
+        <div className="page-layout">
           <AppSidebar />
-          <main className="main-content">
-            <div className="container mx-auto">
+          <main className="main-content-scrollable">
+            <div className="content-container-large">
+              <div className="flex items-center gap-4">
+                <SidebarTrigger />
+              </div>
               <Alert>
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
@@ -223,8 +261,8 @@ export default function UsersPage() {
       <SidebarProvider>
         <div className="page-layout">
           <AppSidebar />
-          <main className="main-content">
-            <div className="content-container">
+          <main className="main-content-scrollable">
+            <div className="content-container-large">
               {/* Header */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
@@ -239,7 +277,10 @@ export default function UsersPage() {
                     {users.length}
                   </Badge>
                 </div>
-                <ConnectionStatus />
+                <div className="flex items-center gap-3">
+                  <PlanBadge workspacePlan={workspacePlan} />
+                  <ConnectionStatus />
+                </div>
               </div>
 
               {/* Filter */}
@@ -256,7 +297,7 @@ export default function UsersPage() {
               </div>
 
               {/* Users Table */}
-              <Card>
+              <Card className="border-0 shadow-md bg-card">
                 <CardHeader>
                   <CardTitle className="text-lg">Users</CardTitle>
                 </CardHeader>
@@ -342,7 +383,7 @@ export default function UsersPage() {
               </Card>
 
               {/* Add User Form */}
-              <Card>
+              <Card className="border-0 shadow-md bg-card">
                 <CardHeader>
                   <CardTitle className="text-lg">Add user</CardTitle>
                 </CardHeader>
