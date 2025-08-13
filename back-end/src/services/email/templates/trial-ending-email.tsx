@@ -48,7 +48,7 @@ export const TrialEndingEmail = ({
           {/* Header */}
           <Section style={header}>
             <Img
-              src={`${frontendUrl}/icon_rabbit.png`}
+              src={`${frontendUrl}/icon_rabbit.svg`}
               width="50"
               height="50"
               alt="RabbitHQ"

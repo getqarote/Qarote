@@ -5,8 +5,6 @@ import { useAuth } from "../../contexts/AuthContext";
 import { Navigation } from "@/components/ui/navigation";
 import { Button } from "@/components/ui/button";
 
-const drawerWidth = 240;
-
 const AdminLayout: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
