@@ -1,75 +1,148 @@
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   AlertTriangle,
-  Clock,
-  CheckCircle,
-  Server,
+  XCircle,
+  Info,
+  Activity,
   ArrowRight,
+  Clock,
 } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import { apiClient, AlertSeverity } from "@/lib/api";
-import { formatDistanceToNow } from "date-fns";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { useServerContext } from "@/contexts/ServerContext";
+import { apiClient } from "@/lib/api";
+import { AlertSeverity, AlertCategory, AlertThresholds } from "@/types/alerts";
+
+type BadgeVariant = "default" | "secondary" | "destructive" | "outline";
 
 export const RecentAlerts = () => {
-  const { data: alertsResponse, isLoading } = useQuery({
-    queryKey: ["alerts", "recent"],
+  const navigate = useNavigate();
+  const { selectedServerId } = useServerContext();
+
+  // Default thresholds for query
+  const defaultThresholds: AlertThresholds = {
+    memory: { warning: 80, critical: 95 },
+    disk: { warning: 15, critical: 10 },
+    fileDescriptors: { warning: 80, critical: 90 },
+    queueMessages: { warning: 10000, critical: 50000 },
+    connections: { warning: 500, critical: 1000 },
+  };
+
+  // Query for recent alerts with limit of 3
+  const {
+    data: alertsData,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["recentAlerts", selectedServerId],
     queryFn: () =>
-      apiClient.getAlerts({
-        limit: 3, // Only get 3 recent alerts
-        status: ["ACTIVE", "ACKNOWLEDGED"],
+      apiClient.getRabbitMQAlerts(selectedServerId!, defaultThresholds, {
+        limit: 3, // Only fetch 3 most recent alerts
+        resolved: false, // Only get active alerts
       }),
-    staleTime: 10000, // 10 seconds
-    refetchInterval: 30000, // Refetch every 30 seconds
+    enabled: !!selectedServerId,
+    refetchInterval: 30000, // Refresh every 30 seconds
   });
 
-  const alerts = alertsResponse?.alerts || [];
-
-  const getAlertIcon = (severity: AlertSeverity) => {
+  // Get severity icon
+  const getSeverityIcon = (severity: AlertSeverity) => {
     switch (severity) {
-      case "CRITICAL":
-        return <AlertTriangle className="w-4 h-4 text-red-600" />;
-      case "HIGH":
-        return <AlertTriangle className="w-4 h-4 text-orange-600" />;
-      case "MEDIUM":
-        return <AlertTriangle className="w-4 h-4 text-yellow-600" />;
-      case "LOW":
-        return <Server className="w-4 h-4 text-blue-600" />;
+      case AlertSeverity.CRITICAL:
+        return <XCircle className="h-4 w-4 text-red-500" />;
+      case AlertSeverity.WARNING:
+        return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
+      case AlertSeverity.INFO:
+        return <Info className="h-4 w-4 text-blue-500" />;
       default:
-        return <AlertTriangle className="w-4 h-4 text-gray-600" />;
+        return <Activity className="h-4 w-4" />;
     }
   };
 
-  const getAlertBadge = (severity: AlertSeverity) => {
+  // Get severity badge variant
+  const getSeverityBadgeVariant = (severity: AlertSeverity): BadgeVariant => {
     switch (severity) {
-      case "CRITICAL":
-        return <Badge className="bg-red-100 text-red-700">Critical</Badge>;
-      case "HIGH":
-        return <Badge className="bg-orange-100 text-orange-700">High</Badge>;
-      case "MEDIUM":
-        return <Badge className="bg-yellow-100 text-yellow-700">Medium</Badge>;
-      case "LOW":
-        return <Badge className="bg-blue-100 text-blue-700">Low</Badge>;
+      case AlertSeverity.CRITICAL:
+        return "destructive";
+      case AlertSeverity.WARNING:
+        return "default";
+      case AlertSeverity.INFO:
+        return "secondary";
       default:
-        return <Badge className="bg-gray-100 text-gray-700">Unknown</Badge>;
+        return "outline";
     }
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "ACTIVE":
-        return <AlertTriangle className="w-3 h-3 text-red-500" />;
-      case "ACKNOWLEDGED":
-        return <Clock className="w-3 h-3 text-yellow-500" />;
-      case "RESOLVED":
-        return <CheckCircle className="w-3 h-3 text-green-500" />;
-      default:
-        return <AlertTriangle className="w-3 h-3 text-gray-500" />;
+  // Format timestamp to relative time
+  const formatRelativeTime = (timestamp: string) => {
+    try {
+      const date = new Date(timestamp);
+      const now = new Date();
+      const diffMs = now.getTime() - date.getTime();
+      const diffMins = Math.floor(diffMs / (1000 * 60));
+      const diffHours = Math.floor(diffMins / 60);
+      const diffDays = Math.floor(diffHours / 24);
+
+      if (diffMins < 1) return "Just now";
+      if (diffMins < 60) return `${diffMins}m ago`;
+      if (diffHours < 24) return `${diffHours}h ago`;
+      return `${diffDays}d ago`;
+    } catch {
+      return "Unknown";
     }
   };
+
+  // Get category icon
+  const getCategoryIcon = (category: AlertCategory) => {
+    switch (category) {
+      case AlertCategory.MEMORY:
+        return <Activity className="h-3 w-3" />;
+      case AlertCategory.DISK:
+        return <Activity className="h-3 w-3" />;
+      case AlertCategory.QUEUE:
+        return <Clock className="h-3 w-3" />;
+      default:
+        return <Activity className="h-3 w-3" />;
+    }
+  };
+
+  const alerts = alertsData?.alerts || [];
+  // Already limited to 3 by the API call, but sort by timestamp to ensure newest first
+  const recentAlerts = alerts.sort(
+    (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+  );
+
+  const criticalCount = alerts.filter(
+    (alert) => alert.severity === AlertSeverity.CRITICAL
+  ).length;
+  const warningCount = alerts.filter(
+    (alert) => alert.severity === AlertSeverity.WARNING
+  ).length;
+
+  if (error) {
+    return (
+      <Card className="border-0 shadow-md bg-card-unified backdrop-blur-sm">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-orange-500" />
+              Recent Alerts
+              <Badge variant="outline">Error</Badge>
+            </CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-4">
+            <AlertTriangle className="h-8 w-8 mx-auto text-orange-500 mb-2" />
+            <p className="text-sm text-muted-foreground">
+              Failed to load alerts data
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="border-0 shadow-md bg-card-unified backdrop-blur-sm">
@@ -79,90 +152,48 @@ export const RecentAlerts = () => {
             <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
               <AlertTriangle className="w-5 h-5 text-yellow-600" />
               Recent Alerts
-              <Badge
-                variant="secondary"
-                className="ml-2 text-xs bg-orange-100 text-orange-700 border-orange-200"
-              >
-                Soon
-              </Badge>
+              {isLoading ? (
+                <Badge variant="outline">Loading...</Badge>
+              ) : (
+                <Badge
+                  variant={alerts.length > 0 ? "destructive" : "secondary"}
+                >
+                  {alerts.length}
+                </Badge>
+              )}
             </CardTitle>
             <p className="text-sm text-gray-500">Latest system notifications</p>
           </div>
-          <Link to="/alerts">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-blue-600 hover:text-blue-800"
-            >
-              View All
-              <ArrowRight className="w-4 h-4 ml-1" />
-            </Button>
-          </Link>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate("/alerts")}
+            className="text-blue-600 hover:text-blue-700"
+          >
+            View All
+            <ArrowRight className="h-4 w-4 ml-1" />
+          </Button>
         </div>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent>
         {isLoading ? (
           <div className="space-y-3">
-            {Array.from({ length: 4 }).map((_, i) => (
+            {Array.from({ length: 3 }).map((_, i) => (
               <div
                 key={i}
-                className="p-3 bg-gray-50 rounded-lg border border-gray-100"
+                className="flex items-center gap-3 p-3 border rounded-lg animate-pulse"
               >
-                <div className="flex items-start gap-3">
-                  <Skeleton className="h-4 w-4 rounded" />
-                  <div className="flex-1 space-y-2">
-                    <Skeleton className="h-4 w-3/4" />
-                    <div className="flex items-center justify-between">
-                      <Skeleton className="h-3 w-20" />
-                      <Skeleton className="h-5 w-16" />
-                    </div>
-                    <Skeleton className="h-3 w-24" />
-                  </div>
+                <div className="h-4 w-4 bg-gray-300 rounded"></div>
+                <div className="flex-1">
+                  <div className="h-4 bg-gray-300 rounded mb-1"></div>
+                  <div className="h-3 bg-gray-200 rounded w-3/4"></div>
                 </div>
+                <div className="h-3 bg-gray-200 rounded w-12"></div>
               </div>
             ))}
           </div>
-        ) : alerts.length > 0 ? (
-          alerts.map((alert) => (
-            <div
-              key={alert.id}
-              className="p-3 bg-gradient-to-r from-gray-50 to-white rounded-lg border border-gray-100 hover:shadow-sm transition-all duration-200"
-            >
-              <div className="flex items-start gap-3">
-                {getAlertIcon(alert.severity)}
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 mb-1">
-                    {alert.title}
-                  </p>
-                  <p className="text-xs text-gray-600 mb-2">
-                    {alert.description}
-                  </p>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-xs text-gray-500">
-                      <Clock className="w-3 h-3" />
-                      {formatDistanceToNow(new Date(alert.createdAt), {
-                        addSuffix: true,
-                      })}
-                    </div>
-                    {getAlertBadge(alert.severity)}
-                  </div>
-                  <div className="flex items-center gap-2 text-xs text-gray-400 mt-1">
-                    {getStatusIcon(alert.status)}
-                    <span>Status: {alert.status}</span>
-                    {alert.alertRule?.server && (
-                      <>
-                        <span>•</span>
-                        <Server className="w-3 h-3" />
-                        <span>{alert.alertRule.server.name}</span>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))
-        ) : (
-          <div className="flex flex-col items-center justify-center py-24 px-4">
+        ) : recentAlerts.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 px-4">
             <AlertTriangle className="h-12 w-12 text-gray-300 mb-3" />
             <p className="text-sm text-gray-500 font-medium">
               No recent alerts
@@ -170,6 +201,90 @@ export const RecentAlerts = () => {
             <p className="text-xs text-gray-400 mt-1">
               All systems are running normally
             </p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {/* Alert Summary */}
+            {(criticalCount > 0 || warningCount > 0) && (
+              <div className="flex items-center gap-2 p-3 bg-orange-50 border border-orange-200 rounded-lg mb-3">
+                <AlertTriangle className="h-4 w-4 text-orange-500" />
+                <div className="text-sm">
+                  <span className="font-medium">
+                    {criticalCount > 0 && (
+                      <span className="text-red-600">
+                        {criticalCount} critical
+                      </span>
+                    )}
+                    {criticalCount > 0 && warningCount > 0 && (
+                      <span className="text-gray-500">, </span>
+                    )}
+                    {warningCount > 0 && (
+                      <span className="text-yellow-600">
+                        {warningCount} warning
+                      </span>
+                    )}
+                  </span>
+                  <span className="text-gray-600"> alerts active</span>
+                </div>
+              </div>
+            )}
+
+            {/* Recent Alerts List - Limited to 3 */}
+            {recentAlerts.map((alert) => (
+              <div
+                key={alert.id}
+                className="flex items-start gap-3 p-3 border rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
+                onClick={() =>
+                  navigate(
+                    `/alerts${selectedServerId ? `/${selectedServerId}` : ""}`
+                  )
+                }
+              >
+                <div className="flex-shrink-0 mt-0.5">
+                  {getSeverityIcon(alert.severity)}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <p className="font-medium text-sm truncate">
+                      {alert.title}
+                    </p>
+                    <Badge
+                      variant={getSeverityBadgeVariant(alert.severity)}
+                      className="text-xs"
+                    >
+                      {alert.severity}
+                    </Badge>
+                    {alert.category && (
+                      <Badge
+                        variant="outline"
+                        className="text-xs flex items-center gap-1"
+                      >
+                        {getCategoryIcon(alert.category)}
+                        {alert.category}
+                      </Badge>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {alert.description}
+                  </p>
+                  {alert.details && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Current: {alert.details.current}
+                    </p>
+                  )}
+                </div>
+                <div className="flex-shrink-0 text-right">
+                  <div className="text-xs text-muted-foreground">
+                    {formatRelativeTime(alert.timestamp)}
+                  </div>
+                  {alert.source && (
+                    <div className="text-xs text-muted-foreground mt-1">
+                      {alert.source.name}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </CardContent>

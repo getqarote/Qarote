@@ -22,6 +22,7 @@ alertsController.get(
   zValidator("query", AlertsQuerySchema),
   async (c) => {
     const { id } = c.req.valid("param");
+    const query = c.req.valid("query");
     const user = c.get("user");
 
     try {
@@ -38,9 +39,49 @@ alertsController.get(
         user.workspaceId
       );
 
+      // Apply filtering and pagination
+      let filteredAlerts = alerts;
+
+      // Filter by severity
+      if (query.severity) {
+        filteredAlerts = filteredAlerts.filter(
+          (alert) => alert.severity === query.severity
+        );
+      }
+
+      // Filter by category
+      if (query.category) {
+        filteredAlerts = filteredAlerts.filter(
+          (alert) => alert.category === query.category
+        );
+      }
+
+      // Filter by resolved status
+      if (query.resolved !== undefined) {
+        const isResolved = query.resolved === "true";
+        filteredAlerts = filteredAlerts.filter(
+          (alert) => alert.resolved === isResolved
+        );
+      }
+
+      // Sort by timestamp (newest first)
+      filteredAlerts.sort(
+        (a, b) =>
+          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      );
+
+      // Apply pagination
+      const offset = query.offset || 0;
+      const limit = query.limit;
+
+      let paginatedAlerts = filteredAlerts;
+      if (limit !== undefined) {
+        paginatedAlerts = filteredAlerts.slice(offset, offset + limit);
+      }
+
       return c.json({
         success: true,
-        alerts,
+        alerts: paginatedAlerts,
         summary,
         thresholds,
         timestamp: new Date().toISOString(),
@@ -48,35 +89,6 @@ alertsController.get(
     } catch (error: any) {
       logger.error("Error getting alerts:", error);
       return createErrorResponse(c, error, 500, "Failed to get alerts");
-    }
-  }
-);
-
-/**
- * Get cluster-wide alerts summary
- * GET /servers/:id/alerts/summary
- */
-alertsController.get(
-  "/servers/:id/alerts/summary",
-  zValidator("param", ServerParamSchema),
-  async (c) => {
-    const { id } = c.req.valid("param");
-    const user = c.get("user");
-
-    try {
-      await verifyServerAccess(id, user.workspaceId);
-      const clusterHealth = await alertService.getClusterHealthSummary(
-        id,
-        user.workspaceId
-      );
-
-      return c.json({
-        success: true,
-        ...clusterHealth,
-      });
-    } catch (error: any) {
-      logger.error("Error getting alerts summary:", error);
-      return createErrorResponse(c, error, 500, "Failed to get alerts summary");
     }
   }
 );
@@ -111,7 +123,7 @@ alertsController.get(
 );
 
 /**
- * Get alert thresholds for the workspace
+ * Get alert thresholds for the workspace (used for alerts form)
  * GET /thresholds
  */
 alertsController.get("/thresholds", async (c) => {
@@ -136,7 +148,7 @@ alertsController.get("/thresholds", async (c) => {
 });
 
 /**
- * Update alert thresholds for the workspace
+ * Update alert thresholds for the workspace (used by alerts form)
  * PUT /thresholds
  */
 alertsController.put(

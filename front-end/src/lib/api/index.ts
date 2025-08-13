@@ -12,7 +12,7 @@ export type * from "./rabbitmqTypes";
 export type * from "./exchangeTypes";
 export type * from "./messageTypes";
 export type * from "./authTypes";
-export type * from "./alertTypes";
+// export type * from "./alertTypes";
 export type * from "./logTypes";
 export type * from "./vhostTypes";
 

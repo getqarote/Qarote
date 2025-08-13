@@ -621,19 +621,46 @@ export class RabbitMQApiClient extends BaseApiClient {
   // Alert Management
   async getServerAlerts(
     serverId: string,
-    thresholds?: AlertThresholds
+    thresholds?: AlertThresholds,
+    options?: {
+      limit?: number;
+      offset?: number;
+      severity?: string;
+      category?: string;
+      resolved?: boolean;
+    }
   ): Promise<AlertsResponse> {
-    let queryString = "";
+    const params = new URLSearchParams();
+
+    // Add threshold parameters
     if (thresholds) {
-      const params = new URLSearchParams();
       Object.entries(thresholds).forEach(([key, value]) => {
         if (value !== undefined) {
           params.append(key, String(value));
         }
       });
-      queryString = params.toString();
     }
 
+    // Add query options
+    if (options) {
+      if (options.limit !== undefined) {
+        params.append("limit", options.limit.toString());
+      }
+      if (options.offset !== undefined) {
+        params.append("offset", options.offset.toString());
+      }
+      if (options.severity) {
+        params.append("severity", options.severity);
+      }
+      if (options.category) {
+        params.append("category", options.category);
+      }
+      if (options.resolved !== undefined) {
+        params.append("resolved", options.resolved.toString());
+      }
+    }
+
+    const queryString = params.toString();
     const url = `/rabbitmq/servers/${serverId}/alerts${queryString ? `?${queryString}` : ""}`;
     return this.request<AlertsResponse>(url);
   }

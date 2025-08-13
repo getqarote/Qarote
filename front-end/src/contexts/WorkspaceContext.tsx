@@ -42,6 +42,8 @@ interface WorkspaceContextType {
   canSendMessages: boolean;
   canExportData: boolean;
   canAccessRouting: boolean;
+  canConfigureAlerts: boolean;
+  canManageQueues: boolean;
   approachingLimits: boolean;
 }
 
@@ -142,6 +144,8 @@ export const WorkspaceProvider: React.FC<WorkspaceProviderProps> = ({
   const canSendMessages = planData?.usage.messages.canSend ?? false;
   const canExportData = planData?.planFeatures.canExportData ?? false;
   const canAccessRouting = planData?.planFeatures.canAccessRouting ?? false;
+  const canConfigureAlerts = planData?.planFeatures.hasAdvancedAlerts ?? false;
+  const canManageQueues = workspacePlan !== WorkspacePlan.FREE;
   const approachingLimits = planData?.approachingLimits ?? false;
 
   const value: WorkspaceContextType = {
@@ -159,6 +163,8 @@ export const WorkspaceProvider: React.FC<WorkspaceProviderProps> = ({
     canSendMessages,
     canExportData,
     canAccessRouting,
+    canConfigureAlerts,
+    canManageQueues,
     approachingLimits,
   };
 

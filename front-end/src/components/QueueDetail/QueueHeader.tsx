@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { ArrowLeft, Send, Trash2, Lock } from "lucide-react";
+import { ArrowLeft, Send, Trash2, Lock, Pause, Play } from "lucide-react";
 import { PurgeQueueDialog } from "@/components/PurgeQueueDialog";
 import { PauseQueueDialog } from "@/components/PauseQueueDialog";
 import { SendMessageDialog } from "@/components/SendMessageDialog";
@@ -31,7 +31,7 @@ export function QueueHeader({
   onDeleteQueue,
 }: QueueHeaderProps) {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const { canSendMessages, workspacePlan } = useWorkspace();
+  const { canSendMessages, canManageQueues, workspacePlan } = useWorkspace();
 
   // Get the actual pause status from the backend
   const { data: pauseStatus, refetch: refetchPauseStatus } =
@@ -39,6 +39,12 @@ export function QueueHeader({
 
   const handleSendMessageClick = () => {
     if (!canSendMessages) {
+      setShowUpgradeModal(true);
+    }
+  };
+
+  const handleQueueManagementClick = () => {
+    if (!canManageQueues) {
       setShowUpgradeModal(true);
     }
   };
@@ -120,40 +126,89 @@ export function QueueHeader({
           </Button>
         )}
 
-        <PurgeQueueDialog
-          queueName={queueName}
-          messageCount={messageCount}
-          onSuccess={onRefetch}
-          trigger={
-            <Button
-              variant="outline"
-              className="flex items-center gap-2 text-red-600 hover:text-red-700"
-            >
-              <Trash2 className="w-4 h-4" />
-              Purge Queue
-            </Button>
-          }
-        />
-
-        <PauseQueueDialog
-          queueName={queueName}
-          consumerCount={consumerCount}
-          isPaused={pauseStatus?.pauseState?.isPaused}
-          onSuccess={handlePauseSuccess}
-        />
-
-        {/* Delete Queue Button */}
-        {onDeleteQueue && (
+        {/* Purge Queue Button with plan restrictions */}
+        {canManageQueues ? (
+          <PurgeQueueDialog
+            queueName={queueName}
+            messageCount={messageCount}
+            onSuccess={onRefetch}
+            trigger={
+              <Button
+                variant="outline"
+                className="flex items-center gap-2 text-red-600 hover:text-red-700"
+              >
+                <Trash2 className="w-4 h-4" />
+                Purge Queue
+              </Button>
+            }
+          />
+        ) : (
           <Button
-            variant="destructive"
-            size="sm"
-            onClick={onDeleteQueue}
-            className="flex items-center gap-2"
+            onClick={handleQueueManagementClick}
+            disabled={true}
+            variant="outline"
+            className="flex items-center gap-2 opacity-60 cursor-not-allowed text-red-600"
+            title="Upgrade to manage queues"
           >
-            <Trash2 className="w-4 h-4" />
-            Delete Queue
+            <Lock className="w-4 h-4" />
+            Purge Queue
+            <span className="ml-1 px-2 py-0.5 bg-orange-500 text-white text-xs rounded-full font-bold">
+              Pro
+            </span>
           </Button>
         )}
+
+        {/* Pause/Resume Queue Button with plan restrictions */}
+        {canManageQueues ? (
+          <PauseQueueDialog
+            queueName={queueName}
+            consumerCount={consumerCount}
+            isPaused={pauseStatus?.pauseState?.isPaused}
+            onSuccess={handlePauseSuccess}
+          />
+        ) : (
+          <Button
+            onClick={handleQueueManagementClick}
+            disabled={true}
+            variant="outline"
+            className="flex items-center gap-2 opacity-60 cursor-not-allowed text-yellow-600"
+            title="Upgrade to manage queues"
+          >
+            <Lock className="w-4 h-4" />
+            Pause Queue
+            <span className="ml-1 px-2 py-0.5 bg-orange-500 text-white text-xs rounded-full font-bold">
+              Pro
+            </span>
+          </Button>
+        )}
+
+        {/* Delete Queue Button with plan restrictions */}
+        {onDeleteQueue &&
+          (canManageQueues ? (
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={onDeleteQueue}
+              className="flex items-center gap-2"
+            >
+              <Trash2 className="w-4 h-4" />
+              Delete Queue
+            </Button>
+          ) : (
+            <Button
+              onClick={handleQueueManagementClick}
+              disabled={true}
+              variant="outline"
+              className="flex items-center gap-2 opacity-60 cursor-not-allowed text-red-600"
+              title="Upgrade to manage queues"
+            >
+              <Lock className="w-4 h-4" />
+              Delete Queue
+              <span className="ml-1 px-2 py-0.5 bg-orange-500 text-white text-xs rounded-full font-bold">
+                Pro
+              </span>
+            </Button>
+          ))}
       </div>
 
       {/* Plan Upgrade Modal */}

@@ -109,17 +109,17 @@ export interface HealthCheck {
     memory: {
       status: "healthy" | "warning" | "critical";
       message: string;
-      details: any;
+      // details: any;
     };
     disk: {
       status: "healthy" | "warning" | "critical";
       message: string;
-      details: any;
+      // details: any;
     };
     queues: {
       status: "healthy" | "warning" | "critical";
       message: string;
-      details: any;
+      // details: any;
     };
   };
   timestamp: string;

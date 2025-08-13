@@ -99,11 +99,6 @@
   /* Page Layout Components */
   .page-layout {
     @apply min-h-screen flex w-full;
-    background-image: linear-gradient(
-      to bottom right,
-      rgb(254 215 170),
-      rgb(254 202 202)
-    );
   }
 
   /* Button Components */

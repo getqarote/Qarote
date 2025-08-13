@@ -155,8 +155,46 @@ export interface HealthStatus {
 
 // Health Response API wrapper
 export interface HealthResponse {
-  health: HealthStatus;
-  timestamp: string;
+  success: boolean;
+  health: {
+    overall: "healthy" | "degraded" | "critical";
+    checks: {
+      connectivity: {
+        status: "healthy" | "warning" | "critical";
+        message: string;
+      };
+      nodes: {
+        status: "healthy" | "warning" | "critical";
+        message: string;
+        details?: {
+          running: number;
+          total: number;
+          nodes: Array<{
+            name: string;
+            running: boolean;
+            mem_alarm: boolean;
+            disk_free_alarm: boolean;
+          }>;
+        };
+      };
+      memory: {
+        status: "healthy" | "warning" | "critical";
+        message: string;
+        details?: Record<string, unknown>;
+      };
+      disk: {
+        status: "healthy" | "warning" | "critical";
+        message: string;
+        details?: Record<string, unknown>;
+      };
+      queues: {
+        status: "healthy" | "warning" | "critical";
+        message: string;
+        details?: Record<string, unknown>;
+      };
+    };
+    timestamp: string;
+  };
 }
 
 export interface ThresholdsResponse {

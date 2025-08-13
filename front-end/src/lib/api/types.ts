@@ -10,6 +10,12 @@ export interface ApiResponse<T> {
   [key: string]: unknown;
 }
 
+export interface ApiError {
+  message: string;
+  status?: number;
+  code?: string;
+}
+
 export interface SSLConfig {
   verifyPeer: boolean;
   caCertContent?: string;

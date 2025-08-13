@@ -95,7 +95,7 @@ const Queues = () => {
               <SidebarTrigger />
             </div>
             <NoServerConfigured
-              title="Queue Management"
+              title="Queues"
               description="Add a RabbitMQ server connection to view and manage queues across your clusters."
             />
           </main>
@@ -115,7 +115,7 @@ const Queues = () => {
                 <div className="flex items-center gap-4">
                   <SidebarTrigger />
                   <div>
-                    <h1 className="title-page">Queue Management</h1>
+                    <h1 className="title-page">Queues</h1>
                     <p className="text-gray-500">
                       Please select a RabbitMQ server to view queues
                     </p>

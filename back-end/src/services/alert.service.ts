@@ -862,17 +862,14 @@ export class AlertService {
         memory: {
           status: "healthy",
           message: "",
-          details: {},
         },
         disk: {
           status: "healthy",
           message: "",
-          details: {},
         },
         queues: {
           status: "healthy",
           message: "",
-          details: {},
         },
       },
       timestamp: new Date().toISOString(),
@@ -964,6 +961,67 @@ export class AlertService {
     } catch (error) {
       healthCheck.checks.nodes.status = "critical";
       healthCheck.checks.nodes.message = `Failed to check nodes: ${error}`;
+      healthCheck.overall = "critical";
+    }
+
+    // Check queues
+    try {
+      const queues = await client.getQueues();
+      if (queues && Array.isArray(queues)) {
+        const totalQueues = queues.length;
+        let criticalQueues = 0;
+        let warningQueues = 0;
+        let queuesWithoutConsumers = 0;
+
+        for (const queue of queues) {
+          const messageCount = queue.messages || 0;
+          const consumerCount = queue.consumers || 0;
+          const unackedMessages = queue.messages_unacknowledged || 0;
+
+          // Check for critical queue conditions
+          if (messageCount >= thresholds.queueMessages.critical) {
+            criticalQueues++;
+          } else if (messageCount >= thresholds.queueMessages.warning) {
+            warningQueues++;
+          }
+
+          if (unackedMessages >= thresholds.unackedMessages.critical) {
+            criticalQueues++;
+          } else if (unackedMessages >= thresholds.unackedMessages.warning) {
+            warningQueues++;
+          }
+
+          // Check for queues with messages but no consumers
+          if (messageCount > 0 && consumerCount === 0) {
+            queuesWithoutConsumers++;
+          }
+        }
+
+        if (criticalQueues > 0) {
+          healthCheck.checks.queues.status = "critical";
+          healthCheck.checks.queues.message = `${criticalQueues} queues have critical issues`;
+          healthCheck.overall = "critical";
+        } else if (warningQueues > 0 || queuesWithoutConsumers > 0) {
+          healthCheck.checks.queues.status = "warning";
+          const issues = [];
+          if (warningQueues > 0) {
+            issues.push(`${warningQueues} queues with high message count`);
+          }
+          if (queuesWithoutConsumers > 0) {
+            issues.push(`${queuesWithoutConsumers} queues without consumers`);
+          }
+          healthCheck.checks.queues.message = issues.join(", ");
+          if (healthCheck.overall === "healthy") {
+            healthCheck.overall = "degraded";
+          }
+        } else {
+          healthCheck.checks.queues.status = "healthy";
+          healthCheck.checks.queues.message = `All ${totalQueues} queues are healthy`;
+        }
+      }
+    } catch (error) {
+      healthCheck.checks.queues.status = "critical";
+      healthCheck.checks.queues.message = `Failed to check queues: ${error}`;
       healthCheck.overall = "critical";
     }
 

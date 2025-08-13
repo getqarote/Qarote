@@ -10,7 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Users, Mail, UserPlus, X, Clock } from "lucide-react";
+import { Users, Mail, UserPlus, X, Clock, Lock } from "lucide-react";
 import { User } from "@/lib/api/authTypes";
 import { InvitationWithInviter } from "@/lib/api/authTypes";
 import { InviteFormState, formatDate, getRoleColor } from "./profileUtils";
@@ -135,15 +135,30 @@ export const EnhancedTeamTab = ({
               <Users className="h-5 w-5" />
               <span>Active Members</span>
             </div>
-            <Button
-              onClick={() => setInviteDialogOpen(true)}
-              disabled={!canInviteMoreUsers}
-              size="sm"
-              className="btn-primary"
-            >
-              <UserPlus className="h-4 w-4 mr-2" />
-              Invite User
-            </Button>
+            {canInviteMoreUsers ? (
+              <Button
+                onClick={() => setInviteDialogOpen(true)}
+                size="sm"
+                className="btn-primary"
+              >
+                <UserPlus className="h-4 w-4 mr-2" />
+                Invite User
+              </Button>
+            ) : (
+              <Button
+                onClick={() => setInviteDialogOpen(true)}
+                disabled={true}
+                size="sm"
+                className="bg-gray-200 text-gray-400 cursor-not-allowed opacity-60 flex items-center gap-2"
+                title="Upgrade to invite more users"
+              >
+                <Lock className="w-4 h-4" />
+                Invite User
+                <span className="ml-1 px-2 py-0.5 bg-orange-500 text-white text-xs rounded-full font-bold">
+                  Pro
+                </span>
+              </Button>
+            )}
           </CardTitle>
         </CardHeader>
         <CardContent>

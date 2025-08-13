@@ -40,7 +40,7 @@ const Nodes = () => {
               <SidebarTrigger />
             </div>
             <NoServerConfigured
-              title="RabbitMQ Nodes"
+              title="Nodes"
               description="Add a RabbitMQ server connection to view cluster nodes and their metrics."
             />
           </main>
@@ -59,7 +59,7 @@ const Nodes = () => {
               <div className="flex items-center gap-4">
                 <SidebarTrigger />
                 <div>
-                  <h1 className="title-page">RabbitMQ Nodes</h1>
+                  <h1 className="title-page">Nodes</h1>
                   <p className="text-gray-500">
                     Please select a RabbitMQ server to view its nodes
                   </p>
@@ -83,7 +83,7 @@ const Nodes = () => {
               <div className="flex items-center gap-4">
                 <SidebarTrigger />
                 <div>
-                  <h1 className="title-page">RabbitMQ Nodes</h1>
+                  <h1 className="title-page">Nodes</h1>
                   <p className="text-gray-500">
                     Detailed view of cluster nodes and their metrics
                   </p>

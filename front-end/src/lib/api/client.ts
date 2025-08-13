@@ -610,8 +610,18 @@ class ApiClient {
   }
 
   // RabbitMQ Alert methods
-  async getRabbitMQAlerts(serverId: string, thresholds?: AlertThresholds) {
-    return this.rabbitmqClient.getServerAlerts(serverId, thresholds);
+  async getRabbitMQAlerts(
+    serverId: string,
+    thresholds?: AlertThresholds,
+    options?: {
+      limit?: number;
+      offset?: number;
+      severity?: string;
+      category?: string;
+      resolved?: boolean;
+    }
+  ) {
+    return this.rabbitmqClient.getServerAlerts(serverId, thresholds, options);
   }
 
   async getRabbitMQAlertsSummary(serverId: string) {

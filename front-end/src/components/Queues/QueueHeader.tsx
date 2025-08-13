@@ -49,7 +49,7 @@ export function QueueHeader({
 
   return (
     <PageHeader
-      title="Queue Management"
+      title="Queues"
       subtitle="Manage and monitor all queues across your clusters"
       actions={actions}
       showSidebarTrigger={false}
