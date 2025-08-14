@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { CreateUserModal } from "@/components/users/CreateUserModal";
 import { WorkspacePlan } from "@/types/plans";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
-import { usePlanData } from "@/hooks/usePlan";
 import { useState } from "react";
 
 interface AddUserButtonProps {
@@ -19,11 +18,16 @@ export const AddUserButton = ({
   onSuccess,
   initialName = "",
 }: AddUserButtonProps) => {
-  const { workspacePlan, isLoading: workspaceLoading } = useWorkspace();
-  const { usage } = usePlanData();
+  const {
+    workspacePlan,
+    isLoading: workspaceLoading,
+    planData,
+  } = useWorkspace();
+  // const { usage } = usePlanData();
   const [showCreateModal, setShowCreateModal] = useState(false);
 
-  const userUsage = usage?.users || {
+  // Since we removed user usage tracking, check permission from plan features
+  const userUsage = planData?.usage?.users || {
     current: 0,
     limit: 1,
     percentage: 0,
@@ -47,31 +51,23 @@ export const AddUserButton = ({
       case WorkspacePlan.DEVELOPER:
         return {
           text: "Add user",
-          badge: `${userUsage.current}/${userUsage.limit || 3}`,
+          badge: "Pro",
           badgeColor: "bg-blue-500",
-          title: "You've reached your user limit. Upgrade to add more users.",
+          title: "User management available with Developer plan",
         };
-      case WorkspacePlan.STARTUP:
+      case WorkspacePlan.ENTERPRISE:
         return {
           text: "Add user",
-          badge: `${userUsage.current}/${userUsage.limit || 10}`,
+          badge: "Pro",
           badgeColor: "bg-purple-500",
-          title: "You've reached your user limit. Upgrade to add more users.",
-        };
-      case WorkspacePlan.BUSINESS:
-        return {
-          text: "Add user",
-          badge: `${userUsage.current}/${userUsage.limit || 50}`,
-          badgeColor: "bg-green-500",
-          title:
-            "You've reached your user limit. Contact support for enterprise solutions.",
+          title: "User management available with Enterprise plan",
         };
       default:
         return {
           text: "Add user",
           badge: "Pro",
-          badgeColor: "bg-orange-500",
-          title: "Upgrade to add users",
+          badgeColor: "bg-green-500",
+          title: "User management available with paid plans",
         };
     }
   };

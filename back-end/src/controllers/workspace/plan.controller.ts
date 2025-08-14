@@ -54,30 +54,6 @@ planRoutes.get("/current/plan", async (c) => {
       );
     }
 
-    // Get queue count
-    const queueCount = await prisma.queue.count({
-      where: {
-        server: {
-          workspaceId: user.workspaceId,
-        },
-      },
-    });
-
-    // Get current month's message count
-    const currentDate = new Date();
-    const currentYear = currentDate.getFullYear();
-    const currentMonth = currentDate.getMonth() + 1;
-
-    const monthlyMessageCount = await prisma.monthlyMessageCount.findUnique({
-      where: {
-        monthly_message_count_unique: {
-          workspaceId: user.workspaceId,
-          year: currentYear,
-          month: currentMonth,
-        },
-      },
-    });
-
     // Get plan features
     const planFeatures = getPlanFeatures(workspace.plan);
 
@@ -105,28 +81,14 @@ planRoutes.get("/current/plan", async (c) => {
           ? workspace._count.servers < planFeatures.maxServers
           : true,
       },
-      queues: {
-        current: queueCount,
-        limit: planFeatures.maxQueues,
-        percentage: planFeatures.maxQueues
-          ? Math.round((queueCount / planFeatures.maxQueues) * 100)
+      workspaces: {
+        current: 1, // For now, each user has one workspace
+        limit: planFeatures.maxWorkspaces,
+        percentage: planFeatures.maxWorkspaces
+          ? Math.round((1 / planFeatures.maxWorkspaces) * 100)
           : 0,
-        canAdd: planFeatures.maxQueues
-          ? queueCount < planFeatures.maxQueues
-          : true,
-      },
-      messages: {
-        current: monthlyMessageCount?.count || 0,
-        limit: planFeatures.maxMessagesPerMonth,
-        percentage: planFeatures.maxMessagesPerMonth
-          ? Math.round(
-              ((monthlyMessageCount?.count || 0) /
-                planFeatures.maxMessagesPerMonth) *
-                100
-            )
-          : 0,
-        canSend: planFeatures.maxMessagesPerMonth
-          ? (monthlyMessageCount?.count || 0) < planFeatures.maxMessagesPerMonth
+        canAdd: planFeatures.maxWorkspaces
+          ? 1 < planFeatures.maxWorkspaces
           : true,
       },
     };
@@ -135,8 +97,7 @@ planRoutes.get("/current/plan", async (c) => {
     const warnings = {
       users: usage.users.percentage >= 80,
       servers: usage.servers.percentage >= 80,
-      queues: usage.queues.percentage >= 80,
-      messages: usage.messages.percentage >= 80,
+      workspaces: usage.workspaces.percentage >= 80,
     };
 
     const response = {

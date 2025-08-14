@@ -8,7 +8,6 @@ interface QueueHeaderProps {
   selectedServerId: string;
   workspacePlan: WorkspacePlan;
   queueCount: number;
-  monthlyMessageCount: number;
   workspaceLoading: boolean;
   canAddQueue: boolean;
   canSendMessages: boolean;
@@ -21,7 +20,6 @@ export function QueueHeader({
   selectedServerId,
   workspacePlan,
   queueCount,
-  monthlyMessageCount,
   workspaceLoading,
   canAddQueue,
   canSendMessages,

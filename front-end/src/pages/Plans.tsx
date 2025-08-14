@@ -84,19 +84,12 @@ const PlanCard: React.FC<PlanCardProps> = ({
       bgColor: "bg-blue-50",
       borderColor: "border-blue-200",
     },
-    [WorkspacePlan.STARTUP]: {
-      name: "Startup",
-      description: "For growing teams and businesses",
+    [WorkspacePlan.ENTERPRISE]: {
+      name: "Enterprise",
+      description: "For large teams and enterprises",
       color: "text-purple-600",
       bgColor: "bg-purple-50",
       borderColor: "border-purple-200",
-    },
-    [WorkspacePlan.BUSINESS]: {
-      name: "Business",
-      description: "For large teams and enterprises",
-      color: "text-green-600",
-      bgColor: "bg-green-50",
-      borderColor: "border-green-200",
     },
   };
 
@@ -116,20 +109,11 @@ const PlanCard: React.FC<PlanCardProps> = ({
           included: planFeatures.canAddServer,
         },
         {
-          name: "Message Queues",
-          value: planFeatures.maxQueues
-            ? `Up to ${planFeatures.maxQueues}`
+          name: "Workspaces",
+          value: planFeatures.maxWorkspaces
+            ? `Up to ${planFeatures.maxWorkspaces}`
             : "Unlimited",
-          included: planFeatures.canAddQueue,
-        },
-        {
-          name: "Monthly Messages",
-          value: planFeatures.maxMessagesPerMonth
-            ? `${planFeatures.maxMessagesPerMonth.toLocaleString()}`
-            : planFeatures.canSendMessages
-              ? "Unlimited"
-              : "View only",
-          included: planFeatures.canSendMessages,
+          included: true,
         },
         {
           name: "Team Members",
@@ -138,60 +122,25 @@ const PlanCard: React.FC<PlanCardProps> = ({
             : "Unlimited",
           included: true,
         },
-      ],
-    },
-    {
-      category: "Advanced Features",
-      items: [
         {
-          name: "Message Routing",
-          value: "Full routing capabilities",
-          included: planFeatures.canAccessRouting,
+          name: "Queue Management",
+          value: "Create and manage queues",
+          included: planFeatures.canAddQueue,
         },
         {
-          name: "Data Export",
-          value: "Export all data",
-          included: planFeatures.canExportData,
+          name: "Exchange Management",
+          value: "Create and manage exchanges",
+          included: planFeatures.canAddExchange,
         },
         {
-          name: "Advanced Metrics",
-          value: "Detailed analytics",
-          included: planFeatures.hasAdvancedMetrics,
+          name: "Virtual Host Management",
+          value: "Create and manage virtual hosts",
+          included: planFeatures.canAddVirtualHost,
         },
         {
-          name: "Smart Alerts",
-          value: "AI-powered alerts",
-          included: planFeatures.hasAdvancedAlerts,
-        },
-      ],
-    },
-    {
-      category: "Memory & Performance",
-      items: [
-        {
-          name: "Basic Memory Metrics",
-          value: "Memory usage overview",
-          included: planFeatures.canViewBasicMemoryMetrics,
-        },
-        {
-          name: "Advanced Memory Analysis",
-          value: "Detailed memory insights",
-          included: planFeatures.canViewAdvancedMemoryMetrics,
-        },
-        {
-          name: "Expert Memory Diagnostics",
-          value: "Deep memory analysis",
-          included: planFeatures.canViewExpertMemoryMetrics,
-        },
-        {
-          name: "Memory Trends",
-          value: "Historical memory data",
-          included: planFeatures.canViewMemoryTrends,
-        },
-        {
-          name: "Memory Optimization",
-          value: "Auto-optimization tips",
-          included: planFeatures.canViewMemoryOptimization,
+          name: "RabbitMQ User Management",
+          value: "Create and manage RabbitMQ users",
+          included: planFeatures.canAddRabbitMQUser,
         },
       ],
     },
@@ -201,12 +150,17 @@ const PlanCard: React.FC<PlanCardProps> = ({
         {
           name: "Community Support",
           value: "Community forums",
-          included: true,
+          included: planFeatures.hasCommunitySupport,
         },
         {
           name: "Priority Support",
-          value: "24/7 priority support",
+          value: "Priority mail support",
           included: planFeatures.hasPrioritySupport,
+        },
+        {
+          name: "Email Alerts",
+          value: "Critical and warning notifications",
+          included: planFeatures.hasEmailAlerts,
         },
       ],
     },
@@ -332,15 +286,13 @@ export const PlansPage: React.FC<PlansPageProps> = ({
   const planPricing = {
     monthly: {
       [WorkspacePlan.FREE]: { price: "Free", originalPrice: undefined },
-      [WorkspacePlan.DEVELOPER]: { price: "$49", originalPrice: undefined },
-      [WorkspacePlan.STARTUP]: { price: "$99", originalPrice: undefined },
-      [WorkspacePlan.BUSINESS]: { price: "$249", originalPrice: undefined },
+      [WorkspacePlan.DEVELOPER]: { price: "$10", originalPrice: undefined },
+      [WorkspacePlan.ENTERPRISE]: { price: "$50", originalPrice: undefined },
     },
     yearly: {
       [WorkspacePlan.FREE]: { price: "Free", originalPrice: undefined },
-      [WorkspacePlan.DEVELOPER]: { price: "$39", originalPrice: "$49" },
-      [WorkspacePlan.STARTUP]: { price: "$79", originalPrice: "$99" },
-      [WorkspacePlan.BUSINESS]: { price: "$199", originalPrice: "$249" },
+      [WorkspacePlan.DEVELOPER]: { price: "$100", originalPrice: "$120" },
+      [WorkspacePlan.ENTERPRISE]: { price: "$500", originalPrice: "$600" },
     },
   };
 
@@ -379,50 +331,52 @@ export const PlansPage: React.FC<PlansPageProps> = ({
                 </p>
 
                 {/* Feature Highlights */}
-                <div className="grid md:grid-cols-4 gap-6 mb-12 max-w-4xl mx-auto">
-                  <div className="flex flex-col items-center p-4">
-                    <div className="bg-blue-100 p-3 rounded-full mb-3">
-                      <Zap className="w-6 h-6 text-blue-600" />
+                <div className="flex justify-center">
+                  <div className="grid md:grid-cols-4 gap-6 mb-12 max-w-4xl">
+                    <div className="flex flex-col items-center p-4">
+                      <div className="bg-blue-100 p-3 rounded-full mb-3">
+                        <Zap className="w-6 h-6 text-blue-600" />
+                      </div>
+                      <h3 className="font-semibold text-gray-900 mb-1">
+                        Real-time Monitoring
+                      </h3>
+                      <p className="text-sm text-gray-600 text-center">
+                        Monitor your RabbitMQ servers with millisecond precision
+                      </p>
                     </div>
-                    <h3 className="font-semibold text-gray-900 mb-1">
-                      Real-time Monitoring
-                    </h3>
-                    <p className="text-sm text-gray-600 text-center">
-                      Monitor your RabbitMQ servers with millisecond precision
-                    </p>
-                  </div>
-                  <div className="flex flex-col items-center p-4">
-                    <div className="bg-purple-100 p-3 rounded-full mb-3">
-                      <TrendingUp className="w-6 h-6 text-purple-600" />
+                    <div className="flex flex-col items-center p-4">
+                      <div className="bg-purple-100 p-3 rounded-full mb-3">
+                        <TrendingUp className="w-6 h-6 text-purple-600" />
+                      </div>
+                      <h3 className="font-semibold text-gray-900 mb-1">
+                        Smart Analytics
+                      </h3>
+                      <p className="text-sm text-gray-600 text-center">
+                        AI-powered insights and memory optimization tips
+                      </p>
                     </div>
-                    <h3 className="font-semibold text-gray-900 mb-1">
-                      Smart Analytics
-                    </h3>
-                    <p className="text-sm text-gray-600 text-center">
-                      AI-powered insights and memory optimization tips
-                    </p>
-                  </div>
-                  <div className="flex flex-col items-center p-4">
-                    <div className="bg-green-100 p-3 rounded-full mb-3">
-                      <Shield className="w-6 h-6 text-green-600" />
+                    <div className="flex flex-col items-center p-4">
+                      <div className="bg-green-100 p-3 rounded-full mb-3">
+                        <Shield className="w-6 h-6 text-green-600" />
+                      </div>
+                      <h3 className="font-semibold text-gray-900 mb-1">
+                        Enterprise Security
+                      </h3>
+                      <p className="text-sm text-gray-600 text-center">
+                        SOC 2 compliant with enterprise-grade encryption
+                      </p>
                     </div>
-                    <h3 className="font-semibold text-gray-900 mb-1">
-                      Enterprise Security
-                    </h3>
-                    <p className="text-sm text-gray-600 text-center">
-                      SOC 2 compliant with enterprise-grade encryption
-                    </p>
-                  </div>
-                  <div className="flex flex-col items-center p-4">
-                    <div className="bg-orange-100 p-3 rounded-full mb-3">
-                      <Headphones className="w-6 h-6 text-orange-600" />
+                    <div className="flex flex-col items-center p-4">
+                      <div className="bg-orange-100 p-3 rounded-full mb-3">
+                        <Headphones className="w-6 h-6 text-orange-600" />
+                      </div>
+                      <h3 className="font-semibold text-gray-900 mb-1">
+                        24/7 Support
+                      </h3>
+                      <p className="text-sm text-gray-600 text-center">
+                        Expert support when you need it most
+                      </p>
                     </div>
-                    <h3 className="font-semibold text-gray-900 mb-1">
-                      24/7 Support
-                    </h3>
-                    <p className="text-sm text-gray-600 text-center">
-                      Expert support when you need it most
-                    </p>
                   </div>
                 </div>
 
@@ -466,21 +420,23 @@ export const PlansPage: React.FC<PlansPageProps> = ({
             </div>
 
             {/* Plans Grid */}
-            <div className="space-y-8">
-              <div className="grid lg:grid-cols-4 gap-8">
-                {Object.values(WorkspacePlan).map((plan) => (
-                  <PlanCard
-                    key={plan}
-                    plan={plan}
-                    price={currentPricing[plan].price}
-                    originalPrice={currentPricing[plan].originalPrice}
-                    period={billingPeriod === "monthly" ? "month" : "year"}
-                    billingPeriod={billingPeriod}
-                    isPopular={plan === WorkspacePlan.STARTUP}
-                    isCurrentPlan={plan === currentPlan}
-                    onUpgrade={onUpgrade}
-                  />
-                ))}
+            <div className="space-y-8 mb-16">
+              <div className="flex justify-center">
+                <div className="grid lg:grid-cols-3 gap-8 max-w-5xl">
+                  {Object.values(WorkspacePlan).map((plan) => (
+                    <PlanCard
+                      key={plan}
+                      plan={plan}
+                      price={currentPricing[plan].price}
+                      originalPrice={currentPricing[plan].originalPrice}
+                      period={billingPeriod === "monthly" ? "month" : "year"}
+                      billingPeriod={billingPeriod}
+                      isPopular={plan === WorkspacePlan.DEVELOPER}
+                      isCurrentPlan={plan === currentPlan}
+                      onUpgrade={onUpgrade}
+                    />
+                  ))}
+                </div>
               </div>
             </div>
           </div>

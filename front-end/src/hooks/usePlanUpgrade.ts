@@ -93,8 +93,7 @@ export const usePlanFeatures = () => {
     const planHierarchy = {
       [WorkspacePlan.FREE]: 0,
       [WorkspacePlan.DEVELOPER]: 1,
-      [WorkspacePlan.STARTUP]: 2,
-      [WorkspacePlan.BUSINESS]: 3,
+      [WorkspacePlan.ENTERPRISE]: 2,
     };
 
     return planHierarchy[currentPlan] < planHierarchy[requiredPlan];

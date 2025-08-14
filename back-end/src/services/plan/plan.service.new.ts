@@ -447,32 +447,3 @@ export async function getWorkspaceResourceCounts(workspaceId: string) {
     workspaces: 1, // For now, each user has one workspace
   };
 }
-
-// Legacy compatibility functions for queue management
-export function getOverLimitWarningMessage(
-  plan: WorkspacePlan,
-  currentCount: number,
-  serverName: string
-): string {
-  // Since we removed queue limits, just provide a generic message
-  return `Queue management available. Current queues: ${currentCount}`;
-}
-
-// Simplified validation for queue creation (no limits in new plan structure)
-export function validateQueueCreationOnServer(
-  plan: WorkspacePlan,
-  currentQueueCount: number
-): void {
-  // Since we removed queue limits, just ensure basic permissions
-  const features = getPlanFeatures(plan);
-  if (!features.canAddQueue) {
-    throw new PlanValidationError(
-      "Queue creation",
-      plan,
-      "DEVELOPER",
-      currentQueueCount,
-      undefined,
-      "Upgrade to Developer plan to create queues."
-    );
-  }
-}

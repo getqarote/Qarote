@@ -22,28 +22,20 @@ export const STRIPE_PRICE_IDS = {
     monthly: stripeConfig.priceIds.developer.monthly,
     yearly: stripeConfig.priceIds.developer.yearly,
   },
-  [WorkspacePlan.STARTUP]: {
-    monthly: stripeConfig.priceIds.startup.monthly,
-    yearly: stripeConfig.priceIds.startup.yearly,
-  },
-  [WorkspacePlan.BUSINESS]: {
-    monthly: stripeConfig.priceIds.business.monthly,
-    yearly: stripeConfig.priceIds.business.yearly,
+  [WorkspacePlan.ENTERPRISE]: {
+    monthly: stripeConfig.priceIds.enterprise.monthly,
+    yearly: stripeConfig.priceIds.enterprise.yearly,
   },
 } as const;
 
 export const PLAN_PRICING = {
   [WorkspacePlan.DEVELOPER]: {
-    monthly: 4900, // $49.00 in cents
-    yearly: 3900, // $39.00 in cents
+    monthly: 1000, // $10.00 in cents
+    yearly: 10000, // $100.00 in cents (yearly discount)
   },
-  [WorkspacePlan.STARTUP]: {
-    monthly: 9900, // $99.00 in cents
-    yearly: 7900, // $79.00 in cents
-  },
-  [WorkspacePlan.BUSINESS]: {
-    monthly: 24900, // $249.00 in cents
-    yearly: 19900, // $199.00 in cents
+  [WorkspacePlan.ENTERPRISE]: {
+    monthly: 5000, // $50.00 in cents
+    yearly: 50000, // $500.00 in cents (yearly discount)
   },
 } as const;
 

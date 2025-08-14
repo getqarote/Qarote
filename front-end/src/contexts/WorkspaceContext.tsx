@@ -40,9 +40,9 @@ interface WorkspaceContextType {
   canAddServer: boolean;
   canAddQueue: boolean;
   canSendMessages: boolean;
-  canExportData: boolean;
-  canAccessRouting: boolean;
-  canConfigureAlerts: boolean;
+  canAddExchange: boolean;
+  canAddVirtualHost: boolean;
+  canAddRabbitMQUser: boolean;
   canManageQueues: boolean;
   approachingLimits: boolean;
 }
@@ -140,11 +140,11 @@ export const WorkspaceProvider: React.FC<WorkspaceProviderProps> = ({
 
   // Convenience getters for common plan operations
   const canAddServer = planData?.usage.servers.canAdd ?? true;
-  const canAddQueue = planData?.usage.queues.canAdd ?? false;
-  const canSendMessages = planData?.usage.messages.canSend ?? false;
-  const canExportData = planData?.planFeatures.canExportData ?? false;
-  const canAccessRouting = planData?.planFeatures.canAccessRouting ?? false;
-  const canConfigureAlerts = planData?.planFeatures.hasAdvancedAlerts ?? false;
+  const canAddQueue = planData?.planFeatures.canAddQueue ?? false;
+  const canSendMessages = planData?.planFeatures.canSendMessages ?? false;
+  const canAddExchange = planData?.planFeatures.canAddExchange ?? false;
+  const canAddVirtualHost = planData?.planFeatures.canAddVirtualHost ?? false;
+  const canAddRabbitMQUser = planData?.planFeatures.canAddRabbitMQUser ?? false;
   const canManageQueues = workspacePlan !== WorkspacePlan.FREE;
   const approachingLimits = planData?.approachingLimits ?? false;
 
@@ -161,9 +161,9 @@ export const WorkspaceProvider: React.FC<WorkspaceProviderProps> = ({
     canAddServer,
     canAddQueue,
     canSendMessages,
-    canExportData,
-    canAccessRouting,
-    canConfigureAlerts,
+    canAddExchange,
+    canAddVirtualHost,
+    canAddRabbitMQUser,
     canManageQueues,
     approachingLimits,
   };

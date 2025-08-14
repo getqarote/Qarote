@@ -12,7 +12,7 @@ export const AvailableUpgrades: React.FC<AvailableUpgradesProps> = ({
   currentPlan,
   onUpgrade,
 }) => {
-  if (currentPlan === WorkspacePlan.BUSINESS) {
+  if (currentPlan === WorkspacePlan.ENTERPRISE) {
     return null;
   }
 
@@ -35,14 +35,14 @@ export const AvailableUpgrades: React.FC<AvailableUpgradesProps> = ({
                   Perfect for growing teams
                 </p>
                 <ul className="text-sm text-gray-600 space-y-1">
-                  <li>• 2 RabbitMQ servers</li>
-                  <li>• 10 queues</li>
-                  <li>• 100 messages/month</li>
-                  <li>• Data export</li>
+                  <li>• Add exchanges</li>
+                  <li>• Add virtual hosts</li>
+                  <li>• Add RabbitMQ users</li>
+                  <li>• Priority support</li>
                 </ul>
               </div>
               <div className="text-right">
-                <div className="text-2xl font-bold text-blue-600">$29</div>
+                <div className="text-2xl font-bold text-blue-600">$10</div>
                 <div className="text-sm text-gray-600">per month</div>
                 <Button
                   onClick={() => onUpgrade(WorkspacePlan.DEVELOPER, "monthly")}
@@ -57,49 +57,22 @@ export const AvailableUpgrades: React.FC<AvailableUpgradesProps> = ({
           {currentPlan === WorkspacePlan.DEVELOPER && (
             <div className="flex items-center justify-between p-4 border rounded-lg bg-purple-50">
               <div className="flex-1">
-                <h3 className="font-semibold text-lg">Startup Plan</h3>
+                <h3 className="font-semibold text-lg">Enterprise Plan</h3>
                 <p className="text-sm text-gray-600 mb-2">
-                  Scale your business
+                  For enterprise needs
                 </p>
                 <ul className="text-sm text-gray-600 space-y-1">
-                  <li>• 5 RabbitMQ servers</li>
-                  <li>• 50 queues</li>
-                  <li>• 1K messages/month</li>
-                  <li>• Advanced metrics</li>
-                  <li>• Smart alerts</li>
+                  <li>• All Developer features</li>
+                  <li>• Email support</li>
+                  <li>• Phone support</li>
+                  <li>• Screen sharing</li>
                 </ul>
               </div>
               <div className="text-right">
-                <div className="text-2xl font-bold text-purple-600">$99</div>
+                <div className="text-2xl font-bold text-purple-600">$50</div>
                 <div className="text-sm text-gray-600">per month</div>
                 <Button
-                  onClick={() => onUpgrade(WorkspacePlan.STARTUP, "monthly")}
-                  className="mt-2"
-                >
-                  Upgrade Now
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {currentPlan === WorkspacePlan.STARTUP && (
-            <div className="flex items-center justify-between p-4 border rounded-lg bg-green-50">
-              <div className="flex-1">
-                <h3 className="font-semibold text-lg">Business Plan</h3>
-                <p className="text-sm text-gray-600 mb-2">Enterprise ready</p>
-                <ul className="text-sm text-gray-600 space-y-1">
-                  <li>• Unlimited servers</li>
-                  <li>• 200 queues</li>
-                  <li>• Unlimited messages</li>
-                  <li>• Priority support</li>
-                  <li>• All features</li>
-                </ul>
-              </div>
-              <div className="text-right">
-                <div className="text-2xl font-bold text-green-600">$299</div>
-                <div className="text-sm text-gray-600">per month</div>
-                <Button
-                  onClick={() => onUpgrade(WorkspacePlan.BUSINESS, "monthly")}
+                  onClick={() => onUpgrade(WorkspacePlan.ENTERPRISE, "monthly")}
                   className="mt-2"
                 >
                   Upgrade Now

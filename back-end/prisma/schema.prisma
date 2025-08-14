@@ -25,8 +25,7 @@ enum InvitationStatus {
 enum WorkspacePlan {
   FREE
   DEVELOPER
-  STARTUP
-  BUSINESS
+  ENTERPRISE
 }
 
 enum AlertType {

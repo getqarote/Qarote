@@ -8,8 +8,7 @@
 export enum WorkspacePlan {
   FREE = "FREE",
   DEVELOPER = "DEVELOPER",
-  STARTUP = "STARTUP",
-  BUSINESS = "BUSINESS",
+  ENTERPRISE = "ENTERPRISE",
 }
 
 // Basic plan features interface for API types
@@ -17,22 +16,16 @@ export interface PlanFeatures {
   canAddQueue: boolean;
   canSendMessages: boolean;
   canAddServer: boolean;
-  canExportData: boolean;
-  canAccessRouting: boolean;
-  maxQueues?: number;
+  canAddExchange: boolean;
+  canAddVirtualHost: boolean;
+  canAddRabbitMQUser: boolean;
+  canInviteUsers: boolean;
   maxServers?: number;
+  maxWorkspaces?: number;
   maxUsers?: number;
-  maxMessagesPerMonth?: number;
-  hasAdvancedMetrics: boolean;
-  hasAdvancedAlerts: boolean;
+  hasCommunitySupport: boolean;
   hasPrioritySupport: boolean;
-
-  // Memory Features
-  canViewBasicMemoryMetrics: boolean;
-  canViewAdvancedMemoryMetrics: boolean;
-  canViewExpertMemoryMetrics: boolean;
-  canViewMemoryTrends: boolean;
-  canViewMemoryOptimization: boolean;
+  hasEmailAlerts: boolean;
 
   // Display information
   displayName: string;
@@ -42,6 +35,7 @@ export interface PlanFeatures {
   // Pricing
   monthlyPrice: number;
   yearlyPrice: number;
+  userCostPerMonth?: number;
 
   // Feature descriptions
   featureDescriptions: string[];
@@ -61,25 +55,18 @@ export interface PlanUsage {
     percentage: number;
     canAdd: boolean;
   };
-  queues: {
+  workspaces: {
     current: number;
     limit?: number;
     percentage: number;
     canAdd: boolean;
-  };
-  messages: {
-    current: number;
-    limit?: number;
-    percentage: number;
-    canSend: boolean;
   };
 }
 
 export interface PlanWarnings {
   users: boolean;
   servers: boolean;
-  queues: boolean;
-  messages: boolean;
+  workspaces: boolean;
 }
 
 export interface CurrentPlanInfo {

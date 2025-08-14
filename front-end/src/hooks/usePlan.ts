@@ -38,50 +38,23 @@ export function usePlanPermissions() {
       canAddServer: false,
       canAddQueue: false,
       canSendMessages: false,
-      canExportData: false,
-      canAccessRouting: false,
-      hasAdvancedMetrics: false,
-      hasAdvancedAlerts: false,
+      canAddExchange: false,
+      canAddVirtualHost: false,
+      canAddRabbitMQUser: false,
+      canInviteUsers: false,
       hasPrioritySupport: false,
     };
   }
 
   return {
-    canAddServer: planData.usage.servers.canAdd,
-    canAddQueue: planData.usage.queues.canAdd,
-    canSendMessages: planData.usage.messages.canSend,
-    canExportData: planData.planFeatures.canExportData,
-    canAccessRouting: planData.planFeatures.canAccessRouting,
-    hasAdvancedMetrics: planData.planFeatures.hasAdvancedMetrics,
-    hasAdvancedAlerts: planData.planFeatures.hasAdvancedAlerts,
+    canAddServer: planData.planFeatures.canAddServer,
+    canAddQueue: planData.planFeatures.canAddQueue,
+    canSendMessages: planData.planFeatures.canSendMessages,
+    canAddExchange: planData.planFeatures.canAddExchange,
+    canAddVirtualHost: planData.planFeatures.canAddVirtualHost,
+    canAddRabbitMQUser: planData.planFeatures.canAddRabbitMQUser,
+    canInviteUsers: planData.planFeatures.canInviteUsers,
     hasPrioritySupport: planData.planFeatures.hasPrioritySupport,
-  };
-}
-
-/**
- * Utility hook to check memory feature permissions
- */
-export function useMemoryPermissions() {
-  const { planData } = usePlanData();
-
-  if (!planData) {
-    return {
-      canViewBasicMemoryMetrics: false,
-      canViewAdvancedMemoryMetrics: false,
-      canViewExpertMemoryMetrics: false,
-      canViewMemoryTrends: false,
-      canViewMemoryOptimization: false,
-    };
-  }
-
-  return {
-    canViewBasicMemoryMetrics: planData.planFeatures.canViewBasicMemoryMetrics,
-    canViewAdvancedMemoryMetrics:
-      planData.planFeatures.canViewAdvancedMemoryMetrics,
-    canViewExpertMemoryMetrics:
-      planData.planFeatures.canViewExpertMemoryMetrics,
-    canViewMemoryTrends: planData.planFeatures.canViewMemoryTrends,
-    canViewMemoryOptimization: planData.planFeatures.canViewMemoryOptimization,
   };
 }
 
@@ -95,8 +68,7 @@ export function useUsageStats() {
     return {
       users: { current: 0, limit: 1, percentage: 0, canAdd: false },
       servers: { current: 0, limit: 1, percentage: 0, canAdd: false },
-      queues: { current: 0, limit: 1, percentage: 0, canAdd: false },
-      messages: { current: 0, limit: 0, percentage: 0, canSend: false },
+      workspaces: { current: 0, limit: 1, percentage: 0, canAdd: false },
     };
   }
 

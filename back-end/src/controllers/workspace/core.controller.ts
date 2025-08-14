@@ -8,7 +8,6 @@ import {
   CreateWorkspaceSchema,
   UpdateWorkspaceSchema,
 } from "@/schemas/workspace";
-import { getMonthlyMessageCount } from "@/services/plan/plan.service";
 
 const coreRoutes = new Hono();
 
@@ -58,26 +57,6 @@ coreRoutes.get("/current", async (c) => {
   } catch (error) {
     logger.error("Error fetching current workspace:", error);
     return c.json({ error: "Failed to fetch workspace" }, 500);
-  }
-});
-
-// Get current workspace monthly message count
-coreRoutes.get("/current/monthly-message-count", async (c) => {
-  const user = c.get("user");
-
-  try {
-    const count = await getMonthlyMessageCount(user.workspaceId);
-    return c.json({
-      workspaceId: user.workspaceId,
-      monthlyMessageCount: count,
-      period: {
-        year: new Date().getFullYear(),
-        month: new Date().getMonth() + 1,
-      },
-    });
-  } catch (error) {
-    logger.error("Error fetching monthly message count:", error);
-    return c.json({ error: "Failed to fetch message count" }, 500);
   }
 });
 

@@ -494,10 +494,6 @@ class ApiClient {
     return this.workspaceClient.deleteWorkspaceData(companyId);
   }
 
-  async getCurrentWorkspaceMonthlyMessageCount() {
-    return this.workspaceClient.getCurrentWorkspaceMonthlyMessageCount();
-  }
-
   // Logs methods
   async getLogs(query?: LogQuery) {
     return this.logsClient.getLogs(query);

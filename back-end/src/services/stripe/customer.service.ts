@@ -93,7 +93,6 @@ export class StripeCustomerService {
     successUrl,
     cancelUrl,
     customerEmail,
-    trialDays = 14,
   }: CreateCheckoutSessionParams) {
     try {
       if (plan === WorkspacePlan.FREE) {
@@ -129,7 +128,6 @@ export class StripeCustomerService {
           billingInterval,
         },
         subscription_data: {
-          trial_period_days: trialDays,
           metadata: {
             workspaceId,
             plan,

@@ -18,7 +18,6 @@ import {
   useQueue,
   useQueueConsumers,
   useQueueBindings,
-  useMonthlyMessageCount,
   useDeleteQueue,
   useQueueLiveRates,
 } from "@/hooks/useApi";
@@ -41,10 +40,6 @@ const QueueDetail = () => {
   const { selectedServerId } = useServerContext();
   const { toast } = useToast();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-
-  const { data: monthlyMessageData } = useMonthlyMessageCount();
-  // Use real monthly message count from API
-  const monthlyMessageCount = monthlyMessageData?.monthlyMessageCount || 0;
 
   const {
     data: queueData,
@@ -132,7 +127,6 @@ const QueueDetail = () => {
                 queueName={queueName}
                 selectedServerId={selectedServerId}
                 messageCount={queue?.messages || 0}
-                monthlyMessageCount={monthlyMessageCount}
                 consumerCount={queue?.consumers || 0}
                 onNavigateBack={handleNavigateBack}
                 onRefetch={refetch}

@@ -1,27 +1,21 @@
 #!/usr/bin/env tsx
 
-import { execSync } from "child_process";
-import { writeFileSync, readFileSync, existsSync } from "fs";
-import { join } from "path";
+import { execSync } from "node:child_process";
+import { writeFileSync, readFileSync, existsSync } from "node:fs";
+import { join } from "node:path";
 
 const PLAN_CONFIG = {
   DEVELOPER: {
     name: "Developer Plan",
-    description: "Perfect for individual developers and small teams",
-    monthly: 4900, // $49.00
-    yearly: 39000, // $390.00 (20% discount)
+    description: "Ideal for individual developers and small projects",
+    monthly: 1000, // $10.00
+    yearly: 10000, // $100.00 (roughly $8.33/month)
   },
-  STARTUP: {
-    name: "Startup Plan",
-    description: "Ideal for growing startups and medium teams",
-    monthly: 9900, // $99.00
-    yearly: 79200, // $792.00 (20% discount)
-  },
-  BUSINESS: {
-    name: "Business Plan",
-    description: "Enterprise-grade solution for large organizations",
-    monthly: 24900, // $249.00
-    yearly: 199200, // $1992.00 (20% discount)
+  ENTERPRISE: {
+    name: "Enterprise Plan",
+    description: "Enterprise-grade features for mission-critical systems",
+    monthly: 5000, // $50.00
+    yearly: 50000, // $500.00 (roughly $41.67/month)
   },
 };
 
@@ -43,6 +37,9 @@ class StripeSetup {
           break;
         case "clean":
           await this.cleanUp();
+          break;
+        case "migrate":
+          await this.migratePricing();
           break;
         case "verify":
           await this.verify();
@@ -254,7 +251,8 @@ class StripeSetup {
             p.metadata?.created_by === "rabbit_hq" ||
             p.name?.includes("Developer Plan") ||
             p.name?.includes("Startup Plan") ||
-            p.name?.includes("Business Plan")
+            p.name?.includes("Business Plan") ||
+            p.name?.includes("Enterprise Plan")
         );
 
         if (testProducts.length === 0) {
@@ -284,6 +282,33 @@ class StripeSetup {
     }
   }
 
+  private async migratePricing() {
+    console.log("🔄 Migrating to new pricing structure...\n");
+
+    this.checkStripeCli();
+    this.checkLogin();
+    this.checkMode();
+
+    console.log("Step 1: Listing current products and prices...");
+    await this.listProducts();
+
+    console.log("\nStep 2: Creating new prices with updated structure...");
+    await this.createAll();
+
+    console.log("\nStep 3: Instructions for cleanup:");
+    console.log(
+      "🔍 Review the products above and manually deactivate old prices:"
+    );
+    console.log("  1. Find old price IDs from the list");
+    console.log("  2. Run: stripe prices update price_old_id --active=false");
+    console.log("  3. Update your .env file with the new price IDs");
+    console.log("  4. Test your checkout flow");
+
+    console.log(
+      "\n💡 You can also run 'npm run setup-stripe clean' to remove old products"
+    );
+  }
+
   private async verify() {
     console.log("🔍 Verifying Stripe configuration...\n");
 
@@ -296,10 +321,8 @@ class StripeSetup {
       "STRIPE_SECRET_KEY",
       "STRIPE_DEVELOPER_MONTHLY_PRICE_ID",
       "STRIPE_DEVELOPER_YEARLY_PRICE_ID",
-      "STRIPE_STARTUP_MONTHLY_PRICE_ID",
-      "STRIPE_STARTUP_YEARLY_PRICE_ID",
-      "STRIPE_BUSINESS_MONTHLY_PRICE_ID",
-      "STRIPE_BUSINESS_YEARLY_PRICE_ID",
+      "STRIPE_ENTERPRISE_MONTHLY_PRICE_ID",
+      "STRIPE_ENTERPRISE_YEARLY_PRICE_ID",
     ];
 
     // Load .env if it exists
@@ -440,6 +463,7 @@ Commands:
   create    Create all products and prices (default)
   list      List existing products and prices
   clean     Archive test products
+  migrate   Migrate from old pricing to new pricing structure
   verify    Verify current configuration
   webhook   Start webhook forwarding
   test      Test Stripe CLI commands
@@ -447,11 +471,17 @@ Commands:
   help      Show this help
 
 Examples:
-  npm run setup-stripe create    # Create everything
-  npm run setup-stripe mode      # Check current mode
-  npm run setup-stripe test      # Test CLI commands first
-  npm run setup-stripe list      # See what exists
-  npm run setup-stripe webhook   # Start webhook forwarding
+  npm run setup-stripe migrate     # Migrate to new pricing ($10 Dev, $50 Enterprise)
+  npm run setup-stripe create      # Create everything
+  npm run setup-stripe mode        # Check current mode
+  npm run setup-stripe test        # Test CLI commands first
+  npm run setup-stripe list        # See what exists
+  npm run setup-stripe clean       # Clean up old products
+  npm run setup-stripe webhook     # Start webhook forwarding
+
+New Pricing Structure:
+  Developer: $10/month, $100/year
+  Enterprise: $50/month, $500/year
 
 Prerequisites:
   - Stripe CLI installed (✅ you have this)

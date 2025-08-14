@@ -39,8 +39,6 @@ export const ResourceUsage = ({
   metricsError,
   overviewError,
 }: ResourceUsageProps) => {
-  console.log("ResourceUsage rendered with metrics:", metrics);
-  console.log("ResourceUsage rendered with overview:", overview);
   const getUsageColor = (percentage: number) => {
     if (percentage < 50) return "bg-green-500";
     if (percentage < 80) return "bg-yellow-500";

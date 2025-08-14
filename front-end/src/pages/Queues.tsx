@@ -7,8 +7,7 @@ import { Input } from "@/components/ui/input";
 import { NoServerConfigured } from "@/components/NoServerConfigured";
 import { useServerContext } from "@/contexts/ServerContext";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
-import { useQueues, queryKeys, useMonthlyMessageCount } from "@/hooks/useApi";
-import { PlanUpgradeModal } from "@/components/plans/PlanUpgradeModal";
+import { useQueues, queryKeys } from "@/hooks/useApi";
 import { QueueHeader } from "@/components/Queues/QueueHeader";
 import { PlanRestrictions } from "@/components/Queues/PlanRestrictions";
 import { QueueTable } from "@/components/Queues/QueueTable";
@@ -27,28 +26,26 @@ const Queues = () => {
   const [restrictionsDismissed, setRestrictionsDismissed] = useState(false);
   const { selectedServerId, hasServers } = useServerContext();
   const { data: queuesData, isLoading, refetch } = useQueues(selectedServerId);
-  const { data: monthlyMessageData } = useMonthlyMessageCount();
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   const queues = useMemo(() => queuesData?.queues || [], [queuesData?.queues]);
   const queueCount = queues.length;
 
-  // Use real monthly message count from API
-  const monthlyMessageCount = monthlyMessageData?.monthlyMessageCount || 0;
+  // Removed monthly message count since we no longer track it
+  // const monthlyMessageCount = monthlyMessageData?.monthlyMessageCount || 0;
 
   const handleAddQueueClick = () => {
     if (canAddQueue) {
       // Original add queue logic - AddQueueForm will handle this
       return;
     } else {
-      // Show upgrade modal for Free plan users
-      setShowUpgradeModal(true);
+      // Navigate to plans page for Free plan users
+      navigate("/plans");
     }
   };
 
   const handleSendMessageClick = () => {
     if (!canSendMessages) {
-      setShowUpgradeModal(true);
+      navigate("/plans");
     }
     // If canSendMessages is true, the SendMessageDialog will handle it
   };
@@ -143,7 +140,6 @@ const Queues = () => {
                   selectedServerId={selectedServerId}
                   workspacePlan={workspacePlan}
                   queueCount={queueCount}
-                  monthlyMessageCount={monthlyMessageCount}
                   workspaceLoading={workspaceLoading}
                   canAddQueue={canAddQueue}
                   canSendMessages={canSendMessages}
@@ -159,10 +155,9 @@ const Queues = () => {
               <PlanRestrictions
                 workspacePlan={workspacePlan}
                 queueCount={queueCount}
-                monthlyMessageCount={monthlyMessageCount}
                 canAddQueue={canAddQueue}
                 canSendMessages={canSendMessages}
-                onUpgrade={() => setShowUpgradeModal(true)}
+                onUpgrade={() => navigate("/plans")}
                 onDismiss={() => setRestrictionsDismissed(true)}
               />
             )}
@@ -189,14 +184,6 @@ const Queues = () => {
                 navigate(`/queues/${queueName}`)
               }
               onRefetch={handleRefetch}
-            />
-
-            {/* Plan Upgrade Modal */}
-            <PlanUpgradeModal
-              isOpen={showUpgradeModal}
-              onClose={() => setShowUpgradeModal(false)}
-              currentPlan={workspacePlan}
-              feature="queue creation"
             />
           </div>
         </main>

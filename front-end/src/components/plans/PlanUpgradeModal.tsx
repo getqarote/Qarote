@@ -97,10 +97,12 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
             </div>
           )}
 
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-2 gap-6">
             {plans.map((planData) => {
-              const isPopular = planData.plan === WorkspacePlan.STARTUP;
-              const price = `$${Math.floor(planData.monthlyPrice / 100)}`;
+              const isPopular = planData.plan === WorkspacePlan.DEVELOPER;
+              // Use fixed pricing for the new plan structure
+              const price =
+                planData.plan === WorkspacePlan.DEVELOPER ? "$10" : "$50";
 
               return (
                 <div
@@ -119,7 +121,10 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
 
                   <div className="text-center mb-6">
                     <h3 className="text-xl font-bold text-gray-900">
-                      {planData.displayName}
+                      {planData.displayName ||
+                        (planData.plan === WorkspacePlan.DEVELOPER
+                          ? "Developer"
+                          : "Enterprise")}
                     </h3>
                     <div className="mt-2">
                       <span className="text-3xl font-bold text-gray-900">
@@ -133,54 +138,57 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
                     <li className="flex items-center">
                       <Check className="w-4 h-4 text-green-500 mr-2" />
                       <span className="text-sm text-gray-700">
-                        {planData.maxQueues || "Unlimited"} queues
+                        {planData.plan === WorkspacePlan.DEVELOPER
+                          ? "Unlimited"
+                          : "Unlimited"}{" "}
+                        queues
                       </span>
                     </li>
                     <li className="flex items-center">
                       <Check className="w-4 h-4 text-green-500 mr-2" />
                       <span className="text-sm text-gray-700">
-                        {planData.maxServers
-                          ? `${planData.maxServers} servers`
-                          : "Unlimited servers"}
+                        {planData.plan === WorkspacePlan.DEVELOPER
+                          ? "Unlimited"
+                          : "Unlimited"}{" "}
+                        servers
                       </span>
                     </li>
                     <li className="flex items-center">
                       <Check className="w-4 h-4 text-green-500 mr-2" />
                       <span className="text-sm text-gray-700">
-                        {planData.maxUsers || "Unlimited"} team members
+                        {planData.plan === WorkspacePlan.DEVELOPER
+                          ? "5"
+                          : "Unlimited"}{" "}
+                        team members
                       </span>
                     </li>
                     <li className="flex items-center">
                       <Check className="w-4 h-4 text-green-500 mr-2" />
                       <span className="text-sm text-gray-700">
-                        {planData.maxMessagesPerMonth
-                          ? `${planData.maxMessagesPerMonth.toLocaleString()} messages/month`
-                          : "Unlimited messages"}
+                        Message sending & queue management
                       </span>
                     </li>
-                    {planData.hasAdvancedMetrics && (
-                      <li className="flex items-center">
-                        <Check className="w-4 h-4 text-green-500 mr-2" />
-                        <span className="text-sm text-gray-700">
-                          Advanced metrics
-                        </span>
-                      </li>
-                    )}
-                    {planData.hasAdvancedAlerts && (
-                      <li className="flex items-center">
-                        <Check className="w-4 h-4 text-green-500 mr-2" />
-                        <span className="text-sm text-gray-700">
-                          Advanced alerts
-                        </span>
-                      </li>
-                    )}
-                    {planData.hasPrioritySupport && (
-                      <li className="flex items-center">
-                        <Check className="w-4 h-4 text-green-500 mr-2" />
-                        <span className="text-sm text-gray-700">
-                          Priority support
-                        </span>
-                      </li>
+                    {planData.plan === WorkspacePlan.ENTERPRISE && (
+                      <>
+                        <li className="flex items-center">
+                          <Check className="w-4 h-4 text-green-500 mr-2" />
+                          <span className="text-sm text-gray-700">
+                            Advanced metrics & analytics
+                          </span>
+                        </li>
+                        <li className="flex items-center">
+                          <Check className="w-4 h-4 text-green-500 mr-2" />
+                          <span className="text-sm text-gray-700">
+                            Priority support
+                          </span>
+                        </li>
+                        <li className="flex items-center">
+                          <Check className="w-4 h-4 text-green-500 mr-2" />
+                          <span className="text-sm text-gray-700">
+                            Advanced alerts & notifications
+                          </span>
+                        </li>
+                      </>
                     )}
                   </ul>
 
@@ -201,7 +209,11 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
                     ) : (
                       <>
                         <Zap className="w-4 h-4 inline-block mr-2" />
-                        Upgrade to {planData.displayName}
+                        Upgrade to{" "}
+                        {planData.displayName ||
+                          (planData.plan === WorkspacePlan.DEVELOPER
+                            ? "Developer"
+                            : "Enterprise")}
                       </>
                     )}
                   </button>

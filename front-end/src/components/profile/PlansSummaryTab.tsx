@@ -28,10 +28,8 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
         return "Free";
       case WorkspacePlan.DEVELOPER:
         return "Developer";
-      case WorkspacePlan.STARTUP:
-        return "Startup";
-      case WorkspacePlan.BUSINESS:
-        return "Business";
+      case WorkspacePlan.ENTERPRISE:
+        return "Enterprise";
       default:
         return "Unknown";
     }
@@ -43,9 +41,7 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
       case WorkspacePlan.FREE:
         return WorkspacePlan.DEVELOPER;
       case WorkspacePlan.DEVELOPER:
-        return WorkspacePlan.STARTUP;
-      case WorkspacePlan.STARTUP:
-        return WorkspacePlan.BUSINESS;
+        return WorkspacePlan.ENTERPRISE;
       default:
         return null;
     }
@@ -62,30 +58,22 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
       icon: <Zap className="w-5 h-5" />,
       color: "text-blue-600",
       bgColor: "bg-blue-50",
-      benefits: ["2 servers", "10 queues", "100 messages/month", "Data export"],
+      benefits: [
+        "Add exchanges",
+        "Add virtual hosts",
+        "Add RabbitMQ users",
+        "Priority support",
+      ],
     },
-    [WorkspacePlan.STARTUP]: {
-      icon: <TrendingUp className="w-5 h-5" />,
+    [WorkspacePlan.ENTERPRISE]: {
+      icon: <Crown className="w-5 h-5" />,
       color: "text-purple-600",
       bgColor: "bg-purple-50",
       benefits: [
-        "5 servers",
-        "50 queues",
-        "1K messages/month",
-        "Advanced metrics",
-        "Smart alerts",
-      ],
-    },
-    [WorkspacePlan.BUSINESS]: {
-      icon: <Crown className="w-5 h-5" />,
-      color: "text-green-600",
-      bgColor: "bg-green-50",
-      benefits: [
-        "Unlimited servers",
-        "200 queues",
-        "Unlimited messages",
-        "Priority support",
-        "All features",
+        "All Developer features",
+        "Email support",
+        "Phone support",
+        "Screen sharing",
       ],
     },
   };
@@ -139,35 +127,35 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
               </ul>
             </div>
 
-            {/* Usage Overview */}
+            {/* Features Overview */}
             <div className="pt-4 border-t">
-              <h4 className="font-medium text-gray-900 mb-3">Current Usage:</h4>
+              <h4 className="font-medium text-gray-900 mb-3">Plan Features:</h4>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="text-center">
                   <div className="text-lg font-semibold text-gray-900">
-                    {currentFeatures.maxServers || "∞"}
+                    {currentFeatures?.canAddExchange ? "✓" : "✗"}
                   </div>
-                  <div className="text-xs text-gray-600">Servers</div>
+                  <div className="text-xs text-gray-600">Add Exchanges</div>
                 </div>
                 <div className="text-center">
                   <div className="text-lg font-semibold text-gray-900">
-                    {currentFeatures.maxQueues || "∞"}
+                    {currentFeatures?.canAddVirtualHost ? "✓" : "✗"}
                   </div>
-                  <div className="text-xs text-gray-600">Queues</div>
+                  <div className="text-xs text-gray-600">Add VHosts</div>
                 </div>
                 <div className="text-center">
                   <div className="text-lg font-semibold text-gray-900">
-                    {currentFeatures.maxUsers || "∞"}
+                    {currentFeatures?.canAddRabbitMQUser ? "✓" : "✗"}
                   </div>
-                  <div className="text-xs text-gray-600">Users</div>
+                  <div className="text-xs text-gray-600">Add Users</div>
                 </div>
                 <div className="text-center">
                   <div className="text-lg font-semibold text-gray-900">
-                    {currentFeatures.maxMessagesPerMonth
-                      ? `${(currentFeatures.maxMessagesPerMonth / 1000).toFixed(0)}K`
-                      : "∞"}
+                    {currentFeatures?.hasPrioritySupport
+                      ? "Priority"
+                      : "Community"}
                   </div>
-                  <div className="text-xs text-gray-600">Messages/mo</div>
+                  <div className="text-xs text-gray-600">Support</div>
                 </div>
               </div>
             </div>

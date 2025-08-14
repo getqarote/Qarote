@@ -45,10 +45,8 @@ export const CurrentPlanCard: React.FC<CurrentPlanCardProps> = ({
         return "Free";
       case WorkspacePlan.DEVELOPER:
         return "Developer";
-      case WorkspacePlan.STARTUP:
-        return "Startup";
-      case WorkspacePlan.BUSINESS:
-        return "Business";
+      case WorkspacePlan.ENTERPRISE:
+        return "Enterprise";
       default:
         return "Unknown";
     }

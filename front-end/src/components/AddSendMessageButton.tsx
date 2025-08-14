@@ -18,8 +18,9 @@ export const AddSendMessageButton = ({
   const { workspacePlan, canSendMessages, planData, isPlanLoading } =
     useWorkspace();
 
-  const monthlyMessageCount = planData?.usage.messages.current || 0;
-  const messageLimit = planData?.usage.messages.limit;
+  // Since we removed message tracking, these are no longer available
+  // const monthlyMessageCount = planData?.usage.messages.current || 0;
+  // const messageLimit = planData?.usage.messages.limit;
 
   const getMessageButtonConfig = () => {
     if (isPlanLoading || canSendMessages) return null;
@@ -35,20 +36,17 @@ export const AddSendMessageButton = ({
       case WorkspacePlan.DEVELOPER:
         return {
           text: "Send Message",
-          badge: `${monthlyMessageCount}/${messageLimit || 100}`,
+          badge: "Pro",
           badgeColor: "bg-blue-500",
-          title: `You've reached your monthly message limit (${messageLimit}). Upgrade to send more messages.`,
+          title: "Send messages available with Developer plan",
         };
-      case WorkspacePlan.STARTUP:
+      case WorkspacePlan.ENTERPRISE:
         return {
           text: "Send Message",
-          badge: `${monthlyMessageCount}/${messageLimit || 1000}`,
+          badge: "Pro",
           badgeColor: "bg-purple-500",
-          title: `You've reached your monthly message limit (${messageLimit}). Upgrade to send more messages.`,
+          title: "Send messages available with Enterprise plan",
         };
-      case WorkspacePlan.BUSINESS:
-        // Business plan has unlimited messages, so this shouldn't show
-        return null;
       default:
         return {
           text: "Send Message",

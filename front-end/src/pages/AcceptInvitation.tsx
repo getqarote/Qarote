@@ -166,8 +166,7 @@ const AcceptInvitation = () => {
     {
       FREE: "Free",
       DEVELOPER: "Developer",
-      STARTUP: "Startup",
-      BUSINESS: "Business",
+      ENTERPRISE: "Enterprise",
     }[invitation?.workspace.plan as string] || invitation?.workspace.plan;
 
   return (

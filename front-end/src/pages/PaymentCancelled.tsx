@@ -16,9 +16,7 @@ const PaymentCancelled: React.FC = () => {
       case WorkspacePlan.FREE:
         return WorkspacePlan.DEVELOPER;
       case WorkspacePlan.DEVELOPER:
-        return WorkspacePlan.STARTUP;
-      case WorkspacePlan.STARTUP:
-        return WorkspacePlan.BUSINESS;
+        return WorkspacePlan.ENTERPRISE;
       default:
         return null;
     }

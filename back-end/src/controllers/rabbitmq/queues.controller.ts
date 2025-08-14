@@ -11,6 +11,7 @@ import {
   getWorkspacePlan,
   getWorkspaceResourceCounts,
   validateQueueCreationOnServer,
+  validateQueueCreation,
 } from "@/services/plan/plan.service";
 import {
   createAmqpClient,
@@ -120,8 +121,7 @@ queuesController.get("/servers/:id/queues", async (c) => {
       );
 
       const upgradeRecommendation = getUpgradeRecommendationForOverLimit(
-        server.workspace.plan,
-        queues.length
+        server.workspace.plan
       );
 
       response.warning = {
@@ -284,15 +284,13 @@ queuesController.post(
       ]);
 
       logger.info(
-        `Queue creation validation: Plan=${plan}, Current queues=${resourceCounts.queues}, Server over limit=${server.isOverQueueLimit}`
+        `Queue creation validation: Plan=${plan}, Current servers=${resourceCounts.servers}, Server over limit=${server.isOverQueueLimit}`
       );
 
       // Use enhanced validation that checks server over-limit status
       validateQueueCreationOnServer(
         plan,
-        resourceCounts.queues,
-        server.isOverQueueLimit || false,
-        server.name
+        0 // Queue count is no longer tracked in resource counts
       );
 
       // Create the queue via RabbitMQ API

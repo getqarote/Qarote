@@ -7,40 +7,38 @@ import { BaseApiClient } from "./baseClient";
 import type { WorkspacePlan } from "@/types/plans";
 
 export interface PlanFeatures {
-  // Feature flags
+  // Core permissions
   canAddQueue: boolean;
   canSendMessages: boolean;
   canAddServer: boolean;
-  canExportData: boolean;
-  canAccessRouting: boolean;
-  hasAdvancedMetrics: boolean;
-  hasAdvancedAlerts: boolean;
-  hasPrioritySupport: boolean;
-
-  // Memory features
-  canViewBasicMemoryMetrics: boolean;
-  canViewAdvancedMemoryMetrics: boolean;
-  canViewExpertMemoryMetrics: boolean;
-  canViewMemoryTrends: boolean;
-  canViewMemoryOptimization: boolean;
+  canAddExchange: boolean;
+  canAddVirtualHost: boolean;
+  canAddRabbitMQUser: boolean;
+  canInviteUsers: boolean;
 
   // Limits
   maxServers?: number;
-  maxQueues?: number;
+  maxWorkspaces?: number;
   maxUsers?: number;
-  maxMessagesPerMonth?: number;
+  maxInvitations?: number;
+
+  // Support features
+  hasCommunitySupport: boolean;
+  hasPrioritySupport: boolean;
+  hasEmailAlerts: boolean;
 
   // RabbitMQ Version Support
   supportedRabbitMqVersions: string[];
+
+  // Pricing (in cents)
+  monthlyPrice: number;
+  yearlyPrice: number;
+  userCostPerMonth?: number;
 
   // Display information
   displayName: string;
   description: string;
   color: string;
-
-  // Pricing (in cents)
-  monthlyPrice: number;
-  yearlyPrice: number;
 
   // Feature descriptions for UI
   featureDescriptions: string[];
@@ -57,15 +55,13 @@ export interface UsageInfo {
 export interface PlanUsage {
   users: UsageInfo;
   servers: UsageInfo;
-  queues: UsageInfo;
-  messages: UsageInfo;
+  workspaces: UsageInfo;
 }
 
 export interface PlanWarnings {
   users: boolean;
   servers: boolean;
-  queues: boolean;
-  messages: boolean;
+  workspaces: boolean;
 }
 
 export interface CurrentPlanResponse {

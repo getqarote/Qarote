@@ -46,10 +46,8 @@ const envSchema = z.object({
   // Stripe Price IDs
   STRIPE_DEVELOPER_MONTHLY_PRICE_ID: z.string(),
   STRIPE_DEVELOPER_YEARLY_PRICE_ID: z.string(),
-  STRIPE_STARTUP_MONTHLY_PRICE_ID: z.string(),
-  STRIPE_STARTUP_YEARLY_PRICE_ID: z.string(),
-  STRIPE_BUSINESS_MONTHLY_PRICE_ID: z.string(),
-  STRIPE_BUSINESS_YEARLY_PRICE_ID: z.string(),
+  STRIPE_ENTERPRISE_MONTHLY_PRICE_ID: z.string(),
+  STRIPE_ENTERPRISE_YEARLY_PRICE_ID: z.string(),
 
   // Sentry Configuration
   SENTRY_DSN: z.string(),
@@ -125,13 +123,9 @@ export const stripeConfig = {
       monthly: config.STRIPE_DEVELOPER_MONTHLY_PRICE_ID,
       yearly: config.STRIPE_DEVELOPER_YEARLY_PRICE_ID,
     },
-    startup: {
-      monthly: config.STRIPE_STARTUP_MONTHLY_PRICE_ID,
-      yearly: config.STRIPE_STARTUP_YEARLY_PRICE_ID,
-    },
-    business: {
-      monthly: config.STRIPE_BUSINESS_MONTHLY_PRICE_ID,
-      yearly: config.STRIPE_BUSINESS_YEARLY_PRICE_ID,
+    enterprise: {
+      monthly: config.STRIPE_ENTERPRISE_MONTHLY_PRICE_ID, // Reuse business prices for enterprise
+      yearly: config.STRIPE_ENTERPRISE_YEARLY_PRICE_ID, // Reuse business prices for enterprise
     },
   },
 } as const;

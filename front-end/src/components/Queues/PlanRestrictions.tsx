@@ -4,7 +4,6 @@ import { WorkspacePlan } from "@/types/plans";
 interface PlanRestrictionsProps {
   workspacePlan: WorkspacePlan;
   queueCount: number;
-  monthlyMessageCount: number;
   canAddQueue: boolean;
   canSendMessages: boolean;
   onUpgrade: () => void;
@@ -14,7 +13,6 @@ interface PlanRestrictionsProps {
 export function PlanRestrictions({
   workspacePlan,
   queueCount,
-  monthlyMessageCount,
   canAddQueue,
   canSendMessages,
   onUpgrade,
@@ -26,37 +24,31 @@ export function PlanRestrictions({
 
   const getQueueRestrictionMessage = () => {
     switch (workspacePlan) {
-      case "FREE":
+      case WorkspacePlan.FREE:
         return {
           title: "Queue creation is not available on the Free plan",
           description:
-            "Upgrade to Developer, Startup, or Business plan to create and manage custom queues.",
+            "Upgrade to Developer or Enterprise plan to create and manage custom queues.",
           buttonColor: "bg-orange-500 hover:bg-orange-600",
         };
-      case "DEVELOPER":
+      case WorkspacePlan.DEVELOPER:
         return {
-          title: `You've reached your queue limit (${queueCount}/10)`,
+          title: "Queue management available",
           description:
-            "Upgrade to Startup plan for 50 queues or Business plan for 200 queues.",
+            "You can create and manage queues with the Developer plan.",
           buttonColor: "bg-blue-500 hover:bg-blue-600",
         };
-      case "STARTUP":
+      case WorkspacePlan.ENTERPRISE:
         return {
-          title: `You've reached your queue limit (${queueCount}/50)`,
-          description: "Upgrade to Business plan for 200 queues.",
-          buttonColor: "bg-purple-500 hover:bg-purple-600",
-        };
-      case "BUSINESS":
-        return {
-          title: `You've reached your queue limit (${queueCount}/200)`,
+          title: "Full queue management available",
           description:
-            "Contact support for enterprise solutions with unlimited queues.",
-          buttonColor: "bg-green-500 hover:bg-green-600",
+            "You have unlimited queue management with the Enterprise plan.",
+          buttonColor: "bg-purple-500 hover:bg-purple-600",
         };
       default:
         return {
           title: "Queue creation is restricted",
-          description: "Upgrade your plan to create more queues.",
+          description: "Upgrade your plan to create queues.",
           buttonColor: "bg-orange-500 hover:bg-orange-600",
         };
     }
@@ -64,152 +56,101 @@ export function PlanRestrictions({
 
   const getMessageRestrictionMessage = () => {
     switch (workspacePlan) {
-      case "FREE":
+      case WorkspacePlan.FREE:
         return {
           title: "Message sending is not available on the Free plan",
           description:
-            "Upgrade to send messages to queues. Developer: 100/month, Startup: 1,000/month, Business: unlimited.",
+            "Upgrade to Developer or Enterprise plan to send messages to queues.",
           buttonColor: "bg-red-500 hover:bg-red-600",
         };
-      case "DEVELOPER":
+      case WorkspacePlan.DEVELOPER:
         return {
-          title: `You've reached your monthly message limit (${monthlyMessageCount}/100)`,
+          title: "Message sending available",
           description:
-            "Upgrade to Startup plan for 1,000 messages/month or Business plan for unlimited messages.",
+            "You can send messages to queues with the Developer plan.",
           buttonColor: "bg-blue-500 hover:bg-blue-600",
         };
-      case "STARTUP":
+      case WorkspacePlan.ENTERPRISE:
         return {
-          title: `You've reached your monthly message limit (${monthlyMessageCount}/1,000)`,
-          description: "Upgrade to Business plan for unlimited messages.",
+          title: "Full message management available",
+          description:
+            "You have unlimited message sending with the Enterprise plan.",
           buttonColor: "bg-purple-500 hover:bg-purple-600",
         };
       default:
         return {
           title: "Message sending is restricted",
-          description: "Upgrade your plan to send more messages.",
+          description: "Upgrade your plan to send messages.",
           buttonColor: "bg-red-500 hover:bg-red-600",
         };
     }
   };
 
-  return (
-    <div className="mb-6 space-y-4">
-      {!canAddQueue && (
-        <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg relative">
-          <button
-            onClick={onDismiss}
-            className="absolute top-2 right-2 p-1 hover:bg-orange-100 rounded-full transition-colors"
-            title="Dismiss notification"
-          >
-            <X className="w-4 h-4 text-orange-600" />
-          </button>
-          <div className="flex items-center gap-3 pr-8">
-            <Crown className="w-5 h-5 text-orange-500" />
-            <div>
-              <p className="font-medium text-orange-900">
-                {getQueueRestrictionMessage().title}
-              </p>
-              <p className="text-sm text-orange-700 mt-1">
-                {getQueueRestrictionMessage().description}
-              </p>
-            </div>
-            <button
-              onClick={onUpgrade}
-              className={`ml-auto px-4 py-2 ${getQueueRestrictionMessage().buttonColor} text-white rounded-lg font-medium transition-colors`}
-            >
-              {workspacePlan === "BUSINESS" ? "Contact Support" : "Upgrade Now"}
-            </button>
-          </div>
-        </div>
-      )}
+  const queueRestriction = getQueueRestrictionMessage();
+  const messageRestriction = getMessageRestrictionMessage();
 
-      {!canSendMessages && (
-        <div
-          className={`p-4 border rounded-lg relative ${
-            workspacePlan === "FREE"
-              ? "bg-red-50 border-red-200"
-              : workspacePlan === "DEVELOPER"
-                ? "bg-blue-50 border-blue-200"
-                : workspacePlan === "STARTUP"
-                  ? "bg-purple-50 border-purple-200"
-                  : "bg-red-50 border-red-200"
-          }`}
-        >
-          <button
-            onClick={onDismiss}
-            className={`absolute top-2 right-2 p-1 rounded-full transition-colors ${
-              workspacePlan === "FREE"
-                ? "hover:bg-red-100"
-                : workspacePlan === "DEVELOPER"
-                  ? "hover:bg-blue-100"
-                  : workspacePlan === "STARTUP"
-                    ? "hover:bg-purple-100"
-                    : "hover:bg-red-100"
-            }`}
-            title="Dismiss notification"
-          >
-            <X
-              className={`w-4 h-4 ${
-                workspacePlan === "FREE"
-                  ? "text-red-600"
-                  : workspacePlan === "DEVELOPER"
-                    ? "text-blue-600"
-                    : workspacePlan === "STARTUP"
-                      ? "text-purple-600"
-                      : "text-red-600"
-              }`}
-            />
-          </button>
-          <div className="flex items-center gap-3 pr-8">
-            <MessageSquare
-              className={`w-5 h-5 ${
-                workspacePlan === "FREE"
-                  ? "text-red-500"
-                  : workspacePlan === "DEVELOPER"
-                    ? "text-blue-500"
-                    : workspacePlan === "STARTUP"
-                      ? "text-purple-500"
-                      : "text-red-500"
-              }`}
-            />
-            <div>
-              <p
-                className={`font-medium ${
-                  workspacePlan === "FREE"
-                    ? "text-red-900"
-                    : workspacePlan === "DEVELOPER"
-                      ? "text-blue-900"
-                      : workspacePlan === "STARTUP"
-                        ? "text-purple-900"
-                        : "text-red-900"
-                }`}
-              >
-                {getMessageRestrictionMessage().title}
-              </p>
-              <p
-                className={`text-sm mt-1 ${
-                  workspacePlan === "FREE"
-                    ? "text-red-700"
-                    : workspacePlan === "DEVELOPER"
-                      ? "text-blue-700"
-                      : workspacePlan === "STARTUP"
-                        ? "text-purple-700"
-                        : "text-red-700"
-                }`}
-              >
-                {getMessageRestrictionMessage().description}
-              </p>
-            </div>
+  return (
+    <div className="bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 rounded-lg p-4 mb-6">
+      <div className="flex justify-between items-start">
+        <div className="flex-1">
+          <div className="flex items-center gap-2 mb-2">
+            <Crown className="h-5 w-5 text-orange-500" />
+            <h3 className="font-medium text-gray-900">Plan Restrictions</h3>
+          </div>
+
+          <div className="space-y-3">
+            {!canAddQueue && (
+              <div className="flex items-start gap-3">
+                <div className="w-2 h-2 bg-orange-500 rounded-full mt-2 flex-shrink-0" />
+                <div>
+                  <p className="font-medium text-sm text-gray-800">
+                    {queueRestriction.title}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    {queueRestriction.description}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {!canSendMessages && (
+              <div className="flex items-start gap-3">
+                <MessageSquare className="h-4 w-4 text-red-500 mt-1 flex-shrink-0" />
+                <div>
+                  <p className="font-medium text-sm text-gray-800">
+                    {messageRestriction.title}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    {messageRestriction.description}
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="flex items-center gap-3 mt-4">
             <button
               onClick={onUpgrade}
-              className={`ml-auto px-4 py-2 ${getMessageRestrictionMessage().buttonColor} text-white rounded-lg font-medium transition-colors`}
+              className={`px-4 py-2 text-white text-sm font-medium rounded-md transition-colors ${
+                workspacePlan === WorkspacePlan.ENTERPRISE
+                  ? "bg-gray-500 hover:bg-gray-600"
+                  : "bg-orange-500 hover:bg-orange-600"
+              }`}
             >
-              {workspacePlan === "BUSINESS" ? "Contact Support" : "Upgrade Now"}
+              {workspacePlan === WorkspacePlan.ENTERPRISE
+                ? "Contact Support"
+                : "Upgrade Now"}
             </button>
           </div>
         </div>
-      )}
+
+        <button
+          onClick={onDismiss}
+          className="text-gray-400 hover:text-gray-600 transition-colors"
+        >
+          <X className="h-5 w-5" />
+        </button>
+      </div>
     </div>
   );
 }

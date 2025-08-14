@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { AddServerForm } from "@/components/AddServerFormComponent";
 import { WorkspacePlan } from "@/types/plans";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
-import { usePlanData } from "@/hooks/usePlan";
 
 interface AddServerButtonProps {
   onUpgradeClick: () => void;
@@ -14,9 +13,11 @@ export const AddServerButton = ({ onUpgradeClick }: AddServerButtonProps) => {
     workspacePlan,
     canAddServer,
     isLoading: workspaceLoading,
+    planData,
   } = useWorkspace();
-  const { usage } = usePlanData();
-  const serverUsage = usage?.servers || {
+
+  // Keep server usage since we still track servers
+  const serverUsage = planData?.usage?.servers || {
     current: 0,
     limit: 1,
     percentage: 0,
@@ -42,7 +43,7 @@ export const AddServerButton = ({ onUpgradeClick }: AddServerButtonProps) => {
           title:
             "You've reached your server limit. Upgrade to add more servers.",
         };
-      case WorkspacePlan.STARTUP:
+      case WorkspacePlan.ENTERPRISE:
         return {
           text: "Add Server",
           badge: `${serverUsage.current}/${serverUsage.limit || 5}`,

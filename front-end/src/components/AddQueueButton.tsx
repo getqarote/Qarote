@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { AddQueueForm } from "@/components/AddQueueForm";
 import { WorkspacePlan } from "@/types/plans";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
-import { usePlanData } from "@/hooks/usePlan";
 
 interface AddQueueButtonProps {
   serverId: string;
@@ -21,13 +20,15 @@ export const AddQueueButton = ({
     canAddQueue,
     isLoading: workspaceLoading,
   } = useWorkspace();
-  const { usage } = usePlanData();
-  const queueUsage = usage?.queues || {
-    current: 0,
-    limit: 1,
-    percentage: 0,
-    canAdd: false,
-  };
+
+  // Since we removed queue usage tracking, check permission directly
+  // const { usage } = usePlanData();
+  // const queueUsage = usage?.queues || {
+  //   current: 0,
+  //   limit: 1,
+  //   percentage: 0,
+  //   canAdd: false,
+  // };
 
   const getQueueButtonConfig = () => {
     if (workspaceLoading || canAddQueue) return null;
@@ -43,24 +44,16 @@ export const AddQueueButton = ({
       case WorkspacePlan.DEVELOPER:
         return {
           text: "Add Queue",
-          badge: `${queueUsage.current}/${queueUsage.limit || 10}`,
+          badge: "Pro",
           badgeColor: "bg-blue-500",
-          title: "You've reached your queue limit. Upgrade to add more queues.",
+          title: "Queues available with Developer plan",
         };
-      case WorkspacePlan.STARTUP:
+      case WorkspacePlan.ENTERPRISE:
         return {
           text: "Add Queue",
-          badge: `${queueUsage.current}/${queueUsage.limit || 50}`,
+          badge: "Pro",
           badgeColor: "bg-purple-500",
-          title: "You've reached your queue limit. Upgrade to add more queues.",
-        };
-      case WorkspacePlan.BUSINESS:
-        return {
-          text: "Add Queue",
-          badge: `${queueUsage.current}/${queueUsage.limit || 200}`,
-          badgeColor: "bg-green-500",
-          title:
-            "You've reached your queue limit. Contact support for enterprise solutions.",
+          title: "Queues available with Enterprise plan",
         };
       default:
         return {
