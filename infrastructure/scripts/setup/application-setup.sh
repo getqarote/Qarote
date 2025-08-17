@@ -101,8 +101,8 @@ fi
 # This will be replaced with actual IP by the setup script
 echo "🔗 Configuring database connection..."
 DB_SERVER_IP="{{DB_SERVER_IP}}"
-if [ ! -f /etc/rabbit-hq-config ] || ! grep -q "DB_SERVER_IP=${DB_SERVER_IP}" /etc/rabbit-hq-config; then
-    echo "DB_SERVER_IP=${DB_SERVER_IP}" > /etc/rabbit-hq-config
+if [ ! -f /etc/rabbithq-config ] || ! grep -q "DB_SERVER_IP=${DB_SERVER_IP}" /etc/rabbithq-config; then
+    echo "DB_SERVER_IP=${DB_SERVER_IP}" > /etc/rabbithq-config
     echo "Database connection configured to: ${DB_SERVER_IP}"
 else
     echo "Database connection already configured, skipping..."

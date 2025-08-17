@@ -89,17 +89,17 @@ fi
 
 # Create the main database (idempotent)
 echo "🗄️  Creating main database..."
-if ! dokku postgres:list | grep -q "rabbit-hq-db"; then
-    dokku postgres:create rabbit-hq-db
-    echo "Database 'rabbit-hq-db' created successfully"
+if ! dokku postgres:list | grep -q "rabbithq-db"; then
+    dokku postgres:create rabbithq-db
+    echo "Database 'rabbithq-db' created successfully"
 else
-    echo "Database 'rabbit-hq-db' already exists, skipping creation..."
+    echo "Database 'rabbithq-db' already exists, skipping creation..."
 fi
 
 # Configure PostgreSQL for external connections (idempotent)
 echo "🔗 Configuring PostgreSQL for external connections..."
-if ! dokku postgres:info rabbit-hq-db | grep -q "Exposed ports.*5432"; then
-    dokku postgres:expose rabbit-hq-db 5432
+if ! dokku postgres:info rabbithq-db | grep -q "Exposed ports.*5432"; then
+    dokku postgres:expose rabbithq-db 5432
     echo "PostgreSQL exposed on port 5432"
 else
     echo "PostgreSQL already exposed on port 5432, skipping..."

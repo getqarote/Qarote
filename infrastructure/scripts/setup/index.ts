@@ -24,28 +24,24 @@ export async function setupInfrastructure(
 
   try {
     // Get SSH key
-    const sshKey = await ensureSSHKey(environment);
+    const sshKey = await ensureSSHKey();
     Logger.success(`Using SSH key: ${sshKey.name}`);
 
     // Provision application server
-    const appServer = await provisionApplicationServer(environment);
+    const appServer = await provisionApplicationServer(environment, sshKey.id);
     Logger.success(
       `Application server ${appServer.name} is ready at ${appServer.public_net.ipv4.ip}`
     );
 
     // Provision database server
-    const dbServer = await provisionDatabaseServer(environment);
+    const dbServer = await provisionDatabaseServer(environment, sshKey.id);
     Logger.success(
       `Database server ${dbServer.name} is ready at ${dbServer.public_net.ipv4.ip}`
     );
 
     // Configure the servers to work together
-    await configureApplicationServer(appServer, environment, dbServer);
-    await configureDatabaseServer(
-      dbServer,
-      environment,
-      appServer.public_net.ipv4.ip
-    );
+    await configureApplicationServer(appServer);
+    await configureDatabaseServer(dbServer, appServer.public_net.ipv4.ip);
 
     // Setup load balancer if required
     const config = getServerConfig(environment);

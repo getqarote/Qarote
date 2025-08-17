@@ -105,7 +105,7 @@ export async function waitForSshReady(
           `${sshUser}@${serverIp}`,
           "echo SSH connection successful",
         ],
-        { stdio: "pipe" }
+        { stdio: "inherit" }
       );
 
       if (result.exitCode === 0) {
@@ -151,7 +151,7 @@ export async function testSshConnection(
         `${sshUser}@${serverIp}`,
         "sudo -n echo 'Sudo access confirmed'",
       ],
-      { stdio: "pipe" }
+      { stdio: "inherit" }
     );
 
     if (result.exitCode !== 0) {
@@ -228,7 +228,7 @@ export async function waitForSSH(
           `rabbithq@${serverIP}`,
           "echo SSH is available",
         ],
-        { stdio: "pipe" }
+        { stdio: "inherit" }
       );
 
       if (result.exitCode === 0) {
@@ -313,7 +313,7 @@ export async function uploadFile(
         localPath,
         `rabbithq@${serverIP}:${remotePath}`,
       ],
-      { stdio: "pipe" }
+      { stdio: "inherit" }
     );
 
     if (result.exitCode !== 0) {

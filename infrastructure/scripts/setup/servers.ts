@@ -9,11 +9,7 @@ import {
   uploadFile,
   waitForSSH,
 } from "./common";
-import {
-  ensureSSHKey,
-  getOrCreateHetznerServer,
-  waitForServerReady,
-} from "./hetzner";
+import { getOrCreateHetznerServer, waitForServerReady } from "./hetzner";
 
 /**
  * Get standard server config options based on environment
@@ -23,15 +19,15 @@ export function getServerConfig(environment: string): ServerConfig {
 
   return {
     applicationServer: {
-      name: `rabbit-hq-app-${environment}`,
+      name: `rabbithq-app-${environment}`,
       type: isProd ? "cpx31" : "cpx21",
     },
     databaseServer: {
-      name: `rabbit-hq-db-${environment}`,
+      name: `rabbithq-db-${environment}`,
       type: isProd ? "cpx31" : "cpx21",
     },
     loadBalancer: {
-      name: `rabbit-hq-lb-${environment}`,
+      name: `rabbithq-lb-${environment}`,
     },
   };
 }
@@ -57,7 +53,7 @@ export async function setupApplicationServer(
   Logger.info("Running application server setup script...");
   const scriptOutput = await executeRemoteCommands(serverIP, [
     "sudo chmod +x /tmp/application-setup.sh",
-    `sudo ENV=${environment} /tmp/application-setup.sh`,
+    `sudo ENV=${environment} /tmp/application-setup.sh`, // ??
   ]);
 
   if (scriptOutput.toLowerCase().includes("error")) {
@@ -106,12 +102,10 @@ export async function setupDatabaseServer(
  * Provision and configure application server
  */
 export async function provisionApplicationServer(
-  environment: string
+  environment: string,
+  sshKeyId: number
 ): Promise<HetznerServer> {
   Logger.info(`Provisioning application server for ${environment}...`);
-
-  // Get SSH key
-  const sshKey = await ensureSSHKey(environment);
 
   // Get server configuration
   const config = getServerConfig(environment);
@@ -120,7 +114,7 @@ export async function provisionApplicationServer(
   const server = await getOrCreateHetznerServer(
     config.applicationServer.name,
     config.applicationServer.type,
-    sshKey.id,
+    sshKeyId,
     environment
   );
 
@@ -137,12 +131,10 @@ export async function provisionApplicationServer(
  * Provision and configure database server
  */
 export async function provisionDatabaseServer(
-  environment: string
+  environment: string,
+  sshKeyId: number
 ): Promise<HetznerServer> {
   Logger.info(`Provisioning database server for ${environment}...`);
-
-  // Get SSH key
-  const sshKey = await ensureSSHKey(environment);
 
   // Get server configuration
   const config = getServerConfig(environment);
@@ -151,7 +143,7 @@ export async function provisionDatabaseServer(
   const server = await getOrCreateHetznerServer(
     config.databaseServer.name,
     config.databaseServer.type,
-    sshKey.id,
+    sshKeyId,
     environment
   );
 
@@ -168,12 +160,11 @@ export async function provisionDatabaseServer(
  * Configure application server with environment variables and settings
  */
 export async function configureApplicationServer(
-  server: HetznerServer,
-  environment: string,
-  dbServer: HetznerServer
+  server: HetznerServer
+  // dbServer: HetznerServer
 ): Promise<void> {
   const serverIP = server.public_net.ipv4.ip;
-  const dbServerIP = dbServer.public_net.ipv4.ip;
+  // const dbServerIP = dbServer.public_net.ipv4.ip;
 
   Logger.info(`Configuring application server at ${serverIP}...`);
 
@@ -181,19 +172,17 @@ export async function configureApplicationServer(
   await waitForSSH(serverIP);
 
   // Set up database connection info
-  const envVars = {
-    DATABASE_URL: `postgres://dokku:dokku@${dbServerIP}:5432/rabbithq`,
-    ENVIRONMENT: environment,
-    NODE_ENV: environment === "production" ? "production" : "development",
-  };
+  // const envVars = {
+  //   DATABASE_URL: `postgres://dokku:dokku@${dbServerIP}:5432/rabbithq`,
+  // };
 
   // Create app if it doesn't exist
   await executeRemoteCommands(serverIP, [
     "sudo dokku apps:create rabbithq || true",
-    `sudo dokku config:set rabbithq ${Object.entries(envVars)
-      .map(([key, value]) => `${key}="${value}"`)
-      .join(" ")}`,
-    "sudo dokku domains:add rabbithq rabbit-hq.io",
+    // `sudo dokku config:set rabbithq ${Object.entries(envVars)
+    //   .map(([key, value]) => `${key}="${value}"`)
+    //   .join(" ")}`,
+    "sudo dokku domains:add rabbithq rabbithq.io",
   ]);
 
   Logger.success("Application server configuration completed!");
@@ -204,7 +193,6 @@ export async function configureApplicationServer(
  */
 export async function configureDatabaseServer(
   server: HetznerServer,
-  environment: string,
   appServerIP: string
 ): Promise<void> {
   const serverIP = server.public_net.ipv4.ip;

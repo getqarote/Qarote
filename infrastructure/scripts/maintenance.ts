@@ -7,12 +7,12 @@
  * in staging and production environments using the dokku-maintenance plugin.
  */
 
+import path from "node:path";
+import fs from "node:fs/promises";
 import { program } from "commander";
 import { config } from "dotenv";
-import path from "path";
 import chalk from "chalk";
-import fs from "fs/promises";
-import { executeCommand, Logger } from "./utils.js";
+import { executeCommand, Logger } from "./utils";
 
 // Load environment variables from staging by default
 config({ path: path.join(process.cwd(), "environments", "staging", ".env") });
@@ -81,7 +81,7 @@ async function getMaintenanceConfig(
   return {
     servers,
     sshUser: "root",
-    appName: "rabbit-hq",
+    appName: "rabbithq",
   };
 }
 

@@ -57,9 +57,7 @@ export async function hetznerApiRequest<T>(
 /**
  * Get or create SSH key in Hetzner Cloud
  */
-export async function ensureSSHKey(
-  environment: string
-): Promise<HetznerSSHKey> {
+export async function ensureSSHKey(): Promise<HetznerSSHKey> {
   Logger.info("Checking SSH key in Hetzner Cloud...");
 
   // Check for local SSH key first - use main id_rsa key
@@ -89,7 +87,7 @@ export async function ensureSSHKey(
     for (const key of response.ssh_keys) {
       if (
         key.public_key.trim() === localPublicKey.trim() ||
-        key.name.startsWith("rabbit-hq-main-")
+        key.name.startsWith("rabbithq-main-")
       ) {
         Logger.success(`Found existing SSH key: ${key.name}`);
         return key;
@@ -108,7 +106,7 @@ export async function ensureSSHKey(
   Logger.info(`Creating new SSH key using ${keyUsed}...`);
 
   const timestamp = Date.now();
-  const keyName = `rabbit-hq-main-${
+  const keyName = `rabbithq-main-${
     keyUsed.includes("main") ? "standard" : "fallback"
   }-${timestamp}`;
 
@@ -236,7 +234,7 @@ export async function createHetznerServer(
       ssh_keys: [sshKeyId],
       location: "nbg1",
       labels: {
-        project: "rabbit-hq",
+        project: "rabbithq",
         environment,
         created_by: "setup-script",
       },
@@ -342,7 +340,7 @@ export async function createHetznerLoadBalancer(
         use_private_ip: false,
       })),
       labels: {
-        project: "rabbit-hq",
+        project: "rabbithq",
         environment,
         created_by: "setup-script",
       },
@@ -360,7 +358,7 @@ export async function createHetznerLoadBalancer(
  */
 export async function waitForServerReady(
   serverId: number,
-  maxAttempts: number = 30
+  maxAttempts: number = 50
 ): Promise<void> {
   Logger.info("Waiting for server to be ready...");
 
