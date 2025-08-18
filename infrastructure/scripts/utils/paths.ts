@@ -34,7 +34,7 @@ export class Paths {
    * Get the main SSH key path
    */
   static get sshKeyPath(): string {
-    const keyPath = `${process.env.HOME || ""}/.ssh/id_rsa_deploy`; // id_rsa is for local
+    const keyPath = `${process.env.HOME || ""}/.ssh/id_rsa`; // id_rsa is for local
 
     this.verifyFileExists(keyPath);
 
@@ -45,7 +45,7 @@ export class Paths {
    * Get the main SSH key public path
    */
   static get sshKeyPublicPath(): string {
-    const publicKeyPath = `${process.env.HOME || ""}/.ssh/id_rsa_deploy.pub`; // id_rsa is for local
+    const publicKeyPath = `${process.env.HOME || ""}/.ssh/id_rsa.pub`; // id_rsa is for local
 
     this.verifyFileExists(publicKeyPath);
 

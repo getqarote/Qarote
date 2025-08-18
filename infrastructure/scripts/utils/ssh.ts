@@ -58,7 +58,7 @@ function getSSHArgs(host: string): string[] {
   }
 
   // For local environment, use SSH key file
-  const mainKeyPath = `${process.env.HOME || ""}/.ssh/id_rsa_deploy`;
+  const mainKeyPath = `${process.env.HOME || ""}/.ssh/id_rsa`;
 
   // Check if main key exists
   try {
