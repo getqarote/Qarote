@@ -1,3 +1,4 @@
+import { WorkspacePlan } from "@prisma/client";
 import {
   Html,
   Head,
@@ -15,7 +16,7 @@ import {
 interface WelcomeEmailProps {
   name: string;
   workspaceName: string;
-  plan: "FREE" | "DEVELOPER" | "STARTUP" | "BUSINESS";
+  plan: WorkspacePlan;
   frontendUrl: string;
 }
 
@@ -28,8 +29,7 @@ export const WelcomeEmail = ({
   const planDisplayName = {
     FREE: "Free",
     DEVELOPER: "Developer",
-    STARTUP: "Startup",
-    BUSINESS: "Business",
+    ENTERPRISE: "Enterprise",
   }[plan];
 
   const dashboardUrl = `${frontendUrl}`;
@@ -110,21 +110,21 @@ export const WelcomeEmail = ({
                 </>
               )}
 
-              {(plan === "STARTUP" || plan === "BUSINESS") && (
+              {
                 <Section style={featureItem}>
                   <Text style={featureText}>
                     🧠 View detailed memory metrics and optimization tips
                   </Text>
                 </Section>
-              )}
+              }
 
-              {plan === "BUSINESS" && (
+              {
                 <Section style={featureItem}>
                   <Text style={featureText}>
                     🎯 Get priority support and expert insights
                   </Text>
                 </Section>
-              )}
+              }
             </Section>
 
             {/* Call to Action */}

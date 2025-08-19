@@ -3,7 +3,6 @@ import { UserRole } from "@prisma/client";
 import { prisma } from "@/core/prisma";
 import { logger } from "@/core/logger";
 import { authorize, checkWorkspaceAccess } from "@/core/auth";
-import { validateDataExport } from "@/services/plan/plan.service";
 import { strictRateLimiter } from "@/middlewares/security";
 
 const dataRoutes = new Hono();
@@ -26,25 +25,6 @@ dataRoutes.get(
 
       if (!workspace) {
         return c.json({ error: "Workspace not found" }, 404);
-      }
-
-      // Validate plan allows data export
-      try {
-        validateDataExport(workspace.plan);
-      } catch (planError) {
-        return c.json(
-          {
-            error:
-              planError instanceof Error
-                ? planError.message
-                : "Plan restriction",
-            code: "PLAN_RESTRICTION",
-            feature: "Data export",
-            currentPlan: workspace.plan,
-            requiredPlans: ["DEVELOPER", "STARTUP", "BUSINESS"],
-          },
-          402
-        );
       }
 
       // Get all workspace data

@@ -1,3 +1,4 @@
+import { WorkspacePlan } from "@prisma/client";
 import {
   Html,
   Head,
@@ -15,7 +16,7 @@ import {
 interface PaymentActionRequiredEmailProps {
   name: string;
   workspaceName: string;
-  plan: "DEVELOPER" | "STARTUP" | "BUSINESS";
+  plan: WorkspacePlan;
   invoiceUrl: string;
   amount: string;
   currency: string;
@@ -32,9 +33,9 @@ export const PaymentActionRequiredEmail = ({
   frontendUrl,
 }: PaymentActionRequiredEmailProps) => {
   const planDisplayName = {
+    FREE: "Free",
     DEVELOPER: "Developer",
-    STARTUP: "Startup",
-    BUSINESS: "Business",
+    ENTERPRISE: "Enterprise",
   }[plan];
 
   const billingUrl = `${frontendUrl}/billing`;

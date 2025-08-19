@@ -1,3 +1,4 @@
+import { WorkspacePlan } from "@prisma/client";
 import {
   Html,
   Head,
@@ -15,7 +16,7 @@ import {
 interface UpcomingInvoiceEmailProps {
   name: string;
   workspaceName: string;
-  plan: "DEVELOPER" | "STARTUP" | "BUSINESS";
+  plan: WorkspacePlan;
   amount: string;
   currency: string;
   invoiceDate: string;
@@ -41,9 +42,9 @@ export const UpcomingInvoiceEmail = ({
   usageReport,
 }: UpcomingInvoiceEmailProps) => {
   const planDisplayName = {
+    FREE: "Free",
     DEVELOPER: "Developer",
-    STARTUP: "Startup",
-    BUSINESS: "Business",
+    ENTERPRISE: "Enterprise",
   }[plan];
 
   const billingUrl = `${frontendUrl}/billing`;
@@ -180,21 +181,21 @@ export const UpcomingInvoiceEmail = ({
                 </Text>
               </Section>
 
-              {(plan === "STARTUP" || plan === "BUSINESS") && (
+              {
                 <Section style={featureItem}>
                   <Text style={featureText}>
                     🧠 Memory optimization insights and recommendations
                   </Text>
                 </Section>
-              )}
+              }
 
-              {plan === "BUSINESS" && (
+              {
                 <Section style={featureItem}>
                   <Text style={featureText}>
                     🎯 Priority support and expert consultation
                   </Text>
                 </Section>
-              )}
+              }
             </Section>
 
             {/* Action Section */}

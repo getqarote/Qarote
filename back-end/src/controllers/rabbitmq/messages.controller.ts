@@ -4,12 +4,7 @@ import { UserRole } from "@prisma/client";
 import { prisma } from "@/core/prisma";
 import { authorize } from "@/core/auth";
 import { logger } from "@/core/logger";
-import {
-  getMonthlyMessageCount,
-  getWorkspacePlan,
-  incrementMonthlyMessageCount,
-  validateMessageSending,
-} from "@/services/plan/plan.service";
+import { getWorkspacePlan } from "@/services/plan/plan.service";
 import { publishMessageToQueueSchema } from "@/schemas/rabbitmq";
 import { createErrorResponse } from "../shared";
 import { createRabbitMQClient } from "./shared";
@@ -59,13 +54,9 @@ messagesController.post(
         );
       }
 
-      const [plan, monthlyMessageCount] = await Promise.all([
-        getWorkspacePlan(server.workspaceId),
-        getMonthlyMessageCount(server.workspaceId),
-      ]);
+      const plan = await getWorkspacePlan(server.workspaceId);
 
-      logger.info({ plan, monthlyMessageCount }, "Message sending validation");
-      validateMessageSending(plan, monthlyMessageCount);
+      logger.info({ plan }, "Message sending validation");
 
       // Send the message via RabbitMQ API
       const client = await createRabbitMQClient(serverId, user.workspaceId);
@@ -162,9 +153,6 @@ messagesController.post(
           422
         );
       }
-
-      // Increment monthly message count after successful send
-      await incrementMonthlyMessageCount(server.workspaceId);
 
       return c.json({
         success: true,

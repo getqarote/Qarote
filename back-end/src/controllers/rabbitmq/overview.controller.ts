@@ -39,8 +39,7 @@ overviewController.get("/servers/:id/overview", async (c) => {
       );
 
       const upgradeRecommendation = getUpgradeRecommendationForOverLimit(
-        server.workspace.plan,
-        overview.queue_totals?.messages || 0
+        server.workspace.plan
       );
 
       response.warning = {

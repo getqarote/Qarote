@@ -15,12 +15,10 @@ import rabbitmqController from "@/controllers/rabbitmq.controller";
 import authController from "@/controllers/auth.controller";
 import userController from "@/controllers/user.controller";
 import workspaceController from "@/controllers/workspace.controller";
-import logsController from "@/controllers/logs.controller";
 import routingController from "@/controllers/routing.controller";
 import feedbackController from "@/controllers/feedback.controller";
 import invitationController from "@/controllers/invitation.controller";
 import paymentController from "@/controllers/payment.controller";
-import { messageHistoryController } from "@/controllers/message-history.controller";
 import healthcheckController from "@/controllers/healthcheck.controller";
 
 import { corsMiddleware } from "@/middlewares/cors";
@@ -51,12 +49,10 @@ app.route("/api/rabbitmq", rabbitmqController);
 app.route("/api/auth", authController);
 app.route("/api/users", userController);
 app.route("/api/workspaces", workspaceController);
-app.route("/api/logs", logsController);
 app.route("/api/routing", routingController);
 app.route("/api/feedback", feedbackController);
 app.route("/api/invitations", invitationController);
 app.route("/api/payments", paymentController);
-app.route("/api/message-history", messageHistoryController);
 app.route("/", healthcheckController);
 
 const { port, host } = serverConfig;

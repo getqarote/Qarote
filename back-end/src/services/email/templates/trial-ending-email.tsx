@@ -1,3 +1,4 @@
+import { WorkspacePlan } from "@prisma/client";
 import {
   Html,
   Head,
@@ -15,7 +16,7 @@ import {
 interface TrialEndingEmailProps {
   name: string;
   workspaceName: string;
-  plan: "DEVELOPER" | "STARTUP" | "BUSINESS";
+  plan: WorkspacePlan;
   trialEndDate: string;
   frontendUrl: string;
 }
@@ -28,9 +29,9 @@ export const TrialEndingEmail = ({
   frontendUrl,
 }: TrialEndingEmailProps) => {
   const planDisplayName = {
+    FREE: "Free",
     DEVELOPER: "Developer",
-    STARTUP: "Startup",
-    BUSINESS: "Business",
+    ENTERPRISE: "Entreprise",
   }[plan];
 
   const upgradeUrl = `${frontendUrl}/billing`;
@@ -130,21 +131,21 @@ export const TrialEndingEmail = ({
                 </Text>
               </Section>
 
-              {(plan === "STARTUP" || plan === "BUSINESS") && (
+              {
                 <Section style={benefitItem}>
                   <Text style={benefitText}>
                     🧠 Memory optimization insights and recommendations
                   </Text>
                 </Section>
-              )}
+              }
 
-              {plan === "BUSINESS" && (
+              {
                 <Section style={benefitItem}>
                   <Text style={benefitText}>
                     🎯 Priority support and expert consultation
                   </Text>
                 </Section>
-              )}
+              }
             </Section>
 
             {/* Call to Action */}

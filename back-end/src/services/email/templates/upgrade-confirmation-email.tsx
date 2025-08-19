@@ -25,10 +25,9 @@ const getPlanDisplayName = (plan: WorkspacePlan) => {
   switch (plan) {
     case WorkspacePlan.DEVELOPER:
       return "Developer";
-    case WorkspacePlan.STARTUP:
-      return "Startup";
-    case WorkspacePlan.BUSINESS:
-      return "Business";
+    case WorkspacePlan.ENTERPRISE:
+      return "Enterprise";
+    case WorkspacePlan.FREE:
     default:
       return "Free";
   }
@@ -45,17 +44,7 @@ const getPlanFeatures = (plan: WorkspacePlan) => {
         "Data export capabilities",
         "Email support",
       ];
-    case WorkspacePlan.STARTUP:
-      return [
-        "10 RabbitMQ servers",
-        "100 message queues",
-        "1M messages per month",
-        "Expert memory diagnostics",
-        "Smart alerts & notifications",
-        "Advanced metrics dashboard",
-        "Priority support",
-      ];
-    case WorkspacePlan.BUSINESS:
+    case WorkspacePlan.ENTERPRISE:
       return [
         "Unlimited RabbitMQ servers",
         "Unlimited message queues",
@@ -66,8 +55,15 @@ const getPlanFeatures = (plan: WorkspacePlan) => {
         "Dedicated account manager",
         "Phone support",
       ];
+    case WorkspacePlan.FREE:
     default:
-      return [];
+      return [
+        "1 RabbitMQ server",
+        "5 message queues",
+        "10K messages per month",
+        "Basic monitoring",
+        "Community support",
+      ];
   }
 };
 

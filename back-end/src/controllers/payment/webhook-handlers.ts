@@ -15,10 +15,7 @@ import {
   PaymentIntent,
 } from "@/services/stripe/stripe.service";
 import { EmailService } from "@/services/email/email.service";
-import {
-  getMonthlyMessageCount,
-  getWorkspaceResourceCounts,
-} from "@/services/plan/plan.service";
+import { getWorkspaceResourceCounts } from "@/services/plan/plan.service";
 import { getUserDisplayName } from "../shared";
 
 export async function handleCheckoutSessionCompleted(session: Session) {
@@ -266,21 +263,16 @@ export async function handleTrialWillEnd(subscription: Subscription) {
       ).toLocaleDateString();
 
       // Get current usage for more compelling email content
-      const [resourceCounts, monthlyMessages] = await Promise.all([
-        getWorkspaceResourceCounts(workspace.id),
-        getMonthlyMessageCount(workspace.id),
-      ]);
+      const resourceCounts = await getWorkspaceResourceCounts(workspace.id);
 
       const emailResult = await EmailService.sendTrialEndingEmail({
         to: workspace.users[0].email,
         name: getUserDisplayName(workspace.users[0]),
         workspaceName: workspace.name,
-        plan: workspace.plan as "DEVELOPER" | "STARTUP" | "BUSINESS",
+        plan: workspace.plan,
         trialEndDate,
         currentUsage: {
           servers: resourceCounts.servers,
-          queues: resourceCounts.queues,
-          monthlyMessages,
         },
       });
 
@@ -504,25 +496,19 @@ export async function handleUpcomingInvoice(invoice: Invoice) {
             ).toLocaleDateString(); // Default to 30 days from now
 
         // Get usage data for business intelligence email
-        const [resourceCounts, monthlyMessages] = await Promise.all([
-          getWorkspaceResourceCounts(workspace.id),
-          getMonthlyMessageCount(workspace.id),
-        ]);
+        const resourceCounts = await getWorkspaceResourceCounts(workspace.id);
 
         const emailResult = await EmailService.sendUpcomingInvoiceEmail({
           to: workspace.users[0].email,
           name: getUserDisplayName(workspace.users[0]),
           workspaceName: workspace.name,
-          plan: workspace.plan as "DEVELOPER" | "STARTUP" | "BUSINESS",
+          plan: workspace.plan as "DEVELOPER" | "ENTERPRISE",
           amount: (invoice.amount_due / 100).toFixed(2),
           currency: invoice.currency,
           invoiceDate,
           nextBillingDate,
           usageReport: {
             servers: resourceCounts.servers,
-            queues: resourceCounts.queues,
-            monthlyMessages,
-            totalMessages: monthlyMessages, // For now, same as monthly
           },
         });
 

@@ -2,17 +2,16 @@ import { TrialEndingEmail } from "./templates/trial-ending-email";
 import { PaymentActionRequiredEmail } from "./templates/payment-action-required-email";
 import { UpcomingInvoiceEmail } from "./templates/upcoming-invoice-email";
 import { CoreEmailService, EmailResult } from "./core-email.service";
+import { WorkspacePlan } from "@prisma/client";
 
 export interface TrialEndingEmailParams {
   to: string;
   name: string;
   workspaceName: string;
-  plan: "DEVELOPER" | "STARTUP" | "BUSINESS";
+  plan: WorkspacePlan;
   trialEndDate: string;
   currentUsage?: {
     servers: number;
-    queues: number;
-    monthlyMessages: number;
   };
 }
 
@@ -20,7 +19,7 @@ export interface PaymentActionRequiredEmailParams {
   to: string;
   name: string;
   workspaceName: string;
-  plan: "DEVELOPER" | "STARTUP" | "BUSINESS";
+  plan: WorkspacePlan;
   invoiceUrl: string;
   amount: string;
   currency: string;
@@ -30,16 +29,13 @@ export interface UpcomingInvoiceEmailParams {
   to: string;
   name: string;
   workspaceName: string;
-  plan: "DEVELOPER" | "STARTUP" | "BUSINESS";
+  plan: WorkspacePlan;
   amount: string;
   currency: string;
   invoiceDate: string;
   nextBillingDate: string;
   usageReport?: {
     servers: number;
-    queues: number;
-    monthlyMessages: number;
-    totalMessages: number;
   };
 }
 
@@ -69,7 +65,7 @@ export class NotificationEmailService {
 
     // Create compelling subject line with usage data
     const usageText = currentUsage
-      ? `Don't lose your ${currentUsage.servers} servers & ${currentUsage.queues} queues`
+      ? `Don't lose your ${currentUsage.servers} servers`
       : "Action required";
 
     return CoreEmailService.sendEmail({
@@ -136,7 +132,6 @@ export class NotificationEmailService {
       currency,
       invoiceDate,
       nextBillingDate,
-      usageReport,
     } = params;
 
     const { frontendUrl } = CoreEmailService.getConfig();
@@ -151,17 +146,11 @@ export class NotificationEmailService {
       invoiceDate,
       nextBillingDate,
       frontendUrl,
-      usageReport,
     });
-
-    // Create subject line with usage insights
-    const usageText = usageReport
-      ? `${usageReport.monthlyMessages.toLocaleString()} messages this month`
-      : "Monthly usage report";
 
     return CoreEmailService.sendEmail({
       to,
-      subject: `${workspaceName} usage report & upcoming invoice - ${usageText}`,
+      subject: `${workspaceName} usage report & upcoming invoice`,
       template,
       emailType: "upcoming_invoice",
       context: {

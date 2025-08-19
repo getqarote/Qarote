@@ -1,7 +1,6 @@
 import { Hono } from "hono";
 import { prisma } from "@/core/prisma";
 import { logger } from "@/core/logger";
-import { canUserAccessMessageHistory } from "@/services/plan/plan.service";
 import { createErrorResponse } from "../shared";
 import { createRabbitMQClient } from "./shared";
 
@@ -333,18 +332,6 @@ metricsController.get("/servers/:id/metrics/historical", async (c) => {
 
     if (!server || !server.workspace) {
       return c.json({ error: "Server not found or access denied" }, 404);
-    }
-
-    // Check if user can access historical data
-    if (!canUserAccessMessageHistory(server.workspace.plan)) {
-      return c.json(
-        {
-          error: "Historical data access requires a higher plan",
-          currentPlan: server.workspace.plan,
-          requiredFeature: "Message history access",
-        },
-        403
-      );
     }
 
     // Parse time range

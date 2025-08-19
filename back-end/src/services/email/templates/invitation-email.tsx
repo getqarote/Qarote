@@ -1,3 +1,4 @@
+import { WorkspacePlan } from "@prisma/client";
 import {
   Html,
   Head,
@@ -17,7 +18,7 @@ interface InvitationEmailProps {
   inviterEmail: string;
   workspaceName: string;
   invitationToken: string;
-  plan: "FREE" | "DEVELOPER" | "STARTUP" | "BUSINESS";
+  plan: WorkspacePlan;
   userCostPerMonth?: number;
   frontendUrl: string;
 }
@@ -36,8 +37,7 @@ export const InvitationEmail = ({
   const planDisplayName = {
     FREE: "Free",
     DEVELOPER: "Developer",
-    STARTUP: "Startup",
-    BUSINESS: "Business",
+    ENTERPRISE: "Entreprise",
   }[plan];
 
   return (

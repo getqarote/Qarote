@@ -1,13 +1,6 @@
 import { Hono } from "hono";
 import { prisma } from "@/core/prisma";
 import { logger } from "@/core/logger";
-import {
-  validateAdvancedMemoryMetricsAccess,
-  validateBasicMemoryMetricsAccess,
-  validateExpertMemoryMetricsAccess,
-  validateMemoryOptimizationAccess,
-  validateMemoryTrendsAccess,
-} from "@/services/plan/plan.service";
 import { RabbitMQNode } from "@/types/rabbitmq";
 import { createErrorResponse } from "../shared";
 import { createRabbitMQClient } from "./shared";
@@ -46,9 +39,6 @@ memoryController.get("/servers/:id/nodes/:nodeName/memory", async (c) => {
       return c.json({ error: "Server workspace not found" }, 404);
     }
 
-    // Validate basic memory metrics access (available to all plans)
-    validateBasicMemoryMetricsAccess(server.workspace.plan);
-
     const client = await createRabbitMQClient(id, user.workspaceId);
     const nodes = await client.getNodes();
     const node = nodes.find((n: RabbitMQNode) => n.name === nodeName);
@@ -72,7 +62,6 @@ memoryController.get("/servers/:id/nodes/:nodeName/memory", async (c) => {
     // Advanced memory metrics (Startup and Business plans)
     let advancedMemoryMetrics = {};
     try {
-      validateAdvancedMemoryMetricsAccess(server.workspace.plan);
       advancedMemoryMetrics = {
         advanced: {
           fileDescriptors: {
@@ -104,7 +93,6 @@ memoryController.get("/servers/:id/nodes/:nodeName/memory", async (c) => {
     // Expert memory metrics (Business plan only)
     let expertMemoryMetrics = {};
     try {
-      validateExpertMemoryMetricsAccess(server.workspace.plan);
       expertMemoryMetrics = {
         expert: {
           ioMetrics: {
@@ -143,7 +131,6 @@ memoryController.get("/servers/:id/nodes/:nodeName/memory", async (c) => {
     // Memory trends (Startup and Business plans)
     let memoryTrends = {};
     try {
-      validateMemoryTrendsAccess(server.workspace.plan);
       // Note: This would typically require historical data storage
       // For now, we'll provide rate details from the current snapshot
       memoryTrends = {
@@ -162,8 +149,6 @@ memoryController.get("/servers/:id/nodes/:nodeName/memory", async (c) => {
     // Memory optimization suggestions (Startup and Business plans)
     let memoryOptimization = {};
     try {
-      validateMemoryOptimizationAccess(server.workspace.plan);
-
       const suggestions = [];
       const warnings = [];
 

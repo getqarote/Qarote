@@ -10,7 +10,6 @@ import {
   extractMajorMinorVersion,
   getWorkspacePlan,
   getWorkspaceResourceCounts,
-  isServerOverQueueLimit,
   validateRabbitMqVersion,
   validateServerCreation,
 } from "@/services/plan/plan.service";
@@ -191,24 +190,6 @@ serverController.post(
       // Validate RabbitMQ version against plan restrictions
       validateRabbitMqVersion(plan, rabbitMqVersion);
 
-      // Check queue count for over-limit detection
-      let queueCount = 0;
-      let isOverLimit = false;
-
-      try {
-        const queues = await client.getQueues();
-        queueCount = queues.length;
-
-        // Check if this server exceeds the user's plan queue limit
-        isOverLimit = isServerOverQueueLimit(plan, queueCount);
-      } catch (queueError) {
-        logger.warn(
-          "Could not fetch queues during server creation:",
-          queueError
-        );
-        // Continue with server creation even if queue fetch fails
-      }
-
       // Encrypt sensitive data before storing
       const server = await prisma.rabbitMQServer.create({
         data: {
@@ -234,8 +215,6 @@ serverController.post(
           version: rabbitMqVersion, // Store full version
           versionMajorMinor: majorMinorVersion, // Store major.minor for plan validation
           // Store over-limit information
-          isOverQueueLimit: isOverLimit,
-          queueCountAtConnect: queueCount,
           overLimitWarningShown: false,
           // Automatically assign server to user's workspace
           workspaceId: user.workspaceId,
