@@ -27,10 +27,6 @@ const envSchema = z.object({
     message: "DATABASE_URL must start with 'postgres://'",
   }),
 
-  REDIS_URL: z.string().startsWith("redis://", {
-    message: "REDIS_URL must start with 'redis://'",
-  }),
-
   // CORS
   CORS_ORIGIN: z.string().describe("*"),
 
@@ -62,6 +58,7 @@ function parseConfig() {
   try {
     return envSchema.parse(process.env);
   } catch (error) {
+    console.error(error);
     if (error instanceof z.ZodError) {
       const errorMessages = error.issues.map(
         (issue) => `${issue.path.join(".")}: ${issue.message}`
@@ -99,10 +96,6 @@ export const authConfig = {
 
 export const databaseConfig = {
   url: config.DATABASE_URL,
-} as const;
-
-export const redisConfig = {
-  url: config.REDIS_URL,
 } as const;
 
 export const corsConfig = {

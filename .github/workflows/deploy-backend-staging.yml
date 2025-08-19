@@ -1,4 +1,4 @@
-name: Deploy Backend to Dokku Staging
+name: Deploy Backend to Staging
 
 env:
   APP_NAME: rabbit-hq-staging
@@ -58,7 +58,8 @@ jobs:
             STRIPE_ENTERPRISE_MONTHLY_PRICE_ID=${{ vars.STRIPE_ENTERPRISE_MONTHLY_PRICE_ID }} \
             STRIPE_ENTERPRISE_YEARLY_PRICE_ID=${{ vars.STRIPE_ENTERPRISE_YEARLY_PRICE_ID }} \
             SENTRY_DSN=${{ vars.SENTRY_DSN }} \
-            SENTRY_ENABLED=${{ vars.SENTRY_ENABLED }}
+            SENTRY_ENABLED=${{ vars.SENTRY_ENABLED }} \
+            NODE_ID=app1
 
       # Deploy the application
       - name: 🐳 Deploy to Dokku

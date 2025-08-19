@@ -1,7 +1,7 @@
 import amqp from "amqplib";
 import { logger } from "@/core/logger";
 import { captureRabbitMQError } from "@/core/sentry";
-import { RabbitMQAmqpClientFactory } from "./AmqpFactory";
+// import { RabbitMQAmqpClientFactory } from "./AmqpFactory";
 
 export interface AMQPConnectionConfig {
   protocol: "amqp" | "amqps";
@@ -119,14 +119,6 @@ export class RabbitMQAmqpClient {
           error: error.message,
         });
         this.isConnected = false;
-
-        // Remove from factory cache on error
-        if (this.config.serverId) {
-          RabbitMQAmqpClientFactory.removeClient(this.config.serverId).catch(
-            (err) =>
-              logger.warn("Failed to remove client from Redis on error:", err)
-          );
-        }
       });
 
       this.connection.on("close", () => {
@@ -135,14 +127,6 @@ export class RabbitMQAmqpClient {
           serverName: this.config.serverName,
         });
         this.isConnected = false;
-
-        // Remove from factory cache on close
-        if (this.config.serverId) {
-          RabbitMQAmqpClientFactory.removeClient(this.config.serverId).catch(
-            (err) =>
-              logger.warn("Failed to remove client from Redis on close:", err)
-          );
-        }
       });
 
       this.isConnected = true;

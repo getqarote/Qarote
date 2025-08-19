@@ -1,17 +1,17 @@
 import { logger } from "@/core/logger";
-import { redis } from "@/core/redis";
 import { AMQPConnectionConfig, RabbitMQAmqpClient } from "./AmqpClient";
 
 /**
  * Factory class to create AMQP clients for different RabbitMQ servers
- * Uses Redis for distributed connection coordination across multiple production servers
+ * Uses local connection management and coordination
  */
 export class RabbitMQAmqpClientFactory {
   private static clients = new Map<string, RabbitMQAmqpClient>();
+  private static connectionCounts = new Map<string, number>();
   private static readonly MAX_CONNECTIONS_PER_SERVER = 3;
 
   /**
-   * Create an AMQP client for a specific RabbitMQ server with Redis coordination
+   * Create an AMQP client for a specific RabbitMQ server with local connection management
    */
   static async createClient(serverConfig: {
     id: string;
@@ -30,14 +30,9 @@ export class RabbitMQAmqpClientFactory {
       return existingClient;
     }
 
-    // Check global connection count via Redis
-    const canCreate = await redis.canCreateConnection(
-      serverConfig.id,
-      this.MAX_CONNECTIONS_PER_SERVER
-    );
-
-    if (!canCreate) {
-      const currentCount = await redis.getConnectionCount(serverConfig.id);
+    // Check local connection count
+    const currentCount = this.connectionCounts.get(serverConfig.id) || 0;
+    if (currentCount >= this.MAX_CONNECTIONS_PER_SERVER) {
       throw new Error(
         `Max connections (${this.MAX_CONNECTIONS_PER_SERVER}) reached for server ${serverConfig.id}. Current: ${currentCount}`
       );
@@ -60,13 +55,12 @@ export class RabbitMQAmqpClientFactory {
     const client = new RabbitMQAmqpClient(config);
     await client.connect();
 
-    // Register in Redis
-    await redis.registerConnection(serverConfig.id, serverConfig.name);
-
+    // Register locally
+    this.connectionCounts.set(serverConfig.id, currentCount + 1);
     this.clients.set(serverConfig.id, client);
 
-    const activeConnections = await redis.getConnectionCount(serverConfig.id);
-    logger.info(`AMQP client created and registered in Redis`, {
+    const activeConnections = this.connectionCounts.get(serverConfig.id) || 0;
+    logger.info(`AMQP client created and registered locally`, {
       serverId: serverConfig.id,
       serverName: serverConfig.name,
       activeConnections,
@@ -83,21 +77,24 @@ export class RabbitMQAmqpClientFactory {
   }
 
   /**
-   * Remove client from cache and Redis (when disconnected)
+   * Remove client from cache and local tracking (when disconnected)
    */
   static async removeClient(serverId: string): Promise<void> {
     this.clients.delete(serverId);
 
-    // Remove from Redis
-    await redis.removeConnection(serverId);
+    // Remove from local tracking
+    const currentCount = this.connectionCounts.get(serverId) || 0;
+    if (currentCount > 0) {
+      this.connectionCounts.set(serverId, currentCount - 1);
+    }
 
-    logger.info(`AMQP client removed from cache and Redis`, {
+    logger.info(`AMQP client removed from cache and local tracking`, {
       serverId,
     });
   }
 
   /**
-   * Cleanup all clients and Redis entries
+   * Cleanup all clients and local tracking
    */
   static async cleanupAll(): Promise<void> {
     const cleanupPromises = Array.from(this.clients.entries()).map(
@@ -113,18 +110,20 @@ export class RabbitMQAmqpClientFactory {
 
     await Promise.all(cleanupPromises);
     this.clients.clear();
-
-    // Cleanup all Redis connections for this node
-    await redis.cleanupAllConnections();
+    this.connectionCounts.clear();
   }
 
   /**
    * Get connection statistics for a server
    */
   static async getConnectionStats(serverId: string) {
-    return await redis.getConnectionStats(
+    const currentCount = this.connectionCounts.get(serverId) || 0;
+    return {
       serverId,
-      this.MAX_CONNECTIONS_PER_SERVER
-    );
+      currentConnections: currentCount,
+      maxConnections: this.MAX_CONNECTIONS_PER_SERVER,
+      hasClient: this.clients.has(serverId),
+      clientActive: this.clients.get(serverId)?.isConnectionActive() || false,
+    };
   }
 }
