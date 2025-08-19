@@ -1,0 +1,57 @@
+name: Deploy Frontend to Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_production:
+        description: 'Type "DEPLOY" to confirm production deployment'
+        required: true
+        default: ""
+
+jobs:
+  deploy-frontend:
+    name: Deploy Frontend to Production
+    runs-on: ubuntu-latest
+    environment: production
+    if: github.event.inputs.confirm_production == 'DEPLOY'
+
+    steps:
+      - name: 🔍 Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "npm"
+          cache-dependency-path: front-end/package-lock.json
+
+      - name: 📦 Install dependencies
+        working-directory: front-end
+        run: npm ci
+
+      - name: 🏗️ Build frontend for production
+        working-directory: front-end
+        env:
+          VITE_API_URL: ${{ vars.VITE_API_URL }}
+          VITE_SENTRY_DSN: ${{ vars.VITE_SENTRY_DSN }}
+          VITE_SENTRY_ENABLED: ${{ vars.VITE_SENTRY_ENABLED }}
+          VITE_APP_VERSION: ${{ vars.VITE_APP_VERSION }}
+          VITE_ENVIRONMENT: production
+          NODE_ENV: production
+        run: npm run build
+
+      - name: 🚀 Deploy to Cloudflare Pages - Production
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          command: pages deploy front-end/dist --project-name=rabbithq-production --branch=main --compatibility-date=2024-01-01
+
+      - name: ✅ Deployment Success
+        run: |
+          echo "🎉 Frontend deployed successfully to production!"
+          echo "🌐 Production URL: https://rabbithq-production.pages.dev"
+          echo "🔗 Custom Domain: https://app.yourdomain.com (if configured)"
+          echo "📝 Commit: ${{ github.sha }}"
