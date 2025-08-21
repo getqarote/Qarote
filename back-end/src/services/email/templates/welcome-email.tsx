@@ -46,7 +46,7 @@ export const WelcomeEmail = ({
           {/* Header */}
           <Section style={header}>
             <Img
-              src={`${frontendUrl}/icon_rabbit.svg`}
+              src={`${frontendUrl}/icon_rabbit.png`}
               width="50"
               height="50"
               alt="RabbitHQ"

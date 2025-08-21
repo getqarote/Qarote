@@ -92,7 +92,7 @@ jobs:
           echo "Waiting for deployment to stabilize..."
           sleep 30
           echo "Testing health endpoint..."
-          curl -sSf https://${{ vars.DOMAIN_BACKEND }}/health || echo "Health check not yet available, deployment may still be in progress"
+          curl -sSf "https://${{ vars.DOMAIN_BACKEND }}/health" || echo "Health check not yet available, deployment may still be in progress"
 
       - name: ✅ Deployment complete
         run: |

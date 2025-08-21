@@ -48,7 +48,7 @@ export const InvitationEmail = ({
         <Container style={container}>
           <Section style={logoContainer}>
             <Img
-              src={`${frontendUrl}/icon_rabbit.svg`}
+              src={`${frontendUrl}/icon_rabbit.png`}
               width="48"
               height="48"
               alt="RabbitHQ"
