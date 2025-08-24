@@ -293,7 +293,7 @@ export const AddServerForm = ({
               <Credentials form={form} />
 
               {/* SSL Configuration */}
-              <SSLConfiguration form={form} />
+              {/* <SSLConfiguration form={form} /> */}
 
               <ConnectionStatusDisplay
                 connectionStatus={connectionStatus}

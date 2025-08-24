@@ -104,7 +104,7 @@ export const ServerDetails = ({ form }: ServerDetailsProps) => {
             </FormItem>
           )}
         />
-
+        {/* 
         <FormField
           control={form.control}
           name="useHttps"
@@ -119,7 +119,7 @@ export const ServerDetails = ({ form }: ServerDetailsProps) => {
               <FormLabel className="text-sm font-medium">Use HTTPS</FormLabel>
             </FormItem>
           )}
-        />
+        /> */}
       </div>
 
       <FormField
