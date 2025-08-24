@@ -69,7 +69,7 @@ const PaymentCancelled: React.FC = () => {
             onClick={() => navigate("/")}
             className="w-full bg-gray-100 hover:bg-gray-200 text-gray-900 py-2 px-4 rounded-lg font-medium transition-colors flex items-center justify-center"
           >
-            <ArrowLeft className="w-4 h-4 mr-2" />
+            <ArrowLeft className="w-4 h-4" />
             Back to Dashboard
           </button>
         </div>

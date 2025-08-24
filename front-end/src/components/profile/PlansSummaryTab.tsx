@@ -238,7 +238,7 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
                   Manage your subscription
                 </p>
               </div>
-              <Link to="/payments/billing">
+              <Link to="/billing">
                 <Button variant="ghost" size="sm" className="text-blue-600">
                   Manage
                 </Button>

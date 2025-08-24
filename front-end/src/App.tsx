@@ -266,7 +266,7 @@ const AppCore = () => (
                     }
                   />
                   <Route
-                    path="/payments/billing"
+                    path="/billing"
                     element={
                       <ProtectedRoute>
                         <Layout>

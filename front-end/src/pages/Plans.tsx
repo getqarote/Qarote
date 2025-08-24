@@ -308,6 +308,13 @@ export const PlansPage: React.FC<PlansPageProps> = ({
             <div className="flex items-center justify-between mb-8">
               <div className="flex items-center gap-4">
                 <SidebarTrigger />
+                <button
+                  onClick={() => navigate("/profile?tab=plans")}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  title="Back to Profile"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                </button>
                 <div>
                   <h1 className="title-page">Choose Your Plan</h1>
                   <p className="text-gray-500">

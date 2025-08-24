@@ -79,12 +79,12 @@ export const ForgotPassword: React.FC = () => {
                 variant="outline"
                 disabled={resetPasswordMutation.isPending}
               >
-                <Send className="h-4 w-4 mr-2" />
+                <Send className="h-4 w-4" />
                 Resend Email
               </Button>
 
               <Button onClick={() => navigate("/auth/sign-in")} variant="ghost">
-                <ArrowLeft className="h-4 w-4 mr-2" />
+                <ArrowLeft className="h-4 w-4" />
                 Back to Sign In
               </Button>
             </div>

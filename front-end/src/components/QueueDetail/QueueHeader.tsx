@@ -61,7 +61,7 @@ export function QueueHeader({
             onClick={onNavigateBack}
             className="text-gray-600 hover:text-gray-900"
           >
-            <ArrowLeft className="w-4 h-4 mr-2" />
+            <ArrowLeft className="w-4 h-4" />
           </Button>
           <h1 className="text-2xl font-bold text-gray-900">{queueName}</h1>
         </div>
