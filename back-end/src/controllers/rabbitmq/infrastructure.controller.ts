@@ -221,7 +221,18 @@ infrastructureController.get("/servers/:id/connections", async (c) => {
 
     const client = await createRabbitMQClient(id, workspaceId);
     const connections = await client.getConnections();
-    return c.json({ connections });
+    const channels = await client.getChannels();
+
+    // Calculate totals for the overview cards
+    const totalConnections = connections.length;
+    const totalChannels = channels.length;
+
+    return c.json({
+      success: true,
+      connections,
+      totalConnections,
+      totalChannels,
+    });
   } catch (error) {
     logger.error(`Error fetching connections for server ${id}:`, error);
     return createErrorResponse(c, error, 500, "Failed to fetch connections");
@@ -248,7 +259,12 @@ infrastructureController.get("/servers/:id/channels", async (c) => {
 
     const client = await createRabbitMQClient(id, workspaceId);
     const channels = await client.getChannels();
-    return c.json({ channels });
+
+    return c.json({
+      success: true,
+      channels,
+      totalChannels: channels.length,
+    });
   } catch (error) {
     logger.error(`Error fetching channels for server ${id}:`, error);
     return createErrorResponse(c, error, 500, "Failed to fetch channels");

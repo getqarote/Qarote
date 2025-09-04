@@ -8,6 +8,10 @@ import {
   ArrowUpDown,
   Zap,
   Link,
+  Wifi,
+  Cable,
+  Radio,
+  Globe,
 } from "lucide-react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
@@ -70,6 +74,43 @@ const Connections = () => {
         return "bg-red-100 text-red-800";
       default:
         return "bg-gray-100 text-gray-800";
+    }
+  };
+
+  const getConnectionIcon = (state?: string, protocol?: string) => {
+    // Prioritize by state first, then protocol
+    switch (state?.toLowerCase()) {
+      case "running":
+        return <Wifi className="h-4 w-4" />;
+      case "blocked":
+        return <Cable className="h-4 w-4" />;
+      case "flow":
+        return <Radio className="h-4 w-4" />;
+      case "closing":
+        return <Link className="h-4 w-4" />;
+      default:
+        // Fallback to protocol-based icons
+        switch (protocol?.toLowerCase()) {
+          case "amqp":
+            return <Network className="h-4 w-4" />;
+          default:
+            return <Globe className="h-4 w-4" />;
+        }
+    }
+  };
+
+  const getConnectionIconColor = (state?: string) => {
+    switch (state?.toLowerCase()) {
+      case "running":
+        return "text-green-600";
+      case "blocked":
+        return "text-yellow-600";
+      case "flow":
+        return "text-blue-600";
+      case "closing":
+        return "text-red-600";
+      default:
+        return "text-gray-600";
     }
   };
 
@@ -155,7 +196,7 @@ const Connections = () => {
                   <CardTitle className="text-sm font-medium">
                     Total Connections
                   </CardTitle>
-                  <Network className="h-4 w-4 text-muted-foreground" />
+                  <Network className="h-4 w-4 text-blue-600" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
@@ -174,7 +215,7 @@ const Connections = () => {
                   <CardTitle className="text-sm font-medium">
                     Total Channels
                   </CardTitle>
-                  <Zap className="h-4 w-4 text-muted-foreground" />
+                  <Zap className="h-4 w-4 text-yellow-600" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
@@ -193,7 +234,7 @@ const Connections = () => {
                   <CardTitle className="text-sm font-medium">
                     Avg Channels/Connection
                   </CardTitle>
-                  <Activity className="h-4 w-4 text-muted-foreground" />
+                  <Activity className="h-4 w-4 text-green-600" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
@@ -258,7 +299,16 @@ const Connections = () => {
                             >
                               <div className="flex items-center gap-4">
                                 <div className="flex items-center gap-2">
-                                  <Link className="h-4 w-4 text-blue-600" />
+                                  <div
+                                    className={getConnectionIconColor(
+                                      connection.state
+                                    )}
+                                  >
+                                    {getConnectionIcon(
+                                      connection.state,
+                                      connection.protocol
+                                    )}
+                                  </div>
                                   <span className="font-medium">
                                     {connection.name}
                                   </span>
