@@ -15,6 +15,10 @@ billingController.get("/billing/overview", async (c) => {
   const user = c.get("user");
 
   try {
+    if (!user.workspaceId) {
+      return c.json({ error: "No workspace assigned" }, 400);
+    }
+
     const workspace = await prisma.workspace.findUnique({
       where: { id: user.workspaceId },
       include: {
@@ -122,6 +126,10 @@ billingController.get("/billing/subscription", async (c) => {
   const user = c.get("user");
 
   try {
+    if (!user.workspaceId) {
+      return c.json({ error: "No workspace assigned" }, 400);
+    }
+
     const subscription = await prisma.subscription.findUnique({
       where: { workspaceId: user.workspaceId },
     });
@@ -144,6 +152,10 @@ billingController.get("/billing/payments", async (c) => {
   const offset = parseInt(c.req.query("offset") || "0");
 
   try {
+    if (!user.workspaceId) {
+      return c.json({ error: "No workspace assigned" }, 400);
+    }
+
     const payments = await prisma.payment.findMany({
       where: { workspaceId: user.workspaceId },
       orderBy: { createdAt: "desc" },
@@ -176,6 +188,10 @@ billingController.post("/billing/payment-method", async (c) => {
   const { paymentMethodId } = await c.req.json();
 
   try {
+    if (!user.workspaceId) {
+      return c.json({ error: "No workspace assigned" }, 400);
+    }
+
     const subscription = await prisma.subscription.findUnique({
       where: { workspaceId: user.workspaceId },
     });
@@ -210,6 +226,10 @@ billingController.post("/billing/portal", async (c) => {
   const user = c.get("user");
 
   try {
+    if (!user.workspaceId) {
+      return c.json({ error: "No workspace assigned" }, 400);
+    }
+
     const subscription = await prisma.subscription.findUnique({
       where: { workspaceId: user.workspaceId },
     });
@@ -239,6 +259,10 @@ billingController.post("/billing/cancel", strictRateLimiter, async (c) => {
   const { cancelImmediately = false, reason, feedback } = await c.req.json();
 
   try {
+    if (!user.workspaceId) {
+      return c.json({ error: "No workspace assigned" }, 400);
+    }
+
     const workspace = await prisma.workspace.findUnique({
       where: { id: user.workspaceId },
       include: {
@@ -267,7 +291,7 @@ billingController.post("/billing/cancel", strictRateLimiter, async (c) => {
 
     // Update our database
     await prisma.subscription.update({
-      where: { workspaceId: user.workspaceId },
+      where: { workspaceId: user.workspaceId! },
       data: {
         status: "CANCELED",
         cancelAtPeriodEnd: !cancelImmediately,
@@ -293,7 +317,7 @@ billingController.post("/billing/cancel", strictRateLimiter, async (c) => {
     // If canceling immediately, downgrade workspace to FREE plan
     if (cancelImmediately) {
       await prisma.workspace.update({
-        where: { id: user.workspaceId },
+        where: { id: user.workspaceId! },
         data: {
           plan: "FREE",
           updatedAt: new Date(),

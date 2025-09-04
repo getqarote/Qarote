@@ -161,6 +161,10 @@ serverController.post(
     const user = c.get("user");
 
     try {
+      if (!user.workspaceId) {
+        return c.json({ error: "No workspace assigned" }, 400);
+      }
+
       // Validate plan restrictions for server creation
       const [plan, resourceCounts] = await Promise.all([
         getWorkspacePlan(user.workspaceId),

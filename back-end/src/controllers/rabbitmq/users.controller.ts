@@ -17,6 +17,10 @@ usersController.get("/servers/:serverId/users", async (c) => {
     const serverId = c.req.param("serverId");
     const user = c.get("user");
 
+    if (!user.workspaceId) {
+      return c.json({ error: "No workspace assigned" }, 400);
+    }
+
     const client = await createRabbitMQClient(serverId, user.workspaceId);
     const users = await client.getUsers();
 
@@ -33,6 +37,10 @@ usersController.get("/servers/:serverId/users/:username", async (c) => {
     const serverId = c.req.param("serverId");
     const username = c.req.param("username");
     const user = c.get("user");
+
+    if (!user.workspaceId) {
+      return c.json({ error: "No workspace assigned" }, 400);
+    }
 
     const client = await createRabbitMQClient(serverId, user.workspaceId);
     const userDetails = await client.getUser(username);
@@ -64,6 +72,10 @@ usersController.post(
       const serverId = c.req.param("serverId");
       const userData = c.req.valid("json");
       const user = c.get("user");
+
+      if (!user.workspaceId) {
+        return c.json({ error: "No workspace assigned" }, 400);
+      }
 
       const client = await createRabbitMQClient(serverId, user.workspaceId);
       await client.createUser(userData.username, {
@@ -97,6 +109,10 @@ usersController.put(
       const updateData = c.req.valid("json");
       const user = c.get("user");
 
+      if (!user.workspaceId) {
+        return c.json({ error: "No workspace assigned" }, 400);
+      }
+
       const client = await createRabbitMQClient(serverId, user.workspaceId);
 
       const payload: any = {};
@@ -127,6 +143,10 @@ usersController.delete("/servers/:serverId/users/:username", async (c) => {
     const username = c.req.param("username");
     const user = c.get("user");
 
+    if (!user.workspaceId) {
+      return c.json({ error: "No workspace assigned" }, 400);
+    }
+
     const client = await createRabbitMQClient(serverId, user.workspaceId);
     await client.deleteUser(username);
 
@@ -156,6 +176,10 @@ usersController.put(
       const permissionData = c.req.valid("json");
       const user = c.get("user");
 
+      if (!user.workspaceId) {
+        return c.json({ error: "No workspace assigned" }, 400);
+      }
+
       const client = await createRabbitMQClient(serverId, user.workspaceId);
       await client.setUserPermissions(permissionData.vhost, username, {
         user: username,
@@ -181,6 +205,10 @@ usersController.delete(
       const username = c.req.param("username");
       const vhost = c.req.param("vhost");
       const user = c.get("user");
+
+      if (!user.workspaceId) {
+        return c.json({ error: "No workspace assigned" }, 400);
+      }
 
       const client = await createRabbitMQClient(serverId, user.workspaceId);
       await client.deleteUserPermissions(vhost, username);

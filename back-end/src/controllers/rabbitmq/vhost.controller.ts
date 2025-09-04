@@ -14,6 +14,14 @@ import {
 
 const vhostController = new Hono();
 
+// Helper function to validate workspace access
+const validateWorkspaceAccess = (user: any) => {
+  if (!user.workspaceId) {
+    throw new Error("No workspace assigned");
+  }
+  return user.workspaceId;
+};
+
 // All vhost operations require ADMIN role
 vhostController.use("*", authorize([UserRole.ADMIN]));
 
@@ -112,9 +120,10 @@ vhostController.get("/servers/:serverId/vhosts/:vhostName", async (c) => {
   const user = c.get("user");
 
   try {
-    await verifyServerAccess(serverId, user.workspaceId);
+    const workspaceId = validateWorkspaceAccess(user);
+    await verifyServerAccess(serverId, workspaceId);
 
-    const client = await createRabbitMQClient(serverId, user.workspaceId);
+    const client = await createRabbitMQClient(serverId, workspaceId);
 
     const [
       vhost,
@@ -176,9 +185,10 @@ vhostController.post(
     const user = c.get("user");
 
     try {
-      await verifyServerAccess(serverId, user.workspaceId);
+      const workspaceId = validateWorkspaceAccess(user);
+      await verifyServerAccess(serverId, workspaceId);
 
-      const client = await createRabbitMQClient(serverId, user.workspaceId);
+      const client = await createRabbitMQClient(serverId, workspaceId);
       await client.createVHost({
         name: vhostData.name,
         description: vhostData.description,
@@ -227,9 +237,10 @@ vhostController.put(
     const user = c.get("user");
 
     try {
-      await verifyServerAccess(serverId, user.workspaceId);
+      const workspaceId = validateWorkspaceAccess(user);
+      await verifyServerAccess(serverId, workspaceId);
 
-      const client = await createRabbitMQClient(serverId, user.workspaceId);
+      const client = await createRabbitMQClient(serverId, workspaceId);
       await client.updateVHost(vhostName, vhostData);
 
       logger.info(
@@ -265,7 +276,8 @@ vhostController.delete("/servers/:serverId/vhosts/:vhostName", async (c) => {
   const user = c.get("user");
 
   try {
-    await verifyServerAccess(serverId, user.workspaceId);
+    const workspaceId = validateWorkspaceAccess(user);
+    await verifyServerAccess(serverId, workspaceId);
 
     // Prevent deletion of default vhost
     if (vhostName === "/") {
@@ -278,7 +290,7 @@ vhostController.delete("/servers/:serverId/vhosts/:vhostName", async (c) => {
       );
     }
 
-    const client = await createRabbitMQClient(serverId, user.workspaceId);
+    const client = await createRabbitMQClient(serverId, workspaceId);
     await client.deleteVHost(vhostName);
 
     logger.info(
@@ -313,9 +325,10 @@ vhostController.put(
     const user = c.get("user");
 
     try {
-      await verifyServerAccess(serverId, user.workspaceId);
+      const workspaceId = validateWorkspaceAccess(user);
+      await verifyServerAccess(serverId, workspaceId);
 
-      const client = await createRabbitMQClient(serverId, user.workspaceId);
+      const client = await createRabbitMQClient(serverId, workspaceId);
       await client.setUserPermissions(vhostName, username, {
         user: username,
         configure: permissionData.configure,
@@ -354,9 +367,10 @@ vhostController.delete(
     const user = c.get("user");
 
     try {
-      await verifyServerAccess(serverId, user.workspaceId);
+      const workspaceId = validateWorkspaceAccess(user);
+      await verifyServerAccess(serverId, workspaceId);
 
-      const client = await createRabbitMQClient(serverId, user.workspaceId);
+      const client = await createRabbitMQClient(serverId, workspaceId);
       await client.deleteUserPermissions(vhostName, username);
 
       logger.info(
@@ -392,9 +406,10 @@ vhostController.put(
     const user = c.get("user");
 
     try {
-      await verifyServerAccess(serverId, user.workspaceId);
+      const workspaceId = validateWorkspaceAccess(user);
+      await verifyServerAccess(serverId, workspaceId);
 
-      const client = await createRabbitMQClient(serverId, user.workspaceId);
+      const client = await createRabbitMQClient(serverId, workspaceId);
       await client.setVHostLimit(vhostName, limitType, {
         value: limitData.value,
       });
@@ -430,9 +445,10 @@ vhostController.delete(
     const user = c.get("user");
 
     try {
-      await verifyServerAccess(serverId, user.workspaceId);
+      const workspaceId = validateWorkspaceAccess(user);
+      await verifyServerAccess(serverId, workspaceId);
 
-      const client = await createRabbitMQClient(serverId, user.workspaceId);
+      const client = await createRabbitMQClient(serverId, workspaceId);
       await client.deleteVHostLimit(vhostName, limitType);
 
       logger.info(

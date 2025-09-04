@@ -538,6 +538,10 @@ userController.put(
       );
     }
 
+    if (!user.workspaceId) {
+      return c.json({ error: "No workspace assigned" }, 400);
+    }
+
     try {
       const updatedWorkspace = await prisma.workspace.update({
         where: { id: user.workspaceId },

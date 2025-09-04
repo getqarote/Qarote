@@ -23,6 +23,10 @@ paymentController.post(
     const user = c.get("user");
     const { plan, billingInterval } = c.req.valid("json");
 
+    if (!user.workspaceId) {
+      return c.json({ error: "No workspace assigned" }, 400);
+    }
+
     // Get workspace
     const workspace = await prisma.workspace.findUnique({
       where: { id: user.workspaceId },
@@ -75,6 +79,10 @@ paymentController.post(
 // Create customer portal session
 paymentController.post("/portal", async (c) => {
   const user = c.get("user");
+
+  if (!user.workspaceId) {
+    return c.json({ error: "No workspace assigned" }, 400);
+  }
 
   const workspace = await prisma.workspace.findUnique({
     where: { id: user.workspaceId },

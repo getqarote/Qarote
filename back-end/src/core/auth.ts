@@ -10,7 +10,7 @@ interface JWTPayload {
   sub: string;
   email: string;
   role: UserRole;
-  workspaceId: string;
+  workspaceId: string | null;
   exp?: number;
   iat?: number;
   [key: string]: unknown;
@@ -23,7 +23,7 @@ export interface SafeUser {
   firstName: string;
   lastName: string;
   role: UserRole;
-  workspaceId: string;
+  workspaceId: string | null;
   isActive: boolean;
   emailVerified?: boolean;
   pendingEmail?: string | null;
@@ -50,7 +50,7 @@ export const generateToken = async (user: {
   id: string;
   email: string;
   role: UserRole;
-  workspaceId: string;
+  workspaceId: string | null;
 }): Promise<string> => {
   const payload: JWTPayload = {
     sub: user.id,

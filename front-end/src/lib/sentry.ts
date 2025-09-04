@@ -75,12 +75,12 @@ export function initSentry() {
 
 export function setSentryUser(user: {
   id: string;
-  workspaceId: string;
+  workspaceId: string | null;
   email?: string;
 }) {
   Sentry.setUser({
     id: user.id,
-    workspace_id: user.workspaceId,
+    workspace_id: user.workspaceId || undefined,
     email: user.email,
   });
 }

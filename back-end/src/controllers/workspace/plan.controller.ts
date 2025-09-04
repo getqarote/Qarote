@@ -29,6 +29,11 @@ planRoutes.get("/current/plan", async (c) => {
   const user = c.get("user");
 
   try {
+    // Check if user has a workspace
+    if (!user.workspaceId) {
+      return c.json({ error: "No workspace assigned" }, 404);
+    }
+
     // Get user's workspace with plan and current usage
     const workspace = await prisma.workspace.findUnique({
       where: { id: user.workspaceId },

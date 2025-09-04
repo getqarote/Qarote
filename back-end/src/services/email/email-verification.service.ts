@@ -187,6 +187,10 @@ export class EmailVerificationService {
 
         // Send welcome email after successful email verification
         try {
+          if (!updatedUser.workspace) {
+            throw new Error(`User ${updatedUser.id} has no workspace assigned`);
+          }
+
           await EmailService.sendWelcomeEmail({
             to: updatedUser.email,
             name: updatedUser.firstName || updatedUser.email,
