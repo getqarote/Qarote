@@ -1,0 +1,21 @@
+{
+  "short_name": "RabbitMQ Next",
+  "name": "RabbitHQ",
+  "description": "Modern RabbitMQ Management Interface",
+  "icons": [
+    {
+      "src": "icon_rabbit.svg",
+      "type": "image/svg+xml",
+      "sizes": "180x180"
+    },
+    {
+      "src": "social-card.svg",
+      "type": "image/svg+xml",
+      "sizes": "1200x630"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#4f46e5",
+  "background_color": "#ffffff"
+}

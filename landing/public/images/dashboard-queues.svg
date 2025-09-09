@@ -1,0 +1,118 @@
+<svg width="900" height="600" viewBox="0 0 900 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="900" height="600" fill="#FAFAFA" rx="12"/>
+  
+  <!-- Browser Header -->
+  <rect width="900" height="40" fill="#F1F5F9" rx="12"/>
+  <rect x="0" y="12" width="900" height="28" fill="#F1F5F9"/>
+  
+  <!-- Browser Dots -->
+  <circle cx="20" cy="20" r="6" fill="#EF4444"/>
+  <circle cx="40" cy="20" r="6" fill="#F59E0B"/>
+  <circle cx="60" cy="20" r="6" fill="#10B981"/>
+  
+  <!-- URL Bar -->
+  <rect x="100" y="12" width="200" height="16" fill="#E2E8F0" rx="8"/>
+  <text x="110" y="22" font-family="Arial, sans-serif" font-size="10" fill="#64748B">https://app.rabbithq.io</text>
+  
+  <!-- Main Header -->
+  <rect x="20" y="60" width="860" height="60" fill="white" rx="8" stroke="#E2E8F0"/>
+  
+  <!-- Logo and Title -->
+  <rect x="35" y="75" width="30" height="30" fill="#EA580C" rx="6"/>
+  <text x="40" y="95" font-family="Arial, sans-serif" font-size="16" fill="white">🐰</text>
+  <text x="80" y="95" font-family="Arial, sans-serif" font-weight="600" font-size="16" fill="#1E293B">RabbitHQ</text>
+  
+  <!-- Connection Status -->
+  <circle cx="740" cy="90" r="4" fill="#10B981"/>
+  <text x="755" y="95" font-family="Arial, sans-serif" font-size="12" fill="#64748B">Connected to cluster</text>
+  
+  <!-- Page Title -->
+  <text x="35" y="155" font-family="Arial, sans-serif" font-weight="700" font-size="20" fill="#EA580C">Queues</text>
+  <text x="35" y="175" font-family="Arial, sans-serif" font-size="14" fill="#64748B">Manage and monitor all queues across your clusters</text>
+  
+  <!-- Action Buttons -->
+  <rect x="650" y="140" width="60" height="28" fill="#1E293B" rx="14"/>
+  <text x="670" y="158" font-family="Arial, sans-serif" font-size="10" fill="white">👑</text>
+  
+  <rect x="720" y="140" width="60" height="28" fill="#FB923C" rx="14"/>
+  <text x="735" y="158" font-family="Arial, sans-serif" font-size="10" fill="white">📤</text>
+  
+  <rect x="810" y="140" width="60" height="28" fill="#FB923C" rx="14"/>
+  <text x="825" y="158" font-family="Arial, sans-serif" font-size="10" fill="white">➕</text>
+  
+  <!-- Filter Bar -->
+  <rect x="35" y="195" width="300" height="32" fill="white" rx="6" stroke="#E2E8F0"/>
+  <text x="45" y="215" font-family="Arial, sans-serif" font-size="12" fill="#9CA3AF">Filter regex</text>
+  <text x="345" y="215" font-family="Arial, sans-serif" font-size="12" fill="#64748B">+/-</text>
+  
+  <!-- Queue Table -->
+  <rect x="35" y="245" width="830" height="315" fill="white" rx="8" stroke="#E2E8F0"/>
+  
+  <!-- Table Header -->
+  <text x="50" y="275" font-family="Arial, sans-serif" font-weight="600" font-size="14" fill="#1E293B">All Queues</text>
+  
+  <!-- Column Headers -->
+  <g transform="translate(50, 305)">
+    <text x="0" y="0" font-family="Arial, sans-serif" font-size="11" fill="#64748B">Queue Name</text>
+    <text x="300" y="0" font-family="Arial, sans-serif" font-size="11" fill="#64748B">Status</text>
+    <text x="380" y="0" font-family="Arial, sans-serif" font-size="11" fill="#64748B">Messages</text>
+    <text x="450" y="0" font-family="Arial, sans-serif" font-size="11" fill="#64748B">Ready</text>
+    <text x="520" y="0" font-family="Arial, sans-serif" font-size="11" fill="#64748B">Unacked</text>
+    <text x="590" y="0" font-family="Arial, sans-serif" font-size="11" fill="#64748B">Consumers</text>
+    <text x="670" y="0" font-family="Arial, sans-serif" font-size="11" fill="#64748B">Rate (msg/s)</text>
+  </g>
+  
+  <!-- Queue Rows -->
+  <g transform="translate(50, 335)">
+    <!-- analytics.clicks -->
+    <rect x="0" y="0" width="780" height="35" fill="#FEF2F2" rx="4"/>
+    <text x="10" y="20" font-family="Arial, sans-serif" font-size="12" fill="#EA580C" font-weight="500">analytics.clicks</text>
+    <text x="300" y="20" font-family="Arial, sans-serif" font-size="11" fill="#64748B">Idle</text>
+    <text x="380" y="20" font-family="Arial, sans-serif" font-size="11" fill="#1E293B">0</text>
+    <text x="450" y="20" font-family="Arial, sans-serif" font-size="11" fill="#3B82F6">0</text>
+    <text x="520" y="20" font-family="Arial, sans-serif" font-size="11" fill="#EA580C">0</text>
+    <text x="590" y="20" font-family="Arial, sans-serif" font-size="11" fill="#64748B">👥 0</text>
+    <text x="670" y="20" font-family="Arial, sans-serif" font-size="11" fill="#1E293B">0.0</text>
+    
+    <!-- analytics.pageviews -->
+    <rect x="0" y="45" width="780" height="35" fill="white" rx="4"/>
+    <text x="10" y="65" font-family="Arial, sans-serif" font-size="12" fill="#EA580C" font-weight="500">analytics.pageviews</text>
+    <text x="300" y="65" font-family="Arial, sans-serif" font-size="11" fill="#64748B">Idle</text>
+    <text x="380" y="65" font-family="Arial, sans-serif" font-size="11" fill="#1E293B">0</text>
+    <text x="450" y="65" font-family="Arial, sans-serif" font-size="11" fill="#3B82F6">0</text>
+    <text x="520" y="65" font-family="Arial, sans-serif" font-size="11" fill="#EA580C">0</text>
+    <text x="590" y="65" font-family="Arial, sans-serif" font-size="11" fill="#64748B">👥 2</text>
+    <text x="670" y="65" font-family="Arial, sans-serif" font-size="11" fill="#1E293B">0.0</text>
+    
+    <!-- critical.alerts -->
+    <rect x="0" y="90" width="780" height="35" fill="#FEF2F2" rx="4"/>
+    <text x="10" y="110" font-family="Arial, sans-serif" font-size="12" fill="#EA580C" font-weight="500">critical.alerts</text>
+    <text x="300" y="110" font-family="Arial, sans-serif" font-size="11" fill="#16A34A">Running</text>
+    <text x="380" y="110" font-family="Arial, sans-serif" font-size="11" fill="#1E293B">0</text>
+    <text x="450" y="110" font-family="Arial, sans-serif" font-size="11" fill="#3B82F6">0</text>
+    <text x="520" y="110" font-family="Arial, sans-serif" font-size="11" fill="#EA580C">0</text>
+    <text x="590" y="110" font-family="Arial, sans-serif" font-size="11" fill="#64748B">👥 1</text>
+    <text x="670" y="110" font-family="Arial, sans-serif" font-size="11" fill="#1E293B">0.0</text>
+    
+    <!-- email.notifications -->
+    <rect x="0" y="135" width="780" height="35" fill="white" rx="4"/>
+    <text x="10" y="155" font-family="Arial, sans-serif" font-size="12" fill="#EA580C" font-weight="500">email.notifications</text>
+    <text x="300" y="155" font-family="Arial, sans-serif" font-size="11" fill="#16A34A">Running</text>
+    <text x="380" y="155" font-family="Arial, sans-serif" font-size="11" fill="#1E293B">0</text>
+    <text x="450" y="155" font-family="Arial, sans-serif" font-size="11" fill="#3B82F6">0</text>
+    <text x="520" y="155" font-family="Arial, sans-serif" font-size="11" fill="#EA580C">0</text>
+    <text x="590" y="155" font-family="Arial, sans-serif" font-size="11" fill="#64748B">👥 1</text>
+    <text x="670" y="155" font-family="Arial, sans-serif" font-size="11" fill="#1E293B">0.0</text>
+    
+    <!-- user.actions -->
+    <rect x="0" y="180" width="780" height="35" fill="#FEF2F2" rx="4"/>
+    <text x="10" y="200" font-family="Arial, sans-serif" font-size="12" fill="#EA580C" font-weight="500">user.actions</text>
+    <text x="300" y="200" font-family="Arial, sans-serif" font-size="11" fill="#64748B">Idle</text>
+    <text x="380" y="200" font-family="Arial, sans-serif" font-size="11" fill="#1E293B">0</text>
+    <text x="450" y="200" font-family="Arial, sans-serif" font-size="11" fill="#3B82F6">0</text>
+    <text x="520" y="200" font-family="Arial, sans-serif" font-size="11" fill="#EA580C">0</text>
+    <text x="590" y="200" font-family="Arial, sans-serif" font-size="11" fill="#64748B">👥 0</text>
+    <text x="670" y="200" font-family="Arial, sans-serif" font-size="11" fill="#1E293B">0.0</text>
+  </g>
+</svg>

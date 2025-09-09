@@ -1,0 +1,22 @@
+# Allow all web crawlers
+User-agent: *
+Allow: /
+
+# Allow social media crawlers to access all content
+User-agent: Twitterbot
+Allow: /
+
+User-agent: facebookexternalhit
+Allow: /
+
+User-agent: LinkedInBot
+Allow: /
+
+User-agent: Slackbot-LinkExpanding
+Allow: /
+
+User-agent: WhatsApp
+Allow: /
+
+# Sitemap location
+Sitemap: https://rabbithq.io/sitemap.xml

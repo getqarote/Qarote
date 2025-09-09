@@ -1,0 +1,59 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background gradient -->
+  <rect width="1200" height="630" fill="url(#paint0_linear)" />
+  
+  <!-- Logo background -->
+  <rect x="120" y="245" width="140" height="140" rx="20" fill="url(#paint1_linear)" />
+  
+  <!-- RabbitMQ-style Rabbit (scaled and positioned) -->
+  <g transform="translate(127, 255) scale(0.7)" fill="white">
+    <!-- Rabbit Body -->
+    <path d="M65 85V110C65 115.523 69.4772 120 75 120H105C110.523 120 115 115.523 115 110V85H65Z" />
+    
+    <!-- Rabbit Head -->
+    <path d="M65 85V70C65 64.4772 69.4772 60 75 60H105C110.523 60 115 64.4772 115 70V85H65Z" />
+    
+    <!-- Left Ear -->
+    <path d="M75 60V40C75 35 70 30 65 30C60 30 55 35 55 40V65C55 70 62 75 70 65L75 60Z" />
+    
+    <!-- Right Ear -->
+    <path d="M105 60V40C105 35 110 30 115 30C120 30 125 35 125 40V65C125 70 118 75 110 65L105 60Z" />
+    
+    <!-- Eyes -->
+    <circle cx="80" cy="73" r="3" fill="#EA580C" />
+    <circle cx="100" cy="73" r="3" fill="#EA580C" />
+    
+    <!-- Mouth/Nose Area -->
+    <path d="M86 80C86 80 90 83 94 80" stroke="#EA580C" stroke-width="1.5" stroke-linecap="round" />
+    
+    <!-- Queue Lines -->
+    <rect x="75" y="95" width="30" height="4" rx="2" fill="white" />
+    <rect x="75" y="105" width="30" height="4" rx="2" fill="white" />
+  </g>
+  
+  <!-- Title -->
+  <text x="280" y="315" font-family="Arial, sans-serif" font-weight="800" font-size="64" fill="#1E293B">
+    Rabbit<tspan fill="url(#paint2_linear)">HQ</tspan>
+  </text>
+  
+  <!-- Subtitle -->
+  <text x="280" y="375" font-family="Arial, sans-serif" font-weight="500" font-size="32" fill="#64748B">
+    The modern RabbitMQ management interface
+  </text>
+  
+  <!-- Gradients -->
+  <defs>
+    <linearGradient id="paint0_linear" x1="0" y1="0" x2="1200" y2="630" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF7ED" />
+      <stop offset="1" stop-color="#FFEDD5" />
+    </linearGradient>
+    <linearGradient id="paint1_linear" x1="120" y1="245" x2="260" y2="385" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#EA580C" />
+      <stop offset="1" stop-color="#DC2626" />
+    </linearGradient>
+    <linearGradient id="paint2_linear" x1="280" y1="315" x2="490" y2="315" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#EA580C" />
+      <stop offset="1" stop-color="#DC2626" />
+    </linearGradient>
+  </defs>
+</svg>
