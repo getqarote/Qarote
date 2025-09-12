@@ -71,7 +71,7 @@
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
-    "hono": "^4.7.11",
+    "hono": "^4.9.7",
     "hono-rate-limiter": "^0.4.2",
     "is-valid-hostname": "^1.0.2",
     "pino": "^9.7.0",
