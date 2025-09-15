@@ -1119,13 +1119,13 @@ const Index = () => {
                 <Twitter className="h-5 w-5" />
               </a>
               <a
-                href="#"
+                href="/privacy-policy"
                 className="text-muted-foreground hover:text-foreground transition-colors text-sm"
               >
                 Privacy Policy
               </a>
               <a
-                href="#"
+                href="/terms-of-service"
                 className="text-muted-foreground hover:text-foreground transition-colors text-sm"
               >
                 Terms of Service
