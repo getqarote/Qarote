@@ -39,6 +39,7 @@ jobs:
           VITE_SENTRY_DSN: ${{ vars.VITE_SENTRY_DSN }}
           VITE_SENTRY_ENABLED: ${{ vars.VITE_SENTRY_ENABLED }}
           VITE_APP_VERSION: ${{ vars.VITE_APP_VERSION }}
+          VITE_GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           VITE_ENVIRONMENT: production
           NODE_ENV: production
         run: npm run build

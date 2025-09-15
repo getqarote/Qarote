@@ -64,6 +64,7 @@ jobs:
             STRIPE_ENTERPRISE_YEARLY_PRICE_ID=${{ vars.STRIPE_ENTERPRISE_YEARLY_PRICE_ID }} \
             SENTRY_DSN=${{ vars.SENTRY_DSN }} \
             SENTRY_ENABLED=${{ vars.SENTRY_ENABLED }} \
+            GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }} \
             NODE_ID=app1
 
       - name: 🔍 Debug Dokku Environment
