@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { apiClient } from "@/lib/api";
 import logger from "@/lib/logger";
+import "@/styles/google-auth.css";
 
 interface GoogleLoginButtonProps {
   onSuccess?: () => void;
@@ -82,7 +83,9 @@ export const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
   };
 
   return (
-    <div className={className}>
+    <div
+      className={`google-login-container flex justify-center items-center ${className || ""}`}
+    >
       <GoogleLogin
         onSuccess={handleGoogleSuccess}
         onError={handleGoogleError}

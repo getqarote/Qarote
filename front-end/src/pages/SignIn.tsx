@@ -1,9 +1,10 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import {
   Card,
   CardContent,
@@ -30,6 +31,7 @@ const SignIn: React.FC = () => {
   const { isAuthenticated } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
 
   // Get the page the user was trying to access
   const from = location.state?.from?.pathname || "/";
@@ -165,10 +167,13 @@ const SignIn: React.FC = () => {
                     <FormItem>
                       <FormLabel>Password</FormLabel>
                       <FormControl>
-                        <Input
-                          type="password"
+                        <PasswordInput
                           placeholder="Enter your password"
                           disabled={loginMutation.isPending}
+                          showPassword={showPassword}
+                          onToggleVisibility={() =>
+                            setShowPassword(!showPassword)
+                          }
                           {...field}
                         />
                       </FormControl>

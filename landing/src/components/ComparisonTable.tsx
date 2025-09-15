@@ -53,8 +53,8 @@ const ComparisonTable = () => {
     },
   ];
 
-  const CheckIcon = () => <Check className="h-5 w-5 text-green-500" />;
-  const XIcon = () => <X className="h-5 w-5 text-red-400" />;
+  const CheckIcon = () => <Check className="h-5 w-5 text-green-500 mx-auto" />;
+  const XIcon = () => <X className="h-5 w-5 text-red-400 mx-auto" />;
 
   return (
     <div className="overflow-x-auto bg-white rounded-xl shadow-sm border border-gray-100">

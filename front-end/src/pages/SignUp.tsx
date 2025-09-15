@@ -1,9 +1,10 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { type ZodType } from "zod/v4";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -32,6 +33,8 @@ const SignUp: React.FC = () => {
   const registerMutation = useRegister();
   const location = useLocation();
   const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Get the page the user was trying to access
   const from = location.state?.from?.pathname || "/";
@@ -196,10 +199,13 @@ const SignUp: React.FC = () => {
                       <FormItem>
                         <FormLabel>Password</FormLabel>
                         <FormControl>
-                          <Input
-                            type="password"
+                          <PasswordInput
                             placeholder="Create a password"
                             disabled={registerMutation.isPending}
+                            showPassword={showPassword}
+                            onToggleVisibility={() =>
+                              setShowPassword(!showPassword)
+                            }
                             {...field}
                           />
                         </FormControl>
@@ -215,10 +221,13 @@ const SignUp: React.FC = () => {
                       <FormItem>
                         <FormLabel>Confirm password</FormLabel>
                         <FormControl>
-                          <Input
-                            type="password"
+                          <PasswordInput
                             placeholder="Confirm your password"
                             disabled={registerMutation.isPending}
+                            showPassword={showConfirmPassword}
+                            onToggleVisibility={() =>
+                              setShowConfirmPassword(!showConfirmPassword)
+                            }
                             {...field}
                           />
                         </FormControl>
