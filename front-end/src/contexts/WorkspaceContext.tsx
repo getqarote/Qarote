@@ -27,7 +27,7 @@ export const WorkspaceProvider: React.FC<WorkspaceProviderProps> = ({
   const { isAuthenticated, user } = useAuth();
 
   const fetchWorkspace = useCallback(async () => {
-    if (!isAuthenticated || !user) {
+    if (!isAuthenticated || !user || !user.workspaceId) {
       return;
     }
 
@@ -87,8 +87,9 @@ export const WorkspaceProvider: React.FC<WorkspaceProviderProps> = ({
   }, [isAuthenticated, user]);
 
   // Fetch both workspace and plan data when user authenticates
+  // Only fetch if user has a workspaceId (meaning they already have a workspace)
   useEffect(() => {
-    if (isAuthenticated && user) {
+    if (isAuthenticated && user && user.workspaceId) {
       fetchWorkspace();
       fetchPlan();
     }

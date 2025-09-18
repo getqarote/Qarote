@@ -100,8 +100,9 @@ export default function VerifyEmail() {
         // Redirect based on authentication status
         setTimeout(() => {
           if (isAuthenticated) {
-            // User is logged in, go to dashboard
-            navigate("/", { replace: true });
+            // User is logged in, always go to workspace creation
+            // The workspace page will handle redirecting to dashboard if user already has workspaces
+            navigate("/workspace", { replace: true });
           } else {
             // User is not logged in, go to sign in page
             navigate("/auth/sign-in", { replace: true });
@@ -158,7 +159,9 @@ export default function VerifyEmail() {
   };
 
   const handleGoToDashboard = () => {
-    navigate("/");
+    // Always go to workspace creation
+    // The workspace page will handle redirecting to dashboard if user already has workspaces
+    navigate("/workspace", { replace: true });
   };
 
   logger.log("Verification State:", verificationState);

@@ -44,6 +44,9 @@ const Workspace = () => {
     },
   });
 
+  console.log("User", user);
+  console.log("Workspaces data", workspacesData);
+
   // Create workspace mutation
   const createWorkspaceMutation = useMutation({
     mutationFn: (data: {

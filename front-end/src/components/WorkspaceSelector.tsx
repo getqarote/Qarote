@@ -123,10 +123,6 @@ export function WorkspaceSelector() {
     return workspace.isOwner ? "Owner" : workspace.userRole || "Member";
   };
 
-  if (!workspace || workspaces.length === 0) {
-    return null;
-  }
-
   return (
     <>
       <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
@@ -139,7 +135,7 @@ export function WorkspaceSelector() {
             <div className="flex items-center gap-2 min-w-0">
               <Building2 className="w-4 h-4 text-gray-600 flex-shrink-0" />
               <span className="truncate font-medium text-gray-900">
-                {currentWorkspace?.name || workspace.name}
+                {currentWorkspace?.name || workspace?.name}
               </span>
               {currentWorkspace && (
                 <div className="flex items-center gap-1 flex-shrink-0">

@@ -27,7 +27,8 @@ import {
 import { useRegister } from "@/hooks/useAuth";
 import { useAuth } from "@/contexts/AuthContext";
 import { signUpSchema, type SignUpFormData } from "@/schemas/forms";
-import GoogleLoginButton from "@/components/auth/GoogleLoginButton";
+import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton";
+import logger from "@/lib/logger";
 
 const SignUp: React.FC = () => {
   const { isAuthenticated } = useAuth();
@@ -312,7 +313,7 @@ const SignUp: React.FC = () => {
             <GoogleLoginButton
               mode="signup"
               onError={(error) => {
-                console.error("Google signup error:", error);
+                logger.error("Google signup error:", error);
               }}
             />
           </CardContent>

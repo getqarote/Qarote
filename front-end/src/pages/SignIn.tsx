@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -22,21 +22,14 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useLogin } from "@/hooks/useAuth";
-import { useAuth } from "@/contexts/AuthContext";
 import { signInSchema, type SignInFormData } from "@/schemas/forms";
 import logger from "@/lib/logger";
-import GoogleLoginButton from "@/components/auth/GoogleLoginButton";
+import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton";
 
 const SignIn: React.FC = () => {
-  const { isAuthenticated } = useAuth();
-  const location = useLocation();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
-
-  // Get the page the user was trying to access
-  const from = location.state?.from?.pathname || "/";
-
-  const loginMutation = useLogin(from);
+  const loginMutation = useLogin();
 
   // Initialize form with react-hook-form
   const form = useForm<SignInFormData>({
@@ -55,22 +48,9 @@ const SignIn: React.FC = () => {
     });
   };
 
-  // Log state changes for debugging
-  useEffect(() => {
-    logger.debug("SignIn component state:", {
-      isAuthenticated,
-      loginSuccess: loginMutation.isSuccess,
-      loginPending: loginMutation.isPending,
-      loginError: loginMutation.error?.message,
-      mutationStatus: loginMutation.status,
-    });
-  }, [
-    isAuthenticated,
-    loginMutation.isSuccess,
-    loginMutation.isPending,
-    loginMutation.error,
-    loginMutation.status,
-  ]);
+  if (loginMutation.isSuccess) {
+    navigate("/workspace", { replace: true });
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-900 via-orange-800 to-red-800 py-12 px-4 sm:px-6 lg:px-8">
@@ -207,7 +187,7 @@ const SignIn: React.FC = () => {
             {/* Google Login */}
             <GoogleLoginButton
               onError={(error) => {
-                console.error("Google login error:", error);
+                logger.error("Google login error:", error);
               }}
             />
 
