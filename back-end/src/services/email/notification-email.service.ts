@@ -3,7 +3,6 @@ import TrialEndingEmail from "./templates/trial-ending-email";
 import PaymentActionRequiredEmail from "./templates/payment-action-required-email";
 import UpcomingInvoiceEmail from "./templates/upcoming-invoice-email";
 import { CoreEmailService, EmailResult } from "./core-email.service";
-import { createLogoAttachment } from "./utils/logo-attachment";
 
 export interface TrialEndingEmailParams {
   to: string;
@@ -69,14 +68,11 @@ export class NotificationEmailService {
       ? `Don't lose your ${currentUsage.servers} servers`
       : "Action required";
 
-    const logoAttachment = createLogoAttachment();
-
     return CoreEmailService.sendEmail({
       to,
       subject: `Your ${plan.toLowerCase()} trial ends soon - ${usageText}`,
       template,
       emailType: "trial_ending",
-      attachments: [logoAttachment],
       context: {
         name,
         workspaceName,
@@ -108,14 +104,11 @@ export class NotificationEmailService {
       frontendUrl,
     });
 
-    const logoAttachment = createLogoAttachment();
-
     return CoreEmailService.sendEmail({
       to,
       subject: `Action required: Complete your payment for ${workspaceName}`,
       template,
       emailType: "payment_action_required",
-      attachments: [logoAttachment],
       context: {
         name,
         workspaceName,
@@ -155,14 +148,11 @@ export class NotificationEmailService {
       frontendUrl,
     });
 
-    const logoAttachment = createLogoAttachment();
-
     return CoreEmailService.sendEmail({
       to,
       subject: `${workspaceName} usage report & upcoming invoice`,
       template,
       emailType: "upcoming_invoice",
-      attachments: [logoAttachment],
       context: {
         name,
         workspaceName,

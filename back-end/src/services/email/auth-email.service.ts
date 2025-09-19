@@ -3,7 +3,6 @@ import { InvitationEmail } from "./templates/invitation-email";
 import { EmailVerification } from "./templates/email-verification";
 import { CoreEmailService, EmailResult } from "./core-email.service";
 import WelcomeEmail from "./templates/welcome-email";
-import { createLogoAttachment } from "./utils/logo-attachment";
 
 export interface SendInvitationEmailParams {
   to: string;
@@ -132,15 +131,11 @@ export class AuthEmailService {
         ? "Please verify your email address - RabbitHQ"
         : "Verify your new email address - RabbitHQ";
 
-    // Create logo attachment for embedding
-    const logoAttachment = createLogoAttachment();
-
     return await CoreEmailService.sendEmail({
       to,
       subject,
       template,
       emailType: "verification",
-      attachments: [logoAttachment],
       context: {
         userName,
         type,

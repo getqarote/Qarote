@@ -36,14 +36,7 @@ export class CoreEmailService {
    * Send an email using a React template
    */
   static async sendEmail(params: BaseEmailParams): Promise<EmailResult> {
-    const {
-      to,
-      subject,
-      template,
-      emailType,
-      context = {},
-      attachments = [],
-    } = params;
+    const { to, subject, template, emailType, context = {} } = params;
 
     try {
       logger.info(`Sending ${emailType} email`, {
@@ -61,7 +54,6 @@ export class CoreEmailService {
         to,
         subject,
         html: emailHtml,
-        attachments: attachments.length > 0 ? attachments : undefined,
       });
 
       if (error) {

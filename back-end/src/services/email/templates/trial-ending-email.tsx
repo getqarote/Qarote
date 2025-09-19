@@ -62,15 +62,6 @@ export default function TrialEndingEmail({
       <Body style={baseStyles.main}>
         <Container style={baseStyles.container}>
           {/* Header */}
-          <Section style={headerStyles.headerWithLogo}>
-            <Img
-              src="cid:rabbit-logo"
-              width="50"
-              height="50"
-              alt="RabbitHQ"
-              style={headerStyles.logoInline}
-            />
-          </Section>
 
           {/* Main Content */}
           <Section style={contentStyles.contentPadded}>

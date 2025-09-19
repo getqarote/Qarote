@@ -43,15 +43,7 @@ export const InvitationEmail = ({
       <Preview>You've been invited to join {workspaceName} on RabbitHQ</Preview>
       <Body style={baseStyles.main}>
         <Container style={baseStyles.container}>
-          <Section style={headerStyles.header}>
-            <Img
-              src="cid:rabbit-logo"
-              width="50"
-              height="50"
-              alt="RabbitHQ"
-              style={headerStyles.logo}
-            />
-          </Section>
+          <Section style={headerStyles.header}></Section>
 
           <Section style={contentStyles.contentPadded}>
             <Text style={contentStyles.title}>You're invited to RabbitHQ!</Text>

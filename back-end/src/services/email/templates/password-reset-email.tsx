@@ -46,15 +46,6 @@ export const PasswordResetEmail: React.FC<PasswordResetEmailProps> = ({
         <Container style={baseStyles.container}>
           <Section style={sectionStyles.section}>
             {/* Add Logo */}
-            <Section style={headerStyles.header}>
-              <Img
-                src="cid:rabbit-logo"
-                width="50"
-                height="50"
-                alt="RabbitHQ"
-                style={headerStyles.logo}
-              />
-            </Section>
 
             <Section style={contentStyles.contentPadded}>
               <Heading style={contentStyles.title}>Reset your password</Heading>

@@ -46,15 +46,6 @@ export const WelcomeBackEmail = ({
       <Body style={baseStyles.main}>
         <Container style={baseStyles.container}>
           {/* Logo */}
-          <Section style={headerStyles.headerWithLogo}>
-            <Img
-              src="cid:rabbit-logo"
-              width="50"
-              height="50"
-              alt="RabbitHQ"
-              style={headerStyles.logo}
-            />
-          </Section>
 
           {/* Main Content */}
           <Section style={sectionStyles.featuresSection}>

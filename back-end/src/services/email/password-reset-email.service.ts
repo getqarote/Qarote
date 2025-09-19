@@ -1,6 +1,5 @@
 import { CoreEmailService } from "./core-email.service";
 import { PasswordResetEmail } from "./templates/password-reset-email";
-import { createLogoAttachment } from "./utils/logo-attachment";
 import React from "react";
 
 export class PasswordResetEmailService {
@@ -25,14 +24,11 @@ export class PasswordResetEmailService {
       token: resetToken,
     });
 
-    const logoAttachment = createLogoAttachment();
-
     await CoreEmailService.sendEmail({
       to,
       subject: "Reset your password - RabbitMQ Dashboard",
       template: emailTemplate,
       emailType: "password-reset",
-      attachments: [logoAttachment],
       context: {
         userName,
         resetToken: resetToken.substring(0, 8) + "...", // Log partial token for debugging
