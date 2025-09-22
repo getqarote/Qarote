@@ -3,12 +3,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Server, Wifi, HardDrive, Cpu, ArrowRight } from "lucide-react";
-import { Node } from "@/lib/api";
+import { RabbitMQNode } from "@/lib/api";
 import { isRabbitMQAuthError } from "@/types/apiErrors";
 import { RabbitMQPermissionError } from "@/components/RabbitMQPermissionError";
 
 interface ConnectedNodesProps {
-  nodes: Node[];
+  nodes: RabbitMQNode[];
   isLoading: boolean;
   nodesError?: Error | null;
 }
@@ -18,7 +18,7 @@ export const ConnectedNodes = ({
   isLoading,
   nodesError,
 }: ConnectedNodesProps) => {
-  const getStatusBadge = (node: Node) => {
+  const getStatusBadge = (node: RabbitMQNode) => {
     if (!node.running) {
       return (
         <Badge variant="destructive" className="bg-red-100 text-red-700">
@@ -90,7 +90,7 @@ export const ConnectedNodes = ({
           <RabbitMQPermissionError
             requiredPermission={nodesError.requiredPermission}
             message={nodesError.message}
-            title="Node Information Unavailable"
+            title="RabbitMQNode Information Unavailable"
           />
         ) : isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

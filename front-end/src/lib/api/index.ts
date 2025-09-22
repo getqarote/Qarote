@@ -12,9 +12,10 @@ export type * from "./rabbitmqTypes";
 export type * from "./exchangeTypes";
 export type * from "./messageTypes";
 export type * from "./authTypes";
-// export type * from "./alertTypes";
 export type * from "./logTypes";
 export type * from "./vhostTypes";
+export type * from "./planClient";
+export type * from "./paymentClient";
 
 // Export individual clients for advanced usage
 export { ServerApiClient } from "./serverClient";
@@ -27,9 +28,3 @@ export { LogsApiClient } from "./logsClient";
 export { BaseApiClient } from "./baseClient";
 export { PlanApiClient } from "./planClient";
 export { PaymentApiClient } from "./paymentClient";
-
-// Export plan types
-export type * from "./planClient";
-
-// Export payment types
-export type * from "./paymentClient";

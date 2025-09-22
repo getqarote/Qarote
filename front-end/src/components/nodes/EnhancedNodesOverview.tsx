@@ -13,25 +13,22 @@ import {
   AlertTriangle,
   XCircle,
   HardDrive,
-  Cpu,
   Activity,
   Network,
-  Info,
   HelpCircle,
 } from "lucide-react";
-import { Node } from "@/lib/api";
+import { RabbitMQNode } from "@/lib/api";
 import { RabbitMQPermissionError } from "@/components/RabbitMQPermissionError";
 import { isRabbitMQAuthError } from "@/types/apiErrors";
 
 interface NodesOverviewProps {
   serverId: string;
-  nodes: Node[];
+  nodes: RabbitMQNode[];
   isLoading: boolean;
   nodesError?: Error | null;
 }
 
 export const EnhancedNodesOverview = ({
-  serverId,
   nodes,
   isLoading,
   nodesError,

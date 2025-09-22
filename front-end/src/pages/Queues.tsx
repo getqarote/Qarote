@@ -9,7 +9,6 @@ import { useServerContext } from "@/contexts/ServerContext";
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { useQueues, queryKeys } from "@/hooks/useApi";
 import { QueueHeader } from "@/components/Queues/QueueHeader";
-import { PlanRestrictions } from "@/components/Queues/PlanRestrictions";
 import { QueueTable } from "@/components/Queues/QueueTable";
 import logger from "@/lib/logger";
 
@@ -23,7 +22,6 @@ const Queues = () => {
     isLoading: workspaceLoading,
   } = useWorkspace();
   const [filterRegex, setFilterRegex] = useState("");
-  const [restrictionsDismissed, setRestrictionsDismissed] = useState(false);
   const { selectedServerId, hasServers } = useServerContext();
   const { data: queuesData, isLoading, refetch } = useQueues(selectedServerId);
 
@@ -149,18 +147,6 @@ const Queues = () => {
                 />
               </div>
             </div>
-
-            {/* Plan Restrictions */}
-            {/* {!restrictionsDismissed && (
-              <PlanRestrictions
-                workspacePlan={workspacePlan}
-                queueCount={queueCount}
-                canAddQueue={canAddQueue}
-                canSendMessages={canSendMessages}
-                onUpgrade={() => navigate("/plans")}
-                onDismiss={() => setRestrictionsDismissed(true)}
-              />
-            )} */}
 
             {/* Filter */}
             <div className="flex items-center gap-4">

@@ -18,11 +18,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import {
   Server,
   ArrowUpDown,
   CheckCircle,
@@ -37,24 +32,20 @@ import {
   Network,
   Database,
   Activity,
-  Zap,
-  FileText,
   Users,
   Settings,
-  TrendingUp,
   Wifi,
-  Archive,
   Info,
   HelpCircle,
 } from "lucide-react";
-import { Node } from "@/lib/api";
+import { RabbitMQNode } from "@/lib/api";
 import { useState } from "react";
 import { RabbitMQPermissionError } from "@/components/RabbitMQPermissionError";
 import { isRabbitMQAuthError } from "@/types/apiErrors";
 
 interface EnhancedNodesTableProps {
   serverId: string;
-  nodes: Node[];
+  nodes: RabbitMQNode[];
   isLoading: boolean;
   nodesError?: Error | null;
 }
@@ -115,14 +106,14 @@ export const EnhancedNodesTable = ({
   const formatNumber = (num: number): string => {
     if (num >= 1e6) return (num / 1e6).toFixed(1) + "M";
     if (num >= 1e3) return (num / 1e3).toFixed(1) + "K";
-    return num.toString();
+    return num?.toString();
   };
 
   const formatRate = (rate: number): string => {
     return rate > 0 ? `${rate.toFixed(1)}/s` : "0/s";
   };
 
-  const getNodeStatus = (node: Node) => {
+  const getNodeStatus = (node: RabbitMQNode) => {
     if (!node.running) {
       return {
         status: "Error",
@@ -243,7 +234,7 @@ export const EnhancedNodesTable = ({
           <RabbitMQPermissionError
             requiredPermission={nodesError.requiredPermission}
             message={nodesError.message}
-            title="Node Information Unavailable"
+            title="RabbitMQNode Information Unavailable"
           />
         </CardContent>
       </Card>
@@ -275,7 +266,7 @@ export const EnhancedNodesTable = ({
               <TableRow>
                 <TableHead className="w-12"></TableHead>
                 <TableHead>
-                  <SortButton field="name">Node Name</SortButton>
+                  <SortButton field="name">RabbitMQNode Name</SortButton>
                 </TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>
@@ -817,8 +808,8 @@ export const EnhancedNodesTable = ({
                                           </p>
                                           <ul className="text-sm space-y-1 ml-4">
                                             <li>
-                                              • Node type: disk (persistent) or
-                                              ram (temporary)
+                                              • RabbitMQNode type: disk
+                                              (persistent) or ram (temporary)
                                             </li>
                                             <li>
                                               • CPU cores available for Erlang
@@ -985,7 +976,7 @@ export const EnhancedNodesTable = ({
                                       <TooltipContent className="max-w-sm">
                                         <div className="space-y-2">
                                           <p className="font-medium">
-                                            Node Health & Alarms
+                                            RabbitMQNode Health & Alarms
                                           </p>
                                           <p className="text-sm">
                                             Critical health indicators to

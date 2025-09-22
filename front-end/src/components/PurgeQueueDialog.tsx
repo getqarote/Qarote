@@ -17,6 +17,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api";
 import { useToast } from "@/hooks/useToast";
 import { useServerContext } from "@/contexts/ServerContext";
+import { useWorkspace } from "@/hooks/useWorkspace";
+import { queryKeys } from "@/hooks/useApi";
 
 interface PurgeQueueDialogProps {
   queueName: string;
@@ -33,6 +35,7 @@ export const PurgeQueueDialog = ({
 }: PurgeQueueDialogProps) => {
   const [open, setOpen] = useState(false);
   const { selectedServerId } = useServerContext();
+  const { workspace } = useWorkspace();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -41,9 +44,12 @@ export const PurgeQueueDialog = ({
       if (!selectedServerId) {
         throw new Error("No server selected");
       }
-      return apiClient.purgeQueue(selectedServerId, queueName);
+      if (!workspace?.id) {
+        throw new Error("No workspace selected");
+      }
+      return apiClient.purgeQueue(selectedServerId, queueName, workspace.id);
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       toast({
         title: "Queue Purged Successfully",
         description:
@@ -53,10 +59,25 @@ export const PurgeQueueDialog = ({
         variant: "default",
       });
 
-      // Invalidate relevant queries to refresh data
-      queryClient.invalidateQueries({ queryKey: ["queues"] });
-      queryClient.invalidateQueries({ queryKey: ["queue"] });
-      queryClient.invalidateQueries({ queryKey: ["overview"] });
+      // Invalidate and refetch relevant queries to refresh data immediately
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.queues(selectedServerId),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.queue(selectedServerId, queueName),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.overview(selectedServerId),
+        }),
+        // Force refetch to ensure immediate update
+        queryClient.refetchQueries({
+          queryKey: queryKeys.queues(selectedServerId),
+        }),
+        queryClient.refetchQueries({
+          queryKey: queryKeys.overview(selectedServerId),
+        }),
+      ]);
 
       setOpen(false);
       onSuccess?.();

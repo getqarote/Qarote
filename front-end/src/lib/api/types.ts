@@ -3,6 +3,8 @@
  * Contains all TypeScript interfaces and types used across the API
  */
 
+import { RateDetail } from "./rabbitmqTypes";
+
 export interface ApiResponse<T> {
   success?: boolean;
   error?: string;
@@ -63,10 +65,6 @@ export interface GarbageCollection {
   min_bin_vheap_size: number;
   min_heap_size: number;
   minor_gcs: number;
-}
-
-export interface RateDetail {
-  rate: number;
 }
 
 export interface QueueMessageStats {
@@ -142,12 +140,6 @@ export interface Queue {
     mode: string;
     [key: string]: unknown;
   };
-}
-
-export interface AuthMechanism {
-  name: string;
-  description: string;
-  enabled: boolean;
 }
 
 export interface Application {

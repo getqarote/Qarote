@@ -11,8 +11,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { PurgeQueueDialog } from "@/components/PurgeQueueDialog";
-import { MessageSquare, Users } from "lucide-react";
+import { MessageSquare, Users, Trash2, Lock } from "lucide-react";
 import { Queue } from "@/lib/api";
+import { useWorkspace } from "@/hooks/useWorkspace";
+import { WorkspacePlan } from "@/types/plans";
+import { useState } from "react";
+import { PlanUpgradeModal } from "@/components/plans/PlanUpgradeModal";
 
 interface QueueTableProps {
   queues: Queue[];
@@ -29,6 +33,14 @@ export function QueueTable({
   onNavigateToQueue,
   onRefetch,
 }: QueueTableProps) {
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const { canManageQueues, workspacePlan } = useWorkspace();
+
+  const handleQueueManagementClick = () => {
+    if (!canManageQueues) {
+      setShowUpgradeModal(true);
+    }
+  };
   const getStatusBadge = (queue: Queue) => {
     if (queue.consumers > 0) {
       return <Badge className="bg-green-100 text-green-700">Running</Badge>;
@@ -142,11 +154,32 @@ export function QueueTable({
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <PurgeQueueDialog
-                        queueName={queue.name}
-                        messageCount={queue.messages}
-                        onSuccess={() => onRefetch()}
-                      />
+                      {canManageQueues ? (
+                        <PurgeQueueDialog
+                          queueName={queue.name}
+                          messageCount={queue.messages}
+                          onSuccess={() => onRefetch()}
+                        />
+                      ) : (
+                        <Button
+                          onClick={handleQueueManagementClick}
+                          disabled={true}
+                          size="sm"
+                          variant="outline"
+                          className="text-red-600 hover:text-red-700 opacity-60 cursor-not-allowed"
+                          title={
+                            workspacePlan === WorkspacePlan.FREE
+                              ? "Upgrade to Developer or Enterprise plan to purge queues"
+                              : "Upgrade to purge queues"
+                          }
+                        >
+                          <Trash2 className="w-4 h-4 mr-1" />
+                          Purge
+                          <span className="ml-1 px-1.5 py-0.5 text-white text-xs rounded-full font-bold bg-orange-500">
+                            Pro
+                          </span>
+                        </Button>
+                      )}
                     </TableCell>
                   </TableRow>
                 );
@@ -164,6 +197,15 @@ export function QueueTable({
           </div>
         )}
       </CardContent>
+
+      {showUpgradeModal && (
+        <PlanUpgradeModal
+          isOpen={showUpgradeModal}
+          onClose={() => setShowUpgradeModal(false)}
+          currentPlan={workspacePlan}
+          feature="queue-management"
+        />
+      )}
     </Card>
   );
 }

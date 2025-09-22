@@ -11,7 +11,6 @@ import {
   getWorkspacePlan,
   getWorkspaceResourceCounts,
   validateQueueCreationOnServer,
-  validateQueueCreation,
 } from "@/services/plan/plan.service";
 import {
   createAmqpClient,
@@ -114,6 +113,20 @@ queuesController.get("/servers/:id/queues", async (c) => {
         });
       }
     }
+
+    // Sort queues: first by messages (descending), then alphabetically by name
+    queues.sort((a, b) => {
+      // First sort by message count (queues with messages first)
+      const aMessages = a.messages || 0;
+      const bMessages = b.messages || 0;
+
+      if (aMessages !== bMessages) {
+        return bMessages - aMessages; // Descending order (more messages first)
+      }
+
+      // If message counts are equal, sort alphabetically by name
+      return a.name.localeCompare(b.name);
+    });
 
     // Prepare response with over-limit warning information
     const response: QueuesResponse = { queues };
