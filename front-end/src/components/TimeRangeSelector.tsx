@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/select";
 import { Clock } from "lucide-react";
 
-export type TimeRange = "1m" | "10m" | "1h";
+export type TimeRange = "1m" | "10m" | "1h" | "8h" | "1d";
 
 interface TimeRangeOption {
   value: TimeRange;
@@ -19,6 +19,8 @@ const timeRangeOptions: TimeRangeOption[] = [
   { value: "1m", label: "1m", description: "Last minute" },
   { value: "10m", label: "10m", description: "Last 10 minutes" },
   { value: "1h", label: "1h", description: "Last hour" },
+  { value: "8h", label: "8h", description: "Last 8 hours" },
+  { value: "1d", label: "1d", description: "Last day" },
 ];
 
 interface TimeRangeSelectorProps {
@@ -32,10 +34,6 @@ export const TimeRangeSelector = ({
   onValueChange,
   className = "",
 }: TimeRangeSelectorProps) => {
-  const selectedOption = timeRangeOptions.find(
-    (option) => option.value === value
-  );
-
   return (
     <div className={`flex items-center gap-1 ${className}`}>
       <Clock className="w-3 h-3 text-gray-500" />

@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
@@ -9,16 +8,13 @@ import {
   CheckCircle,
   XCircle,
   Info,
-  Settings,
   Activity,
   Server,
   Clock,
   Loader2,
-  Lock,
 } from "lucide-react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
-import { Separator } from "@/components/ui/separator";
 import { useServerContext } from "@/contexts/ServerContext";
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { useRabbitMQAlerts } from "@/hooks/useApi";
@@ -201,7 +197,7 @@ const Alerts = () => {
                 {alertsLoading && (
                   <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                 )}
-                {canConfigureAlerts ? (
+                {/* {canConfigureAlerts ? (
                   <Button
                     onClick={handleConfigureClick}
                     className="bg-orange-500 hover:bg-orange-600"
@@ -222,7 +218,7 @@ const Alerts = () => {
                       Pro
                     </span>
                   </Button>
-                )}
+                )} */}
               </div>
             </div>
             {/* Alerts Summary */}

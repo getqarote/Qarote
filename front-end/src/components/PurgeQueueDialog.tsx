@@ -37,7 +37,6 @@ export const PurgeQueueDialog = ({
   const { selectedServerId } = useServerContext();
   const { workspace } = useWorkspace();
   const { toast } = useToast();
-  const queryClient = useQueryClient();
 
   const purgeQueueMutation = useMutation({
     mutationFn: async () => {
@@ -58,26 +57,6 @@ export const PurgeQueueDialog = ({
             : `${data.purged} messages were purged from queue "${queueName}"`,
         variant: "default",
       });
-
-      // Invalidate and refetch relevant queries to refresh data immediately
-      await Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.queues(selectedServerId),
-        }),
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.queue(selectedServerId, queueName),
-        }),
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.overview(selectedServerId),
-        }),
-        // Force refetch to ensure immediate update
-        queryClient.refetchQueries({
-          queryKey: queryKeys.queues(selectedServerId),
-        }),
-        queryClient.refetchQueries({
-          queryKey: queryKeys.overview(selectedServerId),
-        }),
-      ]);
 
       setOpen(false);
       onSuccess?.();

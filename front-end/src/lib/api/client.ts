@@ -226,7 +226,7 @@ class ApiClient {
   async getLiveRatesMetrics(
     serverId: string,
     workspaceId: string,
-    timeRange: "1m" | "10m" | "1h" = "1m"
+    timeRange: "1m" | "10m" | "1h" | "8h" | "1d" = "1m"
   ) {
     return this.rabbitmqClient.getLiveRatesMetrics(
       serverId,
@@ -239,7 +239,7 @@ class ApiClient {
     serverId: string,
     queueName: string,
     workspaceId: string,
-    timeRange: "1m" | "10m" | "1h" = "1m"
+    timeRange: "1m" | "10m" | "1h" | "8h" | "1d" = "1m"
   ) {
     return this.rabbitmqClient.getQueueLiveRates(
       serverId,

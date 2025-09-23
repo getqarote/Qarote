@@ -33,7 +33,8 @@ import { ConsumerDetails } from "@/components/QueueDetail/ConsumerDetails";
 import { QueueBindings } from "@/components/QueueDetail/QueueBindings";
 import { NotFound } from "@/components/QueueDetail/NotFound";
 import { LoadingSkeleton } from "@/components/QueueDetail/LoadingSkeleton";
-import { LiveRatesChart } from "@/components/LiveRatesChart";
+import { MessagesRatesChart } from "@/components/MessagesRatesChart";
+import { QueuedMessagesChart } from "@/components/QueuedMessagesChart";
 
 const QueueDetail = () => {
   const { queueName } = useParams<{ queueName: string }>();
@@ -152,8 +153,17 @@ const QueueDetail = () => {
                   <QueueTiming queue={queue} />
 
                   {/* Live Rates Chart */}
-                  <LiveRatesChart
-                    liveRates={queueLiveRatesData?.liveRates}
+                  <MessagesRatesChart
+                    messagesRates={queueLiveRatesData?.messagesRates}
+                    isLoading={liveRatesLoading}
+                    error={null}
+                    timeRange={timeRange}
+                    onTimeRangeChange={setTimeRange}
+                  />
+
+                  {/* Queued Messages Chart */}
+                  <QueuedMessagesChart
+                    queueTotals={queueLiveRatesData?.queueTotals}
                     isLoading={liveRatesLoading}
                     error={null}
                     timeRange={timeRange}

@@ -12,8 +12,8 @@ import { PlanUpgradeModal } from "@/components/plans/PlanUpgradeModal";
 import { AddServerButton } from "@/components/AddServerButton";
 import { PrimaryMetricsCards } from "@/components/PrimaryMetricsCards";
 import { SecondaryMetricsCards } from "@/components/SecondaryMetricsCards";
-import { LiveRatesChart } from "@/components/LiveRatesChart";
-import { DataRatesChart } from "@/components/DataRatesChart";
+import { MessagesRatesChart } from "@/components/MessagesRatesChart";
+import { QueuedMessagesChart } from "@/components/QueuedMessagesChart";
 import { QueueDepthsChart } from "@/components/QueueDepthsChart";
 import { PlanBadge } from "@/components/ui/PlanBadge";
 import { useServerContext } from "@/contexts/ServerContext";
@@ -45,6 +45,7 @@ const Index = () => {
     metrics,
     liveRates,
     liveRatesData,
+    queueTotals,
     connections,
     isLoading,
     queuesLoading,
@@ -167,9 +168,8 @@ const Index = () => {
             {/* Charts Row - Two columns */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Live Message Rates Chart */}
-              <LiveRatesChart
-                liveRates={liveRates}
-                aggregatedThroughput={liveRatesData?.aggregatedThroughput}
+              <MessagesRatesChart
+                messagesRates={liveRatesData?.messagesRates}
                 isLoading={liveRatesLoading}
                 isFetching={liveRatesFetching}
                 error={liveRatesError}
@@ -177,12 +177,14 @@ const Index = () => {
                 onTimeRangeChange={setLiveRatesTimeRange}
               />
 
-              {/* Data Rates Chart */}
-              <DataRatesChart
-                connections={connections}
-                isLoading={connectionsLoading}
-                isFetching={connectionsFetching}
-                error={connectionsError}
+              {/* Queued Messages Chart */}
+              <QueuedMessagesChart
+                queueTotals={queueTotals}
+                isLoading={liveRatesLoading}
+                isFetching={liveRatesFetching}
+                error={liveRatesError}
+                timeRange={liveRatesTimeRange}
+                onTimeRangeChange={setLiveRatesTimeRange}
               />
             </div>
 

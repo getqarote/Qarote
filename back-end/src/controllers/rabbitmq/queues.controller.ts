@@ -186,7 +186,9 @@ queuesController.get("/servers/:id/queues/:queueName", async (c) => {
   try {
     const client = await createRabbitMQClient(id, workspaceId);
     const queue = await client.getQueue(queueName);
+
     const response: SingleQueueResponse = { queue };
+
     return c.json(response);
   } catch (error) {
     logger.error(`Error fetching queue ${queueName} for server ${id}:`, error);

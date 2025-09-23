@@ -1,5 +1,13 @@
 export interface RateDetail {
   rate: number;
+  samples?: RateSample[];
+  avg_rate?: number;
+  avg?: number;
+}
+
+export interface RateSample {
+  sample: number;
+  timestamp: number;
 }
 
 export interface ExchangeType {

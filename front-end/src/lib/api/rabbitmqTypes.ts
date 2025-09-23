@@ -382,18 +382,38 @@ export interface Channel {
 export interface TimeSeriesDataPoint {
   time: string;
   messages: number;
-  publishRate: number;
-  consumeRate: number;
+  publish?: number;
+  deliver?: number;
+  ack?: number;
+  deliver_get?: number;
+  confirm?: number;
+  get?: number;
+  get_no_ack?: number;
+  redeliver?: number;
+  reject?: number;
+  return_unroutable?: number;
+  disk_reads?: number;
+  disk_writes?: number;
 }
 
 export interface TimeSeriesResponse {
   timeseries: TimeSeriesDataPoint[] | null;
   timeRange: string;
   dataPoints: number;
-  aggregatedThroughput?: Array<{
+  messagesRates?: Array<{
     timestamp: number;
-    publishRate: number;
-    consumeRate: number;
+    publish?: number;
+    deliver?: number;
+    ack?: number;
+    deliver_get?: number;
+    confirm?: number;
+    get?: number;
+    get_no_ack?: number;
+    redeliver?: number;
+    reject?: number;
+    return_unroutable?: number;
+    disk_reads?: number;
+    disk_writes?: number;
   }> | null;
   metadata?: {
     allowedTimeRanges: string[];
@@ -422,10 +442,26 @@ export interface LiveRatesResponse {
       disk_writes: number;
     };
   };
-  aggregatedThroughput: Array<{
+  messagesRates: Array<{
     timestamp: number;
-    publishRate: number;
-    consumeRate: number;
+    publish?: number;
+    deliver?: number;
+    ack?: number;
+    deliver_get?: number;
+    confirm?: number;
+    get?: number;
+    get_no_ack?: number;
+    redeliver?: number;
+    reject?: number;
+    return_unroutable?: number;
+    disk_reads?: number;
+    disk_writes?: number;
+  }>;
+  queueTotals?: Array<{
+    timestamp: number;
+    messages?: number;
+    messages_ready?: number;
+    messages_unacknowledged?: number;
   }>;
   metadata: {
     plan: string | null;

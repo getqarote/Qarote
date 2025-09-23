@@ -54,8 +54,10 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
       const queryParams = new URLSearchParams({
         msg_rates_age: timeRange.age.toString(),
         msg_rates_incr: timeRange.increment.toString(),
+        lengths_age: timeRange.age.toString(),
+        lengths_incr: timeRange.increment.toString(),
         columns:
-          "message_stats.publish,message_stats.publish_details,message_stats.deliver,message_stats.deliver_details,message_stats.ack,message_stats.ack_details,message_stats.deliver_get,message_stats.deliver_get_details,message_stats.confirm,message_stats.confirm_details,message_stats.get,message_stats.get_details,message_stats.get_no_ack,message_stats.get_no_ack_details,message_stats.redeliver,message_stats.redeliver_details,message_stats.reject,message_stats.reject_details,message_stats.return_unroutable,message_stats.return_unroutable_details,message_stats.disk_reads,message_stats.disk_reads_details,message_stats.disk_writes,message_stats.disk_writes_details",
+          "queue_totals.messages,queue_totals.messages_details,queue_totals.messages_ready,queue_totals.messages_ready_details,queue_totals.messages_unacknowledged,queue_totals.messages_unacknowledged_details,message_stats.publish,message_stats.publish_details,message_stats.deliver,message_stats.deliver_details,message_stats.ack,message_stats.ack_details,message_stats.deliver_get,message_stats.deliver_get_details,message_stats.confirm,message_stats.confirm_details,message_stats.get,message_stats.get_details,message_stats.get_no_ack,message_stats.get_no_ack_details,message_stats.redeliver,message_stats.redeliver_details,message_stats.reject,message_stats.reject_details,message_stats.return_unroutable,message_stats.return_unroutable_details,message_stats.disk_reads,message_stats.disk_reads_details,message_stats.disk_writes,message_stats.disk_writes_details",
       });
 
       const overview = await this.request(
@@ -208,8 +210,10 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
       const queryParams = new URLSearchParams({
         msg_rates_age: timeRange.age.toString(),
         msg_rates_incr: timeRange.increment.toString(),
+        lengths_age: timeRange.age.toString(),
+        lengths_incr: timeRange.increment.toString(),
         columns:
-          "name,message_stats.publish,message_stats.publish_details,message_stats.deliver,message_stats.deliver_details,message_stats.ack,message_stats.ack_details,message_stats.deliver_get,message_stats.deliver_get_details,message_stats.confirm,message_stats.confirm_details,message_stats.get,message_stats.get_details,message_stats.get_no_ack,message_stats.get_no_ack_details,message_stats.redeliver,message_stats.redeliver_details,message_stats.reject,message_stats.reject_details,message_stats.return_unroutable,message_stats.return_unroutable_details",
+          "name,messages,messages_details,messages_ready,messages_ready_details,messages_unacknowledged,messages_unacknowledged_details,message_stats.publish,message_stats.publish_details,message_stats.deliver,message_stats.deliver_details,message_stats.ack,message_stats.ack_details,message_stats.deliver_get,message_stats.deliver_get_details,message_stats.confirm,message_stats.confirm_details,message_stats.get,message_stats.get_details,message_stats.get_no_ack,message_stats.get_no_ack_details,message_stats.redeliver,message_stats.redeliver_details,message_stats.reject,message_stats.reject_details,message_stats.return_unroutable,message_stats.return_unroutable_details",
       });
 
       const queue = await this.request(

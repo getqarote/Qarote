@@ -14,7 +14,7 @@ import logger from "@/lib/logger";
 
 const Queues = () => {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
+
   const {
     workspacePlan,
     canAddQueue,
@@ -27,9 +27,6 @@ const Queues = () => {
 
   const queues = useMemo(() => queuesData?.queues || [], [queuesData?.queues]);
   const queueCount = queues.length;
-
-  // Removed monthly message count since we no longer track it
-  // const monthlyMessageCount = monthlyMessageData?.monthlyMessageCount || 0;
 
   const handleAddQueueClick = () => {
     if (canAddQueue) {
@@ -52,13 +49,8 @@ const Queues = () => {
   const handleRefetch = async () => {
     logger.info("Queues page: Refetching queue data...");
     try {
-      // Use both methods to ensure refresh works
-      await Promise.all([
-        refetch(),
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.queues(selectedServerId),
-        }),
-      ]);
+      await refetch();
+
       logger.info("Queues page: Refetch completed successfully");
     } catch (error) {
       logger.error("Queues page: Refetch failed:", error);

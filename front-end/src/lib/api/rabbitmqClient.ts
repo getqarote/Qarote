@@ -70,7 +70,7 @@ export class RabbitMQApiClient extends BaseApiClient {
   async getLiveRatesMetrics(
     serverId: string,
     workspaceId: string,
-    timeRange: "1m" | "10m" | "1h" = "1m"
+    timeRange: "1m" | "10m" | "1h" | "8h" | "1d" = "1m"
   ): Promise<LiveRatesResponse> {
     const params = new URLSearchParams({ timeRange });
     return this.request<LiveRatesResponse>(
@@ -82,7 +82,7 @@ export class RabbitMQApiClient extends BaseApiClient {
     serverId: string,
     queueName: string,
     workspaceId: string,
-    timeRange: "1m" | "10m" | "1h" = "1m"
+    timeRange: "1m" | "10m" | "1h" | "8h" | "1d" = "1m"
   ): Promise<LiveRatesResponse> {
     const encodedQueueName = encodeURIComponent(queueName);
     const params = new URLSearchParams({ timeRange });

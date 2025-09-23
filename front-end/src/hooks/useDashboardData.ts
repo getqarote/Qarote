@@ -126,15 +126,13 @@ export const useDashboardData = (
   // Update chart data from live rates API
   useEffect(() => {
     if (
-      liveRatesData?.aggregatedThroughput &&
-      liveRatesData.aggregatedThroughput.length > 1
+      liveRatesData?.messagesRates &&
+      liveRatesData.messagesRates.length > 1
     ) {
       // Filter out data points where both published and consumed are 0
-      const filteredData = liveRatesData.aggregatedThroughput.filter(
-        (point) => {
-          return point.publishRate > 0 || point.consumeRate > 0;
-        }
-      );
+      const filteredData = liveRatesData.messagesRates.filter((point) => {
+        return (point.publish || 0) > 0 || (point.deliver || 0) > 0;
+      });
 
       // Only update chart data if we have actual activity
       if (filteredData.length > 0) {
@@ -143,8 +141,8 @@ export const useDashboardData = (
             hour: "2-digit",
             minute: "2-digit",
           }),
-          published: Math.round(point.publishRate * 100) / 100,
-          consumed: Math.round(point.consumeRate * 100) / 100,
+          published: Math.round((point.publish || 0) * 100) / 100,
+          consumed: Math.round((point.deliver || 0) * 100) / 100,
         }));
 
         setChartData(formattedData);
@@ -174,6 +172,7 @@ export const useDashboardData = (
     chartData,
     liveRates: liveRatesData?.liveRates,
     liveRatesData,
+    queueTotals: liveRatesData?.queueTotals,
     connections,
 
     // Loading states

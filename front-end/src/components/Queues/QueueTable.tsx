@@ -41,6 +41,7 @@ export function QueueTable({
       setShowUpgradeModal(true);
     }
   };
+
   const getStatusBadge = (queue: Queue) => {
     if (queue.consumers > 0) {
       return <Badge className="bg-green-100 text-green-700">Running</Badge>;

@@ -21,30 +21,21 @@ import { isRabbitMQAuthError } from "@/types/apiErrors";
 import { useEffect, useState } from "react";
 import { TimeRangeSelector, TimeRange } from "@/components/TimeRangeSelector";
 
-interface LiveRates {
-  timestamp: number;
-  rates: {
-    publish: number;
-    deliver: number;
-    ack: number;
-    deliver_get: number;
-    confirm: number;
-    get: number;
-    get_no_ack: number;
-    redeliver: number;
-    reject: number;
-    return_unroutable: number;
-    disk_reads: number;
-    disk_writes: number;
-  };
-}
-
-interface LiveRatesChartProps {
-  liveRates?: LiveRates;
-  aggregatedThroughput?: Array<{
+interface MessagesRatesChartProps {
+  messagesRates?: Array<{
     timestamp: number;
-    publishRate: number;
-    consumeRate: number;
+    publish?: number;
+    deliver?: number;
+    ack?: number;
+    deliver_get?: number;
+    confirm?: number;
+    get?: number;
+    get_no_ack?: number;
+    redeliver?: number;
+    reject?: number;
+    return_unroutable?: number;
+    disk_reads?: number;
+    disk_writes?: number;
   }>;
   isLoading: boolean;
   isFetching?: boolean;
@@ -53,15 +44,14 @@ interface LiveRatesChartProps {
   onTimeRangeChange?: (timeRange: TimeRange) => void;
 }
 
-export const LiveRatesChart = ({
-  liveRates,
-  aggregatedThroughput,
+export const MessagesRatesChart = ({
+  messagesRates,
   isLoading,
   isFetching = false,
   error,
   timeRange = "1m",
   onTimeRangeChange,
-}: LiveRatesChartProps) => {
+}: MessagesRatesChartProps) => {
   const [showUpdating, setShowUpdating] = useState(false);
 
   // Handle delayed updating indicator
@@ -88,67 +78,26 @@ export const LiveRatesChart = ({
     );
   }
 
-  // Create time series data for line chart
-  const chartData =
-    aggregatedThroughput?.map((point) => ({
-      timestamp: point.timestamp,
-      time: new Date(point.timestamp).toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-      }),
-      publish: point.publishRate,
-      deliver: point.consumeRate,
-      ack: liveRates?.rates.ack || 0,
-      deliver_get: liveRates?.rates.deliver_get || 0,
-      confirm: liveRates?.rates.confirm || 0,
-      get: liveRates?.rates.get || 0,
-      get_no_ack: liveRates?.rates.get_no_ack || 0,
-      redeliver: liveRates?.rates.redeliver || 0,
-      reject: liveRates?.rates.reject || 0,
-      return_unroutable: liveRates?.rates.return_unroutable || 0,
-      disk_reads: liveRates?.rates.disk_reads || 0,
-      disk_writes: liveRates?.rates.disk_writes || 0,
-    })) ||
-    (() => {
-      // Fallback: generate time series data based on time range
-      const timeConfigs = {
-        "1m": { age: 60, increment: 10 },
-        "10m": { age: 600, increment: 30 },
-        "1h": { age: 3600, increment: 300 },
-      };
-
-      const config = timeConfigs[timeRange];
-      const timePoints = Math.floor(config.age / config.increment);
-      const intervalMs = config.increment * 1000;
-      const currentTime = Date.now();
-
-      const fallbackData = [];
-      for (let i = timePoints - 1; i >= 0; i--) {
-        const timestamp = currentTime - i * intervalMs;
-        fallbackData.push({
-          timestamp,
-          time: new Date(timestamp).toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-            second: "2-digit",
-          }),
-          publish: liveRates?.rates.publish || 0,
-          deliver: liveRates?.rates.deliver || 0,
-          ack: liveRates?.rates.ack || 0,
-          deliver_get: liveRates?.rates.deliver_get || 0,
-          confirm: liveRates?.rates.confirm || 0,
-          get: liveRates?.rates.get || 0,
-          get_no_ack: liveRates?.rates.get_no_ack || 0,
-          redeliver: liveRates?.rates.redeliver || 0,
-          reject: liveRates?.rates.reject || 0,
-          return_unroutable: liveRates?.rates.return_unroutable || 0,
-          disk_reads: liveRates?.rates.disk_reads || 0,
-          disk_writes: liveRates?.rates.disk_writes || 0,
-        });
-      }
-      return fallbackData;
-    })();
+  const chartData = messagesRates?.map((point) => ({
+    timestamp: point.timestamp,
+    time: new Date(point.timestamp).toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    }),
+    publish: point.publish || 0,
+    deliver: point.deliver || 0,
+    ack: point.ack || 0,
+    deliver_get: point.deliver_get || 0,
+    confirm: point.confirm || 0,
+    get: point.get || 0,
+    get_no_ack: point.get_no_ack || 0,
+    redeliver: point.redeliver || 0,
+    reject: point.reject || 0,
+    return_unroutable: point.return_unroutable || 0,
+    disk_reads: point.disk_reads || 0,
+    disk_writes: point.disk_writes || 0,
+  }));
 
   return (
     <Card className="border-0 shadow-md bg-card-unified backdrop-blur-sm">
@@ -252,7 +201,7 @@ export const LiveRatesChart = ({
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart
                   data={chartData}
-                  margin={{ top: 20, right: 30, left: 40, bottom: 20 }}
+                  margin={{ top: 20, right: 30, left: 60, bottom: 20 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis
@@ -266,7 +215,9 @@ export const LiveRatesChart = ({
                       value: "msgs/s",
                       angle: -90,
                       position: "insideLeft",
+                      style: { textAnchor: "middle" },
                     }}
+                    tick={{ fontSize: 11 }}
                   />
                   <Tooltip
                     formatter={(value: number, name: string) => [

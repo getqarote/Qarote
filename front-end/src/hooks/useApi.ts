@@ -384,7 +384,7 @@ export const useRecentAlerts = () => {
 
 export const useLiveRatesMetrics = (
   serverId: string,
-  timeRange: "1m" | "10m" | "1h" = "1m"
+  timeRange: "1m" | "10m" | "1h" | "8h" | "1d" = "1m"
 ) => {
   const { isAuthenticated } = useAuth();
   const { workspace } = useWorkspace();
@@ -406,7 +406,7 @@ export const useLiveRatesMetrics = (
 export const useQueueLiveRates = (
   serverId: string,
   queueName: string,
-  timeRange: "1m" | "10m" | "1h" = "1m"
+  timeRange: "1m" | "10m" | "1h" | "8h" | "1d" = "1m"
 ) => {
   const { isAuthenticated } = useAuth();
   const { workspace } = useWorkspace();

@@ -1,4 +1,31 @@
 #!/usr/bin/env npx tsx
+/**
+ * Email Notifications Activity Generator
+ *
+ * This script generates realistic email notification activity in RabbitMQ to test
+ * the Live Rates and Data Rates charts in RabbitHQ dashboard.
+ *
+ * Features:
+ * - Creates email.notifications exchange and related queues
+ * - Publishes realistic email messages (welcome, password-reset, order-confirmation, etc.)
+ * - Consumes messages with realistic processing patterns (95% ack rate, 2% reject rate)
+ * - Generates data that will show up in both Live Rates and Data Rates charts
+ *
+ * Usage:
+ *   npx tsx seed-rates-activity.ts [duration_minutes] [messages_per_second]
+ *
+ * Examples:
+ *   npx tsx seed-rates-activity.ts                    # 5 minutes, 20 msgs/sec
+ *   npx tsx seed-rates-activity.ts 10                 # 10 minutes, 20 msgs/sec
+ *   npx tsx seed-rates-activity.ts 5 50              # 5 minutes, 50 msgs/sec
+ *
+ * Environment Variables:
+ *   RABBITMQ_HOST=localhost
+ *   RABBITMQ_PORT=5676
+ *   RABBITMQ_USER=admin
+ *   RABBITMQ_PASS=admin123
+ *   RABBITMQ_MANAGEMENT_PORT=15676
+ */
 import amqp from "amqplib";
 
 interface RabbitMQConfig {
@@ -9,7 +36,7 @@ interface RabbitMQConfig {
   managementPort: number;
 }
 
-class RatesActivityGenerator {
+class EmailNotificationsActivityGenerator {
   private config: RabbitMQConfig;
   private publisherConnection: amqp.ChannelModel | null = null;
   private consumerConnection: amqp.ChannelModel | null = null;
@@ -104,67 +131,81 @@ class RatesActivityGenerator {
       throw new Error("Channels not initialized");
     }
 
-    console.log("🔧 Setting up rates testing infrastructure...");
+    console.log("🔧 Setting up email notifications testing infrastructure...");
 
-    // Create exchanges for different patterns
-    const exchanges = [
-      { name: "rates.direct", type: "direct" },
-      { name: "rates.fanout", type: "fanout" },
-      { name: "rates.topic", type: "topic" },
-    ];
-
-    for (const exchange of exchanges) {
-      await this.publisherChannel.assertExchange(exchange.name, exchange.type, {
-        durable: true,
-      });
-      console.log(`  ✅ Created exchange: ${exchange.name} (${exchange.type})`);
+    // Create email-specific exchange
+    try {
+      await this.publisherChannel.assertExchange(
+        "email.notifications",
+        "direct",
+        {
+          durable: true,
+        }
+      );
+      console.log(`  ✅ Created exchange: email.notifications (direct)`);
+    } catch (error) {
+      console.log(
+        `  📋 Exchange email.notifications already exists, using existing exchange`
+      );
     }
 
-    // Create queues for different usage patterns
-    const queues = [
-      { name: "rates.high.throughput", routingKey: "high" },
-      { name: "rates.medium.throughput", routingKey: "medium" },
-      { name: "rates.low.throughput", routingKey: "low" },
-      { name: "rates.fanout.queue1", routingKey: "" },
-      { name: "rates.fanout.queue2", routingKey: "" },
-      { name: "rates.topic.orders", routingKey: "orders.*" },
-      { name: "rates.topic.users", routingKey: "users.*" },
-    ];
+    // Create email notification queue (this is the main queue we want to test)
+    const emailQueue = "email.notifications";
 
-    for (const queue of queues) {
-      await this.publisherChannel.assertQueue(queue.name, { durable: true });
-
-      // Bind to direct exchange
-      if (
-        queue.routingKey &&
-        !queue.name.includes("fanout") &&
-        !queue.name.includes("topic")
-      ) {
-        await this.publisherChannel.bindQueue(
-          queue.name,
-          "rates.direct",
-          queue.routingKey
-        );
-      }
-
-      // Bind fanout queues
-      if (queue.name.includes("fanout")) {
-        await this.publisherChannel.bindQueue(queue.name, "rates.fanout", "");
-      }
-
-      // Bind topic queues
-      if (queue.name.includes("topic")) {
-        await this.publisherChannel.bindQueue(
-          queue.name,
-          "rates.topic",
-          queue.routingKey
-        );
-      }
-
-      console.log(`  ✅ Created and bound queue: ${queue.name}`);
+    // Check if queue already exists and get its arguments
+    let queueArgs = { durable: true, autoDelete: false };
+    try {
+      const existingQueue = await this.publisherChannel.checkQueue(emailQueue);
+      console.log(
+        `  📋 Queue ${emailQueue} already exists, using existing queue`
+      );
+      // If queue exists, we'll just bind it without recreating
+    } catch (error) {
+      // Queue doesn't exist, create it with default arguments
+      await this.publisherChannel.assertQueue(emailQueue, queueArgs);
+      console.log(`  ✅ Created queue: ${emailQueue}`);
     }
 
-    console.log("✅ Infrastructure setup complete!");
+    // Bind email queue to email exchange (this will work whether queue was created or already existed)
+    try {
+      await this.publisherChannel.bindQueue(
+        emailQueue,
+        "email.notifications",
+        "notification"
+      );
+      console.log(`  ✅ Bound queue: ${emailQueue}`);
+    } catch (error) {
+      console.log(`  ℹ️  Queue ${emailQueue} may already be bound to exchange`);
+    }
+
+    // Create additional test queues for more diverse activity
+    const additionalQueues = [
+      { name: "email.welcome", routingKey: "welcome" },
+      { name: "email.password-reset", routingKey: "password-reset" },
+      { name: "email.order-confirmation", routingKey: "order-confirmation" },
+      { name: "email.marketing", routingKey: "marketing" },
+    ];
+
+    for (const queue of additionalQueues) {
+      try {
+        // Assert queue (creates if doesn't exist, uses existing if it does)
+        await this.publisherChannel.assertQueue(queue.name, { durable: true });
+        console.log(`  ✅ Ensured queue exists: ${queue.name}`);
+
+        // Bind queue to exchange
+        await this.publisherChannel.bindQueue(
+          queue.name,
+          "email.notifications",
+          queue.routingKey
+        );
+        console.log(`  ✅ Bound queue: ${queue.name}`);
+      } catch (error) {
+        console.log(`  ⚠️  Error with queue ${queue.name}:`, error.message);
+        // Continue with other queues
+      }
+    }
+
+    console.log("✅ Email notifications infrastructure setup complete!");
   }
 
   private async startPublishing(messagesPerSecond: number = 10): Promise<void> {
@@ -173,7 +214,7 @@ class RatesActivityGenerator {
 
     const intervalMs = 1000 / messagesPerSecond;
     console.log(
-      `🚀 Starting publisher: ${messagesPerSecond} msgs/sec (${intervalMs}ms interval)`
+      `🚀 Starting email notifications publisher: ${messagesPerSecond} msgs/sec (${intervalMs}ms interval)`
     );
 
     const publishInterval = setInterval(async () => {
@@ -185,44 +226,55 @@ class RatesActivityGenerator {
       try {
         const timestamp = new Date().toISOString();
 
-        // Publish to different exchanges to generate various rates
-        const publishTasks = [
-          // Direct exchange messages
-          this.publishMessage("rates.direct", "high", {
-            type: "high_throughput",
-            timestamp,
-            data: { value: Math.random() * 100 },
-          }),
-          this.publishMessage("rates.direct", "medium", {
-            type: "medium_throughput",
-            timestamp,
-            data: { value: Math.random() * 50 },
-          }),
-          this.publishMessage("rates.direct", "low", {
-            type: "low_throughput",
-            timestamp,
-            data: { value: Math.random() * 25 },
-          }),
-
-          // Fanout messages (will go to multiple queues)
-          this.publishMessage("rates.fanout", "", {
-            type: "broadcast",
-            timestamp,
-            data: { message: "Fanout message" },
-          }),
-
-          // Topic messages
-          this.publishMessage("rates.topic", "orders.created", {
-            type: "order_event",
-            timestamp,
-            data: { orderId: Math.floor(Math.random() * 10000) },
-          }),
-          this.publishMessage("rates.topic", "users.registered", {
-            type: "user_event",
-            timestamp,
-            data: { userId: Math.floor(Math.random() * 1000) },
-          }),
+        // Generate realistic email notification messages
+        const emailTypes = [
+          { type: "welcome", routingKey: "welcome", template: "welcome_email" },
+          {
+            type: "password-reset",
+            routingKey: "password-reset",
+            template: "password_reset_email",
+          },
+          {
+            type: "order-confirmation",
+            routingKey: "order-confirmation",
+            template: "order_confirmation_email",
+          },
+          {
+            type: "marketing",
+            routingKey: "marketing",
+            template: "marketing_email",
+          },
+          {
+            type: "notification",
+            routingKey: "notification",
+            template: "general_notification",
+          },
         ];
+
+        // Publish to different email queues to generate various rates
+        const publishTasks = emailTypes.map((emailType) =>
+          this.publishEmailMessage(emailType.type, emailType.routingKey, {
+            id: `email_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            type: emailType.type,
+            template: emailType.template,
+            timestamp,
+            recipient: {
+              email: `user${Math.floor(Math.random() * 10000)}@example.com`,
+              name: `User ${Math.floor(Math.random() * 1000)}`,
+            },
+            data: {
+              subject: this.generateEmailSubject(emailType.type),
+              priority: Math.random() > 0.8 ? "high" : "normal",
+              retryCount: 0,
+              scheduledAt: timestamp,
+            },
+            metadata: {
+              source: "test_generator",
+              version: "1.0",
+              environment: "test",
+            },
+          })
+        );
 
         await Promise.all(publishTasks);
         this.stats.published += publishTasks.length;
@@ -233,8 +285,8 @@ class RatesActivityGenerator {
     }, intervalMs);
   }
 
-  private async publishMessage(
-    exchange: string,
+  private async publishEmailMessage(
+    emailType: string,
     routingKey: string,
     message: any
   ): Promise<void> {
@@ -243,70 +295,117 @@ class RatesActivityGenerator {
 
     const messageBuffer = Buffer.from(JSON.stringify(message));
 
-    this.publisherChannel.publish(exchange, routingKey, messageBuffer, {
-      persistent: true,
-      timestamp: Date.now(),
-      messageId: `msg-${Date.now()}-${Math.random()}`,
-      contentType: "application/json",
-    });
+    this.publisherChannel.publish(
+      "email.notifications",
+      routingKey,
+      messageBuffer,
+      {
+        persistent: true,
+        timestamp: Date.now(),
+        messageId: message.id,
+        contentType: "application/json",
+        headers: {
+          emailType: emailType,
+          priority: message.data.priority,
+        },
+      }
+    );
+  }
+
+  private generateEmailSubject(emailType: string): string {
+    const subjects = {
+      welcome: "Welcome to our platform!",
+      "password-reset": "Reset your password",
+      "order-confirmation": "Order confirmation",
+      marketing: "Special offer just for you!",
+      notification: "Important notification",
+    };
+    return subjects[emailType as keyof typeof subjects] || "Email notification";
   }
 
   private async startConsuming(): Promise<void> {
     if (!this.consumerChannel)
       throw new Error("Consumer channel not initialized");
 
-    console.log("🔥 Starting consumers...");
+    console.log("🔥 Starting email notification consumers...");
 
-    const queues = [
-      "rates.high.throughput",
-      "rates.medium.throughput",
-      "rates.low.throughput",
-      "rates.fanout.queue1",
-      "rates.fanout.queue2",
-      "rates.topic.orders",
-      "rates.topic.users",
+    const emailQueues = [
+      "email.notifications",
+      "email.welcome",
+      "email.password-reset",
+      "email.order-confirmation",
+      "email.marketing",
     ];
 
-    for (const queueName of queues) {
-      await this.consumerChannel.consume(
-        queueName,
-        async (message) => {
-          if (!message) return;
+    for (const queueName of emailQueues) {
+      try {
+        // First check if the queue exists
+        await this.consumerChannel.checkQueue(queueName);
 
-          try {
-            // Simulate different processing behaviors
-            const shouldAck = Math.random() > 0.1; // 90% ack rate
-            const shouldReject = Math.random() > 0.95; // 5% reject rate
+        await this.consumerChannel.consume(
+          queueName,
+          async (message) => {
+            if (!message) return;
 
-            // Simulate processing time
-            const processingTime = Math.random() * 50; // 0-50ms
-            await this.sleep(processingTime);
+            try {
+              // Parse email message
+              const emailData = JSON.parse(message.content.toString());
 
-            if (shouldReject) {
-              // Reject and requeue sometimes to generate reject rates
-              this.consumerChannel?.reject(message, Math.random() > 0.5);
-              this.stats.rejected++;
-            } else if (shouldAck) {
-              this.consumerChannel?.ack(message);
-              this.stats.acked++;
-            } else {
-              // Let some messages timeout to generate different patterns
-              // Don't ack or reject
+              // Simulate email processing behaviors
+              const shouldAck = Math.random() > 0.05; // 95% ack rate (emails are usually processed successfully)
+              const shouldReject = Math.random() > 0.98; // 2% reject rate (occasional failures)
+              const shouldDelay = Math.random() > 0.7; // 30% chance of processing delay
+
+              // Simulate email processing time (sending emails takes time)
+              const baseProcessingTime = 100; // Base 100ms for email processing
+              const processingTime = shouldDelay
+                ? baseProcessingTime + Math.random() * 200 // Up to 300ms for delayed emails
+                : baseProcessingTime + Math.random() * 50; // Up to 150ms for normal emails
+
+              await this.sleep(processingTime);
+
+              // Log interesting email processing occasionally
+              if (Math.random() < 0.05) {
+                // 5% chance
+                console.log(
+                  `📧 Processing ${emailData.type} email to ${emailData.recipient.email} (${emailData.data.subject})`
+                );
+              }
+
+              if (shouldReject) {
+                // Reject and requeue sometimes to generate reject rates
+                this.consumerChannel?.reject(message, Math.random() > 0.3); // 70% requeue on reject
+                this.stats.rejected++;
+              } else if (shouldAck) {
+                this.consumerChannel?.ack(message);
+                this.stats.acked++;
+              } else {
+                // Let some messages timeout to generate different patterns
+                // Don't ack or reject (simulate timeout scenarios)
+              }
+
+              this.stats.consumed++;
+            } catch (error) {
+              this.stats.errors++;
+              console.error(`❌ Error processing email message:`, error);
+              this.consumerChannel?.reject(message, false); // Don't requeue on error
             }
-
-            this.stats.consumed++;
-          } catch (error) {
-            this.stats.errors++;
-            this.consumerChannel?.reject(message, false);
+          },
+          {
+            noAck: false, // We want to control acking for rate generation
           }
-        },
-        {
-          noAck: false, // We want to control acking for rate generation
-        }
-      );
+        );
+
+        console.log(`  ✅ Started consumer for queue: ${queueName}`);
+      } catch (error) {
+        console.log(
+          `  ⚠️  Queue ${queueName} not found, skipping consumer setup`
+        );
+        // Continue with other queues
+      }
     }
 
-    console.log(`✅ Started consumers for ${queues.length} queues`);
+    console.log(`✅ Consumer setup completed for email queues`);
   }
 
   private async printStats(): Promise<void> {
@@ -316,13 +415,18 @@ class RatesActivityGenerator {
         return;
       }
 
-      console.log(`\n📊 Live Stats:`);
-      console.log(`  📤 Published: ${this.stats.published} messages`);
-      console.log(`  📥 Consumed: ${this.stats.consumed} messages`);
-      console.log(`  ✅ Acknowledged: ${this.stats.acked} messages`);
-      console.log(`  ❌ Rejected: ${this.stats.rejected} messages`);
-      console.log(`  💥 Errors: ${this.stats.errors} messages`);
-      console.log(`  🔄 Current rates should be visible in dashboard...`);
+      console.log(`\n📊 Email Notifications Live Stats:`);
+      console.log(`  📤 Published: ${this.stats.published} email messages`);
+      console.log(`  📥 Consumed: ${this.stats.consumed} email messages`);
+      console.log(`  ✅ Acknowledged: ${this.stats.acked} email messages`);
+      console.log(`  ❌ Rejected: ${this.stats.rejected} email messages`);
+      console.log(`  💥 Errors: ${this.stats.errors} email messages`);
+      console.log(
+        `  🔄 Check your Live Rates and Data Rates charts in the dashboard!`
+      );
+      console.log(
+        `  📧 Email queues: email.notifications, email.welcome, email.password-reset, etc.`
+      );
     }, 5000); // Print stats every 5 seconds
   }
 
@@ -335,11 +439,11 @@ class RatesActivityGenerator {
     messagesPerSecond: number = 20
   ): Promise<void> {
     try {
-      console.log(`🚀 Starting Rates Activity Generator`);
+      console.log(`🚀 Starting Email Notifications Activity Generator`);
       console.log(`   Duration: ${durationMinutes} minutes`);
-      console.log(`   Rate: ${messagesPerSecond} messages/second`);
+      console.log(`   Rate: ${messagesPerSecond} email messages/second`);
       console.log(
-        `   Expected total: ~${durationMinutes * 60 * messagesPerSecond} messages\n`
+        `   Expected total: ~${durationMinutes * 60 * messagesPerSecond} email messages\n`
       );
 
       await this.waitForRabbitMQ();
@@ -349,16 +453,27 @@ class RatesActivityGenerator {
       this.isRunning = true;
 
       // Start all activities
-      await this.startConsuming();
       await this.startPublishing(messagesPerSecond);
+
+      // Small delay to ensure queues are fully set up
+      await this.sleep(1000);
+
+      await this.startConsuming();
       this.printStats();
 
       console.log(
-        `\n🎯 Activity started! Check your RabbitMQ dashboard rates chart now!`
+        `\n🎯 Email notifications activity started! Check your RabbitHQ dashboard now!`
       );
       console.log(
-        `   The rates should show live data updating every 5 seconds.`
+        `   📊 Live Rates Chart: Should show publish, deliver, ack rates for email queues`
       );
+      console.log(
+        `   📊 Data Rates Chart: Should show send/receive data rates from connections`
+      );
+      console.log(
+        `   🔄 Charts update every 5 seconds with time range selectors (1m, 10m, 1h)`
+      );
+      console.log(`   📧 Main queue: email.notifications`);
       console.log(`   Press Ctrl+C to stop early.\n`);
 
       // Run for specified duration
@@ -366,19 +481,26 @@ class RatesActivityGenerator {
 
       console.log(`\n⏰ ${durationMinutes} minutes completed!`);
     } catch (error) {
-      console.error("💥 Error running rates activity generator:", error);
+      console.error(
+        "💥 Error running email notifications activity generator:",
+        error
+      );
       throw error;
     } finally {
       this.isRunning = false;
       await this.sleep(2000); // Allow time for cleanup
       await this.disconnect();
 
-      console.log(`\n📊 Final Stats:`);
-      console.log(`  📤 Total Published: ${this.stats.published} messages`);
-      console.log(`  📥 Total Consumed: ${this.stats.consumed} messages`);
-      console.log(`  ✅ Total Acknowledged: ${this.stats.acked} messages`);
-      console.log(`  ❌ Total Rejected: ${this.stats.rejected} messages`);
-      console.log(`  💥 Total Errors: ${this.stats.errors} messages`);
+      console.log(`\n📊 Final Email Notifications Stats:`);
+      console.log(
+        `  📤 Total Published: ${this.stats.published} email messages`
+      );
+      console.log(`  📥 Total Consumed: ${this.stats.consumed} email messages`);
+      console.log(
+        `  ✅ Total Acknowledged: ${this.stats.acked} email messages`
+      );
+      console.log(`  ❌ Total Rejected: ${this.stats.rejected} email messages`);
+      console.log(`  💥 Total Errors: ${this.stats.errors} email messages`);
     }
   }
 }
@@ -387,10 +509,10 @@ class RatesActivityGenerator {
 async function main() {
   const config: RabbitMQConfig = {
     host: process.env.RABBITMQ_HOST || "localhost",
-    port: parseInt(process.env.RABBITMQ_PORT || "5672"),
+    port: parseInt(process.env.RABBITMQ_PORT || "5676"),
     username: process.env.RABBITMQ_USER || "admin",
     password: process.env.RABBITMQ_PASS || "admin123",
-    managementPort: parseInt(process.env.RABBITMQ_MANAGEMENT_PORT || "15672"),
+    managementPort: parseInt(process.env.RABBITMQ_MANAGEMENT_PORT || "15676"),
   };
 
   // Parse command line arguments
@@ -422,13 +544,19 @@ async function main() {
   console.log(`  ⏱️  Duration: ${durationMinutes} minutes`);
   console.log(`  🚀 Rate: ${messagesPerSecond} messages/second\n`);
 
-  const generator = new RatesActivityGenerator(config);
+  const generator = new EmailNotificationsActivityGenerator(config);
 
   try {
     await generator.run(durationMinutes, messagesPerSecond);
-    console.log("\n🎉 Rates activity generation completed!");
+    console.log("\n🎉 Email notifications activity generation completed!");
     console.log(
-      "   Check your dashboard to see if the rates chart updated correctly."
+      "   Check your RabbitHQ dashboard to see if the Live Rates and Data Rates charts updated correctly."
+    );
+    console.log(
+      "   📊 Live Rates Chart: Shows message rates (publish, deliver, ack, etc.)"
+    );
+    console.log(
+      "   📊 Data Rates Chart: Shows data throughput (send/receive bytes)"
     );
   } catch (error) {
     console.error("\n💥 Script failed:", error);
@@ -455,4 +583,4 @@ if (require.main === module) {
   });
 }
 
-export { RatesActivityGenerator };
+export { EmailNotificationsActivityGenerator };
