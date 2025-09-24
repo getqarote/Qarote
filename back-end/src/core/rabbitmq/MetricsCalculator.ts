@@ -4,13 +4,172 @@ import type {
   RabbitMQConnection,
   RabbitMQChannel,
   RabbitMQNode,
+  RabbitMQQueue,
+  RateSample,
   Metrics,
 } from "@/types/rabbitmq";
+
+// Type definitions for metrics extraction
+export type MessageRates = {
+  timestamp: number;
+  [key: string]: any;
+};
+
+export type QueueTotals = {
+  timestamp: number;
+  messages?: number;
+  messages_ready?: number;
+  messages_unacknowledged?: number;
+};
 
 /**
  * Metrics calculation utilities for RabbitMQ
  */
 export class RabbitMQMetricsCalculator {
+  // Helper function to calculate rates from cumulative samples
+  static calculateRatesFromSamples(
+    samples: Array<{ sample: number; timestamp: number }>
+  ): Array<{ timestamp: number; rate: number }> {
+    if (!samples || samples.length === 0) return [];
+
+    // Sort samples by timestamp (oldest first)
+    const sortedSamples = [...samples].sort(
+      (a, b) => a.timestamp - b.timestamp
+    );
+
+    const rates = [];
+
+    for (let i = 0; i < sortedSamples.length; i++) {
+      const currentSample = sortedSamples[i];
+      const timestamp = currentSample.timestamp;
+
+      if (i === 0) {
+        // First sample: rate is 0 (no previous sample to compare)
+        rates.push({ timestamp, rate: 0 });
+      } else {
+        const previousSample = sortedSamples[i - 1];
+        const timeDiff = (timestamp - previousSample.timestamp) / 1000; // Convert to seconds
+        const valueDiff = currentSample.sample - previousSample.sample;
+
+        // Calculate rate: difference in values divided by time difference
+        const rate = timeDiff > 0 ? valueDiff / timeDiff : 0;
+
+        // Round to 2 decimal places to avoid floating-point precision issues
+        rates.push({ timestamp, rate: Math.round(rate * 100) / 100 });
+      }
+    }
+
+    return rates;
+  }
+
+  // Helper function to process metric samples and calculate rates
+  static processMetricSamples(
+    metricSamples: Record<string, RateSample[]>,
+    messagesRates: Array<{ timestamp: number; [key: string]: any }>
+  ): void {
+    Object.entries(metricSamples).forEach(([metricName, samples]) => {
+      const rates = this.calculateRatesFromSamples(samples);
+      rates.forEach((rateData, index) => {
+        if (!messagesRates[index]) {
+          messagesRates[index] = { timestamp: rateData.timestamp };
+        }
+        messagesRates[index][metricName] = rateData.rate;
+      });
+    });
+  }
+
+  // Helper function to process queue total samples
+  static processQueueTotalSamples(
+    samples: RateSample[],
+    readySamples: RateSample[],
+    unacknowledgedSamples: RateSample[]
+  ): QueueTotals[] {
+    return samples.map((sample, index) => ({
+      timestamp: sample.timestamp,
+      messages: sample.sample,
+      messages_ready: readySamples[index]?.sample || 0,
+      messages_unacknowledged: unacknowledgedSamples[index]?.sample || 0,
+    }));
+  }
+
+  // Generic function for extracting message rates from message stats
+  static extractMessageRatesFromStats(
+    messageStats: any,
+    includeDiskMetrics: boolean = true
+  ): Array<{ timestamp: number; [key: string]: any }> {
+    const baseMetrics = {
+      publish: messageStats.publish_details?.samples || [],
+      deliver: messageStats.deliver_details?.samples || [],
+      ack: messageStats.ack_details?.samples || [],
+      deliver_get: messageStats.deliver_get_details?.samples || [],
+      confirm: messageStats.confirm_details?.samples || [],
+      get: messageStats.get_details?.samples || [],
+      get_no_ack: messageStats.get_no_ack_details?.samples || [],
+      redeliver: messageStats.redeliver_details?.samples || [],
+      reject: messageStats.reject_details?.samples || [],
+      return_unroutable: messageStats.return_unroutable_details?.samples || [],
+    };
+
+    const metrics = includeDiskMetrics
+      ? {
+          ...baseMetrics,
+          disk_reads: messageStats.disk_reads_details?.samples || [],
+          disk_writes: messageStats.disk_writes_details?.samples || [],
+        }
+      : baseMetrics;
+
+    const messagesRates: Array<{ timestamp: number; [key: string]: any }> = [];
+    this.processMetricSamples(metrics, messagesRates);
+    return messagesRates;
+  }
+
+  // Generic function for extracting message rates from message stats
+  static extractMessageRates(
+    data: RabbitMQOverview | RabbitMQQueue,
+    options: { disk?: boolean } = {}
+  ): MessageRates[] {
+    const { disk = true } = options;
+    const messageStats =
+      "message_stats" in data ? data.message_stats : data.message_stats || {};
+
+    if (!messageStats?.publish_details?.samples) {
+      return [];
+    }
+
+    return this.extractMessageRatesFromStats(messageStats, disk);
+  }
+
+  // Generic function for extracting queue totals
+  static extractQueueTotals(
+    data: RabbitMQOverview | RabbitMQQueue
+  ): QueueTotals[] {
+    let samples: RateSample[] | undefined;
+    let readySamples: RateSample[] | undefined;
+    let unacknowledgedSamples: RateSample[] | undefined;
+
+    if ("queue_totals" in data) {
+      // Overview data
+      samples = data.queue_totals?.messages_details?.samples;
+      readySamples = data.queue_totals?.messages_ready_details?.samples;
+      unacknowledgedSamples =
+        data.queue_totals?.messages_unacknowledged_details?.samples;
+    } else {
+      // Queue data
+      samples = data.messages_details?.samples;
+      readySamples = data.messages_ready_details?.samples;
+      unacknowledgedSamples = data.messages_unacknowledged_details?.samples;
+    }
+
+    if (!samples) {
+      return [];
+    }
+
+    return this.processQueueTotalSamples(
+      samples,
+      readySamples || [],
+      unacknowledgedSamples || []
+    );
+  }
   static calculateAverageLatency(
     overview: RabbitMQOverview,
     connections: RabbitMQConnection[],

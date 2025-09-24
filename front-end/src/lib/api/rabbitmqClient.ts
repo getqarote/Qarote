@@ -46,6 +46,7 @@ import {
   UpdateThresholdsResponse,
   HealthResponse,
 } from "@/types/alerts";
+import { TimeRange } from "@/components/TimeRangeSelector";
 
 export class RabbitMQApiClient extends BaseApiClient {
   // Overview and Metrics
@@ -70,7 +71,7 @@ export class RabbitMQApiClient extends BaseApiClient {
   async getLiveRatesMetrics(
     serverId: string,
     workspaceId: string,
-    timeRange: "1m" | "10m" | "1h" | "8h" | "1d" = "1m"
+    timeRange: TimeRange = "1d"
   ): Promise<LiveRatesResponse> {
     const params = new URLSearchParams({ timeRange });
     return this.request<LiveRatesResponse>(
@@ -82,7 +83,7 @@ export class RabbitMQApiClient extends BaseApiClient {
     serverId: string,
     queueName: string,
     workspaceId: string,
-    timeRange: "1m" | "10m" | "1h" | "8h" | "1d" = "1m"
+    timeRange: TimeRange = "1d"
   ): Promise<LiveRatesResponse> {
     const encodedQueueName = encodeURIComponent(queueName);
     const params = new URLSearchParams({ timeRange });

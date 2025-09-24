@@ -29,7 +29,7 @@ const Index = () => {
   const navigate = useNavigate();
   const { workspacePlan } = useWorkspace();
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const [liveRatesTimeRange, setLiveRatesTimeRange] = useState<TimeRange>("1m");
+  const [liveRatesTimeRange, setLiveRatesTimeRange] = useState<TimeRange>("1d");
 
   // Check if user needs to create a workspace
   useEffect(() => {
@@ -165,28 +165,26 @@ const Index = () => {
               enhancedMetricsFetching={enhancedMetricsFetching}
             />
 
-            {/* Charts Row - Two columns */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Live Message Rates Chart */}
-              <MessagesRatesChart
-                messagesRates={liveRatesData?.messagesRates}
-                isLoading={liveRatesLoading}
-                isFetching={liveRatesFetching}
-                error={liveRatesError}
-                timeRange={liveRatesTimeRange}
-                onTimeRangeChange={setLiveRatesTimeRange}
-              />
+            {/* Charts - Full Width Stacked */}
+            {/* Queued Messages Chart - Full Width */}
+            <QueuedMessagesChart
+              queueTotals={queueTotals}
+              isLoading={liveRatesLoading}
+              isFetching={liveRatesFetching}
+              error={liveRatesError}
+              timeRange={liveRatesTimeRange}
+              onTimeRangeChange={setLiveRatesTimeRange}
+            />
 
-              {/* Queued Messages Chart */}
-              <QueuedMessagesChart
-                queueTotals={queueTotals}
-                isLoading={liveRatesLoading}
-                isFetching={liveRatesFetching}
-                error={liveRatesError}
-                timeRange={liveRatesTimeRange}
-                onTimeRangeChange={setLiveRatesTimeRange}
-              />
-            </div>
+            {/* Messages Rates Chart - Full Width */}
+            <MessagesRatesChart
+              messagesRates={liveRatesData?.messagesRates}
+              isLoading={liveRatesLoading}
+              isFetching={liveRatesFetching}
+              error={liveRatesError}
+              timeRange={liveRatesTimeRange}
+              onTimeRangeChange={setLiveRatesTimeRange}
+            />
 
             {/* Queue Depths Chart - Full Width */}
             <QueueDepthsChart

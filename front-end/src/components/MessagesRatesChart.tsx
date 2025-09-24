@@ -49,10 +49,35 @@ export const MessagesRatesChart = ({
   isLoading,
   isFetching = false,
   error,
-  timeRange = "1m",
+  timeRange = "1d",
   onTimeRangeChange,
 }: MessagesRatesChartProps) => {
   const [showUpdating, setShowUpdating] = useState(false);
+
+  // State for toggling line visibility
+  const [visibleLines, setVisibleLines] = useState({
+    publish: true,
+    deliver: true,
+    ack: true,
+    deliver_get: true,
+    confirm: true,
+    get: true,
+    get_no_ack: true,
+    redeliver: true,
+    reject: true,
+    return_unroutable: true,
+    unroutable_drop: true,
+    disk_reads: true,
+    disk_writes: true,
+  });
+
+  // Toggle line visibility
+  const toggleLine = (metricName: keyof typeof visibleLines) => {
+    setVisibleLines((prev) => ({
+      ...prev,
+      [metricName]: !prev[metricName],
+    }));
+  };
 
   // Handle delayed updating indicator
   useEffect(() => {
@@ -81,6 +106,14 @@ export const MessagesRatesChart = ({
   const chartData = messagesRates?.map((point) => ({
     timestamp: point.timestamp,
     time: new Date(point.timestamp).toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    }),
+    dateTime: new Date(point.timestamp).toLocaleString([], {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
       second: "2-digit",
@@ -225,107 +258,208 @@ export const MessagesRatesChart = ({
                       name.charAt(0).toUpperCase() +
                         name.slice(1).replace("_", " "),
                     ]}
-                    labelFormatter={(time: string) => `Time: ${time}`}
+                    labelFormatter={(
+                      time: string,
+                      payload: Array<{ payload: { dateTime: string } }>
+                    ) => {
+                      if (payload && payload[0] && payload[0].payload) {
+                        return `Date & Time: ${payload[0].payload.dateTime}`;
+                      }
+                      return `Time: ${time}`;
+                    }}
                   />
-                  <Legend />
-                  <Line
-                    type="monotone"
-                    dataKey="publish"
-                    stroke="#F97316"
-                    strokeWidth={2}
-                    dot={false}
-                    name="Publish"
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="deliver"
-                    stroke="#3B82F6"
-                    strokeWidth={2}
-                    dot={false}
-                    name="Deliver"
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="ack"
-                    stroke="#10B981"
-                    strokeWidth={2}
-                    dot={false}
-                    name="Ack"
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="deliver_get"
-                    stroke="#EC4899"
-                    strokeWidth={2}
-                    dot={false}
-                    name="Deliver Get"
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="confirm"
-                    stroke="#F59E0B"
-                    strokeWidth={2}
-                    dot={false}
-                    name="Confirm"
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="get"
-                    stroke="#06B6D4"
-                    strokeWidth={2}
-                    dot={false}
-                    name="Get"
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="get_no_ack"
-                    stroke="#C4B5FD"
-                    strokeWidth={2}
-                    dot={false}
-                    name="Get No Ack"
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="redeliver"
-                    stroke="#8B5CF6"
-                    strokeWidth={2}
-                    dot={false}
-                    name="Redeliver"
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="reject"
-                    stroke="#6366F1"
-                    strokeWidth={2}
-                    dot={false}
-                    name="Reject"
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="return_unroutable"
-                    stroke="#06B6D4"
-                    strokeWidth={2}
-                    dot={false}
-                    name="Return Unroutable"
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="disk_reads"
-                    stroke="#059669"
-                    strokeWidth={2}
-                    dot={false}
-                    name="Disk Reads"
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="disk_writes"
-                    stroke="#DC2626"
-                    strokeWidth={2}
-                    dot={false}
-                    name="Disk Writes"
-                  />
+                  {visibleLines.publish && (
+                    <Line
+                      type="monotone"
+                      dataKey="publish"
+                      stroke="#F97316"
+                      strokeWidth={2}
+                      dot={false}
+                      name="Publish"
+                    />
+                  )}
+                  {visibleLines.deliver && (
+                    <Line
+                      type="monotone"
+                      dataKey="deliver"
+                      stroke="#3B82F6"
+                      strokeWidth={2}
+                      dot={false}
+                      name="Deliver"
+                    />
+                  )}
+                  {visibleLines.ack && (
+                    <Line
+                      type="monotone"
+                      dataKey="ack"
+                      stroke="#10B981"
+                      strokeWidth={2}
+                      dot={false}
+                      name="Ack"
+                    />
+                  )}
+                  {visibleLines.deliver_get && (
+                    <Line
+                      type="monotone"
+                      dataKey="deliver_get"
+                      stroke="#EC4899"
+                      strokeWidth={2}
+                      dot={false}
+                      name="Deliver Get"
+                    />
+                  )}
+                  {visibleLines.confirm && (
+                    <Line
+                      type="monotone"
+                      dataKey="confirm"
+                      stroke="#F59E0B"
+                      strokeWidth={2}
+                      dot={false}
+                      name="Confirm"
+                    />
+                  )}
+                  {visibleLines.get && (
+                    <Line
+                      type="monotone"
+                      dataKey="get"
+                      stroke="#06B6D4"
+                      strokeWidth={2}
+                      dot={false}
+                      name="Get"
+                    />
+                  )}
+                  {visibleLines.get_no_ack && (
+                    <Line
+                      type="monotone"
+                      dataKey="get_no_ack"
+                      stroke="#C4B5FD"
+                      strokeWidth={2}
+                      dot={false}
+                      name="Get No Ack"
+                    />
+                  )}
+                  {visibleLines.redeliver && (
+                    <Line
+                      type="monotone"
+                      dataKey="redeliver"
+                      stroke="#8B5CF6"
+                      strokeWidth={2}
+                      dot={false}
+                      name="Redeliver"
+                    />
+                  )}
+                  {visibleLines.reject && (
+                    <Line
+                      type="monotone"
+                      dataKey="reject"
+                      stroke="#6366F1"
+                      strokeWidth={2}
+                      dot={false}
+                      name="Reject"
+                    />
+                  )}
+                  {visibleLines.return_unroutable && (
+                    <Line
+                      type="monotone"
+                      dataKey="return_unroutable"
+                      stroke="#06B6D4"
+                      strokeWidth={2}
+                      dot={false}
+                      name="Return Unroutable"
+                    />
+                  )}
+                  {visibleLines.unroutable_drop && (
+                    <Line
+                      type="monotone"
+                      dataKey="unroutable_drop"
+                      stroke="#FDE047"
+                      strokeWidth={2}
+                      dot={false}
+                      name="Unroutable Drop"
+                    />
+                  )}
+                  {visibleLines.disk_writes && (
+                    <Line
+                      type="monotone"
+                      dataKey="disk_writes"
+                      stroke="#DC2626"
+                      strokeWidth={2}
+                      dot={false}
+                      name="Disk Writes"
+                    />
+                  )}
+                  {visibleLines.disk_reads && (
+                    <Line
+                      type="monotone"
+                      dataKey="disk_reads"
+                      stroke="#059669"
+                      strokeWidth={2}
+                      dot={false}
+                      name="Disk Reads"
+                    />
+                  )}
                 </LineChart>
               </ResponsiveContainer>
+            </div>
+
+            {/* Custom Toggleable Legend */}
+            <div className="mt-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 text-xs">
+              {[
+                // Column 1
+                { key: "publish", name: "Publish", color: "#F97316" },
+                { key: "confirm", name: "Publisher confirm", color: "#F59E0B" },
+                {
+                  key: "deliver",
+                  name: "Deliver (manual ack)",
+                  color: "#DC2626",
+                },
+
+                // Column 2
+                {
+                  key: "deliver_get",
+                  name: "Deliver (auto ack)",
+                  color: "#10B981",
+                },
+                { key: "ack", name: "Consumer ack", color: "#8B5CF6" },
+                { key: "redeliver", name: "Redelivered", color: "#6B7280" },
+
+                // Column 3
+                { key: "get", name: "Get (manual ack)", color: "#6B7280" },
+                { key: "get_no_ack", name: "Get (auto ack)", color: "#C4B5FD" },
+                { key: "reject", name: "Get (empty)", color: "#92400E" },
+
+                // Column 4
+                {
+                  key: "return_unroutable",
+                  name: "Unroutable (return)",
+                  color: "#1E40AF",
+                },
+                {
+                  key: "unroutable_drop",
+                  name: "Unroutable (drop)",
+                  color: "#FDE047",
+                },
+                 { key: "disk_writes", name: "Disk write", color: "#C4B5FD" },
+                 { key: "disk_reads", name: "Disk read", color: "#374151" },
+              ].map((metric) => (
+                <div
+                  key={metric.key}
+                  className={`flex items-center gap-2 p-2 rounded cursor-pointer transition-colors ${
+                    visibleLines[metric.key as keyof typeof visibleLines]
+                      ? "bg-gray-50 hover:bg-gray-100"
+                      : "bg-gray-200 hover:bg-gray-300 opacity-60"
+                  }`}
+                  onClick={() =>
+                    toggleLine(metric.key as keyof typeof visibleLines)
+                  }
+                >
+                  <div
+                    className="w-3 h-3 rounded-sm"
+                    style={{ backgroundColor: metric.color }}
+                  />
+                  <span className="text-gray-700">{metric.name}</span>
+                </div>
+              ))}
             </div>
           </div>
         )}

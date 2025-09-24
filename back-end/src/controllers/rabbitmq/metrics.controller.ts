@@ -3,6 +3,8 @@ import { prisma } from "@/core/prisma";
 import { logger } from "@/core/logger";
 import { createErrorResponse } from "../shared";
 import { createRabbitMQClient } from "./shared";
+import { RabbitMQMetricsCalculator } from "@/core/rabbitmq/MetricsCalculator";
+import { RabbitMQOverview, RabbitMQQueue } from "@/types/rabbitmq";
 
 const metricsController = new Hono();
 
@@ -11,8 +13,8 @@ const timeRangeConfigs = {
   "1m": { age: 60, increment: 10 }, // Last minute, 10-second intervals
   "10m": { age: 600, increment: 30 }, // Last 10 minutes, 30-second intervals
   "1h": { age: 3600, increment: 300 }, // Last hour, 5-minute intervals
-  "8h": { age: 28800, increment: 300 }, // Last 8 hours, 5-minute intervals
-  "1d": { age: 86400, increment: 300 }, // Last day, 5-minute intervals
+  "8h": { age: 28800, increment: 1800 }, // Last 8 hours, 30-minute intervals
+  "1d": { age: 86400, increment: 1800 }, // Last day, 30-minute intervals
 } as const;
 
 type TimeRange = keyof typeof timeRangeConfigs;
@@ -112,86 +114,12 @@ metricsController.get("/servers/:id/metrics/rates", async (c) => {
       `Fetched live rates data from RabbitMQ for server ${id} with time range ${timeRange}`
     );
 
-    // Extract historical data from RabbitMQ response
-    // RabbitMQ returns detailed statistics with samples when using msg_rates_age and msg_rates_incr
-    const messagesRates = [];
-
-    // Debug: Log the overview response to understand the structure
-    logger.debug("RabbitMQ Queue Totals Response Structure:", overview);
-
-    // Check if we have historical data in the overview response
-    if (overview.message_stats?.publish_details?.samples) {
-      // RabbitMQ provides historical samples for all message rate metrics
-      const samples = overview.message_stats.publish_details.samples;
-
-      // Extract all available message rate metrics
-      const messageRateMetrics = {
-        publish: overview.message_stats.publish_details?.samples || [],
-        deliver: overview.message_stats.deliver_details?.samples || [],
-        ack: overview.message_stats.ack_details?.samples || [],
-        deliver_get: overview.message_stats.deliver_get_details?.samples || [],
-        confirm: overview.message_stats.confirm_details?.samples || [],
-        get: overview.message_stats.get_details?.samples || [],
-        get_no_ack: overview.message_stats.get_no_ack_details?.samples || [],
-        redeliver: overview.message_stats.redeliver_details?.samples || [],
-        reject: overview.message_stats.reject_details?.samples || [],
-        return_unroutable:
-          overview.message_stats.return_unroutable_details?.samples || [],
-        disk_reads: overview.message_stats.disk_reads_details?.samples || [],
-        disk_writes: overview.message_stats.disk_writes_details?.samples || [],
-      };
-
-      for (let i = 0; i < samples.length; i++) {
-        const timestamp = samples[i].timestamp;
-
-        // Extract all metrics for this timestamp
-        const dataPoint: any = { timestamp };
-
-        // Add all available metrics
-        Object.entries(messageRateMetrics).forEach(
-          ([metricName, metricSamples]) => {
-            const sample = metricSamples[i];
-            dataPoint[metricName] = sample?.sample || 0;
-          }
-        );
-
-        messagesRates.push(dataPoint);
-      }
-    }
-
-    // Extract queue totals data from RabbitMQ response
-    const queueTotals = [];
-
-    // Check if we have queue totals data in the overview response
-    if (overview.queue_totals?.messages_details?.samples) {
-      const samples = overview.queue_totals.messages_details.samples;
-
-      // Extract all available queue totals metrics
-      const queueTotalsMetrics = {
-        messages: overview.queue_totals.messages_details?.samples || [],
-        messages_ready:
-          overview.queue_totals.messages_ready_details?.samples || [],
-        messages_unacknowledged:
-          overview.queue_totals.messages_unacknowledged_details?.samples || [],
-      };
-
-      for (let i = 0; i < samples.length; i++) {
-        const timestamp = samples[i].timestamp;
-
-        // Extract all metrics for this timestamp
-        const dataPoint: any = { timestamp };
-
-        // Add all available metrics
-        Object.entries(queueTotalsMetrics).forEach(
-          ([metricName, metricSamples]) => {
-            const sample = metricSamples[i];
-            dataPoint[metricName] = sample?.sample || 0;
-          }
-        );
-
-        queueTotals.push(dataPoint);
-      }
-    }
+    // Extract historical data from RabbitMQ response using helper functions
+    const messagesRates = RabbitMQMetricsCalculator.extractMessageRates(
+      overview,
+      { disk: true }
+    );
+    const queueTotals = RabbitMQMetricsCalculator.extractQueueTotals(overview);
 
     const response = {
       serverId: id,
@@ -300,84 +228,12 @@ metricsController.get(
         `Fetched live rates data for queue ${decodedQueueName} from server ${id} with time range ${timeRange}`
       );
 
-      // Extract message operation rates from queue.message_stats
-      const messageStats = queue.message_stats || {};
-
-      // Extract historical data from RabbitMQ queue response
-      // RabbitMQ returns detailed statistics with samples when using msg_rates_age and msg_rates_incr
-      const messagesRates = [];
-
-      // Check if we have historical data in the queue response
-      if (messageStats.publish_details?.samples) {
-        // RabbitMQ provides historical samples for queue-level data
-        const samples = messageStats.publish_details.samples;
-
-        // Extract all available message rate metrics for queue
-        // Note: disk_reads and disk_writes are only available at overview level, not queue level
-        const messageRateMetrics = {
-          publish: messageStats.publish_details?.samples || [],
-          deliver: messageStats.deliver_details?.samples || [],
-          ack: messageStats.ack_details?.samples || [],
-          deliver_get: messageStats.deliver_get_details?.samples || [],
-          confirm: messageStats.confirm_details?.samples || [],
-          get: messageStats.get_details?.samples || [],
-          get_no_ack: messageStats.get_no_ack_details?.samples || [],
-          redeliver: messageStats.redeliver_details?.samples || [],
-          reject: messageStats.reject_details?.samples || [],
-          return_unroutable:
-            messageStats.return_unroutable_details?.samples || [],
-        };
-
-        for (let i = 0; i < samples.length; i++) {
-          const timestamp = samples[i].timestamp;
-
-          // Extract all metrics for this timestamp
-          const dataPoint: any = { timestamp };
-
-          // Add all available metrics
-          Object.entries(messageRateMetrics).forEach(
-            ([metricName, metricSamples]) => {
-              const sample = metricSamples[i];
-              dataPoint[metricName] = sample?.sample || 0;
-            }
-          );
-
-          messagesRates.push(dataPoint);
-        }
-      }
-
-      // Extract queue message data for QueuedMessagesChart
-      const queueTotals = [];
-
-      // Check if we have queue message data in the queue response
-      if (queue.messages_details?.samples) {
-        const samples = queue.messages_details.samples;
-
-        // Extract all available queue message metrics
-        const queueMessageMetrics = {
-          messages: queue.messages_details?.samples || [],
-          messages_ready: queue.messages_ready_details?.samples || [],
-          messages_unacknowledged:
-            queue.messages_unacknowledged_details?.samples || [],
-        };
-
-        for (let i = 0; i < samples.length; i++) {
-          const timestamp = samples[i].timestamp;
-
-          // Extract all metrics for this timestamp
-          const dataPoint: any = { timestamp };
-
-          // Add all available metrics
-          Object.entries(queueMessageMetrics).forEach(
-            ([metricName, metricSamples]) => {
-              const sample = metricSamples[i];
-              dataPoint[metricName] = sample?.sample || 0;
-            }
-          );
-
-          queueTotals.push(dataPoint);
-        }
-      }
+      // Extract historical data from RabbitMQ queue response using helper functions
+      const messagesRates = RabbitMQMetricsCalculator.extractMessageRates(
+        queue,
+        { disk: false }
+      );
+      const queueTotals = RabbitMQMetricsCalculator.extractQueueTotals(queue);
 
       const response = {
         serverId: id,

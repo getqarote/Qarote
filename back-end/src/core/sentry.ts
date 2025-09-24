@@ -205,6 +205,7 @@ export function initSentry() {
     dsn: sentryConfig.dsn,
     environment: sentryConfig.environment,
     // Enable logs to be sent to Sentry
+
     enableLogs: true,
 
     // Performance Monitoring
@@ -221,6 +222,9 @@ export function initSentry() {
 
       // Prisma integration for database monitoring
       Sentry.prismaIntegration(),
+
+      // send console.log, console.warn, and console.error calls as logs to Sentry
+      Sentry.consoleLoggingIntegration({ levels: ["log", "warn", "error"] }),
     ],
 
     // Configure what gets sent to Sentry

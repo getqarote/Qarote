@@ -18,7 +18,7 @@ interface ChartData {
 
 export const useDashboardData = (
   selectedServerId: string | null,
-  timeRange: TimeRange = "1m"
+  timeRange: TimeRange = "1d"
 ) => {
   const [chartData, setChartData] = useState<ChartData[]>([
     { time: "00:00", published: 0, consumed: 0 },

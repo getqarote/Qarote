@@ -45,6 +45,21 @@ export const QueuedMessagesChart = ({
 }: QueuedMessagesChartProps) => {
   const [showUpdating, setShowUpdating] = useState(false);
 
+  // State for toggling line visibility
+  const [visibleLines, setVisibleLines] = useState({
+    total: true,
+    ready: true,
+    unacked: true,
+  });
+
+  // Toggle line visibility
+  const toggleLine = (metricName: keyof typeof visibleLines) => {
+    setVisibleLines((prev) => ({
+      ...prev,
+      [metricName]: !prev[metricName],
+    }));
+  };
+
   // Handle delayed updating indicator
   useEffect(() => {
     if (isFetching) {
@@ -74,6 +89,14 @@ export const QueuedMessagesChart = ({
     time: new Date(point.timestamp).toLocaleTimeString([], {
       hour: "2-digit",
       minute: "2-digit",
+    }),
+    dateTime: new Date(point.timestamp).toLocaleString([], {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
     }),
     total: point.messages || 0,
     ready: point.messages_ready || 0,
@@ -181,35 +204,75 @@ export const QueuedMessagesChart = ({
                             ? "Unacked"
                             : name,
                     ]}
-                    labelFormatter={(time: string) => `Time: ${time}`}
+                    labelFormatter={(
+                      time: string,
+                      payload: Array<{ payload: { dateTime: string } }>
+                    ) => {
+                      if (payload && payload[0] && payload[0].payload) {
+                        return `Date & Time: ${payload[0].payload.dateTime}`;
+                      }
+                      return `Time: ${time}`;
+                    }}
                   />
-                  <Legend />
-                  <Line
-                    type="monotone"
-                    dataKey="total"
-                    stroke="#DC2626"
-                    strokeWidth={2}
-                    dot={false}
-                    name="Total"
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="ready"
-                    stroke="#F59E0B"
-                    strokeWidth={2}
-                    dot={false}
-                    name="Ready"
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="unacked"
-                    stroke="#06B6D4"
-                    strokeWidth={2}
-                    dot={false}
-                    name="Unacked"
-                  />
+                  {visibleLines.total && (
+                    <Line
+                      type="monotone"
+                      dataKey="total"
+                      stroke="#DC2626"
+                      strokeWidth={2}
+                      dot={false}
+                      name="Total"
+                    />
+                  )}
+                  {visibleLines.ready && (
+                    <Line
+                      type="monotone"
+                      dataKey="ready"
+                      stroke="#F59E0B"
+                      strokeWidth={2}
+                      dot={false}
+                      name="Ready"
+                    />
+                  )}
+                  {visibleLines.unacked && (
+                    <Line
+                      type="monotone"
+                      dataKey="unacked"
+                      stroke="#06B6D4"
+                      strokeWidth={2}
+                      dot={false}
+                      name="Unacked"
+                    />
+                  )}
                 </LineChart>
               </ResponsiveContainer>
+            </div>
+
+            {/* Custom Toggleable Legend */}
+            <div className="mt-4 flex gap-4 text-xs">
+              {[
+                { key: "total", name: "Total", color: "#DC2626" },
+                { key: "ready", name: "Ready", color: "#F59E0B" },
+                { key: "unacked", name: "Unacked", color: "#06B6D4" },
+              ].map((metric) => (
+                <div
+                  key={metric.key}
+                  className={`flex items-center gap-2 p-2 rounded cursor-pointer transition-colors ${
+                    visibleLines[metric.key as keyof typeof visibleLines]
+                      ? "bg-gray-50 hover:bg-gray-100"
+                      : "bg-gray-200 hover:bg-gray-300 opacity-60"
+                  }`}
+                  onClick={() =>
+                    toggleLine(metric.key as keyof typeof visibleLines)
+                  }
+                >
+                  <div
+                    className="w-3 h-3 rounded-sm"
+                    style={{ backgroundColor: metric.color }}
+                  />
+                  <span className="text-gray-700">{metric.name}</span>
+                </div>
+              ))}
             </div>
           </div>
         )}

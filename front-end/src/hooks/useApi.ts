@@ -3,6 +3,7 @@ import { apiClient } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { AlertThresholds } from "@/types/alerts";
+import { TimeRange } from "@/components/TimeRangeSelector";
 
 // Query keys
 export const queryKeys = {
@@ -384,7 +385,7 @@ export const useRecentAlerts = () => {
 
 export const useLiveRatesMetrics = (
   serverId: string,
-  timeRange: "1m" | "10m" | "1h" | "8h" | "1d" = "1m"
+  timeRange: TimeRange = "1d"
 ) => {
   const { isAuthenticated } = useAuth();
   const { workspace } = useWorkspace();
@@ -406,7 +407,7 @@ export const useLiveRatesMetrics = (
 export const useQueueLiveRates = (
   serverId: string,
   queueName: string,
-  timeRange: "1m" | "10m" | "1h" | "8h" | "1d" = "1m"
+  timeRange: "1m" | "10m" | "1h" | "8h" | "1d" = "1d"
 ) => {
   const { isAuthenticated } = useAuth();
   const { workspace } = useWorkspace();
