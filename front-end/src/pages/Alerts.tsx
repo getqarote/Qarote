@@ -61,8 +61,8 @@ const Alerts = () => {
               <SidebarTrigger />
             </div>
             <NoServerConfigured
-              title="No RabbitMQ Server Configured"
-              description="Configure a RabbitMQ server to view alerts and monitoring data."
+              title="Alerts"
+              description="Monitor system alerts and notifications"
             />
           </main>
         </div>

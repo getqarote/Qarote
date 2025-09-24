@@ -17,9 +17,7 @@ export function NoServerConfigured({
       <div className="flex items-center justify-between">
         <div>
           <h1 className="title-page">{title}</h1>
-          <p className="text-muted-foreground">
-            Connect to a RabbitMQ server to start monitoring connections
-          </p>
+          <p className="text-muted-foreground">{description}</p>
         </div>
       </div>
       <Card className="border-0 shadow-md bg-card backdrop-blur-sm">
