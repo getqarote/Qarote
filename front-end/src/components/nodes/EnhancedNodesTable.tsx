@@ -122,9 +122,14 @@ export const EnhancedNodesTable = ({
       };
     }
 
-    const memoryUsage = (node.mem_used / node.mem_limit) * 100;
+    const memoryUsage =
+      node.mem_used && node.mem_limit
+        ? (node.mem_used / node.mem_limit) * 100
+        : 0;
     const diskUsage =
-      ((node.disk_free_limit - node.disk_free) / node.disk_free_limit) * 100;
+      node.disk_free_limit && node.disk_free
+        ? ((node.disk_free_limit - node.disk_free) / node.disk_free_limit) * 100
+        : 0;
 
     if (memoryUsage > 80 || diskUsage > 80) {
       return {
@@ -160,32 +165,32 @@ export const EnhancedNodesTable = ({
         bValue = b.name;
         break;
       case "memUsed":
-        aValue = a.mem_used;
-        bValue = b.mem_used;
+        aValue = a.mem_used || 0;
+        bValue = b.mem_used || 0;
         break;
       case "diskFree":
-        aValue = a.disk_free;
-        bValue = b.disk_free;
+        aValue = a.disk_free || 0;
+        bValue = b.disk_free || 0;
         break;
       case "uptime":
-        aValue = a.uptime;
-        bValue = b.uptime;
+        aValue = a.uptime || 0;
+        bValue = b.uptime || 0;
         break;
       case "sockets":
-        aValue = a.sockets_used;
-        bValue = b.sockets_used;
+        aValue = a.sockets_used || 0;
+        bValue = b.sockets_used || 0;
         break;
       case "fdUsed":
-        aValue = a.fd_used;
-        bValue = b.fd_used;
+        aValue = a.fd_used || 0;
+        bValue = b.fd_used || 0;
         break;
       case "ioActivity":
-        aValue = a.io_read_count + a.io_write_count;
-        bValue = b.io_read_count + b.io_write_count;
+        aValue = (a.io_read_count || 0) + (a.io_write_count || 0);
+        bValue = (b.io_read_count || 0) + (b.io_write_count || 0);
         break;
       case "connections":
-        aValue = a.connection_created;
-        bValue = b.connection_created;
+        aValue = a.connection_created || 0;
+        bValue = b.connection_created || 0;
         break;
       default:
         aValue = a.name;
@@ -293,8 +298,14 @@ export const EnhancedNodesTable = ({
               {sortedNodes.map((node) => {
                 const status = getNodeStatus(node);
                 const StatusIcon = status.icon;
-                const memoryUsage = (node.mem_used / node.mem_limit) * 100;
-                const fdUsage = (node.fd_used / node.fd_total) * 100;
+                const memoryUsage =
+                  node.mem_used && node.mem_limit
+                    ? (node.mem_used / node.mem_limit) * 100
+                    : 0;
+                const fdUsage =
+                  node.fd_used && node.fd_total
+                    ? (node.fd_used / node.fd_total) * 100
+                    : 0;
                 const isExpanded = expandedNodes.has(node.name);
 
                 return (
@@ -326,23 +337,36 @@ export const EnhancedNodesTable = ({
                       <TableCell>
                         <div className="space-y-1">
                           <div className="flex items-center justify-between text-sm">
-                            <span>{formatBytes(node.mem_used)}</span>
+                            <span>
+                              {node.mem_used
+                                ? formatBytes(node.mem_used)
+                                : "N/A"}
+                            </span>
                             <span className="text-gray-500">
-                              / {formatBytes(node.mem_limit)}
+                              /{" "}
+                              {node.mem_limit
+                                ? formatBytes(node.mem_limit)
+                                : "N/A"}
                             </span>
                           </div>
-                          <Progress
-                            value={memoryUsage}
-                            className={`h-2 w-20 ${memoryUsage > 80 ? "[&>div]:bg-red-500" : memoryUsage > 60 ? "[&>div]:bg-yellow-500" : "[&>div]:bg-green-500"}`}
-                          />
+                          {node.mem_used && node.mem_limit ? (
+                            <Progress
+                              value={memoryUsage}
+                              className={`h-2 w-20 ${memoryUsage > 80 ? "[&>div]:bg-red-500" : memoryUsage > 60 ? "[&>div]:bg-yellow-500" : "[&>div]:bg-green-500"}`}
+                            />
+                          ) : (
+                            <div className="h-2 w-20 bg-gray-200 rounded"></div>
+                          )}
                         </div>
                       </TableCell>
-                      <TableCell>{formatBytes(node.disk_free)}</TableCell>
+                      <TableCell>
+                        {node.disk_free ? formatBytes(node.disk_free) : "N/A"}
+                      </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1">
                           <Clock className="w-3 h-3 text-purple-500" />
                           <span className="text-gray-700">
-                            {formatUptime(node.uptime)}
+                            {node.uptime ? formatUptime(node.uptime) : "N/A"}
                           </span>
                         </div>
                       </TableCell>
@@ -351,23 +375,29 @@ export const EnhancedNodesTable = ({
                           <div className="flex items-center gap-2 text-sm">
                             <HardDrive className="w-3 h-3 text-blue-500" />
                             <span className="text-xs font-medium text-blue-700">
-                              R: {formatNumber(node.io_read_count)}
+                              R:{" "}
+                              {node.io_read_count
+                                ? formatNumber(node.io_read_count)
+                                : "N/A"}
                             </span>
                             <span className="text-xs font-medium text-indigo-700">
-                              W: {formatNumber(node.io_write_count)}
+                              W:{" "}
+                              {node.io_write_count
+                                ? formatNumber(node.io_write_count)
+                                : "N/A"}
                             </span>
                           </div>
                           <div className="text-xs text-gray-500">
                             <span className="text-blue-600">
-                              {formatRate(
-                                node.io_read_count_details?.rate || 0
-                              )}
+                              {node.io_read_count_details?.rate
+                                ? formatRate(node.io_read_count_details.rate)
+                                : "0/s"}
                             </span>{" "}
                             /{" "}
                             <span className="text-indigo-600">
-                              {formatRate(
-                                node.io_write_count_details?.rate || 0
-                              )}
+                              {node.io_write_count_details?.rate
+                                ? formatRate(node.io_write_count_details.rate)
+                                : "0/s"}
                             </span>
                           </div>
                         </div>
@@ -377,13 +407,17 @@ export const EnhancedNodesTable = ({
                           <div className="flex items-center gap-2 text-sm">
                             <Users className="w-3 h-3 text-green-500" />
                             <span className="font-medium text-green-700">
-                              {formatNumber(node.connection_created)}
+                              {node.connection_created
+                                ? formatNumber(node.connection_created)
+                                : "N/A"}
                             </span>
                           </div>
                           <div className="text-xs text-gray-500">
                             Active:{" "}
                             <span className="text-green-600 font-medium">
-                              {formatNumber(node.sockets_used)}
+                              {node.sockets_used
+                                ? formatNumber(node.sockets_used)
+                                : "N/A"}
                             </span>
                           </div>
                         </div>
@@ -391,15 +425,19 @@ export const EnhancedNodesTable = ({
                       <TableCell>
                         <div className="space-y-1">
                           <div className="flex items-center justify-between text-sm">
-                            <span>{node.fd_used}</span>
+                            <span>{node.fd_used ? node.fd_used : "N/A"}</span>
                             <span className="text-gray-500">
-                              / {node.fd_total}
+                              / {node.fd_total ? node.fd_total : "N/A"}
                             </span>
                           </div>
-                          <Progress
-                            value={fdUsage}
-                            className={`h-2 w-16 ${fdUsage > 80 ? "[&>div]:bg-red-500" : fdUsage > 60 ? "[&>div]:bg-yellow-500" : "[&>div]:bg-green-500"}`}
-                          />
+                          {node.fd_used && node.fd_total ? (
+                            <Progress
+                              value={fdUsage}
+                              className={`h-2 w-16 ${fdUsage > 80 ? "[&>div]:bg-red-500" : fdUsage > 60 ? "[&>div]:bg-yellow-500" : "[&>div]:bg-green-500"}`}
+                            />
+                          ) : (
+                            <div className="h-2 w-16 bg-gray-200 rounded"></div>
+                          )}
                         </div>
                       </TableCell>
                     </TableRow>
@@ -453,7 +491,9 @@ export const EnhancedNodesTable = ({
                                   <div className="flex justify-between">
                                     <span className="text-gray-600">Used:</span>
                                     <span className="font-medium text-blue-700">
-                                      {formatBytes(node.mem_used)}
+                                      {node.mem_used
+                                        ? formatBytes(node.mem_used)
+                                        : "N/A"}
                                     </span>
                                   </div>
                                   <div className="flex justify-between">
@@ -461,7 +501,9 @@ export const EnhancedNodesTable = ({
                                       Limit:
                                     </span>
                                     <span className="font-medium">
-                                      {formatBytes(node.mem_limit)}
+                                      {node.mem_limit
+                                        ? formatBytes(node.mem_limit)
+                                        : "N/A"}
                                     </span>
                                   </div>
                                   <div className="flex justify-between">
@@ -471,7 +513,9 @@ export const EnhancedNodesTable = ({
                                     <span
                                       className={`font-medium ${memoryUsage > 80 ? "text-red-600" : memoryUsage > 60 ? "text-yellow-600" : "text-green-600"}`}
                                     >
-                                      {memoryUsage.toFixed(1)}%
+                                      {node.mem_used && node.mem_limit
+                                        ? `${memoryUsage.toFixed(1)}%`
+                                        : "N/A"}
                                     </span>
                                   </div>
                                   <div className="flex justify-between">
@@ -536,7 +580,9 @@ export const EnhancedNodesTable = ({
                                       Read Ops:
                                     </span>
                                     <span className="font-medium text-blue-700">
-                                      {formatNumber(node.io_read_count)}
+                                      {node.io_read_count
+                                        ? formatNumber(node.io_read_count)
+                                        : "N/A"}
                                     </span>
                                   </div>
                                   <div className="flex justify-between">
@@ -544,7 +590,9 @@ export const EnhancedNodesTable = ({
                                       Write Ops:
                                     </span>
                                     <span className="font-medium text-indigo-700">
-                                      {formatNumber(node.io_write_count)}
+                                      {node.io_write_count
+                                        ? formatNumber(node.io_write_count)
+                                        : "N/A"}
                                     </span>
                                   </div>
                                   <div className="flex justify-between">
@@ -552,9 +600,11 @@ export const EnhancedNodesTable = ({
                                       Read Rate:
                                     </span>
                                     <span className="font-medium text-blue-600">
-                                      {formatRate(
-                                        node.io_read_count_details?.rate || 0
-                                      )}
+                                      {node.io_read_count_details?.rate
+                                        ? formatRate(
+                                            node.io_read_count_details.rate
+                                          )
+                                        : "0/s"}
                                     </span>
                                   </div>
                                   <div className="flex justify-between">
@@ -562,9 +612,11 @@ export const EnhancedNodesTable = ({
                                       Write Rate:
                                     </span>
                                     <span className="font-medium text-indigo-600">
-                                      {formatRate(
-                                        node.io_write_count_details?.rate || 0
-                                      )}
+                                      {node.io_write_count_details?.rate
+                                        ? formatRate(
+                                            node.io_write_count_details.rate
+                                          )
+                                        : "0/s"}
                                     </span>
                                   </div>
                                   <div className="flex justify-between">
@@ -572,8 +624,9 @@ export const EnhancedNodesTable = ({
                                       Avg Read Time:
                                     </span>
                                     <span className="font-medium text-purple-700">
-                                      {(node.io_read_avg_time || 0).toFixed(2)}
-                                      ms
+                                      {node.io_read_avg_time
+                                        ? `${node.io_read_avg_time.toFixed(2)}ms`
+                                        : "N/A"}
                                     </span>
                                   </div>
                                   <div className="flex justify-between">
@@ -581,8 +634,9 @@ export const EnhancedNodesTable = ({
                                       Avg Write Time:
                                     </span>
                                     <span className="font-medium text-purple-700">
-                                      {(node.io_write_avg_time || 0).toFixed(2)}
-                                      ms
+                                      {node.io_write_avg_time
+                                        ? `${node.io_write_avg_time.toFixed(2)}ms`
+                                        : "N/A"}
                                     </span>
                                   </div>
                                 </div>
@@ -634,7 +688,9 @@ export const EnhancedNodesTable = ({
                                       Connections Created:
                                     </span>
                                     <span className="font-medium text-green-700">
-                                      {formatNumber(node.connection_created)}
+                                      {node.connection_created
+                                        ? formatNumber(node.connection_created)
+                                        : "N/A"}
                                     </span>
                                   </div>
                                   <div className="flex justify-between">
@@ -642,7 +698,9 @@ export const EnhancedNodesTable = ({
                                       Connections Closed:
                                     </span>
                                     <span className="font-medium text-orange-700">
-                                      {formatNumber(node.connection_closed)}
+                                      {node.connection_closed
+                                        ? formatNumber(node.connection_closed)
+                                        : "N/A"}
                                     </span>
                                   </div>
                                   <div className="flex justify-between">
@@ -650,7 +708,9 @@ export const EnhancedNodesTable = ({
                                       Channels Created:
                                     </span>
                                     <span className="font-medium text-green-600">
-                                      {formatNumber(node.channel_created)}
+                                      {node.channel_created
+                                        ? formatNumber(node.channel_created)
+                                        : "N/A"}
                                     </span>
                                   </div>
                                   <div className="flex justify-between">
@@ -658,7 +718,9 @@ export const EnhancedNodesTable = ({
                                       Channels Closed:
                                     </span>
                                     <span className="font-medium text-orange-600">
-                                      {formatNumber(node.channel_closed)}
+                                      {node.channel_closed
+                                        ? formatNumber(node.channel_closed)
+                                        : "N/A"}
                                     </span>
                                   </div>
                                   <div className="flex justify-between">
@@ -666,7 +728,9 @@ export const EnhancedNodesTable = ({
                                       Active Sockets:
                                     </span>
                                     <span className="font-medium text-emerald-700">
-                                      {node.sockets_used} / {node.sockets_total}
+                                      {node.sockets_used !== undefined
+                                        ? `${node.sockets_used} / ${node.sockets_total || 0}`
+                                        : "N/A"}
                                     </span>
                                   </div>
                                   <div className="flex justify-between">
@@ -674,7 +738,9 @@ export const EnhancedNodesTable = ({
                                       Net Ticktime:
                                     </span>
                                     <span className="font-medium">
-                                      {node.net_ticktime}s
+                                      {node.net_ticktime
+                                        ? `${node.net_ticktime}s`
+                                        : "N/A"}
                                     </span>
                                   </div>
                                 </div>
@@ -730,7 +796,9 @@ export const EnhancedNodesTable = ({
                                       Mnesia RAM Tx:
                                     </span>
                                     <span className="font-medium text-amber-700">
-                                      {formatNumber(node.mnesia_ram_tx_count)}
+                                      {node.mnesia_ram_tx_count
+                                        ? formatNumber(node.mnesia_ram_tx_count)
+                                        : "N/A"}
                                     </span>
                                   </div>
                                   <div className="flex justify-between">
@@ -738,7 +806,11 @@ export const EnhancedNodesTable = ({
                                       Mnesia Disk Tx:
                                     </span>
                                     <span className="font-medium text-orange-700">
-                                      {formatNumber(node.mnesia_disk_tx_count)}
+                                      {node.mnesia_disk_tx_count
+                                        ? formatNumber(
+                                            node.mnesia_disk_tx_count
+                                          )
+                                        : "N/A"}
                                     </span>
                                   </div>
                                   <div className="flex justify-between">
@@ -746,7 +818,11 @@ export const EnhancedNodesTable = ({
                                       Msg Store Reads:
                                     </span>
                                     <span className="font-medium text-blue-700">
-                                      {formatNumber(node.msg_store_read_count)}
+                                      {node.msg_store_read_count
+                                        ? formatNumber(
+                                            node.msg_store_read_count
+                                          )
+                                        : "N/A"}
                                     </span>
                                   </div>
                                   <div className="flex justify-between">
@@ -754,7 +830,11 @@ export const EnhancedNodesTable = ({
                                       Msg Store Writes:
                                     </span>
                                     <span className="font-medium text-indigo-700">
-                                      {formatNumber(node.msg_store_write_count)}
+                                      {node.msg_store_write_count
+                                        ? formatNumber(
+                                            node.msg_store_write_count
+                                          )
+                                        : "N/A"}
                                     </span>
                                   </div>
                                   <div className="flex justify-between">
@@ -762,9 +842,11 @@ export const EnhancedNodesTable = ({
                                       Queue Index Reads:
                                     </span>
                                     <span className="font-medium text-cyan-700">
-                                      {formatNumber(
-                                        node.queue_index_read_count
-                                      )}
+                                      {node.queue_index_read_count
+                                        ? formatNumber(
+                                            node.queue_index_read_count
+                                          )
+                                        : "N/A"}
                                     </span>
                                   </div>
                                   <div className="flex justify-between">
@@ -772,9 +854,11 @@ export const EnhancedNodesTable = ({
                                       Queue Index Writes:
                                     </span>
                                     <span className="font-medium text-teal-700">
-                                      {formatNumber(
-                                        node.queue_index_write_count
-                                      )}
+                                      {node.queue_index_write_count
+                                        ? formatNumber(
+                                            node.queue_index_write_count
+                                          )
+                                        : "N/A"}
                                     </span>
                                   </div>
                                 </div>
@@ -843,7 +927,7 @@ export const EnhancedNodesTable = ({
                                         Processors:
                                       </span>
                                       <span className="font-medium text-slate-700">
-                                        {node.processors}
+                                        {node.processors || "N/A"}
                                       </span>
                                     </div>
                                     <div className="flex justify-between">
@@ -851,7 +935,7 @@ export const EnhancedNodesTable = ({
                                         OS PID:
                                       </span>
                                       <span className="font-mono text-xs text-slate-700">
-                                        {node.os_pid}
+                                        {node.os_pid || "N/A"}
                                       </span>
                                     </div>
                                     <div className="flex justify-between">
@@ -859,7 +943,9 @@ export const EnhancedNodesTable = ({
                                         Run Queue:
                                       </span>
                                       <span className="font-medium text-slate-700">
-                                        {node.run_queue}
+                                        {node.run_queue !== undefined
+                                          ? node.run_queue
+                                          : "N/A"}
                                       </span>
                                     </div>
                                     <div className="flex justify-between">
@@ -867,7 +953,10 @@ export const EnhancedNodesTable = ({
                                         Processes:
                                       </span>
                                       <span className="font-medium text-slate-700">
-                                        {node.proc_used} / {node.proc_total}
+                                        {node.proc_used !== undefined &&
+                                        node.proc_total !== undefined
+                                          ? `${node.proc_used} / ${node.proc_total}`
+                                          : "N/A"}
                                       </span>
                                     </div>
                                   </div>

@@ -57,12 +57,22 @@ export const EnhancedNodesOverview = ({
   const totalNodes = nodes.length;
   const clusterHealth = totalNodes > 0 ? (healthyNodes / totalNodes) * 100 : 0;
 
-  // Calculate aggregate metrics
-  const totalMemoryUsed = nodes.reduce((sum, node) => sum + node.mem_used, 0);
-  const totalMemoryLimit = nodes.reduce((sum, node) => sum + node.mem_limit, 0);
-  const totalDiskFree = nodes.reduce((sum, node) => sum + node.disk_free, 0);
-  const totalConnections = nodes.reduce(
-    (sum, node) => sum + node.sockets_used,
+  // Calculate aggregate metrics - only include running nodes with data
+  const runningNodes = nodes.filter((node) => node.running);
+  const totalMemoryUsed = runningNodes.reduce(
+    (sum, node) => sum + (node.mem_used || 0),
+    0
+  );
+  const totalMemoryLimit = runningNodes.reduce(
+    (sum, node) => sum + (node.mem_limit || 0),
+    0
+  );
+  const totalDiskFree = runningNodes.reduce(
+    (sum, node) => sum + (node.disk_free || 0),
+    0
+  );
+  const totalConnections = runningNodes.reduce(
+    (sum, node) => sum + (node.sockets_used || 0),
     0
   );
   const avgMemoryUsage =
@@ -173,30 +183,37 @@ export const EnhancedNodesOverview = ({
     },
     {
       name: "Memory Usage",
-      value: avgMemoryUsage.toFixed(1),
-      unit: "%",
-      description: `${formatBytes(totalMemoryUsed)} used`,
+      value: runningNodes.length > 0 ? avgMemoryUsage.toFixed(1) : "N/A",
+      unit: runningNodes.length > 0 ? "%" : "",
+      description:
+        runningNodes.length > 0
+          ? `${formatBytes(totalMemoryUsed)} used`
+          : "No running nodes",
       icon: HardDrive,
       color:
-        avgMemoryUsage > 80
-          ? "text-red-600"
-          : avgMemoryUsage > 60
-            ? "text-yellow-600"
-            : "text-green-600",
+        runningNodes.length > 0
+          ? avgMemoryUsage > 80
+            ? "text-red-600"
+            : avgMemoryUsage > 60
+              ? "text-yellow-600"
+              : "text-green-600"
+          : "text-gray-600",
     },
     {
       name: "Total Disk Free",
-      value: formatBytes(totalDiskFree),
+      value: runningNodes.length > 0 ? formatBytes(totalDiskFree) : "N/A",
       unit: "",
-      description: "Available storage",
+      description:
+        runningNodes.length > 0 ? "Available storage" : "No running nodes",
       icon: Activity,
       color: "text-purple-600",
     },
     {
       name: "Active Connections",
-      value: totalConnections,
+      value: runningNodes.length > 0 ? totalConnections : "N/A",
       unit: "",
-      description: "Total sockets in use",
+      description:
+        runningNodes.length > 0 ? "Total sockets in use" : "No running nodes",
       icon: Network,
       color: "text-orange-600",
     },
