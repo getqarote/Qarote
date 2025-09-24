@@ -129,7 +129,7 @@ export const RecentAlerts = () => {
 
   if (error) {
     return (
-      <Card className="border-0 shadow-md bg-card-unified backdrop-blur-sm">
+      <Card className="border-0 shadow-md bg-card backdrop-blur-sm">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
@@ -152,11 +152,11 @@ export const RecentAlerts = () => {
   }
 
   return (
-    <Card className="border-0 shadow-md bg-card-unified backdrop-blur-sm">
+    <Card className="border-0 shadow-md bg-card backdrop-blur-sm">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+            <CardTitle className="text-lg font-semibold text-foreground flex items-center gap-2">
               <AlertTriangle className="w-5 h-5 text-yellow-600" />
               Recent Alerts
               {isLoading ? (
@@ -169,7 +169,9 @@ export const RecentAlerts = () => {
                 </Badge>
               )}
             </CardTitle>
-            <p className="text-sm text-gray-500">Latest system notifications</p>
+            <p className="text-sm text-muted-foreground">
+              Latest system notifications
+            </p>
           </div>
           <Link
             to="/alerts"
@@ -238,7 +240,7 @@ export const RecentAlerts = () => {
             {recentAlerts.map((alert) => (
               <div
                 key={alert.id}
-                className="flex items-start gap-3 p-3 border rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
+                className="flex items-start gap-3 p-3 border rounded-lg hover:bg-accent transition-colors cursor-pointer"
                 onClick={() =>
                   navigate(
                     `/alerts${selectedServerId ? `/${selectedServerId}` : ""}`

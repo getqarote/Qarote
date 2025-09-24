@@ -60,9 +60,9 @@ export const SecondaryMetricsCards = ({
   }, [enhancedMetricsFetching]);
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <Card className="hover:shadow-lg transition-all duration-300 border-0 shadow-md bg-card-unified backdrop-blur-sm">
+      <Card className="hover:shadow-lg transition-all duration-300 border-0 shadow-md bg-card backdrop-blur-sm">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium text-gray-600">
+          <CardTitle className="text-sm font-medium text-muted-foreground">
             Connected Nodes
           </CardTitle>
           {nodesError && isRabbitMQAuthError(nodesError) ? (
@@ -85,7 +85,7 @@ export const SecondaryMetricsCards = ({
             </div>
           ) : (
             <div>
-              <div className="text-2xl font-bold text-gray-900">
+              <div className="text-2xl font-bold text-foreground">
                 {metrics.connectedNodes}
               </div>
               <p className="text-xs text-green-600 mt-1">
@@ -96,9 +96,9 @@ export const SecondaryMetricsCards = ({
         </CardContent>
       </Card>
 
-      <Card className="hover:shadow-lg transition-all duration-300 border-0 shadow-md bg-card-unified backdrop-blur-sm">
+      <Card className="hover:shadow-lg transition-all duration-300 border-0 shadow-md bg-card backdrop-blur-sm">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium text-gray-600">
+          <CardTitle className="text-sm font-medium text-muted-foreground">
             CPU Usage
           </CardTitle>
           {metricsError && isRabbitMQAuthError(metricsError) ? (
@@ -121,10 +121,10 @@ export const SecondaryMetricsCards = ({
             </div>
           ) : (
             <div>
-              <div className="text-2xl font-bold text-gray-900">
+              <div className="text-2xl font-bold text-foreground">
                 {metrics.cpuUsage.toFixed(1)}%
               </div>
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 Updates every 15s{showEnhancedUpdating && " (updating...)"}
               </p>
             </div>
@@ -132,9 +132,9 @@ export const SecondaryMetricsCards = ({
         </CardContent>
       </Card>
 
-      <Card className="hover:shadow-lg transition-all duration-300 border-0 shadow-md bg-card-unified backdrop-blur-sm">
+      <Card className="hover:shadow-lg transition-all duration-300 border-0 shadow-md bg-card backdrop-blur-sm">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium text-gray-600">
+          <CardTitle className="text-sm font-medium text-muted-foreground">
             Memory Usage
           </CardTitle>
           {metricsError && isRabbitMQAuthError(metricsError) ? (
@@ -157,10 +157,10 @@ export const SecondaryMetricsCards = ({
             </div>
           ) : (
             <div>
-              <div className="text-2xl font-bold text-gray-900">
+              <div className="text-2xl font-bold text-foreground">
                 {metrics.totalMemory.toFixed(1)} GB
               </div>
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 Updates every 15s{showEnhancedUpdating && " (updating...)"}
               </p>
             </div>

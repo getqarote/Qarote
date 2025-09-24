@@ -53,9 +53,9 @@ export const PrimaryMetricsCards = ({
   }, [enhancedMetricsFetching]);
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      <Card className="hover:shadow-lg transition-all duration-300 border-0 shadow-md bg-card-unified backdrop-blur-sm">
+      <Card className="hover:shadow-lg transition-all duration-300 border-0 shadow-md bg-card backdrop-blur-sm">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium text-gray-600">
+          <CardTitle className="text-sm font-medium text-muted-foreground">
             Messages/sec
           </CardTitle>
           {metricsError && isRabbitMQAuthError(metricsError) ? (
@@ -78,7 +78,7 @@ export const PrimaryMetricsCards = ({
             </div>
           ) : (
             <div>
-              <div className="text-3xl font-bold text-gray-900">
+              <div className="text-3xl font-bold text-foreground">
                 {metrics.messagesPerSec}
               </div>
               <p className="text-xs text-green-600 mt-1">
@@ -89,9 +89,9 @@ export const PrimaryMetricsCards = ({
         </CardContent>
       </Card>
 
-      <Card className="hover:shadow-lg transition-all duration-300 border-0 shadow-md bg-card-unified backdrop-blur-sm">
+      <Card className="hover:shadow-lg transition-all duration-300 border-0 shadow-md bg-card backdrop-blur-sm">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium text-gray-600">
+          <CardTitle className="text-sm font-medium text-muted-foreground">
             Active Queues
           </CardTitle>
           {metricsError && isRabbitMQAuthError(metricsError) ? (
@@ -114,7 +114,7 @@ export const PrimaryMetricsCards = ({
             </div>
           ) : (
             <div>
-              <div className="text-3xl font-bold text-gray-900">
+              <div className="text-3xl font-bold text-foreground">
                 {metrics.activeQueues}
               </div>
               <p className="text-xs text-gray-500 mt-1">
@@ -125,9 +125,9 @@ export const PrimaryMetricsCards = ({
         </CardContent>
       </Card>
 
-      <Card className="hover:shadow-lg transition-all duration-300 border-0 shadow-md bg-card-unified backdrop-blur-sm">
+      <Card className="hover:shadow-lg transition-all duration-300 border-0 shadow-md bg-card backdrop-blur-sm">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium text-gray-600">
+          <CardTitle className="text-sm font-medium text-muted-foreground">
             Queues Depth
           </CardTitle>
           {metricsError && isRabbitMQAuthError(metricsError) ? (
@@ -150,7 +150,7 @@ export const PrimaryMetricsCards = ({
             </div>
           ) : (
             <div>
-              <div className="text-3xl font-bold text-gray-900">
+              <div className="text-3xl font-bold text-foreground">
                 {metrics.queueDepth}
               </div>
               <p className="text-xs text-orange-600 mt-1">
@@ -161,9 +161,9 @@ export const PrimaryMetricsCards = ({
         </CardContent>
       </Card>
 
-      <Card className="hover:shadow-lg transition-all duration-300 border-0 shadow-md bg-card-unified backdrop-blur-sm">
+      <Card className="hover:shadow-lg transition-all duration-300 border-0 shadow-md bg-card backdrop-blur-sm">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium text-gray-600">
+          <CardTitle className="text-sm font-medium text-muted-foreground">
             Avg Latency
           </CardTitle>
           {metricsError && isRabbitMQAuthError(metricsError) ? (
@@ -186,7 +186,7 @@ export const PrimaryMetricsCards = ({
             </div>
           ) : (
             <div>
-              <div className="text-3xl font-bold text-gray-900">
+              <div className="text-3xl font-bold text-foreground">
                 {metrics.avgLatency.toFixed(1)}ms
               </div>
               <p className="text-xs text-gray-500 mt-1">

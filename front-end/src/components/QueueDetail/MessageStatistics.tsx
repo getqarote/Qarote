@@ -13,7 +13,7 @@ interface MessageStatisticsProps {
 
 export function MessageStatistics({ queue }: MessageStatisticsProps) {
   return (
-    <Card className="border-0 shadow-md bg-card-unified backdrop-blur-sm">
+    <Card className="border-0 shadow-md bg-card backdrop-blur-sm">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Database className="w-5 h-5" />
@@ -23,25 +23,25 @@ export function MessageStatistics({ queue }: MessageStatisticsProps) {
       <CardContent className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <p className="text-sm text-gray-600">Ready</p>
+            <p className="text-sm text-muted-foreground">Ready</p>
             <p className="text-xl font-bold text-blue-600">
               {queue.messages_ready.toLocaleString()}
             </p>
           </div>
           <div>
-            <p className="text-sm text-gray-600">Unacknowledged</p>
+            <p className="text-sm text-muted-foreground">Unacknowledged</p>
             <p className="text-xl font-bold text-orange-600">
               {queue.messages_unacknowledged.toLocaleString()}
             </p>
           </div>
           <div>
-            <p className="text-sm text-gray-600">In RAM</p>
+            <p className="text-sm text-muted-foreground">In RAM</p>
             <p className="text-xl font-bold text-green-600">
               {queue.messages_ram?.toLocaleString() || "0"}
             </p>
           </div>
           <div>
-            <p className="text-sm text-gray-600">Persistent</p>
+            <p className="text-sm text-muted-foreground">Persistent</p>
             <p className="text-xl font-bold text-purple-600">
               {queue.messages_persistent?.toLocaleString() || "0"}
             </p>
@@ -51,10 +51,12 @@ export function MessageStatistics({ queue }: MessageStatisticsProps) {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-sm text-gray-600">Publish Rate</span>
+                <span className="text-sm text-muted-foreground">
+                  Publish Rate
+                </span>
                 <Tooltip>
                   <TooltipTrigger>
-                    <HelpCircle className="w-4 h-4 text-gray-400 cursor-help" />
+                    <HelpCircle className="w-4 h-4 text-muted-foreground cursor-help" />
                   </TooltipTrigger>
                   <TooltipContent>
                     <div className="text-xs">
@@ -71,10 +73,12 @@ export function MessageStatistics({ queue }: MessageStatisticsProps) {
             </div>
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-sm text-gray-600">Deliver Rate</span>
+                <span className="text-sm text-muted-foreground">
+                  Deliver Rate
+                </span>
                 <Tooltip>
                   <TooltipTrigger>
-                    <HelpCircle className="w-4 h-4 text-gray-400 cursor-help" />
+                    <HelpCircle className="w-4 h-4 text-muted-foreground cursor-help" />
                   </TooltipTrigger>
                   <TooltipContent>
                     <div className="text-xs">

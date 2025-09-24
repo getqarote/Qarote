@@ -18,14 +18,14 @@ export const ActiveQueuesSection = ({
   const navigate = useNavigate();
 
   return (
-    <Card className="border-0 shadow-md bg-card-unified backdrop-blur-sm">
+    <Card className="border-0 shadow-md bg-card backdrop-blur-sm">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle className="text-lg font-semibold text-gray-900">
+            <CardTitle className="text-lg font-semibold text-foreground">
               Active Queues
             </CardTitle>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-muted-foreground">
               Currently processing messages
             </p>
           </div>
@@ -42,7 +42,7 @@ export const ActiveQueuesSection = ({
         {queuesLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="p-4 bg-gray-50 rounded-lg border">
+              <div key={i} className="p-4 bg-card rounded-lg border">
                 <Skeleton className="h-4 w-32 mb-2" />
                 <Skeleton className="h-3 w-20 mb-1" />
                 <Skeleton className="h-3 w-24" />
@@ -57,8 +57,10 @@ export const ActiveQueuesSection = ({
           </div>
         ) : (
           <div className="text-center py-8">
-            <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-500">No queues found on this server</p>
+            <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <p className="text-muted-foreground">
+              No queues found on this server
+            </p>
           </div>
         )}
       </CardContent>

@@ -351,7 +351,7 @@ export const VisualizationControls: React.FC<VisualizationControlsProps> = ({
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="flex items-center justify-between">
-              <label className="text-sm text-gray-700">Auto Layout</label>
+              <label className="text-sm text-foreground">Auto Layout</label>
               <Switch
                 checked={settings.autoLayout}
                 onCheckedChange={(checked) =>
@@ -361,7 +361,7 @@ export const VisualizationControls: React.FC<VisualizationControlsProps> = ({
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm text-gray-700">Theme</label>
+              <label className="text-sm text-foreground">Theme</label>
               <Select
                 value={settings.theme}
                 onValueChange={(value: "light" | "dark") =>

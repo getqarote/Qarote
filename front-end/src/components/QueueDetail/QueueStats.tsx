@@ -28,11 +28,11 @@ export function QueueStats({ queue }: QueueStatsProps) {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      <Card className="border-0 shadow-md bg-card-unified backdrop-blur-sm">
+      <Card className="border-0 shadow-md bg-card backdrop-blur-sm">
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Status</p>
+              <p className="text-sm text-muted-foreground">Status</p>
               {getStatusBadge(queue)}
             </div>
             <Activity className="w-8 h-8 text-blue-600" />
@@ -40,12 +40,12 @@ export function QueueStats({ queue }: QueueStatsProps) {
         </CardContent>
       </Card>
 
-      <Card className="border-0 shadow-md bg-card-unified backdrop-blur-sm">
+      <Card className="border-0 shadow-md bg-card backdrop-blur-sm">
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Total Messages</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm text-muted-foreground">Total Messages</p>
+              <p className="text-2xl font-bold text-foreground">
                 {queue.messages.toLocaleString()}
               </p>
             </div>
@@ -54,12 +54,12 @@ export function QueueStats({ queue }: QueueStatsProps) {
         </CardContent>
       </Card>
 
-      <Card className="border-0 shadow-md bg-card-unified backdrop-blur-sm">
+      <Card className="border-0 shadow-md bg-card backdrop-blur-sm">
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Consumers</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm text-muted-foreground">Consumers</p>
+              <p className="text-2xl font-bold text-foreground">
                 {queue.consumers}
               </p>
             </div>
@@ -68,12 +68,12 @@ export function QueueStats({ queue }: QueueStatsProps) {
         </CardContent>
       </Card>
 
-      <Card className="border-0 shadow-md bg-card-unified backdrop-blur-sm">
+      <Card className="border-0 shadow-md bg-card backdrop-blur-sm">
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Memory Usage</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm text-muted-foreground">Memory Usage</p>
+              <p className="text-2xl font-bold text-foreground">
                 {formatBytes(queue.memory)}
               </p>
             </div>

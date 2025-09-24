@@ -117,7 +117,7 @@ export function WorkspaceSelector() {
     if (workspace.isOwner) {
       return <Crown className="w-3 h-3 text-yellow-600" />;
     }
-    return <User className="w-3 h-3 text-gray-500" />;
+    return <User className="w-3 h-3 text-muted-foreground" />;
   };
 
   const getRoleLabel = (workspace: WorkspaceInfo) => {
@@ -130,12 +130,12 @@ export function WorkspaceSelector() {
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
-            className="h-10 px-3 justify-between min-w-[200px] max-w-[300px] border border-gray-200 bg-white hover:bg-gray-50"
+            className="h-10 px-3 justify-between min-w-[200px] max-w-[300px] border border-border bg-background hover:bg-accent"
             disabled={switchWorkspaceMutation.isPending}
           >
             <div className="flex items-center gap-2 min-w-0">
-              <Building2 className="w-4 h-4 text-gray-600 flex-shrink-0" />
-              <span className="truncate font-medium text-gray-900">
+              <Building2 className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+              <span className="truncate font-medium text-foreground">
                 {currentWorkspace?.name || workspace?.name}
               </span>
               {currentWorkspace && (
@@ -144,12 +144,12 @@ export function WorkspaceSelector() {
                 </div>
               )}
             </div>
-            <ChevronDown className="w-4 h-4 text-gray-500 flex-shrink-0" />
+            <ChevronDown className="w-4 h-4 text-muted-foreground flex-shrink-0" />
           </Button>
         </DropdownMenuTrigger>
 
         <DropdownMenuContent align="start" className="w-[280px]">
-          <DropdownMenuLabel className="text-xs text-gray-500 uppercase tracking-wider">
+          <DropdownMenuLabel className="text-xs text-muted-foreground uppercase tracking-wider">
             Switch Workspace
           </DropdownMenuLabel>
 
@@ -158,7 +158,7 @@ export function WorkspaceSelector() {
           {isLoading ? (
             <DropdownMenuItem disabled>
               <div className="flex items-center gap-2">
-                <div className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
+                <div className="w-4 h-4 border-2 border-muted border-t-foreground rounded-full animate-spin"></div>
                 Loading workspaces...
               </div>
             </DropdownMenuItem>
@@ -170,18 +170,18 @@ export function WorkspaceSelector() {
                   onClick={() => handleWorkspaceSwitch(ws.id)}
                   className={`p-3 cursor-pointer ${
                     ws.id === workspace?.id
-                      ? "bg-blue-50 border-l-2 border-l-blue-500"
+                      ? "bg-primary/10 border-l-2 border-l-primary"
                       : ""
                   }`}
                 >
                   <div className="flex items-center justify-between w-full">
                     <div className="flex items-center gap-3 min-w-0">
-                      <Building2 className="w-4 h-4 text-gray-600 flex-shrink-0" />
+                      <Building2 className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                       <div className="min-w-0">
-                        <div className="font-medium text-gray-900 truncate">
+                        <div className="font-medium text-foreground truncate">
                           {ws.name}
                         </div>
-                        <div className="text-xs text-gray-500 flex items-center gap-2">
+                        <div className="text-xs text-muted-foreground flex items-center gap-2">
                           <span className="flex items-center gap-1">
                             {getRoleIcon(ws)}
                             {getRoleLabel(ws)}
@@ -216,13 +216,15 @@ export function WorkspaceSelector() {
                 <div className="flex items-center justify-between w-full">
                   <div className="flex items-center gap-3">
                     {canCreateWorkspace ? (
-                      <Plus className="w-4 h-4 text-gray-600" />
+                      <Plus className="w-4 h-4 text-muted-foreground" />
                     ) : (
-                      <Lock className="w-4 h-4 text-gray-400" />
+                      <Lock className="w-4 h-4 text-muted-foreground/60" />
                     )}
                     <span
                       className={`font-medium ${
-                        canCreateWorkspace ? "text-gray-900" : "text-gray-400"
+                        canCreateWorkspace
+                          ? "text-foreground"
+                          : "text-muted-foreground/60"
                       }`}
                     >
                       Create New Workspace

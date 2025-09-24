@@ -104,17 +104,17 @@ export const QueuedMessagesChart = ({
   }));
 
   return (
-    <Card className="border-0 shadow-md bg-card-unified backdrop-blur-sm">
+    <Card className="border-0 shadow-md bg-card backdrop-blur-sm">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <CardTitle className="text-lg font-semibold text-gray-900">
+            <CardTitle className="text-lg font-semibold text-foreground">
               Queued messages
             </CardTitle>
             <TooltipProvider>
               <UITooltip>
                 <TooltipTrigger asChild>
-                  <HelpCircle className="w-4 h-4 text-gray-400 hover:text-gray-600 cursor-help" />
+                  <HelpCircle className="w-4 h-4 text-muted-foreground hover:text-foreground cursor-help" />
                 </TooltipTrigger>
                 <TooltipContent className="max-w-sm p-3">
                   <div className="space-y-2 text-sm">
@@ -133,7 +133,7 @@ export const QueuedMessagesChart = ({
                         acknowledged
                       </p>
                     </div>
-                    <p className="text-xs text-gray-500 mt-2">
+                    <p className="text-xs text-muted-foreground mt-2">
                       These metrics show the current state of messages across
                       all queues in the server.
                     </p>
@@ -259,8 +259,8 @@ export const QueuedMessagesChart = ({
                   key={metric.key}
                   className={`flex items-center gap-2 p-2 rounded cursor-pointer transition-colors ${
                     visibleLines[metric.key as keyof typeof visibleLines]
-                      ? "bg-gray-50 hover:bg-gray-100"
-                      : "bg-gray-200 hover:bg-gray-300 opacity-60"
+                      ? "bg-accent hover:bg-accent/80"
+                      : "bg-muted hover:bg-muted/80 opacity-60"
                   }`}
                   onClick={() =>
                     toggleLine(metric.key as keyof typeof visibleLines)
@@ -270,7 +270,7 @@ export const QueuedMessagesChart = ({
                     className="w-3 h-3 rounded-sm"
                     style={{ backgroundColor: metric.color }}
                   />
-                  <span className="text-gray-700">{metric.name}</span>
+                  <span className="text-foreground">{metric.name}</span>
                 </div>
               ))}
             </div>

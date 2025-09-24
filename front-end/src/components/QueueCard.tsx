@@ -35,12 +35,12 @@ export const QueueCard = ({ queue, index }: QueueCardProps) => {
 
   return (
     <div
-      className="p-4 bg-gradient-to-r from-gray-50 to-white rounded-lg border border-gray-100 hover:shadow-lg hover:border-blue-200 transition-all duration-300 animate-fade-in cursor-pointer group"
+      className="p-4 bg-card rounded-lg border border-border hover:shadow-lg hover:border-border transition-all duration-300 animate-fade-in cursor-pointer group"
       style={{ animationDelay: `${index * 100}ms` }}
       onClick={handleClick}
     >
       <div className="flex items-center justify-between mb-2">
-        <h3 className="font-semibold text-gray-900 truncate group-hover:text-blue-600 transition-colors">
+        <h3 className="font-semibold text-foreground truncate group-hover:text-blue-600 transition-colors">
           {queue.name}
         </h3>
         <Badge variant="secondary" className={getStatusColor(status)}>
@@ -49,7 +49,7 @@ export const QueueCard = ({ queue, index }: QueueCardProps) => {
       </div>
       <div className="space-y-1">
         <div className="flex justify-between text-sm">
-          <span className="text-gray-600">
+          <span className="text-muted-foreground">
             {queue.messages.toLocaleString()} messages
           </span>
         </div>

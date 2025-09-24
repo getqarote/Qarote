@@ -35,11 +35,11 @@ export const EnhancedNodesOverview = ({
 }: NodesOverviewProps) => {
   if (nodesError && isRabbitMQAuthError(nodesError)) {
     return (
-      <Card className="border-0 shadow-md bg-card-unified backdrop-blur-sm">
+      <Card className="border-0 shadow-md bg-card backdrop-blur-sm">
         <CardHeader>
-          <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+          <CardTitle className="text-lg font-semibold text-foreground flex items-center gap-2">
             <Server className="h-5 w-5 text-emerald-600" />
-            <span className="text-emerald-900">Cluster Overview</span>
+            <span className="text-emerald-600">Cluster Overview</span>
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -203,15 +203,15 @@ export const EnhancedNodesOverview = ({
   ];
 
   return (
-    <Card className="border-0 shadow-md bg-card-unified backdrop-blur-sm">
+    <Card className="border-0 shadow-md bg-card backdrop-blur-sm">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+            <CardTitle className="text-lg font-semibold text-foreground flex items-center gap-2">
               <Server className="h-5 w-5 text-emerald-600" />
-              <span className="text-emerald-900">Cluster Overview</span>
+              <span className="text-emerald-600">Cluster Overview</span>
             </CardTitle>
-            <p className="text-sm text-gray-500 mt-1">
+            <p className="text-sm text-muted-foreground mt-1">
               RabbitMQ cluster health and aggregate metrics
             </p>
           </div>
@@ -225,7 +225,7 @@ export const EnhancedNodesOverview = ({
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="p-4 bg-gray-50 rounded-lg border">
+              <div key={i} className="p-4 bg-card rounded-lg border">
                 <Skeleton className="h-5 w-24 mb-3" />
                 <Skeleton className="h-8 w-16 mb-2" />
                 <Skeleton className="h-4 w-20" />
@@ -240,13 +240,13 @@ export const EnhancedNodesOverview = ({
                 return (
                   <div
                     key={stat.name}
-                    className="p-4 bg-gradient-to-r from-gray-50 to-white rounded-lg border border-gray-100 hover:shadow-md transition-all duration-300"
+                    className="p-4 bg-card rounded-lg border border-border hover:shadow-md transition-all duration-300"
                   >
                     <div className="flex items-center justify-between mb-3">
                       <StatIcon className={`h-5 w-5 ${stat.color}`} />
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <HelpCircle className="h-4 w-4 text-gray-400 hover:text-gray-600 cursor-help" />
+                          <HelpCircle className="h-4 w-4 text-muted-foreground hover:text-foreground cursor-help" />
                         </TooltipTrigger>
                         <TooltipContent className="max-w-sm">
                           {getOverviewTooltipContent(stat.name)}
@@ -254,7 +254,7 @@ export const EnhancedNodesOverview = ({
                       </Tooltip>
                     </div>
                     <div className="space-y-1">
-                      <h3 className="text-sm font-medium text-gray-600">
+                      <h3 className="text-sm font-medium text-muted-foreground">
                         {stat.name}
                       </h3>
                       <div className="flex items-baseline gap-1">
@@ -262,12 +262,12 @@ export const EnhancedNodesOverview = ({
                           {stat.value}
                         </span>
                         {stat.unit && (
-                          <span className="text-sm text-gray-500">
+                          <span className="text-sm text-muted-foreground">
                             {stat.unit}
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-muted-foreground">
                         {stat.description}
                       </p>
                     </div>

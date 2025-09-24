@@ -110,7 +110,7 @@ const Connections = () => {
       case "closing":
         return "text-red-600";
       default:
-        return "text-gray-600";
+        return "text-muted-foreground";
     }
   };
 
@@ -144,7 +144,7 @@ const Connections = () => {
                 <SidebarTrigger />
                 <div>
                   <h1 className="title-page">Connections</h1>
-                  <p className="text-gray-500">
+                  <p className="text-muted-foreground">
                     Monitor RabbitMQ connections and channels
                   </p>
                 </div>
@@ -152,11 +152,11 @@ const Connections = () => {
               <Card className="border-0 shadow-md bg-card">
                 <CardContent className="p-12">
                   <div className="text-center">
-                    <Server className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                    <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+                    <Server className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                    <h2 className="text-2xl font-semibold text-foreground mb-2">
                       No Server Selected
                     </h2>
-                    <p className="text-gray-600">
+                    <p className="text-muted-foreground">
                       Please select a RabbitMQ server to view connections.
                     </p>
                   </div>
@@ -181,7 +181,7 @@ const Connections = () => {
                 <SidebarTrigger />
                 <div>
                   <h1 className="title-page">Connections</h1>
-                  <p className="text-gray-500">
+                  <p className="text-muted-foreground">
                     Monitor RabbitMQ connections and channels
                   </p>
                 </div>
@@ -278,11 +278,11 @@ const Connections = () => {
                   </div>
                 ) : connectionsData?.connections?.length === 0 ? (
                   <div className="text-center py-8">
-                    <Network className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    <Network className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-foreground mb-2">
                       No Active Connections
                     </h3>
-                    <p className="text-gray-600">
+                    <p className="text-muted-foreground">
                       There are currently no active connections to this RabbitMQ
                       server.
                     </p>
@@ -318,11 +318,11 @@ const Connections = () => {
                                 >
                                   {connection.state}
                                 </Badge>
-                                <div className="flex items-center gap-1 text-sm text-gray-600">
+                                <div className="flex items-center gap-1 text-sm text-muted-foreground">
                                   <Users className="h-3 w-3" />
                                   {connection.user}
                                 </div>
-                                <div className="flex items-center gap-1 text-sm text-gray-600">
+                                <div className="flex items-center gap-1 text-sm text-muted-foreground">
                                   <Server className="h-3 w-3" />
                                   {connection.node}
                                 </div>
@@ -332,7 +332,7 @@ const Connections = () => {
                                   <div className="font-medium">
                                     {connection.channelCount}
                                   </div>
-                                  <div className="text-xs text-gray-500">
+                                  <div className="text-xs text-muted-foreground">
                                     Channels
                                   </div>
                                 </div>
@@ -340,7 +340,7 @@ const Connections = () => {
                                   <div className="font-medium">
                                     {formatBytes(connection.recv_oct || 0)}
                                   </div>
-                                  <div className="text-xs text-gray-500">
+                                  <div className="text-xs text-muted-foreground">
                                     Received
                                   </div>
                                 </div>
@@ -348,11 +348,11 @@ const Connections = () => {
                                   <div className="font-medium">
                                     {formatBytes(connection.send_oct || 0)}
                                   </div>
-                                  <div className="text-xs text-gray-500">
+                                  <div className="text-xs text-muted-foreground">
                                     Sent
                                   </div>
                                 </div>
-                                <ArrowUpDown className="h-4 w-4 text-gray-400" />
+                                <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
                               </div>
                             </div>
                           </CollapsibleTrigger>
@@ -365,25 +365,25 @@ const Connections = () => {
                                   </h4>
                                   <div className="space-y-1 text-sm">
                                     <div>
-                                      <span className="text-gray-500">
+                                      <span className="text-muted-foreground">
                                         Protocol:
                                       </span>{" "}
                                       {connection.protocol}
                                     </div>
                                     <div>
-                                      <span className="text-gray-500">
+                                      <span className="text-muted-foreground">
                                         Virtual Host:
                                       </span>{" "}
                                       {connection.vhost}
                                     </div>
                                     <div>
-                                      <span className="text-gray-500">
+                                      <span className="text-muted-foreground">
                                         Packets Received:
                                       </span>{" "}
                                       {connection.recv_cnt?.toLocaleString()}
                                     </div>
                                     <div>
-                                      <span className="text-gray-500">
+                                      <span className="text-muted-foreground">
                                         Packets Sent:
                                       </span>{" "}
                                       {connection.send_cnt?.toLocaleString()}
@@ -396,19 +396,19 @@ const Connections = () => {
                                   </h4>
                                   <div className="space-y-1 text-sm">
                                     <div>
-                                      <span className="text-gray-500">
+                                      <span className="text-muted-foreground">
                                         Bytes Received:
                                       </span>{" "}
                                       {formatBytes(connection.recv_oct || 0)}
                                     </div>
                                     <div>
-                                      <span className="text-gray-500">
+                                      <span className="text-muted-foreground">
                                         Bytes Sent:
                                       </span>{" "}
                                       {formatBytes(connection.send_oct || 0)}
                                     </div>
                                     <div>
-                                      <span className="text-gray-500">
+                                      <span className="text-muted-foreground">
                                         Active Channels:
                                       </span>{" "}
                                       {connection.channelCount}
@@ -450,7 +450,7 @@ const Connections = () => {
                                                 {channel.state}
                                               </Badge>
                                             </div>
-                                            <div className="text-xs text-gray-500">
+                                            <div className="text-xs text-muted-foreground">
                                               {
                                                 channel.connection_details
                                                   ?.peer_host
@@ -465,7 +465,7 @@ const Connections = () => {
 
                                           <div className="grid grid-cols-3 gap-4 text-xs">
                                             <div>
-                                              <span className="text-gray-500">
+                                              <span className="text-muted-foreground">
                                                 User:
                                               </span>
                                               <div className="font-medium">
@@ -473,7 +473,7 @@ const Connections = () => {
                                               </div>
                                             </div>
                                             <div>
-                                              <span className="text-gray-500">
+                                              <span className="text-muted-foreground">
                                                 VHost:
                                               </span>
                                               <div className="font-medium">
@@ -481,7 +481,7 @@ const Connections = () => {
                                               </div>
                                             </div>
                                             <div>
-                                              <span className="text-gray-500">
+                                              <span className="text-muted-foreground">
                                                 Node:
                                               </span>
                                               <div className="font-medium">

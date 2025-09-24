@@ -107,21 +107,29 @@ export const EnhancedTeamTab = ({
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="text-center p-4 bg-blue-50 rounded-lg">
-              <p className="text-2xl font-bold text-blue-600">{totalUsers}</p>
-              <p className="text-sm text-blue-600">Active Users</p>
+            <div className="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+              <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                {totalUsers}
+              </p>
+              <p className="text-sm text-blue-600 dark:text-blue-400">
+                Active Users
+              </p>
             </div>
-            <div className="text-center p-4 bg-amber-50 rounded-lg">
-              <p className="text-2xl font-bold text-amber-600">
+            <div className="text-center p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
+              <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">
                 {pendingInvitations}
               </p>
-              <p className="text-sm text-amber-600">Pending Invitations</p>
+              <p className="text-sm text-amber-600 dark:text-amber-400">
+                Pending Invitations
+              </p>
             </div>
-            <div className="text-center p-4 bg-green-50 rounded-lg">
-              <p className="text-2xl font-bold text-green-600">
+            <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+              <p className="text-2xl font-bold text-green-600 dark:text-green-400">
                 {maxUsers ? maxUsers - totalUsers - pendingInvitations : "∞"}
               </p>
-              <p className="text-sm text-green-600">Available Slots</p>
+              <p className="text-sm text-green-600 dark:text-green-400">
+                Available Slots
+              </p>
             </div>
           </div>
         </CardContent>
@@ -165,10 +173,7 @@ export const EnhancedTeamTab = ({
           {usersLoading ? (
             <div className="space-y-2">
               {[...Array(3)].map((_, i) => (
-                <div
-                  key={i}
-                  className="h-12 bg-gray-200 rounded animate-pulse"
-                />
+                <div key={i} className="h-12 bg-muted rounded animate-pulse" />
               ))}
             </div>
           ) : workspaceUsers.length > 0 ? (
@@ -246,7 +251,7 @@ export const EnhancedTeamTab = ({
                 {[...Array(2)].map((_, i) => (
                   <div
                     key={i}
-                    className="h-12 bg-gray-200 rounded animate-pulse"
+                    className="h-12 bg-muted rounded animate-pulse"
                   />
                 ))}
               </div>

@@ -98,21 +98,21 @@ export const QueueDepthsChart = ({
   };
 
   return (
-    <Card className="border-0 shadow-md bg-card-unified backdrop-blur-sm">
+    <Card className="border-0 shadow-md bg-card backdrop-blur-sm">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle className="flex items-center gap-2 text-xl font-semibold text-gray-800">
+            <CardTitle className="flex items-center gap-2 text-xl font-semibold text-foreground">
               <BarChart3 className="h-5 w-5 text-orange-600" />
               Queue Depths
             </CardTitle>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-muted-foreground">
               Current message backlog by queue
             </p>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-            <span className="text-xs text-gray-500">
+            <span className="text-xs text-muted-foreground">
               Updates every 5 seconds{showUpdating && " (updating...)"}
             </span>
           </div>

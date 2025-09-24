@@ -100,9 +100,6 @@ export default {
         "gradient-title":
           "linear-gradient(to right, rgb(234 88 12), rgb(220 38 38))", // from-orange-600 to-red-600
       },
-      backgroundColor: {
-        "card-unified": "rgb(252 250 246)", // Unified card background color
-      },
     },
   },
   // eslint-disable-next-line @typescript-eslint/no-require-imports

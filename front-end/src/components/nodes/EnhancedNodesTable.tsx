@@ -223,7 +223,7 @@ export const EnhancedNodesTable = ({
 
   if (nodesError && isRabbitMQAuthError(nodesError)) {
     return (
-      <Card className="border-0 shadow-md bg-card-unified backdrop-blur-sm">
+      <Card className="border-0 shadow-md bg-card backdrop-blur-sm">
         <CardHeader>
           <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
             <Server className="h-5 w-5" />
@@ -242,13 +242,13 @@ export const EnhancedNodesTable = ({
   }
 
   return (
-    <Card className="border-0 shadow-md bg-card-unified backdrop-blur-sm">
+    <Card className="border-0 shadow-md bg-card backdrop-blur-sm">
       <CardHeader>
-        <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+        <CardTitle className="text-lg font-semibold text-foreground flex items-center gap-2">
           <Server className="h-5 w-5 text-blue-600" />
-          <span className="text-blue-900">Cluster Nodes ({nodes.length})</span>
+          <span className="text-blue-600">Cluster Nodes ({nodes.length})</span>
         </CardTitle>
-        <p className="text-sm text-gray-500 mt-1">
+        <p className="text-sm text-muted-foreground mt-1">
           Detailed node metrics and health status. Click on any row to expand
           for more details.
         </p>
@@ -301,20 +301,20 @@ export const EnhancedNodesTable = ({
                   <>
                     <TableRow
                       key={node.name}
-                      className="hover:bg-gray-50/50 cursor-pointer"
+                      className="hover:bg-accent/50 cursor-pointer"
                       onClick={() => toggleNodeExpansion(node.name)}
                     >
                       <TableCell>
                         {isExpanded ? (
-                          <ChevronDown className="h-4 w-4 text-gray-400" />
+                          <ChevronDown className="h-4 w-4 text-muted-foreground" />
                         ) : (
-                          <ChevronRight className="h-4 w-4 text-gray-400" />
+                          <ChevronRight className="h-4 w-4 text-muted-foreground" />
                         )}
                       </TableCell>
                       <TableCell className="font-medium">
                         <div className="flex items-center gap-2">
                           <Server className="h-4 w-4 text-blue-600" />
-                          <span className="text-gray-900">{node.name}</span>
+                          <span className="text-foreground">{node.name}</span>
                         </div>
                       </TableCell>
                       <TableCell>
@@ -407,11 +407,11 @@ export const EnhancedNodesTable = ({
                     {/* Expanded Details Row */}
                     {isExpanded && (
                       <TableRow>
-                        <TableCell colSpan={9} className="bg-gray-50/50 p-6">
+                        <TableCell colSpan={9} className="bg-muted/50 p-6">
                           <TooltipProvider>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                               {/* Memory Details */}
-                              <div className="space-y-3 bg-white/80 rounded-lg p-4 border border-blue-100">
+                              <div className="space-y-3 bg-card rounded-lg p-4 border border-border">
                                 <div className="flex items-center gap-2">
                                   <h4 className="font-medium text-gray-900 flex items-center gap-2">
                                     <MemoryStick className="h-4 w-4 text-blue-600" />
@@ -492,7 +492,7 @@ export const EnhancedNodesTable = ({
                               </div>
 
                               {/* I/O Performance */}
-                              <div className="space-y-3 bg-white/80 rounded-lg p-4 border border-purple-100">
+                              <div className="space-y-3 bg-card rounded-lg p-4 border border-border">
                                 <div className="flex items-center gap-2">
                                   <h4 className="font-medium text-gray-900 flex items-center gap-2">
                                     <Activity className="h-4 w-4 text-purple-600" />
@@ -589,7 +589,7 @@ export const EnhancedNodesTable = ({
                               </div>
 
                               {/* Network & Connections */}
-                              <div className="space-y-3 bg-white/80 rounded-lg p-4 border border-green-100">
+                              <div className="space-y-3 bg-card rounded-lg p-4 border border-border">
                                 <div className="flex items-center gap-2">
                                   <h4 className="font-medium text-gray-900 flex items-center gap-2">
                                     <Network className="h-4 w-4 text-green-600" />
@@ -681,7 +681,7 @@ export const EnhancedNodesTable = ({
                               </div>
 
                               {/* Database & Queue Activity */}
-                              <div className="space-y-3 bg-white/80 rounded-lg p-4 border border-amber-100">
+                              <div className="space-y-3 bg-card rounded-lg p-4 border border-border">
                                 <div className="flex items-center gap-2">
                                   <h4 className="font-medium text-gray-900 flex items-center gap-2">
                                     <Database className="h-4 w-4 text-amber-600" />
@@ -785,7 +785,7 @@ export const EnhancedNodesTable = ({
                             <div className="mt-6 pt-6 border-t border-gray-200">
                               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 {/* System Details */}
-                                <div className="space-y-3 bg-white/80 rounded-lg p-4 border border-slate-100">
+                                <div className="space-y-3 bg-card rounded-lg p-4 border border-border">
                                   <div className="flex items-center gap-2">
                                     <h4 className="font-medium text-gray-900 flex items-center gap-2">
                                       <Cpu className="h-4 w-4 text-slate-600" />
@@ -874,7 +874,7 @@ export const EnhancedNodesTable = ({
                                 </div>
 
                                 {/* Runtime Information */}
-                                <div className="space-y-3 bg-white/80 rounded-lg p-4 border border-rose-100">
+                                <div className="space-y-3 bg-card rounded-lg p-4 border border-border">
                                   <div className="flex items-center gap-2">
                                     <h4 className="font-medium text-gray-900 flex items-center gap-2">
                                       <Settings className="h-4 w-4 text-rose-600" />
@@ -961,7 +961,7 @@ export const EnhancedNodesTable = ({
                                 </div>
 
                                 {/* Health Status */}
-                                <div className="space-y-3 bg-white/80 rounded-lg p-4 border border-emerald-100">
+                                <div className="space-y-3 bg-card rounded-lg p-4 border border-border">
                                   <div className="flex items-center gap-2">
                                     <h4 className="font-medium text-gray-900 flex items-center gap-2">
                                       <Wifi className="h-4 w-4 text-emerald-600" />

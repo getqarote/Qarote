@@ -42,6 +42,7 @@ import { PlanUpgradeModal } from "@/components/plans/PlanUpgradeModal";
 import { useLocation, Link } from "react-router-dom";
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { ServerManagement } from "@/components/ServerManagement";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const menuItems = [
   {
@@ -144,21 +145,23 @@ export function AppSidebar() {
 
   return (
     <Sidebar className="border-r-0 bg-sidebar backdrop-blur-sm">
-      <SidebarHeader className="border-b border-gray-100 p-6">
+      <SidebarHeader className="border-b border-sidebar-border p-6">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-gradient-to-br from-orange-600 to-red-600 rounded-lg flex items-center justify-center">
             <img src="/icon_rabbit.svg" alt="Rabbit" className="w-4 h-4" />
           </div>
           <div>
-            <h2 className="font-bold text-gray-900">RabbitHQ</h2>
-            <p className="text-xs text-gray-500">The next GUI for RabbitMQ</p>
+            <h2 className="font-bold text-sidebar-foreground">RabbitHQ</h2>
+            <p className="text-xs text-sidebar-foreground/70">
+              The next GUI for RabbitMQ
+            </p>
           </div>
         </div>
 
         {/* Server Selection */}
         <div className="mt-4 space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+            <span className="text-xs font-semibold text-sidebar-foreground/70 uppercase tracking-wider">
               Server
             </span>
             <div className="flex items-center gap-1">
@@ -201,7 +204,7 @@ export function AppSidebar() {
                                 ?.host || ""
                             )}
                           </span>
-                          <span className="text-xs text-gray-500 truncate">
+                          <span className="text-xs text-sidebar-foreground/70 truncate">
                             {
                               servers.find((s) => s.id === selectedServerId)
                                 ?.name
@@ -221,7 +224,7 @@ export function AppSidebar() {
                         <span className="font-medium" title={server.host}>
                           {shortenHost(server.host)}
                         </span>
-                        <span className="text-xs text-gray-500 truncate">
+                        <span className="text-xs text-muted-foreground truncate">
                           {server.name}
                         </span>
                       </div>
@@ -231,9 +234,9 @@ export function AppSidebar() {
               </SelectContent>
             </Select>
           ) : (
-            <div className="text-center p-3 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
-              <Server className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-              <p className="text-xs text-gray-500 mb-2">
+            <div className="text-center p-3 bg-sidebar-accent rounded-lg border-2 border-dashed border-sidebar-border">
+              <Server className="h-8 w-8 text-sidebar-foreground/70 mx-auto mb-2" />
+              <p className="text-xs text-sidebar-foreground/70 mb-2">
                 No servers configured
               </p>
               <AddServerForm
@@ -251,7 +254,7 @@ export function AppSidebar() {
 
       <SidebarContent className="px-4">
         <SidebarGroup>
-          <SidebarGroupLabel className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+          <SidebarGroupLabel className="text-xs font-semibold text-sidebar-foreground/70 uppercase tracking-wider mb-2">
             Management
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -274,7 +277,7 @@ export function AppSidebar() {
                         className={`w-full justify-start transition-all duration-200 ${
                           isActive
                             ? "bg-gradient-to-r from-orange-600 to-red-600 text-white hover:from-orange-700 hover:to-red-700"
-                            : "hover:bg-gray-100 text-gray-700"
+                            : "hover:bg-sidebar-accent text-sidebar-foreground"
                         }`}
                       >
                         <Link
@@ -293,16 +296,24 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-gray-100 p-4 space-y-4">
+      <SidebarFooter className="border-t border-sidebar-border p-4 space-y-4">
+        {/* Theme Toggle */}
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-sidebar-foreground/70">Theme</span>
+          <ThemeToggle />
+        </div>
+
         {/* User section */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-sm">
-            <User className="w-4 h-4 text-gray-500" />
+            <User className="w-4 h-4 text-sidebar-foreground/70" />
             <div className="flex flex-col">
-              <span className="font-medium text-gray-700">
+              <span className="font-medium text-sidebar-foreground">
                 {user?.firstName} {user?.lastName}
               </span>
-              <span className="text-xs text-gray-500">{user?.email}</span>
+              <span className="text-xs text-sidebar-foreground/70">
+                {user?.email}
+              </span>
             </div>
           </div>
           <Button
@@ -310,7 +321,7 @@ export function AppSidebar() {
             size="sm"
             onClick={() => logoutMutation.mutate()}
             disabled={logoutMutation.isPending}
-            className="text-gray-500 hover:text-red-600 p-1"
+            className="text-sidebar-foreground/70 hover:text-red-400 p-1"
           >
             <LogOut className="w-4 h-4" />
           </Button>

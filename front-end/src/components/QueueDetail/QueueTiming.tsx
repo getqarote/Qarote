@@ -31,7 +31,7 @@ export function QueueTiming({ queue }: QueueTimingProps) {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <Card className="border-0 shadow-md bg-card-unified backdrop-blur-sm">
+      <Card className="border-0 shadow-md bg-card backdrop-blur-sm">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Clock className="w-5 h-5" />
@@ -40,13 +40,13 @@ export function QueueTiming({ queue }: QueueTimingProps) {
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <p className="text-sm text-gray-600">Idle Since</p>
+            <p className="text-sm text-muted-foreground">Idle Since</p>
             <p className="text-lg font-semibold">
               {formatDuration(queue.idle_since)}
             </p>
           </div>
           <div>
-            <p className="text-sm text-gray-600">Last Message</p>
+            <p className="text-sm text-muted-foreground">Last Message</p>
             <p className="text-lg font-semibold">
               {formatDuration(queue.head_message_timestamp)}
             </p>
@@ -54,7 +54,7 @@ export function QueueTiming({ queue }: QueueTimingProps) {
         </CardContent>
       </Card>
 
-      <Card className="border-0 shadow-md bg-card-unified backdrop-blur-sm">
+      <Card className="border-0 shadow-md bg-card backdrop-blur-sm">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Activity className="w-5 h-5" />
@@ -64,13 +64,15 @@ export function QueueTiming({ queue }: QueueTimingProps) {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-sm text-gray-600">Consumer Utilization</p>
+              <p className="text-sm text-muted-foreground">
+                Consumer Utilization
+              </p>
               <p className="text-lg font-semibold">
                 {queue.consumer_utilisation?.toFixed(1) || "0.0"}%
               </p>
             </div>
             <div>
-              <p className="text-sm text-gray-600">Reductions</p>
+              <p className="text-sm text-muted-foreground">Reductions</p>
               <p className="text-lg font-semibold">
                 {queue.reductions?.toLocaleString() || "0"}
               </p>
@@ -78,7 +80,7 @@ export function QueueTiming({ queue }: QueueTimingProps) {
           </div>
           <div className="pt-4 border-t">
             <div>
-              <p className="text-sm text-gray-600">Message Bytes</p>
+              <p className="text-sm text-muted-foreground">Message Bytes</p>
               <p className="text-lg font-semibold">
                 {formatBytes(queue.message_bytes || 0)}
               </p>

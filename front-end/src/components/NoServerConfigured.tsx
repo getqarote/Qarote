@@ -16,28 +16,22 @@ export function NoServerConfigured({
     <div className="content-container-large">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="title-page">
-            {title}
-          </h1>
-          <p className="text-gray-500">
+          <h1 className="title-page">{title}</h1>
+          <p className="text-muted-foreground">
             Connect to a RabbitMQ server to start monitoring connections
           </p>
         </div>
       </div>
-      <Card className="border-0 shadow-md bg-card-unified backdrop-blur-sm">
+      <Card className="border-0 shadow-md bg-card backdrop-blur-sm">
         <CardContent className="p-6">
           <div className="text-center">
-            <Server className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+            <Server className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <h2 className="text-xl font-semibold text-foreground mb-2">
               No RabbitMQ Server Configured
             </h2>
-            <p className="text-gray-600 mb-4">{description}</p>
+            <p className="text-muted-foreground mb-4">{description}</p>
             <AddServerForm
-              trigger={
-                <Button className="btn-primary">
-                  Add Server
-                </Button>
-              }
+              trigger={<Button className="btn-primary">Add Server</Button>}
             />
           </div>
         </CardContent>

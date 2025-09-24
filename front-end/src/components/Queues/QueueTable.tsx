@@ -78,10 +78,10 @@ export function QueueTable({
   };
 
   return (
-    <Card className="border-0 shadow-md bg-card-unified backdrop-blur-sm">
+    <Card className="border-0 shadow-md bg-card backdrop-blur-sm">
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg font-semibold text-gray-900">
+          <CardTitle className="text-lg font-semibold text-foreground">
             All Queues
           </CardTitle>
         </div>
@@ -115,7 +115,7 @@ export function QueueTable({
                 return (
                   <TableRow
                     key={`${queue.name}-${queue.vhost}`}
-                    className="hover:bg-gray-50/50"
+                    className="hover:bg-accent/50"
                   >
                     <TableCell className="font-medium">
                       <button

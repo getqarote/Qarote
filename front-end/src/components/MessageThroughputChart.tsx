@@ -46,7 +46,7 @@ export const MessageThroughputChart = ({
     );
   }
   return (
-    <Card className="border-0 shadow-md bg-card-unified backdrop-blur-sm">
+    <Card className="border-0 shadow-md bg-card backdrop-blur-sm">
       <CardHeader>
         <CardTitle className="text-lg font-semibold text-gray-900">
           Message Throughput

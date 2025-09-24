@@ -50,14 +50,14 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
   const planBenefits = {
     [WorkspacePlan.FREE]: {
       icon: <Users className="w-5 h-5" />,
-      color: "text-gray-600",
-      bgColor: "bg-gray-50",
+      color: "text-muted-foreground",
+      bgColor: "bg-muted",
       benefits: ["1 RabbitMQ server", "Basic monitoring", "Community support"],
     },
     [WorkspacePlan.DEVELOPER]: {
       icon: <Zap className="w-5 h-5" />,
       color: "text-blue-600",
-      bgColor: "bg-blue-50",
+      bgColor: "bg-blue-50 dark:bg-blue-900/20",
       benefits: [
         "Add exchanges",
         "Add virtual hosts",
@@ -68,7 +68,7 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
     [WorkspacePlan.ENTERPRISE]: {
       icon: <Crown className="w-5 h-5" />,
       color: "text-purple-600",
-      bgColor: "bg-purple-50",
+      bgColor: "bg-purple-50 dark:bg-purple-900/20",
       benefits: [
         "All Developer features",
         "Email support",
@@ -101,7 +101,7 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
                     Current
                   </Badge>
                 </CardTitle>
-                <p className="text-sm text-gray-600 mt-1">
+                <p className="text-sm text-muted-foreground mt-1">
                   Your active subscription
                 </p>
               </div>
@@ -111,16 +111,16 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
         <CardContent>
           <div className="space-y-4">
             <div>
-              <h4 className="font-medium text-gray-900 mb-2">
+              <h4 className="font-medium text-foreground mb-2">
                 What's included:
               </h4>
               <ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
                 {currentPlanInfo.benefits.map((benefit, index) => (
                   <li
                     key={index}
-                    className="flex items-center gap-2 text-sm text-gray-600"
+                    className="flex items-center gap-2 text-sm text-muted-foreground"
                   >
-                    <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
+                    <div className="w-1.5 h-1.5 bg-blue-50 dark:bg-blue-900/200 rounded-full"></div>
                     {benefit}
                   </li>
                 ))}
@@ -129,33 +129,39 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
 
             {/* Features Overview */}
             <div className="pt-4 border-t">
-              <h4 className="font-medium text-gray-900 mb-3">Plan Features:</h4>
+              <h4 className="font-medium text-foreground mb-3">
+                Plan Features:
+              </h4>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="text-center">
-                  <div className="text-lg font-semibold text-gray-900">
+                  <div className="text-lg font-semibold text-foreground">
                     {currentFeatures?.canAddExchange ? "✓" : "✗"}
                   </div>
-                  <div className="text-xs text-gray-600">Add Exchanges</div>
+                  <div className="text-xs text-muted-foreground">
+                    Add Exchanges
+                  </div>
                 </div>
                 <div className="text-center">
-                  <div className="text-lg font-semibold text-gray-900">
+                  <div className="text-lg font-semibold text-foreground">
                     {currentFeatures?.canAddVirtualHost ? "✓" : "✗"}
                   </div>
-                  <div className="text-xs text-gray-600">Add VHosts</div>
+                  <div className="text-xs text-muted-foreground">
+                    Add VHosts
+                  </div>
                 </div>
                 <div className="text-center">
-                  <div className="text-lg font-semibold text-gray-900">
+                  <div className="text-lg font-semibold text-foreground">
                     {currentFeatures?.canAddRabbitMQUser ? "✓" : "✗"}
                   </div>
-                  <div className="text-xs text-gray-600">Add Users</div>
+                  <div className="text-xs text-muted-foreground">Add Users</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-lg font-semibold text-gray-900">
+                  <div className="text-lg font-semibold text-foreground">
                     {currentFeatures?.hasPrioritySupport
                       ? "Priority"
                       : "Community"}
                   </div>
-                  <div className="text-xs text-gray-600">Support</div>
+                  <div className="text-xs text-muted-foreground">Support</div>
                 </div>
               </div>
             </div>
@@ -165,7 +171,7 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
 
       {/* Upgrade Suggestion */}
       {nextPlan && nextPlanInfo && (
-        <Card className="border border-purple-200 bg-gradient-to-r from-purple-50 to-blue-50">
+        <Card className="border border-purple-200 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20">
           <CardContent className="p-6">
             <div className="flex items-start justify-between">
               <div className="flex-1">
@@ -176,26 +182,26 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
                     </div>
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900">
+                    <h3 className="font-semibold text-foreground">
                       Ready to grow? Upgrade to {getPlanDisplayName(nextPlan)}
                     </h3>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-muted-foreground">
                       Unlock more features and higher limits
                     </p>
                   </div>
                 </div>
 
                 <div className="mb-4">
-                  <h4 className="font-medium text-gray-900 mb-2">
+                  <h4 className="font-medium text-foreground mb-2">
                     You'll get:
                   </h4>
                   <ul className="grid grid-cols-1 md:grid-cols-2 gap-1">
                     {nextPlanInfo.benefits.map((benefit, index) => (
                       <li
                         key={index}
-                        className="flex items-center gap-2 text-sm text-gray-600"
+                        className="flex items-center gap-2 text-sm text-muted-foreground"
                       >
-                        <div className="w-1.5 h-1.5 bg-purple-500 rounded-full"></div>
+                        <div className="w-1.5 h-1.5 bg-purple-50 dark:bg-purple-900/200 rounded-full"></div>
                         {benefit}
                       </li>
                     ))}
@@ -229,12 +235,12 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-50 rounded-lg">
+              <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                 <Server className="w-5 h-5 text-blue-600" />
               </div>
               <div className="flex-1">
-                <h4 className="font-medium text-gray-900">Billing & Usage</h4>
-                <p className="text-sm text-gray-600">
+                <h4 className="font-medium text-foreground">Billing & Usage</h4>
+                <p className="text-sm text-muted-foreground">
                   Manage your subscription
                 </p>
               </div>
@@ -254,8 +260,8 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
                 <TrendingUp className="w-5 h-5 text-green-600" />
               </div>
               <div className="flex-1">
-                <h4 className="font-medium text-gray-900">Compare Plans</h4>
-                <p className="text-sm text-gray-600">
+                <h4 className="font-medium text-foreground">Compare Plans</h4>
+                <p className="text-sm text-muted-foreground">
                   See all available options
                 </p>
               </div>

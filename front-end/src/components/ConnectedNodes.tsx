@@ -64,15 +64,15 @@ export const ConnectedNodes = ({
   };
 
   return (
-    <Card className="border-0 shadow-md bg-card-unified backdrop-blur-sm">
+    <Card className="border-0 shadow-md bg-card backdrop-blur-sm">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+            <CardTitle className="text-lg font-semibold text-foreground flex items-center gap-2">
               <Server className="h-5 w-5" />
               Connected Nodes ({nodes.length})
             </CardTitle>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-muted-foreground">
               RabbitMQ cluster node status and metrics
             </p>
           </div>
@@ -111,10 +111,10 @@ export const ConnectedNodes = ({
             {nodes.map((node) => (
               <div
                 key={node.name}
-                className="p-4 bg-gradient-to-r from-gray-50 to-white rounded-lg border border-gray-100 hover:shadow-md transition-all duration-300"
+                className="p-4 bg-card rounded-lg border border-border hover:shadow-md transition-all duration-300"
               >
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-semibold text-gray-900 truncate">
+                  <h3 className="font-semibold text-foreground truncate">
                     {node.name}
                   </h3>
                   {getStatusBadge(node)}
@@ -122,40 +122,44 @@ export const ConnectedNodes = ({
 
                 <div className="space-y-2 text-sm">
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-600">Type:</span>
+                    <span className="text-muted-foreground">Type:</span>
                     <span className="font-medium">{node.type}</span>
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-600">Uptime:</span>
+                    <span className="text-muted-foreground">Uptime:</span>
                     <span className="font-medium">
                       {formatUptime(node.uptime)}
                     </span>
                   </div>
 
                   <div className="grid grid-cols-3 gap-2 mt-3">
-                    <div className="text-center p-2 bg-blue-50 rounded">
+                    <div className="text-center p-2 bg-card rounded">
                       <HardDrive className="h-4 w-4 text-blue-600 mx-auto mb-1" />
                       <div className="text-xs font-medium">
                         {formatBytes(node.mem_used)}
                       </div>
-                      <div className="text-xs text-gray-500">Memory</div>
+                      <div className="text-xs text-muted-foreground">
+                        Memory
+                      </div>
                     </div>
 
-                    <div className="text-center p-2 bg-green-50 rounded">
+                    <div className="text-center p-2 bg-card rounded">
                       <Cpu className="h-4 w-4 text-green-600 mx-auto mb-1" />
                       <div className="text-xs font-medium">
                         {node.processors}
                       </div>
-                      <div className="text-xs text-gray-500">CPUs</div>
+                      <div className="text-xs text-muted-foreground">CPUs</div>
                     </div>
 
-                    <div className="text-center p-2 bg-purple-50 rounded">
+                    <div className="text-center p-2 bg-card rounded">
                       <Server className="h-4 w-4 text-purple-600 mx-auto mb-1" />
                       <div className="text-xs font-medium">
                         {formatBytes(node.disk_free)}
                       </div>
-                      <div className="text-xs text-gray-500">Disk Free</div>
+                      <div className="text-xs text-muted-foreground">
+                        Disk Free
+                      </div>
                     </div>
                   </div>
                 </div>

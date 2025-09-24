@@ -51,7 +51,7 @@ export function QueueHeader({
   const isPaused = pauseStatus?.pauseState?.isPaused ?? false;
 
   return (
-    <div className="border-b bg-white px-6 py-4">
+    <div className="border-b bg-background px-6 py-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <SidebarTrigger />
@@ -59,11 +59,11 @@ export function QueueHeader({
             variant="ghost"
             size="sm"
             onClick={onNavigateBack}
-            className="text-gray-600 hover:text-gray-900"
+            className="text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="w-4 h-4" />
           </Button>
-          <h1 className="text-2xl font-bold text-gray-900">{queueName}</h1>
+          <h1 className="text-2xl font-bold text-foreground">{queueName}</h1>
         </div>
 
         <div className="flex items-center gap-2">

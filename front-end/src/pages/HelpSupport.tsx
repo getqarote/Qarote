@@ -128,7 +128,7 @@ export function HelpSupport() {
                 <SidebarTrigger />
                 <div>
                   <h1 className="title-page">Help & Support</h1>
-                  <p className="text-gray-500">
+                  <p className="text-muted-foreground">
                     Find answers to common questions, submit feedback, or get
                     help with the RabbitMQ Dashboard.
                   </p>
@@ -141,7 +141,9 @@ export function HelpSupport() {
               {/* Quick Help Links */}
               <div className="space-y-6">
                 <div>
-                  <h2 className="text-xl font-semibold mb-4">Quick Links</h2>
+                  <h2 className="text-xl font-semibold mb-4 text-foreground">
+                    Quick Links
+                  </h2>
                   <div className="grid gap-3">
                     {quickLinks.map((link, index) => {
                       const Icon = link.icon;
@@ -163,11 +165,11 @@ export function HelpSupport() {
                                       <h3 className="font-medium">
                                         {link.title}
                                       </h3>
-                                      <p className="text-sm text-gray-600 mt-1">
+                                      <p className="text-sm text-muted-foreground mt-1">
                                         {link.description}
                                       </p>
                                     </div>
-                                    <ExternalLink className="w-4 h-4 text-gray-400" />
+                                    <ExternalLink className="w-4 h-4 text-muted-foreground" />
                                   </div>
                                 </CardContent>
                               </Card>
@@ -182,7 +184,7 @@ export function HelpSupport() {
                                       <h3 className="font-medium">
                                         {link.title}
                                       </h3>
-                                      <p className="text-sm text-gray-600 mt-1">
+                                      <p className="text-sm text-muted-foreground mt-1">
                                         {link.description}
                                       </p>
                                     </div>
@@ -230,7 +232,7 @@ export function HelpSupport() {
                       </div>
                     </div>
                     <div className="pt-2">
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-muted-foreground">
                         We typically respond within 24 hours during business
                         days. Can't open your email client? Use the copy button
                         to get our email address.
@@ -243,7 +245,7 @@ export function HelpSupport() {
               {/* FAQ Section */}
               <div className="space-y-6">
                 <div>
-                  <h2 className="text-xl font-semibold mb-4">
+                  <h2 className="text-xl font-semibold mb-4 text-foreground">
                     Frequently Asked Questions
                   </h2>
                   <div className="space-y-3">
@@ -258,7 +260,7 @@ export function HelpSupport() {
                           <CollapsibleTrigger asChild>
                             <Button
                               variant="ghost"
-                              className="w-full justify-between text-left h-auto p-4 hover:bg-gray-50"
+                              className="w-full justify-between text-left h-auto p-4 hover:bg-accent"
                             >
                               <span className="font-medium">
                                 {faq.question}
@@ -270,7 +272,7 @@ export function HelpSupport() {
                               )}
                             </Button>
                           </CollapsibleTrigger>
-                          <CollapsibleContent className="px-4 pb-4 text-sm text-gray-600">
+                          <CollapsibleContent className="px-4 pb-4 text-sm text-muted-foreground">
                             {faq.answer}
                           </CollapsibleContent>
                         </Collapsible>

@@ -30,7 +30,7 @@ export function ConsumerDetails({
   consumersLoading,
 }: ConsumerDetailsProps) {
   return (
-    <Card className="border-0 shadow-md bg-card-unified backdrop-blur-sm">
+    <Card className="border-0 shadow-md bg-card backdrop-blur-sm">
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
@@ -48,11 +48,11 @@ export function ConsumerDetails({
           </div>
         ) : consumersData?.consumers?.length === 0 ? (
           <div className="text-center py-8">
-            <Users className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            <Users className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+            <h3 className="text-lg font-semibold text-foreground mb-2">
               No Active Consumers
             </h3>
-            <p className="text-gray-600">
+            <p className="text-muted-foreground">
               This queue currently has no active consumers.
             </p>
           </div>
@@ -61,7 +61,7 @@ export function ConsumerDetails({
             {consumersData?.consumers?.map((consumer) => (
               <div
                 key={consumer.consumer_tag}
-                className="border rounded-lg p-4 bg-gradient-to-r from-gray-50 to-gray-100"
+                className="border rounded-lg p-4 bg-card"
               >
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-3">
@@ -81,14 +81,14 @@ export function ConsumerDetails({
                       )}
                     </div>
                   </div>
-                  <div className="text-xs text-gray-500">
+                  <div className="text-xs text-muted-foreground">
                     Channel #{consumer.channel_details.number}
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
                   <div>
-                    <span className="text-gray-500">Connection:</span>
+                    <span className="text-muted-foreground">Connection:</span>
                     <div
                       className="font-medium truncate"
                       title={consumer.channel_details.connection_name}
@@ -97,20 +97,20 @@ export function ConsumerDetails({
                     </div>
                   </div>
                   <div>
-                    <span className="text-gray-500">Client:</span>
+                    <span className="text-muted-foreground">Client:</span>
                     <div className="font-medium">
                       {consumer.channel_details.peer_host}:
                       {consumer.channel_details.peer_port}
                     </div>
                   </div>
                   <div>
-                    <span className="text-gray-500">Prefetch:</span>
+                    <span className="text-muted-foreground">Prefetch:</span>
                     <div className="font-medium">
                       {consumer.prefetch_count || "Unlimited"}
                     </div>
                   </div>
                   <div>
-                    <span className="text-gray-500">Arguments:</span>
+                    <span className="text-muted-foreground">Arguments:</span>
                     <div className="font-medium">
                       {Object.keys(consumer.arguments).length > 0
                         ? `${Object.keys(consumer.arguments).length} args`

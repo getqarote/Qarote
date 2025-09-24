@@ -48,8 +48,8 @@
   .dark {
     --background: 20 14.3% 4.1%;
     --foreground: 0 0% 95%;
-    --card: 30 25% 98%; /* Same unified card background in dark mode */
-    --card-foreground: 20 14.3% 4.1%; /* Dark text on light card */
+    --card: 20 14.3% 8%; /* Darker card background for dark mode */
+    --card-foreground: 0 0% 95%; /* Light text on dark card */
     --popover: 20 14.3% 4.1%;
     --popover-foreground: 0 0% 95%;
 
@@ -155,10 +155,10 @@
 
   /* Card Components */
   .card-unified {
-    @apply bg-card-unified border border-border rounded-lg p-6 shadow-sm;
+    @apply bg-card border border-border rounded-lg p-6 shadow-sm;
   }
 
   .card-unified-compact {
-    @apply bg-card-unified border border-border rounded-lg p-4 shadow-sm;
+    @apply bg-card border border-border rounded-lg p-4 shadow-sm;
   }
 }

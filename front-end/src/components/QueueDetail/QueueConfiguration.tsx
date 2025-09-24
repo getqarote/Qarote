@@ -9,7 +9,7 @@ interface QueueConfigurationProps {
 
 export function QueueConfiguration({ queue }: QueueConfigurationProps) {
   return (
-    <Card className="border-0 shadow-md bg-card-unified backdrop-blur-sm">
+    <Card className="border-0 shadow-md bg-card backdrop-blur-sm">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Settings className="w-5 h-5" />
@@ -19,48 +19,48 @@ export function QueueConfiguration({ queue }: QueueConfigurationProps) {
       <CardContent className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <p className="text-sm text-gray-600">VHost</p>
+            <p className="text-sm text-muted-foreground">VHost</p>
             <Badge variant="outline" className="font-mono">
               {queue.vhost}
             </Badge>
           </div>
           <div>
-            <p className="text-sm text-gray-600">Node</p>
+            <p className="text-sm text-muted-foreground">Node</p>
             <Badge variant="outline" className="font-mono">
               {queue.node}
             </Badge>
           </div>
           <div>
-            <p className="text-sm text-gray-600">Type</p>
+            <p className="text-sm text-muted-foreground">Type</p>
             <Badge variant="outline">{queue.type}</Badge>
           </div>
           <div>
-            <p className="text-sm text-gray-600">State</p>
+            <p className="text-sm text-muted-foreground">State</p>
             <Badge className="bg-green-100 text-green-700">{queue.state}</Badge>
           </div>
         </div>
         <div className="pt-4 border-t">
           <div className="grid grid-cols-2 gap-4">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Durable</span>
+              <span className="text-sm text-muted-foreground">Durable</span>
               <Badge variant={queue.durable ? "default" : "outline"}>
                 {queue.durable ? "Yes" : "No"}
               </Badge>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Auto Delete</span>
+              <span className="text-sm text-muted-foreground">Auto Delete</span>
               <Badge variant={queue.auto_delete ? "destructive" : "outline"}>
                 {queue.auto_delete ? "Yes" : "No"}
               </Badge>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Exclusive</span>
+              <span className="text-sm text-muted-foreground">Exclusive</span>
               <Badge variant={queue.exclusive ? "default" : "outline"}>
                 {queue.exclusive ? "Yes" : "No"}
               </Badge>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Policy</span>
+              <span className="text-sm text-muted-foreground">Policy</span>
               <Badge variant="outline">{queue.policy || "None"}</Badge>
             </div>
           </div>
@@ -69,13 +69,15 @@ export function QueueConfiguration({ queue }: QueueConfigurationProps) {
         {/* Queue Arguments Section */}
         {/* {queue.arguments && Object.keys(queue.arguments).length > 0 && ( */}
         <div className="pt-4 border-t">
-          <h4 className="text-sm font-medium text-gray-900 mb-3">Arguments</h4>
+          <h4 className="text-sm font-medium text-foreground mb-3">
+            Arguments
+          </h4>
           <div className="space-y-2">
             {Object.entries(queue.arguments)
               .filter(([, value]) => value !== undefined && value !== null)
               .map(([key, value]) => (
                 <div key={key} className="flex items-center justify-between">
-                  <span className="text-sm font-mono text-gray-600">
+                  <span className="text-sm font-mono text-muted-foreground">
                     {key}:
                   </span>
                   <Badge

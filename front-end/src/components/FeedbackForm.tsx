@@ -184,10 +184,10 @@ export function FeedbackForm({ onSuccess, className }: FeedbackFormProps) {
                         return (
                           <div
                             key={type.value}
-                            className={`relative cursor-pointer rounded-lg border p-4 transition-all hover:border-gray-300 ${
+                            className={`relative cursor-pointer rounded-lg border p-4 transition-all hover:border-border ${
                               field.value === type.value
-                                ? "border-blue-500 bg-blue-50"
-                                : "border-gray-200 bg-white"
+                                ? "border-primary bg-primary/10"
+                                : "border-border bg-card"
                             }`}
                             onClick={() => field.onChange(type.value)}
                           >
@@ -199,7 +199,7 @@ export function FeedbackForm({ onSuccess, className }: FeedbackFormProps) {
                                 <h4 className="font-medium text-sm">
                                   {type.label}
                                 </h4>
-                                <p className="text-xs text-gray-500 mt-1">
+                                <p className="text-xs text-muted-foreground mt-1">
                                   {type.description}
                                 </p>
                               </div>
@@ -257,7 +257,7 @@ export function FeedbackForm({ onSuccess, className }: FeedbackFormProps) {
                       {...field}
                     />
                   </FormControl>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-muted-foreground">
                     {field.value?.length || 0}/100 characters
                   </p>
                   <FormMessage />
@@ -280,7 +280,7 @@ export function FeedbackForm({ onSuccess, className }: FeedbackFormProps) {
                       {...field}
                     />
                   </FormControl>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-muted-foreground">
                     {field.value?.length || 0}/1000 characters
                   </p>
                   <FormMessage />
@@ -336,7 +336,7 @@ export function FeedbackForm({ onSuccess, className }: FeedbackFormProps) {
                       {...field}
                     />
                   </FormControl>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-muted-foreground">
                     We'll only use this to follow up on your feedback if needed
                   </p>
                   <FormMessage />

@@ -141,13 +141,13 @@ export const ResourceUsage = ({
   ];
 
   return (
-    <Card className="border-0 shadow-md bg-card-unified backdrop-blur-sm">
+    <Card className="border-0 shadow-md bg-card backdrop-blur-sm">
       <CardHeader>
-        <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+        <CardTitle className="text-lg font-semibold text-foreground flex items-center gap-2">
           <Cpu className="w-5 h-5 text-yellow-600" />
           Resource Usage
         </CardTitle>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-muted-foreground">
           Cluster-wide resource metrics and system usage
         </p>
       </CardHeader>
