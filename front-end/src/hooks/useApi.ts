@@ -432,18 +432,36 @@ export const useQueueLiveRates = (
 };
 
 export const usePublishMessage = () => {
+  const { workspace } = useWorkspace();
+
   return useMutation({
-    mutationFn: (params: Parameters<typeof apiClient.publishMessage>[0]) =>
-      apiClient.publishMessage(params),
+    mutationFn: (
+      params: Omit<
+        Parameters<typeof apiClient.publishMessage>[0],
+        "workspaceId"
+      >
+    ) => {
+      if (!workspace?.id) {
+        throw new Error("Workspace ID is required");
+      }
+      return apiClient.publishMessage({ ...params, workspaceId: workspace.id });
+    },
   });
 };
 
 export const useCreateQueue = () => {
   const queryClient = useQueryClient();
+  const { workspace } = useWorkspace();
 
   return useMutation({
-    mutationFn: (params: Parameters<typeof apiClient.createQueue>[0]) =>
-      apiClient.createQueue(params),
+    mutationFn: (
+      params: Omit<Parameters<typeof apiClient.createQueue>[0], "workspaceId">
+    ) => {
+      if (!workspace?.id) {
+        throw new Error("Workspace ID is required");
+      }
+      return apiClient.createQueue({ ...params, workspaceId: workspace.id });
+    },
     onSuccess: (_, variables) => {
       // Invalidate queues list for the specific server
       queryClient.invalidateQueries({
@@ -455,7 +473,6 @@ export const useCreateQueue = () => {
 
 export const useDeleteQueue = () => {
   const queryClient = useQueryClient();
-  const { user } = useAuth();
   const { workspace } = useWorkspace();
 
   return useMutation({
@@ -488,7 +505,6 @@ export const useDeleteQueue = () => {
 
 export const usePauseQueue = () => {
   const queryClient = useQueryClient();
-  const { user } = useAuth();
   const { workspace } = useWorkspace();
 
   return useMutation({
@@ -525,7 +541,6 @@ export const usePauseQueue = () => {
 
 export const useResumeQueue = () => {
   const queryClient = useQueryClient();
-  const { user } = useAuth();
   const { workspace } = useWorkspace();
 
   return useMutation({
@@ -856,7 +871,6 @@ export const useWorkspaceThresholds = () => {
 
 export const useUpdateWorkspaceThresholds = () => {
   const queryClient = useQueryClient();
-  const { user } = useAuth();
   const { workspace } = useWorkspace();
 
   return useMutation({

@@ -173,6 +173,61 @@ export function SendMessageDialog({
     ) || [];
   const queues = queuesData?.queues || [];
 
+  // Helper function to handle errors consistently
+  const handlePublishError = (error: {
+    // TODO: Remove this once we have a better type for the error
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    response?: { data?: any };
+    message?: string;
+  }) => {
+    // eslint-disable-line @typescript-eslint/no-explicit-any
+    // Check if this is a routing error from the API response
+    if (error.response?.data) {
+      const errorData = error.response.data;
+      if (errorData.routed === false && errorData.suggestions) {
+        // This is a routing error - show detailed information
+        setRoutingError({
+          message: (errorData.error ||
+            errorData.message ||
+            "Message not routed") as string,
+          suggestions: (errorData.suggestions || []) as string[],
+          details: errorData.details as {
+            reason: string;
+            exchange: string;
+            routingKey: string;
+            possibleCauses: string[];
+          },
+        });
+
+        toast({
+          title: "Message not routed",
+          description: (errorData.error ||
+            errorData.message ||
+            "Message was published but not delivered to any queue") as string,
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
+    // For other types of errors, clear routing error and show generic message
+    setRoutingError(null);
+
+    let errorMessage =
+      error.message || "An error occurred while sending the message.";
+
+    // Try to extract more specific error information
+    if (error.response?.data?.message) {
+      errorMessage = error.response.data.message as string;
+    }
+
+    toast({
+      title: "Failed to send message",
+      description: errorMessage,
+      variant: "destructive",
+    });
+  };
+
   const onSubmit = async (data: SendMessageFormData) => {
     if (!serverId) {
       return;
@@ -277,33 +332,7 @@ export function SendMessageDialog({
               });
             }
           },
-          onError: (error) => {
-            setRoutingError(null); // Clear routing error for other types of errors
-
-            // Try to parse the error response for routing details
-            let errorMessage =
-              error.message || "An error occurred while sending the message.";
-            let suggestions: string[] = [];
-
-            if (error.message && error.message.includes("not routed")) {
-              try {
-                // If the error contains routing information, try to extract it
-                const errorData = JSON.parse(error.message);
-                if (errorData.suggestions) {
-                  suggestions = errorData.suggestions;
-                  errorMessage = errorData.error || errorMessage;
-                }
-              } catch (e) {
-                // If parsing fails, use the original error message
-              }
-            }
-
-            toast({
-              title: "Failed to send message",
-              description: errorMessage,
-              variant: "destructive",
-            });
-          },
+          onError: handlePublishError,
         }
       );
     } else if (mode === "exchange" && data.exchange) {
@@ -353,33 +382,7 @@ export function SendMessageDialog({
               });
             }
           },
-          onError: (error) => {
-            setRoutingError(null); // Clear routing error for other types of errors
-
-            // Try to parse the error response for routing details
-            let errorMessage =
-              error.message || "An error occurred while sending the message.";
-            let suggestions: string[] = [];
-
-            if (error.message && error.message.includes("not routed")) {
-              try {
-                // If the error contains routing information, try to extract it
-                const errorData = JSON.parse(error.message);
-                if (errorData.suggestions) {
-                  suggestions = errorData.suggestions;
-                  errorMessage = errorData.error || errorMessage;
-                }
-              } catch (e) {
-                // If parsing fails, use the original error message
-              }
-            }
-
-            toast({
-              title: "Failed to send message",
-              description: errorMessage,
-              variant: "destructive",
-            });
-          },
+          onError: handlePublishError,
         }
       );
     } else {
@@ -421,7 +424,10 @@ export function SendMessageDialog({
 
   // Helper function to apply suggested routing settings
   const applySuggestedSettings = (suggestion: string) => {
-    if (suggestion.includes("default exchange")) {
+    if (
+      suggestion.includes("default exchange") ||
+      suggestion.includes("Consider using")
+    ) {
       form.setValue("exchange", "");
       if (queueName) {
         form.setValue("routingKey", queueName);
@@ -441,6 +447,19 @@ export function SendMessageDialog({
           description: `Set routing key to "${queues[0].name}" (first available queue)`,
         });
       }
+    } else if (suggestion.includes("Verify that a queue is bound")) {
+      // Suggest using an existing queue name as routing key
+      if (queues.length > 0) {
+        const currentRoutingKey = form.getValues("routingKey");
+        const matchingQueue = queues.find((q) => q.name === currentRoutingKey);
+        if (!matchingQueue && queues.length > 0) {
+          form.setValue("routingKey", queues[0].name);
+          toast({
+            title: "Settings applied",
+            description: `Set routing key to "${queues[0].name}" (existing queue)`,
+          });
+        }
+      }
     }
   };
 
@@ -457,10 +476,7 @@ export function SendMessageDialog({
           queryKey: queryKeys.queues(serverId),
         });
 
-        // Invalidate monthly message count cache to refresh plan restrictions
-        await queryClient.invalidateQueries({
-          queryKey: queryKeys.monthlyMessageCount,
-        });
+        // Note: Monthly message count is no longer tracked
 
         logger.info("SendMessageDialog: Cache invalidation completed");
       }
@@ -545,7 +561,8 @@ export function SendMessageDialog({
                           >
                             <div className="w-1 h-1 bg-current rounded-full mt-2 flex-shrink-0" />
                             <div className="flex-1">{suggestion}</div>
-                            {suggestion.includes("default exchange") && (
+                            {(suggestion.includes("default exchange") ||
+                              suggestion.includes("Consider using")) && (
                               <Button
                                 type="button"
                                 variant="outline"
@@ -563,6 +580,28 @@ export function SendMessageDialog({
                       </div>
                     </div>
                   )}
+
+                  {routingError.details?.possibleCauses &&
+                    routingError.details.possibleCauses.length > 0 && (
+                      <div className="space-y-2">
+                        <div className="font-medium text-sm">
+                          Possible causes:
+                        </div>
+                        <div className="space-y-1">
+                          {routingError.details.possibleCauses.map(
+                            (cause, index) => (
+                              <div
+                                key={index}
+                                className="flex items-start gap-2 text-sm text-gray-600"
+                              >
+                                <div className="w-1 h-1 bg-gray-400 rounded-full mt-2 flex-shrink-0" />
+                                <div className="flex-1">{cause}</div>
+                              </div>
+                            )
+                          )}
+                        </div>
+                      </div>
+                    )}
 
                   <Button
                     type="button"

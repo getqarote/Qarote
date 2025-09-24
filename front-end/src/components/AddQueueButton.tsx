@@ -21,15 +21,6 @@ export const AddQueueButton = ({
     isLoading: workspaceLoading,
   } = useWorkspace();
 
-  // Since we removed queue usage tracking, check permission directly
-  // const { usage } = usePlanData();
-  // const queueUsage = usage?.queues || {
-  //   current: 0,
-  //   limit: 1,
-  //   percentage: 0,
-  //   canAdd: false,
-  // };
-
   const getQueueButtonConfig = () => {
     if (workspaceLoading || canAddQueue) return null;
 
