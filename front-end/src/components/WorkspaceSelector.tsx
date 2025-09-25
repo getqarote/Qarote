@@ -193,9 +193,6 @@ export function WorkspaceSelector() {
                     </div>
 
                     <div className="flex items-center gap-2 flex-shrink-0">
-                      <Badge variant="outline" className="text-xs">
-                        {ws.plan}
-                      </Badge>
                       {ws.id === workspace?.id && (
                         <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                       )}

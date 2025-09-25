@@ -67,7 +67,8 @@ export const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({
             <div>
               <CardTitle>Subscription Management</CardTitle>
               <p className="text-sm text-gray-600">
-                Manage your plan, billing cycle, and subscription settings
+                Manage your plan, billing cycle, and subscription settings for
+                all your workspaces
               </p>
             </div>
             {/* Subscription Actions */}
@@ -149,7 +150,7 @@ export const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({
                   <p className="text-sm text-blue-700 mb-3">
                     Your {lastPlan} plan subscription was canceled, but you can
                     easily restart it anytime. You'll get all the same great
-                    features you had before.
+                    features you had before across all your workspaces.
                   </p>
                 </div>
               </div>

@@ -11,9 +11,8 @@ import {
   User,
   UserProfile,
   UpdateProfileRequest,
-  UpdateCompanyRequest,
+  UpdateWorkspaceRequest,
   InviteUserRequest,
-  Company,
   Workspace,
   Invitation,
   SendInvitationRequest,
@@ -61,20 +60,10 @@ export class AuthApiClient extends BaseApiClient {
     });
   }
 
-  async updateCompany(
-    companyData: UpdateCompanyRequest
-  ): Promise<{ company: Company }> {
-    return this.request<{ company: Company }>("/users/profile/company", {
-      method: "PUT",
-      body: JSON.stringify(companyData),
-    });
-  }
-
-  // New workspace methods
   async updateWorkspace(
-    workspaceData: UpdateCompanyRequest
-  ): Promise<{ workspace: Company }> {
-    return this.request<{ workspace: Company }>("/users/profile/workspace", {
+    workspaceData: UpdateWorkspaceRequest
+  ): Promise<{ workspace: Workspace }> {
+    return this.request<{ workspace: Workspace }>("/users/profile/workspace", {
       method: "PUT",
       body: JSON.stringify(workspaceData),
     });

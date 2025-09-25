@@ -67,9 +67,6 @@ export interface Workspace {
   };
 }
 
-// Legacy type alias for backwards compatibility
-export type Company = Workspace;
-
 export interface UserProfile extends User {
   workspace?: Workspace;
 }
@@ -85,9 +82,6 @@ export interface UpdateWorkspaceRequest {
   logoUrl?: string;
   planType?: "FREE" | "PREMIUM" | "ENTERPRISE";
 }
-
-// Legacy type alias for backwards compatibility
-export type UpdateCompanyRequest = UpdateWorkspaceRequest;
 
 export interface InviteUserRequest {
   email: string;

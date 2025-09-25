@@ -79,7 +79,8 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
             </h2>
             <p className="text-gray-600 mt-1">
               To use {feature}, you need to upgrade from the{" "}
-              {planData.planFeatures.displayName || currentPlan} plan
+              {planData.planFeatures.displayName || currentPlan} plan. This
+              upgrade will apply to all your workspaces.
             </p>
           </div>
           <button

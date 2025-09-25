@@ -112,7 +112,7 @@ export function CreateWorkspaceForm({
                   <FormControl>
                     <Input
                       {...field}
-                      placeholder="My Company"
+                      placeholder="My Workspace"
                       className="h-10"
                       disabled={createWorkspaceMutation.isPending}
                     />

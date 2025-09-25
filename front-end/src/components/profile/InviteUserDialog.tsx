@@ -51,7 +51,7 @@ export const InviteUserDialog = ({
         <DialogHeader>
           <DialogTitle>Invite Team Member</DialogTitle>
           <DialogDescription>
-            Send an invitation to join your company.
+            Send an invitation to join your workspace.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">

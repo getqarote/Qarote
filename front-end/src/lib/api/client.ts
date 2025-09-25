@@ -440,13 +440,6 @@ class ApiClient {
     return this.authClient.updateProfile(userData);
   }
 
-  async updateCompany(
-    companyData: Parameters<AuthApiClient["updateCompany"]>[0]
-  ) {
-    return this.authClient.updateCompany(companyData);
-  }
-
-  // New workspace methods
   async updateWorkspace(
     workspaceData: Parameters<AuthApiClient["updateWorkspace"]>[0]
   ) {
@@ -598,7 +591,7 @@ class ApiClient {
     return this.alertClient.getAlertStats();
   }
 
-  // Company methods
+  // Workspace methods
   async getCurrentWorkspace() {
     return this.workspaceClient.getCurrentWorkspace();
   }

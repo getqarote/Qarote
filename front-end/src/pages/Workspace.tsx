@@ -189,7 +189,7 @@ const Workspace = () => {
                             <FormControl>
                               <Input
                                 {...field}
-                                placeholder="My Company"
+                                placeholder="My Workspace"
                                 className="h-11"
                                 disabled={createWorkspaceMutation.isPending}
                               />
