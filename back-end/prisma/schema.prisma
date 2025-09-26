@@ -240,11 +240,7 @@ model RabbitMQServer {
   password            String
   vhost               String      @default("/")
   useHttps            Boolean     @default(false) // Protocol selection separate from SSL config
-  sslEnabled          Boolean     @default(false)
   sslVerifyPeer       Boolean     @default(true)
-  sslCaCertContent    String?     @db.Text
-  sslClientCertContent String?    @db.Text
-  sslClientKeyContent String?     @db.Text
   version             String?     // RabbitMQ version (e.g., "3.12.10", "4.0.1")
   versionMajorMinor   String?     // Major.Minor version for plan validation (e.g., "3.12", "4.0")
   

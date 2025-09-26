@@ -13,14 +13,6 @@ const HostSchema = z
 //     "Host must be a valid hostname, IP address, or domain name (e.g., localhost, 192.168.1.1, example.com)",
 // });
 
-// Schema for SSL configuration (now separate from protocol)
-export const SSLConfigSchema = z.object({
-  verifyPeer: z.boolean().default(true),
-  caCertContent: z.string().optional(),
-  clientCertContent: z.string().optional(),
-  clientKeyContent: z.string().optional(),
-});
-
 // Schema for RabbitMQ server credentials
 export const RabbitMQCredentialsSchema = z.object({
   host: HostSchema,
@@ -30,7 +22,6 @@ export const RabbitMQCredentialsSchema = z.object({
   password: z.string().min(1, "Password is required"),
   vhost: z.string().default("/"),
   useHttps: z.boolean(),
-  sslConfig: SSLConfigSchema.optional(),
 });
 
 // Schema for creating a new RabbitMQ server
@@ -43,7 +34,6 @@ export const CreateServerSchema = z.object({
   password: z.string().min(1, "Password is required"),
   vhost: z.string().default("/"),
   useHttps: z.boolean(),
-  sslConfig: SSLConfigSchema.optional(),
 });
 
 // Schema for updating a RabbitMQ server

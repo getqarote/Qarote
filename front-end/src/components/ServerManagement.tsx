@@ -155,7 +155,7 @@ function ServerCard({ server, onServerUpdated }: ServerCardProps) {
           variant="ghost"
           size="sm"
           onClick={() => setIsEditDialogOpen(true)}
-          className="text-gray-500 hover:text-green-600"
+          className="text-black hover:text-black hover:bg-transparent"
           title="Edit Server"
         >
           <Edit className="h-4 w-4" />
@@ -164,7 +164,7 @@ function ServerCard({ server, onServerUpdated }: ServerCardProps) {
           variant="ghost"
           size="sm"
           onClick={() => setIsDeleteDialogOpen(true)}
-          className="text-gray-500 hover:text-red-600"
+          className="text-red-600 hover:text-red-600 hover:bg-transparent"
           title="Delete Server"
         >
           <Trash2 className="h-4 w-4" />

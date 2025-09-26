@@ -4,7 +4,7 @@
  */
 
 import { BaseApiClient } from "./baseClient";
-import { Server, SSLConfig } from "./types";
+import { Server } from "./types";
 
 export class ServerApiClient extends BaseApiClient {
   async getServers(): Promise<{ servers: Server[] }> {
@@ -52,7 +52,6 @@ export class ServerApiClient extends BaseApiClient {
     password: string;
     vhost: string;
     useHttps: boolean;
-    sslConfig?: SSLConfig;
   }): Promise<{
     success: boolean;
     message: string;

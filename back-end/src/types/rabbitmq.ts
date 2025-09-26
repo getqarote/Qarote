@@ -379,13 +379,6 @@ export interface RabbitMQOverview {
   contexts: ContextInfo[];
 }
 
-export interface SSLConfig {
-  verifyPeer: boolean;
-  caCertContent?: string;
-  clientCertContent?: string;
-  clientKeyContent?: string;
-}
-
 export interface RabbitMQCredentials {
   host: string;
   port: number;
@@ -393,7 +386,6 @@ export interface RabbitMQCredentials {
   password: string;
   vhost: string;
   useHttps: boolean;
-  sslConfig?: SSLConfig;
 }
 
 export interface QueueArguments {

@@ -47,8 +47,6 @@ serverController.get("/", async (c) => {
         username: true,
         vhost: true,
         useHttps: true,
-        sslEnabled: true,
-        sslVerifyPeer: true,
         isOverQueueLimit: true,
         queueCountAtConnect: true,
         overLimitWarningShown: true,
@@ -69,9 +67,6 @@ serverController.get("/", async (c) => {
       username: EncryptionService.decrypt(server.username), // Decrypt for display
       vhost: server.vhost,
       useHttps: server.useHttps,
-      sslConfig: {
-        verifyPeer: server.sslVerifyPeer,
-      },
       isOverQueueLimit: server.isOverQueueLimit,
       queueCountAtConnect: server.queueCountAtConnect,
       overLimitWarningShown: server.overLimitWarningShown,
@@ -108,8 +103,6 @@ serverController.get("/:id", async (c) => {
         username: true,
         vhost: true,
         useHttps: true,
-        sslEnabled: true,
-        sslVerifyPeer: true,
         isOverQueueLimit: true,
         queueCountAtConnect: true,
         overLimitWarningShown: true,
@@ -133,9 +126,6 @@ serverController.get("/:id", async (c) => {
       username: EncryptionService.decrypt(server.username), // Decrypt for display
       vhost: server.vhost,
       useHttps: server.useHttps,
-      sslConfig: {
-        verifyPeer: server.sslVerifyPeer,
-      },
       isOverQueueLimit: server.isOverQueueLimit,
       queueCountAtConnect: server.queueCountAtConnect,
       overLimitWarningShown: server.overLimitWarningShown,
@@ -183,7 +173,6 @@ serverController.post(
         password: data.password,
         vhost: data.vhost,
         useHttps: data.useHttps,
-        sslConfig: data.sslConfig,
       });
 
       // Attempt to get the overview to validate connection and detect version
@@ -205,17 +194,6 @@ serverController.post(
           password: EncryptionService.encrypt(data.password), // Encrypt password
           vhost: data.vhost,
           useHttps: data.useHttps,
-          sslEnabled: !!data.sslConfig, // SSL is enabled if SSL config is provided
-          sslVerifyPeer: data.sslConfig?.verifyPeer || true,
-          sslCaCertContent: data.sslConfig?.caCertContent
-            ? EncryptionService.encrypt(data.sslConfig.caCertContent)
-            : null,
-          sslClientCertContent: data.sslConfig?.clientCertContent
-            ? EncryptionService.encrypt(data.sslConfig.clientCertContent)
-            : null,
-          sslClientKeyContent: data.sslConfig?.clientKeyContent
-            ? EncryptionService.encrypt(data.sslConfig.clientKeyContent)
-            : null,
           version: rabbitMqVersion, // Store full version
           versionMajorMinor: majorMinorVersion, // Store major.minor for plan validation
           // Store over-limit information
@@ -236,9 +214,6 @@ serverController.post(
             username: data.username, // Return original (not encrypted) for UI
             vhost: server.vhost,
             useHttps: server.useHttps,
-            sslConfig: {
-              verifyPeer: server.sslVerifyPeer,
-            },
             workspaceId: server.workspaceId,
             createdAt: server.createdAt,
             updatedAt: server.updatedAt,
@@ -298,18 +273,6 @@ serverController.put(
           password: data.password || existingServer.password,
           vhost: data.vhost || existingServer.vhost,
           useHttps: data.useHttps ?? existingServer.useHttps,
-          sslConfig: data.sslConfig || {
-            verifyPeer: existingServer.sslVerifyPeer,
-            caCertContent: existingServer.sslCaCertContent
-              ? EncryptionService.decrypt(existingServer.sslCaCertContent)
-              : undefined,
-            clientCertContent: existingServer.sslClientCertContent
-              ? EncryptionService.decrypt(existingServer.sslClientCertContent)
-              : undefined,
-            clientKeyContent: existingServer.sslClientKeyContent
-              ? EncryptionService.decrypt(existingServer.sslClientKeyContent)
-              : undefined,
-          },
         });
 
         await client.getOverview();
@@ -329,20 +292,6 @@ serverController.put(
       if (data.vhost !== undefined) updateData.vhost = data.vhost;
       if (data.useHttps !== undefined) updateData.useHttps = data.useHttps;
 
-      if (data.sslConfig !== undefined) {
-        updateData.sslEnabled = !!data.sslConfig;
-        updateData.sslVerifyPeer = data.sslConfig?.verifyPeer || true;
-        updateData.sslCaCertContent = data.sslConfig?.caCertContent
-          ? EncryptionService.encrypt(data.sslConfig.caCertContent)
-          : null;
-        updateData.sslClientCertContent = data.sslConfig?.clientCertContent
-          ? EncryptionService.encrypt(data.sslConfig.clientCertContent)
-          : null;
-        updateData.sslClientKeyContent = data.sslConfig?.clientKeyContent
-          ? EncryptionService.encrypt(data.sslConfig.clientKeyContent)
-          : null;
-      }
-
       const server = await prisma.rabbitMQServer.update({
         where: { id },
         data: updateData,
@@ -358,9 +307,6 @@ serverController.put(
           username: EncryptionService.decrypt(server.username), // Decrypt for display
           vhost: server.vhost,
           useHttps: server.useHttps,
-          sslConfig: {
-            verifyPeer: server.sslVerifyPeer,
-          },
           createdAt: server.createdAt,
           updatedAt: server.updatedAt,
         },
@@ -437,43 +383,6 @@ serverController.post(
         },
         400
       );
-    }
-  }
-);
-
-// Mark over-limit warning as shown for a server (ADMIN ONLY - modifies server state)
-serverController.put(
-  "/:id/warning-shown",
-  authorize([UserRole.ADMIN]),
-  async (c) => {
-    const id = c.req.param("id");
-    const user = c.get("user");
-
-    try {
-      // Check if server exists and belongs to user's workspace
-      const existingServer = await prisma.rabbitMQServer.findUnique({
-        where: {
-          id,
-          workspaceId: user.workspaceId,
-        },
-      });
-
-      if (!existingServer) {
-        return c.json({ error: "Server not found or access denied" }, 404);
-      }
-
-      // Update warning shown status
-      await prisma.rabbitMQServer.update({
-        where: { id },
-        data: {
-          overLimitWarningShown: true,
-        },
-      });
-
-      return c.json({ message: "Warning status updated successfully" });
-    } catch (error) {
-      logger.error({ error, id }, "Error updating warning status for server");
-      return c.json({ error: "Failed to update warning status" }, 500);
     }
   }
 );

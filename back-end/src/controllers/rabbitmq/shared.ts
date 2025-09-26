@@ -16,10 +16,6 @@ export function getDecryptedCredentials(server: RabbitMQServer) {
     password: EncryptionService.decrypt(server.password),
     vhost: server.vhost,
     useHttps: server.useHttps,
-    sslConfig: {
-      enabled: server.sslEnabled,
-      verifyPeer: server.sslVerifyPeer,
-    },
   };
 }
 
@@ -67,6 +63,18 @@ export async function createAmqpClient(serverId: string, workspaceId: string) {
       id: serverId,
       workspaceId,
     },
+    select: {
+      id: true,
+      name: true,
+      host: true,
+      port: true,
+      amqpPort: true,
+      username: true,
+      password: true,
+      vhost: true,
+      useHttps: true,
+      queuePauseStates: true,
+    },
   });
 
   if (!server) {
@@ -105,7 +113,7 @@ export async function createAmqpClient(serverId: string, workspaceId: string) {
     username: decryptedUsername, // ✅ Using decrypted username
     password: decryptedPassword, // ✅ Using decrypted password
     vhost: server.vhost || "/",
-    sslEnabled: server.sslEnabled,
+    useHttps: server.useHttps,
   });
 
   // Set up persistence callback to save pause states to database

@@ -1,19 +1,12 @@
-export interface SSLConfig {
-  verifyPeer: boolean;
-  caCertContent?: string;
-  clientCertContent?: string;
-  clientKeyContent?: string;
-}
-
 export interface AddServerFormData {
   name: string;
   host: string;
   port: number;
+  amqpPort: number;
   username: string;
   password: string;
   vhost: string;
   useHttps: boolean;
-  sslConfig?: SSLConfig;
 }
 
 export interface ConnectionStatus {
@@ -34,7 +27,6 @@ export interface Server {
   username: string;
   vhost: string;
   useHttps: boolean;
-  sslConfig?: SSLConfig;
 }
 
 export interface AddServerFormProps {

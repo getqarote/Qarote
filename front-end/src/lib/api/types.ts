@@ -18,13 +18,6 @@ export interface ApiError {
   code?: string;
 }
 
-export interface SSLConfig {
-  verifyPeer: boolean;
-  caCertContent?: string;
-  clientCertContent?: string;
-  clientKeyContent?: string;
-}
-
 export interface Server {
   id: string;
   name: string;
@@ -34,7 +27,6 @@ export interface Server {
   username: string;
   vhost: string;
   useHttps: boolean;
-  sslConfig?: SSLConfig;
   createdAt: string;
   updatedAt: string;
 }

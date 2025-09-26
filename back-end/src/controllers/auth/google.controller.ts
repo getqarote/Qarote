@@ -7,6 +7,7 @@ import { logger } from "@/core/logger";
 import { setSentryUser } from "@/core/sentry";
 import { generateToken, SafeUser } from "@/core/auth";
 import { googleConfig } from "@/config";
+import { UserRole } from "@prisma/client";
 
 const googleController = new Hono();
 
@@ -79,19 +80,8 @@ googleController.post(
             emailVerified: true, // Google emails are verified
             emailVerifiedAt: new Date(),
             isActive: true,
-            role: "USER",
+            role: UserRole.ADMIN,
             lastLogin: new Date(),
-            // Create a default workspace for the user
-            workspace: {
-              create: {
-                name: `${given_name || "User"}'s Workspace`,
-                contactEmail: email,
-                plan: "FREE",
-              },
-            },
-          },
-          include: {
-            workspace: true,
           },
         });
       }
@@ -105,7 +95,7 @@ googleController.post(
         id: user.id,
         email: user.email,
         role: user.role,
-        workspaceId: user.workspaceId,
+        workspaceId: null,
       });
 
       const safeUser: SafeUser = {
@@ -114,7 +104,7 @@ googleController.post(
         firstName: user.firstName,
         lastName: user.lastName,
         role: user.role,
-        workspaceId: user.workspaceId,
+        workspaceId: null,
         isActive: user.isActive,
         emailVerified: user.emailVerified,
         lastLogin: user.lastLogin,
@@ -125,7 +115,7 @@ googleController.post(
       // Set Sentry user context
       setSentryUser({
         id: user.id,
-        workspaceId: user.workspaceId,
+        workspaceId: null,
         email: user.email,
       });
 

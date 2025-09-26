@@ -22,7 +22,7 @@ export class RabbitMQAmqpClientFactory {
     username: string;
     password: string;
     vhost: string;
-    sslEnabled: boolean;
+    useHttps: boolean;
   }): Promise<RabbitMQAmqpClient> {
     // Check local cache first
     const existingClient = this.clients.get(serverConfig.id);
@@ -39,7 +39,7 @@ export class RabbitMQAmqpClientFactory {
     }
 
     const config: AMQPConnectionConfig = {
-      protocol: serverConfig.sslEnabled ? "amqps" : "amqp",
+      protocol: serverConfig.useHttps ? "amqps" : "amqp",
       hostname: serverConfig.host,
       port: serverConfig.amqpPort, // Use AMQP port for the connection
       username: serverConfig.username,

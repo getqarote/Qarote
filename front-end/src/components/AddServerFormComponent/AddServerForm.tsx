@@ -62,12 +62,6 @@ export const AddServerForm = ({
       password: "", // Don't prefill password for security
       vhost: server?.vhost || "/",
       useHttps: server?.useHttps || false,
-      sslConfig: server?.sslConfig || {
-        verifyPeer: true,
-        caCertContent: undefined,
-        clientCertContent: undefined,
-        clientKeyContent: undefined,
-      },
     },
   });
 
@@ -83,12 +77,6 @@ export const AddServerForm = ({
         password: "",
         vhost: server.vhost,
         useHttps: server.useHttps || false,
-        sslConfig: server.sslConfig || {
-          verifyPeer: true,
-          caCertContent: undefined,
-          clientCertContent: undefined,
-          clientKeyContent: undefined,
-        },
       });
       setConnectionStatus({ status: "idle" });
     }
@@ -111,14 +99,6 @@ export const AddServerForm = ({
         password: formData.password,
         vhost: formData.vhost,
         useHttps: formData.useHttps,
-        sslConfig: formData.sslConfig
-          ? {
-              verifyPeer: formData.sslConfig.verifyPeer || true,
-              caCertContent: formData.sslConfig.caCertContent,
-              clientCertContent: formData.sslConfig.clientCertContent,
-              clientKeyContent: formData.sslConfig.clientKeyContent,
-            }
-          : undefined,
       });
 
       if (result.success) {
@@ -162,15 +142,6 @@ export const AddServerForm = ({
           password: data.password,
           vhost: data.vhost,
           useHttps: data.useHttps,
-          sslConfig:
-            data.useHttps && data.sslConfig
-              ? {
-                  verifyPeer: data.sslConfig.verifyPeer || true,
-                  caCertContent: data.sslConfig.caCertContent,
-                  clientCertContent: data.sslConfig.clientCertContent,
-                  clientKeyContent: data.sslConfig.clientKeyContent,
-                }
-              : undefined,
         });
 
         // Invalidate servers query to refresh the server list
@@ -192,15 +163,6 @@ export const AddServerForm = ({
           password: data.password,
           vhost: data.vhost,
           useHttps: data.useHttps,
-          sslConfig:
-            data.useHttps && data.sslConfig
-              ? {
-                  verifyPeer: data.sslConfig.verifyPeer || true,
-                  caCertContent: data.sslConfig.caCertContent,
-                  clientCertContent: data.sslConfig.clientCertContent,
-                  clientKeyContent: data.sslConfig.clientKeyContent,
-                }
-              : undefined,
         });
 
         // Set this as the selected server (only for new servers)

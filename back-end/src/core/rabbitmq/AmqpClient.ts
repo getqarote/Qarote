@@ -1,7 +1,6 @@
 import amqp from "amqplib";
 import { logger } from "@/core/logger";
 import { captureRabbitMQError } from "@/core/sentry";
-// import { RabbitMQAmqpClientFactory } from "./AmqpFactory";
 
 export interface AMQPConnectionConfig {
   protocol: "amqp" | "amqps";

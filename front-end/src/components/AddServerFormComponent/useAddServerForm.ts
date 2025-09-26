@@ -1,10 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
-import type {
-  AddServerFormData,
-  ConnectionStatus,
-  SSLConfig,
-  Server,
-} from "./types";
+import type { AddServerFormData, ConnectionStatus, Server } from "./types";
 import { apiClient } from "@/lib/api";
 
 interface UseAddServerFormProps {
@@ -22,16 +17,11 @@ export const useAddServerForm = ({
         name: server.name,
         host: server.host,
         port: server.port,
+        amqpPort: server.amqpPort,
         username: server.username,
         password: "", // Don't prefill password for security
         vhost: server.vhost,
-        sslConfig: server.sslConfig || {
-          enabled: false,
-          verifyPeer: true,
-          caCertPath: "",
-          clientCertPath: "",
-          clientKeyPath: "",
-        },
+        useHttps: server.useHttps,
       };
     }
 
@@ -39,16 +29,11 @@ export const useAddServerForm = ({
       name: "",
       host: "",
       port: 15672, // RabbitMQ Management Plugin default port
+      amqpPort: 5672,
       username: "guest",
       password: "guest",
       vhost: "/",
-      sslConfig: {
-        enabled: false,
-        verifyPeer: true,
-        caCertPath: "",
-        clientCertPath: "",
-        clientKeyPath: "",
-      },
+      useHttps: false,
     };
   }, [mode, server]);
 
@@ -115,20 +100,6 @@ export const useAddServerForm = ({
     }
   };
 
-  const handleSSLConfigChange = (
-    field: keyof SSLConfig,
-    value: string | boolean
-  ) => {
-    setFormData((prev) => ({
-      ...prev,
-      sslConfig: { ...prev.sslConfig, [field]: value },
-    }));
-    // Reset connection status when SSL config changes
-    if (connectionStatus.status !== "idle") {
-      setConnectionStatus({ status: "idle" });
-    }
-  };
-
   const testConnection = async () => {
     if (!validateForm()) return;
 
@@ -139,10 +110,11 @@ export const useAddServerForm = ({
       const result = await apiClient.testConnection({
         host: formData.host,
         port: formData.port,
+        amqpPort: formData.amqpPort,
         username: formData.username,
         password: formData.password,
         vhost: formData.vhost,
-        sslConfig: formData.sslConfig,
+        useHttps: formData.useHttps,
       });
 
       if (result.success) {
@@ -189,7 +161,6 @@ export const useAddServerForm = ({
     setErrors,
     validateForm,
     handleInputChange,
-    handleSSLConfigChange,
     testConnection,
     resetForm,
     mode,

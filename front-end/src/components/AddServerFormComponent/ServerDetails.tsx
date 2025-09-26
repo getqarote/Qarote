@@ -73,7 +73,8 @@ export const ServerDetails = ({ form }: ServerDetailsProps) => {
                 />
               </FormControl>
               <div className="text-xs text-muted-foreground mt-1">
-                Default: 15672
+                Default: 15672 (HTTP) • 15671 (HTTPS self-hosted) • 443 (HTTPS
+                cloud)
               </div>
               <FormMessage />
             </FormItem>
@@ -104,7 +105,6 @@ export const ServerDetails = ({ form }: ServerDetailsProps) => {
             </FormItem>
           )}
         />
-        {/* 
         <FormField
           control={form.control}
           name="useHttps"
@@ -116,10 +116,15 @@ export const ServerDetails = ({ form }: ServerDetailsProps) => {
                   onCheckedChange={field.onChange}
                 />
               </FormControl>
-              <FormLabel className="text-sm font-medium">Use HTTPS</FormLabel>
+              <div className="flex flex-col">
+                <FormLabel className="text-sm font-medium">Use HTTPS</FormLabel>
+                <div className="text-xs text-muted-foreground">
+                  Enable for secure connections (CloudAMQP, AWS, etc.)
+                </div>
+              </div>
             </FormItem>
           )}
-        /> */}
+        />
       </div>
 
       <FormField

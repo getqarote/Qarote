@@ -3,6 +3,7 @@ import {
   SubscriptionStatus,
   PaymentStatus,
   BillingInterval,
+  UserRole,
 } from "@prisma/client";
 import { prisma } from "@/core/prisma";
 import { logger } from "@/core/logger";
@@ -48,7 +49,7 @@ export async function handleCheckoutSessionCompleted(session: Session) {
       where: { id: workspaceId },
       include: {
         users: {
-          where: { role: "ADMIN" },
+          where: { role: UserRole.ADMIN },
           take: 1,
         },
       },
@@ -83,7 +84,7 @@ export async function handleSubscriptionChange(subscription: Subscription) {
       where: { stripeCustomerId: customerId },
       include: {
         users: {
-          where: { role: "ADMIN" },
+          where: { role: UserRole.ADMIN },
           take: 1,
         },
         subscription: true,
@@ -247,7 +248,7 @@ export async function handleTrialWillEnd(subscription: Subscription) {
     const workspace = await prisma.workspace.findUnique({
       where: { stripeCustomerId: customerId },
       include: {
-        users: { where: { role: "ADMIN" }, take: 1 },
+        users: { where: { role: UserRole.ADMIN }, take: 1 },
       },
     });
 
@@ -409,7 +410,7 @@ export async function handlePaymentActionRequired(invoice: Invoice) {
     const workspace = await prisma.workspace.findUnique({
       where: { stripeCustomerId: customerId },
       include: {
-        users: { where: { role: "ADMIN" }, take: 1 },
+        users: { where: { role: UserRole.ADMIN }, take: 1 },
       },
     });
 
@@ -467,7 +468,7 @@ export async function handleUpcomingInvoice(invoice: Invoice) {
     const workspace = await prisma.workspace.findUnique({
       where: { stripeCustomerId: customerId },
       include: {
-        users: { where: { role: "ADMIN" }, take: 1 },
+        users: { where: { role: UserRole.ADMIN }, take: 1 },
       },
     });
 
@@ -538,7 +539,7 @@ export async function handlePaymentIntentFailed(paymentIntent: PaymentIntent) {
     const workspace = await prisma.workspace.findUnique({
       where: { stripeCustomerId: customerId },
       include: {
-        users: { where: { role: "ADMIN" }, take: 1 },
+        users: { where: { role: UserRole.ADMIN }, take: 1 },
       },
     });
 
@@ -599,7 +600,7 @@ export async function handleCustomerUpdated(customer: Customer) {
       const adminUser = await prisma.user.findFirst({
         where: {
           workspaceId: workspace.id,
-          role: "ADMIN",
+          role: UserRole.ADMIN,
         },
       });
 

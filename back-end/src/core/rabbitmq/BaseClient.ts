@@ -1,5 +1,5 @@
 import { Agent } from "undici";
-import type { RabbitMQCredentials, SSLConfig } from "@/types/rabbitmq";
+import type { RabbitMQCredentials } from "@/types/rabbitmq";
 import { logger } from "../logger";
 import { captureRabbitMQError } from "../sentry";
 
@@ -30,7 +30,6 @@ export class RabbitMQBaseClient {
   protected baseUrl: string;
   protected authHeader: string;
   protected vhost: string;
-  protected sslConfig?: SSLConfig;
 
   constructor(credentials: RabbitMQCredentials) {
     logger.debug(
@@ -40,7 +39,6 @@ export class RabbitMQBaseClient {
         username: credentials.username,
         vhost: credentials.vhost,
         useHttps: credentials.useHttps,
-        sslConfig: credentials.sslConfig,
       },
       "Initializing RabbitMQBaseClient with credentials"
     );
@@ -52,7 +50,6 @@ export class RabbitMQBaseClient {
     ).toString("base64")}`;
 
     this.vhost = encodeURIComponent(credentials.vhost); // not used
-    this.sslConfig = credentials.sslConfig;
   }
 
   protected async request(endpoint: string, options?: RequestInit) {
@@ -65,30 +62,6 @@ export class RabbitMQBaseClient {
         },
         ...options,
       };
-
-      // Configure SSL options if HTTPS is enabled and we have SSL config
-      if (this.sslConfig && this.baseUrl.startsWith("https")) {
-        const agent = new Agent({
-          connect: {
-            // Client certificate (PEM format)
-            cert: this.sslConfig.clientCertContent,
-            // Client private key (PEM format)
-            key: this.sslConfig.clientKeyContent,
-            // Certificate Authority (PEM format)
-            ca: this.sslConfig.caCertContent,
-            // Optional: reject unauthorized certificates (default: true)
-            rejectUnauthorized: this.sslConfig.verifyPeer,
-          },
-        });
-
-        fetchOptions.dispatcher = agent;
-
-        logger.debug(
-          `SSL enabled for HTTPS connection. verifyPeer: ${this.sslConfig.verifyPeer}, ` +
-            `CA cert: ${this.sslConfig.caCertContent ? "provided" : "not provided"}, ` +
-            `Client cert: ${this.sslConfig.clientCertContent ? "provided" : "not provided"}`
-        );
-      }
 
       logger.info(`Fetching RabbitMQ API endpoint: ${this.baseUrl}${endpoint}`);
       const response = await fetch(`${this.baseUrl}${endpoint}`, fetchOptions);
@@ -124,7 +97,7 @@ export class RabbitMQBaseClient {
         return text ? { message: text } : {};
       }
     } catch (error) {
-      logger.error(`Error fetching from RabbitMQ API (${endpoint}):`, error);
+      logger.error({ error }, `Error fetching from RabbitMQ API (${endpoint})`);
 
       // Capture network/connection error in Sentry if not already captured
       if (
