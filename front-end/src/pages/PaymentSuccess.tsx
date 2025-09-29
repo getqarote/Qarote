@@ -39,7 +39,7 @@ const PaymentSuccess: React.FC = () => {
   }, [sessionId]);
 
   return (
-    <div className="min-h-screen bg-gradient-page flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-orange-600 via-red-600 to-orange-700 flex items-center justify-center p-4">
       <div className="bg-white rounded-lg shadow-lg max-w-md w-full p-8 text-center">
         <div className="mb-6">
           <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
@@ -69,7 +69,7 @@ const PaymentSuccess: React.FC = () => {
 
         <div className="space-y-3">
           <button
-            onClick={() => navigate("/queues")}
+            onClick={() => navigate("/")}
             className="w-full bg-gradient-button hover:bg-gradient-button-hover text-white py-2 px-4 rounded-lg font-medium transition-colors flex items-center justify-center"
           >
             Explore Your Dashboard
@@ -77,7 +77,7 @@ const PaymentSuccess: React.FC = () => {
           </button>
 
           <button
-            onClick={() => navigate("/workspace/billing")}
+            onClick={() => navigate("/billing")}
             className="w-full bg-gray-100 hover:bg-gray-200 text-gray-900 py-2 px-4 rounded-lg font-medium transition-colors"
           >
             Manage Subscription
