@@ -39,12 +39,16 @@ export class RabbitMQAmqpClientFactory {
     }
 
     const config: AMQPConnectionConfig = {
-      protocol: serverConfig.useHttps ? "amqps" : "amqp",
+      protocol: serverConfig.useHttps
+        ? "amqps"
+        : serverConfig.amqpPort === 5671
+          ? "amqps"
+          : "amqp",
       hostname: serverConfig.host,
       port: serverConfig.amqpPort, // Use AMQP port for the connection
       username: serverConfig.username,
       password: serverConfig.password,
-      vhost: serverConfig.vhost,
+      vhost: serverConfig.vhost || "/",
       serverId: serverConfig.id,
       serverName: serverConfig.name,
       connectionTimeout: 30_000,
