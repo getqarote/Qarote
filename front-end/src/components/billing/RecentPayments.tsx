@@ -34,14 +34,14 @@ export const RecentPayments: React.FC<RecentPaymentsProps> = ({
               className="flex items-center justify-between py-3 border-b last:border-b-0"
             >
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-green-50 rounded-lg">
-                  <CheckCircle className="w-4 h-4 text-green-600" />
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <CheckCircle className="w-4 h-4 text-primary" />
                 </div>
                 <div>
                   <p className="font-medium">
                     {payment.description || "Subscription payment"}
                   </p>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-muted-foreground">
                     {formatDate(new Date(payment.createdAt))}
                   </p>
                 </div>

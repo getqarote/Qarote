@@ -53,12 +53,12 @@ export const CurrentPlanCard: React.FC<CurrentPlanCardProps> = ({
   };
 
   return (
-    <Card className="border-l-4 border-l-blue-500">
+    <Card className="border-l-4 border-l-primary">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-50 rounded-lg">
-              <CreditCard className="w-6 h-6 text-blue-600" />
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <CreditCard className="w-6 h-6 text-primary" />
             </div>
             <div>
               <CardTitle className="flex items-center gap-2">
@@ -73,7 +73,7 @@ export const CurrentPlanCard: React.FC<CurrentPlanCardProps> = ({
                   {subscription?.status || "Active"}
                 </Badge>
               </CardTitle>
-              <p className="text-sm text-gray-600 mt-1">
+              <p className="text-sm text-muted-foreground mt-1">
                 {workspace.plan === WorkspacePlan.FREE
                   ? "No subscription required"
                   : `${stripeSubscription?.items?.data[0]?.price?.recurring?.interval || ""} billing`}
@@ -87,7 +87,7 @@ export const CurrentPlanCard: React.FC<CurrentPlanCardProps> = ({
                   stripeSubscription.items.data[0]?.price?.unit_amount || 0
                 )}
               </div>
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-muted-foreground">
                 per{" "}
                 {stripeSubscription.items.data[0]?.price?.recurring?.interval}
               </div>
@@ -99,7 +99,9 @@ export const CurrentPlanCard: React.FC<CurrentPlanCardProps> = ({
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <div className="text-sm text-gray-600">Current Period</div>
+              <div className="text-sm text-muted-foreground">
+                Current Period
+              </div>
               <div className="font-medium">
                 {formatDate(
                   new Date(stripeSubscription.current_period_start * 1000)
@@ -111,7 +113,7 @@ export const CurrentPlanCard: React.FC<CurrentPlanCardProps> = ({
               </div>
             </div>
             <div>
-              <div className="text-sm text-gray-600">Next Billing</div>
+              <div className="text-sm text-muted-foreground">Next Billing</div>
               <div className="font-medium">
                 {formatDate(
                   new Date(stripeSubscription.current_period_end * 1000)
@@ -119,7 +121,9 @@ export const CurrentPlanCard: React.FC<CurrentPlanCardProps> = ({
               </div>
             </div>
             <div>
-              <div className="text-sm text-gray-600">Payment Method</div>
+              <div className="text-sm text-muted-foreground">
+                Payment Method
+              </div>
               <div className="font-medium flex items-center gap-2">
                 {paymentMethod ? (
                   <>

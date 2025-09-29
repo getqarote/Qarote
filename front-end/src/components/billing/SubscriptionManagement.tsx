@@ -66,7 +66,7 @@ export const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({
           <div className="flex justify-between items-start">
             <div>
               <CardTitle>Subscription Management</CardTitle>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-muted-foreground">
                 Manage your plan, billing cycle, and subscription settings for
                 all your workspaces
               </p>
@@ -79,7 +79,7 @@ export const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({
               // Show renew button for canceled subscriptions
               <Button
                 onClick={onRenewSubscription}
-                className="bg-green-600 hover:bg-green-700 text-white"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground"
                 disabled={isLoading}
               >
                 <RefreshCw className="w-4 h-4 mr-2" />
@@ -94,18 +94,18 @@ export const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({
                     {onRenewSubscription && (
                       <Button
                         onClick={onRenewSubscription}
-                        className="bg-green-600 hover:bg-green-700 text-white"
+                        className="bg-primary hover:bg-primary/90 text-primary-foreground"
                         disabled={isLoading}
                       >
                         <RefreshCw className="w-4 h-4 mr-2" />
                         Reactivate Subscription
                       </Button>
                     )}
-                    <div className="flex items-center gap-2 text-amber-600 bg-amber-50 px-3 py-2 rounded-md border border-amber-200">
+                    <div className="flex items-center gap-2 text-primary bg-primary/10 px-3 py-2 rounded-md border border-primary/20">
                       <Clock className="w-4 h-4" />
                       <div className="text-sm">
                         <div className="font-medium">Subscription ending</div>
-                        <div className="text-xs text-amber-700">
+                        <div className="text-xs text-primary/80">
                           Will end on{" "}
                           {periodEnd
                             ? new Date(periodEnd).toLocaleDateString("en-US", {
@@ -122,7 +122,7 @@ export const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({
                   <Button
                     onClick={handleCancelClick}
                     variant="outline"
-                    className="text-red-600 border-red-200 hover:bg-red-50"
+                    className="text-destructive border-destructive/20 hover:bg-destructive/10"
                     disabled={isLoading}
                   >
                     <X className="w-4 h-4 mr-2" />
@@ -138,16 +138,16 @@ export const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({
           {currentPlan === WorkspacePlan.FREE &&
           subscriptionCanceled &&
           lastPlan ? (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
               <div className="flex items-start gap-3">
                 <div className="flex-shrink-0">
-                  <RefreshCw className="w-5 h-5 text-blue-600 mt-0.5" />
+                  <RefreshCw className="w-5 h-5 text-primary mt-0.5" />
                 </div>
                 <div>
-                  <h4 className="font-medium text-blue-900 mb-1">
+                  <h4 className="font-medium text-primary mb-1">
                     Ready to come back?
                   </h4>
-                  <p className="text-sm text-blue-700 mb-3">
+                  <p className="text-sm text-primary/80 mb-3">
                     Your {lastPlan} plan subscription was canceled, but you can
                     easily restart it anytime. You'll get all the same great
                     features you had before across all your workspaces.

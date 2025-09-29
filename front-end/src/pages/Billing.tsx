@@ -11,6 +11,7 @@ import {
   BillingLayout,
   SubscriptionManagement,
   RecentPayments,
+  CurrentPlanCard,
 } from "@/components/billing";
 
 interface ExtendedSubscription {
@@ -93,8 +94,7 @@ const Billing: React.FC = () => {
   // Determine if the subscription was canceled
   const subscriptionCanceled =
     billingData?.workspace.plan === WorkspacePlan.FREE &&
-    billingData?.subscription?.status === "CANCELED" &&
-    !!billingData?.subscription?.canceledAt;
+    billingData?.subscription?.status === "CANCELED";
 
   // Get the last plan they had before canceling
   const lastPlan = subscriptionCanceled
@@ -106,6 +106,13 @@ const Billing: React.FC = () => {
       {billingData && (
         <>
           <BillingHeader />
+
+          <CurrentPlanCard
+            workspace={{ plan: billingData.workspace.plan }}
+            subscription={billingData.subscription}
+            stripeSubscription={billingData.stripeSubscription}
+            paymentMethod={billingData.paymentMethod}
+          />
 
           <SubscriptionManagement
             currentPlan={billingData.workspace.plan}

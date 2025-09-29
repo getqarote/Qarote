@@ -90,7 +90,7 @@ export const CancelSubscriptionModal: React.FC<
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-red-600">
+          <DialogTitle className="flex items-center gap-2 text-destructive">
             <AlertTriangle className="h-5 w-5" />
             Cancel Subscription
           </DialogTitle>
@@ -101,15 +101,15 @@ export const CancelSubscriptionModal: React.FC<
 
         <div className="space-y-6 py-4">
           {/* Warning Card */}
-          <Card className="border-red-200 bg-red-50">
+          <Card className="border-destructive/20 bg-destructive/10">
             <CardContent className="pt-6">
               <div className="flex items-start gap-3">
-                <AlertTriangle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
+                <AlertTriangle className="h-5 w-5 text-destructive mt-0.5 flex-shrink-0" />
                 <div className="space-y-2">
-                  <h3 className="font-semibold text-red-800">
+                  <h3 className="font-semibold text-destructive">
                     Important: What happens when you cancel
                   </h3>
-                  <ul className="text-sm text-red-700 space-y-1">
+                  <ul className="text-sm text-destructive/80 space-y-1">
                     <li className="flex items-center gap-2">
                       <Database className="h-4 w-4" />
                       Your data will be preserved but access will be limited to
@@ -152,7 +152,7 @@ export const CancelSubscriptionModal: React.FC<
                     <div className="font-medium">
                       At the end of current billing period
                     </div>
-                    <div className="text-sm text-gray-500">
+                    <div className="text-sm text-muted-foreground">
                       Continue using {currentPlan} features until{" "}
                       {formatDate(periodEnd)}
                     </div>
@@ -163,10 +163,10 @@ export const CancelSubscriptionModal: React.FC<
                 <RadioGroupItem value="immediate" id="immediate" />
                 <Label htmlFor="immediate" className="flex-1">
                   <div>
-                    <div className="font-medium text-red-600">
+                    <div className="font-medium text-destructive">
                       Cancel immediately
                     </div>
-                    <div className="text-sm text-red-500">
+                    <div className="text-sm text-destructive/80">
                       Downgrade to Free plan now (no refund for remaining
                       period)
                     </div>
@@ -179,7 +179,7 @@ export const CancelSubscriptionModal: React.FC<
           {/* Reason Selection */}
           <div className="space-y-3">
             <Label className="text-base font-medium">
-              Why are you canceling? <span className="text-red-500">*</span>
+              Why are you canceling? <span className="text-destructive">*</span>
             </Label>
             <RadioGroup value={reason} onValueChange={setReason}>
               {CANCELLATION_REASONS.map((option) => (
