@@ -7,7 +7,7 @@ export const workspacePlanEnum = z.enum([
   "BUSINESS",
 ]);
 
-export const WorkspacePlanSchema = z.enum([
+export const UserPlanSchema = z.enum([
   "FREE",
   "DEVELOPER",
   "STARTUP",
@@ -30,4 +30,4 @@ export const UpdateWorkspaceSchema = z.object({
 // Types derived from schemas
 export type CreateWorkspaceInput = z.infer<typeof CreateWorkspaceSchema>;
 export type UpdateWorkspaceInput = z.infer<typeof UpdateWorkspaceSchema>;
-export type WorkspacePlan = z.infer<typeof WorkspacePlanSchema>;
+export type UserPlan = z.infer<typeof UserPlanSchema>;

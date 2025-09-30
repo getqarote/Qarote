@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -40,7 +40,6 @@ export function CreateUserModal({
   initialName = "",
   onSuccess,
 }: CreateUserModalProps) {
-  const [isLoading, setIsLoading] = useState(false);
   const queryClient = useQueryClient();
   const { workspace } = useWorkspace();
 

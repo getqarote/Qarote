@@ -40,9 +40,9 @@ import {
   Network,
   Activity,
 } from "lucide-react";
-import PremiumPageWrapper from "../PremiumPageWrapper";
-import { WorkspacePlan } from "@/types/plans";
-import { useWorkspace } from "@/hooks/useWorkspace";
+// import PremiumPageWrapper from "../PremiumPageWrapper";
+import { UserPlan } from "@/types/plans";
+import { useUser } from "@/hooks/useUser";
 
 // Mock data for demonstration
 const generateMockData = () => {
@@ -182,7 +182,6 @@ const generateMockData = () => {
 };
 
 export const RoutingVisualization: React.FC = () => {
-  const { workspacePlan } = useWorkspace();
   const [data, setData] = useState(generateMockData());
   const [messageFlows, setMessageFlows] = useState<MessageFlowType[]>([]);
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
@@ -439,335 +438,333 @@ export const RoutingVisualization: React.FC = () => {
       <div className="min-h-screen flex w-full bg-gradient-to-br from-slate-50 to-blue-50">
         <AppSidebar />
 
-        <PremiumPageWrapper
+        {/* <PremiumPageWrapper
           workspacePlan={workspacePlan}
           feature="Message Routing"
           featureDescription="is a powerful feature that helps you configure and monitor complex message routing patterns between exchanges and queues."
           requiredPlan="Developer or higher"
           preserveLayout={true}
-        >
-          <main className="flex-1 flex flex-col overflow-hidden">
-            {/* Header */}
-            <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 text-white">
-              <div className="px-6 py-8">
-                <div className="flex items-center gap-4 mb-6">
-                  <SidebarTrigger className="text-white hover:bg-white/20" />
-                  <div className="flex items-center gap-3">
-                    <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
-                      <GitBranch className="h-8 w-8" />
-                    </div>
-                    <div>
-                      <h1 className="text-3xl font-bold flex items-center gap-3">
-                        Routing Visualization
-                        <Badge
-                          variant="secondary"
-                          className="bg-white/20 text-white border-white/30"
-                        >
-                          New
-                        </Badge>
-                      </h1>
-                      <p className="text-blue-100 mt-1">
-                        Interactive diagrams showing real-time message flows
-                        across exchanges
-                      </p>
-                    </div>
+        > */}
+        <main className="flex-1 flex flex-col overflow-hidden">
+          {/* Header */}
+          <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 text-white">
+            <div className="px-6 py-8">
+              <div className="flex items-center gap-4 mb-6">
+                <SidebarTrigger className="text-white hover:bg-white/20" />
+                <div className="flex items-center gap-3">
+                  <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
+                    <GitBranch className="h-8 w-8" />
                   </div>
-                </div>
-
-                {/* Quick Stats */}
-                <div className="grid grid-cols-4 gap-4">
-                  <Card className="bg-white/10 border-white/20 text-white">
-                    <CardContent className="p-4">
-                      <div className="flex items-center gap-2">
-                        <Network className="w-5 h-5" />
-                        <div>
-                          <div className="text-2xl font-bold">
-                            {metrics.totalNodes}
-                          </div>
-                          <div className="text-sm opacity-90">Total Nodes</div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="bg-white/10 border-white/20 text-white">
-                    <CardContent className="p-4">
-                      <div className="flex items-center gap-2">
-                        <Zap className="w-5 h-5" />
-                        <div>
-                          <div className="text-2xl font-bold">
-                            {metrics.activeConnections}
-                          </div>
-                          <div className="text-sm opacity-90">
-                            Active Bindings
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="bg-white/10 border-white/20 text-white">
-                    <CardContent className="p-4">
-                      <div className="flex items-center gap-2">
-                        <Activity className="w-5 h-5" />
-                        <div>
-                          <div className="text-2xl font-bold">
-                            {metrics.messagesPerSecond}
-                          </div>
-                          <div className="text-sm opacity-90">Msg/sec</div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="bg-white/10 border-white/20 text-white">
-                    <CardContent className="p-4">
-                      <div className="flex items-center gap-2">
-                        <TrendingUp className="w-5 h-5" />
-                        <div>
-                          <div className="text-2xl font-bold">
-                            {metrics.routingSuccessRate.toFixed(1)}%
-                          </div>
-                          <div className="text-sm opacity-90">Success Rate</div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <div>
+                    <h1 className="text-3xl font-bold flex items-center gap-3">
+                      Routing Visualization
+                      <Badge
+                        variant="secondary"
+                        className="bg-white/20 text-white border-white/30"
+                      >
+                        New
+                      </Badge>
+                    </h1>
+                    <p className="text-blue-100 mt-1">
+                      Interactive diagrams showing real-time message flows
+                      across exchanges
+                    </p>
+                  </div>
                 </div>
               </div>
+
+              {/* Quick Stats */}
+              <div className="grid grid-cols-4 gap-4">
+                <Card className="bg-white/10 border-white/20 text-white">
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-2">
+                      <Network className="w-5 h-5" />
+                      <div>
+                        <div className="text-2xl font-bold">
+                          {metrics.totalNodes}
+                        </div>
+                        <div className="text-sm opacity-90">Total Nodes</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-white/10 border-white/20 text-white">
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-2">
+                      <Zap className="w-5 h-5" />
+                      <div>
+                        <div className="text-2xl font-bold">
+                          {metrics.activeConnections}
+                        </div>
+                        <div className="text-sm opacity-90">
+                          Active Bindings
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-white/10 border-white/20 text-white">
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-2">
+                      <Activity className="w-5 h-5" />
+                      <div>
+                        <div className="text-2xl font-bold">
+                          {metrics.messagesPerSecond}
+                        </div>
+                        <div className="text-sm opacity-90">Msg/sec</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-white/10 border-white/20 text-white">
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-2">
+                      <TrendingUp className="w-5 h-5" />
+                      <div>
+                        <div className="text-2xl font-bold">
+                          {metrics.routingSuccessRate.toFixed(1)}%
+                        </div>
+                        <div className="text-sm opacity-90">Success Rate</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
+          </div>
 
-            {/* Main Content */}
-            <div className="flex-1 flex overflow-hidden">
-              {/* Canvas Area */}
-              <div className="flex-1 relative">
-                <div
-                  ref={canvasRef}
-                  className="w-full h-full relative bg-white overflow-hidden cursor-default"
-                  onMouseMove={handleMouseMove}
-                  onMouseUp={handleMouseUp}
-                  onMouseLeave={handleMouseUp}
-                >
-                  {/* Grid Background */}
-                  <div className="absolute inset-0 opacity-10">
-                    <svg width="100%" height="100%">
-                      <defs>
-                        <pattern
-                          id="grid"
-                          width="20"
-                          height="20"
-                          patternUnits="userSpaceOnUse"
-                        >
-                          <path
-                            d="M 20 0 L 0 0 0 20"
-                            fill="none"
-                            stroke="#e5e7eb"
-                            strokeWidth="1"
-                          />
-                        </pattern>
-                      </defs>
-                      <rect width="100%" height="100%" fill="url(#grid)" />
-                    </svg>
-                  </div>
-
-                  {/* Binding Lines */}
-                  {settings.showBindings && (
-                    <svg
-                      className="absolute inset-0 pointer-events-none"
-                      style={{ zIndex: 5 }}
-                    >
-                      {data.bindings
-                        .filter((binding) => binding.isActive)
-                        .map((binding) => {
-                          const exchange = filteredData.exchanges.find(
-                            (ex) => ex.id === binding.exchangeId
-                          );
-                          const queue = filteredData.queues.find(
-                            (q) => q.id === binding.queueId
-                          );
-
-                          if (!exchange || !queue) return null;
-
-                          const start = getNodeCenter(exchange);
-                          const end = getNodeCenter(queue);
-
-                          return (
-                            <line
-                              key={binding.id}
-                              x1={start.x}
-                              y1={start.y}
-                              x2={end.x}
-                              y2={end.y}
-                              stroke="#d1d5db"
-                              strokeWidth="2"
-                              strokeDasharray="5,5"
-                              className="transition-all duration-200"
-                            />
-                          );
-                        })}
-                    </svg>
-                  )}
-
-                  {/* Exchange Nodes */}
-                  {filteredData.exchanges.map((exchange) => (
-                    <ExchangeNode
-                      key={exchange.id}
-                      node={exchange}
-                      isSelected={selectedNode === exchange.id}
-                      isDragging={
-                        dragState.isDragging && dragState.nodeId === exchange.id
-                      }
-                      onMouseDown={(e) => handleMouseDown(exchange.id, e)}
-                      onClick={() => setSelectedNode(exchange.id)}
-                      showMetrics={settings.showStatistics}
-                    />
-                  ))}
-
-                  {/* Queue Nodes */}
-                  {filteredData.queues.map((queue) => (
-                    <QueueNode
-                      key={queue.id}
-                      node={queue}
-                      isSelected={selectedNode === queue.id}
-                      isDragging={
-                        dragState.isDragging && dragState.nodeId === queue.id
-                      }
-                      onMouseDown={(e) => handleMouseDown(queue.id, e)}
-                      onClick={() => setSelectedNode(queue.id)}
-                      showMetrics={settings.showStatistics}
-                    />
-                  ))}
-
-                  {/* Message Flows */}
-                  {settings.showMessageFlow &&
-                    messageFlows.map((flow) => {
-                      const exchange = filteredData.exchanges.find(
-                        (ex) => ex.id === flow.exchangeId
-                      );
-                      return exchange ? (
-                        <MessageFlow
-                          key={flow.id}
-                          flow={flow}
-                          exchangeType={exchange.type}
-                          onComplete={handleFlowComplete}
-                          animationSpeed={settings.animationSpeed}
+          {/* Main Content */}
+          <div className="flex-1 flex overflow-hidden">
+            {/* Canvas Area */}
+            <div className="flex-1 relative">
+              <div
+                ref={canvasRef}
+                className="w-full h-full relative bg-white overflow-hidden cursor-default"
+                onMouseMove={handleMouseMove}
+                onMouseUp={handleMouseUp}
+                onMouseLeave={handleMouseUp}
+              >
+                {/* Grid Background */}
+                <div className="absolute inset-0 opacity-10">
+                  <svg width="100%" height="100%">
+                    <defs>
+                      <pattern
+                        id="grid"
+                        width="20"
+                        height="20"
+                        patternUnits="userSpaceOnUse"
+                      >
+                        <path
+                          d="M 20 0 L 0 0 0 20"
+                          fill="none"
+                          stroke="#e5e7eb"
+                          strokeWidth="1"
                         />
-                      ) : null;
-                    })}
+                      </pattern>
+                    </defs>
+                    <rect width="100%" height="100%" fill="url(#grid)" />
+                  </svg>
+                </div>
 
-                  {/* Selected Node Info */}
-                  {selectedNode && (
-                    <div className="absolute top-4 left-4 bg-white border border-gray-300 rounded-lg shadow-lg p-4 max-w-sm">
-                      {(() => {
-                        const node = [
-                          ...filteredData.exchanges,
-                          ...filteredData.queues,
-                        ].find((n) => n.id === selectedNode);
-                        if (!node) return null;
-
-                        const isExchange = "type" in node;
-                        return (
-                          <div>
-                            <div className="font-semibold text-gray-800 mb-2">
-                              {isExchange ? "Exchange" : "Queue"}: {node.name}
-                            </div>
-                            <div className="space-y-1 text-sm text-gray-600">
-                              {isExchange && (
-                                <div>
-                                  Type: {(node as ExchangeNodeType).type}
-                                </div>
-                              )}
-                              <div>
-                                Messages: {formatNumber(node.messageCount)}
-                              </div>
-                              <div>
-                                Status: {node.isActive ? "Active" : "Inactive"}
-                              </div>
-                              {!isExchange && (
-                                <>
-                                  <div>
-                                    Consumers:{" "}
-                                    {(node as QueueNodeType).consumerCount}
-                                  </div>
-                                  <div>
-                                    Ready:{" "}
-                                    {formatNumber(
-                                      (node as QueueNodeType).messagesReady
-                                    )}
-                                  </div>
-                                </>
-                              )}
-                            </div>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="mt-3"
-                              onClick={() => setSelectedNode(null)}
-                            >
-                              Close
-                            </Button>
-                          </div>
+                {/* Binding Lines */}
+                {settings.showBindings && (
+                  <svg
+                    className="absolute inset-0 pointer-events-none"
+                    style={{ zIndex: 5 }}
+                  >
+                    {data.bindings
+                      .filter((binding) => binding.isActive)
+                      .map((binding) => {
+                        const exchange = filteredData.exchanges.find(
+                          (ex) => ex.id === binding.exchangeId
                         );
-                      })()}
+                        const queue = filteredData.queues.find(
+                          (q) => q.id === binding.queueId
+                        );
+
+                        if (!exchange || !queue) return null;
+
+                        const start = getNodeCenter(exchange);
+                        const end = getNodeCenter(queue);
+
+                        return (
+                          <line
+                            key={binding.id}
+                            x1={start.x}
+                            y1={start.y}
+                            x2={end.x}
+                            y2={end.y}
+                            stroke="#d1d5db"
+                            strokeWidth="2"
+                            strokeDasharray="5,5"
+                            className="transition-all duration-200"
+                          />
+                        );
+                      })}
+                  </svg>
+                )}
+
+                {/* Exchange Nodes */}
+                {filteredData.exchanges.map((exchange) => (
+                  <ExchangeNode
+                    key={exchange.id}
+                    node={exchange}
+                    isSelected={selectedNode === exchange.id}
+                    isDragging={
+                      dragState.isDragging && dragState.nodeId === exchange.id
+                    }
+                    onMouseDown={(e) => handleMouseDown(exchange.id, e)}
+                    onClick={() => setSelectedNode(exchange.id)}
+                    showMetrics={settings.showStatistics}
+                  />
+                ))}
+
+                {/* Queue Nodes */}
+                {filteredData.queues.map((queue) => (
+                  <QueueNode
+                    key={queue.id}
+                    node={queue}
+                    isSelected={selectedNode === queue.id}
+                    isDragging={
+                      dragState.isDragging && dragState.nodeId === queue.id
+                    }
+                    onMouseDown={(e) => handleMouseDown(queue.id, e)}
+                    onClick={() => setSelectedNode(queue.id)}
+                    showMetrics={settings.showStatistics}
+                  />
+                ))}
+
+                {/* Message Flows */}
+                {settings.showMessageFlow &&
+                  messageFlows.map((flow) => {
+                    const exchange = filteredData.exchanges.find(
+                      (ex) => ex.id === flow.exchangeId
+                    );
+                    return exchange ? (
+                      <MessageFlow
+                        key={flow.id}
+                        flow={flow}
+                        exchangeType={exchange.type}
+                        onComplete={handleFlowComplete}
+                        animationSpeed={settings.animationSpeed}
+                      />
+                    ) : null;
+                  })}
+
+                {/* Selected Node Info */}
+                {selectedNode && (
+                  <div className="absolute top-4 left-4 bg-white border border-gray-300 rounded-lg shadow-lg p-4 max-w-sm">
+                    {(() => {
+                      const node = [
+                        ...filteredData.exchanges,
+                        ...filteredData.queues,
+                      ].find((n) => n.id === selectedNode);
+                      if (!node) return null;
+
+                      const isExchange = "type" in node;
+                      return (
+                        <div>
+                          <div className="font-semibold text-gray-800 mb-2">
+                            {isExchange ? "Exchange" : "Queue"}: {node.name}
+                          </div>
+                          <div className="space-y-1 text-sm text-gray-600">
+                            {isExchange && (
+                              <div>Type: {(node as ExchangeNodeType).type}</div>
+                            )}
+                            <div>
+                              Messages: {formatNumber(node.messageCount)}
+                            </div>
+                            <div>
+                              Status: {node.isActive ? "Active" : "Inactive"}
+                            </div>
+                            {!isExchange && (
+                              <>
+                                <div>
+                                  Consumers:{" "}
+                                  {(node as QueueNodeType).consumerCount}
+                                </div>
+                                <div>
+                                  Ready:{" "}
+                                  {formatNumber(
+                                    (node as QueueNodeType).messagesReady
+                                  )}
+                                </div>
+                              </>
+                            )}
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="mt-3"
+                            onClick={() => setSelectedNode(null)}
+                          >
+                            Close
+                          </Button>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                )}
+
+                {/* Empty State */}
+                {filteredData.exchanges.length === 0 &&
+                  filteredData.queues.length === 0 && (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="text-center text-gray-500">
+                        <AlertCircle className="w-12 h-12 mx-auto mb-4" />
+                        <h3 className="text-lg font-medium mb-2">
+                          No nodes to display
+                        </h3>
+                        <p>Adjust your filters to see routing topology</p>
+                      </div>
                     </div>
                   )}
-
-                  {/* Empty State */}
-                  {filteredData.exchanges.length === 0 &&
-                    filteredData.queues.length === 0 && (
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="text-center text-gray-500">
-                          <AlertCircle className="w-12 h-12 mx-auto mb-4" />
-                          <h3 className="text-lg font-medium mb-2">
-                            No nodes to display
-                          </h3>
-                          <p>Adjust your filters to see routing topology</p>
-                        </div>
-                      </div>
-                    )}
-                </div>
               </div>
-
-              {/* Controls Panel */}
-              <VisualizationControls
-                settings={settings}
-                onSettingsChange={setSettings}
-                filterOptions={filterOptions}
-                onFilterChange={setFilterOptions}
-                isSimulationRunning={simulation.isEnabled}
-                onToggleSimulation={() =>
-                  setSimulation((prev) => ({
-                    ...prev,
-                    isEnabled: !prev.isEnabled,
-                  }))
-                }
-                onResetLayout={() => {
-                  const { exchanges, queues } = autoLayoutNodes(
-                    filteredData.exchanges,
-                    filteredData.queues,
-                    data.bindings,
-                    {
-                      type: "force",
-                      direction: "horizontal",
-                      spacing: { node: settings.nodeSpacing, level: 150 },
-                      animation: {
-                        enabled: true,
-                        duration: 1000,
-                        easing: "ease-out",
-                      },
-                    }
-                  );
-                  setData((prev) => ({ ...prev, exchanges, queues }));
-                }}
-                onExport={() => {
-                  // TODO: Implement export functionality
-                  logger.info("Export functionality would be implemented here");
-                }}
-                metrics={metrics}
-              />
             </div>
-          </main>
-        </PremiumPageWrapper>
+
+            {/* Controls Panel */}
+            <VisualizationControls
+              settings={settings}
+              onSettingsChange={setSettings}
+              filterOptions={filterOptions}
+              onFilterChange={setFilterOptions}
+              isSimulationRunning={simulation.isEnabled}
+              onToggleSimulation={() =>
+                setSimulation((prev) => ({
+                  ...prev,
+                  isEnabled: !prev.isEnabled,
+                }))
+              }
+              onResetLayout={() => {
+                const { exchanges, queues } = autoLayoutNodes(
+                  filteredData.exchanges,
+                  filteredData.queues,
+                  data.bindings,
+                  {
+                    type: "force",
+                    direction: "horizontal",
+                    spacing: { node: settings.nodeSpacing, level: 150 },
+                    animation: {
+                      enabled: true,
+                      duration: 1000,
+                      easing: "ease-out",
+                    },
+                  }
+                );
+                setData((prev) => ({ ...prev, exchanges, queues }));
+              }}
+              onExport={() => {
+                // TODO: Implement export functionality
+                logger.info("Export functionality would be implemented here");
+              }}
+              metrics={metrics}
+            />
+          </div>
+        </main>
+        {/* </PremiumPageWrapper> */}
       </div>
     </SidebarProvider>
   );

@@ -10,8 +10,6 @@ export interface ProfileFormState {
 export interface WorkspaceFormState {
   name: string;
   contactEmail: string;
-  logoUrl: string;
-  plan: "FREE" | "DEVELOPER" | "STARTUP" | "BUSINESS";
 }
 
 // Legacy type alias for backwards compatibility

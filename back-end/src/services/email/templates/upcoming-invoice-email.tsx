@@ -1,4 +1,4 @@
-import { WorkspacePlan } from "@prisma/client";
+import { UserPlan } from "@prisma/client";
 import {
   Html,
   Head,
@@ -26,7 +26,7 @@ import {
 interface UpcomingInvoiceEmailProps {
   name: string;
   workspaceName: string;
-  plan: WorkspacePlan;
+  plan: UserPlan;
   amount: string;
   currency: string;
   invoiceDate: string;

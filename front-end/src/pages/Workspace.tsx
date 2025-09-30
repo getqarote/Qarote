@@ -17,8 +17,8 @@ import {
 } from "@/components/ui/form";
 import { Plus, Loader2, CheckCircle } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useAuth } from "@/contexts/AuthContext";
-import { useWorkspace } from "@/hooks/useWorkspace";
+import { useAuth } from "@/contexts/AuthContextDefinition";
+import { useUser } from "@/hooks/useUser";
 import { apiClient } from "@/lib/api";
 import { toast } from "sonner";
 import { WorkspaceFormData, workspaceSchema } from "@/schemas/forms";
@@ -30,13 +30,10 @@ const Workspace = () => {
 
   // Check if user already has workspaces
   const { data: workspacesData, isLoading: workspacesLoading } = useQuery({
-    queryKey: ["user-workspaces"],
+    queryKey: ["workspaces"],
     queryFn: () => apiClient.getUserWorkspaces(),
     enabled: !!user,
   });
-
-  // console.log("User", user);
-  // console.log("Workspaces data", workspacesData);
 
   const form = useForm<WorkspaceFormData>({
     resolver: zodResolver(workspaceSchema),
@@ -56,7 +53,7 @@ const Workspace = () => {
     }) => apiClient.createWorkspace(data),
     onSuccess: async () => {
       toast.success("Workspace created successfully!");
-      queryClient.invalidateQueries({ queryKey: ["user-workspaces"] });
+      queryClient.invalidateQueries({ queryKey: ["workspaces"] });
 
       // Refetch user data to get updated workspaceId
       await refetchUser();
@@ -64,7 +61,7 @@ const Workspace = () => {
       // Redirect to dashboard after successful creation
       setTimeout(() => {
         navigate("/", { replace: true });
-      }, 1500);
+      }, 1000);
     },
     onError: (error: Error) => {
       toast.error(`Failed to create workspace: ${error.message}`);

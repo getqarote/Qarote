@@ -17,7 +17,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api";
 import { useToast } from "@/hooks/useToast";
 import { useServerContext } from "@/contexts/ServerContext";
-import { useWorkspace } from "@/hooks/useWorkspace";
+import { useUser } from "@/hooks/useUser";
 import { queryKeys } from "@/hooks/useApi";
 
 interface PurgeQueueDialogProps {
@@ -35,7 +35,7 @@ export const PurgeQueueDialog = ({
 }: PurgeQueueDialogProps) => {
   const [open, setOpen] = useState(false);
   const { selectedServerId } = useServerContext();
-  const { workspace } = useWorkspace();
+  const { workspace } = useUser();
   const { toast } = useToast();
 
   const purgeQueueMutation = useMutation({

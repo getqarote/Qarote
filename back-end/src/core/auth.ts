@@ -1,7 +1,7 @@
 import { Context } from "hono";
 import { sign, verify } from "hono/jwt";
 import bcrypt from "bcryptjs";
-import { UserRole } from "@prisma/client";
+import { UserRole, UserPlan, SubscriptionStatus } from "@prisma/client";
 import { prisma } from "./prisma";
 import { authConfig } from "@/config";
 
@@ -30,6 +30,12 @@ export interface SafeUser {
   lastLogin: Date | null;
   createdAt: Date;
   updatedAt: Date;
+  stripeCustomerId?: string | null;
+  stripeSubscriptionId?: string | null;
+  subscription?: {
+    plan: UserPlan;
+    status: SubscriptionStatus;
+  } | null;
 }
 
 // Password utilities
@@ -92,9 +98,19 @@ export const extractUserFromToken = async (
         role: true,
         workspaceId: true,
         isActive: true,
+        emailVerified: true,
+        pendingEmail: true,
         lastLogin: true,
         createdAt: true,
         updatedAt: true,
+        stripeCustomerId: true,
+        stripeSubscriptionId: true,
+        subscription: {
+          select: {
+            plan: true,
+            status: true,
+          },
+        },
       },
     });
 

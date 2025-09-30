@@ -179,6 +179,11 @@ export class EmailVerificationService {
             workspace: {
               select: {
                 name: true,
+                ownerId: true,
+              },
+            },
+            subscription: {
+              select: {
                 plan: true,
               },
             },
@@ -195,7 +200,7 @@ export class EmailVerificationService {
             to: updatedUser.email,
             name: updatedUser.firstName || updatedUser.email,
             workspaceName: updatedUser.workspace.name,
-            plan: updatedUser.workspace.plan,
+            plan: updatedUser.subscription?.plan || "FREE",
           });
 
           logger.info("Welcome email sent after email verification", {

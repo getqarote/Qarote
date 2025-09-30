@@ -1,4 +1,5 @@
-import { WorkspacePlan } from "@prisma/client";
+import React from "react";
+import { UserPlan } from "@prisma/client";
 import TrialEndingEmail from "./templates/trial-ending-email";
 import PaymentActionRequiredEmail from "./templates/payment-action-required-email";
 import UpcomingInvoiceEmail from "./templates/upcoming-invoice-email";
@@ -8,7 +9,7 @@ export interface TrialEndingEmailParams {
   to: string;
   name: string;
   workspaceName: string;
-  plan: WorkspacePlan;
+  plan: UserPlan;
   trialEndDate: string;
   currentUsage?: {
     servers: number;
@@ -19,7 +20,7 @@ export interface PaymentActionRequiredEmailParams {
   to: string;
   name: string;
   workspaceName: string;
-  plan: WorkspacePlan;
+  plan: UserPlan;
   invoiceUrl: string;
   amount: string;
   currency: string;
@@ -29,7 +30,7 @@ export interface UpcomingInvoiceEmailParams {
   to: string;
   name: string;
   workspaceName: string;
-  plan: WorkspacePlan;
+  plan: UserPlan;
   amount: string;
   currency: string;
   invoiceDate: string;
@@ -37,6 +38,13 @@ export interface UpcomingInvoiceEmailParams {
   usageReport?: {
     servers: number;
   };
+}
+
+export interface PaymentFailedEmailParams {
+  to: string;
+  userName: string;
+  amount: number;
+  failureReason: string;
 }
 
 /**
@@ -157,6 +165,51 @@ export class NotificationEmailService {
         name,
         workspaceName,
         plan,
+      },
+    });
+  }
+
+  /**
+   * Send payment failed notification email
+   */
+  static async sendPaymentFailedEmail(
+    params: PaymentFailedEmailParams
+  ): Promise<EmailResult> {
+    const { to, userName, amount, failureReason } = params;
+
+    const { frontendUrl } = CoreEmailService.getConfig();
+
+    // Create a simple HTML template for payment failed email
+    const template = (
+      <div style={{ fontFamily: 'Arial, sans-serif', maxWidth: '600px', margin: '0 auto' }}>
+        <h2>Payment Failed</h2>
+        <p>Hello {userName},</p>
+        <p>We were unable to process your payment of ${amount.toFixed(2)}.</p>
+        <p><strong>Reason:</strong> {failureReason}</p>
+        <p>Please update your payment method to continue using our service.</p>
+        <a href={`${frontendUrl}/billing`} style={{ 
+          display: 'inline-block', 
+          padding: '12px 24px', 
+          backgroundColor: '#007bff', 
+          color: 'white', 
+          textDecoration: 'none', 
+          borderRadius: '4px' 
+        }}>
+          Update Payment Method
+        </a>
+        <p>If you have any questions, please contact our support team.</p>
+      </div>
+    );
+
+    return CoreEmailService.sendEmail({
+      to,
+      subject: `Payment Failed - Action Required`,
+      template,
+      emailType: "payment_failed",
+      context: {
+        userName,
+        amount,
+        failureReason,
       },
     });
   }

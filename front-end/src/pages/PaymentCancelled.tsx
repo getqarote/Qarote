@@ -2,21 +2,21 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { XCircle, ArrowLeft, CreditCard, Loader2 } from "lucide-react";
 import { usePlanUpgrade } from "@/hooks/usePlanUpgrade";
-import { useWorkspace } from "@/hooks/useWorkspace";
-import { WorkspacePlan } from "@/types/plans";
+import { useUser } from "@/hooks/useUser";
+import { UserPlan } from "@/types/plans";
 
 const PaymentCancelled: React.FC = () => {
   const navigate = useNavigate();
   const { handleUpgrade, isUpgrading } = usePlanUpgrade();
-  const { workspacePlan } = useWorkspace();
+  const { workspacePlan } = useUser();
 
   // Helper function to get next plan
-  const getNextPlan = (plan: WorkspacePlan): WorkspacePlan | null => {
+  const getNextPlan = (plan: UserPlan): UserPlan | null => {
     switch (plan) {
-      case WorkspacePlan.FREE:
-        return WorkspacePlan.DEVELOPER;
-      case WorkspacePlan.DEVELOPER:
-        return WorkspacePlan.ENTERPRISE;
+      case UserPlan.FREE:
+        return UserPlan.DEVELOPER;
+      case UserPlan.DEVELOPER:
+        return UserPlan.ENTERPRISE;
       default:
         return null;
     }

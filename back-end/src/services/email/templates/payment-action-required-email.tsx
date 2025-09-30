@@ -1,4 +1,4 @@
-import { WorkspacePlan } from "@prisma/client";
+import { UserPlan } from "@prisma/client";
 import { getPlanFeatures } from "@/services/plan/plan.service";
 import {
   Html,
@@ -26,7 +26,7 @@ import {
 interface PaymentActionRequiredEmailProps {
   name: string;
   workspaceName: string;
-  plan: WorkspacePlan;
+  plan: UserPlan;
   invoiceUrl: string;
   amount: string;
   currency: string;

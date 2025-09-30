@@ -9,18 +9,19 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdownMenu";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { useWorkspace } from "@/hooks/useWorkspace";
+import { useUser } from "@/hooks/useUser";
 import { apiClient, type WorkspaceInfo } from "@/lib/api";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { CreateWorkspaceForm } from "./CreateWorkspaceForm";
 import { toast } from "sonner";
 import logger from "@/lib/logger";
-import { WorkspacePlan } from "@/types/plans";
+import { UserPlan } from "@/types/plans";
+import { useWorkspace } from "@/hooks/useWorkspace";
 
 export function WorkspaceSelector() {
-  const { workspace, canCreateWorkspace, workspacePlan } = useWorkspace();
+  const { canCreateWorkspace, userPlan } = useUser();
+  const { workspace } = useWorkspace();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
@@ -28,7 +29,7 @@ export function WorkspaceSelector() {
 
   // Fetch all user workspaces
   const { data: workspacesData, isLoading } = useQuery({
-    queryKey: ["user-workspaces"],
+    queryKey: ["workspaces"],
     queryFn: () => apiClient.getUserWorkspaces(),
     refetchOnWindowFocus: false,
   });
@@ -82,22 +83,22 @@ export function WorkspaceSelector() {
   const getCreateWorkspaceButtonConfig = () => {
     if (canCreateWorkspace) return null;
 
-    switch (workspacePlan) {
-      case WorkspacePlan.FREE:
+    switch (userPlan) {
+      case UserPlan.FREE:
         return {
           text: "Create New Workspace",
           badge: "Pro",
           badgeColor: "bg-orange-500",
           title: "Upgrade to create multiple workspaces",
         };
-      case WorkspacePlan.DEVELOPER:
+      case UserPlan.DEVELOPER:
         return {
           text: "Create New Workspace",
           badge: "Pro",
           badgeColor: "bg-blue-500",
           title: "Multiple workspaces available with Developer plan",
         };
-      case WorkspacePlan.ENTERPRISE:
+      case UserPlan.ENTERPRISE:
         return {
           text: "Create New Workspace",
           badge: "Pro",

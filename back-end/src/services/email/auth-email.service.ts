@@ -1,4 +1,4 @@
-import { WorkspacePlan } from "@prisma/client";
+import { UserPlan } from "@prisma/client";
 import { InvitationEmail } from "./templates/invitation-email";
 import { EmailVerification } from "./templates/email-verification";
 import { CoreEmailService, EmailResult } from "./core-email.service";
@@ -10,14 +10,14 @@ export interface SendInvitationEmailParams {
   inviterEmail: string;
   workspaceName: string;
   invitationToken: string;
-  plan: WorkspacePlan;
+  plan: UserPlan;
 }
 
 export interface SendWelcomeEmailParams {
   to: string;
   name: string;
   workspaceName: string;
-  plan: WorkspacePlan;
+  plan: UserPlan;
 }
 
 export interface SendVerificationEmailParams {

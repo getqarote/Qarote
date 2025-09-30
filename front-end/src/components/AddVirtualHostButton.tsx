@@ -1,8 +1,8 @@
 import { Lock, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CreateVHostModal } from "@/components/vhosts/CreateVHostModal";
-import { WorkspacePlan } from "@/types/plans";
-import { useWorkspace } from "@/hooks/useWorkspace";
+import { UserPlan } from "@/types/plans";
+import { useUser } from "@/hooks/useUser";
 import { useState } from "react";
 
 interface AddVirtualHostButtonProps {
@@ -18,11 +18,11 @@ export const AddVirtualHostButton = ({
   onSuccess,
   initialName = "",
 }: AddVirtualHostButtonProps) => {
-  const { workspacePlan, isLoading: workspaceLoading } = useWorkspace();
+  const { userPlan, isLoading: workspaceLoading } = useUser();
   const [showCreateModal, setShowCreateModal] = useState(false);
 
   // For Free plan users, virtual host creation is restricted
-  const canAddVirtualHost = workspacePlan !== WorkspacePlan.FREE;
+  const canAddVirtualHost = userPlan !== UserPlan.FREE;
 
   const getVirtualHostButtonConfig = () => {
     if (workspaceLoading || canAddVirtualHost) return null;

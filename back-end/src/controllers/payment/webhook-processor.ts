@@ -3,10 +3,10 @@ import { Event } from "@/services/stripe/stripe.service";
 import {
   handleCheckoutSessionCompleted,
   handleSubscriptionChange,
-  handleSubscriptionDeleted,
+  handleCustomerSubscriptionDeleted,
+  handleInvoicePaymentSucceeded,
+  handleInvoicePaymentFailed,
   handleTrialWillEnd,
-  handlePaymentSucceeded,
-  handlePaymentFailed,
   handlePaymentActionRequired,
   handleUpcomingInvoice,
   handlePaymentIntentFailed,
@@ -25,19 +25,19 @@ export async function processStripeWebhook(event: Event) {
       break;
 
     case "customer.subscription.deleted":
-      await handleSubscriptionDeleted(event.data.object);
+      await handleCustomerSubscriptionDeleted(event.data.object);
+      break;
+
+    case "invoice.payment_succeeded":
+      await handleInvoicePaymentSucceeded(event.data.object);
+      break;
+
+    case "invoice.payment_failed":
+      await handleInvoicePaymentFailed(event.data.object);
       break;
 
     case "customer.subscription.trial_will_end":
       await handleTrialWillEnd(event.data.object);
-      break;
-
-    case "invoice.payment_succeeded":
-      await handlePaymentSucceeded(event.data.object);
-      break;
-
-    case "invoice.payment_failed":
-      await handlePaymentFailed(event.data.object);
       break;
 
     case "invoice.payment_action_required":

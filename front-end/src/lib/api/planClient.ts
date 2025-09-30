@@ -4,7 +4,7 @@
  */
 
 import { BaseApiClient } from "./baseClient";
-import type { WorkspacePlan } from "@/types/plans";
+import type { UserPlan } from "@/types/plans";
 
 export interface PlanFeatures {
   // Core permissions
@@ -65,10 +65,14 @@ export interface PlanWarnings {
 }
 
 export interface CurrentPlanResponse {
+  user: {
+    id: string;
+    email: string;
+    plan: UserPlan;
+  };
   workspace: {
     id: string;
     name: string;
-    plan: WorkspacePlan;
   };
   planFeatures: PlanFeatures;
   usage: PlanUsage;
@@ -79,7 +83,7 @@ export interface CurrentPlanResponse {
 export interface AllPlansResponse {
   plans: Array<
     {
-      plan: WorkspacePlan;
+      plan: UserPlan;
     } & PlanFeatures
   >;
 }

@@ -1,22 +1,14 @@
 import { Crown } from "lucide-react";
-import { WorkspacePlan } from "@/types/plans";
-import { useWorkspace } from "@/hooks/useWorkspace";
+import { useUser } from "@/hooks/useUser";
 
 interface PlanBadgeProps {
-  workspacePlan?: WorkspacePlan;
   size?: "sm" | "md" | "lg";
   showIcon?: boolean;
 }
 
-export function PlanBadge({
-  workspacePlan: propPlan,
-  size = "md",
-  showIcon = true,
-}: PlanBadgeProps) {
-  const { workspacePlan: contextPlan, planData } = useWorkspace();
+export function PlanBadge({ size = "md", showIcon = true }: PlanBadgeProps) {
+  const { planData } = useUser();
 
-  // Use prop plan if provided, otherwise use context plan
-  const plan = propPlan || contextPlan;
   const planFeatures = planData?.planFeatures;
 
   const sizeClasses = {
@@ -32,7 +24,7 @@ export function PlanBadge({
   };
 
   // Get display name and color from backend data, with fallbacks
-  const displayName = planFeatures?.displayName || plan || "Free";
+  const displayName = planFeatures?.displayName || "Free";
   const color = planFeatures?.color || "text-white bg-gray-600";
 
   return (

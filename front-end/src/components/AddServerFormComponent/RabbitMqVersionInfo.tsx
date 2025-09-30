@@ -13,8 +13,9 @@ import {
   X,
 } from "lucide-react";
 import { apiClient } from "@/lib/api";
-import { useWorkspace } from "@/hooks/useWorkspace";
+import { useUser } from "@/hooks/useUser";
 import type { CurrentPlanResponse } from "@/lib/api/planClient";
+import { useWorkspace } from "@/hooks/useWorkspace";
 
 interface RabbitMqVersionInfoProps {
   className?: string;
@@ -26,22 +27,22 @@ export const RabbitMqVersionInfo = ({
   const [isExpanded, setIsExpanded] = useState(true);
   const [isManagementAlertDismissed, setIsManagementAlertDismissed] =
     useState(false);
-  const { workspace: currentWorkspace } = useWorkspace();
+  const { workspace } = useWorkspace();
+  const { userPlan } = useUser();
 
   const { data: planData, isLoading } = useQuery<CurrentPlanResponse>({
-    queryKey: ["current-plan", currentWorkspace?.id],
+    queryKey: ["current-plan", workspace?.id],
     queryFn: () => apiClient.getCurrentPlan(),
-    enabled: !!currentWorkspace?.id,
+    enabled: !!workspace?.id,
   });
 
   if (isLoading || !planData) {
     return null;
   }
-  const { planFeatures, workspace } = planData;
+  const { planFeatures } = planData;
   const supportedVersions = planFeatures.supportedRabbitMqVersions;
   const allVersions = ["3.12", "3.13", "4.0", "4.1"];
-  const isRestrictedPlan =
-    workspace.plan === "FREE" || workspace.plan === "DEVELOPER";
+  const isRestrictedPlan = userPlan === "FREE" || userPlan === "DEVELOPER";
 
   return (
     <div className={className}>

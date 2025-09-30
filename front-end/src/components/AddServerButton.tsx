@@ -1,8 +1,8 @@
 import { Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AddServerForm } from "@/components/AddServerFormComponent";
-import { WorkspacePlan } from "@/types/plans";
-import { useWorkspace } from "@/hooks/useWorkspace";
+import { UserPlan } from "@/types/plans";
+import { useUser } from "@/hooks/useUser";
 
 interface AddServerButtonProps {
   onUpgradeClick: () => void;
@@ -10,11 +10,11 @@ interface AddServerButtonProps {
 
 export const AddServerButton = ({ onUpgradeClick }: AddServerButtonProps) => {
   const {
-    workspacePlan,
+    userPlan,
     canAddServer,
-    isLoading: workspaceLoading,
+    isLoading: userLoading,
     planData,
-  } = useWorkspace();
+  } = useUser();
 
   // Keep server usage since we still track servers
   const serverUsage = planData?.usage?.servers || {
@@ -25,17 +25,17 @@ export const AddServerButton = ({ onUpgradeClick }: AddServerButtonProps) => {
   };
 
   const getServerButtonConfig = () => {
-    if (workspaceLoading || canAddServer) return null;
+    if (userLoading || canAddServer) return null;
 
-    switch (workspacePlan) {
-      case WorkspacePlan.FREE:
+    switch (userPlan) {
+      case UserPlan.FREE:
         return {
           text: "Add Server",
           badge: "Pro",
           badgeColor: "bg-orange-500",
           title: "Upgrade to add servers",
         };
-      case WorkspacePlan.DEVELOPER:
+      case UserPlan.DEVELOPER:
         return {
           text: "Add Server",
           badge: `${serverUsage.current}/${serverUsage.limit || 2}`,
@@ -43,7 +43,7 @@ export const AddServerButton = ({ onUpgradeClick }: AddServerButtonProps) => {
           title:
             "You've reached your server limit. Upgrade to add more servers.",
         };
-      case WorkspacePlan.ENTERPRISE:
+      case UserPlan.ENTERPRISE:
         return {
           text: "Add Server",
           badge: `${serverUsage.current}/${serverUsage.limit || 5}`,

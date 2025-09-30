@@ -1,8 +1,8 @@
 import { Crown, MessageSquare, X } from "lucide-react";
-import { WorkspacePlan } from "@/types/plans";
+import { UserPlan } from "@/types/plans";
 
 interface PlanRestrictionsProps {
-  workspacePlan: WorkspacePlan;
+  workspacePlan: UserPlan;
   queueCount: number;
   canAddQueue: boolean;
   canSendMessages: boolean;
@@ -24,21 +24,21 @@ export function PlanRestrictions({
 
   const getQueueRestrictionMessage = () => {
     switch (workspacePlan) {
-      case WorkspacePlan.FREE:
+      case UserPlan.FREE:
         return {
           title: "Queue creation is not available on the Free plan",
           description:
             "Upgrade to Developer or Enterprise plan to create and manage custom queues.",
           buttonColor: "bg-orange-500 hover:bg-orange-600",
         };
-      case WorkspacePlan.DEVELOPER:
+      case UserPlan.DEVELOPER:
         return {
           title: "Queue management available",
           description:
             "You can create and manage queues with the Developer plan.",
           buttonColor: "bg-blue-500 hover:bg-blue-600",
         };
-      case WorkspacePlan.ENTERPRISE:
+      case UserPlan.ENTERPRISE:
         return {
           title: "Full queue management available",
           description:
@@ -56,21 +56,21 @@ export function PlanRestrictions({
 
   const getMessageRestrictionMessage = () => {
     switch (workspacePlan) {
-      case WorkspacePlan.FREE:
+      case UserPlan.FREE:
         return {
           title: "Message sending is not available on the Free plan",
           description:
             "Upgrade to Developer or Enterprise plan to send messages to queues.",
           buttonColor: "bg-red-500 hover:bg-red-600",
         };
-      case WorkspacePlan.DEVELOPER:
+      case UserPlan.DEVELOPER:
         return {
           title: "Message sending available",
           description:
             "You can send messages to queues with the Developer plan.",
           buttonColor: "bg-blue-500 hover:bg-blue-600",
         };
-      case WorkspacePlan.ENTERPRISE:
+      case UserPlan.ENTERPRISE:
         return {
           title: "Full message management available",
           description:
@@ -132,12 +132,12 @@ export function PlanRestrictions({
             <button
               onClick={onUpgrade}
               className={`px-4 py-2 text-white text-sm font-medium rounded-md transition-colors ${
-                workspacePlan === WorkspacePlan.ENTERPRISE
+                workspacePlan === UserPlan.ENTERPRISE
                   ? "bg-gray-500 hover:bg-gray-600"
                   : "bg-orange-500 hover:bg-orange-600"
               }`}
             >
-              {workspacePlan === WorkspacePlan.ENTERPRISE
+              {workspacePlan === UserPlan.ENTERPRISE
                 ? "Contact Support"
                 : "Upgrade Now"}
             </button>

@@ -1036,17 +1036,25 @@ export class AlertService {
       const workspace = await prisma.workspace.findUnique({
         where: { id: workspaceId },
         select: {
-          plan: true,
+          ownerId: true,
         },
       });
 
-      if (!workspace) {
+      if (!workspace || !workspace.ownerId) {
         return false;
       }
 
+      // Get workspace owner's subscription to determine plan
+      const ownerSubscription = await prisma.subscription.findUnique({
+        where: { userId: workspace.ownerId },
+        select: { plan: true },
+      });
+
+      const plan = ownerSubscription?.plan || "FREE";
+
       // Allow modifications for startup and business plans
       const allowedPlans = ["STARTUP", "BUSINESS"];
-      return allowedPlans.includes(workspace.plan);
+      return allowedPlans.includes(plan);
     } catch (error) {
       logger.error(
         "Failed to check threshold modification permissions:",

@@ -9,7 +9,7 @@
  * - Users with expired tokens
  */
 
-import { PrismaClient, WorkspacePlan, UserRole } from "@prisma/client";
+import { PrismaClient, UserPlan, UserRole } from "@prisma/client";
 import { hashPassword } from "../../src/core/auth";
 import { logger } from "../../src/core/logger";
 import { EmailVerificationService } from "../../src/services/email/email-verification.service";
@@ -19,7 +19,7 @@ const prisma = new PrismaClient();
 
 interface EmailVerificationScenario {
   name: string;
-  plan: WorkspacePlan;
+  plan: UserPlan;
   description: string;
   email: string;
   password: string;
@@ -35,7 +35,7 @@ interface EmailVerificationScenario {
 const EMAIL_VERIFICATION_SCENARIOS: EmailVerificationScenario[] = [
   {
     name: "Fresh Signup - Unverified",
-    plan: WorkspacePlan.FREE,
+    plan: UserPlan.FREE,
     description: "User just signed up, email not verified yet",
     email: "unverified.fresh@test.com",
     password: "password123",
@@ -47,7 +47,7 @@ const EMAIL_VERIFICATION_SCENARIOS: EmailVerificationScenario[] = [
   },
   {
     name: "Old Signup - Unverified",
-    plan: WorkspacePlan.DEVELOPER,
+    plan: UserPlan.DEVELOPER,
     description: "User signed up but never verified email",
     email: "unverified.old@test.com",
     password: "password123",
@@ -59,7 +59,7 @@ const EMAIL_VERIFICATION_SCENARIOS: EmailVerificationScenario[] = [
   },
   {
     name: "Email Change - Pending",
-    plan: WorkspacePlan.DEVELOPER,
+    plan: UserPlan.DEVELOPER,
     description: "Verified user requesting email change",
     email: "verified.changing@test.com",
     password: "password123",
@@ -72,7 +72,7 @@ const EMAIL_VERIFICATION_SCENARIOS: EmailVerificationScenario[] = [
   },
   {
     name: "Verified User",
-    plan: WorkspacePlan.ENTERPRISE,
+    plan: UserPlan.ENTERPRISE,
     description: "Fully verified user with no pending changes",
     email: "verified.user@test.com",
     password: "password123",
@@ -82,7 +82,7 @@ const EMAIL_VERIFICATION_SCENARIOS: EmailVerificationScenario[] = [
   },
   {
     name: "Expired Token - Signup",
-    plan: WorkspacePlan.FREE,
+    plan: UserPlan.FREE,
     description: "User with expired signup verification token",
     email: "expired.signup@test.com",
     password: "password123",
@@ -95,7 +95,7 @@ const EMAIL_VERIFICATION_SCENARIOS: EmailVerificationScenario[] = [
   },
   {
     name: "Expired Token - Email Change",
-    plan: WorkspacePlan.DEVELOPER,
+    plan: UserPlan.DEVELOPER,
     description: "User with expired email change token",
     email: "expired.change@test.com",
     password: "password123",
@@ -109,7 +109,7 @@ const EMAIL_VERIFICATION_SCENARIOS: EmailVerificationScenario[] = [
   },
   {
     name: "Multiple Pending - Developer",
-    plan: WorkspacePlan.DEVELOPER,
+    plan: UserPlan.DEVELOPER,
     description: "Developer who tried multiple email changes",
     email: "multiple.pending@test.com",
     password: "password123",
@@ -122,7 +122,7 @@ const EMAIL_VERIFICATION_SCENARIOS: EmailVerificationScenario[] = [
   },
   {
     name: "Business User - Team Admin",
-    plan: WorkspacePlan.ENTERPRISE,
+    plan: UserPlan.ENTERPRISE,
     description: "Business plan admin managing team email verifications",
     email: "business.admin@test.com",
     password: "password123",
@@ -211,8 +211,8 @@ async function createEmailVerificationScenario(
 
     // Add some additional users for multi-user scenarios
     if (
-      scenario.plan === WorkspacePlan.ENTERPRISE ||
-      scenario.plan === WorkspacePlan.DEVELOPER
+      scenario.plan === UserPlan.ENTERPRISE ||
+      scenario.plan === UserPlan.DEVELOPER
     ) {
       // Create a few team members with different verification states
       const teamMembers = [

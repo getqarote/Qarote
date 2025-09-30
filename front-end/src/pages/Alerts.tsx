@@ -16,7 +16,7 @@ import {
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { useServerContext } from "@/contexts/ServerContext";
-import { useWorkspace } from "@/hooks/useWorkspace";
+import { useUser } from "@/hooks/useUser";
 import { useRabbitMQAlerts } from "@/hooks/useApi";
 import { AlertsConfigureModal } from "@/components/alerts/AlertsConfigureModal";
 import { PageLoader } from "@/components/PageLoader";
@@ -29,7 +29,7 @@ type BadgeVariant = "default" | "secondary" | "destructive" | "outline";
 const Alerts = () => {
   const { serverId } = useParams<{ serverId: string }>();
   const { selectedServerId, hasServers } = useServerContext();
-  const { workspacePlan, canConfigureAlerts } = useWorkspace();
+  const { workspacePlan, canConfigureAlerts } = useUser();
   const [showConfigureModal, setShowConfigureModal] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 

@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { UserRole, WorkspacePlan } from "@prisma/client";
+import { UserRole, UserPlan } from "@prisma/client";
 import { prisma } from "@/core/prisma";
 import { logger } from "@/core/logger";
 import { authorize } from "@/core/auth";
@@ -12,87 +12,88 @@ planRoutes.get("/plans", authorize([UserRole.ADMIN]), async (c) => {
   try {
     const allPlans = Object.entries(PLAN_FEATURES).map(
       ([planKey, features]) => ({
-        plan: planKey as WorkspacePlan,
+        plan: planKey as UserPlan,
         ...features,
       })
     );
 
     return c.json({ plans: allPlans });
   } catch (error) {
-    logger.error("Error fetching plan information:", error);
+    logger.error({ error }, "Error fetching plan information");
     return c.json({ error: "Failed to fetch plan information" }, 500);
   }
 });
 
-// Get current user's plan features and usage (USER - can only see their own workspace plan)
+// Get current user's plan features and usage (USER - can only see their own subscription plan)
 planRoutes.get("/current/plan", async (c) => {
   const user = c.get("user");
 
   try {
-    // Check if user has a workspace
-    if (!user.workspaceId) {
-      return c.json({ error: "No workspace assigned" }, 404);
-    }
-
-    // Get user's workspace with plan and current usage
-    const workspace = await prisma.workspace.findUnique({
-      where: { id: user.workspaceId },
+    // Get user with subscription and workspace information
+    const userWithSubscription = await prisma.user.findUnique({
+      where: { id: user.id },
       include: {
-        _count: {
+        subscription: {
           select: {
-            users: true,
-            servers: true,
+            plan: true,
+            status: true,
+          },
+        },
+        workspace: {
+          include: {
+            _count: {
+              select: {
+                users: true,
+                servers: true,
+              },
+            },
           },
         },
       },
     });
 
-    if (!workspace) {
-      return c.json({ error: "Workspace not found" }, 404);
+    if (!userWithSubscription) {
+      return c.json({ error: "User not found" }, 404);
     }
 
-    // Security check: Ensure user can only access their own workspace
-    if (workspace.id !== user.workspaceId) {
-      return c.json(
-        { error: "Access denied: Cannot access other workspace data" },
-        403
-      );
-    }
-
-    // Get plan features
-    const planFeatures = getPlanFeatures(workspace.plan);
+    // Get plan features from user's subscription
+    const userPlan = userWithSubscription.subscription?.plan || UserPlan.FREE;
+    const planFeatures = getPlanFeatures(userPlan);
 
     // Count owned workspaces for workspace usage calculation
     const ownedWorkspaceCount = await prisma.workspace.count({
       where: { ownerId: user.id },
     });
 
+    // Get current workspace counts
+    const currentWorkspace = userWithSubscription.workspace;
+    const workspaceUsers = currentWorkspace?._count.users || 0;
+    const workspaceServers = currentWorkspace?._count.servers || 0;
+
     // Calculate usage percentages and limits
     const usage = {
       users: {
-        current: workspace._count.users,
+        current: workspaceUsers,
         limit: planFeatures.maxUsers,
         percentage: planFeatures.maxUsers
-          ? Math.round((workspace._count.users / planFeatures.maxUsers) * 100)
+          ? Math.round((workspaceUsers / planFeatures.maxUsers) * 100)
           : 0,
         canAdd: planFeatures.maxUsers
-          ? workspace._count.users < planFeatures.maxUsers
+          ? workspaceUsers < planFeatures.maxUsers
           : true,
       },
       servers: {
-        current: workspace._count.servers,
+        current: workspaceServers,
         limit: planFeatures.maxServers,
         percentage: planFeatures.maxServers
-          ? Math.round(
-              (workspace._count.servers / planFeatures.maxServers) * 100
-            )
+          ? Math.round((workspaceServers / planFeatures.maxServers) * 100)
           : 0,
         canAdd: planFeatures.maxServers
-          ? workspace._count.servers < planFeatures.maxServers
+          ? workspaceServers < planFeatures.maxServers
           : true,
       },
       workspaces: {
-        current: ownedWorkspaceCount, // Use actual owned workspace count
+        current: ownedWorkspaceCount,
         limit: planFeatures.maxWorkspaces,
         percentage: planFeatures.maxWorkspaces
           ? Math.round((ownedWorkspaceCount / planFeatures.maxWorkspaces) * 100)
@@ -111,11 +112,18 @@ planRoutes.get("/current/plan", async (c) => {
     };
 
     const response = {
-      workspace: {
-        id: workspace.id,
-        name: workspace.name,
-        plan: workspace.plan,
+      user: {
+        id: userWithSubscription.id,
+        email: userWithSubscription.email,
+        plan: userPlan,
+        subscriptionStatus: userWithSubscription.subscription?.status || null,
       },
+      workspace: currentWorkspace
+        ? {
+            id: currentWorkspace.id,
+            name: currentWorkspace.name,
+          }
+        : null,
       planFeatures,
       usage,
       warnings,
@@ -124,7 +132,7 @@ planRoutes.get("/current/plan", async (c) => {
 
     return c.json(response);
   } catch (error) {
-    logger.error("Error fetching current plan:", error);
+    logger.error({ error, userId: user.id }, "Error fetching current plan");
     return c.json({ error: "Failed to fetch plan information" }, 500);
   }
 });

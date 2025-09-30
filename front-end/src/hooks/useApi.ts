@@ -1,9 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api";
-import { useAuth } from "@/contexts/AuthContext";
-import { useWorkspace } from "@/hooks/useWorkspace";
+import { useAuth } from "@/contexts/AuthContextDefinition";
 import { AlertThresholds } from "@/types/alerts";
 import { TimeRange } from "@/components/TimeRangeSelector";
+import { useWorkspace } from "./useWorkspace";
 
 // Query keys
 export const queryKeys = {

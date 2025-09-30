@@ -91,40 +91,6 @@ export interface AlertsSummaryResponse {
   timestamp: string;
 }
 
-export interface HealthCheckResponse {
-  success: boolean;
-  health: {
-    overall: "healthy" | "degraded" | "critical";
-    checks: {
-      connectivity: {
-        status: "healthy" | "warning" | "critical";
-        message: string;
-      };
-      nodes: {
-        status: "healthy" | "warning" | "critical";
-        message: string;
-        details: any;
-      };
-      memory: {
-        status: "healthy" | "warning" | "critical";
-        message: string;
-        details: any;
-      };
-      disk: {
-        status: "healthy" | "warning" | "critical";
-        message: string;
-        details: any;
-      };
-      queues: {
-        status: "healthy" | "warning" | "critical";
-        message: string;
-        details: any;
-      };
-    };
-    timestamp: string;
-  };
-}
-
 // Health Status Response (extending existing type)
 export interface HealthStatus {
   overall: "healthy" | "warning" | "critical";

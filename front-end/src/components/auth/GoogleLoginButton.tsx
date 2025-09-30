@@ -1,7 +1,7 @@
 import React from "react";
 import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
 import { useMutation } from "@tanstack/react-query";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/AuthContextDefinition";
 import { useNavigate } from "react-router-dom";
 import { apiClient } from "@/lib/api";
 import logger from "@/lib/logger";

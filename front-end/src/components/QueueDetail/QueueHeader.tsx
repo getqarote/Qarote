@@ -4,11 +4,11 @@ import { ArrowLeft, Send, Trash2, Lock, Pause, Play } from "lucide-react";
 import { PurgeQueueDialog } from "@/components/PurgeQueueDialog";
 import { PauseQueueDialog } from "@/components/PauseQueueDialog";
 import { SendMessageDialog } from "@/components/SendMessageDialog";
-import { useWorkspace } from "@/hooks/useWorkspace";
+import { useUser } from "@/hooks/useUser";
 import { useQueuePauseStatus } from "@/hooks/useApi";
 import { useState } from "react";
 import { PlanUpgradeModal } from "@/components/plans/PlanUpgradeModal";
-import { WorkspacePlan } from "@/types/plans";
+import { UserPlan } from "@/types/plans";
 
 interface QueueHeaderProps {
   queueName: string;
@@ -30,7 +30,7 @@ export function QueueHeader({
   onDeleteQueue,
 }: QueueHeaderProps) {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const { canSendMessages, canManageQueues, workspacePlan } = useWorkspace();
+  const { canSendMessages, canManageQueues, userPlan } = useUser();
 
   // Get the actual pause status from the backend
   const { data: pauseStatus, refetch: refetchPauseStatus } =
@@ -90,7 +90,7 @@ export function QueueHeader({
               variant="outline"
               className="flex items-center gap-2 opacity-60 cursor-not-allowed"
               title={
-                workspacePlan === WorkspacePlan.FREE
+                userPlan === UserPlan.FREE
                   ? "Upgrade to Developer or Enterprise plan to send messages"
                   : "Upgrade to send messages"
               }
@@ -126,7 +126,7 @@ export function QueueHeader({
               variant="outline"
               className="flex items-center gap-2 opacity-60 cursor-not-allowed"
               title={
-                workspacePlan === WorkspacePlan.FREE
+                userPlan === UserPlan.FREE
                   ? "Upgrade to Developer or Enterprise plan to manage queues"
                   : "Upgrade to manage queues"
               }
@@ -174,7 +174,7 @@ export function QueueHeader({
               variant="outline"
               className="flex items-center gap-2 opacity-60 cursor-not-allowed"
               title={
-                workspacePlan === WorkspacePlan.FREE
+                userPlan === UserPlan.FREE
                   ? "Upgrade to Developer or Enterprise plan to pause/resume queues"
                   : "Upgrade to pause/resume queues"
               }
@@ -204,7 +204,7 @@ export function QueueHeader({
               variant="outline"
               className="flex items-center gap-2 opacity-60 cursor-not-allowed"
               title={
-                workspacePlan === WorkspacePlan.FREE
+                userPlan === UserPlan.FREE
                   ? "Upgrade to Developer or Enterprise plan to delete queues"
                   : "Upgrade to delete queues"
               }
@@ -223,7 +223,6 @@ export function QueueHeader({
         <PlanUpgradeModal
           isOpen={showUpgradeModal}
           onClose={() => setShowUpgradeModal(false)}
-          currentPlan={workspacePlan}
           feature="queue-management"
         />
       )}

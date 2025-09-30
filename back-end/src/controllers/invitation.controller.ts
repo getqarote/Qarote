@@ -98,13 +98,13 @@ invitationController.post(
 
       const { email, role } = c.req.valid("json");
 
-      // Get workspace with plan information
+      // Get workspace with plan information from owner's subscription
       const workspace = await prisma.workspace.findUnique({
         where: { id: user.workspaceId },
         select: {
           id: true,
           name: true,
-          plan: true,
+          ownerId: true,
           users: {
             select: { id: true },
           },
@@ -114,6 +114,14 @@ invitationController.post(
       if (!workspace) {
         return c.json({ error: "Workspace not found" }, 404);
       }
+
+      // Get workspace owner's subscription to determine plan
+      const ownerSubscription = await prisma.subscription.findUnique({
+        where: { userId: workspace.ownerId! },
+        select: { plan: true },
+      });
+
+      const plan = ownerSubscription?.plan || "FREE";
 
       // Count pending invitations
       const pendingInvitations = await prisma.invitation.count({
@@ -129,7 +137,7 @@ invitationController.post(
       // Validate invitation limits
       try {
         validateUserInvitation(
-          workspace.plan,
+          plan,
           workspace.users.length,
           pendingInvitations
         );
@@ -139,8 +147,8 @@ invitationController.post(
           {
             error: error.message,
             planLimits: {
-              userLimit: getUserLimitText(workspace.plan),
-              invitationLimit: getInvitationLimitText(workspace.plan),
+              userLimit: getUserLimitText(plan),
+              invitationLimit: getInvitationLimitText(plan),
               currentUsers: workspace.users.length,
               pendingInvitations,
             },
@@ -204,7 +212,7 @@ invitationController.post(
         inviterEmail: user.email,
         workspaceName: workspace.name,
         invitationToken,
-        plan: workspace.plan,
+        plan: plan,
       });
 
       if (!emailResult.success) {
@@ -223,7 +231,7 @@ invitationController.post(
       }
 
       // Calculate cost information
-      const monthlyCost = calculateMonthlyCostForUsers(workspace.plan, 1);
+      const monthlyCost = calculateMonthlyCostForUsers(plan, 1);
 
       return c.json({
         success: true,
@@ -435,7 +443,7 @@ invitationController.get("/:token", async (c) => {
           select: {
             id: true,
             name: true,
-            plan: true,
+            ownerId: true,
           },
         },
         invitedBy: {
@@ -453,6 +461,14 @@ invitationController.get("/:token", async (c) => {
       return c.json({ error: "Invalid or expired invitation token" }, 400);
     }
 
+    // Get workspace owner's subscription to determine plan
+    const ownerSubscription = await prisma.subscription.findUnique({
+      where: { userId: invitation.workspace.ownerId! },
+      select: { plan: true },
+    });
+
+    const plan = ownerSubscription?.plan || "FREE";
+
     return c.json({
       success: true,
       invitation: {
@@ -460,7 +476,11 @@ invitationController.get("/:token", async (c) => {
         email: invitation.email,
         role: invitation.role,
         expiresAt: invitation.expiresAt,
-        workspace: invitation.workspace,
+        workspace: {
+          id: invitation.workspace.id,
+          name: invitation.workspace.name,
+          plan: plan,
+        },
         inviter: {
           ...invitation.invitedBy,
           displayName: getUserDisplayName(invitation.invitedBy),

@@ -1,8 +1,8 @@
 import { Lock, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CreateUserModal } from "@/components/users/CreateUserModal";
-import { WorkspacePlan } from "@/types/plans";
-import { useWorkspace } from "@/hooks/useWorkspace";
+import { UserPlan } from "@/types/plans";
+import { useUser } from "@/hooks/useUser";
 import { useState } from "react";
 
 interface AddUserButtonProps {
@@ -18,12 +18,7 @@ export const AddUserButton = ({
   onSuccess,
   initialName = "",
 }: AddUserButtonProps) => {
-  const {
-    workspacePlan,
-    isLoading: workspaceLoading,
-    planData,
-  } = useWorkspace();
-  // const { usage } = usePlanData();
+  const { userPlan, isLoading: userLoading, planData } = useUser();
   const [showCreateModal, setShowCreateModal] = useState(false);
 
   // Since we removed user usage tracking, check permission from plan features
@@ -38,24 +33,24 @@ export const AddUserButton = ({
   const canAddUser = userUsage.canAdd;
 
   const getUserButtonConfig = () => {
-    if (workspaceLoading || canAddUser) return null;
+    if (userLoading || canAddUser) return null;
 
-    switch (workspacePlan) {
-      case WorkspacePlan.FREE:
+    switch (userPlan) {
+      case UserPlan.FREE:
         return {
           text: "Add user",
           badge: "Pro",
           badgeColor: "bg-orange-500",
           title: "Upgrade to add users",
         };
-      case WorkspacePlan.DEVELOPER:
+      case UserPlan.DEVELOPER:
         return {
           text: "Add user",
           badge: "Pro",
           badgeColor: "bg-blue-500",
           title: "User management available with Developer plan",
         };
-      case WorkspacePlan.ENTERPRISE:
+      case UserPlan.ENTERPRISE:
         return {
           text: "Add user",
           badge: "Pro",

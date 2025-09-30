@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { WorkspacePlan } from "@/types/plans";
-import { useWorkspace } from "@/hooks/useWorkspace";
-import { useAuth } from "@/contexts/AuthContext";
+import { UserPlan } from "@/types/plans";
+import { useUser } from "@/hooks/useUser";
+import { useAuth } from "@/contexts/AuthContextDefinition";
 import { apiClient } from "@/lib/api";
 import logger from "@/lib/logger";
+import { useWorkspace } from "./useWorkspace";
 
 export const usePlanUpgrade = () => {
   const [isUpgrading, setIsUpgrading] = useState(false);
@@ -13,7 +14,7 @@ export const usePlanUpgrade = () => {
   const { user } = useAuth();
 
   const handleUpgrade = async (
-    targetPlan: WorkspacePlan,
+    targetPlan: UserPlan,
     billingInterval: "monthly" | "yearly" = "monthly"
   ) => {
     if (!workspace || !user) {
@@ -24,7 +25,7 @@ export const usePlanUpgrade = () => {
     setIsUpgrading(true);
 
     try {
-      if (targetPlan === WorkspacePlan.FREE) {
+      if (targetPlan === UserPlan.FREE) {
         // Handle free plan - redirect to customer portal for downgrades
         const { url } = await apiClient.createPortalSession();
         window.location.href = url;
@@ -81,19 +82,19 @@ export const usePlanUpgrade = () => {
 };
 
 export const usePlanFeatures = () => {
-  const { workspace } = useWorkspace();
+  const { userPlan } = useUser();
 
-  const currentPlan = workspace?.plan || WorkspacePlan.FREE;
+  const currentPlan = userPlan || UserPlan.FREE;
 
   const getUpgradeMessage = (feature: string) => {
     return `To use ${feature}, upgrade your plan from ${currentPlan}`;
   };
 
-  const shouldShowUpgradePrompt = (requiredPlan: WorkspacePlan) => {
+  const shouldShowUpgradePrompt = (requiredPlan: UserPlan) => {
     const planHierarchy = {
-      [WorkspacePlan.FREE]: 0,
-      [WorkspacePlan.DEVELOPER]: 1,
-      [WorkspacePlan.ENTERPRISE]: 2,
+      [UserPlan.FREE]: 0,
+      [UserPlan.DEVELOPER]: 1,
+      [UserPlan.ENTERPRISE]: 2,
     };
 
     return planHierarchy[currentPlan] < planHierarchy[requiredPlan];

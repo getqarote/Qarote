@@ -4,7 +4,7 @@
  */
 
 import { BaseApiClient } from "./baseClient";
-import { WorkspacePlan } from "@/types/plans";
+// import { UserPlan } from "@/types/plans";
 
 export interface Workspace {
   id: string;
@@ -22,7 +22,7 @@ export interface WorkspaceInfo {
   name: string;
   contactEmail?: string;
   tags?: string[];
-  plan: WorkspacePlan;
+  // plan: UserPlan;
   isOwner: boolean;
   userRole: string;
   _count: {
@@ -33,7 +33,7 @@ export interface WorkspaceInfo {
 }
 
 export interface WorkspaceCreationInfo {
-  currentPlan: WorkspacePlan;
+  // currentPlan: UserPlan;
   ownedWorkspaceCount: number;
   maxWorkspaces: number | null;
   canCreateWorkspace: boolean;

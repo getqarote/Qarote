@@ -34,9 +34,17 @@ sessionController.post("/login", zValidator("json", LoginSchema), async (c) => {
         firstName: true,
         lastName: true,
         workspaceId: true,
+        stripeCustomerId: true,
+        stripeSubscriptionId: true,
         workspace: {
           select: {
             id: true,
+          },
+        },
+        subscription: {
+          select: {
+            plan: true,
+            status: true,
           },
         },
       },
@@ -106,6 +114,14 @@ sessionController.post("/login", zValidator("json", LoginSchema), async (c) => {
       lastLogin: user.lastLogin,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
+      stripeCustomerId: user.stripeCustomerId,
+      stripeSubscriptionId: user.stripeSubscriptionId,
+      subscription: user.subscription
+        ? {
+            plan: user.subscription.plan,
+            status: user.subscription.status,
+          }
+        : null,
     };
 
     // Set Sentry user context
@@ -145,13 +161,20 @@ sessionController.get("/me", authenticate, async (c) => {
         createdAt: true,
         updatedAt: true,
         googleId: true,
+        stripeCustomerId: true,
+        stripeSubscriptionId: true,
         workspace: {
           select: {
             id: true,
             name: true,
             contactEmail: true,
             logoUrl: true,
+          },
+        },
+        subscription: {
+          select: {
             plan: true,
+            status: true,
           },
         },
       },

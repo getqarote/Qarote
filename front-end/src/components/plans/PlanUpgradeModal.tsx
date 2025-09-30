@@ -1,25 +1,25 @@
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { X, Check, Zap, Loader2 } from "lucide-react";
-import { WorkspacePlan } from "@/types/plans";
-import { useWorkspace } from "@/hooks/useWorkspace";
+import { UserPlan } from "@/types/plans";
+import { useUser } from "@/hooks/useUser";
 import logger from "@/lib/logger";
 import { apiClient } from "@/lib/api";
+import { useWorkspace } from "@/hooks/useWorkspace";
 
 interface PlanUpgradeModalProps {
   isOpen: boolean;
   onClose: () => void;
-  currentPlan: WorkspacePlan;
   feature: string;
 }
 
 export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
   isOpen,
   onClose,
-  currentPlan,
   feature,
 }) => {
-  const { planData, workspace } = useWorkspace();
+  const { planData, userPlan } = useUser();
+  const { workspace } = useWorkspace();
   const [isUpgrading, setIsUpgrading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -30,7 +30,7 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
     enabled: !!workspace?.id,
   });
 
-  const handleUpgrade = async (targetPlan: WorkspacePlan) => {
+  const handleUpgrade = async (targetPlan: UserPlan) => {
     try {
       setError(null);
       setIsUpgrading(targetPlan);
@@ -67,7 +67,7 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
     );
   }
 
-  const plans = allPlansData.plans.filter((p) => p.plan !== WorkspacePlan.FREE);
+  const plans = allPlansData.plans.filter((p) => p.plan !== UserPlan.FREE);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -79,8 +79,8 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
             </h2>
             <p className="text-gray-600 mt-1">
               To use {feature}, you need to upgrade from the{" "}
-              {planData.planFeatures.displayName || currentPlan} plan. This
-              upgrade will apply to all your workspaces.
+              {planData.planFeatures.displayName || userPlan} plan. This upgrade
+              will apply to all your workspaces.
             </p>
           </div>
           <button
@@ -100,10 +100,10 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
 
           <div className="grid md:grid-cols-2 gap-6">
             {plans.map((planData) => {
-              const isPopular = planData.plan === WorkspacePlan.DEVELOPER;
+              const isPopular = planData.plan === UserPlan.DEVELOPER;
               // Use fixed pricing for the new plan structure
               const price =
-                planData.plan === WorkspacePlan.DEVELOPER ? "$10" : "$50";
+                planData.plan === UserPlan.DEVELOPER ? "$10" : "$50";
 
               return (
                 <div
@@ -123,7 +123,7 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
                   <div className="text-center mb-6">
                     <h3 className="text-xl font-bold text-gray-900">
                       {planData.displayName ||
-                        (planData.plan === WorkspacePlan.DEVELOPER
+                        (planData.plan === UserPlan.DEVELOPER
                           ? "Developer"
                           : "Enterprise")}
                     </h3>
@@ -139,7 +139,7 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
                     <li className="flex items-center">
                       <Check className="w-4 h-4 text-green-500 mr-2" />
                       <span className="text-sm text-gray-700">
-                        {planData.plan === WorkspacePlan.DEVELOPER
+                        {planData.plan === UserPlan.DEVELOPER
                           ? "Unlimited"
                           : "Unlimited"}{" "}
                         queues
@@ -148,7 +148,7 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
                     <li className="flex items-center">
                       <Check className="w-4 h-4 text-green-500 mr-2" />
                       <span className="text-sm text-gray-700">
-                        {planData.plan === WorkspacePlan.DEVELOPER
+                        {planData.plan === UserPlan.DEVELOPER
                           ? "Unlimited"
                           : "Unlimited"}{" "}
                         servers
@@ -157,7 +157,7 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
                     <li className="flex items-center">
                       <Check className="w-4 h-4 text-green-500 mr-2" />
                       <span className="text-sm text-gray-700">
-                        {planData.plan === WorkspacePlan.DEVELOPER
+                        {planData.plan === UserPlan.DEVELOPER
                           ? "5"
                           : "Unlimited"}{" "}
                         team members
@@ -169,7 +169,7 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
                         Message sending & queue management
                       </span>
                     </li>
-                    {planData.plan === WorkspacePlan.ENTERPRISE && (
+                    {planData.plan === UserPlan.ENTERPRISE && (
                       <>
                         <li className="flex items-center">
                           <Check className="w-4 h-4 text-green-500 mr-2" />
@@ -212,7 +212,7 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
                         <Zap className="w-4 h-4 inline-block mr-2" />
                         Upgrade to{" "}
                         {planData.displayName ||
-                          (planData.plan === WorkspacePlan.DEVELOPER
+                          (planData.plan === UserPlan.DEVELOPER
                             ? "Developer"
                             : "Enterprise")}
                       </>

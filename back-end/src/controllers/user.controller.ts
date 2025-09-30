@@ -7,8 +7,8 @@ import { UpdateWorkspaceSchema } from "@/schemas/workspace";
 import { InviteUserSchema } from "@/schemas/auth";
 import { UserRole } from "@prisma/client";
 import {
-  getWorkspacePlan,
-  getWorkspaceResourceCounts,
+  getUserPlan,
+  getUserResourceCounts,
   validateUserInvitation,
 } from "@/services/plan/plan.service";
 import { logger } from "@/core/logger";
@@ -336,8 +336,8 @@ userController.post(
     try {
       // Validate plan restrictions for user invitation
       const [plan, resourceCounts] = await Promise.all([
-        getWorkspacePlan(workspaceId),
-        getWorkspaceResourceCounts(workspaceId),
+        getUserPlan(currentUser.id),
+        getUserResourceCounts(currentUser.id),
       ]);
 
       validateUserInvitation(plan, resourceCounts.users);
@@ -498,7 +498,6 @@ userController.get("/profile/me", async (c) => {
             name: true,
             contactEmail: true,
             logoUrl: true,
-            plan: true,
             createdAt: true,
             updatedAt: true,
             _count: {
@@ -552,7 +551,6 @@ userController.put(
           name: true,
           contactEmail: true,
           logoUrl: true,
-          plan: true,
           createdAt: true,
           updatedAt: true,
           _count: {

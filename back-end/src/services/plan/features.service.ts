@@ -1,4 +1,4 @@
-import { WorkspacePlan } from "@prisma/client";
+import { UserPlan } from "@prisma/client";
 
 export interface PlanFeatures {
   // Core permissions
@@ -36,8 +36,8 @@ export interface PlanFeatures {
   featureDescriptions: string[];
 }
 
-export const PLAN_FEATURES: Record<WorkspacePlan, PlanFeatures> = {
-  [WorkspacePlan.FREE]: {
+export const PLAN_FEATURES: Record<UserPlan, PlanFeatures> = {
+  [UserPlan.FREE]: {
     // Core permissions
     canAddServer: true,
     canAddQueue: false,
@@ -78,7 +78,7 @@ export const PLAN_FEATURES: Record<WorkspacePlan, PlanFeatures> = {
     ],
   },
 
-  [WorkspacePlan.DEVELOPER]: {
+  [UserPlan.DEVELOPER]: {
     // Core permissions
     canAddServer: true,
     canAddQueue: true,
@@ -121,7 +121,7 @@ export const PLAN_FEATURES: Record<WorkspacePlan, PlanFeatures> = {
     ],
   },
 
-  [WorkspacePlan.ENTERPRISE]: {
+  [UserPlan.ENTERPRISE]: {
     // Core permissions
     canAddServer: true,
     canAddQueue: true,
@@ -167,6 +167,6 @@ export const PLAN_FEATURES: Record<WorkspacePlan, PlanFeatures> = {
 };
 
 // Single source of truth getter
-export function getPlanFeatures(plan: WorkspacePlan): PlanFeatures {
+export function getPlanFeatures(plan: UserPlan): PlanFeatures {
   return PLAN_FEATURES[plan];
 }

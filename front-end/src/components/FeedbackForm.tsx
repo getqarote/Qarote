@@ -29,7 +29,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useToast } from "@/hooks/useToast";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/AuthContextDefinition";
 import { apiClient } from "@/lib/api";
 import type { FeedbackRequest } from "@/types/feedback";
 import { feedbackSchema, type FeedbackFormData } from "@/schemas/forms";

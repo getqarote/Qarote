@@ -44,4 +44,6 @@ export class EmailService {
     NotificationEmailService.sendPaymentActionRequiredEmail;
   static sendUpcomingInvoiceEmail =
     NotificationEmailService.sendUpcomingInvoiceEmail;
+  static sendPaymentFailedEmail =
+    NotificationEmailService.sendPaymentFailedEmail;
 }

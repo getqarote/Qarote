@@ -15,8 +15,8 @@ import { User } from "@/lib/api/authTypes";
 import { InvitationWithInviter } from "@/lib/api/authTypes";
 import { InviteFormState, formatDate, getRoleColor } from "./profileUtils";
 import { InviteUserDialog } from "./InviteUserDialogEnhanced";
-import { WorkspacePlan } from "@/types/plans";
-import { useWorkspace } from "@/hooks/useWorkspace";
+import { UserPlan } from "@/types/plans";
+import { useUser } from "@/hooks/useUser";
 
 interface EnhancedTeamTabProps {
   isAdmin: boolean;
@@ -32,7 +32,7 @@ interface EnhancedTeamTabProps {
   onRevokeInvitation: (invitationId: string, email: string) => void;
   isInviting: boolean;
   isRevoking: boolean;
-  workspacePlan: WorkspacePlan;
+  userPlan: UserPlan;
   canInviteMoreUsers: boolean;
 }
 
@@ -50,10 +50,10 @@ export const EnhancedTeamTab = ({
   onRevokeInvitation,
   isInviting,
   isRevoking,
-  workspacePlan,
+  userPlan,
   canInviteMoreUsers,
 }: EnhancedTeamTabProps) => {
-  const { planData } = useWorkspace();
+  const { planData } = useUser();
   const planFeatures = planData?.planFeatures;
   const totalUsers = workspaceUsers.length;
   const pendingInvitations = invitations.length;
@@ -330,7 +330,7 @@ export const EnhancedTeamTab = ({
         <CardContent className="pt-6">
           <div className="text-sm text-muted-foreground">
             <p>
-              <strong>{workspacePlan} Plan:</strong>{" "}
+              <strong>{userPlan} Plan:</strong>{" "}
               {maxUsers ? `Up to ${maxUsers} users allowed` : "Unlimited users"}
             </p>
             {!canInviteMoreUsers && maxUsers && (

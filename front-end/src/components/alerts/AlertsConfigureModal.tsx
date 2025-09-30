@@ -13,10 +13,11 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { useWorkspace } from "@/hooks/useWorkspace";
+import { useUser } from "@/hooks/useUser";
 import { apiClient } from "@/lib/api";
 import { ApiError } from "@/lib/api/types";
 import { Loader2, Settings, Lock, Crown } from "lucide-react";
+import { useWorkspace } from "@/hooks/useWorkspace";
 
 interface AlertThresholds {
   memory: {
@@ -69,16 +70,16 @@ interface AlertsConfigureModalProps {
 export function AlertsConfigureModal({
   isOpen,
   onClose,
-  serverId,
 }: AlertsConfigureModalProps) {
   const queryClient = useQueryClient();
-  const { workspacePlan } = useWorkspace();
+  const { userPlan } = useUser();
+  const { workspace } = useWorkspace();
   const [formData, setFormData] = useState<Partial<AlertThresholds>>({});
 
   // Query for current thresholds
   const { data: thresholdsData, isLoading } = useQuery({
     queryKey: ["workspaceThresholds"],
-    queryFn: () => apiClient.getWorkspaceThresholds(),
+    queryFn: () => apiClient.getWorkspaceThresholds(workspace.id),
     enabled: isOpen,
   });
 
@@ -92,7 +93,7 @@ export function AlertsConfigureModal({
   // Mutation for updating thresholds
   const updateThresholdsMutation = useMutation({
     mutationFn: (thresholds: AlertThresholds) =>
-      apiClient.updateWorkspaceThresholds(thresholds),
+      apiClient.updateWorkspaceThresholds(thresholds, workspace.id),
     onSuccess: () => {
       toast.success("Alert thresholds updated successfully");
       queryClient.invalidateQueries({ queryKey: ["workspaceThresholds"] });
@@ -105,7 +106,7 @@ export function AlertsConfigureModal({
   });
 
   const canModify = thresholdsData?.canModify ?? false;
-  const isPaidPlan = workspacePlan !== "FREE";
+  const isPaidPlan = userPlan !== "FREE";
 
   const handleInputChange = (
     category: keyof AlertThresholds,

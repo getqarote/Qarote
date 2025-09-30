@@ -1,14 +1,14 @@
 import React, { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { CheckCircle, ArrowRight, CreditCard } from "lucide-react";
-import { useWorkspace } from "@/hooks/useWorkspace";
+import { useUser } from "@/hooks/useUser";
 import { useQueryClient } from "@tanstack/react-query";
 import logger from "@/lib/logger";
 
 const PaymentSuccess: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { refetch, refetchPlan, planData } = useWorkspace();
+  const { refetch, refetchPlan, planData } = useUser();
   const queryClient = useQueryClient();
 
   useEffect(() => {

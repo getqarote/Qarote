@@ -12,7 +12,7 @@ import {
   Section,
   Text,
 } from "@react-email/components";
-import { WorkspacePlan } from "@prisma/client";
+import { UserPlan } from "@prisma/client";
 import { getPlanFeatures } from "@/services/plan/plan.service";
 import {
   baseStyles,
@@ -27,7 +27,7 @@ import {
 interface UpgradeConfirmationEmailProps {
   userName: string;
   workspaceName: string;
-  plan: WorkspacePlan;
+  plan: UserPlan;
   billingInterval: "monthly" | "yearly";
   frontendUrl: string;
 }

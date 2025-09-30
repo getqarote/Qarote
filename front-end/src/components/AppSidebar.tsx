@@ -34,13 +34,12 @@ import {
   Database,
 } from "lucide-react";
 import { useServerContext } from "@/contexts/ServerContext";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/AuthContextDefinition";
 import { useLogout } from "@/hooks/useAuth";
 import { useServers } from "@/hooks/useApi";
 import { AddServerForm } from "@/components/AddServerFormComponent";
 import { PlanUpgradeModal } from "@/components/plans/PlanUpgradeModal";
 import { useLocation, Link } from "react-router-dom";
-import { useWorkspace } from "@/hooks/useWorkspace";
 import { ServerManagement } from "@/components/ServerManagement";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
@@ -82,18 +81,6 @@ const menuItems = [
     icon: User,
     adminOnly: true,
   },
-  // {
-  //   title: "Routing",
-  //   url: "/routing",
-  //   icon: GitBranch,
-  //   isSoon: true,
-  // },
-  // {
-  //   title: "Logs",
-  //   url: "/logs",
-  //   icon: FileText,
-  //   isSoon: true,
-  // },
   {
     title: "Alerts",
     url: "/alerts",
@@ -134,7 +121,6 @@ const shortenHost = (host: string, maxLength: number = 25) => {
 export function AppSidebar() {
   const location = useLocation();
   const { selectedServerId, setSelectedServerId } = useServerContext();
-  const { workspacePlan } = useWorkspace();
   const { user } = useAuth();
   const logoutMutation = useLogout();
   const { data: serversData } = useServers();
@@ -332,7 +318,6 @@ export function AppSidebar() {
       <PlanUpgradeModal
         isOpen={showUpgradeModal}
         onClose={() => setShowUpgradeModal(false)}
-        currentPlan={workspacePlan}
         feature="server management"
       />
     </Sidebar>

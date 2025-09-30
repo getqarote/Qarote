@@ -5,7 +5,7 @@
  */
 
 // Plan enum - keep in sync with backend
-export enum WorkspacePlan {
+export enum UserPlan {
   FREE = "FREE",
   DEVELOPER = "DEVELOPER",
   ENTERPRISE = "ENTERPRISE",
@@ -70,10 +70,14 @@ export interface PlanWarnings {
 }
 
 export interface CurrentPlanInfo {
+  user: {
+    id: string;
+    email: string;
+    plan: UserPlan;
+  };
   workspace: {
     id: string;
     name: string;
-    plan: WorkspacePlan;
   };
   planFeatures: PlanFeatures;
   usage: PlanUsage;

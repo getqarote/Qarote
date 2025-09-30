@@ -15,7 +15,7 @@ import { Link } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { PlanBadge } from "@/components/ui/PlanBadge";
-import { useWorkspace } from "@/hooks/useWorkspace";
+import { useUser } from "@/hooks/useUser";
 import { useToast } from "@/hooks/useToast";
 import { Button } from "@/components/ui/button";
 import {
@@ -85,7 +85,7 @@ const quickLinks = [
 
 export function HelpSupport() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
-  const { workspacePlan } = useWorkspace();
+  const { userPlan } = useUser();
   const { toast } = useToast();
 
   const handleEmailCopy = async () => {
@@ -134,7 +134,7 @@ export function HelpSupport() {
                   </p>
                 </div>
               </div>
-              <PlanBadge workspacePlan={workspacePlan} />
+              <PlanBadge workspacePlan={userPlan} />
             </div>
 
             <div className="grid lg:grid-cols-2 gap-6">

@@ -3,18 +3,19 @@
  * Custom hooks for accessing plan data and features
  */
 
-import { useWorkspace } from "@/hooks/useWorkspace";
+import { useUser } from "@/hooks/useUser";
 
 /**
  * Hook to get current user's plan data with usage information
  * This provides real-time plan features and usage limits
  */
 export function usePlanData() {
-  const { planData, isPlanLoading, planError, refetchPlan } = useWorkspace();
+  const { user, planData, isLoading, planError, refetchPlan } = useUser();
 
   return {
+    user,
     planData,
-    isLoading: isPlanLoading,
+    isLoading,
     error: planError,
     refetch: refetchPlan,
 
@@ -23,7 +24,6 @@ export function usePlanData() {
     usage: planData?.usage,
     warnings: planData?.warnings,
     approachingLimits: planData?.approachingLimits || false,
-    workspace: planData?.workspace,
   };
 }
 

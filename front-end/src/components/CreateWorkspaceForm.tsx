@@ -22,10 +22,10 @@ import {
 } from "@/components/ui/dialog";
 import { Plus, Loader2, Building2 } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useWorkspace } from "@/hooks/useWorkspace";
 import { apiClient } from "@/lib/api";
 import { toast } from "sonner";
 import { WorkspaceFormData, workspaceSchema } from "@/schemas/forms";
+import { useWorkspace } from "@/hooks/useWorkspace";
 
 interface CreateWorkspaceFormProps {
   isOpen: boolean;
@@ -57,7 +57,7 @@ export function CreateWorkspaceForm({
     }) => apiClient.createWorkspace(data),
     onSuccess: () => {
       toast.success("Workspace created successfully!");
-      queryClient.invalidateQueries({ queryKey: ["user-workspaces"] });
+      queryClient.invalidateQueries({ queryKey: ["workspaces"] });
       refreshWorkspace();
       onClose();
       // Reset form

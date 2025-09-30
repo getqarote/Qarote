@@ -1,10 +1,11 @@
 import { Lock, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useWorkspace } from "@/hooks/useWorkspace";
-import { WorkspacePlan } from "@/types/plans";
+import { useUser } from "@/hooks/useUser";
+import { UserPlan } from "@/types/plans";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api";
 import { toast } from "sonner";
+import { useWorkspace } from "@/hooks/useWorkspace";
 
 interface AddUserButtonProps {
   serverId: string;
@@ -25,15 +26,12 @@ export function AddUserButton({
   initialTags = "",
   initialVhost = "/",
 }: AddUserButtonProps) {
-  const {
-    workspacePlan,
-    isLoading: workspaceLoading,
-    workspace,
-  } = useWorkspace();
+  const { userPlan, isLoading: userLoading } = useUser();
+  const { workspace } = useWorkspace();
   const queryClient = useQueryClient();
 
   // For Free plan users, user creation is restricted
-  const canAddUser = workspacePlan !== WorkspacePlan.FREE;
+  const canAddUser = userPlan !== UserPlan.FREE;
 
   const createUserMutation = useMutation({
     mutationFn: async () => {
@@ -78,7 +76,7 @@ export function AddUserButton({
   });
 
   const getUserButtonConfig = () => {
-    if (workspaceLoading || canAddUser) return null;
+    if (userLoading || canAddUser) return null;
 
     return {
       text: "Add user",

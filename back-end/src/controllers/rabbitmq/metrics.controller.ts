@@ -89,16 +89,9 @@ metricsController.get("/servers/:id/metrics/rates", async (c) => {
         id,
         workspaceId,
       },
-      include: {
-        workspace: {
-          select: {
-            plan: true,
-          },
-        },
-      },
     });
 
-    if (!server || !server.workspace) {
+    if (!server) {
       return c.json({ error: "Server not found or access denied" }, 404);
     }
 
@@ -197,16 +190,9 @@ metricsController.get(
           id,
           workspaceId,
         },
-        include: {
-          workspace: {
-            select: {
-              plan: true,
-            },
-          },
-        },
       });
 
-      if (!server || !server.workspace) {
+      if (!server) {
         return c.json({ error: "Server not found or access denied" }, 404);
       }
 

@@ -44,8 +44,7 @@ overviewController.get("/servers/:id/overview", async (c) => {
     if (server.isOverQueueLimit && server.workspace) {
       const warningMessage = getOverLimitWarningMessage(
         server.workspace.plan,
-        overview.queue_totals?.messages || 0,
-        server.name
+        overview.queue_totals?.messages || 0
       );
 
       const upgradeRecommendation = getUpgradeRecommendationForOverLimit(

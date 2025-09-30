@@ -1,5 +1,5 @@
 import Stripe from "stripe";
-import { WorkspacePlan } from "@prisma/client";
+import { UserPlan } from "@prisma/client";
 import { logger } from "@/core/logger";
 import { Sentry, setSentryContext } from "@/core/sentry";
 import { stripeConfig } from "@/config";
@@ -18,30 +18,30 @@ export const stripe = new Stripe(stripeConfig.secretKey, {
 
 // Stripe Price IDs for each plan (these would be created in Stripe Dashboard)
 export const STRIPE_PRICE_IDS = {
-  [WorkspacePlan.DEVELOPER]: {
+  [UserPlan.DEVELOPER]: {
     monthly: stripeConfig.priceIds.developer.monthly,
     yearly: stripeConfig.priceIds.developer.yearly,
   },
-  [WorkspacePlan.ENTERPRISE]: {
+  [UserPlan.ENTERPRISE]: {
     monthly: stripeConfig.priceIds.enterprise.monthly,
     yearly: stripeConfig.priceIds.enterprise.yearly,
   },
 } as const;
 
 export const PLAN_PRICING = {
-  [WorkspacePlan.DEVELOPER]: {
+  [UserPlan.DEVELOPER]: {
     monthly: 1000, // $10.00 in cents
     yearly: 10000, // $100.00 in cents (yearly discount)
   },
-  [WorkspacePlan.ENTERPRISE]: {
+  [UserPlan.ENTERPRISE]: {
     monthly: 5000, // $50.00 in cents
     yearly: 50000, // $500.00 in cents (yearly discount)
   },
 } as const;
 
 export interface CreateCheckoutSessionParams {
-  workspaceId: string;
-  plan: WorkspacePlan;
+  userId: string;
+  plan: UserPlan;
   billingInterval: "monthly" | "yearly";
   successUrl: string;
   cancelUrl: string;
@@ -52,19 +52,17 @@ export interface CreateCheckoutSessionParams {
 export interface CreateCustomerParams {
   email: string;
   name?: string;
-  workspaceId: string;
+  userId: string;
 }
 
 export class CoreStripeService {
   /**
-   * Map Stripe price ID to workspace plan
+   * Map Stripe price ID to user plan
    */
-  static mapStripePlanToWorkspacePlan(
-    stripePriceId: string
-  ): WorkspacePlan | null {
+  static mapStripePlanToUserPlan(stripePriceId: string): UserPlan | null {
     for (const [plan, prices] of Object.entries(STRIPE_PRICE_IDS)) {
       if (prices.monthly === stripePriceId || prices.yearly === stripePriceId) {
-        return plan as WorkspacePlan;
+        return plan as UserPlan;
       }
     }
     return null;

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Mail, X } from "lucide-react";
 import { apiClient } from "@/lib/api";
 import { toast } from "sonner";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/AuthContextDefinition";
 
 interface EmailVerificationBannerProps {
   className?: string;

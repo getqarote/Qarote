@@ -20,12 +20,12 @@ import {
 import { PageLoader } from "@/components/PageLoader";
 import { ConnectionStatus } from "@/components/ConnectionStatus";
 import { useServerContext } from "@/contexts/ServerContext";
-import { useAuth } from "@/contexts/AuthContext";
-import { useWorkspace } from "@/hooks/useWorkspace";
+import { useAuth } from "@/contexts/AuthContextDefinition";
 import { apiClient } from "@/lib/api";
 import { DeleteVHostModal } from "@/components/vhosts/DeleteVHostModal";
 import { EditVHostModal } from "@/components/vhosts/EditVHostModal";
 import { toast } from "sonner";
+import { useWorkspace } from "@/hooks/useWorkspace";
 
 export default function VHostDetailsPage() {
   const { serverId, vhostName } = useParams<{

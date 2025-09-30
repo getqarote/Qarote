@@ -33,8 +33,7 @@ import { StripeWebhookService } from "./webhook.service";
  */
 export class StripeService {
   // Core utilities
-  static mapStripePlanToWorkspacePlan =
-    CoreStripeService.mapStripePlanToWorkspacePlan;
+  static mapStripePlanToUserPlan = CoreStripeService.mapStripePlanToUserPlan;
   static getBillingInterval = CoreStripeService.getBillingInterval;
   static extractCustomerId = CoreStripeService.extractCustomerId;
   static extractSubscriptionId = CoreStripeService.extractSubscriptionId;

@@ -21,7 +21,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useExchanges, useDeleteExchange } from "@/hooks/useApi";
 import { useServerContext } from "@/contexts/ServerContext";
-import { useWorkspace } from "@/hooks/useWorkspace";
+import { useUser } from "@/hooks/useUser";
 import { useState } from "react";
 import {
   Collapsible,
@@ -45,7 +45,7 @@ import { ApiErrorWithCode } from "@/types/apiErrors";
 
 const Exchanges = () => {
   const { selectedServerId, hasServers } = useServerContext();
-  const { workspacePlan } = useWorkspace();
+  const { workspacePlan } = useUser();
   const { toast } = useToast();
   const [expandedExchanges, setExpandedExchanges] = useState<Set<string>>(
     new Set()

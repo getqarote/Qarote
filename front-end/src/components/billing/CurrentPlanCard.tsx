@@ -2,15 +2,13 @@ import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CreditCard } from "lucide-react";
-import { WorkspacePlan } from "@/types/plans";
+import { UserPlan } from "@/types/plans";
 import { formatCurrency, formatDate } from "@/lib/utils";
 
 interface CurrentPlanCardProps {
-  workspace: {
-    plan: WorkspacePlan;
-  };
   subscription?: {
     status: string;
+    plan: UserPlan;
   };
   stripeSubscription?: {
     items: {
@@ -34,21 +32,20 @@ interface CurrentPlanCardProps {
 }
 
 export const CurrentPlanCard: React.FC<CurrentPlanCardProps> = ({
-  workspace,
   subscription,
   stripeSubscription,
   paymentMethod,
 }) => {
-  const getPlanDisplayName = (plan: WorkspacePlan): string => {
+  const getPlanDisplayName = (plan: UserPlan): string => {
     switch (plan) {
-      case WorkspacePlan.FREE:
+      case UserPlan.FREE:
         return "Free";
-      case WorkspacePlan.DEVELOPER:
+      case UserPlan.DEVELOPER:
         return "Developer";
-      case WorkspacePlan.ENTERPRISE:
+      case UserPlan.ENTERPRISE:
         return "Enterprise";
       default:
-        return "Unknown";
+        return UserPlan.FREE;
     }
   };
 
@@ -62,10 +59,10 @@ export const CurrentPlanCard: React.FC<CurrentPlanCardProps> = ({
             </div>
             <div>
               <CardTitle className="flex items-center gap-2">
-                {getPlanDisplayName(workspace.plan)} Plan
+                {getPlanDisplayName(subscription?.plan)} Plan
                 <Badge
                   variant={
-                    workspace.plan === WorkspacePlan.FREE
+                    subscription?.plan === UserPlan.FREE
                       ? "secondary"
                       : "default"
                   }
@@ -74,7 +71,7 @@ export const CurrentPlanCard: React.FC<CurrentPlanCardProps> = ({
                 </Badge>
               </CardTitle>
               <p className="text-sm text-muted-foreground mt-1">
-                {workspace.plan === WorkspacePlan.FREE
+                {subscription?.plan === UserPlan.FREE
                   ? "No subscription required"
                   : `${stripeSubscription?.items?.data[0]?.price?.recurring?.interval || ""} billing`}
               </p>

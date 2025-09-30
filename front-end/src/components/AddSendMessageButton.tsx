@@ -1,8 +1,8 @@
 import { Lock, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SendMessageDialog } from "@/components/SendMessageDialog";
-import { WorkspacePlan } from "@/types/plans";
-import { useWorkspace } from "@/hooks/useWorkspace";
+import { UserPlan } from "@/types/plans";
+import { useUser } from "@/hooks/useUser";
 
 interface AddSendMessageButtonProps {
   serverId: string;
@@ -15,32 +15,27 @@ export const AddSendMessageButton = ({
   onUpgradeClick,
   onSuccess,
 }: AddSendMessageButtonProps) => {
-  const { workspacePlan, canSendMessages, planData, isPlanLoading } =
-    useWorkspace();
-
-  // Since we removed message tracking, these are no longer available
-  // const monthlyMessageCount = planData?.usage.messages.current || 0;
-  // const messageLimit = planData?.usage.messages.limit;
+  const { userPlan, canSendMessages, isLoading: userLoading } = useUser();
 
   const getMessageButtonConfig = () => {
-    if (isPlanLoading || canSendMessages) return null;
+    if (userLoading || canSendMessages) return null;
 
-    switch (workspacePlan) {
-      case WorkspacePlan.FREE:
+    switch (userPlan) {
+      case UserPlan.FREE:
         return {
           text: "Send Message",
           badge: "Pro",
           badgeColor: "bg-orange-500",
           title: "Upgrade to send messages",
         };
-      case WorkspacePlan.DEVELOPER:
+      case UserPlan.DEVELOPER:
         return {
           text: "Send Message",
           badge: "Pro",
           badgeColor: "bg-blue-500",
           title: "Send messages available with Developer plan",
         };
-      case WorkspacePlan.ENTERPRISE:
+      case UserPlan.ENTERPRISE:
         return {
           text: "Send Message",
           badge: "Pro",

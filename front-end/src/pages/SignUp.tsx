@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { PasswordRequirements } from "@/components/ui/password-requirements";
-import { type ZodType } from "zod/v4";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Card,
@@ -25,7 +24,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useRegister } from "@/hooks/useAuth";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/AuthContextDefinition";
 import { signUpSchema, type SignUpFormData } from "@/schemas/forms";
 import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton";
 import logger from "@/lib/logger";

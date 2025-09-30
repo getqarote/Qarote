@@ -22,7 +22,7 @@ import {
   Shield,
   Loader2,
 } from "lucide-react";
-import { WorkspacePlan } from "@/types/plans";
+import { UserPlan } from "@/types/plans";
 
 interface CancelSubscriptionModalProps {
   isOpen: boolean;
@@ -32,7 +32,7 @@ interface CancelSubscriptionModalProps {
     reason: string;
     feedback: string;
   }) => Promise<void>;
-  currentPlan: WorkspacePlan;
+  currentPlan: UserPlan;
   periodEnd?: string;
   isLoading?: boolean;
 }

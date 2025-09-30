@@ -1,12 +1,9 @@
-import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { AddSendMessageButton } from "@/components/AddSendMessageButton";
 import { AddQueueButton } from "@/components/AddQueueButton";
-import { WorkspacePlan } from "@/types/plans";
 
 interface QueueHeaderProps {
   selectedServerId: string;
-  workspacePlan: WorkspacePlan;
   queueCount: number;
   workspaceLoading: boolean;
   canAddQueue: boolean;

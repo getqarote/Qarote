@@ -1,4 +1,4 @@
-import { WorkspacePlan } from "@prisma/client";
+import { UserPlan } from "@prisma/client";
 import { RabbitMQQueue, RabbitMQBinding } from "./rabbitmq";
 
 export interface QueueLimitWarning {
@@ -7,7 +7,7 @@ export interface QueueLimitWarning {
   currentQueueCount: number;
   queueCountAtConnect: number | null;
   upgradeRecommendation: string;
-  recommendedPlan: WorkspacePlan | null;
+  recommendedPlan: UserPlan | null;
   warningShown: boolean | null;
 }
 

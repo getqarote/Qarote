@@ -17,6 +17,7 @@ import {
 import logger from "@/lib/logger";
 import { apiClient } from "@/lib/api";
 import { useServerContext } from "@/contexts/ServerContext";
+import { useUser } from "@/hooks/useUser";
 import { queryKeys } from "@/hooks/useApi";
 import { addServerSchema, type AddServerFormData } from "@/schemas/forms";
 
@@ -37,6 +38,7 @@ export const AddServerForm = ({
   onOpenChange: controlledOnOpenChange,
 }: AddServerFormProps) => {
   const { setSelectedServerId } = useServerContext();
+  const { refetchPlan } = useUser();
   const queryClient = useQueryClient();
   const [internalIsOpen, setInternalIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -171,6 +173,9 @@ export const AddServerForm = ({
         // Invalidate servers query to refresh the server list
         queryClient.invalidateQueries({ queryKey: queryKeys.servers });
 
+        // Refresh user plan data to update server limits
+        await refetchPlan();
+
         // Close dialog
         setIsOpen(false);
 
@@ -252,9 +257,6 @@ export const AddServerForm = ({
               <ServerDetails form={form} />
 
               <Credentials form={form} />
-
-              {/* SSL Configuration */}
-              {/* <SSLConfiguration form={form} /> */}
 
               <ConnectionStatusDisplay
                 connectionStatus={connectionStatus}

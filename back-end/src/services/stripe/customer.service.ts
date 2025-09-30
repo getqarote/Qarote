@@ -1,5 +1,5 @@
 import Stripe from "stripe";
-import { WorkspacePlan } from "@prisma/client";
+import { UserPlan } from "@prisma/client";
 import { logger } from "@/core/logger";
 import {
   stripe,
@@ -13,19 +13,15 @@ export class StripeCustomerService {
   /**
    * Create a new Stripe customer
    */
-  static async createCustomer({
-    email,
-    name,
-    workspaceId,
-  }: CreateCustomerParams) {
+  static async createCustomer({ email, name, userId }: CreateCustomerParams) {
     try {
-      logger.info({ email, workspaceId }, "Creating Stripe customer");
+      logger.info({ email, userId }, "Creating Stripe customer");
 
       const customer = await stripe.customers.create({
         email,
         name,
         metadata: {
-          workspaceId,
+          userId,
         },
       });
 
@@ -33,13 +29,13 @@ export class StripeCustomerService {
       CoreStripeService.setSentryContext("stripe_customer", {
         customerId: customer.id,
         email: customer.email,
-        workspaceId,
+        userId,
       });
 
       logger.info(
         {
           customerId: customer.id,
-          workspaceId,
+          userId,
         },
         "Stripe customer created successfully"
       );
@@ -48,7 +44,7 @@ export class StripeCustomerService {
     } catch (error) {
       CoreStripeService.logStripeError(error, "create_customer", {
         email,
-        workspaceId,
+        userId,
       });
       throw error;
     }
@@ -87,7 +83,7 @@ export class StripeCustomerService {
    * Create a checkout session
    */
   static async createCheckoutSession({
-    workspaceId,
+    userId,
     plan,
     billingInterval,
     successUrl,
@@ -95,13 +91,13 @@ export class StripeCustomerService {
     customerEmail,
   }: CreateCheckoutSessionParams) {
     try {
-      if (plan === WorkspacePlan.FREE) {
+      if (plan === UserPlan.FREE) {
         throw new Error("Cannot create checkout session for FREE plan");
       }
 
       logger.info(
         {
-          workspaceId,
+          userId,
           plan,
           billingInterval,
           customerEmail,
@@ -123,13 +119,13 @@ export class StripeCustomerService {
         success_url: successUrl,
         cancel_url: cancelUrl,
         metadata: {
-          workspaceId,
+          userId,
           plan,
           billingInterval,
         },
         subscription_data: {
           metadata: {
-            workspaceId,
+            userId,
             plan,
             billingInterval,
           },
@@ -147,7 +143,7 @@ export class StripeCustomerService {
       // Set Sentry context for checkout tracking
       CoreStripeService.setSentryContext("stripe_checkout", {
         sessionId: session.id,
-        workspaceId,
+        userId,
         plan,
         billingInterval,
         priceId,
@@ -156,7 +152,7 @@ export class StripeCustomerService {
       logger.info(
         {
           sessionId: session.id,
-          workspaceId,
+          userId,
           plan,
         },
         "Stripe checkout session created successfully"
@@ -165,7 +161,7 @@ export class StripeCustomerService {
       return session;
     } catch (error) {
       CoreStripeService.logStripeError(error, "create_checkout_session", {
-        workspaceId,
+        userId,
         plan,
         billingInterval,
         customerEmail,

@@ -4,7 +4,7 @@ import { UserRole } from "@prisma/client";
 import { prisma } from "@/core/prisma";
 import { authorize } from "@/core/auth";
 import { logger } from "@/core/logger";
-import { getWorkspacePlan } from "@/services/plan/plan.service";
+import { getUserPlan } from "@/services/plan/plan.service";
 import { publishMessageToQueueSchema } from "@/schemas/rabbitmq";
 import { createErrorResponse } from "../shared";
 import { createRabbitMQClient } from "./shared";
@@ -60,7 +60,7 @@ messagesController.post(
         );
       }
 
-      const plan = await getWorkspacePlan(server.workspaceId);
+      const plan = await getUserPlan(server.workspaceId);
 
       logger.info({ plan }, "Message sending validation");
 

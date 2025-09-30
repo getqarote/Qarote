@@ -8,8 +8,8 @@ import { logger } from "@/core/logger";
 import { EncryptionService } from "@/services/encryption.service";
 import {
   extractMajorMinorVersion,
-  getWorkspacePlan,
-  getWorkspaceResourceCounts,
+  getUserPlan,
+  getUserResourceCounts,
   validateRabbitMqVersion,
   validateServerCreation,
 } from "@/services/plan/plan.service";
@@ -157,8 +157,8 @@ serverController.post(
 
       // Validate plan restrictions for server creation
       const [plan, resourceCounts] = await Promise.all([
-        getWorkspacePlan(user.workspaceId),
-        getWorkspaceResourceCounts(user.workspaceId),
+        getUserPlan(user.workspaceId),
+        getUserResourceCounts(user.id),
       ]);
 
       validateServerCreation(plan, resourceCounts.servers);

@@ -1,4 +1,4 @@
-import { WorkspacePlan } from "@prisma/client";
+import { UserPlan } from "@prisma/client";
 import {
   Html,
   Head,
@@ -25,7 +25,7 @@ import {
 interface WelcomeBackEmailProps {
   userName: string;
   workspaceName: string;
-  plan: WorkspacePlan;
+  plan: UserPlan;
   billingInterval: "monthly" | "yearly";
   previousCancelDate?: string;
   frontendUrl: string;

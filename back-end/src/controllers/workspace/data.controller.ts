@@ -17,17 +17,17 @@ dataRoutes.get(
     try {
       const id = c.req.param("id");
 
-      // Get workspace to check plan
+      // Get workspace basic info
       const workspace = await prisma.workspace.findUnique({
         where: { id },
-        select: { id: true, plan: true, name: true },
+        select: { id: true, name: true, ownerId: true },
       });
 
       if (!workspace) {
         return c.json({ error: "Workspace not found" }, 404);
       }
 
-      // Get all workspace data
+      // Get all workspace data including owner's subscription
       const fullWorkspace = await prisma.workspace.findUnique({
         where: { id },
         include: {
@@ -40,6 +40,12 @@ dataRoutes.get(
               role: true,
               createdAt: true,
               lastLogin: true,
+              subscription: {
+                select: {
+                  plan: true,
+                  status: true,
+                },
+              },
             },
           },
           servers: {
@@ -60,12 +66,19 @@ dataRoutes.get(
         return c.json({ error: "Workspace not found" }, 404);
       }
 
+      // Find workspace owner to get plan information
+      const owner = fullWorkspace.users.find(
+        (user) => user.id === fullWorkspace.ownerId
+      );
+      const ownerPlan = owner?.subscription?.plan || "FREE";
+
       // Prepare export data
       const exportData = {
         workspace: {
           id: fullWorkspace.id,
           name: fullWorkspace.name,
-          planType: fullWorkspace.plan,
+          ownerId: fullWorkspace.ownerId,
+          ownerPlan: ownerPlan,
           createdAt: fullWorkspace.createdAt,
         },
         users: fullWorkspace.users,
@@ -88,8 +101,8 @@ dataRoutes.get(
       return c.json(exportData);
     } catch (error) {
       logger.error(
-        `Error exporting data for workspace ${c.req.param("id")}:`,
-        error
+        { error, workspaceId: c.req.param("id") },
+        "Error exporting data for workspace"
       );
       return c.json({ error: "Failed to export workspace data" }, 500);
     }
@@ -164,8 +177,8 @@ dataRoutes.delete(
       });
     } catch (error) {
       logger.error(
-        `Error deleting data for workspace ${c.req.param("id")}:`,
-        error
+        { error, workspaceId: c.req.param("id") },
+        "Error deleting data for workspace"
       );
       return c.json({ error: "Failed to delete workspace data" }, 500);
     }

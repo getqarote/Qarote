@@ -30,8 +30,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useServerContext } from "@/contexts/ServerContext";
-import { useWorkspace } from "@/hooks/useWorkspace";
-import { useAuth } from "@/contexts/AuthContext";
+import { useUser } from "@/hooks/useUser";
+import { useAuth } from "@/contexts/AuthContextDefinition";
 import { apiClient } from "@/lib/api";
 import { VHost } from "@/lib/api/vhostTypes";
 import { CreateVHostModal } from "@/components/vhosts/CreateVHostModal";
@@ -41,7 +41,7 @@ import { toast } from "sonner";
 export default function VHostsPage() {
   const { serverId } = useParams<{ serverId: string }>();
   const { selectedServerId, hasServers } = useServerContext();
-  const { workspacePlan, workspace } = useWorkspace();
+  const { workspacePlan, workspace } = useUser();
   const { user } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();

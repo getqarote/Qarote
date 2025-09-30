@@ -1,6 +1,5 @@
-import { WorkspacePlan } from "@prisma/client";
-import { getPlanFeatures, type PlanFeatures } from "./features.service";
-import { logger } from "@/core/logger";
+import { UserPlan } from "@prisma/client";
+import { getPlanFeatures } from "./features.service";
 import { prisma } from "@/core/prisma";
 
 // Re-export for convenience
@@ -14,7 +13,7 @@ export {
 export class PlanValidationError extends Error {
   constructor(
     public feature: string,
-    public currentPlan: WorkspacePlan,
+    public currentPlan: UserPlan,
     public requiredPlan: string,
     public currentCount?: number,
     public limit?: number,
@@ -34,7 +33,7 @@ export class PlanLimitExceededError extends Error {
     public feature: string,
     public currentCount: number,
     public limit: number,
-    public currentPlan: WorkspacePlan
+    public currentPlan: UserPlan
   ) {
     super(
       `${feature} limit exceeded. Current: ${currentCount}, Limit: ${limit} for ${currentPlan} plan.`
@@ -44,7 +43,7 @@ export class PlanLimitExceededError extends Error {
 }
 
 // Validation functions
-export function validateQueueCreation(plan: WorkspacePlan): void {
+export function validateQueueCreation(plan: UserPlan): void {
   const features = getPlanFeatures(plan);
 
   if (!features.canAddQueue) {
@@ -56,7 +55,7 @@ export function validateQueueCreation(plan: WorkspacePlan): void {
   }
 }
 
-export function validateExchangeCreation(plan: WorkspacePlan): void {
+export function validateExchangeCreation(plan: UserPlan): void {
   const features = getPlanFeatures(plan);
 
   if (!features.canAddExchange) {
@@ -68,7 +67,7 @@ export function validateExchangeCreation(plan: WorkspacePlan): void {
   }
 }
 
-export function validateVirtualHostCreation(plan: WorkspacePlan): void {
+export function validateVirtualHostCreation(plan: UserPlan): void {
   const features = getPlanFeatures(plan);
 
   if (!features.canAddVirtualHost) {
@@ -80,7 +79,7 @@ export function validateVirtualHostCreation(plan: WorkspacePlan): void {
   }
 }
 
-export function validateRabbitMQUserCreation(plan: WorkspacePlan): void {
+export function validateRabbitMQUserCreation(plan: UserPlan): void {
   const features = getPlanFeatures(plan);
 
   if (!features.canAddRabbitMQUser) {
@@ -94,7 +93,7 @@ export function validateRabbitMQUserCreation(plan: WorkspacePlan): void {
 
 // Additional Invitation Validation Functions
 export function calculateMonthlyCostForUsers(
-  plan: WorkspacePlan,
+  plan: UserPlan,
   additionalUsers: number
 ): number {
   const limits = getPlanFeatures(plan);
@@ -109,20 +108,21 @@ export function calculateMonthlyCostForUsers(
 /**
  * Get upgrade recommendation for over-limit scenario
  */
-export function getUpgradeRecommendationForOverLimit(
-  currentPlan: WorkspacePlan
-): { recommendedPlan: WorkspacePlan | null; message: string } {
+export function getUpgradeRecommendationForOverLimit(currentPlan: UserPlan): {
+  recommendedPlan: UserPlan | null;
+  message: string;
+} {
   // Simple upgrade path: Free -> Developer -> Enterprise
-  if (currentPlan === WorkspacePlan.FREE) {
+  if (currentPlan === UserPlan.FREE) {
     return {
-      recommendedPlan: WorkspacePlan.DEVELOPER,
+      recommendedPlan: UserPlan.DEVELOPER,
       message: `Upgrade to Developer plan for enhanced features and queue management.`,
     };
   }
 
-  if (currentPlan === WorkspacePlan.DEVELOPER) {
+  if (currentPlan === UserPlan.DEVELOPER) {
     return {
-      recommendedPlan: WorkspacePlan.ENTERPRISE,
+      recommendedPlan: UserPlan.ENTERPRISE,
       message: `Upgrade to Enterprise plan for unlimited resources and priority support.`,
     };
   }
@@ -146,7 +146,7 @@ export function extractMajorMinorVersion(fullVersion: string): string {
  * Validate if a RabbitMQ version is supported by the current plan
  */
 export function validateRabbitMqVersion(
-  plan: WorkspacePlan,
+  plan: UserPlan,
   rabbitMqVersion: string
 ): void {
   const limits = getPlanFeatures(plan);
@@ -158,7 +158,7 @@ export function validateRabbitMqVersion(
     throw new PlanValidationError(
       `RabbitMQ version ${majorMinorVersion}`,
       plan,
-      plan === WorkspacePlan.FREE ? "Developer or Enterprise" : "Enterprise",
+      plan === UserPlan.FREE ? "Developer or Enterprise" : "Enterprise",
       undefined,
       undefined,
       `Supported versions for ${plan} plan: ${supportedVersionsStr}`
@@ -167,7 +167,7 @@ export function validateRabbitMqVersion(
 }
 
 export function validateServerCreation(
-  plan: WorkspacePlan,
+  plan: UserPlan,
   currentServerCount: number
 ): void {
   const features = getPlanFeatures(plan);
@@ -194,7 +194,7 @@ export function validateServerCreation(
 }
 
 export function validateWorkspaceCreation(
-  plan: WorkspacePlan,
+  plan: UserPlan,
   currentWorkspaceCount: number
 ): void {
   const features = getPlanFeatures(plan);
@@ -213,7 +213,7 @@ export function validateWorkspaceCreation(
 }
 
 export function validateUserInvitation(
-  plan: WorkspacePlan,
+  plan: UserPlan,
   currentUserCount: number,
   pendingInvitations: number = 0
 ): void {
@@ -252,37 +252,37 @@ export function validateUserInvitation(
 }
 
 // Access helper functions
-export function canUserAddQueue(plan: WorkspacePlan): boolean {
+export function canUserAddQueue(plan: UserPlan): boolean {
   return getPlanFeatures(plan).canAddQueue;
 }
 
-export function canUserSendMessages(plan: WorkspacePlan): boolean {
+export function canUserSendMessages(plan: UserPlan): boolean {
   return getPlanFeatures(plan).canSendMessages;
 }
 
-export function canUserAddServer(plan: WorkspacePlan): boolean {
+export function canUserAddServer(plan: UserPlan): boolean {
   return getPlanFeatures(plan).canAddServer;
 }
 
-export function canUserAddExchange(plan: WorkspacePlan): boolean {
+export function canUserAddExchange(plan: UserPlan): boolean {
   return getPlanFeatures(plan).canAddExchange;
 }
 
-export function canUserAddVirtualHost(plan: WorkspacePlan): boolean {
+export function canUserAddVirtualHost(plan: UserPlan): boolean {
   return getPlanFeatures(plan).canAddVirtualHost;
 }
 
-export function canUserAddRabbitMQUser(plan: WorkspacePlan): boolean {
+export function canUserAddRabbitMQUser(plan: UserPlan): boolean {
   return getPlanFeatures(plan).canAddRabbitMQUser;
 }
 
-export function canUserInviteUsers(plan: WorkspacePlan): boolean {
+export function canUserInviteUsers(plan: UserPlan): boolean {
   return getPlanFeatures(plan).canInviteUsers;
 }
 
 // Count-based validations
 export function canUserAddServerWithCount(
-  plan: WorkspacePlan,
+  plan: UserPlan,
   currentServerCount: number
 ): boolean {
   const features = getPlanFeatures(plan);
@@ -292,7 +292,7 @@ export function canUserAddServerWithCount(
 }
 
 export function canUserAddWorkspaceWithCount(
-  plan: WorkspacePlan,
+  plan: UserPlan,
   currentWorkspaceCount: number
 ): boolean {
   const features = getPlanFeatures(plan);
@@ -301,7 +301,7 @@ export function canUserAddWorkspaceWithCount(
 }
 
 export function canUserInviteMoreUsers(
-  plan: WorkspacePlan,
+  plan: UserPlan,
   currentUserCount: number
 ): boolean {
   const features = getPlanFeatures(plan);
@@ -311,42 +311,42 @@ export function canUserInviteMoreUsers(
 }
 
 // Display helpers
-export function getPlanDisplayName(plan: WorkspacePlan): string {
+export function getPlanDisplayName(plan: UserPlan): string {
   return getPlanFeatures(plan).displayName;
 }
 
-export function getPlanColor(plan: WorkspacePlan): string {
+export function getPlanColor(plan: UserPlan): string {
   return getPlanFeatures(plan).color;
 }
 
-export function getPlanDescription(plan: WorkspacePlan): string {
+export function getPlanDescription(plan: UserPlan): string {
   return getPlanFeatures(plan).description;
 }
 
-export function getPlanFeatureDescriptions(plan: WorkspacePlan): string[] {
+export function getPlanFeatureDescriptions(plan: UserPlan): string[] {
   return getPlanFeatures(plan).featureDescriptions;
 }
 
 // Pricing helpers
-export function getMonthlyPrice(plan: WorkspacePlan): string {
+export function getMonthlyPrice(plan: UserPlan): string {
   const price = getPlanFeatures(plan).monthlyPrice;
   return price === 0 ? "Free" : `$${(price / 100).toFixed(0)}`;
 }
 
-export function getYearlyPrice(plan: WorkspacePlan): string {
+export function getYearlyPrice(plan: UserPlan): string {
   const price = getPlanFeatures(plan).yearlyPrice;
   return price === 0 ? "Free" : `$${(price / 100).toFixed(0)}`;
 }
 
-export function getMonthlyPriceInCents(plan: WorkspacePlan): number {
+export function getMonthlyPriceInCents(plan: UserPlan): number {
   return getPlanFeatures(plan).monthlyPrice;
 }
 
-export function getYearlyPriceInCents(plan: WorkspacePlan): number {
+export function getYearlyPriceInCents(plan: UserPlan): number {
   return getPlanFeatures(plan).yearlyPrice;
 }
 
-export function getYearlySavings(plan: WorkspacePlan): string | null {
+export function getYearlySavings(plan: UserPlan): string | null {
   const features = getPlanFeatures(plan);
   if (features.monthlyPrice === 0 || features.yearlyPrice === 0) return null;
 
@@ -360,37 +360,37 @@ export function getYearlySavings(plan: WorkspacePlan): string | null {
 }
 
 // Limit getters
-export function getServerLimitForPlan(plan: WorkspacePlan): number | null {
+export function getServerLimitForPlan(plan: UserPlan): number | null {
   return getPlanFeatures(plan).maxServers;
 }
 
-export function getWorkspaceLimitForPlan(plan: WorkspacePlan): number | null {
+export function getWorkspaceLimitForPlan(plan: UserPlan): number | null {
   return getPlanFeatures(plan).maxWorkspaces;
 }
 
-export function getUserLimitForPlan(plan: WorkspacePlan): number | null {
+export function getUserLimitForPlan(plan: UserPlan): number | null {
   return getPlanFeatures(plan).maxUsers;
 }
 
-export function getInvitationLimitForPlan(plan: WorkspacePlan): number | null {
+export function getInvitationLimitForPlan(plan: UserPlan): number | null {
   return getPlanFeatures(plan).maxInvitations;
 }
 
 // Limit text helpers
-export function getServerLimitText(plan: WorkspacePlan): string {
+export function getServerLimitText(plan: UserPlan): string {
   const features = getPlanFeatures(plan);
   if (!features.canAddServer) return "Cannot add servers";
   if (features.maxServers === null) return "Unlimited servers";
   return `Up to ${features.maxServers} servers`;
 }
 
-export function getWorkspaceLimitText(plan: WorkspacePlan): string {
+export function getWorkspaceLimitText(plan: UserPlan): string {
   const features = getPlanFeatures(plan);
   if (features.maxWorkspaces === null) return "Unlimited workspaces";
   return `Up to ${features.maxWorkspaces} workspaces`;
 }
 
-export function getUserLimitText(plan: WorkspacePlan): string {
+export function getUserLimitText(plan: UserPlan): string {
   const features = getPlanFeatures(plan);
   if (!features.canInviteUsers) return "Cannot invite users";
   if (features.maxUsers === null) return "Unlimited users";
@@ -398,7 +398,7 @@ export function getUserLimitText(plan: WorkspacePlan): string {
   return `Up to ${additionalUsers} additional user${additionalUsers === 1 ? "" : "s"}`;
 }
 
-export function getInvitationLimitText(plan: WorkspacePlan): string {
+export function getInvitationLimitText(plan: UserPlan): string {
   const features = getPlanFeatures(plan);
   if (!features.canInviteUsers) return "Cannot send invitations";
   if (features.maxInvitations === null) return "Unlimited invitations";
@@ -406,61 +406,80 @@ export function getInvitationLimitText(plan: WorkspacePlan): string {
 }
 
 // RabbitMQ version support
-export function getSupportedRabbitMqVersions(plan: WorkspacePlan): string[] {
+export function getSupportedRabbitMqVersions(plan: UserPlan): string[] {
   return getPlanFeatures(plan).supportedRabbitMqVersions;
 }
 
 export function isRabbitMqVersionSupported(
-  plan: WorkspacePlan,
+  plan: UserPlan,
   version: string
 ): boolean {
   const supportedVersions = getSupportedRabbitMqVersions(plan);
   return supportedVersions.includes(version);
 }
 
-export async function getWorkspacePlan(workspaceId: string) {
-  const workspace = await prisma.workspace.findUnique({
-    where: { id: workspaceId },
-    select: { plan: true },
+export async function getUserPlan(userId: string) {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      subscription: {
+        select: { plan: true },
+      },
+    },
   });
 
-  if (!workspace) {
-    throw new Error("Workspace not found");
+  if (!user) {
+    throw new Error("User not found");
   }
 
-  return workspace.plan;
+  // If user has an active subscription, use that plan
+  if (user.subscription) {
+    return user.subscription.plan;
+  }
+
+  // Otherwise, default to FREE plan
+  return UserPlan.FREE;
 }
 
-export async function getWorkspaceResourceCounts(workspaceId: string) {
-  const [serverCount, userCount] = await Promise.all([
+export async function getUserResourceCounts(userId: string) {
+  const [serverCount, userCount, workspaceCount] = await Promise.all([
     prisma.rabbitMQServer.count({
-      where: { workspaceId },
+      where: {
+        workspace: {
+          ownerId: userId,
+        },
+      },
     }),
     prisma.user.count({
-      where: { workspaceId },
+      where: {
+        workspace: {
+          ownerId: userId,
+        },
+      },
+    }),
+    prisma.workspace.count({
+      where: { ownerId: userId },
     }),
   ]);
 
   return {
     servers: serverCount,
     users: userCount,
-    workspaces: 1, // For now, each user has one workspace
+    workspaces: workspaceCount,
   };
 }
 
-// Legacy compatibility functions for queue management
 export function getOverLimitWarningMessage(
-  plan: WorkspacePlan,
-  currentCount: number,
-  serverName: string
+  plan: UserPlan,
+  currentCount: number
 ): string {
-  // Since we removed queue limits, just provide a generic message
-  return `Queue management available. Current queues: ${currentCount}`;
+  const planName = getPlanDisplayName(plan);
+  return `Queue management available on ${planName} plan. Current queues: ${currentCount}`;
 }
 
 // Simplified validation for queue creation (no limits in new plan structure)
 export function validateQueueCreationOnServer(
-  plan: WorkspacePlan,
+  plan: UserPlan,
   currentQueueCount: number
 ): void {
   // Since we removed queue limits, just ensure basic permissions

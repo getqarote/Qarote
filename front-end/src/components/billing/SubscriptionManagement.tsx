@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { X, Clock, RefreshCw } from "lucide-react";
-import { WorkspacePlan } from "@/types/plans";
+import { UserPlan } from "@/types/plans";
 import { CancelSubscriptionModal } from "./CancelSubscriptionModal";
 
 interface CancelSubscriptionResponse {
@@ -18,9 +18,9 @@ interface CancelSubscriptionResponse {
 }
 
 interface SubscriptionManagementProps {
-  currentPlan: WorkspacePlan;
+  currentPlan: UserPlan;
   onOpenBillingPortal: () => void;
-  onUpgrade: (plan: WorkspacePlan, interval: "monthly" | "yearly") => void;
+  onUpgrade: (plan: UserPlan, interval: "monthly" | "yearly") => void;
   onRenewSubscription?: () => void;
   onCancelSubscription: (data: {
     cancelImmediately: boolean;
@@ -31,7 +31,7 @@ interface SubscriptionManagementProps {
   isLoading?: boolean;
   cancelAtPeriodEnd?: boolean;
   subscriptionCanceled?: boolean; // True if user had a subscription but canceled it
-  lastPlan?: WorkspacePlan; // The plan they had before canceling
+  lastPlan?: UserPlan; // The plan they had before canceling
 }
 
 export const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({
@@ -72,7 +72,7 @@ export const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({
               </p>
             </div>
             {/* Subscription Actions */}
-            {currentPlan === WorkspacePlan.FREE &&
+            {currentPlan === UserPlan.FREE &&
             subscriptionCanceled &&
             lastPlan &&
             onRenewSubscription ? (
@@ -85,7 +85,7 @@ export const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({
                 <RefreshCw className="w-4 h-4 mr-2" />
                 Renew {lastPlan} Plan
               </Button>
-            ) : currentPlan !== WorkspacePlan.FREE ? (
+            ) : currentPlan !== UserPlan.FREE ? (
               // Show cancel/pending cancellation for active paid plans
               <>
                 {cancelAtPeriodEnd ? (
@@ -135,9 +135,7 @@ export const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({
         </CardHeader>
         <CardContent>
           {/* Subscription Status Information */}
-          {currentPlan === WorkspacePlan.FREE &&
-          subscriptionCanceled &&
-          lastPlan ? (
+          {currentPlan === UserPlan.FREE && subscriptionCanceled && lastPlan ? (
             <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
               <div className="flex items-start gap-3">
                 <div className="flex-shrink-0">

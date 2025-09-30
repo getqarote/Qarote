@@ -2,7 +2,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { PlanBadge } from "@/components/ui/PlanBadge";
 import { useServerContext } from "@/contexts/ServerContext";
-import { useWorkspace } from "@/hooks/useWorkspace";
+import { useUser } from "@/hooks/useUser";
 import { useNodes } from "@/hooks/useApi";
 import { RabbitMQAuthorizationError } from "@/types/apiErrors";
 import { EnhancedNodesOverview } from "@/components/nodes/EnhancedNodesOverview";
@@ -11,7 +11,7 @@ import { NoServerConfigured } from "@/components/NoServerConfigured";
 
 const Nodes = () => {
   const { selectedServerId, hasServers } = useServerContext();
-  const { workspacePlan } = useWorkspace();
+  const { userPlan } = useUser();
 
   // Single useNodes call for all child components
   const { data: nodesData, isLoading: nodesLoading } =
@@ -89,7 +89,7 @@ const Nodes = () => {
                   </p>
                 </div>
               </div>
-              <PlanBadge workspacePlan={workspacePlan} />
+              <PlanBadge workspacePlan={userPlan} />
             </div>
 
             {/* Cluster Overview */}

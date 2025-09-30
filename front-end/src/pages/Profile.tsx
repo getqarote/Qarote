@@ -31,6 +31,7 @@ import {
   useVerificationStatus,
 } from "@/hooks/useApi";
 import { FeedbackForm } from "@/components/FeedbackForm";
+import { useUser } from "@/hooks/useUser";
 import { useWorkspace } from "@/hooks/useWorkspace";
 
 // Valid tab values - defined outside component to avoid dependency issues
@@ -45,7 +46,8 @@ type TabValue = (typeof VALID_TABS)[number];
 
 const Profile = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const { planData, workspacePlan } = useWorkspace();
+  const { planData, userPlan } = useUser();
+  const { workspace, refetch: refetchWorkspace } = useWorkspace();
   const { data: profileData, isLoading: profileLoading } = useProfile();
   const { data: workspaceUsersData, isLoading: usersLoading } =
     useWorkspaceUsers();
@@ -93,8 +95,6 @@ const Profile = () => {
   const [workspaceForm, setWorkspaceForm] = useState<WorkspaceFormState>({
     name: "",
     contactEmail: "",
-    logoUrl: "",
-    plan: "FREE",
   });
 
   // Invite form state
@@ -104,7 +104,6 @@ const Profile = () => {
   });
 
   const profile = profileData?.profile;
-  const workspace = profile?.workspace;
   const workspaceUsers = workspaceUsersData?.users || [];
   const invitations = invitationsData?.invitations || [];
   const isAdmin = profile?.role === "ADMIN";
@@ -132,8 +131,6 @@ const Profile = () => {
       setWorkspaceForm({
         name: workspace.name || "",
         contactEmail: workspace.contactEmail || "",
-        logoUrl: workspace.logoUrl || "",
-        plan: workspace.plan as "FREE" | "DEVELOPER" | "STARTUP" | "BUSINESS",
       });
     }
   }, [profile, workspace]);
@@ -206,6 +203,7 @@ const Profile = () => {
     try {
       await updateWorkspaceMutation.mutateAsync(workspaceForm);
       setEditingWorkspace(false);
+      await refetchWorkspace(); // Refresh workspace data
       toast.success("Workspace information updated successfully");
     } catch (error) {
       toast.error("Failed to update workspace information");
@@ -222,7 +220,7 @@ const Profile = () => {
     if (!canInviteMoreUsers()) {
       const maxUsers = planFeatures.maxUsers;
       toast.error(
-        `Cannot invite more users. Your ${workspacePlan} plan allows up to ${maxUsers} users. You currently have ${currentUserCount} users and ${pendingInvitationCount} pending invitations.`
+        `Cannot invite more users. Your ${userPlan} plan allows up to ${maxUsers} users. You currently have ${currentUserCount} users and ${pendingInvitationCount} pending invitations.`
       );
       return;
     }
@@ -363,7 +361,7 @@ const Profile = () => {
               </TabsContent>
 
               <TabsContent value="plans" className="space-y-6">
-                <PlansSummaryTab currentPlan={workspacePlan} />
+                <PlansSummaryTab currentPlan={userPlan} />
               </TabsContent>
 
               <TabsContent value="team" className="space-y-6">
@@ -381,7 +379,7 @@ const Profile = () => {
                   onRevokeInvitation={handleRevokeInvitation}
                   isInviting={sendInvitationMutation.isPending}
                   isRevoking={revokeInvitationMutation.isPending}
-                  workspacePlan={workspacePlan}
+                  userPlan={userPlan}
                   canInviteMoreUsers={canInviteMoreUsers()}
                 />
               </TabsContent>

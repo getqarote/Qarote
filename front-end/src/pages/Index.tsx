@@ -17,9 +17,9 @@ import { QueuedMessagesChart } from "@/components/QueuedMessagesChart";
 import { QueueDepthsChart } from "@/components/QueueDepthsChart";
 import { PlanBadge } from "@/components/ui/PlanBadge";
 import { useServerContext } from "@/contexts/ServerContext";
-import { useWorkspace } from "@/hooks/useWorkspace";
+import { useUser } from "@/hooks/useUser";
 import { useDashboardData } from "@/hooks/useDashboardData";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/AuthContextDefinition";
 import { useNavigate } from "react-router-dom";
 import { TimeRange } from "@/components/TimeRangeSelector";
 
@@ -27,7 +27,6 @@ const Index = () => {
   const { selectedServerId, hasServers } = useServerContext();
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  const { workspacePlan } = useWorkspace();
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [liveRatesTimeRange, setLiveRatesTimeRange] = useState<TimeRange>("1d");
 
@@ -99,7 +98,7 @@ const Index = () => {
                     </p>
                   </div>
                 </div>
-                <PlanBadge workspacePlan={workspacePlan} />
+                <PlanBadge />
               </div>
               <Card className="border-0 shadow-md bg-card">
                 <CardContent className="p-6">
@@ -138,7 +137,7 @@ const Index = () => {
                 </div>
               </div>
               <div className="flex gap-3">
-                <PlanBadge workspacePlan={workspacePlan} />
+                <PlanBadge />
                 <AddServerButton
                   onUpgradeClick={() => setShowUpgradeModal(true)}
                 />
@@ -217,7 +216,6 @@ const Index = () => {
         <PlanUpgradeModal
           isOpen={showUpgradeModal}
           onClose={() => setShowUpgradeModal(false)}
-          currentPlan={workspacePlan}
           feature="server management"
         />
       )}

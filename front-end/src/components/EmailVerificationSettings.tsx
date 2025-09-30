@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { CheckCircle, XCircle, Mail, Clock, RefreshCw } from "lucide-react";
 import { apiClient } from "@/lib/api";
 import { toast } from "sonner";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/AuthContextDefinition";
 
 export const EmailVerificationSettings = () => {
   const { user } = useAuth();

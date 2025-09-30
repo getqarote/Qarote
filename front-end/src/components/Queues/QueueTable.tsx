@@ -13,8 +13,8 @@ import {
 import { PurgeQueueDialog } from "@/components/PurgeQueueDialog";
 import { MessageSquare, Users, Trash2, Lock } from "lucide-react";
 import { Queue } from "@/lib/api";
-import { useWorkspace } from "@/hooks/useWorkspace";
-import { WorkspacePlan } from "@/types/plans";
+import { useUser } from "@/hooks/useUser";
+import { UserPlan } from "@/types/plans";
 import { useState } from "react";
 import { PlanUpgradeModal } from "@/components/plans/PlanUpgradeModal";
 
@@ -34,7 +34,7 @@ export function QueueTable({
   onRefetch,
 }: QueueTableProps) {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const { canManageQueues, workspacePlan } = useWorkspace();
+  const { canManageQueues, userPlan } = useUser();
 
   const handleQueueManagementClick = () => {
     if (!canManageQueues) {
@@ -169,7 +169,7 @@ export function QueueTable({
                           variant="outline"
                           className="text-red-600 hover:text-red-700 opacity-60 cursor-not-allowed"
                           title={
-                            workspacePlan === WorkspacePlan.FREE
+                            userPlan === UserPlan.FREE
                               ? "Upgrade to Developer or Enterprise plan to purge queues"
                               : "Upgrade to purge queues"
                           }
@@ -203,7 +203,6 @@ export function QueueTable({
         <PlanUpgradeModal
           isOpen={showUpgradeModal}
           onClose={() => setShowUpgradeModal(false)}
-          currentPlan={workspacePlan}
           feature="queue-management"
         />
       )}

@@ -1,11 +1,11 @@
 import React from "react";
-import { useWorkspace } from "@/hooks/useWorkspace";
+import { useUser } from "@/hooks/useUser";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api";
 import logger from "@/lib/logger";
 import { BillingOverviewResponse } from "@/lib/api/paymentClient";
 import { usePlanUpgrade } from "@/hooks/usePlanUpgrade";
-import { WorkspacePlan } from "@/types/plans";
+import { UserPlan } from "@/types/plans";
 import {
   BillingHeader,
   BillingLayout,
@@ -26,7 +26,7 @@ interface ExtendedStripeSubscription {
 }
 
 const Billing: React.FC = () => {
-  const { workspace } = useWorkspace();
+  const { user } = useUser();
   const { handleUpgrade } = usePlanUpgrade();
   const queryClient = useQueryClient();
 
@@ -35,12 +35,27 @@ const Billing: React.FC = () => {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["billing", workspace?.id],
+    queryKey: ["billing", user.id],
     queryFn: async (): Promise<BillingOverviewResponse> => {
-      if (!workspace?.id) throw new Error("No workspace");
+      if (!user.id) throw new Error("No user");
       return await apiClient.getBillingOverview();
     },
-    enabled: !!workspace?.id,
+    enabled: !!user.id,
+    staleTime: 2 * 60 * 1000, // 2 minutes - billing data doesn't change frequently
+    refetchOnWindowFocus: false, // Don't refetch when window gains focus
+    retry: (failureCount, error: unknown) => {
+      // Don't retry on 429 (rate limit) errors
+      if (
+        error &&
+        typeof error === "object" &&
+        "status" in error &&
+        error.status === 429
+      ) {
+        return false;
+      }
+      // Retry up to 1 time for other errors
+      return failureCount < 1;
+    },
   });
 
   const handleCancelSubscription = async (data: {
@@ -60,7 +75,7 @@ const Billing: React.FC = () => {
 
       // Refetch billing data to update the UI
       await queryClient.invalidateQueries({
-        queryKey: ["billing", workspace?.id],
+        queryKey: ["billing", user.id],
       });
 
       return response;
@@ -82,8 +97,7 @@ const Billing: React.FC = () => {
   const handleRenewSubscription = async () => {
     try {
       // Determine the plan to renew based on subscription history
-      const planToRenew =
-        billingData?.subscription?.plan || WorkspacePlan.DEVELOPER;
+      const planToRenew = billingData?.subscription?.plan || UserPlan.DEVELOPER;
       const data = await apiClient.renewSubscription(planToRenew, "monthly");
       window.location.href = data.url;
     } catch (error) {
@@ -92,14 +106,19 @@ const Billing: React.FC = () => {
   };
 
   // Determine if the subscription was canceled
+  // A subscription is considered canceled if:
+  // 1. Current plan is FREE
+  // 2. Status is CANCELED
+  // 3. There was a previous paid plan (we check payment history)
   const subscriptionCanceled =
-    billingData?.workspace.plan === WorkspacePlan.FREE &&
-    billingData?.subscription?.status === "CANCELED";
+    billingData?.subscription?.plan === UserPlan.FREE &&
+    billingData?.subscription?.status === "CANCELED" &&
+    billingData?.recentPayments &&
+    billingData.recentPayments.length > 0; // Has payment history
 
   // Get the last plan they had before canceling
-  const lastPlan = subscriptionCanceled
-    ? billingData?.subscription?.plan
-    : undefined;
+  // For now, we'll use a default since we don't have historical plan data
+  const lastPlan = subscriptionCanceled ? UserPlan.DEVELOPER : undefined;
 
   return (
     <BillingLayout isLoading={isLoading} error={!!error || !billingData}>
@@ -108,14 +127,13 @@ const Billing: React.FC = () => {
           <BillingHeader />
 
           <CurrentPlanCard
-            workspace={{ plan: billingData.workspace.plan }}
             subscription={billingData.subscription}
             stripeSubscription={billingData.stripeSubscription}
             paymentMethod={billingData.paymentMethod}
           />
 
           <SubscriptionManagement
-            currentPlan={billingData.workspace.plan}
+            currentPlan={billingData.subscription?.plan || UserPlan.FREE}
             onOpenBillingPortal={handleOpenBillingPortal}
             onUpgrade={handleUpgrade}
             onRenewSubscription={handleRenewSubscription}

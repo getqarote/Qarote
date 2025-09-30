@@ -4,12 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { Crown, Zap, Users, Server, TrendingUp, Loader2 } from "lucide-react";
-import { WorkspacePlan } from "@/types/plans";
+import { UserPlan } from "@/types/plans";
 import { usePlanUpgrade } from "@/hooks/usePlanUpgrade";
-import { useWorkspace } from "@/hooks/useWorkspace";
+import { useUser } from "@/hooks/useUser";
 
 interface PlansSummaryTabProps {
-  currentPlan: WorkspacePlan;
+  currentPlan: UserPlan;
   className?: string;
 }
 
@@ -18,17 +18,17 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
   className = "",
 }) => {
   const { handleUpgrade, isUpgrading } = usePlanUpgrade();
-  const { planData } = useWorkspace();
+  const { planData } = useUser();
   const currentFeatures = planData?.planFeatures;
 
   // Helper function to get plan display name
-  const getPlanDisplayName = (plan: WorkspacePlan): string => {
+  const getPlanDisplayName = (plan: UserPlan): string => {
     switch (plan) {
-      case WorkspacePlan.FREE:
+      case UserPlan.FREE:
         return "Free";
-      case WorkspacePlan.DEVELOPER:
+      case UserPlan.DEVELOPER:
         return "Developer";
-      case WorkspacePlan.ENTERPRISE:
+      case UserPlan.ENTERPRISE:
         return "Enterprise";
       default:
         return "Unknown";
@@ -36,25 +36,25 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
   };
 
   // Helper function to get next plan
-  const getNextPlan = (plan: WorkspacePlan): WorkspacePlan | null => {
+  const getNextPlan = (plan: UserPlan): UserPlan | null => {
     switch (plan) {
-      case WorkspacePlan.FREE:
-        return WorkspacePlan.DEVELOPER;
-      case WorkspacePlan.DEVELOPER:
-        return WorkspacePlan.ENTERPRISE;
+      case UserPlan.FREE:
+        return UserPlan.DEVELOPER;
+      case UserPlan.DEVELOPER:
+        return UserPlan.ENTERPRISE;
       default:
         return null;
     }
   };
 
   const planBenefits = {
-    [WorkspacePlan.FREE]: {
+    [UserPlan.FREE]: {
       icon: <Users className="w-5 h-5" />,
       color: "text-muted-foreground",
       bgColor: "bg-muted",
       benefits: ["1 RabbitMQ server", "Basic monitoring", "Community support"],
     },
-    [WorkspacePlan.DEVELOPER]: {
+    [UserPlan.DEVELOPER]: {
       icon: <Zap className="w-5 h-5" />,
       color: "text-blue-600",
       bgColor: "bg-blue-50 dark:bg-blue-900/20",
@@ -65,7 +65,7 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
         "Priority support",
       ],
     },
-    [WorkspacePlan.ENTERPRISE]: {
+    [UserPlan.ENTERPRISE]: {
       icon: <Crown className="w-5 h-5" />,
       color: "text-purple-600",
       bgColor: "bg-purple-50 dark:bg-purple-900/20",
@@ -78,9 +78,15 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
     },
   };
 
+  console.log("currentPlan", currentPlan);
+
   const currentPlanInfo = planBenefits[currentPlan];
   const nextPlan = getNextPlan(currentPlan);
   const nextPlanInfo = nextPlan ? planBenefits[nextPlan] : null;
+
+  console.log("currentPlanInfo", currentPlanInfo);
+  console.log("nextPlan", nextPlan);
+  console.log("nextPlanInfo", nextPlanInfo);
 
   return (
     <div className={`space-y-6 ${className}`}>
@@ -132,7 +138,15 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
               <h4 className="font-medium text-foreground mb-3">
                 Plan Features:
               </h4>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                <div className="text-center">
+                  <div className="text-lg font-semibold text-foreground">
+                    {currentFeatures?.canAddQueue ? "✓" : "✗"}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    Add Queues
+                  </div>
+                </div>
                 <div className="text-center">
                   <div className="text-lg font-semibold text-foreground">
                     {currentFeatures?.canAddExchange ? "✓" : "✗"}

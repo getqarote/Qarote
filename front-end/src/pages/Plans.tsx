@@ -4,9 +4,6 @@ import {
   X,
   Star,
   Zap,
-  Users,
-  Server,
-  MessageSquare,
   TrendingUp,
   Shield,
   Headphones,
@@ -15,38 +12,36 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { WorkspacePlan } from "@/types/plans";
+import { UserPlan } from "@/types/plans";
 import { usePlanUpgrade } from "@/hooks/usePlanUpgrade";
 import { apiClient } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
-import { useWorkspace } from "@/hooks/useWorkspace";
 import { useNavigate } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { PlanBadge } from "@/components/ui/PlanBadge";
+import { useWorkspace } from "@/hooks/useWorkspace";
+import { useUser } from "@/hooks/useUser";
 
 interface PlanCardProps {
-  plan: WorkspacePlan;
+  plan: UserPlan;
   price: string;
   period: "month" | "year";
   billingPeriod: "monthly" | "yearly";
   originalPrice?: string;
   isPopular?: boolean;
   isCurrentPlan?: boolean;
-  onUpgrade: (
-    plan: WorkspacePlan,
-    billingInterval: "monthly" | "yearly"
-  ) => void;
+  onUpgrade: (plan: UserPlan, billingInterval: "monthly" | "yearly") => void;
 }
 
 // Hook to fetch all plans data
 const useAllPlans = () => {
-  const { workspace } = useWorkspace();
+  const { user } = useUser();
 
   return useQuery({
-    queryKey: ["plans", "all", workspace?.id],
+    queryKey: ["plans", "all", user.id],
     queryFn: () => apiClient.getAllPlans(),
-    enabled: !!workspace?.id,
+    enabled: !!user.id,
   });
 };
 
@@ -70,21 +65,21 @@ const PlanCard: React.FC<PlanCardProps> = ({
   }
 
   const planConfig = {
-    [WorkspacePlan.FREE]: {
+    [UserPlan.FREE]: {
       name: "Free",
       description: "Perfect for getting started",
       color: "text-gray-600",
       bgColor: "bg-gray-50",
       borderColor: "border-gray-200",
     },
-    [WorkspacePlan.DEVELOPER]: {
+    [UserPlan.DEVELOPER]: {
       name: "Developer",
       description: "For solo developers and small projects",
       color: "text-blue-600",
       bgColor: "bg-blue-50",
       borderColor: "border-blue-200",
     },
-    [WorkspacePlan.ENTERPRISE]: {
+    [UserPlan.ENTERPRISE]: {
       name: "Enterprise",
       description: "For large teams and enterprises",
       color: "text-gray-600",
@@ -270,7 +265,7 @@ const PlanCard: React.FC<PlanCardProps> = ({
         >
           {isCurrentPlan
             ? "Current Plan"
-            : plan === WorkspacePlan.FREE
+            : plan === UserPlan.FREE
               ? "Get Started"
               : "Upgrade Now"}
         </Button>
@@ -280,33 +275,26 @@ const PlanCard: React.FC<PlanCardProps> = ({
 };
 
 interface PlansPageProps {
-  currentPlan?: WorkspacePlan;
-  onUpgrade?: (
-    plan: WorkspacePlan,
-    billingInterval: "monthly" | "yearly"
-  ) => void;
+  onUpgrade?: (plan: UserPlan, billingInterval: "monthly" | "yearly") => void;
 }
 
-export const PlansPage: React.FC<PlansPageProps> = ({
-  currentPlan = WorkspacePlan.FREE,
-  onUpgrade = () => {},
-}) => {
+export const PlansPage: React.FC<PlansPageProps> = ({ onUpgrade }) => {
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">(
     "monthly"
   );
   const navigate = useNavigate();
-  const { workspacePlan } = useWorkspace();
+  const { userPlan } = useUser();
 
   const planPricing = {
     monthly: {
-      [WorkspacePlan.FREE]: { price: "Free", originalPrice: undefined },
-      [WorkspacePlan.DEVELOPER]: { price: "$10", originalPrice: undefined },
-      [WorkspacePlan.ENTERPRISE]: { price: "$50", originalPrice: undefined },
+      [UserPlan.FREE]: { price: "Free", originalPrice: undefined },
+      [UserPlan.DEVELOPER]: { price: "$10", originalPrice: undefined },
+      [UserPlan.ENTERPRISE]: { price: "$50", originalPrice: undefined },
     },
     yearly: {
-      [WorkspacePlan.FREE]: { price: "Free", originalPrice: undefined },
-      [WorkspacePlan.DEVELOPER]: { price: "$100", originalPrice: "$120" },
-      [WorkspacePlan.ENTERPRISE]: { price: "$500", originalPrice: "$600" },
+      [UserPlan.FREE]: { price: "Free", originalPrice: undefined },
+      [UserPlan.DEVELOPER]: { price: "$100", originalPrice: "$120" },
+      [UserPlan.ENTERPRISE]: { price: "$500", originalPrice: "$600" },
     },
   };
 
@@ -337,7 +325,7 @@ export const PlansPage: React.FC<PlansPageProps> = ({
                   </p>
                 </div>
               </div>
-              <PlanBadge workspacePlan={workspacePlan} />
+              <PlanBadge />
             </div>
 
             {/* Hero Section */}
@@ -444,7 +432,7 @@ export const PlansPage: React.FC<PlansPageProps> = ({
             <div className="space-y-8 mb-16">
               <div className="flex justify-center">
                 <div className="grid lg:grid-cols-3 gap-8 max-w-5xl">
-                  {Object.values(WorkspacePlan).map((plan) => (
+                  {Object.values(UserPlan).map((plan) => (
                     <PlanCard
                       key={plan}
                       plan={plan}
@@ -452,8 +440,8 @@ export const PlansPage: React.FC<PlansPageProps> = ({
                       originalPrice={currentPricing[plan].originalPrice}
                       period={billingPeriod === "monthly" ? "month" : "year"}
                       billingPeriod={billingPeriod}
-                      isPopular={plan === WorkspacePlan.DEVELOPER}
-                      isCurrentPlan={plan === currentPlan}
+                      isPopular={plan === UserPlan.DEVELOPER}
+                      isCurrentPlan={plan === userPlan}
                       onUpgrade={onUpgrade}
                     />
                   ))}
@@ -470,14 +458,8 @@ export const PlansPage: React.FC<PlansPageProps> = ({
 // Default export for lazy loading
 const Plans: React.FC = () => {
   const { handleUpgrade } = usePlanUpgrade();
-  const { workspace } = useWorkspace();
 
-  return (
-    <PlansPage
-      currentPlan={workspace?.plan as WorkspacePlan}
-      onUpgrade={handleUpgrade}
-    />
-  );
+  return <PlansPage onUpgrade={handleUpgrade} />;
 };
 
 export default Plans;

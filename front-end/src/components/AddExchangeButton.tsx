@@ -1,7 +1,7 @@
 import { Lock, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { WorkspacePlan } from "@/types/plans";
-import { useWorkspace } from "@/hooks/useWorkspace";
+import { UserPlan } from "@/types/plans";
+import { useUser } from "@/hooks/useUser";
 
 interface AddExchangeButtonProps {
   onUpgradeClick: () => void;
@@ -12,13 +12,13 @@ export const AddExchangeButton = ({
   onUpgradeClick,
   onAddClick,
 }: AddExchangeButtonProps) => {
-  const { workspacePlan, isLoading: workspaceLoading } = useWorkspace();
+  const { userPlan, isLoading: userLoading } = useUser();
 
   // For Free plan users, exchange creation is restricted
-  const canAddExchange = workspacePlan !== WorkspacePlan.FREE;
+  const canAddExchange = userPlan !== UserPlan.FREE;
 
   const getExchangeButtonConfig = () => {
-    if (workspaceLoading || canAddExchange) return null;
+    if (userLoading || canAddExchange) return null;
 
     return {
       text: "Add Exchange",

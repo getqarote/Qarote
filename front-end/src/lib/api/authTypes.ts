@@ -56,7 +56,7 @@ export interface Workspace {
   name: string;
   contactEmail?: string;
   logoUrl?: string;
-  plan: "FREE" | "DEVELOPER" | "ENTERPRISE";
+  // plan: "FREE" | "DEVELOPER" | "ENTERPRISE";
   autoDelete: boolean;
   consentGiven: boolean;
   consentDate?: string;

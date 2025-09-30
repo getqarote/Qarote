@@ -6,8 +6,8 @@ import { AppSidebar } from "@/components/AppSidebar";
 import { Input } from "@/components/ui/input";
 import { NoServerConfigured } from "@/components/NoServerConfigured";
 import { useServerContext } from "@/contexts/ServerContext";
-import { useWorkspace } from "@/hooks/useWorkspace";
-import { useQueues, queryKeys } from "@/hooks/useApi";
+import { useUser } from "@/hooks/useUser";
+import { useQueues } from "@/hooks/useApi";
 import { QueueHeader } from "@/components/Queues/QueueHeader";
 import { QueueTable } from "@/components/Queues/QueueTable";
 import logger from "@/lib/logger";
@@ -16,11 +16,10 @@ const Queues = () => {
   const navigate = useNavigate();
 
   const {
-    workspacePlan,
     canAddQueue,
     canSendMessages,
     isLoading: workspaceLoading,
-  } = useWorkspace();
+  } = useUser();
   const [filterRegex, setFilterRegex] = useState("");
   const { selectedServerId, hasServers } = useServerContext();
   const { data: queuesData, isLoading, refetch } = useQueues(selectedServerId);
@@ -128,7 +127,6 @@ const Queues = () => {
               <div className="flex-1">
                 <QueueHeader
                   selectedServerId={selectedServerId}
-                  workspacePlan={workspacePlan}
                   queueCount={queueCount}
                   workspaceLoading={workspaceLoading}
                   canAddQueue={canAddQueue}

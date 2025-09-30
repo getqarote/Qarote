@@ -41,7 +41,7 @@ import {
   useWorkspaceThresholds,
   useUpdateWorkspaceThresholds,
 } from "@/hooks/useApi";
-import { useWorkspace } from "@/hooks/useWorkspace";
+import { useUser } from "@/hooks/useUser";
 import { useAlertsModal } from "@/hooks/useAlertsModal";
 
 const thresholdSchema = z
@@ -90,7 +90,7 @@ interface AlertThresholdsModalProps {
 }
 
 export function AlertThresholdsModal({ children }: AlertThresholdsModalProps) {
-  const { workspacePlan } = useWorkspace();
+  const { userPlan } = useUser();
   const { isThresholdsModalOpen, closeThresholdsModal } = useAlertsModal();
 
   const { data: thresholdsData, isLoading } = useWorkspaceThresholds();
@@ -115,13 +115,12 @@ export function AlertThresholdsModal({ children }: AlertThresholdsModalProps) {
   }, [thresholdsData, form]);
 
   const canModify = thresholdsData?.canModify ?? false;
-  const isPremiumPlan =
-    workspacePlan === "STARTUP" || workspacePlan === "BUSINESS";
+  const isPremiumPlan = userPlan === "DEVELOPER" || userPlan === "ENTERPRISE";
 
   console.log("AlertThresholdsModal debug:", {
     canModify,
     isPremiumPlan,
-    workspacePlan,
+    userPlan,
     thresholdsData,
     isLoading,
     updateThresholdsPending: updateThresholds.isPending,

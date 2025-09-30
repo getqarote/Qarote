@@ -8,8 +8,8 @@ import { prisma } from "@/core/prisma";
 import {
   getOverLimitWarningMessage,
   getUpgradeRecommendationForOverLimit,
-  getWorkspacePlan,
-  getWorkspaceResourceCounts,
+  getUserPlan,
+  getUserResourceCounts,
   validateQueueCreationOnServer,
 } from "@/services/plan/plan.service";
 import {
@@ -135,8 +135,7 @@ queuesController.get("/servers/:id/queues", async (c) => {
     if (server.isOverQueueLimit && server.workspace) {
       const warningMessage = getOverLimitWarningMessage(
         server.workspace.plan,
-        queues.length,
-        server.name
+        queues.length
       );
 
       const upgradeRecommendation = getUpgradeRecommendationForOverLimit(
@@ -324,8 +323,8 @@ queuesController.post(
       }
 
       const [plan, resourceCounts] = await Promise.all([
-        getWorkspacePlan(server.workspaceId),
-        getWorkspaceResourceCounts(server.workspaceId),
+        getUserPlan(server.workspaceId),
+        getUserResourceCounts(server.workspaceId),
       ]);
 
       logger.info(

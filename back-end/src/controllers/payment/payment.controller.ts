@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
-import { WorkspacePlan } from "@prisma/client";
+import { UserPlan } from "@prisma/client";
 import { prisma } from "@/core/prisma";
 import { logger } from "@/core/logger";
 import { authenticate } from "@/core/auth";
@@ -23,44 +23,31 @@ paymentController.post(
     const user = c.get("user");
     const { plan, billingInterval } = c.req.valid("json");
 
-    if (!user.workspaceId) {
-      return c.json({ error: "No workspace assigned" }, 400);
-    }
-
-    // Get workspace
-    const workspace = await prisma.workspace.findUnique({
-      where: { id: user.workspaceId },
-    });
-
-    if (!workspace) {
-      return c.json({ error: "Workspace not found" }, 404);
-    }
-
-    if (plan === WorkspacePlan.FREE) {
+    if (plan === UserPlan.FREE) {
       return c.json({ error: "Cannot create checkout for FREE plan" }, 400);
     }
 
     try {
       // Create Stripe customer if not exists
-      let customerId = workspace.stripeCustomerId;
+      let customerId = user.stripeCustomerId;
       if (!customerId) {
         const customer = await StripeService.createCustomer({
           email: user.email,
           name: getUserDisplayName(user),
-          workspaceId: workspace.id,
+          userId: user.id,
         });
         customerId = customer.id;
 
-        // Update workspace with customer ID
-        await prisma.workspace.update({
-          where: { id: workspace.id },
+        // Update user with customer ID
+        await prisma.user.update({
+          where: { id: user.id },
           data: { stripeCustomerId: customerId },
         });
       }
 
       // Create checkout session
       const session = await StripeService.createCheckoutSession({
-        workspaceId: workspace.id,
+        userId: user.id,
         plan,
         billingInterval,
         successUrl: `${emailConfig.frontendUrl}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
@@ -80,21 +67,13 @@ paymentController.post(
 paymentController.post("/portal", async (c) => {
   const user = c.get("user");
 
-  if (!user.workspaceId) {
-    return c.json({ error: "No workspace assigned" }, 400);
-  }
-
-  const workspace = await prisma.workspace.findUnique({
-    where: { id: user.workspaceId },
-  });
-
-  if (!workspace?.stripeCustomerId) {
-    return c.json({ error: "No Stripe customer found" }, 404);
+  if (!user.stripeCustomerId) {
+    return c.json({ error: "No Stripe customer found" }, 400);
   }
 
   try {
     const session = await StripeService.createPortalSession(
-      workspace.stripeCustomerId,
+      user.stripeCustomerId,
       `${emailConfig.frontendUrl}/profile?tab=billing`
     );
 

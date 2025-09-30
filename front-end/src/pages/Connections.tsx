@@ -25,12 +25,12 @@ import {
 import { PlanBadge } from "@/components/ui/PlanBadge";
 import { Badge } from "@/components/ui/badge";
 import { useServerContext } from "@/contexts/ServerContext";
-import { useWorkspace } from "@/hooks/useWorkspace";
+import { useUser } from "@/hooks/useUser";
 import { useConnections, useChannels } from "@/hooks/useApi";
 
 const Connections = () => {
   const { selectedServerId, hasServers } = useServerContext();
-  const { workspacePlan } = useWorkspace();
+  const { workspacePlan } = useUser();
   const [expandedConnections, setExpandedConnections] = useState<Set<string>>(
     new Set()
   );

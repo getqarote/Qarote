@@ -3,10 +3,10 @@
  */
 
 import { BaseApiClient } from "./baseClient";
-import { WorkspacePlan } from "@/types/plans";
+import { UserPlan } from "@/types/plans";
 
 export interface CreateCheckoutSessionRequest {
-  plan: WorkspacePlan;
+  plan: UserPlan;
   billingInterval: "monthly" | "yearly";
   successUrl?: string;
   cancelUrl?: string;
@@ -20,7 +20,7 @@ export interface SubscriptionResponse {
   subscription: {
     id: string;
     status: string;
-    plan: WorkspacePlan;
+    plan: UserPlan;
     billingInterval: string;
     currentPeriodStart: string;
     currentPeriodEnd: string;
@@ -50,14 +50,13 @@ export interface BillingOverviewResponse {
   workspace: {
     id: string;
     name: string;
-    plan: WorkspacePlan;
   };
   subscription: {
     id: string;
     status: string;
     stripeCustomerId: string;
     stripeSubscriptionId: string;
-    plan: WorkspacePlan;
+    plan: UserPlan;
     canceledAt: string | null;
     isRenewalAfterCancel: boolean;
     previousCancelDate: string | null;
@@ -208,7 +207,7 @@ export class PaymentApiClient extends BaseApiClient {
    * Renew/reactivate subscription (redirect to checkout or billing portal)
    */
   async renewSubscription(
-    plan: WorkspacePlan,
+    plan: UserPlan,
     billingInterval: "monthly" | "yearly" = "monthly"
   ): Promise<{ url: string }> {
     // Use the checkout flow to renew with the same plan

@@ -1,18 +1,18 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { WorkspacePlan } from "@/types/plans";
+import { UserPlan } from "@/types/plans";
 
 interface AvailableUpgradesProps {
-  currentPlan: WorkspacePlan;
-  onUpgrade: (plan: WorkspacePlan, interval: "monthly" | "yearly") => void;
+  currentPlan: UserPlan;
+  onUpgrade: (plan: UserPlan, interval: "monthly" | "yearly") => void;
 }
 
 export const AvailableUpgrades: React.FC<AvailableUpgradesProps> = ({
   currentPlan,
   onUpgrade,
 }) => {
-  if (currentPlan === WorkspacePlan.ENTERPRISE) {
+  if (currentPlan === UserPlan.ENTERPRISE) {
     return null;
   }
 
@@ -27,7 +27,7 @@ export const AvailableUpgrades: React.FC<AvailableUpgradesProps> = ({
       <CardContent>
         <div className="space-y-4">
           {/* Show next tier */}
-          {currentPlan === WorkspacePlan.FREE && (
+          {currentPlan === UserPlan.FREE && (
             <div className="flex items-center justify-between p-4 border rounded-lg bg-blue-50">
               <div className="flex-1">
                 <h3 className="font-semibold text-lg">Developer Plan</h3>
@@ -45,7 +45,7 @@ export const AvailableUpgrades: React.FC<AvailableUpgradesProps> = ({
                 <div className="text-2xl font-bold text-blue-600">$10</div>
                 <div className="text-sm text-gray-600">per month</div>
                 <Button
-                  onClick={() => onUpgrade(WorkspacePlan.DEVELOPER, "monthly")}
+                  onClick={() => onUpgrade(UserPlan.DEVELOPER, "monthly")}
                   className="mt-2"
                 >
                   Upgrade Now
@@ -54,7 +54,7 @@ export const AvailableUpgrades: React.FC<AvailableUpgradesProps> = ({
             </div>
           )}
 
-          {currentPlan === WorkspacePlan.DEVELOPER && (
+          {currentPlan === UserPlan.DEVELOPER && (
             <div className="flex items-center justify-between p-4 border rounded-lg bg-purple-50">
               <div className="flex-1">
                 <h3 className="font-semibold text-lg">Enterprise Plan</h3>
@@ -72,7 +72,7 @@ export const AvailableUpgrades: React.FC<AvailableUpgradesProps> = ({
                 <div className="text-2xl font-bold text-purple-600">$50</div>
                 <div className="text-sm text-gray-600">per month</div>
                 <Button
-                  onClick={() => onUpgrade(WorkspacePlan.ENTERPRISE, "monthly")}
+                  onClick={() => onUpgrade(UserPlan.ENTERPRISE, "monthly")}
                   className="mt-2"
                 >
                   Upgrade Now

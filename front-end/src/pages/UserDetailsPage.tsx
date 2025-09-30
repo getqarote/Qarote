@@ -26,12 +26,12 @@ import {
 import { PageLoader } from "@/components/PageLoader";
 import { ConnectionStatus } from "@/components/ConnectionStatus";
 import { useServerContext } from "@/contexts/ServerContext";
-import { useAuth } from "@/contexts/AuthContext";
-import { useWorkspace } from "@/hooks/useWorkspace";
+import { useAuth } from "@/contexts/AuthContextDefinition";
 import { apiClient } from "@/lib/api";
 import { formatTagsDisplay } from "@/lib/formatTags";
 import { DeleteUserModal } from "@/components/users/DeleteUserModal";
 import { toast } from "sonner";
+import { useWorkspace } from "@/hooks/useWorkspace";
 
 export default function UserDetailsPage() {
   const { serverId, username } = useParams<{

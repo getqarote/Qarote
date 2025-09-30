@@ -11,8 +11,6 @@ interface WorkspaceFormFieldsProps {
   workspace: {
     name: string;
     contactEmail?: string;
-    logoUrl?: string;
-    plan: string;
   };
 }
 

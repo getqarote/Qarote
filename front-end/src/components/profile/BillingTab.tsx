@@ -19,12 +19,12 @@ import { Separator } from "@/components/ui/separator";
 import logger from "@/lib/logger";
 import { apiClient } from "@/lib/api";
 import { usePlanUpgrade } from "@/hooks/usePlanUpgrade";
-import { WorkspacePlan } from "@/types/plans";
-import { useWorkspace } from "@/hooks/useWorkspace";
+import { UserPlan } from "@/types/plans";
+import { useUser } from "@/hooks/useUser";
 
 interface Subscription {
   id: string;
-  plan: WorkspacePlan;
+  plan: UserPlan;
   status: string;
   billingInterval: string;
   currentPeriodStart: string;
@@ -91,7 +91,7 @@ const getStatusColor = (status: string) => {
 };
 
 export const BillingTab: React.FC = () => {
-  const { planData } = useWorkspace();
+  const { planData } = useUser();
   const { openCustomerPortal, isUpgrading } = usePlanUpgrade();
 
   const [subscription, setSubscription] = useState<Subscription | null>(null);

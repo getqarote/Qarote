@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { UserRole, WorkspacePlan } from "@prisma/client";
+import { UserRole, UserPlan } from "@prisma/client";
 import { prisma } from "@/core/prisma";
 import { logger } from "@/core/logger";
 import {
@@ -110,18 +110,11 @@ workspaceManagementRoutes.get("/workspaces/creation-info", async (c) => {
 
   try {
     // For new users creating their first workspace, they won't have a workspaceId yet
-    let currentPlan: WorkspacePlan = WorkspacePlan.FREE; // Default plan for new users
+    let currentPlan: UserPlan = UserPlan.FREE; // Default plan for new users
 
-    if (user.workspaceId) {
-      // Get user's current workspace and its plan (if they have one)
-      const currentWorkspace = await prisma.workspace.findUnique({
-        where: { id: user.workspaceId },
-        select: { plan: true },
-      });
-
-      if (currentWorkspace) {
-        currentPlan = currentWorkspace.plan;
-      }
+    // Plans are now user-level, get from user's subscription
+    if (user.subscription) {
+      currentPlan = user.subscription.plan;
     }
 
     // Count owned workspaces
@@ -161,19 +154,20 @@ workspaceManagementRoutes.post(
     const { name, contactEmail, tags } = c.req.valid("json");
 
     try {
-      // For new users creating their first workspace, they won't have a workspaceId yet
-      let currentPlan: WorkspacePlan = WorkspacePlan.FREE; // Default plan for new users
+      // Get user's current plan from their subscription
+      let currentPlan: UserPlan = UserPlan.FREE; // Default plan for new users
 
-      if (user.workspaceId) {
-        // Get user's current workspace and its plan (if they have one)
-        const currentWorkspace = await prisma.workspace.findUnique({
-          where: { id: user.workspaceId },
-          select: { plan: true },
-        });
+      const userWithSubscription = await prisma.user.findUnique({
+        where: { id: user.id },
+        select: {
+          subscription: {
+            select: { plan: true },
+          },
+        },
+      });
 
-        if (currentWorkspace) {
-          currentPlan = currentWorkspace.plan;
-        }
+      if (userWithSubscription?.subscription) {
+        currentPlan = userWithSubscription.subscription.plan;
       }
 
       // Count current owned workspaces
@@ -224,7 +218,7 @@ workspaceManagementRoutes.post(
             contactEmail,
             tags: tags ? tags : undefined, // Store tags as JSON array or undefined
             ownerId: user.id,
-            plan: WorkspacePlan.FREE, // New workspaces start with FREE plan
+            // Plan is now user-level, not workspace-level
           },
           include: {
             _count: {

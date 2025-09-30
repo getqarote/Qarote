@@ -13,13 +13,14 @@ import {
   Save,
   X,
 } from "lucide-react";
-import { Workspace } from "@/lib/api/authTypes";
+import { ExtendedWorkspace } from "@/contexts/WorkspaceContextDefinition";
 import { WorkspaceFormState, formatDate, getPlanColor } from "./profileUtils";
 import { NoWorkspaceCard } from "./NoWorkspaceCard";
 import { WorkspaceFormFields } from "./WorkspaceFormFields";
+import { useUser } from "@/hooks/useUser";
 
 interface WorkspaceInfoTabProps {
-  workspace: Workspace | undefined;
+  workspace: ExtendedWorkspace | undefined;
   isAdmin: boolean;
   editingWorkspace: boolean;
   workspaceForm: WorkspaceFormState;
@@ -39,6 +40,8 @@ export const WorkspaceInfoTab = ({
   onUpdateWorkspace,
   isUpdating,
 }: WorkspaceInfoTabProps) => {
+  const { userPlan, planData } = useUser();
+
   if (!workspace) {
     return <NoWorkspaceCard />;
   }
@@ -51,9 +54,7 @@ export const WorkspaceInfoTab = ({
             <Building2 className="h-6 w-6" />
             <span>Workspace Information</span>
           </div>
-          <Badge className={getPlanColor(workspace.plan)}>
-            {workspace.plan}
-          </Badge>
+          <Badge className={getPlanColor(userPlan)}>{userPlan}</Badge>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -70,11 +71,11 @@ export const WorkspaceInfoTab = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-muted-foreground">
           <div className="flex items-center gap-2">
             <Users className="h-4 w-4" />
-            <span>Users: {workspace._count?.users || 0}</span>
+            <span>Users: {planData?.usage.users.current || 0}</span>
           </div>
           <div className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
-            <span>Servers: {workspace._count?.servers || 0}</span>
+            <span>Servers: {planData?.usage.servers.current || 0}</span>
           </div>
           <div className="flex items-center gap-2">
             <Calendar className="h-4 w-4" />

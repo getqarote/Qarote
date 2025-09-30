@@ -31,18 +31,18 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useServerContext } from "@/contexts/ServerContext";
-import { useWorkspace } from "@/hooks/useWorkspace";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/AuthContextDefinition";
 import { apiClient } from "@/lib/api";
 import { formatTagsDisplay, formatVhostsDisplay } from "@/lib/formatTags";
 import { RabbitMQUser } from "@/lib/api/userTypes";
 import { DeleteUserModal } from "@/components/users/DeleteUserModal";
 import { toast } from "sonner";
+import { useWorkspace } from "@/hooks/useWorkspace";
 
 export default function UsersPage() {
   const { serverId } = useParams<{ serverId: string }>();
   const { selectedServerId, hasServers } = useServerContext();
-  const { workspacePlan, workspace } = useWorkspace();
+  const { workspace } = useWorkspace();
   const { user } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -255,7 +255,7 @@ export default function UsersPage() {
                   </Badge>
                 </div>
                 <div className="flex items-center gap-3">
-                  <PlanBadge workspacePlan={workspacePlan} />
+                  <PlanBadge />
                 </div>
               </div>
 
@@ -556,7 +556,6 @@ export default function UsersPage() {
               <PlanUpgradeModal
                 isOpen={showUpgradeModal}
                 onClose={() => setShowUpgradeModal(false)}
-                currentPlan={workspacePlan}
                 feature="User Management"
               />
             </div>
