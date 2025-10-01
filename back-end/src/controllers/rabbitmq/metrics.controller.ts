@@ -27,6 +27,7 @@ type TimeRange = keyof typeof timeRangeConfigs;
 metricsController.get("/servers/:id/metrics", async (c) => {
   const id = c.req.param("id");
   const workspaceId = c.req.param("workspaceId");
+
   const user = c.get("user");
 
   // Verify user has access to this workspace
@@ -74,8 +75,9 @@ metricsController.get("/servers/:id/metrics", async (c) => {
 metricsController.get("/servers/:id/metrics/rates", async (c) => {
   const id = c.req.param("id");
   const workspaceId = c.req.param("workspaceId");
-  const user = c.get("user");
   const timeRange = (c.req.query("timeRange") as TimeRange) || "1m";
+
+  const user = c.get("user");
 
   // Verify user has access to this workspace
   if (user.workspaceId !== workspaceId) {
@@ -175,12 +177,11 @@ metricsController.get(
     const id = c.req.param("id");
     const queueName = c.req.param("queueName");
     const workspaceId = c.req.param("workspaceId");
-    const user = c.get("user");
     const timeRange = (c.req.query("timeRange") as TimeRange) || "1m";
 
-    // Verify user has access to this workspace
-    if (user.workspaceId !== workspaceId) {
-      return c.json({ error: "Access denied to this workspace" }, 403);
+    // workspaceId is guaranteed to be defined due to checkWorkspaceAccess middleware
+    if (!workspaceId) {
+      return c.json({ error: "Workspace ID is required" }, 400);
     }
 
     try {

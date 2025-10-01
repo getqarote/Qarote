@@ -1,4 +1,26 @@
-import React from "react";
+import {
+  Body,
+  Button,
+  Container,
+  Head,
+  Heading,
+  Hr,
+  Html,
+  Link,
+  Preview,
+  Section,
+  Text,
+} from "@react-email/components";
+import {
+  baseStyles,
+  headerStyles,
+  contentStyles,
+  buttonStyles,
+  textStyles,
+  utilityStyles,
+  sectionStyles,
+  layoutStyles,
+} from "../shared/styles";
 
 interface PaymentConfirmationEmailProps {
   userName: string;
@@ -36,197 +58,86 @@ export const PaymentConfirmationEmail: React.FC<
   };
 
   return (
-    <div
-      style={{
-        fontFamily: "Arial, sans-serif",
-        maxWidth: "600px",
-        margin: "0 auto",
-        backgroundColor: "#ffffff",
-        borderRadius: "8px",
-        overflow: "hidden",
-        boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-      }}
-    >
-      {/* Header */}
-      <div
-        style={{
-          backgroundColor: "#10b981",
-          padding: "32px 24px",
-          textAlign: "center",
-        }}
-      >
-        <h1
-          style={{
-            color: "#ffffff",
-            margin: 0,
-            fontSize: "28px",
-            fontWeight: "bold",
-          }}
-        >
-          ✅ Payment Confirmed
-        </h1>
-      </div>
+    <Html>
+      <Head />
+      <Preview>Payment Confirmed - Your RabbitHQ subscription is active</Preview>
+      <Body style={baseStyles.main}>
+        <Container style={baseStyles.container}>
+          <Section style={headerStyles.header}></Section>
 
-      {/* Content */}
-      <div style={{ padding: "32px 24px" }}>
-        <h2
-          style={{
-            color: "#1f2937",
-            marginBottom: "16px",
-            fontSize: "20px",
-          }}
-        >
-          Hello {userName},
-        </h2>
+          <Section style={contentStyles.contentPadded}>
+            <Heading style={contentStyles.title}>
+              ✅ Payment Confirmed!
+            </Heading>
+          </Section>
 
-        <p
-          style={{
-            color: "#6b7280",
-            fontSize: "16px",
-            lineHeight: "1.6",
-            marginBottom: "24px",
-          }}
-        >
-          Great news! Your payment has been successfully processed.
-        </p>
+          <Section style={contentStyles.content}>
+            <Text style={contentStyles.paragraph}>Hi {userName},</Text>
 
-        {/* Payment Details */}
-        <div
-          style={{
-            backgroundColor: "#f9fafb",
-            border: "1px solid #e5e7eb",
-            borderRadius: "8px",
-            padding: "20px",
-            marginBottom: "24px",
-          }}
-        >
-          <h3
-            style={{
-              color: "#1f2937",
-              margin: "0 0 16px 0",
-              fontSize: "18px",
-            }}
-          >
-            Payment Details
-          </h3>
+            <Text style={contentStyles.paragraph}>
+              Great news! Your payment has been successfully processed and your
+              RabbitHQ subscription is now active.
+            </Text>
 
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              marginBottom: "8px",
-            }}
-          >
-            <span style={{ color: "#6b7280" }}>Amount:</span>
-            <span style={{ color: "#1f2937", fontWeight: "bold" }}>
-              {formatAmount(amount, currency)}
-            </span>
-          </div>
+            <Section style={sectionStyles.successSection}>
+              <Heading as="h2" style={contentStyles.heading}>
+                Payment Details
+              </Heading>
+              
+              <Section style={layoutStyles.detailRow}>
+                <Text style={layoutStyles.detailLabel}>Amount:</Text>
+                <Text style={layoutStyles.detailValue}>
+                  {formatAmount(amount, currency)}
+                </Text>
+              </Section>
 
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              marginBottom: "8px",
-            }}
-          >
-            <span style={{ color: "#6b7280" }}>Payment Method:</span>
-            <span style={{ color: "#1f2937", fontWeight: "bold" }}>
-              {formatPaymentMethod(paymentMethod)}
-            </span>
-          </div>
+              <Section style={layoutStyles.detailRow}>
+                <Text style={layoutStyles.detailLabel}>Payment Method:</Text>
+                <Text style={layoutStyles.detailValue}>
+                  {formatPaymentMethod(paymentMethod)}
+                </Text>
+              </Section>
 
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <span style={{ color: "#6b7280" }}>Status:</span>
-            <span
-              style={{
-                color: "#10b981",
-                fontWeight: "bold",
-                backgroundColor: "#d1fae5",
-                padding: "4px 8px",
-                borderRadius: "4px",
-                fontSize: "14px",
-              }}
-            >
-              ✅ Completed
-            </span>
-          </div>
-        </div>
+              <Section style={layoutStyles.detailRow}>
+                <Text style={layoutStyles.detailLabel}>Status:</Text>
+                <Text style={textStyles.successText}>
+                  ✅ Completed
+                </Text>
+              </Section>
+            </Section>
 
-        <p
-          style={{
-            color: "#6b7280",
-            fontSize: "16px",
-            lineHeight: "1.6",
-            marginBottom: "24px",
-          }}
-        >
-          Thank you for your payment! You can continue using RabbitHQ without
-          any interruptions.
-        </p>
+            <Text style={contentStyles.paragraph}>
+              Thank you for your payment! You can continue using RabbitHQ without
+              any interruptions. Your subscription is now active and you have
+              full access to all features.
+            </Text>
 
-        {/* CTA Button */}
-        <div style={{ textAlign: "center", marginBottom: "24px" }}>
-          <a
-            href={`${frontendUrl}/dashboard`}
-            style={{
-              display: "inline-block",
-              padding: "14px 28px",
-              backgroundColor: "#3b82f6",
-              color: "#ffffff",
-              textDecoration: "none",
-              borderRadius: "8px",
-              fontWeight: "bold",
-              fontSize: "16px",
-              transition: "background-color 0.2s",
-            }}
-          >
-            Go to Dashboard
-          </a>
-        </div>
+            <Section style={buttonStyles.buttonSection}>
+              <Button style={buttonStyles.primaryButton} href={`${frontendUrl}/dashboard`}>
+                Go to Dashboard
+              </Button>
+            </Section>
 
-        <p
-          style={{
-            color: "#9ca3af",
-            fontSize: "14px",
-            lineHeight: "1.5",
-            marginBottom: "0",
-          }}
-        >
-          If you have any questions about this payment, please don't hesitate to
-          contact our support team.
-        </p>
-      </div>
+            <Hr style={utilityStyles.hr} />
 
-      {/* Footer */}
-      <div
-        style={{
-          backgroundColor: "#f9fafb",
-          padding: "20px 24px",
-          borderTop: "1px solid #e5e7eb",
-          textAlign: "center",
-        }}
-      >
-        <p
-          style={{
-            color: "#9ca3af",
-            fontSize: "12px",
-            margin: "0 0 8px 0",
-          }}
-        >
-          This is an automated message from RabbitHQ
-        </p>
-        <p
-          style={{
-            color: "#9ca3af",
-            fontSize: "12px",
-            margin: "0",
-          }}
-        >
-          © 2024 RabbitHQ. All rights reserved.
-        </p>
-      </div>
-    </div>
+            <Text style={contentStyles.paragraph}>
+              If you have any questions about this payment, please don't hesitate to
+              contact our{" "}
+              <Link href={`${frontendUrl}/help`} style={textStyles.link}>
+                support team
+              </Link>
+              .
+            </Text>
+
+            <Hr style={utilityStyles.hr} />
+
+            <Text style={contentStyles.paragraph}>Happy monitoring! 🐰</Text>
+
+            <Text style={contentStyles.signature}>The RabbitHQ Team</Text>
+          </Section>
+        </Container>
+      </Body>
+    </Html>
   );
 };
 

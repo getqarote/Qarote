@@ -12,9 +12,7 @@ import {
   UserProfile,
   UpdateProfileRequest,
   UpdateWorkspaceRequest,
-  InviteUserRequest,
   Workspace,
-  Invitation,
   SendInvitationRequest,
   SendInvitationResponse,
   GetInvitationsResponse,
@@ -78,15 +76,6 @@ export class AuthApiClient extends BaseApiClient {
     return this.request<{ users: User[] }>("/users/profile/workspace/users");
   }
 
-  async inviteUser(
-    userData: InviteUserRequest
-  ): Promise<{ invitation: Invitation }> {
-    return this.request<{ invitation: Invitation }>("/users/invite", {
-      method: "POST",
-      body: JSON.stringify(userData),
-    });
-  }
-
   // async logout(): Promise<void> {
   //   return this.request<void>("/auth/logout", {
   //     method: "POST",
@@ -95,13 +84,13 @@ export class AuthApiClient extends BaseApiClient {
 
   // Invitation management
   async getInvitations(): Promise<GetInvitationsResponse> {
-    return this.request<GetInvitationsResponse>("/invitations");
+    return this.request<GetInvitationsResponse>("/workspaces/invitations");
   }
 
   async sendInvitation(
     invitationData: SendInvitationRequest
   ): Promise<SendInvitationResponse> {
-    return this.request<SendInvitationResponse>("/invitations", {
+    return this.request<SendInvitationResponse>("/workspaces/invitations", {
       method: "POST",
       body: JSON.stringify(invitationData),
     });
@@ -111,7 +100,7 @@ export class AuthApiClient extends BaseApiClient {
     invitationId: string
   ): Promise<RevokeInvitationResponse> {
     return this.request<RevokeInvitationResponse>(
-      `/invitations/${invitationId}`,
+      `/workspaces/invitations/${invitationId}`,
       {
         method: "DELETE",
       }
@@ -149,6 +138,19 @@ export class AuthApiClient extends BaseApiClient {
           token,
           ...registrationData,
         }),
+      }
+    );
+  }
+
+  async acceptInvitationWithGoogle(
+    token: string,
+    credential: string
+  ): Promise<{ user: User; token: string; workspace: Workspace; isNewUser: boolean }> {
+    return this.request<{ user: User; token: string; workspace: Workspace; isNewUser: boolean }>(
+      `/invitations/${token}/accept-google`,
+      {
+        method: "POST",
+        body: JSON.stringify({ credential }),
       }
     );
   }

@@ -9,35 +9,12 @@ import {
   PlanLimitExceededError,
 } from "@/services/plan/plan.service";
 import { zValidator } from "@hono/zod-validator";
-import { z } from "zod";
+import {
+  CreateWorkspaceSchema,
+  UpdateWorkspaceSchema,
+} from "@/schemas/workspace";
 
 const workspaceManagementRoutes = new Hono();
-
-// Validation schemas
-const createWorkspaceSchema = z.object({
-  name: z
-    .string()
-    .min(2, "Workspace name must be at least 2 characters")
-    .max(50, "Workspace name must be less than 50 characters"),
-  contactEmail: z.string().email("Invalid email address").optional(),
-  tags: z
-    .array(z.string().min(1).max(20))
-    .max(10, "Maximum 10 tags allowed")
-    .optional(),
-});
-
-const updateWorkspaceSchema = z.object({
-  name: z
-    .string()
-    .min(2, "Workspace name must be at least 2 characters")
-    .max(50, "Workspace name must be less than 50 characters")
-    .optional(),
-  contactEmail: z.string().email("Invalid email address").optional(),
-  tags: z
-    .array(z.string().min(1).max(20))
-    .max(10, "Maximum 10 tags allowed")
-    .optional(),
-});
 
 // Get user's workspaces (owned and member workspaces)
 workspaceManagementRoutes.get("/workspaces", async (c) => {
@@ -148,7 +125,7 @@ workspaceManagementRoutes.get("/workspaces/creation-info", async (c) => {
 // Create a new workspace
 workspaceManagementRoutes.post(
   "/workspaces",
-  zValidator("json", createWorkspaceSchema),
+  zValidator("json", CreateWorkspaceSchema),
   async (c) => {
     const user = c.get("user");
     const { name, contactEmail, tags } = c.req.valid("json");
@@ -273,7 +250,7 @@ workspaceManagementRoutes.post(
 // Update workspace (only for owners)
 workspaceManagementRoutes.put(
   "/workspaces/:workspaceId",
-  zValidator("json", updateWorkspaceSchema),
+  zValidator("json", UpdateWorkspaceSchema),
   async (c) => {
     const user = c.get("user");
     const workspaceId = c.req.param("workspaceId");

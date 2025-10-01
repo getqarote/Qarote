@@ -14,7 +14,7 @@ import {
 } from "@/services/plan/plan.service";
 import { EncryptionService } from "@/services/encryption.service";
 import { inviteUserSchema } from "@/schemas/invitation";
-import { getUserDisplayName } from "./shared";
+import { getUserDisplayName } from "../shared";
 
 const invitationController = new Hono();
 
@@ -84,6 +84,7 @@ invitationController.get("/", authenticate, async (c) => {
  */
 invitationController.post(
   "/",
+  authenticate,
   authorize([UserRole.ADMIN]),
   zValidator("json", inviteUserSchema),
   async (c) => {
@@ -308,189 +309,5 @@ invitationController.delete(
     }
   }
 );
-
-/**
- * POST /invitations/:token/accept - Accept an invitation
- */
-invitationController.post("/:token/accept", async (c) => {
-  try {
-    const token = c.req.param("token");
-
-    // Find the invitation
-    const invitation = await prisma.invitation.findFirst({
-      where: {
-        token,
-        status: "PENDING",
-        expiresAt: {
-          gt: new Date(),
-        },
-      },
-      include: {
-        workspace: true,
-        invitedBy: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-          },
-        },
-      },
-    });
-
-    if (!invitation) {
-      return c.json({ error: "Invalid or expired invitation token" }, 400);
-    }
-
-    // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email: invitation.email },
-    });
-
-    if (existingUser) {
-      if (existingUser.workspaceId === invitation.workspaceId) {
-        // User is already in this workspace
-        await prisma.invitation.update({
-          where: { id: invitation.id },
-          data: {
-            status: "ACCEPTED",
-            invitedUserId: existingUser.id,
-            updatedAt: new Date(),
-          },
-        });
-
-        return c.json({
-          success: true,
-          message: "You are already a member of this workspace",
-          user: {
-            id: existingUser.id,
-            email: existingUser.email,
-            displayName: getUserDisplayName(existingUser),
-          },
-        });
-      } else {
-        // User exists but in different workspace - move to new workspace
-        await prisma.user.update({
-          where: { id: existingUser.id },
-          data: {
-            workspaceId: invitation.workspaceId,
-            role: invitation.role,
-            updatedAt: new Date(),
-          },
-        });
-
-        await prisma.invitation.update({
-          where: { id: invitation.id },
-          data: {
-            status: "ACCEPTED",
-            invitedUserId: existingUser.id,
-            updatedAt: new Date(),
-          },
-        });
-
-        return c.json({
-          success: true,
-          message: "Invitation accepted successfully",
-          user: {
-            id: existingUser.id,
-            email: existingUser.email,
-            displayName: getUserDisplayName(existingUser),
-          },
-          workspace: {
-            id: invitation.workspace.id,
-            name: invitation.workspace.name,
-          },
-        });
-      }
-    }
-
-    // User doesn't exist - they need to complete registration
-    return c.json({
-      success: false,
-      requiresRegistration: true,
-      message: "Please complete your account registration",
-      invitation: {
-        token: invitation.token,
-        email: invitation.email,
-        role: invitation.role,
-        workspaceName: invitation.workspace.name,
-        inviterName: getUserDisplayName(invitation.invitedBy),
-      },
-    });
-  } catch (error) {
-    logger.error({ error }, "Error accepting invitation");
-    return c.json({ error: "Failed to accept invitation" }, 500);
-  }
-});
-
-/**
- * GET /invitations/:token - Get invitation details for registration
- */
-invitationController.get("/:token", async (c) => {
-  try {
-    const token = c.req.param("token");
-
-    const invitation = await prisma.invitation.findFirst({
-      where: {
-        token,
-        status: "PENDING",
-        expiresAt: {
-          gt: new Date(),
-        },
-      },
-      include: {
-        workspace: {
-          select: {
-            id: true,
-            name: true,
-            ownerId: true,
-          },
-        },
-        invitedBy: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-          },
-        },
-      },
-    });
-
-    if (!invitation) {
-      return c.json({ error: "Invalid or expired invitation token" }, 400);
-    }
-
-    // Get workspace owner's subscription to determine plan
-    const ownerSubscription = await prisma.subscription.findUnique({
-      where: { userId: invitation.workspace.ownerId! },
-      select: { plan: true },
-    });
-
-    const plan = ownerSubscription?.plan || "FREE";
-
-    return c.json({
-      success: true,
-      invitation: {
-        id: invitation.id,
-        email: invitation.email,
-        role: invitation.role,
-        expiresAt: invitation.expiresAt,
-        workspace: {
-          id: invitation.workspace.id,
-          name: invitation.workspace.name,
-          plan: plan,
-        },
-        inviter: {
-          ...invitation.invitedBy,
-          displayName: getUserDisplayName(invitation.invitedBy),
-        },
-      },
-    });
-  } catch (error) {
-    logger.error({ error }, "Error fetching invitation details");
-    return c.json({ error: "Failed to fetch invitation details" }, 500);
-  }
-});
 
 export default invitationController;

@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -105,23 +104,6 @@ export const InviteUserDialog = ({
                 <SelectItem value="ADMIN">Admin</SelectItem>
               </SelectContent>
             </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="message">Personal Message (Optional)</Label>
-            <Textarea
-              id="message"
-              placeholder="Welcome to our team! We're excited to have you on board."
-              value={inviteForm.message || ""}
-              onChange={(e) =>
-                setInviteForm({ ...inviteForm, message: e.target.value })
-              }
-              disabled={isInviting || !canInvite}
-              rows={3}
-            />
-            <p className="text-sm text-muted-foreground">
-              Add a personal note to make your invitation more welcoming.
-            </p>
           </div>
 
           <div className="flex justify-end space-x-2">

@@ -102,6 +102,26 @@ export const publishMessageToQueueSchema = z.object({
     .optional(),
 });
 
+export const CreateUserSchema = z.object({
+  username: z.string().min(1, "Username is required"),
+  password: z.string().min(1, "Password is required").optional(),
+  tags: z.string().optional().default(""),
+});
+
+export const UpdateUserSchema = z.object({
+  password: z.string().optional(),
+  tags: z.string().optional(),
+  removePassword: z.boolean().optional(),
+});
+
+// Set user permissions schema
+export const SetPermissionsSchema = z.object({
+  vhost: z.string().min(1, "Virtual host is required"),
+  configure: z.string().default(".*"),
+  write: z.string().default(".*"),
+  read: z.string().default(".*"),
+});
+
 export type RabbitMQCredentials = z.infer<typeof RabbitMQCredentialsSchema>;
 export type CreateServerInput = z.infer<typeof CreateServerSchema>;
 export type UpdateServerInput = z.infer<typeof UpdateServerSchema>;
@@ -110,3 +130,6 @@ export type PublishMessageToQueueInput = z.infer<
   typeof publishMessageToQueueSchema
 >;
 export type CreateQueueInput = z.infer<typeof CreateQueueSchema>;
+export type CreateUserInput = z.infer<typeof CreateUserSchema>;
+export type UpdateUserInput = z.infer<typeof UpdateUserSchema>;
+export type SetPermissionsInput = z.infer<typeof SetPermissionsSchema>;

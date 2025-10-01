@@ -10,13 +10,23 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Users, Mail, UserPlus, X, Clock, Lock } from "lucide-react";
 import { User } from "@/lib/api/authTypes";
 import { InvitationWithInviter } from "@/lib/api/authTypes";
-import { InviteFormState, formatDate, getRoleColor } from "./profileUtils";
-import { InviteUserDialog } from "./InviteUserDialogEnhanced";
 import { UserPlan } from "@/types/plans";
 import { useUser } from "@/hooks/useUser";
+import { useWorkspace } from "@/hooks/useWorkspace";
+import { InviteFormState, formatDate, getRoleColor } from "./profileUtils";
+import { InviteUserDialog } from "./InviteUserDialogEnhanced";
+import { useState } from "react";
 
 interface EnhancedTeamTabProps {
   isAdmin: boolean;
@@ -30,8 +40,10 @@ interface EnhancedTeamTabProps {
   setInviteForm: (form: InviteFormState) => void;
   onInviteUser: () => void;
   onRevokeInvitation: (invitationId: string, email: string) => void;
+  onRemoveUser: (userId: string, userName: string) => void;
   isInviting: boolean;
   isRevoking: boolean;
+  isRemoving: boolean;
   userPlan: UserPlan;
   canInviteMoreUsers: boolean;
 }
@@ -48,16 +60,55 @@ export const EnhancedTeamTab = ({
   setInviteForm,
   onInviteUser,
   onRevokeInvitation,
+  onRemoveUser,
   isInviting,
   isRevoking,
+  isRemoving,
   userPlan,
   canInviteMoreUsers,
 }: EnhancedTeamTabProps) => {
-  const { planData } = useUser();
+  const { planData, user } = useUser();
+  const { workspace } = useWorkspace();
   const planFeatures = planData?.planFeatures;
   const totalUsers = workspaceUsers.length;
   const pendingInvitations = invitations.length;
   const maxUsers = planFeatures?.maxUsers;
+
+  // Check if current user is the workspace owner
+  const isWorkspaceOwner = workspace?.ownerId === user?.id;
+
+  // State for confirmation dialog
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [userToRemove, setUserToRemove] = useState<{
+    id: string;
+    name: string;
+    email: string;
+  } | null>(null);
+
+  // Handler for opening confirmation dialog
+  const handleRemoveUserClick = (workspaceUser: User) => {
+    setUserToRemove({
+      id: workspaceUser.id,
+      name: `${workspaceUser.firstName} ${workspaceUser.lastName}`,
+      email: workspaceUser.email,
+    });
+    setConfirmDialogOpen(true);
+  };
+
+  // Handler for confirming user removal
+  const handleConfirmRemove = () => {
+    if (userToRemove) {
+      onRemoveUser(userToRemove.id, userToRemove.name);
+      setConfirmDialogOpen(false);
+      setUserToRemove(null);
+    }
+  };
+
+  // Handler for canceling user removal
+  const handleCancelRemove = () => {
+    setConfirmDialogOpen(false);
+    setUserToRemove(null);
+  };
 
   if (!isAdmin) {
     return (
@@ -185,44 +236,67 @@ export const EnhancedTeamTab = ({
                   <TableHead>Status</TableHead>
                   <TableHead>Last Login</TableHead>
                   <TableHead>Joined</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {workspaceUsers.map((user) => (
-                  <TableRow key={user.id}>
+                {workspaceUsers.map((workspaceUser) => (
+                  <TableRow key={workspaceUser.id}>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Avatar className="h-8 w-8">
                           <AvatarFallback>
-                            {user.firstName?.[0]}
-                            {user.lastName?.[0]}
+                            {workspaceUser.firstName?.[0]}
+                            {workspaceUser.lastName?.[0]}
                           </AvatarFallback>
                         </Avatar>
                         <div>
                           <p className="font-medium">
-                            {user.firstName} {user.lastName}
+                            {workspaceUser.firstName} {workspaceUser.lastName}
                           </p>
                           <p className="text-sm text-muted-foreground">
-                            {user.email}
+                            {workspaceUser.email}
                           </p>
                         </div>
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge className={getRoleColor(user.role)}>
-                        {user.role}
+                      <Badge className={getRoleColor(workspaceUser.role)}>
+                        {workspaceUser.role}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={user.isActive ? "default" : "secondary"}>
-                        {user.isActive ? "Active" : "Inactive"}
+                      <Badge
+                        variant={
+                          workspaceUser.isActive ? "default" : "secondary"
+                        }
+                      >
+                        {workspaceUser.isActive ? "Active" : "Inactive"}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
-                      {user.lastLogin ? formatDate(user.lastLogin) : "Never"}
+                      {workspaceUser.lastLogin
+                        ? formatDate(workspaceUser.lastLogin)
+                        : "Never"}
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
-                      {formatDate(user.createdAt)}
+                      {formatDate(workspaceUser.createdAt)}
+                    </TableCell>
+                    <TableCell>
+                      {workspaceUser.id !== user?.id &&
+                        (isWorkspaceOwner ||
+                          workspaceUser.role !== "ADMIN") && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleRemoveUserClick(workspaceUser)}
+                            disabled={isRemoving}
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            title="Remove user from workspace"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        )}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -354,6 +428,37 @@ export const EnhancedTeamTab = ({
         maxUsers={maxUsers}
         currentCount={totalUsers + pendingInvitations}
       />
+
+      {/* Confirmation Dialog for User Removal */}
+      <Dialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Remove User from Workspace</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to remove{" "}
+              <strong>{userToRemove?.name}</strong> ({userToRemove?.email}) from
+              this workspace?
+              <br />
+              <br />
+              This action cannot be undone. The user will lose access to all
+              workspace resources and will need to be re-invited to regain
+              access.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={handleCancelRemove}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleConfirmRemove}
+              className="bg-red-600 hover:bg-red-700"
+              disabled={isRemoving}
+            >
+              {isRemoving ? "Removing..." : "Remove User"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

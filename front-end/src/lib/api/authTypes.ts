@@ -56,6 +56,7 @@ export interface Workspace {
   name: string;
   contactEmail?: string;
   logoUrl?: string;
+  ownerId?: string;
   // plan: "FREE" | "DEVELOPER" | "ENTERPRISE";
   autoDelete: boolean;
   consentGiven: boolean;
@@ -150,7 +151,7 @@ export interface InvitationDetailsResponse {
       name: string;
       plan: string;
     };
-    inviter: {
+    invitedBy: {
       id: string;
       firstName: string | null;
       lastName: string | null;

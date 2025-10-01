@@ -15,9 +15,8 @@ import rabbitmqController from "@/controllers/rabbitmq.controller";
 import authController from "@/controllers/auth.controller";
 import userController from "@/controllers/user.controller";
 import workspaceController from "@/controllers/workspace.controller";
-import routingController from "@/controllers/routing.controller";
+import publicInvitationController from "@/controllers/public-invitation.controller";
 import feedbackController from "@/controllers/feedback.controller";
-import invitationController from "@/controllers/invitation.controller";
 import paymentController from "@/controllers/payment.controller";
 import webhookController from "@/controllers/payment/webhook.controller";
 import healthcheckController from "@/controllers/healthcheck.controller";
@@ -50,9 +49,8 @@ app.route("/api/rabbitmq", rabbitmqController);
 app.route("/api/auth", authController);
 app.route("/api/users", userController);
 app.route("/api/workspaces", workspaceController);
-app.route("/api/routing", routingController);
+app.route("/api/invitations", publicInvitationController);
 app.route("/api/feedback", feedbackController);
-app.route("/api/invitations", invitationController);
 app.route("/api/payments", paymentController);
 app.route("/webhooks", webhookController);
 app.route("/", healthcheckController);
@@ -66,10 +64,6 @@ async function startServer() {
 
     // Start the alert monitoring service
     // alertService.start();
-
-    // Initialize periodic cache cleanup (every hour)
-    // const cleanupInterval = TemporaryStorage.startPeriodicCleanup(60);
-    // logger.info("Cache cleanup service started (runs every 60 minutes)");
 
     serve(
       {

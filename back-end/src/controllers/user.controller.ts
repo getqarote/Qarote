@@ -1,22 +1,16 @@
 import { Hono } from "hono";
+import { z } from "zod/v4";
 import { zValidator } from "@hono/zod-validator";
 import { prisma } from "@/core/prisma";
 import { authenticate, authorize } from "@/core/auth";
 import { UpdateUserSchema, UpdateProfileSchema } from "@/schemas/user";
-import { UpdateWorkspaceSchema } from "@/schemas/workspace";
-import { InviteUserSchema } from "@/schemas/auth";
+// import { UpdateWorkspaceSchema } from "@/schemas/workspace";
 import { UserRole } from "@prisma/client";
-import {
-  getUserPlan,
-  getUserResourceCounts,
-  validateUserInvitation,
-} from "@/services/plan/plan.service";
 import { logger } from "@/core/logger";
 import { planValidationMiddleware } from "@/middlewares/plan-validation";
-import { isDevelopment } from "@/config";
-import { EncryptionService } from "@/services/encryption.service";
 import { EmailVerificationService } from "@/services/email/email-verification.service";
 import { strictRateLimiter } from "@/middlewares/security";
+import { UpdateWorkspaceSchema } from "@/schemas/workspace";
 
 const userController = new Hono();
 
@@ -26,75 +20,39 @@ userController.use("*", authenticate);
 // Apply plan validation middleware to all routes
 userController.use("*", planValidationMiddleware());
 
-// Get all users (admin only)
-userController.get("/", authorize([UserRole.ADMIN]), async (c) => {
-  try {
-    const users = await prisma.user.findMany({
-      select: {
-        id: true,
-        email: true,
-        firstName: true,
-        lastName: true,
-        role: true,
-        workspaceId: true,
-        isActive: true,
-        lastLogin: true,
-        createdAt: true,
-        updatedAt: true,
-        workspace: {
-          select: {
-            id: true,
-            name: true,
-          },
+// Get users in the same workspace
+userController.get(
+  "/workspace/:workspaceId",
+  zValidator("param", z.object({ workspaceId: z.string() })),
+  async (c) => {
+    const workspaceId = c.req.param("workspaceId");
+
+    try {
+      const users = await prisma.user.findMany({
+        where: { workspaceId },
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          role: true,
+          isActive: true,
+          lastLogin: true,
+          createdAt: true,
+          updatedAt: true,
         },
-      },
-    });
+      });
 
-    return c.json({ users });
-  } catch (error) {
-    logger.error({ error }, "Error fetching users");
-    return c.json({ error: "Failed to fetch users" }, 500);
+      return c.json({ users });
+    } catch (error) {
+      logger.error(
+        { error },
+        `Error fetching users for workspace ${workspaceId}`
+      );
+      return c.json({ error: "Failed to fetch users" }, 500);
+    }
   }
-});
-
-// Get users in the same workspace (admin or workspace admin)
-userController.get("/workspace/:workspaceId", async (c) => {
-  const workspaceId = c.req.param("workspaceId");
-  const user = c.get("user");
-
-  // Check if user has access to this workspace
-  if (user.role !== UserRole.ADMIN && user.workspaceId !== workspaceId) {
-    return c.json(
-      { error: "Forbidden", message: "Cannot access users for this workspace" },
-      403
-    );
-  }
-
-  try {
-    const users = await prisma.user.findMany({
-      where: { workspaceId },
-      select: {
-        id: true,
-        email: true,
-        firstName: true,
-        lastName: true,
-        role: true,
-        isActive: true,
-        lastLogin: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
-
-    return c.json({ users });
-  } catch (error) {
-    logger.error(
-      { error },
-      `Error fetching users for workspace ${workspaceId}`
-    );
-    return c.json({ error: "Failed to fetch users" }, 500);
-  }
-});
+);
 
 // Get a specific user by ID (admin or same workspace)
 userController.get("/:id", async (c) => {
@@ -311,91 +269,24 @@ userController.put(
   }
 );
 
-// Invite a user to a workspace (admin or workspace admin)
-userController.post(
-  "/invite",
-  zValidator("json", InviteUserSchema),
+// Get pending invitations for a workspace
+userController.get(
+  "/invitations/workspace/:workspaceId",
+  authorize([UserRole.ADMIN]),
+  zValidator("param", z.object({ workspaceId: z.string() })),
   async (c) => {
-    const { email, role, workspaceId } = c.req.valid("json");
-    const currentUser = c.get("user");
-
-    // Check if user has access to this workspace
-    if (
-      currentUser.role !== UserRole.ADMIN &&
-      currentUser.workspaceId !== workspaceId
-    ) {
-      return c.json(
-        {
-          error: "Forbidden",
-          message: "Cannot invite users to this workspace",
-        },
-        403
-      );
-    }
+    const workspaceId = c.req.param("workspaceId");
 
     try {
-      // Validate plan restrictions for user invitation
-      const [plan, resourceCounts] = await Promise.all([
-        getUserPlan(currentUser.id),
-        getUserResourceCounts(currentUser.id),
-      ]);
-
-      validateUserInvitation(plan, resourceCounts.users);
-
-      // Check if workspace exists
-      const workspace = await prisma.workspace.findUnique({
-        where: { id: workspaceId },
-      });
-
-      if (!workspace) {
-        return c.json({ error: "Workspace not found" }, 404);
-      }
-
-      // Check if user already exists
-      const existingUser = await prisma.user.findUnique({
-        where: { email },
-      });
-
-      // Check if there's already a pending invitation
-      const existingInvitation = await prisma.invitation.findFirst({
+      const invitations = await prisma.invitation.findMany({
         where: {
-          email,
           workspaceId,
           status: "PENDING",
         },
-      });
-
-      if (existingInvitation) {
-        return c.json(
-          { error: "There is already a pending invitation for this email" },
-          400
-        );
-      }
-
-      // Generate invitation token and set expiration (7 days)
-      const token = EncryptionService.generateEncryptionKey();
-      const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + 7);
-
-      // Create invitation
-      const invitation = await prisma.invitation.create({
-        data: {
-          email,
-          token,
-          workspaceId,
-          invitedById: currentUser.id,
-          role,
-          expiresAt,
-          invitedUserId: existingUser?.id,
-        },
         include: {
-          workspace: {
-            select: {
-              name: true,
-            },
-          },
           invitedBy: {
             select: {
+              id: true,
               email: true,
               firstName: true,
               lastName: true,
@@ -404,75 +295,16 @@ userController.post(
         },
       });
 
-      // In a real application, you would send an email with the invitation link
-      // For this example, we'll just return the token
-
-      return c.json(
-        {
-          message: `Invitation sent to ${email}`,
-          invitation: {
-            id: invitation.id,
-            email: invitation.email,
-            workspaceName: invitation.workspace.name,
-            invitedBy: invitation.invitedBy.email,
-            role: invitation.role,
-            expiresAt: invitation.expiresAt,
-            // Only return token in development for testing
-            ...(isDevelopment() ? { token: invitation.token } : {}),
-          },
-        },
-        201
-      );
+      return c.json({ invitations });
     } catch (error) {
-      logger.error({ error }, "Error inviting user");
-      return c.json({ error: "Failed to invite user" }, 500);
+      logger.error(
+        { error },
+        `Error fetching invitations for workspace ${workspaceId}`
+      );
+      return c.json({ error: "Failed to fetch invitations" }, 500);
     }
   }
 );
-
-// Get pending invitations for a workspace (admin or workspace admin)
-userController.get("/invitations/workspace/:workspaceId", async (c) => {
-  const workspaceId = c.req.param("workspaceId");
-  const user = c.get("user");
-
-  // Check if user has access to this workspace
-  if (user.role !== UserRole.ADMIN && user.workspaceId !== workspaceId) {
-    return c.json(
-      {
-        error: "Forbidden",
-        message: "Cannot access invitations for this workspace",
-      },
-      403
-    );
-  }
-
-  try {
-    const invitations = await prisma.invitation.findMany({
-      where: {
-        workspaceId,
-        status: "PENDING",
-      },
-      include: {
-        invitedBy: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-          },
-        },
-      },
-    });
-
-    return c.json({ invitations });
-  } catch (error) {
-    logger.error(
-      { error },
-      `Error fetching invitations for workspace ${workspaceId}`
-    );
-    return c.json({ error: "Failed to fetch invitations" }, 500);
-  }
-});
 
 // Get current user's profile
 userController.get("/profile/me", async (c) => {
@@ -525,18 +357,11 @@ userController.get("/profile/me", async (c) => {
 // Update workspace information (workspace admin only)
 userController.put(
   "/profile/workspace",
+  authorize([UserRole.ADMIN]),
   zValidator("json", UpdateWorkspaceSchema),
   async (c) => {
     const data = c.req.valid("json");
     const user = c.get("user");
-
-    // Only admin users can update workspace info
-    if (user.role !== UserRole.ADMIN) {
-      return c.json(
-        { error: "Only admin users can update workspace information" },
-        403
-      );
-    }
 
     if (!user.workspaceId) {
       return c.json({ error: "No workspace assigned" }, 400);
@@ -570,14 +395,9 @@ userController.put(
   }
 );
 
-// Get workspace users (admin only)
+// Get workspace users
 userController.get("/profile/workspace/users", async (c) => {
   const user = c.get("user");
-
-  // Only admin users can view workspace users
-  if (user.role !== UserRole.ADMIN) {
-    return c.json({ error: "Only admin users can view workspace users" }, 403);
-  }
 
   try {
     const users = await prisma.user.findMany({
@@ -604,5 +424,104 @@ userController.get("/profile/workspace/users", async (c) => {
     return c.json({ error: "Failed to fetch workspace users" }, 500);
   }
 });
+
+// Remove user from workspace (ADMIN ONLY)
+userController.delete(
+  "/profile/workspace/users/:userId",
+  authorize([UserRole.ADMIN]),
+  zValidator("param", z.object({ userId: z.string() })),
+  async (c) => {
+    const currentUser = c.get("user");
+    const userIdToRemove = c.req.param("userId");
+
+    if (!currentUser.workspaceId) {
+      return c.json({ error: "No workspace assigned" }, 400);
+    }
+
+    try {
+      // Find the user to remove
+      const userToRemove = await prisma.user.findFirst({
+        where: {
+          id: userIdToRemove,
+          workspaceId: currentUser.workspaceId,
+        },
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          role: true,
+        },
+      });
+
+      if (!userToRemove) {
+        return c.json({ error: "User not found in this workspace" }, 404);
+      }
+
+      // Prevent removing yourself
+      if (userToRemove.id === currentUser.id) {
+        return c.json(
+          { error: "Cannot remove yourself from the workspace" },
+          400
+        );
+      }
+
+      // Prevent removing other admins (only workspace owner can remove admins)
+      if (userToRemove.role === UserRole.ADMIN) {
+        // Check if current user is the workspace owner
+        const workspace = await prisma.workspace.findFirst({
+          where: {
+            id: currentUser.workspaceId,
+            ownerId: currentUser.id,
+          },
+        });
+
+        if (!workspace) {
+          return c.json(
+            {
+              error: "Only workspace owners can remove admin users",
+            },
+            403
+          );
+        }
+      }
+
+      // Remove user from workspace by setting workspaceId to null
+      await prisma.user.update({
+        where: { id: userIdToRemove },
+        data: {
+          workspaceId: null,
+          role: UserRole.USER, // Reset role to USER when removed from workspace
+        },
+      });
+
+      logger.info(
+        {
+          removedUserId: userIdToRemove,
+          removedUserEmail: userToRemove.email,
+          removedByUserId: currentUser.id,
+          removedByUserEmail: currentUser.email,
+          workspaceId: currentUser.workspaceId,
+        },
+        "User removed from workspace"
+      );
+
+      return c.json({
+        message: "User removed from workspace successfully",
+        removedUser: {
+          id: userToRemove.id,
+          email: userToRemove.email,
+          name: `${userToRemove.firstName} ${userToRemove.lastName}`,
+        },
+      });
+    } catch (error) {
+      logger.error(
+        { error, userIdToRemove, currentUserId: currentUser.id },
+        "Error removing user from workspace"
+      );
+      return c.json({ error: "Failed to remove user from workspace" }, 500);
+    }
+  }
+);
 
 export default userController;

@@ -7,8 +7,8 @@ import { PLAN_FEATURES, getPlanFeatures } from "@/services/plan/plan.service";
 
 const planRoutes = new Hono();
 
-// Get all available plans with their features (ADMIN ONLY - sensitive pricing data)
-planRoutes.get("/plans", authorize([UserRole.ADMIN]), async (c) => {
+// Get all available plans with their features
+planRoutes.get("/plans", async (c) => {
   try {
     const allPlans = Object.entries(PLAN_FEATURES).map(
       ([planKey, features]) => ({

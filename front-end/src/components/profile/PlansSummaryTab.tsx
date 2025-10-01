@@ -78,15 +78,9 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
     },
   };
 
-  console.log("currentPlan", currentPlan);
-
   const currentPlanInfo = planBenefits[currentPlan];
   const nextPlan = getNextPlan(currentPlan);
   const nextPlanInfo = nextPlan ? planBenefits[nextPlan] : null;
-
-  console.log("currentPlanInfo", currentPlanInfo);
-  console.log("nextPlan", nextPlan);
-  console.log("nextPlanInfo", nextPlanInfo);
 
   return (
     <div className={`space-y-6 ${className}`}>

@@ -57,6 +57,13 @@ export const AcceptInvitationSchema = z.object({
   lastName: z.string().min(1, "Last name is required").optional(),
 });
 
+// Schema for accepting invitation with registration (required fields)
+export const AcceptInvitationWithRegistrationSchema = z.object({
+  password: z.string().min(8, "Password must be at least 8 characters"),
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
+});
+
 // Types derived from schemas
 export type RegisterUserInput = z.infer<typeof RegisterUserSchema>;
 export type LoginInput = z.infer<typeof LoginSchema>;
@@ -68,3 +75,6 @@ export type PasswordChangeInput = z.infer<typeof PasswordChangeSchema>;
 export type EmailChangeRequestInput = z.infer<typeof EmailChangeRequestSchema>;
 export type InviteUserInput = z.infer<typeof InviteUserSchema>;
 export type AcceptInvitationInput = z.infer<typeof AcceptInvitationSchema>;
+export type AcceptInvitationWithRegistrationInput = z.infer<
+  typeof AcceptInvitationWithRegistrationSchema
+>;

@@ -25,6 +25,7 @@ import {
   useInvitations,
   useSendInvitation,
   useRevokeInvitation,
+  useRemoveUserFromWorkspace,
   useChangePassword,
   useRequestEmailChange,
   useCancelEmailChange,
@@ -58,6 +59,7 @@ const Profile = () => {
   const updateWorkspaceMutation = useUpdateWorkspace();
   const sendInvitationMutation = useSendInvitation();
   const revokeInvitationMutation = useRevokeInvitation();
+  const removeUserMutation = useRemoveUserFromWorkspace();
   const changePasswordMutation = useChangePassword();
   const requestEmailChangeMutation = useRequestEmailChange();
   const cancelEmailChangeMutation = useCancelEmailChange();
@@ -229,7 +231,6 @@ const Profile = () => {
       const result = await sendInvitationMutation.mutateAsync({
         email: inviteForm.email,
         role: inviteForm.role,
-        message: inviteForm.message,
       });
 
       setInviteDialogOpen(false);
@@ -258,6 +259,17 @@ const Profile = () => {
       toast.success(`Invitation to ${email} has been revoked`);
     } catch (error) {
       logger.error("Revoke invitation error:", error);
+      const errorMessage = extractErrorMessage(error);
+      toast.error(errorMessage);
+    }
+  };
+
+  const handleRemoveUser = async (userId: string, userName: string) => {
+    try {
+      await removeUserMutation.mutateAsync(userId);
+      toast.success(`${userName} has been removed from the workspace`);
+    } catch (error) {
+      logger.error("Remove user error:", error);
       const errorMessage = extractErrorMessage(error);
       toast.error(errorMessage);
     }
@@ -377,8 +389,10 @@ const Profile = () => {
                   setInviteForm={setInviteForm}
                   onInviteUser={handleInviteUser}
                   onRevokeInvitation={handleRevokeInvitation}
+                  onRemoveUser={handleRemoveUser}
                   isInviting={sendInvitationMutation.isPending}
                   isRevoking={revokeInvitationMutation.isPending}
+                  isRemoving={removeUserMutation.isPending}
                   userPlan={userPlan}
                   canInviteMoreUsers={canInviteMoreUsers()}
                 />

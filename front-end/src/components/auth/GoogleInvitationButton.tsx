@@ -5,43 +5,68 @@ import { useAuth } from "@/contexts/AuthContextDefinition";
 import { useNavigate } from "react-router-dom";
 import { apiClient } from "@/lib/api";
 import logger from "@/lib/logger";
+import { useToast } from "@/hooks/useToast";
 import "@/styles/google-auth.css";
 
-interface GoogleLoginButtonProps {
+interface GoogleInvitationButtonProps {
+  invitationToken: string;
+  invitationEmail: string;
   onSuccess?: () => void;
   onError?: (error: string) => void;
   className?: string;
-  mode?: "signin" | "signup";
+  disabled?: boolean;
 }
 
-export const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
+export const GoogleInvitationButton: React.FC<GoogleInvitationButtonProps> = ({
+  invitationToken,
+  invitationEmail,
   onSuccess,
   onError,
   className,
-  mode = "signin",
+  disabled = false,
 }) => {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
-  const googleLoginMutation = useMutation({
+  const googleInvitationMutation = useMutation({
     mutationFn: async (credentialResponse: CredentialResponse) => {
-      return await apiClient.googleLogin(credentialResponse.credential);
+      if (!credentialResponse.credential) {
+        throw new Error("No credential received from Google");
+      }
+      return await apiClient.acceptInvitationWithGoogle(invitationToken, credentialResponse.credential);
     },
     onSuccess: (data) => {
       // Set authentication state
       login(data.token, data.user);
 
+      // Show success message
+      toast({
+        title: "Welcome to RabbitHQ!",
+        description: `You've successfully joined ${data.workspace.name}${data.isNewUser ? " with Google" : ""}`,
+      });
+
       onSuccess?.();
+      
+      // Redirect to dashboard
+      navigate("/", { replace: true });
     },
     onError: (error: Error) => {
-      logger.error("Google login failed:", error);
-      onError?.(error.message || "Google login failed");
+      logger.error("Google invitation acceptance failed:", error);
+      const errorMessage = error.message || "Failed to accept invitation with Google";
+      onError?.(errorMessage);
+      
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
     },
   });
 
   const handleGoogleSuccess = (credentialResponse: CredentialResponse) => {
     if (credentialResponse.credential) {
-      googleLoginMutation.mutate(credentialResponse);
+      googleInvitationMutation.mutate(credentialResponse);
     } else {
       onError?.("No credential received from Google");
     }
@@ -50,10 +75,6 @@ export const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
   const handleGoogleError = () => {
     onError?.("Google login was cancelled or failed");
   };
-
-  if (googleLoginMutation.isSuccess) {
-    navigate("/workspace", { replace: true });
-  }
 
   return (
     <div
@@ -65,10 +86,11 @@ export const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
         useOneTap={false}
         theme="outline"
         size="large"
-        text={mode === "signup" ? "signup_with" : "signin_with"}
+        text="signup_with"
         shape="rectangular"
         logo_alignment="left"
         width={200}
+        disabled={disabled || googleInvitationMutation.isPending}
       />
     </div>
   );

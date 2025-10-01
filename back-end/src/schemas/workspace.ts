@@ -1,33 +1,30 @@
 import { z } from "zod";
 
-export const workspacePlanEnum = z.enum([
-  "FREE",
-  "DEVELOPER",
-  "STARTUP",
-  "BUSINESS",
-]);
-
-export const UserPlanSchema = z.enum([
-  "FREE",
-  "DEVELOPER",
-  "STARTUP",
-  "BUSINESS",
-]);
-
-// Schema for creating a workspace
+// Validation schemas
 export const CreateWorkspaceSchema = z.object({
-  name: z.string().min(1, "Workspace name is required"),
+  name: z
+    .string()
+    .min(2, "Workspace name must be at least 2 characters")
+    .max(50, "Workspace name must be less than 50 characters"),
   contactEmail: z.string().email("Invalid email address").optional(),
-  logoUrl: z.string().url("Invalid URL").optional(),
+  tags: z
+    .array(z.string().min(1).max(20))
+    .max(10, "Maximum 10 tags allowed")
+    .optional(),
 });
 
-// Schema for updating a workspace
 export const UpdateWorkspaceSchema = z.object({
-  name: z.string().min(1, "Workspace name is required").optional(),
+  name: z
+    .string()
+    .min(2, "Workspace name must be at least 2 characters")
+    .max(50, "Workspace name must be less than 50 characters")
+    .optional(),
   contactEmail: z.string().email("Invalid email address").optional(),
+  tags: z
+    .array(z.string().min(1).max(20))
+    .max(10, "Maximum 10 tags allowed")
+    .optional(),
 });
 
-// Types derived from schemas
 export type CreateWorkspaceInput = z.infer<typeof CreateWorkspaceSchema>;
 export type UpdateWorkspaceInput = z.infer<typeof UpdateWorkspaceSchema>;
-export type UserPlan = z.infer<typeof UserPlanSchema>;

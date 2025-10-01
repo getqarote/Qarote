@@ -451,9 +451,14 @@ class StripeSetup {
     console.log("STRIPE_WEBHOOK_SECRET=whsec_xxxxx\n");
 
     try {
-      execSync("stripe listen --forward-to localhost:3000/webhooks/webhook", {
-        stdio: "inherit",
-      });
+      execSync(
+        this.getStripeCommand(
+          "stripe listen --forward-to localhost:3000/webhooks/webhook"
+        ),
+        {
+          stdio: "inherit",
+        }
+      );
     } catch (error) {
       console.error("Webhook forwarding failed:", error);
     }

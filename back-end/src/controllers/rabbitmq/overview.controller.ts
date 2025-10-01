@@ -17,6 +17,7 @@ const overviewController = new Hono();
 overviewController.get("/servers/:id/overview", async (c) => {
   const id = c.req.param("id");
   const workspaceId = c.req.param("workspaceId");
+
   const user = c.get("user");
 
   // Verify user has access to this workspace

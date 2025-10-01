@@ -1,10 +1,10 @@
 import { Hono } from "hono";
 import { authenticate } from "@/core/auth";
 import coreRoutes from "./workspace/core.controller";
-import statsRoutes from "./workspace/stats.controller";
 import dataRoutes from "./workspace/data.controller";
 import planRoutes from "./workspace/plan.controller";
 import managementRoutes from "./workspace/management.controller";
+import invitationRoutes from "./workspace/invitation.controller";
 
 const workspaceController = new Hono();
 
@@ -16,8 +16,8 @@ workspaceController.use("*", authenticate);
 // Plan routes and management routes must come before core routes because core has /:id catch-all
 workspaceController.route("/", planRoutes);
 workspaceController.route("/", managementRoutes);
-workspaceController.route("/", statsRoutes);
 workspaceController.route("/", dataRoutes);
+workspaceController.route("/invitations", invitationRoutes);
 // Core routes last because it contains the catch-all /:id route
 workspaceController.route("/", coreRoutes);
 

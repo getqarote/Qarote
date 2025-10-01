@@ -4,6 +4,12 @@ import { zValidator } from "@hono/zod-validator";
 import { authenticate, authorize } from "@/core/auth";
 import { UserRole } from "@prisma/client";
 import { createRabbitMQClient } from "./shared";
+import { ServerParamSchema } from "@/schemas/alerts";
+import {
+  CreateUserSchema,
+  SetPermissionsSchema,
+  UpdateUserSchema,
+} from "@/schemas/rabbitmq";
 
 const usersController = new Hono();
 
@@ -12,64 +18,66 @@ usersController.use("*", authenticate);
 usersController.use("*", authorize([UserRole.ADMIN]));
 
 // Get all users for a server
-usersController.get("/servers/:serverId/users", async (c) => {
-  try {
-    const serverId = c.req.param("serverId");
-    const user = c.get("user");
+usersController.get(
+  "/servers/:id/users",
+  zValidator("param", ServerParamSchema),
+  async (c) => {
+    try {
+      const serverId = c.req.param("id");
+      const user = c.get("user");
 
-    if (!user.workspaceId) {
-      return c.json({ error: "No workspace assigned" }, 400);
+      if (!user.workspaceId) {
+        return c.json({ error: "No workspace assigned" }, 400);
+      }
+
+      const client = await createRabbitMQClient(serverId, user.workspaceId);
+      const users = await client.getUsers();
+
+      return c.json({ users });
+    } catch (error: any) {
+      console.error("Error fetching users:", error);
+      return c.json({ error: error.message }, 500);
     }
-
-    const client = await createRabbitMQClient(serverId, user.workspaceId);
-    const users = await client.getUsers();
-
-    return c.json({ users });
-  } catch (error: any) {
-    console.error("Error fetching users:", error);
-    return c.json({ error: error.message }, 500);
   }
-});
+);
 
 // Get specific user details
-usersController.get("/servers/:serverId/users/:username", async (c) => {
-  try {
-    const serverId = c.req.param("serverId");
-    const username = c.req.param("username");
-    const user = c.get("user");
+usersController.get(
+  "/servers/:id/users/:username",
+  zValidator("param", ServerParamSchema),
+  async (c) => {
+    try {
+      const serverId = c.req.param("id");
+      const username = c.req.param("username");
+      const user = c.get("user");
 
-    if (!user.workspaceId) {
-      return c.json({ error: "No workspace assigned" }, 400);
+      if (!user.workspaceId) {
+        return c.json({ error: "No workspace assigned" }, 400);
+      }
+
+      const client = await createRabbitMQClient(serverId, user.workspaceId);
+      const userDetails = await client.getUser(username);
+      const permissions = await client.getUserPermissions(username);
+
+      return c.json({
+        user: userDetails,
+        permissions,
+      });
+    } catch (error: any) {
+      console.error("Error fetching user details:", error);
+      return c.json({ error: error.message }, 500);
     }
-
-    const client = await createRabbitMQClient(serverId, user.workspaceId);
-    const userDetails = await client.getUser(username);
-    const permissions = await client.getUserPermissions(username);
-
-    return c.json({
-      user: userDetails,
-      permissions,
-    });
-  } catch (error: any) {
-    console.error("Error fetching user details:", error);
-    return c.json({ error: error.message }, 500);
   }
-});
-
-// Create user schema
-const createUserSchema = z.object({
-  username: z.string().min(1, "Username is required"),
-  password: z.string().min(1, "Password is required").optional(),
-  tags: z.string().optional().default(""),
-});
+);
 
 // Create new user
 usersController.post(
-  "/servers/:serverId/users",
-  zValidator("json", createUserSchema),
+  "/servers/:id/users",
+  zValidator("param", ServerParamSchema),
+  zValidator("json", CreateUserSchema),
   async (c) => {
     try {
-      const serverId = c.req.param("serverId");
+      const serverId = c.req.param("id");
       const userData = c.req.valid("json");
       const user = c.get("user");
 
@@ -91,20 +99,13 @@ usersController.post(
   }
 );
 
-// Update user schema
-const updateUserSchema = z.object({
-  password: z.string().optional(),
-  tags: z.string().optional(),
-  removePassword: z.boolean().optional(),
-});
-
-// Update user
 usersController.put(
-  "/servers/:serverId/users/:username",
-  zValidator("json", updateUserSchema),
+  "/servers/:id/users/:username",
+  zValidator("param", ServerParamSchema),
+  zValidator("json", UpdateUserSchema),
   async (c) => {
     try {
-      const serverId = c.req.param("serverId");
+      const serverId = c.req.param("id");
       const username = c.req.param("username");
       const updateData = c.req.valid("json");
       const user = c.get("user");
@@ -136,42 +137,37 @@ usersController.put(
   }
 );
 
-// Delete user
-usersController.delete("/servers/:serverId/users/:username", async (c) => {
-  try {
-    const serverId = c.req.param("serverId");
-    const username = c.req.param("username");
-    const user = c.get("user");
-
-    if (!user.workspaceId) {
-      return c.json({ error: "No workspace assigned" }, 400);
-    }
-
-    const client = await createRabbitMQClient(serverId, user.workspaceId);
-    await client.deleteUser(username);
-
-    return c.json({ message: "User deleted successfully" });
-  } catch (error: any) {
-    console.error("Error deleting user:", error);
-    return c.json({ error: error.message }, 500);
-  }
-});
-
-// Set user permissions schema
-const setPermissionsSchema = z.object({
-  vhost: z.string().min(1, "Virtual host is required"),
-  configure: z.string().default(".*"),
-  write: z.string().default(".*"),
-  read: z.string().default(".*"),
-});
-
-// Set user permissions
-usersController.put(
-  "/servers/:serverId/users/:username/permissions",
-  zValidator("json", setPermissionsSchema),
+usersController.delete(
+  "/servers/:id/users/:username",
+  zValidator("param", ServerParamSchema),
   async (c) => {
     try {
-      const serverId = c.req.param("serverId");
+      const serverId = c.req.param("id");
+      const username = c.req.param("username");
+      const user = c.get("user");
+
+      if (!user.workspaceId) {
+        return c.json({ error: "No workspace assigned" }, 400);
+      }
+
+      const client = await createRabbitMQClient(serverId, user.workspaceId);
+      await client.deleteUser(username);
+
+      return c.json({ message: "User deleted successfully" });
+    } catch (error: any) {
+      console.error("Error deleting user:", error);
+      return c.json({ error: error.message }, 500);
+    }
+  }
+);
+
+usersController.put(
+  "/servers/:id/users/:username/permissions",
+  zValidator("param", ServerParamSchema),
+  zValidator("json", SetPermissionsSchema),
+  async (c) => {
+    try {
+      const serverId = c.req.param("id");
       const username = c.req.param("username");
       const permissionData = c.req.valid("json");
       const user = c.get("user");
@@ -196,12 +192,12 @@ usersController.put(
   }
 );
 
-// Delete user permissions
 usersController.delete(
-  "/servers/:serverId/users/:username/permissions/:vhost",
+  "/servers/:id/users/:username/permissions/:vhost",
+  zValidator("param", ServerParamSchema),
   async (c) => {
     try {
-      const serverId = c.req.param("serverId");
+      const serverId = c.req.param("id");
       const username = c.req.param("username");
       const vhost = c.req.param("vhost");
       const user = c.get("user");

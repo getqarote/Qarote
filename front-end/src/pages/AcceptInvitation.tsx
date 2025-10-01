@@ -30,6 +30,7 @@ import {
   acceptInvitationSchema,
   type AcceptInvitationFormData,
 } from "@/schemas/forms";
+import { GoogleInvitationButton } from "@/components/auth/GoogleInvitationButton";
 
 interface InvitationDetails {
   id: string;
@@ -41,7 +42,7 @@ interface InvitationDetails {
     name: string;
     plan: string;
   };
-  inviter: {
+  invitedBy: {
     id: string;
     firstName: string | null;
     lastName: string | null;
@@ -203,7 +204,7 @@ const AcceptInvitation = () => {
               </span>
             </div>
             <div className="text-sm text-gray-600">
-              Invited by: <strong>{invitation?.inviter.displayName}</strong>
+              Invited by: <strong>{invitation?.invitedBy.displayName}</strong>
             </div>
           </div>
 
@@ -212,6 +213,38 @@ const AcceptInvitation = () => {
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
+
+          {/* Google Authentication Option */}
+          <div className="space-y-4">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">
+                  Or continue with
+                </span>
+              </div>
+            </div>
+            
+            <GoogleInvitationButton
+              invitationToken={token || ""}
+              invitationEmail={invitation?.email || ""}
+              onError={(error) => setError(error)}
+              disabled={acceptInvitationMutation.isPending}
+            />
+          </div>
+
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-background px-2 text-muted-foreground">
+                Or create account manually
+              </span>
+            </div>
+          </div>
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">

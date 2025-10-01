@@ -4,7 +4,6 @@
  */
 
 import { BaseApiClient } from "./baseClient";
-// import { UserPlan } from "@/types/plans";
 
 export interface Workspace {
   id: string;
@@ -13,6 +12,7 @@ export interface Workspace {
   logoUrl?: string;
   tags?: string[];
   plan: string;
+  ownerId?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -33,7 +33,6 @@ export interface WorkspaceInfo {
 }
 
 export interface WorkspaceCreationInfo {
-  // currentPlan: UserPlan;
   ownedWorkspaceCount: number;
   maxWorkspaces: number | null;
   canCreateWorkspace: boolean;
@@ -90,6 +89,15 @@ export class WorkspaceApiClient extends BaseApiClient {
   async switchWorkspace(id: string): Promise<{ message: string }> {
     return this.request(`/workspaces/workspaces/${id}/switch`, {
       method: "POST",
+    });
+  }
+
+  async removeUserFromWorkspace(userId: string): Promise<{
+    message: string;
+    removedUser: { id: string; email: string; name: string };
+  }> {
+    return this.request(`/users/profile/workspace/users/${userId}`, {
+      method: "DELETE",
     });
   }
 }

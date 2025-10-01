@@ -455,8 +455,8 @@ class ApiClient {
     return this.authClient.getWorkspaceUsers();
   }
 
-  async inviteUser(userData: Parameters<AuthApiClient["inviteUser"]>[0]) {
-    return this.authClient.inviteUser(userData);
+  async removeUserFromWorkspace(userId: string) {
+    return this.workspaceClient.removeUserFromWorkspace(userId);
   }
 
   async logout() {
@@ -539,6 +539,10 @@ class ApiClient {
       token,
       registrationData
     );
+  }
+
+  async acceptInvitationWithGoogle(token: string, credential: string) {
+    return this.authClient.acceptInvitationWithGoogle(token, credential);
   }
 
   // Alert methods
