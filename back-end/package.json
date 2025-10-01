@@ -46,7 +46,8 @@
     "stripe:webhook": "tsx scripts/stripe/setup-stripe.ts webhook",
     "stripe:mode": "tsx scripts/stripe/setup-stripe.ts mode",
     "stripe:test": "tsx scripts/stripe/setup-stripe.ts test",
-    "stripe:login": "stripe login"
+    "stripe:login": "stripe login",
+    "webhook:secret": "stripe listen --print-secret"
   },
   "dependencies": {
     "@hono/node-server": "^1.14.4",

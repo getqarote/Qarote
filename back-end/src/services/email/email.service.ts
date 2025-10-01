@@ -16,6 +16,7 @@ export {
   TrialEndingEmailParams,
   PaymentActionRequiredEmailParams,
   UpcomingInvoiceEmailParams,
+  PaymentConfirmationEmailParams,
 } from "./notification-email.service";
 
 // Import services for internal use
@@ -46,4 +47,6 @@ export class EmailService {
     NotificationEmailService.sendUpcomingInvoiceEmail;
   static sendPaymentFailedEmail =
     NotificationEmailService.sendPaymentFailedEmail;
+  static sendPaymentConfirmationEmail =
+    NotificationEmailService.sendPaymentConfirmationEmail;
 }

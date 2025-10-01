@@ -3,6 +3,7 @@ import { UserPlan } from "@prisma/client";
 import TrialEndingEmail from "./templates/trial-ending-email";
 import PaymentActionRequiredEmail from "./templates/payment-action-required-email";
 import UpcomingInvoiceEmail from "./templates/upcoming-invoice-email";
+import PaymentConfirmationEmail from "./templates/payment-confirmation-email";
 import { CoreEmailService, EmailResult } from "./core-email.service";
 
 export interface TrialEndingEmailParams {
@@ -45,6 +46,14 @@ export interface PaymentFailedEmailParams {
   userName: string;
   amount: number;
   failureReason: string;
+}
+
+export interface PaymentConfirmationEmailParams {
+  to: string;
+  userName: string;
+  amount: number;
+  currency: string;
+  paymentMethod: string;
 }
 
 /**
@@ -170,6 +179,42 @@ export class NotificationEmailService {
   }
 
   /**
+   * Send payment confirmation email
+   */
+  static async sendPaymentConfirmationEmail(
+    params: PaymentConfirmationEmailParams
+  ): Promise<EmailResult> {
+    const { to, userName, amount, currency, paymentMethod } = params;
+
+    const { frontendUrl } = CoreEmailService.getConfig();
+
+    // Render the React email template
+    const template = React.createElement(PaymentConfirmationEmail, {
+      userName,
+      amount,
+      currency,
+      paymentMethod,
+      frontendUrl,
+    });
+
+    return CoreEmailService.sendEmail({
+      to,
+      subject: `✅ Payment Confirmed - ${new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: currency.toUpperCase(),
+      }).format(amount)}`,
+      template,
+      emailType: "payment_confirmation",
+      context: {
+        userName,
+        amount,
+        currency,
+        paymentMethod,
+      },
+    });
+  }
+
+  /**
    * Send payment failed notification email
    */
   static async sendPaymentFailedEmail(
@@ -181,20 +226,31 @@ export class NotificationEmailService {
 
     // Create a simple HTML template for payment failed email
     const template = (
-      <div style={{ fontFamily: 'Arial, sans-serif', maxWidth: '600px', margin: '0 auto' }}>
+      <div
+        style={{
+          fontFamily: "Arial, sans-serif",
+          maxWidth: "600px",
+          margin: "0 auto",
+        }}
+      >
         <h2>Payment Failed</h2>
         <p>Hello {userName},</p>
         <p>We were unable to process your payment of ${amount.toFixed(2)}.</p>
-        <p><strong>Reason:</strong> {failureReason}</p>
+        <p>
+          <strong>Reason:</strong> {failureReason}
+        </p>
         <p>Please update your payment method to continue using our service.</p>
-        <a href={`${frontendUrl}/billing`} style={{ 
-          display: 'inline-block', 
-          padding: '12px 24px', 
-          backgroundColor: '#007bff', 
-          color: 'white', 
-          textDecoration: 'none', 
-          borderRadius: '4px' 
-        }}>
+        <a
+          href={`${frontendUrl}/billing`}
+          style={{
+            display: "inline-block",
+            padding: "12px 24px",
+            backgroundColor: "#007bff",
+            color: "white",
+            textDecoration: "none",
+            borderRadius: "4px",
+          }}
+        >
           Update Payment Method
         </a>
         <p>If you have any questions, please contact our support team.</p>

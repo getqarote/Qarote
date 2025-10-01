@@ -10,6 +10,7 @@ import {
   handlePaymentActionRequired,
   handleUpcomingInvoice,
   handlePaymentIntentFailed,
+  handlePaymentIntentSucceeded,
   handleCustomerUpdated,
 } from "./webhook-handlers";
 
@@ -50,6 +51,10 @@ export async function processStripeWebhook(event: Event) {
 
     case "payment_intent.payment_failed":
       await handlePaymentIntentFailed(event.data.object);
+      break;
+
+    case "payment_intent.succeeded":
+      await handlePaymentIntentSucceeded(event.data.object);
       break;
 
     case "customer.updated":

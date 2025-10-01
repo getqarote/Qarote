@@ -16,6 +16,7 @@ import {
 } from "@/services/stripe/stripe.service";
 import { EmailService } from "@/services/email/email.service";
 import { getUserDisplayName } from "../shared";
+import { generatePaymentDescription } from "@/utils/payment-description.utils";
 
 export async function handleCheckoutSessionCompleted(session: Session) {
   const userId = session.metadata?.userId;
@@ -58,6 +59,28 @@ export async function handleCheckoutSessionCompleted(session: Session) {
         ? subscription
         : null;
 
+    logger.info(
+      { subscriptionData },
+      "Subscription data from checkout session"
+    );
+
+    // Get current period dates safely
+    const currentPeriodStart = subscriptionData?.current_period_start
+      ? new Date(subscriptionData.current_period_start * 1000)
+      : new Date(); // Fallback to current time
+
+    const currentPeriodEnd = subscriptionData?.current_period_end
+      ? new Date(subscriptionData.current_period_end * 1000)
+      : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // Fallback to 30 days from now
+
+    logger.debug(
+      {
+        currentPeriodStart: currentPeriodStart.toISOString(),
+        currentPeriodEnd: currentPeriodEnd.toISOString(),
+      },
+      "Parsed subscription period dates"
+    );
+
     await prisma.subscription.create({
       data: {
         userId,
@@ -71,12 +94,8 @@ export async function handleCheckoutSessionCompleted(session: Session) {
           : BillingInterval.MONTH,
         pricePerMonth:
           subscriptionData?.items?.data?.[0]?.price?.unit_amount || 0,
-        currentPeriodStart: new Date(
-          subscriptionData?.current_period_start! * 1000
-        ),
-        currentPeriodEnd: new Date(
-          subscriptionData?.current_period_end! * 1000
-        ),
+        currentPeriodStart,
+        currentPeriodEnd,
         cancelAtPeriodEnd: subscriptionData?.cancel_at_period_end || false,
       },
     });
@@ -194,10 +213,13 @@ export async function handleSubscriptionChange(subscription: Subscription) {
             `Welcome back email sent for user ${user.id} - user renewed after cancellation`
           );
         } catch (emailError) {
-          logger.error("Failed to send welcome back email:", {
-            userId: user.id,
-            error: emailError,
-          });
+          logger.error(
+            {
+              userId: user.id,
+              error: emailError,
+            },
+            "Failed to send welcome back email:"
+          );
         }
       }
     }
@@ -278,7 +300,14 @@ export async function handleInvoicePaymentSucceeded(invoice: Invoice) {
         amount: invoice.amount_paid,
         currency: invoice.currency,
         status: PaymentStatus.SUCCEEDED,
-        description: invoice.description || `Payment for ${subscriptionId}`,
+        description:
+          invoice.description ||
+          generatePaymentDescription(
+            subscriptionId,
+            (await getPlanFromSubscription(subscriptionId)) || "UNKNOWN",
+            (await getBillingIntervalFromSubscription(subscriptionId)) ||
+              "MONTH"
+          ),
         plan: await getPlanFromSubscription(subscriptionId),
         billingInterval:
           await getBillingIntervalFromSubscription(subscriptionId),
@@ -339,7 +368,14 @@ export async function handleInvoicePaymentFailed(invoice: Invoice) {
         currency: invoice.currency,
         status: PaymentStatus.FAILED,
         description:
-          invoice.description || `Failed payment for ${subscriptionId}`,
+          invoice.description ||
+          generatePaymentDescription(
+            subscriptionId,
+            (await getPlanFromSubscription(subscriptionId)) || "UNKNOWN",
+            (await getBillingIntervalFromSubscription(subscriptionId)) ||
+              "MONTH",
+            true
+          ),
         plan: await getPlanFromSubscription(subscriptionId),
         billingInterval:
           await getBillingIntervalFromSubscription(subscriptionId),
@@ -542,6 +578,53 @@ export async function handlePaymentIntentFailed(paymentIntent: PaymentIntent) {
     logger.info(`Payment failed notification sent for user ${user.id}`);
   } catch (error) {
     logger.error({ error }, "Error handling payment intent failed");
+    throw error;
+  }
+}
+
+export async function handlePaymentIntentSucceeded(
+  paymentIntent: PaymentIntent
+) {
+  try {
+    const customerId = extractStringId(paymentIntent.customer);
+
+    if (!customerId) {
+      logger.error("Missing customer ID in payment intent succeeded event");
+      return;
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { stripeCustomerId: customerId },
+    });
+
+    if (!user) {
+      logger.error(`User not found for customer ${customerId}`);
+      return;
+    }
+
+    // Log successful payment
+    logger.info(
+      `Payment intent succeeded for user ${user.id}: ${paymentIntent.amount / 100} ${paymentIntent.currency}`
+    );
+
+    // Optional: Send payment confirmation email
+    await EmailService.sendPaymentConfirmationEmail({
+      to: user.email,
+      userName: getUserDisplayName(user),
+      amount: paymentIntent.amount / 100,
+      currency: paymentIntent.currency.toUpperCase(),
+      paymentMethod:
+        typeof paymentIntent.payment_method === "object" &&
+        paymentIntent.payment_method?.type
+          ? paymentIntent.payment_method.type
+          : "card",
+    });
+
+    // Optional: Update any payment-related metrics or analytics
+    // This could be useful for tracking successful payments
+    logger.info(`Payment intent ${paymentIntent.id} processed successfully`);
+  } catch (error) {
+    logger.error({ error }, "Error handling payment intent succeeded");
     throw error;
   }
 }

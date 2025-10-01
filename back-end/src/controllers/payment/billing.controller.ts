@@ -5,10 +5,9 @@ import { logger } from "@/core/logger";
 import { StripeService } from "@/services/stripe/stripe.service";
 import { strictRateLimiter, billingRateLimiter } from "@/middlewares/security";
 import { getUserResourceCounts } from "@/services/plan/plan.service";
-import {
-  extractStringId,
-  mapStripeStatusToSubscriptionStatus,
-} from "./webhook-handlers";
+import { config } from "@/config";
+import { mapStripeStatusToSubscriptionStatus } from "./webhook-handlers";
+import { transformPaymentDescription } from "@/utils/payment-description.utils";
 
 const billingController = new Hono();
 
@@ -56,18 +55,73 @@ billingController.get("/billing/overview", billingRateLimiter, async (c) => {
         // Get upcoming invoice
         if (stripeSubscription && !stripeSubscription.canceled_at) {
           upcomingInvoice = await StripeService.getUpcomingInvoice(
-            userWithSubscription.stripeCustomerId || ""
+            userWithSubscription.stripeSubscriptionId || ""
           );
         }
 
-        // Get payment method
-        if (userWithSubscription.stripeCustomerId) {
-          paymentMethod = await StripeService.getPaymentMethod(
-            userWithSubscription.stripeCustomerId
+        // Get payment method from subscription's default_payment_method
+        if (stripeSubscription?.default_payment_method) {
+          logger.info(
+            {
+              paymentMethodId: stripeSubscription.default_payment_method,
+            },
+            "Attempting to fetch payment method"
+          );
+
+          try {
+            const fullPaymentMethod = await StripeService.getPaymentMethod(
+              stripeSubscription.default_payment_method as string
+            );
+
+            logger.info(
+              {
+                id: fullPaymentMethod.id,
+                type: fullPaymentMethod.type,
+              },
+              "Payment method fetched successfully"
+            );
+
+            // Return only essential payment method data
+            paymentMethod = {
+              id: fullPaymentMethod.id,
+              type: fullPaymentMethod.type,
+              card: fullPaymentMethod.card
+                ? {
+                    brand: fullPaymentMethod.card.brand,
+                    last4: fullPaymentMethod.card.last4,
+                    exp_month: fullPaymentMethod.card.exp_month,
+                    exp_year: fullPaymentMethod.card.exp_year,
+                  }
+                : null,
+              billing_details: fullPaymentMethod.billing_details
+                ? {
+                    name: fullPaymentMethod.billing_details.name,
+                    email: fullPaymentMethod.billing_details.email,
+                  }
+                : null,
+            };
+          } catch (paymentMethodError) {
+            logger.error(
+              {
+                error: paymentMethodError,
+                paymentMethodId: stripeSubscription.default_payment_method,
+              },
+              "Failed to fetch payment method"
+            );
+            // Continue without payment method data
+          }
+        } else {
+          logger.warn(
+            {
+              subscriptionId: stripeSubscription?.id,
+              hasDefaultPaymentMethod:
+                !!stripeSubscription?.default_payment_method,
+            },
+            "No default_payment_method found in subscription"
           );
         }
       } catch (stripeError) {
-        logger.warn("Failed to fetch Stripe data:", stripeError);
+        logger.warn({ stripeError }, "Failed to fetch Stripe data");
         // Continue without Stripe data
       }
     }
@@ -110,7 +164,35 @@ billingController.get("/billing/overview", billingRateLimiter, async (c) => {
             updatedAt: userWithSubscription.subscription.updatedAt,
           }
         : null,
-      stripeSubscription,
+      stripeSubscription: stripeSubscription
+        ? {
+            id: stripeSubscription.id,
+            status: stripeSubscription.status,
+            current_period_start: stripeSubscription.current_period_start,
+            current_period_end: stripeSubscription.current_period_end,
+            cancel_at_period_end: stripeSubscription.cancel_at_period_end,
+            canceled_at: stripeSubscription.canceled_at,
+            default_payment_method: stripeSubscription.default_payment_method,
+            currency: stripeSubscription.currency,
+            // Maintain frontend compatibility with items structure
+            items: stripeSubscription.items
+              ? {
+                  data: stripeSubscription.items.data.map((item) => ({
+                    price: {
+                      id: item.price.id,
+                      unit_amount: item.price.unit_amount,
+                      currency: item.price.currency,
+                      recurring: item.price.recurring
+                        ? {
+                            interval: item.price.recurring.interval,
+                          }
+                        : null,
+                    },
+                  })),
+                }
+              : null,
+          }
+        : null,
       upcomingInvoice,
       paymentMethod,
       currentUsage: {
@@ -123,14 +205,18 @@ billingController.get("/billing/overview", billingRateLimiter, async (c) => {
         id: payment.id,
         amount: payment.amount,
         status: payment.status,
-        description: payment.description,
+        description: transformPaymentDescription(
+          payment.description,
+          userWithSubscription.subscription?.plan || "UNKNOWN",
+          userWithSubscription.subscription?.billingInterval || "MONTH"
+        ),
         createdAt: payment.createdAt.toISOString(),
       })),
     };
 
     return c.json(response);
   } catch (error) {
-    logger.error("Error fetching billing overview:", error);
+    logger.error({ error }, "Error fetching billing overview");
     return c.json({ error: "Internal server error" }, 500);
   }
 });
@@ -149,12 +235,12 @@ billingController.post("/billing/portal", async (c) => {
 
     const session = await StripeService.createPortalSession(
       user.stripeCustomerId,
-      `${process.env.FRONTEND_URL}/billing`
+      `${config.FRONTEND_URL}/billing`
     );
 
     return c.json({ url: session.url });
   } catch (error) {
-    logger.error("Error creating billing portal session:", error);
+    logger.error({ error }, "Error creating billing portal session");
     return c.json({ error: "Failed to create billing portal session" }, 500);
   }
 });
@@ -191,11 +277,14 @@ billingController.post("/billing/cancel", async (c) => {
     // Log cancellation reason and feedback
     if (reason || feedback) {
       // TODO: Create subscriptionCancellation table if needed
-      logger.info("Subscription cancellation feedback", {
-        userId: user.id,
-        reason,
-        feedback,
-      });
+      logger.info(
+        {
+          userId: user.id,
+          reason,
+          feedback,
+        },
+        "Subscription cancellation feedback"
+      );
     }
 
     return c.json({
@@ -216,7 +305,7 @@ billingController.post("/billing/cancel", async (c) => {
         : "Subscription will be canceled at the end of the current period",
     });
   } catch (error) {
-    logger.error("Error canceling subscription:", error);
+    logger.error({ error }, "Error canceling subscription");
     return c.json({ error: "Failed to cancel subscription" }, 500);
   }
 });
@@ -237,14 +326,14 @@ billingController.post("/billing/renew", async (c) => {
       userId: user.id,
       plan,
       billingInterval: interval,
-      successUrl: `${process.env.FRONTEND_URL}/payment/success`,
-      cancelUrl: `${process.env.FRONTEND_URL}/payment/cancel`,
+      successUrl: `${config.FRONTEND_URL}/payment/success`,
+      cancelUrl: `${config.FRONTEND_URL}/payment/cancel`,
       customerEmail: user.email,
     });
 
     return c.json({ url: checkoutSession.url });
   } catch (error) {
-    logger.error("Error renewing subscription:", error);
+    logger.error({ error }, "Error renewing subscription");
     return c.json({ error: "Failed to renew subscription" }, 500);
   }
 });
@@ -289,7 +378,7 @@ billingController.get("/payments", async (c) => {
       offset,
     });
   } catch (error) {
-    logger.error("Error fetching payment history:", error);
+    logger.error({ error }, "Error fetching payment history");
     return c.json({ error: "Failed to fetch payment history" }, 500);
   }
 });
