@@ -58,6 +58,28 @@ export async function handleCheckoutSessionCompleted(session: Session) {
         ? subscription
         : null;
 
+    logger.info(
+      { subscriptionData },
+      "Subscription data from checkout session"
+    );
+
+    // Get current period dates safely
+    const currentPeriodStart = subscriptionData?.current_period_start
+      ? new Date(subscriptionData.current_period_start * 1000)
+      : new Date(); // Fallback to current time
+
+    const currentPeriodEnd = subscriptionData?.current_period_end
+      ? new Date(subscriptionData.current_period_end * 1000)
+      : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // Fallback to 30 days from now
+
+    logger.debug(
+      {
+        currentPeriodStart: currentPeriodStart.toISOString(),
+        currentPeriodEnd: currentPeriodEnd.toISOString(),
+      },
+      "Parsed subscription period dates"
+    );
+
     await prisma.subscription.create({
       data: {
         userId,
@@ -71,12 +93,8 @@ export async function handleCheckoutSessionCompleted(session: Session) {
           : BillingInterval.MONTH,
         pricePerMonth:
           subscriptionData?.items?.data?.[0]?.price?.unit_amount || 0,
-        currentPeriodStart: new Date(
-          subscriptionData?.current_period_start! * 1000
-        ),
-        currentPeriodEnd: new Date(
-          subscriptionData?.current_period_end! * 1000
-        ),
+        currentPeriodStart,
+        currentPeriodEnd,
         cancelAtPeriodEnd: subscriptionData?.cancel_at_period_end || false,
       },
     });

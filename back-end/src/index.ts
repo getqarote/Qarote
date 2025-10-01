@@ -19,6 +19,7 @@ import routingController from "@/controllers/routing.controller";
 import feedbackController from "@/controllers/feedback.controller";
 import invitationController from "@/controllers/invitation.controller";
 import paymentController from "@/controllers/payment.controller";
+import webhookController from "@/controllers/payment/webhook.controller";
 import healthcheckController from "@/controllers/healthcheck.controller";
 
 import { corsMiddleware } from "@/middlewares/cors";
@@ -53,6 +54,7 @@ app.route("/api/routing", routingController);
 app.route("/api/feedback", feedbackController);
 app.route("/api/invitations", invitationController);
 app.route("/api/payments", paymentController);
+app.route("/webhooks", webhookController);
 app.route("/", healthcheckController);
 
 const { port, host } = serverConfig;

@@ -15,11 +15,20 @@ app.post("/webhook", async (c) => {
 
   try {
     const body = await c.req.text();
+    logger.debug({ body }, "Stripe webhook body");
 
     const event = await StripeService.constructWebhookEvent(body, signature);
+    logger.debug({ event }, "Stripe webhook event");
 
-    await prisma.stripeWebhookEvent.create({
-      data: {
+    // Use upsert to handle duplicate events gracefully
+    await prisma.stripeWebhookEvent.upsert({
+      where: { stripeEventId: event.id },
+      update: {
+        eventType: event.type,
+        data: JSON.stringify(event.data),
+        processed: false, // Reset processed flag for retries
+      },
+      create: {
         stripeEventId: event.id,
         eventType: event.type,
         data: JSON.stringify(event.data),
