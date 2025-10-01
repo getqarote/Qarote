@@ -716,20 +716,6 @@ export const useWorkspaceUsers = () => {
   });
 };
 
-// Monthly message count hook
-export const useInviteUser = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (userData: Parameters<typeof apiClient.inviteUser>[0]) =>
-      apiClient.inviteUser(userData),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["companyUsers"] });
-      queryClient.invalidateQueries({ queryKey: ["workspaceUsers"] });
-    },
-  });
-};
-
 // New invitation hooks
 export const useInvitations = () => {
   const { isAuthenticated } = useAuth();

@@ -14,7 +14,7 @@ import {
 } from "@/services/plan/plan.service";
 import { EncryptionService } from "@/services/encryption.service";
 import { inviteUserSchema } from "@/schemas/invitation";
-import { getUserDisplayName } from "./shared";
+import { getUserDisplayName } from "../shared";
 
 const invitationController = new Hono();
 
@@ -84,6 +84,7 @@ invitationController.get("/", authenticate, async (c) => {
  */
 invitationController.post(
   "/",
+  authenticate,
   authorize([UserRole.ADMIN]),
   zValidator("json", inviteUserSchema),
   async (c) => {

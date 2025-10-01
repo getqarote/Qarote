@@ -455,10 +455,6 @@ class ApiClient {
     return this.authClient.getWorkspaceUsers();
   }
 
-  async inviteUser(userData: Parameters<AuthApiClient["inviteUser"]>[0]) {
-    return this.authClient.inviteUser(userData);
-  }
-
   async logout() {
     // return this.authClient.logout();
   }
