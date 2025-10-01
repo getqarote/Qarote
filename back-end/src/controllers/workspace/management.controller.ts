@@ -99,7 +99,7 @@ workspaceManagementRoutes.get("/workspaces", async (c) => {
 
     return c.json({ workspaces });
   } catch (error) {
-    logger.error("Error fetching user workspaces:", error);
+    logger.error({ error }, "Error fetching user workspaces:");
     return c.json({ error: "Failed to fetch workspaces" }, 500);
   }
 });
@@ -140,7 +140,7 @@ workspaceManagementRoutes.get("/workspaces/creation-info", async (c) => {
       },
     });
   } catch (error) {
-    logger.error("Error fetching workspace creation info:", error);
+    logger.error({ error }, "Error fetching workspace creation info:");
     return c.json({ error: "Failed to fetch workspace creation info" }, 500);
   }
 });
@@ -244,11 +244,14 @@ workspaceManagementRoutes.post(
         return workspace;
       });
 
-      logger.info("Workspace created successfully", {
-        workspaceId: newWorkspace.id,
-        userId: user.id,
-        workspaceName: name,
-      });
+      logger.info(
+        {
+          workspaceId: newWorkspace.id,
+          userId: user.id,
+          workspaceName: name,
+        },
+        "Workspace created successfully"
+      );
 
       return c.json(
         {
@@ -261,7 +264,7 @@ workspaceManagementRoutes.post(
         201
       );
     } catch (error) {
-      logger.error("Error creating workspace:", error);
+      logger.error({ error }, "Error creating workspace:");
       return c.json({ error: "Failed to create workspace" }, 500);
     }
   }
@@ -327,11 +330,14 @@ workspaceManagementRoutes.put(
         },
       });
 
-      logger.info("Workspace updated successfully", {
-        workspaceId,
-        userId: user.id,
-        updateData,
-      });
+      logger.info(
+        {
+          workspaceId,
+          userId: user.id,
+          updateData,
+        },
+        "Workspace updated successfully"
+      );
 
       return c.json({
         workspace: {
@@ -341,7 +347,7 @@ workspaceManagementRoutes.put(
         },
       });
     } catch (error) {
-      logger.error("Error updating workspace:", error);
+      logger.error({ error }, "Error updating workspace:");
       return c.json({ error: "Failed to update workspace" }, 500);
     }
   }
@@ -384,14 +390,17 @@ workspaceManagementRoutes.delete("/workspaces/:workspaceId", async (c) => {
       where: { id: workspaceId },
     });
 
-    logger.info("Workspace deleted successfully", {
-      workspaceId,
-      userId: user.id,
-    });
+    logger.info(
+      {
+        workspaceId,
+        userId: user.id,
+      },
+      "Workspace deleted successfully"
+    );
 
     return c.json({ message: "Workspace deleted successfully" });
   } catch (error) {
-    logger.error("Error deleting workspace:", error);
+    logger.error({ error }, "Error deleting workspace:");
     return c.json({ error: "Failed to delete workspace" }, 500);
   }
 });
@@ -429,18 +438,21 @@ workspaceManagementRoutes.post("/workspaces/:workspaceId/switch", async (c) => {
       data: { workspaceId },
     });
 
-    logger.info("User switched workspace", {
-      userId: user.id,
-      newWorkspaceId: workspaceId,
-      previousWorkspaceId: user.workspaceId,
-    });
+    logger.info(
+      {
+        userId: user.id,
+        newWorkspaceId: workspaceId,
+        previousWorkspaceId: user.workspaceId,
+      },
+      "User switched workspace"
+    );
 
     return c.json({
       message: "Workspace switched successfully",
       workspaceId,
     });
   } catch (error) {
-    logger.error("Error switching workspace:", error);
+    logger.error({ error }, "Error switching workspace:");
     return c.json({ error: "Failed to switch workspace" }, 500);
   }
 });

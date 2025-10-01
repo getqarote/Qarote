@@ -155,7 +155,10 @@ queuesController.get("/servers/:id/queues", async (c) => {
 
     return c.json(response);
   } catch (error) {
-    logger.error(`Error fetching queues for server ${id}:`, error);
+    logger.error(
+      { error, serverId: id },
+      `Error fetching queues for server ${id}:`
+    );
     return createErrorResponse(c, error, 500, "Failed to fetch queues");
   }
 });
@@ -190,7 +193,10 @@ queuesController.get("/servers/:id/queues/:queueName", async (c) => {
 
     return c.json(response);
   } catch (error) {
-    logger.error(`Error fetching queue ${queueName} for server ${id}:`, error);
+    logger.error(
+      { error, serverId: id, queueName },
+      `Error fetching queue ${queueName} for server ${id}:`
+    );
     return createErrorResponse(c, error, 500, "Failed to fetch queue");
   }
 });
@@ -646,7 +652,7 @@ queuesController.post(
         try {
           await amqpClient.disconnect();
         } catch (cleanupError) {
-          logger.warn("Error cleaning up AMQP connection:", cleanupError);
+          logger.warn({ cleanupError }, "Error cleaning up AMQP connection:");
         }
       }
     }
@@ -699,7 +705,7 @@ queuesController.get(
         try {
           await amqpClient.disconnect();
         } catch (cleanupError) {
-          logger.warn("Error cleaning up AMQP connection:", cleanupError);
+          logger.warn({ cleanupError }, "Error cleaning up AMQP connection:");
         }
       }
     }

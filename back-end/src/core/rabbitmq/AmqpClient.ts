@@ -77,7 +77,7 @@ export class RabbitMQAmqpClient {
       try {
         await this.persistenceCallback(this.config.serverId, states);
       } catch (error) {
-        logger.warn("Failed to persist pause states to database:", error);
+        logger.warn({ error }, "Failed to persist pause states to database:");
       }
     }
   }
@@ -94,14 +94,17 @@ export class RabbitMQAmqpClient {
 
       const connectionUrl = `${this.config.protocol}://${this.config.username}:${this.config.password}@${this.config.hostname}:${this.config.port}${this.config.vhost}`;
 
-      logger.info("Connecting to RabbitMQ via AMQP", {
-        serverId: this.config.serverId,
-        serverName: this.config.serverName,
-        hostname: this.config.hostname,
-        port: this.config.port,
-        vhost: this.config.vhost,
-        protocol: this.config.protocol,
-      });
+      logger.info(
+        {
+          serverId: this.config.serverId,
+          serverName: this.config.serverName,
+          hostname: this.config.hostname,
+          port: this.config.port,
+          vhost: this.config.vhost,
+          protocol: this.config.protocol,
+        },
+        "Connecting to RabbitMQ via AMQP"
+      );
 
       this.connection = await amqp.connect(connectionUrl, {
         heartbeat: this.config.heartbeat || 60,
@@ -112,33 +115,45 @@ export class RabbitMQAmqpClient {
 
       // Set up connection event handlers
       this.connection.on("error", (error: Error) => {
-        logger.error("AMQP connection error:", {
-          serverId: this.config.serverId,
-          serverName: this.config.serverName,
-          error: error.message,
-        });
+        logger.error(
+          {
+            serverId: this.config.serverId,
+            serverName: this.config.serverName,
+            error: error.message,
+          },
+          "AMQP connection error:"
+        );
         this.isConnected = false;
       });
 
       this.connection.on("close", () => {
-        logger.info("AMQP connection closed", {
-          serverId: this.config.serverId,
-          serverName: this.config.serverName,
-        });
+        logger.info(
+          {
+            serverId: this.config.serverId,
+            serverName: this.config.serverName,
+          },
+          "AMQP connection closed"
+        );
         this.isConnected = false;
       });
 
       this.isConnected = true;
-      logger.info("Successfully connected to RabbitMQ via AMQP", {
-        serverId: this.config.serverId,
-        serverName: this.config.serverName,
-      });
+      logger.info(
+        {
+          serverId: this.config.serverId,
+          serverName: this.config.serverName,
+        },
+        "Successfully connected to RabbitMQ via AMQP"
+      );
     } catch (error) {
-      logger.error("Failed to connect to RabbitMQ via AMQP:", {
-        serverId: this.config.serverId,
-        serverName: this.config.serverName,
-        error: error instanceof Error ? error.message : String(error),
-      });
+      logger.error(
+        {
+          serverId: this.config.serverId,
+          serverName: this.config.serverName,
+          error: error instanceof Error ? error.message : String(error),
+        },
+        "Failed to connect to RabbitMQ via AMQP:"
+      );
       this.isConnected = false;
 
       if (error instanceof Error) {
@@ -171,7 +186,7 @@ export class RabbitMQAmqpClient {
       this.consumers.clear();
       logger.info("Disconnected from RabbitMQ AMQP");
     } catch (error) {
-      logger.error("Error disconnecting from RabbitMQ AMQP:", error);
+      logger.error({ error }, "Error disconnecting from RabbitMQ AMQP:");
       throw error;
     }
   }
@@ -484,7 +499,7 @@ export class RabbitMQAmqpClient {
       // Disconnect
       await this.disconnect();
     } catch (error) {
-      logger.error("Error during AMQP client cleanup:", error);
+      logger.error({ error }, "Error during AMQP client cleanup:");
     }
   }
 }

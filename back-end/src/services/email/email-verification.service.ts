@@ -57,12 +57,15 @@ export class EmailVerificationService {
     userName?: string
   ): Promise<{ success: boolean; error?: string }> {
     try {
-      logger.debug("Sending verification email", {
-        email,
-        type,
-        userName,
-        tokenLength: token.length,
-      });
+      logger.debug(
+        {
+          email,
+          type,
+          userName,
+          tokenLength: token.length,
+        },
+        "Sending verification email"
+      );
 
       const result = await EmailService.sendVerificationEmail({
         to: email,
@@ -72,30 +75,39 @@ export class EmailVerificationService {
       });
 
       if (!result.success) {
-        logger.error("Failed to send verification email", {
-          email,
-          type,
-          error: result.error,
-        });
+        logger.error(
+          {
+            email,
+            type,
+            error: result.error,
+          },
+          "Failed to send verification email"
+        );
         return {
           success: false,
           error: result.error || "Failed to send verification email",
         };
       }
 
-      logger.info("Verification email sent successfully", {
-        email,
-        type,
-        messageId: result.messageId,
-      });
+      logger.info(
+        {
+          email,
+          type,
+          messageId: result.messageId,
+        },
+        "Verification email sent successfully"
+      );
 
       return { success: true };
     } catch (error) {
-      logger.error("Error in sendVerificationEmail", {
-        email,
-        type,
-        error,
-      });
+      logger.error(
+        {
+          email,
+          type,
+          error,
+        },
+        "Error in sendVerificationEmail"
+      );
 
       return {
         success: false,
@@ -116,10 +128,13 @@ export class EmailVerificationService {
     error?: string;
   }> {
     try {
-      logger.info("Attempting to verify email token", {
-        tokenLength: token.length,
-        tokenPrefix: token.substring(0, 8),
-      });
+      logger.info(
+        {
+          tokenLength: token.length,
+          tokenPrefix: token.substring(0, 8),
+        },
+        "Attempting to verify email token"
+      );
 
       // Find the token
       const verificationToken = await prisma.emailVerificationToken.findUnique({
@@ -128,28 +143,37 @@ export class EmailVerificationService {
       });
 
       if (!verificationToken) {
-        logger.warn("Verification token not found", {
-          tokenLength: token.length,
-          tokenPrefix: token.substring(0, 8),
-        });
+        logger.warn(
+          {
+            tokenLength: token.length,
+            tokenPrefix: token.substring(0, 8),
+          },
+          "Verification token not found"
+        );
         return { success: false, error: "Invalid verification token" };
       }
 
-      logger.info("Found verification token", {
-        tokenId: verificationToken.id,
-        userId: verificationToken.userId,
-        type: verificationToken.type,
-        expiresAt: verificationToken.expiresAt,
-        currentTime: new Date(),
-      });
+      logger.info(
+        {
+          tokenId: verificationToken.id,
+          userId: verificationToken.userId,
+          type: verificationToken.type,
+          expiresAt: verificationToken.expiresAt,
+          currentTime: new Date(),
+        },
+        "Found verification token"
+      );
 
       // Check if token has expired
       if (new Date() > verificationToken.expiresAt) {
-        logger.warn("Verification token has expired", {
-          tokenId: verificationToken.id,
-          expiresAt: verificationToken.expiresAt,
-          currentTime: new Date(),
-        });
+        logger.warn(
+          {
+            tokenId: verificationToken.id,
+            expiresAt: verificationToken.expiresAt,
+            currentTime: new Date(),
+          },
+          "Verification token has expired"
+        );
         // Clean up expired token
         await prisma.emailVerificationToken.delete({
           where: { id: verificationToken.id },
@@ -159,12 +183,15 @@ export class EmailVerificationService {
 
       const { user, email, type } = verificationToken;
 
-      logger.info("Processing email verification", {
-        userId: user.id,
-        email,
-        type,
-        currentEmailVerified: user.emailVerified,
-      });
+      logger.info(
+        {
+          userId: user.id,
+          email,
+          type,
+          currentEmailVerified: user.emailVerified,
+        },
+        "Processing email verification"
+      );
 
       // Handle different verification types
       if (type === "SIGNUP") {
@@ -203,11 +230,14 @@ export class EmailVerificationService {
             plan: updatedUser.subscription?.plan || "FREE",
           });
 
-          logger.info("Welcome email sent after email verification", {
-            userId: updatedUser.id,
-            email: updatedUser.email,
-            workspaceName: updatedUser.workspace.name,
-          });
+          logger.info(
+            {
+              userId: updatedUser.id,
+              email: updatedUser.email,
+              workspaceName: updatedUser.workspace.name,
+            },
+            "Welcome email sent after email verification"
+          );
         } catch (emailError) {
           logger.error(
             { error: emailError, userId: updatedUser.id },
@@ -233,11 +263,14 @@ export class EmailVerificationService {
         where: { id: verificationToken.id },
       });
 
-      logger.info("Email verification completed successfully", {
-        userId: user.id,
-        email,
-        type,
-      });
+      logger.info(
+        {
+          userId: user.id,
+          email,
+          type,
+        },
+        "Email verification completed successfully"
+      );
 
       return {
         success: true,
@@ -246,12 +279,15 @@ export class EmailVerificationService {
         type,
       };
     } catch (error) {
-      logger.error("Error verifying email token:", {
-        error: error instanceof Error ? error.message : "Unknown error",
-        stack: error instanceof Error ? error.stack : undefined,
-        tokenLength: token.length,
-        tokenPrefix: token.substring(0, 8),
-      });
+      logger.error(
+        {
+          error: error instanceof Error ? error.message : "Unknown error",
+          stack: error instanceof Error ? error.stack : undefined,
+          tokenLength: token.length,
+          tokenPrefix: token.substring(0, 8),
+        },
+        "Error verifying email token:"
+      );
       return { success: false, error: "Failed to verify email token" };
     }
   }

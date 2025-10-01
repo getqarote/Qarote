@@ -46,10 +46,13 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
     increment: number; // seconds between samples (e.g., 10)
   }): Promise<RabbitMQOverview> {
     try {
-      logger.debug("Fetching RabbitMQ overview with time range", {
-        age: timeRange.age,
-        increment: timeRange.increment,
-      });
+      logger.debug(
+        {
+          age: timeRange.age,
+          increment: timeRange.increment,
+        },
+        "Fetching RabbitMQ overview with time range"
+      );
 
       const queryParams = new URLSearchParams({
         msg_rates_age: timeRange.age.toString(),
@@ -84,11 +87,14 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
 
   async getQueues(): Promise<RabbitMQQueue[]> {
     try {
-      logger.debug("Fetching RabbitMQ queues", { vhost: this.vhost });
+      logger.debug({ vhost: this.vhost }, "Fetching RabbitMQ queues");
       const queues = await this.request(`/queues/${this.vhost}`);
-      logger.debug("RabbitMQ queues fetched successfully", {
-        count: queues?.length || 0,
-      });
+      logger.debug(
+        {
+          count: queues?.length || 0,
+        },
+        "RabbitMQ queues fetched successfully"
+      );
       return queues;
     } catch (error) {
       logger.error({ error }, "Failed to fetch RabbitMQ queues");
@@ -109,11 +115,14 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
     increment: number; // seconds between samples (e.g., 10)
   }): Promise<RabbitMQQueue[]> {
     try {
-      logger.debug("Fetching RabbitMQ queues with time range", {
-        vhost: this.vhost,
-        age: timeRange.age,
-        increment: timeRange.increment,
-      });
+      logger.debug(
+        {
+          vhost: this.vhost,
+          age: timeRange.age,
+          increment: timeRange.increment,
+        },
+        "Fetching RabbitMQ queues with time range"
+      );
 
       const queryParams = new URLSearchParams({
         msg_rates_age: timeRange.age.toString(),
@@ -125,9 +134,12 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
       const queues = await this.request(
         `/queues/${this.vhost}?${queryParams.toString()}`
       );
-      logger.debug("RabbitMQ queues with time range fetched successfully", {
-        count: queues?.length || 0,
-      });
+      logger.debug(
+        {
+          count: queues?.length || 0,
+        },
+        "RabbitMQ queues with time range fetched successfully"
+      );
       return queues;
     } catch (error) {
       logger.error(
@@ -150,9 +162,12 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
     try {
       logger.debug("Fetching RabbitMQ nodes");
       const nodes = await this.request("/nodes");
-      logger.debug("RabbitMQ nodes fetched successfully", {
-        count: nodes?.length || 0,
-      });
+      logger.debug(
+        {
+          count: nodes?.length || 0,
+        },
+        "RabbitMQ nodes fetched successfully"
+      );
       return nodes;
     } catch (error) {
       logger.error({ error }, "Failed to fetch RabbitMQ nodes");
@@ -170,15 +185,15 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
 
   async getQueue(queueName: string): Promise<RabbitMQQueue> {
     try {
-      logger.debug("Fetching RabbitMQ queue", { queueName });
+      logger.debug({ queueName }, "Fetching RabbitMQ queue");
       const encodedQueueName = encodeURIComponent(queueName);
       const queue = await this.request(
         `/queues/${this.vhost}/${encodedQueueName}`
       );
-      logger.debug("RabbitMQ queue fetched successfully", { queueName });
+      logger.debug({ queueName }, "RabbitMQ queue fetched successfully");
       return queue;
     } catch (error) {
-      logger.error("Failed to fetch RabbitMQ queue:", { error, queueName });
+      logger.error({ error, queueName }, "Failed to fetch RabbitMQ queue:");
 
       if (error instanceof Error) {
         captureRabbitMQError(error, {
