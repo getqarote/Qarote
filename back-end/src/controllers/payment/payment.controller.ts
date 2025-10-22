@@ -28,6 +28,15 @@ paymentController.post(
     }
 
     try {
+      logger.info(
+        {
+          userId: user.id,
+          plan,
+          billingInterval,
+        },
+        "Creating checkout session with 30-day trial"
+      );
+
       // Create Stripe customer if not exists
       let customerId = user.stripeCustomerId;
       if (!customerId) {
@@ -45,7 +54,7 @@ paymentController.post(
         });
       }
 
-      // Create checkout session
+      // Create checkout session with 30-day trial
       const session = await StripeService.createCheckoutSession({
         userId: user.id,
         plan,
@@ -53,6 +62,8 @@ paymentController.post(
         successUrl: `${emailConfig.frontendUrl}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
         cancelUrl: `${emailConfig.frontendUrl}/payment/cancelled`,
         customerEmail: user.email,
+        // Automatically give 30-day trial to all users during early access period
+        trialDays: 30,
       });
 
       return c.json({ url: session.url });

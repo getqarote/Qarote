@@ -89,6 +89,7 @@ export class StripeCustomerService {
     successUrl,
     cancelUrl,
     customerEmail,
+    trialDays,
   }: CreateCheckoutSessionParams) {
     try {
       if (plan === UserPlan.FREE) {
@@ -122,15 +123,19 @@ export class StripeCustomerService {
           userId,
           plan,
           billingInterval,
+          ...(trialDays && { trialDays: trialDays.toString() }),
         },
         subscription_data: {
           metadata: {
             userId,
             plan,
             billingInterval,
+            ...(trialDays && { trialDays: trialDays.toString() }),
           },
+          // Add trial period for early access users
+          ...(trialDays && { trial_period_days: trialDays }),
         },
-        allow_promotion_codes: false,
+        allow_promotion_codes: true,
       };
 
       // Add customer email if provided

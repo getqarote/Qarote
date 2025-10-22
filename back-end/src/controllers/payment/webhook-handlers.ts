@@ -81,6 +81,13 @@ export async function handleCheckoutSessionCompleted(session: Session) {
       "Parsed subscription period dates"
     );
 
+    // Determine subscription status based on trial
+    const hasTrial =
+      subscriptionData?.trial_start && subscriptionData?.trial_end;
+    const subscriptionStatus = hasTrial
+      ? SubscriptionStatus.TRIALING
+      : SubscriptionStatus.ACTIVE;
+
     await prisma.subscription.create({
       data: {
         userId,
@@ -88,7 +95,7 @@ export async function handleCheckoutSessionCompleted(session: Session) {
         stripePriceId: subscriptionData?.items?.data?.[0]?.price?.id || "",
         stripeCustomerId: customerId!,
         plan,
-        status: SubscriptionStatus.ACTIVE,
+        status: subscriptionStatus,
         billingInterval: billingInterval
           ? mapStripeBillingIntervalToBillingInterval(billingInterval)
           : BillingInterval.MONTH,
@@ -96,6 +103,13 @@ export async function handleCheckoutSessionCompleted(session: Session) {
           subscriptionData?.items?.data?.[0]?.price?.unit_amount || 0,
         currentPeriodStart,
         currentPeriodEnd,
+        // Add trial information
+        trialStart: subscriptionData?.trial_start
+          ? new Date(subscriptionData.trial_start * 1000)
+          : null,
+        trialEnd: subscriptionData?.trial_end
+          ? new Date(subscriptionData.trial_end * 1000)
+          : null,
         cancelAtPeriodEnd: subscriptionData?.cancel_at_period_end || false,
       },
     });
