@@ -43,6 +43,18 @@ export abstract class BaseApiClient {
       });
 
       if (!response.ok) {
+        // Handle 401 Unauthorized - logout user
+        if (response.status === 401) {
+          // Clear auth data
+          localStorage.removeItem("auth_token");
+          localStorage.removeItem("auth_user");
+
+          // Dispatch event to trigger logout in AuthContext
+          window.dispatchEvent(new CustomEvent("auth:unauthorized"));
+
+          logger.warn("Received 401 Unauthorized - user logged out");
+        }
+
         // Try to parse error response
         let errorData: unknown;
         let errorMessage = `HTTP error! status: ${response.status}`;
@@ -108,6 +120,18 @@ export abstract class BaseApiClient {
     });
 
     if (!response.ok) {
+      // Handle 401 Unauthorized - logout user
+      if (response.status === 401) {
+        // Clear auth data
+        localStorage.removeItem("auth_token");
+        localStorage.removeItem("auth_user");
+
+        // Dispatch event to trigger logout in AuthContext
+        window.dispatchEvent(new CustomEvent("auth:unauthorized"));
+
+        logger.warn("Received 401 Unauthorized - user logged out");
+      }
+
       const error = await response.json();
       throw new Error(error.message || "Request failed");
     }
