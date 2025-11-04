@@ -255,26 +255,16 @@ export const DiscourseLink: React.FC<DiscourseWidgetProps> = ({
   userUsername,
   userAvatar,
 }) => {
-  const discourseClient = new DiscourseSSOClient();
-
-  const handleClick = async () => {
+  const handleClick = () => {
     if (!userId || !userEmail || !userName || !userUsername) {
       window.location.href = "/login";
       return;
     }
 
-    try {
-      await discourseClient.redirectToDiscourse({
-        id: userId,
-        email: userEmail,
-        name: userName,
-        username: userUsername,
-        avatar_url: userAvatar,
-      });
-    } catch (error) {
-      window.open(import.meta.env.VITE_DISCOURSE_URL, "_blank");
-      console.error("Error redirecting to Discourse:", error);
-    }
+    // Open Discourse in a new tab instead of redirecting
+    const discourseUrl =
+      import.meta.env.VITE_DISCOURSE_URL || "http://localhost:9000";
+    window.open(discourseUrl, "_blank");
   };
 
   return (
