@@ -57,6 +57,13 @@ const envSchema = z.object({
   DISCOURSE_SSO_SECRET: z.string().min(1, "DISCOURSE_SSO_SECRET is required"),
   DISCOURSE_URL: z.url("DISCOURSE_URL must be a valid URL"),
 
+  // Notion Configuration
+  NOTION_API_KEY: z.string().min(1, "NOTION_API_KEY is required"),
+  NOTION_DATABASE_ID: z.string().min(1, "NOTION_DATABASE_ID is required"),
+  NOTION_SYNC_ENABLED: z.coerce
+    .boolean()
+    .describe("Enable Notion sync (set to false for staging)"),
+
   // NPM package version (for Sentry releases)
   npm_package_version: z.string().describe("1.0.0"),
 });
@@ -152,4 +159,10 @@ export const googleConfig = {
 export const discourseConfig = {
   ssoSecret: config.DISCOURSE_SSO_SECRET,
   url: config.DISCOURSE_URL,
+} as const;
+
+export const notionConfig = {
+  apiKey: config.NOTION_API_KEY,
+  databaseId: config.NOTION_DATABASE_ID,
+  syncEnabled: config.NOTION_SYNC_ENABLED,
 } as const;

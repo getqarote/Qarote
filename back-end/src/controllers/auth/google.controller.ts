@@ -8,6 +8,7 @@ import { setSentryUser } from "@/core/sentry";
 import { generateToken, SafeUser } from "@/core/auth";
 import { googleConfig } from "@/config";
 import { UserRole } from "@prisma/client";
+import { notionService } from "@/services/integrations/notion.service";
 
 const googleController = new Hono();
 
@@ -62,6 +63,55 @@ googleController.post(
               lastLogin: new Date(),
             },
           });
+
+          // Update user in Notion when email is verified (non-blocking)
+          try {
+            const notionResult = await notionService.findUserByUserId(user.id);
+
+            if (notionResult.success && notionResult.notionPageId) {
+              // Update existing Notion page
+              await notionService.updateUser(notionResult.notionPageId, {
+                emailVerified: true,
+              });
+              logger.info(
+                { userId: user.id, notionPageId: notionResult.notionPageId },
+                "User email verification status updated in Notion (Google OAuth)"
+              );
+            } else {
+              // User doesn't exist in Notion yet, create them
+              const createResult = await notionService.createUser({
+                userId: user.id,
+                email: user.email,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                emailVerified: user.emailVerified,
+                createdAt: user.createdAt,
+                role: user.role,
+                workspaceId: user.workspaceId,
+              });
+
+              if (createResult.success) {
+                logger.info(
+                  {
+                    userId: user.id,
+                    notionPageId: createResult.notionPageId,
+                  },
+                  "User created in Notion during Google OAuth linking"
+                );
+              } else {
+                logger.warn(
+                  { error: createResult.error, userId: user.id },
+                  "Failed to create user in Notion during Google OAuth linking"
+                );
+              }
+            }
+          } catch (notionError) {
+            logger.error(
+              { error: notionError, userId: user.id },
+              "Failed to sync user to Notion during Google OAuth linking"
+            );
+            // Don't fail the OAuth flow if Notion sync fails
+          }
         } else {
           // Update last login
           user = await prisma.user.update({
@@ -84,6 +134,38 @@ googleController.post(
             lastLogin: new Date(),
           },
         });
+
+        // Create user in Notion (non-blocking)
+        try {
+          const notionResult = await notionService.createUser({
+            userId: user.id,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            emailVerified: user.emailVerified,
+            createdAt: user.createdAt,
+            role: user.role,
+            workspaceId: user.workspaceId,
+          });
+
+          if (!notionResult.success) {
+            logger.warn(
+              { error: notionResult.error, userId: user.id },
+              "Failed to create user in Notion during Google OAuth registration"
+            );
+          } else {
+            logger.info(
+              { userId: user.id, notionPageId: notionResult.notionPageId },
+              "User created in Notion during Google OAuth registration"
+            );
+          }
+        } catch (notionError) {
+          logger.error(
+            { error: notionError, userId: user.id },
+            "Failed to create user in Notion during Google OAuth registration"
+          );
+          // Don't fail the OAuth flow if Notion sync fails
+        }
       }
 
       if (!user.isActive) {

@@ -3,6 +3,7 @@ import { prisma } from "@/core/prisma";
 import { logger } from "@/core/logger";
 import { authenticate } from "@/core/auth";
 import { EmailVerificationService } from "@/services/email/email-verification.service";
+import { notionService } from "@/services/integrations/notion.service";
 
 const verificationController = new Hono();
 
@@ -40,6 +41,59 @@ verificationController.post("/verify-email", async (c) => {
         updatedAt: true,
       },
     });
+
+    // Update user in Notion when email is verified (non-blocking)
+    if (updatedUser && updatedUser.emailVerified) {
+      try {
+        const notionResult = await notionService.findUserByUserId(
+          updatedUser.id
+        );
+
+        if (notionResult.success && notionResult.notionPageId) {
+          // Update existing Notion page
+          await notionService.updateUser(notionResult.notionPageId, {
+            emailVerified: true,
+          });
+          logger.info(
+            { userId: updatedUser.id, notionPageId: notionResult.notionPageId },
+            "User email verification status updated in Notion"
+          );
+        } else {
+          // User doesn't exist in Notion yet, create them
+          const createResult = await notionService.createUser({
+            userId: updatedUser.id,
+            email: updatedUser.email,
+            firstName: updatedUser.firstName,
+            lastName: updatedUser.lastName,
+            emailVerified: updatedUser.emailVerified,
+            createdAt: updatedUser.createdAt,
+            role: updatedUser.role,
+            workspaceId: updatedUser.workspaceId,
+          });
+
+          if (createResult.success) {
+            logger.info(
+              {
+                userId: updatedUser.id,
+                notionPageId: createResult.notionPageId,
+              },
+              "User created in Notion during email verification"
+            );
+          } else {
+            logger.warn(
+              { error: createResult.error, userId: updatedUser.id },
+              "Failed to create user in Notion during email verification"
+            );
+          }
+        }
+      } catch (notionError) {
+        logger.error(
+          { error: notionError, userId: updatedUser.id },
+          "Failed to sync user to Notion during email verification"
+        );
+        // Don't fail the verification if Notion sync fails
+      }
+    }
 
     return c.json({
       message: "Email verified successfully",

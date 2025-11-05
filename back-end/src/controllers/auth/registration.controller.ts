@@ -6,6 +6,7 @@ import { logger } from "@/core/logger";
 import { hashPassword } from "@/core/auth";
 import { RegisterUserSchema } from "@/schemas/auth";
 import { EmailVerificationService } from "@/services/email/email-verification.service";
+import { notionService } from "@/services/integrations/notion.service";
 
 const registrationController = new Hono();
 
@@ -85,6 +86,38 @@ registrationController.post(
           "Failed to send verification email during registration"
         );
         // Don't fail the registration if email verification fails
+      }
+
+      // Create user in Notion (non-blocking)
+      try {
+        const notionResult = await notionService.createUser({
+          userId: user.id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          emailVerified: user.emailVerified,
+          createdAt: user.createdAt,
+          role: user.role,
+          workspaceId: user.workspaceId,
+        });
+
+        if (!notionResult.success) {
+          logger.warn(
+            { error: notionResult.error, userId: user.id },
+            "Failed to create user in Notion during registration"
+          );
+        } else {
+          logger.info(
+            { userId: user.id, notionPageId: notionResult.notionPageId },
+            "User created in Notion during registration"
+          );
+        }
+      } catch (notionError) {
+        logger.error(
+          { error: notionError, userId: user.id },
+          "Failed to create user in Notion during registration"
+        );
+        // Don't fail the registration if Notion sync fails
       }
 
       // Return success without token - user must verify email first
