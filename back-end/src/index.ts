@@ -37,7 +37,15 @@ const app = new Hono();
 
 // Core middlewares - applied to all routes
 app.use(honoLogger());
-app.use("*", prettyJSON());
+app.use("*", async (c, next) => {
+  if (c.req.path.startsWith("/webhooks")) {
+    // Skip prettyJSON for webhook routes to preserve raw body
+    await next();
+  } else {
+    // Apply prettyJSON for all other routes
+    return prettyJSON()(c, next);
+  }
+});
 app.use("*", secureHeaders());
 app.use("*", requestIdMiddleware);
 app.use("*", performanceMonitoring);

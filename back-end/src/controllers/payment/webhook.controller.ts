@@ -14,11 +14,11 @@ app.post("/webhook", async (c) => {
   }
 
   try {
-    const body = await c.req.text();
+    const body = await c.req.raw.text();
     logger.debug({ body }, "Stripe webhook body");
 
     const event = await StripeService.constructWebhookEvent(body, signature);
-    logger.debug({ event }, "Stripe webhook event");
+    logger.debug({ event }, "Stripe  event");
 
     // Use upsert to handle duplicate events gracefully
     await prisma.stripeWebhookEvent.upsert({
@@ -40,7 +40,7 @@ app.post("/webhook", async (c) => {
     return c.json({ received: true });
   } catch (error) {
     logger.error({ error }, "Webhook error");
-    return c.json({ error: "Webhook processing failed" }, 400);
+    return c.json({ message: "Webhook processing failed", error }, 400);
   }
 });
 

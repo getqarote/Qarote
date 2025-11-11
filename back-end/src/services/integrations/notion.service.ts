@@ -37,8 +37,7 @@ class NotionService {
    * Only syncs in production and when explicitly enabled via env var
    */
   private isSyncEnabled(): boolean {
-    // Only sync in production, or if explicitly enabled via env var
-    return notionConfig.syncEnabled; // && isProduction();
+    return notionConfig.syncEnabled && isProduction();
   }
 
   /**
