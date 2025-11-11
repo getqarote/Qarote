@@ -16,9 +16,35 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@rabbit_dev" />
     <meta name="twitter:image" content="icon_rabbit.svg" />
+
+    <!-- Google Tag Manager -->
+    <script>
+      (function (w, d, s, l, i) {
+        w[l] = w[l] || [];
+        w[l].push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
+        var f = d.getElementsByTagName(s)[0],
+          j = d.createElement(s),
+          dl = l != "dataLayer" ? "&l=" + l : "";
+        j.async = true;
+        j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + dl;
+        f.parentNode.insertBefore(j, f);
+      })(window, document, "script", "dataLayer", "GTM-5G4639NQ");
+    </script>
+    <!-- End Google Tag Manager -->
   </head>
 
   <body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript
+      ><iframe
+        src="https://www.googletagmanager.com/ns.html?id=GTM-5G4639NQ"
+        height="0"
+        width="0"
+        style="display: none; visibility: hidden"
+      ></iframe
+    ></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
 
@@ -27,10 +53,13 @@
       // Only load analytics in production
       if (import.meta.env.PROD) {
         // Load Umami Analytics
-        const umamiScript = document.createElement('script');
+        const umamiScript = document.createElement("script");
         umamiScript.defer = true;
-        umamiScript.src = 'https://cloud.umami.is/script.js';
-        umamiScript.setAttribute('data-website-id', '8b4a4371-41e7-4f8d-a3f8-90b5ff31b945');
+        umamiScript.src = "https://cloud.umami.is/script.js";
+        umamiScript.setAttribute(
+          "data-website-id",
+          "8b4a4371-41e7-4f8d-a3f8-90b5ff31b945"
+        );
         document.head.appendChild(umamiScript);
       }
     </script>
@@ -50,6 +79,5 @@
       })();
     </script>
     <!--End of Tawk.to Script-->
-  </body>
   </body>
 </html>
