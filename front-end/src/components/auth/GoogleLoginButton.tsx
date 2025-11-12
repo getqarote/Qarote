@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContextDefinition";
 import { useNavigate } from "react-router-dom";
 import { apiClient } from "@/lib/api";
 import logger from "@/lib/logger";
+import { trackSignUp } from "@/lib/gtm";
 import "@/styles/google-auth.css";
 
 interface GoogleLoginButtonProps {
@@ -33,9 +34,7 @@ export const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
 
       // Track sign up event with Google Analytics if in signup mode
       if (mode === "signup") {
-        window.dataLayer = window.dataLayer || [];
-        window.dataLayer.push({
-          event: "sign_up",
+        trackSignUp({
           method: "google",
           user_id: data.user.id,
         });

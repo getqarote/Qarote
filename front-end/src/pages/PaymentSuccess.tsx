@@ -5,6 +5,7 @@ import { useUser } from "@/hooks/useUser";
 import { useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api";
 import logger from "@/lib/logger";
+import { trackPurchase } from "@/lib/gtm";
 
 const PaymentSuccess: React.FC = () => {
   const navigate = useNavigate();
@@ -42,7 +43,7 @@ const PaymentSuccess: React.FC = () => {
 
   // Track purchase event with Google Analytics
   useEffect(() => {
-    const trackPurchase = async () => {
+    const handlePurchaseTracking = async () => {
       if (!sessionId || purchaseTracked) return;
 
       try {
@@ -53,9 +54,7 @@ const PaymentSuccess: React.FC = () => {
           const latestPayment = paymentHistory.payments[0];
 
           // Track purchase event
-          window.dataLayer = window.dataLayer || [];
-          window.dataLayer.push({
-            event: "purchase",
+          trackPurchase({
             transaction_id: sessionId,
             value: latestPayment.amount / 100, // Convert from cents to currency unit
             currency: latestPayment.currency.toUpperCase(),
@@ -69,9 +68,7 @@ const PaymentSuccess: React.FC = () => {
           });
         } else {
           // Fallback: use sessionId as transaction_id with default values
-          window.dataLayer = window.dataLayer || [];
-          window.dataLayer.push({
-            event: "purchase",
+          trackPurchase({
             transaction_id: sessionId,
             value: 0, // Will need to be updated if payment details are not available
             currency: "EUR",
@@ -85,9 +82,7 @@ const PaymentSuccess: React.FC = () => {
       } catch (error) {
         logger.error("Failed to track purchase event:", error);
         // Still track with sessionId as fallback
-        window.dataLayer = window.dataLayer || [];
-        window.dataLayer.push({
-          event: "purchase",
+        trackPurchase({
           transaction_id: sessionId,
           value: 0,
           currency: "EUR",
@@ -97,7 +92,7 @@ const PaymentSuccess: React.FC = () => {
     };
 
     if (sessionId) {
-      trackPurchase();
+      handlePurchaseTracking();
     }
   }, [sessionId, purchaseTracked]);
 

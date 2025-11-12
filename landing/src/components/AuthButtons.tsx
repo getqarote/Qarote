@@ -1,4 +1,5 @@
 import { Rocket } from "lucide-react";
+import { trackSignUpClick } from "@/lib/gtm";
 
 interface AuthButtonsProps {
   variant?: "default" | "light";
@@ -8,6 +9,10 @@ const AuthButtons = ({ variant = "default" }: AuthButtonsProps) => {
   const authBaseUrl = import.meta.env.VITE_APP_BASE_URL;
 
   const handleSignUp = () => {
+    trackSignUpClick({
+      source: "auth_buttons",
+      location: "landing_page",
+    });
     window.location.href = `${authBaseUrl}/auth/sign-up`;
   };
 

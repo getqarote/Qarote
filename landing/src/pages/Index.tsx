@@ -32,6 +32,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { trackSignUpClick } from "@/lib/gtm";
 import avatar1 from "@/assets/avatar-1.jpg";
 import avatar2 from "@/assets/avatar-2.jpg";
 import avatar3 from "@/assets/avatar-3.jpg";
@@ -1029,7 +1030,11 @@ const Index = () => {
                             // User is authenticated, redirect to plans page
                             window.location.href = `${appBaseUrl}/plans`;
                           } else {
-                            // User not authenticated, redirect to sign up
+                            // User not authenticated, track sign up click and redirect to sign up
+                            trackSignUpClick({
+                              source: "pricing_card",
+                              location: "landing_page",
+                            });
                             window.location.href = `${authBaseUrl}/auth/sign-up`;
                           }
                         }}

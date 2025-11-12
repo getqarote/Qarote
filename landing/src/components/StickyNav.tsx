@@ -1,3 +1,5 @@
+import { trackSignUpClick } from "@/lib/gtm";
+
 const StickyNav = () => {
   const sections = [
     { id: "features", label: "Features" },
@@ -53,6 +55,10 @@ const StickyNav = () => {
             <button
               onClick={() => {
                 const authBaseUrl = import.meta.env.VITE_APP_BASE_URL;
+                trackSignUpClick({
+                  source: "sticky_nav",
+                  location: "landing_page",
+                });
                 window.location.href = `${authBaseUrl}/auth/sign-up`;
               }}
               className="bg-gradient-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600 px-2 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-colors shadow-lg whitespace-nowrap"

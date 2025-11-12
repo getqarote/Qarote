@@ -28,6 +28,7 @@ import { useAuth } from "@/contexts/AuthContextDefinition";
 import { signUpSchema, type SignUpFormData } from "@/schemas/forms";
 import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton";
 import logger from "@/lib/logger";
+import { trackSignUp } from "@/lib/gtm";
 
 const SignUp: React.FC = () => {
   const { isAuthenticated } = useAuth();
@@ -63,9 +64,7 @@ const SignUp: React.FC = () => {
   // Track sign up event with Google Analytics
   useEffect(() => {
     if (registerMutation.isSuccess && registerMutation.data) {
-      window.dataLayer = window.dataLayer || [];
-      window.dataLayer.push({
-        event: "sign_up",
+      trackSignUp({
         method: "email",
         email: registerMutation.data.email,
       });

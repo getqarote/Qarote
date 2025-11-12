@@ -1,6 +1,6 @@
 /// <reference types="vite/client" />
 
-// Google Analytics type definitions
+// Google Tag Manager type definitions
 interface Window {
   dataLayer?: any[];
 }
