@@ -1,4 +1,3 @@
-import React from "react";
 import { Check, X } from "lucide-react";
 
 const ComparisonTable = () => {
@@ -12,7 +11,7 @@ const ComparisonTable = () => {
       amazonMq: true,
     },
     {
-      feature: "Real-time Monitoring",
+      feature: "Live Monitoring",
       rabbitGui: true,
       management: true,
       prometheus: true,

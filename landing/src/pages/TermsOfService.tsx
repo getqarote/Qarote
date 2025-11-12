@@ -62,7 +62,7 @@ const TermsOfService = () => {
                 and managing RabbitMQ message brokers. Our service includes:
               </p>
               <ul className="list-disc pl-6 space-y-2">
-                <li>Real-time queue monitoring and analytics</li>
+                <li>Live queue monitoring and analytics</li>
                 <li>Message publishing and consumption tools</li>
                 <li>Queue and exchange management</li>
                 <li>Performance metrics and alerting</li>

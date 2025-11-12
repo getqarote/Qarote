@@ -20,10 +20,21 @@ import AuthButtons from "@/components/AuthButtons";
 import ComparisonTable from "@/components/ComparisonTable";
 import FeatureCard from "@/components/FeatureCard";
 import SEO from "@/components/SEO";
+import StickyNav from "@/components/StickyNav";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { useIsMobile } from "@/hooks/use-mobile";
+import avatar1 from "@/assets/avatar-1.jpg";
+import avatar2 from "@/assets/avatar-2.jpg";
+import avatar3 from "@/assets/avatar-3.jpg";
 
 const Index = () => {
   const isMobile = useIsMobile();
@@ -60,7 +71,7 @@ const Index = () => {
       icon: Activity,
       title: "Live Queue Monitoring",
       description:
-        "Monitor queue depths, message rates, and consumer counts with live updates. Track message accumulation and processing performance in real-time.",
+        "Monitor queue depths, message rates, and consumer counts with live updates. Track message accumulation and processing performance.",
       gradient: "from-yellow-500 to-orange-500",
     },
     {
@@ -177,15 +188,9 @@ const Index = () => {
     },
   ];
 
-  const stats = [
-    { number: "500+", label: "Active Users" },
-    { number: "Live", label: "Queue Insights" },
-    { number: "Free", label: "Trial Available" },
-    { number: "5min", label: "Setup Time" },
-  ];
-
   return (
     <div className="min-h-screen bg-background">
+      <StickyNav />
       <SEO
         title="RabbitHQ - Best RabbitMQ Monitoring & Management Interface"
         description="The best RabbitMQ monitoring and management interface for developers. Monitor queues, track performance, and manage your message broker with a modern dashboard. Cleaner than Management Plugin, simpler than Prometheus."
@@ -214,18 +219,28 @@ const Index = () => {
           {
             question: "What is RabbitHQ?",
             answer:
-              "RabbitHQ is a modern management interface for RabbitMQ message brokers. It provides a cleaner, faster, and more intuitive experience than the default Management Plugin, with advanced analytics and monitoring capabilities.",
+              "RabbitHQ is a modern, user-friendly dashboard that helps you monitor and manage your RabbitMQ servers effortlessly. Instead of using the outdated RabbitMQ admin panel or command line, RabbitHQ gives you a clean, visual interface to see your queues, messages, and system health in real time.",
+          },
+          {
+            question: "Who is RabbitHQ for?",
+            answer:
+              "RabbitHQ is designed for developers, DevOps engineers, and teams who use RabbitMQ and want better visibility, easier monitoring, and faster troubleshooting. Whether you're running one broker or dozens, RabbitHQ helps you save time and prevent message bottlenecks.",
+          },
+          {
+            question: "Is RabbitHQ secure?",
+            answer:
+              "Absolutely. All connections to your RabbitMQ servers are encrypted (TLS), and no sensitive data is stored on our servers. You stay in full control of your credentials, and RabbitHQ only reads the metrics and management data needed for your dashboard.",
+          },
+          {
+            question: "What can I do with RabbitHQ?",
+            answer:
+              "With RabbitHQ, you can: View all your queues, exchanges, and bindings at a glance; Monitor message rates, errors, and consumer activity in real time; Create alerts for blocked or overloaded queues; Manage users, vhosts, and permissions visually; Connect multiple RabbitMQ instances in one place.",
           },
           {
             question:
-              "How does RabbitHQ compare to the default Management Plugin?",
+              "How is RabbitHQ different from the RabbitMQ Management UI?",
             answer:
-              "RabbitHQ offers a more modern, responsive interface with real-time updates, advanced analytics, and a better user experience. It's designed to be more intuitive for developers while providing deeper insights into your message queues.",
-          },
-          {
-            question: "How do I monitor RabbitMQ queues with RabbitHQ?",
-            answer:
-              "RabbitHQ provides real-time monitoring dashboards for your queues with metrics like message rates, consumer counts, and queue depth. It offers alerts, historical trends, and performance insights without complex Prometheus or Grafana setups.",
+              "The built-in RabbitMQ Management Plugin works, but it's slow, cluttered, and hard to scale across multiple brokers. RabbitHQ provides: A modern, intuitive interface; Centralized monitoring across environments; Powerful search and filters; Smart alerts and reporting; A clean experience designed for teams.",
           },
           {
             question:
@@ -234,20 +249,9 @@ const Index = () => {
               "RabbitHQ offers purpose-built monitoring specifically for RabbitMQ with zero configuration. While Prometheus and Grafana are powerful, they require significant setup and maintenance. RabbitHQ provides comparable insights with much less overhead.",
           },
           {
-            question:
-              "What makes RabbitHQ the best RabbitMQ management interface?",
+            question: "Can I try RabbitHQ for free?",
             answer:
-              "RabbitHQ combines ease of use with powerful features. It offers superior visualization, real-time updates, advanced filtering, and user-friendly queue management that surpasses both the default plugin and generic monitoring tools.",
-          },
-          {
-            question: "Do I need to host RabbitHQ myself?",
-            answer:
-              "Yes, RabbitHQ is designed to be self-hosted alongside your RabbitMQ instances. It connects securely to your RabbitMQ clusters with minimal configuration and no cloud dependencies.",
-          },
-          {
-            question: "How much does RabbitHQ cost?",
-            answer:
-              "RabbitHQ offers a simple licensing model that scales with your team, not your message volume. This makes it more cost-effective than cloud-based alternatives that charge per message or node.",
+              "Yes! We offer a free tier that includes 1 server, 1 workspace, and 1 team member. You can start monitoring your RabbitMQ queues right away without a credit card. When you're ready to scale, you can upgrade to a paid plan.",
           },
         ]}
         structuredData={{
@@ -276,124 +280,160 @@ const Index = () => {
         }}
       />
       {/* Header */}
-      <header className="relative overflow-hidden bg-gradient-to-br from-orange-600 via-red-600 to-orange-700 text-white">
-        {/* Decorative elements */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-0 left-0 w-full h-full bg-grid-white/5"></div>
-          <div className="absolute -top-40 -right-40 w-80 h-80 bg-orange-500 rounded-full filter blur-3xl opacity-20"></div>
-          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-red-500 rounded-full filter blur-3xl opacity-20"></div>
+      <header
+        id="home"
+        className="relative overflow-visible bg-background text-foreground pb-16"
+      >
+        {/* Decorative elements - subtle colored accents */}
+        <div className="absolute inset-0 opacity-5 overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-orange-400/20 to-transparent"></div>
+          <div className="absolute -top-20 -right-20 sm:-top-40 sm:-right-40 w-40 h-40 sm:w-80 sm:h-80 bg-orange-300 rounded-full filter blur-3xl opacity-20"></div>
+          <div className="absolute top-1/2 -left-20 sm:-left-40 w-32 h-32 sm:w-60 sm:h-60 bg-red-300 rounded-full filter blur-3xl opacity-20"></div>
         </div>
 
-        {/* Image showcase container - desktop only */}
-        <div
-          className={`hidden md:block absolute right-4 md:right-8 lg:right-12 top-1/2 -translate-y-1/2 w-[50%] max-w-3xl h-auto pointer-events-none transition-all duration-1000 ease-out ${
-            imageLoaded
-              ? "translate-x-0 opacity-100"
-              : "translate-x-full opacity-0"
-          }`}
-        >
-          {/* Container with adjusted height */}
-          <div className="relative w-full h-[280px] md:h-[380px] lg:h-[420px] rounded-lg overflow-hidden">
-            {/* Sliding dashboard views */}
-            <div className="w-full h-full">
-              <img
-                src={"/images/dashboard-mockup.svg"}
-                alt={"RabbitHQ Dashboard Interface"}
-                className={`w-full h-full object-contain transition-opacity duration-1000 ease-in-out ${
-                  activeView === 1 ? "opacity-100" : "opacity-0"
-                }`}
-              />
-              <img
-                src={"/images/dashboard-queues.svg"}
-                alt={"RabbitHQ Queue Management"}
-                className={`w-full h-full object-contain absolute top-0 left-0 transition-opacity duration-1000 ease-in-out ${
-                  activeView === 2 ? "opacity-100" : "opacity-0"
-                }`}
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-8 md:py-32">
-          <div className="w-full md:max-w-sm lg:max-w-md animate-slide-in-left opacity-0 text-center md:text-left mx-auto md:mx-0">
-            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full mb-8 shadow-sm border border-white/20">
-              <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-              <span className="text-sm font-medium text-white/90">
-                Now Available - Start Your Free Trial
+        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-3.5 md:pt-32">
+          <div className="w-full text-center">
+            <div className="inline-flex items-center gap-2 sm:gap-3 bg-orange-100 py-1.5 pl-2 pr-3 sm:pr-5 rounded-full mb-8">
+              <div className="flex -space-x-2">
+                <Avatar className="w-6 h-6 sm:w-7 sm:h-7 border-2 border-white">
+                  <AvatarImage src={avatar1} />
+                  <AvatarFallback className="bg-orange-500 text-white text-xs">
+                    JD
+                  </AvatarFallback>
+                </Avatar>
+                <Avatar className="w-6 h-6 sm:w-7 sm:h-7 border-2 border-white">
+                  <AvatarImage src={avatar2} />
+                  <AvatarFallback className="bg-blue-500 text-white text-xs">
+                    AS
+                  </AvatarFallback>
+                </Avatar>
+                <Avatar className="w-6 h-6 sm:w-7 sm:h-7 border-2 border-white">
+                  <AvatarImage src={avatar3} />
+                  <AvatarFallback className="bg-purple-500 text-white text-xs">
+                    MK
+                  </AvatarFallback>
+                </Avatar>
+              </div>
+              <span className="text-xs sm:text-sm text-gray-900 whitespace-nowrap">
+                <span className="font-bold">500+</span> users worldwide
               </span>
             </div>
 
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
-              Rabbit
-              <span className="bg-gradient-to-r from-orange-300 to-red-300 bg-clip-text text-transparent">
-                HQ
-              </span>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6 leading-tight max-w-4xl mx-auto px-2">
+              The modern RabbitMQ management interface your team deserves
             </h1>
 
-            <p className="text-xl sm:text-2xl text-orange-100 mb-8 leading-relaxed">
-              The modern RabbitMQ management interface your team deserves.
-              <br className="hidden sm:block" />
-              <span className="font-semibold text-white">
-                Cleaner than Management Plugin. Simpler than Prometheus. Cheaper
-                than Cloud Solutions.
-              </span>
+            <p className="text-base sm:text-lg md:text-xl text-muted-foreground mb-8 leading-relaxed max-w-3xl mx-auto px-2">
+              Cleaner than Management Plugin. Simpler than Prometheus. Cheaper
+              than Cloud Solutions.
             </p>
 
             <div className="mb-12">
               <AuthButtons />
-              <p className="text-sm text-orange-200 mt-3">
+              <p className="text-xs sm:text-sm text-muted-foreground mt-3 px-4">
                 No credit card required • Start managing queues in minutes
               </p>
             </div>
+          </div>
+        </div>
 
-            {/* Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-8 md:mb-0 max-w-sm md:max-w-none mx-auto md:mx-0">
-              {stats.map((stat, index) => (
-                <div
-                  key={index}
-                  className="text-center bg-white/5 backdrop-blur-sm p-3 rounded-lg border border-white/10"
-                >
-                  <div className="text-lg sm:text-xl font-bold text-white mb-1">
-                    {stat.number}
-                  </div>
-                  <div className="text-xs text-orange-200">{stat.label}</div>
-                </div>
-              ))}
-            </div>
-
-            {/* Mobile Image showcase - shown only on mobile below stats */}
-            <div
-              className={`md:hidden mt-8 transition-all duration-1000 ease-out ${
-                imageLoaded
-                  ? "translate-x-0 opacity-100"
-                  : "translate-x-full opacity-0"
-              }`}
-            >
-              <div className="relative w-full max-w-md mx-auto h-[250px] rounded-lg overflow-hidden">
-                <div className="w-full h-full">
-                  <img
-                    src={"/images/dashboard-mockup.svg"}
-                    alt={"RabbitHQ Dashboard Interface"}
-                    className={`w-full h-full object-contain transition-opacity duration-1000 ease-in-out ${
-                      activeView === 1 ? "opacity-100" : "opacity-0"
-                    }`}
-                  />
-                  <img
-                    src={"/images/dashboard-queues.svg"}
-                    alt={"RabbitHQ Queue Management"}
-                    className={`w-full h-full object-contain absolute top-0 left-0 transition-opacity duration-1000 ease-in-out ${
-                      activeView === 2 ? "opacity-100" : "opacity-0"
-                    }`}
-                  />
-                </div>
+        {/* Image Carousel - now in normal flow within section 1 */}
+        <div className="relative z-10 pb-12">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="relative w-full h-[300px] md:h-[400px] lg:h-[500px] rounded-xl overflow-hidden shadow-2xl border-4 border-white/20">
+              <div className="w-full h-full">
+                <img
+                  src={"/images/dashboard-mockup.svg"}
+                  alt={"RabbitHQ Dashboard Interface"}
+                  className={`w-full h-full object-contain bg-card transition-opacity duration-1000 ease-in-out ${
+                    activeView === 1 ? "opacity-100" : "opacity-0"
+                  }`}
+                />
+                <img
+                  src={"/images/dashboard-queues.svg"}
+                  alt={"RabbitHQ Queue Management"}
+                  className={`w-full h-full object-contain bg-card absolute top-0 left-0 transition-opacity duration-1000 ease-in-out ${
+                    activeView === 2 ? "opacity-100" : "opacity-0"
+                  }`}
+                />
               </div>
             </div>
           </div>
         </div>
       </header>
 
+      {/* Social Proof */}
+      <section id="testimonials" className="py-20 bg-muted/30 relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
+              Trusted by development teams
+            </h2>
+            <p className="text-xl text-muted-foreground">
+              From startups to enterprises, teams choose RabbitHQ
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="bg-card p-8 rounded-xl border border-border">
+              <div className="flex items-center gap-1 mb-4">
+                {[...Array(5)].map((_, i) => (
+                  <Star
+                    key={i}
+                    className="h-5 w-5 fill-yellow-400 text-yellow-400"
+                  />
+                ))}
+              </div>
+              <blockquote className="text-card-foreground mb-4">
+                "Finally, a RabbitMQ interface that doesn't make me want to cry.
+                The setup was instant and the UI is gorgeous."
+              </blockquote>
+              <div className="text-sm text-muted-foreground">
+                — Sarah Chen, DevOps Engineer
+              </div>
+            </div>
+
+            <div className="bg-card p-8 rounded-xl border border-border">
+              <div className="flex items-center gap-1 mb-4">
+                {[...Array(5)].map((_, i) => (
+                  <Star
+                    key={i}
+                    className="h-5 w-5 fill-yellow-400 text-yellow-400"
+                  />
+                ))}
+              </div>
+              <blockquote className="text-card-foreground mb-4">
+                "We saved $3000/month switching from CloudAMQP. Same features,
+                better interface, fraction of the cost."
+              </blockquote>
+              <div className="text-sm text-muted-foreground">
+                — Marcus Rodriguez, CTO
+              </div>
+            </div>
+
+            <div className="bg-card p-8 rounded-xl border border-border">
+              <div className="flex items-center gap-1 mb-4">
+                {[...Array(5)].map((_, i) => (
+                  <Star
+                    key={i}
+                    className="h-5 w-5 fill-yellow-400 text-yellow-400"
+                  />
+                ))}
+              </div>
+              <blockquote className="text-card-foreground mb-4">
+                "The analytics dashboard gives us insights we never had before.
+                Game changer for our monitoring."
+              </blockquote>
+              <div className="text-sm text-muted-foreground">
+                — Alex Thompson, Lead Developer
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Features Section */}
-      <section className="py-20 bg-background">
+      <section id="features" className="py-20 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
@@ -419,8 +459,201 @@ const Index = () => {
         </div>
       </section>
 
+      {/* See it in action Section */}
+      <section id="demo" className="py-20 bg-muted/30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
+              See it in action
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+              Explore the intuitive interface and powerful features that make
+              RabbitMQ management a breeze.
+            </p>
+          </div>
+
+          {/* Application Mockup */}
+          <div className="max-w-6xl mx-auto">
+            <div className="bg-card rounded-2xl shadow-2xl border border-border overflow-hidden">
+              {/* Browser Chrome */}
+              <div className="bg-muted px-4 py-3 border-b border-border">
+                <div className="flex items-center gap-2">
+                  <div className="flex gap-2">
+                    <div className="w-3 h-3 bg-red-400 rounded-full"></div>
+                    <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
+                    <div className="w-3 h-3 bg-green-400 rounded-full"></div>
+                  </div>
+                  <div className="ml-4 bg-background rounded px-3 py-1 text-sm text-muted-foreground flex-1 max-w-md truncate">
+                    https://app.rabbithq.io
+                  </div>
+                </div>
+              </div>
+
+              {/* App Interface */}
+              <div className="bg-muted/20 p-3 sm:p-6">
+                {/* Top Navigation */}
+                <div className="bg-card rounded-lg shadow-sm border border-border p-3 sm:p-4 mb-4 sm:mb-6">
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <div className="flex items-center gap-2 sm:gap-4">
+                      <img
+                        src="/new_icon_rabbit.svg"
+                        alt="RabbitHQ Logo"
+                        className="w-7 h-7 sm:w-8 sm:h-8 flex-shrink-0"
+                      />
+                      <span className="font-semibold text-foreground text-sm sm:text-base">
+                        RabbitHQ
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      <span className="text-muted-foreground truncate">
+                        {isMobile
+                          ? "cluster-prod-01"
+                          : "Connected to cluster-prod-01"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Dashboard Content */}
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
+                  {/* Stats Cards */}
+                  <div className="lg:col-span-2 space-y-3 sm:space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+                      <div className="bg-card rounded-lg p-3 sm:p-4 shadow-sm border border-border">
+                        <div className="flex items-center gap-2 sm:gap-3">
+                          <div className="p-1.5 sm:p-2 bg-blue-100 rounded-lg flex-shrink-0">
+                            <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
+                          </div>
+                          <div>
+                            <div className="text-lg sm:text-2xl font-bold text-foreground">
+                              4.2k
+                            </div>
+                            <div className="text-xs sm:text-sm text-muted-foreground">
+                              Messages/sec
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="bg-card rounded-lg p-3 sm:p-4 shadow-sm border border-border">
+                        <div className="flex items-center gap-2 sm:gap-3">
+                          <div className="p-1.5 sm:p-2 bg-green-100 rounded-lg flex-shrink-0">
+                            <Activity className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
+                          </div>
+                          <div>
+                            <div className="text-lg sm:text-2xl font-bold text-foreground">
+                              127
+                            </div>
+                            <div className="text-xs sm:text-sm text-muted-foreground">
+                              Active Queues
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="bg-card rounded-lg p-3 sm:p-4 shadow-sm border border-border">
+                        <div className="flex items-center gap-2 sm:gap-3">
+                          <div className="p-1.5 sm:p-2 bg-purple-100 rounded-lg flex-shrink-0">
+                            <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600" />
+                          </div>
+                          <div>
+                            <div className="text-lg sm:text-2xl font-bold text-foreground">
+                              2.3ms
+                            </div>
+                            <div className="text-xs sm:text-sm text-muted-foreground">
+                              Avg Latency
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    {/* Chart Area */}
+                    <div className="bg-card rounded-lg p-4 sm:p-6 shadow-sm border border-border">
+                      <h3 className="text-base sm:text-lg font-semibold text-foreground mb-3 sm:mb-4">
+                        Message Throughput
+                      </h3>
+                      <div className="h-36 sm:h-48 bg-gradient-to-r from-primary/10 to-destructive/10 rounded-lg flex items-end justify-around p-2 sm:p-4">
+                        {[65, 78, 45, 88, 92, 75, 85, 95, 82, 77, 89, 94].map(
+                          (height, i) => (
+                            <div
+                              key={i}
+                              className="bg-gradient-to-t from-primary to-destructive rounded-t w-2 sm:w-6"
+                              style={{ height: `${height}%` }}
+                            ></div>
+                          )
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Queue List */}
+                  <div className="bg-card rounded-lg p-4 sm:p-6 shadow-sm border border-border">
+                    <h3 className="text-base sm:text-lg font-semibold text-foreground mb-3 sm:mb-4">
+                      Active Queues
+                    </h3>
+                    <div className="space-y-2 sm:space-y-3">
+                      {[
+                        {
+                          name: "user-notifications",
+                          messages: "1.2k",
+                          consumers: 3,
+                        },
+                        { name: "email-queue", messages: "845", consumers: 2 },
+                        {
+                          name: "analytics-events",
+                          messages: "2.8k",
+                          consumers: 5,
+                        },
+                        {
+                          name: "payment-processing",
+                          messages: "156",
+                          consumers: 1,
+                        },
+                      ].map((queue, i) => (
+                        <div
+                          key={i}
+                          className="flex items-center justify-between p-2 sm:p-3 bg-muted/30 rounded-lg"
+                        >
+                          <div>
+                            <div className="font-medium text-foreground text-xs sm:text-sm">
+                              {queue.name}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              {queue.messages} messages
+                            </div>
+                          </div>
+                          <div className="text-xs bg-primary/10 text-primary px-1.5 sm:px-2 py-0.5 sm:py-1 rounded">
+                            {queue.consumers} consumers
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Comparison Section */}
+      <section id="comparison" className="py-20 bg-muted/20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
+              How we compare
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+              See why RabbitHQ is the obvious choice for modern development
+              teams.
+            </p>
+          </div>
+
+          <ComparisonTable />
+        </div>
+      </section>
+
       {/* Pricing Section */}
-      <section className="py-20 bg-background">
+      <section id="pricing" className="py-20 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
@@ -443,7 +676,7 @@ const Index = () => {
                   Live Monitoring
                 </h3>
                 <p className="text-sm text-muted-foreground text-center">
-                  Monitor your RabbitMQ servers with millisecond precision
+                  Monitor your RabbitMQ servers with second precision
                 </p>
               </div>
               <div className="flex flex-col items-center p-4">
@@ -454,7 +687,7 @@ const Index = () => {
                   Smart Analytics
                 </h3>
                 <p className="text-sm text-muted-foreground text-center">
-                  AI-powered insights and memory optimization tips
+                  Insights and memory optimization tips
                 </p>
               </div>
               <div className="flex flex-col items-center p-4">
@@ -483,7 +716,7 @@ const Index = () => {
           </div>
 
           {/* Billing Toggle */}
-          <div className="flex items-center justify-center gap-4 mb-12">
+          <div className="flex items-center justify-center gap-4 mb-16">
             <span
               className={`text-sm font-medium ${billingPeriod === "monthly" ? "text-foreground" : "text-muted-foreground"}`}
             >
@@ -801,7 +1034,7 @@ const Index = () => {
                           }
                         }}
                       >
-                        {plan.id === "FREE" ? "Get Started" : "Upgrade Now"}
+                        Start free
                       </Button>
                     </CardContent>
                   </Card>
@@ -812,266 +1045,142 @@ const Index = () => {
         </div>
       </section>
 
-      {/* See it in action Section */}
-      <section className="py-20 bg-muted/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* FAQ Section */}
+      <section id="faq" className="py-20 bg-background">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
-              See it in action
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Explore the intuitive interface and powerful features that make
-              RabbitMQ management a breeze.
-            </p>
-          </div>
-
-          {/* Application Mockup */}
-          <div className="max-w-6xl mx-auto">
-            <div className="bg-card rounded-2xl shadow-2xl border border-border overflow-hidden">
-              {/* Browser Chrome */}
-              <div className="bg-muted px-4 py-3 border-b border-border">
-                <div className="flex items-center gap-2">
-                  <div className="flex gap-2">
-                    <div className="w-3 h-3 bg-red-400 rounded-full"></div>
-                    <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
-                    <div className="w-3 h-3 bg-green-400 rounded-full"></div>
-                  </div>
-                  <div className="ml-4 bg-background rounded px-3 py-1 text-sm text-muted-foreground flex-1 max-w-md truncate">
-                    https://app.rabbithq.io
-                  </div>
-                </div>
-              </div>
-
-              {/* App Interface */}
-              <div className="bg-muted/20 p-3 sm:p-6">
-                {/* Top Navigation */}
-                <div className="bg-card rounded-lg shadow-sm border border-border p-3 sm:p-4 mb-4 sm:mb-6">
-                  <div className="flex items-center justify-between flex-wrap gap-2">
-                    <div className="flex items-center gap-2 sm:gap-4">
-                      <img
-                        src="/icon_rabbit.svg"
-                        alt="RabbitHQ Logo"
-                        className="w-7 h-7 sm:w-8 sm:h-8 flex-shrink-0"
-                      />
-                      <span className="font-semibold text-foreground text-sm sm:text-base">
-                        RabbitHQ
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
-                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                      <span className="text-muted-foreground truncate">
-                        {isMobile
-                          ? "cluster-prod-01"
-                          : "Connected to cluster-prod-01"}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Dashboard Content */}
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
-                  {/* Stats Cards */}
-                  <div className="lg:col-span-2 space-y-3 sm:space-y-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-                      <div className="bg-card rounded-lg p-3 sm:p-4 shadow-sm border border-border">
-                        <div className="flex items-center gap-2 sm:gap-3">
-                          <div className="p-1.5 sm:p-2 bg-blue-100 rounded-lg flex-shrink-0">
-                            <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
-                          </div>
-                          <div>
-                            <div className="text-lg sm:text-2xl font-bold text-foreground">
-                              4.2k
-                            </div>
-                            <div className="text-xs sm:text-sm text-muted-foreground">
-                              Messages/sec
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="bg-card rounded-lg p-3 sm:p-4 shadow-sm border border-border">
-                        <div className="flex items-center gap-2 sm:gap-3">
-                          <div className="p-1.5 sm:p-2 bg-green-100 rounded-lg flex-shrink-0">
-                            <Activity className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
-                          </div>
-                          <div>
-                            <div className="text-lg sm:text-2xl font-bold text-foreground">
-                              127
-                            </div>
-                            <div className="text-xs sm:text-sm text-muted-foreground">
-                              Active Queues
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="bg-card rounded-lg p-3 sm:p-4 shadow-sm border border-border">
-                        <div className="flex items-center gap-2 sm:gap-3">
-                          <div className="p-1.5 sm:p-2 bg-purple-100 rounded-lg flex-shrink-0">
-                            <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600" />
-                          </div>
-                          <div>
-                            <div className="text-lg sm:text-2xl font-bold text-foreground">
-                              2.3ms
-                            </div>
-                            <div className="text-xs sm:text-sm text-muted-foreground">
-                              Avg Latency
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    {/* Chart Area */}
-                    <div className="bg-card rounded-lg p-4 sm:p-6 shadow-sm border border-border">
-                      <h3 className="text-base sm:text-lg font-semibold text-foreground mb-3 sm:mb-4">
-                        Message Throughput
-                      </h3>
-                      <div className="h-36 sm:h-48 bg-gradient-to-r from-primary/10 to-destructive/10 rounded-lg flex items-end justify-around p-2 sm:p-4">
-                        {[65, 78, 45, 88, 92, 75, 85, 95, 82, 77, 89, 94].map(
-                          (height, i) => (
-                            <div
-                              key={i}
-                              className="bg-gradient-to-t from-primary to-destructive rounded-t w-2 sm:w-6"
-                              style={{ height: `${height}%` }}
-                            ></div>
-                          )
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Queue List */}
-                  <div className="bg-card rounded-lg p-4 sm:p-6 shadow-sm border border-border">
-                    <h3 className="text-base sm:text-lg font-semibold text-foreground mb-3 sm:mb-4">
-                      Active Queues
-                    </h3>
-                    <div className="space-y-2 sm:space-y-3">
-                      {[
-                        {
-                          name: "user-notifications",
-                          messages: "1.2k",
-                          consumers: 3,
-                        },
-                        { name: "email-queue", messages: "845", consumers: 2 },
-                        {
-                          name: "analytics-events",
-                          messages: "2.8k",
-                          consumers: 5,
-                        },
-                        {
-                          name: "payment-processing",
-                          messages: "156",
-                          consumers: 1,
-                        },
-                      ].map((queue, i) => (
-                        <div
-                          key={i}
-                          className="flex items-center justify-between p-2 sm:p-3 bg-muted/30 rounded-lg"
-                        >
-                          <div>
-                            <div className="font-medium text-foreground text-xs sm:text-sm">
-                              {queue.name}
-                            </div>
-                            <div className="text-xs text-muted-foreground">
-                              {queue.messages} messages
-                            </div>
-                          </div>
-                          <div className="text-xs bg-primary/10 text-primary px-1.5 sm:px-2 py-0.5 sm:py-1 rounded">
-                            {queue.consumers} consumers
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Comparison Section */}
-      <section className="py-20 bg-muted/20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
-              How we compare
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              See why RabbitHQ is the obvious choice for modern development
-              teams.
-            </p>
-          </div>
-
-          <ComparisonTable />
-        </div>
-      </section>
-
-      {/* Social Proof */}
-      <section className="py-20 bg-background">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
-              Trusted by development teams
+              Frequently Asked Questions
             </h2>
             <p className="text-xl text-muted-foreground">
-              From startups to enterprises, teams choose RabbitHQ
+              Everything you need to know about RabbitHQ
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="bg-gradient-to-br from-primary/5 to-destructive/5 p-8 rounded-xl border border-border">
-              <div className="flex items-center gap-1 mb-4">
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    className="h-5 w-5 fill-yellow-400 text-yellow-400"
-                  />
-                ))}
-              </div>
-              <blockquote className="text-card-foreground mb-4">
-                "Finally, a RabbitMQ interface that doesn't make me want to cry.
-                The setup was instant and the UI is gorgeous."
-              </blockquote>
-              <div className="text-sm text-muted-foreground">
-                — Sarah Chen, DevOps Engineer
-              </div>
-            </div>
+          <Accordion type="single" collapsible className="space-y-4">
+            <AccordionItem
+              value="item-1"
+              className="border border-border rounded-lg px-6 bg-card"
+            >
+              <AccordionTrigger className="text-left text-foreground font-semibold hover:no-underline">
+                What is RabbitHQ?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                RabbitHQ is a modern, user-friendly dashboard that helps you
+                monitor and manage your RabbitMQ servers effortlessly. Instead
+                of using the outdated RabbitMQ admin panel or command line,
+                RabbitHQ gives you a clean, visual interface to see your queues,
+                messages, and system health in real time.
+              </AccordionContent>
+            </AccordionItem>
 
-            <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-8 rounded-xl border border-border">
-              <div className="flex items-center gap-1 mb-4">
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    className="h-5 w-5 fill-yellow-400 text-yellow-400"
-                  />
-                ))}
-              </div>
-              <blockquote className="text-card-foreground mb-4">
-                "We saved $3000/month switching from CloudAMQP. Same features,
-                better interface, fraction of the cost."
-              </blockquote>
-              <div className="text-sm text-muted-foreground">
-                — Marcus Rodriguez, CTO
-              </div>
-            </div>
+            <AccordionItem
+              value="item-2"
+              className="border border-border rounded-lg px-6 bg-card"
+            >
+              <AccordionTrigger className="text-left text-foreground font-semibold hover:no-underline">
+                Who is RabbitHQ for?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                RabbitHQ is designed for developers, DevOps engineers, and teams
+                who use RabbitMQ and want better visibility, easier monitoring,
+                and faster troubleshooting. Whether you're running one broker or
+                dozens, RabbitHQ helps you save time and prevent message
+                bottlenecks.
+              </AccordionContent>
+            </AccordionItem>
 
-            <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-8 rounded-xl border border-border">
-              <div className="flex items-center gap-1 mb-4">
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    className="h-5 w-5 fill-yellow-400 text-yellow-400"
-                  />
-                ))}
-              </div>
-              <blockquote className="text-card-foreground mb-4">
-                "The analytics dashboard gives us insights we never had before.
-                Game changer for our monitoring."
-              </blockquote>
-              <div className="text-sm text-muted-foreground">
-                — Alex Thompson, Lead Developer
-              </div>
-            </div>
-          </div>
+            <AccordionItem
+              value="item-3"
+              className="border border-border rounded-lg px-6 bg-card"
+            >
+              <AccordionTrigger className="text-left text-foreground font-semibold hover:no-underline">
+                Is RabbitHQ secure?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                Absolutely. All connections to your RabbitMQ servers are
+                encrypted (TLS), and no sensitive data is stored on our servers.
+                You stay in full control of your credentials, and RabbitHQ only
+                reads the metrics and management data needed for your dashboard.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem
+              value="item-4"
+              className="border border-border rounded-lg px-6 bg-card"
+            >
+              <AccordionTrigger className="text-left text-foreground font-semibold hover:no-underline">
+                What can I do with RabbitHQ?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                With RabbitHQ, you can:
+                <ul className="list-disc list-inside mt-2 space-y-1">
+                  <li>
+                    View all your queues, exchanges, and bindings at a glance
+                  </li>
+                  <li>
+                    Monitor message rates, errors, and consumer activity in real
+                    time
+                  </li>
+                  <li>Create alerts for blocked or overloaded queues</li>
+                  <li>Manage users, vhosts, and permissions visually</li>
+                  <li>Connect multiple RabbitMQ instances in one place</li>
+                </ul>
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem
+              value="item-5"
+              className="border border-border rounded-lg px-6 bg-card"
+            >
+              <AccordionTrigger className="text-left text-foreground font-semibold hover:no-underline">
+                How is RabbitHQ different from the RabbitMQ Management UI?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                The built-in RabbitMQ Management Plugin works, but it's slow,
+                cluttered, and hard to scale across multiple brokers. RabbitHQ
+                provides:
+                <ul className="list-disc list-inside mt-2 space-y-1">
+                  <li>A modern, intuitive interface</li>
+                  <li>Centralized monitoring across environments</li>
+                  <li>Powerful search and filters</li>
+                  <li>Smart alerts and reporting</li>
+                  <li>A clean experience designed for teams</li>
+                </ul>
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem
+              value="item-6"
+              className="border border-border rounded-lg px-6 bg-card"
+            >
+              <AccordionTrigger className="text-left text-foreground font-semibold hover:no-underline">
+                Is RabbitHQ a better monitoring tool than Prometheus and
+                Grafana?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                RabbitHQ offers purpose-built monitoring specifically for
+                RabbitMQ with zero configuration. While Prometheus and Grafana
+                are powerful, they require significant setup and maintenance.
+                RabbitHQ provides comparable insights with much less overhead.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem
+              value="item-7"
+              className="border border-border rounded-lg px-6 bg-card"
+            >
+              <AccordionTrigger className="text-left text-foreground font-semibold hover:no-underline">
+                Can I try RabbitHQ for free?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                Yes! We offer a free tier that includes 1 server, 1 workspace,
+                and 1 team member. You can start monitoring your RabbitMQ queues
+                right away without a credit card. When you're ready to scale,
+                you can upgrade to a paid plan.
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         </div>
       </section>
 
@@ -1091,11 +1200,9 @@ const Index = () => {
             Join thousands of developers already using RabbitHQ
           </p>
 
-          <div className="bg-background/10 backdrop-blur-sm rounded-2xl p-8 mb-8">
-            <AuthButtons />
-          </div>
+          <AuthButtons variant="light" />
 
-          <p className="text-white/80 text-sm">
+          <p className="text-white/80 text-sm mt-4">
             Free trial available • No credit card required • Start in minutes
           </p>
         </div>

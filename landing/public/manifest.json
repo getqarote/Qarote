@@ -4,7 +4,7 @@
   "description": "Modern RabbitMQ Management Interface",
   "icons": [
     {
-      "src": "icon_rabbit.svg",
+      "src": "new_icon_rabbit.svg",
       "type": "image/svg+xml",
       "sizes": "180x180"
     },
