@@ -28,7 +28,7 @@ import { useAuth } from "@/contexts/AuthContextDefinition";
 import { signUpSchema, type SignUpFormData } from "@/schemas/forms";
 import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton";
 import logger from "@/lib/logger";
-import { trackSignUp } from "@/lib/gtm";
+import { trackSignUp } from "@/lib/ga";
 
 const SignUp: React.FC = () => {
   const { isAuthenticated } = useAuth();

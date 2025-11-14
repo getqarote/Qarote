@@ -21,7 +21,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { useExchanges, useDeleteExchange } from "@/hooks/useApi";
 import { useServerContext } from "@/contexts/ServerContext";
-import { useUser } from "@/hooks/useUser";
 import { useState } from "react";
 import {
   Collapsible,
@@ -45,7 +44,6 @@ import { ApiErrorWithCode } from "@/types/apiErrors";
 
 const Exchanges = () => {
   const { selectedServerId, hasServers } = useServerContext();
-  const { workspacePlan } = useUser();
   const { toast } = useToast();
   const [expandedExchanges, setExpandedExchanges] = useState<Set<string>>(
     new Set()
@@ -241,7 +239,7 @@ const Exchanges = () => {
                 </div>
               </div>
               <div className="flex items-center gap-4">
-                <PlanBadge workspacePlan={workspacePlan} />
+                <PlanBadge />
                 <AddExchangeButton
                   onUpgradeClick={() => setShowUpgradeModal(true)}
                   onAddClick={() => setShowCreateExchangeModal(true)}
@@ -706,7 +704,6 @@ const Exchanges = () => {
       <PlanUpgradeModal
         isOpen={showUpgradeModal}
         onClose={() => setShowUpgradeModal(false)}
-        currentPlan={workspacePlan}
         feature="Exchange Management"
       />
     </SidebarProvider>

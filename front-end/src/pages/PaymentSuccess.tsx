@@ -5,7 +5,7 @@ import { useUser } from "@/hooks/useUser";
 import { useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api";
 import logger from "@/lib/logger";
-import { trackPurchase } from "@/lib/gtm";
+import { trackPurchase } from "@/lib/ga";
 
 const PaymentSuccess: React.FC = () => {
   const navigate = useNavigate();

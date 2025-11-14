@@ -4,7 +4,6 @@ import { zValidator } from "@hono/zod-validator";
 import { prisma } from "@/core/prisma";
 import { authenticate, authorize } from "@/core/auth";
 import { UpdateUserSchema, UpdateProfileSchema } from "@/schemas/user";
-// import { UpdateWorkspaceSchema } from "@/schemas/workspace";
 import { UserRole } from "@prisma/client";
 import { logger } from "@/core/logger";
 import { planValidationMiddleware } from "@/middlewares/plan-validation";

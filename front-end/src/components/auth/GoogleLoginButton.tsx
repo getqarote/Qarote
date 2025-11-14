@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContextDefinition";
 import { useNavigate } from "react-router-dom";
 import { apiClient } from "@/lib/api";
 import logger from "@/lib/logger";
-import { trackSignUp } from "@/lib/gtm";
+import { trackSignUp } from "@/lib/ga";
 import "@/styles/google-auth.css";
 
 interface GoogleLoginButtonProps {
