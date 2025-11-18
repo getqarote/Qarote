@@ -184,7 +184,14 @@ export class RabbitMQAmqpClient {
 
       this.isConnected = false;
       this.consumers.clear();
+
       logger.info("Disconnected from RabbitMQ AMQP");
+
+      // Notify factory to decrement connection count (only if actually disconnected)
+      if (this.config.serverId) {
+        const { RabbitMQAmqpClientFactory } = await import("./AmqpFactory.js");
+        await RabbitMQAmqpClientFactory.removeClient(this.config.serverId);
+      }
     } catch (error) {
       logger.error({ error }, "Error disconnecting from RabbitMQ AMQP:");
       throw error;

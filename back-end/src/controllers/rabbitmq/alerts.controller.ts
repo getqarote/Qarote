@@ -4,6 +4,8 @@ import { logger } from "@/core/logger";
 import { verifyServerAccess } from "./shared";
 import { createErrorResponse } from "../shared";
 import { alertService } from "@/services/alert.service";
+import { getUserPlan } from "@/services/plan/plan.service";
+import { UserPlan } from "@prisma/client";
 import {
   ServerParamSchema,
   AlertsQuerySchema,
@@ -38,6 +40,9 @@ alertsController.get(
         return c.json({ error: "Server not found or access denied" }, 404);
       }
 
+      // Get user plan to determine access level
+      const userPlan = await getUserPlan(user.id);
+
       const { alerts, summary } = await alertService.getServerAlerts(
         id,
         server.name,
@@ -47,6 +52,18 @@ alertsController.get(
       // Get current thresholds for response
       const thresholds = await alertService.getWorkspaceThresholds(workspaceId);
 
+      // For free users, return only summary (no detailed alerts)
+      if (userPlan === UserPlan.FREE) {
+        return c.json({
+          success: true,
+          alerts: [], // Empty array for free users
+          summary,
+          thresholds,
+          timestamp: new Date().toISOString(),
+        });
+      }
+
+      // For Developer and Enterprise users, return full alerts
       // Apply filtering and pagination
       let filteredAlerts = alerts;
 

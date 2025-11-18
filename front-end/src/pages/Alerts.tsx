@@ -23,15 +23,19 @@ import { PageLoader } from "@/components/PageLoader";
 import { NoServerConfigured } from "@/components/NoServerConfigured";
 import { PlanUpgradeModal } from "@/components/plans/PlanUpgradeModal";
 import { AlertSeverity, AlertCategory, AlertThresholds } from "@/types/alerts";
+import { UserPlan } from "@/types/plans";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 type BadgeVariant = "default" | "secondary" | "destructive" | "outline";
 
 const Alerts = () => {
   const { serverId } = useParams<{ serverId: string }>();
   const { selectedServerId, hasServers } = useServerContext();
-  const { workspacePlan, canConfigureAlerts } = useUser();
+  const { workspacePlan, canConfigureAlerts, userPlan } = useUser();
   const [showConfigureModal, setShowConfigureModal] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const navigate = useNavigate();
 
   const currentServerId = serverId || selectedServerId;
 
@@ -286,11 +290,37 @@ const Alerts = () => {
                 <CardTitle className="flex items-center gap-2">
                   <AlertTriangle className="h-5 w-5" />
                   Active Alerts
-                  <Badge variant="outline">{alerts.length}</Badge>
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {alerts.length === 0 ? (
+                {/* Show upgrade notification for free users */}
+                {userPlan === UserPlan.FREE ? (
+                  <div className="text-center py-8">
+                    <AlertTriangle className="h-12 w-12 mx-auto text-yellow-500 mb-4" />
+                    <h3 className="text-lg font-medium mb-2">
+                      {summary.total > 0
+                        ? `You have ${summary.total} active alert${summary.total > 1 ? "s" : ""}`
+                        : "No Active Alerts"}
+                    </h3>
+                    <p className="text-muted-foreground mb-4">
+                      {summary.total > 0
+                        ? `You have ${summary.critical > 0 ? `${summary.critical} critical` : ""}${summary.critical > 0 && summary.warning > 0 ? " and " : ""}${summary.warning > 0 ? `${summary.warning} warning` : ""} alert${summary.total > 1 ? "s" : ""} on your system.`
+                        : "Your RabbitMQ cluster is running smoothly with no alerts."}
+                    </p>
+                    {summary.total > 0 && (
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Upgrade to Developer or Enterprise plan to view detailed
+                        alert information and configure alert thresholds.
+                      </p>
+                    )}
+                    <Button
+                      onClick={() => navigate("/plans")}
+                      className="btn-primary"
+                    >
+                      Upgrade now
+                    </Button>
+                  </div>
+                ) : alerts.length === 0 ? (
                   <div className="text-center py-8">
                     <CheckCircle className="h-12 w-12 mx-auto text-green-500 mb-4" />
                     <h3 className="text-lg font-medium mb-2">

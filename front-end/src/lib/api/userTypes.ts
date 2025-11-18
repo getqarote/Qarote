@@ -2,7 +2,7 @@ export interface RabbitMQUser {
   name: string;
   password_hash?: string;
   hashing_algorithm?: string;
-  tags?: string;
+  tags?: string[];
   limits?: Record<string, unknown>;
   accessibleVhosts?: string[];
 }

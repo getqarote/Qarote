@@ -685,11 +685,13 @@ queuesController.get(
 
     try {
       // Verify server access
-      await verifyServerAccess(serverId, workspaceId);
+      const server = await verifyServerAccess(serverId, workspaceId);
+      if (!server) {
+        return c.json({ error: "Server not found or access denied" }, 404);
+      }
 
-      // Create AMQP client to check pause status
+      // Create AMQP client to check pause status (already connects in factory)
       amqpClient = await createAmqpClient(serverId, workspaceId);
-      await amqpClient.connect();
 
       const pauseState = amqpClient.getQueuePauseState(queueName);
 

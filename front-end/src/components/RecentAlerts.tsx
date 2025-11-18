@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   AlertTriangle,
   XCircle,
@@ -15,6 +16,8 @@ import { useServerContext } from "@/contexts/ServerContext";
 import { apiClient } from "@/lib/api";
 import { AlertSeverity, AlertCategory, AlertThresholds } from "@/types/alerts";
 import { useWorkspace } from "@/hooks/useWorkspace";
+import { useUser } from "@/hooks/useUser";
+import { UserPlan } from "@/types/plans";
 
 type BadgeVariant = "default" | "secondary" | "destructive" | "outline";
 
@@ -22,6 +25,7 @@ export const RecentAlerts = () => {
   const navigate = useNavigate();
   const { selectedServerId } = useServerContext();
   const { workspace } = useWorkspace();
+  const { userPlan } = useUser();
 
   // Default thresholds for query
   const defaultThresholds: AlertThresholds = {
@@ -115,17 +119,19 @@ export const RecentAlerts = () => {
   };
 
   const alerts = alertsData?.alerts || [];
+  const summary = alertsData?.summary || {
+    total: 0,
+    critical: 0,
+    warning: 0,
+    info: 0,
+  };
   // Already limited to 3 by the API call, but sort by timestamp to ensure newest first
   const recentAlerts = alerts.sort(
     (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
   );
 
-  const criticalCount = alerts.filter(
-    (alert) => alert.severity === AlertSeverity.CRITICAL
-  ).length;
-  const warningCount = alerts.filter(
-    (alert) => alert.severity === AlertSeverity.WARNING
-  ).length;
+  const criticalCount = summary.critical;
+  const warningCount = summary.warning;
 
   if (error) {
     return (
@@ -163,9 +169,9 @@ export const RecentAlerts = () => {
                 <Badge variant="outline">Loading...</Badge>
               ) : (
                 <Badge
-                  variant={alerts.length > 0 ? "destructive" : "secondary"}
+                  variant={summary.total > 0 ? "destructive" : "secondary"}
                 >
-                  {alerts.length}
+                  {summary.total}
                 </Badge>
               )}
             </CardTitle>
@@ -199,7 +205,7 @@ export const RecentAlerts = () => {
               </div>
             ))}
           </div>
-        ) : recentAlerts.length === 0 ? (
+        ) : summary.total === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 px-4">
             <AlertTriangle className="h-12 w-12 text-gray-300 mb-3" />
             <p className="text-sm text-gray-500 font-medium">
@@ -209,33 +215,22 @@ export const RecentAlerts = () => {
               All systems are running normally
             </p>
           </div>
+        ) : userPlan === UserPlan.FREE ? (
+          <div className="text-center py-8">
+            <AlertTriangle className="h-12 w-12 mx-auto text-yellow-500 mb-4" />
+            <p className="text-sm text-muted-foreground mb-4">
+              Upgrade to Developer or Enterprise plan to view detailed
+              alert information and configure alert thresholds.
+            </p>
+            <Button
+              onClick={() => navigate("/plans")}
+              className="btn-primary"
+            >
+              Upgrade now
+            </Button>
+          </div>
         ) : (
           <div className="space-y-3">
-            {/* Alert Summary */}
-            {(criticalCount > 0 || warningCount > 0) && (
-              <div className="flex items-center gap-2 p-3 bg-orange-50 border border-orange-200 rounded-lg mb-3">
-                <AlertTriangle className="h-4 w-4 text-orange-500" />
-                <div className="text-sm">
-                  <span className="font-medium">
-                    {criticalCount > 0 && (
-                      <span className="text-red-600">
-                        {criticalCount} critical
-                      </span>
-                    )}
-                    {criticalCount > 0 && warningCount > 0 && (
-                      <span className="text-gray-500">, </span>
-                    )}
-                    {warningCount > 0 && (
-                      <span className="text-yellow-600">
-                        {warningCount} warning
-                      </span>
-                    )}
-                  </span>
-                  <span className="text-gray-600"> alerts active</span>
-                </div>
-              </div>
-            )}
-
             {/* Recent Alerts List - Limited to 3 */}
             {recentAlerts.map((alert) => (
               <div

@@ -1,0 +1,49 @@
+---
+alwaysApply: true
+---
+
+# Back-end Project Structure
+
+This document outlines the key locations for different components in the back-end codebase.
+
+## Controllers
+
+All different controllers are located in:
+
+- `back-end/src/controllers/*`
+
+## Zod Schemas
+
+Zod validation schemas are located in:
+
+- `back-end/src/schemas`
+
+## Prisma Schema
+
+Database schema definition is located at:
+
+- `back-end/prisma/schema.prisma`
+
+## Application Configuration
+
+Application configuration is located at:
+
+- `back-end/src/config/index.ts`
+
+## User Plan Service
+
+User plan service is located in:
+
+- `back-end/src/services/plan`
+
+## RabbitMQ Core
+
+RabbitMQ core functionality is located in:
+
+- `/Users/brice/Code/Personal/Active/RabbitHQ/back-end/src/core/rabbitmq`
+
+## Backend Types
+
+Backend types are located in:
+
+- `back-end/src/types`

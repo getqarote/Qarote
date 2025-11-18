@@ -1133,22 +1133,51 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
   async updateUser(username: string, userData: any): Promise<void> {
     try {
       const encodedUsername = encodeURIComponent(username);
-      logger.debug("Updating RabbitMQ user", { username });
+      logger.debug("Updating RabbitMQ user", { username, userData });
 
-      await this.request(`/users/${encodedUsername}`, {
+      const response = await this.request(`/users/${encodedUsername}`, {
         method: "PUT",
         body: JSON.stringify(userData),
       });
 
       logger.debug("RabbitMQ user updated successfully", { username });
     } catch (error) {
-      logger.error({ error, username }, "Failed to update RabbitMQ user");
+      // Enhanced error logging to capture RabbitMQ error details
+      const errorDetails: any = {
+        username,
+        userData,
+        operation: "updateUser",
+        serverId: this.baseUrl,
+      };
 
       if (error instanceof Error) {
+        errorDetails.errorMessage = error.message;
+        errorDetails.errorStack = error.stack;
+        
+        // Extract error cause (RabbitMQ API reason) if available
+        if ((error as any).cause) {
+          errorDetails.rabbitMQReason = (error as any).cause;
+        }
+        
+        // Try to extract response details if available
+        if ((error as any).response) {
+          errorDetails.responseStatus = (error as any).response?.status;
+          errorDetails.responseStatusText = (error as any).response?.statusText;
+          try {
+            errorDetails.responseBody = await (error as any).response?.text();
+          } catch {
+            // Ignore if we can't read the response body
+          }
+        }
+        
+        logger.error(errorDetails, "Failed to update RabbitMQ user - detailed error");
+        
         captureRabbitMQError(error, {
           operation: "updateUser",
           serverId: this.baseUrl,
         });
+      } else {
+        logger.error({ ...errorDetails, error }, "Failed to update RabbitMQ user - unknown error type");
       }
 
       throw error;

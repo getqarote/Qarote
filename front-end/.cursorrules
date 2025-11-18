@@ -1,5 +1,14 @@
 # Front-end Cursor Rules
 
+## Tailwind Configuration
+
+- **ALWAYS reference `front-end/tailwind.config.ts` before creating or updating components**
+  - Check available custom colors, animations, and design tokens defined in the config
+  - Use the predefined color palette (primary, secondary, destructive, muted, accent, etc.)
+  - Use custom background gradients (`gradient-page`, `gradient-button`, `gradient-title`) when appropriate
+  - Reference custom animations and keyframes if needed
+  - Ensure consistency with the existing design system
+
 ## React Query Hooks
 
 - **All `useQuery` hooks MUST be located in `src/hooks/useApi.ts`**

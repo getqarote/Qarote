@@ -13,12 +13,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Trash2, AlertTriangle } from "lucide-react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api";
 import { useToast } from "@/hooks/useToast";
 import { useServerContext } from "@/contexts/ServerContext";
-import { useUser } from "@/hooks/useUser";
-import { queryKeys } from "@/hooks/useApi";
+import { useWorkspace } from "@/hooks/useWorkspace";
 
 interface PurgeQueueDialogProps {
   queueName: string;
@@ -35,7 +34,7 @@ export const PurgeQueueDialog = ({
 }: PurgeQueueDialogProps) => {
   const [open, setOpen] = useState(false);
   const { selectedServerId } = useServerContext();
-  const { workspace } = useUser();
+  const { workspace } = useWorkspace();
   const { toast } = useToast();
 
   const purgeQueueMutation = useMutation({

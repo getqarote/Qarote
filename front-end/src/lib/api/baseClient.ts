@@ -63,8 +63,10 @@ export abstract class BaseApiClient {
           errorData = await response.json();
           if (typeof errorData === "object" && errorData !== null) {
             const data = errorData as Record<string, unknown>;
+            // Prefer message field, then error field, then rabbitMQReason if available
             errorMessage =
               (data.message as string) ||
+              (data.rabbitMQReason as string) ||
               (data.error as string) ||
               errorMessage;
           }

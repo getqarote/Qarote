@@ -27,7 +27,18 @@ export class RabbitMQAmqpClientFactory {
     // Check local cache first
     const existingClient = this.clients.get(serverConfig.id);
     if (existingClient && existingClient.isConnectionActive()) {
+      logger.debug(`Reusing existing active AMQP client`, {
+        serverId: serverConfig.id,
+      });
       return existingClient;
+    }
+
+    // If client exists but is inactive, clean it up first
+    if (existingClient && !existingClient.isConnectionActive()) {
+      logger.debug(`Cleaning up inactive AMQP client before creating new one`, {
+        serverId: serverConfig.id,
+      });
+      await this.removeClient(serverConfig.id);
     }
 
     // Check local connection count
@@ -82,19 +93,32 @@ export class RabbitMQAmqpClientFactory {
 
   /**
    * Remove client from cache and local tracking (when disconnected)
+   * Only removes if the client is actually disconnected
    */
   static async removeClient(serverId: string): Promise<void> {
-    this.clients.delete(serverId);
+    const client = this.clients.get(serverId);
+    
+    // Only remove if client exists and is not connected
+    if (client && !client.isConnectionActive()) {
+      this.clients.delete(serverId);
 
-    // Remove from local tracking
-    const currentCount = this.connectionCounts.get(serverId) || 0;
-    if (currentCount > 0) {
-      this.connectionCounts.set(serverId, currentCount - 1);
+      // Remove from local tracking
+      const currentCount = this.connectionCounts.get(serverId) || 0;
+      if (currentCount > 0) {
+        this.connectionCounts.set(serverId, currentCount - 1);
+      }
+
+      logger.info(`AMQP client removed from cache and local tracking`, {
+        serverId,
+        previousCount: currentCount,
+        newCount: currentCount - 1,
+      });
+    } else if (client && client.isConnectionActive()) {
+      // Client is still active, don't remove it
+      logger.debug(`AMQP client still active, not removing from cache`, {
+        serverId,
+      });
     }
-
-    logger.info(`AMQP client removed from cache and local tracking`, {
-      serverId,
-    });
   }
 
   /**

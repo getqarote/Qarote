@@ -11,13 +11,25 @@ export function createErrorResponse(
   defaultMessage = "Unknown error occurred"
 ) {
   logger.error({ error }, "Controller error");
+
+  let errorMessage = defaultMessage;
+  let rabbitMQReason: string | undefined;
+
+  if (error instanceof Error) {
+    errorMessage = error.message;
+    // Extract RabbitMQ API reason from error cause
+    if (error.cause) {
+      rabbitMQReason = String(error.cause);
+      // Include RabbitMQ reason in the message for better visibility
+      errorMessage = `${error.message}${rabbitMQReason ? `: ${rabbitMQReason}` : ""}`;
+    }
+  }
+
   return c.json(
     {
       error: defaultMessage,
-      message:
-        error instanceof Error
-          ? `${error.message} ${error.cause ? `(${error.cause})` : ""}`
-          : "Unknown error",
+      message: errorMessage,
+      ...(rabbitMQReason && { rabbitMQReason }),
     },
     statusCode
   );

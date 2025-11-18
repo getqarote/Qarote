@@ -71,8 +71,14 @@ export function parseApiError(errorResponse: unknown): Error {
 
     // Handle general API errors with error and code
     if (typeof errorData.error === "string") {
+      // Prefer message if available, otherwise use error
+      const message =
+        typeof errorData.message === "string"
+          ? errorData.message
+          : errorData.error;
+
       return new ApiErrorWithCode(
-        errorData.error,
+        message,
         typeof errorData.code === "string" ? errorData.code : undefined,
         typeof errorData.message === "string" ? errorData.message : undefined
       );

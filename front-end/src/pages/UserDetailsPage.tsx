@@ -213,6 +213,18 @@ export default function UserDetailsPage() {
 
     if (removePassword) {
       updateData.removePassword = true;
+      // When removing password only, preserve existing tags if no new tags are provided
+      // RabbitMQ requires at least one field besides password_hash to be present
+      if (newTags === "" && userDetails?.tags) {
+        // Normalize tags array to comma-separated string format for RabbitMQ API
+        const normalizedTags = userDetails.tags
+          .map((tag) => tag.trim())
+          .filter((tag) => tag.length > 0)
+          .join(",");
+        if (normalizedTags) {
+          updateData.tags = normalizedTags;
+        }
+      }
     } else if (newPassword) {
       updateData.password = newPassword;
     }

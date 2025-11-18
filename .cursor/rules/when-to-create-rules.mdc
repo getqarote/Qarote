@@ -1,0 +1,64 @@
+---
+alwaysApply: true
+---
+
+# When to Create or Update Cursor Rules
+
+This document outlines when you should create or update cursor rules in this codebase.
+
+## When to CREATE a new rule
+
+Create a new cursor rule file when:
+
+1. **Architectural patterns or conventions** that are used across multiple files or modules
+   - Example: A specific pattern for handling errors, authentication, or data validation
+   - Example: A convention for organizing services or controllers
+
+2. **Complex domain logic** that requires explanation beyond what's obvious from the code
+   - Example: Business rules that aren't self-evident
+   - Example: Workflows that span multiple components
+
+3. **Important design decisions** that affect how code should be written or organized
+   - Example: Why certain patterns are preferred over alternatives
+   - Example: Constraints that must be maintained (e.g., database schema relationships)
+
+4. **Recurring patterns** that appear in multiple places and should be followed consistently
+   - Example: API response formatting conventions
+   - Example: Error handling patterns
+
+5. **Project structure conventions** that help navigate or understand the codebase
+   - Example: Where to find specific types of files
+   - Example: How different parts of the application interact
+
+## When to UPDATE an existing rule
+
+Update an existing rule when:
+
+1. **The pattern or convention has changed** - Update the rule to reflect the new approach
+2. **New information is discovered** - Add missing details that would help future development
+3. **The rule is outdated** - Remove or update information that's no longer accurate
+4. **The scope has expanded** - Add new examples or use cases that weren't covered
+
+## When NOT to create a rule
+
+Do NOT create a rule for:
+
+1. **One-off implementations** - Single-use code that won't be repeated
+2. **Simple, self-explanatory code** - Code that's clear without additional context
+3. **Temporary solutions** - Code that's meant to be replaced soon
+4. **Standard library usage** - Common patterns that are well-documented elsewhere
+5. **Minor variations** - Small differences that don't represent a pattern
+
+## Rule file organization
+
+- Place rules in `.cursor/rules/` directory at the appropriate level (root, `back-end/`, `front-end/`, etc.)
+- Use descriptive filenames that indicate the rule's purpose
+- Set `alwaysApply: true` for rules that should be active in every conversation
+- Group related rules logically (e.g., project structure, coding conventions, architecture)
+
+## Best practices
+
+- **Keep rules focused** - Each rule should cover a specific topic or pattern
+- **Keep rules current** - Review and update rules periodically as the codebase evolves
+- **Use examples** - Include concrete examples when they clarify the rule
+- **Be concise** - Rules should be helpful, not overwhelming

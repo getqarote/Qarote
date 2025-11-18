@@ -152,11 +152,34 @@ usersController.put(
         payload.password_hash = "";
       }
 
+      logger.debug("Updating user with payload", {
+        username,
+        serverId,
+        payload,
+        updateData,
+      });
+
       await client.updateUser(username, payload);
 
       return c.json({ message: "User updated successfully" });
     } catch (error: any) {
-      logger.error("Error updating user:", error);
+      // Enhanced error logging
+      const errorMessage = error?.message || "Unknown error";
+      const errorDetails: any = {
+        username: c.req.param("username"),
+        serverId: c.req.param("id"),
+        updateData: c.req.valid("json"),
+        errorMessage,
+        errorStack: error?.stack,
+      };
+
+      // Extract RabbitMQ API reason from error cause
+      if (error?.cause) {
+        errorDetails.rabbitMQReason = error.cause;
+      }
+
+      logger.error(errorDetails, "Error updating user - detailed error");
+
       return createErrorResponse(c, error, 500, "Failed to update user");
     }
   }
