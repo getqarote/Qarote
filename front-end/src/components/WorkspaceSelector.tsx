@@ -206,10 +206,7 @@ export function WorkspaceSelector() {
 
               <DropdownMenuItem
                 onClick={handleCreateWorkspace}
-                className={`p-3 cursor-pointer ${
-                  !canCreateWorkspace ? "opacity-60 cursor-not-allowed" : ""
-                }`}
-                disabled={!canCreateWorkspace}
+                className={`p-3 ${canCreateWorkspace ? "cursor-pointer" : "cursor-pointer opacity-60"}`}
               >
                 <div className="flex items-center justify-between w-full">
                   <div className="flex items-center gap-3">
