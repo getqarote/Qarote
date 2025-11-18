@@ -214,8 +214,8 @@ export const EnhancedTeamTab = ({
               >
                 <Lock className="w-4 h-4" />
                 Invite User
-                <span className="ml-1 px-2 py-0.5 bg-orange-500 text-white text-xs rounded-full font-bold">
-                  Pro
+                <span className="ml-1 px-1.5 py-0.5 bg-orange-500 text-white text-[10px] rounded-full font-semibold">
+                  Upgrade
                 </span>
               </Button>
             )}

@@ -174,8 +174,8 @@ export function QueueTable({
                         >
                           <Trash2 className="w-4 h-4 mr-1" />
                           Purge
-                          <span className="ml-1 px-1.5 py-0.5 text-white text-xs rounded-full font-bold bg-orange-500">
-                            Pro
+                          <span className="ml-1 px-1.5 py-0.5 text-white text-[10px] rounded-full font-semibold bg-orange-500">
+                            Upgrade
                           </span>
                         </Button>
                       )}

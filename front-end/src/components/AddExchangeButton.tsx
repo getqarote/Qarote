@@ -24,7 +24,7 @@ export const AddExchangeButton = ({
 
     return {
       text: "Add Exchange",
-      badge: "Pro",
+      badge: "Upgrade",
       badgeColor: "bg-orange-500",
       title: "Upgrade to add exchanges",
     };
@@ -62,7 +62,7 @@ export const AddExchangeButton = ({
       <Lock className="w-4 h-4" />
       {buttonConfig.text}
       <span
-        className={`ml-1 px-2 py-0.5 ${buttonConfig.badgeColor} text-white text-xs rounded-full font-bold`}
+        className={`ml-1 px-1.5 py-0.5 ${buttonConfig.badgeColor} text-white text-[10px] rounded-full font-semibold`}
       >
         {buttonConfig.badge}
       </span>

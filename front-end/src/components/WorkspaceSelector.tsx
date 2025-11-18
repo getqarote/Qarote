@@ -87,28 +87,28 @@ export function WorkspaceSelector() {
       case UserPlan.FREE:
         return {
           text: "Create New Workspace",
-          badge: "Pro",
+          badge: "Upgrade",
           badgeColor: "bg-orange-500",
           title: "Upgrade to create multiple workspaces",
         };
       case UserPlan.DEVELOPER:
         return {
           text: "Create New Workspace",
-          badge: "Pro",
+          badge: "Upgrade",
           badgeColor: "bg-blue-500",
           title: "Multiple workspaces available with Developer plan",
         };
       case UserPlan.ENTERPRISE:
         return {
           text: "Create New Workspace",
-          badge: "Pro",
+          badge: "Upgrade",
           badgeColor: "bg-purple-500",
           title: "Multiple workspaces available with Enterprise plan",
         };
       default:
         return {
           text: "Create New Workspace",
-          badge: "Pro",
+          badge: "Upgrade",
           badgeColor: "bg-orange-500",
           title: "Upgrade to create multiple workspaces",
         };
@@ -233,7 +233,7 @@ export function WorkspaceSelector() {
                       const buttonConfig = getCreateWorkspaceButtonConfig();
                       return buttonConfig ? (
                         <span
-                          className={`px-2 py-0.5 ${buttonConfig.badgeColor} text-white text-xs rounded-full font-bold`}
+                          className={`px-1.5 py-0.5 ${buttonConfig.badgeColor} text-white text-[10px] rounded-full font-semibold`}
                         >
                           {buttonConfig.badge}
                         </span>

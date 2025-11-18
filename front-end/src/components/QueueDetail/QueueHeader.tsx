@@ -95,8 +95,8 @@ export function QueueHeader({
             >
               <Lock className="w-4 h-4" />
               Send Message
-              <span className="ml-1 px-2 py-0.5 text-white text-xs rounded-full font-bold bg-orange-500">
-                Pro
+              <span className="ml-1 px-1.5 py-0.5 text-white text-[10px] rounded-full font-semibold bg-orange-500">
+                Upgrade
               </span>
             </Button>
           )}
@@ -130,8 +130,8 @@ export function QueueHeader({
             >
               <Lock className="w-4 h-4" />
               Purge Queue
-              <span className="ml-1 px-2 py-0.5 text-white text-xs rounded-full font-bold bg-orange-500">
-                Pro
+              <span className="ml-1 px-1.5 py-0.5 text-white text-[10px] rounded-full font-semibold bg-orange-500">
+                Upgrade
               </span>
             </Button>
           )}
@@ -177,8 +177,8 @@ export function QueueHeader({
             >
               <Lock className="w-4 h-4" />
               {isPaused ? "Resume Queue" : "Pause Queue"}
-              <span className="ml-1 px-2 py-0.5 text-white text-xs rounded-full font-bold bg-orange-500">
-                Pro
+              <span className="ml-1 px-1.5 py-0.5 text-white text-[10px] rounded-full font-semibold bg-orange-500">
+                Upgrade
               </span>
             </Button>
           )}
@@ -206,8 +206,8 @@ export function QueueHeader({
             >
               <Lock className="w-4 h-4" />
               Delete Queue
-              <span className="ml-1 px-2 py-0.5 text-white text-xs rounded-full font-bold bg-orange-500">
-                Pro
+              <span className="ml-1 px-1.5 py-0.5 text-white text-[10px] rounded-full font-semibold bg-orange-500">
+                Upgrade
               </span>
             </Button>
           ) : null}
