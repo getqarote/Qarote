@@ -178,10 +178,11 @@ metricsController.get(
     const queueName = c.req.param("queueName");
     const workspaceId = c.req.param("workspaceId");
     const timeRange = (c.req.query("timeRange") as TimeRange) || "1m";
+    const user = c.get("user");
 
-    // workspaceId is guaranteed to be defined due to checkWorkspaceAccess middleware
-    if (!workspaceId) {
-      return c.json({ error: "Workspace ID is required" }, 400);
+    // Verify user has access to this workspace
+    if (user.workspaceId !== workspaceId) {
+      return c.json({ error: "Access denied to this workspace" }, 403);
     }
 
     try {

@@ -136,7 +136,12 @@ alertsController.get(
     }
 
     try {
-      await verifyServerAccess(id, workspaceId);
+      // Verify server access
+      const server = await verifyServerAccess(id, workspaceId);
+      if (!server) {
+        return c.json({ error: "Server not found or access denied" }, 404);
+      }
+
       const healthCheck = await alertService.getHealthCheck(id, workspaceId);
 
       return c.json({

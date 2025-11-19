@@ -557,7 +557,10 @@ queuesController.post(
 
     try {
       // Verify server access
-      await verifyServerAccess(serverId, workspaceId);
+      const server = await verifyServerAccess(serverId, workspaceId);
+      if (!server) {
+        return c.json({ error: "Server not found or access denied" }, 404);
+      }
 
       // Create AMQP client for direct queue control
       amqpClient = await createAmqpClient(serverId, workspaceId);
@@ -618,7 +621,10 @@ queuesController.post(
 
     try {
       // Verify server access
-      await verifyServerAccess(serverId, workspaceId);
+      const server = await verifyServerAccess(serverId, workspaceId);
+      if (!server) {
+        return c.json({ error: "Server not found or access denied" }, 404);
+      }
 
       // Create AMQP client for direct queue control
       amqpClient = await createAmqpClient(serverId, workspaceId);

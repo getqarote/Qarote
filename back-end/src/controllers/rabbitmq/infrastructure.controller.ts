@@ -74,7 +74,10 @@ infrastructureController.get(
 
     try {
       // Verify server access
-      await verifyServerAccess(id, workspaceId);
+      const server = await verifyServerAccess(id, workspaceId);
+      if (!server) {
+        return c.json({ error: "Server not found or access denied" }, 404);
+      }
 
       const client = await createRabbitMQClient(id, workspaceId);
       const exchanges = await client.getExchanges();
@@ -105,7 +108,10 @@ infrastructureController.post(
 
     try {
       // Verify server access
-      await verifyServerAccess(id, workspaceId);
+      const server = await verifyServerAccess(id, workspaceId);
+      if (!server) {
+        return c.json({ error: "Server not found or access denied" }, 404);
+      }
 
       const body = await c.req.json();
       const {
@@ -184,7 +190,10 @@ infrastructureController.delete(
 
     try {
       // Verify server access
-      await verifyServerAccess(id, workspaceId);
+      const server = await verifyServerAccess(id, workspaceId);
+      if (!server) {
+        return c.json({ error: "Server not found or access denied" }, 404);
+      }
 
       const client = await createRabbitMQClient(id, workspaceId);
       await client.deleteExchange(exchangeName, {
@@ -238,7 +247,10 @@ infrastructureController.get(
 
     try {
       // Verify server access
-      await verifyServerAccess(id, workspaceId);
+      const server = await verifyServerAccess(id, workspaceId);
+      if (!server) {
+        return c.json({ error: "Server not found or access denied" }, 404);
+      }
 
       const client = await createRabbitMQClient(id, workspaceId);
       const connections = await client.getConnections();
@@ -280,7 +292,10 @@ infrastructureController.get(
 
     try {
       // Verify server access
-      await verifyServerAccess(id, workspaceId);
+      const server = await verifyServerAccess(id, workspaceId);
+      if (!server) {
+        return c.json({ error: "Server not found or access denied" }, 404);
+      }
 
       const client = await createRabbitMQClient(id, workspaceId);
       const channels = await client.getChannels();

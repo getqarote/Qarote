@@ -112,16 +112,22 @@ vhostController.get("/servers/:serverId/vhosts", async (c) => {
 vhostController.get("/servers/:serverId/vhosts/:vhostName", async (c) => {
   const serverId = c.req.param("serverId");
   const vhostName = decodeURIComponent(c.req.param("vhostName"));
+  const workspaceId = c.req.param("workspaceId");
   const user = c.get("user");
 
-  if (!user.workspaceId) {
-    return c.json({ error: "No workspace assigned" }, 400);
+  // Verify user has access to this workspace
+  if (user.workspaceId !== workspaceId) {
+    return c.json({ error: "Access denied to this workspace" }, 403);
   }
 
   try {
-    await verifyServerAccess(serverId, user.workspaceId);
+    // Verify server access
+    const server = await verifyServerAccess(serverId, workspaceId);
+    if (!server) {
+      return c.json({ error: "Server not found or access denied" }, 404);
+    }
 
-    const client = await createRabbitMQClient(serverId, user.workspaceId);
+    const client = await createRabbitMQClient(serverId, workspaceId);
 
     const [
       vhost,
@@ -179,17 +185,23 @@ vhostController.post(
   zValidator("json", CreateVHostSchema),
   async (c) => {
     const serverId = c.req.param("serverId");
+    const workspaceId = c.req.param("workspaceId");
     const vhostData = c.req.valid("json");
     const user = c.get("user");
 
-    if (!user.workspaceId) {
-      return c.json({ error: "No workspace assigned" }, 400);
+    // Verify user has access to this workspace
+    if (user.workspaceId !== workspaceId) {
+      return c.json({ error: "Access denied to this workspace" }, 403);
     }
 
     try {
-      await verifyServerAccess(serverId, user.workspaceId);
+      // Verify server access
+      const server = await verifyServerAccess(serverId, workspaceId);
+      if (!server) {
+        return c.json({ error: "Server not found or access denied" }, 404);
+      }
 
-      const client = await createRabbitMQClient(serverId, user.workspaceId);
+      const client = await createRabbitMQClient(serverId, workspaceId);
       await client.createVHost({
         name: vhostData.name,
         description: vhostData.description,
@@ -234,17 +246,23 @@ vhostController.put(
   async (c) => {
     const serverId = c.req.param("serverId");
     const vhostName = decodeURIComponent(c.req.param("vhostName"));
+    const workspaceId = c.req.param("workspaceId");
     const vhostData = c.req.valid("json");
     const user = c.get("user");
 
-    if (!user.workspaceId) {
-      return c.json({ error: "No workspace assigned" }, 400);
+    // Verify user has access to this workspace
+    if (user.workspaceId !== workspaceId) {
+      return c.json({ error: "Access denied to this workspace" }, 403);
     }
 
     try {
-      await verifyServerAccess(serverId, user.workspaceId);
+      // Verify server access
+      const server = await verifyServerAccess(serverId, workspaceId);
+      if (!server) {
+        return c.json({ error: "Server not found or access denied" }, 404);
+      }
 
-      const client = await createRabbitMQClient(serverId, user.workspaceId);
+      const client = await createRabbitMQClient(serverId, workspaceId);
       await client.updateVHost(vhostName, vhostData);
 
       logger.info(
@@ -277,14 +295,20 @@ vhostController.put(
 vhostController.delete("/servers/:serverId/vhosts/:vhostName", async (c) => {
   const serverId = c.req.param("serverId");
   const vhostName = decodeURIComponent(c.req.param("vhostName"));
+  const workspaceId = c.req.param("workspaceId");
   const user = c.get("user");
 
-  if (!user.workspaceId) {
-    return c.json({ error: "No workspace assigned" }, 400);
+  // Verify user has access to this workspace
+  if (user.workspaceId !== workspaceId) {
+    return c.json({ error: "Access denied to this workspace" }, 403);
   }
 
   try {
-    await verifyServerAccess(serverId, user.workspaceId);
+    // Verify server access
+    const server = await verifyServerAccess(serverId, workspaceId);
+    if (!server) {
+      return c.json({ error: "Server not found or access denied" }, 404);
+    }
 
     // Prevent deletion of default vhost
     if (vhostName === "/") {
@@ -297,7 +321,7 @@ vhostController.delete("/servers/:serverId/vhosts/:vhostName", async (c) => {
       );
     }
 
-    const client = await createRabbitMQClient(serverId, user.workspaceId);
+    const client = await createRabbitMQClient(serverId, workspaceId);
     await client.deleteVHost(vhostName);
 
     logger.info(
@@ -328,17 +352,23 @@ vhostController.put(
     const serverId = c.req.param("serverId");
     const vhostName = decodeURIComponent(c.req.param("vhostName"));
     const username = c.req.param("username");
+    const workspaceId = c.req.param("workspaceId");
     const permissionData = c.req.valid("json");
     const user = c.get("user");
 
-    if (!user.workspaceId) {
-      return c.json({ error: "No workspace assigned" }, 400);
+    // Verify user has access to this workspace
+    if (user.workspaceId !== workspaceId) {
+      return c.json({ error: "Access denied to this workspace" }, 403);
     }
 
     try {
-      await verifyServerAccess(serverId, user.workspaceId);
+      // Verify server access
+      const server = await verifyServerAccess(serverId, workspaceId);
+      if (!server) {
+        return c.json({ error: "Server not found or access denied" }, 404);
+      }
 
-      const client = await createRabbitMQClient(serverId, user.workspaceId);
+      const client = await createRabbitMQClient(serverId, workspaceId);
       await client.setUserPermissions(vhostName, username, {
         user: username,
         configure: permissionData.configure,
@@ -374,16 +404,22 @@ vhostController.delete(
     const serverId = c.req.param("serverId");
     const vhostName = decodeURIComponent(c.req.param("vhostName"));
     const username = c.req.param("username");
+    const workspaceId = c.req.param("workspaceId");
     const user = c.get("user");
 
-    if (!user.workspaceId) {
-      return c.json({ error: "No workspace assigned" }, 400);
+    // Verify user has access to this workspace
+    if (user.workspaceId !== workspaceId) {
+      return c.json({ error: "Access denied to this workspace" }, 403);
     }
 
     try {
-      await verifyServerAccess(serverId, user.workspaceId);
+      // Verify server access
+      const server = await verifyServerAccess(serverId, workspaceId);
+      if (!server) {
+        return c.json({ error: "Server not found or access denied" }, 404);
+      }
 
-      const client = await createRabbitMQClient(serverId, user.workspaceId);
+      const client = await createRabbitMQClient(serverId, workspaceId);
       await client.deleteUserPermissions(vhostName, username);
 
       logger.info(
@@ -415,17 +451,23 @@ vhostController.put(
     const serverId = c.req.param("serverId");
     const vhostName = decodeURIComponent(c.req.param("vhostName"));
     const limitType = c.req.param("limitType");
+    const workspaceId = c.req.param("workspaceId");
     const limitData = c.req.valid("json");
     const user = c.get("user");
 
-    if (!user.workspaceId) {
-      return c.json({ error: "No workspace assigned" }, 400);
+    // Verify user has access to this workspace
+    if (user.workspaceId !== workspaceId) {
+      return c.json({ error: "Access denied to this workspace" }, 403);
     }
 
     try {
-      await verifyServerAccess(serverId, user.workspaceId);
+      // Verify server access
+      const server = await verifyServerAccess(serverId, workspaceId);
+      if (!server) {
+        return c.json({ error: "Server not found or access denied" }, 404);
+      }
 
-      const client = await createRabbitMQClient(serverId, user.workspaceId);
+      const client = await createRabbitMQClient(serverId, workspaceId);
       await client.setVHostLimit(vhostName, limitType, {
         value: limitData.value,
       });
@@ -458,16 +500,22 @@ vhostController.delete(
     const serverId = c.req.param("serverId");
     const vhostName = decodeURIComponent(c.req.param("vhostName"));
     const limitType = c.req.param("limitType");
+    const workspaceId = c.req.param("workspaceId");
     const user = c.get("user");
 
-    if (!user.workspaceId) {
-      return c.json({ error: "No workspace assigned" }, 400);
+    // Verify user has access to this workspace
+    if (user.workspaceId !== workspaceId) {
+      return c.json({ error: "Access denied to this workspace" }, 403);
     }
 
     try {
-      await verifyServerAccess(serverId, user.workspaceId);
+      // Verify server access
+      const server = await verifyServerAccess(serverId, workspaceId);
+      if (!server) {
+        return c.json({ error: "Server not found or access denied" }, 404);
+      }
 
-      const client = await createRabbitMQClient(serverId, user.workspaceId);
+      const client = await createRabbitMQClient(serverId, workspaceId);
       await client.deleteVHostLimit(vhostName, limitType);
 
       logger.info(
