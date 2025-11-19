@@ -245,7 +245,7 @@ const Workspace = () => {
 
                       <Button
                         type="submit"
-                        className="w-full h-11 bg-orange-600 hover:bg-orange-700 text-white font-medium"
+                        className="w-full h-11 bg-gradient-button hover:bg-gradient-button-hover text-white font-medium"
                         disabled={
                           createWorkspaceMutation.isPending ||
                           !form.formState.isValid

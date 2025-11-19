@@ -136,10 +136,11 @@ const Index = () => {
         servers: "Up to 1",
         workspaces: "Up to 1",
         teamMembers: "Up to 1",
-        queueManagement: false,
-        exchangeManagement: false,
-        virtualHostManagement: false,
-        rabbitMQUserManagement: false,
+        queueManagement: true,
+        exchangeManagement: true,
+        virtualHostManagement: true,
+        rabbitMQUserManagement: true,
+        alertsNotification: false,
         communitySupport: true,
         prioritySupport: false,
         emailAlerts: false,
@@ -161,6 +162,7 @@ const Index = () => {
         exchangeManagement: true,
         virtualHostManagement: true,
         rabbitMQUserManagement: true,
+        alertsNotification: true,
         communitySupport: true,
         prioritySupport: false,
         emailAlerts: true,
@@ -181,6 +183,7 @@ const Index = () => {
         exchangeManagement: true,
         virtualHostManagement: true,
         rabbitMQUserManagement: true,
+        alertsNotification: true,
         communitySupport: true,
         prioritySupport: true,
         emailAlerts: true,
@@ -938,6 +941,27 @@ const Index = () => {
                                   className={`text-xs ${plan.features.rabbitMQUserManagement ? "text-muted-foreground" : "text-muted-foreground"}`}
                                 >
                                   Create and manage RabbitMQ users
+                                </div>
+                              </div>
+                            </li>
+                            <li className="flex items-start gap-3">
+                              <div className="mt-1">
+                                {plan.features.alertsNotification ? (
+                                  <Check className="w-4 h-4 text-green-500" />
+                                ) : (
+                                  <X className="w-4 h-4 text-muted-foreground" />
+                                )}
+                              </div>
+                              <div className="flex-1">
+                                <span
+                                  className={`text-sm ${plan.features.alertsNotification ? "text-foreground" : "text-muted-foreground"}`}
+                                >
+                                  Alerts Notification
+                                </span>
+                                <div
+                                  className={`text-xs ${plan.features.alertsNotification ? "text-muted-foreground" : "text-muted-foreground"}`}
+                                >
+                                  Real-time alerts and notifications
                                 </div>
                               </div>
                             </li>

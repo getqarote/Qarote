@@ -314,8 +314,11 @@ export async function handleInvoicePaymentSucceeded(invoice: Invoice) {
     }
 
     // Create payment record
-    const paymentIntentId = extractStringId(invoice.payment_intent);
-    const chargeId = extractStringId(invoice.charge);
+    // For $0 invoices (e.g., trial periods), payment_intent and charge can be null
+    // Use invoice ID as fallback for stripePaymentId when payment_intent is null
+    const paymentIntentId =
+      extractStringIdOrNull(invoice.payment_intent) || invoice.id;
+    const chargeId = extractStringIdOrNull(invoice.charge);
     const subscriptionId = extractStringId(invoice.subscription);
 
     await prisma.payment.create({
@@ -385,8 +388,11 @@ export async function handleInvoicePaymentFailed(invoice: Invoice) {
     }
 
     // Create payment record for failed payment
-    const paymentIntentId = extractStringId(invoice.payment_intent);
-    const chargeId = extractStringId(invoice.charge);
+    // For $0 invoices, payment_intent and charge can be null
+    // Use invoice ID as fallback for stripePaymentId when payment_intent is null
+    const paymentIntentId =
+      extractStringIdOrNull(invoice.payment_intent) || invoice.id;
+    const chargeId = extractStringIdOrNull(invoice.charge);
     const subscriptionId = extractStringId(invoice.subscription);
 
     await prisma.payment.create({
@@ -756,6 +762,25 @@ export function extractStringId(value: string | object | null): string {
     return (value as any).id;
   }
   throw new Error(`Unable to extract ID from value: ${JSON.stringify(value)}`);
+}
+
+/**
+ * Extracts a string ID from a value, returning null if the value is null.
+ * Useful for optional fields like charge or payment_intent which can be null for $0 invoices.
+ */
+export function extractStringIdOrNull(
+  value: string | object | null
+): string | null {
+  if (value === null) {
+    return null;
+  }
+  if (typeof value === "string") {
+    return value;
+  }
+  if (typeof value === "object" && "id" in value) {
+    return (value as any).id;
+  }
+  return null;
 }
 
 function getInvoiceReceiptUrl(invoice: Invoice): string | null {

@@ -187,7 +187,7 @@ export function CreateWorkspaceForm({
           <Button
             type="submit"
             onClick={form.handleSubmit(onSubmit)}
-            className="bg-orange-600 hover:bg-orange-700 text-white"
+            className="bg-gradient-button hover:bg-gradient-button-hover text-white"
             disabled={
               createWorkspaceMutation.isPending || !form.formState.isValid
             }
