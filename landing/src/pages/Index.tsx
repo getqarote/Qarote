@@ -327,8 +327,9 @@ const Index = () => {
             </h1>
 
             <p className="text-base sm:text-lg md:text-xl text-muted-foreground mb-8 leading-relaxed max-w-3xl mx-auto px-2">
-              Cleaner than Management Plugin. Simpler than Prometheus. Cheaper
-              than Cloud Solutions.
+              RabbitHQ gives you a clean, unified view of your queues, exchanges
+              and messages, with real monitoring, alerts and multi-workspace
+              support.
             </p>
 
             <div className="mb-12">
