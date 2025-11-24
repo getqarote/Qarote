@@ -9,6 +9,37 @@
   - Reference custom animations and keyframes if needed
   - Ensure consistency with the existing design system
 
+## Button Styling
+
+- **Primary action buttons (CTAs) MUST use the gradient button classes:**
+  - Use `bg-gradient-button hover:bg-gradient-button-hover text-white` for all primary action buttons
+  - This applies to submit buttons, save buttons, create buttons, and any other primary CTAs
+  - **DO NOT** use hardcoded colors like `bg-orange-500 hover:bg-orange-600`
+  - Example:
+    ```tsx
+    <Button
+      type="submit"
+      className="bg-gradient-button hover:bg-gradient-button-hover text-white"
+    >
+      Save Settings
+    </Button>
+    ```
+
+## Toggle Input Styling
+
+- **Switch/Toggle components MUST use the gradient button classes when checked:**
+  - Use `data-[state=checked]:bg-gradient-button` for all Switch components
+  - This ensures toggle switches match the design system's gradient styling
+  - **DO NOT** rely on default `bg-primary` styling for switches
+  - Example:
+    ```tsx
+    <Switch
+      checked={enabled}
+      onCheckedChange={setEnabled}
+      className="data-[state=checked]:bg-gradient-button"
+    />
+    ```
+
 ## React Query Hooks
 
 - **All `useQuery` hooks MUST be located in `src/hooks/useApi.ts`**

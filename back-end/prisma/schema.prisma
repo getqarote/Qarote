@@ -120,6 +120,10 @@ model Workspace {
   tags         Json?          // Array of tags for organization and categorization
   ownerId      String?        // Who created this workspace (nullable for migration)
   
+  // Alert notification settings
+  emailNotificationsEnabled Boolean  @default(true) // Enable/disable email notifications for alerts
+  notificationSeverities    Json?    // Array of alert severities to receive notifications for: ["critical", "warning", "info"] (default: all)
+  
   users                    User[]
   servers                  RabbitMQServer[]
   alertRules               AlertRule[]
@@ -128,6 +132,7 @@ model Workspace {
   
   // Alert preferences
   alertThresholds          WorkspaceAlertThresholds?
+  seenAlerts               SeenAlert[]
   
   createdAt                DateTime       @default(now())
   updatedAt                DateTime       @updatedAt
@@ -254,6 +259,7 @@ model RabbitMQServer {
   updatedAt               DateTime             @updatedAt
   Queues                  Queue[]
   alertRules              AlertRule[]
+  seenAlerts              SeenAlert[]
 }
 
 model Queue {
@@ -404,6 +410,40 @@ model WorkspaceAlertThresholds {
   // Timestamps
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+}
+
+model SeenAlert {
+  id          String    @id @default(uuid())
+  
+  // Alert fingerprint (stable identifier)
+  fingerprint String    @unique // Format: serverId-category-sourceType-sourceName
+  
+  // Alert details for reference
+  serverId    String
+  workspaceId String
+  severity    String    // "critical" | "warning" | "info"
+  category    String    // AlertCategory
+  sourceType  String    // "node" | "queue" | "cluster"
+  sourceName  String
+  
+  // Tracking
+  firstSeenAt DateTime  @default(now())
+  lastSeenAt  DateTime  @default(now())
+  resolvedAt  DateTime? // When alert was auto-resolved (no longer active)
+  emailSentAt DateTime? // When email notification was sent
+  
+  // Relations
+  server      RabbitMQServer @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  @@index([workspaceId])
+  @@index([fingerprint])
+  @@index([serverId])
+  @@index([resolvedAt]) // For querying resolved alerts
+  @@map("seen_alerts")
 }
 
 model Subscription {

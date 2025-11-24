@@ -784,4 +784,53 @@ export class RabbitMQApiClient extends BaseApiClient {
       }
     );
   }
+
+  // Alert Notification Settings
+  async getAlertNotificationSettings(workspaceId: string): Promise<{
+    success: boolean;
+    settings: {
+      emailNotificationsEnabled: boolean;
+      contactEmail: string | null;
+      notificationSeverities?: string[];
+    };
+  }> {
+    const url = `/rabbitmq/workspaces/${workspaceId}/alert-settings`;
+    return this.request<{
+      success: boolean;
+      settings: {
+        emailNotificationsEnabled: boolean;
+        contactEmail: string | null;
+        notificationSeverities?: string[];
+      };
+    }>(url);
+  }
+
+  async updateAlertNotificationSettings(
+    workspaceId: string,
+    settings: {
+      emailNotificationsEnabled?: boolean;
+      contactEmail?: string | null;
+      notificationSeverities?: string[];
+    }
+  ): Promise<{
+    success: boolean;
+    settings: {
+      emailNotificationsEnabled: boolean;
+      contactEmail: string | null;
+      notificationSeverities?: string[];
+    };
+  }> {
+    const url = `/rabbitmq/workspaces/${workspaceId}/alert-settings`;
+    return this.request<{
+      success: boolean;
+      settings: {
+        emailNotificationsEnabled: boolean;
+        contactEmail: string | null;
+        notificationSeverities?: string[];
+      };
+    }>(url, {
+      method: "PUT",
+      body: JSON.stringify(settings),
+    });
+  }
 }

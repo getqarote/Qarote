@@ -206,38 +206,3 @@ export const checkWorkspaceAccess = async (
 
   await next();
 };
-
-// Company access check middleware (deprecated - use checkWorkspaceAccess)
-export const checkCompanyAccess = async (
-  c: Context,
-  next: () => Promise<void>
-) => {
-  const user = c.get("user");
-  const workspaceId = c.req.param("companyId"); // Legacy parameter name for backward compatibility
-
-  if (!user) {
-    return c.json(
-      { error: "Unauthorized", message: "Authentication required" },
-      401
-    );
-  }
-
-  // Allow ADMIN users to access any workspace
-  if (user.role === UserRole.ADMIN) {
-    await next();
-    return;
-  }
-
-  // Check if user belongs to the requested workspace
-  if (!user.workspaceId || user.workspaceId !== workspaceId) {
-    return c.json(
-      {
-        error: "Forbidden",
-        message: "Cannot access resources for this workspace",
-      },
-      403
-    );
-  }
-
-  await next();
-};

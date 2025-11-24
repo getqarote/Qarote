@@ -83,7 +83,7 @@ infrastructureController.get(
       const exchanges = await client.getExchanges();
       return c.json({ exchanges });
     } catch (error) {
-      logger.error(`Error fetching exchanges for server ${id}:`, error);
+      logger.error({ error }, `Error fetching exchanges for server ${id}`);
       return createErrorResponse(c, error, 500, "Failed to fetch exchanges");
     }
   }
@@ -162,7 +162,7 @@ infrastructureController.post(
         },
       });
     } catch (error) {
-      logger.error(`Error creating exchange for server ${id}:`, error);
+      logger.error({ error }, `Error creating exchange for server ${id}`);
       return createErrorResponse(c, error, 500, "Failed to create exchange");
     }
   }
@@ -206,8 +206,8 @@ infrastructureController.delete(
       });
     } catch (error) {
       logger.error(
-        `Error deleting exchange "${exchangeName}" for server ${id}:`,
-        error
+        { error },
+        `Error deleting exchange "${exchangeName}" for server ${id}`
       );
 
       // Check if this is a 400 error indicating the exchange is in use
@@ -267,7 +267,7 @@ infrastructureController.get(
         totalChannels,
       });
     } catch (error) {
-      logger.error(`Error fetching connections for server ${id}:`, error);
+      logger.error({ error }, `Error fetching connections for server ${id}`);
       return createErrorResponse(c, error, 500, "Failed to fetch connections");
     }
   }
@@ -306,7 +306,7 @@ infrastructureController.get(
         totalChannels: channels.length,
       });
     } catch (error) {
-      logger.error(`Error fetching channels for server ${id}:`, error);
+      logger.error({ error }, `Error fetching channels for server ${id}`);
       return createErrorResponse(c, error, 500, "Failed to fetch channels");
     }
   }

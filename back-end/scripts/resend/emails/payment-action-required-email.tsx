@@ -1,3 +1,4 @@
+import React from "react";
 import PaymentActionRequiredEmail from "../../../src/services/email/templates/payment-action-required-email";
 import { emailConfig } from "../../../src/config";
 

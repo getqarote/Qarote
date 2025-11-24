@@ -794,6 +794,25 @@ class ApiClient {
     );
   }
 
+  // Alert Notification Settings methods
+  async getAlertNotificationSettings(workspaceId: string) {
+    return this.rabbitmqClient.getAlertNotificationSettings(workspaceId);
+  }
+
+  async updateAlertNotificationSettings(
+    workspaceId: string,
+    settings: {
+      emailNotificationsEnabled?: boolean;
+      contactEmail?: string | null;
+      notificationSeverities?: string[];
+    }
+  ) {
+    return this.rabbitmqClient.updateAlertNotificationSettings(
+      workspaceId,
+      settings
+    );
+  }
+
   // Discourse methods
   // async generateDiscourseSSOUrl(
   //   user: DiscourseUser

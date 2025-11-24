@@ -4,7 +4,9 @@ import TrialEndingEmail from "./templates/trial-ending-email";
 import PaymentActionRequiredEmail from "./templates/payment-action-required-email";
 import UpcomingInvoiceEmail from "./templates/upcoming-invoice-email";
 import PaymentConfirmationEmail from "./templates/payment-confirmation-email";
+import AlertNotificationEmail from "./templates/alert-notification-email";
 import { CoreEmailService, EmailResult } from "./core-email.service";
+import { RabbitMQAlert } from "@/types/alert";
 
 export interface TrialEndingEmailParams {
   to: string;
@@ -54,6 +56,15 @@ export interface PaymentConfirmationEmailParams {
   amount: number;
   currency: string;
   paymentMethod: string;
+}
+
+export interface AlertNotificationEmailParams {
+  to: string;
+  workspaceName: string;
+  workspaceId: string;
+  serverName: string;
+  serverId: string;
+  alerts: RabbitMQAlert[];
 }
 
 /**
@@ -266,6 +277,55 @@ export class NotificationEmailService {
         userName,
         amount,
         failureReason,
+      },
+    });
+  }
+
+  /**
+   * Send alert notification email when new alerts are detected
+   */
+  static async sendAlertNotificationEmail(
+    params: AlertNotificationEmailParams
+  ): Promise<EmailResult> {
+    const { to, workspaceName, workspaceId, serverName, serverId, alerts } =
+      params;
+
+    const { frontendUrl } = CoreEmailService.getConfig();
+
+    // Render the React email template
+    const template = AlertNotificationEmail({
+      workspaceName,
+      workspaceId,
+      serverName,
+      serverId,
+      alerts,
+      frontendUrl,
+    });
+
+    // Determine subject line based on alert severity
+    const criticalCount = alerts.filter(
+      (a) => a.severity === "critical"
+    ).length;
+    const warningCount = alerts.filter((a) => a.severity === "warning").length;
+
+    let subject: string;
+    if (criticalCount > 0) {
+      subject = `🔴 ${criticalCount} Critical Alert${criticalCount > 1 ? "s" : ""} on ${serverName}`;
+    } else {
+      subject = `⚠️ ${warningCount} Warning Alert${warningCount > 1 ? "s" : ""} on ${serverName}`;
+    }
+
+    return CoreEmailService.sendEmail({
+      to,
+      subject,
+      template,
+      emailType: "alert_notification",
+      context: {
+        workspaceName,
+        serverName,
+        alertCount: alerts.length,
+        criticalCount,
+        warningCount,
       },
     });
   }

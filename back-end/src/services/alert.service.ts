@@ -12,6 +12,7 @@ import {
   RabbitMQAlert,
 } from "@/types/alert";
 import { RabbitMQNode, RabbitMQQueue } from "@/types/rabbitmq";
+import { NotificationEmailService } from "@/services/email/notification-email.service";
 
 const DEFAULT_THRESHOLDS: AlertThresholds = {
   memory: { warning: 80, critical: 95 },
@@ -27,7 +28,7 @@ const DEFAULT_THRESHOLDS: AlertThresholds = {
 };
 
 /**
- * Generate alert ID
+ * Generate alert ID (includes timestamp for uniqueness)
  */
 function generateAlertId(
   serverId: string,
@@ -35,6 +36,18 @@ function generateAlertId(
   source: string
 ): string {
   return `${serverId}-${category}-${source}-${Date.now()}`;
+}
+
+/**
+ * Generate stable alert fingerprint (without timestamp) for tracking seen alerts
+ */
+function generateAlertFingerprint(
+  serverId: string,
+  category: AlertCategory,
+  sourceType: "node" | "queue" | "cluster",
+  sourceName: string
+): string {
+  return `${serverId}-${category}-${sourceType}-${sourceName}`;
 }
 
 /**
@@ -725,7 +738,310 @@ export class AlertService {
       info: alerts.filter((a) => a.severity === AlertSeverity.INFO).length,
     };
 
+    // Track new alerts and send email notifications
+    await this.trackAndNotifyNewAlerts(alerts, workspaceId, serverId);
+
     return { alerts, summary };
+  }
+
+  /**
+   * Track seen alerts and send email notifications for new warnings/critical alerts
+   */
+  /**
+   * Alert Tracking and Notification System Summary
+   * ===============================================
+   *
+   * This system tracks RabbitMQ alerts and sends email notifications to prevent
+   * duplicate emails while ensuring users are notified of new and recurring alerts.
+   *
+   * ## Core Components:
+   *
+   * 1. **SeenAlert Table**: Tracks all alerts that have been seen before
+   *    - `fingerprint`: Unique identifier (serverId-category-sourceType-sourceName)
+   *    - `firstSeenAt`: When alert was first detected
+   *    - `lastSeenAt`: Most recent time alert was seen
+   *    - `resolvedAt`: When alert was auto-resolved (no longer active)
+   *    - `emailSentAt`: When email notification was sent
+   *
+   * 2. **Alert Fingerprinting**: Creates stable identifiers for alerts
+   *    Format: `${serverId}-${category}-${sourceType}-${sourceName}`
+   *    Example: "server-123-memory-node-rabbit@node1"
+   *
+   * ## Notification Logic:
+   *
+   * Email notifications are sent when:
+   * - Alert is brand new (never seen before)
+   * - Alert was previously resolved and comes back (recurring alert)
+   * - Alert hasn't been seen for > 7 days (cooldown period expired)
+   *
+   * Email notifications are NOT sent when:
+   * - Alert is ongoing (same alert still active, within 7-day cooldown)
+   * - Email notifications are disabled in workspace settings
+   * - Workspace has no contact email configured
+   *
+   * ## Auto-Resolution:
+   *
+   * Alerts are automatically marked as resolved when:
+   * - They disappear from the current alerts list (no longer active)
+   * - This happens automatically on each alert check
+   *
+   * When an alert becomes active again after being resolved:
+   * - `resolvedAt` is cleared (set to null)
+   * - Alert is treated as "new" and triggers email notification
+   *
+   * ## Cooldown Period:
+   *
+   * - **Duration**: 7 days
+   * - **Purpose**: Prevents spam for ongoing alerts
+   * - **Behavior**: If an alert hasn't been seen for 7+ days, it's treated as new
+   *
+   * ## Example Scenarios:
+   *
+   * 1. **New Alert**:
+   *    - Alert occurs → Creates SeenAlert record → Email sent
+   *
+   * 2. **Ongoing Alert** (within 7 days):
+   *    - Alert still active → Updates lastSeenAt → No email (cooldown)
+   *
+   * 3. **Resolved Alert Returns**:
+   *    - Alert disappears → Auto-resolved (resolvedAt set)
+   *    - Alert returns → Clears resolvedAt → Email sent (treated as new)
+   *
+   * 4. **Long-term Recurring Alert** (after 7+ days):
+   *    - Alert active for 2 weeks → No duplicate emails
+   *    - Alert disappears → Auto-resolved
+   *    - Alert returns after 10 days → Email sent (past cooldown)
+   *
+   * ## Workspace Settings:
+   *
+   * Email notifications respect workspace configuration:
+   * - `emailNotificationsEnabled`: Must be true
+   * - `contactEmail`: Must be set
+   *
+   * If either condition is false, no emails are sent (but alerts are still tracked).
+   *
+   * ## Tracking Scope:
+   *
+   * Only WARNING and CRITICAL alerts are tracked and can trigger emails.
+   * INFO alerts are ignored for notification purposes.
+   */
+  private async trackAndNotifyNewAlerts(
+    alerts: RabbitMQAlert[],
+    workspaceId: string,
+    serverId: string
+  ): Promise<void> {
+    try {
+      // Get workspace to check for contact email and notification settings
+      const workspace = await prisma.workspace.findUnique({
+        where: { id: workspaceId },
+        select: {
+          contactEmail: true,
+          name: true,
+          emailNotificationsEnabled: true,
+          notificationSeverities: true,
+        },
+      });
+
+      // Check if email notifications are enabled
+      if (!workspace || !workspace.emailNotificationsEnabled) {
+        logger.debug(
+          `Email notifications disabled for workspace ${workspaceId}, skipping alert notifications`
+        );
+        return;
+      }
+
+      if (!workspace.contactEmail) {
+        logger.debug(
+          `Workspace ${workspaceId} has no contact email, skipping alert notifications`
+        );
+        return;
+      }
+
+      // Cooldown period: 7 days in milliseconds
+      const COOLDOWN_PERIOD = 7 * 24 * 60 * 60 * 1000;
+
+      // Get notification severity preferences (default to all if not set)
+      const notificationSeverities = workspace.notificationSeverities
+        ? (workspace.notificationSeverities as string[])
+        : ["critical", "warning", "info"];
+
+      // Get all existing seen alerts for this workspace and server
+      const seenAlerts = await prisma.seenAlert.findMany({
+        where: { workspaceId, serverId },
+        select: {
+          fingerprint: true,
+          emailSentAt: true,
+          resolvedAt: true,
+          lastSeenAt: true,
+        },
+      });
+
+      const seenFingerprints = new Set(seenAlerts.map((a) => a.fingerprint));
+
+      // Create set of currently active alert fingerprints
+      const activeFingerprints = new Set<string>();
+      const newAlerts: RabbitMQAlert[] = [];
+      const now = new Date();
+
+      // Process each alert
+      for (const alert of alerts) {
+        // Only track alerts that match user's severity preferences
+        if (!notificationSeverities.includes(alert.severity)) {
+          continue;
+        }
+
+        const fingerprint = generateAlertFingerprint(
+          serverId,
+          alert.category,
+          alert.source.type,
+          alert.source.name
+        );
+
+        activeFingerprints.add(fingerprint);
+
+        const existingAlert = seenAlerts.find(
+          (a) => a.fingerprint === fingerprint
+        );
+        const isNew = !existingAlert;
+
+        // Check if alert should trigger notification
+        let shouldNotify = false;
+
+        if (isNew) {
+          // Brand new alert - always notify
+          shouldNotify = true;
+          await prisma.seenAlert.create({
+            data: {
+              fingerprint,
+              serverId,
+              workspaceId,
+              severity: alert.severity,
+              category: alert.category,
+              sourceType: alert.source.type,
+              sourceName: alert.source.name,
+              firstSeenAt: now,
+              lastSeenAt: now,
+              resolvedAt: null, // Not resolved
+            },
+          });
+        } else {
+          // Existing alert - check if it should trigger notification
+          const wasResolved = !!existingAlert.resolvedAt;
+          const timeSinceLastSeen =
+            now.getTime() - existingAlert.lastSeenAt.getTime();
+          const isPastCooldown = timeSinceLastSeen > COOLDOWN_PERIOD;
+
+          // Update last seen time and clear resolution if alert is active again
+          await prisma.seenAlert.updateMany({
+            where: { fingerprint },
+            data: {
+              lastSeenAt: now,
+              resolvedAt: null, // Clear resolution since alert is active again
+              severity: alert.severity, // Update severity in case it changed
+            },
+          });
+
+          // Should notify if:
+          // 1. Alert was previously resolved (came back after being fixed)
+          // 2. Alert hasn't been seen for longer than cooldown period
+          // 3. Email was never sent (edge case)
+          if (wasResolved || isPastCooldown || !existingAlert.emailSentAt) {
+            shouldNotify = true;
+          }
+        }
+
+        if (shouldNotify) {
+          newAlerts.push(alert);
+        }
+      }
+
+      // Auto-resolve alerts that are no longer active
+      // Find all seen alerts for this server that are not in current alerts
+      const unresolvedSeenAlerts = await prisma.seenAlert.findMany({
+        where: {
+          workspaceId,
+          serverId,
+          resolvedAt: null, // Only unresolved ones
+        },
+      });
+
+      for (const seenAlert of unresolvedSeenAlerts) {
+        if (!activeFingerprints.has(seenAlert.fingerprint)) {
+          // Alert is no longer active, mark as resolved
+          await prisma.seenAlert.updateMany({
+            where: { fingerprint: seenAlert.fingerprint },
+            data: { resolvedAt: now },
+          });
+          logger.debug(
+            `Auto-resolved alert: ${seenAlert.fingerprint} (no longer active)`
+          );
+        }
+      }
+
+      // Send email for alerts that should trigger notification
+      if (newAlerts.length > 0) {
+        // Filter to only alerts that should actually get an email
+        const alertsToEmail = newAlerts.filter((alert) => {
+          const fingerprint = generateAlertFingerprint(
+            serverId,
+            alert.category,
+            alert.source.type,
+            alert.source.name
+          );
+          const existing = seenAlerts.find(
+            (a) => a.fingerprint === fingerprint
+          );
+
+          // Send email if:
+          // 1. Never sent email before, OR
+          // 2. Alert was resolved (came back), OR
+          // 3. Past cooldown period
+          if (!existing || !existing.emailSentAt) {
+            return true;
+          }
+
+          const wasResolved = !!existing.resolvedAt;
+          const timeSinceLastSeen =
+            now.getTime() - existing.lastSeenAt.getTime();
+          const isPastCooldown = timeSinceLastSeen > COOLDOWN_PERIOD;
+
+          return wasResolved || isPastCooldown;
+        });
+
+        if (alertsToEmail.length > 0) {
+          // Send email notification
+          await NotificationEmailService.sendAlertNotificationEmail({
+            to: workspace.contactEmail,
+            workspaceName: workspace.name,
+            workspaceId,
+            alerts: alertsToEmail,
+            serverName: alertsToEmail[0]?.serverName || "Unknown Server",
+            serverId,
+          });
+
+          // Mark alerts as email sent
+          for (const alert of alertsToEmail) {
+            const fingerprint = generateAlertFingerprint(
+              serverId,
+              alert.category,
+              alert.source.type,
+              alert.source.name
+            );
+            await prisma.seenAlert.updateMany({
+              where: { fingerprint },
+              data: { emailSentAt: now },
+            });
+          }
+
+          logger.info(
+            `Sent alert notification email for ${alertsToEmail.length} new/recurring alerts to ${workspace.contactEmail}`
+          );
+        }
+      }
+    } catch (error) {
+      logger.error({ error }, "Error tracking and notifying new alerts");
+      // Don't throw - we don't want to break the alert retrieval if email fails
+    }
   }
 
   /**

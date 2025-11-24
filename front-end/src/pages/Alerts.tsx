@@ -18,23 +18,28 @@ import { AppSidebar } from "@/components/AppSidebar";
 import { useServerContext } from "@/contexts/ServerContext";
 import { useUser } from "@/hooks/useUser";
 import { useRabbitMQAlerts } from "@/hooks/useApi";
-import { AlertsConfigureModal } from "@/components/alerts/AlertsConfigureModal";
+// import { AlertsConfigureModal } from "@/components/alerts/AlertsConfigureModal";
+import { AlertNotificationSettingsModal } from "@/components/alerts/AlertNotificationSettingsModal";
 import { PageLoader } from "@/components/PageLoader";
 import { NoServerConfigured } from "@/components/NoServerConfigured";
-import { PlanUpgradeModal } from "@/components/plans/PlanUpgradeModal";
+// import { PlanUpgradeModal } from "@/components/plans/PlanUpgradeModal";
 import { AlertSeverity, AlertCategory, AlertThresholds } from "@/types/alerts";
 import { UserPlan } from "@/types/plans";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { Mail } from "lucide-react";
+// import { Settings } from "lucide-react"; // Commented out - used in Configure Thresholds button
 
 type BadgeVariant = "default" | "secondary" | "destructive" | "outline";
 
 const Alerts = () => {
   const { serverId } = useParams<{ serverId: string }>();
   const { selectedServerId, hasServers } = useServerContext();
-  const { workspacePlan, canConfigureAlerts, userPlan } = useUser();
-  const [showConfigureModal, setShowConfigureModal] = useState(false);
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const { canConfigureAlerts, userPlan } = useUser();
+  // const [showConfigureModal, setShowConfigureModal] = useState(false);
+  const [showNotificationSettingsModal, setShowNotificationSettingsModal] =
+    useState(false);
+  // const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const navigate = useNavigate();
 
   const currentServerId = serverId || selectedServerId;
@@ -130,13 +135,13 @@ const Alerts = () => {
   };
 
   // Handle configure button click
-  const handleConfigureClick = () => {
-    if (canConfigureAlerts) {
-      setShowConfigureModal(true);
-    } else {
-      setShowUpgradeModal(true);
-    }
-  };
+  // const handleConfigureClick = () => {
+  //   if (canConfigureAlerts) {
+  //     setShowConfigureModal(true);
+  //   } else {
+  //     setShowUpgradeModal(true);
+  //   }
+  // };
 
   // Render main content
   const alerts = alertsData?.alerts || [];
@@ -201,26 +206,21 @@ const Alerts = () => {
                 {alertsLoading && (
                   <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                 )}
-                {/* {canConfigureAlerts ? (
+                <Button
+                  onClick={() => setShowNotificationSettingsModal(true)}
+                  variant="outline"
+                  className="flex items-center gap-2"
+                >
+                  <Mail className="h-4 w-4" />
+                  Notification Settings
+                </Button>
+                {/* {canConfigureAlerts && (
                   <Button
                     onClick={handleConfigureClick}
-                    className="bg-orange-500 hover:bg-orange-600"
+                    className="bg-gradient-button hover:bg-gradient-button-hover text-white"
                   >
                     <Settings className="h-4 w-4 mr-2" />
-                    Configure
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={handleConfigureClick}
-                    disabled={true}
-                    className="bg-gray-200 text-gray-400 cursor-not-allowed opacity-60 flex items-center gap-2"
-                    title="Upgrade to configure advanced alert settings"
-                  >
-                    <Lock className="w-4 h-4" />
-                    Configure
-                    <span className="ml-1 px-2 py-0.5 bg-orange-500 text-white text-xs rounded-full font-bold">
-                      Pro
-                    </span>
+                    Configure Thresholds
                   </Button>
                 )} */}
               </div>
@@ -411,19 +411,24 @@ const Alerts = () => {
       </div>
 
       {/* Configure Modal */}
-      <AlertsConfigureModal
+      {/* <AlertsConfigureModal
         isOpen={showConfigureModal}
         onClose={() => setShowConfigureModal(false)}
         serverId={currentServerId}
+      /> */}
+
+      {/* Notification Settings Modal */}
+      <AlertNotificationSettingsModal
+        isOpen={showNotificationSettingsModal}
+        onClose={() => setShowNotificationSettingsModal(false)}
       />
 
       {/* Plan Upgrade Modal */}
-      <PlanUpgradeModal
+      {/* <PlanUpgradeModal
         isOpen={showUpgradeModal}
         onClose={() => setShowUpgradeModal(false)}
-        currentPlan={workspacePlan}
         feature="advanced alert configuration"
-      />
+      /> */}
     </SidebarProvider>
   );
 };

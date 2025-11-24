@@ -1,3 +1,4 @@
+import React from "react";
 import UpcomingInvoiceEmail from "../../../src/services/email/templates/upcoming-invoice-email";
 import { emailConfig } from "../../../src/config";
 

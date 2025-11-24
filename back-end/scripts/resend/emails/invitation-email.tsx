@@ -1,3 +1,4 @@
+import React from "react";
 import InvitationEmail from "../../../src/services/email/templates/invitation-email";
 import { emailConfig } from "../../../src/config";
 

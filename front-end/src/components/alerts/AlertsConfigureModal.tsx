@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Dialog,
   DialogContent,
@@ -13,11 +12,13 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { useUser } from "@/hooks/useUser";
-import { apiClient } from "@/lib/api";
 import { ApiError } from "@/lib/api/types";
 import { Loader2, Settings, Lock, Crown } from "lucide-react";
 import { useWorkspace } from "@/hooks/useWorkspace";
+import {
+  useWorkspaceThresholds,
+  useUpdateWorkspaceThresholds,
+} from "@/hooks/useApi";
 
 interface AlertThresholds {
   memory: {
@@ -71,17 +72,11 @@ export function AlertsConfigureModal({
   isOpen,
   onClose,
 }: AlertsConfigureModalProps) {
-  const queryClient = useQueryClient();
-  const { userPlan } = useUser();
   const { workspace } = useWorkspace();
   const [formData, setFormData] = useState<Partial<AlertThresholds>>({});
 
   // Query for current thresholds
-  const { data: thresholdsData, isLoading } = useQuery({
-    queryKey: ["workspaceThresholds"],
-    queryFn: () => apiClient.getWorkspaceThresholds(workspace.id),
-    enabled: isOpen,
-  });
+  const { data: thresholdsData, isLoading } = useWorkspaceThresholds(isOpen);
 
   // Update form data when thresholds load
   useEffect(() => {
@@ -91,22 +86,9 @@ export function AlertsConfigureModal({
   }, [thresholdsData]);
 
   // Mutation for updating thresholds
-  const updateThresholdsMutation = useMutation({
-    mutationFn: (thresholds: AlertThresholds) =>
-      apiClient.updateWorkspaceThresholds(thresholds, workspace.id),
-    onSuccess: () => {
-      toast.success("Alert thresholds updated successfully");
-      queryClient.invalidateQueries({ queryKey: ["workspaceThresholds"] });
-      queryClient.invalidateQueries({ queryKey: ["rabbitmqAlerts"] });
-      onClose();
-    },
-    onError: (error: ApiError) => {
-      toast.error(error.message || "Failed to update thresholds");
-    },
-  });
+  const updateThresholdsMutation = useUpdateWorkspaceThresholds();
 
   const canModify = thresholdsData?.canModify ?? false;
-  const isPaidPlan = userPlan !== "FREE";
 
   const handleInputChange = (
     category: keyof AlertThresholds,
@@ -131,7 +113,15 @@ export function AlertsConfigureModal({
       toast.error("Please upgrade to modify alert thresholds");
       return;
     }
-    updateThresholdsMutation.mutate(formData as AlertThresholds);
+    updateThresholdsMutation.mutate(formData as AlertThresholds, {
+      onSuccess: () => {
+        toast.success("Alert thresholds updated successfully");
+        onClose();
+      },
+      onError: (error: ApiError) => {
+        toast.error(error.message || "Failed to update thresholds");
+      },
+    });
   };
 
   const resetToDefaults = () => {
@@ -208,10 +198,19 @@ export function AlertsConfigureModal({
     </Card>
   );
 
+  // Don't render if workspace is not loaded
+  if (!workspace?.id) {
+    return null;
+  }
+
   if (isLoading) {
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Configure Alert Thresholds</DialogTitle>
+            <DialogDescription>Loading thresholds...</DialogDescription>
+          </DialogHeader>
           <div className="flex items-center justify-center py-8">
             <Loader2 className="h-8 w-8 animate-spin" />
           </div>
@@ -363,7 +362,7 @@ export function AlertsConfigureModal({
               <Button
                 type="submit"
                 disabled={!canModify || updateThresholdsMutation.isPending}
-                className="bg-orange-500 hover:bg-orange-600"
+                className="bg-gradient-button hover:bg-gradient-button-hover text-white"
               >
                 {updateThresholdsMutation.isPending ? (
                   <>

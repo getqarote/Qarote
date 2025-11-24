@@ -1,3 +1,4 @@
+import React from "react";
 import TrialEndingEmail from "../../../src/services/email/templates/trial-ending-email";
 import { emailConfig } from "../../../src/config";
 

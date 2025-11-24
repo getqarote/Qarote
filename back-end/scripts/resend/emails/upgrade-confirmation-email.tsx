@@ -1,3 +1,4 @@
+import React from "react";
 import { UpgradeConfirmationEmail } from "../../../src/services/email/templates/upgrade-confirmation-email";
 import { emailConfig } from "../../../src/config";
 

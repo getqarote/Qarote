@@ -17,6 +17,7 @@ export {
   PaymentActionRequiredEmailParams,
   UpcomingInvoiceEmailParams,
   PaymentConfirmationEmailParams,
+  AlertNotificationEmailParams,
 } from "./notification-email.service";
 
 // Import services for internal use
@@ -49,4 +50,6 @@ export class EmailService {
     NotificationEmailService.sendPaymentFailedEmail;
   static sendPaymentConfirmationEmail =
     NotificationEmailService.sendPaymentConfirmationEmail;
+  static sendAlertNotificationEmail =
+    NotificationEmailService.sendAlertNotificationEmail;
 }

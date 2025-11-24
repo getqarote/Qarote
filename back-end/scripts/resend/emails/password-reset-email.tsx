@@ -1,3 +1,4 @@
+import React from "react";
 import PasswordResetEmail from "../../../src/services/email/templates/password-reset-email";
 import { emailConfig } from "../../../src/config";
 

@@ -859,19 +859,19 @@ export const useRabbitMQHealth = (serverId: string | null) => {
 };
 
 // RabbitMQ Threshold hooks
-export const useWorkspaceThresholds = () => {
+export const useWorkspaceThresholds = (enabled: boolean = true) => {
   const { isAuthenticated } = useAuth();
   const { workspace } = useWorkspace();
 
   return useQuery({
-    queryKey: ["workspaceThresholds"],
+    queryKey: ["workspaceThresholds", workspace?.id],
     queryFn: () => {
       if (!workspace?.id) {
         throw new Error("Workspace ID is required");
       }
       return apiClient.getWorkspaceThresholds(workspace.id);
     },
-    enabled: !!workspace?.id && isAuthenticated,
+    enabled: !!workspace?.id && isAuthenticated && enabled,
     staleTime: 30000, // 30 seconds
   });
 };
@@ -895,6 +895,56 @@ export const useUpdateWorkspaceThresholds = () => {
       // Also invalidate alerts since thresholds affect alert calculations
       queryClient.invalidateQueries({
         queryKey: ["rabbitmqAlerts"],
+      });
+    },
+  });
+};
+
+// Alert Notification Settings hooks
+export const useAlertNotificationSettings = (enabled: boolean = true) => {
+  const { isAuthenticated } = useAuth();
+  const { workspace } = useWorkspace();
+
+  return useQuery({
+    queryKey: ["alertNotificationSettings", workspace?.id],
+    queryFn: () => {
+      if (!workspace?.id) {
+        throw new Error("Workspace ID is required");
+      }
+      return apiClient.getAlertNotificationSettings(workspace.id);
+    },
+    enabled: !!workspace?.id && isAuthenticated && enabled,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    placeholderData: {
+      success: true,
+      settings: {
+        emailNotificationsEnabled: true,
+        contactEmail: null,
+        notificationSeverities: ["critical", "warning", "info"],
+      },
+    },
+  });
+};
+
+export const useUpdateAlertNotificationSettings = () => {
+  const queryClient = useQueryClient();
+  const { workspace } = useWorkspace();
+
+  return useMutation({
+    mutationFn: (settings: {
+      emailNotificationsEnabled?: boolean;
+      contactEmail?: string | null;
+      notificationSeverities?: string[];
+    }) => {
+      if (!workspace?.id) {
+        throw new Error("Workspace ID is required");
+      }
+      return apiClient.updateAlertNotificationSettings(workspace.id, settings);
+    },
+    onSuccess: () => {
+      // Invalidate and refetch notification settings
+      queryClient.invalidateQueries({
+        queryKey: ["alertNotificationSettings"],
       });
     },
   });

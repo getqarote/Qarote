@@ -143,7 +143,6 @@ async function createEmailVerificationScenario(
       data: {
         name: `${scenario.name} Workspace`,
         contactEmail: scenario.email,
-        plan: scenario.plan,
       },
     });
 

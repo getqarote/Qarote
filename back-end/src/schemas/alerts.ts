@@ -307,6 +307,34 @@ export const ServerParamSchema = z.object({
   id: z.string().uuid("Server ID must be a valid UUID"),
 });
 
+// Alert notification settings schemas
+export const AlertNotificationSettingsSchema = z.object({
+  emailNotificationsEnabled: z.boolean(),
+  contactEmail: z.string().email().optional().nullable(),
+  notificationSeverities: z.array(AlertSeveritySchema).optional(), // Array of severities to receive notifications for
+});
+
+export const UpdateAlertNotificationSettingsRequestSchema = z.object({
+  emailNotificationsEnabled: z.boolean().optional(),
+  contactEmail: z.string().email().optional().nullable(),
+  notificationSeverities: z.array(AlertSeveritySchema).optional(), // Array of severities to receive notifications for
+});
+
+export const AlertNotificationSettingsResponseSchema = z.object({
+  success: z.boolean(),
+  settings: AlertNotificationSettingsSchema,
+});
+
+export type AlertNotificationSettings = z.infer<
+  typeof AlertNotificationSettingsSchema
+>;
+export type UpdateAlertNotificationSettingsRequest = z.infer<
+  typeof UpdateAlertNotificationSettingsRequestSchema
+>;
+export type AlertNotificationSettingsResponse = z.infer<
+  typeof AlertNotificationSettingsResponseSchema
+>;
+
 // Export type definitions for TypeScript
 export type AlertSeverity = z.infer<typeof AlertSeveritySchema>;
 export type AlertCategory = z.infer<typeof AlertCategorySchema>;
