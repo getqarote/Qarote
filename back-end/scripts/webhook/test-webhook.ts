@@ -10,10 +10,8 @@
  * - Verifying HMAC signatures
  */
 
-import {
-  WebhookService,
-  WebhookPayload,
-} from "../../src/services/webhook/webhook.service";
+import { WebhookPayload } from "../../src/services/webhook/webhook.interfaces";
+import { WebhookService } from "../../src/services/webhook/webhook.service";
 import {
   RabbitMQAlert,
   AlertSeverity,

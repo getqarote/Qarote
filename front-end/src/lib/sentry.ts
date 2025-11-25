@@ -57,6 +57,28 @@ export function initSentry() {
         return null;
       }
 
+      // Don't send authentication-related errors (invalid/expired tokens, authentication required)
+      const errorValue = event.exception?.values?.[0]?.value || "";
+      const errorType = event.exception?.values?.[0]?.type || "";
+      const errorMessage = event.message || "";
+
+      // Check if it's an authentication-related error
+      if (
+        errorValue.includes("Invalid or expired token") ||
+        errorValue.includes("expired token") ||
+        errorValue.includes("Invalid token") ||
+        errorValue.includes("Authentication required") ||
+        errorMessage.includes("Invalid or expired token") ||
+        errorMessage.includes("Authentication required") ||
+        (errorType === "ApiErrorWithCode" &&
+          (errorValue.toLowerCase().includes("token") ||
+            errorValue.toLowerCase().includes("authentication required") ||
+            errorMessage.toLowerCase().includes("token") ||
+            errorMessage.toLowerCase().includes("authentication required")))
+      ) {
+        return null;
+      }
+
       return event;
     },
 

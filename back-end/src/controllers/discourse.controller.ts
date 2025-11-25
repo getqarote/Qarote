@@ -5,12 +5,11 @@
 
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
-import { DiscourseSSO, DiscourseUser } from "@/services/discourse-sso.service";
+import { DiscourseSSO } from "@/services/discourse-sso.service";
 import { discourseConfig } from "@/config";
 import { logger } from "@/core/logger";
 import { authenticate, SafeUser } from "@/core/auth";
 import {
-  DiscourseSSOUserSchema,
   DiscourseSSOCallbackSchema,
   DiscourseEmbedSchema,
 } from "@/schemas/discourse";

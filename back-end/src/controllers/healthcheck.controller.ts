@@ -1,9 +1,7 @@
 import { Hono } from "hono";
-import { PrismaClient } from "@prisma/client";
 import { logger } from "@/core/logger";
 import { config, sentryConfig } from "@/config";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/core/prisma";
 
 const healthcheckController = new Hono();
 

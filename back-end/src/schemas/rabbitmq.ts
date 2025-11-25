@@ -8,10 +8,6 @@ const HostSchema = z
   .min(1, "Host is required")
   .max(253, "Host must be 253 characters or less")
   .trim();
-// .refine((host) => isValidHostname(host), {
-//   message:
-//     "Host must be a valid hostname, IP address, or domain name (e.g., localhost, 192.168.1.1, example.com)",
-// });
 
 // Schema for RabbitMQ server credentials
 export const RabbitMQCredentialsSchema = z.object({

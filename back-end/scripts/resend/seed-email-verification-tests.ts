@@ -9,13 +9,25 @@
  * - Users with expired tokens
  */
 
-import { PrismaClient, UserPlan, UserRole } from "@prisma/client";
+import { PrismaClient, UserPlan, UserRole } from "../../src/generated/prisma/client/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { Pool } from "pg";
+import dotenv from "dotenv";
+import path from "node:path";
 import { hashPassword } from "../../src/core/auth";
 import { logger } from "../../src/core/logger";
 import { EmailVerificationService } from "../../src/services/email/email-verification.service";
 import { addHours, subHours } from "date-fns";
 
-const prisma = new PrismaClient();
+// Load environment variables
+dotenv.config({ path: path.join(__dirname, "..", "..", ".env") });
+
+// Prisma 7 requires a driver adapter
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL!,
+});
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
 interface EmailVerificationScenario {
   name: string;
