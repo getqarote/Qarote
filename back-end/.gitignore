@@ -17,3 +17,6 @@ dist
 *.njsproj
 *.sln
 *.sw?
+
+# Prisma generated client
+src/generated/

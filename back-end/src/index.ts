@@ -6,9 +6,9 @@ import { Hono } from "hono";
 import { logger as honoLogger } from "hono/logger";
 import { prettyJSON } from "hono/pretty-json";
 import { secureHeaders } from "hono/secure-headers";
-import { PrismaClient } from "@prisma/client";
 import { logger } from "@/core/logger";
 import { serverConfig } from "@/config";
+import { prisma } from "@/core/prisma";
 
 import serverController from "@/controllers/server.controller";
 import rabbitmqController from "@/controllers/rabbitmq.controller";
@@ -32,8 +32,6 @@ import {
 import { standardRateLimiter } from "./middlewares/rateLimiter";
 // import { alertService } from "./services/alert.service";
 // import { TemporaryStorage } from "./core/privacy";
-
-const prisma = new PrismaClient();
 
 const app = new Hono();
 
