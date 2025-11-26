@@ -921,6 +921,8 @@ export const useAlertNotificationSettings = (enabled: boolean = true) => {
         emailNotificationsEnabled: true,
         contactEmail: null,
         notificationSeverities: ["critical", "warning", "info"],
+        browserNotificationsEnabled: false,
+        browserNotificationSeverities: ["critical", "warning", "info"],
       },
     },
   });
@@ -935,6 +937,8 @@ export const useUpdateAlertNotificationSettings = () => {
       emailNotificationsEnabled?: boolean;
       contactEmail?: string | null;
       notificationSeverities?: string[];
+      browserNotificationsEnabled?: boolean;
+      browserNotificationSeverities?: string[];
     }) => {
       if (!workspace?.id) {
         throw new Error("Workspace ID is required");

@@ -18,6 +18,7 @@ import {
   Loader2,
   Mail,
   BellOff,
+  Bell,
   Webhook,
   Plus,
   Trash2,
@@ -55,6 +56,10 @@ export function AlertNotificationSettingsModal({
   const [notificationSeverities, setNotificationSeverities] = useState<
     string[]
   >(["critical", "warning", "info"]);
+  const [browserNotificationsEnabled, setBrowserNotificationsEnabled] =
+    useState(false);
+  const [browserNotificationSeverities, setBrowserNotificationSeverities] =
+    useState<string[]>(["critical", "warning", "info"]);
 
   // Track if this is the initial load to prevent auto-save on mount
   const isInitialMount = React.useRef(true);
@@ -83,6 +88,16 @@ export function AlertNotificationSettingsModal({
       setContactEmail(settingsData.settings.contactEmail || "");
       setNotificationSeverities(
         settingsData.settings.notificationSeverities || [
+          "critical",
+          "warning",
+          "info",
+        ]
+      );
+      setBrowserNotificationsEnabled(
+        settingsData.settings.browserNotificationsEnabled ?? false
+      );
+      setBrowserNotificationSeverities(
+        settingsData.settings.browserNotificationSeverities || [
           "critical",
           "warning",
           "info",
@@ -150,6 +165,12 @@ export function AlertNotificationSettingsModal({
   const emailNotificationsEnabledRef = React.useRef(emailNotificationsEnabled);
   const contactEmailRef = React.useRef(contactEmail);
   const notificationSeveritiesRef = React.useRef(notificationSeverities);
+  const browserNotificationsEnabledRef = React.useRef(
+    browserNotificationsEnabled
+  );
+  const browserNotificationSeveritiesRef = React.useRef(
+    browserNotificationSeverities
+  );
 
   // Keep refs in sync with state
   React.useEffect(() => {
@@ -161,12 +182,20 @@ export function AlertNotificationSettingsModal({
   React.useEffect(() => {
     notificationSeveritiesRef.current = notificationSeverities;
   }, [notificationSeverities]);
+  React.useEffect(() => {
+    browserNotificationsEnabledRef.current = browserNotificationsEnabled;
+  }, [browserNotificationsEnabled]);
+  React.useEffect(() => {
+    browserNotificationSeveritiesRef.current = browserNotificationSeverities;
+  }, [browserNotificationSeverities]);
 
   const autoSaveSettings = React.useCallback(
     (skipValidation = false) => {
       const currentEnabled = emailNotificationsEnabledRef.current;
       const currentEmail = contactEmailRef.current;
       const currentSeverities = notificationSeveritiesRef.current;
+      const currentBrowserEnabled = browserNotificationsEnabledRef.current;
+      const currentBrowserSeverities = browserNotificationSeveritiesRef.current;
 
       // Validate email if notifications are enabled
       if (!skipValidation && currentEnabled) {
@@ -187,12 +216,26 @@ export function AlertNotificationSettingsModal({
         }
       }
 
+      // Validate browser notification severities
+      if (!skipValidation && currentBrowserEnabled) {
+        if (currentBrowserSeverities.length === 0) {
+          toast.error(
+            "Please select at least one alert severity for browser notifications"
+          );
+          return;
+        }
+      }
+
       updateSettingsMutation.mutate(
         {
           emailNotificationsEnabled: currentEnabled,
           contactEmail: currentEnabled ? currentEmail : null,
           notificationSeverities: currentEnabled
             ? currentSeverities
+            : undefined,
+          browserNotificationsEnabled: currentBrowserEnabled,
+          browserNotificationSeverities: currentBrowserEnabled
+            ? currentBrowserSeverities
             : undefined,
         },
         {
@@ -235,6 +278,32 @@ export function AlertNotificationSettingsModal({
     return () => clearTimeout(timeoutId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [notificationSeverities]);
+
+  // Auto-save when browser notifications toggle changes
+  React.useEffect(() => {
+    if (isInitialMount.current) return;
+
+    const timeoutId = setTimeout(() => {
+      autoSaveSettings(!browserNotificationsEnabled); // Skip validation when toggling off
+    }, 100);
+
+    return () => clearTimeout(timeoutId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [browserNotificationsEnabled]);
+
+  // Auto-save when browser notification severities change
+  React.useEffect(() => {
+    if (isInitialMount.current) return;
+
+    const timeoutId = setTimeout(() => {
+      if (browserNotificationsEnabled) {
+        autoSaveSettings();
+      }
+    }, 100);
+
+    return () => clearTimeout(timeoutId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [browserNotificationSeverities]);
 
   // Show modal immediately, but show loading state only if workspace is loading
   // Settings will use placeholder data for instant display
@@ -389,7 +458,9 @@ export function AlertNotificationSettingsModal({
             } else if (typeof error === "object" && error !== null) {
               // Check for Hono validation error format
               if ("error" in error) {
-                const errorObj = error as any;
+                const errorObj = error as unknown as {
+                  error: { issues: { message: string }[] };
+                };
                 // Hono zValidator returns errors in format: { success: false, error: { issues: [...] } }
                 if (
                   errorObj.error?.issues &&
@@ -428,7 +499,9 @@ export function AlertNotificationSettingsModal({
             } else if (typeof error === "object" && error !== null) {
               // Check for Hono validation error format
               if ("error" in error) {
-                const errorObj = error as any;
+                const errorObj = error as unknown as {
+                  error: { issues: { message: string }[] };
+                };
                 // Hono zValidator returns errors in format: { success: false, error: { issues: [...] } }
                 if (
                   errorObj.error?.issues &&
@@ -522,88 +595,223 @@ export function AlertNotificationSettingsModal({
           <div className="space-y-3 p-4 border rounded-lg">
             <Label className="text-base">Alert Severities</Label>
             <p className="text-sm text-muted-foreground mb-3">
-              Select which alert severities you want to receive notifications for
-              (applies to email, webhook, and Slack notifications)
+              Select which alert severities you want to receive notifications
+              for (applies to email, webhook, and Slack notifications)
             </p>
-              <div className="space-y-3">
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="severity-critical"
-                    checked={notificationSeverities.includes("critical")}
-                    onCheckedChange={(checked) => {
-                      const newSeverities = checked
-                        ? [...notificationSeverities, "critical"]
-                        : notificationSeverities.filter(
-                            (s) => s !== "critical"
-                          );
-                      setNotificationSeverities(newSeverities);
-                    }}
-                    disabled={updateSettingsMutation.isPending}
-                    className="data-[state=checked]:bg-gradient-button data-[state=checked]:border-gradient-button"
-                  />
-                  <Label
-                    htmlFor="severity-critical"
-                    className="flex items-center gap-2 cursor-pointer"
-                  >
-                    <span className="text-red-600 font-medium">Critical</span>
-                    <span className="text-xs text-muted-foreground">
-                      - Immediate action required
-                    </span>
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="severity-warning"
-                    checked={notificationSeverities.includes("warning")}
-                    onCheckedChange={(checked) => {
-                      const newSeverities = checked
-                        ? [...notificationSeverities, "warning"]
-                        : notificationSeverities.filter((s) => s !== "warning");
-                      setNotificationSeverities(newSeverities);
-                    }}
-                    disabled={updateSettingsMutation.isPending}
-                    className="data-[state=checked]:bg-gradient-button data-[state=checked]:border-gradient-button"
-                  />
-                  <Label
-                    htmlFor="severity-warning"
-                    className="flex items-center gap-2 cursor-pointer"
-                  >
-                    <span className="text-yellow-600 font-medium">Warning</span>
-                    <span className="text-xs text-muted-foreground">
-                      - Attention recommended
-                    </span>
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="severity-info"
-                    checked={notificationSeverities.includes("info")}
-                    onCheckedChange={(checked) => {
-                      const newSeverities = checked
-                        ? [...notificationSeverities, "info"]
-                        : notificationSeverities.filter((s) => s !== "info");
-                      setNotificationSeverities(newSeverities);
-                    }}
-                    disabled={updateSettingsMutation.isPending}
-                    className="data-[state=checked]:bg-gradient-button data-[state=checked]:border-gradient-button"
-                  />
-                  <Label
-                    htmlFor="severity-info"
-                    className="flex items-center gap-2 cursor-pointer"
-                  >
-                    <span className="text-blue-600 font-medium">Info</span>
-                    <span className="text-xs text-muted-foreground">
-                      - Informational alerts
-                    </span>
-                  </Label>
-                </div>
+            <div className="space-y-3">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="severity-critical"
+                  checked={notificationSeverities.includes("critical")}
+                  onCheckedChange={(checked) => {
+                    const newSeverities = checked
+                      ? [...notificationSeverities, "critical"]
+                      : notificationSeverities.filter((s) => s !== "critical");
+                    setNotificationSeverities(newSeverities);
+                  }}
+                  disabled={updateSettingsMutation.isPending}
+                  className="data-[state=checked]:bg-gradient-button data-[state=checked]:border-gradient-button"
+                />
+                <Label
+                  htmlFor="severity-critical"
+                  className="flex items-center gap-2 cursor-pointer"
+                >
+                  <span className="text-red-600 font-medium">Critical</span>
+                  <span className="text-xs text-muted-foreground">
+                    - Immediate action required
+                  </span>
+                </Label>
               </div>
-              {notificationSeverities.length === 0 && (
-                <p className="text-xs text-red-500 mt-2">
-                  Please select at least one alert severity
-                </p>
-              )}
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="severity-warning"
+                  checked={notificationSeverities.includes("warning")}
+                  onCheckedChange={(checked) => {
+                    const newSeverities = checked
+                      ? [...notificationSeverities, "warning"]
+                      : notificationSeverities.filter((s) => s !== "warning");
+                    setNotificationSeverities(newSeverities);
+                  }}
+                  disabled={updateSettingsMutation.isPending}
+                  className="data-[state=checked]:bg-gradient-button data-[state=checked]:border-gradient-button"
+                />
+                <Label
+                  htmlFor="severity-warning"
+                  className="flex items-center gap-2 cursor-pointer"
+                >
+                  <span className="text-yellow-600 font-medium">Warning</span>
+                  <span className="text-xs text-muted-foreground">
+                    - Attention recommended
+                  </span>
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="severity-info"
+                  checked={notificationSeverities.includes("info")}
+                  onCheckedChange={(checked) => {
+                    const newSeverities = checked
+                      ? [...notificationSeverities, "info"]
+                      : notificationSeverities.filter((s) => s !== "info");
+                    setNotificationSeverities(newSeverities);
+                  }}
+                  disabled={updateSettingsMutation.isPending}
+                  className="data-[state=checked]:bg-gradient-button data-[state=checked]:border-gradient-button"
+                />
+                <Label
+                  htmlFor="severity-info"
+                  className="flex items-center gap-2 cursor-pointer"
+                >
+                  <span className="text-blue-600 font-medium">Info</span>
+                  <span className="text-xs text-muted-foreground">
+                    - Informational alerts
+                  </span>
+                </Label>
+              </div>
             </div>
+            {notificationSeverities.length === 0 && (
+              <p className="text-xs text-red-500 mt-2">
+                Please select at least one alert severity
+              </p>
+            )}
+          </div>
+
+          {/* Browser Notifications Section */}
+          <div className="space-y-3 p-4 border rounded-lg">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label
+                  htmlFor="browser-notifications"
+                  className="text-base flex items-center gap-2"
+                >
+                  <Bell className="h-4 w-4" />
+                  Browser Notifications
+                </Label>
+                <p className="text-sm text-muted-foreground">
+                  Receive browser notifications for new alerts. You'll be
+                  prompted to allow notifications when you enable this feature.
+                </p>
+              </div>
+              <Switch
+                id="browser-notifications"
+                checked={browserNotificationsEnabled}
+                onCheckedChange={setBrowserNotificationsEnabled}
+                disabled={updateSettingsMutation.isPending}
+                className="data-[state=checked]:bg-gradient-button"
+              />
+            </div>
+
+            {browserNotificationsEnabled && (
+              <div className="mt-4 space-y-3 pt-4 border-t">
+                <Label className="text-sm font-medium">
+                  Browser Notification Severities
+                </Label>
+                <p className="text-xs text-muted-foreground mb-3">
+                  Select which alert severities you want to receive browser
+                  notifications for
+                </p>
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="browser-severity-critical"
+                      checked={browserNotificationSeverities.includes(
+                        "critical"
+                      )}
+                      onCheckedChange={(checked) => {
+                        const newSeverities = checked
+                          ? [...browserNotificationSeverities, "critical"]
+                          : browserNotificationSeverities.filter(
+                              (s) => s !== "critical"
+                            );
+                        setBrowserNotificationSeverities(newSeverities);
+                      }}
+                      disabled={updateSettingsMutation.isPending}
+                      className="data-[state=checked]:bg-gradient-button data-[state=checked]:border-gradient-button"
+                    />
+                    <Label
+                      htmlFor="browser-severity-critical"
+                      className="flex items-center gap-2 cursor-pointer"
+                    >
+                      <span className="text-red-600 font-medium">Critical</span>
+                      <span className="text-xs text-muted-foreground">
+                        - Immediate action required
+                      </span>
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="browser-severity-warning"
+                      checked={browserNotificationSeverities.includes(
+                        "warning"
+                      )}
+                      onCheckedChange={(checked) => {
+                        const newSeverities = checked
+                          ? [...browserNotificationSeverities, "warning"]
+                          : browserNotificationSeverities.filter(
+                              (s) => s !== "warning"
+                            );
+                        setBrowserNotificationSeverities(newSeverities);
+                      }}
+                      disabled={updateSettingsMutation.isPending}
+                      className="data-[state=checked]:bg-gradient-button data-[state=checked]:border-gradient-button"
+                    />
+                    <Label
+                      htmlFor="browser-severity-warning"
+                      className="flex items-center gap-2 cursor-pointer"
+                    >
+                      <span className="text-yellow-600 font-medium">
+                        Warning
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        - Attention recommended
+                      </span>
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="browser-severity-info"
+                      checked={browserNotificationSeverities.includes("info")}
+                      onCheckedChange={(checked) => {
+                        const newSeverities = checked
+                          ? [...browserNotificationSeverities, "info"]
+                          : browserNotificationSeverities.filter(
+                              (s) => s !== "info"
+                            );
+                        setBrowserNotificationSeverities(newSeverities);
+                      }}
+                      disabled={updateSettingsMutation.isPending}
+                      className="data-[state=checked]:bg-gradient-button data-[state=checked]:border-gradient-button"
+                    />
+                    <Label
+                      htmlFor="browser-severity-info"
+                      className="flex items-center gap-2 cursor-pointer"
+                    >
+                      <span className="text-blue-600 font-medium">Info</span>
+                      <span className="text-xs text-muted-foreground">
+                        - Informational alerts
+                      </span>
+                    </Label>
+                  </div>
+                </div>
+                {browserNotificationSeverities.length === 0 && (
+                  <p className="text-xs text-red-500 mt-2">
+                    Please select at least one alert severity for browser
+                    notifications
+                  </p>
+                )}
+              </div>
+            )}
+
+            {!browserNotificationsEnabled && (
+              <Alert className="mt-4">
+                <BellOff className="h-4 w-4" />
+                <AlertDescription>
+                  Browser notifications are disabled. Enable this feature to
+                  receive desktop notifications for new alerts.
+                </AlertDescription>
+              </Alert>
+            )}
+          </div>
 
           {/* Divider */}
           <hr className="border-t border-border" />
@@ -662,7 +870,11 @@ export function AlertNotificationSettingsModal({
                 onChange={(e) => setContactEmail(e.target.value)}
                 onKeyDown={(e) => {
                   // Save on Enter key
-                  if (e.key === "Enter" && contactEmail.trim() && emailNotificationsEnabled) {
+                  if (
+                    e.key === "Enter" &&
+                    contactEmail.trim() &&
+                    emailNotificationsEnabled
+                  ) {
                     e.preventDefault();
                     autoSaveSettings();
                   }
@@ -958,7 +1170,10 @@ export function AlertNotificationSettingsModal({
 
           <div className="space-y-4">
             <div className="flex items-center gap-2">
-              <Label htmlFor="webhook-version" className="text-sm font-semibold">
+              <Label
+                htmlFor="webhook-version"
+                className="text-sm font-semibold"
+              >
                 Version:
               </Label>
               <select
@@ -1068,10 +1283,11 @@ X-RabbitHQ-Signature: sha256=abc123... (if secret is configured)`}
 
             <div className="p-4 bg-blue-50 dark:bg-blue-950 rounded-lg">
               <p className="text-sm text-blue-900 dark:text-blue-100">
-                <strong>Note:</strong> If you configure a secret, the payload will
-                include an <code className="font-mono">X-RabbitHQ-Signature</code>{" "}
-                header with an HMAC-SHA256 signature. You can use this to verify
-                the authenticity of the webhook request.
+                <strong>Note:</strong> If you configure a secret, the payload
+                will include an{" "}
+                <code className="font-mono">X-RabbitHQ-Signature</code> header
+                with an HMAC-SHA256 signature. You can use this to verify the
+                authenticity of the webhook request.
               </p>
             </div>
           </div>

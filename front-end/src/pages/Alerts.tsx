@@ -17,7 +17,10 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { useServerContext } from "@/contexts/ServerContext";
 import { useUser } from "@/hooks/useUser";
-import { useRabbitMQAlerts } from "@/hooks/useApi";
+import {
+  useRabbitMQAlerts,
+  useAlertNotificationSettings,
+} from "@/hooks/useApi";
 // import { AlertsConfigureModal } from "@/components/alerts/AlertsConfigureModal";
 import { AlertNotificationSettingsModal } from "@/components/alerts/AlertNotificationSettingsModal";
 import { PageLoader } from "@/components/PageLoader";
@@ -29,6 +32,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Mail } from "lucide-react";
 // import { Settings } from "lucide-react"; // Commented out - used in Configure Thresholds button
+import { useBrowserNotifications } from "@/hooks/useBrowserNotifications";
 
 type BadgeVariant = "default" | "secondary" | "destructive" | "outline";
 
@@ -72,7 +76,16 @@ const Alerts = () => {
     data: alertsData,
     isLoading: alertsLoading,
     error: alertsError,
-  } = useRabbitMQAlerts(currentServerId || "", defaultThresholds);
+  } = useRabbitMQAlerts(currentServerId, defaultThresholds);
+
+  // Get browser notification settings
+  const { data: notificationSettings } = useAlertNotificationSettings(true);
+
+  // Set up browser notifications
+  useBrowserNotifications(alertsData?.alerts, {
+    enabled: notificationSettings.settings.browserNotificationsEnabled,
+    severities: notificationSettings.settings.browserNotificationSeverities,
+  });
 
   if (!hasServers) {
     return (

@@ -312,12 +312,16 @@ export const AlertNotificationSettingsSchema = z.object({
   emailNotificationsEnabled: z.boolean(),
   contactEmail: z.string().email().optional().nullable(),
   notificationSeverities: z.array(AlertSeveritySchema).optional(), // Array of severities to receive notifications for
+  browserNotificationsEnabled: z.boolean(),
+  browserNotificationSeverities: z.array(AlertSeveritySchema).optional(), // Array of severities to receive browser notifications for
 });
 
 export const UpdateAlertNotificationSettingsRequestSchema = z.object({
   emailNotificationsEnabled: z.boolean().optional(),
   contactEmail: z.string().email().optional().nullable(),
   notificationSeverities: z.array(AlertSeveritySchema).optional(), // Array of severities to receive notifications for
+  browserNotificationsEnabled: z.boolean().optional(),
+  browserNotificationSeverities: z.array(AlertSeveritySchema).optional(), // Array of severities to receive browser notifications for
 });
 
 export const AlertNotificationSettingsResponseSchema = z.object({

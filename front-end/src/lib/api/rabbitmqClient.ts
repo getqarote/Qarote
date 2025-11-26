@@ -792,6 +792,8 @@ export class RabbitMQApiClient extends BaseApiClient {
       emailNotificationsEnabled: boolean;
       contactEmail: string | null;
       notificationSeverities?: string[];
+      browserNotificationsEnabled: boolean;
+      browserNotificationSeverities?: string[];
     };
   }> {
     const url = `/rabbitmq/workspaces/${workspaceId}/alert-settings`;
@@ -801,6 +803,8 @@ export class RabbitMQApiClient extends BaseApiClient {
         emailNotificationsEnabled: boolean;
         contactEmail: string | null;
         notificationSeverities?: string[];
+        browserNotificationsEnabled: boolean;
+        browserNotificationSeverities?: string[];
       };
     }>(url);
   }
@@ -811,6 +815,8 @@ export class RabbitMQApiClient extends BaseApiClient {
       emailNotificationsEnabled?: boolean;
       contactEmail?: string | null;
       notificationSeverities?: string[];
+      browserNotificationsEnabled?: boolean;
+      browserNotificationSeverities?: string[];
     }
   ): Promise<{
     success: boolean;
@@ -818,6 +824,8 @@ export class RabbitMQApiClient extends BaseApiClient {
       emailNotificationsEnabled: boolean;
       contactEmail: string | null;
       notificationSeverities?: string[];
+      browserNotificationsEnabled: boolean;
+      browserNotificationSeverities?: string[];
     };
   }> {
     const url = `/rabbitmq/workspaces/${workspaceId}/alert-settings`;
@@ -827,6 +835,8 @@ export class RabbitMQApiClient extends BaseApiClient {
         emailNotificationsEnabled: boolean;
         contactEmail: string | null;
         notificationSeverities?: string[];
+        browserNotificationsEnabled: boolean;
+        browserNotificationSeverities?: string[];
       };
     }>(url, {
       method: "PUT",

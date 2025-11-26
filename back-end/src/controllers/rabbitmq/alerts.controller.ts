@@ -274,6 +274,8 @@ alertsController.get("/alert-settings", async (c) => {
         emailNotificationsEnabled: true,
         contactEmail: true,
         notificationSeverities: true,
+        browserNotificationsEnabled: true,
+        browserNotificationSeverities: true,
       },
     });
 
@@ -286,12 +288,19 @@ alertsController.get("/alert-settings", async (c) => {
       ? (workspace.notificationSeverities as string[])
       : ["critical", "warning", "info"];
 
+    // Parse browserNotificationSeverities from JSON, default to all severities if not set
+    const browserNotificationSeverities = workspace.browserNotificationSeverities
+      ? (workspace.browserNotificationSeverities as string[])
+      : ["critical", "warning", "info"];
+
     return c.json({
       success: true,
       settings: {
         emailNotificationsEnabled: workspace.emailNotificationsEnabled,
         contactEmail: workspace.contactEmail,
         notificationSeverities,
+        browserNotificationsEnabled: workspace.browserNotificationsEnabled,
+        browserNotificationSeverities,
       },
     });
   } catch (error) {
@@ -310,8 +319,13 @@ alertsController.put(
   async (c) => {
     const workspaceId = c.req.param("workspaceId");
     const user = c.get("user");
-    const { emailNotificationsEnabled, contactEmail, notificationSeverities } =
-      c.req.valid("json");
+    const {
+      emailNotificationsEnabled,
+      contactEmail,
+      notificationSeverities,
+      browserNotificationsEnabled,
+      browserNotificationSeverities,
+    } = c.req.valid("json");
 
     // Verify user has access to this workspace
     if (user.workspaceId !== workspaceId) {
@@ -341,6 +355,8 @@ alertsController.put(
         emailNotificationsEnabled?: boolean;
         contactEmail?: string | null;
         notificationSeverities?: string[];
+        browserNotificationsEnabled?: boolean;
+        browserNotificationSeverities?: string[];
       } = {};
 
       if (emailNotificationsEnabled !== undefined) {
@@ -355,6 +371,14 @@ alertsController.put(
         updateData.notificationSeverities = notificationSeverities;
       }
 
+      if (browserNotificationsEnabled !== undefined) {
+        updateData.browserNotificationsEnabled = browserNotificationsEnabled;
+      }
+
+      if (browserNotificationSeverities !== undefined) {
+        updateData.browserNotificationSeverities = browserNotificationSeverities;
+      }
+
       const updatedWorkspace = await prisma.workspace.update({
         where: { id: workspaceId },
         data: updateData,
@@ -362,6 +386,8 @@ alertsController.put(
           emailNotificationsEnabled: true,
           contactEmail: true,
           notificationSeverities: true,
+          browserNotificationsEnabled: true,
+          browserNotificationSeverities: true,
         },
       });
 
@@ -370,12 +396,21 @@ alertsController.put(
         ? (updatedWorkspace.notificationSeverities as string[])
         : ["critical", "warning", "info"];
 
+      // Parse browserNotificationSeverities from JSON, default to all severities if not set
+      const responseBrowserSeverities =
+        updatedWorkspace.browserNotificationSeverities
+          ? (updatedWorkspace.browserNotificationSeverities as string[])
+          : ["critical", "warning", "info"];
+
       return c.json({
         success: true,
         settings: {
           emailNotificationsEnabled: updatedWorkspace.emailNotificationsEnabled,
           contactEmail: updatedWorkspace.contactEmail,
           notificationSeverities: responseSeverities,
+          browserNotificationsEnabled:
+            updatedWorkspace.browserNotificationsEnabled,
+          browserNotificationSeverities: responseBrowserSeverities,
         },
       });
     } catch (error) {

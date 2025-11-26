@@ -123,6 +123,8 @@ model Workspace {
   // Alert notification settings
   emailNotificationsEnabled Boolean  @default(true) // Enable/disable email notifications for alerts
   notificationSeverities    Json?    // Array of alert severities to receive notifications for: ["critical", "warning", "info"] (default: all)
+  browserNotificationsEnabled Boolean @default(false) // Enable/disable browser notifications for alerts
+  browserNotificationSeverities Json? // Array of alert severities to receive browser notifications for: ["critical", "warning", "info"] (default: all)
   
   users                    User[]
   servers                  RabbitMQServer[]
