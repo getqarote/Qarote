@@ -5,11 +5,13 @@ This script provides comprehensive testing for webhook functionality, including 
 ## Usage
 
 ### Run all tests (default)
+
 ```bash
 npm run webhook:test
 ```
 
 ### Run specific test
+
 ```bash
 npm run webhook:test basic      # Test basic webhook without secret
 npm run webhook:test secret     # Test webhook with HMAC signature
@@ -42,37 +44,49 @@ WEBHOOK_TIMEOUT_URL=https://httpstat.us/200?sleep=15000
 ## Tests
 
 ### 1. Basic Webhook
+
 Tests sending a webhook without HMAC signature. Verifies:
+
 - Successful webhook delivery
 - Correct payload structure
 - HTTP status codes
 
 ### 2. Webhook with Secret
+
 Tests sending a webhook with HMAC-SHA256 signature. Verifies:
+
 - Signature header is present
 - Signature format (`sha256=<hex-string>`)
 - Payload integrity
 
 ### 3. Multiple Webhooks
+
 Tests sending to multiple webhooks in parallel. Verifies:
+
 - Parallel execution
 - Individual webhook results
 - Success/failure tracking
 
 ### 4. Retry Logic
+
 Tests retry behavior with failing endpoints (5xx errors). Verifies:
+
 - Exponential backoff
 - Maximum retry attempts (3)
 - Error handling
 
 ### 5. Timeout Handling
+
 Tests timeout behavior with slow endpoints. Verifies:
+
 - 10-second timeout
 - Proper error handling
 - Request cancellation
 
 ### 6. Payload Structure
+
 Validates webhook payload structure. Verifies:
+
 - All required fields present
 - Summary matches alert counts
 - Correct data types
@@ -100,4 +114,3 @@ Validates webhook payload structure. Verifies:
 - Real webhook endpoints (like webhook.site) are recommended for testing
 - Retry and timeout tests may take longer to complete
 - All tests are non-destructive and safe to run
-

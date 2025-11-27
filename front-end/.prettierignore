@@ -1,0 +1,7 @@
+node_modules
+dist
+build
+*.lock
+package-lock.json
+vite.config.ts.timestamp-*
+

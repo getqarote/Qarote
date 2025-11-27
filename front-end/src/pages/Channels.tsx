@@ -14,9 +14,7 @@ const Channels = () => {
             <div className="flex items-center gap-4">
               <SidebarTrigger />
               <div>
-                <h1 className="title-page">
-                  Channels
-                </h1>
+                <h1 className="title-page">Channels</h1>
                 <p className="text-gray-500">
                   Monitor active RabbitMQ channels
                 </p>

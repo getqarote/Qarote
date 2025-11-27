@@ -1153,12 +1153,12 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
       if (error instanceof Error) {
         errorDetails.errorMessage = error.message;
         errorDetails.errorStack = error.stack;
-        
+
         // Extract error cause (RabbitMQ API reason) if available
         if ((error as any).cause) {
           errorDetails.rabbitMQReason = (error as any).cause;
         }
-        
+
         // Try to extract response details if available
         if ((error as any).response) {
           errorDetails.responseStatus = (error as any).response?.status;
@@ -1169,15 +1169,21 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
             // Ignore if we can't read the response body
           }
         }
-        
-        logger.error(errorDetails, "Failed to update RabbitMQ user - detailed error");
-        
+
+        logger.error(
+          errorDetails,
+          "Failed to update RabbitMQ user - detailed error"
+        );
+
         captureRabbitMQError(error, {
           operation: "updateUser",
           serverId: this.baseUrl,
         });
       } else {
-        logger.error({ ...errorDetails, error }, "Failed to update RabbitMQ user - unknown error type");
+        logger.error(
+          { ...errorDetails, error },
+          "Failed to update RabbitMQ user - unknown error type"
+        );
       }
 
       throw error;

@@ -9,10 +9,40 @@ on:
         default: ""
 
 jobs:
+  quality-checks:
+    name: Quality Checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🔍 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: package-lock.json
+
+      - name: 📥 Install dependencies
+        run: npm ci
+
+      - name: 🔍 Type Check
+        working-directory: front-end
+        run: npm run type-check
+
+      - name: 🧹 Lint
+        working-directory: front-end
+        run: npm run lint
+
+      - name: 💅 Format Check
+        working-directory: front-end
+        run: npm run format
+
   deploy-frontend:
     name: Deploy Frontend to Production
     runs-on: ubuntu-latest
     environment: production
+    needs: quality-checks
     if: github.event.inputs.confirm_production == 'DEPLOY'
 
     steps:

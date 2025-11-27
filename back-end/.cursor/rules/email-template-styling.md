@@ -146,4 +146,3 @@ const styles = {
 - **Maintainability**: Changes to shared styles automatically apply to all templates
 - **Branding**: Maintains consistent brand colors and spacing
 - **Accessibility**: Shared styles ensure proper contrast and readability
-

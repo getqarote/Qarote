@@ -57,4 +57,3 @@ export const WebhookResponseSchema = z.object({
 export type CreateWebhook = z.infer<typeof CreateWebhookSchema>;
 export type UpdateWebhook = z.infer<typeof UpdateWebhookSchema>;
 export type WebhookResponse = z.infer<typeof WebhookResponseSchema>;
-

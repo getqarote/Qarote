@@ -107,4 +107,3 @@ export function normalizeTunnelCredentials(
     useHttps: useHttps ?? tunnelConfig.shouldUseHttps,
   };
 }
-

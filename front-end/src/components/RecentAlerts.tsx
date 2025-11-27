@@ -219,13 +219,10 @@ export const RecentAlerts = () => {
           <div className="text-center py-8">
             <AlertTriangle className="h-12 w-12 mx-auto text-yellow-500 mb-4" />
             <p className="text-sm text-muted-foreground mb-4">
-              Upgrade to Developer or Enterprise plan to view detailed
-              alert information and configure alert thresholds.
+              Upgrade to Developer or Enterprise plan to view detailed alert
+              information and configure alert thresholds.
             </p>
-            <Button
-              onClick={() => navigate("/plans")}
-              className="btn-primary"
-            >
+            <Button onClick={() => navigate("/plans")} className="btn-primary">
               Upgrade now
             </Button>
           </div>

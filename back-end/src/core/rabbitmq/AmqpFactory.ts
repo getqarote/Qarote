@@ -97,7 +97,7 @@ export class RabbitMQAmqpClientFactory {
    */
   static async removeClient(serverId: string): Promise<void> {
     const client = this.clients.get(serverId);
-    
+
     // Only remove if client exists and is not connected
     if (client && !client.isConnectionActive()) {
       this.clients.delete(serverId);

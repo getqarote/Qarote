@@ -226,7 +226,7 @@ const AcceptInvitation = () => {
                 </span>
               </div>
             </div>
-            
+
             <GoogleInvitationButton
               invitationToken={token || ""}
               invitationEmail={invitation?.email || ""}

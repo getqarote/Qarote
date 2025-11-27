@@ -60,15 +60,15 @@ export const PaymentConfirmationEmail: React.FC<
   return (
     <Html>
       <Head />
-      <Preview>Payment Confirmed - Your RabbitHQ subscription is active</Preview>
+      <Preview>
+        Payment Confirmed - Your RabbitHQ subscription is active
+      </Preview>
       <Body style={baseStyles.main}>
         <Container style={baseStyles.container}>
           <Section style={headerStyles.header}></Section>
 
           <Section style={contentStyles.contentPadded}>
-            <Heading style={contentStyles.title}>
-              ✅ Payment Confirmed!
-            </Heading>
+            <Heading style={contentStyles.title}>✅ Payment Confirmed!</Heading>
           </Section>
 
           <Section style={contentStyles.content}>
@@ -83,7 +83,7 @@ export const PaymentConfirmationEmail: React.FC<
               <Heading as="h2" style={contentStyles.heading}>
                 Payment Details
               </Heading>
-              
+
               <Section style={layoutStyles.detailRow}>
                 <Text style={layoutStyles.detailLabel}>Amount:</Text>
                 <Text style={layoutStyles.detailValue}>
@@ -100,20 +100,21 @@ export const PaymentConfirmationEmail: React.FC<
 
               <Section style={layoutStyles.detailRow}>
                 <Text style={layoutStyles.detailLabel}>Status:</Text>
-                <Text style={textStyles.successText}>
-                  ✅ Completed
-                </Text>
+                <Text style={textStyles.successText}>✅ Completed</Text>
               </Section>
             </Section>
 
             <Text style={contentStyles.paragraph}>
-              Thank you for your payment! You can continue using RabbitHQ without
-              any interruptions. Your subscription is now active and you have
-              full access to all features.
+              Thank you for your payment! You can continue using RabbitHQ
+              without any interruptions. Your subscription is now active and you
+              have full access to all features.
             </Text>
 
             <Section style={buttonStyles.buttonSection}>
-              <Button style={buttonStyles.primaryButton} href={`${frontendUrl}/dashboard`}>
+              <Button
+                style={buttonStyles.primaryButton}
+                href={`${frontendUrl}/dashboard`}
+              >
                 Go to Dashboard
               </Button>
             </Section>
@@ -121,8 +122,8 @@ export const PaymentConfirmationEmail: React.FC<
             <Hr style={utilityStyles.hr} />
 
             <Text style={contentStyles.paragraph}>
-              If you have any questions about this payment, please don't hesitate to
-              contact our{" "}
+              If you have any questions about this payment, please don't
+              hesitate to contact our{" "}
               <Link href={`${frontendUrl}/help`} style={textStyles.link}>
                 support team
               </Link>

@@ -13,7 +13,10 @@
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "type-check": "tsc --noEmit",
+    "format": "prettier --check .",
+    "format:fix": "prettier --write .",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -88,6 +91,7 @@
     "globals": "^15.9.0",
     "lovable-tagger": "^1.1.7",
     "postcss": "^8.4.47",
+    "prettier": "^3.3.3",
     "stylelint": "^16.23.0",
     "stylelint-config-standard": "^39.0.0",
     "tailwindcss": "^3.4.11",

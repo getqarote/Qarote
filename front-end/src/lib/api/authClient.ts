@@ -145,14 +145,21 @@ export class AuthApiClient extends BaseApiClient {
   async acceptInvitationWithGoogle(
     token: string,
     credential: string
-  ): Promise<{ user: User; token: string; workspace: Workspace; isNewUser: boolean }> {
-    return this.request<{ user: User; token: string; workspace: Workspace; isNewUser: boolean }>(
-      `/invitations/${token}/accept-google`,
-      {
-        method: "POST",
-        body: JSON.stringify({ credential }),
-      }
-    );
+  ): Promise<{
+    user: User;
+    token: string;
+    workspace: Workspace;
+    isNewUser: boolean;
+  }> {
+    return this.request<{
+      user: User;
+      token: string;
+      workspace: Workspace;
+      isNewUser: boolean;
+    }>(`/invitations/${token}/accept-google`, {
+      method: "POST",
+      body: JSON.stringify({ credential }),
+    });
   }
 
   // Email verification methods

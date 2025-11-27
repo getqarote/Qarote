@@ -34,7 +34,10 @@ export const GoogleInvitationButton: React.FC<GoogleInvitationButtonProps> = ({
       if (!credentialResponse.credential) {
         throw new Error("No credential received from Google");
       }
-      return await apiClient.acceptInvitationWithGoogle(invitationToken, credentialResponse.credential);
+      return await apiClient.acceptInvitationWithGoogle(
+        invitationToken,
+        credentialResponse.credential
+      );
     },
     onSuccess: (data) => {
       // Set authentication state
@@ -47,15 +50,16 @@ export const GoogleInvitationButton: React.FC<GoogleInvitationButtonProps> = ({
       });
 
       onSuccess?.();
-      
+
       // Redirect to dashboard
       navigate("/", { replace: true });
     },
     onError: (error: Error) => {
       logger.error("Google invitation acceptance failed:", error);
-      const errorMessage = error.message || "Failed to accept invitation with Google";
+      const errorMessage =
+        error.message || "Failed to accept invitation with Google";
       onError?.(errorMessage);
-      
+
       toast({
         title: "Error",
         description: errorMessage,

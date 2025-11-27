@@ -9,7 +9,11 @@
  * - Users with expired tokens
  */
 
-import { PrismaClient, UserPlan, UserRole } from "../../src/generated/prisma/client/client";
+import {
+  PrismaClient,
+  UserPlan,
+  UserRole,
+} from "../../src/generated/prisma/client/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 import dotenv from "dotenv";

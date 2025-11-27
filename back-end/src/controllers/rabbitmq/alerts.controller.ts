@@ -289,9 +289,10 @@ alertsController.get("/alert-settings", async (c) => {
       : ["critical", "warning", "info"];
 
     // Parse browserNotificationSeverities from JSON, default to all severities if not set
-    const browserNotificationSeverities = workspace.browserNotificationSeverities
-      ? (workspace.browserNotificationSeverities as string[])
-      : ["critical", "warning", "info"];
+    const browserNotificationSeverities =
+      workspace.browserNotificationSeverities
+        ? (workspace.browserNotificationSeverities as string[])
+        : ["critical", "warning", "info"];
 
     return c.json({
       success: true,
@@ -376,7 +377,8 @@ alertsController.put(
       }
 
       if (browserNotificationSeverities !== undefined) {
-        updateData.browserNotificationSeverities = browserNotificationSeverities;
+        updateData.browserNotificationSeverities =
+          browserNotificationSeverities;
       }
 
       const updatedWorkspace = await prisma.workspace.update({

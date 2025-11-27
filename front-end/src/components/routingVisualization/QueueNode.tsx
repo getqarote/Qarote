@@ -144,8 +144,8 @@ export const QueueNode: React.FC<QueueNodeProps> = ({
                 getQueueHealthScore() > 80
                   ? "bg-green-500"
                   : getQueueHealthScore() > 60
-                  ? "bg-yellow-500"
-                  : "bg-red-500"
+                    ? "bg-yellow-500"
+                    : "bg-red-500"
               }`}
               style={{ width: `${getQueueHealthScore()}%` }}
             />

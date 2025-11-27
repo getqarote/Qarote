@@ -13,10 +13,40 @@ on:
   workflow_dispatch:
 
 jobs:
+  quality-checks:
+    name: Quality Checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🔍 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: package-lock.json
+
+      - name: 📥 Install dependencies
+        run: npm ci
+
+      - name: 🔍 Type Check
+        working-directory: back-end
+        run: npm run type-check
+
+      - name: 🧹 Lint
+        working-directory: back-end
+        run: npm run lint
+
+      - name: 💅 Format Check
+        working-directory: back-end
+        run: npm run format
+
   deploy-backend:
     name: Deploy Backend to Dokku - Staging
     runs-on: ubuntu-latest
     environment: staging
+    needs: quality-checks
 
     steps:
       - name: 🔍 Checkout code

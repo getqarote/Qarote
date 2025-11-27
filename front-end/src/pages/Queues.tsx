@@ -22,7 +22,6 @@ const Queues = () => {
   const queues = useMemo(() => queuesData?.queues || [], [queuesData?.queues]);
   const queueCount = queues.length;
 
-
   // Wrapper for refetch with logging to debug refresh issues
   const handleRefetch = async () => {
     logger.info("Queues page: Refetching queue data...");

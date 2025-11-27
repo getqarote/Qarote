@@ -46,4 +46,3 @@ export const UpdateSlackConfigSchema = z.object({
 
 export type CreateSlackConfig = z.infer<typeof CreateSlackConfigSchema>;
 export type UpdateSlackConfig = z.infer<typeof UpdateSlackConfigSchema>;
-
