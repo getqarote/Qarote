@@ -57,7 +57,7 @@ const getSeverityIcon = (severity: string) => {
 export default function AlertNotificationEmail({
   workspaceName,
   serverName,
-  serverId,
+  serverId: _serverId,
   alerts,
   frontendUrl,
 }: AlertNotificationEmailProps): JSX.Element {

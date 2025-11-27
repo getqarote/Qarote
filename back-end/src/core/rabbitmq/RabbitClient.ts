@@ -1,5 +1,6 @@
-import type { RabbitMQCredentials, Metrics } from "@/types/rabbitmq";
 import type {
+  RabbitMQCredentials,
+  Metrics,
   RabbitMQMessage,
   MessageProperties,
   QueueCreateOptions,
@@ -8,7 +9,7 @@ import type {
   PublishResult,
   CreateQueueResult,
   BindQueueResult,
-} from "./types";
+} from "@/types/rabbitmq";
 import { RabbitMQApiClient } from "./ApiClient";
 import { RabbitMQQueueClient } from "./QueueClient";
 import { RabbitMQMetricsCalculator } from "./MetricsCalculator";

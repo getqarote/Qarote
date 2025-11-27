@@ -9,12 +9,10 @@ import {
   Heading,
   Link,
   Hr,
-  Img,
 } from "@react-email/components";
 import { getPlanFeatures } from "@/services/plan/plan.service";
 import {
   baseStyles,
-  headerStyles,
   contentStyles,
   buttonStyles,
   textStyles,

@@ -40,7 +40,7 @@ const Alerts = () => {
   const { serverId } = useParams<{ serverId: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
   const { selectedServerId, hasServers } = useServerContext();
-  const { canConfigureAlerts, userPlan } = useUser();
+  const { userPlan } = useUser();
   // const [showConfigureModal, setShowConfigureModal] = useState(false);
   const [showNotificationSettingsModal, setShowNotificationSettingsModal] =
     useState(false);

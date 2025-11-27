@@ -3,6 +3,7 @@ import { logger } from "@/core/logger";
 import {
   getOverLimitWarningMessage,
   getUpgradeRecommendationForOverLimit,
+  getUserPlan,
 } from "@/services/plan/plan.service";
 import { createRabbitMQClient, verifyServerAccess } from "./shared";
 import { OverviewResponse } from "@/types/overview";
@@ -43,14 +44,14 @@ overviewController.get("/servers/:id/overview", async (c) => {
 
     // Add warning information if server is over the queue limit
     if (server.isOverQueueLimit && server.workspace) {
+      const userPlan = await getUserPlan(user.id);
       const warningMessage = getOverLimitWarningMessage(
-        server.workspace.plan,
+        userPlan,
         overview.queue_totals?.messages || 0
       );
 
-      const upgradeRecommendation = getUpgradeRecommendationForOverLimit(
-        server.workspace.plan
-      );
+      const upgradeRecommendation =
+        getUpgradeRecommendationForOverLimit(userPlan);
 
       response.warning = {
         isOverLimit: true,
@@ -65,7 +66,7 @@ overviewController.get("/servers/:id/overview", async (c) => {
 
     return c.json(response);
   } catch (error) {
-    logger.error(`Error fetching overview for server ${id}:`, error);
+    logger.error({ error }, `Error fetching overview for server ${id}`);
     return createErrorResponse(
       c,
       error,

@@ -120,7 +120,7 @@ export const autoLayoutNodes = (
   exchanges: ExchangeNode[],
   queues: QueueNode[],
   bindings: Binding[],
-  config: LayoutConfig
+  _config: LayoutConfig
 ): { exchanges: ExchangeNode[]; queues: QueueNode[] } => {
   const allNodes = [...exchanges, ...queues];
   const nodeMap = new Map(allNodes.map((node) => [node.id, node]));

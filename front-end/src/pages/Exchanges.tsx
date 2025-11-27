@@ -19,7 +19,8 @@ import {
   Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useExchanges, useDeleteExchange } from "@/hooks/useApi";
+import { useDeleteExchange, useExchanges } from "@/hooks/useApi";
+import logger from "@/lib/logger";
 import { useServerContext } from "@/contexts/ServerContext";
 import { useState } from "react";
 import {
@@ -83,7 +84,7 @@ const Exchanges = () => {
       setExchangeToDelete("");
       setForceDelete(false);
     } catch (error) {
-      console.error("Failed to delete exchange:", error);
+      logger.error("Failed to delete exchange:", error);
 
       // Extract error message and code
       let errorMessage = "Failed to delete exchange";

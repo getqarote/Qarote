@@ -25,7 +25,7 @@ import {
   QueuePurgeResponse,
   QueuesResponse,
   SingleQueueResponse,
-} from "@/types/queue";
+} from "@/types/rabbitmq";
 import { createErrorResponse } from "../shared";
 
 const queuesController = new Hono();
@@ -133,14 +133,14 @@ queuesController.get("/servers/:id/queues", async (c) => {
 
     // Add warning information if server is over the queue limit
     if (server.isOverQueueLimit && server.workspace) {
+      const userPlan = await getUserPlan(user.id);
       const warningMessage = getOverLimitWarningMessage(
-        server.workspace.plan,
+        userPlan,
         queues.length
       );
 
-      const upgradeRecommendation = getUpgradeRecommendationForOverLimit(
-        server.workspace.plan
-      );
+      const upgradeRecommendation =
+        getUpgradeRecommendationForOverLimit(userPlan);
 
       response.warning = {
         isOverLimit: true,
@@ -337,7 +337,7 @@ queuesController.post(
 
       // Create the queue via RabbitMQ API
       const client = await createRabbitMQClient(serverId, workspaceId);
-      const result = await client.createQueue(queueData.name, {
+      const queue = await client.createQueue(queueData.name, {
         durable: queueData.durable,
         autoDelete: queueData.autoDelete,
         arguments: queueData.arguments,
@@ -389,7 +389,7 @@ queuesController.post(
       const response: QueueCreationResponse = {
         success: true,
         message: "Queue created successfully",
-        queue: result,
+        queue,
       };
       return c.json(response);
     } catch (error) {
@@ -435,8 +435,8 @@ queuesController.delete(
       return c.json(response);
     } catch (error) {
       logger.error(
-        `Error purging queue ${queueName} on server ${serverId}:`,
-        error
+        { error },
+        `Error purging queue ${queueName} on server ${serverId}`
       );
       return createErrorResponse(c, error, 500, "Failed to purge queue");
     }
@@ -527,8 +527,8 @@ queuesController.delete(
       });
     } catch (error) {
       logger.error(
-        `Error deleting queue ${queueName} on server ${serverId}:`,
-        error
+        { error },
+        `Error deleting queue ${queueName} on server ${serverId}`
       );
       return createErrorResponse(c, error, 500, "Failed to delete queue");
     }
@@ -588,8 +588,8 @@ queuesController.post(
       });
     } catch (error) {
       logger.error(
-        `Error pausing queue ${queueName} on server ${serverId}:`,
-        error
+        { error },
+        `Error pausing queue ${queueName} on server ${serverId}`
       );
       return createErrorResponse(c, error, 500, "Failed to pause queue");
     } finally {
@@ -652,8 +652,8 @@ queuesController.post(
       });
     } catch (error) {
       logger.error(
-        `Error resuming queue ${queueName} on server ${serverId}:`,
-        error
+        { error },
+        `Error resuming queue ${queueName} on server ${serverId}`
       );
       return createErrorResponse(c, error, 500, "Failed to resume queue");
     } finally {
@@ -708,8 +708,8 @@ queuesController.get(
       });
     } catch (error) {
       logger.error(
-        `Error checking pause status for queue ${queueName} on server ${serverId}:`,
-        error
+        { error },
+        `Error checking pause status for queue ${queueName} on server ${serverId}`
       );
       return createErrorResponse(c, error, 500, "Failed to check pause status");
     } finally {

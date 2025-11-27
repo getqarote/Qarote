@@ -290,7 +290,7 @@ export class AlertService {
   }
 
   private async getConsumerCountMetric(
-    serverId: string
+    _serverId: string
   ): Promise<MetricValue | null> {
     // This would typically come from RabbitMQ Management API
     // For now, return a placeholder value
@@ -301,7 +301,7 @@ export class AlertService {
   }
 
   private async getConnectionCountMetric(
-    serverId: string
+    _serverId: string
   ): Promise<MetricValue | null> {
     // This would require calling RabbitMQ Management API
     // Placeholder implementation
@@ -326,7 +326,7 @@ export class AlertService {
   }
 
   private async getChannelCountMetric(
-    serverId: string
+    _serverId: string
   ): Promise<MetricValue | null> {
     // Similar to connection count, this would use RabbitMQ Management API
     return {
@@ -336,7 +336,7 @@ export class AlertService {
   }
 
   private async getMemoryUsageMetric(
-    serverId: string
+    _serverId: string
   ): Promise<MetricValue | null> {
     // This would require calling RabbitMQ Management API to get node stats
     return {
@@ -346,7 +346,7 @@ export class AlertService {
   }
 
   private async getDiskUsageMetric(
-    serverId: string
+    _serverId: string
   ): Promise<MetricValue | null> {
     // This would require calling RabbitMQ Management API to get node stats
     return {
@@ -356,7 +356,7 @@ export class AlertService {
   }
 
   private async getNodeStatusMetric(
-    serverId: string
+    _serverId: string
   ): Promise<MetricValue | null> {
     // This would check if the RabbitMQ node is responding
     // Return 1 for up, 0 for down
@@ -366,7 +366,7 @@ export class AlertService {
         value: 1, // Mock value - assume server is up
         timestamp: new Date(),
       };
-    } catch (error) {
+    } catch {
       return {
         value: 0, // Server is down
         timestamp: new Date(),

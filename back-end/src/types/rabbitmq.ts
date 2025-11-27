@@ -616,3 +616,206 @@ export interface VHostStats {
   send_oct: number;
   send_oct_details: RateDetail;
 }
+
+/**
+ * RabbitMQ User object from Management API
+ */
+export interface RabbitMQUser {
+  name: string;
+  password_hash?: string;
+  hashing_algorithm?: string;
+  tags: string;
+}
+
+/**
+ * RabbitMQ User Permission (same as VHostPermissions but kept for clarity)
+ */
+export type RabbitMQUserPermission = VHostPermissions;
+
+/**
+ * Data for updating a RabbitMQ user
+ */
+export interface UpdateUserData {
+  tags?: string;
+  password?: string;
+  password_hash?: string;
+}
+
+/**
+ * Additional types for RabbitMQ queue operations
+ */
+
+export interface RabbitMQMessage {
+  payload: string;
+  payload_bytes: number;
+  payload_encoding: string;
+  properties: MessageProperties;
+  routing_key: string;
+  redelivered: boolean;
+  exchange: string;
+  message_count: number;
+}
+
+export interface MessageProperties {
+  delivery_mode?: number;
+  priority?: number;
+  expiration?: string;
+  user_id?: string;
+  app_id?: string;
+  content_type?: string;
+  content_encoding?: string;
+  correlation_id?: string;
+  reply_to?: string;
+  message_id?: string;
+  timestamp?: number;
+  type?: string;
+  headers?: Record<string, unknown>;
+}
+
+export interface QueueCreateOptions {
+  durable?: boolean;
+  autoDelete?: boolean;
+  exclusive?: boolean;
+  arguments?: QueueArguments;
+}
+
+export interface BindingArguments {
+  [key: string]: string | number | boolean;
+}
+
+export type AckMode = "ack_requeue_true" | "reject_requeue_true";
+
+export interface PurgeQueueResult {
+  purged: number;
+}
+
+export interface PublishResult {
+  routed: boolean;
+}
+
+export interface CreateQueueResult {
+  created: boolean;
+}
+
+export interface BindQueueResult {
+  bound: boolean;
+}
+
+/**
+ * Metrics calculation types
+ */
+
+export interface MessageRates {
+  timestamp: number;
+  publish?: number;
+  deliver?: number;
+  ack?: number;
+  deliver_get?: number;
+  confirm?: number;
+  get?: number;
+  get_no_ack?: number;
+  redeliver?: number;
+  reject?: number;
+  return_unroutable?: number;
+  disk_reads?: number;
+  disk_writes?: number;
+  [key: string]: number | undefined;
+}
+
+export type CalculatedQueueTotals = {
+  timestamp: number;
+  messages?: number;
+  messages_ready?: number;
+  messages_unacknowledged?: number;
+};
+
+/**
+ * AMQP connection configuration
+ */
+export interface AMQPConnectionConfig {
+  protocol: "amqp" | "amqps";
+  hostname: string;
+  port: number;
+  username: string;
+  password: string;
+  vhost: string;
+  heartbeat?: number;
+  connectionTimeout?: number;
+  serverId?: string;
+  serverName?: string;
+}
+
+/**
+ * Queue pause state tracking
+ */
+export interface QueuePauseState {
+  queueName: string;
+  vhost: string;
+  isPaused: boolean;
+  pausedAt?: Date;
+  resumedAt?: Date;
+  pausedConsumers: string[];
+  serverId?: string;
+}
+
+/**
+ * Tunnel detection configuration
+ */
+export interface TunnelConfig {
+  isTunnel: boolean;
+  tunnelType?: "ngrok" | "localtunnel" | "other";
+  originalHost: string;
+  normalizedHost: string;
+  shouldUseHttps: boolean;
+  recommendedPort: number;
+}
+
+/**
+ * Queue-related response types
+ */
+import { UserPlan } from "@prisma/client";
+
+export interface QueueLimitWarning {
+  isOverLimit: true;
+  message: string;
+  currentQueueCount: number;
+  queueCountAtConnect: number | null;
+  upgradeRecommendation: string;
+  recommendedPlan: UserPlan | null;
+  warningShown: boolean | null;
+}
+
+export interface QueuesResponse {
+  queues: RabbitMQQueue[];
+  warning?: QueueLimitWarning;
+}
+
+export interface SingleQueueResponse {
+  queue: RabbitMQQueue;
+}
+
+export interface QueueConsumersResponse {
+  success: true;
+  consumers: RabbitMQConsumer[];
+  totalConsumers: number;
+  queueName: string;
+}
+
+export interface QueueBindingsResponse {
+  success: true;
+  bindings: RabbitMQBinding[];
+  totalBindings: number;
+  queueName: string;
+}
+
+export interface QueueCreationResponse {
+  success: true;
+  message: string;
+  queue: CreateQueueResult;
+}
+
+export interface QueuePurgeResponse {
+  success: true;
+  message: string;
+  purged: number;
+}

@@ -355,7 +355,9 @@ export class EmailVerificationService {
     userId: string,
     type?: "SIGNUP" | "EMAIL_CHANGE"
   ): Promise<boolean> {
-    const whereClause: any = { userId };
+    const whereClause: { userId: string; type?: "SIGNUP" | "EMAIL_CHANGE" } = {
+      userId,
+    };
     if (type) {
       whereClause.type = type;
     }

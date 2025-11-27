@@ -70,7 +70,7 @@ const Billing: React.FC = () => {
       // Show success message to user
       if (response.message) {
         // You might want to show a toast notification here
-        console.log("Cancellation message:", response.message);
+        logger.info("Cancellation message:", response.message);
       }
 
       // Refetch billing data to update the UI

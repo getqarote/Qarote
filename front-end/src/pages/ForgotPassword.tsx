@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { useMutation } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api";
 import type { PasswordResetRequest } from "@/lib/api/passwordClient";
+import logger from "@/lib/logger";
 
 export const ForgotPassword: React.FC = () => {
   const navigate = useNavigate();
@@ -30,7 +31,7 @@ export const ForgotPassword: React.FC = () => {
       toast.success("Password reset instructions sent to your email");
     },
     onError: (error: Error) => {
-      console.error("Password reset request error:", error);
+      logger.error("Password reset request error:", error);
       toast.error("Failed to send password reset email. Please try again.");
     },
   });

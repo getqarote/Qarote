@@ -1,4 +1,4 @@
-import { RabbitMQServer } from "@prisma/client";
+import { RabbitMQServer, Workspace } from "@prisma/client";
 import { prisma } from "@/core/prisma";
 import { RabbitMQClient } from "@/core/rabbitmq/RabbitClient";
 import { EncryptionService } from "@/services/encryption.service";
@@ -27,8 +27,7 @@ export async function verifyServerAccess(
   serverId: string,
   workspaceId: string,
   includeWorkspace = false
-): Promise<any> {
-  // TODO: remove any
+): Promise<(RabbitMQServer & { workspace?: Workspace }) | null> {
   const server = await prisma.rabbitMQServer.findFirst({
     where: {
       id: serverId,
@@ -52,6 +51,9 @@ export async function createRabbitMQClient(
   workspaceId: string
 ): Promise<RabbitMQClient> {
   const server = await verifyServerAccess(serverId, workspaceId);
+  if (!server) {
+    throw new Error(`Server with ID ${serverId} not found or access denied`);
+  }
   return new RabbitMQClient(getDecryptedCredentials(server));
 }
 
@@ -98,8 +100,8 @@ export async function createAmqpClient(serverId: string, workspaceId: string) {
     });
   } catch (error) {
     logger.error(
-      `Failed to decrypt credentials for server ${server.name}:`,
-      error
+      { error },
+      `Failed to decrypt credentials for server ${server.name}`
     );
     throw new Error(`Failed to decrypt server credentials for ${server.name}`);
   }
@@ -144,8 +146,8 @@ export async function createAmqpClient(serverId: string, workspaceId: string) {
         });
       } catch (error) {
         logger.error(
-          `Failed to persist pause states for server ${serverId}:`,
-          error
+          { error },
+          `Failed to persist pause states for server ${serverId}`
         );
       }
     }

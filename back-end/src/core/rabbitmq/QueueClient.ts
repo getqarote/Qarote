@@ -13,7 +13,7 @@ import type {
   PublishResult,
   CreateQueueResult,
   BindQueueResult,
-} from "./types";
+} from "@/types/rabbitmq";
 
 /**
  * Queue and message operations for RabbitMQ
@@ -104,7 +104,7 @@ export class RabbitMQQueueClient extends RabbitMQBaseClient {
     const endpoint = `/exchanges/${this.vhost}/${encodedExchange}/publish`;
 
     // Map our property names to RabbitMQ Management API property names
-    const rabbitMQProperties: any = {};
+    const rabbitMQProperties: Record<string, unknown> = {};
 
     try {
       // Always set delivery_mode

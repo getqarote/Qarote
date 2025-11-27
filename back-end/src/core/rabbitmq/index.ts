@@ -28,7 +28,10 @@ export type {
   PublishResult,
   CreateQueueResult,
   BindQueueResult,
-} from "./types";
+  MessageRates,
+  CalculatedQueueTotals,
+  TunnelConfig,
+} from "@/types/rabbitmq";
 
 // Main RabbitMQ client that combines all functionality
 export { RabbitMQClient } from "./RabbitClient";

@@ -4,10 +4,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { isRabbitMQAuthError } from "@/types/apiErrors";
 import { useEffect, useState } from "react";
 
-interface Node {
-  running: boolean;
-}
-
 interface SecondaryMetricsData {
   connectedNodes: number;
   cpuUsage: number;
@@ -16,7 +12,6 @@ interface SecondaryMetricsData {
 
 interface SecondaryMetricsCardsProps {
   metrics: SecondaryMetricsData;
-  nodes: Node[];
   isLoading: boolean;
   metricsError?: Error | null;
   nodesError?: Error | null;
@@ -26,7 +21,6 @@ interface SecondaryMetricsCardsProps {
 
 export const SecondaryMetricsCards = ({
   metrics,
-  nodes,
   isLoading,
   metricsError,
   nodesError,

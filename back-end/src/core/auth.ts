@@ -115,7 +115,7 @@ export const extractUserFromToken = async (
     });
 
     return user;
-  } catch (error) {
+  } catch {
     return null;
   }
 };

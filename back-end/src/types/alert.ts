@@ -104,7 +104,7 @@ export interface HealthCheck {
     nodes: {
       status: "healthy" | "warning" | "critical";
       message: string;
-      details: any;
+      details: Record<string, unknown>;
     };
     memory: {
       status: "healthy" | "warning" | "critical";

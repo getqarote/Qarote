@@ -14,7 +14,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
 import { Clock } from "lucide-react";
 
 export type TimeRange = "1m" | "10m" | "1h" | "8h" | "24h";

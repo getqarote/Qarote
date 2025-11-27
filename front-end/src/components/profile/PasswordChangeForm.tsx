@@ -12,6 +12,7 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Eye, EyeOff, Lock, Shield } from "lucide-react";
 import { toast } from "sonner";
+import logger from "@/lib/logger";
 
 interface PasswordChangeFormProps {
   onPasswordChange: (data: {
@@ -87,7 +88,7 @@ export const PasswordChangeForm: React.FC<PasswordChangeFormProps> = ({
       setErrors({});
       toast.success("Password changed successfully");
     } catch (error) {
-      console.error("Password change error:", error);
+      logger.error("Password change error:", error);
       // Error handling is done by the parent component
     }
   };

@@ -10,7 +10,6 @@ import "@/styles/google-auth.css";
 
 interface GoogleInvitationButtonProps {
   invitationToken: string;
-  invitationEmail: string;
   onSuccess?: () => void;
   onError?: (error: string) => void;
   className?: string;
@@ -19,11 +18,9 @@ interface GoogleInvitationButtonProps {
 
 export const GoogleInvitationButton: React.FC<GoogleInvitationButtonProps> = ({
   invitationToken,
-  invitationEmail,
   onSuccess,
   onError,
   className,
-  disabled = false,
 }) => {
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -94,7 +91,6 @@ export const GoogleInvitationButton: React.FC<GoogleInvitationButtonProps> = ({
         shape="rectangular"
         logo_alignment="left"
         width={200}
-        disabled={disabled || googleInvitationMutation.isPending}
       />
     </div>
   );

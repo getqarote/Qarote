@@ -13,6 +13,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Mail, Eye, EyeOff, AlertCircle, CheckCircle, X } from "lucide-react";
 import { toast } from "sonner";
+import logger from "@/lib/logger";
 
 interface EmailChangeFormProps {
   currentEmail: string;
@@ -83,7 +84,7 @@ export const EmailChangeForm: React.FC<EmailChangeFormProps> = ({
       setErrors({});
       setShowPassword(false);
     } catch (error) {
-      console.error("Email change request error:", error);
+      logger.error("Email change request error:", error);
       // Error handling is done by the parent component
     }
   };
@@ -93,7 +94,7 @@ export const EmailChangeForm: React.FC<EmailChangeFormProps> = ({
       await onCancelEmailChange();
       toast.success("Email change request cancelled");
     } catch (error) {
-      console.error("Cancel email change error:", error);
+      logger.error("Cancel email change error:", error);
       toast.error("Failed to cancel email change request");
     }
   };

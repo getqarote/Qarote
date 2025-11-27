@@ -35,7 +35,7 @@ function DiscourseSSO() {
         // Redirect to Discourse with the response
         window.location.href = response.redirectUrl;
       } catch (err) {
-        console.error("SSO error:", err);
+        logger.error("SSO error:", err);
         setError("SSO authentication failed");
         setLoading(false);
       }

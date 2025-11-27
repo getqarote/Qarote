@@ -5,14 +5,10 @@
  * to automatically configure RabbitMQ connections for localhost servers.
  */
 
-export interface TunnelConfig {
-  isTunnel: boolean;
-  tunnelType?: "ngrok" | "localtunnel" | "other";
-  originalHost: string;
-  normalizedHost: string;
-  shouldUseHttps: boolean;
-  recommendedPort: number;
-}
+import type { TunnelConfig } from "@/types/rabbitmq";
+
+// Re-export type for convenience
+export type { TunnelConfig } from "@/types/rabbitmq";
 
 /**
  * Detects if a host URL is a tunnel service

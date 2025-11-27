@@ -1,7 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api";
 import { queryKeys } from "@/hooks/useApi";
-import { Server } from "@/lib/api/types";
 
 // Update server mutation
 export function useUpdateServer() {

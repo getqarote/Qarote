@@ -7,6 +7,7 @@ import { getUserPlan } from "@/services/plan/plan.service";
 import { publishMessageToQueueSchema } from "@/schemas/rabbitmq";
 import { createErrorResponse } from "../shared";
 import { createRabbitMQClient, verifyServerAccess } from "./shared";
+import type { MessageProperties } from "@/types/rabbitmq";
 
 const messagesController = new Hono();
 
@@ -65,9 +66,9 @@ messagesController.post(
       const targetRoutingKey = routingKey || queueName; // Use queue name as routing key by default
 
       // Convert properties to match RabbitMQ client expectations
-      const publishProperties = properties
+      const publishProperties: MessageProperties | undefined = properties
         ? (() => {
-            const converted: any = {};
+            const converted: MessageProperties = {};
             if (properties.deliveryMode !== undefined)
               converted.delivery_mode = properties.deliveryMode;
             if (properties.priority !== undefined)

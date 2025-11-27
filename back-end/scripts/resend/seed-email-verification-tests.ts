@@ -9,11 +9,6 @@
  * - Users with expired tokens
  */
 
-import {
-  PrismaClient,
-  UserPlan,
-  UserRole,
-} from "../../src/generated/prisma/client/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 import dotenv from "dotenv";
@@ -21,7 +16,8 @@ import path from "node:path";
 import { hashPassword } from "../../src/core/auth";
 import { logger } from "../../src/core/logger";
 import { EmailVerificationService } from "../../src/services/email/email-verification.service";
-import { addHours, subHours } from "date-fns";
+import { subHours } from "date-fns";
+import { PrismaClient, UserPlan, UserRole } from "@prisma/client";
 
 // Load environment variables
 dotenv.config({ path: path.join(__dirname, "..", "..", ".env") });

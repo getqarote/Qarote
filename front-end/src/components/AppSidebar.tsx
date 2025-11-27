@@ -28,7 +28,6 @@ import {
   LogOut,
   User,
   AlertTriangle,
-  Shield,
   HelpCircle,
   Settings,
   Database,

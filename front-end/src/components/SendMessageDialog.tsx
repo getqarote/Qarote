@@ -180,7 +180,6 @@ export function SendMessageDialog({
     response?: { data?: any };
     message?: string;
   }) => {
-    // eslint-disable-line @typescript-eslint/no-explicit-any
     // Check if this is a routing error from the API response
     if (error.response?.data) {
       const errorData = error.response.data;
@@ -496,7 +495,7 @@ export function SendMessageDialog({
       const parsed = JSON.parse(currentPayload);
       form.setValue("payload", JSON.stringify(parsed, null, 2));
     } catch (error) {
-      // If it's not valid JSON, leave it as is
+      logger.error("Invalid JSON payload:", error);
     }
   };
 

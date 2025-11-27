@@ -5,6 +5,7 @@ import { Mail, X } from "lucide-react";
 import { apiClient } from "@/lib/api";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContextDefinition";
+import logger from "@/lib/logger";
 
 interface EmailVerificationBannerProps {
   className?: string;
@@ -28,7 +29,7 @@ export const EmailVerificationBanner = ({
       await apiClient.resendVerificationEmail("SIGNUP");
       toast.success("Verification email sent! Please check your inbox.");
     } catch (error) {
-      console.error("Resend verification error:", error);
+      logger.error("Resend verification error:", error);
       toast.error(
         error instanceof Error
           ? error.message

@@ -2,7 +2,6 @@ import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { prisma } from "@/core/prisma";
 import { authenticate, authorize, SafeUser } from "@/core/auth";
-import { isSuperAdmin } from "@/core/superAdmin";
 import { UserRole } from "@prisma/client";
 import { logger } from "@/core/logger";
 import { submitFeedbackSchema, updateFeedbackSchema } from "@/schemas/feedback";
@@ -67,13 +66,6 @@ feedbackController.get(
   authorize([UserRole.ADMIN]),
   async (c) => {
     try {
-      const user = c.get("user") as SafeUser;
-
-      // Super admin access required for feedback management
-      if (!isSuperAdmin(user)) {
-        return c.json({ error: "Super admin access required" }, 403);
-      }
-
       const url = new URL(c.req.url);
       const page = parseInt(url.searchParams.get("page") || "1");
       const limit = parseInt(url.searchParams.get("limit") || "20");
@@ -148,13 +140,6 @@ feedbackController.get(
   authorize([UserRole.ADMIN]),
   async (c) => {
     try {
-      const user = c.get("user") as SafeUser;
-
-      // Super admin access required for feedback management
-      if (!isSuperAdmin(user)) {
-        return c.json({ error: "Super admin access required" }, 403);
-      }
-
       const id = c.req.param("id");
 
       const feedback = await prisma.feedback.findUnique({

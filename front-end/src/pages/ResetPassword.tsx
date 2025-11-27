@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { useMutation } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api";
 import type { PasswordReset } from "@/lib/api/passwordClient";
+import logger from "@/lib/logger";
 
 export const ResetPassword: React.FC = () => {
   const navigate = useNavigate();
@@ -50,7 +51,7 @@ export const ResetPassword: React.FC = () => {
       );
     },
     onError: (error: Error) => {
-      console.error("Password reset error:", error);
+      logger.error("Password reset error:", error);
       toast.error(
         "Failed to reset password. The link may be expired or invalid."
       );

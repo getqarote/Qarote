@@ -1,0 +1,18 @@
+echo "🔍 Running type checks before push..."
+
+# Get the remote branch name (default to main)
+remote_branch=${1:-main}
+
+# Run type-check for backend if any backend files changed
+if git diff --name-only $remote_branch...HEAD | grep -q "^back-end/"; then
+  echo "📦 Checking backend types..."
+  npm run type-check --workspace=back-end || exit 1
+fi
+
+# Run type-check for frontend if any frontend files changed
+if git diff --name-only $remote_branch...HEAD | grep -q "^front-end/"; then
+  echo "📦 Checking frontend types..."
+  npm run type-check --workspace=front-end || exit 1
+fi
+
+echo "✅ All type checks passed!"

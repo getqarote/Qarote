@@ -18,6 +18,9 @@ import type {
   UpdateVHostRequest,
   SetVHostPermissionsRequest,
   SetVHostLimitRequest,
+  RabbitMQUser,
+  RabbitMQUserPermission,
+  UpdateUserData,
 } from "@/types/rabbitmq";
 
 export class RabbitMQApiClient extends RabbitMQBaseClient {
@@ -239,10 +242,10 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
       });
       return queue;
     } catch (error) {
-      logger.error("Failed to fetch RabbitMQ queue with time range:", {
-        error,
-        queueName,
-      });
+      logger.error(
+        { error, queueName },
+        "Failed to fetch RabbitMQ queue with time range"
+      );
 
       if (error instanceof Error) {
         captureRabbitMQError(error, {
@@ -382,10 +385,10 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
       });
       return queueConsumers;
     } catch (error) {
-      logger.error("Failed to fetch RabbitMQ queue consumers:", {
-        error,
-        queueName,
-      });
+      logger.error(
+        { error, queueName },
+        "Failed to fetch RabbitMQ queue consumers"
+      );
 
       if (error instanceof Error) {
         captureRabbitMQError(error, {
@@ -412,10 +415,10 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
       });
       return bindings;
     } catch (error) {
-      logger.error("Failed to fetch RabbitMQ queue bindings:", {
-        error,
-        queueName,
-      });
+      logger.error(
+        { error, queueName },
+        "Failed to fetch RabbitMQ queue bindings"
+      );
 
       if (error instanceof Error) {
         captureRabbitMQError(error, {
@@ -1033,7 +1036,7 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
   }
 
   // User Management Methods
-  async getUsers(): Promise<any[]> {
+  async getUsers(): Promise<RabbitMQUser[]> {
     try {
       logger.debug("Fetching RabbitMQ users");
       const users = await this.request("/users");
@@ -1055,7 +1058,7 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
     }
   }
 
-  async getUser(username: string): Promise<any> {
+  async getUser(username: string): Promise<RabbitMQUser> {
     try {
       const encodedUsername = encodeURIComponent(username);
       logger.debug("Fetching RabbitMQ user", { username });
@@ -1076,7 +1079,9 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
     }
   }
 
-  async getUserPermissions(username: string): Promise<any[]> {
+  async getUserPermissions(
+    username: string
+  ): Promise<RabbitMQUserPermission[]> {
     try {
       const encodedUsername = encodeURIComponent(username);
       logger.debug("Fetching user permissions", { username });
@@ -1130,12 +1135,12 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
     }
   }
 
-  async updateUser(username: string, userData: any): Promise<void> {
+  async updateUser(username: string, userData: UpdateUserData): Promise<void> {
     try {
       const encodedUsername = encodeURIComponent(username);
       logger.debug("Updating RabbitMQ user", { username, userData });
 
-      const response = await this.request(`/users/${encodedUsername}`, {
+      await this.request(`/users/${encodedUsername}`, {
         method: "PUT",
         body: JSON.stringify(userData),
       });
@@ -1143,7 +1148,18 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
       logger.debug("RabbitMQ user updated successfully", { username });
     } catch (error) {
       // Enhanced error logging to capture RabbitMQ error details
-      const errorDetails: any = {
+      const errorDetails: {
+        username: string;
+        userData: UpdateUserData;
+        operation: string;
+        serverId: string;
+        errorMessage?: string;
+        errorStack?: string;
+        rabbitMQReason?: unknown;
+        responseStatus?: number;
+        responseStatusText?: string;
+        responseBody?: string;
+      } = {
         username,
         userData,
         operation: "updateUser",
@@ -1155,23 +1171,34 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
         errorDetails.errorStack = error.stack;
 
         // Extract error cause (RabbitMQ API reason) if available
-        if ((error as any).cause) {
-          errorDetails.rabbitMQReason = (error as any).cause;
+        const errorWithCause = error as Error & { cause?: unknown };
+        if (errorWithCause.cause) {
+          errorDetails.rabbitMQReason = errorWithCause.cause;
         }
 
         // Try to extract response details if available
-        if ((error as any).response) {
-          errorDetails.responseStatus = (error as any).response?.status;
-          errorDetails.responseStatusText = (error as any).response?.statusText;
+        const errorWithResponse = error as Error & {
+          response?: { status?: number; statusText?: string };
+        };
+        if (errorWithResponse.response) {
+          errorDetails.responseStatus = errorWithResponse.response?.status;
+          errorDetails.responseStatusText =
+            errorWithResponse.response?.statusText;
           try {
-            errorDetails.responseBody = await (error as any).response?.text();
+            const errorWithTextResponse = error as {
+              response?: { text?: () => Promise<string> };
+            };
+            if (errorWithTextResponse.response?.text) {
+              errorDetails.responseBody =
+                await errorWithTextResponse.response.text();
+            }
           } catch {
             // Ignore if we can't read the response body
           }
         }
 
         logger.error(
-          errorDetails,
+          { errorDetails },
           "Failed to update RabbitMQ user - detailed error"
         );
 
@@ -1181,7 +1208,7 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
         });
       } else {
         logger.error(
-          { ...errorDetails, error },
+          { errorDetails, error },
           "Failed to update RabbitMQ user - unknown error type"
         );
       }

@@ -3,7 +3,6 @@ import { logger } from "@/core/logger";
 import { createErrorResponse } from "../shared";
 import { createRabbitMQClient, verifyServerAccess } from "./shared";
 import { RabbitMQMetricsCalculator } from "@/core/rabbitmq/MetricsCalculator";
-import { RabbitMQOverview, RabbitMQQueue } from "@/types/rabbitmq";
 
 const metricsController = new Hono();
 

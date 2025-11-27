@@ -23,8 +23,6 @@ import {
   Download,
   Settings,
   Eye,
-  EyeOff,
-  Zap,
   GitBranch,
   Activity,
 } from "lucide-react";

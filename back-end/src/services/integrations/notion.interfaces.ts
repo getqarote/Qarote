@@ -77,3 +77,24 @@ export type NotionDatabaseResponse = z.infer<
   typeof NotionDatabaseResponseSchema
 >;
 export type NotionPageResponse = z.infer<typeof NotionPageResponseSchema>;
+
+/**
+ * Notion page property value types
+ * Union type for all possible Notion property values
+ */
+export type NotionPageProperty =
+  | { title: Array<{ text: { content: string } }> }
+  | { rich_text: Array<{ text: { content: string } }> }
+  | { checkbox: boolean }
+  | { select: { name: string } }
+  | { number: number }
+  | { date: { start: string } }
+  | { url: string }
+  | { email: string }
+  | { phone_number: string };
+
+/**
+ * Notion page properties object
+ * Maps property names to their values
+ */
+export type NotionPageProperties = Record<string, NotionPageProperty>;

@@ -1,5 +1,4 @@
 import { ReactNode } from "react";
-import { EmailVerificationBanner } from "@/components/EmailVerificationBanner";
 
 interface ProtectedLayoutWrapperProps {
   children: ReactNode;

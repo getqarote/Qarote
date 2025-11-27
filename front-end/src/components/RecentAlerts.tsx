@@ -130,9 +130,6 @@ export const RecentAlerts = () => {
     (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
   );
 
-  const criticalCount = summary.critical;
-  const warningCount = summary.warning;
-
   if (error) {
     return (
       <Card className="border-0 shadow-md bg-card backdrop-blur-sm">

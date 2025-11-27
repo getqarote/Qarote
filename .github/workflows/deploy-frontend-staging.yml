@@ -33,6 +33,7 @@ jobs:
       - name: 🧹 Lint
         working-directory: front-end
         run: npm run lint
+        continue-on-error: false
 
       - name: 💅 Format Check
         working-directory: front-end
@@ -57,7 +58,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: front-end
-        run: npm ci
+        run: npm ci --ignore-scripts # Ignore scripts to avoid husky errors
 
       - name: Build frontend
         working-directory: front-end

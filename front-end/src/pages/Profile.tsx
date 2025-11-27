@@ -154,7 +154,7 @@ const Profile = () => {
       await updateProfileMutation.mutateAsync(profileForm);
       setEditingProfile(false);
       toast.success("Profile updated successfully");
-    } catch (error) {
+    } catch {
       toast.error("Failed to update profile");
     }
   };
@@ -167,7 +167,7 @@ const Profile = () => {
       await changePasswordMutation.mutateAsync(data);
       toast.success("Password changed successfully");
     } catch (error) {
-      console.error("Password change error:", error);
+      logger.error("Password change error:", error);
       const errorMessage = extractErrorMessage(error);
       toast.error(errorMessage);
       throw error; // Re-throw to let the form handle it
@@ -182,7 +182,7 @@ const Profile = () => {
       await requestEmailChangeMutation.mutateAsync(data);
       toast.success("Verification email sent to your new email address");
     } catch (error) {
-      console.error("Email change request error:", error);
+      logger.error("Email change request error:", error);
       const errorMessage = extractErrorMessage(error);
       toast.error(errorMessage);
       throw error; // Re-throw to let the form handle it
@@ -194,7 +194,7 @@ const Profile = () => {
       await cancelEmailChangeMutation.mutateAsync();
       toast.success("Email change request cancelled");
     } catch (error) {
-      console.error("Cancel email change error:", error);
+      logger.error("Cancel email change error:", error);
       const errorMessage = extractErrorMessage(error);
       toast.error(errorMessage);
       throw error; // Re-throw to let the form handle it
@@ -207,7 +207,7 @@ const Profile = () => {
       setEditingWorkspace(false);
       await refetchWorkspace(); // Refresh workspace data
       toast.success("Workspace information updated successfully");
-    } catch (error) {
+    } catch {
       toast.error("Failed to update workspace information");
     }
   };

@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 
 // Simple test script to verify Pino-Sentry integration
-import { initSentry } from "../../src/core/sentry";
+import { initSentry } from "../../src/services/sentry";
 import { logger } from "../../src/core/logger";
 
 // Mock config for testing

@@ -7,7 +7,7 @@ export interface AuditEvent {
   ipAddress?: string;
   userAgent?: string;
   timestamp: Date;
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
 }
 
 export class AuditService {

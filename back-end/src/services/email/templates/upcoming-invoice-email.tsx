@@ -10,11 +10,9 @@ import {
   Link,
   Button,
   Hr,
-  Img,
 } from "@react-email/components";
 import {
   baseStyles,
-  headerStyles,
   contentStyles,
   buttonStyles,
   textStyles,
@@ -228,19 +226,19 @@ export default function UpcomingInvoiceEmail({
   );
 }
 
-const footer = {
+const _footer = {
   padding: "32px 32px 0",
   textAlign: "center" as const,
 };
 
-const footerText = {
+const _footerText = {
   fontSize: "14px",
   lineHeight: "20px",
   color: "#6b7280",
   margin: "0 0 8px",
 };
 
-const footerLink = {
+const _footerLink = {
   color: "#3b82f6",
   textDecoration: "underline",
 };

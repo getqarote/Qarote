@@ -85,7 +85,7 @@ export class CoreStripeService {
    * Extract customer ID from Stripe session object
    * Handles both string and object formats
    */
-  static extractCustomerId(session: any): string | null {
+  static extractCustomerId(session: Stripe.Checkout.Session): string | null {
     return typeof session.customer === "string"
       ? session.customer
       : session.customer?.id || null;
@@ -95,7 +95,9 @@ export class CoreStripeService {
    * Extract subscription ID from Stripe session object
    * Handles both string and object formats
    */
-  static extractSubscriptionId(session: any): string | null {
+  static extractSubscriptionId(
+    session: Stripe.Checkout.Session
+  ): string | null {
     return typeof session.subscription === "string"
       ? session.subscription
       : session.subscription?.id || null;
@@ -105,7 +107,9 @@ export class CoreStripeService {
    * Extract customer ID from subscription or invoice object
    * Handles both string and object formats
    */
-  static extractCustomerIdFromObject(obj: any): string | null {
+  static extractCustomerIdFromObject(
+    obj: Stripe.Subscription | Stripe.Invoice | Stripe.PaymentIntent
+  ): string | null {
     return typeof obj.customer === "string"
       ? obj.customer
       : obj.customer?.id || null;
@@ -114,7 +118,10 @@ export class CoreStripeService {
   /**
    * Set Sentry context for Stripe operations
    */
-  static setSentryContext(context: string, data: Record<string, any>): void {
+  static setSentryContext(
+    context: string,
+    data: Record<string, unknown>
+  ): void {
     setSentryContext(context, data);
   }
 
@@ -122,9 +129,9 @@ export class CoreStripeService {
    * Log and capture Stripe errors in Sentry
    */
   static logStripeError(
-    error: any,
+    error: unknown,
     operation: string,
-    context: Record<string, any> = {}
+    context: Record<string, unknown> = {}
   ): void {
     logger.error(
       { error, ...context },

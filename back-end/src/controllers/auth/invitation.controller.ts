@@ -48,7 +48,7 @@ invitationController.post(
         where: { email: invitation.email },
       });
 
-      const isNewUser = !user; // Track if this is a new user
+      const _isNewUser = !user; // Track if this is a new user
 
       // Transaction to handle user creation/update and invitation acceptance
       const result = await prisma.$transaction(async (tx) => {

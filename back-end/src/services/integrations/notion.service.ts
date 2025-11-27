@@ -14,6 +14,7 @@ import type {
   NotionPageResult,
   DataSourceIdResult,
   NotionServiceResult,
+  NotionPageProperties,
 } from "./notion.interfaces";
 import {
   NotionDatabaseResponseSchema,
@@ -123,7 +124,7 @@ class NotionService {
   private handleNotionError(
     error: unknown,
     operation: string,
-    context: Record<string, any> = {}
+    context: Record<string, unknown> = {}
   ): NotionServiceResult & { success: false } {
     this.logNotionError(error, operation, context);
 
@@ -403,7 +404,7 @@ class NotionService {
         notionPageId,
       });
 
-      const properties: any = {};
+      const properties: NotionPageProperties = {};
 
       if (updates.firstName !== undefined || updates.lastName !== undefined) {
         const firstName = updates.firstName || "";
@@ -615,9 +616,9 @@ class NotionService {
    * Log and capture Notion errors in Sentry
    */
   private logNotionError(
-    error: any,
+    error: unknown,
     operation: string,
-    context: Record<string, any> = {}
+    context: Record<string, unknown> = {}
   ): void {
     logger.error(
       { error, ...context },

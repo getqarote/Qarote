@@ -114,7 +114,7 @@ export function AddQueueForm({
     if (arguments_.trim()) {
       try {
         parsedArguments = JSON.parse(arguments_);
-      } catch (error) {
+      } catch {
         toast({
           title: "Invalid JSON",
           description: "Arguments must be valid JSON",

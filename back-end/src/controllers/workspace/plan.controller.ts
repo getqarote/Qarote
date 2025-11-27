@@ -1,8 +1,7 @@
 import { Hono } from "hono";
-import { UserRole, UserPlan } from "@prisma/client";
+import { UserPlan } from "@prisma/client";
 import { prisma } from "@/core/prisma";
 import { logger } from "@/core/logger";
-import { authorize } from "@/core/auth";
 import { PLAN_FEATURES, getPlanFeatures } from "@/services/plan/plan.service";
 
 const planRoutes = new Hono();

@@ -1,9 +1,9 @@
-import js from "@eslint/js";
-import globals from "globals";
-import tseslint from "typescript-eslint";
+const js = require("@eslint/js");
+const globals = require("globals");
+const tseslint = require("typescript-eslint");
 
-export default tseslint.config(
-  { ignores: ["dist", "node_modules", "src/generated"] },
+module.exports = tseslint.config(
+  { ignores: ["dist", "node_modules", "scripts"] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ["**/*.{ts,tsx}"],
@@ -13,10 +13,11 @@ export default tseslint.config(
     },
     rules: {
       "@typescript-eslint/no-unused-vars": [
-        "warn",
+        "error",
         { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
       ],
-      "@typescript-eslint/no-explicit-any": "warn",
+      "@typescript-eslint/no-explicit-any": "error",
+      "no-console": "error",
     },
   }
 );

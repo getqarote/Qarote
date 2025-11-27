@@ -1,12 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import logger from "../../lib/logger";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,10 +36,7 @@ import {
   RefreshCw,
   Eye,
   AlertTriangle,
-  Calendar,
-  User,
   MessageSquare,
-  ExternalLink,
 } from "lucide-react";
 import { apiClient } from "@/lib/api/client";
 import type { Feedback } from "@/types/feedback";

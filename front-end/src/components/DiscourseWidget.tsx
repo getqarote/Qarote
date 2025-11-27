@@ -15,6 +15,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { ExternalLink, MessageSquare, Users, TrendingUp } from "lucide-react";
 import { DiscourseSSOClient } from "@/lib/DiscourseSSOClient";
+import logger from "@/lib/logger";
 
 interface DiscourseStats {
   topics: number;
@@ -75,7 +76,7 @@ export const DiscourseWidget: React.FC<DiscourseWidgetProps> = ({
         setRecentTopics(topicsData.topics || []);
       }
     } catch (error) {
-      console.error("Error fetching Discourse data:", error);
+      logger.error("Error fetching Discourse data:", error);
     } finally {
       setLoading(false);
     }
@@ -101,7 +102,7 @@ export const DiscourseWidget: React.FC<DiscourseWidgetProps> = ({
         avatar_url: userAvatar,
       });
     } catch (error) {
-      console.error("Error joining community:", error);
+      logger.error("Error joining community:", error);
       // Fallback: open Discourse in new tab
       // window.open("http://localhost:9000", "_blank");
     }
@@ -253,7 +254,7 @@ export const DiscourseLink: React.FC<DiscourseWidgetProps> = ({
   userEmail,
   userName,
   userUsername,
-  userAvatar,
+  userAvatar: _userAvatar,
 }) => {
   const handleClick = () => {
     if (!userId || !userEmail || !userName || !userUsername) {

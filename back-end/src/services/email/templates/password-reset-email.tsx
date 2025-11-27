@@ -9,13 +9,11 @@ import {
   Text,
   Button,
   Hr,
-  Img,
   Link,
 } from "@react-email/components";
 import React from "react";
 import {
   baseStyles,
-  headerStyles,
   contentStyles,
   buttonStyles,
   textStyles,

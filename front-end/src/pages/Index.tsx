@@ -17,7 +17,6 @@ import { QueuedMessagesChart } from "@/components/QueuedMessagesChart";
 import { QueueDepthsChart } from "@/components/QueueDepthsChart";
 import { PlanBadge } from "@/components/ui/PlanBadge";
 import { useServerContext } from "@/contexts/ServerContext";
-import { useUser } from "@/hooks/useUser";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { useAuth } from "@/contexts/AuthContextDefinition";
 import { useNavigate } from "react-router-dom";
@@ -46,16 +45,12 @@ const Index = () => {
     queues,
     nodes,
     metrics,
-    liveRates,
     liveRatesData,
     queueTotals,
-    connections,
     isLoading,
     queuesLoading,
     liveRatesLoading,
-    connectionsLoading,
     liveRatesFetching,
-    connectionsFetching,
     queuesFetching,
     overviewFetching,
     nodesFetching,
@@ -63,7 +58,6 @@ const Index = () => {
     metricsError,
     liveRatesError,
     nodesError,
-    connectionsError,
   } = useDashboardData(selectedServerId, liveRatesTimeRange);
 
   if (!hasServers) {
@@ -158,7 +152,6 @@ const Index = () => {
             {/* Secondary Metrics */}
             <SecondaryMetricsCards
               metrics={metrics}
-              nodes={nodes}
               isLoading={isLoading}
               metricsError={metricsError}
               nodesError={nodesError}

@@ -26,6 +26,21 @@
     "dev:front": "npm run dev --workspace=front-end",
     "dev:back": "npm run dev --workspace=back-end",
     "build": "npm run build --workspace=back-end",
-    "start": "npm run start --workspace=back-end"
+    "start": "npm run start --workspace=back-end",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "back-end/**/*.{ts,tsx}": [
+      "bash -c 'cd back-end && npx eslint --fix \"$@\"' _",
+      "bash -c 'cd back-end && npx prettier --write \"$@\"' _"
+    ],
+    "front-end/**/*.{ts,tsx,js,jsx}": [
+      "bash -c 'cd front-end && npx eslint --fix --max-warnings=-1 \"$@\"' _",
+      "bash -c 'cd front-end && npx prettier --write \"$@\"' _"
+    ]
+  },
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7"
   }
 }

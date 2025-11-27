@@ -13,7 +13,6 @@ import { Link } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { PlanBadge } from "@/components/ui/PlanBadge";
-import { useUser } from "@/hooks/useUser";
 import { useToast } from "@/hooks/useToast";
 import { Button } from "@/components/ui/button";
 import {
@@ -83,9 +82,8 @@ const quickLinks = [
 
 export function HelpSupport() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
-  const { userPlan } = useUser();
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user: _user } = useAuth();
 
   const handleEmailCopy = async () => {
     try {
@@ -94,7 +92,7 @@ export function HelpSupport() {
         title: "Email copied!",
         description: "support@rabbithq.io has been copied to your clipboard.",
       });
-    } catch (error) {
+    } catch {
       toast({
         title: "Copy failed",
         description: "Please manually copy: support@rabbithq.io",
@@ -109,7 +107,7 @@ export function HelpSupport() {
     try {
       // The browser will handle this - no need to intercept
       // Just let the normal mailto: behavior work
-    } catch (error) {
+    } catch {
       e.preventDefault();
       handleEmailCopy();
     }

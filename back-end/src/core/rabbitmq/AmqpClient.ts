@@ -1,29 +1,10 @@
 import amqp from "amqplib";
 import { logger } from "@/core/logger";
 import { captureRabbitMQError } from "@/services/sentry";
+import type { AMQPConnectionConfig, QueuePauseState } from "@/types/rabbitmq";
 
-export interface AMQPConnectionConfig {
-  protocol: "amqp" | "amqps";
-  hostname: string;
-  port: number;
-  username: string;
-  password: string;
-  vhost: string;
-  heartbeat?: number;
-  connectionTimeout?: number;
-  serverId?: string; // Add server ID for tracking
-  serverName?: string; // Add server name for logging
-}
-
-export interface QueuePauseState {
-  queueName: string;
-  vhost: string;
-  isPaused: boolean;
-  pausedAt?: Date;
-  resumedAt?: Date;
-  pausedConsumers: string[];
-  serverId?: string; // Track which server this relates to
-}
+// Re-export types for convenience
+export type { AMQPConnectionConfig, QueuePauseState } from "@/types/rabbitmq";
 
 /**
  * AMQP-based RabbitMQ client for direct protocol operations
@@ -224,7 +205,7 @@ export class RabbitMQAmqpClient {
       // Check if queue exists
       try {
         await this.channel.checkQueue(queueName);
-      } catch (error) {
+      } catch {
         throw new Error(`Queue "${queueName}" does not exist`);
       }
 

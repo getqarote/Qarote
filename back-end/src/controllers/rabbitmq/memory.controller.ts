@@ -1,5 +1,4 @@
 import { Hono } from "hono";
-import { prisma } from "@/core/prisma";
 import { logger } from "@/core/logger";
 import { RabbitMQNode } from "@/types/rabbitmq";
 import { createErrorResponse } from "../shared";
@@ -85,7 +84,7 @@ memoryController.get("/servers/:id/nodes/:nodeName/memory", async (c) => {
           },
         },
       };
-    } catch (error) {
+    } catch {
       // Access not allowed for this plan level
     }
 
@@ -123,7 +122,7 @@ memoryController.get("/servers/:id/nodes/:nodeName/memory", async (c) => {
           },
         },
       };
-    } catch (error) {
+    } catch {
       // Access not allowed for this plan level
     }
 
@@ -141,7 +140,7 @@ memoryController.get("/servers/:id/nodes/:nodeName/memory", async (c) => {
           processUsageRate: node.proc_used_details.rate,
         },
       };
-    } catch (error) {
+    } catch {
       // Access not allowed for this plan level
     }
 
@@ -225,7 +224,7 @@ memoryController.get("/servers/:id/nodes/:nodeName/memory", async (c) => {
           },
         },
       };
-    } catch (error) {
+    } catch {
       // Access not allowed for this plan level
     }
 

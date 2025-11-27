@@ -1,12 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import logger from "../../lib/logger";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -22,8 +16,6 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 import {
   X,
-  User,
-  Calendar,
   Globe,
   Monitor,
   Smartphone,
@@ -31,9 +23,10 @@ import {
   CheckCircle,
   Clock,
   MessageSquare,
-  Send,
   Trash2,
   Save,
+  User,
+  Calendar,
   ExternalLink,
 } from "lucide-react";
 import { apiClient } from "@/lib/api/client";

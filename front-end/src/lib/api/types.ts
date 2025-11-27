@@ -5,7 +5,7 @@
 
 import { RateDetail } from "./rabbitmqTypes";
 
-export interface ApiResponse<T> {
+export interface ApiResponse<_T> {
   success?: boolean;
   error?: string;
   message?: string;

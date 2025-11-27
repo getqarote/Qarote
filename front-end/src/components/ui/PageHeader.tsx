@@ -1,7 +1,6 @@
 import { ReactNode } from "react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { PlanBadge } from "@/components/ui/PlanBadge";
-import { useUser } from "@/hooks/useUser";
 
 interface PageHeaderProps {
   title: string;
@@ -18,8 +17,6 @@ export function PageHeader({
   showPlanBadge = true,
   showSidebarTrigger = true,
 }: PageHeaderProps) {
-  const { userPlan } = useUser();
-
   return (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-4">

@@ -281,7 +281,16 @@ serverController.put(
       }
 
       // Prepare update data with proper encryption
-      const updateData: any = {};
+      const updateData: {
+        name?: string;
+        host?: string;
+        port?: number;
+        amqpPort?: number;
+        username?: string;
+        password?: string;
+        vhost?: string;
+        useHttps?: boolean;
+      } = {};
 
       if (data.name !== undefined) updateData.name = data.name;
       if (data.host !== undefined) updateData.host = data.host;

@@ -16,7 +16,7 @@ export interface BaseEmailParams {
   subject: string;
   template: ReactElement;
   emailType: string;
-  context?: Record<string, any>;
+  context?: Record<string, unknown>;
   attachments?: Array<{
     content?: string;
     path?: string;

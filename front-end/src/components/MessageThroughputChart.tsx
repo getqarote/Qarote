@@ -1,5 +1,5 @@
 import { Suspense, lazy } from "react";
-import { RefreshCw, ShieldAlert } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TimeRange } from "@/components/ThroughputChart";
 import { RabbitMQPermissionError } from "@/components/RabbitMQPermissionError";

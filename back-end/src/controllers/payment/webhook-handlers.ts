@@ -727,7 +727,7 @@ export async function handleCustomerUpdated(customer: Customer) {
     }
 
     // Update user information if needed (e.g., email changes)
-    const updateData: any = {};
+    const updateData: { email?: string } = {};
 
     if (customer.email && customer.email !== user.email) {
       updateData.email = customer.email;
@@ -759,7 +759,11 @@ export function extractStringId(value: string | object | null): string {
     return value;
   }
   if (typeof value === "object" && value !== null && "id" in value) {
-    return (value as any).id;
+    const id = (value as { id: unknown }).id;
+    if (typeof id === "string") {
+      return id;
+    }
+    throw new Error(`ID is not a string: ${JSON.stringify(id)}`);
   }
   throw new Error(`Unable to extract ID from value: ${JSON.stringify(value)}`);
 }
@@ -778,23 +782,52 @@ export function extractStringIdOrNull(
     return value;
   }
   if (typeof value === "object" && "id" in value) {
-    return (value as any).id;
+    const id = (value as { id: unknown }).id;
+    if (typeof id === "string") {
+      return id;
+    }
+    return null;
   }
   return null;
 }
 
 function getInvoiceReceiptUrl(invoice: Invoice): string | null {
   // receipt_url might be available on the invoice object but not in the main type definition
-  return (invoice as any).receipt_url || null;
+  const receiptUrl = (invoice as Invoice & { receipt_url?: string })
+    .receipt_url;
+  return receiptUrl || null;
 }
 
 function getInvoiceHostedUrl(invoice: Invoice): string | null {
   return invoice.hosted_invoice_url || null;
 }
 
-function getInvoiceLastPaymentAttempt(invoice: Invoice): any | null {
+function getInvoiceLastPaymentAttempt(invoice: Invoice): {
+  created?: number;
+  status?: string;
+  payment_intent?: {
+    last_payment_error?: {
+      code?: string;
+      message?: string;
+    };
+  };
+} | null {
   // last_payment_attempt might be available on the invoice object but not in the main type definition
-  return (invoice as any).last_payment_attempt || null;
+  const lastPaymentAttempt = (
+    invoice as Invoice & {
+      last_payment_attempt?: {
+        created?: number;
+        status?: string;
+        payment_intent?: {
+          last_payment_error?: {
+            code?: string;
+            message?: string;
+          };
+        };
+      };
+    }
+  ).last_payment_attempt;
+  return lastPaymentAttempt || null;
 }
 
 export function mapStripeStatusToSubscriptionStatus(

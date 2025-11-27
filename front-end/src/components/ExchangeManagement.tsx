@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useCreateExchange, useDeleteExchange } from "@/hooks/useApi";
+import { useCreateExchange } from "@/hooks/useApi";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -66,7 +66,7 @@ export const CreateExchangeDialog = ({
     if (arguments_.trim()) {
       try {
         parsedArguments = JSON.parse(arguments_);
-      } catch (error) {
+      } catch {
         toast({
           title: "Validation Error",
           description: "Arguments must be valid JSON",

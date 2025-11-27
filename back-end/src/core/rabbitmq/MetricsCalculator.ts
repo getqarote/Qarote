@@ -7,13 +7,13 @@ import type {
   RabbitMQQueue,
   RateSample,
   Metrics,
+  MessageStats,
+  QueueMessageStats,
+  MessageRates,
 } from "@/types/rabbitmq";
 
-// Type definitions for metrics extraction
-export type MessageRates = {
-  timestamp: number;
-  [key: string]: any;
-};
+// Re-export types for convenience
+export type { MessageRates } from "@/types/rabbitmq";
 
 export type QueueTotals = {
   timestamp: number;
@@ -65,7 +65,7 @@ export class RabbitMQMetricsCalculator {
   // Helper function to process metric samples and calculate rates
   static processMetricSamples(
     metricSamples: Record<string, RateSample[]>,
-    messagesRates: Array<{ timestamp: number; [key: string]: any }>
+    messagesRates: MessageRates[]
   ): void {
     Object.entries(metricSamples).forEach(([metricName, samples]) => {
       const rates = this.calculateRatesFromSamples(samples);
@@ -94,9 +94,9 @@ export class RabbitMQMetricsCalculator {
 
   // Generic function for extracting message rates from message stats
   static extractMessageRatesFromStats(
-    messageStats: any,
+    messageStats: MessageStats | QueueMessageStats,
     includeDiskMetrics: boolean = true
-  ): Array<{ timestamp: number; [key: string]: any }> {
+  ): MessageRates[] {
     const baseMetrics = {
       publish: messageStats.publish_details?.samples || [],
       deliver: messageStats.deliver_details?.samples || [],
@@ -110,15 +110,18 @@ export class RabbitMQMetricsCalculator {
       return_unroutable: messageStats.return_unroutable_details?.samples || [],
     };
 
-    const metrics = includeDiskMetrics
-      ? {
-          ...baseMetrics,
-          disk_reads: messageStats.disk_reads_details?.samples || [],
-          disk_writes: messageStats.disk_writes_details?.samples || [],
-        }
-      : baseMetrics;
+    const metrics =
+      includeDiskMetrics &&
+      "disk_reads_details" in messageStats &&
+      "disk_writes_details" in messageStats
+        ? {
+            ...baseMetrics,
+            disk_reads: messageStats.disk_reads_details?.samples || [],
+            disk_writes: messageStats.disk_writes_details?.samples || [],
+          }
+        : baseMetrics;
 
-    const messagesRates: Array<{ timestamp: number; [key: string]: any }> = [];
+    const messagesRates: MessageRates[] = [];
     this.processMetricSamples(metrics, messagesRates);
     return messagesRates;
   }

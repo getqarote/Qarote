@@ -9,7 +9,6 @@ import {
   Link,
   Button,
   Hr,
-  Img,
 } from "@react-email/components";
 import {
   baseStyles,
@@ -81,7 +80,7 @@ export const InvitationEmail = ({
 };
 
 // Custom styles for this template
-const styles = {
+const _styles = {
   detailText: {
     fontSize: "16px",
     lineHeight: "1.5",

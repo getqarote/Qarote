@@ -3,7 +3,7 @@
  */
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
@@ -29,7 +29,6 @@ import {
   getNodeCenter,
   generateRandomMessage,
   calculateNodeSize,
-  debounce,
   formatNumber,
 } from "./utils";
 import {
@@ -41,8 +40,6 @@ import {
   Activity,
 } from "lucide-react";
 // import PremiumPageWrapper from "../PremiumPageWrapper";
-import { UserPlan } from "@/types/plans";
-import { useUser } from "@/hooks/useUser";
 
 // Mock data for demonstration
 const generateMockData = () => {
@@ -219,7 +216,7 @@ export const RoutingVisualization: React.FC = () => {
   });
 
   const canvasRef = useRef<HTMLDivElement>(null);
-  const animationRef = useRef<number>();
+  const _animationRef = useRef<number>();
 
   // Filter data based on current filters
   const filteredData = React.useMemo(() => {
@@ -649,7 +646,6 @@ export const RoutingVisualization: React.FC = () => {
                         flow={flow}
                         exchangeType={exchange.type}
                         onComplete={handleFlowComplete}
-                        animationSpeed={settings.animationSpeed}
                       />
                     ) : null;
                   })}

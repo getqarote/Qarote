@@ -229,9 +229,7 @@ const AcceptInvitation = () => {
 
             <GoogleInvitationButton
               invitationToken={token || ""}
-              invitationEmail={invitation?.email || ""}
               onError={(error) => setError(error)}
-              disabled={acceptInvitationMutation.isPending}
             />
           </div>
 

@@ -1,4 +1,3 @@
-import { useState } from "react";
 import React from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
@@ -28,6 +27,7 @@ import {
 } from "@/components/ui/form";
 import { apiClient } from "@/lib/api";
 import { toast } from "sonner";
+import { useWorkspace } from "@/hooks/useWorkspace";
 
 const createVHostSchema = z.object({
   name: z.string().min(1, "VHost name is required"),
@@ -53,6 +53,7 @@ export function CreateVHostModal({
   onSuccess,
 }: CreateVHostModalProps) {
   const queryClient = useQueryClient();
+  const { workspace } = useWorkspace();
 
   const form = useForm<CreateVHostForm>({
     resolver: zodResolver(createVHostSchema),
@@ -71,12 +72,20 @@ export function CreateVHostModal({
   }, [initialName, form]);
 
   const createVHostMutation = useMutation({
-    mutationFn: (data: CreateVHostForm) =>
-      apiClient.createVHost(serverId, {
-        name: data.name,
-        description: data.description,
-        tracing: data.tracing,
-      }),
+    mutationFn: (data: CreateVHostForm) => {
+      if (!workspace?.id) {
+        throw new Error("Workspace ID is required");
+      }
+      return apiClient.createVHost(
+        serverId,
+        {
+          name: data.name,
+          description: data.description,
+          tracing: data.tracing,
+        },
+        workspace.id
+      );
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["vhosts", serverId] });
       toast.success("Virtual host created successfully");

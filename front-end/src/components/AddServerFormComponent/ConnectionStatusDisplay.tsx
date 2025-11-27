@@ -1,5 +1,5 @@
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { CheckCircle, AlertCircle } from "lucide-react";
+import { CheckCircle } from "lucide-react";
 import { EnhancedErrorDisplay } from "@/components/EnhancedErrorDisplay";
 import type { ConnectionStatus } from "./types";
 

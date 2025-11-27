@@ -177,7 +177,7 @@ discourseController.get("/stats", async (c) => {
  */
 discourseController.get("/topics", async (c) => {
   try {
-    const limit = parseInt(c.req.query("limit") || "5");
+    const _limit = parseInt(c.req.query("limit") || "5");
 
     // For now, return mock data since we don't have direct Discourse API access
     // In production, you would call Discourse's API endpoints

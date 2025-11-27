@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { logger } from "@/core/logger";
+import { prisma } from "@/core/prisma";
 import { alertService } from "@/services/alert.service";
 import { getUserPlan } from "@/services/plan/plan.service";
 import { UserPlan } from "@prisma/client";
@@ -9,10 +10,10 @@ import {
   AlertsQuerySchema,
   UpdateThresholdsRequestSchema,
   UpdateAlertNotificationSettingsRequestSchema,
+  type AlertThresholds,
 } from "@/schemas/alerts";
 import { verifyServerAccess } from "./shared";
 import { createErrorResponse } from "../shared";
-import { prisma } from "@/core/prisma";
 
 const alertsController = new Hono();
 
@@ -150,7 +151,7 @@ alertsController.get(
         success: true,
         health: healthCheck,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error({ error }, "Error getting health check");
       return createErrorResponse(c, error, 500, "Failed to get health check");
     }
@@ -190,7 +191,7 @@ alertsController.get("/thresholds", async (c) => {
       canModify,
       defaults: alertService.getDefaultThresholds(),
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error({ error }, "Error getting thresholds");
     return createErrorResponse(c, error, 500, "Failed to get thresholds");
   }
@@ -226,7 +227,7 @@ alertsController.put(
 
       const result = await alertService.updateWorkspaceThresholds(
         workspaceId,
-        thresholds as any // Cast to match service expectation for partial updates
+        thresholds as Partial<AlertThresholds>
       );
 
       if (!result.success) {
@@ -247,7 +248,7 @@ alertsController.put(
         message: result.message,
         thresholds: updatedThresholds,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error({ error }, "Error updating thresholds");
       return createErrorResponse(c, error, 500, "Failed to update thresholds");
     }

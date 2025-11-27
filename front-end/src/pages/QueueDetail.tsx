@@ -22,6 +22,7 @@ import {
   useQueueLiveRates,
 } from "@/hooks/useApi";
 import { TimeRange } from "@/components/TimeRangeSelector";
+import logger from "@/lib/logger";
 
 // Queue Detail Components
 import { QueueHeader } from "@/components/QueueDetail/QueueHeader";
@@ -85,7 +86,7 @@ const QueueDetail = () => {
       setDeleteDialogOpen(false);
       navigate("/queues");
     } catch (error) {
-      console.error("Failed to delete queue:", error);
+      logger.error("Failed to delete queue:", error);
       toast({
         title: "Error",
         description:

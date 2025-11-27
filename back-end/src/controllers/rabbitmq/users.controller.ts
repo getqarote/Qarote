@@ -41,7 +41,7 @@ usersController.get(
       const users = await client.getUsers();
 
       return c.json({ users });
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error("Error fetching users:", error);
       return createErrorResponse(c, error, 500, "Failed to fetch users");
     }
@@ -76,7 +76,7 @@ usersController.get(
         user: userDetails,
         permissions,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error("Error fetching user details:", error);
       return createErrorResponse(c, error, 500, "Failed to fetch user details");
     }
@@ -111,7 +111,7 @@ usersController.post(
       });
 
       return c.json({ message: "User created successfully" });
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error("Error creating user:", error);
       return createErrorResponse(c, error, 500, "Failed to create user");
     }
@@ -141,7 +141,11 @@ usersController.put(
 
       const client = await createRabbitMQClient(serverId, user.workspaceId);
 
-      const payload: any = {};
+      const payload: {
+        tags?: string;
+        password?: string;
+        password_hash?: string;
+      } = {};
       if (updateData.tags !== undefined) {
         payload.tags = updateData.tags;
       }
@@ -162,20 +166,30 @@ usersController.put(
       await client.updateUser(username, payload);
 
       return c.json({ message: "User updated successfully" });
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Enhanced error logging
-      const errorMessage = error?.message || "Unknown error";
-      const errorDetails: any = {
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
+      const errorDetails: {
+        username: string;
+        serverId: string;
+        updateData: unknown;
+        errorMessage: string;
+        errorStack?: string;
+        rabbitMQReason?: unknown;
+      } = {
         username: c.req.param("username"),
         serverId: c.req.param("id"),
         updateData: c.req.valid("json"),
         errorMessage,
-        errorStack: error?.stack,
+        errorStack: error instanceof Error ? error.stack : undefined,
       };
 
       // Extract RabbitMQ API reason from error cause
-      if (error?.cause) {
-        errorDetails.rabbitMQReason = error.cause;
+      if (error instanceof Error && "cause" in error) {
+        errorDetails.rabbitMQReason = (
+          error as Error & { cause?: unknown }
+        ).cause;
       }
 
       logger.error(errorDetails, "Error updating user - detailed error");
@@ -208,7 +222,7 @@ usersController.delete(
       await client.deleteUser(username);
 
       return c.json({ message: "User deleted successfully" });
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error("Error deleting user:", error);
       return createErrorResponse(c, error, 500, "Failed to delete user");
     }
@@ -245,7 +259,7 @@ usersController.put(
       });
 
       return c.json({ message: "Permissions set successfully" });
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error("Error setting permissions:", error);
       return createErrorResponse(c, error, 500, "Failed to set permissions");
     }
@@ -276,7 +290,7 @@ usersController.delete(
       await client.deleteUserPermissions(vhost, username);
 
       return c.json({ message: "Permissions deleted successfully" });
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error("Error deleting permissions:", error);
       return createErrorResponse(c, error, 500, "Failed to delete permissions");
     }

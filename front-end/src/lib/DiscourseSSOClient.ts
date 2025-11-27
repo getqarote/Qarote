@@ -5,6 +5,7 @@
 
 import { apiClient } from "./api/client";
 import type { DiscourseUser } from "./api/discourseClient";
+import logger from "./logger";
 
 export { type DiscourseUser };
 
@@ -19,13 +20,13 @@ export class DiscourseSSOClient {
    * Redirect user to Discourse with SSO
    * According to DiscourseConnect protocol, we redirect to Discourse's SSO endpoint
    */
-  async redirectToDiscourse(user: DiscourseUser): Promise<void> {
+  async redirectToDiscourse(_user: DiscourseUser): Promise<void> {
     try {
       // Redirect to Discourse's SSO endpoint
       // Discourse will then redirect back to our /discourse/sso page with SSO parameters
       window.location.href = `${this.discourseUrl}/session/sso`;
     } catch (error) {
-      console.error("Error redirecting to Discourse:", error);
+      logger.error("Error redirecting to Discourse:", error);
       // Fallback: redirect without SSO
       window.open(this.discourseUrl, "_blank");
     }
@@ -49,7 +50,7 @@ export class DiscourseSSOClient {
       );
       return response.embedUrl;
     } catch (error) {
-      console.error("Error getting embed URL:", error);
+      logger.error("Error getting embed URL:", error);
       // Fallback: return basic embed URL
       let url = `${this.discourseUrl}/embed`;
 
@@ -95,7 +96,7 @@ export class DiscourseSSOClient {
     try {
       return await apiClient.getDiscourseStats();
     } catch (error) {
-      console.error("Error getting community stats:", error);
+      logger.error("Error getting community stats:", error);
       return null;
     }
   }
@@ -107,7 +108,7 @@ export class DiscourseSSOClient {
     try {
       return await apiClient.getDiscourseTopics(limit);
     } catch (error) {
-      console.error("Error getting recent topics:", error);
+      logger.error("Error getting recent topics:", error);
       return { topics: [] };
     }
   }
@@ -119,7 +120,7 @@ export class DiscourseSSOClient {
     try {
       return await apiClient.getDiscourseInfo();
     } catch (error) {
-      console.error("Error getting Discourse info:", error);
+      logger.error("Error getting Discourse info:", error);
       return {
         discourseUrl: this.discourseUrl,
         ssoEnabled: false,

@@ -14,14 +14,12 @@ interface MessageFlowProps {
   flow: MessageFlowType;
   exchangeType: ExchangeType;
   onComplete?: (flowId: string) => void;
-  animationSpeed?: number;
 }
 
 export const MessageFlow: React.FC<MessageFlowProps> = ({
   flow,
   exchangeType,
   onComplete,
-  animationSpeed = 1,
 }) => {
   const [currentPosition, setCurrentPosition] = useState<Position>({
     x: 0,

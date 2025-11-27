@@ -14,6 +14,7 @@ import { CheckCircle, XCircle, Mail, Clock, RefreshCw } from "lucide-react";
 import { apiClient } from "@/lib/api";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContextDefinition";
+import logger from "@/lib/logger";
 
 export const EmailVerificationSettings = () => {
   const { user } = useAuth();
@@ -36,7 +37,7 @@ export const EmailVerificationSettings = () => {
       toast.success("Verification email sent! Please check your inbox.");
       refetch(); // Refresh verification status
     } catch (error) {
-      console.error("Resend verification error:", error);
+      logger.error("Resend verification error:", error);
       toast.error(
         error instanceof Error
           ? error.message

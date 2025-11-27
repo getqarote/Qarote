@@ -16,8 +16,13 @@ registrationController.post(
   "/register",
   zValidator("json", RegisterUserSchema),
   async (c) => {
-    const { email, password, firstName, lastName, acceptTerms } =
-      c.req.valid("json");
+    const {
+      email,
+      password,
+      firstName,
+      lastName,
+      acceptTerms: _acceptTerms,
+    } = c.req.valid("json");
 
     try {
       // Check if user already exists
