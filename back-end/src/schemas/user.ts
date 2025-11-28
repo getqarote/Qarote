@@ -1,5 +1,5 @@
-import { z } from "zod/v4";
 import { UserRole } from "@prisma/client";
+import { z } from "zod/v4";
 
 // Schema for creating a user
 export const CreateUserSchema = z.object({

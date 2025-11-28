@@ -102,6 +102,7 @@
     "@types/cors": "^2.8.19",
     "@types/node": "^24.0.0",
     "eslint": "^9.9.0",
+    "eslint-plugin-simple-import-sort": "^12.1.1",
     "globals": "^15.9.0",
     "prettier": "^3.3.3",
     "prisma": "^6.19.0",

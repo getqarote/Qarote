@@ -1,26 +1,28 @@
-import { RabbitMQAlert } from "@/types/alert";
 import {
-  Html,
-  Head,
-  Preview,
   Body,
+  Button,
   Container,
+  Head,
+  Hr,
+  Html,
+  Link,
+  Preview,
   Section,
   Text,
-  Link,
-  Button,
-  Hr,
 } from "@react-email/components";
+
+import { RabbitMQAlert } from "@/types/alert";
+
 import {
   baseStyles,
-  contentStyles,
   buttonStyles,
+  colorVariants,
+  contentStyles,
+  footerStyles,
+  layoutStyles,
+  sectionStyles,
   textStyles,
   utilityStyles,
-  sectionStyles,
-  layoutStyles,
-  footerStyles,
-  colorVariants,
 } from "../shared/styles";
 
 interface AlertNotificationEmailProps {

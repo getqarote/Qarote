@@ -1,16 +1,17 @@
-import { logger } from "../logger";
 import type {
-  RabbitMQOverview,
-  RabbitMQConnection,
+  MessageRates,
+  MessageStats,
+  Metrics,
+  QueueMessageStats,
   RabbitMQChannel,
+  RabbitMQConnection,
   RabbitMQNode,
+  RabbitMQOverview,
   RabbitMQQueue,
   RateSample,
-  Metrics,
-  MessageStats,
-  QueueMessageStats,
-  MessageRates,
 } from "@/types/rabbitmq";
+
+import { logger } from "../logger";
 
 // Re-export types for convenience
 export type { MessageRates } from "@/types/rabbitmq";

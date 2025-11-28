@@ -1,7 +1,9 @@
 import { Context, Next } from "hono";
-import { trackMetricCount, trackMetricDistribution } from "@/services/sentry";
 import { v4 as uuidv4 } from "uuid";
+
 import { logger } from "@/core/logger";
+
+import { trackMetricCount, trackMetricDistribution } from "@/services/sentry";
 
 /**
  * Request ID middleware - adds unique ID to each request for tracing

@@ -6,30 +6,33 @@ import { Hono } from "hono";
 import { logger as honoLogger } from "hono/logger";
 import { prettyJSON } from "hono/pretty-json";
 import { secureHeaders } from "hono/secure-headers";
-import { logger } from "@/core/logger";
-import { serverConfig } from "@/config";
-import { prisma } from "@/core/prisma";
 
-import serverController from "@/controllers/server.controller";
-import rabbitmqController from "@/controllers/rabbitmq.controller";
-import authController from "@/controllers/auth.controller";
-import userController from "@/controllers/user.controller";
-import workspaceController from "@/controllers/workspace.controller";
-import publicInvitationController from "@/controllers/public-invitation.controller";
-import feedbackController from "@/controllers/feedback.controller";
-import paymentController from "@/controllers/payment.controller";
-import webhookController from "@/controllers/payment/webhook.controller";
-import alertWebhookController from "@/controllers/webhook.controller";
-import slackController from "@/controllers/slack.controller";
-import healthcheckController from "@/controllers/healthcheck.controller";
-import discourseController from "@/controllers/discourse.controller";
+import { logger } from "@/core/logger";
+import { prisma } from "@/core/prisma";
 
 import { corsMiddleware } from "@/middlewares/cors";
 import {
-  requestIdMiddleware,
   performanceMonitoring,
+  requestIdMiddleware,
 } from "@/middlewares/request";
+
+import { serverConfig } from "@/config";
+
 import { standardRateLimiter } from "./middlewares/rateLimiter";
+
+import authController from "@/controllers/auth.controller";
+import discourseController from "@/controllers/discourse.controller";
+import feedbackController from "@/controllers/feedback.controller";
+import healthcheckController from "@/controllers/healthcheck.controller";
+import paymentController from "@/controllers/payment.controller";
+import webhookController from "@/controllers/payment/webhook.controller";
+import publicInvitationController from "@/controllers/public-invitation.controller";
+import rabbitmqController from "@/controllers/rabbitmq.controller";
+import serverController from "@/controllers/server.controller";
+import slackController from "@/controllers/slack.controller";
+import userController from "@/controllers/user.controller";
+import alertWebhookController from "@/controllers/webhook.controller";
+import workspaceController from "@/controllers/workspace.controller";
 // import { alertService } from "./services/alert.service";
 // import { TemporaryStorage } from "./core/privacy";
 

@@ -1,6 +1,9 @@
 import amqp from "amqplib";
+
 import { logger } from "@/core/logger";
+
 import { captureRabbitMQError } from "@/services/sentry";
+
 import type { AMQPConnectionConfig, QueuePauseState } from "@/types/rabbitmq";
 
 // Re-export types for convenience

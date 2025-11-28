@@ -1,16 +1,19 @@
-import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
-import { authorize } from "@/core/auth";
 import { UserRole } from "@prisma/client";
+import { Hono } from "hono";
+
+import { authorize } from "@/core/auth";
 import { logger } from "@/core/logger";
-import { createRabbitMQClient, verifyServerAccess } from "./shared";
-import { createErrorResponse } from "../shared";
+
 import {
   CreateVHostSchema,
   SetLimitSchema,
   SetPermissionSchema,
   UpdateVHostSchema,
 } from "@/schemas/vhost";
+
+import { createErrorResponse } from "../shared";
+import { createRabbitMQClient, verifyServerAccess } from "./shared";
 
 const vhostController = new Hono();
 

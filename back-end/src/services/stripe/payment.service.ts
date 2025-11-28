@@ -1,5 +1,6 @@
 import { logger } from "@/core/logger";
-import { stripe, CoreStripeService } from "./core.service";
+
+import { CoreStripeService, stripe } from "./core.service";
 
 export class StripePaymentService {
   /**

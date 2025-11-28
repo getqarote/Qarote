@@ -1,7 +1,12 @@
-import { logger } from "@/core/logger";
-import { createRabbitMQClient } from "@/controllers/rabbitmq/shared";
-import { prisma } from "@/core/prisma";
 import { WorkspaceAlertThresholds } from "@prisma/client";
+
+import { logger } from "@/core/logger";
+import { prisma } from "@/core/prisma";
+
+import { NotificationEmailService } from "@/services/email/notification-email.service";
+import { SlackService } from "@/services/slack/slack.service";
+import { WebhookService } from "@/services/webhook/webhook.service";
+
 import {
   AlertCategory,
   AlertSeverity,
@@ -12,9 +17,8 @@ import {
   RabbitMQAlert,
 } from "@/types/alert";
 import { RabbitMQNode, RabbitMQQueue } from "@/types/rabbitmq";
-import { NotificationEmailService } from "@/services/email/notification-email.service";
-import { WebhookService } from "@/services/webhook/webhook.service";
-import { SlackService } from "@/services/slack/slack.service";
+
+import { createRabbitMQClient } from "@/controllers/rabbitmq/shared";
 
 const DEFAULT_THRESHOLDS: AlertThresholds = {
   memory: { warning: 80, critical: 95 },

@@ -1,13 +1,16 @@
-import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { UserRole } from "@prisma/client";
-import { prisma } from "@/core/prisma";
-import { logger } from "@/core/logger";
+import { Hono } from "hono";
+
 import { hashPassword } from "@/core/auth";
-import { RegisterUserSchema } from "@/schemas/auth";
+import { logger } from "@/core/logger";
+import { prisma } from "@/core/prisma";
+
 import { EmailVerificationService } from "@/services/email/email-verification.service";
 import { notionService } from "@/services/integrations/notion.service";
 import { trackSignUpError } from "@/services/sentry";
+
+import { RegisterUserSchema } from "@/schemas/auth";
 
 const registrationController = new Hono();
 

@@ -1,14 +1,18 @@
+import { zValidator } from "@hono/zod-validator";
+import { UserRole } from "@prisma/client";
 import { Hono } from "hono";
 import { z } from "zod/v4";
-import { zValidator } from "@hono/zod-validator";
-import { prisma } from "@/core/prisma";
+
 import { authenticate, authorize } from "@/core/auth";
-import { UpdateUserSchema, UpdateProfileSchema } from "@/schemas/user";
-import { UserRole } from "@prisma/client";
 import { logger } from "@/core/logger";
-import { planValidationMiddleware } from "@/middlewares/plan-validation";
+import { prisma } from "@/core/prisma";
+
 import { EmailVerificationService } from "@/services/email/email-verification.service";
+
+import { planValidationMiddleware } from "@/middlewares/plan-validation";
 import { strictRateLimiter } from "@/middlewares/rateLimiter";
+
+import { UpdateProfileSchema, UpdateUserSchema } from "@/schemas/user";
 import { UpdateWorkspaceSchema } from "@/schemas/workspace";
 
 const userController = new Hono();

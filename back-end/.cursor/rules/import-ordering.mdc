@@ -1,0 +1,76 @@
+---
+alwaysApply: true
+---
+
+# Import Ordering Convention
+
+All imports in back-end files must follow this strict ordering:
+
+1. **Node.js built-in modules** - Node.js core modules (e.g., `node:path`, `node:fs`, `node:url`)
+2. **External npm packages** - Third-party packages (e.g., `hono`, `stripe`, `@prisma/client`, `date-fns`, `dotenv`)
+3. **Core modules** - Internal core functionality (`@/core/*`)
+4. **Services modules** - Service layer (`@/services/*`)
+5. **Middlewares** - Middleware functions (`@/middlewares/*`)
+6. **Schemas** - Zod validation schemas (`@/schemas/*`)
+7. **Config** - Configuration files (`@/config`)
+8. **Types modules** - Type definitions (`@/types/*`)
+9. **Relative imports** - Local file imports (`./`, `../`)
+
+## Examples
+
+### Correct Import Order
+
+```typescript
+// 1. Node.js built-in modules
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
+// 2. External npm packages
+import { Hono } from "hono";
+import { UserPlan } from "@prisma/client";
+import Stripe from "stripe";
+import dotenv from "dotenv";
+
+// 3. Core modules
+import { authenticate } from "@/core/auth";
+import { logger } from "@/core/logger";
+import { prisma } from "@/core/prisma";
+
+// 4. Services modules
+import { StripeService } from "@/services/stripe/stripe.service";
+import { EmailService } from "@/services/email/email.service";
+
+// 5. Middlewares
+import { authenticate } from "@/middlewares/auth";
+import { billingRateLimiter } from "@/middlewares/rateLimiter";
+
+// 6. Schemas
+import { RegisterUserSchema } from "@/schemas/auth";
+import { CreateWorkspaceSchema } from "@/schemas/workspace";
+
+// 7. Config
+import { config } from "@/config";
+import { stripeConfig } from "@/config";
+
+// 8. Types modules
+import { RabbitMQAlert } from "@/types/alert";
+import { WebhookPayload } from "@/types/webhook";
+
+// 9. Relative imports
+import { mapStripeStatusToSubscriptionStatus } from "./webhook-handlers";
+```
+
+### Within Each Group
+
+- Imports within the same group should be sorted alphabetically
+- Blank lines should separate each group
+- No blank lines within a group (unless there are many imports, then group related ones)
+
+## Enforcement
+
+This ordering is enforced by:
+
+- ESLint with `eslint-plugin-simple-import-sort`
+- Cursor rules (this file)
+
+Run `npm run lint:fix` to automatically fix import ordering.

@@ -1,6 +1,7 @@
+import React from "react";
+
 import { CoreEmailService } from "./core-email.service";
 import { PasswordResetEmail } from "./templates/password-reset-email";
-import React from "react";
 
 export class PasswordResetEmailService {
   /**

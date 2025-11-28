@@ -1,5 +1,5 @@
-import { prisma } from "@/core/prisma";
 import { logger } from "@/core/logger";
+import { prisma } from "@/core/prisma";
 
 export class PasswordResetCleanupService {
   /**

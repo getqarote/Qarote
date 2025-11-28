@@ -1,19 +1,20 @@
 import {
-  Html,
-  Head,
-  Preview,
   Body,
+  Button,
   Container,
+  Head,
+  Hr,
+  Html,
+  Link,
+  Preview,
   Section,
   Text,
-  Link,
-  Button,
-  Hr,
 } from "@react-email/components";
+
 import {
   baseStyles,
-  contentStyles,
   buttonStyles,
+  contentStyles,
   textStyles,
   utilityStyles,
 } from "../shared/styles";

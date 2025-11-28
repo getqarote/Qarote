@@ -1,12 +1,14 @@
-import React from "react";
 import { UserPlan } from "@prisma/client";
-import TrialEndingEmail from "./templates/trial-ending-email";
-import PaymentActionRequiredEmail from "./templates/payment-action-required-email";
-import UpcomingInvoiceEmail from "./templates/upcoming-invoice-email";
-import PaymentConfirmationEmail from "./templates/payment-confirmation-email";
-import AlertNotificationEmail from "./templates/alert-notification-email";
-import { CoreEmailService, EmailResult } from "./core-email.service";
+import React from "react";
+
 import { RabbitMQAlert } from "@/types/alert";
+
+import { CoreEmailService, EmailResult } from "./core-email.service";
+import AlertNotificationEmail from "./templates/alert-notification-email";
+import PaymentActionRequiredEmail from "./templates/payment-action-required-email";
+import PaymentConfirmationEmail from "./templates/payment-confirmation-email";
+import TrialEndingEmail from "./templates/trial-ending-email";
+import UpcomingInvoiceEmail from "./templates/upcoming-invoice-email";
 
 export interface TrialEndingEmailParams {
   to: string;

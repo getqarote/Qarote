@@ -1,20 +1,24 @@
 import {
-  Client,
   APIErrorCode,
+  Client,
   ClientErrorCode,
   isNotionClientError,
   LogLevel,
 } from "@notionhq/client";
-import { isProduction, notionConfig, serverConfig } from "@/config";
-import { logger } from "@/core/logger";
-import { Sentry, setSentryContext } from "@/services/sentry";
 import type { User } from "@prisma/client";
+
+import { logger } from "@/core/logger";
+
+import { Sentry, setSentryContext } from "@/services/sentry";
+
+import { isProduction, notionConfig, serverConfig } from "@/config";
+
 import type {
   CreateNotionUserParams,
-  NotionPageResult,
   DataSourceIdResult,
-  NotionServiceResult,
   NotionPageProperties,
+  NotionPageResult,
+  NotionServiceResult,
 } from "./notion.interfaces";
 import {
   NotionDatabaseResponseSchema,

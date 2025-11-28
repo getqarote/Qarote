@@ -1,12 +1,16 @@
-import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
-import { prisma } from "@/core/prisma";
+import { Hono } from "hono";
+
+import { authenticate, comparePassword } from "@/core/auth";
 import { logger } from "@/core/logger";
-import { comparePassword, authenticate } from "@/core/auth";
-import { EmailChangeRequestSchema } from "@/schemas/auth";
-import { EmailVerificationService } from "@/services/email/email-verification.service";
+import { prisma } from "@/core/prisma";
+
 import { auditService } from "@/services/audit.service";
+import { EmailVerificationService } from "@/services/email/email-verification.service";
+
 import { strictRateLimiter } from "@/middlewares/rateLimiter";
+
+import { EmailChangeRequestSchema } from "@/schemas/auth";
 
 const emailController = new Hono();
 

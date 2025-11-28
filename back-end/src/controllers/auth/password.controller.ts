@@ -1,18 +1,23 @@
-import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
-import { prisma } from "@/core/prisma";
+import { Hono } from "hono";
+
+import { authenticate, comparePassword, hashPassword } from "@/core/auth";
 import { logger } from "@/core/logger";
-import { hashPassword, comparePassword, authenticate } from "@/core/auth";
+import { prisma } from "@/core/prisma";
+
+import { auditService } from "@/services/audit.service";
+import { passwordResetEmailService } from "@/services/email/password-reset-email.service";
+import { EncryptionService } from "@/services/encryption.service";
+
+import { strictRateLimiter } from "@/middlewares/rateLimiter";
+
 import {
+  PasswordChangeSchema,
   PasswordResetRequestSchema,
   PasswordResetSchema,
-  PasswordChangeSchema,
 } from "@/schemas/auth";
-import { EncryptionService } from "@/services/encryption.service";
+
 import { isDevelopment } from "@/config";
-import { strictRateLimiter } from "@/middlewares/rateLimiter";
-import { passwordResetEmailService } from "@/services/email/password-reset-email.service";
-import { auditService } from "@/services/audit.service";
 
 const passwordController = new Hono();
 

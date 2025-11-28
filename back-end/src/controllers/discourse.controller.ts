@@ -3,16 +3,20 @@
  * Handles SSO authentication between RabbitHQ and Discourse
  */
 
-import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
-import { DiscourseSSO } from "@/services/discourse-sso.service";
-import { discourseConfig } from "@/config";
-import { logger } from "@/core/logger";
+import { Hono } from "hono";
+
 import { authenticate, SafeUser } from "@/core/auth";
+import { logger } from "@/core/logger";
+
+import { DiscourseSSO } from "@/services/discourse-sso.service";
+
 import {
-  DiscourseSSOCallbackSchema,
   DiscourseEmbedSchema,
+  DiscourseSSOCallbackSchema,
 } from "@/schemas/discourse";
+
+import { discourseConfig } from "@/config";
 
 const discourseSSO = new DiscourseSSO(
   discourseConfig.ssoSecret,

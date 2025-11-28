@@ -1,23 +1,23 @@
 // Re-export all email services and types for backward compatibility
-export { CoreEmailService, EmailResult } from "./core-email.service";
 export {
   AuthEmailService,
   SendInvitationEmailParams,
-  SendWelcomeEmailParams,
   SendVerificationEmailParams,
+  SendWelcomeEmailParams,
 } from "./auth-email.service";
 export {
   BillingEmailService,
   UpgradeConfirmationEmailParams,
   WelcomeBackEmailParams,
 } from "./billing-email.service";
+export { CoreEmailService, EmailResult } from "./core-email.service";
 export {
-  NotificationEmailService,
-  TrialEndingEmailParams,
-  PaymentActionRequiredEmailParams,
-  UpcomingInvoiceEmailParams,
-  PaymentConfirmationEmailParams,
   AlertNotificationEmailParams,
+  NotificationEmailService,
+  PaymentActionRequiredEmailParams,
+  PaymentConfirmationEmailParams,
+  TrialEndingEmailParams,
+  UpcomingInvoiceEmailParams,
 } from "./notification-email.service";
 
 // Import services for internal use

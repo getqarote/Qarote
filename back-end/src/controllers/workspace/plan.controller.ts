@@ -1,8 +1,10 @@
-import { Hono } from "hono";
 import { UserPlan } from "@prisma/client";
-import { prisma } from "@/core/prisma";
+import { Hono } from "hono";
+
 import { logger } from "@/core/logger";
-import { PLAN_FEATURES, getPlanFeatures } from "@/services/plan/plan.service";
+import { prisma } from "@/core/prisma";
+
+import { getPlanFeatures, PLAN_FEATURES } from "@/services/plan/plan.service";
 
 const planRoutes = new Hono();
 

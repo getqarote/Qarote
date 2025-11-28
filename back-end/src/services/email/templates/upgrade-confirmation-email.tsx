@@ -1,3 +1,4 @@
+import { UserPlan } from "@prisma/client";
 import {
   Body,
   Button,
@@ -11,16 +12,17 @@ import {
   Section,
   Text,
 } from "@react-email/components";
-import { UserPlan } from "@prisma/client";
+
 import { getPlanFeatures } from "@/services/plan/plan.service";
+
 import {
   baseStyles,
-  headerStyles,
-  contentStyles,
   buttonStyles,
+  contentStyles,
+  headerStyles,
+  sectionStyles,
   textStyles,
   utilityStyles,
-  sectionStyles,
 } from "../shared/styles";
 
 interface UpgradeConfirmationEmailProps {

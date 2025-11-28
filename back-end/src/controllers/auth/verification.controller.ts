@@ -1,7 +1,9 @@
 import { Hono } from "hono";
-import { prisma } from "@/core/prisma";
-import { logger } from "@/core/logger";
+
 import { authenticate } from "@/core/auth";
+import { logger } from "@/core/logger";
+import { prisma } from "@/core/prisma";
+
 import { EmailVerificationService } from "@/services/email/email-verification.service";
 import { notionService } from "@/services/integrations/notion.service";
 

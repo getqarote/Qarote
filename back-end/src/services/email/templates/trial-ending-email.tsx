@@ -1,24 +1,26 @@
 import { UserPlan } from "@prisma/client";
-import { getPlanFeatures } from "@/services/plan/plan.service";
 import {
-  Html,
-  Head,
-  Preview,
   Body,
+  Button,
   Container,
+  Head,
+  Hr,
+  Html,
+  Link,
+  Preview,
   Section,
   Text,
-  Link,
-  Button,
-  Hr,
 } from "@react-email/components";
+
+import { getPlanFeatures } from "@/services/plan/plan.service";
+
 import {
   baseStyles,
-  contentStyles,
   buttonStyles,
+  contentStyles,
+  sectionStyles,
   textStyles,
   utilityStyles,
-  sectionStyles,
 } from "../shared/styles";
 
 interface TrialEndingEmailProps {

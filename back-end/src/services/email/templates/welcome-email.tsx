@@ -1,23 +1,24 @@
 import { UserPlan } from "@prisma/client";
 import {
-  Html,
-  Head,
-  Preview,
   Body,
+  Button,
   Container,
+  Head,
+  Hr,
+  Html,
+  Link,
+  Preview,
   Section,
   Text,
-  Link,
-  Button,
-  Hr,
 } from "@react-email/components";
+
 import {
   baseStyles,
-  contentStyles,
   buttonStyles,
+  contentStyles,
+  sectionStyles,
   textStyles,
   utilityStyles,
-  sectionStyles,
 } from "../shared/styles";
 
 interface WelcomeEmailProps {

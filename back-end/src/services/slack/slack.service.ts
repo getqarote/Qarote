@@ -1,5 +1,7 @@
 import { logger } from "@/core/logger";
+
 import { RabbitMQAlert } from "@/types/alert";
+
 import { SlackMessage, SlackResult } from "./slack.interfaces";
 
 /**

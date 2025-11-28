@@ -1,17 +1,19 @@
 import { logger } from "@/core/logger";
+
 import { Event } from "@/services/stripe/stripe.service";
+
 import {
   handleCheckoutSessionCompleted,
-  handleSubscriptionChange,
   handleCustomerSubscriptionDeleted,
-  handleInvoicePaymentSucceeded,
+  handleCustomerUpdated,
   handleInvoicePaymentFailed,
-  handleTrialWillEnd,
+  handleInvoicePaymentSucceeded,
   handlePaymentActionRequired,
-  handleUpcomingInvoice,
   handlePaymentIntentFailed,
   handlePaymentIntentSucceeded,
-  handleCustomerUpdated,
+  handleSubscriptionChange,
+  handleTrialWillEnd,
+  handleUpcomingInvoice,
 } from "./webhook-handlers";
 
 export async function processStripeWebhook(event: Event) {

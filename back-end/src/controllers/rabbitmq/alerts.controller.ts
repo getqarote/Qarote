@@ -1,19 +1,23 @@
-import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
+import { UserPlan } from "@prisma/client";
+import { Hono } from "hono";
+
 import { logger } from "@/core/logger";
 import { prisma } from "@/core/prisma";
+
 import { alertService } from "@/services/alert.service";
 import { getUserPlan } from "@/services/plan/plan.service";
-import { UserPlan } from "@prisma/client";
+
 import {
-  ServerParamSchema,
   AlertsQuerySchema,
-  UpdateThresholdsRequestSchema,
-  UpdateAlertNotificationSettingsRequestSchema,
   type AlertThresholds,
+  ServerParamSchema,
+  UpdateAlertNotificationSettingsRequestSchema,
+  UpdateThresholdsRequestSchema,
 } from "@/schemas/alerts";
-import { verifyServerAccess } from "./shared";
+
 import { createErrorResponse } from "../shared";
+import { verifyServerAccess } from "./shared";
 
 const alertsController = new Hono();
 

@@ -1,24 +1,25 @@
 import {
-  Html,
-  Head,
-  Preview,
   Body,
-  Container,
-  Section,
-  Heading,
-  Text,
   Button,
+  Container,
+  Head,
+  Heading,
   Hr,
+  Html,
   Link,
+  Preview,
+  Section,
+  Text,
 } from "@react-email/components";
 import React from "react";
+
 import {
   baseStyles,
-  contentStyles,
   buttonStyles,
+  contentStyles,
+  sectionStyles,
   textStyles,
   utilityStyles,
-  sectionStyles,
 } from "../shared/styles";
 
 interface PasswordResetEmailProps {

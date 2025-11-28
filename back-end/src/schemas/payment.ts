@@ -1,5 +1,5 @@
-import { z } from "zod/v4";
 import { UserPlan } from "@prisma/client";
+import { z } from "zod/v4";
 
 export const createCheckoutSessionSchema = z.object({
   plan: z.enum(UserPlan),

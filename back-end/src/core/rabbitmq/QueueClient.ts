@@ -1,19 +1,20 @@
-import { RabbitMQBaseClient } from "./BaseClient";
-import { logger } from "../logger";
-import {
-  captureRabbitMQError,
-  captureMessageProcessingError,
-} from "../../services/sentry";
 import type {
-  RabbitMQMessage,
-  MessageProperties,
-  QueueCreateOptions,
   BindingArguments,
-  PurgeQueueResult,
-  PublishResult,
-  CreateQueueResult,
   BindQueueResult,
+  CreateQueueResult,
+  MessageProperties,
+  PublishResult,
+  PurgeQueueResult,
+  QueueCreateOptions,
+  RabbitMQMessage,
 } from "@/types/rabbitmq";
+
+import {
+  captureMessageProcessingError,
+  captureRabbitMQError,
+} from "../../services/sentry";
+import { logger } from "../logger";
+import { RabbitMQBaseClient } from "./BaseClient";
 
 /**
  * Queue and message operations for RabbitMQ

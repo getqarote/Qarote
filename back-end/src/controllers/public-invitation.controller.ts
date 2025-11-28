@@ -1,14 +1,18 @@
-import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
-import { prisma } from "@/core/prisma";
-import { logger } from "@/core/logger";
-import { hashPassword, generateToken } from "@/core/auth";
-import { AcceptInvitationWithRegistrationSchema } from "@/schemas/auth";
 import { InvitationStatus } from "@prisma/client";
-import { getUserDisplayName } from "./shared";
 import { OAuth2Client } from "google-auth-library";
-import { googleConfig } from "@/config";
+import { Hono } from "hono";
 import { z } from "zod/v4";
+
+import { generateToken, hashPassword } from "@/core/auth";
+import { logger } from "@/core/logger";
+import { prisma } from "@/core/prisma";
+
+import { AcceptInvitationWithRegistrationSchema } from "@/schemas/auth";
+
+import { googleConfig } from "@/config";
+
+import { getUserDisplayName } from "./shared";
 
 const publicInvitationController = new Hono();
 

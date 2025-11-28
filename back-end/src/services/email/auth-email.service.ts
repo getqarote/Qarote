@@ -1,7 +1,8 @@
 import { UserPlan } from "@prisma/client";
-import { InvitationEmail } from "./templates/invitation-email";
-import { EmailVerification } from "./templates/email-verification";
+
 import { CoreEmailService, EmailResult } from "./core-email.service";
+import { EmailVerification } from "./templates/email-verification";
+import { InvitationEmail } from "./templates/invitation-email";
 import WelcomeEmail from "./templates/welcome-email";
 
 export interface SendInvitationEmailParams {

@@ -3,8 +3,9 @@
  * Handles Single Sign-On between RabbitHQ and Discourse community
  */
 
-import { logger } from "@/core/logger";
 import crypto from "crypto";
+
+import { logger } from "@/core/logger";
 
 export interface DiscourseUser {
   id: string;

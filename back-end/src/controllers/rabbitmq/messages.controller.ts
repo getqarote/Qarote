@@ -1,13 +1,18 @@
-import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { UserRole } from "@prisma/client";
+import { Hono } from "hono";
+
 import { authorize } from "@/core/auth";
 import { logger } from "@/core/logger";
+
 import { getUserPlan } from "@/services/plan/plan.service";
+
 import { publishMessageToQueueSchema } from "@/schemas/rabbitmq";
+
+import type { MessageProperties } from "@/types/rabbitmq";
+
 import { createErrorResponse } from "../shared";
 import { createRabbitMQClient, verifyServerAccess } from "./shared";
-import type { MessageProperties } from "@/types/rabbitmq";
 
 const messagesController = new Hono();
 

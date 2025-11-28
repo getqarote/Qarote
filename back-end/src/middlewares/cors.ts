@@ -1,4 +1,5 @@
 import { cors } from "hono/cors";
+
 import { corsConfig } from "@/config";
 
 export const corsMiddleware = cors({

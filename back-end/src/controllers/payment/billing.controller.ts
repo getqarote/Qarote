@@ -1,16 +1,20 @@
 import { Hono } from "hono";
+
 import { authenticate } from "@/core/auth";
-import { prisma } from "@/core/prisma";
 import { logger } from "@/core/logger";
-import { StripeService } from "@/services/stripe/stripe.service";
-import {
-  strictRateLimiter,
-  billingRateLimiter,
-} from "@/middlewares/rateLimiter";
+import { prisma } from "@/core/prisma";
+
 import { getUserResourceCounts } from "@/services/plan/plan.service";
+import { StripeService } from "@/services/stripe/stripe.service";
+
+import {
+  billingRateLimiter,
+  strictRateLimiter,
+} from "@/middlewares/rateLimiter";
+
 import { config } from "@/config";
+
 import { mapStripeStatusToSubscriptionStatus } from "./webhook-handlers";
-import { transformPaymentDescription } from "@/utils/payment-description.utils";
 
 const billingController = new Hono();
 
@@ -208,7 +212,7 @@ billingController.get("/billing/overview", billingRateLimiter, async (c) => {
         id: payment.id,
         amount: payment.amount,
         status: payment.status,
-        description: transformPaymentDescription(
+        description: StripeService.transformPaymentDescription(
           payment.description,
           userWithSubscription.subscription?.plan || "UNKNOWN",
           userWithSubscription.subscription?.billingInterval || "MONTH"

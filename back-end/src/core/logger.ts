@@ -1,4 +1,5 @@
 import pino from "pino";
+
 import { logConfig } from "@/config";
 
 // Configure pino logger based on environment

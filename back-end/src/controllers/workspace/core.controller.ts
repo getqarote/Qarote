@@ -1,9 +1,11 @@
-import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { UserRole } from "@prisma/client";
-import { prisma } from "@/core/prisma";
-import { logger } from "@/core/logger";
+import { Hono } from "hono";
+
 import { authorize, checkWorkspaceAccess } from "@/core/auth";
+import { logger } from "@/core/logger";
+import { prisma } from "@/core/prisma";
+
 import {
   CreateWorkspaceSchema,
   UpdateWorkspaceSchema,

@@ -1,4 +1,5 @@
 import { logger } from "@/core/logger";
+
 import { AMQPConnectionConfig, RabbitMQAmqpClient } from "./AmqpClient";
 
 /**

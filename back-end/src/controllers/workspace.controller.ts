@@ -1,10 +1,12 @@
 import { Hono } from "hono";
+
 import { authenticate } from "@/core/auth";
+
 import coreRoutes from "./workspace/core.controller";
 import dataRoutes from "./workspace/data.controller";
-import planRoutes from "./workspace/plan.controller";
-import managementRoutes from "./workspace/management.controller";
 import invitationRoutes from "./workspace/invitation.controller";
+import managementRoutes from "./workspace/management.controller";
+import planRoutes from "./workspace/plan.controller";
 
 const workspaceController = new Hono();
 

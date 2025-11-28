@@ -1,9 +1,11 @@
-import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { InvitationStatus } from "@prisma/client";
-import { prisma } from "@/core/prisma";
+import { Hono } from "hono";
+
+import { generateToken, hashPassword, SafeUser } from "@/core/auth";
 import { logger } from "@/core/logger";
-import { hashPassword, generateToken, SafeUser } from "@/core/auth";
+import { prisma } from "@/core/prisma";
+
 import { AcceptInvitationSchema } from "@/schemas/auth";
 
 const invitationController = new Hono();

@@ -1,17 +1,19 @@
 import Sentry from "@sentry/node";
 import { nodeProfilingIntegration } from "@sentry/profiling-node";
+
 import { sentryConfig } from "@/config";
+
 import { logger } from "../../core/logger";
 import type {
-  SentryUser,
-  SentryContextData,
-  RabbitMQErrorContext,
   MessageProcessingErrorContext,
-  StreamingErrorContext,
-  SignUpErrorType,
-  PaymentErrorType,
   MetricAttributes,
   MetricOptions,
+  PaymentErrorType,
+  RabbitMQErrorContext,
+  SentryContextData,
+  SentryUser,
+  SignUpErrorType,
+  StreamingErrorContext,
 } from "./interfaces";
 
 /**
@@ -258,4 +260,4 @@ export function trackPaymentError(
   });
 }
 
-export { Sentry, MetricOptions };
+export { MetricOptions, Sentry };

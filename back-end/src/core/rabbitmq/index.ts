@@ -6,30 +6,30 @@
  */
 
 // Specialized clients for advanced usage
-export { RabbitMQBaseClient } from "./BaseClient";
-export { RabbitMQApiClient } from "./ApiClient";
 export {
-  RabbitMQAmqpClient,
   type AMQPConnectionConfig,
   type QueuePauseState,
+  RabbitMQAmqpClient,
 } from "./AmqpClient";
 export { RabbitMQAmqpClientFactory } from "./AmqpFactory";
-export { RabbitMQQueueClient } from "./QueueClient";
+export { RabbitMQApiClient } from "./ApiClient";
+export { RabbitMQBaseClient } from "./BaseClient";
 export { RabbitMQMetricsCalculator } from "./MetricsCalculator";
+export { RabbitMQQueueClient } from "./QueueClient";
 
 // Types for queue operations
 export type {
-  RabbitMQMessage,
-  MessageProperties,
-  QueueCreateOptions,
-  BindingArguments,
   AckMode,
-  PurgeQueueResult,
-  PublishResult,
-  CreateQueueResult,
+  BindingArguments,
   BindQueueResult,
-  MessageRates,
   CalculatedQueueTotals,
+  CreateQueueResult,
+  MessageProperties,
+  MessageRates,
+  PublishResult,
+  PurgeQueueResult,
+  QueueCreateOptions,
+  RabbitMQMessage,
   TunnelConfig,
 } from "@/types/rabbitmq";
 

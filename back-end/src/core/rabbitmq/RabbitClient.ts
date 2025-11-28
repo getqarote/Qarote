@@ -1,20 +1,21 @@
 import type {
-  RabbitMQCredentials,
-  Metrics,
-  RabbitMQMessage,
-  MessageProperties,
-  QueueCreateOptions,
   BindingArguments,
-  PurgeQueueResult,
-  PublishResult,
-  CreateQueueResult,
   BindQueueResult,
+  CreateQueueResult,
+  MessageProperties,
+  Metrics,
+  PublishResult,
+  PurgeQueueResult,
+  QueueCreateOptions,
+  RabbitMQCredentials,
+  RabbitMQMessage,
 } from "@/types/rabbitmq";
-import { RabbitMQApiClient } from "./ApiClient";
-import { RabbitMQQueueClient } from "./QueueClient";
-import { RabbitMQMetricsCalculator } from "./MetricsCalculator";
-import { logger } from "../logger";
+
 import { captureRabbitMQError } from "../../services/sentry";
+import { logger } from "../logger";
+import { RabbitMQApiClient } from "./ApiClient";
+import { RabbitMQMetricsCalculator } from "./MetricsCalculator";
+import { RabbitMQQueueClient } from "./QueueClient";
 
 /**
  * Main RabbitMQ client that combines all functionality

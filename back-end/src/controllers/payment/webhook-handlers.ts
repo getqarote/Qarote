@@ -1,23 +1,25 @@
 import {
-  UserPlan,
-  SubscriptionStatus,
-  PaymentStatus,
   BillingInterval,
+  PaymentStatus,
+  SubscriptionStatus,
+  UserPlan,
 } from "@prisma/client";
-import { prisma } from "@/core/prisma";
+
 import { logger } from "@/core/logger";
+import { prisma } from "@/core/prisma";
+
+import { EmailService } from "@/services/email/email.service";
 import { trackPaymentError } from "@/services/sentry";
 import {
-  StripeService,
-  Session,
-  Subscription,
-  Invoice,
   Customer,
+  Invoice,
   PaymentIntent,
+  Session,
+  StripeService,
+  Subscription,
 } from "@/services/stripe/stripe.service";
-import { EmailService } from "@/services/email/email.service";
+
 import { getUserDisplayName } from "../shared";
-import { generatePaymentDescription } from "@/utils/payment-description.utils";
 
 export async function handleCheckoutSessionCompleted(session: Session) {
   const userId = session.metadata?.userId;
@@ -332,8 +334,7 @@ export async function handleInvoicePaymentSucceeded(invoice: Invoice) {
         status: PaymentStatus.SUCCEEDED,
         description:
           invoice.description ||
-          generatePaymentDescription(
-            subscriptionId,
+          StripeService.generatePaymentDescription(
             (await getPlanFromSubscription(subscriptionId)) || "UNKNOWN",
             (await getBillingIntervalFromSubscription(subscriptionId)) ||
               "MONTH"
@@ -406,8 +407,7 @@ export async function handleInvoicePaymentFailed(invoice: Invoice) {
         status: PaymentStatus.FAILED,
         description:
           invoice.description ||
-          generatePaymentDescription(
-            subscriptionId,
+          StripeService.generatePaymentDescription(
             (await getPlanFromSubscription(subscriptionId)) || "UNKNOWN",
             (await getBillingIntervalFromSubscription(subscriptionId)) ||
               "MONTH",

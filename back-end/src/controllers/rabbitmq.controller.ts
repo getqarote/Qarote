@@ -1,14 +1,16 @@
 import { Hono } from "hono";
+
 import { authenticate } from "@/core/auth";
-import overviewController from "./rabbitmq/overview.controller";
-import queuesController from "./rabbitmq/queues.controller";
-import messagesController from "./rabbitmq/messages.controller";
-import metricsController from "./rabbitmq/metrics.controller";
+
+import alertsController from "./rabbitmq/alerts.controller";
 import infrastructureController from "./rabbitmq/infrastructure.controller";
 import memoryController from "./rabbitmq/memory.controller";
-import vhostController from "./rabbitmq/vhost.controller";
+import messagesController from "./rabbitmq/messages.controller";
+import metricsController from "./rabbitmq/metrics.controller";
+import overviewController from "./rabbitmq/overview.controller";
+import queuesController from "./rabbitmq/queues.controller";
 import usersController from "./rabbitmq/users.controller";
-import alertsController from "./rabbitmq/alerts.controller";
+import vhostController from "./rabbitmq/vhost.controller";
 
 const rabbitmqController = new Hono();
 

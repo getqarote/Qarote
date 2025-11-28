@@ -1,7 +1,10 @@
 import { Hono } from "hono";
-import { prisma } from "@/core/prisma";
+
 import { logger } from "@/core/logger";
+import { prisma } from "@/core/prisma";
+
 import { StripeService } from "@/services/stripe/stripe.service";
+
 import { processStripeWebhook } from "./webhook-processor";
 
 const app = new Hono();

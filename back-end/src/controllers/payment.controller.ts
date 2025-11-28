@@ -1,6 +1,7 @@
 import { Hono } from "hono";
-import paymentRoutes from "./payment/payment.controller";
+
 import billingRoutes from "./payment/billing.controller";
+import paymentRoutes from "./payment/payment.controller";
 
 const paymentController = new Hono();
 

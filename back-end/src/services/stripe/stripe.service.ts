@@ -1,30 +1,30 @@
 // Re-export types and constants for backward compatibility
 export {
-  Event,
-  Session,
-  Subscription,
-  Invoice,
-  PaymentIntent,
-  Customer,
+  CoreStripeService,
   CreateCheckoutSessionParams,
   CreateCustomerParams,
+  Customer,
+  Event,
+  Invoice,
+  PaymentIntent,
+  PLAN_PRICING,
+  Session,
   stripe,
   STRIPE_PRICE_IDS,
-  PLAN_PRICING,
-  CoreStripeService,
+  Subscription,
 } from "./core.service";
 
 // Re-export services
 export { StripeCustomerService } from "./customer.service";
-export { StripeSubscriptionService } from "./subscription.service";
 export { StripePaymentService } from "./payment.service";
+export { StripeSubscriptionService } from "./subscription.service";
 export { StripeWebhookService } from "./webhook.service";
 
 // Import services for internal use
 import { CoreStripeService } from "./core.service";
 import { StripeCustomerService } from "./customer.service";
-import { StripeSubscriptionService } from "./subscription.service";
 import { StripePaymentService } from "./payment.service";
+import { StripeSubscriptionService } from "./subscription.service";
 import { StripeWebhookService } from "./webhook.service";
 
 /**
@@ -39,6 +39,10 @@ export class StripeService {
   static extractSubscriptionId = CoreStripeService.extractSubscriptionId;
   static extractCustomerIdFromObject =
     CoreStripeService.extractCustomerIdFromObject;
+  static transformPaymentDescription =
+    CoreStripeService.transformPaymentDescription;
+  static generatePaymentDescription =
+    CoreStripeService.generatePaymentDescription;
 
   // Customer operations
   static createCustomer = StripeCustomerService.createCustomer;

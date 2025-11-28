@@ -1,11 +1,12 @@
 import { Hono } from "hono";
+
+import emailRoutes from "./auth/email.controller";
+import googleRoutes from "./auth/google.controller";
+import invitationRoutes from "./auth/invitation.controller";
+import passwordRoutes from "./auth/password.controller";
 import registrationRoutes from "./auth/registration.controller";
 import sessionRoutes from "./auth/session.controller";
 import verificationRoutes from "./auth/verification.controller";
-import passwordRoutes from "./auth/password.controller";
-import emailRoutes from "./auth/email.controller";
-import invitationRoutes from "./auth/invitation.controller";
-import googleRoutes from "./auth/google.controller";
 
 const authController = new Hono();
 

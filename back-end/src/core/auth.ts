@@ -1,8 +1,10 @@
+import { SubscriptionStatus, UserPlan, UserRole } from "@prisma/client";
+import bcrypt from "bcryptjs";
 import { Context } from "hono";
 import { sign, verify } from "hono/jwt";
-import bcrypt from "bcryptjs";
-import { UserRole, UserPlan, SubscriptionStatus } from "@prisma/client";
+
 import { authConfig } from "@/config";
+
 import { prisma } from "./prisma";
 
 // JWT Token interfaces

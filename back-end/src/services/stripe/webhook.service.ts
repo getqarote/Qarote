@@ -1,6 +1,8 @@
 import { logger } from "@/core/logger";
+
 import { stripeConfig } from "@/config";
-import { stripe, CoreStripeService, Event } from "./core.service";
+
+import { CoreStripeService, Event, stripe } from "./core.service";
 
 export class StripeWebhookService {
   /**

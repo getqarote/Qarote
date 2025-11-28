@@ -1,8 +1,10 @@
 import { Hono } from "hono";
+
 import { logger } from "@/core/logger";
+import { RabbitMQMetricsCalculator } from "@/core/rabbitmq/MetricsCalculator";
+
 import { createErrorResponse } from "../shared";
 import { createRabbitMQClient, verifyServerAccess } from "./shared";
-import { RabbitMQMetricsCalculator } from "@/core/rabbitmq/MetricsCalculator";
 
 const metricsController = new Hono();
 
