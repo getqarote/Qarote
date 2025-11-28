@@ -2,43 +2,47 @@
  * Main routing visualization component with interactive diagrams
  */
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/AppSidebar";
-import { ExchangeNode } from "./ExchangeNode";
-import { QueueNode } from "./QueueNode";
-import { MessageFlow } from "./MessageFlow";
-import { VisualizationControls } from "./VisualizationControls";
-import logger from "../../lib/logger";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+
 import {
-  ExchangeNode as ExchangeNodeType,
-  QueueNode as QueueNodeType,
-  MessageFlow as MessageFlowType,
+  Activity,
+  AlertCircle,
+  GitBranch,
+  Network,
+  TrendingUp,
+  Zap,
+} from "lucide-react";
+
+import { AppSidebar } from "@/components/AppSidebar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+
+import { ExchangeNode } from "./ExchangeNode";
+import { MessageFlow } from "./MessageFlow";
+import { QueueNode } from "./QueueNode";
+import {
   Binding,
-  VisualizationSettings,
+  ExchangeNode as ExchangeNodeType,
   FilterOptions,
+  MessageFlow as MessageFlowType,
   Position,
+  QueueNode as QueueNodeType,
   SimulationConfig,
+  VisualizationSettings,
 } from "./types";
 import {
   autoLayoutNodes,
-  generateSmoothPath,
-  getNodeCenter,
-  generateRandomMessage,
   calculateNodeSize,
   formatNumber,
+  generateRandomMessage,
+  generateSmoothPath,
+  getNodeCenter,
 } from "./utils";
-import {
-  GitBranch,
-  Zap,
-  AlertCircle,
-  TrendingUp,
-  Network,
-  Activity,
-} from "lucide-react";
+import { VisualizationControls } from "./VisualizationControls";
+
+import logger from "../../lib/logger";
 // import PremiumPageWrapper from "../PremiumPageWrapper";
 
 // Mock data for demonstration

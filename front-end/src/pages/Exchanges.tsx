@@ -1,34 +1,35 @@
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/AppSidebar";
-import { NoServerConfigured } from "@/components/NoServerConfigured";
-import { PlanBadge } from "@/components/ui/PlanBadge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { useState } from "react";
+
 import {
   Activity,
-  Shuffle,
-  RefreshCw,
-  Server,
   ArrowUpDown,
-  GitBranch,
   Filter,
-  Share2,
-  Radio,
+  GitBranch,
   Hash,
   Link2,
+  Radio,
+  RefreshCw,
+  Server,
+  Share2,
+  Shuffle,
   Trash2,
 } from "lucide-react";
+
+import { logger } from "@/lib/logger";
+
+import { AddExchangeButton } from "@/components/AddExchangeButton";
+import { AppSidebar } from "@/components/AppSidebar";
+import CreateExchangeDialog from "@/components/ExchangeManagement";
+import { NoServerConfigured } from "@/components/NoServerConfigured";
+import { PlanUpgradeModal } from "@/components/plans/PlanUpgradeModal";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useDeleteExchange, useExchanges } from "@/hooks/useApi";
-import logger from "@/lib/logger";
-import { useServerContext } from "@/contexts/ServerContext";
-import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
@@ -37,10 +38,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { PlanBadge } from "@/components/ui/PlanBadge";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+import { useServerContext } from "@/contexts/ServerContext";
+
+import { useDeleteExchange, useExchanges } from "@/hooks/useApi";
 import { useToast } from "@/hooks/useToast";
-import CreateExchangeDialog from "@/components/ExchangeManagement";
-import { AddExchangeButton } from "@/components/AddExchangeButton";
-import { PlanUpgradeModal } from "@/components/plans/PlanUpgradeModal";
+
 import { ApiErrorWithCode } from "@/types/apiErrors";
 
 const Exchanges = () => {

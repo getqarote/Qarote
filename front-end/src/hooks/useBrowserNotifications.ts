@@ -1,7 +1,9 @@
-import { useEffect, useRef, useCallback } from "react";
-import { AlertSeverity } from "@/types/alerts";
+import { useCallback, useEffect, useRef } from "react";
+
+import { logger } from "@/lib/logger";
+
 import type { RabbitMQAlert } from "@/types/alerts";
-import logger from "@/lib/logger";
+import { AlertSeverity } from "@/types/alerts";
 
 interface BrowserNotificationOptions {
   enabled: boolean;

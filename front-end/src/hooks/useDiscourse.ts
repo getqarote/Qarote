@@ -3,9 +3,10 @@
  * Provides easy access to Discourse functionality using the main API client
  */
 
-import { useState, useCallback } from "react";
-import { DiscourseSSOClient, DiscourseUser } from "@/lib/DiscourseSSOClient";
+import { useCallback, useState } from "react";
+
 import { apiClient } from "@/lib/api";
+import { DiscourseSSOClient, DiscourseUser } from "@/lib/DiscourseSSOClient";
 
 export { type DiscourseUser };
 

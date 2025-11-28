@@ -1,17 +1,29 @@
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
+
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  AlertCircle,
+  CheckCircle,
+  ChevronDown,
+  ChevronRight,
+  HelpCircle,
+  MessageSquare,
+  Send,
+  Settings,
+} from "lucide-react";
+
+import { logger } from "@/lib/logger";
+
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import logger from "../lib/logger";
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import {
   Dialog,
   DialogContent,
@@ -20,9 +32,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -30,38 +49,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+
 import {
-  Send,
-  Settings,
-  ChevronDown,
-  ChevronRight,
-  AlertCircle,
-  CheckCircle,
-  MessageSquare,
-  HelpCircle,
-} from "lucide-react";
-import {
-  usePublishMessage,
-  useExchanges,
-  useQueues,
   queryKeys,
+  useExchanges,
+  usePublishMessage,
+  useQueues,
 } from "@/hooks/useApi";
 import { useToast } from "@/hooks/useToast";
-import { sendMessageSchema, type SendMessageFormData } from "@/schemas/forms";
+
+import { type SendMessageFormData, sendMessageSchema } from "@/schemas/forms";
 
 interface LabelWithTooltipProps {
   htmlFor: string;

@@ -1,8 +1,10 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useCallback, useEffect, useState } from "react";
+
 import { User } from "@/lib/api";
-import { setSentryUser } from "@/lib/sentry";
-import logger from "@/lib/logger";
 import { apiClient } from "@/lib/api";
+import { logger } from "@/lib/logger";
+import { setSentryUser } from "@/lib/sentry";
+
 import { AuthContext, AuthContextType } from "./AuthContextDefinition";
 
 interface AuthProviderProps {

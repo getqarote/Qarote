@@ -1,13 +1,15 @@
 import React from "react";
 import { Navigate, useLocation } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContextDefinition";
+
 import { Loader2 } from "lucide-react";
+
+import { useAuth } from "@/contexts/AuthContextDefinition";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
+export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const { isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
 
@@ -38,5 +40,3 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     </>
   );
 };
-
-export default ProtectedRoute;

@@ -1,5 +1,6 @@
+import { CheckCircle, Loader2 } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
-import { Loader2, CheckCircle } from "lucide-react";
 
 interface TestConnectionButtonProps {
   onTestConnection: () => void;

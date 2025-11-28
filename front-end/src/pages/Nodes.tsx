@@ -1,13 +1,16 @@
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
-import { PlanBadge } from "@/components/ui/PlanBadge";
-import { useServerContext } from "@/contexts/ServerContext";
-import { useUser } from "@/hooks/useUser";
-import { useNodes } from "@/hooks/useApi";
-import { RabbitMQAuthorizationError } from "@/types/apiErrors";
 import { EnhancedNodesOverview } from "@/components/nodes/EnhancedNodesOverview";
 import { EnhancedNodesTable } from "@/components/nodes/EnhancedNodesTable";
 import { NoServerConfigured } from "@/components/NoServerConfigured";
+import { PlanBadge } from "@/components/ui/PlanBadge";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+
+import { useServerContext } from "@/contexts/ServerContext";
+
+import { useNodes } from "@/hooks/useApi";
+import { useUser } from "@/hooks/useUser";
+
+import { RabbitMQAuthorizationError } from "@/types/apiErrors";
 
 const Nodes = () => {
   const { selectedServerId, hasServers } = useServerContext();

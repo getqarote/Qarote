@@ -1,4 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
+
+import { Crown, Loader2, Lock, Settings } from "lucide-react";
+import { toast } from "sonner";
+
+import { ApiError } from "@/lib/api/types";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -6,19 +15,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { toast } from "sonner";
-import { ApiError } from "@/lib/api/types";
-import { Loader2, Settings, Lock, Crown } from "lucide-react";
-import { useWorkspace } from "@/hooks/useWorkspace";
+
 import {
-  useWorkspaceThresholds,
   useUpdateWorkspaceThresholds,
+  useWorkspaceThresholds,
 } from "@/hooks/useApi";
+import { useWorkspace } from "@/hooks/useWorkspace";
 
 interface AlertThresholds {
   memory: {

@@ -1,8 +1,12 @@
-import { Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiClient } from "@/lib/api";
+
+import { Plus } from "lucide-react";
 import { toast } from "sonner";
+
+import { apiClient } from "@/lib/api";
+
+import { Button } from "@/components/ui/button";
+
 import { useWorkspace } from "@/hooks/useWorkspace";
 
 interface AddUserButtonProps {

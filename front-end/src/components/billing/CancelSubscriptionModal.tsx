@@ -1,4 +1,18 @@
 import React, { useState } from "react";
+
+import {
+  AlertTriangle,
+  Calendar,
+  Database,
+  Loader2,
+  Shield,
+  Users,
+  X,
+} from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -7,21 +21,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radioGroup";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Card, CardContent } from "@/components/ui/card";
-import {
-  AlertTriangle,
-  X,
-  Calendar,
-  Database,
-  Users,
-  Shield,
-  Loader2,
-} from "lucide-react";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radioGroup";
+import { Textarea } from "@/components/ui/textarea";
+
 import { UserPlan } from "@/types/plans";
 
 interface CancelSubscriptionModalProps {

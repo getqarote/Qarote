@@ -1,7 +1,15 @@
-import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useNavigate, useParams } from "react-router-dom";
+
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Building, Loader2, Mail, Users } from "lucide-react";
+
+import { apiClient } from "@/lib/api/client";
+
+import { GoogleInvitationButton } from "@/components/auth/GoogleInvitationButton";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -9,11 +17,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { PasswordInput } from "@/components/ui/password-input";
-import { PasswordRequirements } from "@/components/ui/password-requirements";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Form,
   FormControl,
@@ -22,15 +25,17 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Loader2, Mail, Users, Building } from "lucide-react";
-import { useToast } from "@/hooks/useToast";
-import { apiClient } from "@/lib/api/client";
+import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
+import { PasswordRequirements } from "@/components/ui/password-requirements";
+
 import { useAcceptInvitation } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/useToast";
+
 import {
-  acceptInvitationSchema,
   type AcceptInvitationFormData,
+  acceptInvitationSchema,
 } from "@/schemas/forms";
-import { GoogleInvitationButton } from "@/components/auth/GoogleInvitationButton";
 
 interface InvitationDetails {
   id: string;

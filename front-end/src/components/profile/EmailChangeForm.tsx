@@ -1,7 +1,13 @@
 import React, { useState } from "react";
+
+import { AlertCircle, CheckCircle, Eye, EyeOff, Mail, X } from "lucide-react";
+import { toast } from "sonner";
+
+import { logger } from "@/lib/logger";
+
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Card,
   CardContent,
@@ -9,11 +15,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
-import { Mail, Eye, EyeOff, AlertCircle, CheckCircle, X } from "lucide-react";
-import { toast } from "sonner";
-import logger from "@/lib/logger";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 interface EmailChangeFormProps {
   currentEmail: string;

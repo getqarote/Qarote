@@ -1,11 +1,15 @@
 import { Link } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Server, Wifi, HardDrive, Cpu, ArrowRight } from "lucide-react";
+
+import { ArrowRight, Cpu, HardDrive, Server, Wifi } from "lucide-react";
+
 import { RabbitMQNode } from "@/lib/api";
-import { isRabbitMQAuthError } from "@/types/apiErrors";
+
 import { RabbitMQPermissionError } from "@/components/RabbitMQPermissionError";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+
+import { isRabbitMQAuthError } from "@/types/apiErrors";
 
 interface ConnectedNodesProps {
   nodes: RabbitMQNode[];

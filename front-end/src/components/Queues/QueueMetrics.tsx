@@ -1,6 +1,8 @@
-import { Card, CardContent } from "@/components/ui/card";
 import { Database, MessageSquare } from "lucide-react";
+
 import { Queue } from "@/lib/api";
+
+import { Card, CardContent } from "@/components/ui/card";
 
 interface QueueMetricsProps {
   queues: Queue[];

@@ -1,7 +1,9 @@
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { MessageSquare, Users, HardDrive, Activity } from "lucide-react";
+import { Activity, HardDrive, MessageSquare, Users } from "lucide-react";
+
 import { Queue } from "@/lib/api";
+
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface QueueStatsProps {
   queue: Queue;

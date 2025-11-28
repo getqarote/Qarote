@@ -3,50 +3,52 @@
  * Handles RabbitMQ-specific operations like queues, exchanges, connections
  */
 
+import { TimeRange } from "@/components/TimeRangeSelector";
+
+import {
+  AlertsResponse,
+  AlertsSummaryResponse,
+  AlertThresholds,
+  HealthResponse,
+  ThresholdsResponse,
+  UpdateThresholdsResponse,
+} from "@/types/alerts";
+
 import { BaseApiClient } from "./baseClient";
-import { Queue } from "./types";
+import { Binding, Consumer, Exchange } from "./exchangeTypes";
 import {
-  Overview,
-  NodesResponse,
-  MetricsResponse,
-  Connection,
-  Channel,
-  LiveRatesResponse,
-  NodeMemoryDetailsResponse,
-} from "./rabbitmqTypes";
-import { Exchange, Binding, Consumer } from "./exchangeTypes";
-import {
-  PublishMessageRequest,
-  PublishMessageResponse,
   CreateQueueRequest,
   CreateQueueResponse,
+  PublishMessageRequest,
+  PublishMessageResponse,
 } from "./messageTypes";
 import {
-  VHostsResponse,
-  VHostDetailsResponse,
-  VHostActionResponse,
-  CreateVHostRequest,
-  UpdateVHostRequest,
-  SetVHostPermissionsRequest,
-  SetVHostLimitRequest,
-} from "./vhostTypes";
+  Channel,
+  Connection,
+  LiveRatesResponse,
+  MetricsResponse,
+  NodeMemoryDetailsResponse,
+  NodesResponse,
+  Overview,
+} from "./rabbitmqTypes";
+import { Queue } from "./types";
 import {
+  CreateUserRequest,
   RabbitMQUser,
   RabbitMQUserPermission,
-  CreateUserRequest,
-  UpdateUserRequest,
   SetUserPermissionRequest,
+  UpdateUserRequest,
   UserDetailsResponse,
 } from "./userTypes";
 import {
-  AlertThresholds,
-  AlertsResponse,
-  AlertsSummaryResponse,
-  ThresholdsResponse,
-  UpdateThresholdsResponse,
-  HealthResponse,
-} from "@/types/alerts";
-import { TimeRange } from "@/components/TimeRangeSelector";
+  CreateVHostRequest,
+  SetVHostLimitRequest,
+  SetVHostPermissionsRequest,
+  UpdateVHostRequest,
+  VHostActionResponse,
+  VHostDetailsResponse,
+  VHostsResponse,
+} from "./vhostTypes";
 
 export class RabbitMQApiClient extends BaseApiClient {
   // Overview and Metrics

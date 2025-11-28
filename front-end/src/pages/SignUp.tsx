@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+
 import { zodResolver } from "@hookform/resolvers/zod";
+
+import { trackSignUp } from "@/lib/ga";
+import { logger } from "@/lib/logger";
+
+import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { PasswordInput } from "@/components/ui/password-input";
-import { PasswordRequirements } from "@/components/ui/password-requirements";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Card,
   CardContent,
@@ -14,7 +17,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Form,
   FormControl,
@@ -23,12 +26,15 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { useRegister } from "@/hooks/useAuth";
+import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
+import { PasswordRequirements } from "@/components/ui/password-requirements";
+
 import { useAuth } from "@/contexts/AuthContextDefinition";
-import { signUpSchema, type SignUpFormData } from "@/schemas/forms";
-import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton";
-import logger from "@/lib/logger";
-import { trackSignUp } from "@/lib/ga";
+
+import { useRegister } from "@/hooks/useAuth";
+
+import { type SignUpFormData, signUpSchema } from "@/schemas/forms";
 
 const SignUp: React.FC = () => {
   const { isAuthenticated } = useAuth();

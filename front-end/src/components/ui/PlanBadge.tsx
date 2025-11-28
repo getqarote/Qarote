@@ -1,4 +1,5 @@
 import { Crown } from "lucide-react";
+
 import { useUser } from "@/hooks/useUser";
 
 interface PlanBadgeProps {

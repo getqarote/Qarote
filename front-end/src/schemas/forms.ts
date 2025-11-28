@@ -75,7 +75,7 @@ export type WorkspaceFormData = z.infer<typeof workspaceSchema>;
 // Feedback form schema
 export const feedbackSchema = z.object({
   type: z.enum(["BUG", "FEATURE", "IMPROVEMENT", "GENERAL"], {
-    required_error: "Please select a feedback type",
+    message: "Please select a feedback type",
   }),
   category: z.enum(
     [
@@ -87,7 +87,7 @@ export const feedbackSchema = z.object({
       "OTHER",
     ],
     {
-      required_error: "Please select a category",
+      message: "Please select a category",
     }
   ),
   title: z

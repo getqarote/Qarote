@@ -1,10 +1,13 @@
 import { useNavigate } from "react-router-dom";
+
 import { MessageSquare } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { QueueCard } from "@/components/QueueCard";
+
 import { Queue } from "@/lib/api";
+
+import { QueueCard } from "@/components/QueueCard";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface ActiveQueuesSectionProps {
   queues: Queue[];

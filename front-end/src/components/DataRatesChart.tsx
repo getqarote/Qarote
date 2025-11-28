@@ -1,14 +1,20 @@
+import { useEffect, useState } from "react";
+
+import { HelpCircle, RefreshCw } from "lucide-react";
 import {
-  LineChart,
+  CartesianGrid,
+  Legend,
   Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
 } from "recharts";
-import { RefreshCw, HelpCircle } from "lucide-react";
+
+import { Connection } from "@/lib/api/rabbitmqTypes";
+
+import { RabbitMQPermissionError } from "@/components/RabbitMQPermissionError";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Tooltip as UITooltip,
@@ -16,10 +22,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { RabbitMQPermissionError } from "@/components/RabbitMQPermissionError";
+
 import { isRabbitMQAuthError } from "@/types/apiErrors";
-import { Connection } from "@/lib/api/rabbitmqTypes";
-import { useEffect, useState } from "react";
 
 interface DataRatesChartProps {
   connections?: Connection[];

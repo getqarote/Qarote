@@ -1,8 +1,15 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { Database } from "lucide-react";
+import { toast } from "sonner";
+
+import { apiClient } from "@/lib/api";
+import { VHost } from "@/lib/api/vhostTypes";
+
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -11,9 +18,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Form,
   FormControl,
@@ -23,16 +27,12 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { apiClient } from "@/lib/api";
-import { VHost } from "@/lib/api/vhostTypes";
-import { toast } from "sonner";
+import { Textarea } from "@/components/ui/textarea";
 
-const editVHostSchema = z.object({
-  description: z.string().optional(),
-  tracing: z.boolean().default(false),
-});
+import { useWorkspace } from "@/hooks/useWorkspace";
 
-type EditVHostForm = z.infer<typeof editVHostSchema>;
+import { editVHostSchema } from "@/schemas/vhost";
+import { type EditVHostForm } from "@/schemas/vhost";
 
 interface EditVHostModalProps {
   isOpen: boolean;
@@ -48,6 +48,7 @@ export function EditVHostModal({
   vhost,
 }: EditVHostModalProps) {
   const queryClient = useQueryClient();
+  const { workspace } = useWorkspace();
 
   const form = useForm<EditVHostForm>({
     resolver: zodResolver(editVHostSchema),
@@ -58,8 +59,12 @@ export function EditVHostModal({
   });
 
   const updateVHostMutation = useMutation({
-    mutationFn: (data: EditVHostForm) =>
-      apiClient.updateVHost(serverId, vhost.name, data),
+    mutationFn: (data: EditVHostForm) => {
+      if (!workspace?.id) {
+        throw new Error("Workspace ID is required");
+      }
+      return apiClient.updateVHost(serverId, vhost.name, data, workspace.id);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["vhost", serverId, vhost.name],

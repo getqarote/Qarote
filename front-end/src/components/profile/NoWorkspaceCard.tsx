@@ -1,5 +1,6 @@
-import { Card, CardContent } from "@/components/ui/card";
 import { Building2 } from "lucide-react";
+
+import { Card, CardContent } from "@/components/ui/card";
 
 export const NoWorkspaceCard = () => {
   return (

@@ -10,7 +10,6 @@ export const ProtectedLayoutWrapper = ({
   return (
     <div className="min-h-screen">
       {/* Email verification banner for authenticated users */}
-      {/* <EmailVerificationBanner className="mx-4 mt-4" /> */}
       {children}
     </div>
   );

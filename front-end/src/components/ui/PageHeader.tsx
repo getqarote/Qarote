@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
-import { SidebarTrigger } from "@/components/ui/sidebar";
+
 import { PlanBadge } from "@/components/ui/PlanBadge";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 
 interface PageHeaderProps {
   title: string;

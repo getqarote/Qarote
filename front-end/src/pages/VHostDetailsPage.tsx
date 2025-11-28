@@ -1,13 +1,18 @@
-import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+
 import { AlertCircle, ArrowLeft } from "lucide-react";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { toast } from "sonner";
+
 import { AppSidebar } from "@/components/AppSidebar";
+import { ConnectionStatus } from "@/components/ConnectionStatus";
+import { PageLoader } from "@/components/PageLoader";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import {
   Table,
   TableBody,
@@ -16,21 +21,20 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { PageLoader } from "@/components/PageLoader";
-import { ConnectionStatus } from "@/components/ConnectionStatus";
-import { useServerContext } from "@/contexts/ServerContext";
-import { useAuth } from "@/contexts/AuthContextDefinition";
 import { DeleteVHostModal } from "@/components/vhosts/DeleteVHostModal";
 import { EditVHostModal } from "@/components/vhosts/EditVHostModal";
-import { toast } from "sonner";
+
+import { useAuth } from "@/contexts/AuthContextDefinition";
+import { useServerContext } from "@/contexts/ServerContext";
+
 import {
-  useServers,
-  useVHost,
-  useUsers,
   useDeleteVHost,
-  useSetVHostPermissions,
   useDeleteVHostPermissions,
+  useServers,
   useSetVHostLimit,
+  useSetVHostPermissions,
+  useUsers,
+  useVHost,
 } from "@/hooks/useApi";
 
 export default function VHostDetailsPage() {

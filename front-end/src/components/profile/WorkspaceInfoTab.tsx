@@ -1,23 +1,27 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Building2,
-  Settings,
-  Users,
   Calendar,
-  Shield,
   Edit,
   Save,
+  Settings,
+  Shield,
+  Users,
   X,
 } from "lucide-react";
+
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+
 import { ExtendedWorkspace } from "@/contexts/WorkspaceContextDefinition";
-import { WorkspaceFormState, formatDate, getPlanColor } from "./profileUtils";
-import { NoWorkspaceCard } from "./NoWorkspaceCard";
-import { WorkspaceFormFields } from "./WorkspaceFormFields";
+
 import { useUser } from "@/hooks/useUser";
+
+import { NoWorkspaceCard } from "./NoWorkspaceCard";
+import { formatDate, getPlanColor, WorkspaceFormState } from "./profileUtils";
+import { WorkspaceFormFields } from "./WorkspaceFormFields";
 
 interface WorkspaceInfoTabProps {
   workspace: ExtendedWorkspace | undefined;

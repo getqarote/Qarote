@@ -1,5 +1,6 @@
 import React from "react";
 import { Navigate, useLocation } from "react-router-dom";
+
 import { useAuth } from "@/contexts/AuthContextDefinition";
 
 interface PublicRouteProps {
@@ -11,7 +12,7 @@ interface PublicRouteProps {
  * like sign-in and sign-up to prevent them from accessing authentication pages
  * when they're already logged in.
  */
-const PublicRoute: React.FC<PublicRouteProps> = ({ children }) => {
+export const PublicRoute: React.FC<PublicRouteProps> = ({ children }) => {
   const { isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
 
@@ -36,5 +37,3 @@ const PublicRoute: React.FC<PublicRouteProps> = ({ children }) => {
   // Render the public content (sign-in, sign-up pages)
   return <>{children}</>;
 };
-
-export default PublicRoute;

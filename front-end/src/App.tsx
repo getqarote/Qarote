@@ -1,21 +1,24 @@
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import { lazy, Suspense } from "react";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { Suspense, lazy } from "react";
-import { ServerProvider } from "@/contexts/ServerContext";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+
+import { queryClient } from "@/lib/queryClient";
+import { SentryErrorBoundary, withSentryProfiling } from "@/lib/sentry";
+
+import { Layout } from "@/components/Layout";
+import { PageLoader } from "@/components/PageLoader";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { PublicRoute } from "@/components/PublicRoute";
+import { TawkTo } from "@/components/TawkTo";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { Toaster } from "@/components/ui/toaster";
+import { TooltipProvider } from "@/components/ui/tooltip";
+
 import { AuthProvider } from "@/contexts/AuthContext";
+import { ServerProvider } from "@/contexts/ServerContext";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 import { UserProvider } from "@/contexts/UserContext";
 import { WorkspaceProvider } from "@/contexts/WorkspaceContext";
-import { ThemeProvider } from "@/contexts/ThemeContext";
-import ProtectedRoute from "@/components/ProtectedRoute";
-import PublicRoute from "@/components/PublicRoute";
-import { PageLoader } from "@/components/PageLoader";
-import { Layout } from "@/components/Layout";
-import { SentryErrorBoundary, withSentryProfiling } from "@/lib/sentry";
-import { queryClient } from "@/lib/queryClient";
-import TawkTo from "@/components/TawkTo";
 
 // Lazy load all pages
 const Index = lazy(() => import("./pages/Index"));

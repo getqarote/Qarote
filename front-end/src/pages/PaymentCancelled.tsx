@@ -1,8 +1,11 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { XCircle, ArrowLeft, CreditCard, Loader2 } from "lucide-react";
+
+import { ArrowLeft, CreditCard, Loader2, XCircle } from "lucide-react";
+
 import { usePlanUpgrade } from "@/hooks/usePlanUpgrade";
 import { useUser } from "@/hooks/useUser";
+
 import { UserPlan } from "@/types/plans";
 
 const PaymentCancelled: React.FC = () => {

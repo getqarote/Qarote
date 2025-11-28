@@ -1,8 +1,11 @@
-import { MessageSquare, Clock, Activity, Zap, ShieldAlert } from "lucide-react";
+import { useEffect, useState } from "react";
+
+import { Activity, Clock, MessageSquare, ShieldAlert, Zap } from "lucide-react";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+
 import { isRabbitMQAuthError } from "@/types/apiErrors";
-import { useEffect, useState } from "react";
 
 interface MetricsData {
   messagesPerSec: number;

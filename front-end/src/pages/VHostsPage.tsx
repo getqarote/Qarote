@@ -1,26 +1,30 @@
 import { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { useServers, useVHosts, useDeleteVHost } from "@/hooks/useApi";
+import { useNavigate, useParams } from "react-router-dom";
+
 import {
-  Database,
   AlertCircle,
-  Trash2,
-  Edit,
   ChevronUp,
+  Database,
+  Edit,
   Server,
+  Trash2,
 } from "lucide-react";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/AppSidebar";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { PlanBadge } from "@/components/ui/PlanBadge";
-import { PageLoader } from "@/components/PageLoader";
-import { NoServerConfigured } from "@/components/NoServerConfigured";
+import { toast } from "sonner";
+
+import { VHost } from "@/lib/api/vhostTypes";
+
 import { AddVirtualHostButton } from "@/components/AddVirtualHostButton";
+import { AppSidebar } from "@/components/AppSidebar";
+import { NoServerConfigured } from "@/components/NoServerConfigured";
+import { PageLoader } from "@/components/PageLoader";
 import { PlanUpgradeModal } from "@/components/plans/PlanUpgradeModal";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { PlanBadge } from "@/components/ui/PlanBadge";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import {
   Table,
   TableBody,
@@ -29,12 +33,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useServerContext } from "@/contexts/ServerContext";
-import { useAuth } from "@/contexts/AuthContextDefinition";
-import { VHost } from "@/lib/api/vhostTypes";
 import { CreateVHostModal } from "@/components/vhosts/CreateVHostModal";
 import { DeleteVHostModal } from "@/components/vhosts/DeleteVHostModal";
-import { toast } from "sonner";
+
+import { useAuth } from "@/contexts/AuthContextDefinition";
+import { useServerContext } from "@/contexts/ServerContext";
+
+import { useDeleteVHost, useServers, useVHosts } from "@/hooks/useApi";
 
 export default function VHostsPage() {
   const { serverId } = useParams<{ serverId: string }>();

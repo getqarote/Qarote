@@ -1,7 +1,9 @@
+import { AlertTriangle, ArrowUpCircle, XCircle } from "lucide-react";
+
+import { generateErrorProps } from "@/lib/error-utils";
+
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { ArrowUpCircle, AlertTriangle, XCircle } from "lucide-react";
-import { generateErrorProps } from "@/lib/error-utils";
 
 interface EnhancedErrorDisplayProps {
   error: Error;

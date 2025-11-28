@@ -1,5 +1,7 @@
 import { createContext } from "react";
+
 import type { CurrentPlanResponse, User } from "@/lib/api";
+
 import { UserPlan } from "@/types/plans";
 
 interface UserContextType {

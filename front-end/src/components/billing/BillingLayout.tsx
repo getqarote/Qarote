@@ -1,7 +1,9 @@
 import React from "react";
-import { SidebarProvider } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/AppSidebar";
+
 import { AlertCircle } from "lucide-react";
+
+import { AppSidebar } from "@/components/AppSidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 
 interface BillingLayoutProps {
   children: React.ReactNode;

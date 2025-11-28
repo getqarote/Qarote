@@ -1,13 +1,15 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useCallback, useEffect, useState } from "react";
+
 import { apiClient } from "@/lib/api";
+import { logger } from "@/lib/logger";
 import { setSentryContext } from "@/lib/sentry";
-import logger from "../lib/logger";
+
+import { useAuth } from "./AuthContextDefinition";
 import {
+  type ExtendedWorkspace,
   WorkspaceContext,
   type WorkspaceContextType,
-  type ExtendedWorkspace,
 } from "./WorkspaceContextDefinition";
-import { useAuth } from "./AuthContextDefinition";
 
 interface WorkspaceProviderProps {
   children: React.ReactNode;

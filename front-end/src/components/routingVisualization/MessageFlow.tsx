@@ -3,10 +3,11 @@
  */
 
 import React, { useEffect, useState } from "react";
+
 import {
+  ExchangeType,
   MessageFlow as MessageFlowType,
   Position,
-  ExchangeType,
 } from "./types";
 import { getExchangeTypeColor } from "./utils";
 

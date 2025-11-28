@@ -1,8 +1,13 @@
 import { useEffect } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { toast } from "sonner";
+
+import { apiClient } from "@/lib/api";
+
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -10,20 +15,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { apiClient } from "@/lib/api";
-import { toast } from "sonner";
+
 import { useWorkspace } from "@/hooks/useWorkspace";
 
-const createUserSchema = z.object({
-  username: z.string().min(1, "Username is required"),
-  password: z.string().min(1, "Password is required"),
-  tags: z.string().optional(),
-});
-
-type CreateUserFormData = z.infer<typeof createUserSchema>;
+import { type CreateUserFormData, createUserSchema } from "@/schemas/user";
 
 interface CreateUserModalProps {
   isOpen: boolean;

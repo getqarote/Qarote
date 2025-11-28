@@ -1,14 +1,35 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
+import { Fragment, useState } from "react";
+
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+  Activity,
+  AlertTriangle,
+  ArrowUpDown,
+  CheckCircle,
+  ChevronDown,
+  ChevronRight,
+  Clock,
+  Cpu,
+  Database,
+  HardDrive,
+  HelpCircle,
+  Info,
+  MemoryStick,
+  Network,
+  Server,
+  Settings,
+  Users,
+  Wifi,
+  XCircle,
+} from "lucide-react";
+
+import { RabbitMQNode } from "@/lib/api";
+
+import { RabbitMQPermissionError } from "@/components/RabbitMQPermissionError";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -18,29 +39,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  Server,
-  ArrowUpDown,
-  CheckCircle,
-  AlertTriangle,
-  XCircle,
-  ChevronDown,
-  ChevronRight,
-  MemoryStick,
-  HardDrive,
-  Cpu,
-  Clock,
-  Network,
-  Database,
-  Activity,
-  Users,
-  Settings,
-  Wifi,
-  Info,
-  HelpCircle,
-} from "lucide-react";
-import { RabbitMQNode } from "@/lib/api";
-import { useState, Fragment } from "react";
-import { RabbitMQPermissionError } from "@/components/RabbitMQPermissionError";
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
 import { isRabbitMQAuthError } from "@/types/apiErrors";
 
 interface EnhancedNodesTableProps {

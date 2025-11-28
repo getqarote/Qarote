@@ -1,7 +1,9 @@
+import { useState } from "react";
+
 import { Plus } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { CreateVHostModal } from "@/components/vhosts/CreateVHostModal";
-import { useState } from "react";
 
 interface AddVirtualHostButtonProps {
   serverId: string;

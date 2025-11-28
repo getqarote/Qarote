@@ -1,6 +1,10 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Users } from "lucide-react";
+
+import { User } from "@/lib/api/authTypes";
+
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -9,10 +13,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Users } from "lucide-react";
-import { User } from "@/lib/api/authTypes";
-import { InviteFormState, formatDate, getRoleColor } from "./profileUtils";
+
 import { InviteUserDialog } from "./InviteUserDialog";
+import { formatDate, getRoleColor, InviteFormState } from "./profileUtils";
 
 interface TeamTabProps {
   isAdmin: boolean;

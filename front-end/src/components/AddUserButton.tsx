@@ -1,7 +1,9 @@
+import { useState } from "react";
+
 import { Plus } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { CreateUserModal } from "@/components/users/CreateUserModal";
-import { useState } from "react";
 
 interface AddUserButtonProps {
   serverId: string;

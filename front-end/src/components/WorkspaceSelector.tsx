@@ -1,5 +1,14 @@
 import { useState } from "react";
-import { ChevronDown, Building2, Plus, Crown, User, Lock } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
+
+import { Building2, ChevronDown, Crown, Lock, Plus, User } from "lucide-react";
+import { toast } from "sonner";
+
+import { apiClient, type WorkspaceInfo } from "@/lib/api";
+import { logger } from "@/lib/logger";
+
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,16 +17,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdownMenu";
-import { Button } from "@/components/ui/button";
+
 import { useUser } from "@/hooks/useUser";
-import { apiClient, type WorkspaceInfo } from "@/lib/api";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
-import { CreateWorkspaceForm } from "./CreateWorkspaceForm";
-import { toast } from "sonner";
-import logger from "@/lib/logger";
-import { UserPlan } from "@/types/plans";
 import { useWorkspace } from "@/hooks/useWorkspace";
+
+import { UserPlan } from "@/types/plans";
+
+import { CreateWorkspaceForm } from "./CreateWorkspaceForm";
 
 export function WorkspaceSelector() {
   const { canCreateWorkspace, userPlan } = useUser();

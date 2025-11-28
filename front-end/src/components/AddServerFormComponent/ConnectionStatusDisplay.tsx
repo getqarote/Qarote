@@ -1,6 +1,8 @@
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CheckCircle } from "lucide-react";
+
 import { EnhancedErrorDisplay } from "@/components/EnhancedErrorDisplay";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+
 import type { ConnectionStatus } from "./types";
 
 interface ConnectionStatusDisplayProps {

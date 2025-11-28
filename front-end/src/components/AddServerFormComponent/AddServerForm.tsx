@@ -1,11 +1,15 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { Loader2, Plus, Server, Edit } from "lucide-react";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
+
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Edit, Loader2, Plus, Server } from "lucide-react";
+
+import { apiClient } from "@/lib/api";
+import { logger } from "@/lib/logger";
+
 import { Button } from "@/components/ui/button";
 import { DialogFooter } from "@/components/ui/dialog";
-import { Form } from "@/components/ui/form";
 import {
   Dialog,
   DialogContent,
@@ -14,18 +18,20 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import logger from "@/lib/logger";
-import { apiClient } from "@/lib/api";
-import { useServerContext } from "@/contexts/ServerContext";
-import { useUser } from "@/hooks/useUser";
-import { queryKeys } from "@/hooks/useApi";
-import { addServerSchema, type AddServerFormData } from "@/schemas/forms";
+import { Form } from "@/components/ui/form";
 
-import { ServerDetails } from "./ServerDetails";
-import { Credentials } from "./Credentials";
+import { useServerContext } from "@/contexts/ServerContext";
+
+import { queryKeys } from "@/hooks/useApi";
+import { useUser } from "@/hooks/useUser";
+
+import { type AddServerFormData, addServerSchema } from "@/schemas/forms";
+
 import { ConnectionStatusDisplay } from "./ConnectionStatusDisplay";
-import { TestConnectionButton } from "./TestConnectionButton";
+import { Credentials } from "./Credentials";
 import { RabbitMqVersionInfo } from "./RabbitMqVersionInfo";
+import { ServerDetails } from "./ServerDetails";
+import { TestConnectionButton } from "./TestConnectionButton";
 import { TunnelHelper } from "./TunnelHelper";
 import type { AddServerFormProps, ConnectionStatus } from "./types";
 

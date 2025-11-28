@@ -1,11 +1,15 @@
 import { useState } from "react";
+
+import { Mail, X } from "lucide-react";
+import { toast } from "sonner";
+
+import { apiClient } from "@/lib/api";
+import { logger } from "@/lib/logger";
+
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Mail, X } from "lucide-react";
-import { apiClient } from "@/lib/api";
-import { toast } from "sonner";
+
 import { useAuth } from "@/contexts/AuthContextDefinition";
-import logger from "@/lib/logger";
 
 interface EmailVerificationBannerProps {
   className?: string;

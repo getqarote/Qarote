@@ -1,6 +1,6 @@
 export { AddServerForm } from "./AddServerForm";
 export type {
-  AddServerFormProps,
   AddServerFormData,
+  AddServerFormProps,
   ConnectionStatus,
 } from "./types";

@@ -1,7 +1,10 @@
 import { ReactNode } from "react";
 import { Link } from "react-router-dom";
+
 import { ExternalLink, HelpCircle } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
+
 import { AppHeader } from "./AppHeader";
 
 interface LayoutProps {

@@ -1,9 +1,14 @@
 import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { Plus, Trash2, Users } from "lucide-react";
+import { toast } from "sonner";
+
+import { apiClient } from "@/lib/api";
+import { VHostPermission } from "@/lib/api/vhostTypes";
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -12,15 +17,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import {
   Dialog,
   DialogContent,
@@ -39,18 +35,20 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { apiClient } from "@/lib/api";
-import { VHostPermission } from "@/lib/api/vhostTypes";
-import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
-const permissionSchema = z.object({
-  username: z.string().min(1, "Username is required"),
-  configure: z.string().default(".*"),
-  write: z.string().default(".*"),
-  read: z.string().default(".*"),
-});
+import { useWorkspace } from "@/hooks/useWorkspace";
 
-type PermissionForm = z.infer<typeof permissionSchema>;
+import { permissionSchema } from "@/schemas/vhost";
+import { type PermissionForm } from "@/schemas/vhost";
 
 interface VHostPermissionsTabProps {
   serverId: string;
@@ -64,6 +62,7 @@ export function VHostPermissionsTab({
   permissions,
 }: VHostPermissionsTabProps) {
   const queryClient = useQueryClient();
+  const { workspace } = useWorkspace();
   const [showAddModal, setShowAddModal] = useState(false);
 
   const form = useForm<PermissionForm>({
@@ -77,13 +76,23 @@ export function VHostPermissionsTab({
   });
 
   const addPermissionMutation = useMutation({
-    mutationFn: (data: PermissionForm) =>
-      apiClient.setVHostPermissions(serverId, vhostName, data.username, {
-        username: data.username,
-        configure: data.configure,
-        write: data.write,
-        read: data.read,
-      }),
+    mutationFn: (data: PermissionForm) => {
+      if (!workspace?.id) {
+        throw new Error("Workspace ID is required");
+      }
+      return apiClient.setVHostPermissions(
+        serverId,
+        vhostName,
+        data.username,
+        {
+          username: data.username,
+          configure: data.configure,
+          write: data.write,
+          read: data.read,
+        },
+        workspace.id
+      );
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["vhost", serverId, vhostName],
@@ -98,8 +107,17 @@ export function VHostPermissionsTab({
   });
 
   const deletePermissionMutation = useMutation({
-    mutationFn: (username: string) =>
-      apiClient.deleteVHostPermissions(serverId, vhostName, username),
+    mutationFn: (username: string) => {
+      if (!workspace?.id) {
+        throw new Error("Workspace ID is required");
+      }
+      return apiClient.deleteVHostPermissions(
+        serverId,
+        vhostName,
+        username,
+        workspace.id
+      );
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["vhost", serverId, vhostName],

@@ -1,15 +1,17 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Cpu,
-  HardDrive,
-  Database,
   Activity,
-  Zap,
+  Cpu,
+  Database,
+  HardDrive,
+  Info,
   MessageSquare,
   Network,
-  Info,
   ShieldAlert,
+  Zap,
 } from "lucide-react";
+
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
 import { isRabbitMQAuthError } from "@/types/apiErrors";
 
 interface ResourceUsageProps {

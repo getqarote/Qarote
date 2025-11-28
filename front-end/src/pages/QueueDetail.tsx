@@ -1,8 +1,22 @@
-import { useParams, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { SidebarProvider } from "@/components/ui/sidebar";
+import { useNavigate, useParams } from "react-router-dom";
+
+import { logger } from "@/lib/logger";
+
 import { AppSidebar } from "@/components/AppSidebar";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import { MessagesRatesChart } from "@/components/MessagesRatesChart";
+import { ConsumerDetails } from "@/components/QueueDetail/ConsumerDetails";
+import { LoadingSkeleton } from "@/components/QueueDetail/LoadingSkeleton";
+import { MessageStatistics } from "@/components/QueueDetail/MessageStatistics";
+import { NotFound } from "@/components/QueueDetail/NotFound";
+import { QueueBindings } from "@/components/QueueDetail/QueueBindings";
+import { QueueConfiguration } from "@/components/QueueDetail/QueueConfiguration";
+// Queue Detail Components
+import { QueueHeader } from "@/components/QueueDetail/QueueHeader";
+import { QueueStats } from "@/components/QueueDetail/QueueStats";
+import { QueueTiming } from "@/components/QueueDetail/QueueTiming";
+import { QueuedMessagesChart } from "@/components/QueuedMessagesChart";
+import { TimeRange } from "@/components/TimeRangeSelector";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -12,30 +26,19 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useToast } from "@/hooks/useToast";
+import { SidebarProvider } from "@/components/ui/sidebar";
+import { TooltipProvider } from "@/components/ui/tooltip";
+
 import { useServerContext } from "@/contexts/ServerContext";
+
 import {
-  useQueue,
-  useQueueConsumers,
-  useQueueBindings,
   useDeleteQueue,
+  useQueue,
+  useQueueBindings,
+  useQueueConsumers,
   useQueueLiveRates,
 } from "@/hooks/useApi";
-import { TimeRange } from "@/components/TimeRangeSelector";
-import logger from "@/lib/logger";
-
-// Queue Detail Components
-import { QueueHeader } from "@/components/QueueDetail/QueueHeader";
-import { QueueStats } from "@/components/QueueDetail/QueueStats";
-import { MessageStatistics } from "@/components/QueueDetail/MessageStatistics";
-import { QueueConfiguration } from "@/components/QueueDetail/QueueConfiguration";
-import { QueueTiming } from "@/components/QueueDetail/QueueTiming";
-import { ConsumerDetails } from "@/components/QueueDetail/ConsumerDetails";
-import { QueueBindings } from "@/components/QueueDetail/QueueBindings";
-import { NotFound } from "@/components/QueueDetail/NotFound";
-import { LoadingSkeleton } from "@/components/QueueDetail/LoadingSkeleton";
-import { MessagesRatesChart } from "@/components/MessagesRatesChart";
-import { QueuedMessagesChart } from "@/components/QueuedMessagesChart";
+import { useToast } from "@/hooks/useToast";
 
 const QueueDetail = () => {
   const { queueName } = useParams<{ queueName: string }>();

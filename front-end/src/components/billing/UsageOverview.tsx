@@ -1,6 +1,8 @@
 import React from "react";
+
+import { MessageSquare, Server, TrendingUp, Users } from "lucide-react";
+
 import { Card, CardContent } from "@/components/ui/card";
-import { TrendingUp, Users, Server, MessageSquare } from "lucide-react";
 
 interface UsageOverviewProps {
   currentUsage: {

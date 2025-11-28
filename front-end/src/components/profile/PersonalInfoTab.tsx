@@ -1,30 +1,33 @@
 import {
+  Calendar,
+  Crown,
+  Edit,
+  Lock,
+  Mail,
+  Save,
+  Settings,
+  X,
+} from "lucide-react";
+
+import { UserProfile } from "@/lib/api/authTypes";
+
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
-  CardDescription,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  Mail,
-  Calendar,
-  Settings,
-  Edit,
-  Save,
-  X,
-  Crown,
-  Lock,
-} from "lucide-react";
-import { UserProfile } from "@/lib/api/authTypes";
-import { ProfileFormState, formatDate, getRoleColor } from "./profileUtils";
-import { CompactPasswordChangeForm } from "./CompactPasswordChangeForm";
+
 import { CompactEmailChangeForm } from "./CompactEmailChangeForm";
+import { CompactPasswordChangeForm } from "./CompactPasswordChangeForm";
+import { formatDate, getRoleColor, ProfileFormState } from "./profileUtils";
 
 interface PersonalInfoTabProps {
   profile: UserProfile;

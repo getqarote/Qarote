@@ -1,15 +1,19 @@
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+
+import { logger } from "@/lib/logger";
+
 import { AppSidebar } from "@/components/AppSidebar";
-import { Input } from "@/components/ui/input";
 import { NoServerConfigured } from "@/components/NoServerConfigured";
-import { useServerContext } from "@/contexts/ServerContext";
-import { useUser } from "@/hooks/useUser";
-import { useQueues } from "@/hooks/useApi";
 import { QueueHeader } from "@/components/Queues/QueueHeader";
 import { QueueTable } from "@/components/Queues/QueueTable";
-import logger from "@/lib/logger";
+import { Input } from "@/components/ui/input";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+
+import { useServerContext } from "@/contexts/ServerContext";
+
+import { useQueues } from "@/hooks/useApi";
+import { useUser } from "@/hooks/useUser";
 
 const Queues = () => {
   const navigate = useNavigate();

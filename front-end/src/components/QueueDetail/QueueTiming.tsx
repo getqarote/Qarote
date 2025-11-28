@@ -1,6 +1,8 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Clock, Activity } from "lucide-react";
+import { Activity, Clock } from "lucide-react";
+
 import { Queue } from "@/lib/api";
+
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface QueueTimingProps {
   queue: Queue;

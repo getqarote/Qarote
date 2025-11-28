@@ -1,9 +1,15 @@
 import React from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { Database } from "lucide-react";
+import { toast } from "sonner";
+
+import { apiClient } from "@/lib/api";
+
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -12,10 +18,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Form,
   FormControl,
@@ -25,17 +27,13 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { apiClient } from "@/lib/api";
-import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+
 import { useWorkspace } from "@/hooks/useWorkspace";
 
-const createVHostSchema = z.object({
-  name: z.string().min(1, "VHost name is required"),
-  description: z.string().optional(),
-  tracing: z.boolean().default(false),
-});
-
-type CreateVHostForm = z.infer<typeof createVHostSchema>;
+import { createVHostSchema } from "@/schemas/vhost";
+import { type CreateVHostForm } from "@/schemas/vhost";
 
 interface CreateVHostModalProps {
   isOpen: boolean;

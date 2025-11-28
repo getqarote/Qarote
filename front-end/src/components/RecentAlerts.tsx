@@ -1,22 +1,28 @@
-import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+
 import {
-  AlertTriangle,
-  XCircle,
-  Info,
   Activity,
+  AlertTriangle,
   ArrowRight,
   Clock,
+  Info,
+  XCircle,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { useServerContext } from "@/contexts/ServerContext";
+
 import { apiClient } from "@/lib/api";
-import { AlertSeverity, AlertCategory, AlertThresholds } from "@/types/alerts";
-import { useWorkspace } from "@/hooks/useWorkspace";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+import { useServerContext } from "@/contexts/ServerContext";
+
 import { useUser } from "@/hooks/useUser";
+import { useWorkspace } from "@/hooks/useWorkspace";
+
+import { AlertCategory, AlertSeverity, AlertThresholds } from "@/types/alerts";
 import { UserPlan } from "@/types/plans";
 
 type BadgeVariant = "default" | "secondary" | "destructive" | "outline";

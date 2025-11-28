@@ -1,10 +1,15 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { UserPlan } from "@/types/plans";
-import { useUser } from "@/hooks/useUser";
-import { useAuth } from "@/contexts/AuthContextDefinition";
+
 import { apiClient } from "@/lib/api";
-import logger from "@/lib/logger";
+import { logger } from "@/lib/logger";
+
+import { useAuth } from "@/contexts/AuthContextDefinition";
+
+import { useUser } from "@/hooks/useUser";
+
+import { UserPlan } from "@/types/plans";
+
 import { useWorkspace } from "./useWorkspace";
 
 export const usePlanUpgrade = () => {

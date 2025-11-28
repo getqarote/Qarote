@@ -1,27 +1,30 @@
 import { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { useServers, useUsers, useVHosts, useDeleteUser } from "@/hooks/useApi";
+import { useNavigate, useParams } from "react-router-dom";
+
 import {
-  User,
   AlertCircle,
-  Trash2,
-  Edit,
   ChevronUp,
+  Edit,
   Server,
+  Trash2,
+  User,
 } from "lucide-react";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { toast } from "sonner";
+
+import { RabbitMQUser } from "@/lib/api/userTypes";
+import { formatTagsDisplay, formatVhostsDisplay } from "@/lib/formatTags";
+
 import { AppSidebar } from "@/components/AppSidebar";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { PlanBadge } from "@/components/ui/PlanBadge";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { PageLoader } from "@/components/PageLoader";
 import { NoServerConfigured } from "@/components/NoServerConfigured";
-import { AddUserButton } from "@/components/users/AddUserButton";
+import { PageLoader } from "@/components/PageLoader";
 import { PlanUpgradeModal } from "@/components/plans/PlanUpgradeModal";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { PlanBadge } from "@/components/ui/PlanBadge";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import {
   Table,
   TableBody,
@@ -30,12 +33,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useServerContext } from "@/contexts/ServerContext";
-import { useAuth } from "@/contexts/AuthContextDefinition";
-import { formatTagsDisplay, formatVhostsDisplay } from "@/lib/formatTags";
-import { RabbitMQUser } from "@/lib/api/userTypes";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { AddUserButton } from "@/components/users/AddUserButton";
 import { DeleteUserModal } from "@/components/users/DeleteUserModal";
-import { toast } from "sonner";
+
+import { useAuth } from "@/contexts/AuthContextDefinition";
+import { useServerContext } from "@/contexts/ServerContext";
+
+import { useDeleteUser, useServers, useUsers, useVHosts } from "@/hooks/useApi";
 
 export default function UsersPage() {
   const { serverId } = useParams<{ serverId: string }>();

@@ -1,9 +1,13 @@
-import { Lock } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { AddServerForm } from "@/components/AddServerFormComponent";
-import { UserPlan } from "@/types/plans";
-import { useUser } from "@/hooks/useUser";
 import { useNavigate } from "react-router-dom";
+
+import { Lock } from "lucide-react";
+
+import { AddServerForm } from "@/components/AddServerFormComponent";
+import { Button } from "@/components/ui/button";
+
+import { useUser } from "@/hooks/useUser";
+
+import { UserPlan } from "@/types/plans";
 
 export const AddServerButton = () => {
   const {

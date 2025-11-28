@@ -1,21 +1,23 @@
 import { useState } from "react";
+
 import {
-  Network,
-  Users,
   Activity,
+  ArrowUpDown,
+  Cable,
+  Globe,
+  Link,
+  Network,
+  Radio,
   RefreshCw,
   Server,
-  ArrowUpDown,
-  Zap,
-  Link,
+  Users,
   Wifi,
-  Cable,
-  Radio,
-  Globe,
+  Zap,
 } from "lucide-react";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+
 import { AppSidebar } from "@/components/AppSidebar";
 import { NoServerConfigured } from "@/components/NoServerConfigured";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Collapsible,
@@ -23,14 +25,14 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { PlanBadge } from "@/components/ui/PlanBadge";
-import { Badge } from "@/components/ui/badge";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+
 import { useServerContext } from "@/contexts/ServerContext";
-import { useUser } from "@/hooks/useUser";
-import { useConnections, useChannels } from "@/hooks/useApi";
+
+import { useChannels, useConnections } from "@/hooks/useApi";
 
 const Connections = () => {
   const { selectedServerId, hasServers } = useServerContext();
-  const { workspacePlan } = useUser();
   const [expandedConnections, setExpandedConnections] = useState<Set<string>>(
     new Set()
   );
@@ -186,7 +188,7 @@ const Connections = () => {
                   </p>
                 </div>
               </div>
-              <PlanBadge workspacePlan={workspacePlan} />
+              <PlanBadge />
             </div>
 
             {/* Overview Cards */}

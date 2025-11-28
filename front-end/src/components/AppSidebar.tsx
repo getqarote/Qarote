@@ -1,4 +1,33 @@
 import { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+
+import {
+  Activity,
+  AlertTriangle,
+  Clock,
+  Database,
+  HelpCircle,
+  LogOut,
+  MessageSquare,
+  Plus,
+  Server,
+  Settings,
+  User,
+} from "lucide-react";
+
+import { AddServerForm } from "@/components/AddServerFormComponent";
+import { DiscourseLink } from "@/components/DiscourseWidget";
+import { PlanUpgradeModal } from "@/components/plans/PlanUpgradeModal";
+import { ServerManagement } from "@/components/ServerManagement";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Sidebar,
   SidebarContent,
@@ -11,37 +40,12 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Activity,
-  MessageSquare,
-  Clock,
-  Server,
-  Plus,
-  LogOut,
-  User,
-  AlertTriangle,
-  HelpCircle,
-  Settings,
-  Database,
-} from "lucide-react";
-import { useServerContext } from "@/contexts/ServerContext";
+
 import { useAuth } from "@/contexts/AuthContextDefinition";
-import { useLogout } from "@/hooks/useAuth";
+import { useServerContext } from "@/contexts/ServerContext";
+
 import { useServers } from "@/hooks/useApi";
-import { AddServerForm } from "@/components/AddServerFormComponent";
-import { PlanUpgradeModal } from "@/components/plans/PlanUpgradeModal";
-import { useLocation, Link } from "react-router-dom";
-import { ServerManagement } from "@/components/ServerManagement";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { DiscourseLink } from "@/components/DiscourseWidget";
+import { useLogout } from "@/hooks/useAuth";
 
 const menuItems = [
   {

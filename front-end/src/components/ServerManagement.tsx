@@ -1,15 +1,19 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import logger from "@/lib/logger";
+
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+  Edit,
+  Loader2,
+  Server as ServerIcon,
+  Settings,
+  Trash2,
+} from "lucide-react";
+import { toast } from "sonner";
+
+import { Server } from "@/lib/api/types";
+import { logger } from "@/lib/logger";
+
+import { AddServerForm } from "@/components/AddServerFormComponent";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,19 +24,20 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alertDialog";
+import { Button } from "@/components/ui/button";
 import {
-  Settings,
-  Edit,
-  Trash2,
-  Server as ServerIcon,
-  Loader2,
-} from "lucide-react";
-import { Server } from "@/lib/api/types";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+
+import { useServerContext } from "@/contexts/ServerContext";
+
 import { useServers } from "@/hooks/useApi";
 import { useDeleteServer } from "@/hooks/useServerMutations";
-import { AddServerForm } from "@/components/AddServerFormComponent";
-import { useServerContext } from "@/contexts/ServerContext";
-import { toast } from "sonner";
 
 interface ServerManagementProps {
   trigger?: React.ReactNode;

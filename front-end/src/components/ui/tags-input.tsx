@@ -1,8 +1,11 @@
-import React, { useState, KeyboardEvent, useRef } from "react";
+import React, { KeyboardEvent, useRef, useState } from "react";
+
 import { X } from "lucide-react";
-import { Input } from "./input";
-import { Badge } from "./badge";
+
 import { cn } from "@/lib/utils";
+
+import { Badge } from "./badge";
+import { Input } from "./input";
 
 interface TagsInputProps {
   value: string[];

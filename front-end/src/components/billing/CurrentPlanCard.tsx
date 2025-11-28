@@ -1,9 +1,13 @@
 import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+
 import { CreditCard } from "lucide-react";
-import { UserPlan } from "@/types/plans";
+
 import { formatCurrency, formatDate } from "@/lib/utils";
+
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+import { UserPlan } from "@/types/plans";
 
 interface CurrentPlanCardProps {
   subscription?: {

@@ -1,6 +1,8 @@
-import logger from "../logger";
-import { captureAPIError } from "../sentry";
+import { logger } from "@/lib/logger";
+import { captureAPIError } from "@/lib/sentry";
+
 import { parseApiError } from "@/types/apiErrors";
+
 /**
  * Base API Client
  * Core HTTP client with authentication and error handling

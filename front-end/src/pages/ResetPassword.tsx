@@ -1,8 +1,16 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
+
+import { Check, Eye, EyeOff, Lock, Shield, X } from "lucide-react";
+import { toast } from "sonner";
+
+import { apiClient } from "@/lib/api";
+import type { PasswordReset } from "@/lib/api/passwordClient";
+import { logger } from "@/lib/logger";
+
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Card,
   CardContent,
@@ -10,13 +18,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Eye, EyeOff, Lock, Check, X, Shield } from "lucide-react";
-import { toast } from "sonner";
-import { useMutation } from "@tanstack/react-query";
-import { apiClient } from "@/lib/api";
-import type { PasswordReset } from "@/lib/api/passwordClient";
-import logger from "@/lib/logger";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export const ResetPassword: React.FC = () => {
   const navigate = useNavigate();

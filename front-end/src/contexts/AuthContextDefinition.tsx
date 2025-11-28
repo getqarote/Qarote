@@ -1,4 +1,5 @@
 import { createContext, useContext } from "react";
+
 import { User } from "@/lib/api";
 
 interface AuthContextType {

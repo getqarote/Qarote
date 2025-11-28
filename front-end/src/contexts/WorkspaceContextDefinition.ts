@@ -1,4 +1,5 @@
 import { createContext } from "react";
+
 import type { Workspace } from "@/lib/api/workspaceClient";
 
 // Extended workspace interface to handle the full API response
@@ -23,4 +24,4 @@ export const WorkspaceContext = createContext<WorkspaceContextType | undefined>(
   undefined
 );
 
-export type { WorkspaceContextType, ExtendedWorkspace };
+export type { ExtendedWorkspace, WorkspaceContextType };

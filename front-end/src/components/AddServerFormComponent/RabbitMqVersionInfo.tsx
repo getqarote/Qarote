@@ -1,20 +1,24 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+
+import {
+  ArrowUpCircle,
+  CheckCircle,
+  ChevronDown,
+  ChevronUp,
+  InfoIcon,
+  X,
+  XCircle,
+} from "lucide-react";
+
+import { apiClient } from "@/lib/api";
+import type { CurrentPlanResponse } from "@/lib/api/planClient";
+
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  InfoIcon,
-  CheckCircle,
-  XCircle,
-  ArrowUpCircle,
-  ChevronDown,
-  ChevronUp,
-  X,
-} from "lucide-react";
-import { apiClient } from "@/lib/api";
+
 import { useUser } from "@/hooks/useUser";
-import type { CurrentPlanResponse } from "@/lib/api/planClient";
 import { useWorkspace } from "@/hooks/useWorkspace";
 
 interface RabbitMqVersionInfoProps {

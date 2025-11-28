@@ -1,7 +1,10 @@
 import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
 import { Calendar } from "lucide-react";
+
 import { formatCurrency, formatDate } from "@/lib/utils";
+
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface UpcomingInvoiceProps {
   upcomingInvoice: {

@@ -1,4 +1,4 @@
-import React, { createContext, useState, ReactNode } from "react";
+import React, { createContext, ReactNode, useState } from "react";
 
 interface AlertsModalContextType {
   isThresholdsModalOpen: boolean;

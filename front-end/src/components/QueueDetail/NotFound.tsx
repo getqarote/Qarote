@@ -1,5 +1,6 @@
-import { Button } from "@/components/ui/button";
 import { MessageSquare } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
 
 interface NotFoundProps {
   title: string;

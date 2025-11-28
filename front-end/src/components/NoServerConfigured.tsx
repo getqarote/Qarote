@@ -1,7 +1,8 @@
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Server } from "lucide-react";
+
 import { AddServerForm } from "@/components/AddServerFormComponent";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface NoServerConfiguredProps {
   title: string;

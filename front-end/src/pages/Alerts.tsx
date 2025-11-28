@@ -1,38 +1,43 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useNavigate } from "react-router-dom";
+
 import {
+  Activity,
   AlertTriangle,
   CheckCircle,
-  XCircle,
-  Info,
-  Activity,
-  Server,
   Clock,
+  Info,
   Loader2,
+  Server,
+  XCircle,
 } from "lucide-react";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/AppSidebar";
-import { useServerContext } from "@/contexts/ServerContext";
-import { useUser } from "@/hooks/useUser";
-import {
-  useRabbitMQAlerts,
-  useAlertNotificationSettings,
-} from "@/hooks/useApi";
+import { Mail } from "lucide-react";
+
 // import { AlertsConfigureModal } from "@/components/alerts/AlertsConfigureModal";
 import { AlertNotificationSettingsModal } from "@/components/alerts/AlertNotificationSettingsModal";
-import { PageLoader } from "@/components/PageLoader";
+import { AppSidebar } from "@/components/AppSidebar";
 import { NoServerConfigured } from "@/components/NoServerConfigured";
-// import { PlanUpgradeModal } from "@/components/plans/PlanUpgradeModal";
-import { AlertSeverity, AlertCategory, AlertThresholds } from "@/types/alerts";
-import { UserPlan } from "@/types/plans";
+import { PageLoader } from "@/components/PageLoader";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
-import { Mail } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+
+import { useServerContext } from "@/contexts/ServerContext";
+
+import {
+  useAlertNotificationSettings,
+  useRabbitMQAlerts,
+} from "@/hooks/useApi";
 // import { Settings } from "lucide-react"; // Commented out - used in Configure Thresholds button
 import { useBrowserNotifications } from "@/hooks/useBrowserNotifications";
+import { useUser } from "@/hooks/useUser";
+
+// import { PlanUpgradeModal } from "@/components/plans/PlanUpgradeModal";
+import { AlertCategory, AlertSeverity, AlertThresholds } from "@/types/alerts";
+import { UserPlan } from "@/types/plans";
 
 type BadgeVariant = "default" | "secondary" | "destructive" | "outline";
 

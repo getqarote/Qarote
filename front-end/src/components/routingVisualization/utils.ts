@@ -3,13 +3,13 @@
  */
 
 import {
-  Position,
-  Size,
-  ExchangeNode,
-  QueueNode,
   Binding,
+  ExchangeNode,
   ExchangeType,
   LayoutConfig,
+  Position,
+  QueueNode,
+  Size,
 } from "./types";
 
 /**

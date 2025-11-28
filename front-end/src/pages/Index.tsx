@@ -1,26 +1,30 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 import { Server } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+
+import { AddServerButton } from "@/components/AddServerButton";
 import { AppSidebar } from "@/components/AppSidebar";
-import { ConnectionStatus } from "@/components/ConnectionStatus";
-import { RecentAlerts } from "@/components/RecentAlerts";
-import { ResourceUsage } from "@/components/ResourceUsage";
 import { ConnectedNodes } from "@/components/ConnectedNodes";
+import { ConnectionStatus } from "@/components/ConnectionStatus";
+import { MessagesRatesChart } from "@/components/MessagesRatesChart";
 import { NoServerConfigured } from "@/components/NoServerConfigured";
 import { PlanUpgradeModal } from "@/components/plans/PlanUpgradeModal";
-import { AddServerButton } from "@/components/AddServerButton";
 import { PrimaryMetricsCards } from "@/components/PrimaryMetricsCards";
-import { SecondaryMetricsCards } from "@/components/SecondaryMetricsCards";
-import { MessagesRatesChart } from "@/components/MessagesRatesChart";
-import { QueuedMessagesChart } from "@/components/QueuedMessagesChart";
 import { QueueDepthsChart } from "@/components/QueueDepthsChart";
-import { PlanBadge } from "@/components/ui/PlanBadge";
-import { useServerContext } from "@/contexts/ServerContext";
-import { useDashboardData } from "@/hooks/useDashboardData";
-import { useAuth } from "@/contexts/AuthContextDefinition";
-import { useNavigate } from "react-router-dom";
+import { QueuedMessagesChart } from "@/components/QueuedMessagesChart";
+import { RecentAlerts } from "@/components/RecentAlerts";
+import { ResourceUsage } from "@/components/ResourceUsage";
+import { SecondaryMetricsCards } from "@/components/SecondaryMetricsCards";
 import { TimeRange } from "@/components/TimeRangeSelector";
+import { Card, CardContent } from "@/components/ui/card";
+import { PlanBadge } from "@/components/ui/PlanBadge";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+
+import { useAuth } from "@/contexts/AuthContextDefinition";
+import { useServerContext } from "@/contexts/ServerContext";
+
+import { useDashboardData } from "@/hooks/useDashboardData";
 
 const Index = () => {
   const { selectedServerId, hasServers } = useServerContext();

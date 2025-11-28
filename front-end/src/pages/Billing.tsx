@@ -1,18 +1,22 @@
 import React from "react";
-import { useUser } from "@/hooks/useUser";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+
 import { apiClient } from "@/lib/api";
-import logger from "@/lib/logger";
 import { BillingOverviewResponse } from "@/lib/api/paymentClient";
-import { usePlanUpgrade } from "@/hooks/usePlanUpgrade";
-import { UserPlan } from "@/types/plans";
+import { logger } from "@/lib/logger";
+
 import {
   BillingHeader,
   BillingLayout,
-  SubscriptionManagement,
-  RecentPayments,
   CurrentPlanCard,
+  RecentPayments,
+  SubscriptionManagement,
 } from "@/components/billing";
+
+import { usePlanUpgrade } from "@/hooks/usePlanUpgrade";
+import { useUser } from "@/hooks/useUser";
+
+import { UserPlan } from "@/types/plans";
 
 interface ExtendedSubscription {
   cancelAtPeriodEnd?: boolean;

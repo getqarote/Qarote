@@ -1,8 +1,11 @@
-import { Server, Cpu, HardDrive, ShieldAlert } from "lucide-react";
+import { useEffect, useState } from "react";
+
+import { Cpu, HardDrive, Server, ShieldAlert } from "lucide-react";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+
 import { isRabbitMQAuthError } from "@/types/apiErrors";
-import { useEffect, useState } from "react";
 
 interface SecondaryMetricsData {
   connectedNodes: number;

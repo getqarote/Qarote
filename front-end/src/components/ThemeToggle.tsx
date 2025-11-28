@@ -1,5 +1,5 @@
-import React from "react";
-import { Moon, Sun, Monitor } from "lucide-react";
+import { Monitor, Moon, Sun } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -7,6 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdownMenu";
+
 import { useTheme } from "@/contexts/ThemeContext";
 
 export function ThemeToggle() {

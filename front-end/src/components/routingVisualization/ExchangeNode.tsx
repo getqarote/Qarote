@@ -3,13 +3,15 @@
  */
 
 import React from "react";
+
+import { Badge } from "@/components/ui/badge";
+
 import { ExchangeNode as ExchangeNodeType } from "./types";
 import {
+  formatNumber,
   getExchangeTypeColor,
   getExchangeTypeIcon,
-  formatNumber,
 } from "./utils";
-import { Badge } from "@/components/ui/badge";
 
 interface ExchangeNodeProps {
   node: ExchangeNodeType;

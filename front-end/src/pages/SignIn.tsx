@@ -1,10 +1,14 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
+import { Link, useNavigate } from "react-router-dom";
+
 import { zodResolver } from "@hookform/resolvers/zod";
+
+import { logger } from "@/lib/logger";
+
+import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { PasswordInput } from "@/components/ui/password-input";
 import {
   Card,
   CardContent,
@@ -12,7 +16,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Form,
   FormControl,
@@ -21,10 +24,12 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
+
 import { useLogin } from "@/hooks/useAuth";
-import { signInSchema, type SignInFormData } from "@/schemas/forms";
-import logger from "@/lib/logger";
-import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton";
+
+import { type SignInFormData, signInSchema } from "@/schemas/forms";
 
 const SignIn: React.FC = () => {
   const navigate = useNavigate();

@@ -1,5 +1,6 @@
 import * as Sentry from "@sentry/react";
-import logger from "./logger";
+
+import { logger } from "@/lib/logger";
 
 export function initSentry() {
   // Only initialize Sentry in production or when explicitly enabled

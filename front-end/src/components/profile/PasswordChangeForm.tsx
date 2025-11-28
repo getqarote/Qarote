@@ -1,7 +1,12 @@
 import React, { useState } from "react";
+
+import { Eye, EyeOff, Lock, Shield } from "lucide-react";
+import { toast } from "sonner";
+
+import { logger } from "@/lib/logger";
+
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Card,
   CardContent,
@@ -9,10 +14,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Eye, EyeOff, Lock, Shield } from "lucide-react";
-import { toast } from "sonner";
-import logger from "@/lib/logger";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 interface PasswordChangeFormProps {
   onPasswordChange: (data: {

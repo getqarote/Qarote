@@ -1,8 +1,11 @@
-import { Suspense, lazy } from "react";
+import { lazy, Suspense } from "react";
+
 import { RefreshCw } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TimeRange } from "@/components/ThroughputChart";
+
 import { RabbitMQPermissionError } from "@/components/RabbitMQPermissionError";
+import { TimeRange } from "@/components/ThroughputChart";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
 import { isRabbitMQAuthError } from "@/types/apiErrors";
 
 // Lazy load ThroughputChart since it's a heavy charting component

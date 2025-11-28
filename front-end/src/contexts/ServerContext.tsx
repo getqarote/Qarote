@@ -1,10 +1,11 @@
 import React, {
   createContext,
   useContext,
-  useState,
   useEffect,
   useMemo,
+  useState,
 } from "react";
+
 import { useServers } from "@/hooks/useApi";
 
 interface ServerContextType {

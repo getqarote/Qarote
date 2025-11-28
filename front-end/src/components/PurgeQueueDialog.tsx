@@ -1,4 +1,10 @@
 import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+
+import { AlertTriangle, Trash2 } from "lucide-react";
+
+import { apiClient } from "@/lib/api";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -10,13 +16,12 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alertDialog";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Trash2, AlertTriangle } from "lucide-react";
-import { useMutation } from "@tanstack/react-query";
-import { apiClient } from "@/lib/api";
-import { useToast } from "@/hooks/useToast";
+import { Button } from "@/components/ui/button";
+
 import { useServerContext } from "@/contexts/ServerContext";
+
+import { useToast } from "@/hooks/useToast";
 import { useWorkspace } from "@/hooks/useWorkspace";
 
 interface PurgeQueueDialogProps {

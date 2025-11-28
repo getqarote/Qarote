@@ -1,37 +1,41 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+
+import { Crown, MessageSquare, Shield, User } from "lucide-react";
+import { toast } from "sonner";
+
+import { logger } from "@/lib/logger";
+
 import { AppSidebar } from "@/components/AppSidebar";
+import { FeedbackForm } from "@/components/FeedbackForm";
 import {
-  PersonalInfoTab,
-  WorkspaceInfoTab,
   EnhancedTeamTab,
-  ProfileLoading,
+  InviteFormState,
+  PersonalInfoTab,
   PlansSummaryTab,
   ProfileFormState,
+  ProfileLoading,
   WorkspaceFormState,
-  InviteFormState,
+  WorkspaceInfoTab,
 } from "@/components/profile";
-import { User, Shield, MessageSquare, Crown } from "lucide-react";
-import { toast } from "sonner";
-import logger from "@/lib/logger";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 import {
+  useCancelEmailChange,
+  useChangePassword,
+  useInvitations,
   useProfile,
+  useRemoveUserFromWorkspace,
+  useRequestEmailChange,
+  useRevokeInvitation,
+  useSendInvitation,
   useUpdateProfile,
   useUpdateWorkspace,
-  useWorkspaceUsers,
-  useInvitations,
-  useSendInvitation,
-  useRevokeInvitation,
-  useRemoveUserFromWorkspace,
-  useChangePassword,
-  useRequestEmailChange,
-  useCancelEmailChange,
   useVerificationStatus,
+  useWorkspaceUsers,
 } from "@/hooks/useApi";
-import { FeedbackForm } from "@/components/FeedbackForm";
 import { useUser } from "@/hooks/useUser";
 import { useWorkspace } from "@/hooks/useWorkspace";
 

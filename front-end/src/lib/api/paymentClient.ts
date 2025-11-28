@@ -2,8 +2,9 @@
  * Payment API Client for Stripe integration
  */
 
-import { BaseApiClient } from "./baseClient";
 import { UserPlan } from "@/types/plans";
+
+import { BaseApiClient } from "./baseClient";
 
 export interface CreateCheckoutSessionRequest {
   plan: UserPlan;

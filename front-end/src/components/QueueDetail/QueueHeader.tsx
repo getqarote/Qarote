@@ -1,9 +1,11 @@
+import { ArrowLeft, Pause, Play, Send, Trash2 } from "lucide-react";
+
+import { PauseQueueDialog } from "@/components/PauseQueueDialog";
+import { PurgeQueueDialog } from "@/components/PurgeQueueDialog";
+import { SendMessageDialog } from "@/components/SendMessageDialog";
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { ArrowLeft, Send, Trash2, Pause, Play } from "lucide-react";
-import { PurgeQueueDialog } from "@/components/PurgeQueueDialog";
-import { PauseQueueDialog } from "@/components/PauseQueueDialog";
-import { SendMessageDialog } from "@/components/SendMessageDialog";
+
 import { useQueuePauseStatus } from "@/hooks/useApi";
 
 interface QueueHeaderProps {

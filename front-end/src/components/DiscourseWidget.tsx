@@ -3,7 +3,14 @@
  * Provides seamless integration with Discourse community
  */
 
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
+
+import { ExternalLink, MessageSquare, TrendingUp, Users } from "lucide-react";
+
+import { DiscourseSSOClient } from "@/lib/DiscourseSSOClient";
+import { logger } from "@/lib/logger";
+
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -12,10 +19,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { ExternalLink, MessageSquare, Users, TrendingUp } from "lucide-react";
-import { DiscourseSSOClient } from "@/lib/DiscourseSSOClient";
-import logger from "@/lib/logger";
 
 interface DiscourseStats {
   topics: number;

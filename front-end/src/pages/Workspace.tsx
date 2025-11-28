@@ -1,11 +1,16 @@
-import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
+
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CheckCircle, Loader2, Plus } from "lucide-react";
+import { toast } from "sonner";
+
+import { apiClient } from "@/lib/api";
+
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { TagsInput } from "@/components/ui/tags-input";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -14,11 +19,11 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Plus, Loader2, CheckCircle } from "lucide-react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Input } from "@/components/ui/input";
+import { TagsInput } from "@/components/ui/tags-input";
+
 import { useAuth } from "@/contexts/AuthContextDefinition";
-import { apiClient } from "@/lib/api";
-import { toast } from "sonner";
+
 import { WorkspaceFormData, workspaceSchema } from "@/schemas/forms";
 
 const Workspace = () => {

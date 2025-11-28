@@ -1,4 +1,8 @@
 import { AlertTriangle } from "lucide-react";
+
+import { VHost } from "@/lib/api/vhostTypes";
+
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -7,8 +11,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { VHost } from "@/lib/api/vhostTypes";
 
 interface DeleteVHostModalProps {
   isOpen: boolean;

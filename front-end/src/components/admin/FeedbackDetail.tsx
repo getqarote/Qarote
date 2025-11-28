@@ -1,9 +1,28 @@
-import { useState, useEffect, useCallback } from "react";
-import logger from "../../lib/logger";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useCallback, useEffect, useState } from "react";
+
+import { format } from "date-fns";
+import {
+  AlertTriangle,
+  Calendar,
+  CheckCircle,
+  Clock,
+  ExternalLink,
+  Globe,
+  MessageSquare,
+  Monitor,
+  Save,
+  Smartphone,
+  Trash2,
+  User,
+  X,
+} from "lucide-react";
+
+import { apiClient } from "@/lib/api/client";
+
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -11,27 +30,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
-import {
-  X,
-  Globe,
-  Monitor,
-  Smartphone,
-  AlertTriangle,
-  CheckCircle,
-  Clock,
-  MessageSquare,
-  Trash2,
-  Save,
-  User,
-  Calendar,
-  ExternalLink,
-} from "lucide-react";
-import { apiClient } from "@/lib/api/client";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Textarea } from "@/components/ui/textarea";
+
 import type { Feedback } from "@/types/feedback";
-import { format } from "date-fns";
+
+import logger from "../../lib/logger";
 
 interface FeedbackDetailProps {
   feedbackId: string;

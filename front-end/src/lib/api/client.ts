@@ -3,37 +3,38 @@
  * Combines all API clients into a single interface
  */
 
-import { ServerApiClient } from "./serverClient";
-import { RabbitMQApiClient } from "./rabbitmqClient";
-import { AuthApiClient } from "./authClient";
-import { AlertApiClient } from "./alertClient";
-import { WorkspaceApiClient } from "./workspaceClient";
-import { LogsApiClient } from "./logsClient";
-import { FeedbackApiClient } from "./feedbackClient";
-import { PlanApiClient } from "./planClient";
-import { PaymentApiClient } from "./paymentClient";
-import { PasswordApiClient } from "./passwordClient";
-import { DiscourseApiClient } from "./discourseClient";
-import { WebhookApiClient } from "./webhookClient";
-import { SlackApiClient } from "./slackClient";
-import type { LogQuery, CreateLogRequest, LogExportRequest } from "./logTypes";
-import type { FeedbackRequest } from "@/types/feedback";
-import type { FeedbackFilters, UpdateFeedbackRequest } from "./feedbackClient";
 import { AlertThresholds } from "@/types/alerts";
+import type { FeedbackRequest } from "@/types/feedback";
+
+import { AlertApiClient } from "./alertClient";
+import { AuthApiClient } from "./authClient";
 import type {
   DiscourseEmbedResponse,
   DiscourseInfoResponse,
   DiscourseStatsResponse,
   DiscourseTopicsResponse,
 } from "./discourseClient";
-import type {
-  CreateWebhookRequest,
-  UpdateWebhookRequest,
-} from "./webhookClient";
+import { DiscourseApiClient } from "./discourseClient";
+import type { FeedbackFilters, UpdateFeedbackRequest } from "./feedbackClient";
+import { FeedbackApiClient } from "./feedbackClient";
+import { LogsApiClient } from "./logsClient";
+import type { CreateLogRequest, LogExportRequest, LogQuery } from "./logTypes";
+import { PasswordApiClient } from "./passwordClient";
+import { PaymentApiClient } from "./paymentClient";
+import { PlanApiClient } from "./planClient";
+import { RabbitMQApiClient } from "./rabbitmqClient";
+import { ServerApiClient } from "./serverClient";
 import type {
   CreateSlackConfigRequest,
   UpdateSlackConfigRequest,
 } from "./slackClient";
+import { SlackApiClient } from "./slackClient";
+import type {
+  CreateWebhookRequest,
+  UpdateWebhookRequest,
+} from "./webhookClient";
+import { WebhookApiClient } from "./webhookClient";
+import { WorkspaceApiClient } from "./workspaceClient";
 
 class ApiClient {
   private serverClient: ServerApiClient;

@@ -1,4 +1,5 @@
 import { useContext } from "react";
+
 import { AlertsModalContext } from "@/contexts/AlertsModalContext";
 
 export function useAlertsModal() {

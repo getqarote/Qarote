@@ -1,26 +1,31 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useCallback, useEffect, useState } from "react";
+
 import {
+  AlertCircle,
+  Calendar,
+  CheckCircle,
+  Circle,
+  Clock,
   CreditCard,
+  DollarSign,
   Download,
   Eye,
-  Calendar,
-  DollarSign,
-  Clock,
-  AlertCircle,
-  CheckCircle,
-  XCircle,
   RefreshCw,
-  Circle,
+  XCircle,
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import logger from "@/lib/logger";
+
 import { apiClient } from "@/lib/api";
+import { logger } from "@/lib/logger";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+
 import { usePlanUpgrade } from "@/hooks/usePlanUpgrade";
-import { UserPlan } from "@/types/plans";
 import { useUser } from "@/hooks/useUser";
+
+import { UserPlan } from "@/types/plans";
 
 interface Subscription {
   id: string;

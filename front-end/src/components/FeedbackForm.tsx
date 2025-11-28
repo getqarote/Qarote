@@ -1,18 +1,13 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+
 import { zodResolver } from "@hookform/resolvers/zod";
-import { MessageSquare, Bug, Lightbulb, Zap } from "lucide-react";
+import { Bug, Lightbulb, MessageSquare, Zap } from "lucide-react";
+
+import { apiClient } from "@/lib/api";
+import { logger } from "@/lib/logger";
+
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import logger from "../lib/logger";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Card,
   CardContent,
@@ -28,11 +23,23 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { useToast } from "@/hooks/useToast";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+
 import { useAuth } from "@/contexts/AuthContextDefinition";
-import { apiClient } from "@/lib/api";
+
+import { useToast } from "@/hooks/useToast";
+
+import { type FeedbackFormData, feedbackSchema } from "@/schemas/forms";
+
 import type { FeedbackRequest } from "@/types/feedback";
-import { feedbackSchema, type FeedbackFormData } from "@/schemas/forms";
 
 interface FeedbackFormProps {
   onSuccess?: () => void;

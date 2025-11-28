@@ -1,6 +1,7 @@
 import { Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
+
 import { AddQueueForm } from "@/components/AddQueueForm";
+import { Button } from "@/components/ui/button";
 
 interface AddQueueButtonProps {
   serverId: string;

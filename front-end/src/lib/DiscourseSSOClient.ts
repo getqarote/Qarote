@@ -3,9 +3,10 @@
  * Handles client-side SSO operations using the main API client
  */
 
+import { logger } from "@/lib/logger";
+
 import { apiClient } from "./api/client";
 import type { DiscourseUser } from "./api/discourseClient";
-import logger from "./logger";
 
 export { type DiscourseUser };
 

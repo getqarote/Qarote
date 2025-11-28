@@ -1,8 +1,12 @@
 import React, { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+import { Clock, RefreshCw, X } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
-import { X, Clock, RefreshCw } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
 import { UserPlan } from "@/types/plans";
+
 import { CancelSubscriptionModal } from "./CancelSubscriptionModal";
 
 interface CancelSubscriptionResponse {

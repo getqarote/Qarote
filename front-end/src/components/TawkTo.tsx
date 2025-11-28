@@ -1,7 +1,8 @@
 import { useLocation } from "react-router-dom";
+
 import TawkMessengerReact from "@tawk.to/tawk-messenger-react";
 
-const TawkTo = () => {
+export const TawkTo = () => {
   const location = useLocation();
 
   // Don't show Tawk.to on sign-in or sign-up pages
@@ -21,5 +22,3 @@ const TawkTo = () => {
     />
   );
 };
-
-export default TawkTo;

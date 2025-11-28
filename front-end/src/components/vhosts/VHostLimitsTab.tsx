@@ -1,9 +1,15 @@
 import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { Plus, Trash2, Settings, Edit } from "lucide-react";
+import { Edit, Plus, Settings, Trash2 } from "lucide-react";
+import { toast } from "sonner";
+
+import { apiClient } from "@/lib/api";
+import { VHostLimits } from "@/lib/api/vhostTypes";
+
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -12,16 +18,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import {
   Dialog,
   DialogContent,
@@ -32,13 +28,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   Form,
   FormControl,
   FormDescription,
@@ -47,16 +36,27 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { apiClient } from "@/lib/api";
-import { VHostLimits } from "@/lib/api/vhostTypes";
-import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
-const limitSchema = z.object({
-  limitType: z.enum(["max-connections", "max-queues", "max-channels"]),
-  value: z.number().min(1, "Value must be greater than 0"),
-});
+import { useWorkspace } from "@/hooks/useWorkspace";
 
-type LimitForm = z.infer<typeof limitSchema>;
+import { editLimitValueSchema, limitSchema } from "@/schemas/vhost";
+import { type EditLimitValueForm, type LimitForm } from "@/schemas/vhost";
 
 interface VHostLimitsTabProps {
   serverId: string;
@@ -82,6 +82,7 @@ export function VHostLimitsTab({
   limits,
 }: VHostLimitsTabProps) {
   const queryClient = useQueryClient();
+  const { workspace } = useWorkspace();
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingLimit, setEditingLimit] = useState<{
     type: string;
@@ -96,16 +97,26 @@ export function VHostLimitsTab({
     },
   });
 
-  const editForm = useForm<{ value: number }>({
-    resolver: zodResolver(z.object({ value: z.number().min(1) })),
+  const editForm = useForm<EditLimitValueForm>({
+    resolver: zodResolver(editLimitValueSchema),
   });
 
   const setLimitMutation = useMutation({
-    mutationFn: (data: LimitForm) =>
-      apiClient.setVHostLimit(serverId, vhostName, data.limitType, {
-        value: data.value,
-        limitType: data.limitType,
-      }),
+    mutationFn: (data: LimitForm) => {
+      if (!workspace?.id) {
+        throw new Error("Workspace ID is required");
+      }
+      return apiClient.setVHostLimit(
+        serverId,
+        vhostName,
+        data.limitType,
+        {
+          value: data.value,
+          limitType: data.limitType,
+        },
+        workspace.id
+      );
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["vhost", serverId, vhostName],
@@ -120,14 +131,24 @@ export function VHostLimitsTab({
   });
 
   const updateLimitMutation = useMutation({
-    mutationFn: (data: { type: string; value: number }) =>
-      apiClient.setVHostLimit(serverId, vhostName, data.type, {
-        value: data.value,
-        limitType: data.type as
-          | "max-connections"
-          | "max-queues"
-          | "max-channels",
-      }),
+    mutationFn: (data: { type: string; value: number }) => {
+      if (!workspace?.id) {
+        throw new Error("Workspace ID is required");
+      }
+      return apiClient.setVHostLimit(
+        serverId,
+        vhostName,
+        data.type,
+        {
+          value: data.value,
+          limitType: data.type as
+            | "max-connections"
+            | "max-queues"
+            | "max-channels",
+        },
+        workspace.id
+      );
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["vhost", serverId, vhostName],
@@ -141,8 +162,17 @@ export function VHostLimitsTab({
   });
 
   const deleteLimitMutation = useMutation({
-    mutationFn: (limitType: string) =>
-      apiClient.deleteVHostLimit(serverId, vhostName, limitType),
+    mutationFn: (limitType: string) => {
+      if (!workspace?.id) {
+        throw new Error("Workspace ID is required");
+      }
+      return apiClient.deleteVHostLimit(
+        serverId,
+        vhostName,
+        limitType,
+        workspace.id
+      );
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["vhost", serverId, vhostName],

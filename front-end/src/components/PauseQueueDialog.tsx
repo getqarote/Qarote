@@ -1,4 +1,8 @@
 import { useState } from "react";
+
+import { Pause, Play } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -8,11 +12,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Pause, Play } from "lucide-react";
+
+import { useServerContext } from "@/contexts/ServerContext";
+
 import { usePauseQueue, useResumeQueue } from "@/hooks/useApi";
 import { useToast } from "@/hooks/useToast";
-import { useServerContext } from "@/contexts/ServerContext";
 
 interface PauseQueueDialogProps {
   queueName: string;

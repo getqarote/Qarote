@@ -1,6 +1,7 @@
 import { MessageSquare } from "lucide-react";
-import { Button } from "@/components/ui/button";
+
 import { SendMessageDialog } from "@/components/SendMessageDialog";
+import { Button } from "@/components/ui/button";
 
 interface AddSendMessageButtonProps {
   serverId: string;

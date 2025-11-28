@@ -3,23 +3,23 @@
  * Handles user authentication and profile management
  */
 
-import { BaseApiClient } from "./baseClient";
 import {
+  AcceptInvitationResponse,
+  GetInvitationsResponse,
+  InvitationDetailsResponse,
   LoginRequest,
   RegisterRequest,
   RegisterResponse,
-  User,
-  UserProfile,
-  UpdateProfileRequest,
-  UpdateWorkspaceRequest,
-  Workspace,
+  RevokeInvitationResponse,
   SendInvitationRequest,
   SendInvitationResponse,
-  GetInvitationsResponse,
-  InvitationDetailsResponse,
-  AcceptInvitationResponse,
-  RevokeInvitationResponse,
+  UpdateProfileRequest,
+  UpdateWorkspaceRequest,
+  User,
+  UserProfile,
+  Workspace,
 } from "./authTypes";
+import { BaseApiClient } from "./baseClient";
 
 export class AuthApiClient extends BaseApiClient {
   async login(

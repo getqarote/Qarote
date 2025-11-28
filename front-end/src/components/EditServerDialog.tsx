@@ -1,9 +1,11 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+
 import { Loader2, Save, TestTube } from "lucide-react";
 import { toast } from "sonner";
+
+import { Server } from "@/lib/api/types";
+
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
@@ -13,7 +15,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Server } from "@/lib/api/types";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+
 import { useTestConnection, useUpdateServer } from "@/hooks/useServerMutations";
 
 interface EditServerDialogProps {
@@ -67,12 +71,12 @@ export function EditServerDialog({
       setFormData({
         name: server.name,
         host: server.host,
-        port: server.port,
+        port: server.amqpPort,
         username: server.username,
         password: "", // Don't pre-fill password for security
         vhost: server.vhost,
-        useSSL: server.sslConfig?.enabled || false,
-        managementPort: 15672, // Default value since it's not in the Server type
+        useSSL: server.useHttps,
+        managementPort: server.port,
       });
       setErrors({});
       setConnectionStatus(null);
@@ -122,13 +126,12 @@ export function EditServerDialog({
     try {
       const result = await testConnectionMutation.mutateAsync({
         host: formData.host,
-        port: formData.port,
+        port: formData.managementPort,
         username: formData.username,
         password: formData.password || "current_password", // Use placeholder since we don't have access to current password
         vhost: formData.vhost,
-        sslConfig: formData.useSSL
-          ? { enabled: true, verifyPeer: false }
-          : undefined,
+        useHttps: formData.useSSL,
+        amqpPort: formData.port,
       });
 
       setConnectionStatus(result);

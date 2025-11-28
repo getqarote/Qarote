@@ -1,5 +1,15 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+
+import { CheckCircle, Clock, Mail, RefreshCw, XCircle } from "lucide-react";
+import { toast } from "sonner";
+
+import { apiClient } from "@/lib/api";
+import { logger } from "@/lib/logger";
+
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -7,14 +17,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
-import { CheckCircle, XCircle, Mail, Clock, RefreshCw } from "lucide-react";
-import { apiClient } from "@/lib/api";
-import { toast } from "sonner";
+
 import { useAuth } from "@/contexts/AuthContextDefinition";
-import logger from "@/lib/logger";
 
 export const EmailVerificationSettings = () => {
   const { user } = useAuth();

@@ -1,11 +1,13 @@
+import { Database, HelpCircle } from "lucide-react";
+
+import { Queue } from "@/lib/api";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Database, HelpCircle } from "lucide-react";
-import { Queue } from "@/lib/api";
 
 interface MessageStatisticsProps {
   queue: Queue;

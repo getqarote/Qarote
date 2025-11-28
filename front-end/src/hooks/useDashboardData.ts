@@ -1,14 +1,17 @@
-import { useMemo, useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
+
+import { TimeRange } from "@/components/TimeRangeSelector";
+
+import { RabbitMQAuthorizationError } from "@/types/apiErrors";
+
 import {
+  useConnections,
+  useLiveRatesMetrics,
+  useMetrics,
+  useNodes,
   useOverview,
   useQueues,
-  useNodes,
-  useMetrics,
-  useLiveRatesMetrics,
-  useConnections,
 } from "./useApi";
-import { RabbitMQAuthorizationError } from "@/types/apiErrors";
-import { TimeRange } from "@/components/TimeRangeSelector";
 
 interface ChartData {
   time: string;

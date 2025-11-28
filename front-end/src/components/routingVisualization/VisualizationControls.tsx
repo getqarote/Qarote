@@ -3,12 +3,21 @@
  */
 
 import React from "react";
-import { Button } from "@/components/ui/button";
+
+import {
+  Activity,
+  Download,
+  Eye,
+  GitBranch,
+  Pause,
+  Play,
+  RotateCcw,
+  Settings,
+} from "lucide-react";
+
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { Switch } from "@/components/ui/switch";
-import { Slider } from "@/components/ui/slider";
 import {
   Select,
   SelectContent,
@@ -16,17 +25,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Play,
-  Pause,
-  RotateCcw,
-  Download,
-  Settings,
-  Eye,
-  GitBranch,
-  Activity,
-} from "lucide-react";
-import { VisualizationSettings, ExchangeType, FilterOptions } from "./types";
+import { Separator } from "@/components/ui/separator";
+import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
+
+import { ExchangeType, FilterOptions, VisualizationSettings } from "./types";
 
 interface VisualizationControlsProps {
   settings: VisualizationSettings;

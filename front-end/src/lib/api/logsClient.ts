@@ -7,11 +7,11 @@
 import { BaseApiClient } from "./baseClient";
 import {
   ActivityLog,
+  CreateLogRequest,
+  LogExportRequest,
   LogQuery,
   LogsResponse,
   LogStats,
-  CreateLogRequest,
-  LogExportRequest,
 } from "./logTypes";
 
 export class LogsApiClient extends BaseApiClient {

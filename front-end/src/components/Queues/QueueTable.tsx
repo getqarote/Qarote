@@ -1,5 +1,10 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { MessageSquare, Users } from "lucide-react";
+
+import { Queue } from "@/lib/api";
+
+import { PurgeQueueDialog } from "@/components/PurgeQueueDialog";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -9,9 +14,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { PurgeQueueDialog } from "@/components/PurgeQueueDialog";
-import { MessageSquare, Users } from "lucide-react";
-import { Queue } from "@/lib/api";
 
 interface QueueTableProps {
   queues: Queue[];

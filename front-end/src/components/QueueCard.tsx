@@ -1,6 +1,8 @@
-import { Badge } from "@/components/ui/badge";
-import { Queue } from "@/lib/api";
 import { useNavigate } from "react-router-dom";
+
+import { Queue } from "@/lib/api";
+
+import { Badge } from "@/components/ui/badge";
 
 interface QueueCardProps {
   queue: Queue;

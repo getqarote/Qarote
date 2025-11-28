@@ -1,23 +1,27 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 import {
+  ArrowLeft,
   Check,
+  Headphones,
+  Shield,
+  TrendingUp,
   X,
   Zap,
-  TrendingUp,
-  Shield,
-  Headphones,
-  ArrowLeft,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import { UserPlan } from "@/types/plans";
-import { usePlanUpgrade } from "@/hooks/usePlanUpgrade";
-import { useNavigate } from "react-router-dom";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+
 import { AppSidebar } from "@/components/AppSidebar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { PlanBadge } from "@/components/ui/PlanBadge";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+
+import { usePlanUpgrade } from "@/hooks/usePlanUpgrade";
 import { useUser } from "@/hooks/useUser";
+
+import { UserPlan } from "@/types/plans";
 
 interface PlanCardProps {
   plan: {

@@ -3,8 +3,9 @@
  * Handles all plan-related API operations
  */
 
-import { BaseApiClient } from "./baseClient";
 import type { UserPlan } from "@/types/plans";
+
+import { BaseApiClient } from "./baseClient";
 
 export interface PlanFeatures {
   // Core permissions

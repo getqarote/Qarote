@@ -1,6 +1,6 @@
-import { PageHeader } from "@/components/ui/PageHeader";
-import { AddSendMessageButton } from "@/components/AddSendMessageButton";
 import { AddQueueButton } from "@/components/AddQueueButton";
+import { AddSendMessageButton } from "@/components/AddSendMessageButton";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 interface QueueHeaderProps {
   selectedServerId: string;

@@ -1,5 +1,6 @@
 import ReactGA from "react-ga4";
-import logger from "./logger";
+
+import { logger } from "@/lib/logger";
 
 const GA_MEASUREMENT_ID = "G-4MM5ZSTE2F";
 

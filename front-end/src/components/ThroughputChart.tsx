@@ -1,14 +1,14 @@
+import { Clock } from "lucide-react";
 import {
-  AreaChart,
   Area,
-  XAxis,
-  YAxis,
+  AreaChart,
   CartesianGrid,
+  Legend,
   ResponsiveContainer,
   Tooltip,
-  Legend,
+  XAxis,
+  YAxis,
 } from "recharts";
-import { Clock } from "lucide-react";
 
 export type TimeRange =
   | "1m"

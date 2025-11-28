@@ -3,10 +3,13 @@
  */
 
 import React from "react";
+
+import { CheckCircle, Clock, MessageSquare, Users } from "lucide-react";
+
+import { Badge } from "@/components/ui/badge";
+
 import { QueueNode as QueueNodeType } from "./types";
 import { formatNumber } from "./utils";
-import { Badge } from "@/components/ui/badge";
-import { MessageSquare, Users, Clock, CheckCircle } from "lucide-react";
 
 interface QueueNodeProps {
   node: QueueNodeType;

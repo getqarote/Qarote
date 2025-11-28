@@ -1,5 +1,5 @@
-import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
+import { UseFormReturn } from "react-hook-form";
+
 import {
   FormControl,
   FormField,
@@ -7,7 +7,9 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { UseFormReturn } from "react-hook-form";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+
 import type { AddServerFormData } from "@/schemas/forms";
 
 interface ServerDetailsProps {

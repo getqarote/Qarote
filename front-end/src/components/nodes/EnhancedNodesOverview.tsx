@@ -1,5 +1,19 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Activity,
+  AlertTriangle,
+  CheckCircle,
+  HardDrive,
+  HelpCircle,
+  Network,
+  Server,
+  XCircle,
+} from "lucide-react";
+
+import { RabbitMQNode } from "@/lib/api";
+
+import { RabbitMQPermissionError } from "@/components/RabbitMQPermissionError";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Tooltip,
@@ -7,18 +21,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import {
-  Server,
-  CheckCircle,
-  AlertTriangle,
-  XCircle,
-  HardDrive,
-  Activity,
-  Network,
-  HelpCircle,
-} from "lucide-react";
-import { RabbitMQNode } from "@/lib/api";
-import { RabbitMQPermissionError } from "@/components/RabbitMQPermissionError";
+
 import { isRabbitMQAuthError } from "@/types/apiErrors";
 
 interface NodesOverviewProps {

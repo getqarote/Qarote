@@ -1,11 +1,15 @@
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { X, Check, Zap, Loader2 } from "lucide-react";
-import { UserPlan } from "@/types/plans";
-import { useUser } from "@/hooks/useUser";
-import logger from "@/lib/logger";
+
+import { Check, Loader2, X, Zap } from "lucide-react";
+
 import { apiClient } from "@/lib/api";
+import { logger } from "@/lib/logger";
+
+import { useUser } from "@/hooks/useUser";
 import { useWorkspace } from "@/hooks/useWorkspace";
+
+import { UserPlan } from "@/types/plans";
 
 interface PlanUpgradeModalProps {
   isOpen: boolean;

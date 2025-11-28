@@ -3,12 +3,13 @@
  * Handles feedback submission and management
  */
 
-import { BaseApiClient } from "./baseClient";
 import type {
-  FeedbackRequest,
   Feedback,
+  FeedbackRequest,
   FeedbackStats,
 } from "@/types/feedback";
+
+import { BaseApiClient } from "./baseClient";
 
 export interface FeedbackListResponse {
   feedback: Feedback[];

@@ -1,9 +1,12 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useCallback, useEffect, useState } from "react";
+
 import { apiClient, type CurrentPlanResponse } from "@/lib/api";
+import { logger } from "@/lib/logger";
+
 import { UserPlan } from "@/types/plans";
-import logger from "../lib/logger";
-import { UserContext, type UserContextType } from "./UserContextDefinition";
+
 import { useAuth } from "./AuthContextDefinition";
+import { UserContext, type UserContextType } from "./UserContextDefinition";
 
 interface UserProviderProps {
   children: React.ReactNode;

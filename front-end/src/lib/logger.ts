@@ -29,4 +29,4 @@ log.methodFactory = function (methodName, logLevel, loggerName) {
 // Apply the custom method factory
 log.rebuild();
 
-export default log;
+export const logger = log;

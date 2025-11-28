@@ -1,12 +1,16 @@
-import React from "react";
-import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
-import { useMutation } from "@tanstack/react-query";
-import { useAuth } from "@/contexts/AuthContextDefinition";
-import { useNavigate } from "react-router-dom";
-import { apiClient } from "@/lib/api";
-import logger from "@/lib/logger";
-import { useToast } from "@/hooks/useToast";
 import "@/styles/google-auth.css";
+
+import React from "react";
+import { CredentialResponse, GoogleLogin } from "@react-oauth/google";
+import { useMutation } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
+
+import { apiClient } from "@/lib/api";
+import { logger } from "@/lib/logger";
+
+import { useAuth } from "@/contexts/AuthContextDefinition";
+
+import { useToast } from "@/hooks/useToast";
 
 interface GoogleInvitationButtonProps {
   invitationToken: string;

@@ -1,7 +1,9 @@
 import { useMutation } from "@tanstack/react-query";
+
 import { apiClient, LoginRequest, RegisterRequest } from "@/lib/api";
+import { logger } from "@/lib/logger";
+
 import { useAuth } from "@/contexts/AuthContextDefinition";
-import logger from "@/lib/logger";
 
 export const useLogin = () => {
   const { login } = useAuth();

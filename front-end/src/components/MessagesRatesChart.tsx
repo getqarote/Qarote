@@ -1,13 +1,18 @@
+import { useEffect, useState } from "react";
+
+import { HelpCircle, RefreshCw } from "lucide-react";
 import {
-  LineChart,
+  CartesianGrid,
   Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
 } from "recharts";
-import { RefreshCw, HelpCircle } from "lucide-react";
+
+import { RabbitMQPermissionError } from "@/components/RabbitMQPermissionError";
+import { TimeRange, TimeRangeSelector } from "@/components/TimeRangeSelector";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Tooltip as UITooltip,
@@ -15,10 +20,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { RabbitMQPermissionError } from "@/components/RabbitMQPermissionError";
+
 import { isRabbitMQAuthError } from "@/types/apiErrors";
-import { useEffect, useState } from "react";
-import { TimeRangeSelector, TimeRange } from "@/components/TimeRangeSelector";
 
 interface MessagesRatesChartProps {
   messagesRates?: Array<{

@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
-import { useAuth } from "@/contexts/AuthContextDefinition";
+
 import { apiClient } from "@/lib/api/client";
-import logger from "@/lib/logger";
+import { logger } from "@/lib/logger";
+
+import { useAuth } from "@/contexts/AuthContextDefinition";
 
 function DiscourseSSO() {
   const { user } = useAuth();

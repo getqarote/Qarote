@@ -1,19 +1,18 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
+
 import {
-  MessageSquare,
-  ExternalLink,
+  Book,
   ChevronDown,
   ChevronRight,
-  Mail,
-  Book,
-  Zap,
   Copy,
+  ExternalLink,
+  Mail,
+  MessageSquare,
+  Zap,
 } from "lucide-react";
-import { Link } from "react-router-dom";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+
 import { AppSidebar } from "@/components/AppSidebar";
-import { PlanBadge } from "@/components/ui/PlanBadge";
-import { useToast } from "@/hooks/useToast";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -27,7 +26,12 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { PlanBadge } from "@/components/ui/PlanBadge";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+
 import { useAuth } from "@/contexts/AuthContextDefinition";
+
+import { useToast } from "@/hooks/useToast";
 
 const faqs = [
   {

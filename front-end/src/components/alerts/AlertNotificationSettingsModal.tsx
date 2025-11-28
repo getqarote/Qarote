@@ -1,4 +1,24 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
+
+import {
+  Bell,
+  BellOff,
+  Eye,
+  EyeOff,
+  Loader2,
+  Mail,
+  MessageSquare,
+  Plus,
+  Trash2,
+  Webhook,
+} from "lucide-react";
+import { toast } from "sonner";
+
+import { ApiError } from "@/lib/api/types";
+
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -6,39 +26,23 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Checkbox } from "@/components/ui/checkbox";
-import { toast } from "sonner";
-import { useWorkspace } from "@/hooks/useWorkspace";
-import { ApiError } from "@/lib/api/types";
-import {
-  Loader2,
-  Mail,
-  BellOff,
-  Bell,
-  Webhook,
-  Plus,
-  Trash2,
-  Eye,
-  EyeOff,
-  MessageSquare,
-} from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+
 import {
   useAlertNotificationSettings,
-  useUpdateAlertNotificationSettings,
-  useWebhooks,
+  useCreateSlackConfig,
   useCreateWebhook,
-  useUpdateWebhook,
+  useDeleteSlackConfig,
   useDeleteWebhook,
   useSlackConfigs,
-  useCreateSlackConfig,
+  useUpdateAlertNotificationSettings,
   useUpdateSlackConfig,
-  useDeleteSlackConfig,
+  useUpdateWebhook,
+  useWebhooks,
 } from "@/hooks/useApi";
+import { useWorkspace } from "@/hooks/useWorkspace";
 
 interface AlertNotificationSettingsModalProps {
   isOpen: boolean;

@@ -1,12 +1,15 @@
 import { useState } from "react";
+
+import { Clock } from "lucide-react";
 import {
-  LineChart,
+  CartesianGrid,
   Line,
+  LineChart,
+  ResponsiveContainer,
   XAxis,
   YAxis,
-  CartesianGrid,
-  ResponsiveContainer,
 } from "recharts";
+
 import {
   Select,
   SelectContent,
@@ -14,7 +17,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Clock } from "lucide-react";
 
 export type TimeRange = "1m" | "10m" | "1h" | "8h" | "24h";
 

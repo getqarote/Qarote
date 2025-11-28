@@ -1,15 +1,15 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+import { Clock, Lock, Mail, UserPlus, Users, X } from "lucide-react";
+
+import { User } from "@/lib/api/authTypes";
+import { InvitationWithInviter } from "@/lib/api/authTypes";
+
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -18,16 +18,22 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Users, Mail, UserPlus, X, Clock, Lock } from "lucide-react";
-import { User } from "@/lib/api/authTypes";
-import { InvitationWithInviter } from "@/lib/api/authTypes";
-import { UserPlan } from "@/types/plans";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+
 import { useUser } from "@/hooks/useUser";
 import { useWorkspace } from "@/hooks/useWorkspace";
-import { InviteFormState, formatDate, getRoleColor } from "./profileUtils";
+
+import { UserPlan } from "@/types/plans";
+
 import { InviteUserDialog } from "./InviteUserDialogEnhanced";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { formatDate, getRoleColor, InviteFormState } from "./profileUtils";
 
 interface EnhancedTeamTabProps {
   isAdmin: boolean;

@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { CheckCircle, ArrowRight, CreditCard } from "lucide-react";
-import { useUser } from "@/hooks/useUser";
 import { useQueryClient } from "@tanstack/react-query";
+import { useNavigate, useSearchParams } from "react-router-dom";
+
+import { ArrowRight, CheckCircle, CreditCard } from "lucide-react";
+
 import { apiClient } from "@/lib/api";
-import logger from "@/lib/logger";
 import { trackPurchase } from "@/lib/ga";
+import { logger } from "@/lib/logger";
+
+import { useUser } from "@/hooks/useUser";
 
 const PaymentSuccess: React.FC = () => {
   const navigate = useNavigate();

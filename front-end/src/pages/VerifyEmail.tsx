@@ -1,6 +1,15 @@
-import { useState, useEffect, useRef } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useNavigate, useSearchParams } from "react-router-dom";
+
+import { CheckCircle, Mail, RefreshCw, XCircle } from "lucide-react";
+import { toast } from "sonner";
+
+import { apiClient } from "@/lib/api";
+import { logger } from "@/lib/logger";
+
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -8,13 +17,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { CheckCircle, XCircle, RefreshCw, Mail } from "lucide-react";
-import { apiClient } from "@/lib/api";
-import { toast } from "sonner";
+
 import { useAuth } from "@/contexts/AuthContextDefinition";
-import logger from "@/lib/logger";
 
 interface VerificationResult {
   success: boolean;
