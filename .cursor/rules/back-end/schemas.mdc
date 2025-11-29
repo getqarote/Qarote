@@ -1,0 +1,86 @@
+---
+alwaysApply: true
+---
+
+# Back-end Zod Schema Organization
+
+All Zod validation schemas used in controllers must be defined in `back-end/src/schemas/` directory, not inline in controller files.
+
+## Schema File Organization
+
+- **Location**: `back-end/src/schemas/`
+- **Naming**: Use descriptive filenames matching the domain/feature (e.g., `auth.ts`, `payment.ts`, `portal.ts`)
+- **Export pattern**: Export schemas with descriptive names (e.g., `purchaseLicenseSchema`, `registerUserSchema`)
+
+## Schema Definition Rules
+
+1. **All controller schemas must be in `back-end/src/schemas/`**
+   - Do not define schemas inline in controller files
+   - Group related schemas in the same file (e.g., all portal schemas in `portal.ts`)
+
+2. **Schema naming convention**
+   - Use camelCase with "Schema" suffix: `purchaseLicenseSchema`, `registerUserSchema`
+   - Match the request/input being validated
+
+3. **Type exports**
+   - Export TypeScript types derived from schemas using `z.infer<>`
+   - Use descriptive type names: `PurchaseLicenseRequest`, `RegisterUserInput`
+
+4. **Import pattern in controllers**
+   ```typescript
+   import { purchaseLicenseSchema } from "@/schemas/portal";
+   ```
+
+## Examples
+
+### ✅ Correct - Schema in schemas directory
+
+**`back-end/src/schemas/portal.ts`**:
+```typescript
+import { z } from "zod/v4";
+
+export const purchaseLicenseSchema = z.object({
+  tier: z.enum(["DEVELOPER", "ENTERPRISE"]),
+  billingInterval: z.enum(["monthly", "yearly"]),
+});
+
+export type PurchaseLicenseRequest = z.infer<typeof purchaseLicenseSchema>;
+```
+
+**`back-end/src/controllers/portal/license-purchase.controller.ts`**:
+```typescript
+import { purchaseLicenseSchema } from "@/schemas/portal";
+
+portalLicenseController.post(
+  "/purchase",
+  zValidator("json", purchaseLicenseSchema),
+  async (c) => {
+    // ...
+  }
+);
+```
+
+### ❌ Incorrect - Schema defined inline
+
+```typescript
+// ❌ Don't define schemas in controllers
+const PurchaseLicenseSchema = z.object({
+  tier: z.enum(["DEVELOPER", "ENTERPRISE"]),
+  billingInterval: z.enum(["monthly", "yearly"]),
+});
+
+portalLicenseController.post(
+  "/purchase",
+  zValidator("json", PurchaseLicenseSchema),
+  async (c) => {
+    // ...
+  }
+);
+```
+
+## Benefits
+
+- **Reusability**: Schemas can be shared across controllers, services, and tests
+- **Maintainability**: Centralized validation logic is easier to update
+- **Consistency**: Ensures consistent validation patterns across the codebase
+- **Testability**: Schemas can be tested independently

@@ -1,0 +1,236 @@
+---
+alwaysApply: true
+---
+
+# Tailwind CSS Usage Rules
+
+All styling must be done through Tailwind CSS classes and configuration, not inline styles or CSS-in-JS.
+
+## Core Principles
+
+1. **No inline styles** - Never use `style={{}}` prop in React components
+2. **No CSS-in-JS** - Do not use styled-components, emotion, or similar libraries
+3. **Use Tailwind classes** - All styling should use Tailwind utility classes via `className`
+4. **Extend Tailwind config** - Custom colors, animations, and utilities go in `tailwind.config.ts`
+5. **Component classes in CSS** - Reusable component patterns go in `index.css` using `@layer components`
+
+## Allowed Approaches
+
+### ✅ Use Tailwind Utility Classes
+
+```tsx
+// ✅ Correct - Using Tailwind classes
+<div className="flex items-center justify-center min-h-screen bg-background">
+  <Card className="w-full max-w-md p-6">
+    <h1 className="text-2xl font-bold text-foreground">Title</h1>
+  </Card>
+</div>
+```
+
+### ✅ Extend Tailwind Config
+
+**`tailwind.config.ts`**:
+
+```typescript
+export default {
+  theme: {
+    extend: {
+      colors: {
+        primary: {
+          DEFAULT: "hsl(var(--primary))",
+          foreground: "hsl(var(--primary-foreground))",
+        },
+      },
+      backgroundImage: {
+        "gradient-button":
+          "linear-gradient(to right, rgb(194 65 12), rgb(185 28 28))",
+      },
+      animation: {
+        "slide-in-right": "slide-in-right 1s ease-out forwards",
+      },
+    },
+  },
+} satisfies Config;
+```
+
+**Component**:
+
+```tsx
+// ✅ Correct - Using custom Tailwind utilities from config
+<button className="bg-gradient-button hover:bg-gradient-button-hover">
+  Click me
+</button>
+```
+
+### ✅ Use Component Classes in CSS
+
+**`index.css`**:
+
+```css
+@layer components {
+  .btn-primary {
+    @apply bg-gradient-button hover:bg-gradient-button-hover text-white font-medium px-6 py-2 rounded-md;
+  }
+
+  .card-unified {
+    @apply bg-card border border-border rounded-lg shadow-sm;
+  }
+}
+```
+
+**Component**:
+
+```tsx
+// ✅ Correct - Using component classes from CSS
+<button className="btn-primary">Click me</button>
+<Card className="card-unified">Content</Card>
+```
+
+### ✅ Third-Party Component Overrides
+
+For third-party components that require specific CSS overrides (e.g., Google OAuth), use separate CSS files:
+
+**`styles/google-auth.css`**:
+
+```css
+/* Override third-party component styles */
+.google-login-container div[role="button"] {
+  margin: 0 auto !important;
+}
+```
+
+## Prohibited Approaches
+
+### ❌ Inline Styles
+
+```tsx
+// ❌ Incorrect - Using inline styles
+<div style={{ display: "flex", alignItems: "center", padding: "1rem" }}>
+  Content
+</div>
+
+// ✅ Correct - Use Tailwind classes
+<div className="flex items-center p-4">
+  Content
+</div>
+```
+
+### ❌ CSS-in-JS Libraries
+
+```tsx
+// ❌ Incorrect - Using styled-components or emotion
+const StyledButton = styled.button`
+  background: linear-gradient(to right, #c2410c, #b91c1c);
+  padding: 0.5rem 1rem;
+`;
+
+// ✅ Correct - Use Tailwind classes or component classes
+<button className="bg-gradient-button px-4 py-2">Click me</button>;
+```
+
+### ❌ Direct CSS Files for Component Styles
+
+```tsx
+// ❌ Incorrect - Creating component-specific CSS files
+// Button.module.css
+.button {
+  display: flex;
+  align-items: center;
+}
+
+// ✅ Correct - Use Tailwind classes or component classes in index.css
+<button className="flex items-center">Click me</button>
+```
+
+## When to Add to Tailwind Config
+
+Add to `tailwind.config.ts` when:
+
+1. **Custom colors** - Brand colors, theme colors
+2. **Custom animations** - Reusable animations
+3. **Custom gradients** - Background gradients
+4. **Custom spacing/sizing** - Project-specific values
+5. **Custom utilities** - Repeated patterns that should be utilities
+
+## When to Add to index.css @layer components
+
+Add to `index.css` using `@layer components` when:
+
+1. **Reusable component patterns** - Button variants, card styles, layout patterns
+2. **Complex combinations** - Multiple Tailwind classes that are used together frequently
+3. **Component-specific styles** - Styles that represent a complete component pattern
+
+## Examples
+
+### Custom Color in Config
+
+**`tailwind.config.ts`**:
+
+```typescript
+colors: {
+  orange: {
+    500: "#f97316",
+    600: "#ea580c",
+  },
+}
+```
+
+**Component**:
+
+```tsx
+<div className="bg-orange-500 hover:bg-orange-600">Content</div>
+```
+
+### Custom Animation in Config
+
+**`tailwind.config.ts`**:
+
+```typescript
+keyframes: {
+  "slide-in-right": {
+    "0%": { opacity: "0", transform: "translateX(100%)" },
+    "100%": { opacity: "1", transform: "translateX(0)" },
+  },
+},
+animation: {
+  "slide-in-right": "slide-in-right 1s ease-out forwards",
+},
+```
+
+**Component**:
+
+```tsx
+<div className="animate-slide-in-right">Content</div>
+```
+
+### Component Class in CSS
+
+**`index.css`**:
+
+```css
+@layer components {
+  .page-container {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6;
+  }
+}
+```
+
+**Component**:
+
+```tsx
+<div className="page-container">Content</div>
+```
+
+## File Organization
+
+- **`tailwind.config.ts`** - Custom theme extensions (colors, animations, utilities)
+- **`index.css`** - Global styles, CSS variables, component classes (`@layer components`)
+- **`styles/*.css`** - Third-party component overrides only (e.g., `google-auth.css`)
+
+## Benefits
+
+- **Consistency**: All styles follow the same system
+- **Maintainability**: Styles are centralized and easy to update
+- **Performance**: Tailwind purges unused styles
+- **Type safety**: Tailwind classes are validated
+- **Reusability**: Custom utilities and components can be reused across the app

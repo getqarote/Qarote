@@ -9,6 +9,7 @@ import { logger } from "@/core/logger";
 import { prisma } from "@/core/prisma";
 
 import { EmailService } from "@/services/email/email.service";
+import { licenseService } from "@/services/license/license.service";
 import { trackPaymentError } from "@/services/sentry";
 import {
   Customer,
@@ -25,10 +26,16 @@ export async function handleCheckoutSessionCompleted(session: Session) {
   const userId = session.metadata?.userId;
   const plan = session.metadata?.plan as UserPlan;
   const billingInterval = session.metadata?.billingInterval;
+  const purchaseType = session.metadata?.type; // "license" or "subscription"
 
   if (!userId || !plan) {
     logger.error("Missing metadata in checkout session");
     return;
+  }
+
+  // Handle license purchases differently from subscriptions
+  if (purchaseType === "license") {
+    return handleLicensePurchase(session, userId, plan, billingInterval);
   }
 
   try {
@@ -137,6 +144,95 @@ export async function handleCheckoutSessionCompleted(session: Session) {
       handler: "handleCheckoutSessionCompleted",
       error_message: error instanceof Error ? error.message : "Unknown error",
     });
+  }
+}
+
+/**
+ * Handle license purchase from Stripe checkout
+ */
+async function handleLicensePurchase(
+  session: Session,
+  userId: string,
+  plan: UserPlan,
+  billingInterval: string | undefined
+) {
+  try {
+    const customerId = StripeService.extractCustomerId(session);
+    const paymentIntentId =
+      typeof session.payment_intent === "string"
+        ? session.payment_intent
+        : session.payment_intent?.id;
+
+    // Get user
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: { workspace: true },
+    });
+
+    if (!user) {
+      logger.error("User not found for license purchase");
+      return;
+    }
+
+    // Calculate expiration date
+    const expiresAt = new Date();
+    if (billingInterval === "yearly") {
+      expiresAt.setFullYear(expiresAt.getFullYear() + 1);
+    } else {
+      expiresAt.setMonth(expiresAt.getMonth() + 1);
+    }
+
+    // Generate license
+    const { licenseKey, licenseId } = await licenseService.generateLicense({
+      tier: plan,
+      customerEmail: user.email,
+      workspaceId: user.workspaceId || undefined,
+      expiresAt,
+      stripeCustomerId: customerId || undefined,
+      stripePaymentId: paymentIntentId || undefined,
+    });
+
+    logger.info(
+      {
+        licenseId,
+        userId,
+        plan,
+        customerEmail: user.email,
+      },
+      "License generated from Stripe checkout"
+    );
+
+    // Send license email to customer
+    try {
+      // TODO: Create and send license email template
+      logger.info(
+        {
+          to: user.email,
+          licenseKey,
+        },
+        "License purchase completed - email should be sent"
+      );
+    } catch (emailError) {
+      logger.error({ error: emailError }, "Failed to send license email");
+    }
+
+    // Update user with Stripe customer ID if not set
+    if (customerId && !user.stripeCustomerId) {
+      await prisma.user.update({
+        where: { id: userId },
+        data: { stripeCustomerId: customerId },
+      });
+    }
+  } catch (error) {
+    logger.error(
+      {
+        error,
+        sessionId: session.id,
+        userId,
+      },
+      "Error handling license purchase"
+    );
+    throw error;
   }
 }
 

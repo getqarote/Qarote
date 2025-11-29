@@ -1,0 +1,88 @@
+name: Deploy Customer Portal to Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_production:
+        description: 'Type "DEPLOY" to confirm production deployment'
+        required: true
+        default: ""
+
+jobs:
+  quality-checks:
+    name: Quality Checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🔍 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: package-lock.json
+
+      - name: 📥 Install dependencies
+        run: npm ci
+
+      - name: 🔍 Type Check
+        working-directory: customer-portal
+        run: npm run type-check
+
+      - name: 🧹 Lint
+        working-directory: customer-portal
+        run: npm run lint
+        continue-on-error: false
+
+      - name: 💅 Format Check
+        working-directory: customer-portal
+        run: npm run format
+
+  deploy-customer-portal:
+    name: Deploy Customer Portal to Cloudflare Pages - Production
+    environment: production
+    runs-on: ubuntu-latest
+    needs: quality-checks
+    if: github.event.inputs.confirm_production == 'DEPLOY'
+
+    steps:
+      - name: 🔍 Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "npm"
+          cache-dependency-path: package-lock.json
+
+      - name: 📦 Install dependencies
+        working-directory: customer-portal
+        run: npm ci --ignore-scripts # Ignore scripts to avoid husky errors
+
+      - name: 🏗️ Build customer portal for production
+        working-directory: customer-portal
+        env:
+          VITE_API_URL: ${{ vars.VITE_API_URL }}
+          VITE_GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          VITE_ENABLE_OAUTH: ${{ vars.VITE_ENABLE_OAUTH }}
+          VITE_DEPLOYMENT_MODE: ${{ vars.VITE_DEPLOYMENT_MODE }}
+          NODE_ENV: production
+        run: npm run build
+
+      - name: 🚀 Deploy to Cloudflare Pages - Production
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          command: pages deploy customer-portal/dist --project-name=rabbithq-customer-portal --branch=main --commit-hash=${{ github.sha }}
+
+      - name: ✅ Deployment Success
+        run: |
+          echo "🎉 Customer Portal deployed successfully to production!"
+          echo "🌐 Production URL: https://rabbithq-customer-portal.pages.dev"
+          echo "🔗 Custom Domain: https://portal.rabbithq.io (if configured)"
+          echo "📝 Commit: ${{ github.sha }}"
+

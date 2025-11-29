@@ -16,6 +16,8 @@
   "workspaces": [
     "front-end",
     "back-end",
+    "landing",
+    "customer-portal",
     "infrastructure"
   ],
   "engines": {
@@ -25,9 +27,11 @@
   "scripts": {
     "dev:front": "npm run dev --workspace=front-end",
     "dev:back": "npm run dev --workspace=back-end",
+    "dev:landing": "npm run dev --workspace=landing",
+    "dev:customer-portal": "npm run dev --workspace=customer-portal",
     "build": "npm run build --workspace=back-end",
     "start": "npm run start --workspace=back-end",
-    "prepare": "husky"
+    "prepare": "husky || true"
   },
   "lint-staged": {
     "back-end/**/*.{ts,tsx}": [

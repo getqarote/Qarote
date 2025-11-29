@@ -1,5 +1,11 @@
 import { initSentry } from "@/services/sentry";
-initSentry();
+
+import { isCloudMode } from "@/config/deployment";
+
+// Initialize Sentry only if enabled
+if (isCloudMode() || process.env.ENABLE_SENTRY === "true") {
+  initSentry();
+}
 
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
@@ -17,6 +23,7 @@ import {
 } from "@/middlewares/request";
 
 import { serverConfig } from "@/config";
+import { validateDeploymentMode } from "@/config/deployment";
 
 import { standardRateLimiter } from "./middlewares/rateLimiter";
 
@@ -24,8 +31,10 @@ import authController from "@/controllers/auth.controller";
 import discourseController from "@/controllers/discourse.controller";
 import feedbackController from "@/controllers/feedback.controller";
 import healthcheckController from "@/controllers/healthcheck.controller";
+import licenseController from "@/controllers/license/license.controller";
 import paymentController from "@/controllers/payment.controller";
 import webhookController from "@/controllers/payment/webhook.controller";
+import portalLicenseController from "@/controllers/portal/license-purchase.controller";
 import publicInvitationController from "@/controllers/public-invitation.controller";
 import rabbitmqController from "@/controllers/rabbitmq.controller";
 import serverController from "@/controllers/server.controller";
@@ -75,12 +84,18 @@ app.route("/api/payments", paymentController);
 app.route("/api/webhooks", alertWebhookController);
 app.route("/api/slack", slackController);
 app.route("/api/discourse", discourseController);
+app.route("/api/license", licenseController);
+app.route("/api/portal/licenses", portalLicenseController);
 app.route("/", healthcheckController);
 
 const { port, host } = serverConfig;
 
 async function startServer() {
   try {
+    // Validate deployment mode and required services
+    validateDeploymentMode();
+    logger.info("Deployment mode validation passed");
+
     await prisma.$connect();
     logger.info("Connected to database");
 

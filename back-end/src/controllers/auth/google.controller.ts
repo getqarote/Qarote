@@ -12,6 +12,7 @@ import { notionService } from "@/services/integrations/notion.service";
 import { setSentryUser, trackSignUpError } from "@/services/sentry";
 
 import { googleConfig } from "@/config";
+import { isCloudMode } from "@/config/deployment";
 
 const googleController = new Hono();
 
@@ -28,10 +29,42 @@ googleController.post(
   "/google",
   zValidator("json", GoogleAuthSchema),
   async (c) => {
+    // Check if OAuth is enabled
+    if (!googleConfig.enabled) {
+      return c.json(
+        {
+          error: "OAuth not available",
+          message: "Google OAuth is not enabled for this deployment",
+        },
+        503
+      );
+    }
+
+    // Cloud mode requires Google OAuth
+    if (isCloudMode() && !googleConfig.clientId) {
+      return c.json(
+        {
+          error: "OAuth configuration error",
+          message: "Google OAuth is required for cloud deployments",
+        },
+        500
+      );
+    }
+
     const { credential } = c.req.valid("json");
 
     try {
       // Verify the Google OAuth token
+      if (!googleConfig.clientId) {
+        return c.json(
+          {
+            error: "OAuth configuration error",
+            message: "Google OAuth client ID not configured",
+          },
+          500
+        );
+      }
+
       const ticket = await client.verifyIdToken({
         idToken: credential,
         audience: googleConfig.clientId,

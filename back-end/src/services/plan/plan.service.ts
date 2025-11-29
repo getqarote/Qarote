@@ -16,13 +16,17 @@ export class PlanValidationError extends Error {
   constructor(
     public feature: string,
     public currentPlan: UserPlan,
-    public requiredPlan: string,
+    public requiredPlan: UserPlan | string,
     public currentCount?: number,
     public limit?: number,
     public details?: string
   ) {
+    const requiredPlanDisplay =
+      typeof requiredPlan === "string"
+        ? requiredPlan
+        : getPlanDisplayName(requiredPlan);
     super(
-      `${feature} is not available on the ${currentPlan} plan. Upgrade to ${requiredPlan} plan.${
+      `${feature} is not available on the ${currentPlan} plan. Upgrade to ${requiredPlanDisplay} plan.${
         details ? " " + details : ""
       }`
     );
@@ -490,7 +494,7 @@ export function validateQueueCreationOnServer(
     throw new PlanValidationError(
       "Queue creation",
       plan,
-      "DEVELOPER",
+      UserPlan.DEVELOPER,
       currentQueueCount,
       undefined,
       "Upgrade to Developer plan to create queues."

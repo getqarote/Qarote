@@ -1,0 +1,190 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 20 14.3% 4.1%;
+    --card: 30 25% 98%; /* rgb(252 250 246) converted to HSL - unified card background */
+    --card-foreground: 20 14.3% 4.1%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 20 14.3% 4.1%;
+
+    /* Orange primary theme */
+    --primary: 25 95% 53%;
+    --primary-foreground: 0 0% 98%;
+
+    --secondary: 30 25% 94%;
+    --secondary-foreground: 25 45% 17%;
+
+    --muted: 30 25% 94%;
+    --muted-foreground: 25 8% 45%;
+
+    --accent: 30 25% 94%;
+    --accent-foreground: 25 45% 17%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 30 25% 89%;
+    --input: 30 25% 89%;
+    --ring: 25 95% 53%;
+
+    /* Smaller radius */
+    --radius: 0.25rem;
+
+    /* Orange sidebar theme */
+    --sidebar-background: 30 54% 98%;
+    --sidebar-foreground: 25 25% 20%;
+    --sidebar-primary: 25 95% 53%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 30 35% 92%;
+    --sidebar-accent-foreground: 25 45% 17%;
+    --sidebar-border: 30 25% 89%;
+    --sidebar-ring: 25 95% 53%;
+  }
+
+  .dark {
+    --background: 20 14.3% 4.1%;
+    --foreground: 0 0% 95%;
+    --card: 30 25% 98%; /* Same unified card background in dark mode */
+    --card-foreground: 20 14.3% 4.1%; /* Dark text on light card */
+    --popover: 20 14.3% 4.1%;
+    --popover-foreground: 0 0% 95%;
+
+    /* Orange primary theme for dark mode */
+    --primary: 25 95% 53%;
+    --primary-foreground: 0 0% 98%;
+
+    --secondary: 25 14% 12%;
+    --secondary-foreground: 0 0% 95%;
+
+    --muted: 25 14% 12%;
+    --muted-foreground: 25 8% 65%;
+
+    --accent: 25 14% 12%;
+    --accent-foreground: 0 0% 95%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 25 14% 12%;
+    --input: 25 14% 12%;
+    --ring: 25 95% 53%;
+
+    /* Orange sidebar theme for dark mode */
+    --sidebar-background: 25 20% 8%;
+    --sidebar-foreground: 30 25% 85%;
+    --sidebar-primary: 25 95% 53%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 25 15% 15%;
+    --sidebar-accent-foreground: 30 25% 85%;
+    --sidebar-border: 25 14% 12%;
+    --sidebar-ring: 25 95% 53%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  /* Page Layout Components */
+  .page-layout {
+    @apply flex h-screen bg-background;
+  }
+
+  /* Button Components */
+  .btn-primary {
+    @apply bg-gradient-button hover:bg-gradient-button-hover text-white font-medium px-6 py-2 rounded-md transition-all duration-200;
+  }
+
+  .btn-primary-large {
+    @apply bg-gradient-button hover:bg-gradient-button-hover text-white font-medium px-8 py-3 rounded-lg transition-all duration-200;
+  }
+
+  /* Title Components */
+  .title-gradient {
+    @apply bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent;
+  }
+
+  .title-page {
+    @apply text-3xl font-bold text-foreground;
+  }
+
+  .title-section {
+    @apply text-2xl font-semibold text-foreground mb-4;
+  }
+
+  /* Main Content Layout */
+  .main-content {
+    @apply flex-1 flex flex-col min-h-0;
+  }
+
+  .main-content-scrollable {
+    @apply flex-1 flex flex-col min-h-0 overflow-auto;
+  }
+
+  .content-container {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6;
+  }
+
+  .content-container-large {
+    @apply max-w-7xl mx-auto px-6 py-6 space-y-6;
+  }
+
+  /* Card Components */
+  .card-unified {
+    @apply bg-card border border-border rounded-lg shadow-sm;
+  }
+
+  .card-unified-compact {
+    @apply bg-card border border-border rounded-md shadow-sm p-4;
+  }
+
+  /* Billing Interval Toggle */
+  .billing-toggle {
+    @apply inline-flex rounded-lg border p-1;
+  }
+
+  .billing-toggle-button {
+    @apply px-4 py-2 rounded-md text-sm font-medium transition-colors;
+  }
+
+  .billing-toggle-button-active {
+    @apply bg-gradient-accent text-white;
+  }
+
+  .billing-toggle-button-inactive {
+    @apply text-muted-foreground hover:text-foreground;
+  }
+
+  /* License Card Selection */
+  .license-card-selected {
+    @apply ring-2 ring-accent-orange;
+  }
+
+  .license-card-hover {
+    @apply hover:border-accent-orange/50;
+  }
+
+  /* Icon Colors */
+  .icon-accent {
+    @apply text-accent-orange;
+  }
+
+  .icon-destructive {
+    @apply text-destructive;
+  }
+
+  .icon-success {
+    @apply text-green-500;
+  }
+}

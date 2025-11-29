@@ -1,0 +1,5 @@
+User-agent: *
+Disallow: /
+
+# This is a staging environment - do not index
+# Staging URL: TODO

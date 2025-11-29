@@ -1,0 +1,42 @@
+/* Google OAuth centering styles */
+
+/* Center the Google account picker/suggestions */
+.google-login-container div[role="button"] {
+  margin: 0 auto !important;
+}
+
+/* Center the Google One Tap iframe */
+.google-login-container iframe {
+  margin: 0 auto !important;
+  display: block !important;
+}
+
+/* Center any Google OAuth popup content */
+.google-login-container .gsi-button {
+  margin: 0 auto !important;
+}
+
+/* Center Google account selection popup */
+.google-login-container .gsi-button-container {
+  display: flex !important;
+  justify-content: center !important;
+}
+
+/* Additional centering for Google's internal elements */
+.google-login-container [data-testid="google-login-button"] {
+  margin: 0 auto !important;
+}
+
+/* Center the Google account chooser */
+.google-login-container .gsi-button {
+  text-align: center !important;
+}
+
+/* Ensure the container itself is centered */
+.google-login-container {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  width: 100% !important;
+}
+

@@ -99,8 +99,9 @@ export function trackMetricGauge(
 }
 
 export function initSentry() {
-  // Only initialize Sentry in production or when explicitly enabled
-  if (!sentryConfig.enabled && sentryConfig.environment !== "production") {
+  // Only initialize Sentry if enabled and DSN is provided
+  if (!sentryConfig.enabled) {
+    logger.info("Sentry is disabled - skipping initialization");
     return;
   }
 

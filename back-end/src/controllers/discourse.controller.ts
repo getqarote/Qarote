@@ -17,11 +17,22 @@ import {
 } from "@/schemas/discourse";
 
 import { discourseConfig } from "@/config";
+import { isCloudMode } from "@/config/deployment";
 
-const discourseSSO = new DiscourseSSO(
-  discourseConfig.ssoSecret,
-  discourseConfig.url
-);
+// Initialize DiscourseSSO only if Discourse is enabled and configured
+// Cloud mode requires Discourse if it's enabled, self-hosted can have it optional
+const discourseSSO =
+  discourseConfig.enabled && discourseConfig.ssoSecret && discourseConfig.url
+    ? new DiscourseSSO(discourseConfig.ssoSecret, discourseConfig.url)
+    : null;
+
+// Validate Discourse configuration for cloud mode
+// Only require Discourse if it's explicitly enabled but not properly configured
+if (isCloudMode() && discourseConfig.enabled && !discourseSSO) {
+  throw new Error(
+    "Discourse SSO is required for cloud deployments when ENABLE_DISCOURSE is true. Please set DISCOURSE_SSO_SECRET and DISCOURSE_URL, or set ENABLE_DISCOURSE=false to disable Discourse."
+  );
+}
 
 const discourseController = new Hono();
 
@@ -66,6 +77,11 @@ discourseController.get(
   async (c) => {
     try {
       const { sso, sig } = c.req.valid("query");
+
+      // Check if Discourse is enabled
+      if (!discourseSSO) {
+        return c.json({ error: "Discourse SSO is not enabled" }, 503);
+      }
 
       // Verify SSO callback from Discourse
       const payload = discourseSSO.verifySSOCallback(sso, sig);
@@ -124,6 +140,11 @@ discourseController.get(
   async (c) => {
     try {
       const { topic, category } = c.req.valid("query");
+
+      // Check if Discourse is enabled
+      if (!discourseSSO) {
+        return c.json({ error: "Discourse is not enabled" }, 503);
+      }
 
       const embedUrl = discourseSSO.getEmbedUrl(
         topic || undefined,

@@ -137,6 +137,7 @@ model Workspace {
   seenAlerts               SeenAlert[]
   webhooks                 Webhook[]
   slackConfigs             SlackConfig[]
+  licenses                 License[]
   
   createdAt                DateTime       @default(now())
   updatedAt                DateTime       @updatedAt
@@ -527,6 +528,36 @@ model Subscription {
   @@index([userId], name: "subscription_user_idx")
   @@index([status], name: "subscription_status_idx")
   @@map("subscriptions")
+}
+
+model License {
+  id                String    @id @default(uuid())
+  licenseKey        String    @unique
+  tier              UserPlan  // FREE, DEVELOPER, or ENTERPRISE
+  expiresAt         DateTime?
+  customerEmail     String
+  workspaceId       String?
+  lastValidatedAt   DateTime?
+  isActive          Boolean   @default(true)
+  
+  // Stripe purchase information
+  stripeCustomerId  String?
+  stripePaymentId  String?
+  
+  // Instance tracking (for self-hosted deployments)
+  instanceId        String?   // Optional instance identifier
+  
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  // Relations
+  workspace         Workspace? @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
+  
+  @@index([licenseKey], name: "license_key_idx")
+  @@index([customerEmail], name: "license_customer_email_idx")
+  @@index([workspaceId], name: "license_workspace_idx")
+  @@index([isActive], name: "license_active_idx")
+  @@map("licenses")
 }
 
 model Payment {
