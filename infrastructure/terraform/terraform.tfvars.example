@@ -1,0 +1,52 @@
+# Example Terraform variables file
+# Copy this to terraform.tfvars and fill in your values
+
+# List of providers to deploy to
+cloud_providers = ["aws", "azure", "gcp", "digitalocean"]
+
+# AWS Configuration
+aws_region = "us-east-1"
+
+# Azure Configuration
+azure_location = "eastus"
+
+# GCP Configuration
+gcp_project_id = "your-gcp-project-id"  # REQUIRED: Your GCP project ID
+gcp_region     = "us-central1"
+gcp_zone       = "us-central1-a"
+
+# Digital Ocean Configuration
+do_region = "nyc1"
+
+# Instance configuration
+instance_type = "t3.medium" # AWS default, will be mapped per provider
+
+# RabbitMQ Configuration
+rabbitmq_admin_user     = "admin"
+rabbitmq_admin_password = "CHANGE_ME_SECURE_PASSWORD"
+
+# SSH Configuration (optional)
+# If not provided, some providers will generate keys automatically
+ssh_public_key = ""
+
+# DNS Configuration (optional - leave empty to use IP addresses)
+# For AWS Route 53:
+# 1. Create a hosted zone in Route 53 for your domain (e.g., example.com)
+# 2. Get the hosted zone ID from Route 53 console
+# 3. Update your domain's nameservers to point to Route 53 nameservers
+aws_domain_name      = ""  # e.g., "rabbitmq-aws.rabbithq.com"
+aws_route53_zone_id  = ""  # e.g., "Z1234567890ABC" (Route 53 hosted zone ID)
+
+# For GCP Cloud DNS:
+# 1. Create a managed zone in Cloud DNS for your domain (e.g., example.com)
+# 2. Get the zone name from Cloud DNS console
+# 3. Update your domain's nameservers to point to Cloud DNS nameservers
+gcp_domain_name      = ""  # e.g., "rabbitmq-gcp.rabbithq.com"
+gcp_dns_zone_name    = ""  # e.g., "rabbithq-zone" (Cloud DNS managed zone name)
+
+# Tags
+tags = {
+  Project     = "RabbitHQ"
+  Environment = "testing"
+  ManagedBy   = "Terraform"
+}
