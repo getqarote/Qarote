@@ -101,6 +101,24 @@ variable "aws_instance_type" {
   default     = "t3.micro" # Small instance for testing
 }
 
+variable "enable_amazon_mq" {
+  description = "Enable Amazon MQ managed RabbitMQ broker alongside self-managed EC2 instance"
+  type        = bool
+  default     = false
+}
+
+variable "aws_mq_instance_type" {
+  description = "Amazon MQ instance type for managed RabbitMQ broker"
+  type        = string
+  default     = "mq.t3.micro"
+}
+
+variable "aws_mq_domain_name" {
+  description = "Domain name for Amazon MQ broker (e.g., managed.aws-rabbithq.com). Leave empty to use default endpoint."
+  type        = string
+  default     = ""
+}
+
 variable "azure_instance_type" {
   description = "Azure VM size for RabbitMQ servers"
   type        = string
@@ -171,7 +189,7 @@ locals {
   common_tags = var.tags
 }
 
-# AWS Configuration
+# AWS Configuration - Self-managed EC2 RabbitMQ
 module "aws_rabbitmq" {
   count  = contains(var.cloud_providers, "aws") ? 1 : 0
   source = "./modules/aws"
@@ -184,6 +202,20 @@ module "aws_rabbitmq" {
   domain_name         = var.aws_domain_name
   route53_zone_id     = var.aws_route53_zone_id
   tags                = local.common_tags
+}
+
+# AWS Configuration - Managed Amazon MQ RabbitMQ
+module "aws_mq_rabbitmq" {
+  count  = contains(var.cloud_providers, "aws") && var.enable_amazon_mq ? 1 : 0
+  source = "./modules/aws-mq"
+
+  region                = var.aws_region
+  instance_type         = var.aws_mq_instance_type
+  rabbitmq_admin_user   = var.rabbitmq_admin_user
+  rabbitmq_admin_password = var.rabbitmq_admin_password
+  domain_name           = var.aws_mq_domain_name
+  route53_zone_id       = var.aws_route53_zone_id
+  tags                  = local.common_tags
 }
 
 # Azure Configuration
@@ -285,10 +317,28 @@ output "digitalocean_rabbitmq" {
   sensitive = false
 }
 
+output "aws_mq_rabbitmq" {
+  description = "AWS Amazon MQ RabbitMQ broker details"
+  value = try({
+    broker_id        = module.aws_mq_rabbitmq[0].broker_id
+    broker_arn       = module.aws_mq_rabbitmq[0].broker_arn
+    broker_name     = module.aws_mq_rabbitmq[0].broker_name
+    amqp_endpoint   = module.aws_mq_rabbitmq[0].amqp_endpoint
+    amqps_endpoint  = module.aws_mq_rabbitmq[0].amqps_endpoint
+    management_endpoint = module.aws_mq_rabbitmq[0].management_endpoint
+    fqdn            = module.aws_mq_rabbitmq[0].fqdn
+    management_url  = module.aws_mq_rabbitmq[0].fqdn != null ? "https://${module.aws_mq_rabbitmq[0].fqdn}:443" : try("https://${module.aws_mq_rabbitmq[0].management_endpoint}:443", null)
+    amqp_url        = module.aws_mq_rabbitmq[0].fqdn != null ? "amqp://${var.rabbitmq_admin_user}:${var.rabbitmq_admin_password}@${module.aws_mq_rabbitmq[0].fqdn}:5672" : try(module.aws_mq_rabbitmq[0].connection_urls.amqp, null)
+    amqps_url       = module.aws_mq_rabbitmq[0].fqdn != null ? "amqps://${var.rabbitmq_admin_user}:${var.rabbitmq_admin_password}@${module.aws_mq_rabbitmq[0].fqdn}:5671" : try(module.aws_mq_rabbitmq[0].connection_urls.amqps, null)
+  }, null)
+  sensitive = true
+}
+
 output "all_instances" {
   description = "Summary of all RabbitMQ instances"
   value = {
     aws = try(module.aws_rabbitmq[0].public_ip, null)
+    aws_mq = try(module.aws_mq_rabbitmq[0].broker_endpoint, null)
     azure = try(module.azure_rabbitmq[0].public_ip, null)
     gcp = try(module.gcp_rabbitmq[0].public_ip, null)
     digitalocean = try(module.digitalocean_rabbitmq[0].public_ip, null)
