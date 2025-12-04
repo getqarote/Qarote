@@ -8,7 +8,7 @@ import {
   getUserPlan,
 } from "@/services/plan/plan.service";
 
-import { OverviewResponse } from "@/types/overview";
+import { OverviewResponse } from "@/types/rabbitmq";
 
 import { createErrorResponse } from "../shared";
 import { createRabbitMQClient, verifyServerAccess } from "./shared";
