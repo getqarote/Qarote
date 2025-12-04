@@ -68,11 +68,6 @@ const envSchema = z.object({
   GOOGLE_CLIENT_ID: z.string().optional(),
   ENABLE_OAUTH: z.coerce.boolean().default(true),
 
-  // Discourse Configuration
-  DISCOURSE_SSO_SECRET: z.string().optional(),
-  DISCOURSE_URL: z.string().optional(),
-  ENABLE_DISCOURSE: z.coerce.boolean().default(false),
-
   // License Configuration (for self-hosted)
   LICENSE_KEY: z.string().optional(),
   LICENSE_VALIDATION_URL: z.string().optional(),
@@ -183,12 +178,6 @@ export const sentryConfig = {
 export const googleConfig = {
   clientId: config.GOOGLE_CLIENT_ID,
   enabled: config.ENABLE_OAUTH,
-} as const;
-
-export const discourseConfig = {
-  ssoSecret: config.DISCOURSE_SSO_SECRET,
-  url: config.DISCOURSE_URL,
-  enabled: config.ENABLE_DISCOURSE,
 } as const;
 
 export const licenseConfig = {

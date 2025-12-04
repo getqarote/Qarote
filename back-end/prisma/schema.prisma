@@ -186,6 +186,10 @@ model User {
   stripeCustomerId      String?   @unique
   stripeSubscriptionId  String?   @unique
   
+  // Discord integration
+  discordJoined        Boolean   @default(false)
+  discordJoinedAt      DateTime?
+  
   // Payment relations - moved from workspace to user level
   subscription             Subscription?
   payments                 Payment[]

@@ -134,6 +134,7 @@ const Index = () => {
       borderColor: "border-gray-200",
       features: {
         servers: "Up to 1",
+        rabbitMQVersionSupport: "Only LTS versions",
         workspaces: "Up to 1",
         teamMembers: "Up to 1",
         queueManagement: true,
@@ -156,6 +157,7 @@ const Index = () => {
       isPopular: true,
       features: {
         servers: "Up to 2",
+        rabbitMQVersionSupport: "All versions 3.x and 4.x",
         workspaces: "Up to 2",
         teamMembers: "Up to 2",
         queueManagement: true,
@@ -177,6 +179,7 @@ const Index = () => {
       borderColor: "border-gray-200",
       features: {
         servers: "Unlimited",
+        rabbitMQVersionSupport: "All versions 3.x and 4.x",
         workspaces: "Unlimited",
         teamMembers: "Unlimited",
         queueManagement: true,
@@ -831,6 +834,19 @@ const Index = () => {
                                 </span>
                                 <div className="text-xs text-muted-foreground">
                                   {plan.features.servers}
+                                </div>
+                              </div>
+                            </li>
+                            <li className="flex items-start gap-3">
+                              <div className="mt-1">
+                                <Check className="w-4 h-4 text-green-500" />
+                              </div>
+                              <div className="flex-1">
+                                <span className="text-sm text-foreground">
+                                  RabbitMQ Version Support
+                                </span>
+                                <div className="text-xs text-muted-foreground">
+                                  {plan.features.rabbitMQVersionSupport}
                                 </div>
                               </div>
                             </li>

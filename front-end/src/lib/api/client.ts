@@ -8,13 +8,7 @@ import type { FeedbackRequest } from "@/types/feedback";
 
 import { AlertApiClient } from "./alertClient";
 import { AuthApiClient } from "./authClient";
-import type {
-  DiscourseEmbedResponse,
-  DiscourseInfoResponse,
-  DiscourseStatsResponse,
-  DiscourseTopicsResponse,
-} from "./discourseClient";
-import { DiscourseApiClient } from "./discourseClient";
+import { DiscordApiClient } from "./discordClient";
 import type { FeedbackFilters, UpdateFeedbackRequest } from "./feedbackClient";
 import { FeedbackApiClient } from "./feedbackClient";
 import { LogsApiClient } from "./logsClient";
@@ -47,7 +41,7 @@ class ApiClient {
   private planClient: PlanApiClient;
   private paymentClient: PaymentApiClient;
   private passwordClient: PasswordApiClient;
-  private discourseClient: DiscourseApiClient;
+  private discordClient: DiscordApiClient;
   private webhookClient: WebhookApiClient;
   private slackClient: SlackApiClient;
 
@@ -62,7 +56,7 @@ class ApiClient {
     this.planClient = new PlanApiClient(baseUrl);
     this.paymentClient = new PaymentApiClient(baseUrl);
     this.passwordClient = new PasswordApiClient(baseUrl);
-    this.discourseClient = new DiscourseApiClient(baseUrl);
+    this.discordClient = new DiscordApiClient(baseUrl);
     this.webhookClient = new WebhookApiClient(baseUrl);
     this.slackClient = new SlackApiClient(baseUrl);
   }
@@ -885,43 +879,13 @@ class ApiClient {
     return this.slackClient.deleteSlackConfig(workspaceId, slackConfigId);
   }
 
-  // Discourse methods
-  // async generateDiscourseSSOUrl(
-  //   user: DiscourseUser
-  // ): Promise<DiscourseSSOResponse> {
-  //   return this.discourseClient.generateSSOUrl(user);
-  // }
-
-  async processDiscourseSSOCallback(
-    sso: string,
-    sig: string
-  ): Promise<{ redirectUrl: string }> {
-    return this.discourseClient.processSSOCallback(sso, sig);
+  // Discord methods
+  async markDiscordJoined() {
+    return this.discordClient.markJoined();
   }
 
-  async getDiscourseEmbedUrl(
-    topicId?: string,
-    categoryId?: string
-  ): Promise<DiscourseEmbedResponse> {
-    return this.discourseClient.getEmbedUrl(topicId, categoryId);
-  }
-
-  async getDiscourseInfo(): Promise<DiscourseInfoResponse> {
-    return this.discourseClient.getInfo();
-  }
-
-  async getDiscourseStats(): Promise<DiscourseStatsResponse> {
-    return this.discourseClient.getStats();
-  }
-
-  async getDiscourseTopics(
-    limit: number = 5
-  ): Promise<DiscourseTopicsResponse> {
-    return this.discourseClient.getTopics(limit);
-  }
-
-  async checkDiscourseAuth(): Promise<boolean> {
-    return this.discourseClient.checkAuth();
+  async getDiscordStatus() {
+    return this.discordClient.getStatus();
   }
 }
 

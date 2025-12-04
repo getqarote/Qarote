@@ -229,76 +229,6 @@ services:
       timeout: 10s
       retries: 5
 
-  # Discourse Community Support
-  discourse:
-    image: discourse/discourse:latest
-    container_name: rabbithq_discourse
-    restart: unless-stopped
-    environment:
-      DISCOURSE_HOSTNAME: localhost:9000
-      DISCOURSE_DEVELOPER_EMAILS: tessierhuort@gmail.com
-      DISCOURSE_SMTP_ADDRESS: smtp.gmail.com
-      DISCOURSE_SMTP_PORT: 587
-      DISCOURSE_SMTP_USER_NAME: tessierhuort@gmail.com
-      DISCOURSE_SMTP_PASSWORD: kpho wdwx fzmr sdiu
-      DISCOURSE_SMTP_ENABLE_START_TLS: true
-      DISCOURSE_SMTP_AUTHENTICATION: login
-      DISCOURSE_REDIS_HOST: discourse-redis
-      DISCOURSE_DB_HOST: discourse-postgres
-      DISCOURSE_DB_NAME: discourse
-      DISCOURSE_DB_USERNAME: discourse
-      DISCOURSE_DB_PASSWORD: discourse_password
-      DISCOURSE_SERVE_STATIC_ASSETS: true
-      DISCOURSE_SKIP_POST_DEPLOYMENT_MIGRATIONS: false
-      DISCOURSE_SINGLE_SIGN_ON_SECRET: gagyJ/OHhh35SS5Cl0P6FrcMju+RIPN94xcOIasWba4=
-      DISCOURSE_SINGLE_SIGN_ON_REDIRECT: http://localhost:9000/auth/discourse/callback
-    ports:
-      - "9000:80"
-    volumes:
-      - discourse_data:/var/discourse/shared/standalone
-    networks:
-      - rabbit_dashboard_network
-    depends_on:
-      - discourse-postgres
-      - discourse-redis
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:80"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-
-  discourse-postgres:
-    image: pgvector/pgvector:pg15
-    container_name: rabbithq_discourse_postgres
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: discourse
-      POSTGRES_USER: discourse
-      POSTGRES_PASSWORD: discourse_password
-    volumes:
-      - discourse_postgres_data:/var/lib/postgresql/data
-    networks:
-      - rabbit_dashboard_network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U discourse -d discourse"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  discourse-redis:
-    image: redis:7-alpine
-    container_name: rabbithq_discourse_redis
-    restart: unless-stopped
-    volumes:
-      - discourse_redis_data:/data
-    networks:
-      - rabbit_dashboard_network
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
 volumes:
   postgres_data:
     driver: local
@@ -319,12 +249,6 @@ volumes:
   rabbitmq_4_0_data:
     driver: local
   rabbitmq_4_1_data:
-    driver: local
-  discourse_data:
-    driver: local
-  discourse_postgres_data:
-    driver: local
-  discourse_redis_data:
     driver: local
 
 networks:

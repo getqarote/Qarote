@@ -881,55 +881,6 @@ export async function ensureProductionDatabaseVolume(): Promise<HetznerVolume> {
 }
 
 /**
- * Ensure a Discourse volume exists and is properly configured
- */
-export async function ensureDiscourseVolume(): Promise<HetznerVolume> {
-  const volumeName = "rabbithq-discourse-prod";
-  const volumeSize = 100; // 100GB for Discourse storage (uploads, backups, etc.)
-
-  try {
-    // Check if volume already exists
-    let volume = await getVolumeByName(volumeName);
-
-    if (volume) {
-      Logger.info(
-        `Discourse volume already exists: ${volume.name} (ID: ${volume.id})`
-      );
-      return volume;
-    }
-
-    // Create new volume
-    const createRequest: CreateVolumeRequest = {
-      size: volumeSize,
-      name: volumeName,
-      location: "nbg1",
-      format: "ext4", // Good for general file storage
-      labels: {
-        project: "rabbithq",
-        environment: "production",
-        type: "discourse",
-        created_by: "infrastructure-setup",
-      },
-    };
-
-    Logger.info(`Creating Discourse volume: ${volumeName} (${volumeSize}GB)`);
-    volume = await createHetznerVolume(createRequest);
-
-    Logger.success(
-      `Created Discourse volume: ${volume.name} with ${volume.size}GB capacity`
-    );
-
-    return volume;
-  } catch (error) {
-    throw new Error(
-      `Failed to ensure Discourse volume: ${
-        error instanceof Error ? error.message : String(error)
-      }`
-    );
-  }
-}
-
-/**
  * Attach database volume to database server if not already attached
  */
 export async function ensureVolumeAttachedToServer(

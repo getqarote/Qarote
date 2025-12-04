@@ -40,7 +40,6 @@ const PaymentCancelled = lazy(() => import("./pages/PaymentCancelled"));
 const TermsOfService = lazy(() => import("./pages/public/TermsOfService"));
 const PrivacyPolicy = lazy(() => import("./pages/public/PrivacyPolicy"));
 const HelpSupport = lazy(() => import("./pages/HelpSupport"));
-const DiscourseSSO = lazy(() => import("./pages/DiscourseSSO"));
 const SignIn = lazy(() => import("./pages/SignIn"));
 const SignUp = lazy(() => import("./pages/SignUp"));
 const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
@@ -87,14 +86,6 @@ const AppCore = () => (
                         }
                       />
                       <Route path="/verify-email" element={<VerifyEmail />} />
-                      <Route
-                        path="/discourse/sso"
-                        element={
-                          <ProtectedRoute>
-                            <DiscourseSSO />
-                          </ProtectedRoute>
-                        }
-                      />
                       <Route
                         path="/terms-of-service"
                         element={<TermsOfService />}

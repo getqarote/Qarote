@@ -126,7 +126,6 @@ GOOGLE_CLIENT_ID=
 **Other Services**
 ```env
 ENABLE_NOTION=false
-ENABLE_DISCOURSE=false
 ENABLE_SLACK=false
 ```
 

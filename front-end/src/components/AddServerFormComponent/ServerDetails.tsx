@@ -12,13 +12,24 @@ import { Switch } from "@/components/ui/switch";
 
 import type { AddServerFormData } from "@/schemas/forms";
 
+import { ServerUrlInput } from "./ServerUrlInput";
+
 interface ServerDetailsProps {
   form: UseFormReturn<AddServerFormData>;
+  mode?: "add" | "edit";
 }
 
-export const ServerDetails = ({ form }: ServerDetailsProps) => {
+export const ServerDetails = ({ form, mode = "add" }: ServerDetailsProps) => {
   return (
     <div className="space-y-4">
+      <ServerUrlInput form={form} mode={mode} />
+      {mode === "add" && (
+        <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+          <p className="text-sm font-medium text-muted-foreground mb-4">
+            Or fill the fields below manually
+          </p>
+        </div>
+      )}
       <div className="grid grid-cols-2 gap-4">
         <FormField
           control={form.control}

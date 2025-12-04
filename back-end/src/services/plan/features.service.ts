@@ -104,7 +104,25 @@ export const PLAN_FEATURES: Record<UserPlan, PlanFeatures> = {
     hasEmailAlerts: true,
 
     // RabbitMQ support
-    supportedRabbitMqVersions: ["3.12", "3.13", "4.0", "4.1"],
+    supportedRabbitMqVersions: [
+      "3.13",
+      "3.12",
+      "3.11",
+      "3.10",
+      "3.9",
+      "3.8",
+      "3.7",
+      "3.6",
+      "3.5",
+      "3.4",
+      "3.3",
+      "3.2",
+      "3.1",
+      "3.0",
+      "4.0",
+      "4.1",
+      "4.2",
+    ],
 
     // Pricing
     monthlyPrice: 1000, // $10.00
@@ -147,7 +165,25 @@ export const PLAN_FEATURES: Record<UserPlan, PlanFeatures> = {
     hasEmailAlerts: true,
 
     // RabbitMQ support
-    supportedRabbitMqVersions: ["3.12", "3.13", "4.0", "4.1"],
+    supportedRabbitMqVersions: [
+      "3.13",
+      "3.12",
+      "3.11",
+      "3.10",
+      "3.9",
+      "3.8",
+      "3.7",
+      "3.6",
+      "3.5",
+      "3.4",
+      "3.3",
+      "3.2",
+      "3.1",
+      "3.0",
+      "4.0",
+      "4.1",
+      "4.2",
+    ],
 
     // Pricing
     monthlyPrice: 5000, // $50.00

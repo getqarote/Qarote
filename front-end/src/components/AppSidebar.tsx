@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 
 import { AddServerForm } from "@/components/AddServerFormComponent";
-import { DiscourseLink } from "@/components/DiscourseWidget";
+import { DiscordLink } from "@/components/DiscordLink";
 import { PlanUpgradeModal } from "@/components/plans/PlanUpgradeModal";
 import { ServerManagement } from "@/components/ServerManagement";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -288,12 +288,7 @@ export function AppSidebar() {
 
       <SidebarFooter className="border-t border-sidebar-border p-4 space-y-4">
         {/* Community Support */}
-        <DiscourseLink
-          userId={user?.id}
-          userEmail={user?.email}
-          userName={`${user?.firstName} ${user?.lastName}`}
-          userUsername={user?.email?.split("@")[0]}
-        />
+        <DiscordLink userId={user?.id} userEmail={user?.email} />
 
         {/* Theme Toggle */}
         <div className="flex items-center justify-between">

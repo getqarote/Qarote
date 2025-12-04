@@ -29,7 +29,7 @@ import { standardRateLimiter } from "./middlewares/rateLimiter";
 
 import alertsController from "@/controllers/alerts.controller";
 import authController from "@/controllers/auth.controller";
-import discourseController from "@/controllers/discourse.controller";
+import discordController from "@/controllers/discord.controller";
 import feedbackController from "@/controllers/feedback.controller";
 import healthcheckController from "@/controllers/healthcheck.controller";
 import licenseController from "@/controllers/license/license.controller";
@@ -84,7 +84,7 @@ app.route("/api/feedback", feedbackController);
 app.route("/api/payments", paymentController);
 app.route("/api/webhooks", alertWebhookController);
 app.route("/api/slack", slackController);
-app.route("/api/discourse", discourseController);
+app.route("/api/discord", discordController);
 app.route("/api/license", licenseController);
 app.route("/api/portal/licenses", portalLicenseController);
 app.route("/api/alerts", alertsController);

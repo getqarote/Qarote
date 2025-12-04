@@ -38,6 +38,7 @@ import { useServerContext } from "@/contexts/ServerContext";
 
 import { useServers } from "@/hooks/useApi";
 import { useDeleteServer } from "@/hooks/useServerMutations";
+import { useUser } from "@/hooks/useUser";
 
 interface ServerManagementProps {
   trigger?: React.ReactNode;
@@ -114,6 +115,7 @@ function ServerCard({ server, onServerUpdated }: ServerCardProps) {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const { selectedServerId, setSelectedServerId } = useServerContext();
+  const { refetchPlan } = useUser();
   const deleteServerMutation = useDeleteServer();
   const navigate = useNavigate();
   const params = useParams<{ serverId?: string }>();
@@ -121,6 +123,9 @@ function ServerCard({ server, onServerUpdated }: ServerCardProps) {
   const handleDeleteServer = async () => {
     try {
       await deleteServerMutation.mutateAsync(server.id);
+
+      // Refetch plan data to update server count/limits
+      await refetchPlan();
 
       // If the deleted server was selected, clear the selection
       if (selectedServerId === server.id) {

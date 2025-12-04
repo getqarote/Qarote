@@ -261,7 +261,7 @@ export const AddServerForm = ({
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <RabbitMqVersionInfo />
 
-              <ServerDetails form={form} />
+              <ServerDetails form={form} mode={mode} />
 
               <TunnelHelper form={form} />
 

@@ -7,8 +7,7 @@
     "deployment",
     "infrastructure",
     "cloudflare",
-    "postgres",
-    "discourse"
+    "postgres"
   ],
   "author": "RabbitHQ Team",
   "license": "MIT",
@@ -27,9 +26,7 @@
     "scale:production": "tsx scripts/scale.ts production",
     "destroy:staging": "tsx scripts/destroy.ts staging",
     "destroy:production": "tsx scripts/destroy.ts production",
-    "maintenance": "tsx scripts/maintenance.ts",
-    "discourse:setup:staging": "tsx scripts/setup/discourse-setup.ts staging",
-    "discourse:setup:production": "tsx scripts/setup/discourse-setup.ts production"
+    "maintenance": "tsx scripts/maintenance.ts"
   },
   "dependencies": {
     "chalk": "^5.3.0",

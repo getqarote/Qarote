@@ -28,7 +28,7 @@ interface RabbitMqVersionInfoProps {
 export const RabbitMqVersionInfo = ({
   className,
 }: RabbitMqVersionInfoProps) => {
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
   const [isManagementAlertDismissed, setIsManagementAlertDismissed] =
     useState(false);
   const { workspace } = useWorkspace();
@@ -45,8 +45,33 @@ export const RabbitMqVersionInfo = ({
   }
   const { planFeatures } = planData;
   const supportedVersions = planFeatures.supportedRabbitMqVersions;
-  const allVersions = ["3.12", "3.13", "4.0", "4.1"];
-  const isRestrictedPlan = userPlan === "FREE" || userPlan === "DEVELOPER";
+  const isFreePlan = userPlan === "FREE";
+
+  // Generate all versions to display based on plan
+  // FREE plan: Only show LTS versions
+  // DEVELOPER/ENTERPRISE: Show all supported versions
+  const ltsVersions = ["3.12", "3.13", "4.0", "4.1"];
+  const all3xVersions = [
+    "3.13",
+    "3.12",
+    "3.11",
+    "3.10",
+    "3.9",
+    "3.8",
+    "3.7",
+    "3.6",
+    "3.5",
+    "3.4",
+    "3.3",
+    "3.2",
+    "3.1",
+    "3.0",
+  ];
+  const all4xVersions = ["4.2", "4.1", "4.0"];
+
+  const allVersions = isFreePlan
+    ? ltsVersions
+    : [...all3xVersions, ...all4xVersions];
 
   return (
     <div className={className}>
@@ -61,7 +86,9 @@ export const RabbitMqVersionInfo = ({
             <p className="text-sm">
               Ensure the <strong>RabbitMQ Management Plugin</strong> is enabled
               for API access. The port field above should be the Management
-              plugin port (default: 15672), not the AMQP broker port (5672).
+              plugin port (default: <strong>15672</strong> for HTTP,{" "}
+              <strong>443</strong> for HTTPS URLs), not the AMQP broker port (
+              <strong>5672</strong>).
             </p>
             <p className="text-xs mt-2 opacity-90">
               To enable:{" "}
@@ -85,9 +112,9 @@ export const RabbitMqVersionInfo = ({
       )}
 
       {/* Version Support Information */}
-      <Alert>
+      <Alert className="[&>svg]:top-1/2 [&>svg]:-translate-y-1/2">
         <InfoIcon className="h-4 w-4" />
-        <AlertDescription>
+        <AlertDescription className="!translate-y-0">
           <div className="flex items-center justify-between mb-2">
             <div className="font-medium">
               RabbitMQ Version Support ({workspace.plan} Plan)
@@ -112,6 +139,7 @@ export const RabbitMqVersionInfo = ({
                 <div className="flex flex-wrap gap-2">
                   {allVersions.map((version) => {
                     const isSupported = supportedVersions.includes(version);
+                    const isLts = ltsVersions.includes(version);
                     return (
                       <Badge
                         key={version}
@@ -127,14 +155,15 @@ export const RabbitMqVersionInfo = ({
                         ) : (
                           <XCircle className="h-3 w-3" />
                         )}
-                        RabbitMQ {version} LTS
+                        RabbitMQ {version}
+                        {isLts && " LTS"}
                       </Badge>
                     );
                   })}
                 </div>
               </div>
 
-              {isRestrictedPlan && (
+              {isFreePlan && (
                 <div className="text-sm text-amber-700 bg-amber-50 p-3 rounded-md border border-amber-200">
                   <div className="flex items-center gap-2 mb-1">
                     <ArrowUpCircle className="h-4 w-4" />
@@ -143,12 +172,9 @@ export const RabbitMqVersionInfo = ({
                     </span>
                   </div>
                   <p>
-                    Upgrade to <strong>Startup</strong> or{" "}
-                    <strong>Business</strong> plan to connect to RabbitMQ{" "}
-                    {allVersions
-                      .filter((v) => !supportedVersions.includes(v))
-                      .join(", ")}{" "}
-                    LTS versions.
+                    Upgrade to <strong>Developer</strong> or{" "}
+                    <strong>Enterprise</strong> plan to connect to all RabbitMQ
+                    versions (3.0-4.x), including non-LTS versions.
                   </p>
                 </div>
               )}

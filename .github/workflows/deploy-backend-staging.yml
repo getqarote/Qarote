@@ -90,8 +90,6 @@ jobs:
             SENTRY_DSN=${{ vars.SENTRY_DSN }} \
             SENTRY_ENABLED=${{ vars.SENTRY_ENABLED }} \
             GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }} \
-            DISCOURSE_SSO_SECRET=${{ secrets.DISCOURSE_SSO_SECRET }} \
-            DISCOURSE_URL=${{ vars.DISCOURSE_URL }} \
             NOTION_API_KEY=${{ secrets.NOTION_API_KEY }} \
             NOTION_DATABASE_ID=${{ vars.NOTION_DATABASE_ID }} \
             NOTION_SYNC_ENABLED=${{ vars.NOTION_SYNC_ENABLED }} \
