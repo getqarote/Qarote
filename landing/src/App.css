@@ -99,3 +99,4 @@
 .landing-hero-text {
   @apply bg-gradient-to-r from-primary to-destructive bg-clip-text text-transparent;
 }
+

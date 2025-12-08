@@ -99,6 +99,8 @@ export default {
           "linear-gradient(to right, rgb(194 65 12), rgb(185 28 28))", // from-orange-700 to-red-700
         "gradient-title":
           "linear-gradient(to right, rgb(234 88 12), rgb(220 38 38))", // from-orange-600 to-red-600
+        "gradient-auth":
+          "linear-gradient(135deg, rgb(234 88 12) 0%, rgb(249 115 22) 25%, rgb(220 38 38) 50%, rgb(234 88 12) 75%, rgb(249 115 22) 100%)",
       },
       backdropBlur: {
         dialog: "2px",

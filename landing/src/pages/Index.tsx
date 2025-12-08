@@ -1,16 +1,20 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Activity,
   BarChart3,
   Check,
   Clock,
   Headphones,
+  Mail,
   MessageSquare,
+  Play,
   Rocket,
+  Server,
   Settings,
   Shield,
   Star,
-  TrendingUp,
+  Users,
+  Webhook,
   X,
   Zap,
 } from "lucide-react";
@@ -30,6 +34,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { trackSignUpClick } from "@/lib/gtm";
 import avatar1 from "@/assets/avatar-1.jpg";
@@ -38,33 +43,31 @@ import avatar3 from "@/assets/avatar-3.jpg";
 
 const Index = () => {
   const isMobile = useIsMobile();
-  const [activeView, setActiveView] = useState(1); // 1 = chart view, 2 = queue list view
-  const [imageLoaded, setImageLoaded] = useState(false);
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">(
-    "monthly"
+    "yearly"
   );
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
 
-  // Trigger initial animation after component mounts
-  useEffect(() => {
-    const loadTimeout = setTimeout(() => {
-      setImageLoaded(true);
-    }, 500);
-    return () => clearTimeout(loadTimeout);
-  }, []);
-
-  // Switch between chart and queue views every 3 seconds
-  useEffect(() => {
-    if (!imageLoaded) return;
-
-    const interval = setInterval(() => {
-      setActiveView((current) => {
-        const newView = current === 1 ? 2 : 1;
-        return newView;
-      });
-    }, 3000); // 3 seconds between transitions
-
-    return () => clearInterval(interval);
-  }, [imageLoaded]);
+  const testimonials = [
+    {
+      title: "Finally, a RabbitMQ interface that doesn't make me want to cry.",
+      text: "Finally, a RabbitMQ interface that doesn't make me want to cry. The setup was instant and the UI is gorgeous.",
+      name: "Sarah Chen",
+      role: "DevOps Engineer",
+    },
+    {
+      title: "RabbitHQ's alerts have already saved us multiple times.",
+      text: "RabbitHQ's alerts have already saved us multiple times. We get actionable notifications before things escalate.",
+      name: "Marcus Rodriguez",
+      role: "CTO",
+    },
+    {
+      title: "The analytics dashboard gives us insights we never had before.",
+      text: "The analytics dashboard gives us insights we never had before. Game changer for our monitoring.",
+      name: "Alex Thompson",
+      role: "Lead Developer",
+    },
+  ];
 
   const features = [
     {
@@ -113,25 +116,25 @@ const Index = () => {
 
   const planPricing = {
     monthly: {
-      FREE: { price: "Free", originalPrice: undefined },
-      DEVELOPER: { price: "$10", originalPrice: undefined },
-      ENTERPRISE: { price: "$50", originalPrice: undefined },
+      FREE: { price: "$0", originalPrice: undefined },
+      DEVELOPER: { price: "$34", originalPrice: undefined },
+      ENTERPRISE: { price: "$124", originalPrice: undefined },
     },
     yearly: {
-      FREE: { price: "Free", originalPrice: undefined },
-      DEVELOPER: { price: "$100", originalPrice: "$120" },
-      ENTERPRISE: { price: "$500", originalPrice: "$600" },
+      FREE: { price: "$0", originalPrice: undefined },
+      DEVELOPER: { price: "$29", originalPrice: "$34" },
+      ENTERPRISE: { price: "$99", originalPrice: "$124" },
     },
   };
 
   const plans = [
     {
       id: "FREE",
-      name: "Free",
+      name: "Starter",
       description: "Perfect for getting started",
       color: "text-gray-600",
       bgColor: "bg-gray-50",
-      borderColor: "border-gray-200",
+      borderColor: "border-orange-200",
       features: {
         servers: "Up to 1",
         rabbitMQVersionSupport: "Only LTS versions",
@@ -149,30 +152,30 @@ const Index = () => {
     },
     {
       id: "DEVELOPER",
-      name: "Developer",
+      name: "Pro",
       description: "For solo developers and small projects",
-      color: "text-blue-600",
-      bgColor: "bg-blue-50",
-      borderColor: "border-blue-200",
+      color: "text-gray-600",
+      bgColor: "bg-gray-50",
+      borderColor: "border-gray-200",
       isPopular: true,
       features: {
-        servers: "Up to 2",
+        servers: "Up to 3",
         rabbitMQVersionSupport: "All versions 3.x and 4.x",
-        workspaces: "Up to 2",
-        teamMembers: "Up to 2",
+        workspaces: "Up to 3",
+        teamMembers: "Up to 3",
         queueManagement: true,
         exchangeManagement: true,
         virtualHostManagement: true,
         rabbitMQUserManagement: true,
         alertsNotification: true,
         communitySupport: true,
-        prioritySupport: false,
+        prioritySupport: true,
         emailAlerts: true,
       },
     },
     {
       id: "ENTERPRISE",
-      name: "Enterprise",
+      name: "Business",
       description: "For large teams and enterprises",
       color: "text-gray-600",
       bgColor: "bg-gray-50",
@@ -196,7 +199,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <StickyNav />
+      <StickyNav onVideoClick={() => setIsVideoPlaying(true)} />
       <SEO
         title="RabbitHQ - Best RabbitMQ Monitoring & Management Interface"
         description="The best RabbitMQ monitoring and management interface for developers. Monitor queues, track performance, and manage your message broker with a modern dashboard. Cleaner than Management Plugin, simpler than Prometheus."
@@ -299,7 +302,7 @@ const Index = () => {
 
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-3.5 md:pt-32">
           <div className="w-full text-center">
-            <div className="inline-flex items-center gap-2 sm:gap-3 bg-orange-100 py-1.5 pl-2 pr-3 sm:pr-5 rounded-full mb-8">
+            <div className="inline-flex items-center gap-2 sm:gap-3 bg-orange-100 py-1.5 pl-2 pr-3 sm:pr-5 rounded-full mb-4">
               <div className="flex -space-x-2">
                 <Avatar className="w-6 h-6 sm:w-7 sm:h-7 border-2 border-white">
                   <AvatarImage src={avatar1} />
@@ -329,13 +332,28 @@ const Index = () => {
               The modern RabbitMQ management interface your team deserves
             </h1>
 
-            <p className="text-base sm:text-lg md:text-xl text-muted-foreground mb-8 leading-relaxed max-w-3xl mx-auto px-2">
-              Cleaner than Management Plugin. Simpler than Prometheus. Cheaper
-              than Cloud Solutions.
+            <p className="text-base sm:text-lg md:text-xl text-muted-foreground mb-12 leading-relaxed max-w-3xl mx-auto px-2">
+              RabbitHQ gives you a clean, unified view of your queues, exchanges
+              and messages, with real monitoring, alerts and multi-workspace
+              support.
             </p>
 
             <div className="mb-12">
-              <AuthButtons />
+              <AuthButtons
+                onHowItWorksClick={() => {
+                  const videoElement = document.getElementById("video");
+                  if (videoElement) {
+                    videoElement.scrollIntoView({
+                      behavior: "smooth",
+                      block: "center",
+                    });
+                    // Launch video after a short delay to allow scroll to complete
+                    setTimeout(() => {
+                      setIsVideoPlaying(true);
+                    }, 500);
+                  }
+                }}
+              />
               <p className="text-xs sm:text-sm text-muted-foreground mt-3 px-4">
                 No credit card required • Start managing queues in minutes
               </p>
@@ -343,95 +361,180 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Image Carousel - now in normal flow within section 1 */}
-        <div className="relative z-10 pb-12">
-          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="relative w-full h-[300px] md:h-[400px] lg:h-[500px] rounded-xl overflow-hidden shadow-2xl border-4 border-white/20">
-              <div className="w-full h-full">
-                <img
-                  src={"/images/dashboard-mockup.svg"}
-                  alt={"RabbitHQ Dashboard Interface"}
-                  className={`w-full h-full object-contain bg-card transition-opacity duration-1000 ease-in-out ${
-                    activeView === 1 ? "opacity-100" : "opacity-0"
-                  }`}
+        {/* YouTube Video */}
+        <div id="video" className="relative pb-12">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div
+              className="relative w-full aspect-video rounded-[1rem] overflow-hidden group cursor-pointer shadow-soft"
+              onClick={() => setIsVideoPlaying(true)}
+            >
+              {!isVideoPlaying ? (
+                <>
+                  <img
+                    src={"/images/rabbithq.png"}
+                    alt={"RabbitHQ Dashboard Interface"}
+                    className="w-full h-full object-contain bg-card"
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/15 group-hover:bg-black/20 transition-colors">
+                    <button
+                      type="button"
+                      className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-white/90 hover:bg-white flex items-center justify-center transition-all hover:scale-110 pointer-events-none shadow-soft"
+                    >
+                      <Play
+                        className="w-10 h-10 md:w-12 md:h-12 text-orange-600 ml-1"
+                        fill="currentColor"
+                      />
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <iframe
+                  src="https://www.youtube.com/embed/YhsU_QFkGUE?autoplay=1"
+                  title="RabbitHQ Video"
+                  className="w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
                 />
-                <img
-                  src={"/images/dashboard-queues.svg"}
-                  alt={"RabbitHQ Queue Management"}
-                  className={`w-full h-full object-contain bg-card absolute top-0 left-0 transition-opacity duration-1000 ease-in-out ${
-                    activeView === 2 ? "opacity-100" : "opacity-0"
-                  }`}
-                />
-              </div>
+              )}
             </div>
           </div>
         </div>
       </header>
 
-      {/* Social Proof */}
-      <section id="testimonials" className="py-20 bg-muted/30 relative">
+      {/* Comparison Section */}
+      <section className="pt-12 pb-20 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
-              Trusted by development teams
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4">
+              Managing RabbitMQ servers
+              <br />
+              <span className="text-foreground">
+                doesn't have to be painful
+              </span>
             </h2>
-            <p className="text-xl text-muted-foreground">
-              From startups to enterprises, teams choose RabbitHQ
-            </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="bg-card p-8 rounded-xl border border-border">
-              <div className="flex items-center gap-1 mb-4">
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    className="h-5 w-5 fill-yellow-400 text-yellow-400"
-                  />
-                ))}
-              </div>
-              <blockquote className="text-card-foreground mb-4">
-                "Finally, a RabbitMQ interface that doesn't make me want to cry.
-                The setup was instant and the UI is gorgeous."
-              </blockquote>
-              <div className="text-sm text-muted-foreground">
-                — Sarah Chen, DevOps Engineer
-              </div>
-            </div>
+          {/* Main Comparison Container */}
+          <div className="bg-transparent rounded-xl border border-border overflow-hidden shadow-soft">
+            <div className="grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-border">
+              {/* Left Column - Traditional */}
+              <div className="pt-8 lg:pt-12 px-8 lg:px-12 pb-0 flex flex-col relative overflow-visible">
+                <h3 className="text-2xl font-bold text-foreground mb-8">
+                  Traditional management interfaces
+                </h3>
+                <div className="space-y-5 mb-16">
+                  <div className="flex gap-4 items-start">
+                    <X className="w-6 h-6 text-red-500 flex-shrink-0 mt-0.5" />
+                    <p className="text-foreground">
+                      An outdated UI that slows you down
+                    </p>
+                  </div>
 
-            <div className="bg-card p-8 rounded-xl border border-border">
-              <div className="flex items-center gap-1 mb-4">
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    className="h-5 w-5 fill-yellow-400 text-yellow-400"
-                  />
-                ))}
-              </div>
-              <blockquote className="text-card-foreground mb-4">
-                "We saved $3000/month switching from CloudAMQP. Same features,
-                better interface, fraction of the cost."
-              </blockquote>
-              <div className="text-sm text-muted-foreground">
-                — Marcus Rodriguez, CTO
-              </div>
-            </div>
+                  <div className="flex gap-4 items-start">
+                    <X className="w-6 h-6 text-red-500 flex-shrink-0 mt-0.5" />
+                    <p className="text-foreground">
+                      No unified view across servers or environments
+                    </p>
+                  </div>
 
-            <div className="bg-card p-8 rounded-xl border border-border">
-              <div className="flex items-center gap-1 mb-4">
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    className="h-5 w-5 fill-yellow-400 text-yellow-400"
-                  />
-                ))}
+                  <div className="flex gap-4 items-start">
+                    <X className="w-6 h-6 text-red-500 flex-shrink-0 mt-0.5" />
+                    <p className="text-foreground">
+                      No reliable, actionable alerts
+                    </p>
+                  </div>
+
+                  <div className="flex gap-4 items-start">
+                    <X className="w-6 h-6 text-red-500 flex-shrink-0 mt-0.5" />
+                    <p className="text-foreground">
+                      DIY dashboards and scripts everywhere
+                    </p>
+                  </div>
+                </div>
+
+                {/* Visual Representation - Simple/Outdated */}
+                <div className="bg-card rounded-t-xl border-t border-l border-r border-border p-4 mt-auto flex flex-col h-[200px] shadow-soft">
+                  <div className="flex gap-2 mb-3">
+                    <div className="w-3 h-3 bg-red-400 rounded-full"></div>
+                    <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
+                    <div className="w-3 h-3 bg-green-400 rounded-full"></div>
+                  </div>
+                  <div className="bg-background rounded flex-1 flex items-center justify-center">
+                    <div className="text-red-500 text-4xl">⚠️</div>
+                  </div>
+                </div>
               </div>
-              <blockquote className="text-card-foreground mb-4">
-                "The analytics dashboard gives us insights we never had before.
-                Game changer for our monitoring."
-              </blockquote>
-              <div className="text-sm text-muted-foreground">
-                — Alex Thompson, Lead Developer
+
+              {/* Right Column - RabbitHQ */}
+              <div className="pt-8 lg:pt-12 px-8 lg:px-12 pb-0 flex flex-col relative overflow-visible">
+                <h3 className="text-2xl font-bold text-foreground mb-8">
+                  RabbitHQ
+                </h3>
+                <div className="space-y-5 mb-16">
+                  <div className="flex gap-4 items-start">
+                    <Check className="w-6 h-6 text-green-500 flex-shrink-0 mt-0.5" />
+                    <p className="text-foreground">
+                      A clean, modern UI built for speed and clarity
+                    </p>
+                  </div>
+
+                  <div className="flex gap-4 items-start">
+                    <Check className="w-6 h-6 text-green-500 flex-shrink-0 mt-0.5" />
+                    <p className="text-foreground">
+                      A unified dashboard for all your servers and environments
+                    </p>
+                  </div>
+
+                  <div className="flex gap-4 items-start">
+                    <Check className="w-6 h-6 text-green-500 flex-shrink-0 mt-0.5" />
+                    <p className="text-foreground">
+                      Smart, actionable alerts that catch issues early
+                    </p>
+                  </div>
+
+                  <div className="flex gap-4 items-start">
+                    <Check className="w-6 h-6 text-green-500 flex-shrink-0 mt-0.5" />
+                    <p className="text-foreground">
+                      Zero-setup monitoring, no scripts, no maintenance
+                    </p>
+                  </div>
+                </div>
+
+                {/* Visual Representation - Modern Dashboard */}
+                <div className="bg-card rounded-t-xl border-t border-l border-r border-border p-4 mt-auto flex flex-col overflow-hidden h-[200px] shadow-soft">
+                  <div className="flex gap-2 mb-3">
+                    <div className="w-3 h-3 bg-red-400 rounded-full"></div>
+                    <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
+                    <div className="w-3 h-3 bg-green-400 rounded-full"></div>
+                  </div>
+                  <div className="bg-background rounded p-3 space-y-2 flex-1 flex flex-col justify-between overflow-hidden min-h-0">
+                    <div className="flex items-center gap-2">
+                      <img
+                        src="/new_icon_rabbit.svg"
+                        alt="RabbitHQ"
+                        className="w-6 h-6"
+                      />
+                      <span className="font-semibold text-sm">RabbitHQ</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="bg-muted/30 rounded p-1.5">
+                        <div className="text-xs text-muted-foreground">
+                          Messages/sec
+                        </div>
+                        <div className="text-sm font-bold">4.2k</div>
+                      </div>
+                      <div className="bg-muted/30 rounded p-1.5">
+                        <div className="text-xs text-muted-foreground">
+                          Active Queues
+                        </div>
+                        <div className="text-sm font-bold">127</div>
+                      </div>
+                    </div>
+                    <div className="bg-green-100 border border-green-200 rounded p-1.5 text-xs text-green-700">
+                      ✓ All systems operational
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -439,16 +542,14 @@ const Index = () => {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-20 bg-background">
+      <section id="features" className="pt-12 pb-20 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
-              Everything you need, nothing you don't
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4">
+              All you really care about.
+              <br />
+              Monitored in one place.
             </h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Stop fighting with outdated interfaces and complex monitoring
-              setups. Get back to building amazing applications.
-            </p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -458,305 +559,419 @@ const Index = () => {
                 icon={feature.icon}
                 title={feature.title}
                 description={feature.description}
-                gradient={feature.gradient}
               />
+            ))}
+          </div>
+
+          <div className="text-center mt-16">
+            <button
+              onClick={() => {
+                trackSignUpClick({
+                  source: "features_cta",
+                  location: "landing_page",
+                });
+                const appBaseUrl = import.meta.env.VITE_APP_BASE_URL;
+                window.location.href = `${appBaseUrl}/auth/sign-up`;
+              }}
+              className="bg-gradient-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600 px-4 py-3 sm:px-8 sm:py-4 rounded-lg font-semibold transition-colors duration-200 text-base sm:text-lg"
+            >
+              Start monitoring for free
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Connect Section */}
+      <section className="pt-12 pb-20 bg-background">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-12 items-start">
+            {/* Left side - Title and description */}
+            <div className="lg:sticky lg:top-20">
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-6">
+                Connect easily with your RabbitMQ servers
+              </h2>
+              <p className="text-lg text-muted-foreground">
+                Don't change the way your RabbitMQ servers work, RabbitHQ is
+                specially made for this message broker.
+              </p>
+            </div>
+
+            {/* Right side - Steps */}
+            <div className="space-y-8">
+              {/* Step 1: Sign up */}
+              <div className="bg-transparent border border-border rounded-xl pt-6 px-6 pb-0 flex gap-6 flex-col relative overflow-visible shadow-soft">
+                <div className="flex gap-6">
+                  <div className="flex-shrink-0">
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-r from-orange-500 to-red-500 flex items-center justify-center">
+                      <span className="text-white font-bold text-xl">1</span>
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold text-foreground mb-2">
+                      Sign up
+                    </h3>
+                    <p className="text-muted-foreground mb-4">
+                      Create your account in seconds. No credit card required.
+                      Start monitoring your RabbitMQ infrastructure immediately.
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-auto">
+                  <div className="bg-card border-t border-l border-r border-border rounded-t-xl p-6 max-w-sm mx-auto">
+                    <div className="flex items-center justify-center gap-2 mb-6">
+                      <img
+                        src="/new_icon_rabbit.svg"
+                        alt="RabbitHQ"
+                        className="w-8 h-8"
+                      />
+                      <span className="font-bold text-xl text-foreground">
+                        RabbitHQ
+                      </span>
+                    </div>
+                    <h4 className="text-lg font-bold text-foreground text-center mb-2">
+                      Create your RabbitHQ account
+                    </h4>
+                    <p className="text-sm text-muted-foreground text-center mb-6">
+                      Transform the way you monitor RabbitMQ.
+                    </p>
+                    <div className="space-y-3">
+                      <button
+                        onClick={() => {
+                          window.location.href =
+                            "https://app.rabbithq.io/auth/sign-up";
+                        }}
+                        className="w-full bg-background border border-border rounded-lg p-3 flex items-center justify-center gap-3 hover:bg-muted/50 transition-colors"
+                      >
+                        <Mail className="w-5 h-5 text-orange-600" />
+                        <span className="text-sm font-medium text-foreground">
+                          Continue with Email
+                        </span>
+                      </button>
+                      <div className="relative">
+                        <div className="absolute inset-0 flex items-center">
+                          <div className="w-full border-t border-border"></div>
+                        </div>
+                        <div className="relative flex justify-center text-xs uppercase">
+                          <span className="bg-card px-2 text-muted-foreground">
+                            or
+                          </span>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => {
+                          window.location.href =
+                            "https://app.rabbithq.io/auth/sign-up";
+                        }}
+                        className="w-full bg-background border border-border rounded-lg p-3 flex items-center justify-center gap-3 hover:bg-muted/50 transition-colors"
+                      >
+                        <div className="w-5 h-5 flex items-center justify-center">
+                          <svg className="w-5 h-5" viewBox="0 0 24 24">
+                            <path
+                              fill="#4285F4"
+                              d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                            />
+                            <path
+                              fill="#34A853"
+                              d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                            />
+                            <path
+                              fill="#FBBC05"
+                              d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                            />
+                            <path
+                              fill="#EA4335"
+                              d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                            />
+                          </svg>
+                        </div>
+                        <span className="text-sm font-medium text-foreground">
+                          Continue with Google
+                        </span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Step 2: Add your servers */}
+              <div className="bg-transparent border border-border rounded-xl pt-6 px-6 pb-0 flex gap-6 flex-col relative overflow-visible shadow-soft">
+                <div className="flex gap-6">
+                  <div className="flex-shrink-0">
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-r from-orange-500 to-red-500 flex items-center justify-center">
+                      <span className="text-white font-bold text-xl">2</span>
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold text-foreground mb-2">
+                      Add your servers
+                    </h3>
+                    <p className="text-muted-foreground mb-4">
+                      Connect your RabbitMQ servers with a simple connection.
+                      Support for multiple environments and clusters.
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-auto">
+                  <div className="bg-card border-t border-l border-r border-border rounded-t-xl p-6 max-w-sm mx-auto">
+                    <div className="space-y-3">
+                      <div className="bg-background border border-border rounded-lg p-4 flex items-center gap-4">
+                        <div className="flex-shrink-0">
+                          <Server className="w-6 h-6 text-orange-600" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="font-semibold text-foreground mb-1">
+                            Production Server
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            3 nodes
+                          </div>
+                        </div>
+                      </div>
+                      <div className="bg-background border border-border rounded-lg p-4 flex items-center gap-4">
+                        <div className="flex-shrink-0">
+                          <Server className="w-6 h-6 text-orange-600" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="font-semibold text-foreground mb-1">
+                            Staging Server
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            3 nodes
+                          </div>
+                        </div>
+                      </div>
+                      <div className="bg-background border border-border rounded-lg p-4 flex items-center gap-4">
+                        <div className="flex-shrink-0">
+                          <Server className="w-6 h-6 text-orange-600" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="font-semibold text-foreground mb-1">
+                            Development Server
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            3 nodes
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Step 3: Monitor and collaborate */}
+              <div className="bg-transparent border border-border rounded-xl pt-6 px-6 pb-0 flex gap-6 flex-col relative overflow-visible shadow-soft">
+                <div className="flex gap-6">
+                  <div className="flex-shrink-0">
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-r from-orange-500 to-red-500 flex items-center justify-center">
+                      <span className="text-white font-bold text-xl">3</span>
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold text-foreground mb-2">
+                      Monitor and collaborate
+                    </h3>
+                    <p className="text-muted-foreground mb-4">
+                      Get real-time insights into your queues, exchanges, and
+                      message flow. Monitor with your team and set up alerts.
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-auto">
+                  <div className="bg-card border-t border-l border-r border-border rounded-t-xl p-6 max-w-sm mx-auto">
+                    <div className="space-y-4">
+                      {/* Metrics Cards */}
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="bg-background border border-border rounded-lg p-3">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Activity className="w-4 h-4 text-orange-600" />
+                            <span className="text-xs text-muted-foreground">
+                              Messages/sec
+                            </span>
+                          </div>
+                          <div className="text-lg font-bold text-foreground">
+                            4.2k
+                          </div>
+                        </div>
+                        <div className="bg-background border border-border rounded-lg p-3">
+                          <div className="flex items-center gap-2 mb-2">
+                            <BarChart3 className="w-4 h-4 text-orange-600" />
+                            <span className="text-xs text-muted-foreground">
+                              Queues
+                            </span>
+                          </div>
+                          <div className="text-lg font-bold text-foreground">
+                            127
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Chart Card */}
+                      <div className="bg-background border border-border rounded-lg p-4">
+                        <div className="flex items-center justify-between mb-3">
+                          <span className="text-sm font-semibold text-foreground">
+                            Queue Depths
+                          </span>
+                        </div>
+                        <div className="h-20 bg-muted/30 rounded flex items-end justify-between gap-1 p-2">
+                          <div
+                            className="flex-1 bg-orange-500 rounded-t"
+                            style={{ height: "40%" }}
+                          ></div>
+                          <div
+                            className="flex-1 bg-orange-500 rounded-t"
+                            style={{ height: "60%" }}
+                          ></div>
+                          <div
+                            className="flex-1 bg-orange-500 rounded-t"
+                            style={{ height: "45%" }}
+                          ></div>
+                          <div
+                            className="flex-1 bg-orange-500 rounded-t"
+                            style={{ height: "75%" }}
+                          ></div>
+                          <div
+                            className="flex-1 bg-orange-500 rounded-t"
+                            style={{ height: "55%" }}
+                          ></div>
+                          <div
+                            className="flex-1 bg-orange-500 rounded-t"
+                            style={{ height: "80%" }}
+                          ></div>
+                          <div
+                            className="flex-1 bg-orange-500 rounded-t"
+                            style={{ height: "65%" }}
+                          ></div>
+                        </div>
+                      </div>
+
+                      {/* Queue Status Card */}
+                      <div className="bg-background border border-border rounded-lg p-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                            <span className="text-sm font-semibold text-foreground">
+                              All systems operational
+                            </span>
+                          </div>
+                          <Check className="w-4 h-4 text-green-600" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Social Proof */}
+      <section id="testimonials" className="pt-12 pb-20 bg-background relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-6">
+              They loved it, why not you?
+            </h2>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {testimonials.slice(0, 3).map((testimonial, idx) => (
+              <div
+                key={idx}
+                className="p-8 rounded-xl flex flex-col h-full bg-testimonial-bg"
+              >
+                <div className="flex items-center gap-1 mb-4">
+                  {[...Array(5)].map((_, i) => (
+                    <Star
+                      key={i}
+                      className="h-5 w-5 fill-yellow-400 text-yellow-400"
+                    />
+                  ))}
+                </div>
+                <h3 className="text-xl font-bold text-foreground mb-4">
+                  {testimonial.title}
+                </h3>
+                <p className="text-muted-foreground mb-6 leading-relaxed flex-grow">
+                  {testimonial.text}
+                </p>
+                <div className="mt-auto">
+                  <div className="text-sm">
+                    <div className="font-semibold text-foreground">
+                      {testimonial.name}
+                    </div>
+                    <div className="text-muted-foreground">
+                      {testimonial.role}
+                    </div>
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* See it in action Section */}
-      <section id="demo" className="py-20 bg-muted/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
-              See it in action
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Explore the intuitive interface and powerful features that make
-              RabbitMQ management a breeze.
-            </p>
-          </div>
-
-          {/* Application Mockup */}
-          <div className="max-w-6xl mx-auto">
-            <div className="bg-card rounded-2xl shadow-2xl border border-border overflow-hidden">
-              {/* Browser Chrome */}
-              <div className="bg-muted px-4 py-3 border-b border-border">
-                <div className="flex items-center gap-2">
-                  <div className="flex gap-2">
-                    <div className="w-3 h-3 bg-red-400 rounded-full"></div>
-                    <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
-                    <div className="w-3 h-3 bg-green-400 rounded-full"></div>
-                  </div>
-                  <div className="ml-4 bg-background rounded px-3 py-1 text-sm text-muted-foreground flex-1 max-w-md truncate">
-                    https://app.rabbithq.io
-                  </div>
-                </div>
-              </div>
-
-              {/* App Interface */}
-              <div className="bg-muted/20 p-3 sm:p-6">
-                {/* Top Navigation */}
-                <div className="bg-card rounded-lg shadow-sm border border-border p-3 sm:p-4 mb-4 sm:mb-6">
-                  <div className="flex items-center justify-between flex-wrap gap-2">
-                    <div className="flex items-center gap-2 sm:gap-4">
-                      <img
-                        src="/new_icon_rabbit.svg"
-                        alt="RabbitHQ Logo"
-                        className="w-7 h-7 sm:w-8 sm:h-8 flex-shrink-0"
-                      />
-                      <span className="font-semibold text-foreground text-sm sm:text-base">
-                        RabbitHQ
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
-                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                      <span className="text-muted-foreground truncate">
-                        {isMobile
-                          ? "cluster-prod-01"
-                          : "Connected to cluster-prod-01"}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Dashboard Content */}
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
-                  {/* Stats Cards */}
-                  <div className="lg:col-span-2 space-y-3 sm:space-y-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-                      <div className="bg-card rounded-lg p-3 sm:p-4 shadow-sm border border-border">
-                        <div className="flex items-center gap-2 sm:gap-3">
-                          <div className="p-1.5 sm:p-2 bg-blue-100 rounded-lg flex-shrink-0">
-                            <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
-                          </div>
-                          <div>
-                            <div className="text-lg sm:text-2xl font-bold text-foreground">
-                              4.2k
-                            </div>
-                            <div className="text-xs sm:text-sm text-muted-foreground">
-                              Messages/sec
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="bg-card rounded-lg p-3 sm:p-4 shadow-sm border border-border">
-                        <div className="flex items-center gap-2 sm:gap-3">
-                          <div className="p-1.5 sm:p-2 bg-green-100 rounded-lg flex-shrink-0">
-                            <Activity className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
-                          </div>
-                          <div>
-                            <div className="text-lg sm:text-2xl font-bold text-foreground">
-                              127
-                            </div>
-                            <div className="text-xs sm:text-sm text-muted-foreground">
-                              Active Queues
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="bg-card rounded-lg p-3 sm:p-4 shadow-sm border border-border">
-                        <div className="flex items-center gap-2 sm:gap-3">
-                          <div className="p-1.5 sm:p-2 bg-purple-100 rounded-lg flex-shrink-0">
-                            <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600" />
-                          </div>
-                          <div>
-                            <div className="text-lg sm:text-2xl font-bold text-foreground">
-                              2.3ms
-                            </div>
-                            <div className="text-xs sm:text-sm text-muted-foreground">
-                              Avg Latency
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    {/* Chart Area */}
-                    <div className="bg-card rounded-lg p-4 sm:p-6 shadow-sm border border-border">
-                      <h3 className="text-base sm:text-lg font-semibold text-foreground mb-3 sm:mb-4">
-                        Message Throughput
-                      </h3>
-                      <div className="h-36 sm:h-48 bg-gradient-to-r from-primary/10 to-destructive/10 rounded-lg flex items-end justify-around p-2 sm:p-4">
-                        {[65, 78, 45, 88, 92, 75, 85, 95, 82, 77, 89, 94].map(
-                          (height, i) => (
-                            <div
-                              key={i}
-                              className="bg-gradient-to-t from-primary to-destructive rounded-t w-2 sm:w-6"
-                              style={{ height: `${height}%` }}
-                            ></div>
-                          )
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Queue List */}
-                  <div className="bg-card rounded-lg p-4 sm:p-6 shadow-sm border border-border">
-                    <h3 className="text-base sm:text-lg font-semibold text-foreground mb-3 sm:mb-4">
-                      Active Queues
-                    </h3>
-                    <div className="space-y-2 sm:space-y-3">
-                      {[
-                        {
-                          name: "user-notifications",
-                          messages: "1.2k",
-                          consumers: 3,
-                        },
-                        { name: "email-queue", messages: "845", consumers: 2 },
-                        {
-                          name: "analytics-events",
-                          messages: "2.8k",
-                          consumers: 5,
-                        },
-                        {
-                          name: "payment-processing",
-                          messages: "156",
-                          consumers: 1,
-                        },
-                      ].map((queue, i) => (
-                        <div
-                          key={i}
-                          className="flex items-center justify-between p-2 sm:p-3 bg-muted/30 rounded-lg"
-                        >
-                          <div>
-                            <div className="font-medium text-foreground text-xs sm:text-sm">
-                              {queue.name}
-                            </div>
-                            <div className="text-xs text-muted-foreground">
-                              {queue.messages} messages
-                            </div>
-                          </div>
-                          <div className="text-xs bg-primary/10 text-primary px-1.5 sm:px-2 py-0.5 sm:py-1 rounded">
-                            {queue.consumers} consumers
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Comparison Section */}
-      <section id="comparison" className="py-20 bg-muted/20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
-              How we compare
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              See why RabbitHQ is the obvious choice for modern development
-              teams.
-            </p>
-          </div>
-
-          <ComparisonTable />
-        </div>
-      </section>
-
       {/* Pricing Section */}
-      <section id="pricing" className="py-20 bg-background">
+      <section id="pricing" className="pt-12 pb-20 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
-              Simple, transparent pricing
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4">
+              Simple pricing. Powerful monitoring.
             </h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Scale your RabbitMQ monitoring with plans designed for teams of
-              all sizes.
-            </p>
-          </div>
-
-          {/* Feature Highlights */}
-          <div className="flex justify-center mb-12">
-            <div className="grid md:grid-cols-4 gap-6 max-w-4xl">
-              <div className="flex flex-col items-center p-4">
-                <div className="bg-blue-100 p-3 rounded-full mb-3">
-                  <Zap className="w-6 h-6 text-blue-600" />
-                </div>
-                <h3 className="font-semibold text-foreground mb-1">
-                  Live Monitoring
-                </h3>
-                <p className="text-sm text-muted-foreground text-center">
-                  Monitor your RabbitMQ servers with second precision
-                </p>
-              </div>
-              <div className="flex flex-col items-center p-4">
-                <div className="bg-purple-100 p-3 rounded-full mb-3">
-                  <TrendingUp className="w-6 h-6 text-purple-600" />
-                </div>
-                <h3 className="font-semibold text-foreground mb-1">
-                  Smart Analytics
-                </h3>
-                <p className="text-sm text-muted-foreground text-center">
-                  Insights and memory optimization tips
-                </p>
-              </div>
-              <div className="flex flex-col items-center p-4">
-                <div className="bg-green-100 p-3 rounded-full mb-3">
-                  <Shield className="w-6 h-6 text-green-600" />
-                </div>
-                <h3 className="font-semibold text-foreground mb-1">
-                  Enterprise Security
-                </h3>
-                <p className="text-sm text-muted-foreground text-center">
-                  SOC 2 compliant with enterprise-grade encryption
-                </p>
-              </div>
-              <div className="flex flex-col items-center p-4">
-                <div className="bg-orange-100 p-3 rounded-full mb-3">
-                  <Headphones className="w-6 h-6 text-orange-600" />
-                </div>
-                <h3 className="font-semibold text-foreground mb-1">
-                  24/7 Support
-                </h3>
-                <p className="text-sm text-muted-foreground text-center">
-                  Expert support when you need it most
-                </p>
-              </div>
-            </div>
           </div>
 
           {/* Billing Toggle */}
-          <div className="flex items-center justify-center gap-4 mb-16">
-            <span
-              className={`text-sm font-medium ${billingPeriod === "monthly" ? "text-foreground" : "text-muted-foreground"}`}
-            >
-              Monthly
-            </span>
-            <button
-              onClick={() =>
-                setBillingPeriod(
-                  billingPeriod === "monthly" ? "yearly" : "monthly"
-                )
-              }
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                billingPeriod === "yearly" ? "bg-blue-600" : "bg-muted"
-              }`}
-            >
+          <div className="flex flex-col items-center justify-center gap-3 mb-16 text-center">
+            <div className="flex items-center gap-4">
               <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                  billingPeriod === "yearly" ? "translate-x-6" : "translate-x-1"
+                className={`text-sm font-medium ${billingPeriod === "monthly" ? "text-foreground" : "text-muted-foreground"}`}
+              >
+                Billed monthly
+              </span>
+              <button
+                onClick={() =>
+                  setBillingPeriod(
+                    billingPeriod === "monthly" ? "yearly" : "monthly"
+                  )
+                }
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  billingPeriod === "yearly"
+                    ? "bg-gradient-to-r from-orange-500 to-red-500"
+                    : "bg-muted"
                 }`}
-              />
-            </button>
-            <span
-              className={`text-sm font-medium ${billingPeriod === "yearly" ? "text-foreground" : "text-muted-foreground"}`}
-            >
-              Yearly
-            </span>
-            {billingPeriod === "yearly" && (
-              <Badge className="bg-green-100 text-green-800">Save 20%</Badge>
-            )}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    billingPeriod === "yearly"
+                      ? "translate-x-6"
+                      : "translate-x-1"
+                  }`}
+                />
+              </button>
+              <span
+                className={`text-sm font-medium ${billingPeriod === "yearly" ? "text-foreground" : "text-muted-foreground"}`}
+              >
+                Billed yearly
+              </span>
+            </div>
+            <Badge className="bg-transparent text-green-600 border-0 mt-2 hover:bg-transparent">
+              {billingPeriod === "yearly"
+                ? "Save up to 20% with annual billing"
+                : "Switch to yearly billing to save up to 20%"}
+            </Badge>
           </div>
 
           {/* Plans Grid */}
-          <div className="flex justify-center">
-            <div className="grid lg:grid-cols-3 gap-8 max-w-5xl">
+          <div className="flex justify-center w-full">
+            <div
+              className="flex gap-6 w-full max-w-6xl overflow-x-auto overflow-y-visible px-4 py-4 snap-x snap-mandatory md:px-6 md:py-6 lg:grid lg:grid-cols-3 lg:px-0 lg:py-0 lg:overflow-visible lg:snap-none"
+              style={{
+                WebkitOverflowScrolling: "touch",
+                scrollPaddingLeft: "1rem",
+                scrollPaddingRight: "1rem",
+                scrollPaddingTop: "1rem",
+                scrollPaddingBottom: "1rem",
+              }}
+            >
               {plans.map((plan) => {
                 const currentPricing =
                   planPricing[billingPeriod][
@@ -767,60 +982,38 @@ const Index = () => {
                 return (
                   <Card
                     key={plan.id}
-                    className={`relative ${plan.borderColor} ${isPopular ? "ring-2 ring-blue-500 shadow-lg scale-105" : ""} transition-all duration-200 hover:shadow-lg`}
+                    className={`relative flex h-full flex-col min-w-[78%] md:min-w-[60%] lg:min-w-0 snap-center first:ml-2 last:mr-2 md:first:ml-4 md:last:mr-4 lg:first:ml-0 lg:last:mr-0 bg-transparent rounded-xl shadow-soft ${
+                      isPopular ? "ring-2 ring-orange-500" : ""
+                    }`}
                   >
-                    {isPopular && (
-                      <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                        <Badge
-                          className="text-white px-4 py-1 text-sm font-medium"
-                          style={{
-                            backgroundImage:
-                              "linear-gradient(to right, rgb(234 88 12), rgb(220 38 38))",
-                          }}
-                        >
-                          <Star className="w-4 h-4 mr-1" />
-                          Most Popular
-                        </Badge>
-                      </div>
-                    )}
-
-                    <CardContent className="p-6">
-                      <div className="text-center mb-6">
+                    <CardContent className="p-6 flex flex-col h-full">
+                      <div className="text-left mb-2">
                         <h3 className={`text-2xl font-bold ${plan.color} mb-2`}>
                           {plan.name}
                         </h3>
-                        <p className="text-muted-foreground text-sm mb-4">
-                          {plan.description}
-                        </p>
 
-                        <div className="mb-4">
-                          <div className="flex items-baseline justify-center gap-1">
+                        <div className="mb-4 min-h-[60px] flex flex-col justify-start">
+                          <div className="flex items-center justify-start gap-2">
+                            {currentPricing.originalPrice && (
+                              <span className="text-muted-foreground line-through text-2xl">
+                                {currentPricing.originalPrice}
+                              </span>
+                            )}
                             <span className="text-4xl font-bold text-foreground">
                               {currentPricing.price}
                             </span>
-                            {currentPricing.price !== "Free" && (
+                            {currentPricing.price !== "$0" && (
                               <span className="text-muted-foreground">
-                                /
-                                {billingPeriod === "monthly" ? "month" : "year"}
+                                /month
                               </span>
                             )}
                           </div>
-                          {currentPricing.originalPrice && (
-                            <div className="flex items-center justify-center gap-2 mt-1">
-                              <span className="text-muted-foreground line-through text-sm">
-                                {currentPricing.originalPrice}
-                              </span>
-                              <Badge variant="secondary" className="text-xs">
-                                Save 20%
-                              </Badge>
-                            </div>
-                          )}
                         </div>
                       </div>
 
-                      <div className="space-y-6 mb-6">
+                      <div className="space-y-6 flex-1">
                         <div>
-                          <h4 className="font-semibold text-foreground mb-3 text-sm uppercase tracking-wide">
+                          <h4 className="font-semibold text-foreground mb-3 text-xs sm:text-sm uppercase tracking-wide whitespace-nowrap">
                             Core Features
                           </h4>
                           <ul className="space-y-2">
@@ -830,10 +1023,13 @@ const Index = () => {
                               </div>
                               <div className="flex-1">
                                 <span className="text-sm text-foreground">
-                                  RabbitMQ Servers
+                                  {plan.features.servers} RabbitMQ{" "}
+                                  {plan.features.servers === "Up to 1"
+                                    ? "Server"
+                                    : "Servers"}
                                 </span>
                                 <div className="text-xs text-muted-foreground">
-                                  {plan.features.servers}
+                                  Connect and monitor your servers
                                 </div>
                               </div>
                             </li>
@@ -856,10 +1052,13 @@ const Index = () => {
                               </div>
                               <div className="flex-1">
                                 <span className="text-sm text-foreground">
-                                  Workspaces
+                                  {plan.features.workspaces}{" "}
+                                  {plan.features.workspaces === "Up to 1"
+                                    ? "Workspace"
+                                    : "Workspaces"}
                                 </span>
                                 <div className="text-xs text-muted-foreground">
-                                  {plan.features.workspaces}
+                                  Organize your servers by environment
                                 </div>
                               </div>
                             </li>
@@ -869,10 +1068,26 @@ const Index = () => {
                               </div>
                               <div className="flex-1">
                                 <span className="text-sm text-foreground">
-                                  Team Members
+                                  {plan.features.teamMembers} Team{" "}
+                                  {plan.features.teamMembers === "Up to 1"
+                                    ? "Member"
+                                    : "Members"}
                                 </span>
                                 <div className="text-xs text-muted-foreground">
-                                  {plan.features.teamMembers}
+                                  Collaborate with your team
+                                </div>
+                              </div>
+                            </li>
+                            <li className="flex items-start gap-3">
+                              <div className="mt-1">
+                                <Check className="w-4 h-4 text-green-500" />
+                              </div>
+                              <div className="flex-1">
+                                <span className="text-sm text-foreground">
+                                  Advanced analytics
+                                </span>
+                                <div className="text-xs text-muted-foreground">
+                                  Detailed insights and reports
                                 </div>
                               </div>
                             </li>
@@ -962,6 +1177,19 @@ const Index = () => {
                             </li>
                             <li className="flex items-start gap-3">
                               <div className="mt-1">
+                                <Check className="w-4 h-4 text-green-500" />
+                              </div>
+                              <div className="flex-1">
+                                <span className="text-sm text-foreground">
+                                  SOC 2 compliance
+                                </span>
+                                <div className="text-xs text-muted-foreground">
+                                  Data security and policy
+                                </div>
+                              </div>
+                            </li>
+                            <li className="flex items-start gap-3">
+                              <div className="mt-1">
                                 {plan.features.alertsNotification ? (
                                   <Check className="w-4 h-4 text-green-500" />
                                 ) : (
@@ -977,14 +1205,15 @@ const Index = () => {
                                 <div
                                   className={`text-xs ${plan.features.alertsNotification ? "text-muted-foreground" : "text-muted-foreground"}`}
                                 >
-                                  Real-time alerts and notifications
+                                  Real-time alerts (Email, Slack, Browser and
+                                  Webhook)
                                 </div>
                               </div>
                             </li>
                           </ul>
                         </div>
 
-                        <div>
+                        <div className="mt-auto space-y-4">
                           <h4 className="font-semibold text-foreground mb-3 text-sm uppercase tracking-wide">
                             Support
                           </h4>
@@ -998,7 +1227,7 @@ const Index = () => {
                                   Community Support
                                 </span>
                                 <div className="text-xs text-muted-foreground">
-                                  Community forums
+                                  Private Discord server
                                 </div>
                               </div>
                             </li>
@@ -1023,63 +1252,38 @@ const Index = () => {
                                 </div>
                               </div>
                             </li>
-                            <li className="flex items-start gap-3">
-                              <div className="mt-1">
-                                {plan.features.emailAlerts ? (
-                                  <Check className="w-4 h-4 text-green-500" />
-                                ) : (
-                                  <X className="w-4 h-4 text-muted-foreground" />
-                                )}
-                              </div>
-                              <div className="flex-1">
-                                <span
-                                  className={`text-sm ${plan.features.emailAlerts ? "text-foreground" : "text-muted-foreground"}`}
-                                >
-                                  Email Alerts
-                                </span>
-                                <div
-                                  className={`text-xs ${plan.features.emailAlerts ? "text-muted-foreground" : "text-muted-foreground"}`}
-                                >
-                                  Critical and warning notifications
-                                </div>
-                              </div>
-                            </li>
                           </ul>
                         </div>
+                        <Button
+                          size={undefined}
+                          className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600 px-4 py-3 sm:px-8 sm:py-4 rounded-lg font-semibold transition-colors duration-200 text-base sm:text-lg h-auto"
+                          onClick={() => {
+                            const appBaseUrl = import.meta.env
+                              .VITE_APP_BASE_URL;
+
+                            // Check if user is authenticated by looking for auth token
+                            const token =
+                              localStorage.getItem("authToken") ||
+                              document.cookie
+                                .split(";")
+                                .find((c) => c.trim().startsWith("authToken="));
+
+                            if (token) {
+                              // User is authenticated, redirect to plans page
+                              window.location.href = `${appBaseUrl}/plans`;
+                            } else {
+                              // User not authenticated, track sign up click and redirect to sign up
+                              trackSignUpClick({
+                                source: "pricing_card",
+                                location: "landing_page",
+                              });
+                              window.location.href = `${appBaseUrl}/auth/sign-up`;
+                            }
+                          }}
+                        >
+                          Start free
+                        </Button>
                       </div>
-
-                      <Button
-                        className="w-full text-white"
-                        style={{
-                          backgroundImage:
-                            "linear-gradient(to right, rgb(234 88 12), rgb(220 38 38))",
-                        }}
-                        onClick={() => {
-                          const authBaseUrl = import.meta.env.VITE_APP_BASE_URL;
-                          const appBaseUrl = "http://localhost:8080";
-
-                          // Check if user is authenticated by looking for auth token
-                          const token =
-                            localStorage.getItem("authToken") ||
-                            document.cookie
-                              .split(";")
-                              .find((c) => c.trim().startsWith("authToken="));
-
-                          if (token) {
-                            // User is authenticated, redirect to plans page
-                            window.location.href = `${appBaseUrl}/plans`;
-                          } else {
-                            // User not authenticated, track sign up click and redirect to sign up
-                            trackSignUpClick({
-                              source: "pricing_card",
-                              location: "landing_page",
-                            });
-                            window.location.href = `${authBaseUrl}/auth/sign-up`;
-                          }
-                        }}
-                      >
-                        Start free
-                      </Button>
                     </CardContent>
                   </Card>
                 );
@@ -1090,10 +1294,10 @@ const Index = () => {
       </section>
 
       {/* FAQ Section */}
-      <section id="faq" className="py-20 bg-background">
+      <section id="faq" className="pt-12 pb-20 bg-background">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4">
               Frequently Asked Questions
             </h2>
             <p className="text-xl text-muted-foreground">
@@ -1104,7 +1308,7 @@ const Index = () => {
           <Accordion type="single" collapsible className="space-y-4">
             <AccordionItem
               value="item-1"
-              className="border border-border rounded-lg px-6 bg-card"
+              className="border border-border rounded-xl px-6 bg-transparent"
             >
               <AccordionTrigger className="text-left text-foreground font-semibold hover:no-underline">
                 What is RabbitHQ?
@@ -1120,7 +1324,7 @@ const Index = () => {
 
             <AccordionItem
               value="item-2"
-              className="border border-border rounded-lg px-6 bg-card"
+              className="border border-border rounded-xl px-6 bg-transparent"
             >
               <AccordionTrigger className="text-left text-foreground font-semibold hover:no-underline">
                 Who is RabbitHQ for?
@@ -1136,7 +1340,7 @@ const Index = () => {
 
             <AccordionItem
               value="item-3"
-              className="border border-border rounded-lg px-6 bg-card"
+              className="border border-border rounded-xl px-6 bg-transparent"
             >
               <AccordionTrigger className="text-left text-foreground font-semibold hover:no-underline">
                 Is RabbitHQ secure?
@@ -1151,7 +1355,7 @@ const Index = () => {
 
             <AccordionItem
               value="item-4"
-              className="border border-border rounded-lg px-6 bg-card"
+              className="border border-border rounded-xl px-6 bg-transparent"
             >
               <AccordionTrigger className="text-left text-foreground font-semibold hover:no-underline">
                 What can I do with RabbitHQ?
@@ -1175,7 +1379,7 @@ const Index = () => {
 
             <AccordionItem
               value="item-5"
-              className="border border-border rounded-lg px-6 bg-card"
+              className="border border-border rounded-xl px-6 bg-transparent"
             >
               <AccordionTrigger className="text-left text-foreground font-semibold hover:no-underline">
                 How is RabbitHQ different from the RabbitMQ Management UI?
@@ -1196,7 +1400,7 @@ const Index = () => {
 
             <AccordionItem
               value="item-6"
-              className="border border-border rounded-lg px-6 bg-card"
+              className="border border-border rounded-xl px-6 bg-transparent"
             >
               <AccordionTrigger className="text-left text-foreground font-semibold hover:no-underline">
                 Is RabbitHQ a better monitoring tool than Prometheus and
@@ -1212,7 +1416,7 @@ const Index = () => {
 
             <AccordionItem
               value="item-7"
-              className="border border-border rounded-lg px-6 bg-card"
+              className="border border-border rounded-xl px-6 bg-transparent"
             >
               <AccordionTrigger className="text-left text-foreground font-semibold hover:no-underline">
                 Can I try RabbitHQ for free?
@@ -1225,30 +1429,63 @@ const Index = () => {
               </AccordionContent>
             </AccordionItem>
           </Accordion>
+
+          <div className="text-center mt-16">
+            <h3 className="text-2xl font-bold text-foreground mb-4">
+              Still have questions?
+            </h3>
+            <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
+              Can't find the answer you're looking for? Please chat to our
+              friendly team.
+            </p>
+            <button
+              onClick={() => {
+                // Tawk.to API is available via the React component
+                if (window.Tawk_API) {
+                  window.Tawk_API.maximize();
+                }
+              }}
+              className="inline-flex items-center justify-center bg-gradient-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600 px-4 py-3 sm:px-8 sm:py-4 rounded-lg font-semibold transition-colors duration-200 text-base sm:text-lg"
+            >
+              Contact us
+            </button>
+          </div>
         </div>
       </section>
 
       {/* Final CTA */}
-      <section
-        className="py-20 text-white"
-        style={{
-          backgroundImage:
-            "linear-gradient(to right, rgb(234 88 12), rgb(220 38 38))",
-        }}
-      >
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-            Ready to upgrade your RabbitMQ experience?
-          </h2>
-          <p className="text-xl text-white/80 mb-8">
-            Join thousands of developers already using RabbitHQ
-          </p>
-
-          <AuthButtons variant="light" />
-
-          <p className="text-white/80 text-sm mt-4">
-            Free trial available • No credit card required • Start in minutes
-          </p>
+      <section className="pt-12 pb-20 bg-background">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div
+            className="text-white rounded-xl py-20 px-12 lg:px-16 relative overflow-hidden bg-gradient-auth bg-[length:200%_200%] animate-gradient-shift"
+            style={{
+              animationDuration: "8s",
+            }}
+          >
+            <div className="grid md:grid-cols-2 gap-12 lg:gap-16 items-center">
+              <div>
+                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">
+                  Ready to upgrade your RabbitMQ experience?
+                </h2>
+              </div>
+              <div className="text-center md:text-left">
+                <p className="text-xl text-white mb-8">
+                  Start monitoring your RabbitMQ servers for free today.
+                </p>
+                <div className="flex flex-col items-center md:items-start">
+                  <AuthButtons
+                    variant="light"
+                    onHowItWorksClick={() => setIsVideoPlaying(true)}
+                    hideHowItWorks={true}
+                    align="left"
+                  />
+                  <p className="text-xs sm:text-sm text-white mt-3">
+                    No credit card required
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -1258,9 +1495,6 @@ const Index = () => {
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="mb-4 md:mb-0">
               <h3 className="text-xl font-bold">RabbitHQ</h3>
-              <p className="text-muted-foreground">
-                The future of message queue management
-              </p>
             </div>
 
             <div className="flex items-center gap-6">

@@ -1,9 +1,13 @@
 import { trackSignUpClick } from "@/lib/gtm";
 
-const StickyNav = () => {
+interface StickyNavProps {
+  onVideoClick?: () => void;
+}
+
+const StickyNav = ({ onVideoClick }: StickyNavProps) => {
   const sections = [
+    { id: "video", label: "How it works" },
     { id: "features", label: "Features" },
-    { id: "demo", label: "How it works" },
     { id: "pricing", label: "Pricing" },
   ];
 
@@ -15,6 +19,13 @@ const StickyNav = () => {
         top: offsetTop,
         behavior: "smooth",
       });
+      
+      // If it's the video section, launch the video after scrolling
+      if (id === "video" && onVideoClick) {
+        setTimeout(() => {
+          onVideoClick();
+        }, 500);
+      }
     }
   };
 
@@ -61,7 +72,7 @@ const StickyNav = () => {
                 });
                 window.location.href = `${authBaseUrl}/auth/sign-up`;
               }}
-              className="bg-gradient-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600 px-2 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-colors shadow-lg whitespace-nowrap"
+              className="bg-gradient-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600 px-2 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-colors whitespace-nowrap"
             >
               Try for free
             </button>

@@ -1,16 +1,9 @@
 /// <reference types="vite/client" />
 
-// Google Analytics type definitions
-interface Window {
-  gtag?: (
-    command: string,
-    action: string,
-    params?: {
-      page_title?: string;
-      page_location?: string;
-      page_path?: string;
-      [key: string]: any;
-    }
-  ) => void;
-  dataLayer?: any[];
+interface ImportMetaEnv {
+  readonly VITE_APP_BASE_URL: string;
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv;
 }
