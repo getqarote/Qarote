@@ -33,12 +33,12 @@ export const STRIPE_PRICE_IDS = {
 
 export const PLAN_PRICING = {
   [UserPlan.DEVELOPER]: {
-    monthly: 1000, // $10.00 in cents
-    yearly: 10000, // $100.00 in cents (yearly discount)
+    monthly: 3400, // $34.00 in cents
+    yearly: 34800, // $348.00 in cents (yearly discount)
   },
   [UserPlan.ENTERPRISE]: {
-    monthly: 5000, // $50.00 in cents
-    yearly: 50000, // $500.00 in cents (yearly discount)
+    monthly: 12400, // $124.00 in cents
+    yearly: 118800, // $1,188.00 in cents (yearly discount)
   },
 } as const;
 

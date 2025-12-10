@@ -8,14 +8,14 @@ const PLAN_CONFIG = {
   DEVELOPER: {
     name: "Developer Plan",
     description: "Ideal for individual developers and small projects",
-    monthly: 1000, // $10.00
-    yearly: 10000, // $100.00 (roughly $8.33/month)
+    monthly: 3400, // $34.00
+    yearly: 34800, // $348.00/year = $29/month
   },
   ENTERPRISE: {
     name: "Enterprise Plan",
     description: "Enterprise-grade features for mission-critical systems",
-    monthly: 5000, // $50.00
-    yearly: 50000, // $500.00 (roughly $41.67/month)
+    monthly: 12400, // $124.00
+    yearly: 118800, // $1,188.00/year = $99/month
   },
 };
 

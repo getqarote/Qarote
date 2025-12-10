@@ -113,12 +113,27 @@ export default {
             opacity: "0",
           },
         },
+        "gradient-shift": {
+          "0%": {
+            backgroundPosition: "0% 50%",
+          },
+          "50%": {
+            backgroundPosition: "100% 50%",
+          },
+          "100%": {
+            backgroundPosition: "0% 50%",
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "slide-in-right": "slide-in-right 1s ease-out forwards",
         "slide-in-left": "slide-in-left 1s ease-out forwards",
+        "gradient-shift": "gradient-shift 3s ease infinite",
+      },
+      boxShadow: {
+        soft: "0 4px 6px #00000008",
       },
       backgroundImage: {
         "gradient-page":
@@ -129,9 +144,12 @@ export default {
           "linear-gradient(to right, rgb(194 65 12), rgb(185 28 28))", // from-orange-700 to-red-700
         "gradient-title":
           "linear-gradient(to right, rgb(234 88 12), rgb(220 38 38))", // from-orange-600 to-red-600
+        "gradient-auth":
+          "linear-gradient(135deg, rgb(234 88 12) 0%, rgb(249 115 22) 25%, rgb(220 38 38) 50%, rgb(234 88 12) 75%, rgb(249 115 22) 100%)",
       },
       backgroundColor: {
         "card-unified": "rgb(252 250 246)", // Unified card background color
+        "testimonial-bg": "#fff5eb", // Orange-50 equivalent for testimonials
       },
     },
   },
