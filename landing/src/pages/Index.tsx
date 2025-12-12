@@ -3,8 +3,6 @@ import {
   Activity,
   BarChart3,
   Check,
-  Clock,
-  Headphones,
   Mail,
   MessageSquare,
   Play,
@@ -12,62 +10,29 @@ import {
   Server,
   Settings,
   Shield,
-  Star,
-  Users,
-  Webhook,
   X,
-  Zap,
 } from "lucide-react";
 
 import AuthButtons from "@/components/AuthButtons";
-import ComparisonTable from "@/components/ComparisonTable";
 import FeatureCard from "@/components/FeatureCard";
 import SEO from "@/components/SEO";
 import StickyNav from "@/components/StickyNav";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { trackSignUpClick } from "@/lib/gtm";
-import avatar1 from "@/assets/avatar-1.jpg";
-import avatar2 from "@/assets/avatar-2.jpg";
-import avatar3 from "@/assets/avatar-3.jpg";
 
 const Index = () => {
-  const isMobile = useIsMobile();
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">(
     "yearly"
   );
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
-
-  const testimonials = [
-    {
-      title: "Finally, a RabbitMQ interface that doesn't make me want to cry.",
-      text: "Finally, a RabbitMQ interface that doesn't make me want to cry. The setup was instant and the UI is gorgeous.",
-      name: "Sarah Chen",
-      role: "DevOps Engineer",
-    },
-    {
-      title: "RabbitHQ's alerts have already saved us multiple times.",
-      text: "RabbitHQ's alerts have already saved us multiple times. We get actionable notifications before things escalate.",
-      name: "Marcus Rodriguez",
-      role: "CTO",
-    },
-    {
-      title: "The analytics dashboard gives us insights we never had before.",
-      text: "The analytics dashboard gives us insights we never had before. Game changer for our monitoring.",
-      name: "Alex Thompson",
-      role: "Lead Developer",
-    },
-  ];
 
   const features = [
     {
@@ -302,32 +267,6 @@ const Index = () => {
 
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-3.5 md:pt-32">
           <div className="w-full text-center">
-            <div className="inline-flex items-center gap-2 sm:gap-3 bg-orange-100 py-1.5 pl-2 pr-3 sm:pr-5 rounded-full mb-4">
-              <div className="flex -space-x-2">
-                <Avatar className="w-6 h-6 sm:w-7 sm:h-7 border-2 border-white">
-                  <AvatarImage src={avatar1} />
-                  <AvatarFallback className="bg-orange-500 text-white text-xs">
-                    JD
-                  </AvatarFallback>
-                </Avatar>
-                <Avatar className="w-6 h-6 sm:w-7 sm:h-7 border-2 border-white">
-                  <AvatarImage src={avatar2} />
-                  <AvatarFallback className="bg-blue-500 text-white text-xs">
-                    AS
-                  </AvatarFallback>
-                </Avatar>
-                <Avatar className="w-6 h-6 sm:w-7 sm:h-7 border-2 border-white">
-                  <AvatarImage src={avatar3} />
-                  <AvatarFallback className="bg-purple-500 text-white text-xs">
-                    MK
-                  </AvatarFallback>
-                </Avatar>
-              </div>
-              <span className="text-xs sm:text-sm text-gray-900 whitespace-nowrap">
-                <span className="font-bold">500+</span> users worldwide
-              </span>
-            </div>
-
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6 leading-tight max-w-4xl mx-auto px-2">
               The modern RabbitMQ management interface your team deserves
             </h1>
@@ -861,51 +800,6 @@ const Index = () => {
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Social Proof */}
-      <section id="testimonials" className="pt-12 pb-20 bg-background relative">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-6">
-              They loved it, why not you?
-            </h2>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {testimonials.slice(0, 3).map((testimonial, idx) => (
-              <div
-                key={idx}
-                className="p-8 rounded-xl flex flex-col h-full bg-testimonial-bg"
-              >
-                <div className="flex items-center gap-1 mb-4">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className="h-5 w-5 fill-yellow-400 text-yellow-400"
-                    />
-                  ))}
-                </div>
-                <h3 className="text-xl font-bold text-foreground mb-4">
-                  {testimonial.title}
-                </h3>
-                <p className="text-muted-foreground mb-6 leading-relaxed flex-grow">
-                  {testimonial.text}
-                </p>
-                <div className="mt-auto">
-                  <div className="text-sm">
-                    <div className="font-semibold text-foreground">
-                      {testimonial.name}
-                    </div>
-                    <div className="text-muted-foreground">
-                      {testimonial.role}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
           </div>
         </div>
       </section>

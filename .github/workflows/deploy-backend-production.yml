@@ -98,6 +98,7 @@ jobs:
             NOTION_API_KEY=${{ secrets.NOTION_API_KEY }} \
             NOTION_DATABASE_ID=${{ vars.NOTION_DATABASE_ID }} \
             NOTION_SYNC_ENABLED=${{ vars.NOTION_SYNC_ENABLED }} \
+            ENABLE_NOTION=true \
             NODE_ID=app1
 
       - name: 🔍 Debug Dokku Environment
