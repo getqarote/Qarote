@@ -1,0 +1,93 @@
+# React Import Best Practices
+
+## Critical Rule: Always Use Named Imports for React Hooks
+
+**NEVER use namespace imports (`import * as React`) to access React hooks in production code.**
+
+### ❌ WRONG - Causes Production Errors
+
+```typescript
+import * as React from "react";
+
+function MyComponent() {
+  const [state, setState] = React.useState(); // ❌ Can fail in production builds
+  React.useEffect(() => {}, []); // ❌ Can fail in production builds
+}
+```
+
+### ✅ CORRECT - Use Named Imports for Hooks
+
+```typescript
+import { useState, useEffect } from "react";
+// You can still use namespace import for other React APIs if needed
+import * as React from "react";
+
+function MyComponent() {
+  const [state, setState] = useState(); // ✅ Always works
+  useEffect(() => {}, []); // ✅ Always works
+  
+  // Namespace import is fine for non-hook APIs
+  const context = React.createContext();
+  const Component = React.forwardRef(...);
+}
+```
+
+## When to Use Namespace vs Named Imports
+
+### Use Named Imports For:
+- **All React hooks**: `useState`, `useEffect`, `useCallback`, `useMemo`, `useRef`, `useContext`, etc.
+- **Common React APIs**: `StrictMode`, `Fragment`, `Suspense`, `lazy`, `memo`
+
+### Namespace Import (`import * as React`) is OK For:
+- `React.createContext()`
+- `React.forwardRef()`
+- `React.Component`
+- `React.PureComponent`
+- Type references: `React.ReactNode`, `React.ComponentProps`, `React.CSSProperties`
+
+## Best Practice Pattern
+
+```typescript
+// ✅ RECOMMENDED: Named imports for hooks, namespace for other APIs
+import { useState, useEffect, useCallback, useMemo } from "react";
+import * as React from "react";
+
+function MyComponent() {
+  // Hooks - use named imports
+  const [state, setState] = useState();
+  useEffect(() => {}, []);
+  const memoized = useMemo(() => {}, []);
+  
+  // Other APIs - namespace is fine
+  const context = React.createContext();
+  const Component = React.forwardRef(...);
+}
+```
+
+## Why This Matters
+
+Using `React.useEffect` or `React.useState` via namespace imports can cause:
+- **Production build failures**: `TypeError: Cannot read properties of null (reading 'useEffect')`
+- **Bundling issues**: React may not be properly resolved in minified builds
+- **Runtime errors**: React instance may be `null` when accessed via namespace
+
+## Vite Configuration
+
+The `vite.config.ts` includes critical settings to prevent this:
+
+```typescript
+resolve: {
+  dedupe: ["react", "react-dom"], // Ensures single React instance
+},
+build: {
+  rollupOptions: {
+    output: {
+      manualChunks: {
+        "vendor-react": ["react", "react-dom"], // Ensures React is bundled correctly
+      },
+    },
+  },
+}
+```
+
+**Never remove these settings** - they prevent duplicate React instances and bundling issues.

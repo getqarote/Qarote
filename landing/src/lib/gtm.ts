@@ -1,24 +1,26 @@
+import { logger } from "./logger";
+
 /**
  * Initialize dataLayer if it doesn't exist
  * @returns true if dataLayer exists or was created, false otherwise
  */
 function ensureDataLayer(): boolean {
   if (typeof window === "undefined") {
-    console.warn(
+    logger.warn(
       "window.dataLayer: window is undefined (likely SSR). GTM tracking will not work."
     );
     return false;
   }
 
   if (!window.dataLayer) {
-    console.warn(
+    logger.warn(
       "window.dataLayer does not exist. Creating it, but GTM may not be properly initialized."
     );
     window.dataLayer = [];
   }
 
   if (!Array.isArray(window.dataLayer)) {
-    console.error(
+    logger.error(
       "window.dataLayer exists but is not an array. GTM tracking may fail.",
       { dataLayer: window.dataLayer }
     );
@@ -36,23 +38,23 @@ export function pushToDataLayer(data: Record<string, unknown>): void {
     const dataLayerExists = ensureDataLayer();
 
     if (!dataLayerExists) {
-      console.warn("Cannot push to dataLayer: dataLayer is not available", {
+      logger.warn("Cannot push to dataLayer: dataLayer is not available", {
         event: data,
       });
       return;
     }
 
     if (!window.dataLayer) {
-      console.error(
+      logger.error(
         "window.dataLayer is still undefined after ensureDataLayer(). This should not happen."
       );
       return;
     }
 
     window.dataLayer.push(data);
-    console.debug("GTM event pushed", data);
+    logger.debug("GTM event pushed", data);
   } catch (error) {
-    console.error("Failed to push to dataLayer:", error, { event: data });
+    logger.error("Failed to push to dataLayer:", error, { event: data });
   }
 }
 

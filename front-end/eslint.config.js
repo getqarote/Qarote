@@ -25,6 +25,17 @@ export default tseslint.config(
         "warn",
         { allowConstantExport: true },
       ],
+      // Prevent React namespace access for hooks (can cause production errors)
+      // This catches patterns like React.useState, React.useEffect, etc.
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector:
+            "MemberExpression[object.name='React'][property.name=/^use[A-Z]/]",
+          message:
+            "Use named imports for React hooks (e.g., 'import { useState } from \"react\"') instead of React.useState. Namespace imports can cause production build errors like 'Cannot read properties of null (reading useEffect)'.",
+        },
+      ],
       // Disable base rule as it conflicts with TypeScript version
       "no-unused-vars": "off",
       "@typescript-eslint/no-unused-vars": [

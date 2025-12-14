@@ -2,7 +2,13 @@
  * Main routing visualization component with interactive diagrams
  */
 
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 import {
   Activity,
@@ -223,7 +229,7 @@ export const RoutingVisualization: React.FC = () => {
   const _animationRef = useRef<number>();
 
   // Filter data based on current filters
-  const filteredData = React.useMemo(() => {
+  const filteredData = useMemo(() => {
     const filteredExchanges = data.exchanges.filter((ex) => {
       if (!filterOptions.exchangeTypes.includes(ex.type)) return false;
       if (!settings.showInactiveNodes && !ex.isActive) return false;
@@ -412,7 +418,7 @@ export const RoutingVisualization: React.FC = () => {
   }, []);
 
   // Metrics calculation
-  const metrics = React.useMemo(() => {
+  const metrics = useMemo(() => {
     const totalNodes =
       filteredData.exchanges.length + filteredData.queues.length;
     const activeConnections = data.bindings.filter((b) => b.isActive).length;

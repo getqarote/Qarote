@@ -17,6 +17,10 @@ export default defineConfig({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
+    // CRITICAL: Prevents duplicate React instances which can cause production errors
+    // like "Cannot read properties of null (reading 'useEffect')"
+    // Never remove this - it ensures a single React instance across all dependencies
+    dedupe: ["react", "react-dom"],
   },
   build: {
     target: "esnext",
@@ -25,7 +29,8 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          // Vendor chunk for React and related libraries
+          // CRITICAL: React must be in its own chunk to prevent bundling issues
+          // This ensures React is properly resolved and prevents production errors
           "vendor-react": ["react", "react-dom", "react-router-dom"],
           // UI components chunk
           "vendor-ui": [

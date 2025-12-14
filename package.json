@@ -42,6 +42,14 @@
     "front-end/**/*.{ts,tsx,js,jsx}": [
       "bash -c 'cd front-end && npx eslint --fix --max-warnings=-1 \"$@\"' _",
       "bash -c 'cd front-end && npx prettier --write \"$@\"' _"
+    ],
+    "landing/**/*.{ts,tsx,js,jsx}": [
+      "bash -c 'cd landing && npx eslint --fix --max-warnings=-1 \"$@\"' _",
+      "bash -c 'cd landing && npx prettier --write \"$@\"' _"
+    ],
+    "customer-portal/**/*.{ts,tsx,js,jsx}": [
+      "bash -c 'cd customer-portal && npx eslint --fix --max-warnings=-1 \"$@\"' _",
+      "bash -c 'cd customer-portal && npx prettier --write \"$@\"' _"
     ]
   },
   "devDependencies": {

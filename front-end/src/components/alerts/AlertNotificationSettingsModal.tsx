@@ -1,4 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 import {
   Bell,
@@ -89,7 +95,7 @@ export function AlertNotificationSettingsModal({
   const [serverSearchTerm, setServerSearchTerm] = useState<string>("");
 
   // Track if this is the initial load to prevent auto-save on mount
-  const isInitialMount = React.useRef(true);
+  const isInitialMount = useRef(true);
 
   // Query for current settings
   const { data: settingsData } = useAlertNotificationSettings(isOpen);
@@ -99,7 +105,7 @@ export function AlertNotificationSettingsModal({
   const servers = serversData?.servers || [];
 
   // Get selected server objects
-  const selectedServers = React.useMemo(() => {
+  const selectedServers = useMemo(() => {
     if (!notificationServerIds || notificationServerIds.length === 0) return [];
     return servers.filter((server) =>
       notificationServerIds.includes(server.id)
@@ -107,12 +113,12 @@ export function AlertNotificationSettingsModal({
   }, [servers, notificationServerIds]);
 
   // Filter servers based on search term (excluding already selected)
-  const availableServers = React.useMemo(() => {
+  const availableServers = useMemo(() => {
     const selectedIds = notificationServerIds || [];
     return servers.filter((server) => !selectedIds.includes(server.id));
   }, [servers, notificationServerIds]);
 
-  const filteredServers = React.useMemo(() => {
+  const filteredServers = useMemo(() => {
     if (!serverSearchTerm.trim()) return availableServers;
     const searchLower = serverSearchTerm.toLowerCase();
     return availableServers.filter(
@@ -221,34 +227,32 @@ export function AlertNotificationSettingsModal({
 
   // Auto-save function for email notifications and severities
   // Use refs to access latest values without causing re-renders
-  const emailNotificationsEnabledRef = React.useRef(emailNotificationsEnabled);
-  const contactEmailRef = React.useRef(contactEmail);
-  const notificationSeveritiesRef = React.useRef(notificationSeverities);
-  const browserNotificationsEnabledRef = React.useRef(
-    browserNotificationsEnabled
-  );
-  const browserNotificationSeveritiesRef = React.useRef(
+  const emailNotificationsEnabledRef = useRef(emailNotificationsEnabled);
+  const contactEmailRef = useRef(contactEmail);
+  const notificationSeveritiesRef = useRef(notificationSeverities);
+  const browserNotificationsEnabledRef = useRef(browserNotificationsEnabled);
+  const browserNotificationSeveritiesRef = useRef(
     browserNotificationSeverities
   );
 
   // Keep refs in sync with state
-  React.useEffect(() => {
+  useEffect(() => {
     emailNotificationsEnabledRef.current = emailNotificationsEnabled;
   }, [emailNotificationsEnabled]);
-  React.useEffect(() => {
+  useEffect(() => {
     contactEmailRef.current = contactEmail;
   }, [contactEmail]);
-  React.useEffect(() => {
+  useEffect(() => {
     notificationSeveritiesRef.current = notificationSeverities;
   }, [notificationSeverities]);
-  React.useEffect(() => {
+  useEffect(() => {
     browserNotificationsEnabledRef.current = browserNotificationsEnabled;
   }, [browserNotificationsEnabled]);
-  React.useEffect(() => {
+  useEffect(() => {
     browserNotificationSeveritiesRef.current = browserNotificationSeverities;
   }, [browserNotificationSeverities]);
 
-  const autoSaveSettings = React.useCallback(
+  const autoSaveSettings = useCallback(
     (
       options: {
         skipValidation?: boolean;
@@ -349,7 +353,7 @@ export function AlertNotificationSettingsModal({
   );
 
   // Auto-save when email notifications toggle changes
-  React.useEffect(() => {
+  useEffect(() => {
     if (isInitialMount.current) return;
 
     const timeoutId = setTimeout(() => {
@@ -366,7 +370,7 @@ export function AlertNotificationSettingsModal({
   // Email input changes - no auto-save, only save on button click
 
   // Auto-save when severities change
-  React.useEffect(() => {
+  useEffect(() => {
     if (isInitialMount.current) return;
 
     const timeoutId = setTimeout(() => {
@@ -382,7 +386,7 @@ export function AlertNotificationSettingsModal({
   }, [notificationSeverities]);
 
   // Auto-save when browser notifications toggle changes
-  React.useEffect(() => {
+  useEffect(() => {
     if (isInitialMount.current) return;
 
     const timeoutId = setTimeout(() => {
@@ -397,7 +401,7 @@ export function AlertNotificationSettingsModal({
   }, [browserNotificationsEnabled]);
 
   // Auto-save when browser notification severities change
-  React.useEffect(() => {
+  useEffect(() => {
     if (isInitialMount.current) return;
 
     const timeoutId = setTimeout(() => {

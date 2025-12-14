@@ -1,4 +1,5 @@
 import React from "react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -62,7 +63,7 @@ export function CreateVHostModal({
   });
 
   // Update form when initialName changes
-  React.useEffect(() => {
+  useEffect(() => {
     if (initialName) {
       form.setValue("name", initialName);
     }

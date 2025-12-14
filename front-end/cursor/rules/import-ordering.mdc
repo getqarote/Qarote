@@ -28,6 +28,8 @@ import "@/styles/theme.css";
 import { readFileSync } from "node:fs";
 
 // 3. React modules
+// IMPORTANT: Always use named imports for React hooks (useState, useEffect, etc.)
+// NEVER use React.useState or React.useEffect - this causes production build errors
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
