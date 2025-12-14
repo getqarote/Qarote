@@ -253,16 +253,19 @@ export class RabbitMQAmqpClient {
       // Persist to database
       await this.persistPauseStates();
 
-      logger.info(`Queue ${queueName} paused successfully via AMQP`, {
-        serverId: this.config.serverId,
-        serverName: this.config.serverName,
-        pauseConsumerTag,
-        pausedAt: pauseState.pausedAt,
-      });
+      logger.info(
+        {
+          serverId: this.config.serverId,
+          serverName: this.config.serverName,
+          pauseConsumerTag,
+          pausedAt: pauseState.pausedAt,
+        },
+        `Queue ${queueName} paused successfully via AMQP`
+      );
 
       return pauseState;
     } catch (error) {
-      logger.error(`Failed to pause queue ${queueName} via AMQP:`, error);
+      logger.error({ error }, `Failed to pause queue ${queueName} via AMQP:`);
 
       if (error instanceof Error) {
         captureRabbitMQError(error, {
@@ -300,7 +303,10 @@ export class RabbitMQAmqpClient {
           this.consumers.delete(consumerTag);
           logger.debug(`Cancelled pause consumer: ${consumerTag}`);
         } catch (error) {
-          logger.warn(`Failed to cancel pause consumer ${consumerTag}:`, error);
+          logger.warn(
+            { error },
+            `Failed to cancel pause consumer ${consumerTag}:`
+          );
         }
       }
 
@@ -316,16 +322,19 @@ export class RabbitMQAmqpClient {
       // Persist to database
       await this.persistPauseStates();
 
-      logger.info(`Queue ${queueName} resumed successfully via AMQP`, {
-        serverId: this.config.serverId,
-        serverName: this.config.serverName,
-        resumedAt: resumedState.resumedAt,
-        cancelledConsumers: pauseState.pausedConsumers.length,
-      });
+      logger.info(
+        {
+          serverId: this.config.serverId,
+          serverName: this.config.serverName,
+          resumedAt: resumedState.resumedAt,
+          cancelledConsumers: pauseState.pausedConsumers.length,
+        },
+        `Queue ${queueName} resumed successfully via AMQP`
+      );
 
       return resumedState;
     } catch (error) {
-      logger.error(`Failed to resume queue ${queueName} via AMQP:`, error);
+      logger.error({ error }, `Failed to resume queue ${queueName} via AMQP:`);
 
       if (error instanceof Error) {
         captureRabbitMQError(error, {
@@ -376,7 +385,7 @@ export class RabbitMQAmqpClient {
     }
 
     await this.channel.assertQueue(queueName, options);
-    logger.info(`Created queue: ${queueName}`, { options });
+    logger.info({ options }, `Created queue: ${queueName}`);
   }
 
   /**
@@ -398,7 +407,7 @@ export class RabbitMQAmqpClient {
 
     this.consumers.set(consumerTag, result);
 
-    logger.info(`Created consumer for queue ${queueName}`, { consumerTag });
+    logger.info({ consumerTag }, `Created consumer for queue ${queueName}`);
 
     return consumerTag;
   }
@@ -429,10 +438,13 @@ export class RabbitMQAmqpClient {
 
     try {
       this.channel.ack(msg);
-      logger.debug(`Message acknowledged`, {
-        deliveryTag: msg.fields.deliveryTag,
-        consumerTag: msg.fields.consumerTag,
-      });
+      logger.debug(
+        {
+          deliveryTag: msg.fields.deliveryTag,
+          consumerTag: msg.fields.consumerTag,
+        },
+        `Message acknowledged`
+      );
     } catch (error) {
       logger.error({ error }, "Failed to acknowledge message");
       throw error;
@@ -452,11 +464,14 @@ export class RabbitMQAmqpClient {
 
     try {
       this.channel.nack(msg, false, requeue);
-      logger.debug(`Message negative acknowledged`, {
-        deliveryTag: msg.fields.deliveryTag,
-        consumerTag: msg.fields.consumerTag,
-        requeue,
-      });
+      logger.debug(
+        {
+          deliveryTag: msg.fields.deliveryTag,
+          consumerTag: msg.fields.consumerTag,
+          requeue,
+        },
+        `Message negative acknowledged`
+      );
     } catch (error) {
       logger.error({ error }, "Failed to negative acknowledge message");
       throw error;
@@ -481,8 +496,8 @@ export class RabbitMQAmqpClient {
           await this.cancelConsumer(consumerTag);
         } catch (error) {
           logger.warn(
-            `Failed to cancel consumer ${consumerTag} during cleanup:`,
-            error
+            { error },
+            `Failed to cancel consumer ${consumerTag} during cleanup:`
           );
         }
       }

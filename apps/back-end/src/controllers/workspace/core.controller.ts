@@ -29,7 +29,7 @@ coreRoutes.get("/", authorize([UserRole.ADMIN]), async (c) => {
 
     return c.json({ workspaces });
   } catch (error) {
-    logger.error("Error fetching workspaces:", error);
+    logger.error({ error }, "Error fetching workspaces:");
     return c.json({ error: "Failed to fetch workspaces" }, 500);
   }
 });
@@ -62,7 +62,7 @@ coreRoutes.get("/current", async (c) => {
 
     return c.json({ workspace });
   } catch (error) {
-    logger.error("Error fetching current workspace:", error);
+    logger.error({ error }, "Error fetching current workspace:");
     return c.json({ error: "Failed to fetch workspace" }, 500);
   }
 });
@@ -96,7 +96,7 @@ coreRoutes.get("/:id", async (c) => {
 
     return c.json({ workspace });
   } catch (error) {
-    logger.error(`Error fetching workspace ${id}:`, error);
+    logger.error({ error }, `Error fetching workspace ${id}:`);
     return c.json({ error: "Failed to fetch workspace" }, 500);
   }
 });
@@ -116,7 +116,7 @@ coreRoutes.post(
 
       return c.json({ workspace }, 201);
     } catch (error) {
-      logger.error("Error creating workspace:", error);
+      logger.error({ error }, "Error creating workspace:");
       return c.json({ error: "Failed to create workspace" }, 500);
     }
   }
@@ -140,7 +140,7 @@ coreRoutes.put(
 
       return c.json({ workspace });
     } catch (error) {
-      logger.error(`Error updating workspace ${c.req.param("id")}:`, error);
+      logger.error({ error }, `Error updating workspace ${c.req.param("id")}:`);
       return c.json({ error: "Failed to update workspace" }, 500);
     }
   }
@@ -161,7 +161,7 @@ coreRoutes.delete(
 
       return c.json({ message: "Workspace deleted successfully" });
     } catch (error) {
-      logger.error(`Error deleting workspace ${c.req.param("id")}:`, error);
+      logger.error({ error }, `Error deleting workspace ${c.req.param("id")}:`);
       return c.json({ error: "Failed to delete workspace" }, 500);
     }
   }

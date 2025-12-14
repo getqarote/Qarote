@@ -44,7 +44,7 @@ export class RabbitMQQueueClient extends RabbitMQBaseClient {
       // We can't determine exact count, so return a success indicator
       return { purged: -1 }; // -1 indicates successful purge without count
     } catch (error) {
-      logger.error(`Error purging queue "${queueName}":`, error);
+      logger.error({ error }, `Error purging queue "${queueName}":`);
 
       // Capture RabbitMQ error in Sentry
       if (error instanceof Error) {
@@ -91,7 +91,10 @@ export class RabbitMQQueueClient extends RabbitMQBaseClient {
       );
       return Array.isArray(result) ? result : [];
     } catch (error) {
-      logger.error(`Error fetching messages from queue "${queueName}":`, error);
+      logger.error(
+        { error },
+        `Error fetching messages from queue "${queueName}":`
+      );
 
       // Capture message processing error in Sentry
       if (error instanceof Error) {
@@ -153,8 +156,8 @@ export class RabbitMQQueueClient extends RabbitMQBaseClient {
       };
 
       logger.info(
-        "Publishing message with data:",
-        JSON.stringify(publishData, null, 2)
+        { data: JSON.stringify(publishData, null, 2) },
+        "Publishing message with data:"
       );
 
       const result = await this.request<PublishResult>(endpoint, {
@@ -163,15 +166,15 @@ export class RabbitMQQueueClient extends RabbitMQBaseClient {
       });
 
       logger.info(
-        "Publish result from RabbitMQ:",
-        JSON.stringify(result, null, 2)
+        { result: JSON.stringify(result, null, 2) },
+        "Publish result from RabbitMQ:"
       );
 
       return result;
     } catch (error) {
       logger.error(
-        `Error publishing message to exchange "${exchange}":`,
-        error
+        { error },
+        `Error publishing message to exchange "${exchange}":`
       );
 
       // Capture RabbitMQ error in Sentry
@@ -214,7 +217,7 @@ export class RabbitMQQueueClient extends RabbitMQBaseClient {
 
       return { created: true };
     } catch (error) {
-      logger.error(`Error creating queue "${queueName}":`, error);
+      logger.error({ error }, `Error creating queue "${queueName}":`);
 
       // Capture RabbitMQ error in Sentry
       if (error instanceof Error) {
@@ -255,8 +258,8 @@ export class RabbitMQQueueClient extends RabbitMQBaseClient {
       return { bound: true };
     } catch (error) {
       logger.error(
-        `Error binding queue "${queueName}" to exchange "${exchangeName}":`,
-        error
+        { error },
+        `Error binding queue "${queueName}" to exchange "${exchangeName}":`
       );
 
       // Capture RabbitMQ error in Sentry

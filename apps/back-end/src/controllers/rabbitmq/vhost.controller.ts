@@ -84,7 +84,10 @@ vhostController.get("/servers/:serverId/vhosts", async (c) => {
             limitCount: Object.keys(limits || {}).length,
           };
         } catch (error) {
-          logger.warn(`Failed to get details for vhost ${vhost.name}:`, error);
+          logger.warn(
+            { error },
+            `Failed to get details for vhost ${vhost.name}:`
+          );
           return {
             ...vhost,
             messages: vhost.messages || 0,
@@ -108,7 +111,7 @@ vhostController.get("/servers/:serverId/vhosts", async (c) => {
       total: mappedVhosts.length,
     });
   } catch (error) {
-    logger.error(`Error fetching vhosts for server ${serverId}:`, error);
+    logger.error({ error }, `Error fetching vhosts for server ${serverId}:`);
     return createErrorResponse(c, error, 500, "Failed to fetch virtual hosts");
   }
 });
@@ -183,8 +186,8 @@ vhostController.get("/servers/:serverId/vhosts/:vhostName", async (c) => {
     });
   } catch (error) {
     logger.error(
-      `Error fetching vhost ${vhostName} for server ${serverId}:`,
-      error
+      { error },
+      `Error fetching vhost ${vhostName} for server ${serverId}:`
     );
     return createErrorResponse(c, error, 500, "Failed to fetch virtual host");
   }
@@ -237,8 +240,8 @@ vhostController.post(
       });
     } catch (error) {
       logger.error(
-        `Error creating vhost ${vhostData.name} on server ${serverId}:`,
-        error
+        { error },
+        `Error creating vhost ${vhostData.name} on server ${serverId}:`
       );
       return createErrorResponse(
         c,
@@ -289,8 +292,8 @@ vhostController.put(
       });
     } catch (error) {
       logger.error(
-        `Error updating vhost ${vhostName} on server ${serverId}:`,
-        error
+        { error },
+        `Error updating vhost ${vhostName} on server ${serverId}:`
       );
       return createErrorResponse(
         c,
@@ -348,8 +351,8 @@ vhostController.delete("/servers/:serverId/vhosts/:vhostName", async (c) => {
     });
   } catch (error) {
     logger.error(
-      `Error deleting vhost ${vhostName} on server ${serverId}:`,
-      error
+      { error },
+      `Error deleting vhost ${vhostName} on server ${serverId}:`
     );
     return createErrorResponse(c, error, 500, "Failed to delete virtual host");
   }
@@ -400,8 +403,8 @@ vhostController.put(
       });
     } catch (error) {
       logger.error(
-        `Error setting permissions for user ${username} on vhost ${vhostName}:`,
-        error
+        { error },
+        `Error setting permissions for user ${username} on vhost ${vhostName}:`
       );
       return createErrorResponse(c, error, 500, "Failed to set permissions");
     }
@@ -446,8 +449,8 @@ vhostController.delete(
       });
     } catch (error) {
       logger.error(
-        `Error deleting permissions for user ${username} on vhost ${vhostName}:`,
-        error
+        { error },
+        `Error deleting permissions for user ${username} on vhost ${vhostName}:`
       );
       return createErrorResponse(c, error, 500, "Failed to delete permissions");
     }
@@ -496,8 +499,8 @@ vhostController.put(
       });
     } catch (error) {
       logger.error(
-        `Error setting limit ${limitType} for vhost ${vhostName}:`,
-        error
+        { error },
+        `Error setting limit ${limitType} for vhost ${vhostName}:`
       );
       return createErrorResponse(c, error, 500, "Failed to set limit");
     }
@@ -542,8 +545,8 @@ vhostController.delete(
       });
     } catch (error) {
       logger.error(
-        `Error deleting limit ${limitType} for vhost ${vhostName}:`,
-        error
+        { error },
+        `Error deleting limit ${limitType} for vhost ${vhostName}:`
       );
       return createErrorResponse(c, error, 500, "Failed to delete limit");
     }

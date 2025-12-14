@@ -74,7 +74,7 @@ export class AlertHealthService {
         }
       }
     } catch (error) {
-      logger.warn(`Failed to get nodes for cluster health summary:`, error);
+      logger.warn({ error }, `Failed to get nodes for cluster health summary:`);
       criticalIssues++;
       issues.push("Failed to connect to cluster nodes");
       clusterHealth = "critical";

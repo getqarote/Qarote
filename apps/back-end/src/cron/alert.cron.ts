@@ -83,7 +83,7 @@ export class AlertService {
         try {
           await this.evaluateAlertRule(rule);
         } catch (error) {
-          logger.error(`Error evaluating alert rule ${rule.id}:`, error);
+          logger.error({ error }, `Error evaluating alert rule ${rule.id}:`);
         }
       }
     } catch (error) {
@@ -173,7 +173,7 @@ export class AlertService {
           return null;
       }
     } catch (error) {
-      logger.error(`Error getting metric for rule ${rule.id}:`, error);
+      logger.error({ error }, `Error getting metric for rule ${rule.id}:`);
       return null;
     }
   }
