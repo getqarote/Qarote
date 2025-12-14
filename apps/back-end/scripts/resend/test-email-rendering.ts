@@ -15,15 +15,12 @@ async function testEmailRendering() {
 
   try {
     // Dynamically import templates to avoid TypeScript issues
-    const { default: EmailVerification } = await import(
-      "../../src/services/email/templates/email-verification"
-    );
-    const { default: WelcomeEmail } = await import(
-      "../../src/services/email/templates/welcome-email"
-    );
-    const { default: PasswordResetEmail } = await import(
-      "../../src/services/email/templates/password-reset-email"
-    );
+    const { default: EmailVerification } =
+      await import("../../src/services/email/templates/email-verification");
+    const { default: WelcomeEmail } =
+      await import("../../src/services/email/templates/welcome-email");
+    const { default: PasswordResetEmail } =
+      await import("../../src/services/email/templates/password-reset-email");
 
     const tests = [
       {

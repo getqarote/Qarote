@@ -37,6 +37,7 @@ The project includes a special build command for Cloudflare Pages which avoids i
 ## Custom Domain
 
 After deployment, you can configure a custom domain in Cloudflare Pages:
+
 - Recommended: `portal.rabbithq.io` or `customers.rabbithq.io`
 
 ## Troubleshooting
@@ -47,4 +48,3 @@ If you encounter build issues:
 2. Verify that the `cloudflare.json` configuration is correct
 3. Check that your environment variables are set correctly
 4. Ensure the build output directory is set to `dist`
-
