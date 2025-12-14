@@ -9,7 +9,7 @@ on:
     branches: [main]
     paths:
       - "apps/back-end/**"
-      - "apps/back-end/app.json"
+      - "apps/back-end/app.worker.json"
       - ".github/workflows/deploy-worker-staging.yml"
   workflow_dispatch:
 
@@ -47,8 +47,8 @@ jobs:
         working-directory: apps/back-end
         run: npm run test:run
 
-  ensure-worker-app:
-    name: Ensure Worker App Exists
+  configure-worker-app:
+    name: Configure Worker App
     runs-on: ubuntu-latest
     environment: staging
     needs: quality-checks
@@ -67,37 +67,29 @@ jobs:
           mkdir -p ~/.ssh
           ssh-keyscan -H ${{ vars.DOKKU_HOST }} >> ~/.ssh/known_hosts
 
-      - name: ✅ Check if backend app exists
-        run: |
-          ssh dokku@${{ vars.DOKKU_HOST }} apps:exists ${{ env.BACKEND_APP_NAME }} || \
-            (echo "Error: Backend app ${{ env.BACKEND_APP_NAME }} does not exist" && exit 1)
-
-      - name: 🏗️ Ensure worker app exists
-        run: |
-          if ! ssh dokku@${{ vars.DOKKU_HOST }} apps:exists ${{ env.APP_NAME }}; then
-            echo "Creating worker app..."
-            ssh dokku@${{ vars.DOKKU_HOST }} apps:create ${{ env.APP_NAME }}
-          else
-            echo "Worker app already exists"
-          fi
-
       - name: 📋 Copy config from backend app
         run: |
           echo "Exporting config from backend app..."
           CONFIG=$(ssh dokku@${{ vars.DOKKU_HOST }} config:export ${{ env.BACKEND_APP_NAME }})
           echo "Importing config to worker app..."
-          ssh dokku@${{ vars.DOKKU_HOST }} config:set ${{ env.APP_NAME }} "$CONFIG"
+          # Remove "export " prefix from each line and set config variables
+          # Exclude DOKKU_APP_RESTORE and database URLs as we'll set them via postgres:link
+          echo "$CONFIG" | sed 's/^export //' | grep -v "^DOKKU_APP_RESTORE=" | grep -v "^DATABASE_URL=" | grep -v "^DOKKU_POSTGRES" | while IFS= read -r line; do
+            if [ -n "$line" ]; then
+              ssh dokku@${{ vars.DOKKU_HOST }} config:set ${{ env.APP_NAME }} "$line" || true
+            fi
+          done
 
-      - name: ⚙️ Set start command for worker
+      - name: 🚫 Configure worker app to use app.worker.json
         run: |
-          ssh dokku@${{ vars.DOKKU_HOST }} ps:set ${{ env.APP_NAME }} start-cmd "npm run start:alert" || \
-            echo "Note: Start command may already be set or format differs"
+          echo "Configuring worker app to use app.worker.json (without predeploy hook)..."
+          ssh dokku@${{ vars.DOKKU_HOST }} app-json:set ${{ env.APP_NAME }} appjson-path app.worker.json
 
   deploy-worker:
     name: Deploy Worker to Dokku - Staging
     runs-on: ubuntu-latest
     environment: staging
-    needs: [quality-checks, ensure-worker-app]
+    needs: [quality-checks, configure-worker-app]
 
     steps:
       - name: 🔍 Checkout code
@@ -128,11 +120,11 @@ jobs:
           echo "Checking worker app status..."
           ssh dokku@${{ vars.DOKKU_HOST }} ps:report ${{ env.APP_NAME }}
 
-      - name: 📈 Scale worker process
+      - name: 📈 Scale processes (disable web, enable worker)
         run: |
-          echo "Scaling worker process to 1..."
-          ssh dokku@${{ vars.DOKKU_HOST }} ps:scale ${{ env.APP_NAME }} worker=1 || \
-            echo "Note: Worker process may need to be scaled manually"
+          echo "Scaling processes: web=0, worker=1..."
+          ssh dokku@${{ vars.DOKKU_HOST }} ps:scale ${{ env.APP_NAME }} web=0 worker=1 || \
+            echo "Note: Process scaling may need to be done manually"
 
       - name: 📋 Show worker logs
         run: |
