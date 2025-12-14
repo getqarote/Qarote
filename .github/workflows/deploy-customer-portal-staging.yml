@@ -74,11 +74,11 @@ jobs:
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          command: pages deploy apps/customer-portal/dist --project-name=rabbithq-customer-portal-staging --branch=main --commit-hash=${{ github.sha }}
+          command: pages deploy apps/customer-portal/dist --project-name=customer-portal-staging --branch=main --commit-hash=${{ github.sha }}
 
       - name: ✅ Deployment Success
         run: |
           echo "🎉 Customer Portal deployed successfully to staging!"
-          echo "🌐 Staging URL: https://rabbithq-customer-portal-staging.pages.dev"
+          echo "🌐 Staging URL: https://customer-portal-staging-5ir.pages.dev"
           echo "🔗 Custom Domain: https://portal.yourdomain.com (if configured)"
           echo "📝 Commit: ${{ github.sha }}"
