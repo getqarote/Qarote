@@ -28,17 +28,23 @@ export class RabbitMQAmqpClientFactory {
     // Check local cache first
     const existingClient = this.clients.get(serverConfig.id);
     if (existingClient && existingClient.isConnectionActive()) {
-      logger.debug(`Reusing existing active AMQP client`, {
-        serverId: serverConfig.id,
-      });
+      logger.debug(
+        {
+          serverId: serverConfig.id,
+        },
+        `Reusing existing active AMQP client`
+      );
       return existingClient;
     }
 
     // If client exists but is inactive, clean it up first
     if (existingClient && !existingClient.isConnectionActive()) {
-      logger.debug(`Cleaning up inactive AMQP client before creating new one`, {
-        serverId: serverConfig.id,
-      });
+      logger.debug(
+        {
+          serverId: serverConfig.id,
+        },
+        `Cleaning up inactive AMQP client before creating new one`
+      );
       await this.removeClient(serverConfig.id);
     }
 
@@ -76,11 +82,14 @@ export class RabbitMQAmqpClientFactory {
     this.clients.set(serverConfig.id, client);
 
     const activeConnections = this.connectionCounts.get(serverConfig.id) || 0;
-    logger.info(`AMQP client created and registered locally`, {
-      serverId: serverConfig.id,
-      serverName: serverConfig.name,
-      activeConnections,
-    });
+    logger.info(
+      {
+        serverId: serverConfig.id,
+        serverName: serverConfig.name,
+        activeConnections,
+      },
+      `AMQP client created and registered locally`
+    );
 
     return client;
   }
@@ -109,16 +118,22 @@ export class RabbitMQAmqpClientFactory {
         this.connectionCounts.set(serverId, currentCount - 1);
       }
 
-      logger.info(`AMQP client removed from cache and local tracking`, {
-        serverId,
-        previousCount: currentCount,
-        newCount: currentCount - 1,
-      });
+      logger.info(
+        {
+          serverId,
+          previousCount: currentCount,
+          newCount: currentCount - 1,
+        },
+        `AMQP client removed from cache and local tracking`
+      );
     } else if (client && client.isConnectionActive()) {
       // Client is still active, don't remove it
-      logger.debug(`AMQP client still active, not removing from cache`, {
-        serverId,
-      });
+      logger.debug(
+        {
+          serverId,
+        },
+        `AMQP client still active, not removing from cache`
+      );
     }
   }
 
@@ -132,7 +147,7 @@ export class RabbitMQAmqpClientFactory {
           await client.cleanup();
           await this.removeClient(serverId);
         } catch (error) {
-          logger.warn("Error cleaning up AMQP client:", error);
+          logger.warn({ error }, "Error cleaning up AMQP client:");
         }
       }
     );

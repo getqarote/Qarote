@@ -71,10 +71,13 @@ export class CoreEmailService {
 
     // Check if email is enabled
     if (!emailConfig.enabled) {
-      logger.warn(`Email is disabled - skipping ${emailType} email`, {
-        to,
-        emailType,
-      });
+      logger.warn(
+        {
+          to,
+          emailType,
+        },
+        `Email is disabled - skipping ${emailType} email`
+      );
       return {
         success: false,
         error: "Email service is disabled",
@@ -82,12 +85,15 @@ export class CoreEmailService {
     }
 
     try {
-      logger.info(`Sending ${emailType} email`, {
-        to,
-        emailType,
-        provider: emailConfig.provider,
-        ...context,
-      });
+      logger.info(
+        {
+          to,
+          emailType,
+          provider: emailConfig.provider,
+          ...context,
+        },
+        `Sending ${emailType} email`
+      );
 
       // Render the React email template to HTML
       const emailHtml = await render(template);
@@ -182,11 +188,14 @@ export class CoreEmailService {
       });
     }
 
-    logger.info(`${emailType} email sent successfully via Resend`, {
-      messageId: data?.id,
-      to,
-      ...context,
-    });
+    logger.info(
+      {
+        messageId: data?.id,
+        to,
+        ...context,
+      },
+      `${emailType} email sent successfully via Resend`
+    );
 
     return {
       success: true,
@@ -230,11 +239,14 @@ export class CoreEmailService {
       });
     }
 
-    logger.info(`${emailType} email sent successfully via SMTP`, {
-      messageId: info.messageId,
-      to,
-      ...context,
-    });
+    logger.info(
+      {
+        messageId: info.messageId,
+        to,
+        ...context,
+      },
+      `${emailType} email sent successfully via SMTP`
+    );
 
     return {
       success: true,

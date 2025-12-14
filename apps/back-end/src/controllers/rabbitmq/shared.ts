@@ -96,12 +96,15 @@ export async function createAmqpClient(serverId: string, workspaceId: string) {
     decryptedUsername = EncryptionService.decrypt(server.username);
     decryptedPassword = EncryptionService.decrypt(server.password);
 
-    logger.debug(`Decrypted credentials for server ${server.name}`, {
-      serverId: server.id,
-      serverName: server.name,
-      hasUsername: !!decryptedUsername,
-      hasPassword: !!decryptedPassword,
-    });
+    logger.debug(
+      {
+        serverId: server.id,
+        serverName: server.name,
+        hasUsername: !!decryptedUsername,
+        hasPassword: !!decryptedPassword,
+      },
+      `Decrypted credentials for server ${server.name}`
+    );
   } catch (error) {
     logger.error(
       { error },
@@ -144,10 +147,13 @@ export async function createAmqpClient(serverId: string, workspaceId: string) {
           },
         });
 
-        logger.debug(`Persisted pause states for server ${serverId}`, {
-          pausedQueues: pauseStates.filter((s) => s.isPaused).length,
-          totalQueues: pauseStates.length,
-        });
+        logger.debug(
+          {
+            pausedQueues: pauseStates.filter((s) => s.isPaused).length,
+            totalQueues: pauseStates.length,
+          },
+          `Persisted pause states for server ${serverId}`
+        );
       } catch (error) {
         logger.error(
           { error },

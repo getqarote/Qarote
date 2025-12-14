@@ -50,7 +50,7 @@ usersController.get(
 
       return c.json({ users: mappedUsers });
     } catch (error: unknown) {
-      logger.error("Error fetching users:", error);
+      logger.error({ error }, "Error fetching users:");
       return createErrorResponse(c, error, 500, "Failed to fetch users");
     }
   }
@@ -88,7 +88,7 @@ usersController.get(
         permissions,
       });
     } catch (error: unknown) {
-      logger.error("Error fetching user details:", error);
+      logger.error({ error }, "Error fetching user details:");
       return createErrorResponse(c, error, 500, "Failed to fetch user details");
     }
   }
@@ -123,7 +123,7 @@ usersController.post(
 
       return c.json({ message: "User created successfully" });
     } catch (error: unknown) {
-      logger.error("Error creating user:", error);
+      logger.error({ error }, "Error creating user:");
       return createErrorResponse(c, error, 500, "Failed to create user");
     }
   }
@@ -167,12 +167,15 @@ usersController.put(
         payload.password_hash = "";
       }
 
-      logger.debug("Updating user with payload", {
-        username,
-        serverId,
-        payload,
-        updateData,
-      });
+      logger.debug(
+        {
+          username,
+          serverId,
+          payload,
+          updateData,
+        },
+        "Updating user with payload"
+      );
 
       await client.updateUser(username, payload);
 
@@ -234,7 +237,7 @@ usersController.delete(
 
       return c.json({ message: "User deleted successfully" });
     } catch (error: unknown) {
-      logger.error("Error deleting user:", error);
+      logger.error({ error }, "Error deleting user:");
       return createErrorResponse(c, error, 500, "Failed to delete user");
     }
   }
@@ -271,7 +274,7 @@ usersController.put(
 
       return c.json({ message: "Permissions set successfully" });
     } catch (error: unknown) {
-      logger.error("Error setting permissions:", error);
+      logger.error({ error }, "Error setting permissions:");
       return createErrorResponse(c, error, 500, "Failed to set permissions");
     }
   }
@@ -302,7 +305,7 @@ usersController.delete(
 
       return c.json({ message: "Permissions deleted successfully" });
     } catch (error: unknown) {
-      logger.error("Error deleting permissions:", error);
+      logger.error({ error }, "Error deleting permissions:");
       return createErrorResponse(c, error, 500, "Failed to delete permissions");
     }
   }

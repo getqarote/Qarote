@@ -235,12 +235,15 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
     vhost: string
   ): Promise<RabbitMQQueue> {
     try {
-      logger.debug("Fetching RabbitMQ queue with time range", {
-        queueName,
-        vhost,
-        age: timeRange.age,
-        increment: timeRange.increment,
-      });
+      logger.debug(
+        {
+          queueName,
+          vhost,
+          age: timeRange.age,
+          increment: timeRange.increment,
+        },
+        "Fetching RabbitMQ queue with time range"
+      );
 
       const encodedQueueName = encodeURIComponent(queueName);
       const encodedVhost = encodeURIComponent(vhost);
@@ -256,10 +259,13 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
       const queue = await this.request<RabbitMQQueue>(
         `/queues/${encodedVhost}/${encodedQueueName}?${queryParams.toString()}`
       );
-      logger.debug("RabbitMQ queue with time range fetched successfully", {
-        queueName,
-        vhost,
-      });
+      logger.debug(
+        {
+          queueName,
+          vhost,
+        },
+        "RabbitMQ queue with time range fetched successfully"
+      );
       return queue;
     } catch (error) {
       logger.error(
@@ -284,9 +290,12 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
       logger.debug("Fetching RabbitMQ connections");
       const connections =
         await this.request<RabbitMQConnection[]>("/connections");
-      logger.debug("RabbitMQ connections fetched successfully", {
-        count: connections?.length || 0,
-      });
+      logger.debug(
+        {
+          count: connections?.length || 0,
+        },
+        "RabbitMQ connections fetched successfully"
+      );
       return connections;
     } catch (error) {
       logger.error({ error }, "Failed to fetch RabbitMQ connections");
@@ -306,9 +315,12 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
     try {
       logger.debug("Fetching RabbitMQ channels");
       const channels = await this.request<RabbitMQChannel[]>("/channels");
-      logger.debug("RabbitMQ channels fetched successfully", {
-        count: channels?.length || 0,
-      });
+      logger.debug(
+        {
+          count: channels?.length || 0,
+        },
+        "RabbitMQ channels fetched successfully"
+      );
       return channels;
     } catch (error) {
       logger.error({ error }, "Failed to fetch RabbitMQ channels");
@@ -332,9 +344,12 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
         : "/exchanges";
       logger.debug({ vhost: vhost || "all" }, "Fetching RabbitMQ exchanges");
       const exchanges = await this.request<RabbitMQExchange[]>(endpoint);
-      logger.debug("RabbitMQ exchanges fetched successfully", {
-        count: exchanges?.length || 0,
-      });
+      logger.debug(
+        {
+          count: exchanges?.length || 0,
+        },
+        "RabbitMQ exchanges fetched successfully"
+      );
       return exchanges;
     } catch (error) {
       logger.error({ error }, "Failed to fetch RabbitMQ exchanges");
@@ -358,9 +373,12 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
         : "/bindings";
       logger.debug({ vhost: vhost || "all" }, "Fetching RabbitMQ bindings");
       const bindings = await this.request<RabbitMQBinding[]>(endpoint);
-      logger.debug("RabbitMQ bindings fetched successfully", {
-        count: bindings?.length || 0,
-      });
+      logger.debug(
+        {
+          count: bindings?.length || 0,
+        },
+        "RabbitMQ bindings fetched successfully"
+      );
       return bindings;
     } catch (error) {
       logger.error({ error }, "Failed to fetch RabbitMQ bindings");
@@ -380,9 +398,12 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
     try {
       logger.debug("Fetching RabbitMQ consumers");
       const consumers = await this.request<RabbitMQConsumer[]>("/consumers");
-      logger.debug("RabbitMQ consumers fetched successfully", {
-        count: consumers?.length || 0,
-      });
+      logger.debug(
+        {
+          count: consumers?.length || 0,
+        },
+        "RabbitMQ consumers fetched successfully"
+      );
       return consumers;
     } catch (error) {
       logger.error({ error }, "Failed to fetch RabbitMQ consumers");
@@ -403,7 +424,7 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
     vhost: string
   ): Promise<RabbitMQConsumer[]> {
     try {
-      logger.debug("Fetching RabbitMQ queue consumers", { queueName, vhost });
+      logger.debug({ queueName, vhost }, "Fetching RabbitMQ queue consumers");
       const encodedQueueName = encodeURIComponent(queueName);
       const consumers = await this.getConsumers();
       const queueConsumers = consumers.filter(
@@ -411,11 +432,14 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
           consumer.queue?.name === encodedQueueName &&
           consumer.queue?.vhost === vhost
       );
-      logger.debug("RabbitMQ queue consumers fetched successfully", {
-        queueName,
-        vhost,
-        count: queueConsumers.length,
-      });
+      logger.debug(
+        {
+          queueName,
+          vhost,
+          count: queueConsumers.length,
+        },
+        "RabbitMQ queue consumers fetched successfully"
+      );
       return queueConsumers;
     } catch (error) {
       logger.error(
@@ -440,17 +464,20 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
     vhost: string
   ): Promise<RabbitMQBinding[]> {
     try {
-      logger.debug("Fetching RabbitMQ queue bindings", { queueName, vhost });
+      logger.debug({ queueName, vhost }, "Fetching RabbitMQ queue bindings");
       const encodedQueueName = encodeURIComponent(queueName);
       const encodedVhost = encodeURIComponent(vhost);
       const bindings = await this.request<RabbitMQBinding[]>(
         `/queues/${encodedVhost}/${encodedQueueName}/bindings`
       );
-      logger.debug("RabbitMQ queue bindings fetched successfully", {
-        queueName,
-        vhost,
-        count: bindings?.length || 0,
-      });
+      logger.debug(
+        {
+          queueName,
+          vhost,
+          count: bindings?.length || 0,
+        },
+        "RabbitMQ queue bindings fetched successfully"
+      );
       return bindings;
     } catch (error) {
       logger.error(
@@ -482,12 +509,15 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
     } = {}
   ): Promise<void> {
     try {
-      logger.debug("Creating RabbitMQ exchange", {
-        exchangeName,
-        exchangeType,
-        vhost,
-        options,
-      });
+      logger.debug(
+        {
+          exchangeName,
+          exchangeType,
+          vhost,
+          options,
+        },
+        "Creating RabbitMQ exchange"
+      );
 
       const exchangeDefinition = {
         type: exchangeType,
@@ -505,11 +535,14 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
         body: JSON.stringify(exchangeDefinition),
       });
 
-      logger.debug("RabbitMQ exchange created successfully", {
-        exchangeName,
-        exchangeType,
-        vhost,
-      });
+      logger.debug(
+        {
+          exchangeName,
+          exchangeType,
+          vhost,
+        },
+        "RabbitMQ exchange created successfully"
+      );
     } catch (error) {
       logger.error(
         { error, exchangeName, exchangeType, vhost },
@@ -536,11 +569,14 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
     } = {}
   ): Promise<void> {
     try {
-      logger.debug("Deleting RabbitMQ exchange", {
-        exchangeName,
-        vhost,
-        options,
-      });
+      logger.debug(
+        {
+          exchangeName,
+          vhost,
+          options,
+        },
+        "Deleting RabbitMQ exchange"
+      );
 
       const encodedExchangeName = encodeURIComponent(exchangeName);
       const encodedVhost = encodeURIComponent(vhost);
@@ -556,10 +592,13 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
 
       await this.request(url, { method: "DELETE" });
 
-      logger.debug("RabbitMQ exchange deleted successfully", {
-        exchangeName,
-        vhost,
-      });
+      logger.debug(
+        {
+          exchangeName,
+          vhost,
+        },
+        "RabbitMQ exchange deleted successfully"
+      );
     } catch (error) {
       logger.error(
         { error, exchangeName, vhost },
@@ -587,7 +626,7 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
     } = {}
   ): Promise<void> {
     try {
-      logger.debug("Deleting RabbitMQ queue", { queueName, vhost, options });
+      logger.debug({ queueName, vhost, options }, "Deleting RabbitMQ queue");
 
       const encodedQueueName = encodeURIComponent(queueName);
       const encodedVhost = encodeURIComponent(vhost);
@@ -608,7 +647,7 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
         method: "DELETE",
       });
 
-      logger.debug("RabbitMQ queue deleted successfully", { queueName, vhost });
+      logger.debug({ queueName, vhost }, "RabbitMQ queue deleted successfully");
     } catch (error) {
       logger.error(
         { error, queueName, vhost },
@@ -632,9 +671,12 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
     try {
       logger.debug("Fetching RabbitMQ VHosts");
       const vhosts = await this.request<RabbitMQVHost[]>("/vhosts");
-      logger.debug("RabbitMQ VHosts fetched successfully", {
-        count: vhosts?.length || 0,
-      });
+      logger.debug(
+        {
+          count: vhosts?.length || 0,
+        },
+        "RabbitMQ VHosts fetched successfully"
+      );
       return vhosts;
     } catch (error) {
       logger.error({ error }, "Failed to fetch RabbitMQ VHosts");
@@ -653,11 +695,11 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
   async getVHost(vhostName: string): Promise<RabbitMQVHost> {
     try {
       const encodedVHostName = encodeURIComponent(vhostName);
-      logger.debug("Fetching RabbitMQ VHost", { vhostName });
+      logger.debug({ vhostName }, "Fetching RabbitMQ VHost");
       const vhost = await this.request<RabbitMQVHost>(
         `/vhosts/${encodedVHostName}`
       );
-      logger.debug("RabbitMQ VHost fetched successfully", { vhostName });
+      logger.debug({ vhostName }, "RabbitMQ VHost fetched successfully");
       return vhost;
     } catch (error) {
       logger.error({ error, vhostName }, "Failed to fetch RabbitMQ VHost");
@@ -676,7 +718,7 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
   async createVHost(data: CreateVHostRequest): Promise<void> {
     try {
       const encodedVHostName = encodeURIComponent(data.name);
-      logger.debug("Creating RabbitMQ VHost", { name: data.name });
+      logger.debug({ name: data.name }, "Creating RabbitMQ VHost");
 
       await this.request(`/vhosts/${encodedVHostName}`, {
         method: "PUT",
@@ -687,7 +729,7 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
         }),
       });
 
-      logger.debug("RabbitMQ VHost created successfully", { name: data.name });
+      logger.debug({ name: data.name }, "RabbitMQ VHost created successfully");
     } catch (error) {
       logger.error(
         { error, vhostName: data.name },
@@ -712,14 +754,14 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
   ): Promise<void> {
     try {
       const encodedVHostName = encodeURIComponent(vhostName);
-      logger.debug("Updating RabbitMQ VHost", { vhostName });
+      logger.debug({ vhostName }, "Updating RabbitMQ VHost");
 
       await this.request(`/vhosts/${encodedVHostName}`, {
         method: "PUT",
         body: JSON.stringify(data),
       });
 
-      logger.debug("RabbitMQ VHost updated successfully", { vhostName });
+      logger.debug({ vhostName }, "RabbitMQ VHost updated successfully");
     } catch (error) {
       logger.error({ error, vhostName }, "Failed to update RabbitMQ VHost");
 
@@ -738,13 +780,13 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
   async deleteVHost(vhostName: string): Promise<void> {
     try {
       const encodedVHostName = encodeURIComponent(vhostName);
-      logger.debug("Deleting RabbitMQ VHost", { vhostName });
+      logger.debug({ vhostName }, "Deleting RabbitMQ VHost");
 
       await this.request(`/vhosts/${encodedVHostName}`, {
         method: "DELETE",
       });
 
-      logger.debug("RabbitMQ VHost deleted successfully", { vhostName });
+      logger.debug({ vhostName }, "RabbitMQ VHost deleted successfully");
     } catch (error) {
       logger.error({ error, vhostName }, "Failed to delete RabbitMQ VHost");
 
@@ -764,14 +806,17 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
   async getVHostPermissions(vhostName: string): Promise<VHostPermissions[]> {
     try {
       const encodedVHostName = encodeURIComponent(vhostName);
-      logger.debug("Fetching VHost permissions", { vhostName });
+      logger.debug({ vhostName }, "Fetching VHost permissions");
       const permissions = await this.request<VHostPermissions[]>(
         `/vhosts/${encodedVHostName}/permissions`
       );
-      logger.debug("VHost permissions fetched successfully", {
-        vhostName,
-        count: permissions?.length || 0,
-      });
+      logger.debug(
+        {
+          vhostName,
+          count: permissions?.length || 0,
+        },
+        "VHost permissions fetched successfully"
+      );
       return permissions;
     } catch (error) {
       logger.error({ error, vhostName }, "Failed to fetch VHost permissions");
@@ -796,7 +841,7 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
     try {
       const encodedVHostName = encodeURIComponent(vhostName);
       const encodedUsername = encodeURIComponent(username);
-      logger.debug("Setting user permissions", { vhostName, username });
+      logger.debug({ vhostName, username }, "Setting user permissions");
 
       await this.request(
         `/permissions/${encodedVHostName}/${encodedUsername}`,
@@ -810,10 +855,13 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
         }
       );
 
-      logger.debug("User permissions set successfully", {
-        vhostName,
-        username,
-      });
+      logger.debug(
+        {
+          vhostName,
+          username,
+        },
+        "User permissions set successfully"
+      );
     } catch (error) {
       logger.error(
         { error, vhostName, username },
@@ -839,7 +887,7 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
     try {
       const encodedVHostName = encodeURIComponent(vhostName);
       const encodedUsername = encodeURIComponent(username);
-      logger.debug("Deleting user permissions", { vhostName, username });
+      logger.debug({ vhostName, username }, "Deleting user permissions");
 
       await this.request(
         `/permissions/${encodedVHostName}/${encodedUsername}`,
@@ -848,10 +896,13 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
         }
       );
 
-      logger.debug("User permissions deleted successfully", {
-        vhostName,
-        username,
-      });
+      logger.debug(
+        {
+          vhostName,
+          username,
+        },
+        "User permissions deleted successfully"
+      );
     } catch (error) {
       logger.error(
         { error, vhostName, username },
@@ -874,11 +925,11 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
   async getVHostLimits(vhostName: string): Promise<VHostLimits> {
     try {
       const encodedVHostName = encodeURIComponent(vhostName);
-      logger.debug("Fetching VHost limits", { vhostName });
+      logger.debug({ vhostName }, "Fetching VHost limits");
       const limits = await this.request<VHostLimits>(
         `/vhost-limits/${encodedVHostName}`
       );
-      logger.debug("VHost limits fetched successfully", { vhostName });
+      logger.debug({ vhostName }, "VHost limits fetched successfully");
       return limits;
     } catch (error) {
       logger.error({ error, vhostName }, "Failed to fetch VHost limits");
@@ -902,18 +953,21 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
   ): Promise<void> {
     try {
       const encodedVHostName = encodeURIComponent(vhostName);
-      logger.debug("Setting VHost limit", {
-        vhostName,
-        limitType,
-        value: data.value,
-      });
+      logger.debug(
+        {
+          vhostName,
+          limitType,
+          value: data.value,
+        },
+        "Setting VHost limit"
+      );
 
       await this.request(`/vhost-limits/${encodedVHostName}/${limitType}`, {
         method: "PUT",
         body: JSON.stringify({ value: data.value }),
       });
 
-      logger.debug("VHost limit set successfully", { vhostName, limitType });
+      logger.debug({ vhostName, limitType }, "VHost limit set successfully");
     } catch (error) {
       logger.error(
         { error, vhostName, limitType },
@@ -935,16 +989,19 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
   async deleteVHostLimit(vhostName: string, limitType: string): Promise<void> {
     try {
       const encodedVHostName = encodeURIComponent(vhostName);
-      logger.debug("Deleting VHost limit", { vhostName, limitType });
+      logger.debug({ vhostName, limitType }, "Deleting VHost limit");
 
       await this.request(`/vhosts/${encodedVHostName}/limits/${limitType}`, {
         method: "DELETE",
       });
 
-      logger.debug("VHost limit deleted successfully", {
-        vhostName,
-        limitType,
-      });
+      logger.debug(
+        {
+          vhostName,
+          limitType,
+        },
+        "VHost limit deleted successfully"
+      );
     } catch (error) {
       logger.error(
         { error, vhostName, limitType },
@@ -969,14 +1026,17 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
   ): Promise<VHostTopicPermissions[]> {
     try {
       const encodedVHostName = encodeURIComponent(vhostName);
-      logger.debug("Fetching VHost topic permissions", { vhostName });
+      logger.debug({ vhostName }, "Fetching VHost topic permissions");
       const permissions = await this.request<VHostTopicPermissions[]>(
         `/vhosts/${encodedVHostName}/topic-permissions`
       );
-      logger.debug("VHost topic permissions fetched successfully", {
-        vhostName,
-        count: permissions?.length || 0,
-      });
+      logger.debug(
+        {
+          vhostName,
+          count: permissions?.length || 0,
+        },
+        "VHost topic permissions fetched successfully"
+      );
       return permissions;
     } catch (error) {
       logger.error(
@@ -1007,11 +1067,14 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
       const encodedVHostName = encodeURIComponent(vhostName);
       const encodedUsername = encodeURIComponent(username);
       const encodedExchange = encodeURIComponent(exchange);
-      logger.debug("Setting user topic permissions", {
-        vhostName,
-        username,
-        exchange,
-      });
+      logger.debug(
+        {
+          vhostName,
+          username,
+          exchange,
+        },
+        "Setting user topic permissions"
+      );
 
       await this.request(
         `/topic-permissions/${encodedVHostName}/${encodedUsername}/${encodedExchange}`,
@@ -1024,11 +1087,14 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
         }
       );
 
-      logger.debug("User topic permissions set successfully", {
-        vhostName,
-        username,
-        exchange,
-      });
+      logger.debug(
+        {
+          vhostName,
+          username,
+          exchange,
+        },
+        "User topic permissions set successfully"
+      );
     } catch (error) {
       logger.error(
         { error, vhostName, username, exchange },
@@ -1057,11 +1123,14 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
       const encodedVHostName = encodeURIComponent(vhostName);
       const encodedUsername = encodeURIComponent(username);
       const encodedExchange = encodeURIComponent(exchange);
-      logger.debug("Deleting user topic permissions", {
-        vhostName,
-        username,
-        exchange,
-      });
+      logger.debug(
+        {
+          vhostName,
+          username,
+          exchange,
+        },
+        "Deleting user topic permissions"
+      );
 
       await this.request(
         `/topic-permissions/${encodedVHostName}/${encodedUsername}/${encodedExchange}`,
@@ -1070,11 +1139,14 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
         }
       );
 
-      logger.debug("User topic permissions deleted successfully", {
-        vhostName,
-        username,
-        exchange,
-      });
+      logger.debug(
+        {
+          vhostName,
+          username,
+          exchange,
+        },
+        "User topic permissions deleted successfully"
+      );
     } catch (error) {
       logger.error(
         { error, vhostName, username, exchange },
@@ -1099,9 +1171,12 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
     try {
       logger.debug("Fetching RabbitMQ users");
       const users = await this.request<RabbitMQUser[]>("/users");
-      logger.debug("RabbitMQ users fetched successfully", {
-        count: users?.length || 0,
-      });
+      logger.debug(
+        {
+          count: users?.length || 0,
+        },
+        "RabbitMQ users fetched successfully"
+      );
       return users;
     } catch (error) {
       logger.error({ error }, "Failed to fetch RabbitMQ users");
@@ -1120,11 +1195,11 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
   async getUser(username: string): Promise<RabbitMQUser> {
     try {
       const encodedUsername = encodeURIComponent(username);
-      logger.debug("Fetching RabbitMQ user", { username });
+      logger.debug({ username }, "Fetching RabbitMQ user");
       const user = await this.request<RabbitMQUser>(
         `/users/${encodedUsername}`
       );
-      logger.debug("RabbitMQ user fetched successfully", { username });
+      logger.debug({ username }, "RabbitMQ user fetched successfully");
       return user;
     } catch (error) {
       logger.error({ error, username }, "Failed to fetch RabbitMQ user");
@@ -1145,11 +1220,11 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
   ): Promise<RabbitMQUserPermission[]> {
     try {
       const encodedUsername = encodeURIComponent(username);
-      logger.debug("Fetching user permissions", { username });
+      logger.debug({ username }, "Fetching user permissions");
       const permissions = await this.request<RabbitMQUserPermission[]>(
         `/users/${encodedUsername}/permissions`
       );
-      logger.debug("User permissions fetched successfully", { username });
+      logger.debug({ username }, "User permissions fetched successfully");
       return permissions;
     } catch (error) {
       logger.error({ error, username }, "Failed to fetch user permissions");
@@ -1171,7 +1246,7 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
   ): Promise<void> {
     try {
       const encodedUsername = encodeURIComponent(username);
-      logger.debug("Creating RabbitMQ user", { username });
+      logger.debug({ username }, "Creating RabbitMQ user");
 
       await this.request(`/users/${encodedUsername}`, {
         method: "PUT",
@@ -1181,7 +1256,7 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
         }),
       });
 
-      logger.debug("RabbitMQ user created successfully", { username });
+      logger.debug({ username }, "RabbitMQ user created successfully");
     } catch (error) {
       logger.error({ error, username }, "Failed to create RabbitMQ user");
 
@@ -1199,14 +1274,14 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
   async updateUser(username: string, userData: UpdateUserData): Promise<void> {
     try {
       const encodedUsername = encodeURIComponent(username);
-      logger.debug("Updating RabbitMQ user", { username, userData });
+      logger.debug({ username, userData }, "Updating RabbitMQ user");
 
       await this.request(`/users/${encodedUsername}`, {
         method: "PUT",
         body: JSON.stringify(userData),
       });
 
-      logger.debug("RabbitMQ user updated successfully", { username });
+      logger.debug({ username }, "RabbitMQ user updated successfully");
     } catch (error) {
       // Enhanced error logging to capture RabbitMQ error details
       const errorDetails: {
@@ -1281,13 +1356,13 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
   async deleteUser(username: string): Promise<void> {
     try {
       const encodedUsername = encodeURIComponent(username);
-      logger.debug("Deleting RabbitMQ user", { username });
+      logger.debug({ username }, "Deleting RabbitMQ user");
 
       await this.request(`/users/${encodedUsername}`, {
         method: "DELETE",
       });
 
-      logger.debug("RabbitMQ user deleted successfully", { username });
+      logger.debug({ username }, "RabbitMQ user deleted successfully");
     } catch (error) {
       logger.error({ error, username }, "Failed to delete RabbitMQ user");
 

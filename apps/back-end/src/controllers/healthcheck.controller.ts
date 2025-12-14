@@ -51,7 +51,7 @@ healthcheckController.get("/health", async (c) => {
 
     return c.json(healthCheck, 200);
   } catch (error) {
-    logger.error("Health check failed:", error);
+    logger.error({ error }, "Health check failed:");
 
     return c.json(
       {

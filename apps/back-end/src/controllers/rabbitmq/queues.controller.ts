@@ -274,8 +274,8 @@ queuesController.get(
       return c.json(response);
     } catch (error) {
       logger.error(
-        `Error fetching consumers for queue ${queueName} on server ${id}:`,
-        error
+        { error },
+        `Error fetching consumers for queue ${queueName} on server ${id}:`
       );
       return createErrorResponse(
         c,
@@ -330,8 +330,8 @@ queuesController.get(
       return c.json(response);
     } catch (error) {
       logger.error(
-        `Error fetching bindings for queue ${queueName} on server ${id}:`,
-        error
+        { error },
+        `Error fetching bindings for queue ${queueName} on server ${id}:`
       );
       return createErrorResponse(
         c,
@@ -638,12 +638,15 @@ queuesController.post(
       await amqpClient.connect();
       const pauseState = await amqpClient.pauseQueue(queueName);
 
-      logger.info(`Queue ${queueName} paused via AMQP`, {
-        serverId,
-        queueName,
-        pausedAt: pauseState.pausedAt,
-        userId: user.id,
-      });
+      logger.info(
+        {
+          serverId,
+          queueName,
+          pausedAt: pauseState.pausedAt,
+          userId: user.id,
+        },
+        `Queue ${queueName} paused via AMQP`
+      );
 
       return c.json({
         success: true,
@@ -702,12 +705,15 @@ queuesController.post(
       await amqpClient.connect();
       const resumeState = await amqpClient.resumeQueue(queueName);
 
-      logger.info(`Queue ${queueName} resumed via AMQP`, {
-        serverId,
-        queueName,
-        resumedAt: resumeState.resumedAt,
-        userId: user.id,
-      });
+      logger.info(
+        {
+          serverId,
+          queueName,
+          resumedAt: resumeState.resumedAt,
+          userId: user.id,
+        },
+        `Queue ${queueName} resumed via AMQP`
+      );
 
       return c.json({
         success: true,
