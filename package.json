@@ -57,6 +57,10 @@
     "lint-staged": "^16.2.7"
   },
   "overrides": {
-    "vite": "^7.2.7"
+    "vite": "7.2.7",
+    "next": "16.0.10",
+    "@react-email/preview-server": {
+      "next": "16.0.10"
+    }
   }
 }
