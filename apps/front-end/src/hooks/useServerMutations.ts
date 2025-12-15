@@ -3,10 +3,12 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api";
 
 import { queryKeys } from "@/hooks/useApi";
+import { useWorkspace } from "@/hooks/useWorkspace";
 
 // Update server mutation
 export function useUpdateServer() {
   const queryClient = useQueryClient();
+  const { workspace } = useWorkspace();
 
   return useMutation({
     mutationFn: async (data: {
@@ -20,6 +22,9 @@ export function useUpdateServer() {
       useSSL: boolean;
       managementPort: number;
     }) => {
+      if (!workspace?.id) {
+        throw new Error("Workspace ID is required");
+      }
       const serverData = {
         name: data.name,
         host: data.host,
@@ -32,7 +37,11 @@ export function useUpdateServer() {
         ...(data.password && { password: data.password }),
       };
 
-      const response = await apiClient.updateServer(data.id, serverData);
+      const response = await apiClient.updateServer(
+        workspace.id,
+        data.id,
+        serverData
+      );
       return response.server;
     },
     onSuccess: () => {
@@ -44,10 +53,14 @@ export function useUpdateServer() {
 // Delete server mutation
 export function useDeleteServer() {
   const queryClient = useQueryClient();
+  const { workspace } = useWorkspace();
 
   return useMutation({
     mutationFn: async (serverId: string) => {
-      await apiClient.deleteServer(serverId);
+      if (!workspace?.id) {
+        throw new Error("Workspace ID is required");
+      }
+      await apiClient.deleteServer(workspace.id, serverId);
       return serverId;
     },
     onSuccess: (deletedServerId) => {
@@ -105,6 +118,8 @@ export function useDeleteServer() {
 
 // Test connection mutation
 export function useTestConnection() {
+  const { workspace } = useWorkspace();
+
   return useMutation({
     mutationFn: async (credentials: {
       host: string;
@@ -115,7 +130,10 @@ export function useTestConnection() {
       useHttps: boolean;
       amqpPort: number;
     }) => {
-      return await apiClient.testConnection(credentials);
+      if (!workspace?.id) {
+        throw new Error("Workspace ID is required");
+      }
+      return await apiClient.testConnection(workspace.id, credentials);
     },
   });
 }

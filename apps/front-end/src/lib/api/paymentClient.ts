@@ -137,21 +137,28 @@ export class PaymentApiClient extends BaseApiClient {
    * Create a Stripe checkout session for plan upgrade
    */
   async createCheckoutSession(
+    workspaceId: string,
     data: CreateCheckoutSessionRequest
   ): Promise<CreateCheckoutSessionResponse> {
-    return this.request<CreateCheckoutSessionResponse>("/payments/checkout", {
-      method: "POST",
-      body: JSON.stringify(data),
-    });
+    return this.request<CreateCheckoutSessionResponse>(
+      `/workspaces/${workspaceId}/payments/checkout`,
+      {
+        method: "POST",
+        body: JSON.stringify(data),
+      }
+    );
   }
 
   /**
    * Create a Stripe customer portal session for subscription management
    */
-  async createPortalSession(): Promise<{ url: string }> {
-    return this.request<{ url: string }>("/payments/portal", {
-      method: "POST",
-    });
+  async createPortalSession(workspaceId: string): Promise<{ url: string }> {
+    return this.request<{ url: string }>(
+      `/workspaces/${workspaceId}/payments/portal`,
+      {
+        method: "POST",
+      }
+    );
   }
 
   /**
@@ -165,38 +172,49 @@ export class PaymentApiClient extends BaseApiClient {
    * Get payment history with pagination
    */
   async getPaymentHistory(
+    workspaceId: string,
     limit = 20,
     offset = 0
   ): Promise<PaymentHistoryResponse> {
     return this.request<PaymentHistoryResponse>(
-      `/payments/payments?limit=${limit}&offset=${offset}`
+      `/workspaces/${workspaceId}/payments/payments?limit=${limit}&offset=${offset}`
     );
   }
 
   /**
    * Get comprehensive billing overview including usage, subscription, and payment details
    */
-  async getBillingOverview(): Promise<BillingOverviewResponse> {
-    return this.request<BillingOverviewResponse>("/payments/billing/overview");
+  async getBillingOverview(
+    workspaceId: string
+  ): Promise<BillingOverviewResponse> {
+    return this.request<BillingOverviewResponse>(
+      `/workspaces/${workspaceId}/payments/billing/overview`
+    );
   }
 
   /**
    * Create a billing portal session for subscription management
    */
-  async createBillingPortalSession(): Promise<{ url: string }> {
-    return this.request<{ url: string }>("/payments/billing/portal", {
-      method: "POST",
-    });
+  async createBillingPortalSession(
+    workspaceId: string
+  ): Promise<{ url: string }> {
+    return this.request<{ url: string }>(
+      `/workspaces/${workspaceId}/payments/billing/portal`,
+      {
+        method: "POST",
+      }
+    );
   }
 
   /**
    * Cancel current subscription
    */
   async cancelSubscription(
+    workspaceId: string,
     data: CancelSubscriptionRequest
   ): Promise<CancelSubscriptionResponse> {
     return this.request<CancelSubscriptionResponse>(
-      "/payments/billing/cancel",
+      `/workspaces/${workspaceId}/payments/billing/cancel`,
       {
         method: "POST",
         body: JSON.stringify(data),
@@ -208,11 +226,12 @@ export class PaymentApiClient extends BaseApiClient {
    * Renew/reactivate subscription (redirect to checkout or billing portal)
    */
   async renewSubscription(
+    workspaceId: string,
     plan: UserPlan,
     billingInterval: "monthly" | "yearly" = "monthly"
   ): Promise<{ url: string }> {
     // Use the checkout flow to renew with the same plan
-    return this.createCheckoutSession({
+    return this.createCheckoutSession(workspaceId, {
       plan,
       billingInterval,
     });

@@ -83,8 +83,9 @@ userController.get(
 );
 
 // Get a specific user by ID (admin or same workspace)
-userController.get("/:id", async (c) => {
+userController.get("/:id", checkWorkspaceAccess, async (c) => {
   const id = c.req.param("id");
+  const workspaceId = c.req.param("workspaceId");
   const currentUser = c.get("user");
 
   try {
@@ -118,7 +119,7 @@ userController.get("/:id", async (c) => {
     if (
       currentUser.role !== UserRole.ADMIN &&
       currentUser.id !== user.id &&
-      currentUser.workspaceId !== user.workspaceId
+      workspaceId !== user.workspaceId
     ) {
       return c.json(
         { error: "Forbidden", message: "Cannot access this user" },
@@ -136,21 +137,34 @@ userController.get("/:id", async (c) => {
 // Update a user (admin only)
 userController.put(
   "/:id",
+  checkWorkspaceAccess,
   strictRateLimiter,
   authorize([UserRole.ADMIN]),
   zValidator("json", UpdateUserSchema),
   async (c) => {
     const id = c.req.param("id");
+    const workspaceId = c.req.param("workspaceId");
     const data = c.req.valid("json");
 
     try {
-      // Check if user exists
+      // Check if user exists and belongs to workspace
       const existingUser = await prisma.user.findUnique({
         where: { id },
       });
 
       if (!existingUser) {
         return c.json({ error: "User not found" }, 404);
+      }
+
+      // Verify user belongs to the workspace
+      if (existingUser.workspaceId !== workspaceId) {
+        return c.json(
+          {
+            error: "Forbidden",
+            message: "User does not belong to this workspace",
+          },
+          403
+        );
       }
 
       const user = await prisma.user.update({

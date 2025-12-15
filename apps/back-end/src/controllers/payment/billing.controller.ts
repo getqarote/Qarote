@@ -11,6 +11,7 @@ import {
   billingRateLimiter,
   strictRateLimiter,
 } from "@/middlewares/rateLimiter";
+import { checkWorkspaceAccess } from "@/middlewares/workspace";
 
 import { config } from "@/config";
 
@@ -19,10 +20,12 @@ import { mapStripeStatusToSubscriptionStatus } from "./webhook-handlers";
 const billingController = new Hono();
 
 billingController.use("*", authenticate);
+billingController.use("*", checkWorkspaceAccess);
 
 // Get comprehensive billing overview - use more lenient rate limiting
 billingController.get("/billing/overview", billingRateLimiter, async (c) => {
   const user = c.get("user");
+  const workspaceId = c.req.param("workspaceId");
 
   try {
     // Get user with subscription
@@ -37,15 +40,13 @@ billingController.get("/billing/overview", billingRateLimiter, async (c) => {
       return c.json({ error: "User not found" }, 404);
     }
 
-    // Get user's current workspace for display purposes
-    const currentWorkspace = user.workspaceId
-      ? await prisma.workspace.findUnique({
-          where: { id: user.workspaceId },
-        })
-      : null;
+    // Get workspace for display purposes
+    const currentWorkspace = await prisma.workspace.findUnique({
+      where: { id: workspaceId },
+    });
 
     if (!currentWorkspace) {
-      return c.json({ error: "No workspace assigned" }, 400);
+      return c.json({ error: "Workspace not found" }, 404);
     }
 
     let stripeSubscription = null;

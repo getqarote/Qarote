@@ -24,6 +24,7 @@ import { Separator } from "@/components/ui/separator";
 
 import { usePlanUpgrade } from "@/hooks/usePlanUpgrade";
 import { useUser } from "@/hooks/useUser";
+import { useWorkspace } from "@/hooks/useWorkspace";
 
 import { UserPlan } from "@/types/plans";
 
@@ -97,6 +98,7 @@ const getStatusColor = (status: string) => {
 
 export const BillingTab: React.FC = () => {
   const { planData } = useUser();
+  const { workspace } = useWorkspace();
   const { openCustomerPortal, isUpgrading } = usePlanUpgrade();
 
   const [subscription, setSubscription] = useState<Subscription | null>(null);
@@ -119,27 +121,37 @@ export const BillingTab: React.FC = () => {
     }
   }, []);
 
-  const fetchPayments = useCallback(async (offset = 0, append = false) => {
-    try {
-      if (!append) setLoading(true);
-      else setLoadingMore(true);
+  const fetchPayments = useCallback(
+    async (offset = 0, append = false) => {
+      try {
+        if (!workspace?.id) {
+          throw new Error("Workspace ID is required");
+        }
+        if (!append) setLoading(true);
+        else setLoadingMore(true);
 
-      const data = await apiClient.getPaymentHistory(20, offset);
+        const data = await apiClient.getPaymentHistory(
+          workspace.id,
+          20,
+          offset
+        );
 
-      if (append) {
-        setPayments((prev) => [...prev, ...data.payments]);
-      } else {
-        setPayments(data.payments);
+        if (append) {
+          setPayments((prev) => [...prev, ...data.payments]);
+        } else {
+          setPayments(data.payments);
+        }
+
+        setPagination(data.pagination);
+      } catch (error) {
+        logger.error("Error fetching payments:", error);
+      } finally {
+        setLoading(false);
+        setLoadingMore(false);
       }
-
-      setPagination(data.pagination);
-    } catch (error) {
-      logger.error("Error fetching payments:", error);
-    } finally {
-      setLoading(false);
-      setLoadingMore(false);
-    }
-  }, []);
+    },
+    [workspace?.id]
+  );
 
   useEffect(() => {
     const loadData = async () => {

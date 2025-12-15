@@ -24,6 +24,7 @@ import { useServerContext } from "@/contexts/ServerContext";
 
 import { queryKeys } from "@/hooks/useApi";
 import { useUser } from "@/hooks/useUser";
+import { useWorkspace } from "@/hooks/useWorkspace";
 
 import { type AddServerFormData, addServerSchema } from "@/schemas";
 
@@ -46,6 +47,7 @@ export const AddServerForm = ({
 }: AddServerFormProps) => {
   const { setSelectedServerId } = useServerContext();
   const { refetchPlan } = useUser();
+  const { workspace } = useWorkspace();
   const queryClient = useQueryClient();
   const [internalIsOpen, setInternalIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -100,7 +102,10 @@ export const AddServerForm = ({
     setConnectionStatus({ status: "idle" });
 
     try {
-      const result = await apiClient.testConnection({
+      if (!workspace?.id) {
+        throw new Error("Workspace ID is required");
+      }
+      const result = await apiClient.testConnection(workspace.id, {
         host: formData.host,
         port: formData.port,
         amqpPort: formData.amqpPort,
@@ -140,9 +145,12 @@ export const AddServerForm = ({
     setIsLoading(true);
 
     try {
+      if (!workspace?.id) {
+        throw new Error("Workspace ID is required");
+      }
       if (mode === "edit" && server) {
         // Update existing server
-        await apiClient.updateServer(server.id, {
+        await apiClient.updateServer(workspace.id, server.id, {
           name: data.name,
           host: data.host,
           port: data.port,
@@ -163,7 +171,7 @@ export const AddServerForm = ({
         onServerUpdated?.();
       } else {
         // Create new server
-        const result = await apiClient.createServer({
+        const result = await apiClient.createServer(workspace.id, {
           name: data.name,
           host: data.host,
           port: data.port,

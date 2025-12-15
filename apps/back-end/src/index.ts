@@ -43,8 +43,6 @@ import slackController from "@/controllers/slack.controller";
 import userController from "@/controllers/user.controller";
 import alertWebhookController from "@/controllers/webhook.controller";
 import workspaceController from "@/controllers/workspace.controller";
-// import { alertService } from "./services/alert.service";
-// import { TemporaryStorage } from "./core/privacy";
 
 const app = new Hono();
 
@@ -74,20 +72,21 @@ app.use("*", standardRateLimiter);
 app.route("/webhooks", webhookApp);
 
 // endpoint routes
-app.route("/api/servers", serverController);
+app.route("/api/workspaces/:workspaceId/servers", serverController);
 app.route("/api/rabbitmq", rabbitmqController);
 app.route("/api/auth", authController);
-app.route("/api/users", userController);
+app.route("/api/users", userController); // Profile routes (no workspaceId needed)
+app.route("/api/workspaces/:workspaceId/users", userController); // Workspace-scoped routes
 app.route("/api/workspaces", workspaceController);
 app.route("/api/invitations", publicInvitationController);
 app.route("/api/feedback", feedbackController);
-app.route("/api/payments", paymentController);
+app.route("/api/workspaces/:workspaceId/payments", paymentController);
 app.route("/api/webhooks", alertWebhookController);
 app.route("/api/slack", slackController);
 app.route("/api/discord", discordController);
 app.route("/api/license", licenseController);
 app.route("/api/portal/licenses", portalLicenseController);
-app.route("/api/alerts", alertsController);
+app.route("/api/workspaces/:workspaceId/alerts", alertsController);
 app.route("/", healthcheckController);
 
 const { port, host } = serverConfig;
@@ -100,9 +99,6 @@ async function startServer() {
 
     await prisma.$connect();
     logger.info("Connected to database");
-
-    // Start the alert monitoring service
-    // alertService.start();
 
     serve(
       {
@@ -123,14 +119,12 @@ async function startServer() {
 
 process.on("SIGINT", async () => {
   logger.info("Shutting down server...");
-  // alertService.stop();
   await prisma.$disconnect();
   process.exit(0);
 });
 
 process.on("SIGTERM", async () => {
   logger.info("Shutting down server...");
-  // alertService.stop();
   await prisma.$disconnect();
   process.exit(0);
 });

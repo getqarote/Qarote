@@ -17,6 +17,7 @@ import {
 
 import { authenticate, authorize } from "@/middlewares/auth";
 import { planValidationMiddleware } from "@/middlewares/planValidation";
+import { checkWorkspaceAccess } from "@/middlewares/workspace";
 
 import {
   CreateServerSchema,
@@ -29,18 +30,21 @@ const serverController = new Hono();
 // Apply authentication middleware to all routes
 serverController.use("*", authenticate);
 
+// Apply workspace access check middleware to all routes
+serverController.use("*", checkWorkspaceAccess);
+
 // Apply plan validation middleware to all routes
 serverController.use("*", planValidationMiddleware());
 
-// Get all RabbitMQ servers (filtered by user's workspace)
+// Get all RabbitMQ servers (filtered by workspace)
 serverController.get("/", async (c) => {
   try {
-    const user = c.get("user");
+    const workspaceId = c.req.param("workspaceId");
 
-    // Only return servers that belong to the user's workspace
+    // Only return servers that belong to the workspace
     const servers = await prisma.rabbitMQServer.findMany({
       where: {
-        workspaceId: user.workspaceId,
+        workspaceId,
       },
       select: {
         id: true,
@@ -86,17 +90,17 @@ serverController.get("/", async (c) => {
   }
 });
 
-// Get a specific server by ID (only if it belongs to user's workspace)
+// Get a specific server by ID (only if it belongs to workspace)
 serverController.get("/:id", async (c) => {
   const id = c.req.param("id");
-  const user = c.get("user");
+  const workspaceId = c.req.param("workspaceId");
 
   try {
     const server = await prisma.rabbitMQServer.findUnique({
       where: {
         id,
-        // Ensure the server belongs to the user's workspace
-        workspaceId: user.workspaceId,
+        // Ensure the server belongs to the workspace
+        workspaceId,
       },
       select: {
         id: true,
@@ -153,12 +157,9 @@ serverController.post(
   async (c) => {
     const data = c.req.valid("json");
     const user = c.get("user");
+    const workspaceId = c.req.param("workspaceId");
 
     try {
-      if (!user.workspaceId) {
-        return c.json({ error: "No workspace assigned" }, 400);
-      }
-
       // Validate plan restrictions for server creation
       const [plan, resourceCounts] = await Promise.all([
         getUserPlan(user.id),
@@ -203,8 +204,8 @@ serverController.post(
           versionMajorMinor: majorMinorVersion, // Store major.minor for plan validation
           // Store over-limit information
           overLimitWarningShown: false,
-          // Automatically assign server to user's workspace
-          workspaceId: user.workspaceId,
+          // Assign server to workspace from route param
+          workspaceId,
         },
       });
 
@@ -247,14 +248,14 @@ serverController.put(
   async (c) => {
     const id = c.req.param("id");
     const data = c.req.valid("json");
-    const user = c.get("user");
+    const workspaceId = c.req.param("workspaceId");
 
     try {
-      // Check if server exists and belongs to user's workspace
+      // Check if server exists and belongs to workspace
       const existingServer = await prisma.rabbitMQServer.findUnique({
         where: {
           id,
-          workspaceId: user.workspaceId,
+          workspaceId,
         },
       });
 
@@ -344,14 +345,14 @@ serverController.put(
 // Delete a server (ADMIN ONLY - dangerous operation)
 serverController.delete("/:id", authorize([UserRole.ADMIN]), async (c) => {
   const id = c.req.param("id");
-  const user = c.get("user");
+  const workspaceId = c.req.param("workspaceId");
 
   try {
-    // Check if server exists and belongs to user's workspace
+    // Check if server exists and belongs to workspace
     const existingServer = await prisma.rabbitMQServer.findUnique({
       where: {
         id,
-        workspaceId: user.workspaceId,
+        workspaceId,
       },
     });
 

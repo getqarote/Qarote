@@ -9,11 +9,13 @@ import { trackPurchase } from "@/lib/ga";
 import { logger } from "@/lib/logger";
 
 import { useUser } from "@/hooks/useUser";
+import { useWorkspace } from "@/hooks/useWorkspace";
 
 const PaymentSuccess: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { refetchPlan, planData } = useUser();
+  const { workspace } = useWorkspace();
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -50,8 +52,15 @@ const PaymentSuccess: React.FC = () => {
       if (!sessionId || purchaseTracked) return;
 
       try {
+        if (!workspace?.id) {
+          throw new Error("Workspace ID is required");
+        }
         // Get payment history to find the latest payment
-        const paymentHistory = await apiClient.getPaymentHistory(1, 0);
+        const paymentHistory = await apiClient.getPaymentHistory(
+          workspace.id,
+          1,
+          0
+        );
 
         if (paymentHistory.payments && paymentHistory.payments.length > 0) {
           const latestPayment = paymentHistory.payments[0];
