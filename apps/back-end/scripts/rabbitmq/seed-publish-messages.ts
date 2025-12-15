@@ -1,3 +1,5 @@
+import { setTimeout as setTimeoutPromise } from "node:timers/promises";
+
 import amqp from "amqplib";
 
 interface RabbitMQConfig {
@@ -47,7 +49,7 @@ class TestMessageGenerator {
         console.log(
           `⏳ RabbitMQ is not ready yet. Retry ${retries + 1}/${maxRetries}...`
         );
-        await this.sleep(2000);
+        await setTimeoutPromise(2000);
         retries++;
       }
     }
@@ -189,7 +191,7 @@ class TestMessageGenerator {
         }
 
         // Small delay to avoid overwhelming the server
-        await this.sleep(50);
+        await setTimeoutPromise(50);
       } catch (error) {
         errorCount++;
         console.error(`❌ Error publishing message ${i + 1}:`, error);
@@ -231,10 +233,6 @@ class TestMessageGenerator {
     }
 
     console.log(`  📊 Total messages across all test queues: ${totalMessages}`);
-  }
-
-  private sleep(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   public async run(messageCount: number = 100): Promise<void> {

@@ -1,3 +1,5 @@
+import { setTimeout as setTimeoutPromise } from "node:timers/promises";
+
 import { logger } from "@/core/logger";
 
 import { RabbitMQAlert } from "@/services/alerts/alert.interfaces";
@@ -11,13 +13,6 @@ export class SlackService {
   private static readonly MAX_RETRIES = 3;
   private static readonly RETRY_DELAY_MS = 1_000; // 1 second
   private static readonly REQUEST_TIMEOUT_MS = 10_000; // 10 seconds
-
-  /**
-   * Sleep for specified milliseconds
-   */
-  private static sleep(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-  }
 
   /**
    * Get color for alert severity
@@ -241,7 +236,7 @@ export class SlackService {
           (response.status >= 500 || response.status === 429) &&
           retries < this.MAX_RETRIES
         ) {
-          await this.sleep(
+          await setTimeoutPromise(
             this.RETRY_DELAY_MS * Math.pow(2, retries) // Exponential backoff
           );
           return this.sendMessage(webhookUrl, message, retries + 1);
@@ -288,7 +283,7 @@ export class SlackService {
 
       // Retry on network errors
       if (retries < this.MAX_RETRIES) {
-        await this.sleep(
+        await setTimeoutPromise(
           this.RETRY_DELAY_MS * Math.pow(2, retries) // Exponential backoff
         );
         return this.sendMessage(webhookUrl, message, retries + 1);
