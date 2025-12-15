@@ -85,7 +85,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.6.1",
     "google-auth-library": "^10.3.0",
-    "hono": "^4.10.8",
+    "hono": "^4.11.1",
     "hono-rate-limiter": "^0.4.2",
     "is-valid-hostname": "^1.0.2",
     "nodemailer": "^7.0.11",
