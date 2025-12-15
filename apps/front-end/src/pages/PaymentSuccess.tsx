@@ -9,11 +9,13 @@ import { trackPurchase } from "@/lib/ga";
 import { logger } from "@/lib/logger";
 
 import { useUser } from "@/hooks/useUser";
+import { useWorkspace } from "@/hooks/useWorkspace";
 
 const PaymentSuccess: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { refetchPlan, planData } = useUser();
+  const { workspace } = useWorkspace();
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -49,9 +51,18 @@ const PaymentSuccess: React.FC = () => {
     const handlePurchaseTracking = async () => {
       if (!sessionId || purchaseTracked) return;
 
+      // Wait for workspace to be available before proceeding
+      if (!workspace?.id) {
+        return;
+      }
+
       try {
         // Get payment history to find the latest payment
-        const paymentHistory = await apiClient.getPaymentHistory(1, 0);
+        const paymentHistory = await apiClient.getPaymentHistory(
+          workspace.id,
+          1,
+          0
+        );
 
         if (paymentHistory.payments && paymentHistory.payments.length > 0) {
           const latestPayment = paymentHistory.payments[0];
@@ -97,7 +108,7 @@ const PaymentSuccess: React.FC = () => {
     if (sessionId) {
       handlePurchaseTracking();
     }
-  }, [sessionId, purchaseTracked]);
+  }, [sessionId, purchaseTracked, workspace?.id]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-600 via-red-600 to-orange-700 flex items-center justify-center p-4">

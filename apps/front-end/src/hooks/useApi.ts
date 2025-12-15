@@ -13,8 +13,9 @@ import { useWorkspace } from "./useWorkspace";
 
 // Query keys
 export const queryKeys = {
-  servers: ["servers"] as const,
-  server: (id: string) => ["servers", id] as const,
+  servers: (workspaceId?: string) => ["servers", workspaceId] as const,
+  server: (workspaceId: string | undefined, id: string) =>
+    ["servers", workspaceId, id] as const,
   overview: (serverId: string) => ["overview", serverId] as const,
   queues: (serverId: string, vhost?: string) =>
     ["queues", serverId, vhost || ""] as const,
@@ -31,11 +32,17 @@ export const queryKeys = {
 // Server hooks
 export const useServers = () => {
   const { isAuthenticated } = useAuth();
+  const { workspace } = useWorkspace();
 
   return useQuery({
-    queryKey: queryKeys.servers,
-    queryFn: () => apiClient.getServers(),
-    enabled: isAuthenticated, // Only run when authenticated
+    queryKey: queryKeys.servers(workspace?.id),
+    queryFn: () => {
+      if (!workspace?.id) {
+        throw new Error("Workspace ID is required");
+      }
+      return apiClient.getServers(workspace.id);
+    },
+    enabled: isAuthenticated && !!workspace?.id, // Only run when authenticated and workspace exists
     staleTime: 30000, // 30 seconds
     refetchInterval: 60000, // Refetch every minute
   });
@@ -43,31 +50,52 @@ export const useServers = () => {
 
 export const useServer = (id: string) => {
   const { isAuthenticated } = useAuth();
+  const { workspace } = useWorkspace();
 
   return useQuery({
-    queryKey: queryKeys.server(id),
-    queryFn: () => apiClient.getServer(id),
-    enabled: !!id && isAuthenticated, // Only run when authenticated and id exists
+    queryKey: queryKeys.server(workspace?.id, id),
+    queryFn: () => {
+      if (!workspace?.id) {
+        throw new Error("Workspace ID is required");
+      }
+      return apiClient.getServer(workspace.id, id);
+    },
+    enabled: !!id && isAuthenticated && !!workspace?.id, // Only run when authenticated, id exists, and workspace exists
     staleTime: 60000, // 1 minute
   });
 };
 
 export const useCreateServer = () => {
   const queryClient = useQueryClient();
+  const { workspace } = useWorkspace();
 
   return useMutation({
-    mutationFn: (server: Parameters<typeof apiClient.createServer>[0]) =>
-      apiClient.createServer(server),
+    mutationFn: (server: Parameters<typeof apiClient.createServer>[1]) => {
+      if (!workspace?.id) {
+        throw new Error("Workspace ID is required");
+      }
+      return apiClient.createServer(workspace.id, server);
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.servers });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.servers(workspace?.id),
+      });
     },
   });
 };
 
 export const useTestConnection = () => {
+  const { workspace } = useWorkspace();
+
   return useMutation({
-    mutationFn: (credentials: Parameters<typeof apiClient.testConnection>[0]) =>
-      apiClient.testConnection(credentials),
+    mutationFn: (
+      credentials: Parameters<typeof apiClient.testConnection>[1]
+    ) => {
+      if (!workspace?.id) {
+        throw new Error("Workspace ID is required");
+      }
+      return apiClient.testConnection(workspace.id, credentials);
+    },
   });
 };
 
@@ -406,40 +434,60 @@ export const useQueueBindings = (
 // Alert Rules hooks
 export const useAlertRules = (enabled: boolean = true) => {
   const { isAuthenticated } = useAuth();
+  const { workspace } = useWorkspace();
 
   return useQuery({
-    queryKey: ["alertRules"],
-    queryFn: () => apiClient.getAlertRules(),
-    enabled: isAuthenticated && enabled,
+    queryKey: ["alertRules", workspace?.id],
+    queryFn: () => {
+      if (!workspace?.id) {
+        throw new Error("Workspace ID is required");
+      }
+      return apiClient.getAlertRules(workspace.id);
+    },
+    enabled: isAuthenticated && !!workspace?.id && enabled,
     staleTime: 30000, // 30 seconds
   });
 };
 
 export const useAlertRule = (id: string | null, enabled: boolean = true) => {
   const { isAuthenticated } = useAuth();
+  const { workspace } = useWorkspace();
 
   return useQuery({
-    queryKey: ["alertRule", id],
-    queryFn: () => apiClient.getAlertRule(id!),
-    enabled: isAuthenticated && !!id && enabled,
+    queryKey: ["alertRule", workspace?.id, id],
+    queryFn: () => {
+      if (!workspace?.id) {
+        throw new Error("Workspace ID is required");
+      }
+      return apiClient.getAlertRule(workspace.id, id!);
+    },
+    enabled: isAuthenticated && !!id && !!workspace?.id && enabled,
     staleTime: 30000,
   });
 };
 
 export const useCreateAlertRule = () => {
   const queryClient = useQueryClient();
+  const { workspace } = useWorkspace();
 
   return useMutation({
-    mutationFn: (data: Parameters<typeof apiClient.createAlertRule>[0]) =>
-      apiClient.createAlertRule(data),
+    mutationFn: (data: Parameters<typeof apiClient.createAlertRule>[1]) => {
+      if (!workspace?.id) {
+        throw new Error("Workspace ID is required");
+      }
+      return apiClient.createAlertRule(workspace.id, data);
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["alertRules"] });
+      queryClient.invalidateQueries({
+        queryKey: ["alertRules", workspace?.id],
+      });
     },
   });
 };
 
 export const useUpdateAlertRule = () => {
   const queryClient = useQueryClient();
+  const { workspace } = useWorkspace();
 
   return useMutation({
     mutationFn: ({
@@ -447,22 +495,39 @@ export const useUpdateAlertRule = () => {
       data,
     }: {
       id: string;
-      data: Parameters<typeof apiClient.updateAlertRule>[1];
-    }) => apiClient.updateAlertRule(id, data),
+      data: Parameters<typeof apiClient.updateAlertRule>[2];
+    }) => {
+      if (!workspace?.id) {
+        throw new Error("Workspace ID is required");
+      }
+      return apiClient.updateAlertRule(workspace.id, id, data);
+    },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["alertRules"] });
-      queryClient.invalidateQueries({ queryKey: ["alertRule", variables.id] });
+      queryClient.invalidateQueries({
+        queryKey: ["alertRules", workspace?.id],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["alertRule", workspace?.id, variables.id],
+      });
     },
   });
 };
 
 export const useDeleteAlertRule = () => {
   const queryClient = useQueryClient();
+  const { workspace } = useWorkspace();
 
   return useMutation({
-    mutationFn: (id: string) => apiClient.deleteAlertRule(id),
+    mutationFn: (id: string) => {
+      if (!workspace?.id) {
+        throw new Error("Workspace ID is required");
+      }
+      return apiClient.deleteAlertRule(workspace.id, id);
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["alertRules"] });
+      queryClient.invalidateQueries({
+        queryKey: ["alertRules", workspace?.id],
+      });
     },
   });
 };
@@ -690,21 +755,32 @@ export const useQueuePauseStatus = (serverId: string, queueName: string) => {
 // Profile hooks
 export const useProfile = () => {
   const { isAuthenticated } = useAuth();
+  const { workspace } = useWorkspace();
 
   return useQuery({
-    queryKey: ["profile"],
-    queryFn: () => apiClient.getProfile(),
-    enabled: isAuthenticated,
+    queryKey: ["profile", workspace?.id],
+    queryFn: () => {
+      if (!workspace?.id) {
+        throw new Error("Workspace ID is required");
+      }
+      return apiClient.getProfile(workspace.id);
+    },
+    enabled: isAuthenticated && !!workspace?.id,
     staleTime: 30000, // 30 seconds
   });
 };
 
 export const useUpdateProfile = () => {
   const queryClient = useQueryClient();
+  const { workspace } = useWorkspace();
 
   return useMutation({
-    mutationFn: (userData: Parameters<typeof apiClient.updateProfile>[0]) =>
-      apiClient.updateProfile(userData),
+    mutationFn: (userData: { firstName?: string; lastName?: string }) => {
+      if (!workspace?.id) {
+        throw new Error("Workspace ID is required");
+      }
+      return apiClient.updateProfile(workspace.id, userData);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["profile"] });
     },
@@ -775,11 +851,20 @@ export const useResetPassword = () => {
 // Workspace hooks (new workspace API)
 export const useUpdateWorkspace = () => {
   const queryClient = useQueryClient();
+  const { workspace } = useWorkspace();
 
   return useMutation({
-    mutationFn: (
-      workspaceData: Parameters<typeof apiClient.updateWorkspace>[0]
-    ) => apiClient.updateWorkspace(workspaceData),
+    mutationFn: (workspaceData: {
+      name?: string;
+      contactEmail?: string;
+      logoUrl?: string;
+      planType?: "FREE" | "PREMIUM" | "ENTERPRISE";
+    }) => {
+      if (!workspace?.id) {
+        throw new Error("Workspace ID is required");
+      }
+      return apiClient.updateWorkspace(workspace.id, workspaceData);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["profile"] });
       queryClient.invalidateQueries({ queryKey: ["workspaceUsers"] });
@@ -801,11 +886,17 @@ export const useCompanyUsers = () => {
 // Workspace users hook (new workspace API)
 export const useWorkspaceUsers = () => {
   const { isAuthenticated } = useAuth();
+  const { workspace } = useWorkspace();
 
   return useQuery({
-    queryKey: ["workspaceUsers"],
-    queryFn: () => apiClient.getWorkspaceUsers(),
-    enabled: isAuthenticated,
+    queryKey: ["workspaceUsers", workspace?.id],
+    queryFn: () => {
+      if (!workspace?.id) {
+        throw new Error("Workspace ID is required");
+      }
+      return apiClient.getWorkspaceUsers(workspace.id);
+    },
+    enabled: isAuthenticated && !!workspace?.id,
     staleTime: 60000, // 1 minute
   });
 };
@@ -875,9 +966,15 @@ export const useAcceptInvitation = () => {
 
 export const useRemoveUserFromWorkspace = () => {
   const queryClient = useQueryClient();
+  const { workspace } = useWorkspace();
 
   return useMutation({
-    mutationFn: (userId: string) => apiClient.removeUserFromWorkspace(userId),
+    mutationFn: (userId: string) => {
+      if (!workspace?.id) {
+        throw new Error("Workspace ID is required");
+      }
+      return apiClient.removeUserFromWorkspace(workspace.id, userId);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["workspaceUsers"] });
     },

@@ -5,12 +5,8 @@ import { logger } from "@/core/logger";
 import { NodeMemoryDetailsResponse } from "@/types/api-responses";
 import { RabbitMQNode } from "@/types/rabbitmq";
 
-import { createErrorResponse } from "../shared";
-import {
-  createRabbitMQClient,
-  getWorkspaceId,
-  verifyServerAccess,
-} from "./shared";
+import { createErrorResponse, getWorkspaceId } from "../shared";
+import { createRabbitMQClient, verifyServerAccess } from "./shared";
 
 const memoryController = new Hono();
 

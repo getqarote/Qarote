@@ -26,7 +26,7 @@ import {
 const workspaceManagementRoutes = new Hono();
 
 // Get user's workspaces (owned and member workspaces)
-workspaceManagementRoutes.get("/workspaces", async (c) => {
+workspaceManagementRoutes.get("/", async (c) => {
   const user = c.get("user");
 
   try {
@@ -85,7 +85,7 @@ workspaceManagementRoutes.get("/workspaces", async (c) => {
 });
 
 // Get workspace creation info for current user
-workspaceManagementRoutes.get("/workspaces/creation-info", async (c) => {
+workspaceManagementRoutes.get("/creation-info", async (c) => {
   const user = c.get("user");
 
   try {
@@ -127,7 +127,7 @@ workspaceManagementRoutes.get("/workspaces/creation-info", async (c) => {
 
 // Create a new workspace
 workspaceManagementRoutes.post(
-  "/workspaces",
+  "/",
   zValidator("json", CreateWorkspaceSchema),
   async (c) => {
     const user = c.get("user");
@@ -255,7 +255,7 @@ workspaceManagementRoutes.post(
 
 // Update workspace (only for owners)
 workspaceManagementRoutes.put(
-  "/workspaces/:workspaceId",
+  "/:workspaceId",
   zValidator("json", UpdateWorkspaceSchema),
   async (c) => {
     const user = c.get("user");
@@ -337,7 +337,7 @@ workspaceManagementRoutes.put(
 );
 
 // Delete workspace (only for owners)
-workspaceManagementRoutes.delete("/workspaces/:workspaceId", async (c) => {
+workspaceManagementRoutes.delete("/:workspaceId", async (c) => {
   const user = c.get("user");
   const workspaceId = c.req.param("workspaceId");
 
@@ -390,7 +390,7 @@ workspaceManagementRoutes.delete("/workspaces/:workspaceId", async (c) => {
 
 // Switch active workspace
 workspaceManagementRoutes.post(
-  "/workspaces/:workspaceId/switch",
+  "/:workspaceId/switch",
   checkWorkspaceAccess,
   async (c) => {
     const user = c.get("user");

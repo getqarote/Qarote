@@ -11,6 +11,7 @@ import { logger } from "@/core/logger";
 import { prisma } from "@/core/prisma";
 
 import { authenticate } from "@/middlewares/auth";
+import { checkWorkspaceAccess } from "@/middlewares/workspace";
 
 import {
   AcknowledgeAlertRequestSchema,
@@ -27,21 +28,20 @@ const alertsController = new Hono();
 // All alert routes require authentication
 alertsController.use("*", authenticate);
 
+// All alert routes require workspace access
+alertsController.use("*", checkWorkspaceAccess);
+
 /**
  * Get all alert rules for the workspace
  * GET /alerts/rules
  */
 alertsController.get("/rules", async (c) => {
-  const user = c.get("user");
-
-  if (!user.workspaceId) {
-    return c.json({ error: "User must belong to a workspace" }, 400);
-  }
+  const workspaceId = c.req.param("workspaceId");
 
   try {
     const alertRules = await prisma.alertRule.findMany({
       where: {
-        workspaceId: user.workspaceId,
+        workspaceId,
       },
       include: {
         server: {
@@ -88,18 +88,14 @@ alertsController.get("/rules", async (c) => {
  * GET /alerts/rules/:id
  */
 alertsController.get("/rules/:id", async (c) => {
-  const user = c.get("user");
+  const workspaceId = c.req.param("workspaceId");
   const id = c.req.param("id");
-
-  if (!user.workspaceId) {
-    return c.json({ error: "User must belong to a workspace" }, 400);
-  }
 
   try {
     const alertRule = await prisma.alertRule.findFirst({
       where: {
         id,
-        workspaceId: user.workspaceId,
+        workspaceId,
       },
       include: {
         server: {
@@ -149,10 +145,11 @@ alertsController.post(
   zValidator("json", CreateAlertRuleRequestSchema),
   async (c) => {
     const user = c.get("user");
+    const workspaceId = c.req.param("workspaceId");
     const data = c.req.valid("json");
 
-    if (!user.workspaceId) {
-      return c.json({ error: "User must belong to a workspace" }, 400);
+    if (!workspaceId) {
+      return c.json({ error: "Workspace ID is required" }, 400);
     }
 
     try {
@@ -160,7 +157,7 @@ alertsController.post(
       const server = await prisma.rabbitMQServer.findFirst({
         where: {
           id: data.serverId,
-          workspaceId: user.workspaceId,
+          workspaceId,
         },
       });
 
@@ -178,7 +175,7 @@ alertsController.post(
           severity: data.severity as AlertSeverity,
           enabled: data.enabled ?? true,
           serverId: data.serverId,
-          workspaceId: user.workspaceId,
+          workspaceId,
           createdById: user.id,
         },
         include: {
@@ -228,20 +225,16 @@ alertsController.put(
   "/rules/:id",
   zValidator("json", UpdateAlertRuleRequestSchema),
   async (c) => {
-    const user = c.get("user");
+    const workspaceId = c.req.param("workspaceId");
     const id = c.req.param("id");
     const data = c.req.valid("json");
-
-    if (!user.workspaceId) {
-      return c.json({ error: "User must belong to a workspace" }, 400);
-    }
 
     try {
       // Verify alert rule belongs to workspace
       const existingRule = await prisma.alertRule.findFirst({
         where: {
           id,
-          workspaceId: user.workspaceId,
+          workspaceId,
         },
       });
 
@@ -254,7 +247,7 @@ alertsController.put(
         const server = await prisma.rabbitMQServer.findFirst({
           where: {
             id: data.serverId,
-            workspaceId: user.workspaceId,
+            workspaceId,
           },
         });
 
@@ -330,19 +323,15 @@ alertsController.put(
  * DELETE /alerts/rules/:id
  */
 alertsController.delete("/rules/:id", async (c) => {
-  const user = c.get("user");
+  const workspaceId = c.req.param("workspaceId");
   const id = c.req.param("id");
-
-  if (!user.workspaceId) {
-    return c.json({ error: "User must belong to a workspace" }, 400);
-  }
 
   try {
     // Verify alert rule belongs to workspace
     const existingRule = await prisma.alertRule.findFirst({
       where: {
         id,
-        workspaceId: user.workspaceId,
+        workspaceId,
       },
     });
 
@@ -369,11 +358,11 @@ alertsController.get(
   "/",
   zValidator("query", LegacyAlertsQuerySchema),
   async (c) => {
-    const user = c.get("user");
+    const workspaceId = c.req.param("workspaceId");
     const query = c.req.valid("query");
 
-    if (!user.workspaceId) {
-      return c.json({ error: "User must belong to a workspace" }, 400);
+    if (!workspaceId) {
+      return c.json({ error: "Workspace ID is required" }, 400);
     }
 
     try {
@@ -383,7 +372,7 @@ alertsController.get(
         severity?: { in: AlertSeverity[] } | AlertSeverity;
         serverId?: string;
       } = {
-        workspaceId: user.workspaceId,
+        workspaceId: workspaceId as string, // Type assertion safe because of check above
       };
 
       if (query.status) {
@@ -467,22 +456,111 @@ alertsController.get(
 );
 
 /**
+ * Get alert statistics
+ * GET /alerts/stats/summary
+ * Note: This route must be registered before /:id to avoid route shadowing
+ */
+alertsController.get("/stats/summary", async (c) => {
+  const workspaceId = c.req.param("workspaceId");
+
+  try {
+    const [total, active, acknowledged, resolved, critical, recent] =
+      await Promise.all([
+        prisma.alert.count({
+          where: { workspaceId },
+        }),
+        prisma.alert.count({
+          where: {
+            workspaceId,
+            status: "ACTIVE",
+          },
+        }),
+        prisma.alert.count({
+          where: {
+            workspaceId,
+            status: "ACKNOWLEDGED",
+          },
+        }),
+        prisma.alert.count({
+          where: {
+            workspaceId,
+            status: "RESOLVED",
+          },
+        }),
+        prisma.alert.count({
+          where: {
+            workspaceId,
+            severity: "CRITICAL",
+            status: { in: ["ACTIVE", "ACKNOWLEDGED"] },
+          },
+        }),
+        prisma.alert.findMany({
+          where: { workspaceId },
+          include: {
+            alertRule: {
+              select: {
+                id: true,
+                name: true,
+                server: {
+                  select: {
+                    id: true,
+                    name: true,
+                    host: true,
+                  },
+                },
+              },
+            },
+            user: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+              },
+            },
+          },
+          orderBy: {
+            createdAt: "desc",
+          },
+          take: 10,
+        }),
+      ]);
+
+    const recentAlerts = recent.map((alert) => ({
+      ...alert,
+      createdAt: alert.createdAt.toISOString(),
+      updatedAt: alert.updatedAt.toISOString(),
+      resolvedAt: alert.resolvedAt?.toISOString() ?? null,
+      acknowledgedAt: alert.acknowledgedAt?.toISOString() ?? null,
+    }));
+
+    return c.json({
+      total,
+      active,
+      acknowledged,
+      resolved,
+      critical,
+      recent: recentAlerts,
+    });
+  } catch (error) {
+    logger.error({ error }, "Error getting alert stats");
+    return createErrorResponse(c, error, 500, "Failed to get alert stats");
+  }
+});
+
+/**
  * Get a single alert instance by ID
  * GET /alerts/:id
  */
 alertsController.get("/:id", async (c) => {
-  const user = c.get("user");
+  const workspaceId = c.req.param("workspaceId");
   const id = c.req.param("id");
-
-  if (!user.workspaceId) {
-    return c.json({ error: "User must belong to a workspace" }, 400);
-  }
 
   try {
     const alert = await prisma.alert.findFirst({
       where: {
         id,
-        workspaceId: user.workspaceId,
+        workspaceId,
       },
       include: {
         alertRule: {
@@ -534,19 +612,15 @@ alertsController.post(
   "/:id/acknowledge",
   zValidator("json", AcknowledgeAlertRequestSchema),
   async (c) => {
-    const user = c.get("user");
+    const workspaceId = c.req.param("workspaceId");
     const id = c.req.param("id");
     const { note: _note } = c.req.valid("json");
-
-    if (!user.workspaceId) {
-      return c.json({ error: "User must belong to a workspace" }, 400);
-    }
 
     try {
       const alert = await prisma.alert.findFirst({
         where: {
           id,
-          workspaceId: user.workspaceId,
+          workspaceId,
         },
       });
 
@@ -607,19 +681,15 @@ alertsController.post(
   "/:id/resolve",
   zValidator("json", ResolveAlertRequestSchema),
   async (c) => {
-    const user = c.get("user");
+    const workspaceId = c.req.param("workspaceId");
     const id = c.req.param("id");
     const { note: _note } = c.req.valid("json");
-
-    if (!user.workspaceId) {
-      return c.json({ error: "User must belong to a workspace" }, 400);
-    }
 
     try {
       const alert = await prisma.alert.findFirst({
         where: {
           id,
-          workspaceId: user.workspaceId,
+          workspaceId,
         },
       });
 
@@ -671,101 +741,5 @@ alertsController.post(
     }
   }
 );
-
-/**
- * Get alert statistics
- * GET /alerts/stats/summary
- */
-alertsController.get("/stats/summary", async (c) => {
-  const user = c.get("user");
-
-  if (!user.workspaceId) {
-    return c.json({ error: "User must belong to a workspace" }, 400);
-  }
-
-  try {
-    const [total, active, acknowledged, resolved, critical, recent] =
-      await Promise.all([
-        prisma.alert.count({
-          where: { workspaceId: user.workspaceId },
-        }),
-        prisma.alert.count({
-          where: {
-            workspaceId: user.workspaceId,
-            status: "ACTIVE",
-          },
-        }),
-        prisma.alert.count({
-          where: {
-            workspaceId: user.workspaceId,
-            status: "ACKNOWLEDGED",
-          },
-        }),
-        prisma.alert.count({
-          where: {
-            workspaceId: user.workspaceId,
-            status: "RESOLVED",
-          },
-        }),
-        prisma.alert.count({
-          where: {
-            workspaceId: user.workspaceId,
-            severity: "CRITICAL",
-            status: { in: ["ACTIVE", "ACKNOWLEDGED"] },
-          },
-        }),
-        prisma.alert.findMany({
-          where: { workspaceId: user.workspaceId },
-          include: {
-            alertRule: {
-              select: {
-                id: true,
-                name: true,
-                server: {
-                  select: {
-                    id: true,
-                    name: true,
-                    host: true,
-                  },
-                },
-              },
-            },
-            user: {
-              select: {
-                id: true,
-                firstName: true,
-                lastName: true,
-                email: true,
-              },
-            },
-          },
-          orderBy: {
-            createdAt: "desc",
-          },
-          take: 10,
-        }),
-      ]);
-
-    const recentAlerts = recent.map((alert) => ({
-      ...alert,
-      createdAt: alert.createdAt.toISOString(),
-      updatedAt: alert.updatedAt.toISOString(),
-      resolvedAt: alert.resolvedAt?.toISOString() ?? null,
-      acknowledgedAt: alert.acknowledgedAt?.toISOString() ?? null,
-    }));
-
-    return c.json({
-      total,
-      active,
-      acknowledged,
-      resolved,
-      critical,
-      recent: recentAlerts,
-    });
-  } catch (error) {
-    logger.error({ error }, "Error getting alert stats");
-    return createErrorResponse(c, error, 500, "Failed to get alert stats");
-  }
-});
 
 export default alertsController;

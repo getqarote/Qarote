@@ -62,33 +62,38 @@ class ApiClient {
   }
 
   // Server methods
-  async getServers() {
-    return this.serverClient.getServers();
+  async getServers(workspaceId: string) {
+    return this.serverClient.getServers(workspaceId);
   }
 
-  async getServer(id: string) {
-    return this.serverClient.getServer(id);
+  async getServer(workspaceId: string, id: string) {
+    return this.serverClient.getServer(workspaceId, id);
   }
 
-  async createServer(server: Parameters<ServerApiClient["createServer"]>[0]) {
-    return this.serverClient.createServer(server);
+  async createServer(
+    workspaceId: string,
+    server: Parameters<ServerApiClient["createServer"]>[1]
+  ) {
+    return this.serverClient.createServer(workspaceId, server);
   }
 
   async updateServer(
+    workspaceId: string,
     id: string,
-    server: Parameters<ServerApiClient["updateServer"]>[1]
+    server: Parameters<ServerApiClient["updateServer"]>[2]
   ) {
-    return this.serverClient.updateServer(id, server);
+    return this.serverClient.updateServer(workspaceId, id, server);
   }
 
-  async deleteServer(id: string) {
-    return this.serverClient.deleteServer(id);
+  async deleteServer(workspaceId: string, id: string) {
+    return this.serverClient.deleteServer(workspaceId, id);
   }
 
   async testConnection(
-    credentials: Parameters<ServerApiClient["testConnection"]>[0]
+    workspaceId: string,
+    credentials: Parameters<ServerApiClient["testConnection"]>[1]
   ) {
-    return this.serverClient.testConnection(credentials);
+    return this.serverClient.testConnection(workspaceId, credentials);
   }
 
   // RabbitMQ methods
@@ -470,18 +475,22 @@ class ApiClient {
     return this.authClient.register(userData);
   }
 
-  async getProfile() {
-    return this.authClient.getProfile();
+  async getProfile(workspaceId: string) {
+    return this.authClient.getProfile(workspaceId);
   }
 
-  async updateProfile(userData: Parameters<AuthApiClient["updateProfile"]>[0]) {
-    return this.authClient.updateProfile(userData);
+  async updateProfile(
+    workspaceId: string,
+    userData: Parameters<AuthApiClient["updateProfile"]>[1]
+  ) {
+    return this.authClient.updateProfile(workspaceId, userData);
   }
 
   async updateWorkspace(
-    workspaceData: Parameters<AuthApiClient["updateWorkspace"]>[0]
+    workspaceId: string,
+    workspaceData: Parameters<AuthApiClient["updateWorkspace"]>[1]
   ) {
-    return this.authClient.updateWorkspace(workspaceData);
+    return this.authClient.updateWorkspace(workspaceId, workspaceData);
   }
 
   async getCompanyUsers() {
@@ -489,12 +498,12 @@ class ApiClient {
   }
 
   // New workspace users method
-  async getWorkspaceUsers() {
-    return this.authClient.getWorkspaceUsers();
+  async getWorkspaceUsers(workspaceId: string) {
+    return this.authClient.getWorkspaceUsers(workspaceId);
   }
 
-  async removeUserFromWorkspace(userId: string) {
-    return this.workspaceClient.removeUserFromWorkspace(userId);
+  async removeUserFromWorkspace(workspaceId: string, userId: string) {
+    return this.workspaceClient.removeUserFromWorkspace(workspaceId, userId);
   }
 
   async logout() {
@@ -584,50 +593,55 @@ class ApiClient {
   }
 
   // Alert methods
-  async getAlerts(query?: Parameters<AlertApiClient["getAlerts"]>[0]) {
-    return this.alertClient.getAlerts(query);
+  async getAlerts(
+    workspaceId: string,
+    query?: Parameters<AlertApiClient["getAlerts"]>[1]
+  ) {
+    return this.alertClient.getAlerts(workspaceId, query);
   }
 
   // Alert Rules methods
-  async getAlertRules() {
-    return this.alertClient.getAlertRules();
+  async getAlertRules(workspaceId: string) {
+    return this.alertClient.getAlertRules(workspaceId);
   }
 
-  async getAlertRule(id: string) {
-    return this.alertClient.getAlertRule(id);
+  async getAlertRule(workspaceId: string, id: string) {
+    return this.alertClient.getAlertRule(workspaceId, id);
   }
 
   async createAlertRule(
-    data: Parameters<AlertApiClient["createAlertRule"]>[0]
+    workspaceId: string,
+    data: Parameters<AlertApiClient["createAlertRule"]>[1]
   ) {
-    return this.alertClient.createAlertRule(data);
+    return this.alertClient.createAlertRule(workspaceId, data);
   }
 
   async updateAlertRule(
+    workspaceId: string,
     id: string,
-    data: Parameters<AlertApiClient["updateAlertRule"]>[1]
+    data: Parameters<AlertApiClient["updateAlertRule"]>[2]
   ) {
-    return this.alertClient.updateAlertRule(id, data);
+    return this.alertClient.updateAlertRule(workspaceId, id, data);
   }
 
-  async deleteAlertRule(id: string) {
-    return this.alertClient.deleteAlertRule(id);
+  async deleteAlertRule(workspaceId: string, id: string) {
+    return this.alertClient.deleteAlertRule(workspaceId, id);
   }
 
-  async getAlert(id: string) {
-    return this.alertClient.getAlert(id);
+  async getAlert(workspaceId: string, id: string) {
+    return this.alertClient.getAlert(workspaceId, id);
   }
 
-  async acknowledgeAlert(id: string, note?: string) {
-    return this.alertClient.acknowledgeAlert(id, note);
+  async acknowledgeAlert(workspaceId: string, id: string, note?: string) {
+    return this.alertClient.acknowledgeAlert(workspaceId, id, note);
   }
 
-  async resolveAlert(id: string, note?: string) {
-    return this.alertClient.resolveAlert(id, note);
+  async resolveAlert(workspaceId: string, id: string, note?: string) {
+    return this.alertClient.resolveAlert(workspaceId, id, note);
   }
 
-  async getAlertStats() {
-    return this.alertClient.getAlertStats();
+  async getAlertStats(workspaceId: string) {
+    return this.alertClient.getAlertStats(workspaceId);
   }
 
   // Workspace methods
@@ -736,42 +750,53 @@ class ApiClient {
 
   // Payment methods
   async createCheckoutSession(
-    data: Parameters<PaymentApiClient["createCheckoutSession"]>[0]
+    workspaceId: string,
+    data: Parameters<PaymentApiClient["createCheckoutSession"]>[1]
   ) {
-    return this.paymentClient.createCheckoutSession(data);
+    return this.paymentClient.createCheckoutSession(workspaceId, data);
   }
 
-  async createPortalSession() {
-    return this.paymentClient.createPortalSession();
+  async createPortalSession(workspaceId: string) {
+    return this.paymentClient.createPortalSession(workspaceId);
   }
 
   async getSubscription() {
     return this.paymentClient.getSubscription();
   }
 
-  async getPaymentHistory(limit?: number, offset?: number) {
-    return this.paymentClient.getPaymentHistory(limit, offset);
+  async getPaymentHistory(
+    workspaceId: string,
+    limit?: number,
+    offset?: number
+  ) {
+    return this.paymentClient.getPaymentHistory(workspaceId, limit, offset);
   }
 
-  async getBillingOverview() {
-    return this.paymentClient.getBillingOverview();
+  async getBillingOverview(workspaceId: string) {
+    return this.paymentClient.getBillingOverview(workspaceId);
   }
 
-  async createBillingPortalSession() {
-    return this.paymentClient.createBillingPortalSession();
+  async createBillingPortalSession(workspaceId: string) {
+    return this.paymentClient.createBillingPortalSession(workspaceId);
   }
 
   async cancelSubscription(
-    data: Parameters<PaymentApiClient["cancelSubscription"]>[0]
+    workspaceId: string,
+    data: Parameters<PaymentApiClient["cancelSubscription"]>[1]
   ) {
-    return this.paymentClient.cancelSubscription(data);
+    return this.paymentClient.cancelSubscription(workspaceId, data);
   }
 
   async renewSubscription(
-    plan: Parameters<PaymentApiClient["renewSubscription"]>[0],
-    billingInterval?: Parameters<PaymentApiClient["renewSubscription"]>[1]
+    workspaceId: string,
+    plan: Parameters<PaymentApiClient["renewSubscription"]>[1],
+    billingInterval?: Parameters<PaymentApiClient["renewSubscription"]>[2]
   ) {
-    return this.paymentClient.renewSubscription(plan, billingInterval);
+    return this.paymentClient.renewSubscription(
+      workspaceId,
+      plan,
+      billingInterval
+    );
   }
 
   // RabbitMQ Alert methods

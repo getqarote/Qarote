@@ -30,15 +30,18 @@ export const usePlanUpgrade = () => {
     setIsUpgrading(true);
 
     try {
+      if (!workspace?.id) {
+        throw new Error("Workspace ID is required");
+      }
       if (targetPlan === UserPlan.FREE) {
         // Handle free plan - redirect to customer portal for downgrades
-        const { url } = await apiClient.createPortalSession();
+        const { url } = await apiClient.createPortalSession(workspace.id);
         window.location.href = url;
         return;
       }
 
       // Create Stripe checkout session for paid plans
-      const { url } = await apiClient.createCheckoutSession({
+      const { url } = await apiClient.createCheckoutSession(workspace.id, {
         plan: targetPlan,
         billingInterval,
         successUrl: `${window.location.origin}/payment/success`,
@@ -64,7 +67,10 @@ export const usePlanUpgrade = () => {
     setIsUpgrading(true);
 
     try {
-      const { url } = await apiClient.createPortalSession();
+      if (!workspace.id) {
+        throw new Error("Workspace ID is required");
+      }
+      const { url } = await apiClient.createPortalSession(workspace.id);
 
       logger.info("Redirecting to customer portal:", url);
 

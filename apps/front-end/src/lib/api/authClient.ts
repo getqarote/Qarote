@@ -47,24 +47,33 @@ export class AuthApiClient extends BaseApiClient {
     });
   }
 
-  async getProfile(): Promise<{ profile: UserProfile }> {
-    return this.request<{ profile: UserProfile }>("/users/profile/me");
+  async getProfile(workspaceId: string): Promise<{ profile: UserProfile }> {
+    return this.request<{ profile: UserProfile }>(
+      `/workspaces/${workspaceId}/users/me`
+    );
   }
 
-  async updateProfile(userData: UpdateProfileRequest): Promise<{ user: User }> {
-    return this.request<{ user: User }>("/users/profile/me", {
+  async updateProfile(
+    workspaceId: string,
+    userData: UpdateProfileRequest
+  ): Promise<{ user: User }> {
+    return this.request<{ user: User }>(`/workspaces/${workspaceId}/users/me`, {
       method: "PUT",
       body: JSON.stringify(userData),
     });
   }
 
   async updateWorkspace(
+    workspaceId: string,
     workspaceData: UpdateWorkspaceRequest
   ): Promise<{ workspace: Workspace }> {
-    return this.request<{ workspace: Workspace }>("/users/profile/workspace", {
-      method: "PUT",
-      body: JSON.stringify(workspaceData),
-    });
+    return this.request<{ workspace: Workspace }>(
+      `/workspaces/${workspaceId}/users/profile/workspace`,
+      {
+        method: "PUT",
+        body: JSON.stringify(workspaceData),
+      }
+    );
   }
 
   async getCompanyUsers(): Promise<{ users: User[] }> {
@@ -72,8 +81,8 @@ export class AuthApiClient extends BaseApiClient {
   }
 
   // New workspace users method
-  async getWorkspaceUsers(): Promise<{ users: User[] }> {
-    return this.request<{ users: User[] }>("/users/profile/workspace/users");
+  async getWorkspaceUsers(workspaceId: string): Promise<{ users: User[] }> {
+    return this.request<{ users: User[] }>(`/workspaces/${workspaceId}/users`);
   }
 
   // async logout(): Promise<void> {

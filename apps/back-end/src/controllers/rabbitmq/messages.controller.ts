@@ -16,12 +16,8 @@ import {
 import { PublishMessageResponse } from "@/types/api-responses";
 import type { MessageProperties } from "@/types/rabbitmq";
 
-import { createErrorResponse } from "../shared";
-import {
-  createRabbitMQClient,
-  getWorkspaceId,
-  verifyServerAccess,
-} from "./shared";
+import { createErrorResponse, getWorkspaceId } from "../shared";
+import { createRabbitMQClient, verifyServerAccess } from "./shared";
 
 const messagesController = new Hono();
 

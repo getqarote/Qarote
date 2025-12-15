@@ -41,8 +41,12 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
 
       logger.info(`Starting upgrade to ${targetPlan}`);
 
+      if (!workspace?.id) {
+        throw new Error("Workspace ID is required");
+      }
+
       // Create Stripe checkout session
-      const response = await apiClient.createCheckoutSession({
+      const response = await apiClient.createCheckoutSession(workspace.id, {
         plan: targetPlan,
         billingInterval: "monthly", // Default to monthly, could be made configurable
       });

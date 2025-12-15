@@ -9,6 +9,7 @@ import { StripeService } from "@/services/stripe/stripe.service";
 
 import { authenticate } from "@/middlewares/auth";
 import { strictRateLimiter } from "@/middlewares/rateLimiter";
+import { checkWorkspaceAccess } from "@/middlewares/workspace";
 
 import { createCheckoutSessionSchema } from "@/schemas/payment";
 
@@ -19,6 +20,7 @@ import { getUserDisplayName } from "../shared";
 const paymentController = new Hono();
 
 paymentController.use("*", authenticate);
+paymentController.use("*", checkWorkspaceAccess);
 paymentController.use("*", strictRateLimiter);
 
 // Create checkout session for subscription

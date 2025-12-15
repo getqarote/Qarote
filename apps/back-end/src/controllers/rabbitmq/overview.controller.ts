@@ -12,12 +12,8 @@ import { OverviewResponse } from "@/types/api-responses";
 
 import { OverviewMapper } from "@/mappers/rabbitmq/OverviewMapper";
 
-import { createErrorResponse } from "../shared";
-import {
-  createRabbitMQClient,
-  getWorkspaceId,
-  verifyServerAccess,
-} from "./shared";
+import { createErrorResponse, getWorkspaceId } from "../shared";
+import { createRabbitMQClient, verifyServerAccess } from "./shared";
 
 const overviewController = new Hono();
 

@@ -1,5 +1,4 @@
 import { RabbitMQServer, Workspace } from "@prisma/client";
-import { Context } from "hono";
 
 import { logger } from "@/core/logger";
 import { prisma } from "@/core/prisma";
@@ -7,19 +6,6 @@ import { QueuePauseState, RabbitMQAmqpClientFactory } from "@/core/rabbitmq";
 import { RabbitMQClient } from "@/core/rabbitmq/RabbitClient";
 
 import { EncryptionService } from "@/services/encryption.service";
-
-/**
- * Helper function to safely extract workspaceId from context
- * The middleware ensures it exists, but TypeScript doesn't know that
- * when middleware is applied at parent level with pattern matching
- */
-export function getWorkspaceId(c: Context): string {
-  const workspaceId = c.req.param("workspaceId");
-  if (!workspaceId) {
-    throw new Error("Workspace ID is required");
-  }
-  return workspaceId;
-}
 
 /**
  * Helper function to decrypt server credentials for RabbitMQ client
