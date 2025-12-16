@@ -13,12 +13,8 @@ import { NodesResponse } from "@/types/api-responses";
 
 import { BindingMapper, ExchangeMapper, NodeMapper } from "@/mappers/rabbitmq";
 
-import { createErrorResponse } from "../shared";
-import {
-  createRabbitMQClient,
-  getWorkspaceId,
-  verifyServerAccess,
-} from "./shared";
+import { createErrorResponse, getWorkspaceId } from "../shared";
+import { createRabbitMQClient, verifyServerAccess } from "./shared";
 
 const infrastructureController = new Hono();
 

@@ -33,11 +33,10 @@ import {
 
 import { BindingMapper, ConsumerMapper, QueueMapper } from "@/mappers/rabbitmq";
 
-import { createErrorResponse } from "../shared";
+import { createErrorResponse, getWorkspaceId } from "../shared";
 import {
   createAmqpClient,
   createRabbitMQClient,
-  getWorkspaceId,
   verifyServerAccess,
 } from "./shared";
 

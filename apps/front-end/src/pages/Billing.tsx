@@ -15,6 +15,7 @@ import {
 
 import { usePlanUpgrade } from "@/hooks/usePlanUpgrade";
 import { useUser } from "@/hooks/useUser";
+import { useWorkspace } from "@/hooks/useWorkspace";
 
 import { UserPlan } from "@/types/plans";
 
@@ -31,6 +32,7 @@ interface ExtendedStripeSubscription {
 
 const Billing: React.FC = () => {
   const { user } = useUser();
+  const { workspace } = useWorkspace();
   const { handleUpgrade } = usePlanUpgrade();
   const queryClient = useQueryClient();
 
@@ -39,12 +41,13 @@ const Billing: React.FC = () => {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["billing", user.id],
+    queryKey: ["billing", user.id, workspace?.id],
     queryFn: async (): Promise<BillingOverviewResponse> => {
       if (!user.id) throw new Error("No user");
-      return await apiClient.getBillingOverview();
+      if (!workspace?.id) throw new Error("No workspace");
+      return await apiClient.getBillingOverview(workspace.id);
     },
-    enabled: !!user.id,
+    enabled: !!user.id && !!workspace?.id,
     staleTime: 2 * 60 * 1000, // 2 minutes - billing data doesn't change frequently
     refetchOnWindowFocus: false, // Don't refetch when window gains focus
     retry: (failureCount, error: unknown) => {
@@ -68,7 +71,10 @@ const Billing: React.FC = () => {
     feedback: string;
   }) => {
     try {
-      const response = await apiClient.cancelSubscription(data);
+      if (!workspace?.id) {
+        throw new Error("Workspace ID is required");
+      }
+      const response = await apiClient.cancelSubscription(workspace.id, data);
       logger.info("Subscription canceled successfully", response);
 
       // Show success message to user
@@ -79,7 +85,7 @@ const Billing: React.FC = () => {
 
       // Refetch billing data to update the UI
       await queryClient.invalidateQueries({
-        queryKey: ["billing", user.id],
+        queryKey: ["billing", user.id, workspace?.id],
       });
 
       return response;
@@ -91,7 +97,10 @@ const Billing: React.FC = () => {
 
   const handleOpenBillingPortal = async () => {
     try {
-      const data = await apiClient.createBillingPortalSession();
+      if (!workspace?.id) {
+        throw new Error("Workspace ID is required");
+      }
+      const data = await apiClient.createBillingPortalSession(workspace.id);
       window.open(data.url, "_blank");
     } catch (error) {
       logger.error("Failed to open billing portal:", error);
@@ -100,9 +109,16 @@ const Billing: React.FC = () => {
 
   const handleRenewSubscription = async () => {
     try {
+      if (!workspace?.id) {
+        throw new Error("Workspace ID is required");
+      }
       // Determine the plan to renew based on subscription history
       const planToRenew = billingData?.subscription?.plan || UserPlan.DEVELOPER;
-      const data = await apiClient.renewSubscription(planToRenew, "monthly");
+      const data = await apiClient.renewSubscription(
+        workspace.id,
+        planToRenew,
+        "monthly"
+      );
       window.location.href = data.url;
     } catch (error) {
       logger.error("Failed to renew subscription:", error);

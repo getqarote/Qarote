@@ -2,6 +2,8 @@ import { useCallback, useEffect, useState } from "react";
 
 import { apiClient } from "@/lib/api";
 
+import { useWorkspace } from "@/hooks/useWorkspace";
+
 import type { AddServerFormData, ConnectionStatus, Server } from "./types";
 
 interface UseAddServerFormProps {
@@ -13,6 +15,7 @@ export const useAddServerForm = ({
   server,
   mode = "add",
 }: UseAddServerFormProps = {}) => {
+  const { workspace } = useWorkspace();
   const getInitialFormData = useCallback((): AddServerFormData => {
     if (mode === "edit" && server) {
       return {
@@ -109,7 +112,10 @@ export const useAddServerForm = ({
     setConnectionStatus({ status: "idle" });
 
     try {
-      const result = await apiClient.testConnection({
+      if (!workspace?.id) {
+        throw new Error("Workspace ID is required");
+      }
+      const result = await apiClient.testConnection(workspace.id, {
         host: formData.host,
         port: formData.port,
         amqpPort: formData.amqpPort,

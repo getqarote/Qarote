@@ -1,3 +1,5 @@
+import { setTimeout as setTimeoutPromise } from "node:timers/promises";
+
 import amqp from "amqplib";
 
 interface RabbitMQConfig {
@@ -46,7 +48,7 @@ class TestMessageConsumer {
         console.log(
           `⏳ RabbitMQ is not ready yet. Retry ${retries + 1}/${maxRetries}...`
         );
-        await this.sleep(2000);
+        await setTimeoutPromise(2000);
         retries++;
       }
     }
@@ -297,7 +299,7 @@ class TestMessageConsumer {
     let waitTime = 0;
 
     while (this.isConsuming && waitTime < maxWaitTime) {
-      await this.sleep(checkInterval);
+      await setTimeoutPromise(checkInterval);
       waitTime += checkInterval;
 
       // Check if there are no more messages to consume
@@ -370,10 +372,6 @@ class TestMessageConsumer {
     while (Date.now() - start < processingTime) {
       // Busy wait to simulate processing
     }
-  }
-
-  private sleep(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   public async run(messageCount: number = 100): Promise<void> {

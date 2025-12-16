@@ -52,11 +52,11 @@ export class WorkspaceApiClient extends BaseApiClient {
 
   // Workspace management methods
   async getUserWorkspaces(): Promise<{ workspaces: WorkspaceInfo[] }> {
-    return this.request("/workspaces/workspaces");
+    return this.request("/workspaces");
   }
 
   async getWorkspaceCreationInfo(): Promise<WorkspaceCreationInfo> {
-    return this.request("/workspaces/workspaces/creation-info");
+    return this.request("/workspaces/creation-info");
   }
 
   async createWorkspace(data: {
@@ -64,7 +64,7 @@ export class WorkspaceApiClient extends BaseApiClient {
     contactEmail?: string;
     tags?: string[];
   }): Promise<{ workspace: WorkspaceInfo }> {
-    return this.request("/workspaces/workspaces", {
+    return this.request("/workspaces", {
       method: "POST",
       body: JSON.stringify(data),
     });
@@ -74,29 +74,32 @@ export class WorkspaceApiClient extends BaseApiClient {
     id: string,
     data: { name: string; contactEmail?: string; tags?: string[] }
   ): Promise<{ workspace: WorkspaceInfo }> {
-    return this.request(`/workspaces/workspaces/${id}`, {
+    return this.request(`/workspaces/${id}`, {
       method: "PUT",
       body: JSON.stringify(data),
     });
   }
 
   async deleteWorkspace(id: string): Promise<{ message: string }> {
-    return this.request(`/workspaces/workspaces/${id}`, {
+    return this.request(`/workspaces/${id}`, {
       method: "DELETE",
     });
   }
 
   async switchWorkspace(id: string): Promise<{ message: string }> {
-    return this.request(`/workspaces/workspaces/${id}/switch`, {
+    return this.request(`/workspaces/${id}/switch`, {
       method: "POST",
     });
   }
 
-  async removeUserFromWorkspace(userId: string): Promise<{
+  async removeUserFromWorkspace(
+    workspaceId: string,
+    userId: string
+  ): Promise<{
     message: string;
     removedUser: { id: string; email: string; name: string };
   }> {
-    return this.request(`/users/profile/workspace/users/${userId}`, {
+    return this.request(`/workspaces/${workspaceId}/users/${userId}`, {
       method: "DELETE",
     });
   }

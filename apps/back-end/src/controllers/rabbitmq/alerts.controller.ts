@@ -25,8 +25,8 @@ import {
   UpdateThresholdsResponse,
 } from "@/types/api-responses";
 
-import { createErrorResponse } from "../shared";
-import { getWorkspaceId, verifyServerAccess } from "./shared";
+import { createErrorResponse, getWorkspaceId } from "../shared";
+import { verifyServerAccess } from "./shared";
 
 const alertsController = new Hono();
 

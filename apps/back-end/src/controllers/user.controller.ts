@@ -11,176 +11,130 @@ import { EmailVerificationService } from "@/services/email/email-verification.se
 import { authenticate, authorize } from "@/middlewares/auth";
 import { planValidationMiddleware } from "@/middlewares/planValidation";
 import { strictRateLimiter } from "@/middlewares/rateLimiter";
-import { checkWorkspaceAccess } from "@/middlewares/workspace";
+import {
+  checkWorkspaceAccess,
+  hasWorkspaceAccess,
+} from "@/middlewares/workspace";
 
 import {
   UpdateProfileSchema,
   UpdateUserSchema,
   UserIdParamSchema,
-  WorkspaceIdParamSchema,
 } from "@/schemas/user";
 import { UpdateWorkspaceSchema } from "@/schemas/workspace";
+
+import { getWorkspaceId } from "./shared";
 
 const userController = new Hono();
 
 // All routes in this controller require authentication
 userController.use("*", authenticate);
 
+// Apply workspace access check middleware to all routes
+userController.use("*", checkWorkspaceAccess);
+
 // Apply plan validation middleware to all routes
 userController.use("*", planValidationMiddleware());
 
 // Get users in the same workspace
-userController.get(
-  "/workspace/:workspaceId",
-  checkWorkspaceAccess,
-  zValidator("param", WorkspaceIdParamSchema),
-  async (c) => {
-    const workspaceId = c.req.param("workspaceId");
-
-    try {
-      // Get all workspace members via WorkspaceMember table
-      const workspaceMembers = await prisma.workspaceMember.findMany({
-        where: { workspaceId },
-        include: {
-          user: {
-            select: {
-              id: true,
-              email: true,
-              firstName: true,
-              lastName: true,
-              isActive: true,
-              lastLogin: true,
-              createdAt: true,
-              updatedAt: true,
-            },
-          },
-        },
-        orderBy: { createdAt: "desc" },
-      });
-
-      // Format response to match expected structure
-      const users = workspaceMembers.map((member) => ({
-        id: member.user.id,
-        email: member.user.email,
-        firstName: member.user.firstName,
-        lastName: member.user.lastName,
-        role: member.role, // Use role from WorkspaceMember
-        isActive: member.user.isActive,
-        lastLogin: member.user.lastLogin,
-        createdAt: member.user.createdAt,
-        updatedAt: member.user.updatedAt,
-      }));
-
-      return c.json({ users });
-    } catch (error) {
-      logger.error(
-        { error },
-        `Error fetching users for workspace ${workspaceId}`
-      );
-      return c.json({ error: "Failed to fetch users" }, 500);
-    }
-  }
-);
-
-// Get a specific user by ID (admin or same workspace)
-userController.get("/:id", async (c) => {
-  const id = c.req.param("id");
-  const currentUser = c.get("user");
+userController.get("/", async (c) => {
+  const workspaceId = getWorkspaceId(c);
 
   try {
-    const user = await prisma.user.findUnique({
-      where: { id },
+    // Get all workspace members via WorkspaceMember table
+    const workspaceMembers = await prisma.workspaceMember.findMany({
+      where: { workspaceId },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+            isActive: true,
+            lastLogin: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    // Format response to match expected structure
+    const users = workspaceMembers.map((member) => ({
+      id: member.user.id,
+      email: member.user.email,
+      firstName: member.user.firstName,
+      lastName: member.user.lastName,
+      role: member.role, // Use role from WorkspaceMember
+      isActive: member.user.isActive,
+      lastLogin: member.user.lastLogin,
+      createdAt: member.user.createdAt,
+      updatedAt: member.user.updatedAt,
+    }));
+
+    return c.json({ users });
+  } catch (error) {
+    logger.error(
+      { error },
+      `Error fetching users for workspace ${workspaceId}`
+    );
+    return c.json({ error: "Failed to fetch users" }, 500);
+  }
+});
+
+// Get current user's profile (must be before /:id to avoid route shadowing)
+userController.get("/me", async (c) => {
+  const user = c.get("user");
+
+  try {
+    const profile = await prisma.user.findUnique({
+      where: { id: user.id },
       select: {
         id: true,
         email: true,
         firstName: true,
         lastName: true,
         role: true,
-        workspaceId: true,
         isActive: true,
         lastLogin: true,
         createdAt: true,
         updatedAt: true,
+        googleId: true,
         workspace: {
           select: {
             id: true,
             name: true,
+            contactEmail: true,
+            logoUrl: true,
+            createdAt: true,
+            updatedAt: true,
+            _count: {
+              select: {
+                users: true,
+                servers: true,
+              },
+            },
           },
         },
       },
     });
 
-    if (!user) {
-      return c.json({ error: "User not found" }, 404);
+    if (!profile) {
+      return c.json({ error: "Profile not found" }, 404);
     }
 
-    // Only allow admins or users from the same workspace to access user details
-    if (
-      currentUser.role !== UserRole.ADMIN &&
-      currentUser.id !== user.id &&
-      currentUser.workspaceId !== user.workspaceId
-    ) {
-      return c.json(
-        { error: "Forbidden", message: "Cannot access this user" },
-        403
-      );
-    }
-
-    return c.json({ user });
+    return c.json({ profile });
   } catch (error) {
-    logger.error({ error }, `Error fetching user ${id}`);
-    return c.json({ error: "Failed to fetch user" }, 500);
+    logger.error({ error }, `Error fetching profile for user ${user.id}`);
+    return c.json({ error: "Failed to fetch profile" }, 500);
   }
 });
 
-// Update a user (admin only)
+// Update own profile (must be before /:id to avoid route shadowing)
 userController.put(
-  "/:id",
-  strictRateLimiter,
-  authorize([UserRole.ADMIN]),
-  zValidator("json", UpdateUserSchema),
-  async (c) => {
-    const id = c.req.param("id");
-    const data = c.req.valid("json");
-
-    try {
-      // Check if user exists
-      const existingUser = await prisma.user.findUnique({
-        where: { id },
-      });
-
-      if (!existingUser) {
-        return c.json({ error: "User not found" }, 404);
-      }
-
-      const user = await prisma.user.update({
-        where: { id },
-        data,
-        select: {
-          id: true,
-          email: true,
-          firstName: true,
-          lastName: true,
-          role: true,
-          workspaceId: true,
-          isActive: true,
-          lastLogin: true,
-          createdAt: true,
-          updatedAt: true,
-        },
-      });
-
-      return c.json({ user });
-    } catch (error) {
-      logger.error({ error }, `Error updating user ${id}`);
-      return c.json({ error: "Failed to update user" }, 500);
-    }
-  }
-);
-
-// Update own profile (any authenticated user)
-userController.put(
-  "/profile/me",
+  "/me",
   strictRateLimiter,
   zValidator("json", UpdateProfileSchema),
   async (c) => {
@@ -297,91 +251,152 @@ userController.put(
   }
 );
 
-// Get pending invitations for a workspace
-userController.get(
-  "/invitations/workspace/:workspaceId",
-  authorize([UserRole.ADMIN]),
-  checkWorkspaceAccess,
-  zValidator("param", WorkspaceIdParamSchema),
-  async (c) => {
-    const workspaceId = c.req.param("workspaceId");
-
-    try {
-      const invitations = await prisma.invitation.findMany({
-        where: {
-          workspaceId,
-          status: "PENDING",
-        },
-        include: {
-          invitedBy: {
-            select: {
-              id: true,
-              email: true,
-              firstName: true,
-              lastName: true,
-            },
-          },
-        },
-      });
-
-      return c.json({ invitations });
-    } catch (error) {
-      logger.error(
-        { error },
-        `Error fetching invitations for workspace ${workspaceId}`
-      );
-      return c.json({ error: "Failed to fetch invitations" }, 500);
-    }
-  }
-);
-
-// Get current user's profile
-userController.get("/profile/me", async (c) => {
-  const user = c.get("user");
+// Get pending invitations for a workspace (MUST be before /:id route to avoid shadowing)
+userController.get("/invitations", authorize([UserRole.ADMIN]), async (c) => {
+  const workspaceId = getWorkspaceId(c);
 
   try {
-    const profile = await prisma.user.findUnique({
-      where: { id: user.id },
+    const invitations = await prisma.invitation.findMany({
+      where: {
+        workspaceId,
+        status: "PENDING",
+      },
+      include: {
+        invitedBy: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+    });
+
+    return c.json({ invitations });
+  } catch (error) {
+    logger.error(
+      { error },
+      `Error fetching invitations for workspace ${workspaceId}`
+    );
+    return c.json({ error: "Failed to fetch invitations" }, 500);
+  }
+});
+
+// Get a specific user by ID (admin or same workspace)
+userController.get("/:id", async (c) => {
+  const id = c.req.param("id");
+  const workspaceId = getWorkspaceId(c);
+  const currentUser = c.get("user");
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id },
       select: {
         id: true,
         email: true,
         firstName: true,
         lastName: true,
         role: true,
+        workspaceId: true,
         isActive: true,
         lastLogin: true,
         createdAt: true,
         updatedAt: true,
-        googleId: true,
         workspace: {
           select: {
             id: true,
             name: true,
-            contactEmail: true,
-            logoUrl: true,
-            createdAt: true,
-            updatedAt: true,
-            _count: {
-              select: {
-                users: true,
-                servers: true,
-              },
-            },
           },
         },
       },
     });
 
-    if (!profile) {
-      return c.json({ error: "Profile not found" }, 404);
+    if (!user) {
+      return c.json({ error: "User not found" }, 404);
     }
 
-    return c.json({ profile });
+    // Only allow admins or users from the same workspace to access user details
+    if (currentUser.role !== UserRole.ADMIN && currentUser.id !== user.id) {
+      // Check if the user being accessed is actually a member of the workspace
+      // (not just if their primary workspace matches)
+      const userIsMember = await hasWorkspaceAccess(user.id, workspaceId);
+      if (!userIsMember) {
+        return c.json(
+          { error: "Forbidden", message: "Cannot access this user" },
+          403
+        );
+      }
+    }
+
+    return c.json({ user });
   } catch (error) {
-    logger.error({ error }, `Error fetching profile for user ${user.id}`);
-    return c.json({ error: "Failed to fetch profile" }, 500);
+    logger.error({ error }, `Error fetching user ${id}`);
+    return c.json({ error: "Failed to fetch user" }, 500);
   }
 });
+
+// Update a user (admin only)
+userController.put(
+  "/:id",
+  strictRateLimiter,
+  authorize([UserRole.ADMIN]),
+  zValidator("json", UpdateUserSchema),
+  async (c) => {
+    const id = c.req.param("id");
+    const workspaceId = getWorkspaceId(c);
+    const data = c.req.valid("json");
+
+    try {
+      // Check if user exists
+      const existingUser = await prisma.user.findUnique({
+        where: { id },
+      });
+
+      if (!existingUser) {
+        return c.json({ error: "User not found" }, 404);
+      }
+
+      // Verify user is actually a member of the workspace
+      // (check WorkspaceMember table, not just primary workspace assignment)
+      const userIsMember = await hasWorkspaceAccess(
+        existingUser.id,
+        workspaceId
+      );
+      if (!userIsMember) {
+        return c.json(
+          {
+            error: "Forbidden",
+            message: "User does not belong to this workspace",
+          },
+          403
+        );
+      }
+
+      const user = await prisma.user.update({
+        where: { id },
+        data,
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          role: true,
+          workspaceId: true,
+          isActive: true,
+          lastLogin: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+
+      return c.json({ user });
+    } catch (error) {
+      logger.error({ error }, `Error updating user ${id}`);
+      return c.json({ error: "Failed to update user" }, 500);
+    }
+  }
+);
 
 // Update workspace information (workspace admin only)
 userController.put(
@@ -424,70 +439,16 @@ userController.put(
   }
 );
 
-// Get workspace users
-userController.get("/profile/workspace/users", async (c) => {
-  const user = c.get("user");
-
-  if (!user.workspaceId) {
-    return c.json({ error: "No workspace assigned" }, 404);
-  }
-
-  try {
-    // Get all workspace members via WorkspaceMember table
-    const workspaceMembers = await prisma.workspaceMember.findMany({
-      where: { workspaceId: user.workspaceId },
-      include: {
-        user: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-            isActive: true,
-            lastLogin: true,
-            createdAt: true,
-          },
-        },
-      },
-      orderBy: { createdAt: "desc" },
-    });
-
-    // Format response to match expected structure
-    const users = workspaceMembers.map((member) => ({
-      id: member.user.id,
-      email: member.user.email,
-      firstName: member.user.firstName,
-      lastName: member.user.lastName,
-      role: member.role, // Use role from WorkspaceMember
-      isActive: member.user.isActive,
-      lastLogin: member.user.lastLogin,
-      createdAt: member.user.createdAt,
-    }));
-
-    return c.json({ users });
-  } catch (error) {
-    logger.error(
-      { error },
-      `Error fetching workspace users for workspace ${user.workspaceId}`
-    );
-    return c.json({ error: "Failed to fetch workspace users" }, 500);
-  }
-});
-
 // Remove user from workspace (ADMIN ONLY)
+// Note: This route must be registered after /me and /invitations to avoid shadowing
 userController.delete(
-  "/profile/workspace/users/:userId",
+  "/:userId",
   authorize([UserRole.ADMIN]),
   zValidator("param", UserIdParamSchema),
   async (c) => {
     const currentUser = c.get("user");
     const userIdToRemove = c.req.param("userId");
-
-    if (!currentUser.workspaceId) {
-      return c.json({ error: "No workspace assigned" }, 400);
-    }
-
-    const workspaceId = currentUser.workspaceId; // TypeScript now knows this is string
+    const workspaceId = getWorkspaceId(c);
 
     try {
       // Find the user to remove

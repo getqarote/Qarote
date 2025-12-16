@@ -15,12 +15,8 @@ import {
 
 import { VHostMapper } from "@/mappers/rabbitmq/VHostMapper";
 
-import { createErrorResponse } from "../shared";
-import {
-  createRabbitMQClient,
-  getWorkspaceId,
-  verifyServerAccess,
-} from "./shared";
+import { createErrorResponse, getWorkspaceId } from "../shared";
+import { createRabbitMQClient, verifyServerAccess } from "./shared";
 
 const vhostController = new Hono();
 

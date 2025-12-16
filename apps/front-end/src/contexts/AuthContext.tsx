@@ -94,9 +94,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     if (!token) return;
 
     try {
-      const response = await apiClient.getProfile();
+      // Get workspace from user's workspaceId or from workspace context
+      const storedUser = localStorage.getItem("auth_user");
+      const parsedUser = storedUser ? JSON.parse(storedUser) : null;
+      const workspaceId = parsedUser?.workspaceId || parsedUser?.workspace?.id;
+
+      if (!workspaceId) {
+        logger.warn("Cannot refetch user: no workspace ID available");
+        return;
+      }
+
+      const response = await apiClient.getProfile(workspaceId);
       const updatedUser = response.profile;
-      // TODO: fix this shit
+      // Ensure workspaceId is set from workspace object if not directly available
       updatedUser.workspaceId = updatedUser.workspace?.id;
       setUser(updatedUser);
       localStorage.setItem("auth_user", JSON.stringify(updatedUser));
