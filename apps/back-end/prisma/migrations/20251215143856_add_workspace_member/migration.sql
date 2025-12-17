@@ -27,6 +27,7 @@ ALTER TABLE "WorkspaceMember" ADD CONSTRAINT "WorkspaceMember_workspaceId_fkey" 
 
 -- Migrate existing data: Add all users with workspaceId to WorkspaceMember
 -- Use their current role from the User table
+-- Only include users where both user and workspace exist (to handle orphaned data)
 INSERT INTO "WorkspaceMember" ("id", "userId", "workspaceId", "role", "createdAt", "updatedAt")
 SELECT 
     gen_random_uuid()::text,
@@ -37,10 +38,12 @@ SELECT
     NOW()
 FROM "User" u
 WHERE u."workspaceId" IS NOT NULL
+  AND EXISTS (SELECT 1 FROM "Workspace" w WHERE w."id" = u."workspaceId")
 ON CONFLICT ("userId", "workspaceId") DO NOTHING;
 
 -- Migrate workspace owners: Ensure all workspace owners are members with ADMIN role
 -- This handles cases where owners might not have been in the users relation
+-- Only include owners that exist in the User table
 INSERT INTO "WorkspaceMember" ("id", "userId", "workspaceId", "role", "createdAt", "updatedAt")
 SELECT 
     gen_random_uuid()::text,
@@ -51,6 +54,7 @@ SELECT
     NOW()
 FROM "Workspace" w
 WHERE w."ownerId" IS NOT NULL
+  AND EXISTS (SELECT 1 FROM "User" u WHERE u."id" = w."ownerId")
   AND NOT EXISTS (
     SELECT 1 FROM "WorkspaceMember" wm 
     WHERE wm."userId" = w."ownerId" AND wm."workspaceId" = w."id"
