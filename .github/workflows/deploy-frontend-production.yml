@@ -16,35 +16,37 @@ jobs:
       - name: 🔍 Checkout code
         uses: actions/checkout@v4
 
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
       - name: 📦 Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "24"
-          cache: "npm"
-          cache-dependency-path: package-lock.json
+          cache: 'pnpm'
+          cache-dependency-path: pnpm-lock.yaml
 
       - name: 📥 Install dependencies
-        run: npm ci
-
-      - name: 🔍 Check package version consistency
-        run: npm run syncpack:check
+        run: pnpm install --frozen-lockfile
 
       - name: 🔍 Type Check
         working-directory: apps/app
-        run: npm run type-check
+        run: pnpm run type-check
 
       - name: 🧹 Lint
         working-directory: apps/app
-        run: npm run lint
+        run: pnpm run lint
         continue-on-error: false
 
       - name: 💅 Format Check
         working-directory: apps/app
-        run: npm run format
+        run: pnpm run format
 
       - name: 🧪 Run Tests
         working-directory: apps/app
-        run: npm run test:run
+        run: pnpm run test:run
 
   deploy-frontend:
     name: Deploy Frontend to Production
@@ -59,15 +61,20 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
       - name: 🔧 Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 24
-          cache: "npm"
-          cache-dependency-path: package-lock.json
+          cache: 'pnpm'
+          cache-dependency-path: pnpm-lock.yaml
 
       - name: 📦 Install dependencies
-        run: npm ci --ignore-scripts # Ignore scripts to avoid husky errors
+        run: pnpm install --frozen-lockfile --ignore-scripts # Ignore scripts to avoid husky errors
 
       - name: 🏗️ Build frontend for production
         working-directory: apps/app
@@ -79,7 +86,7 @@ jobs:
           VITE_GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           VITE_ENVIRONMENT: production
           NODE_ENV: production
-        run: npm run build
+        run: pnpm run build
 
       - name: 🚀 Deploy to Cloudflare Pages - Production
         uses: cloudflare/wrangler-action@v3

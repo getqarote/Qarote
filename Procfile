@@ -1,2 +1,2 @@
-web: npm run start --workspace=apps/api
-worker: npm run start:alert --workspace=apps/api
+web: pnpm run start --filter=api
+worker: pnpm run start:alert --filter=api

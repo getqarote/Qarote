@@ -16,31 +16,33 @@ jobs:
       - name: 🔍 Checkout code
         uses: actions/checkout@v4
 
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
       - name: 📦 Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "24"
-          cache: "npm"
-          cache-dependency-path: package-lock.json
+          cache: 'pnpm'
+          cache-dependency-path: pnpm-lock.yaml
 
       - name: 📥 Install dependencies
-        run: npm ci
-
-      - name: 🔍 Check package version consistency
-        run: npm run syncpack:check
+        run: pnpm install --frozen-lockfile
 
       - name: 🔍 Type Check
         working-directory: apps/portal
-        run: npm run type-check
+        run: pnpm run type-check
 
       - name: 🧹 Lint
         working-directory: apps/portal
-        run: npm run lint
+        run: pnpm run lint
         continue-on-error: false
 
       - name: 💅 Format Check
         working-directory: apps/portal
-        run: npm run format
+        run: pnpm run format
 
   deploy-portal:
     name: Deploy Portal to Cloudflare Pages - Staging
@@ -52,15 +54,20 @@ jobs:
       - name: 🔍 Checkout code
         uses: actions/checkout@v4
 
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
       - name: 🔧 Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 24
-          cache: "npm"
-          cache-dependency-path: package-lock.json
+          cache: 'pnpm'
+          cache-dependency-path: pnpm-lock.yaml
 
       - name: 📦 Install dependencies
-        run: npm ci --ignore-scripts # Ignore scripts to avoid husky errors
+        run: pnpm install --frozen-lockfile --ignore-scripts # Ignore scripts to avoid husky errors
 
       - name: 🏗️ Build portal
         working-directory: apps/portal
@@ -70,7 +77,7 @@ jobs:
           VITE_ENABLE_OAUTH: ${{ vars.VITE_ENABLE_OAUTH }}
           VITE_DEPLOYMENT_MODE: ${{ vars.VITE_DEPLOYMENT_MODE }}
           NODE_ENV: production
-        run: npm run build
+        run: pnpm run build
 
       - name: 🚀 Deploy to Cloudflare Pages - Staging
         uses: cloudflare/wrangler-action@v3

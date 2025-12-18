@@ -20,34 +20,39 @@ jobs:
       - name: 🔍 Checkout code
         uses: actions/checkout@v4
 
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
       - name: 📦 Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "24"
-          cache: "npm"
-          cache-dependency-path: package-lock.json
+          cache: 'pnpm'
+          cache-dependency-path: pnpm-lock.yaml
 
       - name: 📥 Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: 🔍 Check package version consistency
         run: npm run syncpack:check
 
       - name: 🔍 Type Check
         working-directory: apps/api
-        run: npm run type-check
+        run: pnpm run type-check
 
       - name: 🧹 Lint
         working-directory: apps/api
-        run: npm run lint
+        run: pnpm run lint
 
       - name: 💅 Format Check
         working-directory: apps/api
-        run: npm run format
+        run: pnpm run format
 
       - name: 🧪 Run Tests
         working-directory: apps/api
-        run: npm run test:run
+        run: pnpm run test:run
 
   deploy-backend:
     name: Deploy Backend to Dokku - Staging

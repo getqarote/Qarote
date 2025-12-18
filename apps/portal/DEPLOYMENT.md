@@ -19,14 +19,14 @@ Set these environment variables in your Cloudflare Pages project:
 The project includes a special build command for Cloudflare Pages which avoids issues with optional dependencies:
 
 ```json
-"build:cloudflare": "npm install --no-optional && vite build"
+"build:cloudflare": "pnpm install --no-optional && vite build"
 ```
 
 ## Deployment Steps
 
 1. In Cloudflare Pages, connect your repository
 2. Configure the build settings:
-   - Build command: `npm run build:cloudflare`
+   - Build command: `pnpm run build:cloudflare`
    - Build output directory: `dist`
    - Root directory: `portal` (if deploying from monorepo root)
    - Node.js version: **24** (required - set via NODE_VERSION environment variable or .nvmrc)

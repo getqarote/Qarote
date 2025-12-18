@@ -5,13 +5,13 @@
   "type": "module",
   "engines": {
     "node": ">=24.0.0",
-    "npm": ">=10.0.0"
+    "pnpm": ">=9.0.0"
   },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "build:dev": "vite build --mode development",
-    "build:cloudflare": "npm install --no-optional --no-package-lock && vite build",
+    "build:cloudflare": "pnpm install --no-optional && vite build",
     "lint": "eslint . --max-warnings=-1",
     "lint:fix": "eslint . --fix",
     "type-check": "tsc --noEmit",

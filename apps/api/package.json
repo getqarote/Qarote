@@ -8,7 +8,7 @@
   "license": "ISC",
   "engines": {
     "node": ">=24.0.0",
-    "npm": ">=10.0.0"
+    "pnpm": ">=9.0.0"
   },
   "scripts": {
     "dev": "tsx watch src/index.ts",
@@ -27,8 +27,8 @@
     "db:migrate": "prisma migrate deploy",
     "db:generate": "prisma generate",
     "postinstall": "prisma generate",
-    "build:production": "npm run db:generate && npm run build",
-    "start:production": "npm run db:migrate && npm run start",
+    "build:production": "pnpm run db:generate && pnpm run build",
+    "start:production": "pnpm run db:migrate && pnpm run start",
     "seed:test": "tsx scripts/rabbitmq/seed-test-data.ts",
     "seed:users": "tsx scripts/rabbitmq/seed-test-data.ts --type=users",
     "seed:limits": "tsx scripts/rabbitmq/seed-test-data.ts --type=limits",
@@ -83,6 +83,7 @@
     "amqplib": "^0.10.8",
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
+    "date-fns": "^3.6.0",
     "dotenv": "^16.6.1",
     "google-auth-library": "^10.3.0",
     "hono": "^4.11.1",

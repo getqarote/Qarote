@@ -2,4 +2,4 @@
 # Default variables for dokku-worker role
 
 create_worker_app: true
-worker_start_command: "npm run start:alert"
+worker_start_command: "pnpm run start:alert"

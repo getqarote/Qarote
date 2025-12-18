@@ -13,55 +13,58 @@
     "type": "git",
     "url": "https://github.com/LaGriffe/rabbit-dash-board.git"
   },
-  "workspaces": [
-    "apps/app",
-    "apps/api",
-    "apps/web",
-    "apps/portal",
-    "infrastructure"
-  ],
+  "packageManager": "pnpm@9.0.0",
   "engines": {
     "node": ">=24.0.0",
-    "npm": ">=10.0.0"
+    "pnpm": ">=9.0.0"
   },
   "scripts": {
-    "dev:app": "npm run dev --workspace=apps/app",
-    "dev:api": "npm run dev --workspace=apps/api",
-    "dev:api:alert": "npm run dev:alert --workspace=apps/api",
-    "dev:web": "npm run dev --workspace=apps/web",
-    "dev:portal": "npm run dev --workspace=apps/portal",
-    "prepare": "husky || true",
-    "syncpack:check": "syncpack list-mismatches",
-    "syncpack:fix": "syncpack fix-mismatches"
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "type-check": "turbo run type-check",
+    "format": "turbo run format",
+    "dev:app": "turbo run dev --filter=qarote-app",
+    "dev:api": "turbo run dev --filter=qarote-api",
+    "dev:api:alert": "turbo run dev:alert --filter=qarote-api",
+    "dev:web": "turbo run dev --filter=qarote-web",
+    "dev:portal": "turbo run dev --filter=qarote-portal",
+    "prepare": "husky || true"
   },
   "lint-staged": {
     "apps/api/**/*.{ts,tsx}": [
-      "bash -c 'cd apps/api && npx eslint --fix \"$@\"' _",
-      "bash -c 'cd apps/api && npx prettier --write \"$@\"' _"
+      "bash -c 'cd apps/api && pnpm exec eslint --fix \"$@\"' _",
+      "bash -c 'cd apps/api && pnpm exec prettier --write \"$@\"' _"
     ],
     "apps/app/**/*.{ts,tsx,js,jsx}": [
-      "bash -c 'cd apps/app && npx eslint --fix --max-warnings=-1 \"$@\"' _",
-      "bash -c 'cd apps/app && npx prettier --write \"$@\"' _"
+      "bash -c 'cd apps/app && pnpm exec eslint --fix --max-warnings=-1 \"$@\"' _",
+      "bash -c 'cd apps/app && pnpm exec prettier --write \"$@\"' _"
     ],
     "apps/web/**/*.{ts,tsx,js,jsx}": [
-      "bash -c 'cd apps/web && npx eslint --fix --max-warnings=-1 \"$@\"' _",
-      "bash -c 'cd apps/web && npx prettier --write \"$@\"' _"
+      "bash -c 'cd apps/web && pnpm exec eslint --fix --max-warnings=-1 \"$@\"' _",
+      "bash -c 'cd apps/web && pnpm exec prettier --write \"$@\"' _"
     ],
     "apps/portal/**/*.{ts,tsx,js,jsx}": [
-      "bash -c 'cd apps/portal && npx eslint --fix --max-warnings=-1 \"$@\"' _",
-      "bash -c 'cd apps/portal && npx prettier --write \"$@\"' _"
+      "bash -c 'cd apps/portal && pnpm exec eslint --fix --max-warnings=-1 \"$@\"' _",
+      "bash -c 'cd apps/portal && pnpm exec prettier --write \"$@\"' _"
     ]
   },
   "devDependencies": {
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
-    "syncpack": "^13.0.4"
+    "turbo": "^2.0.0"
   },
   "overrides": {
     "vite": "7.2.7",
     "next": "16.0.10",
     "@react-email/preview-server": {
       "next": "16.0.10"
+    }
+  },
+  "pnpm": {
+    "overrides": {
+      "esbuild@<=0.24.2": ">=0.25.0"
     }
   }
 }

@@ -1,7 +1,7 @@
 {
   "scripts": {
     "dokku": {
-      "predeploy": "npm run db:generate --workspace=apps/api && npm run db:migrate --workspace=apps/api"
+      "predeploy": "pnpm run db:generate --filter=api && pnpm run db:migrate --filter=api"
     }
   },
   "healthchecks": {

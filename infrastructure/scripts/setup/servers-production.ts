@@ -411,7 +411,7 @@ export async function configureProductionLoadBalancer(
     }>("/load_balancers");
 
     const loadBalancer = lbsResponse.load_balancers.find(
-      (lb) => lb.name === config.loadBalancer.name
+      (lb) => lb.name === config?.loadBalancer?.name
     );
 
     if (!loadBalancer) {
