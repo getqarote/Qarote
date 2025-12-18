@@ -4,12 +4,12 @@
   "description": "Modern RabbitMQ Management Interface",
   "icons": [
     {
-      "src": "new_icon_qarote.svg",
+      "src": "images/new_icon.svg",
       "type": "image/svg+xml",
       "sizes": "180x180"
     },
     {
-      "src": "new_social_card.svg",
+      "src": "images/social_card.svg",
       "type": "image/svg+xml",
       "sizes": "1200x630"
     }

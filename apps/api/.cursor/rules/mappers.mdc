@@ -22,7 +22,7 @@ All mappers follow this pattern:
 
 ```typescript
 import type { RabbitMQEntity } from "@/types/rabbitmq";
-import type { EntityResponse } from "@/types/api-responses";
+import type { EntityResponse } from "@/types/api";
 
 export class EntityMapper {
   /**
@@ -72,7 +72,7 @@ return c.json({ queues: mappedQueues });
 ## Type Definitions
 
 - **Internal Types**: `api/src/types/rabbitmq.ts` - Full RabbitMQ API types
-- **API Response Types**: `api/src/types/api-responses.ts` - Lean types for web application
+- **API Response Types**: `api/src/types/api.ts` - Lean types for web application
 - **Web Application Types**: `app/src/lib/api/*` - Must match API response types
 
 ## Rules
@@ -108,6 +108,6 @@ Create a new mapper when:
 
 Mappers should follow the import ordering convention:
 
-1. Types from `@/types/api-responses`
+1. Types from `@/types/api`
 2. Types from `@/types/rabbitmq`
 3. Other internal types as needed

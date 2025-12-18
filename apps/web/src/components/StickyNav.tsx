@@ -35,7 +35,7 @@ const StickyNav = ({ onVideoClick }: StickyNavProps) => {
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center gap-2">
             <img
-              src="/new_icon_qarote.svg"
+              src="/images/new_icon.svg"
               alt="Qarote"
               className="w-6 h-6 sm:w-8 sm:h-8"
             />

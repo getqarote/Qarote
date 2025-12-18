@@ -1,4 +1,4 @@
-import type { VHostResponse } from "@/types/api-responses";
+import type { VHostResponse } from "@/types/api";
 import type {
   RabbitMQVHost,
   VHostLimits,

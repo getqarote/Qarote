@@ -256,7 +256,7 @@ const Index = () => {
           },
           description:
             "The modern RabbitMQ management interface your team deserves. Cleaner than Management Plugin. Simpler than Prometheus. Cheaper than Cloud Solutions.",
-          screenshot: "https://qarote.io/new_social_card.png",
+          screenshot: "https://qarote.io/images/social_card.png",
           softwareVersion: "1.0",
           aggregateRating: {
             "@type": "AggregateRating",
@@ -324,7 +324,7 @@ const Index = () => {
               {!isVideoPlaying ? (
                 <>
                   <img
-                    src={"/images/qarote.png"}
+                    src={"/images/dashboard.png"}
                     alt={"Qarote Dashboard Interface"}
                     className="w-full h-full object-contain bg-card"
                   />
@@ -463,7 +463,7 @@ const Index = () => {
                   <div className="bg-background rounded p-3 space-y-2 flex-1 flex flex-col justify-between overflow-hidden min-h-0">
                     <div className="flex items-center gap-2">
                       <img
-                        src="/new_icon_qarote.svg"
+                        src="/images/new_icon.svg"
                         alt="Qarote"
                         className="w-6 h-6"
                       />
@@ -573,7 +573,7 @@ const Index = () => {
                   <div className="bg-card border-t border-l border-r border-border rounded-t-xl p-6 max-w-sm mx-auto">
                     <div className="flex items-center justify-center gap-2 mb-6">
                       <img
-                        src="/new_icon_qarote.svg"
+                        src="/images/new_icon.svg"
                         alt="Qarote"
                         className="w-8 h-8"
                       />

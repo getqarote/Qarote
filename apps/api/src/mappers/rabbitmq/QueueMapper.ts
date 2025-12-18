@@ -1,4 +1,4 @@
-import type { QueueResponse } from "@/types/api-responses";
+import type { QueueResponse } from "@/types/api";
 import type { RabbitMQQueue } from "@/types/rabbitmq";
 
 /**

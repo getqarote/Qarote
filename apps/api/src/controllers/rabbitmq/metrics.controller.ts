@@ -11,7 +11,7 @@ import {
   LiveRatesResponse,
   MetricsResponse,
   QueueLiveRatesResponse,
-} from "@/types/api-responses";
+} from "@/types/api";
 
 import { NodeMapper, OverviewMapper } from "@/mappers/rabbitmq";
 

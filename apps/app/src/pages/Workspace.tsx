@@ -99,8 +99,8 @@ const Workspace = () => {
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 bg-gradient-to-br from-orange-600 to-red-600 rounded-lg flex items-center justify-center">
                 <img
-                  src="/new_icon_qarote.svg"
-                  alt="Rabbit"
+                  src="/images/new_icon.svg"
+                  alt="Qarote"
                   className="w-4 h-4"
                 />
               </div>

@@ -9,7 +9,7 @@ import {
   VHostRequiredQuerySchema,
 } from "@/schemas/rabbitmq";
 
-import { NodesResponse } from "@/types/api-responses";
+import { NodesResponse } from "@/types/api";
 
 import { BindingMapper, ExchangeMapper, NodeMapper } from "@/mappers/rabbitmq";
 
