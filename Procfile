@@ -1,2 +1,2 @@
-web: pnpm run start --filter=api
-worker: pnpm run start:alert --filter=api
+web: pnpm --filter=qarote-api run start
+worker: pnpm --filter=qarote-api run start:alert

@@ -1,7 +1,7 @@
 {
   "scripts": {
     "dokku": {
-      "predeploy": "pnpm run db:generate --filter=api && pnpm run db:migrate --filter=api"
+      "predeploy": "pnpm --filter=qarote-api run db:generate && pnpm --filter=qarote-api run db:migrate"
     }
   },
   "healthchecks": {

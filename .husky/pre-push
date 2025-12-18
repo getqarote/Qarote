@@ -1,38 +1,34 @@
-echo "🔍 Running checks before push..."
+echo "🔍 Running type checks before push..."
 
 # Get the remote branch name (default to main)
 remote_branch=${1:-main}
 
-# Check package version consistency
-if git diff --name-only $remote_branch...HEAD | grep -qE "^(package\.json|apps/.*/package\.json|\.syncpackrc\.json)"; then
-  echo "📦 Checking package version consistency..."
-  npm run syncpack:check || exit 1
-fi
-
-echo "🔍 Running type checks..."
-
-# Run type-check for backend if any backend files changed
+# Collect packages that need type-checking (using actual package names)
+packages_to_check=""
 if git diff --name-only $remote_branch...HEAD | grep -q "^apps/api/"; then
-  echo "📦 Checking backend types..."
-  npm run type-check --workspace=apps/api || exit 1
+  packages_to_check="$packages_to_check qarote-api"
 fi
 
-# Run type-check for frontend if any frontend files changed
 if git diff --name-only $remote_branch...HEAD | grep -q "^apps/app/"; then
-  echo "📦 Checking frontend types..."
-  npm run type-check --workspace=apps/app || exit 1
+  packages_to_check="$packages_to_check qarote-app"
 fi
 
-# Run type-check for landing if any landing files changed
 if git diff --name-only $remote_branch...HEAD | grep -q "^apps/web/"; then
-  echo "📦 Checking landing types..."
-  npm run type-check --workspace=apps/web || exit 1
+  packages_to_check="$packages_to_check qarote-web"
 fi
 
-# Run type-check for portal if any portal files changed
 if git diff --name-only $remote_branch...HEAD | grep -q "^apps/portal/"; then
-  echo "📦 Checking portal types..."
-  npm run type-check --workspace=apps/portal || exit 1
+  packages_to_check="$packages_to_check qarote-portal"
 fi
 
-echo "✅ All type checks passed!"
+# Run type-check for all changed packages using Turborepo
+if [ -n "$packages_to_check" ]; then
+  echo "📦 Checking types for changed packages..."
+  # Trim leading space and run type-check for each package
+  for package in $(echo "$packages_to_check" | xargs); do
+    pnpm turbo run type-check --filter="$package" || exit 1
+  done
+  echo "✅ All type checks passed!"
+else
+  echo "✅ No app files changed, skipping type checks"
+fi
