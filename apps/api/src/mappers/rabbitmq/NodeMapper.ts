@@ -1,4 +1,4 @@
-import type { NodeResponse } from "@/types/api-responses";
+import type { NodeResponse } from "@/types/api";
 import type { RabbitMQNode } from "@/types/rabbitmq";
 
 /**

@@ -2,7 +2,7 @@ import { Hono } from "hono";
 
 import { logger } from "@/core/logger";
 
-import { NodeMemoryDetailsResponse } from "@/types/api-responses";
+import { NodeMemoryDetailsResponse } from "@/types/api";
 import { RabbitMQNode } from "@/types/rabbitmq";
 
 import { createErrorResponse, getWorkspaceId } from "../shared";

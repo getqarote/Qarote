@@ -29,7 +29,7 @@ import {
   QueuePurgeResponse,
   QueuesResponse,
   SingleQueueResponse,
-} from "@/types/api-responses";
+} from "@/types/api";
 
 import { BindingMapper, ConsumerMapper, QueueMapper } from "@/mappers/rabbitmq";
 

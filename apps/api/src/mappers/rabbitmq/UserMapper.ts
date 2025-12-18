@@ -1,4 +1,4 @@
-import type { UserResponse } from "@/types/api-responses";
+import type { UserResponse } from "@/types/api";
 import type { RabbitMQUser } from "@/types/rabbitmq";
 
 /**

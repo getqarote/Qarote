@@ -37,12 +37,11 @@ This directory contains Docker configuration files for running a complete develo
 3. **Populate RabbitMQ with sample data**:
 
    ```bash
-   docker exec rabbit_dashboard_rabbitmq /etc/rabbitmq/populate-data.sh
+   docker exec rabbit_dashboard_qarote /etc/rabbitmq/populate-data.sh
    ```
 
 4. **Access the RabbitMQ Management UI**:
    Open http://localhost:15672 in your browser
-
    - Username: `admin`
    - Password: `admin123`
 
@@ -144,13 +143,13 @@ docker-compose restart rabbitmq
 ### Access RabbitMQ container shell
 
 ```bash
-docker exec -it rabbit_dashboard_rabbitmq sh
+docker exec -it rabbit_dashboard_qarote sh
 ```
 
 ### Re-populate sample data
 
 ```bash
-docker exec rabbit_dashboard_rabbitmq /etc/rabbitmq/populate-data.sh
+docker exec rabbit_dashboard_qarote /etc/rabbitmq/populate-data.sh
 ```
 
 ## Adding Your Own Server

@@ -8,7 +8,7 @@ import {
   getUserPlan,
 } from "@/services/plan/plan.service";
 
-import { OverviewResponse } from "@/types/api-responses";
+import { OverviewResponse } from "@/types/api";
 
 import { OverviewMapper } from "@/mappers/rabbitmq/OverviewMapper";
 

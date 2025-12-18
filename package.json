@@ -25,13 +25,11 @@
     "npm": ">=10.0.0"
   },
   "scripts": {
-    "dev:front": "npm run dev --workspace=apps/app",
-    "dev:back": "npm run dev --workspace=apps/api",
-    "dev:back:alert": "npm run dev:alert --workspace=apps/api",
-    "dev:landing": "npm run dev --workspace=apps/web",
+    "dev:app": "npm run dev --workspace=apps/app",
+    "dev:api": "npm run dev --workspace=apps/api",
+    "dev:api:alert": "npm run dev:alert --workspace=apps/api",
+    "dev:web": "npm run dev --workspace=apps/web",
     "dev:portal": "npm run dev --workspace=apps/portal",
-    "build": "npm run build --workspace=apps/api",
-    "start": "npm run start --workspace=apps/api",
     "prepare": "husky || true"
   },
   "lint-staged": {

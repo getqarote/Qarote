@@ -1,4 +1,4 @@
-import type { BindingResponse } from "@/types/api-responses";
+import type { BindingResponse } from "@/types/api";
 import type { RabbitMQBinding } from "@/types/rabbitmq";
 
 /**

@@ -1,4 +1,4 @@
-import type { ConsumerResponse } from "@/types/api-responses";
+import type { ConsumerResponse } from "@/types/api";
 import type { RabbitMQConsumer } from "@/types/rabbitmq";
 
 /**

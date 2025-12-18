@@ -20,7 +20,7 @@ interface FAQItem {
 export const SEO = ({
   title = "Qarote - Best RabbitMQ Monitoring & Management Interface",
   description = "The best RabbitMQ monitoring and management interface for developers. Monitor queues, track performance, and manage your message broker with a modern dashboard. Cleaner than Management Plugin, simpler than Prometheus.",
-  image = "https://qarote.io/new_social_card.png",
+  image = "https://qarote.io/images/social_card.png",
   url = "https://qarote.io",
   type = "website",
   keywords = [

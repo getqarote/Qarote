@@ -23,7 +23,7 @@ import {
   ServerHealthCheckResponse,
   UpdateAlertNotificationSettingsResponse,
   UpdateThresholdsResponse,
-} from "@/types/api-responses";
+} from "@/types/api";
 
 import { createErrorResponse, getWorkspaceId } from "../shared";
 import { verifyServerAccess } from "./shared";

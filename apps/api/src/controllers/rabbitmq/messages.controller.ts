@@ -13,7 +13,7 @@ import {
   VHostRequiredQuerySchema,
 } from "@/schemas/rabbitmq";
 
-import { PublishMessageResponse } from "@/types/api-responses";
+import { PublishMessageResponse } from "@/types/api";
 import type { MessageProperties } from "@/types/rabbitmq";
 
 import { createErrorResponse, getWorkspaceId } from "../shared";

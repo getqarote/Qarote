@@ -84,10 +84,10 @@ To add more nodes:
 
 ```bash
 # Check cluster status
-docker exec rabbit_dashboard_rabbitmq_node1 rabbitmqctl cluster_status
+docker exec rabbit_dashboard_qarote_node1 rabbitmqctl cluster_status
 
 # Check node status
-docker exec rabbit_dashboard_rabbitmq_node1 rabbitmqctl node_health_check
+docker exec rabbit_dashboard_qarote_node1 rabbitmqctl node_health_check
 
 # View logs
 docker-compose logs rabbitmq-node1
@@ -128,7 +128,7 @@ docker-compose up -d
 
 ### Check cluster status
 
-docker exec rabbit_dashboard_rabbitmq_node1 rabbitmqctl cluster_status
+docker exec rabbit_dashboard_qarote_node1 rabbitmqctl cluster_status
 
 ### Access load balanced management UI
 
