@@ -1,0 +1,38 @@
+{
+  "dependencyTypes": ["prod", "dev"],
+  "source": [
+    "package.json",
+    "apps/*/package.json"
+  ],
+  "semverGroups": [
+    {
+      "label": "Use exact versions for critical shared packages",
+      "packages": [
+        "vite",
+        "typescript",
+        "eslint",
+        "prettier",
+        "zod",
+        "react",
+        "react-dom",
+        "@types/react",
+        "@types/react-dom"
+      ],
+      "range": ""
+    },
+    {
+      "label": "Use caret for other shared packages",
+      "packages": ["**"],
+      "range": "^"
+    }
+  ],
+  "versionGroups": [
+    {
+      "label": "Ensure all apps use the same version of shared packages",
+      "packages": ["**"],
+      "dependencies": ["**"],
+      "dependencyTypes": ["prod", "dev"]
+    }
+  ]
+}
+

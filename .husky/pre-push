@@ -1,7 +1,15 @@
-echo "🔍 Running type checks before push..."
+echo "🔍 Running checks before push..."
 
 # Get the remote branch name (default to main)
 remote_branch=${1:-main}
+
+# Check package version consistency
+if git diff --name-only $remote_branch...HEAD | grep -qE "^(package\.json|apps/.*/package\.json|\.syncpackrc\.json)"; then
+  echo "📦 Checking package version consistency..."
+  npm run syncpack:check || exit 1
+fi
+
+echo "🔍 Running type checks..."
 
 # Run type-check for backend if any backend files changed
 if git diff --name-only $remote_branch...HEAD | grep -q "^apps/api/"; then

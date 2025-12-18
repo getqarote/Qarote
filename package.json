@@ -30,7 +30,9 @@
     "dev:api:alert": "npm run dev:alert --workspace=apps/api",
     "dev:web": "npm run dev --workspace=apps/web",
     "dev:portal": "npm run dev --workspace=apps/portal",
-    "prepare": "husky || true"
+    "prepare": "husky || true",
+    "syncpack:check": "syncpack list-mismatches",
+    "syncpack:fix": "syncpack fix-mismatches"
   },
   "lint-staged": {
     "apps/api/**/*.{ts,tsx}": [
@@ -52,7 +54,8 @@
   },
   "devDependencies": {
     "husky": "^9.1.7",
-    "lint-staged": "^16.2.7"
+    "lint-staged": "^16.2.7",
+    "syncpack": "^13.0.4"
   },
   "overrides": {
     "vite": "7.2.7",

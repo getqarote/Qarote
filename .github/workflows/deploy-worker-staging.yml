@@ -31,6 +31,9 @@ jobs:
       - name: 📥 Install dependencies
         run: npm ci
 
+      - name: 🔍 Check package version consistency
+        run: npm run syncpack:check
+
       - name: 🔍 Type Check
         working-directory: apps/api
         run: npm run type-check

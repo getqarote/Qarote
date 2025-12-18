@@ -78,7 +78,7 @@
     "@react-email/text": "^0.1.5",
     "@sentry/node": "^10.24.0",
     "@sentry/profiling-node": "^10.24.0",
-    "@types/react": "^19.1.8",
+    "@types/react": "^18.3.3",
     "@types/uuid": "^10.0.0",
     "amqplib": "^0.10.8",
     "bcryptjs": "^3.0.2",
@@ -97,7 +97,7 @@
     "stripe": "^17.7.0",
     "tsconfig-paths": "^4.2.0",
     "uuid": "^11.1.0",
-    "zod": "^3.25.67"
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.0",
@@ -107,16 +107,16 @@
     "@types/cors": "^2.8.19",
     "@types/node": "^24.0.0",
     "@types/nodemailer": "^6.4.14",
-    "eslint": "^9.28.0",
+    "eslint": "^9.39.1",
     "eslint-plugin-simple-import-sort": "^12.1.1",
     "globals": "^15.15.0",
     "next": "^16.0.10",
-    "prettier": "^3.6.0",
+    "prettier": "^3.7.1",
     "prisma": "^6.19.0",
     "tsc-alias": "^1.8.16",
     "tsx": "^4.19.4",
-    "typescript": "^5.8.3",
-    "typescript-eslint": "^8.33.1",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.48.0",
     "vitest": "^4.0.15"
   }
 }
