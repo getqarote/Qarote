@@ -3,6 +3,11 @@ logs
 *.log
 npm-debug.log*
 
+# Lock files (we use pnpm)
+package-lock.json
+npm-shrinkwrap.json
+yarn.lock
+
 .env
 node_modules
 dist
