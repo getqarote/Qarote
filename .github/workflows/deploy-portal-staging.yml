@@ -25,11 +25,14 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "24"
-          cache: 'pnpm'
+          cache: "pnpm"
           cache-dependency-path: pnpm-lock.yaml
 
       - name: 📥 Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: 🔍 Check package version consistency
+        run: pnpm run syncpack:check
 
       - name: 🔍 Type Check
         working-directory: apps/portal
@@ -63,7 +66,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 24
-          cache: 'pnpm'
+          cache: "pnpm"
           cache-dependency-path: pnpm-lock.yaml
 
       - name: 📦 Install dependencies

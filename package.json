@@ -30,7 +30,9 @@
     "dev:api:alert": "turbo run dev:alert --filter=qarote-api",
     "dev:web": "turbo run dev --filter=qarote-web",
     "dev:portal": "turbo run dev --filter=qarote-portal",
-    "prepare": "husky || true"
+    "prepare": "husky || true",
+    "syncpack:check": "syncpack list-mismatches",
+    "syncpack:fix": "syncpack fix-mismatches"
   },
   "lint-staged": {
     "apps/api/**/*.{ts,tsx}": [
@@ -53,6 +55,7 @@
   "devDependencies": {
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
+    "syncpack": "^13.0.4",
     "turbo": "^2.0.0"
   },
   "overrides": {

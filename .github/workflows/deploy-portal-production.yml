@@ -31,6 +31,9 @@ jobs:
       - name: 📥 Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: 🔍 Check package version consistency
+        run: pnpm run syncpack:check
+
       - name: 🔍 Type Check
         working-directory: apps/portal
         run: pnpm run type-check

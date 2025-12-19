@@ -36,7 +36,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: 🔍 Check package version consistency
-        run: npm run syncpack:check
+        run: pnpm run syncpack:check
 
       - name: 🔍 Type Check
         working-directory: apps/api
