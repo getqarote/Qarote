@@ -145,14 +145,9 @@ export function AppSidebar() {
     <Sidebar className="border-r-0 bg-sidebar backdrop-blur-sm">
       <SidebarHeader className="border-b border-sidebar-border p-6">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-gradient-to-br from-orange-600 to-red-600 rounded-lg flex items-center justify-center">
-            <img src="/images/new_icon.svg" alt="Qarote" className="w-4 h-4" />
-          </div>
+          <img src="/images/new_icon.svg" alt="Qarote" className="w-6 h-6" />
           <div>
             <h2 className="font-bold text-sidebar-foreground">Qarote</h2>
-            <p className="text-xs text-sidebar-foreground/70">
-              The next GUI for RabbitMQ
-            </p>
           </div>
         </div>
 

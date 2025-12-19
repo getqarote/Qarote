@@ -76,6 +76,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts # Ignore scripts to avoid husky errors
 
+      - name: Install Wrangler CLI globally
+        run: npm install -g wrangler@3.90.0
+
       - name: Build frontend
         working-directory: apps/app
         env:

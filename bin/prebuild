@@ -1,0 +1,185 @@
+#!/bin/bash
+# Enable corepack before the buildpack runs
+# This is required for pnpm to work with the Heroku Node.js buildpack
+# Corepack is included with Node.js 16.10+ but needs to be explicitly enabled
+#
+# IMPORTANT: This script runs AFTER Node.js is installed but BEFORE dependencies
+# The buildpack's binaries.sh runs during "Installing binaries" phase and needs corepack
+
+echo "=== Enabling corepack for pnpm support ==="
+echo "This script runs early in the buildpack process to ensure corepack is available"
+
+# The buildpack installs Node.js in $HOME/.heroku/node/bin
+# We need to find it and enable corepack before binaries.sh runs
+
+# Common locations where Heroku buildpack installs Node.js
+NODE_DIRS=(
+  "$HOME/.heroku/node/bin"
+  "/app/.heroku/node/bin"
+  "/tmp/cache/node/bin"
+  "$(dirname "$(which node 2>/dev/null || echo '')" 2>/dev/null)"
+)
+
+NODE_DIR=""
+COREPACK_PATH=""
+
+# Find Node.js installation
+for dir in "${NODE_DIRS[@]}"; do
+  if [ -n "$dir" ] && [ -f "$dir/node" ] && [ -f "$dir/corepack" ]; then
+    NODE_DIR="$dir"
+    COREPACK_PATH="$dir/corepack"
+    echo "Found Node.js at: $NODE_DIR"
+    echo "Found corepack at: $COREPACK_PATH"
+    break
+  fi
+done
+
+# If not found, try to find node in PATH
+if [ -z "$NODE_DIR" ]; then
+  if command -v node &> /dev/null; then
+    NODE_PATH=$(command -v node)
+    NODE_DIR=$(dirname "$NODE_PATH")
+    COREPACK_PATH="$NODE_DIR/corepack"
+    if [ -f "$COREPACK_PATH" ]; then
+      echo "Found Node.js in PATH at: $NODE_DIR"
+    else
+      NODE_DIR=""
+      COREPACK_PATH=""
+    fi
+  fi
+fi
+
+# If not found in standard locations, search more aggressively
+# The buildpack installs Node.js in versioned cache directories
+if [ -z "$NODE_DIR" ] || [ ! -f "$COREPACK_PATH" ]; then
+  echo "Searching for Node.js in buildpack cache locations..."
+  
+  # Search in common buildpack cache locations
+  # The buildpack stores Node.js in /tmp/cache/node-VERSION/bin
+  for possible_node_dir in \
+    /tmp/cache/node-*/bin \
+    /tmp/cache/node/bin \
+    "$HOME/.heroku/node/bin" \
+    "/app/.heroku/node/bin" \
+    /opt/nodejs/bin \
+    /usr/local/node/bin; do
+    # Expand glob patterns
+    for node_dir in $possible_node_dir; do
+      if [ -f "$node_dir/node" ] && [ -f "$node_dir/corepack" ]; then
+        NODE_DIR="$node_dir"
+        COREPACK_PATH="$node_dir/corepack"
+        echo "Found Node.js in buildpack cache: $NODE_DIR"
+        break 2
+      fi
+    done
+  done
+fi
+
+# If corepack is not found, we need to install it manually
+# Node.js 25.0.0+ does NOT include corepack by default
+# See: https://github.com/nodejs/corepack#manual-installs
+if [ -z "$NODE_DIR" ] || [ ! -f "$COREPACK_PATH" ]; then
+  echo "Warning: corepack not found in Node.js installation."
+  echo "This can happen with Node.js 25.0.0+ which doesn't include corepack by default."
+  echo "Attempting to install corepack manually..."
+  
+  # First, ensure we have node and npm available
+  if ! command -v node &> /dev/null; then
+    echo "Error: Node.js not found. Cannot install corepack."
+    echo "heroku-prebuild script will attempt to handle corepack setup."
+    exit 0
+  fi
+  
+  # Install corepack globally using npm
+  echo "Installing corepack via npm..."
+  npm install --global corepack@latest || {
+    echo "Error: Failed to install corepack via npm"
+    echo "heroku-prebuild script will attempt to handle corepack setup."
+    exit 0
+  }
+  
+  # Find the installed corepack
+  COREPACK_PATH=$(command -v corepack 2>/dev/null || echo "")
+  if [ -z "$COREPACK_PATH" ]; then
+    # Try to find it in npm's global bin directory
+    NPM_GLOBAL_BIN=$(npm config get prefix 2>/dev/null)/bin
+    if [ -f "$NPM_GLOBAL_BIN/corepack" ]; then
+      COREPACK_PATH="$NPM_GLOBAL_BIN/corepack"
+      export PATH="$NPM_GLOBAL_BIN:$PATH"
+      echo "Found corepack at: $COREPACK_PATH"
+    else
+      echo "Error: corepack installed but not found in PATH"
+      echo "heroku-prebuild script will attempt to handle corepack setup."
+      exit 0
+    fi
+  else
+    echo "Found corepack at: $COREPACK_PATH"
+  fi
+  
+  # Update NODE_DIR if we found node
+  if [ -z "$NODE_DIR" ]; then
+    NODE_PATH=$(command -v node)
+    NODE_DIR=$(dirname "$NODE_PATH")
+    echo "Using Node.js at: $NODE_DIR"
+  fi
+fi
+
+# Add Node.js bin directory to PATH
+export PATH="$NODE_DIR:$PATH"
+echo "Added $NODE_DIR to PATH"
+
+# Update corepack to latest version (as recommended by pnpm docs)
+# Only update if corepack was bundled (not if we just installed it)
+if [ -f "$NODE_DIR/corepack" ] && [ "$COREPACK_PATH" = "$NODE_DIR/corepack" ]; then
+  echo "Updating corepack to latest version..."
+  npm install --global corepack@latest 2>/dev/null || {
+    echo "Note: Could not update corepack globally, using bundled version"
+  }
+  # Re-check corepack path after update
+  COREPACK_PATH=$(command -v corepack 2>/dev/null || echo "$COREPACK_PATH")
+else
+  echo "Using manually installed corepack (already latest version)"
+fi
+
+# Enable corepack for pnpm (as per pnpm documentation)
+echo "Enabling corepack for pnpm..."
+"$COREPACK_PATH" enable pnpm || {
+  echo "Warning: 'corepack enable pnpm' failed, trying generic enable..."
+  "$COREPACK_PATH" enable || {
+    echo "Error: Failed to enable corepack"
+    exit 1
+  }
+}
+
+# Create symlinks in common locations to ensure corepack is findable
+# This is critical because binaries.sh might not have the same PATH
+for link_dir in /usr/local/bin /usr/bin /bin; do
+  if [ -w "$link_dir" ] 2>/dev/null; then
+    if [ ! -f "$link_dir/corepack" ] || [ ! -L "$link_dir/corepack" ]; then
+      ln -sf "$COREPACK_PATH" "$link_dir/corepack" 2>/dev/null && \
+        echo "Created symlink: $link_dir/corepack -> $COREPACK_PATH" || \
+        echo "Note: Could not create symlink in $link_dir"
+    fi
+  fi
+done
+
+# Ensure common bin directories are in PATH
+for dir in /usr/local/bin /usr/bin /bin "$NODE_DIR"; do
+  if [[ ":$PATH:" != *":$dir:"* ]]; then
+    export PATH="$dir:$PATH"
+  fi
+done
+
+# Verify corepack is available
+if command -v corepack &> /dev/null; then
+  echo "✓ corepack enabled and available in PATH"
+  corepack --version 2>/dev/null || echo "  (version check skipped)"
+  echo "Corepack location: $(command -v corepack)"
+else
+  echo "Error: corepack not found in PATH after enabling"
+  echo "Current PATH: $PATH"
+  exit 1
+fi
+
+echo "=== Corepack setup complete ==="
+

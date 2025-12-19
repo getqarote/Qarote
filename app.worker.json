@@ -1,10 +1,10 @@
 {
   "healthchecks": {
-    "web": [
+    "worker": [
       {
         "type": "liveness",
-        "name": "web liveness check",
-        "description": "Ongoing livez check for web process",
+        "name": "worker liveness check",
+        "description": "Ongoing liveness check for worker process",
         "path": "/livez",
         "attempts": 3,
         "timeout": 5,
@@ -12,17 +12,17 @@
       },
       {
         "type": "readiness",
-        "name": "web readiness check",
-        "description": "Check if the web process is ready to serve traffic",
-        "path": "/readyz",
+        "name": "worker readiness check",
+        "description": "Check if the worker process is ready (database connected)",
+        "path": "/health",
         "attempts": 3,
         "timeout": 5,
         "wait": 10
       },
       {
         "type": "startup",
-        "name": "web startup check",
-        "description": "Check if the web process is responding during startup",
+        "name": "worker startup check",
+        "description": "Check if the worker process is responding during startup",
         "path": "/health",
         "attempts": 5,
         "timeout": 10,

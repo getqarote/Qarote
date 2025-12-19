@@ -36,25 +36,43 @@ act --version
 
 ## Quick Start
 
-### Test a specific job
+### Test workflows using npm scripts (Recommended)
 
 ```bash
-# Test quality checks from API staging workflow
-./scripts/test-workflow.sh .github/workflows/deploy-api-staging.yml quality-checks
+# List all available workflows
+pnpm run act:list
 
-# Or use act directly
-act -j quality-checks -W .github/workflows/deploy-api-staging.yml
+# Test staging workflows
+pnpm run act:test:api          # API staging quality checks
+pnpm run act:test:frontend     # Frontend staging quality checks
+pnpm run act:test:landing      # Landing staging quality checks
+pnpm run act:test:portal       # Portal staging quality checks
+pnpm run act:test:worker       # Worker staging quality checks
+
+# Test production workflows (workflow_dispatch)
+pnpm run act:test:api:prod     # API production
+pnpm run act:test:frontend:prod # Frontend production
+pnpm run act:test:landing:prod  # Landing production
+pnpm run act:test:portal:prod   # Portal production
+pnpm run act:test:worker:prod   # Worker production
 ```
 
-### List all workflows
+### Use act directly
 
 ```bash
+# Test a specific job
+act -j quality-checks -W .github/workflows/deploy-api-staging.yml
+
+# List all workflows
+pnpm run act:list
+# or
 act -l
 ```
 
 ## Configuration
 
 The repository includes a `.actrc` file with default settings:
+
 - Uses `catthehacker/ubuntu:act-latest` image (medium size, good compatibility)
 - Uses `linux/amd64` architecture for Apple Silicon compatibility
 
@@ -74,8 +92,8 @@ rm -rf node_modules
 act -j quality-checks -W .github/workflows/deploy-api-staging.yml
 npm install  # Restore after testing
 
-# Option 2: Use the test script which handles this
-./scripts/test-workflow.sh
+# Option 2: Use the npm scripts which handle this
+pnpm run act:test:api
 ```
 
 ### Docker Not Running
@@ -94,26 +112,70 @@ act -j deploy-backend \
 ```
 
 Or create a `.secrets` file:
+
 ```
 DOKKU_SSH_PRIVATE_KEY=your-key-here
 ```
 
 Then use:
+
 ```bash
 act --secret-file .secrets
 ```
 
+### Testing Deploy Jobs
+
+To test the `deploy-backend` job (will fail at SSH/deployment steps, but you can verify corepack setup):
+
+```bash
+# Using npm script (recommended)
+pnpm run act:test:api:deploy
+
+# Or directly with act (requires secrets)
+act -j deploy-backend \
+    -W .github/workflows/deploy-api-staging.yml \
+    --skip-checkout \
+    --secret DOKKU_SSH_PRIVATE_KEY="$(cat ~/.ssh/id_rsa)" \
+    --env DOKKU_HOST=your-dokku-host
+```
+
+**Note**: The deploy job will fail when trying to SSH to Dokku (expected in local testing), but you can verify that:
+- Corepack setup scripts run correctly
+- Environment variables are properly configured
+- The workflow structure is correct
+
+### Testing Corepack Setup Locally
+
+To test the corepack setup without running the full deployment:
+
+```bash
+pnpm run test:corepack
+```
+
+This script simulates the Heroku buildpack behavior and tests:
+- `bin/prebuild` script execution
+- `heroku-prebuild` script execution  
+- Corepack availability and pnpm preparation
+- Simulates the `binaries.sh: line 244` check that fails in Dokku
+
 ## Testing Different Workflows
 
 ```bash
-# API Staging
-act -j quality-checks -W .github/workflows/deploy-api-staging.yml
+# Using npm scripts (recommended)
+pnpm run act:test:api
+pnpm run act:test:frontend
+pnpm run act:test:landing
+pnpm run act:test:portal
+pnpm run act:test:worker
 
-# Frontend Staging  
+# Or use act directly
+act -j quality-checks -W .github/workflows/deploy-api-staging.yml
 act -j quality-checks -W .github/workflows/deploy-frontend-staging.yml
 
-# Production workflows (use workflow_dispatch)
-act workflow_dispatch -W .github/workflows/deploy-api-production.yml
+# Production workflows (workflow_dispatch)
+pnpm run act:test:api:prod
+# or
+act workflow_dispatch -W .github/workflows/deploy-api-production.yml --input confirm_production=DEPLOY
 ```
 
 ## Limitations
@@ -145,4 +207,3 @@ act workflow_dispatch
 
 - [act Documentation](https://nektosact.com/)
 - [act GitHub Repository](https://github.com/nektos/act)
-

@@ -15,12 +15,16 @@
   },
   "packageManager": "pnpm@9.0.0",
   "engines": {
-    "node": ">=24.0.0",
-    "pnpm": ">=9.0.0"
+    "node": "24.x"
   },
   "scripts": {
+    "heroku-prebuild": "if ! command -v corepack > /dev/null 2>&1; then npm install --global corepack@latest || true; fi && (corepack enable pnpm || corepack enable || true)",
     "dev": "turbo run dev",
-    "build": "turbo run build",
+    "build": "turbo run build --filter=qarote-api",
+    "build:api": "turbo run build --filter=qarote-api",
+    "build:app": "turbo run build --filter=qarote-app",
+    "build:web": "turbo run build --filter=qarote-web",
+    "build:portal": "turbo run build --filter=qarote-portal",
     "test": "turbo run test",
     "lint": "turbo run lint",
     "type-check": "turbo run type-check",
@@ -32,7 +36,21 @@
     "dev:portal": "turbo run dev --filter=qarote-portal",
     "prepare": "husky || true",
     "syncpack:check": "syncpack list-mismatches",
-    "syncpack:fix": "syncpack fix-mismatches"
+    "syncpack:fix": "syncpack fix-mismatches",
+    "act:list": "act -l",
+    "act:test:api": "act -j quality-checks -W .github/workflows/deploy-api-staging.yml",
+    "act:test:api:deploy": "act -j deploy-backend -W .github/workflows/deploy-api-staging.yml --env APP_NAME=qarote-staging",
+    "test:corepack": "bash scripts/test-corepack-buildpack.sh",
+    "test:dokku-build": "bash scripts/test-dokku-build.sh",
+    "act:test:api:prod": "act workflow_dispatch -W .github/workflows/deploy-api-production.yml --input confirm_production=DEPLOY",
+    "act:test:frontend": "act -j quality-checks -W .github/workflows/deploy-frontend-staging.yml",
+    "act:test:frontend:prod": "act workflow_dispatch -W .github/workflows/deploy-frontend-production.yml --input confirm_production=DEPLOY",
+    "act:test:landing": "act -j quality-checks -W .github/workflows/deploy-landing-staging.yml",
+    "act:test:landing:prod": "act workflow_dispatch -W .github/workflows/deploy-landing-production.yml --input confirm_production=DEPLOY",
+    "act:test:portal": "act -j quality-checks -W .github/workflows/deploy-portal-staging.yml",
+    "act:test:portal:prod": "act workflow_dispatch -W .github/workflows/deploy-portal-production.yml --input confirm_production=DEPLOY",
+    "act:test:worker": "act -j quality-checks -W .github/workflows/deploy-worker-staging.yml",
+    "act:test:worker:prod": "act workflow_dispatch -W .github/workflows/deploy-worker-production.yml --input confirm_production=DEPLOY"
   },
   "lint-staged": {
     "apps/api/**/*.{ts,tsx}": [
