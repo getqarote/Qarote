@@ -36,9 +36,8 @@ import {
 
 import { useServerContext } from "@/contexts/ServerContext";
 
-import { useServers } from "@/hooks/useApi";
-import { useDeleteServer } from "@/hooks/useServerMutations";
-import { useUser } from "@/hooks/useUser";
+import { useDeleteServer, useServers } from "@/hooks/queries/useServer";
+import { useUser } from "@/hooks/ui/useUser";
 
 interface ServerManagementProps {
   trigger?: React.ReactNode;

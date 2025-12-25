@@ -1,12 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus, Trash2, Users } from "lucide-react";
 import { toast } from "sonner";
 
-import { apiClient } from "@/lib/api";
 import { VHostPermission } from "@/lib/api/vhostTypes";
 
 import { Button } from "@/components/ui/button";
@@ -45,7 +44,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-import { useWorkspace } from "@/hooks/useWorkspace";
+import {
+  useDeleteVHostPermissions,
+  useSetVHostPermissions,
+} from "@/hooks/queries/useRabbitMQVHosts";
+import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 import { type PermissionForm, permissionSchema } from "@/schemas";
 
@@ -74,62 +77,63 @@ export function VHostPermissionsTab({
     },
   });
 
-  const addPermissionMutation = useMutation({
-    mutationFn: (data: PermissionForm) => {
-      if (!workspace?.id) {
-        throw new Error("Workspace ID is required");
-      }
-      return apiClient.setVHostPermissions(
-        serverId,
-        vhostName,
-        data.username,
-        {
-          username: data.username,
-          configure: data.configure,
-          write: data.write,
-          read: data.read,
-        },
-        workspace.id
-      );
-    },
-    onSuccess: () => {
+  const addPermissionMutation = useSetVHostPermissions();
+  const deletePermissionMutation = useDeleteVHostPermissions();
+
+  // Handle success/error for addPermission
+  useEffect(() => {
+    if (addPermissionMutation.isSuccess) {
       queryClient.invalidateQueries({
         queryKey: ["vhost", serverId, vhostName],
       });
       toast.success("Permission added successfully");
       form.reset();
       setShowAddModal(false);
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || "Failed to add permission");
-    },
-  });
-
-  const deletePermissionMutation = useMutation({
-    mutationFn: (username: string) => {
-      if (!workspace?.id) {
-        throw new Error("Workspace ID is required");
-      }
-      return apiClient.deleteVHostPermissions(
-        serverId,
-        vhostName,
-        username,
-        workspace.id
+    }
+    if (addPermissionMutation.isError) {
+      toast.error(
+        addPermissionMutation.error?.message || "Failed to add permission"
       );
-    },
-    onSuccess: () => {
+    }
+  }, [
+    addPermissionMutation.isSuccess,
+    addPermissionMutation.isError,
+    addPermissionMutation.error,
+  ]);
+
+  // Handle success/error for deletePermission
+  useEffect(() => {
+    if (deletePermissionMutation.isSuccess) {
       queryClient.invalidateQueries({
         queryKey: ["vhost", serverId, vhostName],
       });
       toast.success("Permission deleted successfully");
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || "Failed to delete permission");
-    },
-  });
+    }
+    if (deletePermissionMutation.isError) {
+      toast.error(
+        deletePermissionMutation.error?.message || "Failed to delete permission"
+      );
+    }
+  }, [
+    deletePermissionMutation.isSuccess,
+    deletePermissionMutation.isError,
+    deletePermissionMutation.error,
+  ]);
 
   const onSubmit = (data: PermissionForm) => {
-    addPermissionMutation.mutate(data);
+    if (!workspace?.id) {
+      toast.error("Workspace ID is required");
+      return;
+    }
+    addPermissionMutation.mutate({
+      serverId,
+      workspaceId: workspace.id,
+      vhostName,
+      username: data.username,
+      configure: data.configure,
+      write: data.write,
+      read: data.read,
+    });
   };
 
   return (
@@ -308,9 +312,18 @@ export function VHostPermissionsTab({
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() =>
-                        deletePermissionMutation.mutate(permission.user)
-                      }
+                      onClick={() => {
+                        if (!workspace?.id) {
+                          toast.error("Workspace ID is required");
+                          return;
+                        }
+                        deletePermissionMutation.mutate({
+                          serverId,
+                          workspaceId: workspace.id,
+                          vhostName,
+                          username: permission.user,
+                        });
+                      }}
                       disabled={deletePermissionMutation.isPending}
                       className="text-red-600 hover:text-red-700"
                     >

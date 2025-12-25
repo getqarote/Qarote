@@ -38,8 +38,9 @@ import {
   useQueueBindings,
   useQueueConsumers,
   useQueueLiveRates,
-} from "@/hooks/useApi";
-import { useToast } from "@/hooks/useToast";
+} from "@/hooks/queries/useRabbitMQ";
+import { useToast } from "@/hooks/ui/useToast";
+import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 const QueueDetail = () => {
   const { queueName } = useParams<{ queueName: string }>();
@@ -69,19 +70,25 @@ const QueueDetail = () => {
     useQueueLiveRates(selectedServerId, queueName, timeRange, selectedVHost);
 
   const deleteQueueMutation = useDeleteQueue();
+  const { workspace } = useWorkspace();
 
   const queue = queueData?.queue;
 
   const handleNavigateBack = () => navigate("/queues");
 
   const handleDeleteQueue = async () => {
-    if (!selectedServerId || !queueName) return;
+    if (!selectedServerId || !queueName || !workspace?.id) return;
 
     try {
       await deleteQueueMutation.mutateAsync({
         serverId: selectedServerId,
+        workspaceId: workspace.id,
         queueName,
-        options: { if_unused: true, if_empty: true },
+        ifUnused: true,
+        ifEmpty: true,
+        vhost: selectedVHost
+          ? encodeURIComponent(selectedVHost)
+          : encodeURIComponent("/"),
       });
 
       toast({

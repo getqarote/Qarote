@@ -14,17 +14,17 @@ import {
   XCircle,
 } from "lucide-react";
 
-import { apiClient } from "@/lib/api";
 import { logger } from "@/lib/logger";
+import { trpc } from "@/lib/trpc/client";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 
-import { usePlanUpgrade } from "@/hooks/usePlanUpgrade";
-import { useUser } from "@/hooks/useUser";
-import { useWorkspace } from "@/hooks/useWorkspace";
+import { usePlanUpgrade } from "@/hooks/ui/usePlanUpgrade";
+import { useUser } from "@/hooks/ui/useUser";
+import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 import { UserPlan } from "@/types/plans";
 
@@ -112,14 +112,20 @@ export const BillingTab: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
 
+  // Note: getSubscription endpoint doesn't exist in the API
+  // Subscription info is available from billing overview
+  // This function is kept for backward compatibility but subscription
+  // should be fetched from billing overview instead
+  const utils = trpc.useUtils();
+
   const fetchSubscription = useCallback(async () => {
     try {
-      const data = await apiClient.getSubscription();
+      const data = await utils.payment.getBillingOverview.fetch();
       setSubscription(data.subscription);
     } catch (error) {
       logger.error("Error fetching subscription:", error);
     }
-  }, []);
+  }, [utils]);
 
   const fetchPayments = useCallback(
     async (offset = 0, append = false) => {
@@ -130,11 +136,10 @@ export const BillingTab: React.FC = () => {
         if (!append) setLoading(true);
         else setLoadingMore(true);
 
-        const data = await apiClient.getPaymentHistory(
-          workspace.id,
-          20,
-          offset
-        );
+        const data = await utils.payment.history.getPaymentHistory.fetch({
+          limit: 20,
+          offset,
+        });
 
         if (append) {
           setPayments((prev) => [...prev, ...data.payments]);
@@ -150,7 +155,7 @@ export const BillingTab: React.FC = () => {
         setLoadingMore(false);
       }
     },
-    [workspace?.id]
+    [workspace?.id, utils]
   );
 
   useEffect(() => {

@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 
-import { apiClient } from "@/lib/api";
+import { trpc } from "@/lib/trpc/client";
 
-import { useWorkspace } from "@/hooks/useWorkspace";
+import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 import type { AddServerFormData, ConnectionStatus, Server } from "./types";
 
@@ -16,6 +16,7 @@ export const useAddServerForm = ({
   mode = "add",
 }: UseAddServerFormProps = {}) => {
   const { workspace } = useWorkspace();
+  const testConnectionMutation = trpc.rabbitmq.server.testConnection.useMutation();
   const getInitialFormData = useCallback((): AddServerFormData => {
     if (mode === "edit" && server) {
       return {
@@ -115,7 +116,8 @@ export const useAddServerForm = ({
       if (!workspace?.id) {
         throw new Error("Workspace ID is required");
       }
-      const result = await apiClient.testConnection(workspace.id, {
+      const result = await testConnectionMutation.mutateAsync({
+        workspaceId: workspace.id,
         host: formData.host,
         port: formData.port,
         amqpPort: formData.amqpPort,

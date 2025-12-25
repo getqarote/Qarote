@@ -29,8 +29,11 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-import { useCreateExchange } from "@/hooks/useApi";
-import { useToast } from "@/hooks/useToast";
+import { useVHostContext } from "@/contexts/VHostContextDefinition";
+
+import { useCreateExchange } from "@/hooks/queries/useRabbitMQ";
+import { useToast } from "@/hooks/ui/useToast";
+import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 interface ExchangeManagementProps {
   serverId: string;
@@ -53,6 +56,8 @@ export const CreateExchangeDialog = ({
   const [arguments_, setArguments] = useState("");
 
   const createExchangeMutation = useCreateExchange();
+  const { workspace } = useWorkspace();
+  const { selectedVHost } = useVHostContext();
 
   const handleCreateExchange = async () => {
     if (!exchangeName || !exchangeType) {
@@ -79,17 +84,28 @@ export const CreateExchangeDialog = ({
       }
     }
 
+    if (!workspace?.id) {
+      toast({
+        title: "Error",
+        description: "Workspace ID is required",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       await createExchangeMutation.mutateAsync({
         serverId,
-        exchangeData: {
-          name: exchangeName,
-          type: exchangeType,
-          durable,
-          auto_delete: autoDelete,
-          internal,
-          arguments: parsedArguments,
-        },
+        workspaceId: workspace.id,
+        name: exchangeName,
+        type: exchangeType,
+        durable,
+        auto_delete: autoDelete,
+        internal,
+        arguments: parsedArguments,
+        vhost: selectedVHost
+          ? encodeURIComponent(selectedVHost)
+          : encodeURIComponent("/"),
       });
 
       toast({

@@ -3,8 +3,8 @@ import { useNavigate } from "react-router-dom";
 
 import { ArrowLeft, CreditCard, Loader2, XCircle } from "lucide-react";
 
-import { usePlanUpgrade } from "@/hooks/usePlanUpgrade";
-import { useUser } from "@/hooks/useUser";
+import { usePlanUpgrade } from "@/hooks/ui/usePlanUpgrade";
+import { useUser } from "@/hooks/ui/useUser";
 
 import { UserPlan } from "@/types/plans";
 

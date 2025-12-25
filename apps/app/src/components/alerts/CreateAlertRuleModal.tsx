@@ -31,7 +31,7 @@ import { Switch } from "@/components/ui/switch";
 
 import { useServerContext } from "@/contexts/ServerContext";
 
-import { useCreateAlertRule } from "@/hooks/useApi";
+import { useCreateAlertRule } from "@/hooks/queries/useAlerts";
 
 const ALERT_TYPES: { value: AlertType; label: string }[] = [
   { value: "QUEUE_DEPTH", label: "Queue Depth" },

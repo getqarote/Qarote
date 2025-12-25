@@ -21,14 +21,17 @@ importers:
         specifier: ^13.0.4
         version: 13.0.4(typescript@5.9.3)
       turbo:
-        specifier: ^2.0.0
-        version: 2.6.3
+        specifier: ^2.7.2
+        version: 2.7.2
 
   apps/api:
     dependencies:
       '@hono/node-server':
         specifier: ^1.14.4
         version: 1.19.7(hono@4.11.1)
+      '@hono/trpc-server':
+        specifier: ^0.4.1
+        version: 0.4.1(@trpc/server@11.8.0(typescript@5.9.3))(hono@4.11.1)
       '@hono/zod-validator':
         specifier: ^0.7.0
         version: 0.7.6(hono@4.11.1)(zod@3.25.76)
@@ -77,6 +80,9 @@ importers:
       '@sentry/profiling-node':
         specifier: ^10.24.0
         version: 10.32.0
+      '@trpc/server':
+        specifier: ^11.0.0
+        version: 11.8.0(typescript@5.9.3)
       '@types/react':
         specifier: ^18.3.3
         version: 18.3.27
@@ -303,6 +309,12 @@ importers:
       '@tawk.to/tawk-messenger-react':
         specifier: ^2.0.2
         version: 2.0.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@trpc/client':
+        specifier: ^11.0.0
+        version: 11.8.0(@trpc/server@11.8.0(typescript@5.9.3))(typescript@5.9.3)
+      '@trpc/react-query':
+        specifier: ^11.0.0
+        version: 11.8.0(@tanstack/react-query@5.90.12(react@18.3.1))(@trpc/client@11.8.0(@trpc/server@11.8.0(typescript@5.9.3))(typescript@5.9.3))(@trpc/server@11.8.0(typescript@5.9.3))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -490,6 +502,12 @@ importers:
       '@tanstack/react-query':
         specifier: ^5.56.2
         version: 5.90.12(react@18.3.1)
+      '@trpc/client':
+        specifier: ^11.0.0
+        version: 11.8.0(@trpc/server@11.8.0(typescript@5.9.3))(typescript@5.9.3)
+      '@trpc/react-query':
+        specifier: ^11.0.0
+        version: 11.8.0(@tanstack/react-query@5.90.12(react@18.3.1))(@trpc/client@11.8.0(@trpc/server@11.8.0(typescript@5.9.3))(typescript@5.9.3))(@trpc/server@11.8.0(typescript@5.9.3))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -1476,6 +1494,13 @@ packages:
     engines: {node: '>=18.14.1'}
     peerDependencies:
       hono: ^4
+
+  '@hono/trpc-server@0.4.1':
+    resolution: {integrity: sha512-5D4gA+MpJxUzqCEDgZMlhxz1G8BkoneR+N+bD7Kt28LPJ0jAhXp1GA3ucpV6KxMBBLvFXIAFAfzdBeRmz12Pkw==}
+    engines: {node: '>=16.0.0'}
+    peerDependencies:
+      '@trpc/server': ^10.10.0 || >11.0.0-rc
+      hono: '>=4.0.0'
 
   '@hono/zod-validator@0.7.6':
     resolution: {integrity: sha512-Io1B6d011Gj1KknV4rXYz4le5+5EubcWEU/speUjuw9XMMIaP3n78yXLhjd2A3PXaXaUwEAluOiAyLqhBEJgsw==}
@@ -3208,6 +3233,27 @@ packages:
     peerDependencies:
       react: ^18.1.0
       react-dom: ^18.1.0
+
+  '@trpc/client@11.8.0':
+    resolution: {integrity: sha512-imJQeESX1hAapDaC4JB91yvXg41AZfBuTh/scnEiN/hAubZa5s/ikp0n+w29q2GCf+hREkr3WptUFKFJoDAIug==}
+    peerDependencies:
+      '@trpc/server': 11.8.0
+      typescript: '>=5.7.2'
+
+  '@trpc/react-query@11.8.0':
+    resolution: {integrity: sha512-zJG22PqhGUBq6ke58McGxRBGWGDTHlmsgpxp/rQx8iT2yi0Ja1H2/UcSsjZ/MG65DhCfpKvMVH0OVivTn9FWwA==}
+    peerDependencies:
+      '@tanstack/react-query': ^5.80.3
+      '@trpc/client': 11.8.0
+      '@trpc/server': 11.8.0
+      react: '>=18.2.0'
+      react-dom: '>=18.2.0'
+      typescript: '>=5.7.2'
+
+  '@trpc/server@11.8.0':
+    resolution: {integrity: sha512-DphyQnLuyX2nwJCQGWQ9zYz4hZGvRhSBqDhQ0SH3tDhQ3PU4u68xofA0pJ741Ir4InEAFD+TtJVLAQy+wVOkiQ==}
+    peerDependencies:
+      typescript: '>=5.7.2'
 
   '@types/amqplib@0.10.8':
     resolution: {integrity: sha512-vtDp8Pk1wsE/AuQ8/Rgtm6KUZYqcnTgNvEHwzCkX8rL7AGsC6zqAfKAAJhUZXFhM/Pp++tbnUHiam/8vVpPztA==}
@@ -5637,38 +5683,38 @@ packages:
     engines: {node: '>=18.0.0'}
     hasBin: true
 
-  turbo-darwin-64@2.6.3:
-    resolution: {integrity: sha512-BlJJDc1CQ7SK5Y5qnl7AzpkvKSnpkfPmnA+HeU/sgny3oHZckPV2776ebO2M33CYDSor7+8HQwaodY++IINhYg==}
+  turbo-darwin-64@2.7.2:
+    resolution: {integrity: sha512-dxY3X6ezcT5vm3coK6VGixbrhplbQMwgNsCsvZamS/+/6JiebqW9DKt4NwpgYXhDY2HdH00I7FWs3wkVuan4rA==}
     cpu: [x64]
     os: [darwin]
 
-  turbo-darwin-arm64@2.6.3:
-    resolution: {integrity: sha512-MwVt7rBKiOK7zdYerenfCRTypefw4kZCue35IJga9CH1+S50+KTiCkT6LBqo0hHeoH2iKuI0ldTF2a0aB72z3w==}
+  turbo-darwin-arm64@2.7.2:
+    resolution: {integrity: sha512-1bXmuwPLqNFt3mzrtYcVx1sdJ8UYb124Bf48nIgcpMCGZy3kDhgxNv1503kmuK/37OGOZbsWSQFU4I08feIuSg==}
     cpu: [arm64]
     os: [darwin]
 
-  turbo-linux-64@2.6.3:
-    resolution: {integrity: sha512-cqpcw+dXxbnPtNnzeeSyWprjmuFVpHJqKcs7Jym5oXlu/ZcovEASUIUZVN3OGEM6Y/OTyyw0z09tOHNt5yBAVg==}
+  turbo-linux-64@2.7.2:
+    resolution: {integrity: sha512-kP+TiiMaiPugbRlv57VGLfcjFNsFbo8H64wMBCPV2270Or2TpDCBULMzZrvEsvWFjT3pBFvToYbdp8/Kw0jAQg==}
     cpu: [x64]
     os: [linux]
 
-  turbo-linux-arm64@2.6.3:
-    resolution: {integrity: sha512-MterpZQmjXyr4uM7zOgFSFL3oRdNKeflY7nsjxJb2TklsYqiu3Z9pQ4zRVFFH8n0mLGna7MbQMZuKoWqqHb45w==}
+  turbo-linux-arm64@2.7.2:
+    resolution: {integrity: sha512-VDJwQ0+8zjAfbyY6boNaWfP6RIez4ypKHxwkuB6SrWbOSk+vxTyW5/hEjytTwK8w/TsbKVcMDyvpora8tEsRFw==}
     cpu: [arm64]
     os: [linux]
 
-  turbo-windows-64@2.6.3:
-    resolution: {integrity: sha512-biDU70v9dLwnBdLf+daoDlNJVvqOOP8YEjqNipBHzgclbQlXbsi6Gqqelp5er81Qo3BiRgmTNx79oaZQTPb07Q==}
+  turbo-windows-64@2.7.2:
+    resolution: {integrity: sha512-rPjqQXVnI6A6oxgzNEE8DNb6Vdj2Wwyhfv3oDc+YM3U9P7CAcBIlKv/868mKl4vsBtz4ouWpTQNXG8vljgJO+w==}
     cpu: [x64]
     os: [win32]
 
-  turbo-windows-arm64@2.6.3:
-    resolution: {integrity: sha512-dDHVKpSeukah3VsI/xMEKeTnV9V9cjlpFSUs4bmsUiLu3Yv2ENlgVEZv65wxbeE0bh0jjpmElDT+P1KaCxArQQ==}
+  turbo-windows-arm64@2.7.2:
+    resolution: {integrity: sha512-tcnHvBhO515OheIFWdxA+qUvZzNqqcHbLVFc1+n+TJ1rrp8prYicQtbtmsiKgMvr/54jb9jOabU62URAobnB7g==}
     cpu: [arm64]
     os: [win32]
 
-  turbo@2.6.3:
-    resolution: {integrity: sha512-bf6YKUv11l5Xfcmg76PyWoy/e2vbkkxFNBGJSnfdSXQC33ZiUfutYh6IXidc5MhsnrFkWfdNNLyaRk+kHMLlwA==}
+  turbo@2.7.2:
+    resolution: {integrity: sha512-5JIA5aYBAJSAhrhbyag1ZuMSgUZnHtI+Sq3H8D3an4fL8PeF+L1yYvbEJg47akP1PFfATMf5ehkqFnxfkmuwZQ==}
     hasBin: true
 
   type-check@0.4.0:
@@ -6678,6 +6724,11 @@ snapshots:
 
   '@hono/node-server@1.19.7(hono@4.11.1)':
     dependencies:
+      hono: 4.11.1
+
+  '@hono/trpc-server@0.4.1(@trpc/server@11.8.0(typescript@5.9.3))(hono@4.11.1)':
+    dependencies:
+      '@trpc/server': 11.8.0(typescript@5.9.3)
       hono: 4.11.1
 
   '@hono/zod-validator@0.7.6(hono@4.11.1)(zod@3.25.76)':
@@ -8526,6 +8577,24 @@ snapshots:
     dependencies:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
+
+  '@trpc/client@11.8.0(@trpc/server@11.8.0(typescript@5.9.3))(typescript@5.9.3)':
+    dependencies:
+      '@trpc/server': 11.8.0(typescript@5.9.3)
+      typescript: 5.9.3
+
+  '@trpc/react-query@11.8.0(@tanstack/react-query@5.90.12(react@18.3.1))(@trpc/client@11.8.0(@trpc/server@11.8.0(typescript@5.9.3))(typescript@5.9.3))(@trpc/server@11.8.0(typescript@5.9.3))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)':
+    dependencies:
+      '@tanstack/react-query': 5.90.12(react@18.3.1)
+      '@trpc/client': 11.8.0(@trpc/server@11.8.0(typescript@5.9.3))(typescript@5.9.3)
+      '@trpc/server': 11.8.0(typescript@5.9.3)
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
+      typescript: 5.9.3
+
+  '@trpc/server@11.8.0(typescript@5.9.3)':
+    dependencies:
+      typescript: 5.9.3
 
   '@types/amqplib@0.10.8':
     dependencies:
@@ -11258,32 +11327,32 @@ snapshots:
     optionalDependencies:
       fsevents: 2.3.3
 
-  turbo-darwin-64@2.6.3:
+  turbo-darwin-64@2.7.2:
     optional: true
 
-  turbo-darwin-arm64@2.6.3:
+  turbo-darwin-arm64@2.7.2:
     optional: true
 
-  turbo-linux-64@2.6.3:
+  turbo-linux-64@2.7.2:
     optional: true
 
-  turbo-linux-arm64@2.6.3:
+  turbo-linux-arm64@2.7.2:
     optional: true
 
-  turbo-windows-64@2.6.3:
+  turbo-windows-64@2.7.2:
     optional: true
 
-  turbo-windows-arm64@2.6.3:
+  turbo-windows-arm64@2.7.2:
     optional: true
 
-  turbo@2.6.3:
+  turbo@2.7.2:
     optionalDependencies:
-      turbo-darwin-64: 2.6.3
-      turbo-darwin-arm64: 2.6.3
-      turbo-linux-64: 2.6.3
-      turbo-linux-arm64: 2.6.3
-      turbo-windows-64: 2.6.3
-      turbo-windows-arm64: 2.6.3
+      turbo-darwin-64: 2.7.2
+      turbo-darwin-arm64: 2.7.2
+      turbo-linux-64: 2.7.2
+      turbo-linux-arm64: 2.7.2
+      turbo-windows-64: 2.7.2
+      turbo-windows-arm64: 2.7.2
 
   type-check@0.4.0:
     dependencies:

@@ -1,12 +1,11 @@
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CheckCircle, Loader2, Plus } from "lucide-react";
 import { toast } from "sonner";
-
-import { apiClient } from "@/lib/api";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -24,19 +23,20 @@ import { TagsInput } from "@/components/ui/tags-input";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
 
+import {
+  useCreateWorkspace,
+  useUserWorkspaces,
+} from "@/hooks/queries/useWorkspaceApi";
+
 import { WorkspaceFormData, workspaceSchema } from "@/schemas";
 
 const Workspace = () => {
   const navigate = useNavigate();
-  const { user, refetchUser } = useAuth();
+  const { refetchUser } = useAuth();
   const queryClient = useQueryClient();
 
   // Check if user already has workspaces
-  const { isLoading: workspacesLoading } = useQuery({
-    queryKey: ["workspaces"],
-    queryFn: () => apiClient.getUserWorkspaces(),
-    enabled: !!user,
-  });
+  const { isLoading: workspacesLoading } = useUserWorkspaces();
 
   const form = useForm<WorkspaceFormData>({
     resolver: zodResolver(workspaceSchema),
@@ -48,34 +48,49 @@ const Workspace = () => {
   });
 
   // Create workspace mutation
-  const createWorkspaceMutation = useMutation({
-    mutationFn: (data: {
-      name: string;
-      contactEmail?: string;
-      tags?: string[];
-    }) => apiClient.createWorkspace(data),
-    onSuccess: async () => {
+  const createWorkspaceMutation = useCreateWorkspace();
+
+  // Handle success/error
+  useEffect(() => {
+    if (createWorkspaceMutation.isSuccess && createWorkspaceMutation.data) {
       toast.success("Workspace created successfully!");
       queryClient.invalidateQueries({ queryKey: ["workspaces"] });
 
+      // Update user's workspaceId in localStorage from the response
+      const storedUser = localStorage.getItem("auth_user");
+      if (storedUser) {
+        const parsedUser = JSON.parse(storedUser);
+        parsedUser.workspaceId = createWorkspaceMutation.data.workspace.id;
+        localStorage.setItem("auth_user", JSON.stringify(parsedUser));
+      }
+
       // Refetch user data to get updated workspaceId
-      await refetchUser();
+      refetchUser();
 
       // Redirect to dashboard after successful creation
       setTimeout(() => {
         navigate("/", { replace: true });
       }, 1000);
-    },
-    onError: (error: Error) => {
-      toast.error(`Failed to create workspace: ${error.message}`);
-    },
-  });
+    }
+    if (createWorkspaceMutation.isError) {
+      toast.error(
+        `Failed to create workspace: ${createWorkspaceMutation.error?.message || "Unknown error"}`
+      );
+    }
+  }, [
+    createWorkspaceMutation.isSuccess,
+    createWorkspaceMutation.isError,
+    createWorkspaceMutation.data,
+  ]);
 
   const onSubmit = (data: WorkspaceFormData) => {
     createWorkspaceMutation.mutate({
       name: data.name.trim(),
       contactEmail: data.contactEmail?.trim() || undefined,
-      tags: data.tags?.filter((tag) => tag.trim().length > 0) || undefined,
+      tags:
+        data.tags && data.tags.length > 0
+          ? data.tags.filter((tag) => tag.trim().length > 0)
+          : undefined,
     });
   };
 
@@ -97,18 +112,13 @@ const Workspace = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-gradient-to-br from-orange-600 to-red-600 rounded-lg flex items-center justify-center">
-                <img
-                  src="/images/new_icon.svg"
-                  alt="Qarote"
-                  className="w-4 h-4"
-                />
-              </div>
+              <img
+                src="/images/new_icon.svg"
+                alt="Qarote"
+                className="w-8 h-8"
+              />
               <div>
                 <h1 className="text-xl font-semibold text-gray-900">Qarote</h1>
-                <p className="text-sm text-gray-500">
-                  The next GUI for RabbitMQ
-                </p>
               </div>
             </div>
           </div>

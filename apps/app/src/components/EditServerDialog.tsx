@@ -18,7 +18,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-import { useTestConnection, useUpdateServer } from "@/hooks/useServerMutations";
+import { useTestConnection, useUpdateServer } from "@/hooks/api/useServer";
+import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 interface EditServerDialogProps {
   server: Server;
@@ -62,6 +63,7 @@ export function EditServerDialog({
     version?: string;
   } | null>(null);
 
+  const { workspace } = useWorkspace();
   const updateServerMutation = useUpdateServer();
   const testConnectionMutation = useTestConnection();
 
@@ -124,7 +126,11 @@ export function EditServerDialog({
     }
 
     try {
+      if (!workspace?.id) {
+        throw new Error("Workspace ID is required");
+      }
       const result = await testConnectionMutation.mutateAsync({
+        workspaceId: workspace.id,
         host: formData.host,
         port: formData.managementPort,
         username: formData.username,
@@ -158,10 +164,20 @@ export function EditServerDialog({
     }
 
     try {
+      if (!workspace?.id) {
+        throw new Error("Workspace ID is required");
+      }
       await updateServerMutation.mutateAsync({
+        workspaceId: workspace.id,
         id: server.id,
-        ...formData,
+        name: formData.name,
+        host: formData.host,
+        port: formData.managementPort,
+        amqpPort: formData.port,
+        username: formData.username,
         password: formData.password || undefined, // Only send password if changed
+        vhost: formData.vhost,
+        useHttps: formData.useSSL,
       });
 
       onServerUpdated();

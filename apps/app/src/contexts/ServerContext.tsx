@@ -6,7 +6,7 @@ import React, {
   useState,
 } from "react";
 
-import { useServers } from "@/hooks/useApi";
+import { useServers } from "@/hooks/queries/useServer";
 
 interface ServerContextType {
   selectedServerId: string | null;

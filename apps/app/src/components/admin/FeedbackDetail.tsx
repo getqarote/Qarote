@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import { format } from "date-fns";
 import {
@@ -17,8 +17,6 @@ import {
   X,
 } from "lucide-react";
 
-import { apiClient } from "@/lib/api/client";
-
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -33,6 +31,12 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
+
+import {
+  useDeleteFeedback,
+  useFeedbackById,
+  useUpdateFeedback,
+} from "@/hooks/queries/useFeedback";
 
 import type { Feedback } from "@/types/feedback";
 
@@ -64,54 +68,72 @@ function InfoItem({
 }
 
 export function FeedbackDetail({ feedbackId, onClose }: FeedbackDetailProps) {
-  const [feedback, setFeedback] = useState<Feedback | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [updating, setUpdating] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [response, setResponse] = useState("");
   const [status, setStatus] = useState<Feedback["status"]>("OPEN");
 
-  const loadFeedback = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await apiClient.getFeedbackById(feedbackId);
-      setFeedback(data.feedback);
-      setStatus(data.feedback.status);
-      setResponse(data.feedback.response || "");
-    } catch (err) {
-      logger.error("Failed to load feedback:", err);
-      setError(err instanceof Error ? err.message : "Failed to load feedback");
-    } finally {
-      setLoading(false);
-    }
-  }, [feedbackId]);
+  const {
+    data: feedbackData,
+    isLoading: loading,
+    error: queryError,
+    refetch,
+  } = useFeedbackById(feedbackId);
 
+  const updateFeedbackMutation = useUpdateFeedback();
+  const deleteFeedbackMutation = useDeleteFeedback();
+
+  const feedback = feedbackData?.feedback || null;
+  const error = queryError
+    ? queryError instanceof Error
+      ? queryError.message
+      : "Failed to load feedback"
+    : null;
+
+  // Update local state when feedback data changes
   useEffect(() => {
-    loadFeedback();
-  }, [loadFeedback]);
+    if (feedback) {
+      setStatus(feedback.status);
+      setResponse(feedback.response || "");
+    }
+  }, [feedback]);
+
+  // Handle update success/error
+  useEffect(() => {
+    if (updateFeedbackMutation.isSuccess) {
+      refetch();
+    }
+    if (updateFeedbackMutation.isError) {
+      logger.error("Failed to update feedback:", updateFeedbackMutation.error);
+    }
+  }, [
+    updateFeedbackMutation.isSuccess,
+    updateFeedbackMutation.isError,
+    updateFeedbackMutation.error,
+    refetch,
+  ]);
+
+  // Handle delete success/error
+  useEffect(() => {
+    if (deleteFeedbackMutation.isSuccess) {
+      onClose();
+    }
+    if (deleteFeedbackMutation.isError) {
+      logger.error("Failed to delete feedback:", deleteFeedbackMutation.error);
+    }
+  }, [
+    deleteFeedbackMutation.isSuccess,
+    deleteFeedbackMutation.isError,
+    deleteFeedbackMutation.error,
+    onClose,
+  ]);
 
   const handleUpdate = async () => {
     if (!feedback) return;
 
-    try {
-      setUpdating(true);
-      await apiClient.updateFeedback(feedback.id, {
-        status,
-        response: response.trim() || undefined,
-      });
-
-      // Reload feedback to get updated data
-      await loadFeedback();
-    } catch (err) {
-      logger.error("Failed to update feedback:", err);
-      setError(
-        err instanceof Error ? err.message : "Failed to update feedback"
-      );
-    } finally {
-      setUpdating(false);
-    }
+    updateFeedbackMutation.mutate({
+      id: feedback.id,
+      status,
+      response: response.trim() || undefined,
+    });
   };
 
   const handleDelete = async () => {
@@ -125,18 +147,7 @@ export function FeedbackDetail({ feedbackId, onClose }: FeedbackDetailProps) {
       return;
     }
 
-    try {
-      setDeleting(true);
-      await apiClient.deleteFeedback(feedback.id);
-      onClose();
-    } catch (err) {
-      logger.error("Failed to delete feedback:", err);
-      setError(
-        err instanceof Error ? err.message : "Failed to delete feedback"
-      );
-    } finally {
-      setDeleting(false);
-    }
+    deleteFeedbackMutation.mutate({ id: feedback.id });
   };
 
   const statusColors = {
@@ -223,7 +234,7 @@ export function FeedbackDetail({ feedbackId, onClose }: FeedbackDetailProps) {
             </AlertDescription>
           </Alert>
           <div className="mt-4 flex gap-2">
-            <Button onClick={loadFeedback} variant="outline">
+            <Button onClick={() => refetch()} variant="outline">
               Try Again
             </Button>
             <Button onClick={onClose} variant="ghost">
@@ -443,11 +454,11 @@ export function FeedbackDetail({ feedbackId, onClose }: FeedbackDetailProps) {
           <Button
             variant="destructive"
             onClick={handleDelete}
-            disabled={deleting}
+            disabled={deleteFeedbackMutation.isPending}
             className="flex items-center gap-2"
           >
             <Trash2 className="w-4 h-4" />
-            {deleting ? "Deleting..." : "Delete"}
+            {deleteFeedbackMutation.isPending ? "Deleting..." : "Delete"}
           </Button>
 
           <div className="flex gap-2">
@@ -456,11 +467,11 @@ export function FeedbackDetail({ feedbackId, onClose }: FeedbackDetailProps) {
             </Button>
             <Button
               onClick={handleUpdate}
-              disabled={!hasChanges || updating}
+              disabled={!hasChanges || updateFeedbackMutation.isPending}
               className="flex items-center gap-2"
             >
               <Save className="w-4 h-4" />
-              {updating ? "Saving..." : "Save Changes"}
+              {updateFeedbackMutation.isPending ? "Saving..." : "Save Changes"}
             </Button>
           </div>
         </div>

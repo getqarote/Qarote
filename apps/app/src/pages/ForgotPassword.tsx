@@ -1,12 +1,9 @@
-import React, { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { ArrowLeft, Mail, Send } from "lucide-react";
 import { toast } from "sonner";
 
-import { apiClient } from "@/lib/api";
-import type { PasswordResetRequest } from "@/lib/api/passwordClient";
 import { logger } from "@/lib/logger";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -21,23 +18,29 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
+import { useRequestPasswordReset } from "@/hooks/queries/useProfile";
+
 export const ForgotPassword: React.FC = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [emailSent, setEmailSent] = useState(false);
 
-  const resetPasswordMutation = useMutation({
-    mutationFn: (data: PasswordResetRequest) =>
-      apiClient.requestPasswordReset(data),
-    onSuccess: () => {
+  const resetPasswordMutation = useRequestPasswordReset();
+
+  // Handle success/error with useEffect or in the mutation
+  useEffect(() => {
+    if (resetPasswordMutation.isSuccess) {
       setEmailSent(true);
       toast.success("Password reset instructions sent to your email");
-    },
-    onError: (error: Error) => {
-      logger.error("Password reset request error:", error);
+    }
+    if (resetPasswordMutation.isError) {
+      logger.error(
+        "Password reset request error:",
+        resetPasswordMutation.error
+      );
       toast.error("Failed to send password reset email. Please try again.");
-    },
-  });
+    }
+  }, [resetPasswordMutation.isSuccess, resetPasswordMutation.isError]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

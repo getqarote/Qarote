@@ -158,6 +158,7 @@ export function QueueTable({
                       <PurgeQueueDialog
                         queueName={queue.name}
                         messageCount={queue.messages}
+                        vhost={metrics.vhost}
                         onSuccess={() => onRefetch()}
                       />
                     </TableCell>

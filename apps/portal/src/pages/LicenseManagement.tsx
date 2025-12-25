@@ -1,12 +1,12 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 
 import { format } from "date-fns";
 import { CheckCircle, Copy, Download, XCircle } from "lucide-react";
 import { toast } from "sonner";
 
-import { type License, licenseClient } from "@/lib/api";
+import { trpc } from "@/lib/trpc/client";
+import { type License } from "@/lib/types";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -18,10 +18,7 @@ import {
 } from "@/components/ui/card";
 
 const LicenseManagement = () => {
-  const { data, isLoading } = useQuery({
-    queryKey: ["licenses"],
-    queryFn: () => licenseClient.getLicenses(),
-  });
+  const { data, isLoading } = trpc.license.getLicenses.useQuery();
 
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
@@ -32,13 +29,20 @@ const LicenseManagement = () => {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
+  const utils = trpc.useUtils();
+
   const handleDownload = async (licenseId: string) => {
     try {
-      const blob = await licenseClient.downloadLicense(licenseId);
+      const result = await utils.license.downloadLicense.fetch({
+        licenseId,
+      });
+
+      // Create blob from content string
+      const blob = new Blob([result.content], { type: result.mimeType });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `license-${licenseId}.txt`;
+      a.download = result.filename;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);

@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Check } from "lucide-react";
 import { toast } from "sonner";
 
-import { licenseClient } from "@/lib/api";
+import { trpc } from "@/lib/trpc/client";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -23,17 +23,25 @@ const LicensePurchase = () => {
   );
   const [isLoading, setIsLoading] = useState(false);
 
+  const purchaseLicenseMutation = trpc.license.purchaseLicense.useMutation({
+    onSuccess: (data) => {
+      // Redirect to Stripe Checkout
+      window.location.href = data.checkoutUrl;
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to initiate purchase");
+      setIsLoading(false);
+    },
+  });
+
   const handlePurchase = async () => {
     setIsLoading(true);
 
     try {
-      const response = await licenseClient.purchaseLicense({
+      purchaseLicenseMutation.mutate({
         tier: selectedTier,
         billingInterval,
       });
-
-      // Redirect to Stripe Checkout
-      window.location.href = response.checkoutUrl;
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Failed to initiate purchase"

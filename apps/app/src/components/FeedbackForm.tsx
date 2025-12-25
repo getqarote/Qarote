@@ -1,10 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Bug, Lightbulb, MessageSquare, Zap } from "lucide-react";
 
-import { apiClient } from "@/lib/api";
 import { logger } from "@/lib/logger";
 
 import { Button } from "@/components/ui/button";
@@ -35,7 +34,8 @@ import { Textarea } from "@/components/ui/textarea";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
 
-import { useToast } from "@/hooks/useToast";
+import { useSubmitFeedback } from "@/hooks/queries/useFeedback";
+import { useToast } from "@/hooks/ui/useToast";
 
 import { type FeedbackFormData, feedbackSchema } from "@/schemas";
 
@@ -110,27 +110,11 @@ export function FeedbackForm({ onSuccess, className }: FeedbackFormProps) {
     },
   });
 
-  const onSubmit = async (data: FeedbackFormData) => {
-    setIsSubmitting(true);
+  const submitFeedbackMutation = useSubmitFeedback();
 
-    try {
-      const feedbackData: FeedbackRequest = {
-        type: data.type,
-        category: data.category,
-        title: data.title.trim(),
-        description: data.description.trim(),
-        priority: data.priority || "MEDIUM",
-        email: data.email?.trim() || undefined,
-        metadata: {
-          url: window.location.href,
-          userAgent: navigator.userAgent,
-          viewport: `${window.innerWidth}x${window.innerHeight}`,
-          timestamp: new Date().toISOString(),
-        },
-      };
-
-      await apiClient.submitFeedback(feedbackData);
-
+  // Handle success/error
+  useEffect(() => {
+    if (submitFeedbackMutation.isSuccess) {
       toast({
         title: "Feedback Submitted",
         description:
@@ -148,16 +132,42 @@ export function FeedbackForm({ onSuccess, className }: FeedbackFormProps) {
       });
 
       onSuccess?.();
-    } catch (error) {
-      logger.error("Failed to submit feedback:", error);
+      setIsSubmitting(false);
+    }
+    if (submitFeedbackMutation.isError) {
+      logger.error("Failed to submit feedback:", submitFeedbackMutation.error);
       toast({
         title: "Submission Failed",
         description: "Failed to submit feedback. Please try again.",
         variant: "destructive",
       });
-    } finally {
       setIsSubmitting(false);
     }
+  }, [
+    submitFeedbackMutation.isSuccess,
+    submitFeedbackMutation.isError,
+    submitFeedbackMutation.error,
+  ]);
+
+  const onSubmit = async (data: FeedbackFormData) => {
+    setIsSubmitting(true);
+
+    const feedbackData: FeedbackRequest = {
+      type: data.type,
+      category: data.category,
+      title: data.title.trim(),
+      description: data.description.trim(),
+      priority: data.priority || "MEDIUM",
+      email: data.email?.trim() || undefined,
+      metadata: {
+        url: window.location.href,
+        userAgent: navigator.userAgent,
+        viewport: `${window.innerWidth}x${window.innerHeight}`,
+        timestamp: new Date().toISOString(),
+      },
+    };
+
+    submitFeedbackMutation.mutate(feedbackData);
   };
 
   return (

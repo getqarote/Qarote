@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useState } from "react";
 
-import { authClient, type User } from "@/lib/api";
 import { logger } from "@/lib/logger";
+import { trpc } from "@/lib/trpc/client";
+import { type User } from "@/lib/types";
 
 interface AuthContextType {
   user: User | null;
@@ -69,18 +70,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
   }, [logout]);
 
+  const utils = trpc.useUtils();
+
   const refetchUser = useCallback(async () => {
     if (!token) return;
 
     try {
-      const response = await authClient.getProfile();
+      const response = await utils.user.getProfile.fetch();
       const updatedUser = response.profile;
       setUser(updatedUser);
       localStorage.setItem("auth_user", JSON.stringify(updatedUser));
     } catch (error) {
       logger.error("Failed to refetch user data:", error);
     }
-  }, [token]);
+  }, [token, utils]);
 
   const value: AuthContextType = {
     user,

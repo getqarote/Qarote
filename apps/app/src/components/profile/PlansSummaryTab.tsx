@@ -7,8 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-import { usePlanUpgrade } from "@/hooks/usePlanUpgrade";
-import { useUser } from "@/hooks/useUser";
+import { usePlanUpgrade } from "@/hooks/ui/usePlanUpgrade";
+import { useUser } from "@/hooks/ui/useUser";
 
 import { UserPlan } from "@/types/plans";
 

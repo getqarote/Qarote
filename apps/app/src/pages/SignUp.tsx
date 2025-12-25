@@ -32,7 +32,7 @@ import { PasswordRequirements } from "@/components/ui/password-requirements";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
 
-import { useRegister } from "@/hooks/useAuth";
+import { useRegister } from "@/hooks/ui/useAuth";
 
 import { type SignUpFormData, signUpSchema } from "@/schemas";
 

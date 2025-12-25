@@ -58,13 +58,16 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
+import { useVHostContext } from "@/contexts/VHostContextDefinition";
+
+import { queryKeys } from "@/hooks/queries/queryKeys";
 import {
-  queryKeys,
   useExchanges,
   usePublishMessage,
   useQueues,
-} from "@/hooks/useApi";
-import { useToast } from "@/hooks/useToast";
+} from "@/hooks/queries/useRabbitMQ";
+import { useToast } from "@/hooks/ui/useToast";
+import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 import { type SendMessageFormData, sendMessageSchema } from "@/schemas";
 
@@ -141,6 +144,8 @@ export function SendMessageDialog({
   const publishMutation = usePublishMessage();
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { workspace } = useWorkspace();
+  const { selectedVHost } = useVHostContext();
 
   // Initialize form with react-hook-form
   const form = useForm<SendMessageFormData>({
@@ -290,15 +295,27 @@ export function SendMessageDialog({
 
     if (mode === "queue" && queueName) {
       // Direct queue publishing
+      if (!workspace?.id) {
+        toast({
+          title: "Error",
+          description: "Workspace ID is required",
+          variant: "destructive",
+        });
+        return;
+      }
       publishMutation.mutate(
         {
           serverId,
+          workspaceId: workspace.id,
           queueName,
           message: data.payload,
           exchange: data.exchange || "", // Use default exchange if not specified
           routingKey: data.routingKey || queueName, // Use queue name as routing key if not specified
           properties:
             Object.keys(properties).length > 0 ? properties : undefined,
+          vhost: selectedVHost
+            ? encodeURIComponent(selectedVHost)
+            : encodeURIComponent("/"),
         },
         {
           onSuccess: (data) => {
@@ -341,15 +358,27 @@ export function SendMessageDialog({
       );
     } else if (mode === "exchange" && data.exchange) {
       // Exchange publishing (now supported)
+      if (!workspace?.id) {
+        toast({
+          title: "Error",
+          description: "Workspace ID is required",
+          variant: "destructive",
+        });
+        return;
+      }
       publishMutation.mutate(
         {
           serverId,
+          workspaceId: workspace.id,
           queueName: data.routingKey || "", // Use routing key as queue name for exchange publishing
           message: data.payload,
           exchange: data.exchange,
           routingKey: data.routingKey,
           properties:
             Object.keys(properties).length > 0 ? properties : undefined,
+          vhost: selectedVHost
+            ? encodeURIComponent(selectedVHost)
+            : encodeURIComponent("/"),
         },
         {
           onSuccess: (data) => {

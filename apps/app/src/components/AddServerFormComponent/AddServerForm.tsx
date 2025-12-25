@@ -1,11 +1,9 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { useQueryClient } from "@tanstack/react-query";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Edit, Loader2, Plus, Server } from "lucide-react";
 
-import { apiClient } from "@/lib/api";
 import { logger } from "@/lib/logger";
 
 import { Button } from "@/components/ui/button";
@@ -22,9 +20,13 @@ import { Form } from "@/components/ui/form";
 
 import { useServerContext } from "@/contexts/ServerContext";
 
-import { queryKeys } from "@/hooks/useApi";
-import { useUser } from "@/hooks/useUser";
-import { useWorkspace } from "@/hooks/useWorkspace";
+import {
+  useCreateServer,
+  useTestConnection,
+  useUpdateServer,
+} from "@/hooks/queries/useServer";
+import { useUser } from "@/hooks/ui/useUser";
+import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 import { type AddServerFormData, addServerSchema } from "@/schemas";
 
@@ -48,7 +50,9 @@ export const AddServerForm = ({
   const { setSelectedServerId } = useServerContext();
   const { refetchPlan } = useUser();
   const { workspace } = useWorkspace();
-  const queryClient = useQueryClient();
+  const createServerMutation = useCreateServer();
+  const updateServerMutation = useUpdateServer();
+  const testConnectionMutation = useTestConnection();
   const [internalIsOpen, setInternalIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isTestingConnection, setIsTestingConnection] = useState(false);
@@ -105,7 +109,8 @@ export const AddServerForm = ({
       if (!workspace?.id) {
         throw new Error("Workspace ID is required");
       }
-      const result = await apiClient.testConnection(workspace.id, {
+      const result = await testConnectionMutation.mutateAsync({
+        workspaceId: workspace.id,
         host: formData.host,
         port: formData.port,
         amqpPort: formData.amqpPort,
@@ -150,7 +155,9 @@ export const AddServerForm = ({
       }
       if (mode === "edit" && server) {
         // Update existing server
-        await apiClient.updateServer(workspace.id, server.id, {
+        await updateServerMutation.mutateAsync({
+          workspaceId: workspace.id,
+          id: server.id,
           name: data.name,
           host: data.host,
           port: data.port,
@@ -161,11 +168,6 @@ export const AddServerForm = ({
           useHttps: data.useHttps,
         });
 
-        // Invalidate servers query to refresh the server list
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.servers(workspace?.id),
-        });
-
         // Close dialog
         setIsOpen(false);
 
@@ -173,7 +175,8 @@ export const AddServerForm = ({
         onServerUpdated?.();
       } else {
         // Create new server
-        const result = await apiClient.createServer(workspace.id, {
+        const result = await createServerMutation.mutateAsync({
+          workspaceId: workspace.id,
           name: data.name,
           host: data.host,
           port: data.port,
@@ -186,11 +189,6 @@ export const AddServerForm = ({
 
         // Set this as the selected server (only for new servers)
         setSelectedServerId(result.server.id);
-
-        // Invalidate servers query to refresh the server list
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.servers(workspace?.id),
-        });
 
         // Refresh user plan data to update server limits
         await refetchPlan();

@@ -40,7 +40,10 @@ import { DeleteUserModal } from "@/components/users/DeleteUserModal";
 import { useAuth } from "@/contexts/AuthContextDefinition";
 import { useServerContext } from "@/contexts/ServerContext";
 
-import { useDeleteUser, useServers, useUsers, useVHosts } from "@/hooks/useApi";
+import { useDeleteUser, useUsers } from "@/hooks/queries/useRabbitMQUsers";
+import { useVHosts } from "@/hooks/queries/useRabbitMQVHosts";
+import { useServers } from "@/hooks/queries/useServer";
+import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 export default function UsersPage() {
   const { serverId } = useParams<{ serverId: string }>();
@@ -73,6 +76,7 @@ export default function UsersPage() {
   const { data: vhostsData } = useVHosts(currentServerId, serverExists);
 
   const deleteUserMutation = useDeleteUser();
+  const { workspace } = useWorkspace();
 
   // Redirect non-admin users
   if (user?.role !== "ADMIN") {
@@ -523,8 +527,13 @@ export default function UsersPage() {
                   user={deleteUser}
                   onConfirm={async () => {
                     try {
+                      if (!workspace?.id) {
+                        toast.error("Workspace ID is required");
+                        return;
+                      }
                       await deleteUserMutation.mutateAsync({
                         serverId: currentServerId!,
+                        workspaceId: workspace.id,
                         username: deleteUser.name,
                       });
                       toast.success("User deleted successfully");

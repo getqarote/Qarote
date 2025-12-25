@@ -1,5 +1,5 @@
 import { UserPlan } from "@prisma/client";
-import { z } from "zod/v4";
+import { z } from "zod";
 
 // Schema for license purchase
 export const purchaseLicenseSchema = z.object({
@@ -7,5 +7,18 @@ export const purchaseLicenseSchema = z.object({
   billingInterval: z.enum(["monthly", "yearly"]),
 });
 
+// Schema for license validation
+export const validateLicenseSchema = z.object({
+  licenseKey: z.string().min(1, "License key is required"),
+  instanceId: z.string().optional(),
+});
+
+// Schema for license download
+export const downloadLicenseSchema = z.object({
+  licenseId: z.string(),
+});
+
 // Types derived from schemas
 export type PurchaseLicenseRequest = z.infer<typeof purchaseLicenseSchema>;
+export type ValidateLicenseRequest = z.infer<typeof validateLicenseSchema>;
+export type DownloadLicenseRequest = z.infer<typeof downloadLicenseSchema>;

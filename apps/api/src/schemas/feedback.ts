@@ -1,4 +1,4 @@
-import z from "zod/v4";
+import { z } from "zod";
 
 // Validation schemas
 export const submitFeedbackSchema = z.object({
@@ -28,4 +28,28 @@ export const submitFeedbackSchema = z.object({
 export const updateFeedbackSchema = z.object({
   status: z.enum(["OPEN", "IN_PROGRESS", "RESOLVED", "CLOSED"]).optional(),
   response: z.string().max(2000).optional(),
+});
+
+// ID parameter schemas
+export const FeedbackIdSchema = z.object({
+  id: z.string(),
+});
+
+// Query schemas
+export const GetAllFeedbackQuerySchema = z.object({
+  page: z.number().int().positive().optional().default(1),
+  limit: z.number().int().positive().optional().default(20),
+  status: z.string().optional(),
+  type: z.string().optional(),
+  priority: z.string().optional(),
+  workspaceId: z.string().optional(),
+});
+
+export const GetFeedbackStatsQuerySchema = z.object({
+  workspaceId: z.string().optional(),
+});
+
+// Update feedback with ID schema
+export const UpdateFeedbackWithIdSchema = updateFeedbackSchema.extend({
+  id: z.string(),
 });

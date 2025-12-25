@@ -27,8 +27,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-import { useUser } from "@/hooks/useUser";
-import { useWorkspace } from "@/hooks/useWorkspace";
+import { useUser } from "@/hooks/ui/useUser";
+import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 import { UserPlan } from "@/types/plans";
 

@@ -59,14 +59,14 @@ import {
   useCreateWebhook,
   useDeleteSlackConfig,
   useDeleteWebhook,
-  useServers,
   useSlackConfigs,
   useUpdateAlertNotificationSettings,
   useUpdateSlackConfig,
   useUpdateWebhook,
   useWebhooks,
-} from "@/hooks/useApi";
-import { useWorkspace } from "@/hooks/useWorkspace";
+} from "@/hooks/queries/useAlerts";
+import { useServers } from "@/hooks/queries/useServer";
+import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 interface AlertNotificationSettingsModalProps {
   isOpen: boolean;
@@ -133,13 +133,13 @@ export function AlertNotificationSettingsModal({
   const selectedCount = notificationServerIds?.length || 0;
 
   // Webhook hooks (must be called before any early returns)
-  const { data: webhooksData } = useWebhooks(isOpen);
+  const { data: webhooks = [] } = useWebhooks(isOpen);
   const createWebhookMutation = useCreateWebhook();
   const updateWebhookMutation = useUpdateWebhook();
   const deleteWebhookMutation = useDeleteWebhook();
 
   // Slack hooks (must be called before any early returns)
-  const { data: slackConfigsData } = useSlackConfigs(isOpen);
+  const { data: slackConfigs = [] } = useSlackConfigs(isOpen);
   const createSlackConfigMutation = useCreateSlackConfig();
   const updateSlackConfigMutation = useUpdateSlackConfig();
   const deleteSlackConfigMutation = useDeleteSlackConfig();
@@ -182,7 +182,6 @@ export function AlertNotificationSettingsModal({
 
   // Update webhook fields from first webhook (if exists)
   useEffect(() => {
-    const webhooks = webhooksData?.webhooks || [];
     const firstWebhook = webhooks[0];
     if (firstWebhook) {
       setWebhookUrl(firstWebhook.url);
@@ -193,11 +192,10 @@ export function AlertNotificationSettingsModal({
       setWebhookSecret("");
       setWebhookEnabled(true);
     }
-  }, [webhooksData]);
+  }, [webhooks]);
 
   // Update Slack fields from first Slack config (if exists)
   useEffect(() => {
-    const slackConfigs = slackConfigsData?.slackConfigs || [];
     const firstSlack = slackConfigs[0];
     if (firstSlack) {
       setSlackWebhookUrl(firstSlack.webhookUrl);
@@ -206,7 +204,7 @@ export function AlertNotificationSettingsModal({
       setSlackWebhookUrl("");
       setSlackEnabled(true);
     }
-  }, [slackConfigsData]);
+  }, [slackConfigs]);
 
   // Show loading state only if workspace is loading (settings will use placeholder data for instant display)
   const isLoading = isWorkspaceLoading || !workspace?.id;
@@ -434,7 +432,6 @@ export function AlertNotificationSettingsModal({
     );
   }
 
-  const webhooks = webhooksData?.webhooks || [];
   const firstWebhook = webhooks[0];
 
   const handleSaveWebhook = () => {
@@ -464,12 +461,10 @@ export function AlertNotificationSettingsModal({
       // Update existing webhook
       updateWebhookMutation.mutate(
         {
-          webhookId: firstWebhook.id,
-          data: {
-            url: webhookUrl.trim(),
-            enabled: webhookEnabled,
-            secret: webhookSecret.trim() || null,
-          },
+          id: firstWebhook.id,
+          url: webhookUrl.trim(),
+          enabled: webhookEnabled,
+          secret: webhookSecret.trim() || null,
         },
         {
           onSuccess: () => {
@@ -515,7 +510,6 @@ export function AlertNotificationSettingsModal({
     });
   };
 
-  const slackConfigs = slackConfigsData?.slackConfigs || [];
   const firstSlack = slackConfigs[0];
 
   const handleSaveSlack = () => {
@@ -549,42 +543,16 @@ export function AlertNotificationSettingsModal({
       // Update existing Slack config
       updateSlackConfigMutation.mutate(
         {
-          slackConfigId: firstSlack.id,
-          data: {
-            webhookUrl: slackWebhookUrl.trim(),
-            enabled: slackEnabled,
-          },
+          id: firstSlack.id,
+          webhookUrl: slackWebhookUrl.trim(),
+          enabled: slackEnabled,
         },
         {
           onSuccess: () => {
             toast.success("Slack configuration updated successfully");
           },
           onError: (error: ApiError) => {
-            // Extract validation error message from API response
-            let errorMessage = "Failed to update Slack configuration";
-
-            if (error.message) {
-              errorMessage = error.message;
-            } else if (typeof error === "object" && error !== null) {
-              // Check for Hono validation error format
-              if ("error" in error) {
-                const errorObj = error as unknown as {
-                  error: { issues: { message: string }[] };
-                };
-                // Hono zValidator returns errors in format: { success: false, error: { issues: [...] } }
-                if (
-                  errorObj.error?.issues &&
-                  Array.isArray(errorObj.error.issues)
-                ) {
-                  const firstIssue = errorObj.error.issues[0];
-                  errorMessage = firstIssue?.message || String(errorObj.error);
-                } else {
-                  errorMessage = String(errorObj.error);
-                }
-              }
-            }
-
-            toast.error(errorMessage);
+            toast.error(error.message || "Failed to update Slack configuration");
           },
         }
       );
@@ -600,31 +568,7 @@ export function AlertNotificationSettingsModal({
             toast.success("Slack configuration created successfully");
           },
           onError: (error: ApiError) => {
-            // Extract validation error message from API response
-            let errorMessage = "Failed to create Slack configuration";
-
-            if (error.message) {
-              errorMessage = error.message;
-            } else if (typeof error === "object" && error !== null) {
-              // Check for Hono validation error format
-              if ("error" in error) {
-                const errorObj = error as unknown as {
-                  error: { issues: { message: string }[] };
-                };
-                // Hono zValidator returns errors in format: { success: false, error: { issues: [...] } }
-                if (
-                  errorObj.error?.issues &&
-                  Array.isArray(errorObj.error.issues)
-                ) {
-                  const firstIssue = errorObj.error.issues[0];
-                  errorMessage = firstIssue?.message || String(errorObj.error);
-                } else {
-                  errorMessage = String(errorObj.error);
-                }
-              }
-            }
-
-            toast.error(errorMessage);
+            toast.error(error.message || "Failed to create Slack configuration");
           },
         }
       );
@@ -650,8 +594,8 @@ export function AlertNotificationSettingsModal({
     if (!firstSlack) return; // Just update local state if no config exists yet
     updateSlackConfigMutation.mutate(
       {
-        slackConfigId: firstSlack.id,
-        data: { enabled },
+        id: firstSlack.id,
+        enabled,
       },
       {
         onError: (error: ApiError) => {
@@ -668,8 +612,8 @@ export function AlertNotificationSettingsModal({
     if (!firstWebhook) return; // Just update local state if no webhook exists yet
     updateWebhookMutation.mutate(
       {
-        webhookId: firstWebhook.id,
-        data: { enabled },
+        id: firstWebhook.id,
+        enabled,
       },
       {
         onSuccess: () => {

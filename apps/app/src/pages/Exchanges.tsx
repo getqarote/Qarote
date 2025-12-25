@@ -45,8 +45,9 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useServerContext } from "@/contexts/ServerContext";
 import { useVHostContext } from "@/contexts/VHostContextDefinition";
 
-import { useDeleteExchange, useExchanges } from "@/hooks/useApi";
-import { useToast } from "@/hooks/useToast";
+import { useDeleteExchange, useExchanges } from "@/hooks/queries/useRabbitMQ";
+import { useToast } from "@/hooks/ui/useToast";
+import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 import { ApiErrorWithCode } from "@/types/apiErrors";
 
@@ -72,15 +73,20 @@ const Exchanges = () => {
   } = useExchanges(selectedServerId, selectedVHost);
 
   const deleteExchangeMutation = useDeleteExchange();
+  const { workspace } = useWorkspace();
 
   const handleDeleteExchange = async (exchangeName: string) => {
-    if (!selectedServerId) return;
+    if (!selectedServerId || !workspace?.id) return;
 
     try {
       await deleteExchangeMutation.mutateAsync({
         serverId: selectedServerId,
+        workspaceId: workspace.id,
         exchangeName,
-        options: forceDelete ? {} : { if_unused: true },
+        ifUnused: forceDelete ? undefined : true,
+        vhost: selectedVHost
+          ? encodeURIComponent(selectedVHost)
+          : encodeURIComponent("/"),
       });
 
       toast({

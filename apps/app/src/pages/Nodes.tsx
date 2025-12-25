@@ -7,8 +7,8 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 
 import { useServerContext } from "@/contexts/ServerContext";
 
-import { useNodes } from "@/hooks/useApi";
-import { useUser } from "@/hooks/useUser";
+import { useNodes } from "@/hooks/queries/useRabbitMQ";
+import { useUser } from "@/hooks/ui/useUser";
 
 import { RabbitMQAuthorizationError } from "@/types/apiErrors";
 

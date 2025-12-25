@@ -3,8 +3,8 @@ import { useNavigate } from "react-router-dom";
 
 import { toast } from "sonner";
 
-import { authClient } from "@/lib/api";
 import { logger } from "@/lib/logger";
+import { trpc } from "@/lib/trpc/client";
 
 import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton";
 import { Button } from "@/components/ui/button";
@@ -23,22 +23,22 @@ const Login = () => {
   const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+
+  const loginMutation = trpc.auth.session.login.useMutation({
+    onSuccess: (data) => {
+      login(data.token, data.user);
+      toast.success("Logged in successfully");
+      navigate("/licenses");
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to login");
+    },
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
 
-    try {
-      const response = await authClient.login({ email, password });
-      login(response.token, response.user);
-      toast.success("Logged in successfully");
-      navigate("/licenses");
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to login");
-    } finally {
-      setIsLoading(false);
-    }
+    loginMutation.mutate({ email, password });
   };
 
   return (
@@ -83,8 +83,12 @@ const Login = () => {
                 placeholder="••••••••"
               />
             </div>
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Logging in..." : "Login"}
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={loginMutation.isPending}
+            >
+              {loginMutation.isPending ? "Logging in..." : "Login"}
             </Button>
           </form>
 

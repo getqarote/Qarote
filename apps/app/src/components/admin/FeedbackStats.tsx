@@ -1,5 +1,3 @@
-import { useEffect, useState } from "react";
-
 import {
   AlertTriangle,
   CheckCircle,
@@ -9,17 +7,13 @@ import {
   TrendingUp,
 } from "lucide-react";
 
-import { apiClient } from "@/lib/api/client";
-
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
-import type { FeedbackStats as FeedbackStatsType } from "@/types/feedback";
-
-import logger from "../../lib/logger";
+import { useFeedbackStats } from "@/hooks/queries/useFeedback";
 
 interface StatsCardProps {
   title: string;
@@ -92,29 +86,19 @@ function CategoryStats({ title, data, colorMap }: CategoryStatsProps) {
 }
 
 export function FeedbackStats() {
-  const [stats, setStats] = useState<FeedbackStatsType | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    data: statsData,
+    isLoading: loading,
+    error: queryError,
+    refetch,
+  } = useFeedbackStats();
 
-  const loadStats = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await apiClient.getFeedbackStats();
-      setStats(response.stats);
-    } catch (err) {
-      logger.error("Failed to load feedback stats:", err);
-      setError(
-        err instanceof Error ? err.message : "Failed to load statistics"
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadStats();
-  }, []);
+  const stats = statsData?.stats || null;
+  const error = queryError
+    ? queryError instanceof Error
+      ? queryError.message
+      : "Failed to load statistics"
+    : null;
 
   const statusColorMap = {
     OPEN: "text-red-600 border-red-200",
@@ -185,7 +169,7 @@ export function FeedbackStats() {
               Overview of all feedback submissions
             </p>
           </div>
-          <Button onClick={loadStats} variant="outline" size="sm">
+          <Button onClick={() => refetch()} variant="outline" size="sm">
             <RefreshCw className="w-4 h-4 mr-2" />
             Retry
           </Button>
@@ -211,7 +195,7 @@ export function FeedbackStats() {
               Overview of all feedback submissions
             </p>
           </div>
-          <Button onClick={loadStats} variant="outline" size="sm">
+          <Button onClick={() => refetch()} variant="outline" size="sm">
             <RefreshCw className="w-4 h-4 mr-2" />
             Refresh
           </Button>

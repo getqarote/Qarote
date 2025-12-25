@@ -6,7 +6,7 @@ import { SendMessageDialog } from "@/components/SendMessageDialog";
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 
-import { useQueuePauseStatus } from "@/hooks/useApi";
+import { useQueuePauseStatus } from "@/hooks/queries/useRabbitMQ";
 
 interface QueueHeaderProps {
   queueName: string;

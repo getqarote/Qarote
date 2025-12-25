@@ -1,4 +1,4 @@
-import { UserPlan } from "@prisma/client";
+import { BillingInterval, SubscriptionStatus, UserPlan } from "@prisma/client";
 import Stripe from "stripe";
 
 import { logger } from "@/core/logger";
@@ -61,12 +61,24 @@ export interface CreateCustomerParams {
 export class CoreStripeService {
   /**
    * Map Stripe price ID to user plan
+   * First tries exact match with STRIPE_PRICE_IDS, then falls back to string matching
    */
   static mapStripePlanToUserPlan(stripePriceId: string): UserPlan | null {
+    // First, try exact match with configured price IDs
     for (const [plan, prices] of Object.entries(STRIPE_PRICE_IDS)) {
       if (prices.monthly === stripePriceId || prices.yearly === stripePriceId) {
         return plan as UserPlan;
       }
+    }
+    // Fallback to string matching for flexibility
+    if (stripePriceId.includes("free")) {
+      return UserPlan.FREE;
+    }
+    if (stripePriceId.includes("developer")) {
+      return UserPlan.DEVELOPER;
+    }
+    if (stripePriceId.includes("enterprise")) {
+      return UserPlan.ENTERPRISE;
     }
     return null;
   }
@@ -116,6 +128,143 @@ export class CoreStripeService {
     return typeof obj.customer === "string"
       ? obj.customer
       : obj.customer?.id || null;
+  }
+
+  /**
+   * Extract subscription ID from Stripe invoice
+   * Handles both string and object subscription types
+   */
+  static extractSubscriptionIdFromInvoice(
+    invoice: Stripe.Invoice
+  ): string | null {
+    if (typeof invoice.subscription === "string") {
+      return invoice.subscription;
+    }
+    return invoice.subscription?.id || null;
+  }
+
+  /**
+   * Extract customer ID from Stripe subscription
+   * Handles both string and object customer types
+   */
+  static extractCustomerIdFromSubscription(
+    subscription: Stripe.Subscription
+  ): string | null {
+    if (typeof subscription.customer === "string") {
+      return subscription.customer;
+    }
+    return subscription.customer?.id || null;
+  }
+
+  /**
+   * Extract payment intent ID from Stripe checkout session
+   * Handles both string and object payment_intent types
+   */
+  static extractPaymentIntentIdFromSession(
+    session: Stripe.Checkout.Session
+  ): string | null {
+    if (typeof session.payment_intent === "string") {
+      return session.payment_intent;
+    }
+    return session.payment_intent?.id || null;
+  }
+
+  /**
+   * Map Stripe subscription status to our internal SubscriptionStatus enum
+   */
+  static mapStripeStatusToSubscriptionStatus(
+    stripeStatus: string
+  ): SubscriptionStatus {
+    switch (stripeStatus.toUpperCase()) {
+      case "ACTIVE":
+        return SubscriptionStatus.ACTIVE;
+      case "PAST_DUE":
+        return SubscriptionStatus.PAST_DUE;
+      case "CANCELED":
+      case "CANCELLED":
+        return SubscriptionStatus.CANCELED;
+      case "INCOMPLETE":
+        return SubscriptionStatus.INCOMPLETE;
+      case "INCOMPLETE_EXPIRED":
+        return SubscriptionStatus.INCOMPLETE_EXPIRED;
+      default:
+        return SubscriptionStatus.INCOMPLETE;
+    }
+  }
+
+  /**
+   * Extract payment failure reason from Stripe invoice
+   * Attempts to get the most specific error message available
+   */
+  static mapInvoiceToFailureReason(invoice: Stripe.Invoice): string {
+    // First, try to get failure_message from the charge object
+    if (
+      invoice.charge &&
+      typeof invoice.charge !== "string" &&
+      invoice.charge.failure_message
+    ) {
+      return invoice.charge.failure_message;
+    }
+
+    // Fallback to outcome reason if available
+    if (
+      invoice.charge &&
+      typeof invoice.charge !== "string" &&
+      invoice.charge.outcome?.reason
+    ) {
+      return invoice.charge.outcome.reason;
+    }
+
+    // Default fallback
+    return "Payment failed";
+  }
+
+  /**
+   * Determine subscription status based on trial information
+   * Returns TRIALING if trial exists, otherwise ACTIVE
+   */
+  static mapSubscriptionStatusFromTrial(
+    trialStart: number | null | undefined,
+    trialEnd: number | null | undefined
+  ): SubscriptionStatus {
+    const hasTrial = trialStart && trialEnd;
+    return hasTrial ? SubscriptionStatus.TRIALING : SubscriptionStatus.ACTIVE;
+  }
+
+  /**
+   * Map Stripe billing interval string to BillingInterval enum
+   * Handles both "yearly"/"year" and "monthly"/"month" formats
+   */
+  static mapStripeBillingIntervalToBillingInterval(
+    interval: string | undefined
+  ): BillingInterval {
+    if (interval === "yearly" || interval === "year") {
+      return BillingInterval.YEAR;
+    }
+    return BillingInterval.MONTH;
+  }
+
+  /**
+   * Map Stripe recurring interval to BillingInterval enum
+   * Stripe uses "year" and "month" for recurring intervals
+   */
+  static mapStripeBillingInterval(
+    interval: string | undefined
+  ): BillingInterval {
+    if (interval === "year") {
+      return BillingInterval.YEAR;
+    }
+    return BillingInterval.MONTH;
+  }
+
+  /**
+   * Map BillingInterval enum to string format
+   * Returns "monthly" or "yearly" for display/API purposes
+   */
+  static mapBillingIntervalToString(
+    interval: BillingInterval
+  ): "monthly" | "yearly" {
+    return interval === BillingInterval.YEAR ? "yearly" : "monthly";
   }
 
   /**

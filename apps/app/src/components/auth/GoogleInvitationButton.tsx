@@ -2,15 +2,14 @@ import "@/styles/google-auth.css";
 
 import React from "react";
 import { CredentialResponse, GoogleLogin } from "@react-oauth/google";
-import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 
-import { apiClient } from "@/lib/api";
 import { logger } from "@/lib/logger";
+import { trpc } from "@/lib/trpc/client";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
 
-import { useToast } from "@/hooks/useToast";
+import { useToast } from "@/hooks/ui/useToast";
 
 interface GoogleInvitationButtonProps {
   invitationToken: string;
@@ -30,16 +29,7 @@ export const GoogleInvitationButton: React.FC<GoogleInvitationButtonProps> = ({
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const googleInvitationMutation = useMutation({
-    mutationFn: async (credentialResponse: CredentialResponse) => {
-      if (!credentialResponse.credential) {
-        throw new Error("No credential received from Google");
-      }
-      return await apiClient.acceptInvitationWithGoogle(
-        invitationToken,
-        credentialResponse.credential
-      );
-    },
+  const googleInvitationMutation = trpc.public.invitation.acceptWithGoogle.useMutation({
     onSuccess: (data) => {
       // Set authentication state
       login(data.token, data.user);
@@ -71,7 +61,10 @@ export const GoogleInvitationButton: React.FC<GoogleInvitationButtonProps> = ({
 
   const handleGoogleSuccess = (credentialResponse: CredentialResponse) => {
     if (credentialResponse.credential) {
-      googleInvitationMutation.mutate(credentialResponse);
+      googleInvitationMutation.mutate({
+        token: invitationToken,
+        credential: credentialResponse.credential,
+      });
     } else {
       onError?.("No credential received from Google");
     }

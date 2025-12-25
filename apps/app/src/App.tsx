@@ -4,6 +4,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 import { queryClient } from "@/lib/queryClient";
 import { SentryErrorBoundary, withSentryProfiling } from "@/lib/sentry";
+import { TRPCProvider } from "@/lib/trpc/provider";
 
 import { Layout } from "@/components/Layout";
 import { PageLoader } from "@/components/PageLoader";
@@ -52,275 +53,280 @@ const Workspace = lazy(() => import("./pages/Workspace"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const AppCore = () => (
-  <QueryClientProvider client={queryClient}>
-    <ThemeProvider>
-      <AuthProvider>
-        <UserProvider>
-          <WorkspaceProvider>
-            <ServerProvider>
-              <VHostProvider>
-                <TooltipProvider>
-                  <Toaster />
-                  <Sonner />
-                  <BrowserRouter
-                    future={{
-                      v7_startTransition: true,
-                      v7_relativeSplatPath: true,
-                    }}
-                  >
-                    <TawkTo />
-                    <ScrollToTop />
-                    <Suspense fallback={<PageLoader />}>
-                      <Routes>
-                        {/* Public authentication routes */}
-                        <Route
-                          path="/auth/sign-in"
-                          element={
-                            <PublicRoute>
-                              <SignIn />
-                            </PublicRoute>
-                          }
-                        />
-                        <Route
-                          path="/auth/sign-up"
-                          element={
-                            <PublicRoute>
-                              <SignUp />
-                            </PublicRoute>
-                          }
-                        />
-                        <Route path="/verify-email" element={<VerifyEmail />} />
-                        <Route
-                          path="/terms-of-service"
-                          element={<TermsOfService />}
-                        />
-                        <Route
-                          path="/privacy-policy"
-                          element={<PrivacyPolicy />}
-                        />
-                        <Route
-                          path="/forgot-password"
-                          element={
-                            <PublicRoute>
-                              <ForgotPassword />
-                            </PublicRoute>
-                          }
-                        />
-                        <Route
-                          path="/reset-password"
-                          element={
-                            <PublicRoute>
-                              <ResetPassword />
-                            </PublicRoute>
-                          }
-                        />
-                        <Route
-                          path="/invite/:token"
-                          element={
-                            <PublicRoute>
-                              <AcceptInvitation />
-                            </PublicRoute>
-                          }
-                        />
+  <TRPCProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <AuthProvider>
+          <UserProvider>
+            <WorkspaceProvider>
+              <ServerProvider>
+                <VHostProvider>
+                  <TooltipProvider>
+                    <Toaster />
+                    <Sonner />
+                    <BrowserRouter
+                      future={{
+                        v7_startTransition: true,
+                        v7_relativeSplatPath: true,
+                      }}
+                    >
+                      <TawkTo />
+                      <ScrollToTop />
+                      <Suspense fallback={<PageLoader />}>
+                        <Routes>
+                          {/* Public authentication routes */}
+                          <Route
+                            path="/auth/sign-in"
+                            element={
+                              <PublicRoute>
+                                <SignIn />
+                              </PublicRoute>
+                            }
+                          />
+                          <Route
+                            path="/auth/sign-up"
+                            element={
+                              <PublicRoute>
+                                <SignUp />
+                              </PublicRoute>
+                            }
+                          />
+                          <Route
+                            path="/verify-email"
+                            element={<VerifyEmail />}
+                          />
+                          <Route
+                            path="/terms-of-service"
+                            element={<TermsOfService />}
+                          />
+                          <Route
+                            path="/privacy-policy"
+                            element={<PrivacyPolicy />}
+                          />
+                          <Route
+                            path="/forgot-password"
+                            element={
+                              <PublicRoute>
+                                <ForgotPassword />
+                              </PublicRoute>
+                            }
+                          />
+                          <Route
+                            path="/reset-password"
+                            element={
+                              <PublicRoute>
+                                <ResetPassword />
+                              </PublicRoute>
+                            }
+                          />
+                          <Route
+                            path="/invite/:token"
+                            element={
+                              <PublicRoute>
+                                <AcceptInvitation />
+                              </PublicRoute>
+                            }
+                          />
 
-                        {/* Protected routes */}
-                        <Route
-                          path="/workspace"
-                          element={
-                            <ProtectedRoute>
-                              <Workspace />
-                            </ProtectedRoute>
-                          }
-                        />
-                        <Route
-                          path="/"
-                          element={
-                            <ProtectedRoute>
-                              <Layout>
-                                <Index />
-                              </Layout>
-                            </ProtectedRoute>
-                          }
-                        />
-                        <Route
-                          path="/queues"
-                          element={
-                            <ProtectedRoute>
-                              <Layout>
-                                <Queues />
-                              </Layout>
-                            </ProtectedRoute>
-                          }
-                        />
-                        <Route
-                          path="/queues/:queueName"
-                          element={
-                            <ProtectedRoute>
-                              <Layout>
-                                <QueueDetail />
-                              </Layout>
-                            </ProtectedRoute>
-                          }
-                        />
-                        <Route
-                          path="/connections"
-                          element={
-                            <ProtectedRoute>
-                              <Layout>
-                                <Connections />
-                              </Layout>
-                            </ProtectedRoute>
-                          }
-                        />
-                        <Route
-                          path="/nodes"
-                          element={
-                            <ProtectedRoute>
-                              <Layout>
-                                <Nodes />
-                              </Layout>
-                            </ProtectedRoute>
-                          }
-                        />
-                        <Route
-                          path="/exchanges"
-                          element={
-                            <ProtectedRoute>
-                              <Layout>
-                                <Exchanges />
-                              </Layout>
-                            </ProtectedRoute>
-                          }
-                        />
-                        <Route
-                          path="/vhosts"
-                          element={
-                            <ProtectedRoute>
-                              <Layout>
-                                <VHosts />
-                              </Layout>
-                            </ProtectedRoute>
-                          }
-                        />
-                        <Route
-                          path="/vhosts/:vhostName"
-                          element={
-                            <ProtectedRoute>
-                              <Layout>
-                                <VHostDetails />
-                              </Layout>
-                            </ProtectedRoute>
-                          }
-                        />
-                        <Route
-                          path="/users"
-                          element={
-                            <ProtectedRoute>
-                              <Layout>
-                                <Users />
-                              </Layout>
-                            </ProtectedRoute>
-                          }
-                        />
-                        <Route
-                          path="/users/:username"
-                          element={
-                            <ProtectedRoute>
-                              <Layout>
-                                <UserDetails />
-                              </Layout>
-                            </ProtectedRoute>
-                          }
-                        />
-                        <Route
-                          path="/alerts"
-                          element={
-                            <ProtectedRoute>
-                              <Layout>
-                                <Alerts />
-                              </Layout>
-                            </ProtectedRoute>
-                          }
-                        />
-                        <Route
-                          path="/profile"
-                          element={
-                            <ProtectedRoute>
-                              <Layout>
-                                <Profile />
-                              </Layout>
-                            </ProtectedRoute>
-                          }
-                        />
-                        <Route
-                          path="/plans"
-                          element={
-                            <ProtectedRoute>
-                              <Layout>
-                                <Plans />
-                              </Layout>
-                            </ProtectedRoute>
-                          }
-                        />
-                        <Route
-                          path="/billing"
-                          element={
-                            <ProtectedRoute>
-                              <Layout>
-                                <Billing />
-                              </Layout>
-                            </ProtectedRoute>
-                          }
-                        />
-                        <Route
-                          path="/payment/success"
-                          element={
-                            <ProtectedRoute>
-                              <PaymentSuccess />
-                            </ProtectedRoute>
-                          }
-                        />
-                        <Route
-                          path="/payment/cancelled"
-                          element={
-                            <ProtectedRoute>
-                              <PaymentCancelled />
-                            </ProtectedRoute>
-                          }
-                        />
-                        <Route
-                          path="/help"
-                          element={
-                            <ProtectedRoute>
-                              <Layout>
-                                <HelpSupport />
-                              </Layout>
-                            </ProtectedRoute>
-                          }
-                        />
+                          {/* Protected routes */}
+                          <Route
+                            path="/workspace"
+                            element={
+                              <ProtectedRoute>
+                                <Workspace />
+                              </ProtectedRoute>
+                            }
+                          />
+                          <Route
+                            path="/"
+                            element={
+                              <ProtectedRoute>
+                                <Layout>
+                                  <Index />
+                                </Layout>
+                              </ProtectedRoute>
+                            }
+                          />
+                          <Route
+                            path="/queues"
+                            element={
+                              <ProtectedRoute>
+                                <Layout>
+                                  <Queues />
+                                </Layout>
+                              </ProtectedRoute>
+                            }
+                          />
+                          <Route
+                            path="/queues/:queueName"
+                            element={
+                              <ProtectedRoute>
+                                <Layout>
+                                  <QueueDetail />
+                                </Layout>
+                              </ProtectedRoute>
+                            }
+                          />
+                          <Route
+                            path="/connections"
+                            element={
+                              <ProtectedRoute>
+                                <Layout>
+                                  <Connections />
+                                </Layout>
+                              </ProtectedRoute>
+                            }
+                          />
+                          <Route
+                            path="/nodes"
+                            element={
+                              <ProtectedRoute>
+                                <Layout>
+                                  <Nodes />
+                                </Layout>
+                              </ProtectedRoute>
+                            }
+                          />
+                          <Route
+                            path="/exchanges"
+                            element={
+                              <ProtectedRoute>
+                                <Layout>
+                                  <Exchanges />
+                                </Layout>
+                              </ProtectedRoute>
+                            }
+                          />
+                          <Route
+                            path="/vhosts"
+                            element={
+                              <ProtectedRoute>
+                                <Layout>
+                                  <VHosts />
+                                </Layout>
+                              </ProtectedRoute>
+                            }
+                          />
+                          <Route
+                            path="/vhosts/:vhostName"
+                            element={
+                              <ProtectedRoute>
+                                <Layout>
+                                  <VHostDetails />
+                                </Layout>
+                              </ProtectedRoute>
+                            }
+                          />
+                          <Route
+                            path="/users"
+                            element={
+                              <ProtectedRoute>
+                                <Layout>
+                                  <Users />
+                                </Layout>
+                              </ProtectedRoute>
+                            }
+                          />
+                          <Route
+                            path="/users/:username"
+                            element={
+                              <ProtectedRoute>
+                                <Layout>
+                                  <UserDetails />
+                                </Layout>
+                              </ProtectedRoute>
+                            }
+                          />
+                          <Route
+                            path="/alerts"
+                            element={
+                              <ProtectedRoute>
+                                <Layout>
+                                  <Alerts />
+                                </Layout>
+                              </ProtectedRoute>
+                            }
+                          />
+                          <Route
+                            path="/profile"
+                            element={
+                              <ProtectedRoute>
+                                <Layout>
+                                  <Profile />
+                                </Layout>
+                              </ProtectedRoute>
+                            }
+                          />
+                          <Route
+                            path="/plans"
+                            element={
+                              <ProtectedRoute>
+                                <Layout>
+                                  <Plans />
+                                </Layout>
+                              </ProtectedRoute>
+                            }
+                          />
+                          <Route
+                            path="/billing"
+                            element={
+                              <ProtectedRoute>
+                                <Layout>
+                                  <Billing />
+                                </Layout>
+                              </ProtectedRoute>
+                            }
+                          />
+                          <Route
+                            path="/payment/success"
+                            element={
+                              <ProtectedRoute>
+                                <PaymentSuccess />
+                              </ProtectedRoute>
+                            }
+                          />
+                          <Route
+                            path="/payment/cancelled"
+                            element={
+                              <ProtectedRoute>
+                                <PaymentCancelled />
+                              </ProtectedRoute>
+                            }
+                          />
+                          <Route
+                            path="/help"
+                            element={
+                              <ProtectedRoute>
+                                <Layout>
+                                  <HelpSupport />
+                                </Layout>
+                              </ProtectedRoute>
+                            }
+                          />
 
-                        {/* Protected 404 route - catches all other paths */}
-                        <Route
-                          path="*"
-                          element={
-                            <ProtectedRoute>
-                              <Layout>
-                                <NotFound />
-                              </Layout>
-                            </ProtectedRoute>
-                          }
-                        />
-                      </Routes>
-                    </Suspense>
-                  </BrowserRouter>
-                </TooltipProvider>
-              </VHostProvider>
-            </ServerProvider>
-          </WorkspaceProvider>
-        </UserProvider>
-      </AuthProvider>
-    </ThemeProvider>
-  </QueryClientProvider>
+                          {/* Protected 404 route - catches all other paths */}
+                          <Route
+                            path="*"
+                            element={
+                              <ProtectedRoute>
+                                <Layout>
+                                  <NotFound />
+                                </Layout>
+                              </ProtectedRoute>
+                            }
+                          />
+                        </Routes>
+                      </Suspense>
+                    </BrowserRouter>
+                  </TooltipProvider>
+                </VHostProvider>
+              </ServerProvider>
+            </WorkspaceProvider>
+          </UserProvider>
+        </AuthProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
+  </TRPCProvider>
 );
 
 // Wrap the app with Sentry error boundary and profiling

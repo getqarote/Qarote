@@ -5,8 +5,8 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { CheckCircle, Mail, RefreshCw, XCircle } from "lucide-react";
 import { toast } from "sonner";
 
-import { apiClient } from "@/lib/api";
 import { logger } from "@/lib/logger";
+import { trpc } from "@/lib/trpc/client";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -78,7 +78,10 @@ export default function VerifyEmail() {
 
         setVerificationState({ loading: true, result: null });
 
-        const data = await apiClient.verifyEmail(verificationToken);
+        const utils = trpc.useUtils();
+        const data = await utils.auth.verifyEmail.mutate({
+          token: verificationToken,
+        });
 
         logger.log("Verification successful:", data);
 
@@ -146,7 +149,10 @@ export default function VerifyEmail() {
 
   const handleResendVerification = async () => {
     try {
-      await apiClient.resendVerificationEmail("SIGNUP");
+      const utils = trpc.useUtils();
+      await utils.auth.resendVerification.mutate({
+        type: "SIGNUP",
+      });
       toast.success("Verification email sent! Please check your inbox.");
     } catch (error: unknown) {
       logger.error("Resend verification error:", error);

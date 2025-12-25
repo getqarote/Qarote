@@ -1,12 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Edit, Plus, Settings, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
-import { apiClient } from "@/lib/api";
 import { VHostLimits } from "@/lib/api/vhostTypes";
 
 import { Badge } from "@/components/ui/badge";
@@ -53,7 +52,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-import { useWorkspace } from "@/hooks/useWorkspace";
+import {
+  useDeleteVHostLimit,
+  useSetVHostLimit,
+} from "@/hooks/queries/useRabbitMQVHosts";
+import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 import {
   type EditLimitValueForm,
@@ -105,100 +108,75 @@ export function VHostLimitsTab({
     resolver: zodResolver(editLimitValueSchema),
   });
 
-  const setLimitMutation = useMutation({
-    mutationFn: (data: LimitForm) => {
-      if (!workspace?.id) {
-        throw new Error("Workspace ID is required");
-      }
-      return apiClient.setVHostLimit(
-        serverId,
-        vhostName,
-        data.limitType,
-        {
-          value: data.value,
-          limitType: data.limitType,
-        },
-        workspace.id
-      );
-    },
-    onSuccess: () => {
+  const setLimitMutation = useSetVHostLimit();
+  const deleteLimitMutation = useDeleteVHostLimit();
+
+  // Handle success/error for setLimit
+  useEffect(() => {
+    if (setLimitMutation.isSuccess) {
       queryClient.invalidateQueries({
         queryKey: ["vhost", serverId, vhostName],
       });
       toast.success("Limit set successfully");
       form.reset();
       setShowAddModal(false);
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || "Failed to set limit");
-    },
-  });
+    }
+    if (setLimitMutation.isError) {
+      toast.error(setLimitMutation.error?.message || "Failed to set limit");
+    }
+  }, [
+    setLimitMutation.isSuccess,
+    setLimitMutation.isError,
+    setLimitMutation.error,
+  ]);
 
-  const updateLimitMutation = useMutation({
-    mutationFn: (data: { type: string; value: number }) => {
-      if (!workspace?.id) {
-        throw new Error("Workspace ID is required");
-      }
-      return apiClient.setVHostLimit(
-        serverId,
-        vhostName,
-        data.type,
-        {
-          value: data.value,
-          limitType: data.type as
-            | "max-connections"
-            | "max-queues"
-            | "max-channels",
-        },
-        workspace.id
-      );
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["vhost", serverId, vhostName],
-      });
-      toast.success("Limit updated successfully");
-      setEditingLimit(null);
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || "Failed to update limit");
-    },
-  });
-
-  const deleteLimitMutation = useMutation({
-    mutationFn: (limitType: string) => {
-      if (!workspace?.id) {
-        throw new Error("Workspace ID is required");
-      }
-      return apiClient.deleteVHostLimit(
-        serverId,
-        vhostName,
-        limitType,
-        workspace.id
-      );
-    },
-    onSuccess: () => {
+  // Handle success/error for deleteLimit
+  useEffect(() => {
+    if (deleteLimitMutation.isSuccess) {
       queryClient.invalidateQueries({
         queryKey: ["vhost", serverId, vhostName],
       });
       toast.success("Limit removed successfully");
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || "Failed to remove limit");
-    },
-  });
+    }
+    if (deleteLimitMutation.isError) {
+      toast.error(
+        deleteLimitMutation.error?.message || "Failed to remove limit"
+      );
+    }
+  }, [
+    deleteLimitMutation.isSuccess,
+    deleteLimitMutation.isError,
+    deleteLimitMutation.error,
+  ]);
 
   const onSubmit = (data: LimitForm) => {
-    setLimitMutation.mutate(data);
+    if (!workspace?.id) {
+      toast.error("Workspace ID is required");
+      return;
+    }
+    setLimitMutation.mutate({
+      serverId,
+      workspaceId: workspace.id,
+      vhostName,
+      limitType: data.limitType,
+      value: data.value,
+    });
   };
 
   const onEditSubmit = (data: { value: number }) => {
-    if (editingLimit) {
-      updateLimitMutation.mutate({
-        type: editingLimit.type,
-        value: data.value,
-      });
+    if (!editingLimit || !workspace?.id) {
+      return;
     }
+    setLimitMutation.mutate({
+      serverId,
+      workspaceId: workspace.id,
+      vhostName,
+      limitType: editingLimit.type as
+        | "max-connections"
+        | "max-queues"
+        | "max-channels",
+      value: data.value,
+    });
   };
 
   const limitEntries = Object.entries(limits).filter(
@@ -375,7 +353,21 @@ export function VHostLimitsTab({
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => deleteLimitMutation.mutate(limitType)}
+                        onClick={() => {
+                          if (!workspace?.id) {
+                            toast.error("Workspace ID is required");
+                            return;
+                          }
+                          deleteLimitMutation.mutate({
+                            serverId,
+                            workspaceId: workspace.id,
+                            vhostName,
+                            limitType: limitType as
+                              | "max-connections"
+                              | "max-queues"
+                              | "max-channels",
+                          });
+                        }}
                         disabled={deleteLimitMutation.isPending}
                         className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
                       >
@@ -439,12 +431,12 @@ export function VHostLimitsTab({
                   type="button"
                   variant="outline"
                   onClick={() => setEditingLimit(null)}
-                  disabled={updateLimitMutation.isPending}
+                  disabled={setLimitMutation.isPending}
                 >
                   Cancel
                 </Button>
-                <Button type="submit" disabled={updateLimitMutation.isPending}>
-                  {updateLimitMutation.isPending ? "Updating..." : "Update"}
+                <Button type="submit" disabled={setLimitMutation.isPending}>
+                  {setLimitMutation.isPending ? "Updating..." : "Update"}
                 </Button>
               </DialogFooter>
             </form>

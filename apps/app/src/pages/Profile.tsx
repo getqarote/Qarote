@@ -25,19 +25,21 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   useCancelEmailChange,
   useChangePassword,
-  useInvitations,
   useProfile,
-  useRemoveUserFromWorkspace,
   useRequestEmailChange,
+  useUpdateProfile,
+  useVerificationStatus,
+} from "@/hooks/queries/useProfile";
+import {
+  useInvitations,
+  useRemoveUserFromWorkspace,
   useRevokeInvitation,
   useSendInvitation,
-  useUpdateProfile,
   useUpdateWorkspace,
-  useVerificationStatus,
   useWorkspaceUsers,
-} from "@/hooks/useApi";
-import { useUser } from "@/hooks/useUser";
-import { useWorkspace } from "@/hooks/useWorkspace";
+} from "@/hooks/queries/useWorkspaceApi";
+import { useUser } from "@/hooks/ui/useUser";
+import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 // Valid tab values - defined outside component to avoid dependency issues
 const VALID_TABS = [
@@ -106,10 +108,10 @@ const Profile = () => {
   // Invite form state
   const [inviteForm, setInviteForm] = useState<InviteFormState>({
     email: "",
-    role: "USER",
+    role: "MEMBER",
   });
 
-  const profile = profileData?.profile;
+  const profile = profileData?.user;
   const workspaceUsers = workspaceUsersData?.users || [];
   const invitations = invitationsData?.invitations || [];
   const isAdmin = profile?.role === "ADMIN";
@@ -206,8 +208,15 @@ const Profile = () => {
   };
 
   const handleUpdateWorkspace = async () => {
+    if (!workspace?.id) {
+      toast.error("No workspace found");
+      return;
+    }
     try {
-      await updateWorkspaceMutation.mutateAsync(workspaceForm);
+      await updateWorkspaceMutation.mutateAsync({
+        workspaceId: workspace.id,
+        ...workspaceForm,
+      });
       setEditingWorkspace(false);
       await refetchWorkspace(); // Refresh workspace data
       toast.success("Workspace information updated successfully");
@@ -238,7 +247,7 @@ const Profile = () => {
       });
 
       setInviteDialogOpen(false);
-      setInviteForm({ email: "", role: "USER" });
+      setInviteForm({ email: "", role: "MEMBER" });
 
       toast.success(
         `Invitation sent successfully to ${inviteForm.email}! ${
@@ -269,8 +278,15 @@ const Profile = () => {
   };
 
   const handleRemoveUser = async (userId: string, userName: string) => {
+    if (!workspace?.id) {
+      toast.error("No workspace found");
+      return;
+    }
     try {
-      await removeUserMutation.mutateAsync(userId);
+      await removeUserMutation.mutateAsync({
+        workspaceId: workspace.id,
+        userId,
+      });
       toast.success(`${userName} has been removed from the workspace`);
     } catch (error) {
       logger.error("Remove user error:", error);

@@ -37,12 +37,13 @@ import { useServerContext } from "@/contexts/ServerContext";
 import {
   useDeleteUser,
   useDeleteUserPermissions,
-  useServers,
   useSetUserPermissions,
   useUpdateUser,
   useUser,
-  useVHosts,
-} from "@/hooks/useApi";
+} from "@/hooks/queries/useRabbitMQUsers";
+import { useVHosts } from "@/hooks/queries/useRabbitMQVHosts";
+import { useServers } from "@/hooks/queries/useServer";
+import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 export default function UserDetailsPage() {
   const { serverId, username } = useParams<{
@@ -112,6 +113,7 @@ export default function UserDetailsPage() {
   const updateUserMutation = useUpdateUser();
   const setPermissionsMutation = useSetUserPermissions();
   const clearPermissionsMutation = useDeleteUserPermissions();
+  const { workspace } = useWorkspace();
 
   // Redirect non-admin users
   if (user?.role !== "ADMIN") {
@@ -239,11 +241,18 @@ export default function UserDetailsPage() {
     }
 
     if (Object.keys(updateData).length > 0) {
+      if (!workspace?.id) {
+        toast.error("Workspace ID is required");
+        return;
+      }
       updateUserMutation
         .mutateAsync({
           serverId: currentServerId!,
+          workspaceId: workspace.id,
           username: decodedUsername,
-          data: updateData,
+          password: updateData.password,
+          tags: updateData.tags,
+          removePassword: updateData.removePassword,
         })
         .then(() => {
           toast.success("User updated successfully");
@@ -258,16 +267,19 @@ export default function UserDetailsPage() {
   };
 
   const handleSetPermissions = async () => {
+    if (!workspace?.id) {
+      toast.error("Workspace ID is required");
+      return;
+    }
     try {
       await setPermissionsMutation.mutateAsync({
         serverId: currentServerId!,
+        workspaceId: workspace.id,
         username: decodedUsername,
-        data: {
-          vhost: selectedVHost,
-          configure: configureRegexp,
-          write: writeRegexp,
-          read: readRegexp,
-        },
+        vhost: selectedVHost,
+        configure: configureRegexp,
+        write: writeRegexp,
+        read: readRegexp,
       });
       toast.success("Permissions set successfully");
       // Clear the form fields
@@ -398,8 +410,13 @@ export default function UserDetailsPage() {
                                 size="sm"
                                 onClick={async () => {
                                   try {
+                                    if (!workspace?.id) {
+                                      toast.error("Workspace ID is required");
+                                      return;
+                                    }
                                     await clearPermissionsMutation.mutateAsync({
                                       serverId: currentServerId!,
+                                      workspaceId: workspace.id,
                                       username: decodedUsername,
                                       vhost: permission.vhost,
                                     });
@@ -734,8 +751,13 @@ export default function UserDetailsPage() {
                   user={userDetails}
                   onConfirm={async () => {
                     try {
+                      if (!workspace?.id) {
+                        toast.error("Workspace ID is required");
+                        return;
+                      }
                       await deleteUserMutation.mutateAsync({
                         serverId: currentServerId!,
+                        workspaceId: workspace.id,
                         username: decodedUsername,
                       });
                       toast.success("User deleted successfully");

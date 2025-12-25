@@ -1,35 +1,39 @@
 /**
  * Main API Client
  * Combines all API clients into a single interface
+ *
+ * NOTE: This client has been migrated to tRPC. All methods are commented out
+ * to prevent accidental usage. Types are still exported for compatibility.
  */
 
-import { AlertThresholds } from "@/types/alerts";
-import type { FeedbackRequest } from "@/types/feedback";
+// All imports are commented out since the entire class is deprecated
+// Types are exported from index.ts for compatibility
+// import type { AlertThresholds } from "@/types/alerts";
+// import type { FeedbackRequest } from "@/types/feedback";
+// import type { FeedbackFilters, UpdateFeedbackRequest } from "./feedbackClient";
+// import type { CreateLogRequest, LogExportRequest, LogQuery } from "./logTypes";
 
-import { AlertApiClient } from "./alertClient";
-import { AuthApiClient } from "./authClient";
-import { DiscordApiClient } from "./discordClient";
-import type { FeedbackFilters, UpdateFeedbackRequest } from "./feedbackClient";
-import { FeedbackApiClient } from "./feedbackClient";
-import { LogsApiClient } from "./logsClient";
-import type { CreateLogRequest, LogExportRequest, LogQuery } from "./logTypes";
-import { PasswordApiClient } from "./passwordClient";
-import { PaymentApiClient } from "./paymentClient";
-import { PlanApiClient } from "./planClient";
-import { RabbitMQApiClient } from "./rabbitmqClient";
-import { ServerApiClient } from "./serverClient";
-import type {
-  CreateSlackConfigRequest,
-  UpdateSlackConfigRequest,
-} from "./slackClient";
-import { SlackApiClient } from "./slackClient";
-import type {
-  CreateWebhookRequest,
-  UpdateWebhookRequest,
-} from "./webhookClient";
-import { WebhookApiClient } from "./webhookClient";
-import { WorkspaceApiClient } from "./workspaceClient";
+// Client classes are commented out but kept for reference
+// import { AlertApiClient } from "./alertClient";
+// import { AuthApiClient } from "./authClient";
+// import { FeedbackApiClient } from "./feedbackClient";
+// import { LogsApiClient } from "./logsClient";
+// import { PasswordApiClient } from "./passwordClient";
+// import { PaymentApiClient } from "./paymentClient";
+// import { PlanApiClient } from "./planClient";
+// import { RabbitMQApiClient } from "./rabbitmqClient";
+// import { ServerApiClient } from "./serverClient";
+// import { WorkspaceApiClient } from "./workspaceClient";
 
+/*
+ * DEPRECATED: This class has been migrated to tRPC.
+ * All methods have been moved to apps/api/src/trpc/routers
+ * and should be accessed via tRPC hooks in apps/app/src/hooks/queries
+ *
+ * This code is commented out to prevent accidental usage.
+ * It will be removed in a future cleanup.
+ */
+/*
 class ApiClient {
   private serverClient: ServerApiClient;
   private rabbitmqClient: RabbitMQApiClient;
@@ -41,9 +45,6 @@ class ApiClient {
   private planClient: PlanApiClient;
   private paymentClient: PaymentApiClient;
   private passwordClient: PasswordApiClient;
-  private discordClient: DiscordApiClient;
-  private webhookClient: WebhookApiClient;
-  private slackClient: SlackApiClient;
 
   constructor(baseUrl?: string) {
     this.serverClient = new ServerApiClient(baseUrl);
@@ -56,9 +57,6 @@ class ApiClient {
     this.planClient = new PlanApiClient(baseUrl);
     this.paymentClient = new PaymentApiClient(baseUrl);
     this.passwordClient = new PasswordApiClient(baseUrl);
-    this.discordClient = new DiscordApiClient(baseUrl);
-    this.webhookClient = new WebhookApiClient(baseUrl);
-    this.slackClient = new SlackApiClient(baseUrl);
   }
 
   // Server methods
@@ -869,65 +867,7 @@ class ApiClient {
       settings
     );
   }
-
-  // Webhook methods
-  async getWebhooks(workspaceId: string) {
-    return this.webhookClient.getWebhooks(workspaceId);
-  }
-
-  async getWebhook(workspaceId: string, webhookId: string) {
-    return this.webhookClient.getWebhook(workspaceId, webhookId);
-  }
-
-  async createWebhook(workspaceId: string, data: CreateWebhookRequest) {
-    return this.webhookClient.createWebhook(workspaceId, data);
-  }
-
-  async updateWebhook(
-    workspaceId: string,
-    webhookId: string,
-    data: UpdateWebhookRequest
-  ) {
-    return this.webhookClient.updateWebhook(workspaceId, webhookId, data);
-  }
-
-  async deleteWebhook(workspaceId: string, webhookId: string) {
-    return this.webhookClient.deleteWebhook(workspaceId, webhookId);
-  }
-
-  // Slack methods
-  async getSlackConfigs(workspaceId: string) {
-    return this.slackClient.getSlackConfigs(workspaceId);
-  }
-
-  async getSlackConfig(workspaceId: string, slackConfigId: string) {
-    return this.slackClient.getSlackConfig(workspaceId, slackConfigId);
-  }
-
-  async createSlackConfig(workspaceId: string, data: CreateSlackConfigRequest) {
-    return this.slackClient.createSlackConfig(workspaceId, data);
-  }
-
-  async updateSlackConfig(
-    workspaceId: string,
-    slackConfigId: string,
-    data: UpdateSlackConfigRequest
-  ) {
-    return this.slackClient.updateSlackConfig(workspaceId, slackConfigId, data);
-  }
-
-  async deleteSlackConfig(workspaceId: string, slackConfigId: string) {
-    return this.slackClient.deleteSlackConfig(workspaceId, slackConfigId);
-  }
-
-  // Discord methods
-  async markDiscordJoined() {
-    return this.discordClient.markJoined();
-  }
-
-  async getDiscordStatus() {
-    return this.discordClient.getStatus();
-  }
 }
 
-export const apiClient = new ApiClient();
+// export const apiClient = new ApiClient();
+*/

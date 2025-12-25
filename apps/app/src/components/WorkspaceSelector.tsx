@@ -1,11 +1,10 @@
-import { useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 
 import { Building2, ChevronDown, Crown, Lock, Plus, User } from "lucide-react";
 import { toast } from "sonner";
 
-import { apiClient, type WorkspaceInfo } from "@/lib/api";
 import { logger } from "@/lib/logger";
 
 import { Button } from "@/components/ui/button";
@@ -18,8 +17,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdownMenu";
 
-import { useUser } from "@/hooks/useUser";
-import { useWorkspace } from "@/hooks/useWorkspace";
+import {
+  useSwitchWorkspace,
+  useUserWorkspaces,
+} from "@/hooks/queries/useWorkspaceApi";
+import { useUser } from "@/hooks/ui/useUser";
+import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 import { UserPlan } from "@/types/plans";
 
@@ -34,18 +37,15 @@ export function WorkspaceSelector() {
   const [showCreateModal, setShowCreateModal] = useState(false);
 
   // Fetch all user workspaces
-  const { data: workspacesData, isLoading } = useQuery({
-    queryKey: ["workspaces"],
-    queryFn: () => apiClient.getUserWorkspaces(),
-    refetchOnWindowFocus: false,
-  });
+  const { data: workspacesData, isLoading } = useUserWorkspaces();
 
   // Switch workspace mutation
-  const switchWorkspaceMutation = useMutation({
-    mutationFn: (workspaceId: string) => apiClient.switchWorkspace(workspaceId),
-    onSuccess: () => {
+  const switchWorkspaceMutation = useSwitchWorkspace();
+
+  // Handle success/error
+  useEffect(() => {
+    if (switchWorkspaceMutation.isSuccess) {
       // Invalidate all workspace-related queries
-      // TODO: fix this shit - too many queries
       queryClient.invalidateQueries({ queryKey: ["workspace"] });
       queryClient.invalidateQueries({ queryKey: ["workspaces"] });
       queryClient.invalidateQueries({ queryKey: ["current-workspace"] });
@@ -56,12 +56,15 @@ export function WorkspaceSelector() {
 
       // Refresh the page to ensure all components reload with new workspace context
       window.location.reload();
-    },
-    onError: (error) => {
-      logger.error("Failed to switch workspace:", error);
+    }
+    if (switchWorkspaceMutation.isError) {
+      logger.error(
+        "Failed to switch workspace:",
+        switchWorkspaceMutation.error
+      );
       toast.error("Failed to switch workspace. Please try again.");
-    },
-  });
+    }
+  }, [switchWorkspaceMutation.isSuccess, switchWorkspaceMutation.isError]);
 
   const workspaces = workspacesData?.workspaces || [];
   const currentWorkspace =
@@ -73,7 +76,7 @@ export function WorkspaceSelector() {
       return;
     }
 
-    switchWorkspaceMutation.mutate(workspaceId);
+    switchWorkspaceMutation.mutate({ workspaceId });
     setIsOpen(false);
   };
 

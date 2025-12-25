@@ -48,7 +48,7 @@ import {
   useCreateAlertRule,
   useDeleteAlertRule,
   useUpdateAlertRule,
-} from "@/hooks/useApi";
+} from "@/hooks/queries/useAlerts";
 
 const ALERT_TYPES: { value: AlertType; label: string }[] = [
   { value: "QUEUE_DEPTH", label: "Queue Depth" },
@@ -119,7 +119,7 @@ function AlertRuleForm({
           severity: formData.severity,
           enabled: formData.enabled,
         };
-        await updateMutation.mutateAsync({ id: rule.id, data: updateData });
+        await updateMutation.mutateAsync({ id: rule.id, ...updateData });
         toast.success("Alert rule updated successfully");
       } else {
         const createData: CreateAlertRuleInput = {
@@ -303,7 +303,7 @@ export function AlertRulesManager() {
     }
 
     try {
-      await deleteMutation.mutateAsync(id);
+      await deleteMutation.mutateAsync({ id });
       toast.success("Alert rule deleted successfully");
     } catch (error) {
       toast.error(

@@ -26,5 +26,26 @@ export const UpdateWorkspaceSchema = z.object({
     .optional(),
 });
 
+// Schema for workspace ID parameter
+export const WorkspaceIdParamSchema = z.object({
+  workspaceId: z.string(),
+});
+
+// Schema for updating workspace with ID
+export const UpdateWorkspaceWithIdSchema = z.object({
+  workspaceId: z.string(),
+  workspace: UpdateWorkspaceSchema,
+});
+
+// Schema for invitation ID parameter
+export const InvitationIdParamSchema = z.object({
+  invitationId: z.string(),
+});
+
 export type CreateWorkspaceInput = z.infer<typeof CreateWorkspaceSchema>;
 export type UpdateWorkspaceInput = z.infer<typeof UpdateWorkspaceSchema>;
+export type WorkspaceIdParam = z.infer<typeof WorkspaceIdParamSchema>;
+export type UpdateWorkspaceWithIdInput = z.infer<
+  typeof UpdateWorkspaceWithIdSchema
+>;
+export type InvitationIdParam = z.infer<typeof InvitationIdParamSchema>;

@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
-import { useServers, useVHosts } from "@/hooks/useApi";
+import { useVHosts } from "@/hooks/queries/useRabbitMQVHosts";
+import { useServers } from "@/hooks/queries/useServer";
 
 import { useServerContext } from "./ServerContext";
 import { VHostContext, type VHostContextType } from "./VHostContextDefinition";

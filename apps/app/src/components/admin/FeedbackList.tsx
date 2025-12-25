@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 
 import { format } from "date-fns";
 import {
@@ -10,11 +10,7 @@ import {
   Search,
 } from "lucide-react";
 
-import { apiClient } from "@/lib/api/client";
-import type {
-  FeedbackFilters,
-  FeedbackListResponse,
-} from "@/lib/api/feedbackClient";
+import type { FeedbackFilters } from "@/lib/api/feedbackClient";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -47,9 +43,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-import type { Feedback } from "@/types/feedback";
+import { useFeedbackList } from "@/hooks/queries/useFeedback";
 
-import logger from "../../lib/logger";
+import type { Feedback } from "@/types/feedback";
 
 interface FeedbackListProps {
   onSelectFeedback: (id: string) => void;
@@ -141,34 +137,18 @@ export function FeedbackList({
   onSelectFeedback,
   selectedFeedbackId,
 }: FeedbackListProps) {
-  const [feedbackData, setFeedbackData] = useState<FeedbackListResponse | null>(
-    null
-  );
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<FeedbackFilters>({
     page: 1,
     limit: 10,
   });
   const [searchTerm, setSearchTerm] = useState("");
 
-  const loadFeedback = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await apiClient.getFeedback(filters);
-      setFeedbackData(response);
-    } catch (err) {
-      logger.error("Failed to load feedback:", err);
-      setError(err instanceof Error ? err.message : "Failed to load feedback");
-    } finally {
-      setLoading(false);
-    }
-  }, [filters]);
-
-  useEffect(() => {
-    loadFeedback();
-  }, [loadFeedback]);
+  const {
+    data: feedbackData,
+    isLoading: loading,
+    error: queryError,
+    refetch,
+  } = useFeedbackList(filters);
 
   const handleFilterChange = (
     key: keyof FeedbackFilters,
@@ -188,8 +168,14 @@ export function FeedbackList({
   const handleSearch = () => {
     // In a real implementation, you might want to add search functionality to the API
     // For now, we'll just refresh the data
-    loadFeedback();
+    refetch();
   };
+
+  const error = queryError
+    ? queryError instanceof Error
+      ? queryError.message
+      : "Failed to load feedback"
+    : null;
 
   const totalPages = feedbackData?.pagination.pages || 0;
   const currentPage = feedbackData?.pagination.page || 1;
@@ -229,7 +215,7 @@ export function FeedbackList({
             <h2 className="text-2xl font-bold">Feedback Management</h2>
             <p className="text-gray-600">Review and manage user feedback</p>
           </div>
-          <Button onClick={loadFeedback} variant="outline" size="sm">
+          <Button onClick={() => refetch()} variant="outline" size="sm">
             <RefreshCw className="w-4 h-4 mr-2" />
             Retry
           </Button>

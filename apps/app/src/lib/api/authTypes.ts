@@ -87,7 +87,7 @@ export interface UpdateWorkspaceRequest {
 
 export interface InviteUserRequest {
   email: string;
-  role: "ADMIN" | "USER" | "READONLY";
+  role: "ADMIN" | "MEMBER" | "READONLY";
   workspaceId: string;
 }
 
@@ -114,7 +114,7 @@ export interface InvitationWithInviter extends Invitation {
 
 export interface SendInvitationRequest {
   email: string;
-  role: "USER" | "ADMIN";
+  role: "MEMBER" | "ADMIN";
   message?: string;
 }
 

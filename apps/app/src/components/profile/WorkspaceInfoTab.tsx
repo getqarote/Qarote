@@ -17,7 +17,7 @@ import { Separator } from "@/components/ui/separator";
 
 import { ExtendedWorkspace } from "@/contexts/WorkspaceContextDefinition";
 
-import { useUser } from "@/hooks/useUser";
+import { useUser } from "@/hooks/ui/useUser";
 
 import { NoWorkspaceCard } from "./NoWorkspaceCard";
 import { formatDate, getPlanColor, WorkspaceFormState } from "./profileUtils";

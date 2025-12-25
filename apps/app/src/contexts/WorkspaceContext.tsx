@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useState } from "react";
 
-import { apiClient } from "@/lib/api";
 import { logger } from "@/lib/logger";
 import { setSentryContext } from "@/lib/sentry";
+
+import { useCurrentWorkspace } from "@/hooks/queries/useWorkspaceApi";
 
 import { useAuth } from "./AuthContextDefinition";
 import {
@@ -23,43 +24,55 @@ export const WorkspaceProvider: React.FC<WorkspaceProviderProps> = ({
   const [error, setError] = useState<string | null>(null);
   const { isAuthenticated, user } = useAuth();
 
+  const {
+    data,
+    isLoading: queryLoading,
+    error: queryError,
+    refetch,
+  } = useCurrentWorkspace();
+
   const fetchWorkspace = useCallback(async () => {
     if (!isAuthenticated || !user || !user.workspaceId) {
       return;
     }
 
-    setIsLoading(true);
-    setError(null);
+    await refetch();
+  }, [isAuthenticated, user, refetch]);
 
-    try {
-      const response = await apiClient.getCurrentWorkspace();
-      setWorkspace(response.workspace);
+  // Update workspace state when query data changes
+  useEffect(() => {
+    if (data?.workspace) {
+      setWorkspace(data.workspace);
 
       // Set Sentry workspace context
       setSentryContext("workspace", {
-        id: response.workspace.id,
-        name: response.workspace.name,
-        createdAt: response.workspace.createdAt,
+        id: data.workspace.id,
+        name: data.workspace.name,
+        createdAt: data.workspace.createdAt,
       });
-    } catch (err) {
+    } else if (queryError) {
       // If user doesn't have a workspace (404), this is not an error
       if (
-        err instanceof Error &&
-        err.message.includes("No workspace assigned")
+        queryError instanceof Error &&
+        queryError.message.includes("No workspace assigned")
       ) {
         logger.debug("User has no workspace assigned yet");
         setWorkspace(null);
         setError(null);
       } else {
         const errorMessage =
-          err instanceof Error ? err.message : "Failed to fetch workspace";
+          queryError instanceof Error
+            ? queryError.message
+            : "Failed to fetch workspace";
         setError(errorMessage);
-        logger.error("Failed to fetch workspace:", err);
+        logger.error("Failed to fetch workspace:", queryError);
       }
-    } finally {
-      setIsLoading(false);
     }
-  }, [isAuthenticated, user]);
+  }, [data, queryError]);
+
+  useEffect(() => {
+    setIsLoading(queryLoading);
+  }, [queryLoading]);
 
   // Fetch workspace data when user authenticates
   // Only fetch if user has a workspaceId (meaning they already have a workspace)

@@ -13,8 +13,8 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { useServerContext } from "@/contexts/ServerContext";
 import { useVHostContext } from "@/contexts/VHostContextDefinition";
 
-import { useQueues } from "@/hooks/useApi";
-import { useUser } from "@/hooks/useUser";
+import { useQueues } from "@/hooks/queries/useRabbitMQ";
+import { useUser } from "@/hooks/ui/useUser";
 
 const Queues = () => {
   const navigate = useNavigate();

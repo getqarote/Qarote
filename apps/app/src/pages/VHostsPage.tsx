@@ -40,7 +40,9 @@ import { DeleteVHostModal } from "@/components/vhosts/DeleteVHostModal";
 import { useAuth } from "@/contexts/AuthContextDefinition";
 import { useServerContext } from "@/contexts/ServerContext";
 
-import { useDeleteVHost, useServers, useVHosts } from "@/hooks/useApi";
+import { useDeleteVHost, useVHosts } from "@/hooks/queries/useRabbitMQVHosts";
+import { useServers } from "@/hooks/queries/useServer";
+import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 export default function VHostsPage() {
   const { serverId } = useParams<{ serverId: string }>();
@@ -69,6 +71,7 @@ export default function VHostsPage() {
   } = useVHosts(currentServerId, serverExists);
 
   const deleteVHostMutation = useDeleteVHost();
+  const { workspace } = useWorkspace();
 
   // Redirect non-admin users
   if (user?.role !== "ADMIN") {
@@ -396,8 +399,13 @@ export default function VHostsPage() {
                 vhost={deleteVHost}
                 onConfirm={async () => {
                   try {
+                    if (!workspace?.id) {
+                      toast.error("Workspace ID is required");
+                      return;
+                    }
                     await deleteVHostMutation.mutateAsync({
                       serverId: currentServerId!,
+                      workspaceId: workspace.id,
                       vhostName: deleteVHost.name,
                     });
                     toast.success("Virtual host deleted successfully");

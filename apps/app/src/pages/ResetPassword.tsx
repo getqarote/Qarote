@@ -1,12 +1,9 @@
-import React, { useEffect, useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 
 import { Check, Eye, EyeOff, Lock, Shield, X } from "lucide-react";
 import { toast } from "sonner";
 
-import { apiClient } from "@/lib/api";
-import type { PasswordReset } from "@/lib/api/passwordClient";
 import { logger } from "@/lib/logger";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -20,6 +17,8 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+
+import { useResetPassword } from "@/hooks/queries/useProfile";
 
 export const ResetPassword: React.FC = () => {
   const navigate = useNavigate();
@@ -45,21 +44,23 @@ export const ResetPassword: React.FC = () => {
     }
   }, [token, navigate]);
 
-  const resetPasswordMutation = useMutation({
-    mutationFn: (data: PasswordReset) => apiClient.resetPassword(data),
-    onSuccess: () => {
+  const resetPasswordMutation = useResetPassword();
+
+  // Handle success/error with useEffect
+  useEffect(() => {
+    if (resetPasswordMutation.isSuccess) {
       setResetSuccess(true);
       toast.success(
         "Password reset successfully! You can now sign in with your new password."
       );
-    },
-    onError: (error: Error) => {
-      logger.error("Password reset error:", error);
+    }
+    if (resetPasswordMutation.isError) {
+      logger.error("Password reset error:", resetPasswordMutation.error);
       toast.error(
         "Failed to reset password. The link may be expired or invalid."
       );
-    },
-  });
+    }
+  }, [resetPasswordMutation.isSuccess, resetPasswordMutation.isError]);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};

@@ -1,11 +1,10 @@
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Building2, Loader2, Plus } from "lucide-react";
 import { toast } from "sonner";
-
-import { apiClient } from "@/lib/api";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -28,7 +27,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { TagsInput } from "@/components/ui/tags-input";
 
-import { useWorkspace } from "@/hooks/useWorkspace";
+import { useCreateWorkspace } from "@/hooks/queries/useWorkspaceApi";
+import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 import { WorkspaceFormData, workspaceSchema } from "@/schemas";
 
@@ -54,24 +54,24 @@ export function CreateWorkspaceForm({
   });
 
   // Create workspace mutation
-  const createWorkspaceMutation = useMutation({
-    mutationFn: (data: {
-      name: string;
-      contactEmail?: string;
-      tags?: string[];
-    }) => apiClient.createWorkspace(data),
-    onSuccess: () => {
+  const createWorkspaceMutation = useCreateWorkspace();
+
+  // Handle success/error
+  useEffect(() => {
+    if (createWorkspaceMutation.isSuccess) {
       toast.success("Workspace created successfully!");
       queryClient.invalidateQueries({ queryKey: ["workspaces"] });
       refreshWorkspace();
       onClose();
       // Reset form
       form.reset();
-    },
-    onError: (error: Error) => {
-      toast.error(`Failed to create workspace: ${error.message}`);
-    },
-  });
+    }
+    if (createWorkspaceMutation.isError) {
+      toast.error(
+        `Failed to create workspace: ${createWorkspaceMutation.error?.message || "Unknown error"}`
+      );
+    }
+  }, [createWorkspaceMutation.isSuccess, createWorkspaceMutation.isError]);
 
   const onSubmit = (data: WorkspaceFormData) => {
     createWorkspaceMutation.mutate({

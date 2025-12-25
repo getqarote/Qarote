@@ -27,7 +27,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 
-import { useLogin } from "@/hooks/useAuth";
+import { useLogin } from "@/hooks/ui/useAuth";
 
 import { type SignInFormData, signInSchema } from "@/schemas";
 

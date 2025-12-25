@@ -52,8 +52,11 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-import { useCreateQueue, useExchanges } from "@/hooks/useApi";
-import { useToast } from "@/hooks/useToast";
+import { useVHostContext } from "@/contexts/VHostContextDefinition";
+
+import { useCreateQueue, useExchanges } from "@/hooks/queries/useRabbitMQ";
+import { useToast } from "@/hooks/ui/useToast";
+import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 import { type AddQueueFormData, addQueueSchema } from "@/schemas";
 
@@ -74,6 +77,8 @@ export function AddQueueForm({
 
   const createQueueMutation = useCreateQueue();
   const { toast } = useToast();
+  const { workspace } = useWorkspace();
+  const { selectedVHost } = useVHostContext();
 
   // Initialize form with react-hook-form
   const form = useForm<AddQueueFormData>({
@@ -131,38 +136,34 @@ export function AddQueueForm({
     // Merge all arguments
     const finalArguments = { ...queueArguments, ...parsedArguments };
 
+    if (!workspace?.id) {
+      toast({
+        title: "Error",
+        description: "Workspace ID is required",
+        variant: "destructive",
+      });
+      return;
+    }
+
     createQueueMutation.mutate(
       {
         serverId,
+        workspaceId: workspace.id,
         name: data.name.trim(),
         durable: data.durable,
         autoDelete: data.autoDelete,
         exclusive: data.exclusive,
         arguments: finalArguments,
-        bindToExchange:
-          data.bindToExchange && data.bindToExchange !== "none"
-            ? data.bindToExchange
-            : undefined,
-        routingKey: data.routingKey,
+        vhost: selectedVHost
+          ? encodeURIComponent(selectedVHost)
+          : encodeURIComponent("/"),
       },
       {
-        onSuccess: (response) => {
+        onSuccess: () => {
           setOpen(false);
 
           // Create detailed success message
-          let description = `Queue "${data.name}" has been created successfully.`;
-
-          if (response.bound && response.exchange) {
-            description += ` It has been bound to exchange "${
-              response.exchange === "default" ? "(Default)" : response.exchange
-            }"`;
-            if (response.routingKey) {
-              description += ` with routing key "${response.routingKey}"`;
-            }
-            description += ".";
-          } else if (data.bindToExchange && data.bindToExchange !== "none") {
-            description += " Note: No exchange binding was configured.";
-          }
+          const description = `Queue "${data.name}" has been created successfully.`;
 
           toast({
             title: "Queue created successfully",

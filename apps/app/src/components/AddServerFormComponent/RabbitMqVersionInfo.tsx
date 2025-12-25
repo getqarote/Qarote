@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 
 import {
   ArrowUpCircle,
@@ -11,15 +10,13 @@ import {
   XCircle,
 } from "lucide-react";
 
-import { apiClient } from "@/lib/api";
-import type { CurrentPlanResponse } from "@/lib/api/planClient";
-
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
-import { useUser } from "@/hooks/useUser";
-import { useWorkspace } from "@/hooks/useWorkspace";
+import { useCurrentPlan } from "@/hooks/queries/usePlans";
+import { useUser } from "@/hooks/ui/useUser";
+import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 interface RabbitMqVersionInfoProps {
   className?: string;
@@ -34,11 +31,7 @@ export const RabbitMqVersionInfo = ({
   const { workspace } = useWorkspace();
   const { userPlan } = useUser();
 
-  const { data: planData, isLoading } = useQuery<CurrentPlanResponse>({
-    queryKey: ["current-plan", workspace?.id],
-    queryFn: () => apiClient.getCurrentPlan(),
-    enabled: !!workspace?.id,
-  });
+  const { data: planData, isLoading } = useCurrentPlan();
 
   if (isLoading || !planData) {
     return null;

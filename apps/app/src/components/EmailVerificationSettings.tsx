@@ -1,11 +1,10 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 
 import { CheckCircle, Clock, Mail, RefreshCw, XCircle } from "lucide-react";
 import { toast } from "sonner";
 
-import { apiClient } from "@/lib/api";
 import { logger } from "@/lib/logger";
+import { trpc } from "@/lib/trpc/client";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -28,25 +27,29 @@ export const EmailVerificationSettings = () => {
     data: verificationStatus,
     isLoading,
     refetch,
-  } = useQuery({
-    queryKey: ["verification-status"],
-    queryFn: () => apiClient.getVerificationStatus(),
+  } = trpc.auth.verification.getVerificationStatus.useQuery(undefined, {
     enabled: !!user,
   });
 
-  const handleResendVerification = async (type: "SIGNUP" | "EMAIL_CHANGE") => {
-    try {
-      setIsResending(true);
-      await apiClient.resendVerificationEmail(type);
+  const resendVerificationMutation = trpc.auth.verification.resendVerification.useMutation({
+    onSuccess: () => {
       toast.success("Verification email sent! Please check your inbox.");
       refetch(); // Refresh verification status
-    } catch (error) {
+    },
+    onError: (error: Error) => {
       logger.error("Resend verification error:", error);
       toast.error(
         error instanceof Error
           ? error.message
           : "Failed to resend verification email"
       );
+    },
+  });
+
+  const handleResendVerification = async (type: "SIGNUP" | "EMAIL_CHANGE") => {
+    try {
+      setIsResending(true);
+      resendVerificationMutation.mutate({ type });
     } finally {
       setIsResending(false);
     }

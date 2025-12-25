@@ -93,7 +93,7 @@ export const InviteUserDialog = ({
               onValueChange={(value) =>
                 setInviteForm({
                   ...inviteForm,
-                  role: value as "ADMIN" | "USER",
+                  role: value as "ADMIN" | "MEMBER",
                 })
               }
               disabled={isInviting || !canInvite}
@@ -102,7 +102,7 @@ export const InviteUserDialog = ({
                 <SelectValue placeholder="Select a role" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="USER">User</SelectItem>
+                <SelectItem value="MEMBER">Member</SelectItem>
                 <SelectItem value="ADMIN">Admin</SelectItem>
               </SelectContent>
             </Select>

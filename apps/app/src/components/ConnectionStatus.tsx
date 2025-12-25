@@ -3,7 +3,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 import { useServerContext } from "@/contexts/ServerContext";
 
-import { useOverview, useServer } from "@/hooks/useApi";
+import { useOverview } from "@/hooks/queries/useRabbitMQ";
+import { useServer } from "@/hooks/queries/useServer";
 
 export const ConnectionStatus = () => {
   const { selectedServerId } = useServerContext();

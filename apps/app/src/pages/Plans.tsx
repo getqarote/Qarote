@@ -18,8 +18,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { PlanBadge } from "@/components/ui/PlanBadge";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 
-import { usePlanUpgrade } from "@/hooks/usePlanUpgrade";
-import { useUser } from "@/hooks/useUser";
+import { usePlanUpgrade } from "@/hooks/ui/usePlanUpgrade";
+import { useUser } from "@/hooks/ui/useUser";
 
 import { UserPlan } from "@/types/plans";
 

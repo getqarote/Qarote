@@ -5,7 +5,7 @@ import { Lock } from "lucide-react";
 import { AddServerForm } from "@/components/AddServerFormComponent";
 import { Button } from "@/components/ui/button";
 
-import { useUser } from "@/hooks/useUser";
+import { useUser } from "@/hooks/ui/useUser";
 
 import { UserPlan } from "@/types/plans";
 

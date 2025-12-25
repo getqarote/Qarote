@@ -24,9 +24,9 @@ import {
   useAlertNotificationSettings,
   useRabbitMQAlerts,
   useResolvedAlerts,
-} from "@/hooks/useApi";
-import { useBrowserNotifications } from "@/hooks/useBrowserNotifications";
-import { useUser } from "@/hooks/useUser";
+} from "@/hooks/queries/useAlerts";
+import { useBrowserNotifications } from "@/hooks/ui/useBrowserNotifications";
+import { useUser } from "@/hooks/ui/useUser";
 
 const Alerts = () => {
   const { serverId } = useParams<{ serverId: string }>();

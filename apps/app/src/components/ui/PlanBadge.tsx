@@ -1,6 +1,6 @@
 import { Crown } from "lucide-react";
 
-import { useUser } from "@/hooks/useUser";
+import { useUser } from "@/hooks/ui/useUser";
 
 interface PlanBadgeProps {
   size?: "sm" | "md" | "lg";

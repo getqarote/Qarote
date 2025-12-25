@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useState } from "react";
 
 import { User } from "@/lib/api";
-import { apiClient } from "@/lib/api";
 import { logger } from "@/lib/logger";
 import { setSentryUser } from "@/lib/sentry";
+import { trpc } from "@/lib/trpc/client";
 
 import { AuthContext, AuthContextType } from "./AuthContextDefinition";
 
@@ -104,8 +104,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         return;
       }
 
-      const response = await apiClient.getProfile(workspaceId);
-      const updatedUser = response.profile;
+      const utils = trpc.useUtils();
+      const response = await utils.auth.getSession.fetch();
+      const updatedUser = response.user;
       // Ensure workspaceId is set from workspace object if not directly available
       updatedUser.workspaceId = updatedUser.workspace?.id;
       setUser(updatedUser);

@@ -24,7 +24,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { useAuth } from "@/contexts/AuthContextDefinition";
 import { useServerContext } from "@/contexts/ServerContext";
 
-import { useDashboardData } from "@/hooks/useDashboardData";
+import { useDashboardData } from "@/hooks/ui/useDashboardData";
 
 const Index = () => {
   const { selectedServerId, hasServers } = useServerContext();

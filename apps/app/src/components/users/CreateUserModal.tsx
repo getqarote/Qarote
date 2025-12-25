@@ -1,11 +1,9 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-
-import { apiClient } from "@/lib/api";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -17,8 +15,6 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-
-import { useWorkspace } from "@/hooks/useWorkspace";
 
 import { type CreateUserFormData, createUserSchema } from "@/schemas";
 
@@ -38,7 +34,6 @@ export function CreateUserModal({
   onSuccess,
 }: CreateUserModalProps) {
   const queryClient = useQueryClient();
-  const { workspace } = useWorkspace();
 
   const {
     register,
@@ -62,32 +57,25 @@ export function CreateUserModal({
     }
   }, [initialName, setValue]);
 
-  const createUserMutation = useMutation({
-    mutationFn: (data: CreateUserFormData) => {
-      if (!workspace?.id) {
-        throw new Error("Workspace ID is required");
-      }
-      return apiClient.createUser(
-        serverId,
-        {
-          username: data.username,
-          password: data.password,
-          tags: data.tags,
-        },
-        workspace.id
-      );
-    },
-    onSuccess: () => {
+  const createUserMutation = useCreateUser();
+
+  // Handle success/error
+  useEffect(() => {
+    if (createUserMutation.isSuccess) {
       queryClient.invalidateQueries({ queryKey: ["users", serverId] });
       toast.success("User created successfully");
       reset();
       onSuccess?.();
       onClose();
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || "Failed to create user");
-    },
-  });
+    }
+    if (createUserMutation.isError) {
+      toast.error(createUserMutation.error?.message || "Failed to create user");
+    }
+  }, [
+    createUserMutation.isSuccess,
+    createUserMutation.isError,
+    createUserMutation.error,
+  ]);
 
   const onSubmit = (data: CreateUserFormData) => {
     createUserMutation.mutate(data);

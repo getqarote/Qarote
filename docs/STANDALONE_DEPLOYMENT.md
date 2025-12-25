@@ -73,7 +73,7 @@ VITE_DEPLOYMENT_MODE=self-hosted
 
 ```bash
 cd apps/api
-npm run prisma:migrate
+npm run db:migrate:dev
 ```
 
 ### 5. Start Services

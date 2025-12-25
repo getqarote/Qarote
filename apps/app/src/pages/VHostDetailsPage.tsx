@@ -27,15 +27,16 @@ import { EditVHostModal } from "@/components/vhosts/EditVHostModal";
 import { useAuth } from "@/contexts/AuthContextDefinition";
 import { useServerContext } from "@/contexts/ServerContext";
 
+import { useUsers } from "@/hooks/queries/useRabbitMQUsers";
 import {
   useDeleteVHost,
   useDeleteVHostPermissions,
-  useServers,
   useSetVHostLimit,
   useSetVHostPermissions,
-  useUsers,
   useVHost,
-} from "@/hooks/useApi";
+} from "@/hooks/queries/useRabbitMQVHosts";
+import { useServers } from "@/hooks/queries/useServer";
+import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 export default function VHostDetailsPage() {
   const { serverId, vhostName } = useParams<{
@@ -80,6 +81,7 @@ export default function VHostDetailsPage() {
   const setPermissionsMutation = useSetVHostPermissions();
   const setLimitsMutation = useSetVHostLimit();
   const clearPermissionsMutation = useDeleteVHostPermissions();
+  const { workspace } = useWorkspace();
 
   // Set default user when users are loaded
   useEffect(() => {
@@ -94,17 +96,19 @@ export default function VHostDetailsPage() {
       toast.error("Please fill in all permission fields");
       return;
     }
+    if (!workspace?.id) {
+      toast.error("Workspace ID is required");
+      return;
+    }
     try {
       await setPermissionsMutation.mutateAsync({
         serverId: currentServerId!,
+        workspaceId: workspace.id,
         vhostName: decodedVHostName,
         username: selectedUser,
-        permissions: {
-          username: selectedUser,
-          configure: configureRegexp,
-          write: writeRegexp,
-          read: readRegexp,
-        },
+        configure: configureRegexp,
+        write: writeRegexp,
+        read: readRegexp,
       });
       toast.success("Permissions set successfully");
     } catch (error) {
@@ -119,18 +123,20 @@ export default function VHostDetailsPage() {
       toast.error("Please set at least one limit");
       return;
     }
+    if (!workspace?.id) {
+      toast.error("Workspace ID is required");
+      return;
+    }
     try {
       const promises = [];
       if (maxConnections) {
         promises.push(
           setLimitsMutation.mutateAsync({
             serverId: currentServerId!,
+            workspaceId: workspace.id,
             vhostName: decodedVHostName,
             limitType: "max-connections",
-            data: {
-              value: parseInt(maxConnections),
-              limitType: "max-connections" as const,
-            },
+            value: parseInt(maxConnections),
           })
         );
       }
@@ -138,12 +144,10 @@ export default function VHostDetailsPage() {
         promises.push(
           setLimitsMutation.mutateAsync({
             serverId: currentServerId!,
+            workspaceId: workspace.id,
             vhostName: decodedVHostName,
             limitType: "max-queues",
-            data: {
-              value: parseInt(maxQueues),
-              limitType: "max-queues" as const,
-            },
+            value: parseInt(maxQueues),
           })
         );
       }
@@ -159,9 +163,14 @@ export default function VHostDetailsPage() {
   };
 
   const handleClearPermissions = async (username: string) => {
+    if (!workspace?.id) {
+      toast.error("Workspace ID is required");
+      return;
+    }
     try {
       await clearPermissionsMutation.mutateAsync({
         serverId: currentServerId!,
+        workspaceId: workspace.id,
         vhostName: decodedVHostName,
         username,
       });
@@ -650,8 +659,13 @@ export default function VHostDetailsPage() {
                 vhost={vhost}
                 onConfirm={async () => {
                   try {
+                    if (!workspace?.id) {
+                      toast.error("Workspace ID is required");
+                      return;
+                    }
                     await deleteVHostMutation.mutateAsync({
                       serverId: currentServerId!,
+                      workspaceId: workspace.id,
                       vhostName: decodedVHostName,
                     });
                     toast.success("Virtual host deleted successfully");

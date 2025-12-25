@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Building, Loader2, Mail, Users } from "lucide-react";
 
-import { apiClient } from "@/lib/api/client";
+import { trpc } from "@/lib/trpc/client";
 
 import { GoogleInvitationButton } from "@/components/auth/GoogleInvitationButton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -29,8 +29,8 @@ import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { PasswordRequirements } from "@/components/ui/password-requirements";
 
-import { useAcceptInvitation } from "@/hooks/useAuth";
-import { useToast } from "@/hooks/useToast";
+import { useAcceptInvitation } from "@/hooks/ui/useAuth";
+import { useToast } from "@/hooks/ui/useToast";
 
 import {
   type AcceptInvitationFormData,
@@ -49,8 +49,6 @@ interface InvitationDetails {
   };
   invitedBy: {
     id: string;
-    firstName: string | null;
-    lastName: string | null;
     email: string;
     displayName: string;
   };
@@ -89,7 +87,10 @@ const AcceptInvitation = () => {
       }
 
       try {
-        const response = await apiClient.getInvitationDetails(token);
+        const utils = trpc.useUtils();
+        const response = await utils.public.invitation.getDetails.fetch({
+          token,
+        });
         if (response.success) {
           setInvitation(response.invitation);
         } else {

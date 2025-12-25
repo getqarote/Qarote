@@ -252,6 +252,13 @@ export const AlertsQuerySchema = z.object({
   vhost: z.string(),
 });
 
+// Schema for alerts query with optional vhost default
+export const AlertsQueryWithOptionalVHostSchema = AlertsQuerySchema.omit({
+  vhost: true,
+}).extend({
+  vhost: z.string().optional().default("/"),
+});
+
 // GET /servers/:id/alerts response
 export const AlertsResponseSchema = z.object({
   success: z.boolean(),
@@ -538,6 +545,23 @@ export const ResolveAlertRequestSchema = z.object({
   note: z.string().max(500).optional(),
 });
 
+// ID parameter schemas for tRPC
+export const AlertRuleIdSchema = z.object({
+  id: z.string(),
+});
+
+export const AlertIdSchema = z.object({
+  id: z.string(),
+});
+
+export const SlackConfigIdSchema = z.object({
+  id: z.string(),
+});
+
+export const WebhookIdSchema = z.object({
+  id: z.string(),
+});
+
 // Type exports
 export type AlertType = z.infer<typeof AlertTypeSchema>;
 export type LegacyAlertSeverity = z.infer<typeof LegacyAlertSeveritySchema>;
@@ -558,3 +582,130 @@ export type AcknowledgeAlertRequest = z.infer<
   typeof AcknowledgeAlertRequestSchema
 >;
 export type ResolveAlertRequest = z.infer<typeof ResolveAlertRequestSchema>;
+
+// ============================================================================
+// Alert Notification Configuration Schemas (Slack & Webhook)
+// ============================================================================
+
+/**
+ * Validate Slack webhook URL format
+ * Slack webhook URLs follow the pattern: https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX
+ */
+const slackWebhookUrlSchema = z
+  .string()
+  .url("Invalid webhook URL")
+  .refine(
+    (url) => {
+      try {
+        const urlObj = new URL(url);
+        return (
+          urlObj.hostname === "hooks.slack.com" &&
+          urlObj.pathname.startsWith("/services/") &&
+          urlObj.pathname.split("/").length >= 4 // /services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX
+        );
+      } catch {
+        return false;
+      }
+    },
+    {
+      message:
+        "Invalid Slack webhook URL. Must be in the format: https://hooks.slack.com/services/",
+    }
+  );
+
+/**
+ * Schema for creating a Slack configuration
+ */
+export const CreateSlackConfigSchema = z.object({
+  webhookUrl: slackWebhookUrlSchema,
+  customValue: z.string().optional().nullable(),
+  enabled: z.boolean().default(true),
+});
+
+/**
+ * Schema for updating a Slack configuration
+ */
+export const UpdateSlackConfigSchema = z.object({
+  webhookUrl: slackWebhookUrlSchema.optional(),
+  customValue: z.string().optional().nullable(),
+  enabled: z.boolean().optional(),
+});
+
+/**
+ * Validate that the URL is not a Slack webhook URL
+ * Slack webhooks should be configured through the Slack integration, not general webhooks
+ */
+const webhookUrlSchema = z
+  .string()
+  .url("Invalid webhook URL")
+  .refine(
+    (url) => {
+      try {
+        const urlObj = new URL(url);
+        return urlObj.hostname !== "hooks.slack.com";
+      } catch {
+        return false;
+      }
+    },
+    {
+      message:
+        "Slack webhook URLs should be added in the Slack Notifications section, not here.",
+    }
+  );
+
+/**
+ * Schema for creating a webhook
+ */
+export const CreateWebhookSchema = z.object({
+  url: webhookUrlSchema,
+  enabled: z.boolean().optional().default(true),
+  secret: z.string().optional().nullable(),
+});
+
+/**
+ * Schema for updating a webhook
+ */
+export const UpdateWebhookSchema = z.object({
+  url: webhookUrlSchema.optional(),
+  enabled: z.boolean().optional(),
+  secret: z.string().optional().nullable(),
+});
+
+/**
+ * Schema for webhook response
+ */
+export const WebhookResponseSchema = z.object({
+  id: z.string(),
+  workspaceId: z.string(),
+  url: z.string(),
+  enabled: z.boolean(),
+  secret: z.string().nullable(),
+  version: z.string(),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+});
+
+// Update schemas with ID for tRPC (must be after base schemas are defined)
+export const UpdateAlertRuleWithIdSchema = UpdateAlertRuleRequestSchema.extend({
+  id: z.string(),
+});
+
+export const UpdateWebhookWithIdSchema = UpdateWebhookSchema.extend({
+  id: z.string(),
+});
+
+export const UpdateSlackConfigWithIdSchema = UpdateSlackConfigSchema.extend({
+  id: z.string(),
+});
+
+// Type exports
+export type CreateSlackConfig = z.infer<typeof CreateSlackConfigSchema>;
+export type UpdateSlackConfig = z.infer<typeof UpdateSlackConfigSchema>;
+export type CreateWebhook = z.infer<typeof CreateWebhookSchema>;
+export type UpdateWebhook = z.infer<typeof UpdateWebhookSchema>;
+export type WebhookResponse = z.infer<typeof WebhookResponseSchema>;
+export type UpdateAlertRuleWithId = z.infer<typeof UpdateAlertRuleWithIdSchema>;
+export type UpdateWebhookWithId = z.infer<typeof UpdateWebhookWithIdSchema>;
+export type UpdateSlackConfigWithId = z.infer<
+  typeof UpdateSlackConfigWithIdSchema
+>;

@@ -8,6 +8,7 @@ if (isCloudMode() || process.env.ENABLE_SENTRY === "true") {
 }
 
 import { serve } from "@hono/node-server";
+import { trpcServer } from "@hono/trpc-server";
 import { Hono } from "hono";
 import { logger as honoLogger } from "hono/logger";
 import { prettyJSON } from "hono/pretty-json";
@@ -25,24 +26,13 @@ import {
 import { serverConfig } from "@/config";
 import { validateDeploymentMode } from "@/config/deployment";
 
+import { createContext } from "@/trpc/context";
+import { appRouter } from "@/trpc/router";
+
 import { standardRateLimiter } from "./middlewares/rateLimiter";
 
-import alertsController from "@/controllers/alerts.controller";
-import authController from "@/controllers/auth.controller";
-import discordController from "@/controllers/discord.controller";
-import feedbackController from "@/controllers/feedback.controller";
 import healthcheckController from "@/controllers/healthcheck.controller";
-import licenseController from "@/controllers/license/license.controller";
-import paymentController from "@/controllers/payment.controller";
 import webhookController from "@/controllers/payment/webhook.controller";
-import portalLicenseController from "@/controllers/portal/license-purchase.controller";
-import publicInvitationController from "@/controllers/public-invitation.controller";
-import rabbitmqController from "@/controllers/rabbitmq.controller";
-import serverController from "@/controllers/server.controller";
-import slackController from "@/controllers/slack.controller";
-import userController from "@/controllers/user.controller";
-import alertWebhookController from "@/controllers/webhook.controller";
-import workspaceController from "@/controllers/workspace.controller";
 
 const app = new Hono();
 
@@ -71,36 +61,19 @@ app.use("*", standardRateLimiter);
 // Mount webhook app BEFORE other routes to ensure it's processed first
 app.route("/webhooks", webhookApp);
 
+// Mount tRPC router
+app.use(
+  "/trpc/*",
+  trpcServer({
+    router: appRouter,
+    createContext: async (opts, c) => {
+      return createContext({ req: c.req });
+    },
+  })
+);
+
 // 1. Health check (most basic)
 app.route("/", healthcheckController);
-
-// 2. Authentication
-app.route("/api/auth", authController);
-
-// 3. Workspace-scoped routes (more specific first)
-app.route("/api/workspaces/:workspaceId/servers", serverController);
-app.route("/api/workspaces/:workspaceId/users", userController);
-app.route("/api/workspaces/:workspaceId/payments", paymentController);
-app.route("/api/workspaces/:workspaceId/alerts", alertsController);
-
-// 4. Workspace base (less specific, after workspace-scoped routes)
-app.route("/api/workspaces", workspaceController);
-
-// 5. Core API routes
-app.route("/api/rabbitmq", rabbitmqController);
-app.route("/api/invitations", publicInvitationController);
-app.route("/api/feedback", feedbackController);
-
-// 6. Integrations
-app.route("/api/slack", slackController);
-app.route("/api/discord", discordController);
-
-// 7. License & Portal
-app.route("/api/license", licenseController);
-app.route("/api/portal/licenses", portalLicenseController);
-
-// 8. Webhooks
-app.route("/api/webhooks", alertWebhookController);
 
 const { port, host } = serverConfig;
 

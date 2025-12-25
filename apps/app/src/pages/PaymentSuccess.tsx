@@ -4,12 +4,12 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { ArrowRight, CheckCircle, CreditCard } from "lucide-react";
 
-import { apiClient } from "@/lib/api";
 import { trackPurchase } from "@/lib/ga";
 import { logger } from "@/lib/logger";
+import { trpc } from "@/lib/trpc/client";
 
-import { useUser } from "@/hooks/useUser";
-import { useWorkspace } from "@/hooks/useWorkspace";
+import { useUser } from "@/hooks/ui/useUser";
+import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 const PaymentSuccess: React.FC = () => {
   const navigate = useNavigate();
@@ -58,11 +58,11 @@ const PaymentSuccess: React.FC = () => {
 
       try {
         // Get payment history to find the latest payment
-        const paymentHistory = await apiClient.getPaymentHistory(
-          workspace.id,
-          1,
-          0
-        );
+        const utils = trpc.useUtils();
+        const paymentHistory = await utils.payment.history.getPaymentHistory.fetch({
+          limit: 1,
+          offset: 0,
+        });
 
         if (paymentHistory.payments && paymentHistory.payments.length > 0) {
           const latestPayment = paymentHistory.payments[0];
@@ -71,14 +71,14 @@ const PaymentSuccess: React.FC = () => {
           trackPurchase({
             transaction_id: sessionId,
             value: latestPayment.amount / 100, // Convert from cents to currency unit
-            currency: latestPayment.currency.toUpperCase(),
+            currency: "USD", // Default currency, payment history doesn't include currency
           });
 
           setPurchaseTracked(true);
           logger.info("Purchase event tracked", {
             transaction_id: sessionId,
             value: latestPayment.amount / 100,
-            currency: latestPayment.currency,
+            currency: "USD",
           });
         } else {
           // Fallback: use sessionId as transaction_id with default values

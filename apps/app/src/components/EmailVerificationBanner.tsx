@@ -3,8 +3,8 @@ import { useState } from "react";
 import { Mail, X } from "lucide-react";
 import { toast } from "sonner";
 
-import { apiClient } from "@/lib/api";
 import { logger } from "@/lib/logger";
+import { trpc } from "@/lib/trpc/client";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -27,18 +27,24 @@ export const EmailVerificationBanner = ({
     return null;
   }
 
-  const handleResendVerification = async () => {
-    try {
-      setIsResending(true);
-      await apiClient.resendVerificationEmail("SIGNUP");
+  const resendVerificationMutation = trpc.auth.verification.resendVerification.useMutation({
+    onSuccess: () => {
       toast.success("Verification email sent! Please check your inbox.");
-    } catch (error) {
+    },
+    onError: (error) => {
       logger.error("Resend verification error:", error);
       toast.error(
         error instanceof Error
           ? error.message
           : "Failed to resend verification email"
       );
+    },
+  });
+
+  const handleResendVerification = async () => {
+    try {
+      setIsResending(true);
+      resendVerificationMutation.mutate({ type: "SIGNUP" });
     } finally {
       setIsResending(false);
     }

@@ -17,7 +17,7 @@ export interface SendInvitationEmailParams {
 export interface SendWelcomeEmailParams {
   to: string;
   name: string;
-  workspaceName: string;
+  workspaceName?: string;
   plan: UserPlan;
 }
 

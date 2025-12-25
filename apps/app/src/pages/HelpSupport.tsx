@@ -31,7 +31,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
 
-import { useToast } from "@/hooks/useToast";
+import { useToast } from "@/hooks/ui/useToast";
 
 const faqs = [
   {

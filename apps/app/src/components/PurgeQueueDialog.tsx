@@ -1,9 +1,6 @@
-import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 
 import { AlertTriangle, Trash2 } from "lucide-react";
-
-import { apiClient } from "@/lib/api";
 
 import {
   AlertDialog,
@@ -20,13 +17,16 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 import { useServerContext } from "@/contexts/ServerContext";
+import { useVHostContext } from "@/contexts/VHostContextDefinition";
 
-import { useToast } from "@/hooks/useToast";
-import { useWorkspace } from "@/hooks/useWorkspace";
+import { usePurgeQueue } from "@/hooks/queries/useRabbitMQ";
+import { useToast } from "@/hooks/ui/useToast";
+import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 interface PurgeQueueDialogProps {
   queueName: string;
   messageCount: number;
+  vhost?: string | null;
   trigger?: React.ReactNode;
   onSuccess?: () => void;
 }
@@ -34,51 +34,70 @@ interface PurgeQueueDialogProps {
 export const PurgeQueueDialog = ({
   queueName,
   messageCount,
+  vhost: vhostProp,
   trigger,
   onSuccess,
 }: PurgeQueueDialogProps) => {
   const [open, setOpen] = useState(false);
   const { selectedServerId } = useServerContext();
+  const { selectedVHost } = useVHostContext();
   const { workspace } = useWorkspace();
   const { toast } = useToast();
 
-  const purgeQueueMutation = useMutation({
-    mutationFn: async () => {
-      if (!selectedServerId) {
-        throw new Error("No server selected");
-      }
-      if (!workspace?.id) {
-        throw new Error("No workspace selected");
-      }
-      return apiClient.purgeQueue(selectedServerId, queueName, workspace.id);
-    },
-    onSuccess: async (data) => {
+  const purgeQueueMutation = usePurgeQueue();
+
+  // Use prop vhost if provided, otherwise use context vhost, fallback to "/"
+  const vhost = vhostProp ?? selectedVHost ?? "/";
+
+  // Handle success/error
+  useEffect(() => {
+    if (purgeQueueMutation.isSuccess) {
       toast({
         title: "Queue Purged Successfully",
-        description:
-          data.purged === -1
-            ? `All messages in queue "${queueName}" have been purged`
-            : `${data.purged} messages were purged from queue "${queueName}"`,
+        description: `All messages in queue "${queueName}" have been purged`,
         variant: "default",
       });
 
       setOpen(false);
       onSuccess?.();
-    },
-    onError: (error) => {
+    }
+    if (purgeQueueMutation.isError) {
       toast({
         title: "Failed to Purge Queue",
         description:
-          error instanceof Error
-            ? error.message
-            : "An unexpected error occurred",
+          purgeQueueMutation.error?.message || "An unexpected error occurred",
         variant: "destructive",
       });
-    },
-  });
+    }
+  }, [
+    purgeQueueMutation.isSuccess,
+    purgeQueueMutation.isError,
+    purgeQueueMutation.error,
+  ]);
 
   const handlePurge = () => {
-    purgeQueueMutation.mutate();
+    if (!selectedServerId) {
+      toast({
+        title: "Error",
+        description: "No server selected",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (!workspace?.id) {
+      toast({
+        title: "Error",
+        description: "No workspace selected",
+        variant: "destructive",
+      });
+      return;
+    }
+    purgeQueueMutation.mutate({
+      serverId: selectedServerId,
+      workspaceId: workspace.id,
+      queueName,
+      vhost: encodeURIComponent(vhost),
+    });
   };
 
   return (

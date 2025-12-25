@@ -46,8 +46,8 @@ import { useAuth } from "@/contexts/AuthContextDefinition";
 import { useServerContext } from "@/contexts/ServerContext";
 import { useVHostContext } from "@/contexts/VHostContextDefinition";
 
-import { useServers } from "@/hooks/useApi";
-import { useLogout } from "@/hooks/useAuth";
+import { useServers } from "@/hooks/queries/useServer";
+import { useLogout } from "@/hooks/ui/useAuth";
 
 const menuItems = [
   {

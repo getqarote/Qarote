@@ -1,9 +1,8 @@
 import React from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 
-import { apiClient } from "@/lib/api";
-import { BillingOverviewResponse } from "@/lib/api/paymentClient";
 import { logger } from "@/lib/logger";
+import { trpc } from "@/lib/trpc/client";
 
 import {
   BillingHeader,
@@ -13,9 +12,9 @@ import {
   SubscriptionManagement,
 } from "@/components/billing";
 
-import { usePlanUpgrade } from "@/hooks/usePlanUpgrade";
-import { useUser } from "@/hooks/useUser";
-import { useWorkspace } from "@/hooks/useWorkspace";
+import { usePlanUpgrade } from "@/hooks/ui/usePlanUpgrade";
+import { useUser } from "@/hooks/ui/useUser";
+import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 import { UserPlan } from "@/types/plans";
 
@@ -40,17 +39,11 @@ const Billing: React.FC = () => {
     data: billingData,
     isLoading,
     error,
-  } = useQuery({
-    queryKey: ["billing", user.id, workspace?.id],
-    queryFn: async (): Promise<BillingOverviewResponse> => {
-      if (!user.id) throw new Error("No user");
-      if (!workspace?.id) throw new Error("No workspace");
-      return await apiClient.getBillingOverview(workspace.id);
-    },
-    enabled: !!user.id && !!workspace?.id,
+  } = trpc.payment.billing.getBillingOverview.useQuery(undefined, {
+    enabled: !!user.id,
     staleTime: 2 * 60 * 1000, // 2 minutes - billing data doesn't change frequently
     refetchOnWindowFocus: false, // Don't refetch when window gains focus
-    retry: (failureCount, error: unknown) => {
+    retry: (failureCount: number, error: unknown) => {
       // Don't retry on 429 (rate limit) errors
       if (
         error &&
@@ -65,6 +58,27 @@ const Billing: React.FC = () => {
     },
   });
 
+  const cancelSubscriptionMutation =
+    trpc.payment.subscription.cancelSubscription.useMutation({
+      onSuccess: (response: { message: string }) => {
+        logger.info("Subscription canceled successfully", response);
+
+        // Show success message to user
+        if (response.message) {
+          // You might want to show a toast notification here
+          logger.info("Cancellation message:", response.message);
+        }
+
+        // Refetch billing data to update the UI
+        queryClient.invalidateQueries({
+          queryKey: ["billing", user.id, workspace?.id],
+        });
+      },
+      onError: (error: Error) => {
+        logger.error("Failed to cancel subscription:", error);
+      },
+    });
+
   const handleCancelSubscription = async (data: {
     cancelImmediately: boolean;
     reason: string;
@@ -74,38 +88,43 @@ const Billing: React.FC = () => {
       if (!workspace?.id) {
         throw new Error("Workspace ID is required");
       }
-      const response = await apiClient.cancelSubscription(workspace.id, data);
-      logger.info("Subscription canceled successfully", response);
-
-      // Show success message to user
-      if (response.message) {
-        // You might want to show a toast notification here
-        logger.info("Cancellation message:", response.message);
-      }
-
-      // Refetch billing data to update the UI
-      await queryClient.invalidateQueries({
-        queryKey: ["billing", user.id, workspace?.id],
-      });
-
-      return response;
+      return await cancelSubscriptionMutation.mutateAsync(data);
     } catch (error) {
       logger.error("Failed to cancel subscription:", error);
       throw error; // Re-throw so the modal can handle the error
     }
   };
 
+  const createBillingPortalMutation =
+    trpc.payment.billing.createBillingPortalSession.useMutation({
+      onSuccess: (data: { url: string }) => {
+        window.open(data.url, "_blank");
+      },
+      onError: (error: Error) => {
+        logger.error("Failed to open billing portal:", error);
+      },
+    });
+
   const handleOpenBillingPortal = async () => {
     try {
       if (!workspace?.id) {
         throw new Error("Workspace ID is required");
       }
-      const data = await apiClient.createBillingPortalSession(workspace.id);
-      window.open(data.url, "_blank");
+      createBillingPortalMutation.mutate();
     } catch (error) {
       logger.error("Failed to open billing portal:", error);
     }
   };
+
+  const renewSubscriptionMutation =
+    trpc.payment.subscription.renewSubscription.useMutation({
+      onSuccess: (data: { url: string }) => {
+        window.location.href = data.url;
+      },
+      onError: (error: Error) => {
+        logger.error("Failed to renew subscription:", error);
+      },
+    });
 
   const handleRenewSubscription = async () => {
     try {
@@ -114,12 +133,10 @@ const Billing: React.FC = () => {
       }
       // Determine the plan to renew based on subscription history
       const planToRenew = billingData?.subscription?.plan || UserPlan.DEVELOPER;
-      const data = await apiClient.renewSubscription(
-        workspace.id,
-        planToRenew,
-        "monthly"
-      );
-      window.location.href = data.url;
+      renewSubscriptionMutation.mutate({
+        plan: planToRenew,
+        interval: "monthly",
+      });
     } catch (error) {
       logger.error("Failed to renew subscription:", error);
     }

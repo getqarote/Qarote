@@ -21,8 +21,8 @@ import { Label } from "@/components/ui/label";
 import {
   useUpdateWorkspaceThresholds,
   useWorkspaceThresholds,
-} from "@/hooks/useApi";
-import { useWorkspace } from "@/hooks/useWorkspace";
+} from "@/hooks/queries/useAlerts";
+import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 interface AlertThresholds {
   memory: {

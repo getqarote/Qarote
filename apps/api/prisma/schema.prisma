@@ -95,7 +95,7 @@ model Invitation {
   token                               String           @unique
   invitedById                         String
   invitedUserId                       String?
-  role                                UserRole         @default(USER)
+  role                                UserRole         @default(MEMBER)
   status                              InvitationStatus @default(PENDING)
   expiresAt                           DateTime
   createdAt                           DateTime         @default(now())
@@ -185,7 +185,7 @@ model User {
   passwordHash                              String?
   firstName                                 String
   lastName                                  String
-  role                                      UserRole                 @default(USER)
+  role                                      UserRole                 @default(MEMBER)
   isActive                                  Boolean                  @default(true)
   lastLogin                                 DateTime?
   createdAt                                 DateTime                 @default(now())
@@ -560,6 +560,6 @@ enum UserPlan {
 
 enum UserRole {
   ADMIN
-  USER
+  MEMBER
   READONLY
 }

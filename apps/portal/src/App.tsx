@@ -1,18 +1,16 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
 import Layout from "@/components/Layout";
 import { Toaster } from "@/components/ui/toaster";
 
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { TRPCProvider } from "@/lib/trpc/provider";
 
 import AccountSettings from "@/pages/AccountSettings";
 import Downloads from "@/pages/Downloads";
 import LicenseManagement from "@/pages/LicenseManagement";
 import LicensePurchase from "@/pages/LicensePurchase";
 import Login from "@/pages/Login";
-
-const queryClient = new QueryClient();
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -34,7 +32,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
 const App = () => {
   return (
-    <QueryClientProvider client={queryClient}>
+    <TRPCProvider>
       <AuthProvider>
         <Toaster />
         <BrowserRouter
@@ -62,7 +60,7 @@ const App = () => {
           </Routes>
         </BrowserRouter>
       </AuthProvider>
-    </QueryClientProvider>
+    </TRPCProvider>
   );
 };
 

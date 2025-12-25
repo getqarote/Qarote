@@ -1,9 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router-dom";
 
 import { AlertTriangle, ArrowRight } from "lucide-react";
-
-import { apiClient } from "@/lib/api";
 
 import {
   formatRelativeTime,
@@ -18,8 +15,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useServerContext } from "@/contexts/ServerContext";
 import { useVHostContext } from "@/contexts/VHostContextDefinition";
 
-import { useUser } from "@/hooks/useUser";
-import { useWorkspace } from "@/hooks/useWorkspace";
+import { useRabbitMQAlerts } from "@/hooks/queries/useAlerts";
+import { useUser } from "@/hooks/ui/useUser";
 
 import { UserPlan } from "@/types/plans";
 
@@ -27,7 +24,6 @@ export const RecentAlerts = () => {
   const navigate = useNavigate();
   const { selectedServerId } = useServerContext();
   const { selectedVHost } = useVHostContext();
-  const { workspace } = useWorkspace();
   const { userPlan } = useUser();
 
   // Query for recent alerts with limit of 3 (filtered by vhost)
@@ -35,16 +31,9 @@ export const RecentAlerts = () => {
     data: alertsData,
     isLoading,
     error,
-  } = useQuery({
-    queryKey: ["recentAlerts", selectedServerId, selectedVHost],
-    queryFn: () =>
-      apiClient.getRabbitMQAlerts(selectedServerId, workspace.id, {
-        limit: 3, // Only fetch 3 most recent alerts
-        resolved: false, // Only get active alerts
-        vhost: selectedVHost || "/", // Use "/" as default if no vhost selected
-      }),
-    enabled: !!selectedServerId && !!selectedVHost,
-    refetchInterval: 30000, // Refresh every 30 seconds
+  } = useRabbitMQAlerts(selectedServerId, selectedVHost, {
+    limit: 3, // Only fetch 3 most recent alerts
+    resolved: false, // Only get active alerts
   });
 
   const alerts = alertsData?.alerts || [];

@@ -205,12 +205,6 @@ export class EmailVerificationService {
             emailVerifiedAt: new Date(),
           },
           include: {
-            workspace: {
-              select: {
-                name: true,
-                ownerId: true,
-              },
-            },
             subscription: {
               select: {
                 plan: true,
@@ -221,14 +215,9 @@ export class EmailVerificationService {
 
         // Send welcome email after successful email verification
         try {
-          if (!updatedUser.workspace) {
-            throw new Error(`User ${updatedUser.id} has no workspace assigned`);
-          }
-
           await EmailService.sendWelcomeEmail({
             to: updatedUser.email,
             name: updatedUser.firstName || updatedUser.email,
-            workspaceName: updatedUser.workspace.name,
             plan: updatedUser.subscription?.plan || "FREE",
           });
 
@@ -236,7 +225,6 @@ export class EmailVerificationService {
             {
               userId: updatedUser.id,
               email: updatedUser.email,
-              workspaceName: updatedUser.workspace.name,
             },
             "Welcome email sent after email verification"
           );

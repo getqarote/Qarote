@@ -29,7 +29,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 
 import { useServerContext } from "@/contexts/ServerContext";
 
-import { useChannels, useConnections } from "@/hooks/useApi";
+import { useChannels, useConnections } from "@/hooks/queries/useRabbitMQ";
 
 const Connections = () => {
   const { selectedServerId, hasServers } = useServerContext();
