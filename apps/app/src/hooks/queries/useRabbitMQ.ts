@@ -64,29 +64,6 @@ export const useNodes = (serverId: string | null) => {
   return query;
 };
 
-export const useNodeMemoryDetails = (
-  serverId: string,
-  nodeName: string,
-  enabled: boolean = true
-) => {
-  const { workspace } = useWorkspace();
-
-  const query = trpc.rabbitmq.memory.getNodeMemory.useQuery(
-    {
-      serverId,
-      workspaceId: workspace?.id || "",
-      nodeName,
-    },
-    {
-      enabled: !!serverId && !!nodeName && !!workspace?.id && enabled,
-      staleTime: 10000, // 10 seconds
-      refetchInterval: 30000, // Refetch every 30 seconds
-    }
-  );
-
-  return query;
-};
-
 export const useQueue = (
   serverId: string,
   queueName: string,
@@ -212,33 +189,6 @@ export const useDeleteExchange = () => {
   });
 
   return mutation;
-};
-
-export const useBindings = (serverId: string | null) => {
-  const { workspace } = useWorkspace();
-
-  // Bindings are included in getExchanges response
-  const exchangesQuery = trpc.rabbitmq.infrastructure.getExchanges.useQuery(
-    {
-      serverId: serverId || "",
-      workspaceId: workspace?.id || "",
-    },
-    {
-      enabled: !!serverId && !!workspace?.id,
-      staleTime: 10000, // 10 seconds
-      refetchInterval: 30000, // Refetch every 30 seconds
-    }
-  );
-
-  return {
-    ...exchangesQuery,
-    data: exchangesQuery.data
-      ? {
-          ...exchangesQuery.data,
-          bindings: exchangesQuery.data.bindings || [],
-        }
-      : undefined,
-  };
 };
 
 export const useQueueConsumers = (

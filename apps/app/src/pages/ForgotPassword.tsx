@@ -20,7 +20,7 @@ import { Label } from "@/components/ui/label";
 
 import { useRequestPasswordReset } from "@/hooks/queries/useProfile";
 
-export const ForgotPassword: React.FC = () => {
+const ForgotPassword: React.FC = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [emailSent, setEmailSent] = useState(false);

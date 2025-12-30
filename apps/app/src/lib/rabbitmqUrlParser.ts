@@ -1,7 +1,7 @@
 import type { AddServerFormData } from "@/schemas";
 import { urlValidationSchema } from "@/schemas";
 
-export interface ParsedRabbitMQUrl {
+interface ParsedRabbitMQUrl {
   host: string;
   port: number;
   amqpPort: number;

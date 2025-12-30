@@ -115,56 +115,8 @@ export function setSentryContext(
   Sentry.setContext(context, data);
 }
 
-export function captureUIError(
-  error: Error,
-  context: {
-    component?: string;
-    action?: string;
-    props?: unknown;
-  }
-) {
-  Sentry.withScope((scope) => {
-    scope.setTag("component", "ui");
-    scope.setContext("ui", context);
-    Sentry.captureException(error);
-  });
-}
-
-export function captureAPIError(
-  error: Error,
-  context: {
-    endpoint?: string;
-    method?: string;
-    status?: number;
-    response?: unknown;
-  }
-) {
-  Sentry.withScope((scope) => {
-    scope.setTag("component", "api-client");
-    scope.setContext("api", context);
-    Sentry.captureException(error);
-  });
-}
-
-export function captureStreamingError(
-  error: Error,
-  context: {
-    streamType?: string;
-    serverId?: string;
-    queueName?: string;
-  }
-) {
-  Sentry.withScope((scope) => {
-    scope.setTag("component", "streaming");
-    scope.setContext("stream", context);
-    Sentry.captureException(error);
-  });
-}
-
 // Error Boundary Component
 export const SentryErrorBoundary = Sentry.withErrorBoundary;
 
 // High-Order Component for profiling
 export const withSentryProfiling = Sentry.withProfiler;
-
-export { Sentry };

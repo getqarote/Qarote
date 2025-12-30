@@ -13,7 +13,6 @@ import type {
   SentryContextData,
   SentryUser,
   SignUpErrorType,
-  StreamingErrorContext,
 } from "./interfaces";
 
 /**
@@ -71,30 +70,6 @@ export function trackMetricDistribution(
       { error, metricName: name },
       "Failed to track distribution metric"
     );
-  }
-}
-
-/**
- * Track a gauge metric
- * Only tracks in production environment
- */
-export function trackMetricGauge(
-  name: string,
-  value: number,
-  options?: Omit<MetricOptions, "tags"> & { tags?: MetricAttributes }
-) {
-  if (!shouldTrackMetrics()) {
-    return;
-  }
-
-  try {
-    Sentry.metrics.gauge(name, value, {
-      tags: options?.tags || {},
-      unit: options?.unit,
-    } as MetricOptions);
-  } catch (error) {
-    // Never let metrics tracking throw
-    logger.warn({ error, metricName: name }, "Failed to track gauge metric");
   }
 }
 
@@ -218,17 +193,6 @@ export function captureMessageProcessingError(
   });
 }
 
-export function captureStreamingError(
-  error: Error,
-  context: StreamingErrorContext
-) {
-  Sentry.withScope((scope) => {
-    scope.setTag("component", "streaming");
-    scope.setContext("stream", context);
-    Sentry.captureException(error);
-  });
-}
-
 /**
  * Track sign up errors as metrics
  * Only tracks in production environment
@@ -261,4 +225,4 @@ export function trackPaymentError(
   });
 }
 
-export { MetricOptions, Sentry };
+export { Sentry };

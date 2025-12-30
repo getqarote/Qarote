@@ -18,7 +18,7 @@ import { join } from "node:path";
 
 import { RabbitMQClient } from "../../src/core/rabbitmq/RabbitClient";
 import { ResponseValidator } from "../../src/core/rabbitmq/ResponseValidator";
-import type { RabbitMQCredentials } from "../../src/types/rabbitmq";
+import type { RabbitMQCredentials } from "../../src/core/rabbitmq/rabbitmq.interfaces";
 
 interface DiscoveryReport {
   server: {

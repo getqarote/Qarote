@@ -3,7 +3,7 @@
  * @param tags - Comma-separated string of tags
  * @returns Array of tag strings for rendering
  */
-export function formatTags(tags: string | null | undefined): string[] {
+function formatTags(tags: string | null | undefined): string[] {
   if (!tags || tags.trim() === "") {
     return [];
   }

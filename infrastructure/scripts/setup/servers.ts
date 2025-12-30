@@ -47,14 +47,14 @@ export async function setupInfrastructure(
 // Export environment-specific functions for direct use
 export {
   // Staging exports
-  provisionStagingApplicationServer,
-  provisionStagingDatabaseServer,
-  configureStagingApplicationServer,
-  configureStagingDatabaseServer,
+  
+  
+  
+  
 
   // Production exports
-  provisionProductionApplicationServer,
-  provisionProductionDatabaseServer,
-  configureProductionApplicationServer,
-  configureProductionDatabaseServer,
+  
+  
+  
+  
 };

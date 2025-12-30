@@ -85,7 +85,7 @@ function checkRateLimit(
  * @param max - Maximum number of requests allowed in the window (default: 100)
  * @param keyGenerator - Function to generate a unique key for rate limiting
  */
-export function createRateLimiter(
+function createRateLimiter(
   windowMs: number = 60000,
   max: number = 100,
   keyGenerator?: (userId: string | null, path: string) => string
@@ -129,6 +129,15 @@ export function createRateLimiter(
 }
 
 /**
+ * Standard rate limiting for API endpoints
+ * 100 requests per minute
+ */
+export const standardRateLimiter = createRateLimiter(
+  60000, // 1 minute window
+  100 // 100 requests max
+);
+
+/**
  * Strict rate limiting for sensitive operations (payments, cancellations)
  * 5 requests per minute
  */
@@ -152,13 +161,4 @@ export const billingRateLimiter = createRateLimiter(
   (userId) => {
     return userId ? `${userId}:billing` : `anonymous:billing`;
   }
-);
-
-/**
- * Standard rate limiting for API endpoints
- * 100 requests per minute
- */
-export const standardRateLimiter = createRateLimiter(
-  60000, // 1 minute window
-  100 // 100 requests max
 );

@@ -1,5 +1,5 @@
 import React from "react";
-import EmailVerification from "../../../src/services/email/templates/email-verification";
+import { EmailVerification } from "../../../src/services/email/templates/email-verification";
 import { emailConfig } from "../../../src/config";
 
 const { frontendUrl } = emailConfig;

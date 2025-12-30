@@ -9,7 +9,7 @@ import crypto from "crypto";
 import { logger } from "@/core/logger";
 import { prisma } from "@/core/prisma";
 
-export interface GenerateLicenseOptions {
+interface GenerateLicenseOptions {
   tier: UserPlan;
   customerEmail: string;
   workspaceId?: string;
@@ -18,12 +18,12 @@ export interface GenerateLicenseOptions {
   stripePaymentId?: string;
 }
 
-export interface ValidateLicenseOptions {
+interface ValidateLicenseOptions {
   licenseKey: string;
   instanceId?: string;
 }
 
-export class LicenseService {
+class LicenseService {
   /**
    * Generate a new license key
    */

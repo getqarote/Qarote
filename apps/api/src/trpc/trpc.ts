@@ -13,7 +13,6 @@ import { hasWorkspaceAccess } from "@/middlewares/workspace";
 import type { Context } from "./context";
 import {
   billingRateLimiter,
-  createRateLimiter,
   standardRateLimiter,
   strictRateLimiter,
 } from "./middlewares/rateLimiter";
@@ -27,12 +26,12 @@ const t = initTRPC.context<Context>().create();
  * Base router and procedure exports
  */
 export const router = t.router;
-export const publicProcedure = t.procedure;
+const publicProcedure = t.procedure;
 
 /**
  * Protected procedure - requires authentication
  */
-export const protectedProcedure = publicProcedure.use(async (opts) => {
+const protectedProcedure = publicProcedure.use(async (opts) => {
   const { ctx } = opts;
 
   if (!ctx.user) {
@@ -60,7 +59,7 @@ export const protectedProcedure = publicProcedure.use(async (opts) => {
 /**
  * Admin procedure - requires admin role
  */
-export const adminProcedure = protectedProcedure.use(async (opts) => {
+const adminProcedure = protectedProcedure.use(async (opts) => {
   const { ctx } = opts;
 
   if (ctx.user.role !== UserRole.ADMIN) {
@@ -81,11 +80,11 @@ export const adminProcedure = protectedProcedure.use(async (opts) => {
  * @returns A procedure middleware that enforces role-based authorization
  *
  * @example
- * // Allow only ADMIN role
+ * Allow only ADMIN role
  * authorize([UserRole.ADMIN]).mutation(...)
  *
  * @example
- * // Allow multiple roles
+ * Allow multiple roles
  * authorize([UserRole.ADMIN, UserRole.MEMBER]).query(...)
  */
 export const authorize = (allowedRoles: UserRole[]) => {
@@ -108,10 +107,53 @@ export const authorize = (allowedRoles: UserRole[]) => {
 };
 
 /**
- * Workspace-scoped procedure - requires workspace access
+ * Rate-limited procedures
+ * Apply rate limiting to procedures that need it
+ */
+
+/**
+ * Public procedure with standard rate limiting (100 requests/minute)
+ * Use for public endpoints like login, registration, password reset
+ */
+export const rateLimitedPublicProcedure = publicProcedure.use(
+  standardRateLimiter as Parameters<typeof publicProcedure.use>[0]
+);
+
+/**
+ * Protected procedure with standard rate limiting (100 requests/minute)
+ */
+export const rateLimitedProcedure = protectedProcedure.use(
+  standardRateLimiter as Parameters<typeof protectedProcedure.use>[0]
+);
+
+/**
+ * Protected procedure with strict rate limiting (5 requests/minute)
+ * Use for sensitive operations like payments, cancellations
+ */
+export const strictRateLimitedProcedure = protectedProcedure.use(
+  strictRateLimiter as Parameters<typeof protectedProcedure.use>[0]
+);
+
+/**
+ * Protected procedure with billing rate limiting (30 requests/minute)
+ * Use for billing overview and less sensitive operations
+ */
+export const billingRateLimitedProcedure = protectedProcedure.use(
+  billingRateLimiter as Parameters<typeof protectedProcedure.use>[0]
+);
+
+/**
+ * Admin procedure with standard rate limiting
+ */
+export const rateLimitedAdminProcedure = adminProcedure.use(
+  standardRateLimiter as Parameters<typeof adminProcedure.use>[0]
+);
+
+/**
+ * Workspace-scoped procedure - requires workspace access and rate limiting
  * Workspace ID can come from input, context, or user's workspaceId
  */
-export const workspaceProcedure = protectedProcedure.use(async (opts) => {
+export const workspaceProcedure = rateLimitedProcedure.use(async (opts) => {
   const { ctx, input } = opts;
 
   // Try to get workspaceId from input (if provided), context, or user's workspaceId
@@ -197,68 +239,6 @@ export const planValidationProcedure = protectedProcedure.use(async (opts) => {
     throw error;
   }
 });
-
-/**
- * Rate-limited procedures
- * Apply rate limiting to procedures that need it
- */
-
-/**
- * Protected procedure with standard rate limiting (100 requests/minute)
- */
-export const rateLimitedProcedure = protectedProcedure.use(
-  standardRateLimiter as Parameters<typeof protectedProcedure.use>[0]
-);
-
-/**
- * Protected procedure with strict rate limiting (5 requests/minute)
- * Use for sensitive operations like payments, cancellations
- */
-export const strictRateLimitedProcedure = protectedProcedure.use(
-  strictRateLimiter as Parameters<typeof protectedProcedure.use>[0]
-);
-
-/**
- * Protected procedure with billing rate limiting (30 requests/minute)
- * Use for billing overview and less sensitive operations
- */
-export const billingRateLimitedProcedure = protectedProcedure.use(
-  billingRateLimiter as Parameters<typeof protectedProcedure.use>[0]
-);
-
-/**
- * Admin procedure with standard rate limiting
- */
-export const rateLimitedAdminProcedure = adminProcedure.use(
-  standardRateLimiter as Parameters<typeof adminProcedure.use>[0]
-);
-
-/**
- * Admin procedure with strict rate limiting
- */
-export const strictRateLimitedAdminProcedure = adminProcedure.use(
-  strictRateLimiter as Parameters<typeof adminProcedure.use>[0]
-);
-
-/**
- * Helper to create custom rate-limited procedures
- * @param baseProcedure - Base procedure to apply rate limiting to
- * @param windowMs - Time window in milliseconds
- * @param max - Maximum requests per window
- * @param keyGenerator - Optional custom key generator
- */
-export function withRateLimit(
-  baseProcedure: typeof protectedProcedure,
-  windowMs: number = 60000,
-  max: number = 100,
-  keyGenerator?: (userId: string | null, path: string) => string
-) {
-  return baseProcedure.use(
-    createRateLimiter(windowMs, max, keyGenerator) as Parameters<
-      typeof baseProcedure.use
-    >[0]
-  );
-}
 
 /**
  * Admin procedure with plan validation

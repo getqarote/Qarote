@@ -7,7 +7,7 @@ import { WorkspaceMapper } from "@/mappers/workspace";
 
 import {
   authorize,
-  protectedProcedure,
+  rateLimitedProcedure,
   router,
   workspaceProcedure,
 } from "@/trpc/trpc";
@@ -20,7 +20,7 @@ export const coreRouter = router({
   /**
    * Get current workspace (PROTECTED)
    */
-  getCurrent: protectedProcedure.query(async ({ ctx }) => {
+  getCurrent: rateLimitedProcedure.query(async ({ ctx }) => {
     const user = ctx.user;
 
     try {

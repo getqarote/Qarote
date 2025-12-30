@@ -11,7 +11,11 @@ import {
 
 import { FeedbackMapper } from "@/mappers/feedback";
 
-import { authorize, protectedProcedure, router } from "@/trpc/trpc";
+import {
+  authorize,
+  rateLimitedProcedure,
+  router,
+} from "@/trpc/trpc";
 
 /**
  * Feedback router
@@ -21,7 +25,7 @@ export const feedbackRouter = router({
   /**
    * Submit feedback (authenticated users)
    */
-  submit: protectedProcedure
+  submit: rateLimitedProcedure
     .input(submitFeedbackSchema)
     .mutation(async ({ input, ctx }) => {
       const user = ctx.user;

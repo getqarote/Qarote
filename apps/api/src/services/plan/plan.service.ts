@@ -5,11 +5,7 @@ import { prisma } from "@/core/prisma";
 import { getPlanFeatures } from "./features.service";
 
 // Re-export for convenience
-export {
-  getPlanFeatures,
-  PLAN_FEATURES,
-  type PlanFeatures,
-} from "./features.service";
+export { getPlanFeatures, PLAN_FEATURES } from "./features.service";
 
 // Error codes enum
 export enum PlanErrorCode {
@@ -52,69 +48,6 @@ export class PlanLimitExceededError extends Error {
     );
     this.name = "PlanLimitExceededError";
   }
-}
-
-// Validation functions
-export function validateQueueCreation(plan: UserPlan): void {
-  const features = getPlanFeatures(plan);
-
-  if (!features.canAddQueue) {
-    throw new PlanValidationError(
-      "Queue creation",
-      plan,
-      "Developer or Enterprise"
-    );
-  }
-}
-
-export function validateExchangeCreation(plan: UserPlan): void {
-  const features = getPlanFeatures(plan);
-
-  if (!features.canAddExchange) {
-    throw new PlanValidationError(
-      "Exchange creation",
-      plan,
-      "Developer or Enterprise"
-    );
-  }
-}
-
-export function validateVirtualHostCreation(plan: UserPlan): void {
-  const features = getPlanFeatures(plan);
-
-  if (!features.canAddVirtualHost) {
-    throw new PlanValidationError(
-      "Virtual Host creation",
-      plan,
-      "Developer or Enterprise"
-    );
-  }
-}
-
-export function validateRabbitMQUserCreation(plan: UserPlan): void {
-  const features = getPlanFeatures(plan);
-
-  if (!features.canAddRabbitMQUser) {
-    throw new PlanValidationError(
-      "RabbitMQ User creation",
-      plan,
-      "Developer or Enterprise"
-    );
-  }
-}
-
-// Additional Invitation Validation Functions
-export function calculateMonthlyCostForUsers(
-  plan: UserPlan,
-  additionalUsers: number
-): number {
-  const limits = getPlanFeatures(plan);
-
-  if (!limits.userCostPerMonth || additionalUsers <= 0) {
-    return 0;
-  }
-
-  return limits.userCostPerMonth * additionalUsers;
 }
 
 /**
@@ -263,45 +196,7 @@ export function validateUserInvitation(
   }
 }
 
-// Access helper functions
-export function canUserAddQueue(plan: UserPlan): boolean {
-  return getPlanFeatures(plan).canAddQueue;
-}
-
-export function canUserSendMessages(plan: UserPlan): boolean {
-  return getPlanFeatures(plan).canSendMessages;
-}
-
-export function canUserAddServer(plan: UserPlan): boolean {
-  return getPlanFeatures(plan).canAddServer;
-}
-
-export function canUserAddExchange(plan: UserPlan): boolean {
-  return getPlanFeatures(plan).canAddExchange;
-}
-
-export function canUserAddVirtualHost(plan: UserPlan): boolean {
-  return getPlanFeatures(plan).canAddVirtualHost;
-}
-
-export function canUserAddRabbitMQUser(plan: UserPlan): boolean {
-  return getPlanFeatures(plan).canAddRabbitMQUser;
-}
-
-export function canUserInviteUsers(plan: UserPlan): boolean {
-  return getPlanFeatures(plan).canInviteUsers;
-}
-
 // Count-based validations
-export function canUserAddServerWithCount(
-  plan: UserPlan,
-  currentServerCount: number
-): boolean {
-  const features = getPlanFeatures(plan);
-  if (!features.canAddServer) return false;
-  if (features.maxServers === null) return true;
-  return currentServerCount < features.maxServers;
-}
 
 export function canUserAddWorkspaceWithCount(
   plan: UserPlan,
@@ -312,122 +207,9 @@ export function canUserAddWorkspaceWithCount(
   return currentWorkspaceCount < features.maxWorkspaces;
 }
 
-export function canUserInviteMoreUsers(
-  plan: UserPlan,
-  currentUserCount: number
-): boolean {
-  const features = getPlanFeatures(plan);
-  if (!features.canInviteUsers) return false;
-  if (features.maxUsers === null) return true;
-  return currentUserCount < features.maxUsers;
-}
-
 // Display helpers
 export function getPlanDisplayName(plan: UserPlan): string {
   return getPlanFeatures(plan).displayName;
-}
-
-export function getPlanColor(plan: UserPlan): string {
-  return getPlanFeatures(plan).color;
-}
-
-export function getPlanDescription(plan: UserPlan): string {
-  return getPlanFeatures(plan).description;
-}
-
-export function getPlanFeatureDescriptions(plan: UserPlan): string[] {
-  return getPlanFeatures(plan).featureDescriptions;
-}
-
-// Pricing helpers
-export function getMonthlyPrice(plan: UserPlan): string {
-  const price = getPlanFeatures(plan).monthlyPrice;
-  return price === 0 ? "Free" : `$${(price / 100).toFixed(0)}`;
-}
-
-export function getYearlyPrice(plan: UserPlan): string {
-  const price = getPlanFeatures(plan).yearlyPrice;
-  return price === 0 ? "Free" : `$${(price / 100).toFixed(0)}`;
-}
-
-export function getMonthlyPriceInCents(plan: UserPlan): number {
-  return getPlanFeatures(plan).monthlyPrice;
-}
-
-export function getYearlyPriceInCents(plan: UserPlan): number {
-  return getPlanFeatures(plan).yearlyPrice;
-}
-
-export function getYearlySavings(plan: UserPlan): string | null {
-  const features = getPlanFeatures(plan);
-  if (features.monthlyPrice === 0 || features.yearlyPrice === 0) return null;
-
-  const monthlyAnnual = features.monthlyPrice * 12;
-  const yearlyAnnual = features.yearlyPrice * 12;
-  const savings = monthlyAnnual - yearlyAnnual;
-
-  if (savings <= 0) return null;
-
-  return `$${(savings / 100).toFixed(0)}`;
-}
-
-// Limit getters
-export function getServerLimitForPlan(plan: UserPlan): number | null {
-  return getPlanFeatures(plan).maxServers;
-}
-
-export function getWorkspaceLimitForPlan(plan: UserPlan): number | null {
-  return getPlanFeatures(plan).maxWorkspaces;
-}
-
-export function getUserLimitForPlan(plan: UserPlan): number | null {
-  return getPlanFeatures(plan).maxUsers;
-}
-
-export function getInvitationLimitForPlan(plan: UserPlan): number | null {
-  return getPlanFeatures(plan).maxInvitations;
-}
-
-// Limit text helpers
-export function getServerLimitText(plan: UserPlan): string {
-  const features = getPlanFeatures(plan);
-  if (!features.canAddServer) return "Cannot add servers";
-  if (features.maxServers === null) return "Unlimited servers";
-  return `Up to ${features.maxServers} servers`;
-}
-
-export function getWorkspaceLimitText(plan: UserPlan): string {
-  const features = getPlanFeatures(plan);
-  if (features.maxWorkspaces === null) return "Unlimited workspaces";
-  return `Up to ${features.maxWorkspaces} workspaces`;
-}
-
-export function getUserLimitText(plan: UserPlan): string {
-  const features = getPlanFeatures(plan);
-  if (!features.canInviteUsers) return "Cannot invite users";
-  if (features.maxUsers === null) return "Unlimited users";
-  const additionalUsers = features.maxUsers - 1;
-  return `Up to ${additionalUsers} additional user${additionalUsers === 1 ? "" : "s"}`;
-}
-
-export function getInvitationLimitText(plan: UserPlan): string {
-  const features = getPlanFeatures(plan);
-  if (!features.canInviteUsers) return "Cannot send invitations";
-  if (features.maxInvitations === null) return "Unlimited invitations";
-  return `Up to ${features.maxInvitations} pending invitations`;
-}
-
-// RabbitMQ version support
-export function getSupportedRabbitMqVersions(plan: UserPlan): string[] {
-  return getPlanFeatures(plan).supportedRabbitMqVersions;
-}
-
-export function isRabbitMqVersionSupported(
-  plan: UserPlan,
-  version: string
-): boolean {
-  const supportedVersions = getSupportedRabbitMqVersions(plan);
-  return supportedVersions.includes(version);
 }
 
 export async function getUserPlan(userId: string) {

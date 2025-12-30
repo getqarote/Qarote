@@ -1,9 +1,8 @@
-import { UserRole } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 
 import { WorkspaceIdParamSchema } from "@/schemas/workspace";
 
-import { authorize, router } from "@/trpc/trpc";
+import { rateLimitedAdminProcedure, router } from "@/trpc/trpc";
 
 /**
  * Workspace data router
@@ -11,9 +10,9 @@ import { authorize, router } from "@/trpc/trpc";
  */
 export const dataRouter = router({
   /**
-   * Export all workspace data (ADMIN ONLY)
+   * Export all workspace data (ADMIN ONLY - RATE LIMITED)
    */
-  export: authorize([UserRole.ADMIN])
+  export: rateLimitedAdminProcedure
     .input(WorkspaceIdParamSchema)
     .query(async ({ input, ctx }) => {
       const { workspaceId } = input;

@@ -9,7 +9,10 @@ import { createCheckoutSessionSchema } from "@/schemas/payment";
 
 import { emailConfig } from "@/config";
 
-import { protectedProcedure, router } from "@/trpc/trpc";
+import {
+  router,
+  strictRateLimitedProcedure,
+} from "@/trpc/trpc";
 
 /**
  * Checkout router
@@ -17,9 +20,9 @@ import { protectedProcedure, router } from "@/trpc/trpc";
  */
 export const checkoutRouter = router({
   /**
-   * Create checkout session for subscription (PROTECTED)
+   * Create checkout session for subscription (PROTECTED - STRICT RATE LIMITED)
    */
-  createCheckoutSession: protectedProcedure
+  createCheckoutSession: strictRateLimitedProcedure
     .input(createCheckoutSessionSchema)
     .mutation(async ({ input, ctx }) => {
       const { plan, billingInterval } = input;

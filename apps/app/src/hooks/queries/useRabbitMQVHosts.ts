@@ -98,18 +98,6 @@ export const useSetVHostLimit = () => {
   });
 };
 
-export const useDeleteVHostLimit = () => {
-  const utils = trpc.useUtils();
-
-  return trpc.rabbitmq.vhost.deleteLimit.useMutation({
-    onSuccess: () => {
-      // Invalidate vhost data to refresh limits
-      utils.rabbitmq.vhost.getVHost.invalidate();
-      utils.rabbitmq.vhost.getVHosts.invalidate();
-    },
-  });
-};
-
 export const useCreateVHost = () => {
   const utils = trpc.useUtils();
 

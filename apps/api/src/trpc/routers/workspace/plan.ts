@@ -3,7 +3,7 @@ import { TRPCError } from "@trpc/server";
 
 import { getPlanFeatures, PLAN_FEATURES } from "@/services/plan/plan.service";
 
-import { protectedProcedure, router } from "@/trpc/trpc";
+import { rateLimitedProcedure, router } from "@/trpc/trpc";
 
 /**
  * Plan router
@@ -13,7 +13,7 @@ export const planRouter = router({
   /**
    * Get all available plans with their features (PUBLIC - but using protected for consistency)
    */
-  getAllPlans: protectedProcedure.query(async ({ ctx }) => {
+  getAllPlans: rateLimitedProcedure.query(async ({ ctx }) => {
     try {
       const allPlans = Object.entries(PLAN_FEATURES).map(
         ([planKey, features]) => ({
@@ -36,7 +36,7 @@ export const planRouter = router({
    * Get current user's plan features and usage (PROTECTED)
    * Always uses workspace owner's subscription plan for workspace features
    */
-  getCurrentPlan: protectedProcedure.query(async ({ ctx }) => {
+  getCurrentPlan: rateLimitedProcedure.query(async ({ ctx }) => {
     const user = ctx.user;
 
     try {

@@ -5,4 +5,4 @@
  * license types to API response types with proper date serialization.
  */
 
-export { type LicenseApiResponse, LicenseMapper } from "./LicenseMapper";
+export { LicenseMapper } from "./license.mapper";

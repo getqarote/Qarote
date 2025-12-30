@@ -88,7 +88,7 @@ import { RabbitMQAlert } from "./alert.interfaces";
  * Only WARNING and CRITICAL alerts are tracked and can trigger emails.
  * INFO alerts are ignored for notification purposes.
  */
-export class AlertNotificationService {
+class AlertNotificationService {
   private readonly COOLDOWN_PERIOD = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
 
   /**

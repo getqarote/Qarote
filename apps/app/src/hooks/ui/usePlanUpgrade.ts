@@ -8,7 +8,6 @@ import { useAuth } from "@/contexts/AuthContextDefinition";
 
 import { UserPlan } from "@/types/plans";
 
-import { useUser } from "./useUser";
 import { useWorkspace } from "./useWorkspace";
 
 export const usePlanUpgrade = () => {
@@ -103,31 +102,5 @@ export const usePlanUpgrade = () => {
     handleUpgrade,
     openCustomerPortal,
     isUpgrading,
-  };
-};
-
-export const usePlanFeatures = () => {
-  const { userPlan } = useUser();
-
-  const currentPlan = userPlan || UserPlan.FREE;
-
-  const getUpgradeMessage = (feature: string) => {
-    return `To use ${feature}, upgrade your plan from ${currentPlan}`;
-  };
-
-  const shouldShowUpgradePrompt = (requiredPlan: UserPlan) => {
-    const planHierarchy = {
-      [UserPlan.FREE]: 0,
-      [UserPlan.DEVELOPER]: 1,
-      [UserPlan.ENTERPRISE]: 2,
-    };
-
-    return planHierarchy[currentPlan] < planHierarchy[requiredPlan];
-  };
-
-  return {
-    currentPlan,
-    getUpgradeMessage,
-    shouldShowUpgradePrompt,
   };
 };

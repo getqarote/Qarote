@@ -5,7 +5,7 @@ import { EmailVerification } from "./templates/email-verification";
 import { InvitationEmail } from "./templates/invitation-email";
 import WelcomeEmail from "./templates/welcome-email";
 
-export interface SendInvitationEmailParams {
+interface SendInvitationEmailParams {
   to: string;
   inviterName: string;
   inviterEmail: string;
@@ -14,14 +14,14 @@ export interface SendInvitationEmailParams {
   plan: UserPlan;
 }
 
-export interface SendWelcomeEmailParams {
+interface SendWelcomeEmailParams {
   to: string;
   name: string;
   workspaceName?: string;
   plan: UserPlan;
 }
 
-export interface SendVerificationEmailParams {
+interface SendVerificationEmailParams {
   to: string;
   userName?: string;
   verificationToken: string;

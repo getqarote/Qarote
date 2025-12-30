@@ -3,35 +3,6 @@
  * Contains interfaces for user authentication and management
  */
 
-export interface LoginRequest {
-  email: string;
-  password: string;
-}
-
-export interface RegisterRequest {
-  email: string;
-  password: string;
-  firstName: string;
-  lastName: string;
-  workspaceName?: string;
-}
-
-export interface RegisterResponse {
-  message: string;
-  email: string;
-}
-
-export interface AuthResponse {
-  token: string;
-  user: {
-    id: string;
-    email: string;
-    firstName: string;
-    lastName: string;
-    workspaceId?: string;
-  };
-}
-
 export interface User {
   id: string;
   email: string;
@@ -51,7 +22,7 @@ export interface User {
   googleId?: string | null;
 }
 
-export interface Workspace {
+interface Workspace {
   id: string;
   name: string;
   contactEmail?: string;
@@ -73,25 +44,7 @@ export interface UserProfile extends User {
   workspace?: Workspace;
 }
 
-export interface UpdateProfileRequest {
-  firstName?: string;
-  lastName?: string;
-}
-
-export interface UpdateWorkspaceRequest {
-  name?: string;
-  contactEmail?: string;
-  logoUrl?: string;
-  planType?: "FREE" | "PREMIUM" | "ENTERPRISE";
-}
-
-export interface InviteUserRequest {
-  email: string;
-  role: "ADMIN" | "MEMBER" | "READONLY";
-  workspaceId: string;
-}
-
-export interface Invitation {
+interface Invitation {
   id: string;
   email: string;
   role: string;
@@ -110,80 +63,4 @@ export interface InvitationWithInviter extends Invitation {
     email: string;
     displayName: string;
   };
-}
-
-export interface SendInvitationRequest {
-  email: string;
-  role: "MEMBER" | "ADMIN";
-  message?: string;
-}
-
-export interface SendInvitationResponse {
-  success: boolean;
-  message: string;
-  invitation: {
-    id: string;
-    email: string;
-    role: string;
-    expiresAt: string;
-    monthlyCost: number;
-  };
-  emailResult: {
-    messageId: string;
-  };
-}
-
-export interface GetInvitationsResponse {
-  success: boolean;
-  invitations: InvitationWithInviter[];
-  count: number;
-}
-
-export interface InvitationDetailsResponse {
-  success: boolean;
-  invitation: {
-    id: string;
-    email: string;
-    role: string;
-    expiresAt: string;
-    workspace: {
-      id: string;
-      name: string;
-      plan: string;
-    };
-    invitedBy: {
-      id: string;
-      firstName: string | null;
-      lastName: string | null;
-      email: string;
-      displayName: string;
-    };
-  };
-}
-
-export interface AcceptInvitationResponse {
-  success: boolean;
-  message: string;
-  user?: {
-    id: string;
-    email: string;
-    displayName: string;
-  };
-  workspace?: {
-    id: string;
-    name: string;
-  };
-  requiresRegistration?: boolean;
-  invitation?: {
-    token: string;
-    email: string;
-    role: string;
-    workspaceName: string;
-    inviterName: string;
-  };
-}
-
-export interface RevokeInvitationResponse {
-  success: boolean;
-  message: string;
 }

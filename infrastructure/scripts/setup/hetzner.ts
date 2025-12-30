@@ -205,7 +205,7 @@ export async function getOrCreateHetznerServer(
 /**
  * Load and customize cloud-config template
  */
-export async function loadCloudConfig(publicKey: string): Promise<string> {
+async function loadCloudConfig(publicKey: string): Promise<string> {
   const cloudConfigPath = `${Paths.scriptDir}/setup/cloud-config.yml`;
 
   try {
@@ -226,7 +226,7 @@ export async function loadCloudConfig(publicKey: string): Promise<string> {
 /**
  * Create a server in Hetzner Cloud with rabbithq user and firewall
  */
-export async function createHetznerServer(
+async function createHetznerServer(
   name: string,
   serverType: string,
   sshKeyId: number,
@@ -324,7 +324,7 @@ export async function getOrCreateHetznerLoadBalancer(
 /**
  * Create a load balancer in Hetzner Cloud
  */
-export async function createHetznerLoadBalancer(
+async function createHetznerLoadBalancer(
   name: string,
   serverIds: number[],
   environment: string
@@ -589,7 +589,7 @@ export async function ensureProductionDatabaseFirewall(): Promise<HetznerFirewal
 /**
  * Apply firewall to a server
  */
-export async function applyFirewallToServer(
+async function applyFirewallToServer(
   firewallId: number,
   serverId: number
 ): Promise<void> {
@@ -699,7 +699,7 @@ async function waitForAction(
 /**
  * Create a volume on Hetzner Cloud
  */
-export async function createHetznerVolume(
+async function createHetznerVolume(
   request: CreateVolumeRequest
 ): Promise<HetznerVolume> {
   const apiToken = process.env.HETZNER_API_TOKEN;
@@ -743,7 +743,7 @@ export async function createHetznerVolume(
 /**
  * Attach a volume to a server
  */
-export async function attachVolumeToServer(
+async function attachVolumeToServer(
   volumeId: number,
   serverId: number,
   automount = true
@@ -798,7 +798,7 @@ export async function attachVolumeToServer(
 /**
  * Get volume by name
  */
-export async function getVolumeByName(
+async function getVolumeByName(
   name: string
 ): Promise<HetznerVolume | null> {
   const apiToken = process.env.HETZNER_API_TOKEN;

@@ -18,7 +18,3 @@ export const downloadLicenseSchema = z.object({
   licenseId: z.string(),
 });
 
-// Types derived from schemas
-export type PurchaseLicenseRequest = z.infer<typeof purchaseLicenseSchema>;
-export type ValidateLicenseRequest = z.infer<typeof validateLicenseSchema>;
-export type DownloadLicenseRequest = z.infer<typeof downloadLicenseSchema>;

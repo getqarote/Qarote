@@ -31,7 +31,7 @@ interface PaymentConfirmationEmailProps {
   frontendUrl: string;
 }
 
-export const PaymentConfirmationEmail: React.FC<
+const PaymentConfirmationEmail: React.FC<
   PaymentConfirmationEmailProps
 > = ({ userName, amount, currency, paymentMethod, frontendUrl }) => {
   const formatAmount = (amount: number, currency: string) => {

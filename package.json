@@ -50,7 +50,9 @@
     "act:test:portal": "act -j quality-checks -W .github/workflows/deploy-portal-staging.yml",
     "act:test:portal:prod": "act workflow_dispatch -W .github/workflows/deploy-portal-production.yml --input confirm_production=DEPLOY",
     "act:test:worker": "act -j quality-checks -W .github/workflows/deploy-worker-staging.yml",
-    "act:test:worker:prod": "act workflow_dispatch -W .github/workflows/deploy-worker-production.yml --input confirm_production=DEPLOY"
+    "act:test:worker:prod": "act workflow_dispatch -W .github/workflows/deploy-worker-production.yml --input confirm_production=DEPLOY",
+    "knip": "knip",
+    "knip:fix": "knip --fix"
   },
   "lint-staged": {
     "apps/api/**/*.{ts,tsx}": [
@@ -72,6 +74,7 @@
   },
   "devDependencies": {
     "husky": "^9.1.7",
+    "knip": "^5.0.0",
     "lint-staged": "^16.2.7",
     "syncpack": "^13.0.4",
     "turbo": "^2.7.2"

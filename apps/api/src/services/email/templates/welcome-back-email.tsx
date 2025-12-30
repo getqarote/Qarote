@@ -179,4 +179,3 @@ const styles = {
   },
 } as const;
 
-export default WelcomeBackEmail;

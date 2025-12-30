@@ -5,7 +5,11 @@ import { StripeService } from "@/services/stripe/stripe.service";
 
 import { config } from "@/config";
 
-import { protectedProcedure, router } from "@/trpc/trpc";
+import {
+  billingRateLimitedProcedure,
+  rateLimitedProcedure,
+  router,
+} from "@/trpc/trpc";
 
 /**
  * Billing router
@@ -13,9 +17,9 @@ import { protectedProcedure, router } from "@/trpc/trpc";
  */
 export const billingRouter = router({
   /**
-   * Get comprehensive billing overview (PROTECTED)
+   * Get comprehensive billing overview (PROTECTED - BILLING RATE LIMITED)
    */
-  getBillingOverview: protectedProcedure.query(async ({ ctx }) => {
+  getBillingOverview: billingRateLimitedProcedure.query(async ({ ctx }) => {
     const { user, prisma } = ctx;
 
     try {
@@ -251,7 +255,7 @@ export const billingRouter = router({
   /**
    * Create billing portal session (PROTECTED)
    */
-  createBillingPortalSession: protectedProcedure.mutation(async ({ ctx }) => {
+  createBillingPortalSession: rateLimitedProcedure.mutation(async ({ ctx }) => {
     const { user } = ctx;
 
     try {
@@ -283,7 +287,7 @@ export const billingRouter = router({
   /**
    * Create portal session (PROTECTED) - alias for createBillingPortalSession
    */
-  createPortalSession: protectedProcedure.mutation(async ({ ctx }) => {
+  createPortalSession: rateLimitedProcedure.mutation(async ({ ctx }) => {
     const { user } = ctx;
 
     try {

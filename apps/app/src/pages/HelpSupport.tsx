@@ -84,7 +84,7 @@ const quickLinks = [
   },
 ];
 
-export function HelpSupport() {
+function HelpSupport() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const { toast } = useToast();
   const { user: _user } = useAuth();

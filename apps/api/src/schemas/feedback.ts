@@ -25,7 +25,7 @@ export const submitFeedbackSchema = z.object({
     .optional(),
 });
 
-export const updateFeedbackSchema = z.object({
+const updateFeedbackSchema = z.object({
   status: z.enum(["OPEN", "IN_PROGRESS", "RESOLVED", "CLOSED"]).optional(),
   response: z.string().max(2000).optional(),
 });

@@ -22,7 +22,7 @@ import { WorkspaceMapper } from "@/mappers/workspace";
 
 import {
   planValidationProcedure,
-  protectedProcedure,
+  rateLimitedProcedure,
   router,
   workspaceProcedure,
 } from "@/trpc/trpc";
@@ -35,7 +35,7 @@ export const managementRouter = router({
   /**
    * Get user's workspaces (PROTECTED)
    */
-  getUserWorkspaces: protectedProcedure.query(async ({ ctx }) => {
+  getUserWorkspaces: rateLimitedProcedure.query(async ({ ctx }) => {
     const user = ctx.user;
 
     try {
@@ -97,7 +97,7 @@ export const managementRouter = router({
   /**
    * Get workspace creation info (PROTECTED)
    */
-  getCreationInfo: protectedProcedure.query(async ({ ctx }) => {
+  getCreationInfo: rateLimitedProcedure.query(async ({ ctx }) => {
     const user = ctx.user;
 
     try {
@@ -273,7 +273,7 @@ export const managementRouter = router({
   /**
    * Update workspace (PROTECTED - owner only)
    */
-  update: protectedProcedure
+  update: rateLimitedProcedure
     .input(WorkspaceIdParamSchema.merge(UpdateWorkspaceSchema))
     .mutation(async ({ input, ctx }) => {
       const user = ctx.user;
@@ -359,7 +359,7 @@ export const managementRouter = router({
   /**
    * Delete workspace (PROTECTED - owner only)
    */
-  delete: protectedProcedure
+  delete: rateLimitedProcedure
     .input(WorkspaceIdParamSchema)
     .mutation(async ({ input, ctx }) => {
       const user = ctx.user;

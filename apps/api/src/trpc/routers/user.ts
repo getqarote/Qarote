@@ -21,7 +21,7 @@ import { UserMapper } from "@/mappers/auth";
 
 import {
   authorize,
-  protectedProcedure,
+  rateLimitedProcedure,
   router,
   workspaceProcedure,
 } from "@/trpc/trpc";
@@ -89,7 +89,7 @@ export const userRouter = router({
   /**
    * Get current user's profile
    */
-  getProfile: protectedProcedure.query(async ({ ctx }) => {
+  getProfile: rateLimitedProcedure.query(async ({ ctx }) => {
     const user = ctx.user;
 
     try {
@@ -163,7 +163,7 @@ export const userRouter = router({
   /**
    * Update own profile
    */
-  updateProfile: protectedProcedure
+  updateProfile: rateLimitedProcedure
     .input(UpdateProfileSchema)
     .mutation(async ({ input, ctx }) => {
       const data = input;

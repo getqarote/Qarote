@@ -16,7 +16,7 @@ export interface EmailResult {
   error?: string | null;
 }
 
-export interface BaseEmailParams {
+interface BaseEmailParams {
   to: string;
   subject: string;
   template: ReactElement;

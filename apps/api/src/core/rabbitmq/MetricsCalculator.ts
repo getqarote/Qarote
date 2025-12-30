@@ -1,27 +1,17 @@
+import { logger } from "../logger";
 import type {
   MessageRates,
   MessageStats,
   Metrics,
   QueueMessageStats,
+  QueueTotalsTimeSeries,
   RabbitMQChannel,
   RabbitMQConnection,
   RabbitMQNode,
   RabbitMQOverview,
   RabbitMQQueue,
   RateSample,
-} from "@/types/rabbitmq";
-
-import { logger } from "../logger";
-
-// Re-export types for convenience
-export type { MessageRates } from "@/types/rabbitmq";
-
-export type QueueTotals = {
-  timestamp: number;
-  messages?: number;
-  messages_ready?: number;
-  messages_unacknowledged?: number;
-};
+} from "./rabbitmq.interfaces";
 
 /**
  * Metrics calculation utilities for RabbitMQ
@@ -84,7 +74,7 @@ export class RabbitMQMetricsCalculator {
     samples: RateSample[],
     readySamples: RateSample[],
     unacknowledgedSamples: RateSample[]
-  ): QueueTotals[] {
+  ): QueueTotalsTimeSeries[] {
     return samples.map((sample, index) => ({
       timestamp: sample.timestamp,
       messages: sample.sample,
@@ -146,7 +136,7 @@ export class RabbitMQMetricsCalculator {
   // Generic function for extracting queue totals
   static extractQueueTotals(
     data: RabbitMQOverview | RabbitMQQueue
-  ): QueueTotals[] {
+  ): QueueTotalsTimeSeries[] {
     let samples: RateSample[] | undefined;
     let readySamples: RateSample[] | undefined;
     let unacknowledgedSamples: RateSample[] | undefined;

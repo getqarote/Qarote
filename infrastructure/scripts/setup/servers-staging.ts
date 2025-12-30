@@ -14,7 +14,7 @@ import { getOrCreateHetznerServer, waitForServerReady } from "./hetzner";
 /**
  * Get staging server config options
  */
-export function getStagingServerConfig(): ServerConfig {
+function getStagingServerConfig(): ServerConfig {
   return {
     applicationServer: {
       name: `rabbithq-app-staging`,
@@ -33,7 +33,7 @@ export function getStagingServerConfig(): ServerConfig {
 /**
  * Set up an application server with Dokku (staging)
  */
-export async function setupStagingApplicationServer(
+async function setupStagingApplicationServer(
   server: HetznerServer
 ): Promise<void> {
   const serverIP = server.public_net.ipv4.ip;
@@ -61,7 +61,7 @@ export async function setupStagingApplicationServer(
 /**
  * Set up a database server with PostgreSQL (staging)
  */
-export async function setupStagingDatabaseServer(
+async function setupStagingDatabaseServer(
   server: HetznerServer
 ): Promise<void> {
   const serverIP = server.public_net.ipv4.ip;

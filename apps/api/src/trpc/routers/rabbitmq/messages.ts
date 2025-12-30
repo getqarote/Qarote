@@ -1,14 +1,14 @@
 import { UserRole } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 
+import type { MessageProperties } from "@/core/rabbitmq/rabbitmq.interfaces";
+
 import { getUserPlan } from "@/services/plan/plan.service";
 
 import {
   PublishMessageWithQueueSchema,
   VHostRequiredQuerySchema,
 } from "@/schemas/rabbitmq";
-
-import type { MessageProperties } from "@/types/rabbitmq";
 
 import { authorize, router } from "@/trpc/trpc";
 

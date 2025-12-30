@@ -61,7 +61,7 @@ export interface EnvConfig {
 /**
  * Frontend environment configuration
  */
-export interface FrontendEnvConfig {
+interface FrontendEnvConfig {
   // API Configuration
   VITE_API_URL: string;
 
@@ -77,7 +77,7 @@ export interface FrontendEnvConfig {
 /**
  * Load environment variables from a file
  */
-export async function loadEnvFromFile(
+async function loadEnvFromFile(
   filePath: string
 ): Promise<Record<string, string>> {
   try {
@@ -177,7 +177,7 @@ export function getAppNames(environment: Environment) {
 /**
  * Display help message
  */
-export function displayUsage(
+function displayUsage(
   scriptName: string,
   usage: string,
   examples: string[] = []

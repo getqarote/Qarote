@@ -73,16 +73,6 @@ export const useRevokeInvitation = () => {
   });
 };
 
-export const useInvitationDetails = (token: string) => {
-  return trpc.public.invitation.getDetails.useQuery(
-    { token },
-    {
-      enabled: !!token,
-      staleTime: 300000, // 5 minutes
-    }
-  );
-};
-
 export const useRemoveUserFromWorkspace = () => {
   const utils = trpc.useUtils();
 

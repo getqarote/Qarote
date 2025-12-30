@@ -1,3 +1,6 @@
+import { captureRabbitMQError } from "../../services/sentry";
+import { logger } from "../logger";
+import { RabbitMQBaseClient } from "./BaseClient";
 import type {
   CreateVHostRequest,
   RabbitMQBinding,
@@ -18,11 +21,7 @@ import type {
   VHostLimits,
   VHostPermissions,
   VHostTopicPermissions,
-} from "@/types/rabbitmq";
-
-import { captureRabbitMQError } from "../../services/sentry";
-import { logger } from "../logger";
-import { RabbitMQBaseClient } from "./BaseClient";
+} from "./rabbitmq.interfaces";
 
 export class RabbitMQApiClient extends RabbitMQBaseClient {
   async getOverview(): Promise<RabbitMQOverview> {

@@ -42,7 +42,7 @@ export async function executeCommand(
 /**
  * Detect if running in CI environment (GitHub Actions)
  */
-export function isRunningInCI(): boolean {
+function isRunningInCI(): boolean {
   return process.env.CI === "true" || process.env.GITHUB_ACTIONS === "true";
 }
 

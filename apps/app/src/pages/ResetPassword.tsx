@@ -20,7 +20,7 @@ import { Label } from "@/components/ui/label";
 
 import { useResetPassword } from "@/hooks/queries/useProfile";
 
-export const ResetPassword: React.FC = () => {
+const ResetPassword: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");

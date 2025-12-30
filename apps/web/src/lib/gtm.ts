@@ -33,7 +33,7 @@ function ensureDataLayer(): boolean {
 /**
  * Push an event to Google Tag Manager dataLayer
  */
-export function pushToDataLayer(data: Record<string, unknown>): void {
+function pushToDataLayer(data: Record<string, unknown>): void {
   try {
     const dataLayerExists = ensureDataLayer();
 
@@ -69,18 +69,5 @@ export function trackSignUpClick(params?: {
     event: "sign_up_click",
     ...(params?.source && { source: params.source }),
     ...(params?.location && { location: params.location }),
-  });
-}
-
-/**
- * Track a custom event
- */
-export function trackEvent(
-  eventName: string,
-  eventParams?: Record<string, unknown>
-): void {
-  pushToDataLayer({
-    event: eventName,
-    ...eventParams,
   });
 }

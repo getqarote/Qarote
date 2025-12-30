@@ -10,7 +10,7 @@ import PaymentConfirmationEmail from "./templates/payment-confirmation-email";
 import TrialEndingEmail from "./templates/trial-ending-email";
 import UpcomingInvoiceEmail from "./templates/upcoming-invoice-email";
 
-export interface TrialEndingEmailParams {
+interface TrialEndingEmailParams {
   to: string;
   name: string;
   workspaceName: string;
@@ -21,7 +21,7 @@ export interface TrialEndingEmailParams {
   };
 }
 
-export interface PaymentActionRequiredEmailParams {
+interface PaymentActionRequiredEmailParams {
   to: string;
   name: string;
   workspaceName: string;
@@ -31,7 +31,7 @@ export interface PaymentActionRequiredEmailParams {
   currency: string;
 }
 
-export interface UpcomingInvoiceEmailParams {
+interface UpcomingInvoiceEmailParams {
   to: string;
   name: string;
   workspaceName: string;
@@ -45,14 +45,14 @@ export interface UpcomingInvoiceEmailParams {
   };
 }
 
-export interface PaymentFailedEmailParams {
+interface PaymentFailedEmailParams {
   to: string;
   userName: string;
   amount: number;
   failureReason: string;
 }
 
-export interface PaymentConfirmationEmailParams {
+interface PaymentConfirmationEmailParams {
   to: string;
   userName: string;
   amount: number;
@@ -60,7 +60,7 @@ export interface PaymentConfirmationEmailParams {
   paymentMethod: string;
 }
 
-export interface AlertNotificationEmailParams {
+interface AlertNotificationEmailParams {
   to: string;
   workspaceName: string;
   workspaceId: string;

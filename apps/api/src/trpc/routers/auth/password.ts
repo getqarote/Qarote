@@ -14,7 +14,11 @@ import {
 
 import { isDevelopment } from "@/config";
 
-import { protectedProcedure, publicProcedure, router } from "@/trpc/trpc";
+import {
+  rateLimitedPublicProcedure,
+  router,
+  strictRateLimitedProcedure,
+} from "@/trpc/trpc";
 
 /**
  * Password router
@@ -22,9 +26,9 @@ import { protectedProcedure, publicProcedure, router } from "@/trpc/trpc";
  */
 export const passwordRouter = router({
   /**
-   * Request password reset (PUBLIC)
+   * Request password reset (PUBLIC - RATE LIMITED)
    */
-  requestPasswordReset: publicProcedure
+  requestPasswordReset: rateLimitedPublicProcedure
     .input(PasswordResetRequestSchema)
     .mutation(async ({ input, ctx }) => {
       const { email } = input;
@@ -125,9 +129,9 @@ export const passwordRouter = router({
     }),
 
   /**
-   * Reset password using token (PUBLIC)
+   * Reset password using token (PUBLIC - RATE LIMITED)
    */
-  resetPassword: publicProcedure
+  resetPassword: rateLimitedPublicProcedure
     .input(PasswordResetSchema)
     .mutation(async ({ input, ctx }) => {
       const { token, password } = input;
@@ -238,9 +242,9 @@ export const passwordRouter = router({
     }),
 
   /**
-   * Change password (authenticated)
+   * Change password (authenticated - STRICT RATE LIMITED)
    */
-  changePassword: protectedProcedure
+  changePassword: strictRateLimitedProcedure
     .input(PasswordChangeSchema)
     .mutation(async ({ input, ctx }) => {
       const { currentPassword, newPassword } = input;

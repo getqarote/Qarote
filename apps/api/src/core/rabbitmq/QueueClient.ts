@@ -1,3 +1,11 @@
+import { logger } from "@/core/logger";
+
+import {
+  captureMessageProcessingError,
+  captureRabbitMQError,
+} from "@/services/sentry";
+
+import { RabbitMQBaseClient } from "./BaseClient";
 import type {
   BindingArguments,
   BindQueueResult,
@@ -7,14 +15,8 @@ import type {
   PurgeQueueResult,
   QueueCreateOptions,
   RabbitMQMessage,
-} from "@/types/rabbitmq";
-
-import {
-  captureMessageProcessingError,
-  captureRabbitMQError,
-} from "../../services/sentry";
-import { logger } from "../logger";
-import { RabbitMQBaseClient } from "./BaseClient";
+} from "./rabbitmq.interfaces";
+import { AckMode } from "./rabbitmq.interfaces";
 
 /**
  * Queue and message operations for RabbitMQ
@@ -70,7 +72,7 @@ export class RabbitMQQueueClient extends RabbitMQBaseClient {
 
     const payload = {
       count,
-      ackmode: "ack_requeue_true",
+      ackmode: AckMode.ACK_REQUEUE_TRUE,
       encoding: "auto",
     };
 

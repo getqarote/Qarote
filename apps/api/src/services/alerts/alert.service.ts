@@ -20,7 +20,7 @@ import { alertThresholdsService } from "./alert.thresholds";
  * Alert Service class
  * Main orchestrator for alert-related operations
  */
-export class AlertService {
+class AlertService {
   /**
    * Get alerts for a server
    * @param vhost - Optional vhost to filter queue-related alerts. Node alerts are not filtered by vhost.

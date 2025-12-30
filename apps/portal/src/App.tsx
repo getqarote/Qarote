@@ -1,10 +1,11 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
+import { TRPCProvider } from "@/lib/trpc/provider";
+
 import Layout from "@/components/Layout";
 import { Toaster } from "@/components/ui/toaster";
 
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
-import { TRPCProvider } from "@/lib/trpc/provider";
 
 import AccountSettings from "@/pages/AccountSettings";
 import Downloads from "@/pages/Downloads";

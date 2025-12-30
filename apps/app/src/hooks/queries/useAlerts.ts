@@ -17,18 +17,6 @@ export const useAlertRules = (enabled: boolean = true) => {
   return query;
 };
 
-export const useAlertRule = (id: string | null, enabled: boolean = true) => {
-  const query = trpc.alerts.rules.getRule.useQuery(
-    { id: id || "" },
-    {
-      enabled: !!id && enabled,
-      staleTime: 30000,
-    }
-  );
-
-  return query;
-};
-
 export const useCreateAlertRule = () => {
   const utils = trpc.useUtils();
 
@@ -133,73 +121,6 @@ export const useResolvedAlerts = (
   );
 
   return query;
-};
-
-export const useRabbitMQAlertsSummary = (serverId: string | null) => {
-  const { workspace } = useWorkspace();
-
-  // Summary is included in getAlerts response, but we can also use stats
-  const alertsQuery = trpc.rabbitmq.alerts.getAlerts.useQuery(
-    {
-      serverId: serverId || "",
-      workspaceId: workspace?.id || "",
-      vhost: encodeURIComponent("/"), // Default vhost for summary
-    },
-    {
-      enabled: !!serverId && !!workspace?.id,
-      staleTime: 5000, // 5 seconds
-      refetchInterval: 30000, // Refetch every 30 seconds
-    }
-  );
-
-  return alertsQuery;
-};
-
-export const useRabbitMQHealth = (serverId: string | null) => {
-  const { workspace } = useWorkspace();
-
-  const query = trpc.rabbitmq.alerts.getHealthCheck.useQuery(
-    {
-      serverId: serverId || "",
-      workspaceId: workspace?.id || "",
-    },
-    {
-      enabled: !!serverId && !!workspace?.id,
-      staleTime: 5000, // 5 seconds
-      refetchInterval: 10000, // Refetch every 10 seconds
-    }
-  );
-
-  return query;
-};
-
-// RabbitMQ Threshold hooks
-export const useWorkspaceThresholds = (enabled: boolean = true) => {
-  const { workspace } = useWorkspace();
-
-  const query = trpc.rabbitmq.alerts.getThresholds.useQuery(
-    {
-      workspaceId: workspace?.id || "",
-    },
-    {
-      enabled: !!workspace?.id && enabled,
-      staleTime: 30000, // 30 seconds
-    }
-  );
-
-  return query;
-};
-
-export const useUpdateWorkspaceThresholds = () => {
-  const utils = trpc.useUtils();
-
-  return trpc.rabbitmq.alerts.updateThresholds.useMutation({
-    onSuccess: () => {
-      // Invalidate thresholds and alerts
-      utils.rabbitmq.alerts.getThresholds.invalidate();
-      utils.rabbitmq.alerts.getAlerts.invalidate();
-    },
-  });
 };
 
 // Alert Notification Settings hooks

@@ -9,7 +9,7 @@ import {
 } from "@/schemas/rabbitmq";
 import { UsernameParamSchema } from "@/schemas/vhost";
 
-import { UserMapper } from "@/mappers/rabbitmq/UserMapper";
+import { UserMapper } from "@/mappers/rabbitmq";
 
 import { authorize, router } from "@/trpc/trpc";
 

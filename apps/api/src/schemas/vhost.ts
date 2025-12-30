@@ -18,11 +18,6 @@ export const SetPermissionSchema = z.object({
   read: z.string().default(".*"),
 });
 
-export const SetLimitSchema = z.object({
-  value: z.number().min(0, "Limit value must be non-negative"),
-  limitType: z.enum(["max-connections", "max-queues", "max-channels"]),
-});
-
 // Schema for username parameter
 export const UsernameParamSchema = z.object({
   username: z.string().min(1, "Username is required"),

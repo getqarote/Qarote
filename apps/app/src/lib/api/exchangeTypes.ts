@@ -3,7 +3,7 @@
  * Contains interfaces for exchanges, bindings, and consumers
  */
 
-export interface Exchange {
+type _Exchange = {
   name: string;
   vhost: string;
   type: string;
@@ -19,9 +19,9 @@ export interface Exchange {
   };
   bindingCount: number;
   bindings: Binding[];
-}
+};
 
-export interface Binding {
+interface Binding {
   source: string;
   vhost: string;
   destination: string;
@@ -31,7 +31,7 @@ export interface Binding {
   properties_key: string;
 }
 
-export interface Consumer {
+type _Consumer = {
   consumer_tag: string;
   channel_details: {
     name: string;
@@ -48,4 +48,4 @@ export interface Consumer {
   exclusive: boolean;
   prefetch_count: number;
   arguments: { [key: string]: unknown };
-}
+};

@@ -14,7 +14,7 @@ import {
   VHostLimitValueSchema,
 } from "@/schemas/vhost";
 
-import { VHostMapper } from "@/mappers/rabbitmq/VHostMapper";
+import { VHostMapper } from "@/mappers/rabbitmq";
 
 import { authorize, router } from "@/trpc/trpc";
 

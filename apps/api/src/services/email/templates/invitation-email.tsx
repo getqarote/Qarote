@@ -103,4 +103,3 @@ const _styles = {
   },
 } as const;
 
-export default InvitationEmail;

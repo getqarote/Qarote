@@ -123,5 +123,3 @@ export const EmailVerification = ({
     </Html>
   );
 };
-
-export default EmailVerification;

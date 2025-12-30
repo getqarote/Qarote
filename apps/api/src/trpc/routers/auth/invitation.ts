@@ -18,7 +18,10 @@ import { googleConfig } from "@/config";
 import { UserMapper } from "@/mappers/auth";
 import { WorkspaceMapper } from "@/mappers/workspace";
 
-import { publicProcedure, router } from "@/trpc/trpc";
+import {
+  rateLimitedPublicProcedure,
+  router,
+} from "@/trpc/trpc";
 
 /**
  * Initialize Google OAuth client
@@ -33,7 +36,7 @@ export const invitationRouter = router({
   /**
    * Get invitation details by token (PUBLIC)
    */
-  getInvitationDetails: publicProcedure
+  getInvitationDetails: rateLimitedPublicProcedure
     .input(InvitationTokenSchema)
     .query(async ({ input, ctx }) => {
       const { token } = input;
@@ -119,7 +122,7 @@ export const invitationRouter = router({
   /**
    * Accept invitation (PUBLIC)
    */
-  acceptInvitation: publicProcedure
+  acceptInvitation: rateLimitedPublicProcedure
     .input(AcceptInvitationSchema)
     .mutation(async ({ input, ctx }) => {
       const { token, password, firstName, lastName } = input;
@@ -305,7 +308,7 @@ export const invitationRouter = router({
   /**
    * Accept invitation with registration (PUBLIC)
    */
-  acceptInvitationWithRegistration: publicProcedure
+  acceptInvitationWithRegistration: rateLimitedPublicProcedure
     .input(AcceptInvitationWithRegistrationTokenSchema)
     .mutation(async ({ input, ctx }) => {
       const { token, password, firstName, lastName } = input;
@@ -436,7 +439,7 @@ export const invitationRouter = router({
   /**
    * Accept invitation with Google OAuth (PUBLIC)
    */
-  acceptInvitationWithGoogle: publicProcedure
+  acceptInvitationWithGoogle: rateLimitedPublicProcedure
     .input(AcceptInvitationWithGoogleSchema)
     .mutation(async ({ input, ctx }) => {
       const { token, credential } = input;

@@ -5,4 +5,4 @@
  * user types to API response types with proper date serialization.
  */
 
-export { type UserApiResponse, UserMapper } from "./UserMapper";
+export { UserMapper } from "./auth.mapper";

@@ -1,7 +1,6 @@
-import type { RabbitMQCredentials } from "@/types/rabbitmq";
-
 import { captureRabbitMQError } from "../../services/sentry";
 import { logger } from "../logger";
+import type { RabbitMQCredentials } from "./rabbitmq.interfaces";
 import { normalizeTunnelCredentials } from "./tunnel";
 
 /**

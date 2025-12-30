@@ -16,7 +16,11 @@ import { emailConfig, stripeConfig } from "@/config";
 
 import { LicenseMapper } from "@/mappers/license";
 
-import { protectedProcedure, publicProcedure, router } from "@/trpc/trpc";
+import {
+  rateLimitedProcedure,
+  rateLimitedPublicProcedure,
+  router,
+} from "@/trpc/trpc";
 
 /**
  * License router
@@ -25,9 +29,9 @@ import { protectedProcedure, publicProcedure, router } from "@/trpc/trpc";
 export const licenseRouter = router({
   /**
    * Validate a license key
-   * Public endpoint - called by self-hosted instances
+   * Public endpoint - called by self-hosted instances (RATE LIMITED)
    */
-  validate: publicProcedure
+  validate: rateLimitedPublicProcedure
     .input(validateLicenseSchema)
     .mutation(async ({ input, ctx }) => {
       const { licenseKey, instanceId } = input;
@@ -72,7 +76,7 @@ export const licenseRouter = router({
    * Get all licenses for the authenticated user
    * Protected endpoint - portal only
    */
-  getLicenses: protectedProcedure.query(async ({ ctx }) => {
+  getLicenses: rateLimitedProcedure.query(async ({ ctx }) => {
     const user = ctx.user;
 
     try {
@@ -95,7 +99,7 @@ export const licenseRouter = router({
    * Purchase a license
    * Protected endpoint - portal only
    */
-  purchaseLicense: protectedProcedure
+  purchaseLicense: rateLimitedProcedure
     .input(purchaseLicenseSchema)
     .mutation(async ({ input, ctx }) => {
       const user = ctx.user;
@@ -176,7 +180,7 @@ export const licenseRouter = router({
    * Protected endpoint - portal only
    * Returns file content and filename for client-side download
    */
-  downloadLicense: protectedProcedure
+  downloadLicense: rateLimitedProcedure
     .input(downloadLicenseSchema)
     .query(async ({ input, ctx }) => {
       const user = ctx.user;

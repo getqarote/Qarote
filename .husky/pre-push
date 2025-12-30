@@ -29,6 +29,11 @@ if [ -n "$packages_to_check" ]; then
     pnpm turbo run type-check --filter="$package" || exit 1
   done
   echo "✅ All type checks passed!"
+  
+  # Run knip to check for unused code (runs at root level, checks entire workspace)
+  echo "🔍 Running knip (unused code check)..."
+  pnpm run knip || exit 1
+  echo "✅ Knip check passed!"
 else
   echo "✅ No app files changed, skipping type checks"
 fi

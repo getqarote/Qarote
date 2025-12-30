@@ -1,4 +1,3 @@
-import { UserRole } from "@prisma/client";
 import { z } from "zod";
 
 // Schema for user registration
@@ -39,13 +38,6 @@ export const PasswordChangeSchema = z.object({
 export const EmailChangeRequestSchema = z.object({
   newEmail: z.string().email("Invalid email address"),
   password: z.string().min(1, "Password is required for email change"),
-});
-
-// Schema for account invitation
-export const InviteUserSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  role: z.nativeEnum(UserRole).default(UserRole.MEMBER),
-  workspaceId: z.string().uuid("Invalid workspace ID"),
 });
 
 // Schema for accepting an invitation
@@ -107,31 +99,3 @@ export const AcceptInvitationWithGoogleSchema = z.object({
   token: z.string().min(1, "Token is required"),
   credential: z.string().min(1, "Google credential is required"),
 });
-
-// Types derived from schemas
-export type RegisterUserInput = z.infer<typeof RegisterUserSchema>;
-export type LoginInput = z.infer<typeof LoginSchema>;
-export type PasswordResetRequestInput = z.infer<
-  typeof PasswordResetRequestSchema
->;
-export type PasswordResetInput = z.infer<typeof PasswordResetSchema>;
-export type PasswordChangeInput = z.infer<typeof PasswordChangeSchema>;
-export type EmailChangeRequestInput = z.infer<typeof EmailChangeRequestSchema>;
-export type InviteUserInput = z.infer<typeof InviteUserSchema>;
-export type AcceptInvitationInput = z.infer<typeof AcceptInvitationSchema>;
-export type AcceptInvitationWithRegistrationInput = z.infer<
-  typeof AcceptInvitationWithRegistrationSchema
->;
-export type GoogleAuthInput = z.infer<typeof GoogleAuthSchema>;
-export type GoogleInvitationAcceptInput = z.infer<
-  typeof GoogleInvitationAcceptSchema
->;
-export type VerifyEmailInput = z.infer<typeof VerifyEmailSchema>;
-export type ResendVerificationInput = z.infer<typeof ResendVerificationSchema>;
-export type InvitationTokenInput = z.infer<typeof InvitationTokenSchema>;
-export type AcceptInvitationWithRegistrationTokenInput = z.infer<
-  typeof AcceptInvitationWithRegistrationTokenSchema
->;
-export type AcceptInvitationWithGoogleInput = z.infer<
-  typeof AcceptInvitationWithGoogleSchema
->;

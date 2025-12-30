@@ -12,9 +12,6 @@ export interface WorkspaceFormState {
   contactEmail: string;
 }
 
-// Legacy type alias for backwards compatibility
-export type CompanyFormState = WorkspaceFormState;
-
 export interface InviteFormState {
   email: string;
   role: "ADMIN" | "MEMBER";

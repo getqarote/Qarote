@@ -22,7 +22,7 @@ import {
 /**
  * Get production server config options
  */
-export function getProductionServerConfig(): ServerConfig {
+function getProductionServerConfig(): ServerConfig {
   return {
     applicationServer: {
       name: `rabbithq-app-production`,
@@ -61,7 +61,7 @@ interface HetznerSubnet {
 /**
  * Create or get private network for production environment
  */
-export async function ensureProductionPrivateNetwork(): Promise<{
+async function ensureProductionPrivateNetwork(): Promise<{
   network_id: number;
 }> {
   const networkName = `rabbithq-network-production`;
@@ -163,7 +163,7 @@ export async function ensureProductionPrivateNetwork(): Promise<{
 /**
  * Attach server to private network with IP
  */
-export async function attachServerToNetwork(
+async function attachServerToNetwork(
   serverId: number,
   networkId: number,
   privateIP: string
@@ -192,7 +192,7 @@ export async function attachServerToNetwork(
 /**
  * Set up production application server with private network configuration
  */
-export async function setupProductionApplicationServer(
+async function setupProductionApplicationServer(
   server: HetznerServer
 ): Promise<void> {
   const serverIP = server.public_net.ipv4.ip;
@@ -242,7 +242,7 @@ export async function setupProductionApplicationServer(
 /**
  * Set up production database server with private network configuration
  */
-export async function setupProductionDatabaseServer(
+async function setupProductionDatabaseServer(
   server: HetznerServer
 ): Promise<void> {
   const serverIP = server.public_net.ipv4.ip;
@@ -396,7 +396,7 @@ export async function configureProductionApplicationServer(
 /**
  * Configure load balancer and add application server as target
  */
-export async function configureProductionLoadBalancer(
+async function configureProductionLoadBalancer(
   appServer: HetznerServer,
   networkId: number
 ): Promise<void> {

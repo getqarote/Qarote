@@ -9,7 +9,7 @@ export interface RabbitMQUser {
   accessibleVhosts?: string[];
 }
 
-export interface RabbitMQUserPermission {
+interface RabbitMQUserPermission {
   user: string;
   vhost: string;
   configure: string;
@@ -17,26 +17,26 @@ export interface RabbitMQUserPermission {
   read: string;
 }
 
-export interface CreateUserRequest {
+type _CreateUserRequest = {
   username: string;
   password?: string;
   tags?: string;
-}
+};
 
-export interface UpdateUserRequest {
+type _UpdateUserRequest = {
   password?: string;
   tags?: string;
   removePassword?: boolean;
-}
+};
 
-export interface SetUserPermissionRequest {
+type _SetUserPermissionRequest = {
   vhost: string;
   configure: string;
   write: string;
   read: string;
-}
+};
 
-export interface UserDetailsResponse {
+type _UserDetailsResponse = {
   user: RabbitMQUser;
   permissions: RabbitMQUserPermission[];
-}
+};

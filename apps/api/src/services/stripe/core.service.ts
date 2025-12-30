@@ -31,17 +31,6 @@ export const STRIPE_PRICE_IDS = {
   },
 } as const;
 
-export const PLAN_PRICING = {
-  [UserPlan.DEVELOPER]: {
-    monthly: 3400, // $34.00 in cents
-    yearly: 34800, // $348.00 in cents (yearly discount)
-  },
-  [UserPlan.ENTERPRISE]: {
-    monthly: 12400, // $124.00 in cents
-    yearly: 118800, // $1,188.00 in cents (yearly discount)
-  },
-} as const;
-
 export interface CreateCheckoutSessionParams {
   userId: string;
   plan: UserPlan;

@@ -5,7 +5,7 @@ import { CoreEmailService, EmailResult } from "./core-email.service";
 import { UpgradeConfirmationEmail } from "./templates/upgrade-confirmation-email";
 import { WelcomeBackEmail } from "./templates/welcome-back-email";
 
-export interface UpgradeConfirmationEmailParams {
+interface UpgradeConfirmationEmailParams {
   to: string;
   userName: string;
   workspaceName: string;
@@ -13,7 +13,7 @@ export interface UpgradeConfirmationEmailParams {
   billingInterval: "monthly" | "yearly";
 }
 
-export interface WelcomeBackEmailParams {
+interface WelcomeBackEmailParams {
   to: string;
   userName: string;
   workspaceName: string;

@@ -7,7 +7,7 @@ import { prisma } from "@/core/prisma";
 import { EncryptionService } from "../encryption.service";
 import { EmailService } from "./email.service";
 
-export interface EmailVerificationOptions {
+interface EmailVerificationOptions {
   userId: string;
   email: string;
   type: "SIGNUP" | "EMAIL_CHANGE";

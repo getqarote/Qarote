@@ -1,3 +1,4 @@
+import { logger } from "../logger";
 import type {
   RabbitMQBinding,
   RabbitMQChannel,
@@ -9,9 +10,7 @@ import type {
   RabbitMQQueue,
   RabbitMQUser,
   RabbitMQVHost,
-} from "@/types/rabbitmq";
-
-import { logger } from "../logger";
+} from "./rabbitmq.interfaces";
 
 /**
  * Field detection result for a single response

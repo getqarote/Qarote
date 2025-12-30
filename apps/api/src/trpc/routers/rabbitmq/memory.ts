@@ -1,8 +1,8 @@
 import { TRPCError } from "@trpc/server";
 
-import { ServerWorkspaceWithNodeNameSchema } from "@/schemas/rabbitmq";
+import { RabbitMQNode } from "@/core/rabbitmq/rabbitmq.interfaces";
 
-import { RabbitMQNode } from "@/types/rabbitmq";
+import { ServerWorkspaceWithNodeNameSchema } from "@/schemas/rabbitmq";
 
 import { router, workspaceProcedure } from "@/trpc/trpc";
 

@@ -180,7 +180,7 @@ export interface InfrastructureResult {
 /**
  * Wait for SSH connection to be ready with retries
  */
-export async function waitForSshReady(
+async function waitForSshReady(
   serverIp: string,
   sshUser: string,
   maxAttempts: number = 20
@@ -230,7 +230,7 @@ export async function waitForSshReady(
 /**
  * Test SSH connection to server with sudo capabilities
  */
-export async function testSshConnection(
+async function testSshConnection(
   serverIp: string,
   sshUser: string
 ): Promise<void> {
@@ -273,14 +273,14 @@ export async function testSshConnection(
 /**
  * Get path to database setup script
  */
-export function getDatabaseSetupScriptPath(): string {
+function getDatabaseSetupScriptPath(): string {
   return `${Paths.scriptDir}/setup/database-setup.sh`;
 }
 
 /**
  * Create customized application setup script with database IP
  */
-export async function createApplicationSetupScript(
+async function createApplicationSetupScript(
   dbServerIp: string
 ): Promise<string> {
   const templatePath = `${Paths.scriptDir}/setup/application-setup.sh`;

@@ -16,6 +16,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      "@api": path.resolve(__dirname, "../api/src"),
     },
     // CRITICAL: Prevents duplicate React instances which can cause production errors
     // like "Cannot read properties of null (reading 'useEffect')"

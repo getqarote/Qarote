@@ -37,16 +37,6 @@ export interface MessageProcessingErrorContext {
 }
 
 /**
- * Streaming error context
- */
-export interface StreamingErrorContext {
-  streamId?: string;
-  userId?: string;
-  serverId?: string;
-  [key: string]: unknown;
-}
-
-/**
  * Sign up error types
  */
 export type SignUpErrorType =

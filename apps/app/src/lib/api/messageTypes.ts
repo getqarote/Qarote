@@ -3,7 +3,7 @@
  * Contains interfaces for message handling, publishing, and browsing
  */
 
-export interface RabbitMQMessage {
+type _RabbitMQMessage = {
   payload: string;
   payload_bytes: number;
   payload_encoding: string;
@@ -25,9 +25,9 @@ export interface RabbitMQMessage {
   redelivered: boolean;
   exchange: string;
   message_count: number;
-}
+};
 
-export interface PublishMessageRequest {
+type _PublishMessageRequest = {
   serverId: string;
   queueName: string;
   message: string;
@@ -47,9 +47,9 @@ export interface PublishMessageRequest {
     timestamp?: number;
     type?: string;
   };
-}
+};
 
-export interface PublishToExchangeRequest {
+type _PublishToExchangeRequest = {
   serverId: string;
   exchange: string;
   routingKey: string;
@@ -69,9 +69,9 @@ export interface PublishToExchangeRequest {
     type?: string;
     headers?: Record<string, unknown>;
   };
-}
+};
 
-export interface PublishMessageResponse {
+type _PublishMessageResponse = {
   success: boolean;
   message: string;
   routed: boolean;
@@ -87,9 +87,9 @@ export interface PublishMessageResponse {
     routingKey: string;
     possibleCauses: string[];
   };
-}
+};
 
-export interface CreateQueueRequest {
+type _CreateQueueRequest = {
   serverId: string;
   name: string;
   durable: boolean;
@@ -98,13 +98,13 @@ export interface CreateQueueRequest {
   arguments: Record<string, unknown>;
   bindToExchange?: string;
   routingKey: string;
-}
+};
 
-export interface CreateQueueResponse {
+type _CreateQueueResponse = {
   success: boolean;
   message: string;
   queue: import("./types").Queue;
   bound: boolean;
   exchange?: string;
   routingKey?: string;
-}
+};

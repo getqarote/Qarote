@@ -10,7 +10,7 @@ import { EncryptionService } from "@/services/encryption.service";
 /**
  * Helper function to decrypt server credentials for RabbitMQ client
  */
-export function getDecryptedCredentials(server: RabbitMQServer) {
+function getDecryptedCredentials(server: RabbitMQServer) {
   return {
     host: server.host,
     port: server.port,

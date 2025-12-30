@@ -41,7 +41,7 @@ interface ExchangeManagementProps {
   onClose?: () => void;
 }
 
-export const CreateExchangeDialog = ({
+const CreateExchangeDialog = ({
   serverId,
   isOpen,
   onClose,

@@ -13,7 +13,7 @@ import { isCloudMode } from "@/config/deployment";
 
 import { UserMapper } from "@/mappers/auth";
 
-import { publicProcedure, router } from "@/trpc/trpc";
+import { rateLimitedPublicProcedure, router } from "@/trpc/trpc";
 
 // Initialize Google OAuth client
 const client = new OAuth2Client();
@@ -24,9 +24,9 @@ const client = new OAuth2Client();
  */
 export const googleRouter = router({
   /**
-   * Google OAuth login (PUBLIC)
+   * Google OAuth login (PUBLIC - RATE LIMITED)
    */
-  googleLogin: publicProcedure
+  googleLogin: rateLimitedPublicProcedure
     .input(GoogleAuthSchema)
     .mutation(async ({ input, ctx }) => {
       const { credential } = input;

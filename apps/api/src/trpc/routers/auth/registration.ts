@@ -10,7 +10,7 @@ import { RegisterUserSchema } from "@/schemas/auth";
 
 import { UserMapper } from "@/mappers/auth";
 
-import { publicProcedure, router } from "@/trpc/trpc";
+import { rateLimitedPublicProcedure, router } from "@/trpc/trpc";
 
 /**
  * Registration router
@@ -18,9 +18,9 @@ import { publicProcedure, router } from "@/trpc/trpc";
  */
 export const registrationRouter = router({
   /**
-   * Register new user (PUBLIC)
+   * Register new user (PUBLIC - RATE LIMITED)
    */
-  register: publicProcedure
+  register: rateLimitedPublicProcedure
     .input(RegisterUserSchema)
     .mutation(async ({ input, ctx }) => {
       const { email, password, firstName, lastName, acceptTerms } = input;

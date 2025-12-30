@@ -9,5 +9,3 @@ export const inviteUserSchema = z.object({
     .optional()
     .describe("Optional personal message from inviter"),
 });
-
-export type InviteUserRequest = z.infer<typeof inviteUserSchema>;

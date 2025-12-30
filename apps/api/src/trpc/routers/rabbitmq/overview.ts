@@ -8,7 +8,7 @@ import {
 
 import { ServerWorkspaceInputSchema } from "@/schemas/rabbitmq";
 
-import { OverviewMapper } from "@/mappers/rabbitmq/OverviewMapper";
+import { OverviewMapper } from "@/mappers/rabbitmq";
 
 import { router, workspaceProcedure } from "@/trpc/trpc";
 

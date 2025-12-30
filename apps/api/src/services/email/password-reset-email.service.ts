@@ -3,7 +3,7 @@ import React from "react";
 import { CoreEmailService } from "./core-email.service";
 import { PasswordResetEmail } from "./templates/password-reset-email";
 
-export class PasswordResetEmailService {
+class PasswordResetEmailService {
   /**
    * Send password reset email
    */

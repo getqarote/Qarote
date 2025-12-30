@@ -7,7 +7,7 @@ import { EmailVerificationService } from "@/services/email/email-verification.se
 
 import { EmailChangeRequestSchema } from "@/schemas/auth";
 
-import { protectedProcedure, router } from "@/trpc/trpc";
+import { router, strictRateLimitedProcedure } from "@/trpc/trpc";
 
 /**
  * Email router
@@ -15,9 +15,9 @@ import { protectedProcedure, router } from "@/trpc/trpc";
  */
 export const emailRouter = router({
   /**
-   * Request email change (PROTECTED)
+   * Request email change (PROTECTED - STRICT RATE LIMITED)
    */
-  requestEmailChange: protectedProcedure
+  requestEmailChange: strictRateLimitedProcedure
     .input(EmailChangeRequestSchema)
     .mutation(async ({ input, ctx }) => {
       const { newEmail, password } = input;
@@ -142,9 +142,9 @@ export const emailRouter = router({
     }),
 
   /**
-   * Cancel email change (PROTECTED)
+   * Cancel email change (PROTECTED - STRICT RATE LIMITED)
    */
-  cancelEmailChange: protectedProcedure.mutation(async ({ ctx }) => {
+  cancelEmailChange: strictRateLimitedProcedure.mutation(async ({ ctx }) => {
     const user = ctx.user;
 
     try {

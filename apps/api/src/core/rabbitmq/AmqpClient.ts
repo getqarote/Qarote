@@ -4,10 +4,10 @@ import { logger } from "@/core/logger";
 
 import { captureRabbitMQError } from "@/services/sentry";
 
-import type { AMQPConnectionConfig, QueuePauseState } from "@/types/rabbitmq";
+import type { AMQPConnectionConfig, QueuePauseState } from "./rabbitmq.interfaces";
 
 // Re-export types for convenience
-export type { AMQPConnectionConfig, QueuePauseState } from "@/types/rabbitmq";
+export type { AMQPConnectionConfig, QueuePauseState } from "./rabbitmq.interfaces";
 
 /**
  * AMQP-based RabbitMQ client for direct protocol operations

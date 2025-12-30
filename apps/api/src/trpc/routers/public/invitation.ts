@@ -14,7 +14,7 @@ import {
 
 import { googleConfig } from "@/config";
 
-import { publicProcedure, router } from "@/trpc/trpc";
+import { rateLimitedPublicProcedure, router } from "@/trpc/trpc";
 
 /**
  * Initialize Google OAuth client
@@ -30,7 +30,7 @@ export const publicInvitationRouter = router({
    * Get invitation details by token (PUBLIC)
    * GET /invitations/:token
    */
-  getDetails: publicProcedure
+  getDetails: rateLimitedPublicProcedure
     .input(InvitationTokenSchema)
     .query(async ({ input, ctx }) => {
       const { token } = input;
@@ -117,7 +117,7 @@ export const publicInvitationRouter = router({
    * Accept invitation with registration (PUBLIC)
    * POST /invitations/:token/accept
    */
-  accept: publicProcedure
+  accept: rateLimitedPublicProcedure
     .input(InvitationTokenSchema.merge(AcceptInvitationWithRegistrationSchema))
     .mutation(async ({ input, ctx }) => {
       const { token, password, firstName, lastName } = input;
@@ -242,7 +242,7 @@ export const publicInvitationRouter = router({
    * Accept invitation with Google OAuth (PUBLIC)
    * POST /invitations/:token/accept-google
    */
-  acceptWithGoogle: publicProcedure
+  acceptWithGoogle: rateLimitedPublicProcedure
     .input(InvitationTokenSchema.merge(GoogleInvitationAcceptSchema))
     .mutation(async ({ input, ctx }) => {
       const { token, credential } = input;

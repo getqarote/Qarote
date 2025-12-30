@@ -1,6 +1,6 @@
 import { TRPCError } from "@trpc/server";
 
-import { protectedProcedure, router } from "@/trpc/trpc";
+import { rateLimitedProcedure, router } from "@/trpc/trpc";
 
 /**
  * Discord router
@@ -10,7 +10,7 @@ export const discordRouter = router({
   /**
    * Mark user as having joined Discord
    */
-  markJoined: protectedProcedure.mutation(async ({ ctx }) => {
+  markJoined: rateLimitedProcedure.mutation(async ({ ctx }) => {
     const user = ctx.user;
 
     try {
@@ -50,7 +50,7 @@ export const discordRouter = router({
   /**
    * Get user's Discord join status
    */
-  getStatus: protectedProcedure.query(async ({ ctx }) => {
+  getStatus: rateLimitedProcedure.query(async ({ ctx }) => {
     const user = ctx.user;
 
     try {

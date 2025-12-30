@@ -7,7 +7,11 @@ import { ResendVerificationSchema, VerifyEmailSchema } from "@/schemas/auth";
 
 import { UserMapper } from "@/mappers/auth";
 
-import { protectedProcedure, publicProcedure, router } from "@/trpc/trpc";
+import {
+  rateLimitedProcedure,
+  rateLimitedPublicProcedure,
+  router,
+} from "@/trpc/trpc";
 
 /**
  * Verification router
@@ -15,9 +19,9 @@ import { protectedProcedure, publicProcedure, router } from "@/trpc/trpc";
  */
 export const verificationRouter = router({
   /**
-   * Verify email with token (PUBLIC)
+   * Verify email with token (PUBLIC - RATE LIMITED)
    */
-  verifyEmail: publicProcedure
+  verifyEmail: rateLimitedPublicProcedure
     .input(VerifyEmailSchema)
     .mutation(async ({ input, ctx }) => {
       const { token } = input;
@@ -99,7 +103,7 @@ export const verificationRouter = router({
    * - Authenticated users: uses their account info
    * - Unauthenticated users: requires email to identify the account
    */
-  resendVerification: publicProcedure
+  resendVerification: rateLimitedPublicProcedure
     .input(ResendVerificationSchema)
     .mutation(async ({ input, ctx }) => {
       const { type, email: inputEmail } = input;
@@ -268,7 +272,7 @@ export const verificationRouter = router({
   /**
    * Get verification status (PROTECTED)
    */
-  getVerificationStatus: protectedProcedure.query(async ({ ctx }) => {
+  getVerificationStatus: rateLimitedProcedure.query(async ({ ctx }) => {
     const user = ctx.user;
 
     try {

@@ -1,6 +1,3 @@
-import { UserRole } from "@prisma/client";
-import { Context } from "hono";
-
 import { prisma } from "@/core/prisma";
 
 /**
@@ -32,49 +29,3 @@ export async function hasWorkspaceAccess(
 
   return !!member;
 }
-
-// Workspace access check middleware
-export const checkWorkspaceAccess = async (
-  c: Context,
-  next: () => Promise<void>
-) => {
-  const user = c.get("user");
-  const workspaceId = c.req.param("workspaceId");
-
-  if (!user) {
-    return c.json(
-      { error: "Unauthorized", message: "Authentication required" },
-      401
-    );
-  }
-
-  if (!workspaceId) {
-    return c.json(
-      {
-        error: "Bad Request",
-        message: "Workspace ID is required",
-      },
-      400
-    );
-  }
-
-  // Allow ADMIN users to access any workspace
-  if (user.role === UserRole.ADMIN) {
-    await next();
-    return;
-  }
-
-  // Check if user belongs to the requested workspace
-  const hasAccess = await hasWorkspaceAccess(user.id, workspaceId);
-  if (!hasAccess) {
-    return c.json(
-      {
-        error: "Forbidden",
-        message: "Cannot access resources for this workspace",
-      },
-      403
-    );
-  }
-
-  await next();
-};

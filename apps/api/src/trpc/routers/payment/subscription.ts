@@ -10,7 +10,7 @@ import {
 
 import { config } from "@/config";
 
-import { protectedProcedure, router } from "@/trpc/trpc";
+import { router, strictRateLimitedProcedure } from "@/trpc/trpc";
 
 /**
  * Subscription router
@@ -18,9 +18,9 @@ import { protectedProcedure, router } from "@/trpc/trpc";
  */
 export const subscriptionRouter = router({
   /**
-   * Cancel subscription (PROTECTED)
+   * Cancel subscription (PROTECTED - STRICT RATE LIMITED)
    */
-  cancelSubscription: protectedProcedure
+  cancelSubscription: strictRateLimitedProcedure
     .input(cancelSubscriptionSchema)
     .mutation(async ({ input, ctx }) => {
       const { cancelImmediately = false, reason = "", feedback = "" } = input;
@@ -96,9 +96,9 @@ export const subscriptionRouter = router({
     }),
 
   /**
-   * Renew subscription (PROTECTED)
+   * Renew subscription (PROTECTED - STRICT RATE LIMITED)
    */
-  renewSubscription: protectedProcedure
+  renewSubscription: strictRateLimitedProcedure
     .input(renewSubscriptionSchema)
     .mutation(async ({ input, ctx }) => {
       const { plan, interval = "monthly" } = input;

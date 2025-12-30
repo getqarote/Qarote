@@ -42,6 +42,9 @@ jobs:
         working-directory: apps/api
         run: pnpm run type-check
 
+      - name: 🔍 Knip (unused code check)
+        run: pnpm run knip
+
       - name: 🧹 Lint
         working-directory: apps/api
         run: pnpm run lint

@@ -2,7 +2,7 @@
  * Enhanced error message parsing for plan validation errors
  */
 
-export interface ParsedPlanError {
+interface ParsedPlanError {
   isVersionError: boolean;
   isFeatureError: boolean;
   currentPlan: string;
@@ -13,7 +13,7 @@ export interface ParsedPlanError {
   upgradeMessage: string;
 }
 
-export function parsePlanValidationError(error: Error): ParsedPlanError | null {
+function parsePlanValidationError(error: Error): ParsedPlanError | null {
   const message = error.message;
 
   // Check for RabbitMQ version errors

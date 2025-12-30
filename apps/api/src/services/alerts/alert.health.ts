@@ -9,7 +9,7 @@ import { alertThresholdsService } from "./alert.thresholds";
  * Alert Health Service
  * Handles health checks and cluster health summaries
  */
-export class AlertHealthService {
+class AlertHealthService {
   /**
    * Get cluster health summary
    */

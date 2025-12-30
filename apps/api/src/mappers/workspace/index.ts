@@ -5,4 +5,4 @@
  * workspace types to API response types with proper date serialization.
  */
 
-export { type WorkspaceApiResponse, WorkspaceMapper } from "./WorkspaceMapper";
+export { WorkspaceMapper } from "./workspace.mapper";

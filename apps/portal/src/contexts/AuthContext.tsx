@@ -14,7 +14,7 @@ interface AuthContextType {
   refetchUser: () => Promise<void>;
 }
 
-export const AuthContext = React.createContext<AuthContextType | undefined>(
+const AuthContext = React.createContext<AuthContextType | undefined>(
   undefined
 );
 

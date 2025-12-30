@@ -4,7 +4,7 @@ import { rateLimiter } from "hono-rate-limiter";
 /**
  * Rate limiting using hono-rate-limiter
  */
-export const createRateLimiter = (
+const createRateLimiter = (
   windowMs: number = 60000, // 1 minute
   max: number = 100, // 100 requests per window
   keyGenerator?: (c: Context) => string
@@ -30,30 +30,6 @@ export const createRateLimiter = (
     },
   });
 };
-
-/**
- * Strict rate limiting for sensitive operations (payments, cancellations)
- */
-export const strictRateLimiter = createRateLimiter(
-  60000, // 1 minute window
-  5, // 5 requests max
-  (c) => {
-    const user = c.get("user");
-    return `${user.id}:${c.req.method}:sensitive`;
-  }
-);
-
-/**
- * Moderate rate limiting for billing overview and less sensitive operations
- */
-export const billingRateLimiter = createRateLimiter(
-  60000, // 1 minute window
-  30, // 30 requests max - more convenient for billing overview
-  (c) => {
-    const user = c.get("user");
-    return `${user.id}:billing`;
-  }
-);
 
 /**
  * Standard rate limiting for API endpoints
