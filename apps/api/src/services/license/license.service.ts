@@ -8,6 +8,8 @@ import crypto from "node:crypto";
 import { logger } from "@/core/logger";
 import { prisma } from "@/core/prisma";
 
+import { licenseConfig } from "@/config";
+
 import type {
   GenerateLicenseFileOptions,
   GenerateLicenseFileResult,
@@ -177,7 +179,7 @@ class LicenseService {
     options: GenerateLicenseFileOptions
   ): Promise<GenerateLicenseFileResult> {
     // Check if private key is available (SaaS only)
-    const privateKey = process.env.LICENSE_PRIVATE_KEY;
+    const privateKey = licenseConfig.privateKey;
     if (!privateKey) {
       throw new Error(
         "License generation requires private key (SaaS only). " +
@@ -187,9 +189,10 @@ class LicenseService {
 
     try {
       const now = new Date();
-      const expiresAt =
-        options.expiresAt ||
-        new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000); // Default 1 year
+      // Handle null expiration (perpetual license)
+      // null explicitly means perpetual (never expires), so preserve it
+      // Since expiresAt is Date | null (required), it's never undefined
+      const expiresAt = options.expiresAt;
 
       // Prepare license data
       const licenseData: LicenseData = {
@@ -197,7 +200,7 @@ class LicenseService {
         tier: options.tier,
         customerEmail: options.customerEmail,
         issuedAt: now.toISOString(),
-        expiresAt: expiresAt.toISOString(),
+        expiresAt: expiresAt === null ? null : expiresAt.toISOString(),
         features: options.features,
         maxInstances: options.maxInstances,
         instanceId: options.instanceId,

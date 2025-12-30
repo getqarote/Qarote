@@ -66,6 +66,7 @@ export const useRabbitMQAlerts = (
     severity?: string;
     category?: string;
     resolved?: boolean;
+    enabled?: boolean;
   }
 ) => {
   const { workspace } = useWorkspace();
@@ -82,7 +83,8 @@ export const useRabbitMQAlerts = (
       resolved: options?.resolved ? "true" : undefined,
     },
     {
-      enabled: !!serverId && !!workspace?.id && !!vhost,
+      enabled:
+        (options?.enabled ?? true) && !!serverId && !!workspace?.id && !!vhost,
       staleTime: 5000, // 5 seconds
       refetchInterval: 30000, // Refetch every 30 seconds
     }
@@ -99,6 +101,7 @@ export const useResolvedAlerts = (
     offset?: number;
     severity?: string;
     category?: string;
+    enabled?: boolean;
   }
 ) => {
   const { workspace } = useWorkspace();
@@ -114,7 +117,8 @@ export const useResolvedAlerts = (
       category: options?.category,
     },
     {
-      enabled: !!serverId && !!workspace?.id && !!vhost,
+      enabled:
+        (options?.enabled ?? true) && !!serverId && !!workspace?.id && !!vhost,
       staleTime: 30000, // 30 seconds
       refetchInterval: 60000, // Refetch every minute
     }

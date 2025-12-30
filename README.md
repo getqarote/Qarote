@@ -1,4 +1,30 @@
-# RabbitMQ Dashboard - Docker Development Setup
+# Qarote - RabbitMQ Dashboard & Monitoring
+
+Qarote is a modern, user-friendly dashboard for monitoring and managing RabbitMQ servers. It provides real-time visibility into queues, exchanges, connections, and system health.
+
+## Editions
+
+Qarote is available in two editions:
+
+### Community Edition (Open Source)
+- **License**: MIT
+- **Price**: Free
+- **Features**: Core RabbitMQ monitoring (queues, exchanges, vhosts, users)
+- **Documentation**: [docs/COMMUNITY_EDITION.md](docs/COMMUNITY_EDITION.md)
+
+### Enterprise Edition (Licensed)
+- **License**: Commercial
+- **Price**: Paid
+- **Features**: All Community features plus workspace management, alerting, integrations (Slack, webhooks), and data export
+- **Documentation**: [docs/ENTERPRISE_EDITION.md](docs/ENTERPRISE_EDITION.md)
+
+**Feature Comparison**: See [docs/FEATURE_COMPARISON.md](docs/FEATURE_COMPARISON.md) for a detailed comparison.
+
+**Deployment Guide**: See [docs/SELF_HOSTED_DEPLOYMENT.md](docs/SELF_HOSTED_DEPLOYMENT.md) for deployment instructions.
+
+---
+
+## Docker Development Setup
 
 This directory contains Docker configuration files for running a complete development environment with RabbitMQ, PostgreSQL, and sample data.
 

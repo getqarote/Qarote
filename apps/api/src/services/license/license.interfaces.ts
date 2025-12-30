@@ -13,7 +13,7 @@ export interface LicenseData {
   tier: string;
   customerEmail: string;
   issuedAt: string;
-  expiresAt: string;
+  expiresAt: string | null; // null means perpetual (never expires)
   features: string[];
   maxInstances?: number;
   instanceId?: string;
@@ -28,7 +28,7 @@ export interface LicenseFile {
   tier: string;
   customerEmail: string;
   issuedAt: string;
-  expiresAt: string;
+  expiresAt: string | null; // null means perpetual (never expires)
   features: string[];
   maxInstances?: number;
   instanceId?: string;
@@ -88,7 +88,7 @@ export interface GenerateLicenseFileResult {
 /**
  * Validated license information returned from license validation
  */
-export interface ValidatedLicense {
+interface ValidatedLicense {
   id: string;
   tier: UserPlan;
   expiresAt: Date | null;

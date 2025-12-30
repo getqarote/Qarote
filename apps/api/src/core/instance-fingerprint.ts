@@ -11,7 +11,7 @@ import os from "os";
  * Generate a stable instance fingerprint
  * Combines multiple hardware/network characteristics to create a unique ID
  */
-export function getInstanceFingerprint(): string {
+function getInstanceFingerprint(): string {
   const factors: string[] = [];
 
   // Hostname
@@ -44,7 +44,11 @@ export function getInstanceFingerprint(): string {
   const combined = factors.join("-");
 
   // Generate stable hash
-  return crypto.createHash("sha256").update(combined).digest("hex").substring(0, 16);
+  return crypto
+    .createHash("sha256")
+    .update(combined)
+    .digest("hex")
+    .substring(0, 16);
 }
 
 /**
@@ -58,4 +62,3 @@ export function getInstanceId(): string {
 
   return getInstanceFingerprint();
 }
-

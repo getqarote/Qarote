@@ -50,9 +50,10 @@ export const slackRouter = router({
     }),
 
   /**
-   * Create a new Slack configuration (WORKSPACE)
+   * Create a new Slack configuration (WORKSPACE, feature gated)
    */
   createConfig: workspaceProcedure
+    .use(requirePremiumFeature(FEATURES.SLACK_INTEGRATION))
     .input(CreateSlackConfigSchema)
     .mutation(async ({ input, ctx }) => {
       const { workspaceId } = ctx;

@@ -41,10 +41,3 @@ export const FEATURE_DESCRIPTIONS: Record<PremiumFeature, string> = {
 export function getAllPremiumFeatures(): PremiumFeature[] {
   return Object.values(FEATURES);
 }
-
-/**
- * Check if a feature is premium
- */
-export function isPremiumFeature(feature: string): feature is PremiumFeature {
-  return Object.values(FEATURES).includes(feature as PremiumFeature);
-}

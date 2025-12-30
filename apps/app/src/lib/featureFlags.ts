@@ -14,22 +14,13 @@ export type PremiumFeature =
 /**
  * Get deployment mode from environment
  */
-export function getDeploymentMode(): "cloud" | "community" | "enterprise" {
-  return (import.meta.env.VITE_DEPLOYMENT_MODE as "cloud" | "community" | "enterprise") || "cloud";
-}
-
-/**
- * Check if running in community mode
- */
-export function isCommunityMode(): boolean {
-  return getDeploymentMode() === "community";
-}
-
-/**
- * Check if running in enterprise mode
- */
-export function isEnterpriseMode(): boolean {
-  return getDeploymentMode() === "enterprise";
+function getDeploymentMode(): "cloud" | "community" | "enterprise" {
+  return (
+    (import.meta.env.VITE_DEPLOYMENT_MODE as
+      | "cloud"
+      | "community"
+      | "enterprise") || "cloud"
+  );
 }
 
 /**
@@ -42,7 +33,7 @@ export function isCloudMode(): boolean {
 /**
  * Feature descriptions for UI
  */
-export const FEATURE_DESCRIPTIONS: Record<PremiumFeature, string> = {
+const FEATURE_DESCRIPTIONS: Record<PremiumFeature, string> = {
   workspace_management: "Workspace Management",
   alerting: "Alerting System",
   slack_integration: "Slack Integration",
@@ -57,4 +48,3 @@ export const FEATURE_DESCRIPTIONS: Record<PremiumFeature, string> = {
 export function getFeatureDescription(feature: PremiumFeature): string {
   return FEATURE_DESCRIPTIONS[feature] || feature;
 }
-

@@ -2,17 +2,12 @@
  * Deployment mode detection and validation
  */
 
-import { deploymentConfig } from "./index";
+import { config, deploymentConfig, licenseConfig } from "./index";
 
 /**
  * Check if running in cloud mode
  */
 export const isCloudMode = () => deploymentConfig.isCloud();
-
-/**
- * Check if running in self-hosted mode (community or enterprise)
- */
-export const isSelfHostedMode = () => deploymentConfig.isSelfHosted();
 
 /**
  * Check if running in community mode
@@ -23,11 +18,6 @@ export const isCommunityMode = () => deploymentConfig.isCommunity();
  * Check if running in enterprise mode
  */
 export const isEnterpriseMode = () => deploymentConfig.isEnterprise();
-
-/**
- * Get current deployment mode
- */
-export const getDeploymentMode = () => deploymentConfig.mode;
 
 /**
  * Validate that required services are available based on deployment mode
@@ -58,15 +48,20 @@ export const validateDeploymentMode = () => {
     }
   } else if (isEnterpriseMode()) {
     // Enterprise mode requires license file
-    if (!process.env.LICENSE_FILE_PATH && !process.env.LICENSE_KEY) {
+    // Check raw config value (before default) to avoid false positives from default value
+    const hasLicenseFilePath =
+      config.LICENSE_FILE_PATH && config.LICENSE_FILE_PATH !== "";
+
+    if (!hasLicenseFilePath) {
       throw new Error(
-        "Enterprise deployment mode requires LICENSE_FILE_PATH or LICENSE_KEY. " +
-          "Please set LICENSE_FILE_PATH environment variable or purchase a license from the Customer Portal."
+        "Enterprise deployment mode requires LICENSE_FILE_PATH. " +
+          "Please set LICENSE_FILE_PATH environment variable to the path of your license file. " +
+          "You can download your license file from the Customer Portal."
       );
     }
-    
+
     // Enterprise mode requires public key for validation
-    if (!process.env.LICENSE_PUBLIC_KEY) {
+    if (!licenseConfig.publicKey) {
       throw new Error(
         "Enterprise deployment mode requires LICENSE_PUBLIC_KEY. " +
           "Please set LICENSE_PUBLIC_KEY environment variable."

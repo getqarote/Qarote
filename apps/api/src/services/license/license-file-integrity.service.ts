@@ -3,22 +3,21 @@
  * Validates that license file hasn't been tampered with
  */
 
-import crypto from "node:crypto";
-
 import fs from "fs/promises";
 import path from "path";
 
 import { logger } from "@/core/logger";
 
+import { licenseConfig } from "@/config";
+
 /**
  * Check file permissions (should be readable only by owner)
  */
-export async function checkLicenseFilePermissions(
+async function checkLicenseFilePermissions(
   filePath?: string
 ): Promise<boolean> {
   try {
-    const licensePath =
-      filePath || process.env.LICENSE_FILE_PATH || "./license.json";
+    const licensePath = filePath || licenseConfig.licenseFilePath;
     const absolutePath = path.isAbsolute(licensePath)
       ? licensePath
       : path.join(process.cwd(), licensePath);
@@ -38,27 +37,13 @@ export async function checkLicenseFilePermissions(
 }
 
 /**
- * Calculate file checksum
- */
-export async function calculateFileChecksum(filePath: string): Promise<string> {
-  try {
-    const content = await fs.readFile(filePath);
-    return crypto.createHash("sha256").update(content).digest("hex");
-  } catch (error) {
-    logger.error({ error }, "Failed to calculate file checksum");
-    throw error;
-  }
-}
-
-/**
  * Validate license file integrity
  */
 export async function validateLicenseFileIntegrity(
   filePath?: string
 ): Promise<{ valid: boolean; reason?: string }> {
   try {
-    const licensePath =
-      filePath || process.env.LICENSE_FILE_PATH || "./license.json";
+    const licensePath = filePath || licenseConfig.licenseFilePath;
     const absolutePath = path.isAbsolute(licensePath)
       ? licensePath
       : path.join(process.cwd(), licensePath);

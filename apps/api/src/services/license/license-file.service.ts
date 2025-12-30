@@ -9,6 +9,8 @@ import path from "path";
 import { getInstanceId } from "@/core/instance-fingerprint";
 import { logger } from "@/core/logger";
 
+import { licenseConfig } from "@/config";
+
 import type {
   LicenseFile,
   LicenseValidationResult,
@@ -22,8 +24,7 @@ export async function readLicenseFile(
   filePath?: string
 ): Promise<LicenseFile | null> {
   try {
-    const licensePath =
-      filePath || process.env.LICENSE_FILE_PATH || "./license.json";
+    const licensePath = filePath || licenseConfig.licenseFilePath;
 
     // Resolve absolute path
     const absolutePath = path.isAbsolute(licensePath)
@@ -70,7 +71,7 @@ export async function validateLicenseFileOffline(
   }
 
   // Get public key
-  const key = publicKey || process.env.LICENSE_PUBLIC_KEY;
+  const key = publicKey || licenseConfig.publicKey;
   if (!key) {
     return {
       valid: false,
@@ -94,16 +95,18 @@ export async function validateLicenseFileOffline(
     };
   }
 
-  // 2. Check expiration
-  const expiresAt = new Date(licenseFile.expiresAt);
-  const now = new Date();
+  // 2. Check expiration (skip if null - perpetual license)
+  if (licenseFile.expiresAt !== null) {
+    const expiresAt = new Date(licenseFile.expiresAt);
+    const now = new Date();
 
-  if (expiresAt < now) {
-    return {
-      valid: false,
-      reason: "expired",
-      message: `License expired on ${expiresAt.toISOString()}`,
-    };
+    if (expiresAt < now) {
+      return {
+        valid: false,
+        reason: "expired",
+        message: `License expired on ${expiresAt.toISOString()}`,
+      };
+    }
   }
 
   // 3. Check instance ID if specified

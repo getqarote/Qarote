@@ -2,6 +2,12 @@
 
 This directory contains documentation for deploying and using Qarote.
 
+## Editions
+
+- **[Community Edition](COMMUNITY_EDITION.md)** - Open-source edition guide
+- **[Enterprise Edition](ENTERPRISE_EDITION.md)** - Licensed edition guide
+- **[Feature Comparison](FEATURE_COMPARISON.md)** - Detailed feature comparison between editions
+
 ## Self-Hosted Deployment
 
 - **[Self-Hosted Deployment Guide](SELF_HOSTED_DEPLOYMENT.md)** - Complete guide for deploying Community and Enterprise editions

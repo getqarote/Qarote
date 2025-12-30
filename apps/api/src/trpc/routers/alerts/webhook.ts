@@ -143,9 +143,10 @@ export const webhookRouter = router({
     }),
 
   /**
-   * Delete a webhook (WORKSPACE)
+   * Delete a webhook (WORKSPACE, feature gated)
    */
   deleteWebhook: workspaceProcedure
+    .use(requirePremiumFeature(FEATURES.WEBHOOK_INTEGRATION))
     .input(WebhookIdSchema)
     .mutation(async ({ input, ctx }) => {
       const { id } = input;

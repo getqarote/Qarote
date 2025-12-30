@@ -25,7 +25,6 @@ import { WorkspaceMapper } from "@/mappers/workspace";
 
 import {
   planValidationProcedure,
-  protectedProcedure,
   rateLimitedProcedure,
   router,
   workspaceProcedure,
@@ -155,10 +154,11 @@ export const managementRouter = router({
   }),
 
   /**
-   * Create a new workspace (PROTECTED with plan validation and feature gating)
+   * Create a new workspace (PROTECTED with plan validation)
+   * Note: First workspace creation is allowed in community mode for onboarding.
+   * Subsequent workspace management operations (update, delete, switch) require premium features.
    */
   create: planValidationProcedure
-    .use(requirePremiumFeature(FEATURES.WORKSPACE_MANAGEMENT))
     .input(CreateWorkspaceSchema)
     .mutation(async ({ input, ctx }) => {
       const user = ctx.user;
@@ -278,7 +278,7 @@ export const managementRouter = router({
   /**
    * Update workspace (PROTECTED - owner only, feature gated)
    */
-  update: protectedProcedure
+  update: rateLimitedProcedure
     .use(requirePremiumFeature(FEATURES.WORKSPACE_MANAGEMENT))
     .input(WorkspaceIdParamSchema.merge(UpdateWorkspaceSchema))
     .mutation(async ({ input, ctx }) => {
@@ -365,7 +365,7 @@ export const managementRouter = router({
   /**
    * Delete workspace (PROTECTED - owner only, feature gated)
    */
-  delete: protectedProcedure
+  delete: rateLimitedProcedure
     .use(requirePremiumFeature(FEATURES.WORKSPACE_MANAGEMENT))
     .input(WorkspaceIdParamSchema)
     .mutation(async ({ input, ctx }) => {

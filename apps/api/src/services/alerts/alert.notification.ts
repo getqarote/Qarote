@@ -170,12 +170,8 @@ class AlertNotificationService {
     vhost?: string // Optional - undefined means "check all vhosts"
   ): Promise<void> {
     // Check if alerting feature is enabled
+    // In community mode, alerts are tracked but notifications are not sent
     const alertingEnabled = await isFeatureEnabled(FEATURES.ALERTING);
-    if (!alertingEnabled) {
-      // In community mode, alerts are tracked but notifications are not sent
-      logger.debug("Alerting feature not enabled - skipping notifications");
-      return;
-    }
 
     try {
       // Get workspace to check for contact email and notification settings
@@ -416,6 +412,15 @@ class AlertNotificationService {
       }
 
       // Send notifications (email and webhooks) for alerts that should trigger notification
+      // Skip notifications if alerting feature is disabled (community mode)
+      // Alerts are still tracked in the database, but notifications are not sent
+      if (!alertingEnabled) {
+        logger.debug(
+          "Alerting feature not enabled - alerts tracked but notifications skipped"
+        );
+        return;
+      }
+
       // Only send if email notifications are enabled and contact email is set
       const shouldSendNotifications =
         workspace.emailNotificationsEnabled && !!workspace.contactEmail;

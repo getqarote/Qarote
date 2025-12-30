@@ -16,6 +16,8 @@
     "dev": "vite",
     "build": "vite build",
     "build:dev": "vite build --mode development",
+    "build:community": "VITE_DEPLOYMENT_MODE=community vite build",
+    "build:enterprise": "VITE_DEPLOYMENT_MODE=enterprise vite build",
     "lint": "eslint . --max-warnings=-1",
     "lint:fix": "eslint . --fix",
     "type-check": "tsc --noEmit",
