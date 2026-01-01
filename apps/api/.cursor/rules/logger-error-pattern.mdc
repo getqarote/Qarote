@@ -1,3 +1,7 @@
+---
+alwaysApply: true
+---
+
 # Logger Error Pattern
 
 ## Rule: Logger.error Must Use Object-First Pattern

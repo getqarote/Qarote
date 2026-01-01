@@ -1,0 +1,79 @@
+---
+alwaysApply: true
+---
+
+# Import Ordering Convention
+
+All imports in TypeScript/JavaScript files must follow this strict ordering:
+
+1. **CSS and style files** - Stylesheet imports (e.g., `./index.css`, `@/styles/theme.css`, `.scss`, `.less`, `.sass`)
+2. **Node.js built-in modules** - Node.js core modules (e.g., `node:path`, `node:fs`, `node:url`)
+3. **React modules** - React and React-related packages (e.g., `react`, `react-dom`, `react-router-dom`, `@react-oauth/google`, `@tanstack/react-query`)
+4. **External npm packages** - Other third-party packages (e.g., `zod`, `date-fns`, `lucide-react`, `@radix-ui/*`)
+5. **Lib modules** - Internal library functionality (`@/lib/*`)
+6. **Components modules** - React components (`@/components/*`)
+7. **Contexts modules** - React contexts (`@/contexts/*`)
+8. **Hooks modules** - Custom React hooks (`@/hooks/*`)
+9. **Schemas modules** - Zod validation schemas (`@/schemas/*`)
+10. **Types modules** - Type definitions (`@/types/*`)
+11. **Config** - Configuration files (`@/config`)
+12. **Relative imports** - Local file imports (`./`, `../`)
+
+### Example
+
+```typescript
+// 1. CSS and style files
+import "./index.css";
+import "@/styles/theme.css";
+
+// 2. Node.js built-in modules
+import { readFileSync } from "node:fs";
+
+// 3. React modules
+// IMPORTANT: Always use named imports for React hooks (useState, useEffect, etc.)
+// NEVER use React.useState or React.useEffect - this causes production build errors
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+
+// 4. External npm packages
+import { z } from "zod";
+import { format } from "date-fns";
+import { Button } from "@radix-ui/react-button";
+
+// 5. Lib modules
+import { apiClient } from "@/lib/api";
+import { logger } from "@/lib/logger";
+
+// 6. Components modules
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+
+// 7. Contexts modules
+import { useAuth } from "@/contexts/AuthContext";
+
+// 8. Hooks modules
+import { useUser } from "@/hooks/useUser";
+import { useWorkspace } from "@/hooks/useWorkspace";
+
+// 9. Schemas modules
+import { signUpSchema } from "@/schemas/forms";
+
+// 10. Types modules
+import { UserPlan } from "@/types/plans";
+
+// 11. Config
+import { config } from "@/config";
+
+// 12. Relative imports
+import { helperFunction } from "./utils";
+```
+
+### Enforcement
+
+This ordering is enforced by:
+
+- ESLint with `eslint-plugin-simple-import-sort`
+- Cursor rules (this file)
+
+Run `pnpm run lint:fix` to automatically fix import ordering.

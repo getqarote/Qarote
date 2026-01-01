@@ -6,17 +6,95 @@ alwaysApply: true
 
 This document outlines the key locations for different components in the API codebase.
 
-## Controllers
+## tRPC Routers
 
-All different controllers are located in:
+The API primarily uses **tRPC** for all endpoints. Routers are organized by domain:
 
-- `api/src/controllers/*`
+- **Root router**: `api/src/trpc/router.ts` - Combines all routers
+- **tRPC setup**: `api/src/trpc/trpc.ts` - tRPC initialization and procedures
+- **Context**: `api/src/trpc/context.ts` - Request context creation
+
+### Router Organization
+
+All tRPC routers are located in `api/src/trpc/routers/`:
+
+- **`auth/`** - Authentication (email, Google OAuth, password, registration, session, verification, invitation)
+- **`user/`** - User management
+- **`workspace/`** - Workspace operations (core, management, plan, invitation, data)
+- **`rabbitmq/`** - RabbitMQ operations (queues, overview, infrastructure, metrics, memory, messages, server, vhost, alerts, users)
+- **`alerts/`** - Alert management (rules, webhook, slack)
+- **`payment/`** - Payment processing (billing, checkout, subscription)
+- **`feedback/`** - User feedback
+- **`portal/`** - Portal/license operations
+- **`public/`** - Public endpoints (invitation)
+- **`discord.ts`** - Discord integration
+
+### Router Structure
+
+Each router domain follows this pattern:
+
+```typescript
+// Example: api/src/trpc/routers/workspace/index.ts
+import { router } from "@/trpc/trpc";
+import { coreRouter } from "./core";
+import { managementRouter } from "./management";
+
+export const workspaceRouter = router({
+  core: coreRouter,
+  management: managementRouter,
+  // ...
+});
+```
+
+### tRPC Procedures
+
+- Use `publicProcedure` for unauthenticated endpoints
+- Use `protectedProcedure` for authenticated endpoints
+- Use `requirePremiumFeature` middleware for Enterprise features
+- Use rate limiters from `@/trpc/middlewares/rateLimiter`
+
+## Controllers (Legacy/Webhooks)
+
+Only two controllers remain for special cases:
+
+- **`api/src/controllers/healthcheck.controller.ts`** - Health check endpoint
+- **`api/src/controllers/payment/webhook.controller.ts`** - Stripe webhook (needs raw body, can't use tRPC)
+
+**Note**: New endpoints should use tRPC routers, not controllers.
 
 ## Zod Schemas
 
 Zod validation schemas are located in:
 
-- `api/src/schemas`
+- `api/src/schemas/` - All validation schemas (auth, payment, portal, rabbitmq, user, workspace, etc.)
+
+Schemas are imported in tRPC procedures using `.input()`:
+
+```typescript
+import { registerUserSchema } from "@/schemas/auth";
+
+export const register = publicProcedure
+  .input(registerUserSchema)
+  .mutation(async ({ input, ctx }) => {
+    // ...
+  });
+```
+
+## Services
+
+Business logic services are located in:
+
+- `api/src/services/` - All service layer implementations
+
+Services are called from tRPC procedures, not directly from controllers.
+
+## Mappers
+
+Response mappers transform internal types to API response types:
+
+- `api/src/mappers/` - All mapper classes (auth, feedback, license, rabbitmq, server, workspace)
+
+Mappers are used in tRPC procedures to format responses.
 
 ## Prisma Schema
 
@@ -28,22 +106,45 @@ Database schema definition is located at:
 
 Application configuration is located at:
 
-- `api/src/config/index.ts`
+- `api/src/config/` - All configuration files
+  - `index.ts` - Main config export
+  - `deployment.ts` - Deployment mode configuration
+  - `features.ts` - Feature flags
 
-## User Plan Service
+## Core Modules
 
-User plan service is located in:
+Core functionality is located in:
 
-- `api/src/services/plan`
+- `api/src/core/` - Core modules (auth, logger, prisma, rabbitmq, utils, workspace-access, feature-flags, instance-fingerprint)
 
-## RabbitMQ Core
+## Middlewares
 
-RabbitMQ core functionality is located in:
+Middleware functions are located in:
 
-- `/Users/brice/Code/Personal/Active/Qarote/api/src/core/rabbitmq`
+- `api/src/middlewares/` - All middleware (cors, rateLimiter, request, workspace)
+- `api/src/trpc/middlewares/` - tRPC-specific middlewares (rateLimiter)
 
 ## Backend Types
 
 Backend types are located in:
 
-- `api/src/types`
+- `api/src/types/` - Type definitions (api, rabbitmq, etc.)
+
+## tRPC Endpoint Access
+
+tRPC endpoints are mounted at `/trpc/*` in the main application.
+
+Frontend clients access endpoints like:
+
+- `trpc.auth.register.mutate(...)`
+- `trpc.workspace.core.get.useQuery(...)`
+- `trpc.rabbitmq.queues.list.useQuery(...)`
+
+## File Organization Best Practices
+
+1. **New endpoints**: Create in appropriate tRPC router, not controllers
+2. **Shared logic**: Put in services, not in routers
+3. **Validation**: Use Zod schemas from `api/src/schemas/`
+4. **Response formatting**: Use mappers from `api/src/mappers/`
+5. **Error handling**: Use `TRPCError` from `@trpc/server`
+6. **Logging**: Use `logger` from `@/core/logger` with structured logging pattern

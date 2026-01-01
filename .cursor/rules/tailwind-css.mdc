@@ -81,18 +81,6 @@ export default {
 <Card className="card-unified">Content</Card>
 ```
 
-### ✅ Third-Party Component Overrides
-
-For third-party components that require specific CSS overrides (e.g., Google OAuth), use separate CSS files:
-
-**`styles/google-auth.css`**:
-```css
-/* Override third-party component styles */
-.google-login-container div[role="button"] {
-  margin: 0 auto !important;
-}
-```
-
 ## Prohibited Approaches
 
 ### ❌ Inline Styles
@@ -122,92 +110,19 @@ const StyledButton = styled.button`
 <button className="bg-gradient-button px-4 py-2">Click me</button>
 ```
 
-### ❌ Direct CSS Files for Component Styles
+## Button Styling
 
-```tsx
-// ❌ Incorrect - Creating component-specific CSS files
-// Button.module.css
-.button {
-  display: flex;
-  align-items: center;
-}
+- **Primary action buttons (CTAs) MUST use the gradient button classes:**
+  - Use `bg-gradient-button hover:bg-gradient-button-hover text-white` for all primary action buttons
+  - This applies to submit buttons, save buttons, create buttons, and any other primary CTAs
+  - **DO NOT** use hardcoded colors like `bg-orange-500 hover:bg-orange-600`
 
-// ✅ Correct - Use Tailwind classes or component classes in index.css
-<button className="flex items-center">Click me</button>
-```
+## Toggle Input Styling
 
-## When to Add to Tailwind Config
-
-Add to `tailwind.config.ts` when:
-
-1. **Custom colors** - Brand colors, theme colors
-2. **Custom animations** - Reusable animations
-3. **Custom gradients** - Background gradients
-4. **Custom spacing/sizing** - Project-specific values
-5. **Custom utilities** - Repeated patterns that should be utilities
-
-## When to Add to index.css @layer components
-
-Add to `index.css` using `@layer components` when:
-
-1. **Reusable component patterns** - Button variants, card styles, layout patterns
-2. **Complex combinations** - Multiple Tailwind classes that are used together frequently
-3. **Component-specific styles** - Styles that represent a complete component pattern
-
-## Examples
-
-### Custom Color in Config
-
-**`tailwind.config.ts`**:
-```typescript
-colors: {
-  orange: {
-    500: "#f97316",
-    600: "#ea580c",
-  },
-}
-```
-
-**Component**:
-```tsx
-<div className="bg-orange-500 hover:bg-orange-600">Content</div>
-```
-
-### Custom Animation in Config
-
-**`tailwind.config.ts`**:
-```typescript
-keyframes: {
-  "slide-in-right": {
-    "0%": { opacity: "0", transform: "translateX(100%)" },
-    "100%": { opacity: "1", transform: "translateX(0)" },
-  },
-},
-animation: {
-  "slide-in-right": "slide-in-right 1s ease-out forwards",
-},
-```
-
-**Component**:
-```tsx
-<div className="animate-slide-in-right">Content</div>
-```
-
-### Component Class in CSS
-
-**`index.css`**:
-```css
-@layer components {
-  .page-container {
-    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6;
-  }
-}
-```
-
-**Component**:
-```tsx
-<div className="page-container">Content</div>
-```
+- **Switch/Toggle components MUST use the gradient button classes when checked:**
+  - Use `data-[state=checked]:bg-gradient-button` for all Switch components
+  - This ensures toggle switches match the design system's gradient styling
+  - **DO NOT** rely on default `bg-primary` styling for switches
 
 ## File Organization
 

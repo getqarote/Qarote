@@ -1,3 +1,7 @@
+---
+alwaysApply: true
+---
+
 # Email Template Styling Guide
 
 ## Rule: All Email Templates Must Use Shared Styles

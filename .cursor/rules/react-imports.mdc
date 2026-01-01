@@ -1,3 +1,7 @@
+---
+alwaysApply: true
+---
+
 # React Import Best Practices
 
 ## Critical Rule: Always Use Named Imports for React Hooks
