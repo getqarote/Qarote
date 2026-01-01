@@ -27,32 +27,27 @@ Visit the [Customer Portal](https://portal.qarote.io) to purchase a license:
 
 After purchase, you'll receive a license key via email.
 
-### 2. Choose Deployment Option
-
-**Option A: Minimal Deployment** (you provide RabbitMQ)
+### 2. Deploy Enterprise Edition
 
 ```bash
-docker-compose -f docker-compose.standalone.yml up -d
+export DEPLOYMENT_MODE=enterprise
+docker-compose -f docker-compose.selfhosted.yml up -d
 ```
 
-**Option B: With RabbitMQ** (includes RabbitMQ for testing)
-
-```bash
-docker-compose -f docker-compose.standalone-rabbitmq.yml up -d
-```
+**Note:** Enterprise customers provide their own RabbitMQ servers. For development/testing with RabbitMQ, use the main `docker-compose.yml` file.
 
 ### 3. Configure Environment Variables
 
 Create `.env` files in `apps/api/` and `apps/app/` directories:
 
-**Backend (`apps/api/.env`):**
+**Backend (environment variables in docker-compose or .env):**
 
 ```env
 # Required
-DEPLOYMENT_MODE=self-hosted
-LICENSE_KEY=your-license-key-here
-LICENSE_VALIDATION_URL=https://api.qarote.io
-DATABASE_URL=postgres://postgres:changeme@postgres:5432/rabbit_dashboard
+DEPLOYMENT_MODE=enterprise
+LICENSE_FILE_PATH=./license.json
+LICENSE_PUBLIC_KEY=your-public-key-here
+DATABASE_URL=postgres://postgres:changeme@postgres:5432/qarote
 JWT_SECRET=your-jwt-secret-min-32-chars
 ENCRYPTION_KEY=your-encryption-key-min-32-chars
 
@@ -62,11 +57,11 @@ ENABLE_EMAIL=false
 ENABLE_OAUTH=false
 ```
 
-**Frontend (`apps/app/.env`):**
+**Frontend (environment variables in docker-compose or .env):**
 
 ```env
 VITE_API_URL=http://localhost:3000
-VITE_DEPLOYMENT_MODE=self-hosted
+VITE_DEPLOYMENT_MODE=enterprise
 ```
 
 ### 4. Run Database Migrations
@@ -79,15 +74,19 @@ npm run db:migrate:dev
 ### 5. Start Services
 
 ```bash
-docker-compose -f docker-compose.standalone.yml up -d
+export DEPLOYMENT_MODE=enterprise
+docker-compose -f docker-compose.selfhosted.yml up -d
 ```
 
 ## License Activation
 
 1. Purchase license from Customer Portal
-2. Copy license key from email or portal
-3. Set `LICENSE_KEY` in backend `.env`
-4. Restart backend service
+2. Download license file (JSON format, cryptographically signed)
+3. Place license file at `./license.json` (or set `LICENSE_FILE_PATH`)
+4. Set `LICENSE_PUBLIC_KEY` environment variable (provided with license)
+5. Restart backend service
+
+The license is validated offline using cryptographic signatures - no internet connection required.
 
 The license is validated periodically (daily/weekly) with the Qarote license server.
 

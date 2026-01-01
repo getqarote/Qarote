@@ -9,9 +9,16 @@ npm-shrinkwrap.json
 yarn.lock
 bun.lockb
 
+# Environment files (ignore actual .env files, but keep .example files)
 .env
+.env.*
+!.env.*.example
+
 node_modules
 dist
+
+# Infrastructure (SaaS deployment - private)
+infrastructure/
 
 # Turborepo
 .turbo

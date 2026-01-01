@@ -97,7 +97,8 @@ License files are cryptographically signed JSON files that include:
 
 2. **Copy environment file:**
    ```bash
-   cp .env.enterprise.example .env
+   cp .env.selfhosted.example .env
+   # Edit .env and set DEPLOYMENT_MODE=enterprise
    ```
 
 3. **Place your license file:**
@@ -118,7 +119,8 @@ License files are cryptographically signed JSON files that include:
 
 5. **Start services:**
    ```bash
-   docker-compose -f docker-compose.standalone.yml up -d
+   export DEPLOYMENT_MODE=enterprise
+   docker-compose -f docker-compose.selfhosted.yml up -d
    ```
 
 6. **Run database migrations:**

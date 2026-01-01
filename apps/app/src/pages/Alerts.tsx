@@ -9,7 +9,6 @@ import { AlertRulesModal } from "@/components/alerts/AlertRulesModal";
 import { AlertsSummary } from "@/components/alerts/AlertsSummary";
 import { ResolvedAlertsList } from "@/components/alerts/ResolvedAlertsList";
 import { AppSidebar } from "@/components/AppSidebar";
-import { FeatureGate } from "@/components/FeatureGate";
 import { NoServerConfigured } from "@/components/NoServerConfigured";
 import { PageLoader } from "@/components/PageLoader";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -164,162 +163,158 @@ const Alerts = () => {
     );
   }
 
-  // Wrap the rest of the component with FeatureGate
-  // This will show the upgrade prompt if the feature is not available
+  // FeatureGate is handled at the route level in App.tsx
+  // No need to wrap here to avoid double-wrapping issues
+  if (!currentServerId) {
+    return <PageLoader />;
+  }
+
   return (
-    <FeatureGate feature="alerting">
-      {!currentServerId ? (
-        <PageLoader />
-      ) : (
-        <SidebarProvider>
-          <div className="page-layout">
-            <AppSidebar />
-            <main className="main-content-scrollable">
-              <div className="content-container-large">
-                {/* Header */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <SidebarTrigger />
-                    <div>
-                      <h1 className="title-page">Alerts</h1>
-                      <p className="text-gray-500">
-                        Monitor system alerts and notifications
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    {alertsLoading && (
-                      <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                    )}
-                    <Button
-                      onClick={() => setShowAlertRulesModal(true)}
-                      variant="outline"
-                      className="flex items-center gap-2"
-                    >
-                      <Settings className="h-4 w-4" />
-                      Alert Rules
-                    </Button>
-                    <Button
-                      onClick={() => setShowNotificationSettingsModal(true)}
-                      variant="outline"
-                      className="flex items-center gap-2"
-                    >
-                      <Mail className="h-4 w-4" />
-                      Notification Settings
-                    </Button>
-                  </div>
+    <SidebarProvider>
+      <div className="page-layout">
+        <AppSidebar />
+        <main className="main-content-scrollable">
+          <div className="content-container-large">
+            {/* Header */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <SidebarTrigger />
+                <div>
+                  <h1 className="title-page">Alerts</h1>
+                  <p className="text-gray-500">
+                    Monitor system alerts and notifications
+                  </p>
                 </div>
-
-                {/* Loading state */}
-                {featureFlagsLoading || (alertsLoading && !alertsData) ? (
-                  <PageLoader />
-                ) : alertsError ? (
-                  <Alert>
-                    <AlertTriangle className="h-4 w-4" />
-                    <AlertDescription>
-                      Failed to load alerts data. Please try again.
-                    </AlertDescription>
-                  </Alert>
-                ) : (
-                  <>
-                    {/* Alerts Summary */}
-                    <AlertsSummary
-                      summary={
-                        alertsData?.summary || {
-                          total: 0,
-                          critical: 0,
-                          warning: 0,
-                          info: 0,
-                        }
-                      }
-                    />
-
-                    {/* Alerts with Tabs */}
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                          <AlertTriangle className="h-5 w-5" />
-                          Alerts
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <Tabs
-                          value={viewMode}
-                          onValueChange={(value) =>
-                            setViewMode(value as "active" | "resolved")
-                          }
-                        >
-                          <TabsList className="grid w-full grid-cols-2 mb-6">
-                            <TabsTrigger value="active">
-                              Active Alerts
-                            </TabsTrigger>
-                            <TabsTrigger value="resolved">
-                              Resolved Alerts
-                            </TabsTrigger>
-                          </TabsList>
-
-                          <TabsContent value="active">
-                            <ActiveAlertsList
-                              alerts={alertsData?.alerts || []}
-                              summary={
-                                alertsData?.summary || {
-                                  total: 0,
-                                  critical: 0,
-                                  warning: 0,
-                                  info: 0,
-                                }
-                              }
-                              userPlan={userPlan}
-                              total={alertsData?.total || 0}
-                              page={activeAlertsPage}
-                              pageSize={activeAlertsPageSize}
-                              onPageChange={setActiveAlertsPage}
-                              onPageSizeChange={(size) => {
-                                setActiveAlertsPageSize(size);
-                                setActiveAlertsPage(1); // Reset to first page when changing page size
-                              }}
-                            />
-                          </TabsContent>
-
-                          <TabsContent value="resolved">
-                            <ResolvedAlertsList
-                              alerts={resolvedAlertsData?.alerts || []}
-                              isLoading={
-                                resolvedAlertsLoading && !resolvedAlertsData
-                              }
-                              error={resolvedAlertsError}
-                              total={resolvedAlertsData?.total || 0}
-                              page={resolvedAlertsPage}
-                              pageSize={resolvedAlertsPageSize}
-                              onPageChange={setResolvedAlertsPage}
-                              onPageSizeChange={(size) => {
-                                setResolvedAlertsPageSize(size);
-                                setResolvedAlertsPage(1); // Reset to first page when changing page size
-                              }}
-                            />
-                          </TabsContent>
-                        </Tabs>
-                      </CardContent>
-                    </Card>
-                  </>
-                )}
               </div>
-            </main>
-          </div>
-          {/* Notification Settings Modal */}
-          <AlertNotificationSettingsModal
-            isOpen={showNotificationSettingsModal}
-            onClose={() => setShowNotificationSettingsModal(false)}
-          />
+              <div className="flex items-center gap-3">
+                {alertsLoading && (
+                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                )}
+                <Button
+                  onClick={() => setShowAlertRulesModal(true)}
+                  variant="outline"
+                  className="flex items-center gap-2"
+                >
+                  <Settings className="h-4 w-4" />
+                  Alert Rules
+                </Button>
+                <Button
+                  onClick={() => setShowNotificationSettingsModal(true)}
+                  variant="outline"
+                  className="flex items-center gap-2"
+                >
+                  <Mail className="h-4 w-4" />
+                  Notification Settings
+                </Button>
+              </div>
+            </div>
 
-          {/* Alert Rules Modal */}
-          <AlertRulesModal
-            isOpen={showAlertRulesModal}
-            onClose={() => setShowAlertRulesModal(false)}
-          />
-        </SidebarProvider>
-      )}
-    </FeatureGate>
+            {/* Loading state */}
+            {featureFlagsLoading || (alertsLoading && !alertsData) ? (
+              <PageLoader />
+            ) : alertsError ? (
+              <Alert>
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription>
+                  Failed to load alerts data. Please try again.
+                </AlertDescription>
+              </Alert>
+            ) : (
+              <>
+                {/* Alerts Summary */}
+                <AlertsSummary
+                  summary={
+                    alertsData?.summary || {
+                      total: 0,
+                      critical: 0,
+                      warning: 0,
+                      info: 0,
+                    }
+                  }
+                />
+
+                {/* Alerts with Tabs */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <AlertTriangle className="h-5 w-5" />
+                      Alerts
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <Tabs
+                      value={viewMode}
+                      onValueChange={(value) =>
+                        setViewMode(value as "active" | "resolved")
+                      }
+                    >
+                      <TabsList className="grid w-full grid-cols-2 mb-6">
+                        <TabsTrigger value="active">Active Alerts</TabsTrigger>
+                        <TabsTrigger value="resolved">
+                          Resolved Alerts
+                        </TabsTrigger>
+                      </TabsList>
+
+                      <TabsContent value="active">
+                        <ActiveAlertsList
+                          alerts={alertsData?.alerts || []}
+                          summary={
+                            alertsData?.summary || {
+                              total: 0,
+                              critical: 0,
+                              warning: 0,
+                              info: 0,
+                            }
+                          }
+                          userPlan={userPlan}
+                          total={alertsData?.total || 0}
+                          page={activeAlertsPage}
+                          pageSize={activeAlertsPageSize}
+                          onPageChange={setActiveAlertsPage}
+                          onPageSizeChange={(size) => {
+                            setActiveAlertsPageSize(size);
+                            setActiveAlertsPage(1); // Reset to first page when changing page size
+                          }}
+                        />
+                      </TabsContent>
+
+                      <TabsContent value="resolved">
+                        <ResolvedAlertsList
+                          alerts={resolvedAlertsData?.alerts || []}
+                          isLoading={
+                            resolvedAlertsLoading && !resolvedAlertsData
+                          }
+                          error={resolvedAlertsError}
+                          total={resolvedAlertsData?.total || 0}
+                          page={resolvedAlertsPage}
+                          pageSize={resolvedAlertsPageSize}
+                          onPageChange={setResolvedAlertsPage}
+                          onPageSizeChange={(size) => {
+                            setResolvedAlertsPageSize(size);
+                            setResolvedAlertsPage(1); // Reset to first page when changing page size
+                          }}
+                        />
+                      </TabsContent>
+                    </Tabs>
+                  </CardContent>
+                </Card>
+              </>
+            )}
+          </div>
+        </main>
+      </div>
+      {/* Notification Settings Modal */}
+      <AlertNotificationSettingsModal
+        isOpen={showNotificationSettingsModal}
+        onClose={() => setShowNotificationSettingsModal(false)}
+      />
+
+      {/* Alert Rules Modal */}
+      <AlertRulesModal
+        isOpen={showAlertRulesModal}
+        onClose={() => setShowAlertRulesModal(false)}
+      />
+    </SidebarProvider>
   );
 };
 

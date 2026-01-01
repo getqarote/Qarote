@@ -16,38 +16,39 @@ This directory contains documentation for deploying and using Qarote.
 ## Quick Start
 
 1. **Choose your deployment option:**
-   - **Minimal**: `docker-compose.standalone.yml` - PostgreSQL + Backend + Frontend (you provide RabbitMQ)
-   - **With RabbitMQ**: `docker-compose.standalone-rabbitmq.yml` - Includes a RabbitMQ instance
+   - **Self-Hosted**: `docker-compose.selfhosted.yml` - Supports both Community (open-source) and Enterprise (licensed) editions
+   
+   Note: For development/testing with RabbitMQ, use the main `docker-compose.yml` file.
 
 2. **Set up environment variables:**
    - Copy `.env.example.backend` to `apps/api/.env`
    - Copy `.env.example.frontend` to `apps/app/.env`
    - Update all required values (see below)
 
-3. **Purchase and activate a license:**
-   - Visit the Customer Portal at `portal.qarote.io`
-   - Purchase a license
-   - Copy your license key
-   - Set `LICENSE_KEY` in your backend `.env` file
+3. **Set deployment mode:**
+   - For **Community Edition**: Set `DEPLOYMENT_MODE=community` in your `.env` file
+   - For **Enterprise Edition**: Set `DEPLOYMENT_MODE=enterprise` and configure license:
+     - Visit the Customer Portal at `portal.qarote.io`
+     - Purchase a license
+     - Download your license file (JSON format)
+     - Place license file at `./license.json` (or set `LICENSE_FILE_PATH`)
+     - Set `LICENSE_PUBLIC_KEY` environment variable
 
 4. **Deploy:**
 
    ```bash
-   # Minimal deployment
-   docker-compose -f docker-compose.standalone.yml up -d
-
-   # Or with RabbitMQ
-   docker-compose -f docker-compose.standalone-rabbitmq.yml up -d
+   # Both Community and Enterprise use the same file
+   docker-compose -f docker-compose.selfhosted.yml up -d
    ```
 
 ## Required Configuration
 
 ### Backend (.env)
 
-**Mandatory:**
+**Mandatory (Enterprise Edition):**
 
-- `LICENSE_KEY` - Your license key from the Customer Portal
-- `LICENSE_VALIDATION_URL` - URL to validate licenses (default: https://api.qarote.io)
+- `LICENSE_FILE_PATH` - Path to license file (default: `./license.json`)
+- `LICENSE_PUBLIC_KEY` - Public key for license validation (provided with license)
 - `JWT_SECRET` - Secret for JWT tokens (min 32 characters)
 - `ENCRYPTION_KEY` - Key for encrypting credentials (min 32 characters)
 - `DATABASE_URL` - PostgreSQL connection string
@@ -68,14 +69,15 @@ This directory contains documentation for deploying and using Qarote.
 
 - `VITE_ENABLE_SENTRY` - Enable error tracking
 
-## License Activation
+## License Activation (Enterprise Edition)
 
 1. Purchase a license from the Customer Portal
-2. Copy your license key
-3. Set `LICENSE_KEY` in your backend environment
-4. Restart the backend service
+2. Download your license file (JSON format, cryptographically signed)
+3. Place the license file at `./license.json` (or set `LICENSE_FILE_PATH`)
+4. Set `LICENSE_PUBLIC_KEY` environment variable (provided with your license)
+5. Restart the backend service
 
-The license will be validated periodically (daily/weekly) with the Qarote license server.
+The license is validated offline using cryptographic signatures - no internet connection required.
 
 ## Air-Gapped Deployments
 

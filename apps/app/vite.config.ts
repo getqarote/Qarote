@@ -50,7 +50,6 @@ export default defineConfig({
           "vendor-forms": ["react-hook-form", "@hookform/resolvers"],
           // Date and time utilities
           "vendor-utils": [
-            "date-fns",
             "clsx",
             "class-variance-authority",
             "tailwind-merge",

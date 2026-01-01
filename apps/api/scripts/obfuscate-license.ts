@@ -5,9 +5,9 @@
  * Note: This is a deterrent, not a security measure. Legal protection is the primary enforcement.
  */
 
-import fs from "fs/promises";
-import path from "path";
-import { execSync } from "child_process";
+import fs from "node:fs/promises";
+import path from "node:path";
+import { execSync } from "node:child_process";
 
 const licenseFiles = [
   "dist/core/feature-flags.js",

@@ -20,7 +20,6 @@ const config: KnipConfig = {
   },
   ignore: [
     // Ignore infrastructure folder
-    "infrastructure/**",
     // Ignore UI component directories (as requested)
     "apps/app/src/components/ui/**",
     "apps/web/src/components/ui/**",

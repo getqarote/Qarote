@@ -7,12 +7,14 @@ Qarote is a modern, user-friendly dashboard for monitoring and managing RabbitMQ
 Qarote is available in two editions:
 
 ### Community Edition (Open Source)
+
 - **License**: MIT
 - **Price**: Free
 - **Features**: Core RabbitMQ monitoring (queues, exchanges, vhosts, users)
 - **Documentation**: [docs/COMMUNITY_EDITION.md](docs/COMMUNITY_EDITION.md)
 
 ### Enterprise Edition (Licensed)
+
 - **License**: Commercial
 - **Price**: Paid
 - **Features**: All Community features plus workspace management, alerting, integrations (Slack, webhooks), and data export
@@ -21,6 +23,46 @@ Qarote is available in two editions:
 **Feature Comparison**: See [docs/FEATURE_COMPARISON.md](docs/FEATURE_COMPARISON.md) for a detailed comparison.
 
 **Deployment Guide**: See [docs/SELF_HOSTED_DEPLOYMENT.md](docs/SELF_HOSTED_DEPLOYMENT.md) for deployment instructions.
+
+## Self-Hosted Deployment
+
+### Community Edition - Recommended: Dokku
+
+**We recommend using Dokku for self-hosting the Community Edition.** It provides a simple, Heroku-like deployment experience:
+
+```bash
+# 1. Install Dokku on your server
+# 2. Create app and database
+ssh dokku@your-server apps:create qarote
+dokku postgres:create qarote-db && dokku postgres:link qarote-db qarote
+
+# 3. Set environment variables
+dokku config:set qarote DEPLOYMENT_MODE=community JWT_SECRET=... ENCRYPTION_KEY=...
+
+# 4. Deploy
+git remote add dokku dokku@your-server:qarote
+git push dokku main
+```
+
+See [docs/COMMUNITY_EDITION.md](docs/COMMUNITY_EDITION.md#recommended-dokku-deployment) for complete Dokku instructions.
+
+### Alternative: Docker Compose
+
+Both Community and Enterprise editions can also be self-hosted using Docker Compose:
+
+```bash
+# 1. Copy environment file
+cp .env.selfhosted.example .env
+
+# 2. Edit .env and set DEPLOYMENT_MODE
+#    - For Community: DEPLOYMENT_MODE=community
+#    - For Enterprise: DEPLOYMENT_MODE=enterprise (also set LICENSE_FILE_PATH and LICENSE_PUBLIC_KEY)
+
+# 3. Start services
+docker-compose -f docker-compose.selfhosted.yml up -d
+```
+
+See [docs/SELF_HOSTED_DEPLOYMENT.md](docs/SELF_HOSTED_DEPLOYMENT.md) for complete instructions.
 
 ---
 
@@ -33,7 +75,7 @@ This directory contains Docker configuration files for running a complete develo
 ### PostgreSQL Database
 
 - **Port**: 5432
-- **Database**: rabbit_dashboard
+- **Database**: qarote
 - **Username**: postgres
 - **Password**: password
 

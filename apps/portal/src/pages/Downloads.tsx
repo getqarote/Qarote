@@ -13,19 +13,15 @@ import {
 const Downloads = () => {
   const downloads = [
     {
-      name: "Docker Compose (Minimal)",
-      description: "PostgreSQL + Backend + Frontend",
-      file: "docker-compose.standalone.yml",
-    },
-    {
-      name: "Docker Compose (with RabbitMQ)",
-      description: "Includes a RabbitMQ instance for testing",
-      file: "docker-compose.standalone-rabbitmq.yml",
+      name: "Self-Hosted Deployment",
+      description:
+        "Docker Compose file for both Community (open-source) and Enterprise (licensed) editions",
+      file: "docker-compose.selfhosted.yml",
     },
     {
       name: "Installation Guide",
       description: "Complete setup instructions",
-      file: "STANDALONE_DEPLOYMENT.md",
+      file: "SELF_HOSTED_DEPLOYMENT.md",
     },
   ];
 

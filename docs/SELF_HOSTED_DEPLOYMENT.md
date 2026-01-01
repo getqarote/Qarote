@@ -23,46 +23,94 @@ Qarote offers two self-hosted deployment options:
 
 ### Feature Comparison
 
-| Feature | Community | Enterprise |
-|---------|-----------|------------|
-| RabbitMQ Monitoring | ✅ | ✅ |
-| Queue Management | ✅ | ✅ |
-| Exchange Management | ✅ | ✅ |
-| Virtual Host Management | ✅ | ✅ |
-| User Management | ✅ | ✅ |
-| Workspace Management | ❌ | ✅ |
-| Team Members | ❌ | ✅ |
-| Alerting System | ❌ | ✅ |
-| Slack Integration | ❌ | ✅ |
-| Webhook Integration | ❌ | ✅ |
-| Data Export | ❌ | ✅ |
-| Advanced Alert Rules | ❌ | ✅ |
+| Feature                 | Community | Enterprise |
+| ----------------------- | --------- | ---------- |
+| RabbitMQ Monitoring     | ✅        | ✅         |
+| Queue Management        | ✅        | ✅         |
+| Exchange Management     | ✅        | ✅         |
+| Virtual Host Management | ✅        | ✅         |
+| User Management         | ✅        | ✅         |
+| Workspace Management    | ❌        | ✅         |
+| Team Members            | ❌        | ✅         |
+| Alerting System         | ❌        | ✅         |
+| Slack Integration       | ❌        | ✅         |
+| Webhook Integration     | ❌        | ✅         |
+| Data Export             | ❌        | ✅         |
+| Advanced Alert Rules    | ❌        | ✅         |
 
 ## Community Edition
 
 The Community Edition is free and open-source. It provides core RabbitMQ monitoring capabilities without premium features.
 
-### Deployment
+### Recommended: Dokku Deployment
+
+**We recommend using Dokku for self-hosting the Community Edition.** Dokku provides a simple, Heroku-like deployment experience on your own server.
+
+#### Quick Start with Dokku
+
+1. **Install Dokku** on your server (see [Dokku Installation Guide](https://dokku.com/docs/getting-started/installation/))
+
+2. **Create the app and database:**
+   ```bash
+   ssh dokku@your-server apps:create qarote
+   sudo dokku plugin:install https://github.com/dokku/dokku-postgres.git postgres
+   dokku postgres:create qarote-db
+   dokku postgres:link qarote-db qarote
+   ```
+
+3. **Set environment variables:**
+   ```bash
+   dokku config:set qarote \
+     DEPLOYMENT_MODE=community \
+     JWT_SECRET=$(openssl rand -base64 32) \
+     ENCRYPTION_KEY=$(openssl rand -base64 32) \
+     NODE_ENV=production \
+     LOG_LEVEL=info
+   ```
+
+4. **Deploy:**
+   ```bash
+   git remote add dokku dokku@your-server:qarote
+   git push dokku main
+   ```
+
+5. **Set up domain and SSL (optional):**
+   ```bash
+   dokku domains:set qarote your-domain.com
+   dokku letsencrypt:enable qarote
+   ```
+
+For more details, see [docs/COMMUNITY_EDITION.md](COMMUNITY_EDITION.md#recommended-dokku-deployment).
+
+### Alternative: Docker Compose Deployment
+
+If you prefer Docker Compose or need more control over the deployment:
 
 1. **Clone the repository:**
+
    ```bash
    git clone https://github.com/your-org/qarote.git
    cd qarote
    ```
 
 2. **Copy environment file:**
+
    ```bash
-   cp .env.community.example .env
+   cp .env.selfhosted.example .env
+   # Edit .env and set DEPLOYMENT_MODE=community
    ```
 
 3. **Configure environment variables** (see [Configuration](#configuration))
 
 4. **Start services:**
+
    ```bash
-   docker-compose -f docker-compose.community.yml up -d
+   export DEPLOYMENT_MODE=community
+   docker-compose -f docker-compose.selfhosted.yml up -d
    ```
 
 5. **Run database migrations:**
+
    ```bash
    docker exec qarote_backend_community npm run db:migrate:dev
    ```
@@ -74,6 +122,7 @@ The Community Edition is free and open-source. It provides core RabbitMQ monitor
 ### Environment Variables
 
 **Required:**
+
 - `DEPLOYMENT_MODE=community`
 - `JWT_SECRET` - Secret for JWT tokens (min 32 characters)
 - `ENCRYPTION_KEY` - Key for encrypting credentials (min 32 characters)
@@ -81,6 +130,7 @@ The Community Edition is free and open-source. It provides core RabbitMQ monitor
 - `POSTGRES_PASSWORD` - Database password
 
 **Optional:**
+
 - `ENABLE_EMAIL=false` - Disable email features
 - `ENABLE_OAUTH=false` - Disable OAuth authentication
 - `ENABLE_SENTRY=false` - Disable error tracking
@@ -98,14 +148,17 @@ The Enterprise Edition requires a valid license file to unlock premium features.
 ### Deployment
 
 1. **Clone the repository:**
+
    ```bash
    git clone https://github.com/your-org/qarote.git
    cd qarote
    ```
 
 2. **Copy environment file:**
+
    ```bash
-   cp .env.community.example .env
+   cp .env.selfhosted.example .env
+   # Edit .env and set DEPLOYMENT_MODE=community
    ```
 
 3. **Configure environment variables** (see [Configuration](#configuration))
@@ -115,13 +168,16 @@ The Enterprise Edition requires a valid license file to unlock premium features.
    - Set `LICENSE_PUBLIC_KEY` environment variable (provided with your license)
 
 5. **Start services:**
+
    ```bash
-   docker-compose -f docker-compose.standalone.yml up -d
+   export DEPLOYMENT_MODE=enterprise
+   docker-compose -f docker-compose.selfhosted.yml up -d
    ```
 
 6. **Run database migrations:**
+
    ```bash
-   docker exec qarote_backend npm run db:migrate:dev
+   docker exec qarote_backend_enterprise npm run db:migrate:dev
    ```
 
 7. **Access the application:**
@@ -131,6 +187,7 @@ The Enterprise Edition requires a valid license file to unlock premium features.
 ### Environment Variables
 
 **Required:**
+
 - `DEPLOYMENT_MODE=enterprise`
 - `LICENSE_FILE_PATH` - Path to license file (default: `./license.json`)
 - `LICENSE_PUBLIC_KEY` - Public key for license validation (provided with license)
@@ -140,6 +197,7 @@ The Enterprise Edition requires a valid license file to unlock premium features.
 - `POSTGRES_PASSWORD` - Database password
 
 **Optional:**
+
 - `ENABLE_EMAIL=false` - Disable email features (or configure SMTP)
 - `ENABLE_OAUTH=false` - Disable OAuth authentication
 - `ENABLE_SENTRY=false` - Disable error tracking
@@ -166,7 +224,8 @@ export ENCRYPTION_KEY=$(openssl rand -base64 32)
 export POSTGRES_PASSWORD=$(openssl rand -base64 16)
 
 # 3. Start services
-docker-compose -f docker-compose.community.yml up -d
+export DEPLOYMENT_MODE=community
+docker-compose -f docker-compose.selfhosted.yml up -d
 
 # 4. Run migrations
 docker exec qarote_backend_community npm run db:migrate:dev
@@ -192,10 +251,11 @@ export LICENSE_PUBLIC_KEY="-----BEGIN PUBLIC KEY-----\n...\n-----END PUBLIC KEY-
 cp /path/to/your/license.json ./license.json
 
 # 4. Start services
-docker-compose -f docker-compose.standalone.yml up -d
+export DEPLOYMENT_MODE=enterprise
+docker-compose -f docker-compose.selfhosted.yml up -d
 
 # 5. Run migrations
-docker exec qarote_backend npm run db:migrate:dev
+docker exec qarote_backend_enterprise npm run db:migrate:dev
 
 # 6. Access application
 open http://localhost:8080
@@ -214,7 +274,7 @@ Create a `.env` file in the project root or set environment variables:
 DEPLOYMENT_MODE=community  # or "enterprise"
 
 # Database
-DATABASE_URL=postgres://postgres:changeme@postgres:5432/rabbit_dashboard
+DATABASE_URL=postgres://postgres:changeme@postgres:5432/qarote
 POSTGRES_PASSWORD=changeme
 
 # Security
@@ -303,15 +363,17 @@ Enterprise licenses are provided as JSON files with cryptographic signatures:
 
 1. **Download license file** from Customer Portal
 2. **Place license file** on your server:
+
    ```bash
    # Default location
    cp /path/to/downloaded/license.json ./license.json
-   
+
    # Or specify custom path
    export LICENSE_FILE_PATH=/secure/path/to/license.json
    ```
 
 3. **Set public key** (provided with your license):
+
    ```bash
    export LICENSE_PUBLIC_KEY="-----BEGIN PUBLIC KEY-----
    ...
@@ -319,6 +381,7 @@ Enterprise licenses are provided as JSON files with cryptographic signatures:
    ```
 
 4. **Set file permissions** (recommended):
+
    ```bash
    chmod 600 license.json
    ```
@@ -331,11 +394,13 @@ Enterprise licenses are provided as JSON files with cryptographic signatures:
 ### Instance ID (Optional)
 
 If your license specifies an `instanceId`, the license will only work on that specific server. The instance ID is generated from:
+
 - Hostname
 - Platform and architecture
 - Network interface MAC address
 
 To get your instance ID:
+
 ```bash
 docker exec qarote_backend node -e "const {getInstanceId} = require('./dist/core/instance-fingerprint'); console.log(getInstanceId());"
 ```
@@ -349,6 +414,7 @@ When purchasing a license, you can optionally provide your instance ID to lock t
 **Error:** "License signature verification failed"
 
 **Solutions:**
+
 - Verify `LICENSE_PUBLIC_KEY` is set correctly (include `-----BEGIN PUBLIC KEY-----` and `-----END PUBLIC KEY-----`)
 - Ensure license file hasn't been modified
 - Check license file path is correct
@@ -356,12 +422,14 @@ When purchasing a license, you can optionally provide your instance ID to lock t
 **Error:** "License expired"
 
 **Solutions:**
+
 - Check license expiration date
 - Renew your license from Customer Portal
 
 **Error:** "License instance ID mismatch"
 
 **Solutions:**
+
 - Your license is locked to a specific instance ID
 - Ensure you're using the license on the correct server
 - Contact support to update instance ID
@@ -369,10 +437,12 @@ When purchasing a license, you can optionally provide your instance ID to lock t
 ### Premium Features Not Available
 
 **In Community Edition:**
+
 - This is expected - premium features require Enterprise Edition
 - Upgrade prompts will be shown in the UI
 
 **In Enterprise Edition:**
+
 - Verify license file is valid and not expired
 - Check license file includes the required features
 - Ensure `LICENSE_FILE_PATH` and `LICENSE_PUBLIC_KEY` are set correctly
@@ -383,13 +453,15 @@ When purchasing a license, you can optionally provide your instance ID to lock t
 **Error:** "Connection refused" or "Database not found"
 
 **Solutions:**
+
 - Verify PostgreSQL container is running: `docker-compose ps postgres`
 - Check `DATABASE_URL` format: `postgres://user:password@host:port/database`
-- Ensure database exists: `docker exec qarote_postgres psql -U postgres -c "CREATE DATABASE rabbit_dashboard;"`
+- Ensure database exists: `docker exec qarote_postgres psql -U postgres -c "CREATE DATABASE qarote;"`
 
 ### Services Not Starting
 
 **Check logs:**
+
 ```bash
 # Backend logs
 docker-compose logs backend
@@ -402,6 +474,7 @@ docker-compose logs postgres
 ```
 
 **Common issues:**
+
 - Missing required environment variables
 - Port conflicts (3000, 5432, 8080)
 - Insufficient disk space or memory
@@ -421,17 +494,20 @@ docker-compose logs postgres
 4. **Place license file** on server
 5. **Restart services:**
    ```bash
-   docker-compose -f docker-compose.standalone.yml up -d
+   export DEPLOYMENT_MODE=enterprise
+   docker-compose -f docker-compose.selfhosted.yml up -d
    ```
 
 ### Updating Qarote
 
 1. **Pull latest changes:**
+
    ```bash
    git pull origin main
    ```
 
 2. **Rebuild containers:**
+
    ```bash
    docker-compose build
    docker-compose up -d
@@ -447,6 +523,7 @@ docker-compose logs postgres
 For completely offline deployments:
 
 1. **Set all external services to disabled:**
+
    ```env
    ENABLE_EMAIL=false
    ENABLE_OAUTH=false
@@ -454,6 +531,7 @@ For completely offline deployments:
    ```
 
 2. **Use SMTP for email** (if needed):
+
    ```env
    ENABLE_EMAIL=true
    EMAIL_PROVIDER=smtp
@@ -493,4 +571,3 @@ For completely offline deployments:
    - Keep Qarote updated
    - Monitor security advisories
    - Apply patches promptly
-

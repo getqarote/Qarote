@@ -43,7 +43,7 @@ export const validateDeploymentMode = () => {
       const missingNames = missingServices.map((s) => s.name).join(", ");
       throw new Error(
         `Cloud deployment mode requires the following services: ${missingNames}. ` +
-          `Please set the corresponding environment variables or switch to self-hosted mode.`
+          `Please set the corresponding environment variables or switch to community or enterprise mode.`
       );
     }
   } else if (isEnterpriseMode()) {
@@ -71,5 +71,5 @@ export const validateDeploymentMode = () => {
     // Community mode doesn't require license - all premium features disabled
     // No validation needed
   }
-  // Self-hosted modes don't require other services (they're optional)
+  // Community/Enterprise modes don't require other services (they're optional)
 };

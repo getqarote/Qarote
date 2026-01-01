@@ -1,0 +1,97 @@
+# Qarote Self-Hosted Deployment
+# Supports both Community Edition (open-source) and Enterprise Edition (licensed)
+# Set DEPLOYMENT_MODE=community or DEPLOYMENT_MODE=enterprise
+# For Enterprise: also set LICENSE_FILE_PATH and LICENSE_PUBLIC_KEY
+# Customers provide their own RabbitMQ servers
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: qarote_postgres_${DEPLOYMENT_MODE}
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: qarote
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - postgres_data_${DEPLOYMENT_MODE}:/var/lib/postgresql/data
+    networks:
+      - qarote_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d qarote"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: ./apps/api/Dockerfile
+    container_name: qarote_backend_${DEPLOYMENT_MODE}
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      HOST: 0.0.0.0
+      NODE_ID: ${NODE_ID}
+      LOG_LEVEL: ${LOG_LEVEL}
+      DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD}@postgres:5432/qarote
+      JWT_SECRET: ${JWT_SECRET}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+      CORS_ORIGIN: ${CORS_ORIGIN}
+      DEPLOYMENT_MODE: ${DEPLOYMENT_MODE}
+      # License configuration (required for enterprise, ignored for community)
+      LICENSE_FILE_PATH: ${LICENSE_FILE_PATH}
+      LICENSE_PUBLIC_KEY: ${LICENSE_PUBLIC_KEY}
+      # Optional: For license file generation (SaaS only)
+      LICENSE_PRIVATE_KEY: ${LICENSE_PRIVATE_KEY}
+      # Optional services (can be disabled for air-gapped deployments)
+      ENABLE_SENTRY: ${ENABLE_SENTRY}
+      SENTRY_DSN: ${SENTRY_DSN}
+      SENTRY_ENABLED: ${SENTRY_ENABLED}
+      ENABLE_EMAIL: ${ENABLE_EMAIL}
+      EMAIL_PROVIDER: ${EMAIL_PROVIDER}
+      RESEND_API_KEY: ${RESEND_API_KEY}
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASS: ${SMTP_PASS}
+      ENABLE_OAUTH: ${ENABLE_OAUTH}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      FRONTEND_URL: ${FRONTEND_URL}
+      FROM_EMAIL: ${FROM_EMAIL}
+    ports:
+      - "${BACKEND_PORT}:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - qarote_network
+
+  frontend:
+    build:
+      context: .
+      dockerfile: ./apps/app/Dockerfile
+    container_name: qarote_frontend_${DEPLOYMENT_MODE}
+    restart: unless-stopped
+    environment:
+      VITE_API_URL: ${VITE_API_URL}
+      VITE_DEPLOYMENT_MODE: ${DEPLOYMENT_MODE}
+      VITE_ENABLE_SENTRY: ${VITE_ENABLE_SENTRY}
+      VITE_SENTRY_DSN: ${VITE_SENTRY_DSN}
+    ports:
+      - "${FRONTEND_PORT}:80"
+    depends_on:
+      - backend
+    networks:
+      - qarote_network
+
+volumes:
+  postgres_data_${DEPLOYMENT_MODE}:
+    driver: local
+
+networks:
+  qarote_network:
+    driver: bridge

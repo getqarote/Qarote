@@ -59,13 +59,73 @@ The following features require an Enterprise Edition license:
 
 ## Installation
 
-### Prerequisites
+### Recommended: Dokku Deployment
+
+**We recommend using Dokku for self-hosting the Community Edition.** Dokku provides a simple, Heroku-like deployment experience on your own server.
+
+#### Why Dokku?
+
+- **Easy deployment**: Git push to deploy, just like Heroku
+- **Automatic SSL**: Let's Encrypt certificates out of the box
+- **Process management**: Built-in process scaling and monitoring
+- **Database plugins**: Easy PostgreSQL setup with plugins
+- **Zero configuration**: Works with minimal setup
+
+#### Dokku Quick Start
+
+1. **Install Dokku** on your server (see [Dokku Installation Guide](https://dokku.com/docs/getting-started/installation/))
+
+2. **Create the app:**
+   ```bash
+   ssh dokku@your-server apps:create qarote
+   ```
+
+3. **Install PostgreSQL plugin:**
+   ```bash
+   sudo dokku plugin:install https://github.com/dokku/dokku-postgres.git postgres
+   dokku postgres:create qarote-db
+   dokku postgres:link qarote-db qarote
+   ```
+
+4. **Set environment variables:**
+   ```bash
+   dokku config:set qarote \
+     DEPLOYMENT_MODE=community \
+     JWT_SECRET=$(openssl rand -base64 32) \
+     ENCRYPTION_KEY=$(openssl rand -base64 32) \
+     NODE_ENV=production \
+     LOG_LEVEL=info
+   ```
+
+5. **Deploy:**
+   ```bash
+   git remote add dokku dokku@your-server:qarote
+   git push dokku main
+   ```
+
+6. **Set up domain (optional):**
+   ```bash
+   dokku domains:set qarote your-domain.com
+   dokku letsencrypt:enable qarote
+   ```
+
+That's it! Your app will be available at `https://your-domain.com` (or your server's IP).
+
+For more details, see the [Dokku Documentation](https://dokku.com/docs/).
+
+---
+
+### Alternative: Docker Compose
+
+If you prefer Docker Compose or need more control over the deployment, you can use the Docker Compose method below.
+
+#### Prerequisites
 
 - Docker and Docker Compose
 - PostgreSQL 15+ (or use the included PostgreSQL container)
 - Node.js 24+ (for development)
 
-### Quick Start
+#### Quick Start
 
 1. **Clone the repository:**
    ```bash
@@ -75,7 +135,8 @@ The following features require an Enterprise Edition license:
 
 2. **Copy environment file:**
    ```bash
-   cp .env.community.example .env
+   cp .env.selfhosted.example .env
+   # Edit .env and set DEPLOYMENT_MODE=community
    ```
 
 3. **Configure environment variables:**
@@ -94,7 +155,8 @@ The following features require an Enterprise Edition license:
 
 4. **Start services:**
    ```bash
-   docker-compose -f docker-compose.community.yml up -d
+   export DEPLOYMENT_MODE=community
+   docker-compose -f docker-compose.selfhosted.yml up -d
    ```
 
 5. **Run database migrations:**
