@@ -21,11 +21,17 @@ RUN pnpm install --frozen-lockfile --ignore-scripts
 COPY apps/app ./apps/app
 
 # Build the application
+# Accept DEPLOYMENT_MODE as build argument (defaults to community for self-hosted)
+ARG DEPLOYMENT_MODE=community
 WORKDIR /app/apps/app
-RUN pnpm run build
+# Set VITE_DEPLOYMENT_MODE during build (Vite embeds env vars at build time, not runtime)
+RUN VITE_DEPLOYMENT_MODE=${DEPLOYMENT_MODE} pnpm run build
 
 # Production stage
 FROM nginx:alpine
+
+# Copy nginx configuration
+COPY docker/nginx/nginx.conf /etc/nginx/conf.d/default.conf
 
 # Copy built files
 COPY --from=builder /app/apps/app/dist /usr/share/nginx/html

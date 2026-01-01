@@ -74,6 +74,8 @@ services:
     build:
       context: .
       dockerfile: ./apps/app/Dockerfile
+      args:
+        DEPLOYMENT_MODE: ${DEPLOYMENT_MODE:-community}
     container_name: qarote_frontend_${DEPLOYMENT_MODE}
     restart: unless-stopped
     environment:
