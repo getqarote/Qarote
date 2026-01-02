@@ -29,10 +29,6 @@ Welcome to the Qarote documentation! This hub provides comprehensive guides for 
   - Environment configuration
   - License setup (Enterprise)
 
-- **[Standalone Deployment](STANDALONE_DEPLOYMENT.md)** - Legacy deployment guide
-  - Legacy standalone deployment instructions
-  - ⚠️ **Note**: See [SELF_HOSTED_DEPLOYMENT.md](SELF_HOSTED_DEPLOYMENT.md) for updated information
-
 ### Development & Testing
 
 - **[Testing GitHub Actions Locally](ACT_TESTING.md)** - Local testing guide
@@ -77,7 +73,6 @@ docs/
 ├── ENTERPRISE_EDITION.md                # Enterprise Edition guide
 ├── FEATURE_COMPARISON.md                # Feature comparison
 ├── SELF_HOSTED_DEPLOYMENT.md            # Main deployment guide
-├── STANDALONE_DEPLOYMENT.md             # Legacy deployment guide
 └── ACT_TESTING.md                       # Testing GitHub Actions
 ```
 

@@ -1,0 +1,62 @@
+name: Validate Commit Messages
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+  push:
+    branches:
+      - main
+      - develop
+
+jobs:
+  validate-commits:
+    name: Validate Conventional Commits
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🔍 Checkout code
+        uses: actions/checkout@v4
+        with:
+          # Fetch all commits for PR validation
+          fetch-depth: 0
+
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "pnpm"
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: 📥 Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: 📝 Validate commit messages
+        run: |
+          # For PRs, validate commits between base and head
+          # For pushes, validate the last commit
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            BASE_SHA="${{ github.event.pull_request.base.sha }}"
+            HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+            echo "Validating commits between $BASE_SHA and $HEAD_SHA"
+
+            # Get commit range and validate each commit
+            git log --format="%H" $BASE_SHA..$HEAD_SHA | while read commit_hash; do
+              echo "Validating commit: $commit_hash"
+              COMMIT_MSG_FILE=$(mktemp)
+              git log -1 --format="%B" "$commit_hash" > "$COMMIT_MSG_FILE"
+              pnpm exec commitlint --edit "$COMMIT_MSG_FILE" || exit 1
+              rm -f "$COMMIT_MSG_FILE"
+            done
+          else
+            # For direct pushes, validate the last commit
+            echo "Validating last commit"
+            COMMIT_MSG_FILE=$(mktemp)
+            git log -1 --format="%B" > "$COMMIT_MSG_FILE"
+            pnpm exec commitlint --edit "$COMMIT_MSG_FILE" || exit 1
+            rm -f "$COMMIT_MSG_FILE"
+          fi
+

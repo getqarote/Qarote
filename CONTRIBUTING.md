@@ -114,9 +114,73 @@ qarote/
 
 5. **Commit your changes:**
 
+   We use [Conventional Commits](https://www.conventionalcommits.org/) to maintain a clear and consistent commit history. All commit messages must follow this format:
+
    ```bash
    git commit -m "feat: add your feature description"
    ```
+
+   **Commit Message Format:**
+
+   ```
+   <type>(<scope>): <subject>
+
+   <body>
+
+   <footer>
+   ```
+
+   **Types:**
+   - `feat`: A new feature
+   - `fix`: A bug fix
+   - `docs`: Documentation only changes
+   - `style`: Changes that do not affect the meaning of the code (formatting, missing semi-colons, etc.)
+   - `refactor`: A code change that neither fixes a bug nor adds a feature
+   - `perf`: A code change that improves performance
+   - `test`: Adding missing tests or correcting existing tests
+   - `build`: Changes that affect the build system or external dependencies
+   - `ci`: Changes to CI configuration files and scripts
+   - `chore`: Other changes that don't modify src or test files
+   - `revert`: Reverts a previous commit
+
+   **Examples:**
+
+   ```bash
+   # Feature
+   git commit -m "feat(api): add user authentication endpoint"
+
+   # Bug fix
+   git commit -m "fix(app): resolve memory leak in dashboard component"
+
+   # Documentation
+   git commit -m "docs: update installation instructions"
+
+   # With scope and body
+   git commit -m "feat(api): add rate limiting middleware
+
+   Implements rate limiting using Redis to prevent API abuse.
+   Configurable per endpoint with default limits."
+
+   # Breaking change
+   git commit -m "feat(api): change authentication method
+
+   BREAKING CHANGE: JWT tokens now expire after 1 hour instead of 24 hours.
+   Users will need to refresh tokens more frequently."
+   ```
+
+   **Rules:**
+   - Type and subject are required
+   - Type must be lowercase
+   - Subject must be lowercase
+   - Subject must not end with a period
+   - Header (type + scope + subject) must not exceed 100 characters
+   - Use the imperative mood in the subject ("add" not "added" or "adds")
+   - Scope is optional but recommended for clarity
+
+   **Validation:**
+   - Commit messages are automatically validated using commitlint
+   - Invalid commit messages will be rejected
+   - This validation runs both locally (via git hooks) and in CI
 
 6. **Push and create a Pull Request:**
    ```bash
@@ -134,6 +198,7 @@ All code must be properly formatted before committing. We use:
 ### Before Committing
 
 1. **Format your code:**
+
    ```bash
    pnpm run format:fix  # Auto-fix formatting
    pnpm run lint:fix    # Auto-fix linting issues
@@ -150,9 +215,10 @@ All code must be properly formatted before committing. We use:
 We use Husky to automatically format and lint your code before commits:
 
 - **Pre-commit**: Automatically runs `eslint --fix` and `prettier --write` on staged files
+- **Commit-msg**: Validates commit messages follow the Conventional Commits format
 - **Pre-push**: Runs type checks and dependency version checks
 
-If formatting fails, the commit will be blocked. Fix the issues and try again.
+If formatting fails or the commit message is invalid, the commit will be blocked. Fix the issues and try again.
 
 ### Editor Setup
 
@@ -174,6 +240,7 @@ This ensures your code is automatically formatted as you work.
 - **Line endings**: LF (Unix-style)
 
 These rules are enforced by:
+
 - `.editorconfig` - Editor settings
 - `.prettierrc` - Prettier configuration
 - `eslint.config.*` - ESLint configuration per app
@@ -183,7 +250,7 @@ These rules are enforced by:
 - We use ESLint and Prettier for code formatting
 - TypeScript strict mode is enabled
 - Follow existing code patterns and conventions
-- Write meaningful commit messages (conventional commits preferred)
+- Write meaningful commit messages following the [Conventional Commits](https://www.conventionalcommits.org/) format (enforced via commitlint)
 
 ### Testing
 
