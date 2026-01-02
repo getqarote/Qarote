@@ -7,8 +7,13 @@ npm-debug.log*
 package-lock.json
 npm-shrinkwrap.json
 yarn.lock
+bun.lockb
 
+# Environment files (ignore actual .env files, but keep .example files)
 .env
+.env.*
+!.env.*.example
+
 node_modules
 dist
 
@@ -18,6 +23,7 @@ dist
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
+!.vscode/settings.json
 .idea
 .DS_Store
 *.suo

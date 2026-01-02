@@ -1,206 +1,297 @@
-# RabbitMQ Dashboard - Docker Development Setup
+<div align="center">
 
-This directory contains Docker configuration files for running a complete development environment with RabbitMQ, PostgreSQL, and sample data.
+# 🥕 Qarote
 
-## Services
+**A modern, user-friendly dashboard for monitoring and managing RabbitMQ servers**
 
-### PostgreSQL Database
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Node.js](https://img.shields.io/badge/Node.js-24.x-green.svg)](https://nodejs.org/)
+[![pnpm](https://img.shields.io/badge/pnpm-9.0.0-orange.svg)](https://pnpm.io/)
 
-- **Port**: 5432
-- **Database**: rabbit_dashboard
-- **Username**: postgres
-- **Password**: password
+[Features](#-features) • [Editions](#-editions) • [Quick Start](#-quick-start) • [Documentation](#-documentation) • [Contributing](#-contributing)
 
-### RabbitMQ Server
+</div>
 
-- **AMQP Port**: 5672
-- **Management UI**: http://localhost:15672
-- **Username**: admin
-- **Password**: admin123
+---
 
-## Quick Start
+## ✨ Features
 
-1. **Start the services**:
+- 🎯 **Real-time Monitoring** - Live visibility into queues, exchanges, connections, and system health
+- 📊 **Beautiful Dashboard** - Modern, intuitive interface built with React and TypeScript
+- 🔔 **Alerting System** - Get notified about queue depths, message rates, and system issues (Enterprise)
+- 👥 **Workspace Management** - Multi-user workspaces with role-based access control (Enterprise)
+- 🔌 **Integrations** - Slack, webhooks, and custom integrations (Enterprise)
+- 📤 **Data Export** - Export queue metrics and analytics (Enterprise)
+- 🚀 **Self-Hosted** - Deploy on your own infrastructure with Docker Compose or Dokku
+- 🔒 **Enterprise Security** - Offline license validation for air-gapped deployments
+
+## 🎭 Editions
+
+Qarote is available in two editions to suit different needs:
+
+### 🆓 Community Edition (Open Source)
+
+<div align="center">
+
+**Free • MIT License • Open Source**
+
+</div>
+
+- ✅ Core RabbitMQ monitoring (queues, exchanges, vhosts, users)
+- ✅ Real-time metrics and charts
+- ✅ Server management
+- ✅ User-friendly dashboard
+- ✅ Self-hosted deployment
+- ✅ Active community support
+
+📖 **[View Community Edition Guide](docs/COMMUNITY_EDITION.md)**
+
+### 💼 Enterprise Edition (Licensed)
+
+<div align="center">
+
+**Commercial License • Premium Features • Priority Support**
+
+</div>
+
+- ✅ All Community Edition features
+- ✅ **Workspace Management** - Multi-user workspaces with teams
+- ✅ **Advanced Alerting** - Custom alert rules with Slack/webhook notifications
+- ✅ **Data Export** - CSV/JSON export of metrics and analytics
+- ✅ **Priority Support** - Direct support channel
+- ✅ **Offline Validation** - Air-gapped deployment support
+- ✅ **License Management** - Cryptographically signed licenses
+
+📖 **[View Enterprise Edition Guide](docs/ENTERPRISE_EDITION.md)** • **[Compare Features](docs/FEATURE_COMPARISON.md)**
+
+## 🚀 Quick Start
+
+### Self-Hosted Deployment
+
+#### 🎯 Community Edition - Recommended: Dokku
+
+**We recommend using Dokku for the simplest deployment experience:**
+
+```bash
+# 1. Install Dokku on your server
+# 2. Create app and database
+ssh dokku@your-server apps:create qarote
+dokku postgres:create qarote-db && dokku postgres:link qarote-db qarote
+
+# 3. Set environment variables
+dokku config:set qarote DEPLOYMENT_MODE=community JWT_SECRET=... ENCRYPTION_KEY=...
+
+# 4. Deploy
+git remote add dokku dokku@your-server:qarote
+git push dokku main
+```
+
+📖 **[Complete Dokku Guide](docs/COMMUNITY_EDITION.md#recommended-dokku-deployment)**
+
+#### 🐳 Alternative: Docker Compose
+
+Both Community and Enterprise editions can be deployed with Docker Compose:
+
+```bash
+# 1. Copy environment file
+cp .env.selfhosted.example .env
+
+# 2. Edit .env and set DEPLOYMENT_MODE
+#    - Community: DEPLOYMENT_MODE=community
+#    - Enterprise: DEPLOYMENT_MODE=enterprise (also configure license)
+
+# 3. Start services
+docker-compose -f docker-compose.selfhosted.yml up -d
+```
+
+📖 **[Complete Deployment Guide](docs/SELF_HOSTED_DEPLOYMENT.md)**
+
+### 🛠️ Development Setup
+
+1. **Clone the repository:**
+
+   ```bash
+   git clone https://github.com/your-org/qarote.git
+   cd qarote
+   ```
+
+2. **Install dependencies:**
+
+   ```bash
+   pnpm install
+   ```
+
+3. **Start local services (PostgreSQL, RabbitMQ):**
 
    ```bash
    docker-compose up -d
    ```
 
-2. **Wait for services to be ready** (about 30-60 seconds):
-
-   ```bash
-   docker-compose logs -f rabbitmq
-   ```
-
-   Wait until you see "Server startup complete" message.
-
-3. **Populate RabbitMQ with sample data**:
-
-   ```bash
-   docker exec rabbit_dashboard_qarote /etc/rabbitmq/populate-data.sh
-   ```
-
-4. **Access the RabbitMQ Management UI**:
-   Open http://localhost:15672 in your browser
-   - Username: `admin`
-   - Password: `admin123`
-
-5. **Start your backend API** (in another terminal):
+4. **Run database migrations:**
 
    ```bash
    cd apps/api
-   pnpm run dev
+   pnpm run db:migrate:dev
    ```
 
-6. **Start your frontend** (in another terminal):
+5. **Start development servers:**
+
    ```bash
-   cd apps/app
+   # From project root
    pnpm run dev
+
+   # Or start individual services:
+   pnpm run dev:api    # Backend API (port 3000)
+   pnpm run dev:app    # Frontend app (port 8080)
    ```
 
-## Pre-configured Data
+📖 **[Contributing Guide](CONTRIBUTING.md)** • **[Development Documentation](docs/README.md)**
 
-The RabbitMQ instance comes pre-configured with:
+## 📚 Documentation
 
-### Users
+<div align="center">
 
-- **admin** (administrator) - Password: admin123
-- **guest** (management) - Password: admin123
-- **producer** (producer role) - Password: admin123
-- **consumer** (consumer role) - Password: admin123
+**[📖 Documentation Hub](docs/README.md)** - Your one-stop shop for all Qarote documentation
 
-### Virtual Hosts
+</div>
 
-- `/` (default)
-- `/production`
-- `/staging`
+### 📋 Quick Links
 
-### Exchanges
+- **[Community Edition Guide](docs/COMMUNITY_EDITION.md)** - Setup and usage for open-source edition
+- **[Enterprise Edition Guide](docs/ENTERPRISE_EDITION.md)** - Setup and licensing for enterprise edition
+- **[Feature Comparison](docs/FEATURE_COMPARISON.md)** - Detailed feature matrix
+- **[Self-Hosted Deployment](docs/SELF_HOSTED_DEPLOYMENT.md)** - Complete deployment guide
+- **[Contributing Guide](CONTRIBUTING.md)** - How to contribute to Qarote
+- **[Security Policy](SECURITY.md)** - Security reporting and policy
 
-- **notifications.direct** - Direct exchange for notifications
-- **events.topic** - Topic exchange for events
-- **analytics.fanout** - Fanout exchange for analytics
-- **user.events** - Topic exchange for user events
-- **system.alerts** - Direct exchange for system alerts
+## 🏗️ Architecture
 
-### Queues
+Qarote is built as a modern monorepo with the following structure:
 
-- **email.notifications** - Email notification queue (TTL: 1 hour, Max: 10,000)
-- **sms.notifications** - SMS notification queue (TTL: 30 min, Max: 5,000)
-- **user.registration.events** - User registration events
-- **user.login.events** - User login events
-- **order.processing** - Order processing queue (TTL: 2 hours, Max: 1,000)
-- **payment.processing** - Payment processing queue (TTL: 5 min)
-- **analytics.clicks** - Click analytics (Max: 50,000)
-- **analytics.pageviews** - Pageview analytics (Max: 100,000)
-- **critical.alerts** - Critical system alerts (TTL: 24 hours)
-- **warning.alerts** - Warning alerts (TTL: 12 hours)
-- **info.alerts** - Info alerts (TTL: 1 hour, Max: 1,000)
-
-## Sample Data
-
-After running the populate script, you'll have realistic message counts in each queue:
-
-- Email notifications: ~70 messages
-- SMS notifications: ~15 messages
-- User events: ~80 messages
-- Order processing: ~48 messages
-- Payment processing: ~30 messages
-- Analytics: ~205 messages
-- System alerts: ~26 messages
-
-## Useful Commands
-
-### View logs
-
-```bash
-# All services
-docker-compose logs -f
-
-# Specific service
-docker-compose logs -f rabbitmq
-docker-compose logs -f postgres
+```
+qarote/
+├── 🎨 apps/
+│   ├── api/          # Backend API (Hono.js, tRPC, Prisma)
+│   ├── app/          # Main frontend application (React, Vite)
+│   ├── web/          # Landing page
+│   └── portal/       # Customer portal
+├── 📖 docs/          # Documentation
+├── 🐳 docker/        # Docker configurations
+└── 🔧 scripts/       # Utility scripts
 ```
 
-### Stop services
+### 🛠️ Tech Stack
+
+- **Frontend**: React, TypeScript, Vite, Tailwind CSS
+- **Backend**: Node.js, Hono.js, tRPC, Prisma
+- **Database**: PostgreSQL
+- **Message Queue**: RabbitMQ
+- **Package Manager**: pnpm
+- **Monorepo**: Turborepo
+
+## 🐳 Docker Development
+
+This repository includes Docker Compose configuration for a complete development environment.
+
+### 🚀 Quick Start
 
 ```bash
+# Start all services
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop services
 docker-compose down
 ```
 
-### Stop and remove volumes (clean slate)
+### 📊 Services
 
-```bash
-docker-compose down -v
-```
+| Service                | Port  | Access                                    |
+| ---------------------- | ----- | ----------------------------------------- |
+| 🐘 PostgreSQL          | 5432  | `postgres:password@localhost:5432/qarote` |
+| 🐰 RabbitMQ            | 5672  | `amqp://admin:admin123@localhost:5672`    |
+| 🌐 RabbitMQ Management | 15672 | http://localhost:15672                    |
 
-### Restart RabbitMQ
+### 📝 Pre-configured Data
 
-```bash
-docker-compose restart rabbitmq
-```
+The development environment includes:
 
-### Access RabbitMQ container shell
+- 👥 **Users**: admin, guest, producer, consumer
+- 📁 **Virtual Hosts**: `/`, `/production`, `/staging`
+- 📨 **Exchanges**: notifications, events, analytics, alerts
+- 📬 **Queues**: Email, SMS, user events, order processing, analytics
 
-```bash
-docker exec -it rabbit_dashboard_qarote sh
-```
+📖 **[Full Development Setup Guide](CONTRIBUTING.md#development-setup)**
 
-### Re-populate sample data
+## 🤝 Contributing
 
-```bash
-docker exec rabbit_dashboard_qarote /etc/rabbitmq/populate-data.sh
-```
+We welcome contributions from the community! Here's how you can help:
 
-## Adding Your Own Server
+1. 🍴 **Fork the repository**
+2. 🌿 **Create a feature branch** (`git checkout -b feature/amazing-feature`)
+3. ✏️ **Make your changes** and test locally
+4. ✅ **Run linting and tests** (`pnpm run lint && pnpm run test`)
+5. 💾 **Commit your changes** (follow [Conventional Commits](https://www.conventionalcommits.org/))
+6. 📤 **Push to your branch** (`git push origin feature/amazing-feature`)
+7. 🔄 **Open a Pull Request**
 
-In your frontend application, use the "Add Server" form with these settings:
+📖 **[Complete Contributing Guide](CONTRIBUTING.md)**
 
-- **Name**: Local Development
-- **Host**: localhost
-- **Port**: 15672
-- **Username**: admin
-- **Password**: admin123
-- **Use SSL**: No
+### 🎯 Contribution Areas
 
-## Monitoring
+- 🐛 Bug fixes
+- ✨ New features (Community Edition)
+- 📝 Documentation improvements
+- 🧪 Test coverage
+- 🎨 UI/UX enhancements
+- 🌐 Translations
 
-The RabbitMQ Management UI provides comprehensive monitoring:
+## 🔒 Security
 
-- Queue depths and message rates
-- Exchange message rates
-- Connection and channel information
-- Node health and memory usage
-- User permissions and virtual host management
+**Please do not create public issues for security vulnerabilities.**
 
-## Configuration Files
+Instead, email **security@qarote.io** with:
 
-- `docker-compose.yml` - Main Docker Compose configuration
-- `docker/rabbitmq/rabbitmq.conf` - RabbitMQ server configuration
-- `docker/rabbitmq/definitions.json` - Pre-configured exchanges, queues, users, and bindings
-- `docker/rabbitmq/populate-data.sh` - Script to add sample messages
+- A detailed description of the vulnerability
+- Steps to reproduce (if applicable)
+- Potential impact
+- Suggested fix (if you have one)
 
-## Troubleshooting
+📖 **[Security Policy](SECURITY.md)**
 
-### RabbitMQ won't start
+## 📞 Support
 
-- Check if port 5672 or 15672 are already in use
-- Ensure Docker has enough memory allocated (at least 2GB recommended)
+### 💬 Community Support
 
-### Can't access Management UI
+- **[GitHub Discussions](https://github.com/your-org/qarote/discussions)** - Ask questions and share ideas
+- **[GitHub Issues](https://github.com/your-org/qarote/issues)** - Report bugs and request features
 
-- Wait for the service to fully start (check logs)
-- Ensure port 15672 is not blocked by firewall
-- Try accessing via http://127.0.0.1:15672 instead of localhost
+### 💼 Enterprise Support
 
-### Sample data script fails
+- **Email**: [support@qarote.io](mailto:support@qarote.io)
+- **Customer Portal**: [portal.qarote.io](https://portal.qarote.io)
 
-- Ensure RabbitMQ is fully started before running the script
-- Check that the management plugin is enabled
-- Verify the container can reach the RabbitMQ management API
+## 📄 License
 
-### Database connection issues
+- **Community Edition**: [MIT License](LICENSE) - Free and open source
+- **Enterprise Edition**: Commercial License - See [Enterprise Edition Guide](docs/ENTERPRISE_EDITION.md)
 
-- Ensure PostgreSQL is running and healthy
-- Check that port 5432 is accessible
-- Verify database credentials in your backend configuration
+## 🌟 Star History
+
+<div align="center">
+
+If you find Qarote useful, please consider giving it a ⭐ on GitHub!
+
+</div>
+
+---
+
+<div align="center">
+
+**Made with ❤️ by [La Griffe](https://github.com/LaGriffe)**
+
+[Website](https://qarote.io) • [Documentation](docs/README.md) • [Contributing](CONTRIBUTING.md) • [Security](SECURITY.md)
+
+</div>

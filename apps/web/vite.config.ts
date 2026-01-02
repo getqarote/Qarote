@@ -6,7 +6,7 @@ import { defineConfig } from "vite";
 export default defineConfig({
   server: {
     host: "::",
-    port: 8080,
+    port: 8082,
     allowedHosts: [".ngrok-free.app", ".ngrok.io"],
   },
   plugins: [

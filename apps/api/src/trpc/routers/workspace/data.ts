@@ -1,6 +1,10 @@
 import { TRPCError } from "@trpc/server";
 
+import { requirePremiumFeature } from "@/core/feature-flags";
+
 import { WorkspaceIdParamSchema } from "@/schemas/workspace";
+
+import { FEATURES } from "@/config/features";
 
 import { rateLimitedAdminProcedure, router } from "@/trpc/trpc";
 
@@ -10,9 +14,10 @@ import { rateLimitedAdminProcedure, router } from "@/trpc/trpc";
  */
 export const dataRouter = router({
   /**
-   * Export all workspace data (ADMIN ONLY - RATE LIMITED)
+   * Export all workspace data (ADMIN ONLY - RATE LIMITED, feature gated)
    */
   export: rateLimitedAdminProcedure
+    .use(requirePremiumFeature(FEATURES.DATA_EXPORT))
     .input(WorkspaceIdParamSchema)
     .query(async ({ input, ctx }) => {
       const { workspaceId } = input;

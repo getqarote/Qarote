@@ -13,7 +13,8 @@ import App from "./App.tsx";
 // Initialize Sentry only if enabled
 const enableSentry =
   import.meta.env.VITE_ENABLE_SENTRY === "true" ||
-  import.meta.env.VITE_DEPLOYMENT_MODE !== "self-hosted";
+  (import.meta.env.VITE_DEPLOYMENT_MODE !== "community" &&
+    import.meta.env.VITE_DEPLOYMENT_MODE !== "enterprise");
 
 if (enableSentry) {
   initSentry();

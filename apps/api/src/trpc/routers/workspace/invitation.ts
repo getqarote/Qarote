@@ -1,6 +1,7 @@
 import { InvitationStatus, UserPlan } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 
+import { requirePremiumFeature } from "@/core/feature-flags";
 import { formatInvitedBy, getUserDisplayName } from "@/core/utils";
 
 import { EmailService } from "@/services/email/email.service";
@@ -12,6 +13,8 @@ import {
 
 import { inviteUserSchema } from "@/schemas/invitation";
 import { InvitationIdParamSchema } from "@/schemas/workspace";
+
+import { FEATURES } from "@/config/features";
 
 import {
   planValidationProcedure,
@@ -87,9 +90,10 @@ export const invitationRouter = router({
   }),
 
   /**
-   * Send invitation (PROTECTED with plan validation)
+   * Send invitation (PROTECTED with plan validation and feature gating)
    */
   sendInvitation: planValidationProcedure
+    .use(requirePremiumFeature(FEATURES.WORKSPACE_MANAGEMENT))
     .input(inviteUserSchema)
     .mutation(async ({ input, ctx }) => {
       const user = ctx.user;

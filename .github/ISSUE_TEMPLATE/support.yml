@@ -1,0 +1,87 @@
+name: 💬 Support Question
+description: Ask a question or get help with Qarote
+title: "[Support]: "
+labels: ["question", "support"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reaching out! We're here to help. Please fill out the form below.
+
+        **Note**: For Enterprise Edition support, please contact support@qarote.io or use the [Customer Portal](https://portal.qarote.io).
+
+  - type: dropdown
+    id: edition
+    attributes:
+      label: Edition
+      description: Which edition are you using?
+      options:
+        - Community Edition (Open Source)
+        - Enterprise Edition (Licensed)
+        - Cloud/SaaS
+        - Not sure
+    validations:
+      required: true
+
+  - type: dropdown
+    id: topic
+    attributes:
+      label: Topic
+      description: What is your question about?
+      options:
+        - Installation & Setup
+        - Configuration
+        - Deployment (Dokku, Docker Compose)
+        - License & Activation
+        - RabbitMQ Connection
+        - Features & Usage
+        - Troubleshooting
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Question
+      description: What is your question?
+      placeholder: Please describe your question in detail...
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Provide any relevant context about your setup
+      placeholder: |
+        - Deployment method: [Dokku, Docker Compose, etc.]
+        - OS: [e.g. Ubuntu 22.04, macOS 14.0]
+        - Node.js version: [e.g. 24.0.0]
+        - Qarote version: [e.g. 1.0.0]
+        - RabbitMQ version: [e.g. 3.12.0]
+
+  - type: textarea
+    id: tried
+    attributes:
+      label: What Have You Tried?
+      description: What have you already tried to solve this?
+      placeholder: List any steps you've already taken or resources you've consulted
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Information
+      description: Any other information that might be helpful
+      placeholder: Screenshots, logs, error messages, etc.
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Checklist
+      options:
+        - label: I have searched existing issues and documentation
+          required: true
+        - label: I have checked the [documentation](https://github.com/your-org/qarote/tree/main/docs)
+          required: false

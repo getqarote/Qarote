@@ -21,6 +21,11 @@ if git diff --name-only $remote_branch...HEAD | grep -q "^apps/portal/"; then
   packages_to_check="$packages_to_check qarote-portal"
 fi
 
+# Run syncpack to check for dependency version mismatches (always run)
+echo "📦 Checking dependency versions with syncpack..."
+pnpm run syncpack:check || exit 1
+echo "✅ Syncpack check passed!"
+
 # Run type-check for all changed packages using Turborepo
 if [ -n "$packages_to_check" ]; then
   echo "📦 Checking types for changed packages..."

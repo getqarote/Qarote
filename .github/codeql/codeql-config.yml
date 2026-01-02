@@ -1,0 +1,24 @@
+name: "Qarote CodeQL Config"
+
+paths:
+  - apps/api/src
+  - apps/app/src
+  - apps/web/src
+  - apps/portal/src
+
+paths-ignore:
+  - "**/node_modules/**"
+  - "**/dist/**"
+  - "**/build/**"
+  - "**/.turbo/**"
+  - "**/coverage/**"
+  - "**/*.test.ts"
+  - "**/*.test.tsx"
+  - "**/*.spec.ts"
+  - "**/*.spec.tsx"
+  - "**/__tests__/**"
+  - "**/tests/**"
+  - "**/test/**"
+  - "**/migrations/**"
+  - "**/scripts/**"
+  - "**/docker/**"

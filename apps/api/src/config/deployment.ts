@@ -2,7 +2,7 @@
  * Deployment mode detection and validation
  */
 
-import { deploymentConfig } from "./index";
+import { config, deploymentConfig, licenseConfig } from "./index";
 
 /**
  * Check if running in cloud mode
@@ -10,9 +10,14 @@ import { deploymentConfig } from "./index";
 export const isCloudMode = () => deploymentConfig.isCloud();
 
 /**
- * Check if running in self-hosted mode
+ * Check if running in community mode
  */
-const isSelfHostedMode = () => deploymentConfig.isSelfHosted();
+export const isCommunityMode = () => deploymentConfig.isCommunity();
+
+/**
+ * Check if running in enterprise mode
+ */
+export const isEnterpriseMode = () => deploymentConfig.isEnterprise();
 
 /**
  * Validate that required services are available based on deployment mode
@@ -24,6 +29,22 @@ export const validateDeploymentMode = () => {
     const requiredServices: Array<{ name: string; envVar: string }> = [
       { name: "Stripe Secret Key", envVar: "STRIPE_SECRET_KEY" },
       { name: "Stripe Webhook Secret", envVar: "STRIPE_WEBHOOK_SECRET" },
+      {
+        name: "Stripe Developer Monthly Price ID",
+        envVar: "STRIPE_DEVELOPER_MONTHLY_PRICE_ID",
+      },
+      {
+        name: "Stripe Developer Yearly Price ID",
+        envVar: "STRIPE_DEVELOPER_YEARLY_PRICE_ID",
+      },
+      {
+        name: "Stripe Enterprise Monthly Price ID",
+        envVar: "STRIPE_ENTERPRISE_MONTHLY_PRICE_ID",
+      },
+      {
+        name: "Stripe Enterprise Yearly Price ID",
+        envVar: "STRIPE_ENTERPRISE_YEARLY_PRICE_ID",
+      },
       { name: "Sentry DSN", envVar: "SENTRY_DSN" },
       { name: "Resend API Key", envVar: "RESEND_API_KEY" },
       { name: "Google OAuth Client ID", envVar: "GOOGLE_CLIENT_ID" },
@@ -38,17 +59,33 @@ export const validateDeploymentMode = () => {
       const missingNames = missingServices.map((s) => s.name).join(", ");
       throw new Error(
         `Cloud deployment mode requires the following services: ${missingNames}. ` +
-          `Please set the corresponding environment variables or switch to self-hosted mode.`
+          `Please set the corresponding environment variables or switch to community or enterprise mode.`
       );
     }
-  } else if (isSelfHostedMode()) {
-    // Self-hosted mode requires license key
-    if (!process.env.LICENSE_KEY || process.env.LICENSE_KEY === "") {
+  } else if (isEnterpriseMode()) {
+    // Enterprise mode requires license file
+    // Check raw config value (before default) to avoid false positives from default value
+    const hasLicenseFilePath =
+      config.LICENSE_FILE_PATH && config.LICENSE_FILE_PATH !== "";
+
+    if (!hasLicenseFilePath) {
       throw new Error(
-        "Self-hosted deployment mode requires LICENSE_KEY. " +
-          "Please set LICENSE_KEY environment variable or purchase a license from the Customer Portal."
+        "Enterprise deployment mode requires LICENSE_FILE_PATH. " +
+          "Please set LICENSE_FILE_PATH environment variable to the path of your license file. " +
+          "You can download your license file from the Customer Portal."
       );
     }
+
+    // Enterprise mode requires public key for validation
+    if (!licenseConfig.publicKey) {
+      throw new Error(
+        "Enterprise deployment mode requires LICENSE_PUBLIC_KEY. " +
+          "Please set LICENSE_PUBLIC_KEY environment variable."
+      );
+    }
+  } else if (isCommunityMode()) {
+    // Community mode doesn't require license - all premium features disabled
+    // No validation needed
   }
-  // Self-hosted mode doesn't require other services (they're optional)
+  // Community/Enterprise modes don't require other services (they're optional)
 };

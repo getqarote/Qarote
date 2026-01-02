@@ -3,25 +3,22 @@
  * Handles license key generation, validation, and management
  */
 
-import { UserPlan } from "@prisma/client";
-import crypto from "crypto";
+import crypto from "node:crypto";
 
 import { logger } from "@/core/logger";
 import { prisma } from "@/core/prisma";
 
-interface GenerateLicenseOptions {
-  tier: UserPlan;
-  customerEmail: string;
-  workspaceId?: string;
-  expiresAt?: Date;
-  stripeCustomerId?: string;
-  stripePaymentId?: string;
-}
+import { licenseConfig } from "@/config";
 
-interface ValidateLicenseOptions {
-  licenseKey: string;
-  instanceId?: string;
-}
+import type {
+  GenerateLicenseFileOptions,
+  GenerateLicenseFileResult,
+  GenerateLicenseOptions,
+  LicenseData,
+  LicenseValidationResponse,
+  ValidateLicenseOptions,
+} from "./license.interfaces";
+import { signLicenseData } from "./license-crypto.service";
 
 class LicenseService {
   /**
@@ -77,18 +74,9 @@ class LicenseService {
   /**
    * Validate a license key
    */
-  async validateLicense(options: ValidateLicenseOptions): Promise<{
-    valid: boolean;
-    license?: {
-      id: string;
-      tier: UserPlan;
-      expiresAt: Date | null;
-      isActive: boolean;
-      customerEmail: string;
-      workspaceId: string | null;
-    };
-    message?: string;
-  }> {
+  async validateLicense(
+    options: ValidateLicenseOptions
+  ): Promise<LicenseValidationResponse> {
     try {
       // Check if license exists in database
       const license = await prisma.license.findUnique({
@@ -181,6 +169,67 @@ class LicenseService {
       where: { id: licenseId },
       data: { isActive: false },
     });
+  }
+
+  /**
+   * Generate a signed license file (SaaS only - requires private key)
+   * This creates a cryptographically signed license file that can be validated offline
+   */
+  async generateLicenseFile(
+    options: GenerateLicenseFileOptions
+  ): Promise<GenerateLicenseFileResult> {
+    // Check if private key is available (SaaS only)
+    const privateKey = licenseConfig.privateKey;
+    if (!privateKey) {
+      throw new Error(
+        "License generation requires private key (SaaS only). " +
+          "Please set LICENSE_PRIVATE_KEY environment variable."
+      );
+    }
+
+    try {
+      const now = new Date();
+      // Handle null expiration (perpetual license)
+      // null explicitly means perpetual (never expires), so preserve it
+      // Since expiresAt is Date | null (required), it's never undefined
+      const expiresAt = options.expiresAt;
+
+      // Prepare license data
+      const licenseData: LicenseData = {
+        licenseKey: options.licenseKey,
+        tier: options.tier,
+        customerEmail: options.customerEmail,
+        issuedAt: now.toISOString(),
+        expiresAt: expiresAt === null ? null : expiresAt.toISOString(),
+        features: options.features,
+        maxInstances: options.maxInstances,
+        instanceId: options.instanceId,
+      };
+
+      // Sign license data
+      const signature = signLicenseData(licenseData, privateKey);
+
+      // Create license file
+      const licenseFile = {
+        version: "1.0",
+        ...licenseData,
+        signature,
+      };
+
+      logger.info(
+        {
+          licenseKey: options.licenseKey,
+          tier: options.tier,
+          customerEmail: options.customerEmail,
+        },
+        "License file generated successfully"
+      );
+
+      return { licenseFile };
+    } catch (error) {
+      logger.error({ error }, "Failed to generate license file");
+      throw error;
+    }
   }
 }
 

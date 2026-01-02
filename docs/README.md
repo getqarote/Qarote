@@ -1,79 +1,138 @@
-# Qarote Standalone Deployment
+# Qarote Documentation Hub
 
-This directory contains configuration files and examples for deploying Qarote as a standalone, self-hosted application.
+Welcome to the Qarote documentation! This hub provides comprehensive guides for deploying, using, and contributing to Qarote.
 
-## Quick Start
+## 📚 Table of Contents
 
-1. **Choose your deployment option:**
-   - **Minimal**: `docker-compose.standalone.yml` - PostgreSQL + Backend + Frontend (you provide RabbitMQ)
-   - **With RabbitMQ**: `docker-compose.standalone-rabbitmq.yml` - Includes a RabbitMQ instance
+### Getting Started
 
-2. **Set up environment variables:**
-   - Copy `.env.example.backend` to `apps/api/.env`
-   - Copy `.env.example.frontend` to `apps/app/.env`
-   - Update all required values (see below)
+- **[Community Edition](COMMUNITY_EDITION.md)** - Open-source edition guide
+  - Free, MIT-licensed edition
+  - Core RabbitMQ monitoring features
+  - Self-hosting with Dokku or Docker Compose
 
-3. **Purchase and activate a license:**
-   - Visit the Customer Portal at `portal.qarote.io`
-   - Purchase a license
-   - Copy your license key
-   - Set `LICENSE_KEY` in your backend `.env` file
+- **[Enterprise Edition](ENTERPRISE_EDITION.md)** - Licensed edition guide
+  - Commercial license with premium features
+  - Workspace management, alerting, integrations
+  - License activation and offline validation
 
-4. **Deploy:**
+- **[Feature Comparison](FEATURE_COMPARISON.md)** - Detailed feature comparison
+  - Side-by-side comparison of Community vs Enterprise
+  - Feature availability matrix
+  - Upgrade path information
 
+### Deployment Guides
+
+- **[Self-Hosted Deployment](SELF_HOSTED_DEPLOYMENT.md)** - Complete deployment guide
+  - Supports both Community and Enterprise editions
+  - Docker Compose setup
+  - Environment configuration
+  - License setup (Enterprise)
+
+- **[Standalone Deployment](STANDALONE_DEPLOYMENT.md)** - Legacy deployment guide
+  - Legacy standalone deployment instructions
+  - ⚠️ **Note**: See [SELF_HOSTED_DEPLOYMENT.md](SELF_HOSTED_DEPLOYMENT.md) for updated information
+
+### Development & Testing
+
+- **[Testing GitHub Actions Locally](ACT_TESTING.md)** - Local testing guide
+  - Using `act` to test GitHub Actions workflows
+  - Setting up local environment
+  - Debugging workflows
+
+## 🚀 Quick Start
+
+### For Users
+
+1. **Choose your edition:**
+   - **Community Edition**: Free, open-source - [Get Started](COMMUNITY_EDITION.md)
+   - **Enterprise Edition**: Licensed with premium features - [Get Started](ENTERPRISE_EDITION.md)
+
+2. **Deploy:**
+   - **Recommended (Community)**: [Dokku Deployment](COMMUNITY_EDITION.md#recommended-dokku-deployment)
+   - **Alternative**: [Docker Compose](SELF_HOSTED_DEPLOYMENT.md)
+
+3. **Configure:**
+   - Set `DEPLOYMENT_MODE=community` or `DEPLOYMENT_MODE=enterprise`
+   - Configure environment variables (see deployment guide)
+   - For Enterprise: Set up license file
+
+### For Contributors
+
+1. **Read the [Contributing Guide](../CONTRIBUTING.md)** in the root directory
+2. **Set up development environment:**
    ```bash
-   # Minimal deployment
-   docker-compose -f docker-compose.standalone.yml up -d
-
-   # Or with RabbitMQ
-   docker-compose -f docker-compose.standalone-rabbitmq.yml up -d
+   pnpm install
+   docker-compose up -d
+   pnpm run dev
    ```
+3. **Follow code formatting guidelines** (see CONTRIBUTING.md)
 
-## Required Configuration
+## 📖 Documentation Structure
 
-### Backend (.env)
+```
+docs/
+├── README.md (this file)              # Documentation hub
+├── COMMUNITY_EDITION.md                 # Community Edition guide
+├── ENTERPRISE_EDITION.md                # Enterprise Edition guide
+├── FEATURE_COMPARISON.md                # Feature comparison
+├── SELF_HOSTED_DEPLOYMENT.md            # Main deployment guide
+├── STANDALONE_DEPLOYMENT.md             # Legacy deployment guide
+└── ACT_TESTING.md                       # Testing GitHub Actions
+```
 
-**Mandatory:**
+## 🎯 Common Tasks
 
-- `LICENSE_KEY` - Your license key from the Customer Portal
-- `LICENSE_VALIDATION_URL` - URL to validate licenses (default: https://api.qarote.io)
-- `JWT_SECRET` - Secret for JWT tokens (min 32 characters)
-- `ENCRYPTION_KEY` - Key for encrypting credentials (min 32 characters)
-- `DATABASE_URL` - PostgreSQL connection string
+### Deploying Community Edition
 
-**Optional (can be disabled for air-gapped deployments):**
+1. Read [COMMUNITY_EDITION.md](COMMUNITY_EDITION.md)
+2. Choose deployment method (Dokku recommended)
+3. Follow setup instructions
+4. Configure environment variables
 
-- `ENABLE_SENTRY` - Enable error tracking
-- `ENABLE_EMAIL` - Enable email notifications
-- `ENABLE_OAUTH` - Enable OAuth authentication
+### Deploying Enterprise Edition
 
-### Frontend (.env)
+1. Read [ENTERPRISE_EDITION.md](ENTERPRISE_EDITION.md)
+2. Purchase license from Customer Portal
+3. Download license file
+4. Follow [SELF_HOSTED_DEPLOYMENT.md](SELF_HOSTED_DEPLOYMENT.md)
+5. Configure license in environment
 
-**Mandatory:**
+### Comparing Editions
 
-- `VITE_API_URL` - Backend API URL
+- See [FEATURE_COMPARISON.md](FEATURE_COMPARISON.md) for detailed comparison
+- Community Edition: Core monitoring features
+- Enterprise Edition: Advanced features (workspaces, alerting, integrations)
 
-**Optional:**
+### Testing Workflows Locally
 
-- `VITE_ENABLE_SENTRY` - Enable error tracking
+- See [ACT_TESTING.md](ACT_TESTING.md) for using `act` to test GitHub Actions
+- Useful for debugging CI/CD workflows before pushing
 
-## License Activation
+## 🔗 External Resources
 
-1. Purchase a license from the Customer Portal
-2. Copy your license key
-3. Set `LICENSE_KEY` in your backend environment
-4. Restart the backend service
+- **Main Repository**: [GitHub Repository](https://github.com/your-org/qarote)
+- **Issues**: [GitHub Issues](https://github.com/your-org/qarote/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/your-org/qarote/discussions)
+- **Security**: See [SECURITY.md](../SECURITY.md) in root directory
+- **Contributing**: See [CONTRIBUTING.md](../CONTRIBUTING.md) in root directory
 
-The license will be validated periodically (daily/weekly) with the Qarote license server.
+## 📝 Documentation Updates
 
-## Air-Gapped Deployments
+This documentation is maintained alongside the codebase. If you find errors or have suggestions:
 
-For completely offline deployments:
+1. **For Community Edition**: Open a [GitHub Issue](https://github.com/your-org/qarote/issues/new?template=bug.yml) or submit a PR
+2. **For Enterprise Edition**: Contact [support@qarote.io](mailto:support@qarote.io)
 
-- Set all `ENABLE_*` flags to `false`
-- Use SMTP for email (if needed) instead of Resend
-- License validation will use a grace period for offline periods
+## 🆘 Need Help?
 
-## Support
+- **Community Support**: [GitHub Discussions](https://github.com/your-org/qarote/discussions)
+- **Enterprise Support**: [support@qarote.io](mailto:support@qarote.io)
+- **Security Issues**: [security@qarote.io](mailto:security@qarote.io) (see [SECURITY.md](../SECURITY.md))
+- **Bug Reports**: [GitHub Issues](https://github.com/your-org/qarote/issues/new?template=bug.yml)
 
-For more information, visit: https://qarote.io/docs/standalone
+---
+
+**Last Updated**: January 2025
+
+For the latest information, always refer to the main [README.md](../README.md) in the repository root.

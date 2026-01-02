@@ -18,7 +18,7 @@ const envSchema = z.object({
 
   // Deployment Mode
   DEPLOYMENT_MODE: z
-    .enum(["cloud", "self-hosted"])
+    .enum(["cloud", "community", "enterprise"])
     .describe("cloud")
     .default("cloud"),
 
@@ -50,15 +50,15 @@ const envSchema = z.object({
   SMTP_USER: z.string().optional(),
   SMTP_PASS: z.string().optional(),
 
-  // Stripe Configuration
-  STRIPE_SECRET_KEY: z.string().describe("sk_test_... or sk_live_..."),
-  STRIPE_WEBHOOK_SECRET: z.string().describe("sk_test_... or sk_live_..."),
+  // Stripe Configuration (optional - only required for cloud mode)
+  STRIPE_SECRET_KEY: z.string().optional(),
+  STRIPE_WEBHOOK_SECRET: z.string().optional(),
 
-  // Stripe Price IDs
-  STRIPE_DEVELOPER_MONTHLY_PRICE_ID: z.string(),
-  STRIPE_DEVELOPER_YEARLY_PRICE_ID: z.string(),
-  STRIPE_ENTERPRISE_MONTHLY_PRICE_ID: z.string(),
-  STRIPE_ENTERPRISE_YEARLY_PRICE_ID: z.string(),
+  // Stripe Price IDs (optional - only required for cloud mode)
+  STRIPE_DEVELOPER_MONTHLY_PRICE_ID: z.string().optional(),
+  STRIPE_DEVELOPER_YEARLY_PRICE_ID: z.string().optional(),
+  STRIPE_ENTERPRISE_MONTHLY_PRICE_ID: z.string().optional(),
+  STRIPE_ENTERPRISE_YEARLY_PRICE_ID: z.string().optional(),
 
   // Sentry Configuration
   SENTRY_DSN: z.string().optional(),
@@ -69,9 +69,12 @@ const envSchema = z.object({
   GOOGLE_CLIENT_ID: z.string().optional(),
   ENABLE_OAUTH: z.coerce.boolean().default(true),
 
-  // License Configuration (for self-hosted)
+  // License Configuration (for enterprise/self-hosted)
   LICENSE_KEY: z.string().optional(),
   LICENSE_VALIDATION_URL: z.string().optional(),
+  LICENSE_FILE_PATH: z.string().optional(),
+  LICENSE_PUBLIC_KEY: z.string().optional(),
+  LICENSE_PRIVATE_KEY: z.string().optional(),
 
   // Notion Configuration
   NOTION_API_KEY: z.string().optional(),
@@ -177,6 +180,14 @@ export const googleConfig = {
   enabled: config.ENABLE_OAUTH,
 } as const;
 
+export const licenseConfig = {
+  licenseKey: config.LICENSE_KEY,
+  validationUrl: config.LICENSE_VALIDATION_URL || "https://api.qarote.io",
+  licenseFilePath: config.LICENSE_FILE_PATH || "./license.json",
+  publicKey: config.LICENSE_PUBLIC_KEY,
+  privateKey: config.LICENSE_PRIVATE_KEY,
+} as const;
+
 export const notionConfig = {
   apiKey: config.NOTION_API_KEY,
   databaseId: config.NOTION_DATABASE_ID,
@@ -192,5 +203,9 @@ export const alertConfig = {
 export const deploymentConfig = {
   mode: config.DEPLOYMENT_MODE,
   isCloud: () => config.DEPLOYMENT_MODE === "cloud",
-  isSelfHosted: () => config.DEPLOYMENT_MODE === "self-hosted",
+  isCommunity: () => config.DEPLOYMENT_MODE === "community",
+  isEnterprise: () => config.DEPLOYMENT_MODE === "enterprise",
+  isSelfHosted: () =>
+    config.DEPLOYMENT_MODE === "enterprise" ||
+    config.DEPLOYMENT_MODE === "community",
 } as const;

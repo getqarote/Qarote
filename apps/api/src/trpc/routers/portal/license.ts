@@ -4,6 +4,7 @@ import { TRPCError } from "@trpc/server";
 import { getUserDisplayName } from "@/core/utils";
 
 import { licenseService } from "@/services/license/license.service";
+import { getLicenseFeaturesForTier } from "@/services/license/license-features.service";
 import { stripe, StripeService } from "@/services/stripe/stripe.service";
 
 import {
@@ -201,28 +202,24 @@ export const licenseRouter = router({
           });
         }
 
-        // Generate license file content
-        const licenseContent = `Qarote License
-================
+        // Generate signed license file (JSON format)
+        const features = getLicenseFeaturesForTier(license.tier);
 
-License Key: ${license.licenseKey}
-Tier: ${license.tier}
-Customer Email: ${license.customerEmail}
-Expires: ${license.expiresAt ? license.expiresAt.toISOString() : "Never"}
-Issued: ${license.createdAt.toISOString()}
+        const licenseFile = await licenseService.generateLicenseFile({
+          licenseKey: license.licenseKey,
+          tier: license.tier,
+          customerEmail: license.customerEmail,
+          expiresAt: license.expiresAt,
+          features: features as string[], // Convert PremiumFeature[] to string[]
+          // Optional: instanceId if customer wants to lock to specific server
+          // maxInstances: 1, // Default to 1 instance per license
+        });
 
-To activate this license in your self-hosted Qarote deployment:
-1. Set the LICENSE_KEY environment variable to the license key above
-2. Set LICENSE_VALIDATION_URL to your Qarote backend URL
-3. Restart your application
-
-For more information, visit: https://qarote.io/docs/standalone
-`;
-
+        // Return JSON license file
         return {
-          content: licenseContent,
-          filename: `qarote-license-${licenseId}.txt`,
-          mimeType: "text/plain",
+          content: JSON.stringify(licenseFile.licenseFile, null, 2),
+          filename: `qarote-license-${licenseId}.json`,
+          mimeType: "application/json",
         };
       } catch (error) {
         ctx.logger.error({ error }, "Error downloading license");

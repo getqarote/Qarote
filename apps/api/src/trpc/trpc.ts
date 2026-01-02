@@ -26,7 +26,7 @@ const t = initTRPC.context<Context>().create();
  * Base router and procedure exports
  */
 export const router = t.router;
-const publicProcedure = t.procedure;
+export const publicProcedure = t.procedure;
 
 /**
  * Protected procedure - requires authentication

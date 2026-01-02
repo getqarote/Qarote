@@ -1,10 +1,14 @@
 import { TRPCError } from "@trpc/server";
 
+import { requirePremiumFeature } from "@/core/feature-flags";
+
 import {
   CreateWebhookSchema,
   UpdateWebhookWithIdSchema,
   WebhookIdSchema,
 } from "@/schemas/alerts";
+
+import { FEATURES } from "@/config/features";
 
 import { router, workspaceProcedure } from "@/trpc/trpc";
 
@@ -14,39 +18,42 @@ import { router, workspaceProcedure } from "@/trpc/trpc";
  */
 export const webhookRouter = router({
   /**
-   * Get all webhooks for the workspace (WORKSPACE)
+   * Get all webhooks for the workspace (WORKSPACE, feature gated)
    */
-  getWebhooks: workspaceProcedure.query(async ({ ctx }) => {
-    const { workspaceId } = ctx;
+  getWebhooks: workspaceProcedure
+    .use(requirePremiumFeature(FEATURES.WEBHOOK_INTEGRATION))
+    .query(async ({ ctx }) => {
+      const { workspaceId } = ctx;
 
-    try {
-      const webhooks = await ctx.prisma.webhook.findMany({
-        where: {
-          workspaceId,
-        },
-        orderBy: {
-          createdAt: "desc",
-        },
-      });
+      try {
+        const webhooks = await ctx.prisma.webhook.findMany({
+          where: {
+            workspaceId,
+          },
+          orderBy: {
+            createdAt: "desc",
+          },
+        });
 
-      return webhooks.map((webhook) => ({
-        ...webhook,
-        createdAt: webhook.createdAt.toISOString(),
-        updatedAt: webhook.updatedAt.toISOString(),
-      }));
-    } catch (error) {
-      ctx.logger.error({ error }, "Error getting webhooks");
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: "Failed to get webhooks",
-      });
-    }
-  }),
+        return webhooks.map((webhook) => ({
+          ...webhook,
+          createdAt: webhook.createdAt.toISOString(),
+          updatedAt: webhook.updatedAt.toISOString(),
+        }));
+      } catch (error) {
+        ctx.logger.error({ error }, "Error getting webhooks");
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to get webhooks",
+        });
+      }
+    }),
 
   /**
-   * Create a new webhook (WORKSPACE)
+   * Create a new webhook (WORKSPACE, feature gated)
    */
   createWebhook: workspaceProcedure
+    .use(requirePremiumFeature(FEATURES.WEBHOOK_INTEGRATION))
     .input(CreateWebhookSchema)
     .mutation(async ({ input, ctx }) => {
       const { workspaceId } = ctx;
@@ -81,6 +88,7 @@ export const webhookRouter = router({
    * Update a webhook (WORKSPACE)
    */
   updateWebhook: workspaceProcedure
+    .use(requirePremiumFeature(FEATURES.WEBHOOK_INTEGRATION))
     .input(UpdateWebhookWithIdSchema)
     .mutation(async ({ input, ctx }) => {
       const { id, ...data } = input;
@@ -135,9 +143,10 @@ export const webhookRouter = router({
     }),
 
   /**
-   * Delete a webhook (WORKSPACE)
+   * Delete a webhook (WORKSPACE, feature gated)
    */
   deleteWebhook: workspaceProcedure
+    .use(requirePremiumFeature(FEATURES.WEBHOOK_INTEGRATION))
     .input(WebhookIdSchema)
     .mutation(async ({ input, ctx }) => {
       const { id } = input;

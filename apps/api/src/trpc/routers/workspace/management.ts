@@ -1,6 +1,7 @@
 import { UserPlan, UserRole } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 
+import { requirePremiumFeature } from "@/core/feature-flags";
 import {
   ensureWorkspaceMember,
   getUserWorkspaceRole,
@@ -17,6 +18,8 @@ import {
   UpdateWorkspaceSchema,
   WorkspaceIdParamSchema,
 } from "@/schemas/workspace";
+
+import { FEATURES } from "@/config/features";
 
 import { WorkspaceMapper } from "@/mappers/workspace";
 
@@ -152,6 +155,8 @@ export const managementRouter = router({
 
   /**
    * Create a new workspace (PROTECTED with plan validation)
+   * Note: First workspace creation is allowed in community mode for onboarding.
+   * Subsequent workspace management operations (update, delete, switch) require premium features.
    */
   create: planValidationProcedure
     .input(CreateWorkspaceSchema)
@@ -271,9 +276,10 @@ export const managementRouter = router({
     }),
 
   /**
-   * Update workspace (PROTECTED - owner only)
+   * Update workspace (PROTECTED - owner only, feature gated)
    */
   update: rateLimitedProcedure
+    .use(requirePremiumFeature(FEATURES.WORKSPACE_MANAGEMENT))
     .input(WorkspaceIdParamSchema.merge(UpdateWorkspaceSchema))
     .mutation(async ({ input, ctx }) => {
       const user = ctx.user;
@@ -357,9 +363,10 @@ export const managementRouter = router({
     }),
 
   /**
-   * Delete workspace (PROTECTED - owner only)
+   * Delete workspace (PROTECTED - owner only, feature gated)
    */
   delete: rateLimitedProcedure
+    .use(requirePremiumFeature(FEATURES.WORKSPACE_MANAGEMENT))
     .input(WorkspaceIdParamSchema)
     .mutation(async ({ input, ctx }) => {
       const user = ctx.user;
@@ -417,9 +424,10 @@ export const managementRouter = router({
     }),
 
   /**
-   * Switch active workspace (WORKSPACE)
+   * Switch active workspace (WORKSPACE, feature gated)
    */
   switch: workspaceProcedure
+    .use(requirePremiumFeature(FEATURES.WORKSPACE_MANAGEMENT))
     .input(WorkspaceIdParamSchema)
     .mutation(async ({ input, ctx }) => {
       const user = ctx.user;

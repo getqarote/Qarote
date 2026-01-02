@@ -15,21 +15,55 @@ export type Invoice = Stripe.Invoice;
 export type PaymentIntent = Stripe.PaymentIntent;
 export type Customer = Stripe.Customer;
 
-export const stripe = new Stripe(stripeConfig.secretKey, {
-  apiVersion: "2025-02-24.acacia",
+// Lazy initialization of Stripe instance
+// Only initializes when accessed and if Stripe is configured
+let stripeInstance: Stripe | null = null;
+
+function getStripe(): Stripe {
+  if (!stripeInstance) {
+    if (!stripeConfig.secretKey) {
+      throw new Error(
+        "Stripe is not configured. STRIPE_SECRET_KEY is required for cloud deployment mode."
+      );
+    }
+    stripeInstance = new Stripe(stripeConfig.secretKey, {
+      apiVersion: "2025-02-24.acacia",
+    });
+  }
+  return stripeInstance;
+}
+
+// Export stripe as a Proxy that initializes lazily
+export const stripe = new Proxy({} as Stripe, {
+  get(_target, prop) {
+    const instance = getStripe();
+    const value = instance[prop as keyof Stripe];
+    // Bind functions to the instance
+    if (typeof value === "function") {
+      return value.bind(instance);
+    }
+    return value;
+  },
 });
 
-// Stripe Price IDs for each plan (these would be created in Stripe Dashboard)
-export const STRIPE_PRICE_IDS = {
-  [UserPlan.DEVELOPER]: {
-    monthly: stripeConfig.priceIds.developer.monthly,
-    yearly: stripeConfig.priceIds.developer.yearly,
-  },
-  [UserPlan.ENTERPRISE]: {
-    monthly: stripeConfig.priceIds.enterprise.monthly,
-    yearly: stripeConfig.priceIds.enterprise.yearly,
-  },
-} as const;
+// Stripe Price IDs for each plan (only available if Stripe is configured)
+export const STRIPE_PRICE_IDS =
+  stripeConfig.secretKey &&
+  stripeConfig.priceIds.developer.monthly &&
+  stripeConfig.priceIds.developer.yearly &&
+  stripeConfig.priceIds.enterprise.monthly &&
+  stripeConfig.priceIds.enterprise.yearly
+    ? ({
+        [UserPlan.DEVELOPER]: {
+          monthly: stripeConfig.priceIds.developer.monthly!,
+          yearly: stripeConfig.priceIds.developer.yearly!,
+        },
+        [UserPlan.ENTERPRISE]: {
+          monthly: stripeConfig.priceIds.enterprise.monthly!,
+          yearly: stripeConfig.priceIds.enterprise.yearly!,
+        },
+      } as const)
+    : null;
 
 export interface CreateCheckoutSessionParams {
   userId: string;
@@ -53,10 +87,15 @@ export class CoreStripeService {
    * First tries exact match with STRIPE_PRICE_IDS, then falls back to string matching
    */
   static mapStripePlanToUserPlan(stripePriceId: string): UserPlan | null {
-    // First, try exact match with configured price IDs
-    for (const [plan, prices] of Object.entries(STRIPE_PRICE_IDS)) {
-      if (prices.monthly === stripePriceId || prices.yearly === stripePriceId) {
-        return plan as UserPlan;
+    // First, try exact match with configured price IDs (if Stripe is configured)
+    if (STRIPE_PRICE_IDS) {
+      for (const [plan, prices] of Object.entries(STRIPE_PRICE_IDS)) {
+        if (
+          prices.monthly === stripePriceId ||
+          prices.yearly === stripePriceId
+        ) {
+          return plan as UserPlan;
+        }
       }
     }
     // Fallback to string matching for flexibility
@@ -78,9 +117,11 @@ export class CoreStripeService {
   static getBillingInterval(
     stripePriceId: string
   ): "monthly" | "yearly" | null {
-    for (const [, prices] of Object.entries(STRIPE_PRICE_IDS)) {
-      if (prices.monthly === stripePriceId) return "monthly";
-      if (prices.yearly === stripePriceId) return "yearly";
+    if (STRIPE_PRICE_IDS) {
+      for (const [, prices] of Object.entries(STRIPE_PRICE_IDS)) {
+        if (prices.monthly === stripePriceId) return "monthly";
+        if (prices.yearly === stripePriceId) return "yearly";
+      }
     }
     return null;
   }

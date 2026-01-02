@@ -3,7 +3,7 @@
   "description": "RabbitMQ Dashboard Monitoring Tool",
   "private": true,
   "author": "La  Griffe",
-  "license": "ISC",
+  "license": "MIT",
   "keywords": [
     "rabbitmq",
     "dashboard",
@@ -25,6 +25,8 @@
     "build:app": "turbo run build --filter=qarote-app",
     "build:web": "turbo run build --filter=qarote-web",
     "build:portal": "turbo run build --filter=qarote-portal",
+    "build:community": "turbo run build --filter=qarote-api --filter=qarote-app",
+    "build:enterprise": "turbo run build --filter=qarote-api --filter=qarote-app",
     "test": "turbo run test",
     "lint": "turbo run lint",
     "type-check": "turbo run type-check",

@@ -1,11 +1,15 @@
 import { AlertSeverity, AlertType, ComparisonOperator } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 
+import { requirePremiumFeature } from "@/core/feature-flags";
+
 import {
   AlertRuleIdSchema,
   CreateAlertRuleRequestSchema,
   UpdateAlertRuleWithIdSchema,
 } from "@/schemas/alerts";
+
+import { FEATURES } from "@/config/features";
 
 import { router, workspaceProcedure } from "@/trpc/trpc";
 
@@ -15,61 +19,64 @@ import { router, workspaceProcedure } from "@/trpc/trpc";
  */
 export const rulesRouter = router({
   /**
-   * Get all alert rules for the workspace (WORKSPACE)
+   * Get all alert rules for the workspace (WORKSPACE, feature gated)
    */
-  getRules: workspaceProcedure.query(async ({ ctx }) => {
-    const { workspaceId } = ctx;
+  getRules: workspaceProcedure
+    .use(requirePremiumFeature(FEATURES.ALERTING))
+    .query(async ({ ctx }) => {
+      const { workspaceId } = ctx;
 
-    try {
-      const alertRules = await ctx.prisma.alertRule.findMany({
-        where: {
-          workspaceId,
-        },
-        include: {
-          server: {
-            select: {
-              id: true,
-              name: true,
-              host: true,
+      try {
+        const alertRules = await ctx.prisma.alertRule.findMany({
+          where: {
+            workspaceId,
+          },
+          include: {
+            server: {
+              select: {
+                id: true,
+                name: true,
+                host: true,
+              },
+            },
+            user: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+              },
+            },
+            _count: {
+              select: {
+                alerts: true,
+              },
             },
           },
-          user: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-              email: true,
-            },
+          orderBy: {
+            createdAt: "desc",
           },
-          _count: {
-            select: {
-              alerts: true,
-            },
-          },
-        },
-        orderBy: {
-          createdAt: "desc",
-        },
-      });
+        });
 
-      return alertRules.map((rule) => ({
-        ...rule,
-        createdAt: rule.createdAt.toISOString(),
-        updatedAt: rule.updatedAt.toISOString(),
-      }));
-    } catch (error) {
-      ctx.logger.error({ error }, "Error getting alert rules");
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: "Failed to get alert rules",
-      });
-    }
-  }),
+        return alertRules.map((rule) => ({
+          ...rule,
+          createdAt: rule.createdAt.toISOString(),
+          updatedAt: rule.updatedAt.toISOString(),
+        }));
+      } catch (error) {
+        ctx.logger.error({ error }, "Error getting alert rules");
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to get alert rules",
+        });
+      }
+    }),
 
   /**
    * Get a single alert rule by ID (WORKSPACE)
    */
   getRule: workspaceProcedure
+    .use(requirePremiumFeature(FEATURES.ALERTING))
     .input(AlertRuleIdSchema)
     .query(async ({ input, ctx }) => {
       const { id } = input;
@@ -130,9 +137,10 @@ export const rulesRouter = router({
     }),
 
   /**
-   * Create a new alert rule (WORKSPACE)
+   * Create a new alert rule (WORKSPACE, feature gated)
    */
   createRule: workspaceProcedure
+    .use(requirePremiumFeature(FEATURES.ADVANCED_ALERT_RULES))
     .input(CreateAlertRuleRequestSchema)
     .mutation(async ({ input, ctx }) => {
       const { workspaceId, user } = ctx;
@@ -209,9 +217,10 @@ export const rulesRouter = router({
     }),
 
   /**
-   * Update an alert rule (WORKSPACE)
+   * Update an alert rule (WORKSPACE, feature gated)
    */
   updateRule: workspaceProcedure
+    .use(requirePremiumFeature(FEATURES.ADVANCED_ALERT_RULES))
     .input(UpdateAlertRuleWithIdSchema)
     .mutation(async ({ input, ctx }) => {
       const { id, ...data } = input;
@@ -318,9 +327,10 @@ export const rulesRouter = router({
     }),
 
   /**
-   * Delete an alert rule (WORKSPACE)
+   * Delete an alert rule (WORKSPACE, feature gated)
    */
   deleteRule: workspaceProcedure
+    .use(requirePremiumFeature(FEATURES.ADVANCED_ALERT_RULES))
     .input(AlertRuleIdSchema)
     .mutation(async ({ input, ctx }) => {
       const { id } = input;
