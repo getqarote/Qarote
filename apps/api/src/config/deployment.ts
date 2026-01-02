@@ -29,6 +29,22 @@ export const validateDeploymentMode = () => {
     const requiredServices: Array<{ name: string; envVar: string }> = [
       { name: "Stripe Secret Key", envVar: "STRIPE_SECRET_KEY" },
       { name: "Stripe Webhook Secret", envVar: "STRIPE_WEBHOOK_SECRET" },
+      {
+        name: "Stripe Developer Monthly Price ID",
+        envVar: "STRIPE_DEVELOPER_MONTHLY_PRICE_ID",
+      },
+      {
+        name: "Stripe Developer Yearly Price ID",
+        envVar: "STRIPE_DEVELOPER_YEARLY_PRICE_ID",
+      },
+      {
+        name: "Stripe Enterprise Monthly Price ID",
+        envVar: "STRIPE_ENTERPRISE_MONTHLY_PRICE_ID",
+      },
+      {
+        name: "Stripe Enterprise Yearly Price ID",
+        envVar: "STRIPE_ENTERPRISE_YEARLY_PRICE_ID",
+      },
       { name: "Sentry DSN", envVar: "SENTRY_DSN" },
       { name: "Resend API Key", envVar: "RESEND_API_KEY" },
       { name: "Google OAuth Client ID", envVar: "GOOGLE_CLIENT_ID" },

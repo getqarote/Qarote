@@ -108,6 +108,12 @@ export class StripeCustomerService {
         "Creating Stripe checkout session"
       );
 
+      if (!STRIPE_PRICE_IDS) {
+        throw new Error(
+          "Stripe is not configured. STRIPE_PRICE_IDS are required for creating checkout sessions."
+        );
+      }
+
       const priceId = STRIPE_PRICE_IDS[plan][billingInterval];
 
       const sessionParams: Stripe.Checkout.SessionCreateParams = {

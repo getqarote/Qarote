@@ -50,15 +50,15 @@ const envSchema = z.object({
   SMTP_USER: z.string().optional(),
   SMTP_PASS: z.string().optional(),
 
-  // Stripe Configuration
-  STRIPE_SECRET_KEY: z.string().describe("sk_test_... or sk_live_..."),
-  STRIPE_WEBHOOK_SECRET: z.string().describe("sk_test_... or sk_live_..."),
+  // Stripe Configuration (optional - only required for cloud mode)
+  STRIPE_SECRET_KEY: z.string().optional(),
+  STRIPE_WEBHOOK_SECRET: z.string().optional(),
 
-  // Stripe Price IDs
-  STRIPE_DEVELOPER_MONTHLY_PRICE_ID: z.string(),
-  STRIPE_DEVELOPER_YEARLY_PRICE_ID: z.string(),
-  STRIPE_ENTERPRISE_MONTHLY_PRICE_ID: z.string(),
-  STRIPE_ENTERPRISE_YEARLY_PRICE_ID: z.string(),
+  // Stripe Price IDs (optional - only required for cloud mode)
+  STRIPE_DEVELOPER_MONTHLY_PRICE_ID: z.string().optional(),
+  STRIPE_DEVELOPER_YEARLY_PRICE_ID: z.string().optional(),
+  STRIPE_ENTERPRISE_MONTHLY_PRICE_ID: z.string().optional(),
+  STRIPE_ENTERPRISE_YEARLY_PRICE_ID: z.string().optional(),
 
   // Sentry Configuration
   SENTRY_DSN: z.string().optional(),
@@ -205,5 +205,7 @@ export const deploymentConfig = {
   isCloud: () => config.DEPLOYMENT_MODE === "cloud",
   isCommunity: () => config.DEPLOYMENT_MODE === "community",
   isEnterprise: () => config.DEPLOYMENT_MODE === "enterprise",
-  isSelfHosted: () => config.DEPLOYMENT_MODE === "enterprise" || config.DEPLOYMENT_MODE === "community",
+  isSelfHosted: () =>
+    config.DEPLOYMENT_MODE === "enterprise" ||
+    config.DEPLOYMENT_MODE === "community",
 } as const;

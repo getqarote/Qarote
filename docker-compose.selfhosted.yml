@@ -16,7 +16,7 @@ services:
     ports:
       - "${POSTGRES_PORT}:5432"
     volumes:
-      - postgres_data_${DEPLOYMENT_MODE}:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
     networks:
       - qarote_network
     healthcheck:
@@ -91,7 +91,7 @@ services:
       - qarote_network
 
 volumes:
-  postgres_data_${DEPLOYMENT_MODE}:
+  postgres_data:
     driver: local
 
 networks:
