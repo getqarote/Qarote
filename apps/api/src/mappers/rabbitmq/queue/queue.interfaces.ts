@@ -69,4 +69,3 @@ export interface QueueResponse {
   synchronised_slave_nodes?: string[];
   recoverable_slaves?: string[] | null;
 }
-

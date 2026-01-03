@@ -1,4 +1,7 @@
-import { RabbitMQNode, RabbitMQQueue } from "@/core/rabbitmq/rabbitmq.interfaces";
+import {
+  RabbitMQNode,
+  RabbitMQQueue,
+} from "@/core/rabbitmq/rabbitmq.interfaces";
 
 import { generateAlertId } from "./alert.fingerprint";
 import {

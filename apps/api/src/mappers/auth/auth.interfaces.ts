@@ -46,4 +46,3 @@ export type UserApiResponse = {
   subscription?: SubscriptionData;
   workspace?: WorkspaceData;
 };
-

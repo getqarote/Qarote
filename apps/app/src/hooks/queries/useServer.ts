@@ -128,4 +128,3 @@ export const useDeleteServer = () => {
 export const useTestConnection = () => {
   return trpc.rabbitmq.server.testConnection.useMutation();
 };
-

@@ -5,8 +5,10 @@
 
 import { ReactNode } from "react";
 
-import { useFeatureFlags } from "@/hooks/useFeatureFlags";
 import { type PremiumFeature } from "@/lib/featureFlags";
+
+import { useFeatureFlags } from "@/hooks/useFeatureFlags";
+
 import { UpgradePrompt } from "./UpgradePrompt";
 
 interface FeatureGateProps {
@@ -48,4 +50,3 @@ export function FeatureGate({
   // Show fallback if provided
   return <>{fallback || null}</>;
 }
-

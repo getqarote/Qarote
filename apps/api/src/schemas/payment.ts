@@ -16,4 +16,3 @@ export const renewSubscriptionSchema = z.object({
   plan: z.nativeEnum(UserPlan),
   interval: z.enum(["monthly", "yearly"]).optional().default("monthly"),
 });
-

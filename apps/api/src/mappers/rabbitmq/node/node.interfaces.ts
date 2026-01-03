@@ -74,4 +74,3 @@ export interface NodeResponse {
   // System information
   run_queue: number;
 }
-

@@ -73,4 +73,3 @@ export type FeedbackApiResponse = {
     lastName: string | null;
   } | null;
 };
-

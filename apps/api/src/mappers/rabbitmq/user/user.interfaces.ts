@@ -17,4 +17,3 @@ export interface UserResponse {
   };
   accessibleVhosts?: string[];
 }
-

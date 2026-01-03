@@ -27,4 +27,3 @@ export interface License {
   createdAt: Date;
   updatedAt: Date;
 }
-

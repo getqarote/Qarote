@@ -31,9 +31,13 @@ interface PaymentConfirmationEmailProps {
   frontendUrl: string;
 }
 
-const PaymentConfirmationEmail: React.FC<
-  PaymentConfirmationEmailProps
-> = ({ userName, amount, currency, paymentMethod, frontendUrl }) => {
+const PaymentConfirmationEmail: React.FC<PaymentConfirmationEmailProps> = ({
+  userName,
+  amount,
+  currency,
+  paymentMethod,
+  frontendUrl,
+}) => {
   const formatAmount = (amount: number, currency: string) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",

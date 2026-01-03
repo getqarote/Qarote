@@ -5,6 +5,8 @@
 
 import { AlertCircle, Lock } from "lucide-react";
 
+import { getFeatureDescription, type PremiumFeature } from "@/lib/featureFlags";
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -14,7 +16,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getFeatureDescription, type PremiumFeature } from "@/lib/featureFlags";
 
 interface UpgradePromptProps {
   feature: PremiumFeature;
@@ -48,8 +49,9 @@ export function UpgradePrompt({
             <div className="space-y-1">
               <p className="text-sm font-medium">Enterprise Edition Required</p>
               <p className="text-sm text-muted-foreground">
-                This feature is available in Enterprise Edition. Upgrade to unlock
-                workspace management, alerting, and advanced integrations.
+                This feature is available in Enterprise Edition. Upgrade to
+                unlock workspace management, alerting, and advanced
+                integrations.
               </p>
             </div>
           </div>
@@ -79,4 +81,3 @@ export function UpgradePrompt({
     </div>
   );
 }
-

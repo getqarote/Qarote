@@ -49,4 +49,3 @@ export class FeedbackMapper {
     return feedbacks.map(this.toApiResponse);
   }
 }
-

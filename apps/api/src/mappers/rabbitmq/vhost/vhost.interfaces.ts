@@ -47,4 +47,3 @@ export interface VHostResponse {
     totalConsumers: number;
   };
 }
-

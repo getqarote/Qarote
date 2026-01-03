@@ -59,10 +59,11 @@ const PaymentSuccess: React.FC = () => {
       try {
         // Get payment history to find the latest payment
         const utils = trpc.useUtils();
-        const paymentHistory = await utils.payment.history.getPaymentHistory.fetch({
-          limit: 1,
-          offset: 0,
-        });
+        const paymentHistory =
+          await utils.payment.history.getPaymentHistory.fetch({
+            limit: 1,
+            offset: 0,
+          });
 
         if (paymentHistory.payments && paymentHistory.payments.length > 0) {
           const latestPayment = paymentHistory.payments[0];

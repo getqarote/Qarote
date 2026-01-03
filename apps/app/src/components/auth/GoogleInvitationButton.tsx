@@ -29,35 +29,36 @@ export const GoogleInvitationButton: React.FC<GoogleInvitationButtonProps> = ({
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const googleInvitationMutation = trpc.public.invitation.acceptWithGoogle.useMutation({
-    onSuccess: (data) => {
-      // Set authentication state
-      login(data.token, data.user);
+  const googleInvitationMutation =
+    trpc.public.invitation.acceptWithGoogle.useMutation({
+      onSuccess: (data) => {
+        // Set authentication state
+        login(data.token, data.user);
 
-      // Show success message
-      toast({
-        title: "Welcome to Qarote!",
-        description: `You've successfully joined ${data.workspace.name}${data.isNewUser ? " with Google" : ""}`,
-      });
+        // Show success message
+        toast({
+          title: "Welcome to Qarote!",
+          description: `You've successfully joined ${data.workspace.name}${data.isNewUser ? " with Google" : ""}`,
+        });
 
-      onSuccess?.();
+        onSuccess?.();
 
-      // Redirect to dashboard
-      navigate("/", { replace: true });
-    },
-    onError: (error: Error) => {
-      logger.error("Google invitation acceptance failed:", error);
-      const errorMessage =
-        error.message || "Failed to accept invitation with Google";
-      onError?.(errorMessage);
+        // Redirect to dashboard
+        navigate("/", { replace: true });
+      },
+      onError: (error: Error) => {
+        logger.error("Google invitation acceptance failed:", error);
+        const errorMessage =
+          error.message || "Failed to accept invitation with Google";
+        onError?.(errorMessage);
 
-      toast({
-        title: "Error",
-        description: errorMessage,
-        variant: "destructive",
-      });
-    },
-  });
+        toast({
+          title: "Error",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      },
+    });
 
   const handleGoogleSuccess = (credentialResponse: CredentialResponse) => {
     if (credentialResponse.credential) {

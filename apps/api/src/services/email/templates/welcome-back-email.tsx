@@ -178,4 +178,3 @@ const styles = {
     color: "#374151",
   },
 } as const;
-

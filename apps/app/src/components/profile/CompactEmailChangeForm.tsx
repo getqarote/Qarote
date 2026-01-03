@@ -258,4 +258,3 @@ export const CompactEmailChangeForm: React.FC<CompactEmailChangeFormProps> = ({
     </div>
   );
 };
-

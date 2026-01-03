@@ -76,4 +76,3 @@ export class WorkspaceMapper {
     return workspaces.map(this.toApiResponse);
   }
 }
-

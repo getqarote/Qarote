@@ -48,7 +48,8 @@ export default function WelcomeEmail({
     <Html>
       <Head />
       <Preview>
-        Welcome to Qarote, {name}!{workspaceName ? " Your workspace is ready to go." : ""}
+        Welcome to Qarote, {name}!
+        {workspaceName ? " Your workspace is ready to go." : ""}
       </Preview>
       <Body style={baseStyles.main}>
         <Container style={baseStyles.container}>
@@ -63,34 +64,37 @@ export default function WelcomeEmail({
             <Text style={contentStyles.paragraph}>
               {workspaceName ? (
                 <>
-                  Welcome to Qarote! Your workspace <strong>{workspaceName}</strong>{" "}
-                  has been successfully set up on the{" "}
-                  <strong>{planDisplayName}</strong> plan.
+                  Welcome to Qarote! Your workspace{" "}
+                  <strong>{workspaceName}</strong> has been successfully set up
+                  on the <strong>{planDisplayName}</strong> plan.
                 </>
               ) : (
                 <>
-                  Welcome to Qarote! Your account has been successfully created on the{" "}
-                  <strong>{planDisplayName}</strong> plan. Get started by creating your first workspace!
+                  Welcome to Qarote! Your account has been successfully created
+                  on the <strong>{planDisplayName}</strong> plan. Get started by
+                  creating your first workspace!
                 </>
               )}
             </Text>
 
             {!workspaceName && (
               <Text style={contentStyles.paragraph}>
-                A workspace helps you organize your RabbitMQ servers, manage team members, and track your monitoring data. You can create one right away!
+                A workspace helps you organize your RabbitMQ servers, manage
+                team members, and track your monitoring data. You can create one
+                right away!
               </Text>
             )}
 
             <Text style={contentStyles.paragraph}>
               {workspaceName ? (
                 <>
-                  You can now start monitoring your RabbitMQ clusters and managing
-                  your message queues with ease.
+                  You can now start monitoring your RabbitMQ clusters and
+                  managing your message queues with ease.
                 </>
               ) : (
                 <>
-                  Once you create your workspace, you can start monitoring your RabbitMQ clusters and managing
-                  your message queues with ease.
+                  Once you create your workspace, you can start monitoring your
+                  RabbitMQ clusters and managing your message queues with ease.
                 </>
               )}
             </Text>
@@ -98,7 +102,9 @@ export default function WelcomeEmail({
             {/* Plan Features Section */}
             <Section style={sectionStyles.featuresSection}>
               <Text style={contentStyles.heading}>
-                {workspaceName ? "What you can do now:" : "What you can do once you create your workspace:"}
+                {workspaceName
+                  ? "What you can do now:"
+                  : "What you can do once you create your workspace:"}
               </Text>
 
               {!workspaceName && (

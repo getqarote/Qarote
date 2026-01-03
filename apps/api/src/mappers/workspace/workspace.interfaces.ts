@@ -47,4 +47,3 @@ export type WorkspaceApiResponse = {
   // Allow additional properties that may be added by controllers
   [key: string]: unknown;
 };
-

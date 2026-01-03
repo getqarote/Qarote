@@ -83,4 +83,3 @@ export class QueueMapper {
     return queues.map(this.toApiResponse);
   }
 }
-

@@ -14,9 +14,7 @@ interface AuthContextType {
   refetchUser: () => Promise<void>;
 }
 
-const AuthContext = React.createContext<AuthContextType | undefined>(
-  undefined
-);
+const AuthContext = React.createContext<AuthContextType | undefined>(undefined);
 
 interface AuthProviderProps {
   children: React.ReactNode;

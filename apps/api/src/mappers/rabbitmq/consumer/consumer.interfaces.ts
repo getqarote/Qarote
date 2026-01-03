@@ -25,4 +25,3 @@ export interface ConsumerResponse {
   prefetch_count: number;
   arguments: { [key: string]: unknown };
 }
-

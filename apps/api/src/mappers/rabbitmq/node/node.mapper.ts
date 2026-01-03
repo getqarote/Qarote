@@ -92,4 +92,3 @@ export class NodeMapper {
     return nodes.map(this.toApiResponse);
   }
 }
-

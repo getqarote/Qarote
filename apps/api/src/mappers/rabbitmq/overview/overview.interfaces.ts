@@ -16,4 +16,3 @@ export interface OverviewApiResponse {
   default_queue_type?: string;
   release_series_support_status?: string;
 }
-

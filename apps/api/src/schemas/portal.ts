@@ -17,4 +17,3 @@ export const validateLicenseSchema = z.object({
 export const downloadLicenseSchema = z.object({
   licenseId: z.string(),
 });
-

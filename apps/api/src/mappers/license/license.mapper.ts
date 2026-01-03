@@ -43,4 +43,3 @@ export class LicenseMapper {
     return licenses.map(this.toApiResponse);
   }
 }
-

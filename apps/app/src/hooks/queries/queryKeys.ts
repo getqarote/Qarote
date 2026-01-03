@@ -17,4 +17,3 @@ export const queryKeys = {
   nodes: (serverId: string) => ["nodes", serverId] as const,
   alerts: ["alerts"] as const,
 };
-

@@ -35,4 +35,3 @@ export type LicenseApiResponse = {
   createdAt: string;
   updatedAt: string;
 };
-

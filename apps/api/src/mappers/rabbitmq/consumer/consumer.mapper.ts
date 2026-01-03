@@ -28,4 +28,3 @@ export class ConsumerMapper {
     return consumers.map(this.toApiResponse);
   }
 }
-

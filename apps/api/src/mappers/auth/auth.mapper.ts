@@ -3,10 +3,7 @@
  * Converts Date objects to ISO strings for JSON serialization
  */
 
-import type {
-  PrismaUserWithDates,
-  UserApiResponse,
-} from "./auth.interfaces";
+import type { PrismaUserWithDates, UserApiResponse } from "./auth.interfaces";
 
 /**
  * Mapper for transforming Prisma User to API response format
@@ -38,12 +35,14 @@ export class UserMapper {
 
     // Include subscription if present (can be null)
     if ("subscription" in user) {
-      response.subscription = (user.subscription as UserApiResponse["subscription"]) ?? null;
+      response.subscription =
+        (user.subscription as UserApiResponse["subscription"]) ?? null;
     }
 
     // Include workspace if present (can be null)
     if ("workspace" in user) {
-      response.workspace = (user.workspace as UserApiResponse["workspace"]) ?? null;
+      response.workspace =
+        (user.workspace as UserApiResponse["workspace"]) ?? null;
     }
 
     return response;
@@ -56,4 +55,3 @@ export class UserMapper {
     return users.map(this.toApiResponse);
   }
 }
-

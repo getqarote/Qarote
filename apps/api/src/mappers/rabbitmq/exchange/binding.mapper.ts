@@ -28,4 +28,3 @@ export class BindingMapper {
     return bindings.map(this.toApiResponse);
   }
 }
-

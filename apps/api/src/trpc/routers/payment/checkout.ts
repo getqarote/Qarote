@@ -9,10 +9,7 @@ import { createCheckoutSessionSchema } from "@/schemas/payment";
 
 import { emailConfig } from "@/config";
 
-import {
-  router,
-  strictRateLimitedProcedure,
-} from "@/trpc/trpc";
+import { router, strictRateLimitedProcedure } from "@/trpc/trpc";
 
 /**
  * Checkout router

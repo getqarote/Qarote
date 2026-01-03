@@ -552,7 +552,9 @@ export function AlertNotificationSettingsModal({
             toast.success("Slack configuration updated successfully");
           },
           onError: (error: ApiError) => {
-            toast.error(error.message || "Failed to update Slack configuration");
+            toast.error(
+              error.message || "Failed to update Slack configuration"
+            );
           },
         }
       );
@@ -568,7 +570,9 @@ export function AlertNotificationSettingsModal({
             toast.success("Slack configuration created successfully");
           },
           onError: (error: ApiError) => {
-            toast.error(error.message || "Failed to create Slack configuration");
+            toast.error(
+              error.message || "Failed to create Slack configuration"
+            );
           },
         }
       );

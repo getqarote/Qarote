@@ -11,11 +11,7 @@ import {
 
 import { FeedbackMapper } from "@/mappers/feedback";
 
-import {
-  authorize,
-  rateLimitedProcedure,
-  router,
-} from "@/trpc/trpc";
+import { authorize, rateLimitedProcedure, router } from "@/trpc/trpc";
 
 /**
  * Feedback router

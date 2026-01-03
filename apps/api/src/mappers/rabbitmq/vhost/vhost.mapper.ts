@@ -82,4 +82,3 @@ export class VHostMapper {
     return vhosts.map(this.toApiResponse);
   }
 }
-

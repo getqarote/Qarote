@@ -18,10 +18,7 @@ import { googleConfig } from "@/config";
 import { UserMapper } from "@/mappers/auth";
 import { WorkspaceMapper } from "@/mappers/workspace";
 
-import {
-  rateLimitedPublicProcedure,
-  router,
-} from "@/trpc/trpc";
+import { rateLimitedPublicProcedure, router } from "@/trpc/trpc";
 
 /**
  * Initialize Google OAuth client
