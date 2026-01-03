@@ -26,21 +26,11 @@ export default defineConfig({
           // Vendor chunk for React and related libraries
           "vendor-react": ["react", "react-dom", "react-router-dom"],
           // UI components chunk
-          "vendor-ui": [
-            "@radix-ui/react-dialog",
-            "@radix-ui/react-dropdown-menu",
-            "@radix-ui/react-select",
-            "@radix-ui/react-slot",
-            "@radix-ui/react-tabs",
-            "@radix-ui/react-toast",
-            "@radix-ui/react-tooltip",
-          ],
+          "vendor-ui": ["@radix-ui/react-slot"],
           // Data fetching and state management
           "vendor-data": ["@tanstack/react-query"],
           // Icons
           "vendor-icons": ["lucide-react"],
-          // Form and validation
-          "vendor-forms": ["react-hook-form", "@hookform/resolvers", "zod"],
           // Date and time utilities
           "vendor-utils": [
             "date-fns",
@@ -48,8 +38,6 @@ export default defineConfig({
             "class-variance-authority",
             "tailwind-merge",
           ],
-          // Stripe
-          "vendor-stripe": ["@stripe/stripe-js"],
         },
       },
     },
