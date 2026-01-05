@@ -3,8 +3,8 @@
  * Handles reading, parsing, and validating license files
  */
 
-import fs from "fs/promises";
-import path from "path";
+import fs from "node:fs/promises";
+import path from "node:path";
 
 import { getInstanceId } from "@/core/instance-fingerprint";
 import { logger } from "@/core/logger";

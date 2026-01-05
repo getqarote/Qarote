@@ -20,7 +20,7 @@ const envSchema = z.object({
   DEPLOYMENT_MODE: z
     .enum(["cloud", "community", "enterprise"])
     .describe("cloud")
-    .default("cloud"),
+    .default("community"),
 
   // Logging
   LOG_LEVEL: z.enum(["error", "warn", "info", "debug"]).describe("info"),
@@ -43,7 +43,7 @@ const envSchema = z.object({
   RESEND_API_KEY: z.string().optional(),
   FROM_EMAIL: z.email().describe("noreply@qarote.io"),
   FRONTEND_URL: z.url("FRONTEND_URL must be a valid URL"),
-  ENABLE_EMAIL: z.coerce.boolean().default(true),
+  ENABLE_EMAIL: z.coerce.boolean().default(false),
   EMAIL_PROVIDER: z.enum(["resend", "smtp"]).default("resend"),
   SMTP_HOST: z.string().optional(),
   SMTP_PORT: z.coerce.number().optional(),
@@ -63,11 +63,10 @@ const envSchema = z.object({
   // Sentry Configuration
   SENTRY_DSN: z.string().optional(),
   SENTRY_ENABLED: z.coerce.boolean().default(false),
-  ENABLE_SENTRY: z.coerce.boolean().default(true),
 
   // Google OAuth Configuration
   GOOGLE_CLIENT_ID: z.string().optional(),
-  ENABLE_OAUTH: z.coerce.boolean().default(true),
+  ENABLE_OAUTH: z.coerce.boolean().default(false),
 
   // License Configuration (for enterprise/self-hosted)
   LICENSE_KEY: z.string().optional(),
@@ -168,7 +167,7 @@ export const logConfig = {
 
 export const sentryConfig = {
   dsn: config.SENTRY_DSN,
-  enabled: config.SENTRY_ENABLED && config.ENABLE_SENTRY,
+  enabled: config.SENTRY_ENABLED,
   environment: config.NODE_ENV,
   release: `qarote-backend@${config.npm_package_version || "unknown"}`,
   tracesSampleRate: isProduction() ? 0.1 : 1.0,
@@ -182,7 +181,6 @@ export const googleConfig = {
 
 export const licenseConfig = {
   licenseKey: config.LICENSE_KEY,
-  validationUrl: config.LICENSE_VALIDATION_URL || "https://api.qarote.io",
   licenseFilePath: config.LICENSE_FILE_PATH || "./license.json",
   publicKey: config.LICENSE_PUBLIC_KEY,
   privateKey: config.LICENSE_PRIVATE_KEY,

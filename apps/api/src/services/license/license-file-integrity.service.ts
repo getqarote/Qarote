@@ -3,8 +3,8 @@
  * Validates that license file hasn't been tampered with
  */
 
-import fs from "fs/promises";
-import path from "path";
+import fs from "node:fs/promises";
+import path from "node:path";
 
 import { logger } from "@/core/logger";
 

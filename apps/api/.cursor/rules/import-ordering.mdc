@@ -7,6 +7,8 @@ alwaysApply: true
 All imports in API files must follow this strict ordering:
 
 1. **Node.js built-in modules** - Node.js core modules (e.g., `node:path`, `node:fs`, `node:url`)
+   - **REQUIRED**: All Node.js built-in modules MUST use the `node:` prefix (e.g., `node:path`, `node:fs`, `node:crypto`, `node:os`)
+   - **NEVER** use bare imports like `import path from "path"` - always use `import path from "node:path"`
 2. **External npm packages** - Third-party packages (e.g., `hono`, `stripe`, `@prisma/client`, `date-fns`, `dotenv`)
 3. **Core modules** - Internal core functionality (`@/core/*`)
 4. **Services modules** - Service layer (`@/services/*`)

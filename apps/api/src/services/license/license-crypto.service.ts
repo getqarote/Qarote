@@ -3,7 +3,7 @@
  * Handles RSA-SHA256 signing and verification of license files
  */
 
-import crypto from "crypto";
+import crypto from "node:crypto";
 
 import { logger } from "@/core/logger";
 

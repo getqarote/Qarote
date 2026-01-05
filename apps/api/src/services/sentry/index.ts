@@ -85,6 +85,18 @@ export function initSentry() {
     return;
   }
 
+  // Validate DSN format - must be a valid URL and not just "https://"
+  const dsn = sentryConfig.dsn.trim();
+  if (
+    dsn === "" ||
+    dsn === "https://" ||
+    !dsn.startsWith("https://") ||
+    dsn.length < 20
+  ) {
+    logger.warn("Invalid Sentry DSN format - monitoring disabled");
+    return;
+  }
+
   Sentry.init({
     dsn: sentryConfig.dsn,
     environment: sentryConfig.environment,
