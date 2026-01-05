@@ -1,6 +1,5 @@
-import { setTimeout as setTimeoutPromise } from "node:timers/promises";
-
 import { logger } from "@/core/logger";
+import { retryWithBackoffAndTimeout } from "@/core/retry";
 
 import { RabbitMQAlert } from "@/services/alerts/alert.interfaces";
 
@@ -10,10 +9,6 @@ import { SlackMessage, SlackResult } from "./slack.interfaces";
  * Slack service for sending alert notifications to Slack channels via incoming webhooks
  */
 export class SlackService {
-  private static readonly MAX_RETRIES = 3;
-  private static readonly RETRY_DELAY_MS = 1_000; // 1 second
-  private static readonly REQUEST_TIMEOUT_MS = 10_000; // 10 seconds
-
   /**
    * Get color for alert severity
    */
@@ -197,58 +192,73 @@ export class SlackService {
    */
   static async sendMessage(
     webhookUrl: string,
-    message: SlackMessage,
-    retries: number = 0
+    message: SlackMessage
   ): Promise<SlackResult> {
     try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(
-        () => controller.abort(),
-        this.REQUEST_TIMEOUT_MS
-      );
+      const response = await retryWithBackoffAndTimeout(
+        async (signal: AbortSignal) => {
+          const fetchResponse = await fetch(webhookUrl, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(message),
+            signal,
+          });
 
-      const response = await fetch(webhookUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+          // Check if response indicates a retryable error
+          if (!fetchResponse.ok) {
+            const statusCode = fetchResponse.status;
+            // Retry on 5xx errors or 429 (rate limiting)
+            if (statusCode >= 500 || statusCode === 429) {
+              const errorText = await fetchResponse
+                .text()
+                .catch(() => "Unknown error");
+              logger.warn(
+                {
+                  webhookUrl: webhookUrl.substring(0, 50) + "...",
+                  statusCode,
+                  error: errorText,
+                },
+                "Slack webhook request failed, will retry"
+              );
+              const error = new Error(
+                `HTTP ${statusCode}: ${fetchResponse.statusText}`
+              ) as Error & { statusCode: number; status: number };
+              error.statusCode = statusCode;
+              error.status = statusCode;
+              throw error;
+            }
+            // For non-retryable errors (4xx except 429), throw but don't retry
+            const errorText = await fetchResponse
+              .text()
+              .catch(() => "Unknown error");
+
+            logger.warn(
+              {
+                webhookUrl: webhookUrl.substring(0, 50) + "...",
+                statusCode,
+                error: errorText,
+              },
+              "Slack webhook request failed, non-retryable error"
+            );
+            const error = new Error(
+              `HTTP ${statusCode}: ${fetchResponse.statusText}`
+            ) as Error & { statusCode: number; status: number };
+            error.statusCode = statusCode;
+            error.status = statusCode;
+            throw error;
+          }
+
+          return fetchResponse;
         },
-        body: JSON.stringify(message),
-        signal: controller.signal,
-      });
-
-      clearTimeout(timeoutId);
-
-      if (!response.ok) {
-        const errorText = await response.text().catch(() => "Unknown error");
-        logger.warn(
-          {
-            webhookUrl: webhookUrl.substring(0, 50) + "...", // Log partial URL for security
-            statusCode: response.status,
-            statusText: response.statusText,
-            error: errorText,
-            retries,
-          },
-          "Slack webhook request failed"
-        );
-
-        // Retry on 5xx errors or rate limiting
-        if (
-          (response.status >= 500 || response.status === 429) &&
-          retries < this.MAX_RETRIES
-        ) {
-          await setTimeoutPromise(
-            this.RETRY_DELAY_MS * Math.pow(2, retries) // Exponential backoff
-          );
-          return this.sendMessage(webhookUrl, message, retries + 1);
-        }
-
-        return {
-          success: false,
-          statusCode: response.status,
-          error: `HTTP ${response.status}: ${response.statusText}`,
-          retries,
-        };
-      }
+        {
+          maxRetries: 3,
+          retryDelayMs: 1_000,
+          timeoutMs: 10_000,
+        },
+        "generic"
+      );
 
       // Slack returns "ok" as text for successful requests
       const responseText = await response.text();
@@ -265,7 +275,6 @@ export class SlackService {
       logger.info(
         {
           statusCode: response.status,
-          retries,
         },
         "Slack message sent successfully"
       );
@@ -273,26 +282,19 @@ export class SlackService {
       return {
         success: true,
         statusCode: response.status,
-        retries,
       };
     } catch (error) {
-      logger.error(
-        { error, webhookUrl, retries },
-        "Error sending Slack message"
-      );
+      logger.error({ error, webhookUrl }, "Error sending Slack message");
 
-      // Retry on network errors
-      if (retries < this.MAX_RETRIES) {
-        await setTimeoutPromise(
-          this.RETRY_DELAY_MS * Math.pow(2, retries) // Exponential backoff
-        );
-        return this.sendMessage(webhookUrl, message, retries + 1);
-      }
+      // Extract status code if available
+      const statusCode =
+        (error as { statusCode?: number; status?: number })?.statusCode ??
+        (error as { statusCode?: number; status?: number })?.status;
 
       return {
         success: false,
+        statusCode,
         error: Error.isError(error) ? error.message : "Unknown error occurred",
-        retries,
       };
     }
   }

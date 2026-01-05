@@ -1,6 +1,7 @@
 import Stripe from "stripe";
 
 import { logger } from "@/core/logger";
+import { retryWithBackoff } from "@/core/retry";
 
 import { CoreStripeService, stripe } from "./core.service";
 
@@ -12,9 +13,18 @@ export class StripeSubscriptionService {
     try {
       logger.info({ subscriptionId, expand }, "Retrieving Stripe subscription");
 
-      const subscription = await stripe.subscriptions.retrieve(subscriptionId, {
-        ...(expand && { expand }),
-      });
+      const subscription = await retryWithBackoff(
+        () =>
+          stripe.subscriptions.retrieve(subscriptionId, {
+            ...(expand && { expand }),
+          }),
+        {
+          maxRetries: 3,
+          retryDelayMs: 1_000,
+          timeoutMs: 10_000,
+        },
+        "stripe"
+      );
 
       logger.info(
         {
@@ -46,9 +56,18 @@ export class StripeSubscriptionService {
         "Canceling Stripe subscription"
       );
 
-      const subscription = await stripe.subscriptions.update(subscriptionId, {
-        cancel_at_period_end: atPeriodEnd,
-      });
+      const subscription = await retryWithBackoff(
+        () =>
+          stripe.subscriptions.update(subscriptionId, {
+            cancel_at_period_end: atPeriodEnd,
+          }),
+        {
+          maxRetries: 3,
+          retryDelayMs: 1_000,
+          timeoutMs: 10_000,
+        },
+        "stripe"
+      );
 
       // Set Sentry context for subscription cancellation
       CoreStripeService.setSentryContext("stripe_cancellation", {
@@ -120,9 +139,14 @@ export class StripeSubscriptionService {
         updateParams.cancel_at_period_end = false;
       }
 
-      const subscription = await stripe.subscriptions.update(
-        subscriptionId,
-        updateParams
+      const subscription = await retryWithBackoff(
+        () => stripe.subscriptions.update(subscriptionId, updateParams),
+        {
+          maxRetries: 3,
+          retryDelayMs: 1_000,
+          timeoutMs: 10_000,
+        },
+        "stripe"
       );
 
       // Set Sentry context for subscription cancellation
@@ -165,19 +189,33 @@ export class StripeSubscriptionService {
         "Updating Stripe subscription"
       );
 
-      const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-
-      const updatedSubscription = await stripe.subscriptions.update(
-        subscriptionId,
+      const subscription = await retryWithBackoff(
+        () => stripe.subscriptions.retrieve(subscriptionId),
         {
-          items: [
-            {
-              id: subscription.items.data[0].id,
-              price: newPriceId,
-            },
-          ],
-          proration_behavior: "create_prorations",
-        }
+          maxRetries: 3,
+          retryDelayMs: 1_000,
+          timeoutMs: 10_000,
+        },
+        "stripe"
+      );
+
+      const updatedSubscription = await retryWithBackoff(
+        () =>
+          stripe.subscriptions.update(subscriptionId, {
+            items: [
+              {
+                id: subscription.items.data[0].id,
+                price: newPriceId,
+              },
+            ],
+            proration_behavior: "create_prorations",
+          }),
+        {
+          maxRetries: 3,
+          retryDelayMs: 1_000,
+          timeoutMs: 10_000,
+        },
+        "stripe"
       );
 
       // Set Sentry context for subscription update
@@ -223,9 +261,18 @@ export class StripeSubscriptionService {
         "Updating subscription payment method"
       );
 
-      const subscription = await stripe.subscriptions.update(subscriptionId, {
-        default_payment_method: paymentMethodId,
-      });
+      const subscription = await retryWithBackoff(
+        () =>
+          stripe.subscriptions.update(subscriptionId, {
+            default_payment_method: paymentMethodId,
+          }),
+        {
+          maxRetries: 3,
+          retryDelayMs: 1_000,
+          timeoutMs: 10_000,
+        },
+        "stripe"
+      );
 
       logger.info(
         {
