@@ -15,12 +15,14 @@ interface GoogleLoginButtonProps {
   onSuccess?: () => void;
   onError?: (error: string) => void;
   className?: string;
+  mode?: "signin" | "signup";
 }
 
 export const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
   onSuccess,
   onError,
   className,
+  mode = "signin",
 }) => {
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -81,7 +83,7 @@ export const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
         useOneTap={false}
         theme="outline"
         size="large"
-        text="signin_with"
+        text={mode === "signup" ? "signup_with" : "signin_with"}
         shape="rectangular"
         logo_alignment="left"
         width={200}

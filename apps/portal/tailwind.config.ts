@@ -138,6 +138,8 @@ export default {
           "linear-gradient(to right, rgb(249 115 22), rgb(239 68 68))", // orange-500 to red-500
         "gradient-accent-hover":
           "linear-gradient(to right, rgb(234 88 12), rgb(220 38 38))", // orange-600 to red-600
+        "gradient-auth":
+          "linear-gradient(135deg, rgb(234 88 12) 0%, rgb(249 115 22) 25%, rgb(220 38 38) 50%, rgb(234 88 12) 75%, rgb(249 115 22) 100%)",
       },
       backgroundColor: {
         "card-unified": "rgb(252 250 246)", // Unified card background color
