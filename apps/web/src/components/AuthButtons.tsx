@@ -1,9 +1,6 @@
 import * as React from "react";
 import { useTranslation } from "react-i18next";
 
-import type { LucideProps } from "lucide-react";
-import { Play } from "lucide-react";
-
 import { trackSignUpClick } from "@/lib/gtm";
 
 interface AuthButtonsProps {
@@ -44,8 +41,8 @@ const AuthButtons = ({
 
   const primaryButtonStyles =
     variant === "light"
-      ? "bg-white text-orange-600 hover:bg-gray-50"
-      : "bg-linear-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600";
+      ? "bg-[#FF691B] text-white hover:bg-[#E55A0F]"
+      : "bg-[#FF691B] text-white hover:bg-[#E55A0F]";
 
   const secondaryButtonStyles =
     variant === "light"
@@ -63,28 +60,22 @@ const AuthButtons = ({
   const widthClass = align === "left" ? "w-auto" : "w-full max-w-md";
   const paddingClass = align === "left" ? "pl-0" : "px-4";
 
-  // Type-safe workaround for React type conflicts between lucide-react and @types/react
-  const PlayIcon = Play as unknown as React.ComponentType<LucideProps>;
-
   return (
     <div
       className={`flex ${alignClass} items-center gap-6 ${widthClass} ${marginClass} ${paddingClass}`}
     >
       <button
         onClick={handleSignUp}
-        className={`${primaryButtonStyles} px-4 py-3 sm:px-8 sm:py-4 rounded-lg font-semibold transition-colors duration-200 flex items-center justify-center text-base sm:text-lg w-full sm:w-auto`}
+        className={`${primaryButtonStyles} px-4 py-3 sm:px-8 sm:py-4 transition-colors duration-200 flex items-center justify-center gap-3 text-base sm:text-lg w-full sm:w-auto rounded-full`}
       >
         <span className="whitespace-nowrap">{t("cta.getStartedForFree")}</span>
+        <img
+          src="/images/arrow-right.svg"
+          alt="Arrow right"
+          className="h-[0.8em] w-auto"
+          style={{ imageRendering: "crisp-edges", verticalAlign: "middle" }}
+        />
       </button>
-      {!hideHowItWorks && (
-        <button
-          onClick={handleHowItWorks}
-          className={`${secondaryButtonStyles} px-4 py-3 sm:px-8 sm:py-4 rounded-lg font-semibold transition-colors duration-200 flex items-center justify-center gap-2 text-base sm:text-lg`}
-        >
-          <PlayIcon className="h-[1em] w-[1em] fill-current" />
-          <span className="whitespace-nowrap">{t("cta.howItWorks")}</span>
-        </button>
-      )}
     </div>
   );
 };
