@@ -546,10 +546,13 @@ class NotionService {
         };
       }
 
+      // Extract to local variable for TypeScript narrowing in callback
+      const dataSourceId = dataSourceResult.dataSourceId;
+
       const response = await retryWithBackoff(
         () =>
           this.client.dataSources.query({
-            data_source_id: dataSourceResult.dataSourceId,
+            data_source_id: dataSourceId,
             filter: {
               property: "User ID",
               rich_text: {
