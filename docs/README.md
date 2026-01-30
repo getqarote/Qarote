@@ -69,11 +69,23 @@ Welcome to the Qarote documentation! This hub provides comprehensive guides for 
 ```
 docs/
 ├── README.md (this file)              # Documentation hub
-├── COMMUNITY_EDITION.md                 # Community Edition guide
-├── ENTERPRISE_EDITION.md                # Enterprise Edition guide
-├── FEATURE_COMPARISON.md                # Feature comparison
-├── SELF_HOSTED_DEPLOYMENT.md            # Main deployment guide
-└── ACT_TESTING.md                       # Testing GitHub Actions
+├── COMMUNITY_EDITION.md               # Community Edition guide
+├── ENTERPRISE_EDITION.md              # Enterprise Edition guide
+├── FEATURE_COMPARISON.md              # Feature comparison
+├── SELF_HOSTED_DEPLOYMENT.md          # Main deployment guide
+└── ACT_TESTING.md                     # Testing GitHub Actions
+```
+
+### Application Documentation
+
+Each application has its own README:
+
+```
+apps/
+├── api/README.md      # Backend API documentation
+├── app/README.md      # Frontend dashboard documentation
+├── web/README.md      # Landing page documentation
+└── portal/README.md   # Customer portal documentation
 ```
 
 ## 🎯 Common Tasks

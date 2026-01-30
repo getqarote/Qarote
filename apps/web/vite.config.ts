@@ -28,6 +28,10 @@ export default defineConfig({
     target: "esnext",
     minify: "esbuild",
     sourcemap: false,
+    // Enable CSS code splitting for better caching
+    cssCodeSplit: true,
+    // Optimize chunk size
+    assetsInlineLimit: 4096, // 4KB - inline smaller assets
     rollupOptions: {
       output: {
         manualChunks: {
@@ -43,7 +47,7 @@ export default defineConfig({
           ],
           // Data fetching and state management
           "vendor-data": ["@tanstack/react-query"],
-          // Icons
+          // Icons - separate chunk for better caching
           "vendor-icons": ["lucide-react"],
           // Date and time utilities
           "vendor-utils": [
@@ -52,6 +56,11 @@ export default defineConfig({
             "tailwind-merge",
           ],
         },
+      },
+      // Better tree-shaking
+      treeshake: {
+        moduleSideEffects: false,
+        propertyReadSideEffects: false,
       },
     },
     // Ensure React is properly bundled

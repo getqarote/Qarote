@@ -36,6 +36,15 @@ jobs:
 
       - name: 📝 Validate commit messages
         run: |
+          # Skip validation for Dependabot PRs (they use non-conventional commit messages)
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            PR_AUTHOR="${{ github.event.pull_request.user.login }}"
+            if [ "$PR_AUTHOR" == "dependabot[bot]" ] || [ "$PR_AUTHOR" == "dependabot-preview[bot]" ]; then
+              echo "⏭️  Skipping commit validation for Dependabot PR (automated dependency updates)"
+              exit 0
+            fi
+          fi
+
           # For PRs, validate commits between base and head
           # For pushes, validate the last commit
           if [ "${{ github.event_name }}" == "pull_request" ]; then
@@ -59,4 +68,3 @@ jobs:
             pnpm exec commitlint --edit "$COMMIT_MSG_FILE" || exit 1
             rm -f "$COMMIT_MSG_FILE"
           fi
-

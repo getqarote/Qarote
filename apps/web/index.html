@@ -14,6 +14,17 @@
       content="RabbitMQ, RabbitMQ monitoring, RabbitMQ management, RabbitMQ web interface, RabbitMQ dashboard, RabbitMQ admin, RabbitMQ GUI, RabbitMQ UI, RabbitMQ interface, RabbitMQ monitoring tool, RabbitMQ management tool, RabbitMQ queue management, RabbitMQ management UI, RabbitMQ monitoring UI, RabbitMQ admin GUI"
     />
 
+    <!-- Preload LCP image for faster rendering (WebP with responsive sizes) -->
+    <link
+      rel="preload"
+      as="image"
+      type="image/webp"
+      href="/images/dashboard-1920.webp"
+      imagesrcset="/images/dashboard-640.webp 640w, /images/dashboard-1280.webp 1280w, /images/dashboard-1920.webp 1920w"
+      imagesizes="(max-width: 640px) 640px, (max-width: 1280px) 1280px, 1920px"
+      fetchpriority="high"
+    />
+
     <!-- Favicon and App Manifest -->
     <link rel="icon" type="image/svg+xml" href="images/new_icon.svg" />
     <link rel="manifest" href="/manifest.json" />
@@ -129,18 +140,23 @@
         ]
       }
     </script>
-    <!-- Google Tag Manager -->
+    <!-- Google Tag Manager - Deferred for better FCP -->
     <script>
-      (function (w, d, s, l, i) {
-        w[l] = w[l] || [];
-        w[l].push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
-        var f = d.getElementsByTagName(s)[0],
-          j = d.createElement(s),
-          dl = l != "dataLayer" ? "&l=" + l : "";
-        j.async = true;
-        j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + dl;
-        f.parentNode.insertBefore(j, f);
-      })(window, document, "script", "dataLayer", "GTM-5G4639NQ");
+      // Defer GTM loading to improve initial page load
+      window.addEventListener('load', function() {
+        setTimeout(function() {
+          (function (w, d, s, l, i) {
+            w[l] = w[l] || [];
+            w[l].push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
+            var f = d.getElementsByTagName(s)[0],
+              j = d.createElement(s),
+              dl = l != "dataLayer" ? "&l=" + l : "";
+            j.async = true;
+            j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + dl;
+            f.parentNode.insertBefore(j, f);
+          })(window, document, "script", "dataLayer", "GTM-5G4639NQ");
+        }, 100);
+      });
     </script>
     <!-- End Google Tag Manager -->
   </head>

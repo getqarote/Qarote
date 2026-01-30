@@ -1,87 +1,172 @@
-# Welcome to Qarote
+# Qarote Landing Page
 
-## Project info
+The marketing website and landing page for Qarote, built with React, TypeScript, and Tailwind CSS.
 
-**URL**: https://lovable.dev/projects/84b41197-11ea-44ed-bef6-9a45f09b9d7d
+## Overview
 
-## How can I edit this code?
+This is the public-facing website at [qarote.io](https://qarote.io) that showcases Qarote's features and drives user signups. It includes:
 
-There are several ways of editing your application.
+- **Homepage** - Product overview, features, pricing, and testimonials
+- **Legal Pages** - Terms of Service and Privacy Policy
+- **SEO Optimization** - Meta tags, sitemap, and structured data
+- **Analytics** - Google Analytics and Google Tag Manager integration
+- **Live Chat** - Tawk.to integration for customer support
 
-**Use Lovable**
+## Tech Stack
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/84b41197-11ea-44ed-bef6-9a45f09b9d7d) and start prompting.
+- **Framework**: [React](https://react.dev/) 18 with TypeScript
+- **Build Tool**: [Vite](https://vite.dev/) 7
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/) with [shadcn/ui](https://ui.shadcn.com/)
+- **SEO**: [React Helmet Async](https://github.com/staylor/react-helmet-async)
+- **Analytics**: Google Analytics 4 / Google Tag Manager
+- **Live Chat**: [Tawk.to](https://www.tawk.to/)
+- **Hosting**: [Cloudflare Pages](https://pages.cloudflare.com/)
 
-Changes made via Lovable will be committed automatically to this repo.
+## Project Structure
 
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+```
+apps/web/
+├── public/
+│   ├── images/           # Marketing images and logos
+│   ├── manifest.json     # PWA manifest
+│   ├── robots.txt        # Search engine directives
+│   └── sitemap.xml       # XML sitemap for SEO
+├── src/
+│   ├── assets/           # Avatar images for testimonials
+│   ├── components/
+│   │   ├── ui/           # shadcn/ui components
+│   │   ├── AuthButtons.tsx
+│   │   ├── FeatureCard.tsx
+│   │   ├── SEO.tsx       # SEO meta tags component
+│   │   ├── StickyNav.tsx
+│   │   └── TawkTo.tsx    # Live chat widget
+│   ├── hooks/
+│   │   └── use-toast.ts
+│   ├── lib/
+│   │   ├── gtm.ts        # Google Tag Manager
+│   │   ├── logger.ts
+│   │   └── utils.ts
+│   ├── pages/
+│   │   ├── Index.tsx     # Homepage
+│   │   ├── NotFound.tsx  # 404 page
+│   │   ├── PrivacyPolicy.tsx
+│   │   └── TermsOfService.tsx
+│   ├── types/            # TypeScript declarations
+│   ├── App.tsx           # Main app with routing
+│   ├── index.css         # Global styles
+│   └── main.tsx          # Entry point
+├── DEPLOYMENT.md         # Cloudflare Pages deployment guide
+├── cloudflare.json       # Cloudflare configuration
+├── tailwind.config.ts
+├── vite.config.ts
+└── package.json
 ```
 
-**Edit a file directly in GitHub**
+## Getting Started
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Prerequisites
 
-**Use GitHub Codespaces**
+- Node.js 24+
+- pnpm 9+
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### Development Setup
 
-## What technologies are used for this project?
+1. **Install dependencies** (from project root):
 
-This project is built with:
+   ```bash
+   pnpm install
+   ```
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-- Google Sheets API for waitlist storage
+2. **Start the development server**:
 
-## Setting up Google Sheets API integration
+   ```bash
+   pnpm run dev:web
+   ```
 
-The waitlist form uses Google Sheets to store email addresses. To set this up:
+   The site will be available at `http://localhost:5173`.
 
-1. Create a [Google Cloud Project](https://console.cloud.google.com/)
-2. Enable the Google Sheets API
-3. Create a Service Account with permission to modify Google Sheets
-4. Generate a JSON key for the Service Account
-5. Copy `.env.example` to `.env.local` and fill in the service account details
-6. Share your target Google Sheet with the service account email address
+## Available Scripts
 
-For security reasons, in a production environment, you should handle the API requests through a backend service rather than directly from the client.
+```bash
+pnpm run dev              # Start development server
+pnpm run build            # Build for production
+pnpm run build:cloudflare # Build for Cloudflare Pages
+pnpm run preview          # Preview production build
+pnpm run lint             # Check linting
+pnpm run lint:fix         # Fix linting issues
+pnpm run type-check       # TypeScript type checking
+```
 
-## How can I deploy this project?
+## Pages & Routes
 
-Simply open [Lovable](https://lovable.dev/projects/84b41197-11ea-44ed-bef6-9a45f09b9d7d) and click on Share -> Publish.
+| Path | Component | Description |
+|------|-----------|-------------|
+| `/` | `Index` | Homepage with features, pricing, FAQ |
+| `/privacy-policy` | `PrivacyPolicy` | Privacy policy |
+| `/terms-of-service` | `TermsOfService` | Terms of service |
+| `*` | `NotFound` | 404 error page |
 
-## Can I connect a custom domain to my Lovable project?
+## Deployment
 
-Yes, you can!
+This site is deployed to **Cloudflare Pages**. See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed instructions.
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+### Quick Deploy
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+1. Connect repository to Cloudflare Pages
+2. Set build configuration:
+   - **Build command**: `pnpm run build:cloudflare`
+   - **Build output directory**: `dist`
+   - **Root directory**: `apps/web`
+3. Set environment variable: `NODE_VERSION=24`
+4. Deploy
+
+### Custom Domain
+
+The site is configured for `qarote.io` and `www.qarote.io`.
+
+## SEO Configuration
+
+### Meta Tags
+
+The `SEO` component handles meta tags for each page:
+
+```tsx
+<SEO
+  title="Page Title"
+  description="Page description for search engines"
+  image="/images/social_card.png"
+/>
+```
+
+### Sitemap
+
+Update `public/sitemap.xml` when adding new pages.
+
+### Robots.txt
+
+The `public/robots.txt` file controls search engine crawling.
+
+## Analytics
+
+### Google Tag Manager
+
+GTM is initialized in `src/lib/gtm.ts`. Page views are automatically tracked.
+
+### Google Analytics
+
+GA4 events can be sent using:
+
+```typescript
+window.gtag("event", "event_name", {
+  // event parameters
+});
+```
+
+## Live Chat
+
+The Tawk.to widget is configured in `src/components/TawkTo.tsx`. It appears on all pages to provide live customer support.
+
+## Related Documentation
+
+- [Cloudflare Deployment](./DEPLOYMENT.md)
+- [Contributing Guide](../../CONTRIBUTING.md)
