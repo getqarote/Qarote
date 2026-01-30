@@ -8,6 +8,8 @@ All imports in TypeScript/JavaScript files must follow this strict ordering:
 
 1. **CSS and style files** - Stylesheet imports (e.g., `./index.css`, `@/styles/theme.css`, `.scss`, `.less`, `.sass`)
 2. **Node.js built-in modules** - Node.js core modules (e.g., `node:path`, `node:fs`, `node:url`)
+   - **REQUIRED**: All Node.js built-in modules MUST use the `node:` prefix (e.g., `node:path`, `node:fs`, `node:crypto`, `node:os`)
+   - **NEVER** use bare imports like `import path from "path"` - always use `import path from "node:path"`
 3. **React modules** - React and React-related packages (e.g., `react`, `react-dom`, `react-router-dom`, `@react-oauth/google`, `@tanstack/react-query`)
 4. **External npm packages** - Other third-party packages (e.g., `zod`, `date-fns`, `lucide-react`, `@radix-ui/*`)
 5. **Lib modules** - Internal library functionality (`@/lib/*`)

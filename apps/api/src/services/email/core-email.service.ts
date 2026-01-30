@@ -4,6 +4,7 @@ import type { ReactElement } from "react";
 import { Resend } from "resend";
 
 import { logger } from "@/core/logger";
+import { retryWithBackoff } from "@/core/retry";
 
 import { Sentry, setSentryContext } from "@/services/sentry";
 
@@ -162,18 +163,50 @@ export class CoreEmailService {
       throw new Error("Resend API key not configured");
     }
 
-    const { data, error } = await resend.emails.send({
-      from: emailConfig.fromEmail,
-      to,
-      subject,
-      html,
-    });
+    // Use retry logic with exponential backoff for 5xx errors and timeouts
+    const { data, error } = await retryWithBackoff(
+      async () => {
+        const result = await resend.emails.send({
+          from: emailConfig.fromEmail,
+          to,
+          subject,
+          html,
+        });
+
+        // If there's an error with a 5xx status code, throw it so retry can handle it
+        if (result.error) {
+          const errorObj = result.error as {
+            message?: string;
+            status?: number;
+            statusCode?: number;
+          };
+
+          // Check if it's a 5xx error
+          const statusCode = errorObj.status ?? errorObj.statusCode;
+          if (typeof statusCode === "number" && statusCode >= 500) {
+            throw result.error;
+          }
+
+          // For 4xx errors, return as-is (don't retry)
+          return result;
+        }
+
+        return result;
+      },
+      {
+        maxRetries: 3,
+        retryDelayMs: 1_000,
+        timeoutMs: 10_000,
+      },
+      "resend"
+    );
 
     if (error) {
       logger.error(error, `Failed to send ${emailType} email via Resend`);
       return {
         success: false,
-        error: error.message || "Failed to send email",
+        error:
+          (error as { message?: string }).message || "Failed to send email",
       };
     }
 

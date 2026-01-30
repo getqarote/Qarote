@@ -59,6 +59,7 @@ const AcceptInvitation = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const acceptInvitationMutation = useAcceptInvitation();
+  const utils = trpc.useUtils();
 
   const [invitation, setInvitation] = useState<InvitationDetails | null>(null);
   const [loading, setLoading] = useState(true);
@@ -87,7 +88,6 @@ const AcceptInvitation = () => {
       }
 
       try {
-        const utils = trpc.useUtils();
         const response = await utils.public.invitation.getDetails.fetch({
           token,
         });
@@ -108,7 +108,7 @@ const AcceptInvitation = () => {
     };
 
     fetchInvitationDetails();
-  }, [token]);
+  }, [token, utils]);
 
   const onSubmit = (data: AcceptInvitationFormData) => {
     if (!token) {

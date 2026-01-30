@@ -43,6 +43,63 @@ export default function VerifyEmail() {
 
   const token = searchParams.get("token");
 
+  // tRPC mutations
+  const verifyEmailMutation = trpc.auth.verification.verifyEmail.useMutation({
+    onSuccess: (data) => {
+      logger.log("Verification successful:", data);
+
+      // Update user context with the verified user data
+      if (data.user) {
+        updateUser(data.user);
+      }
+
+      // Invalidate verification status query to refresh any cached data
+      queryClient.invalidateQueries({ queryKey: ["verification-status"] });
+
+      setVerificationState({
+        loading: false,
+        result: {
+          success: true,
+          message: data.message,
+          type: data.type,
+        },
+      });
+
+      toast.success("Email verified successfully!");
+
+      // Redirect based on authentication status
+      setTimeout(() => {
+        if (isAuthenticated) {
+          navigate("/workspace", { replace: true });
+        } else {
+          navigate("/auth/sign-in", { replace: true });
+        }
+      }, 3000);
+    },
+    onError: (error) => {
+      logger.error("Email verification error:", error);
+
+      setVerificationState({
+        loading: false,
+        result: {
+          success: false,
+          error: error.message || "Failed to verify email. Please try again.",
+        },
+      });
+    },
+  });
+
+  const resendVerificationMutation =
+    trpc.auth.verification.resendVerification.useMutation({
+      onSuccess: () => {
+        toast.success("Verification email sent! Please check your inbox.");
+      },
+      onError: (error) => {
+        logger.error("Resend verification error:", error);
+        toast.error(error.message || "Failed to resend verification email");
+      },
+    });
+
   useEffect(() => {
     logger.log("VerifyEmail useEffect triggered", {
       token,
@@ -69,99 +126,17 @@ export default function VerifyEmail() {
 
     verificationAttempted.current = true;
 
-    const verifyEmailToken = async (verificationToken: string) => {
-      try {
-        logger.log("Starting verification with token:", {
-          tokenLength: verificationToken.length,
-          tokenPrefix: verificationToken.substring(0, 8),
-        });
+    logger.log("Starting verification with token:", {
+      tokenLength: token.length,
+      tokenPrefix: token.substring(0, 8),
+    });
 
-        setVerificationState({ loading: true, result: null });
+    setVerificationState({ loading: true, result: null });
+    verifyEmailMutation.mutate({ token });
+  }, [token]);
 
-        const utils = trpc.useUtils();
-        const data = await utils.auth.verifyEmail.mutate({
-          token: verificationToken,
-        });
-
-        logger.log("Verification successful:", data);
-
-        // Update user context with the verified user data
-        if (data.user) {
-          updateUser(data.user);
-        }
-
-        // Invalidate verification status query to refresh any cached data
-        queryClient.invalidateQueries({ queryKey: ["verification-status"] });
-
-        setVerificationState({
-          loading: false,
-          result: {
-            success: true,
-            message: data.message,
-            type: data.type,
-          },
-        });
-
-        toast.success("Email verified successfully!");
-
-        // Redirect based on authentication status
-        setTimeout(() => {
-          if (isAuthenticated) {
-            // User is logged in, always go to workspace creation
-            // The workspace page will handle redirecting to dashboard if user already has workspaces
-            navigate("/workspace", { replace: true });
-          } else {
-            // User is not logged in, go to sign in page
-            navigate("/auth/sign-in", { replace: true });
-          }
-        }, 3000);
-      } catch (error: unknown) {
-        logger.error("Email verification error:", error);
-
-        // Check if the error is an HTTP error with response data
-        let errorMessage = "Failed to verify email. Please try again.";
-        if (error instanceof Error) {
-          errorMessage = error.message;
-          logger.log("Error details:", {
-            message: error.message,
-            name: error.name,
-            stack: error.stack,
-          });
-        }
-
-        // Log additional details if it's a fetch error
-        if (error && typeof error === "object" && "response" in error) {
-          logger.log("Response error details:", error);
-        }
-
-        setVerificationState({
-          loading: false,
-          result: {
-            success: false,
-            error: errorMessage,
-          },
-        });
-      }
-    };
-
-    verifyEmailToken(token);
-  }, [token, navigate, isAuthenticated, updateUser, queryClient]);
-
-  const handleResendVerification = async () => {
-    try {
-      const utils = trpc.useUtils();
-      await utils.auth.resendVerification.mutate({
-        type: "SIGNUP",
-      });
-      toast.success("Verification email sent! Please check your inbox.");
-    } catch (error: unknown) {
-      logger.error("Resend verification error:", error);
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : "Failed to resend verification email"
-      );
-    }
+  const handleResendVerification = () => {
+    resendVerificationMutation.mutate({ type: "SIGNUP" });
   };
 
   const handleGoToSignIn = () => {

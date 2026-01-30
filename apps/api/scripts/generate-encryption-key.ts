@@ -6,7 +6,7 @@
  * Usage: npx tsx scripts/generate-encryption-key.ts
  */
 
-import cryptoModule from "crypto";
+import cryptoModule from "node:crypto";
 
 function generateEncryptionKey() {
   // Generate a 32-byte (256-bit) random key

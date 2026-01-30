@@ -44,7 +44,7 @@ export const WorkspaceInfoTab = ({
   onUpdateWorkspace,
   isUpdating,
 }: WorkspaceInfoTabProps) => {
-  const { userPlan, planData } = useUser();
+  const { user, userPlan, planData } = useUser();
 
   if (!workspace) {
     return <NoWorkspaceCard />;
@@ -68,6 +68,7 @@ export const WorkspaceInfoTab = ({
           editingWorkspace={editingWorkspace}
           workspaceForm={workspaceForm}
           setWorkspaceForm={setWorkspaceForm}
+          userEmail={user.email}
         />
 
         <Separator />

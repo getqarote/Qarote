@@ -12,6 +12,7 @@ import Downloads from "@/pages/Downloads";
 import LicenseManagement from "@/pages/LicenseManagement";
 import LicensePurchase from "@/pages/LicensePurchase";
 import Login from "@/pages/Login";
+import SignUp from "@/pages/SignUp";
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -25,7 +26,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/auth/sign-in" replace />;
   }
 
   return <>{children}</>;
@@ -43,7 +44,13 @@ const App = () => {
           }}
         >
           <Routes>
-            <Route path="/login" element={<Login />} />
+            {/* Redirect old /login route to new /auth/sign-in for backward compatibility */}
+            <Route
+              path="/login"
+              element={<Navigate to="/auth/sign-in" replace />}
+            />
+            <Route path="/auth/sign-in" element={<Login />} />
+            <Route path="/auth/sign-up" element={<SignUp />} />
             <Route
               path="/"
               element={

@@ -15,6 +15,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const utils = trpc.useUtils();
 
   useEffect(() => {
     // Check for stored auth data on mount
@@ -104,7 +105,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         return;
       }
 
-      const utils = trpc.useUtils();
       const response = await utils.auth.getSession.fetch();
       const updatedUser = response.user;
       // Ensure workspaceId is set from workspace object if not directly available
@@ -121,7 +121,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } catch (error) {
       logger.error("Failed to refetch user data:", error);
     }
-  }, [token]);
+  }, [token, utils]);
 
   const value: AuthContextType = {
     user,

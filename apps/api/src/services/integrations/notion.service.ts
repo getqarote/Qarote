@@ -8,6 +8,7 @@ import {
 import type { User } from "@prisma/client";
 
 import { logger } from "@/core/logger";
+import { retryWithBackoff } from "@/core/retry";
 
 import { Sentry, setSentryContext } from "@/services/sentry";
 
@@ -68,10 +69,19 @@ class NotionService {
       });
 
       // Get database to retrieve data sources
-      const rawResponse = await this.client.request({
-        method: "get",
-        path: `databases/${notionConfig.databaseId}`,
-      });
+      const rawResponse = await retryWithBackoff(
+        () =>
+          this.client.request({
+            method: "get",
+            path: `databases/${notionConfig.databaseId}`,
+          }),
+        {
+          maxRetries: 3,
+          retryDelayMs: 1_000,
+          timeoutMs: 10_000,
+        },
+        "notion"
+      );
 
       // Validate response with Zod schema
       let response;
@@ -259,91 +269,100 @@ class NotionService {
         };
       }
 
-      const rawResponse = await this.client.request({
-        method: "post",
-        path: "pages",
-        body: {
-          parent: {
-            type: "data_source_id",
-            data_source_id: dataSourceResult.dataSourceId,
-          },
-          properties: {
-            // Assuming the database has these properties:
-            // - Name (title): Full name
-            // - Email (email): User email
-            // - First Name (rich_text): First name
-            // - Last Name (rich_text): Last name
-            // - User ID (rich_text): Internal user ID
-            // - Email Verified (checkbox): Verification status
-            // - Role (select): User role
-            // - Created At (date): Registration date
-            // - Workspace ID (rich_text): Optional workspace ID
-            Name: {
-              title: [
-                {
-                  text: {
-                    content: `${params.firstName} ${params.lastName}`,
-                  },
-                },
-              ],
-            },
-            Email: {
-              email: params.email,
-            },
-            "First Name": {
-              rich_text: [
-                {
-                  text: {
-                    content: params.firstName,
-                  },
-                },
-              ],
-            },
-            "Last Name": {
-              rich_text: [
-                {
-                  text: {
-                    content: params.lastName,
-                  },
-                },
-              ],
-            },
-            "User ID": {
-              rich_text: [
-                {
-                  text: {
-                    content: params.userId,
-                  },
-                },
-              ],
-            },
-            "Email Verified": {
-              checkbox: params.emailVerified,
-            },
-            Role: {
-              select: {
-                name: params.role || "USER",
+      const rawResponse = await retryWithBackoff(
+        () =>
+          this.client.request({
+            method: "post",
+            path: "pages",
+            body: {
+              parent: {
+                type: "data_source_id",
+                data_source_id: dataSourceResult.dataSourceId,
               },
-            },
-            "Created At": {
-              date: {
-                start: params.createdAt.toISOString(),
-              },
-            },
-            ...(params.workspaceId && {
-              "Workspace ID": {
-                rich_text: [
-                  {
-                    text: {
-                      content: params.workspaceId,
+              properties: {
+                // Assuming the database has these properties:
+                // - Name (title): Full name
+                // - Email (email): User email
+                // - First Name (rich_text): First name
+                // - Last Name (rich_text): Last name
+                // - User ID (rich_text): Internal user ID
+                // - Email Verified (checkbox): Verification status
+                // - Role (select): User role
+                // - Created At (date): Registration date
+                // - Workspace ID (rich_text): Optional workspace ID
+                Name: {
+                  title: [
+                    {
+                      text: {
+                        content: `${params.firstName} ${params.lastName}`,
+                      },
                     },
+                  ],
+                },
+                Email: {
+                  email: params.email,
+                },
+                "First Name": {
+                  rich_text: [
+                    {
+                      text: {
+                        content: params.firstName,
+                      },
+                    },
+                  ],
+                },
+                "Last Name": {
+                  rich_text: [
+                    {
+                      text: {
+                        content: params.lastName,
+                      },
+                    },
+                  ],
+                },
+                "User ID": {
+                  rich_text: [
+                    {
+                      text: {
+                        content: params.userId,
+                      },
+                    },
+                  ],
+                },
+                "Email Verified": {
+                  checkbox: params.emailVerified,
+                },
+                Role: {
+                  select: {
+                    name: params.role || "USER",
                   },
-                ],
+                },
+                "Created At": {
+                  date: {
+                    start: params.createdAt.toISOString(),
+                  },
+                },
+                ...(params.workspaceId && {
+                  "Workspace ID": {
+                    rich_text: [
+                      {
+                        text: {
+                          content: params.workspaceId,
+                        },
+                      },
+                    ],
+                  },
+                }),
               },
-            }),
-          },
+            },
+          }),
+        {
+          maxRetries: 3,
+          retryDelayMs: 1_000,
+          timeoutMs: 10_000,
         },
-      });
+        "notion"
+      );
 
       // Validate response with Zod schema
       let response;
@@ -474,10 +493,19 @@ class NotionService {
         };
       }
 
-      await this.client.pages.update({
-        page_id: notionPageId,
-        properties,
-      });
+      await retryWithBackoff(
+        () =>
+          this.client.pages.update({
+            page_id: notionPageId,
+            properties,
+          }),
+        {
+          maxRetries: 3,
+          retryDelayMs: 1_000,
+          timeoutMs: 10_000,
+        },
+        "notion"
+      );
 
       logger.info(
         {
@@ -518,15 +546,27 @@ class NotionService {
         };
       }
 
-      const response = await this.client.dataSources.query({
-        data_source_id: dataSourceResult.dataSourceId,
-        filter: {
-          property: "User ID",
-          rich_text: {
-            equals: userId,
-          },
+      // Extract to local variable for TypeScript narrowing in callback
+      const dataSourceId = dataSourceResult.dataSourceId;
+
+      const response = await retryWithBackoff(
+        () =>
+          this.client.dataSources.query({
+            data_source_id: dataSourceId,
+            filter: {
+              property: "User ID",
+              rich_text: {
+                equals: userId,
+              },
+            },
+          }),
+        {
+          maxRetries: 3,
+          retryDelayMs: 1_000,
+          timeoutMs: 10_000,
         },
-      });
+        "notion"
+      );
 
       if (response.results.length === 0) {
         return {

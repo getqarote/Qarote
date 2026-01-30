@@ -4,8 +4,8 @@
  * Used to prevent license sharing across different servers
  */
 
-import crypto from "crypto";
-import os from "os";
+import crypto from "node:crypto";
+import os from "node:os";
 
 /**
  * Generate a stable instance fingerprint

@@ -28,21 +28,18 @@ import { useDashboardData } from "@/hooks/ui/useDashboardData";
 
 const Index = () => {
   const { selectedServerId, hasServers } = useServerContext();
-  const { user, isAuthenticated, refetchUser } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [liveRatesTimeRange, setLiveRatesTimeRange] = useState<TimeRange>("1d");
 
   // Check if user needs to create a workspace
   useEffect(() => {
-    if (isAuthenticated) {
-      if (!user?.workspaceId) {
-        navigate("/workspace", { replace: true });
-      } else {
-        navigate("/", { replace: true });
-      }
+    if (isAuthenticated && !user?.workspaceId) {
+      navigate("/workspace", { replace: true });
     }
-  }, [isAuthenticated, user, navigate, refetchUser]);
+    // Don't navigate to "/" when already on "/" - this prevents redirect loops
+  }, [isAuthenticated, user?.workspaceId, navigate]);
 
   const {
     overview,

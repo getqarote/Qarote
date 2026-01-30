@@ -17,6 +17,7 @@ const PaymentSuccess: React.FC = () => {
   const { refetchPlan, planData } = useUser();
   const { workspace } = useWorkspace();
   const queryClient = useQueryClient();
+  const utils = trpc.useUtils();
 
   useEffect(() => {
     // Refresh workspace data to get updated plan
@@ -58,7 +59,6 @@ const PaymentSuccess: React.FC = () => {
 
       try {
         // Get payment history to find the latest payment
-        const utils = trpc.useUtils();
         const paymentHistory =
           await utils.payment.history.getPaymentHistory.fetch({
             limit: 1,
@@ -109,7 +109,7 @@ const PaymentSuccess: React.FC = () => {
     if (sessionId) {
       handlePurchaseTracking();
     }
-  }, [sessionId, purchaseTracked, workspace?.id]);
+  }, [sessionId, purchaseTracked, workspace?.id, utils]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-600 via-red-600 to-orange-700 flex items-center justify-center p-4">

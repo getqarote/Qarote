@@ -1,4 +1,5 @@
 import { logger } from "@/core/logger";
+import { retryWithBackoff } from "@/core/retry";
 
 import { CoreStripeService, stripe } from "./core.service";
 
@@ -10,9 +11,18 @@ export class StripePaymentService {
     try {
       logger.info({ subscriptionId }, "Retrieving upcoming invoice");
 
-      const invoice = await stripe.invoices.retrieveUpcoming({
-        subscription: subscriptionId,
-      });
+      const invoice = await retryWithBackoff(
+        () =>
+          stripe.invoices.retrieveUpcoming({
+            subscription: subscriptionId,
+          }),
+        {
+          maxRetries: 3,
+          retryDelayMs: 1_000,
+          timeoutMs: 10_000,
+        },
+        "stripe"
+      );
 
       logger.info(
         {
@@ -38,8 +48,15 @@ export class StripePaymentService {
     try {
       logger.info({ paymentMethodId }, "Retrieving payment method");
 
-      const paymentMethod =
-        await stripe.paymentMethods.retrieve(paymentMethodId);
+      const paymentMethod = await retryWithBackoff(
+        () => stripe.paymentMethods.retrieve(paymentMethodId),
+        {
+          maxRetries: 3,
+          retryDelayMs: 1_000,
+          timeoutMs: 10_000,
+        },
+        "stripe"
+      );
 
       logger.info(
         {
@@ -65,11 +82,20 @@ export class StripePaymentService {
     try {
       logger.info({ customerId, limit }, "Retrieving Stripe payment history");
 
-      const invoices = await stripe.invoices.list({
-        customer: customerId,
-        limit,
-        status: "paid",
-      });
+      const invoices = await retryWithBackoff(
+        () =>
+          stripe.invoices.list({
+            customer: customerId,
+            limit,
+            status: "paid",
+          }),
+        {
+          maxRetries: 3,
+          retryDelayMs: 1_000,
+          timeoutMs: 10_000,
+        },
+        "stripe"
+      );
 
       logger.info(
         {
@@ -96,10 +122,19 @@ export class StripePaymentService {
     try {
       logger.info({ customerId, limit }, "Retrieving Stripe invoice history");
 
-      const invoices = await stripe.invoices.list({
-        customer: customerId,
-        limit,
-      });
+      const invoices = await retryWithBackoff(
+        () =>
+          stripe.invoices.list({
+            customer: customerId,
+            limit,
+          }),
+        {
+          maxRetries: 3,
+          retryDelayMs: 1_000,
+          timeoutMs: 10_000,
+        },
+        "stripe"
+      );
 
       logger.info(
         {
