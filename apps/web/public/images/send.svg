@@ -1,0 +1,14 @@
+<svg width="265" height="371" viewBox="0 0 265 371" fill="none" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
+<path d="M0 159L6.95011e-06 106L53 106L53 159H0Z" fill="#FF691B"/>
+<path d="M53 106V53L106 53L106 106H53Z" fill="#FF691B"/>
+<path d="M159 106V53L212 53V106L159 106Z" fill="#FF691B"/>
+<path d="M106 53V0L159 6.95011e-06V53L106 53Z" fill="#FF691B"/>
+<path d="M106 106L106 53L159 53V106L106 106Z" fill="#FF691B"/>
+<path d="M106 159V106L159 106V159H106Z" fill="#FF691B"/>
+<path d="M106 212V159H159V212H106Z" fill="#FF691B"/>
+<path d="M106 265V212H159V265H106Z" fill="#FF691B"/>
+<path d="M106 318V265H159V318H106Z" fill="#FF691B"/>
+<path d="M106 371V318H159V371H106Z" fill="#FF691B"/>
+<path d="M212 159V106H265V159H212Z" fill="#FF691B"/>
+</svg>
+

@@ -30,16 +30,16 @@ const StickyNav = ({ onVideoClick }: StickyNavProps) => {
   };
 
   return (
-    <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border shadow-sm">
+    <nav className="sticky top-0 z-50 border-b border-border" style={{ backgroundColor: '#ffffff' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
             <img
               src="/images/new_icon.svg"
               alt="Qarote"
               className="w-6 h-6 sm:w-8 sm:h-8"
             />
-            <span className="font-bold text-foreground text-base sm:text-lg">
+            <span className="text-foreground" style={{ fontWeight: 400, fontSize: '1.2rem' }}>
               Qarote
             </span>
           </div>
@@ -49,7 +49,7 @@ const StickyNav = ({ onVideoClick }: StickyNavProps) => {
               <button
                 key={section.id}
                 onClick={() => scrollToSection(section.id)}
-                className="px-4 py-2 text-sm font-medium text-foreground hover:text-orange-500 transition-colors"
+                className="px-4 py-2 text-base font-medium text-foreground hover:text-orange-500 transition-colors"
               >
                 {section.label}
               </button>
@@ -59,7 +59,7 @@ const StickyNav = ({ onVideoClick }: StickyNavProps) => {
           <div className="flex items-center gap-1 sm:gap-2">
             <a
               href={`${import.meta.env.VITE_APP_BASE_URL}/auth/sign-in`}
-              className="text-foreground hover:text-orange-500 px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium transition-colors"
+              className="text-foreground hover:text-orange-500 px-2 sm:px-4 py-2 text-base font-medium transition-colors"
             >
               Login
             </a>
@@ -72,9 +72,15 @@ const StickyNav = ({ onVideoClick }: StickyNavProps) => {
                 });
                 window.location.href = `${authBaseUrl}/auth/sign-up`;
               }}
-              className="bg-gradient-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600 px-2 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-colors whitespace-nowrap"
+              className="bg-[#FF691B] text-white hover:bg-[#E55A0F] px-2 sm:px-4 py-2 text-base transition-colors whitespace-nowrap rounded-full inline-flex items-center justify-center gap-2"
             >
-              Try for free
+              <span>Try for free</span>
+              <img
+                src="/images/arrow-right.svg"
+                alt="Arrow right"
+                className="h-[0.8em] w-auto"
+                style={{ imageRendering: "crisp-edges", verticalAlign: "middle" }}
+              />
             </button>
           </div>
         </div>

@@ -49,19 +49,19 @@ const AccordionTrigger = React.forwardRef<
     <AccordionPrimitive.Trigger
       ref={ref}
       className={cn(
-        "flex flex-1 items-center justify-between py-4 font-medium transition-all hover:underline group",
+        "flex flex-1 items-center justify-between py-4 transition-all hover:underline group",
         className
       )}
       {...props}
     >
       {children}
-      <div className="relative h-8 w-8 shrink-0">
-        <span className="plus absolute inset-0 flex items-center justify-center text-orange-600 font-light text-3xl transition-all duration-200 opacity-100 rotate-0 group-data-[state=open]:opacity-0 group-data-[state=open]:rotate-90">
-          +
-        </span>
-        <span className="minus absolute inset-0 flex items-center justify-center text-orange-600 font-light text-3xl transition-all duration-200 opacity-0 -rotate-90 group-data-[state=open]:opacity-100 group-data-[state=open]:rotate-0">
-          −
-        </span>
+      <div className="relative h-8 w-8 shrink-0 flex items-center justify-center">
+        <img
+          src="/images/arrow-down.svg"
+          alt="Toggle"
+          className="h-[1em] w-[1em] transition-transform duration-200 group-data-[state=open]:rotate-180"
+          style={{ imageRendering: "crisp-edges" }}
+        />
       </div>
     </AccordionPrimitive.Trigger>
   </AccordionPrimitive.Header>
@@ -81,7 +81,7 @@ const AccordionContent = React.forwardRef<
 >(({ className, children, ...props }, ref) => (
   <AccordionPrimitive.Content
     ref={ref}
-    className="overflow-hidden text-sm transition-all data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down"
+    className="overflow-hidden text-base transition-all data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down"
     {...props}
   >
     <div className={cn("pb-4 pt-0", className)}>{children}</div>
