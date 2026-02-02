@@ -23,7 +23,8 @@ export const registrationRouter = router({
   register: rateLimitedPublicProcedure
     .input(RegisterUserSchema)
     .mutation(async ({ input, ctx }) => {
-      const { email, password, firstName, lastName, acceptTerms } = input;
+      const { email, password, firstName, lastName, acceptTerms, sourceApp } =
+        input;
 
       // Validate that terms were accepted
       if (!acceptTerms) {
@@ -86,7 +87,8 @@ export const registrationRouter = router({
             user.email,
             verificationToken,
             "SIGNUP",
-            firstName
+            firstName,
+            sourceApp
           );
 
           ctx.logger.info(

@@ -76,12 +76,9 @@ const LicenseManagement = () => {
       {licenses.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
-            <p className="text-muted-foreground mb-4">
+            <p className="text-muted-foreground">
               You don't have any licenses yet.
             </p>
-            <Link to="/purchase">
-              <Button>Purchase Your First License</Button>
-            </Link>
           </CardContent>
         </Card>
       ) : (

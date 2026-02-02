@@ -18,7 +18,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-import { useAuth } from "@/contexts/AuthContextDefinition";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface VerificationResult {
   success: boolean;
@@ -33,6 +33,8 @@ export default function VerifyEmail() {
   const queryClient = useQueryClient();
   const { isAuthenticated, updateUser } = useAuth();
   const verificationAttempted = useRef(false);
+  const [userEmail, setUserEmail] = useState<string>("");
+  const [showEmailInput, setShowEmailInput] = useState(false);
   const [verificationState, setVerificationState] = useState<{
     loading: boolean;
     result: VerificationResult | null;
@@ -70,7 +72,7 @@ export default function VerifyEmail() {
       // Redirect based on authentication status
       setTimeout(() => {
         if (isAuthenticated) {
-          navigate("/workspace", { replace: true });
+          navigate("/licenses", { replace: true });
         } else {
           navigate("/auth/sign-in", { replace: true });
         }
@@ -136,17 +138,43 @@ export default function VerifyEmail() {
   }, [token]);
 
   const handleResendVerification = () => {
-    resendVerificationMutation.mutate({ type: "SIGNUP", sourceApp: "app" });
+    // For authenticated users, send directly
+    if (isAuthenticated) {
+      resendVerificationMutation.mutate({
+        type: "SIGNUP",
+        sourceApp: "portal",
+      });
+      return;
+    }
+
+    // For unauthenticated users, show email input if not already shown
+    if (!showEmailInput) {
+      setShowEmailInput(true);
+      return;
+    }
+
+    // Validate email before sending
+    if (!userEmail || !userEmail.includes("@")) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+
+    resendVerificationMutation.mutate({
+      type: "SIGNUP",
+      email: userEmail,
+      sourceApp: "portal",
+    });
+
+    // Hide email input after sending
+    setShowEmailInput(false);
   };
 
   const handleGoToSignIn = () => {
     navigate("/auth/sign-in");
   };
 
-  const handleGoToDashboard = () => {
-    // Always go to workspace creation
-    // The workspace page will handle redirecting to dashboard if user already has workspaces
-    navigate("/workspace", { replace: true });
+  const handleGoToLicenses = () => {
+    navigate("/licenses", { replace: true });
   };
 
   logger.log("Verification State:", verificationState);
@@ -211,18 +239,18 @@ export default function VerifyEmail() {
                   {result.message ||
                     "Email verification completed successfully."}
                   {result.type === "SIGNUP" &&
-                    " You can now access all features of the application."}
+                    " You can now purchase and manage your licenses."}
                 </AlertDescription>
               </Alert>
 
               <div className="space-y-2">
                 <Button
                   onClick={
-                    isAuthenticated ? handleGoToDashboard : handleGoToSignIn
+                    isAuthenticated ? handleGoToLicenses : handleGoToSignIn
                   }
                   className="w-full bg-gradient-button hover:bg-gradient-button-hover"
                 >
-                  {isAuthenticated ? "Go to Dashboard" : "Sign In to Continue"}
+                  {isAuthenticated ? "Go to Licenses" : "Sign In to Continue"}
                 </Button>
                 <p className="text-sm text-gray-500 text-center">
                   Redirecting automatically in 3 seconds...
@@ -250,13 +278,28 @@ export default function VerifyEmail() {
                   </Button>
                 )}
 
+                {!isAuthenticated && showEmailInput && (
+                  <div className="space-y-2">
+                    <input
+                      type="email"
+                      placeholder="Enter your email address"
+                      value={userEmail}
+                      onChange={(e) => setUserEmail(e.target.value)}
+                      className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                    />
+                  </div>
+                )}
+
                 <Button
                   onClick={handleResendVerification}
                   variant="outline"
                   className="w-full"
+                  disabled={resendVerificationMutation.isPending}
                 >
                   <Mail className="h-4 w-4 mr-2" />
-                  Resend Verification Email
+                  {!isAuthenticated && showEmailInput
+                    ? "Send Verification Email"
+                    : "Resend Verification Email"}
                 </Button>
 
                 {!isAuthenticated && (
@@ -271,11 +314,11 @@ export default function VerifyEmail() {
 
                 {isAuthenticated && (
                   <Button
-                    onClick={handleGoToDashboard}
+                    onClick={handleGoToLicenses}
                     variant="ghost"
                     className="w-full"
                   >
-                    Go to Dashboard
+                    Go to Licenses
                   </Button>
                 )}
               </div>

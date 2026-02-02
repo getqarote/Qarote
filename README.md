@@ -64,6 +64,12 @@ Qarote is available in two editions to suit different needs:
 
 📖 **[View Enterprise Edition Guide](docs/ENTERPRISE_EDITION.md)** • **[Compare Features](docs/FEATURE_COMPARISON.md)**
 
+<div align="center">
+
+**[🎟️ Get Enterprise License](https://portal.qarote.io)** - Purchase and manage your licenses
+
+</div>
+
 ## 🚀 Quick Start
 
 ### Self-Hosted Deployment

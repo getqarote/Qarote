@@ -31,3 +31,15 @@ dist
 *.njsproj
 *.sln
 *.sw?
+
+# BMad Method files
+_bmad/
+_bmad-output/
+.bmad/
+bmad-config.json
+.bmad-method/
+**/bmad-*.md
+**/BMAD-*.md
+
+
+docs
