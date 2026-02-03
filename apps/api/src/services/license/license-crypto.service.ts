@@ -23,7 +23,6 @@ export function signLicenseData(data: LicenseData, privateKey: string): string {
       expiresAt: data.expiresAt,
       features: data.features,
       maxInstances: data.maxInstances,
-      instanceId: data.instanceId,
     });
 
     // Sign with RSA-SHA256
@@ -58,7 +57,6 @@ export function verifyLicenseSignature(
       expiresAt: data.expiresAt,
       features: data.features,
       maxInstances: data.maxInstances,
-      instanceId: data.instanceId,
     });
 
     // Verify signature

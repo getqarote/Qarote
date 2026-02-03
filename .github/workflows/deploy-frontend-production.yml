@@ -25,7 +25,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "24"
-          cache: 'pnpm'
+          cache: "pnpm"
           cache-dependency-path: pnpm-lock.yaml
 
       - name: 📥 Install dependencies
@@ -76,7 +76,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 24
-          cache: 'pnpm'
+          cache: "pnpm"
           cache-dependency-path: pnpm-lock.yaml
 
       - name: 📦 Install dependencies
@@ -93,6 +93,7 @@ jobs:
           VITE_SENTRY_ENABLED: ${{ vars.VITE_SENTRY_ENABLED }}
           VITE_APP_VERSION: ${{ vars.VITE_APP_VERSION }}
           VITE_GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          VITE_DEPLOYMENT_MODE: ${{ vars.DEPLOYMENT_MODE }}
           VITE_ENVIRONMENT: production
           NODE_ENV: production
         run: pnpm run build

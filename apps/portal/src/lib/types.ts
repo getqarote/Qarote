@@ -19,7 +19,7 @@ export interface License {
   id: string;
   licenseKey: string;
   tier: "FREE" | "DEVELOPER" | "ENTERPRISE";
-  expiresAt: Date | null;
+  expiresAt: Date;
   customerEmail: string;
   workspaceId: string | null;
   lastValidatedAt: Date | null;

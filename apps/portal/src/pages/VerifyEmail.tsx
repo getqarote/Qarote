@@ -33,6 +33,7 @@ export default function VerifyEmail() {
   const queryClient = useQueryClient();
   const { isAuthenticated, updateUser } = useAuth();
   const verificationAttempted = useRef(false);
+  const redirectTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [userEmail, setUserEmail] = useState<string>("");
   const [showEmailInput, setShowEmailInput] = useState(false);
   const [verificationState, setVerificationState] = useState<{
@@ -70,7 +71,7 @@ export default function VerifyEmail() {
       toast.success("Email verified successfully!");
 
       // Redirect based on authentication status
-      setTimeout(() => {
+      redirectTimerRef.current = setTimeout(() => {
         if (isAuthenticated) {
           navigate("/licenses", { replace: true });
         } else {
@@ -137,6 +138,16 @@ export default function VerifyEmail() {
     verifyEmailMutation.mutate({ token });
   }, [token]);
 
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (redirectTimerRef.current) {
+        clearTimeout(redirectTimerRef.current);
+        redirectTimerRef.current = null;
+      }
+    };
+  }, []);
+
   const handleResendVerification = () => {
     // For authenticated users, send directly
     if (isAuthenticated) {
@@ -170,10 +181,20 @@ export default function VerifyEmail() {
   };
 
   const handleGoToSignIn = () => {
+    // Clear any pending redirect timer
+    if (redirectTimerRef.current) {
+      clearTimeout(redirectTimerRef.current);
+      redirectTimerRef.current = null;
+    }
     navigate("/auth/sign-in");
   };
 
   const handleGoToLicenses = () => {
+    // Clear any pending redirect timer
+    if (redirectTimerRef.current) {
+      clearTimeout(redirectTimerRef.current);
+      redirectTimerRef.current = null;
+    }
     navigate("/licenses", { replace: true });
   };
 

@@ -21,6 +21,7 @@ const LicenseManagement = () => {
   const { data, isLoading } = trpc.license.getLicenses.useQuery();
 
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   const copyToClipboard = (text: string, licenseId: string) => {
     navigator.clipboard.writeText(text);
@@ -32,6 +33,10 @@ const LicenseManagement = () => {
   const utils = trpc.useUtils();
 
   const handleDownload = async (licenseId: string) => {
+    // Prevent duplicate downloads
+    if (downloadingId) return;
+
+    setDownloadingId(licenseId);
     try {
       const result = await utils.license.downloadLicense.fetch({
         licenseId,
@@ -50,6 +55,8 @@ const LicenseManagement = () => {
       toast.success("License downloaded");
     } catch (error) {
       toast.error("Failed to download license");
+    } finally {
+      setDownloadingId(null);
     }
   };
 
@@ -136,9 +143,12 @@ const LicenseManagement = () => {
                     <Button
                       variant="outline"
                       onClick={() => handleDownload(license.id)}
+                      disabled={downloadingId === license.id}
                     >
                       <Download className="h-4 w-4 mr-2" />
-                      Download
+                      {downloadingId === license.id
+                        ? "Downloading..."
+                        : "Download"}
                     </Button>
                   </div>
                 </div>

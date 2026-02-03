@@ -102,11 +102,14 @@ Both Community and Enterprise editions can be deployed with Docker Compose:
 # 1. Copy environment file
 cp .env.selfhosted.example .env
 
-# 2. Edit .env and set DEPLOYMENT_MODE
+# 2. Generate secure secrets
+pnpm setup:selfhosted --write
+
+# 3. Edit .env and set DEPLOYMENT_MODE
 #    - Community: DEPLOYMENT_MODE=community
 #    - Enterprise: DEPLOYMENT_MODE=enterprise (also configure license)
 
-# 3. Start services
+# 4. Start services
 docker compose -f docker-compose.selfhosted.yml up -d
 ```
 

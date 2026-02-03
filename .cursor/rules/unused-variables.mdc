@@ -1,0 +1,125 @@
+# Unused Variables Convention
+
+## Rule: Do Not Use Underscore Prefix for Unused Variables
+
+**NEVER prefix unused variables with `_` to suppress linter warnings.**
+
+### ❌ WRONG - Using underscore prefix
+
+```typescript
+// ❌ Don't do this
+const { data: _data, error } = someFunction();
+const { license: _updatedLicense, newVersion } = await renewLicense();
+```
+
+### ✅ CORRECT - Proper solutions
+
+#### 1. Remove the unused variable entirely
+
+```typescript
+// ✅ Only destructure what you need
+const { error } = someFunction();
+const { newVersion } = await renewLicense();
+```
+
+#### 2. Use the variable if it provides value
+
+```typescript
+// ✅ Use it in logging or validation
+const { license: updatedLicense, newVersion } = await renewLicense();
+
+logger.info(
+  {
+    licenseId: updatedLicense.id,
+    newVersion,
+    expiresAt: updatedLicense.expiresAt,
+  },
+  "License renewed successfully"
+);
+```
+
+#### 3. If destructuring is required for API shape, use array position
+
+```typescript
+// ✅ Use array destructuring with empty slots
+const [, newVersion] = await renewLicense(); // Skip first element
+
+// Or use object rest to ignore properties
+const { newVersion, ...rest } = await renewLicense();
+```
+
+## Why This Matters
+
+- **Clarity**: Underscores hide the fact that we're not using returned data
+- **Code smell**: Unused variables often indicate incomplete implementation or incorrect API usage
+- **Refactoring opportunity**: Forces us to think about whether the variable should be used or if the API should change
+- **Consistency**: Keeps the codebase clean and intentional
+
+## When You Encounter Unused Variables
+
+1. **Ask why it's unused** - Should it be used for logging, validation, or error handling?
+2. **Check if it's needed** - Can the destructuring be simplified?
+3. **Consider the API** - Should the function return less data?
+4. **Never use underscore** - It's a band-aid that hides the real issue
+
+## Examples
+
+### Destructuring API responses
+
+```typescript
+// ❌ Wrong
+const { license: _updatedLicense, newVersion } = await renewLicense(id, date);
+
+// ✅ Better - Only get what you need
+const { newVersion } = await renewLicense(id, date);
+
+// ✅ Or use it
+const { license: updatedLicense, newVersion } = await renewLicense(id, date);
+logger.info({ licenseId: updatedLicense.id, newVersion }, "License renewed");
+```
+
+### Function parameters
+
+```typescript
+// ❌ Wrong
+async function handler(req: Request, _res: Response) {
+  // ... only uses req
+}
+
+// ✅ Better - Remove unused parameter or use it
+async function handler(req: Request) {
+  // ... only uses req
+}
+```
+
+### TypeScript tuple destructuring
+
+```typescript
+// ❌ Wrong
+const [_error, data] = await somePromise();
+
+// ✅ Better - Use proper error handling
+const [error, data] = await somePromise();
+if (error) {
+  logger.error({ error }, "Operation failed");
+  return;
+}
+
+// ✅ Or use try-catch if appropriate
+try {
+  const data = await someOperation();
+  // ...
+} catch (error) {
+  logger.error({ error }, "Operation failed");
+}
+```
+
+## Exceptions
+
+There are NO exceptions. If ESLint complains about an unused variable:
+
+1. Remove it
+2. Use it
+3. Restructure the code
+
+Never silence the warning with an underscore prefix.

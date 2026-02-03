@@ -1,5 +1,5 @@
 import React from "react";
-import WelcomeBackEmail from "../../../src/services/email/templates/welcome-back-email";
+import { WelcomeBackEmail } from "../../../src/services/email/templates/welcome-back-email";
 import { emailConfig } from "../../../src/config";
 
 const { frontendUrl } = emailConfig;

@@ -407,7 +407,9 @@ export const serverRouter = router({
   testConnection: authorize([UserRole.ADMIN])
     .input(TestConnectionWithWorkspaceSchema)
     .mutation(async ({ input, ctx }) => {
-      const { workspaceId: _workspaceId, ...credentials } = input;
+      // Extract connection credentials (exclude workspaceId which is only for validation)
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { workspaceId, ...credentials } = input;
 
       ctx.logger.info({ credentials }, "Testing connection with credentials");
 

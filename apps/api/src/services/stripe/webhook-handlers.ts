@@ -6,6 +6,7 @@ import { getUserDisplayName } from "@/core/utils";
 
 import { EmailService } from "@/services/email/email.service";
 import { licenseService } from "@/services/license/license.service";
+import { getLicenseFeaturesForTier } from "@/services/license/license-features.service";
 import { trackPaymentError } from "@/services/sentry";
 import { CoreStripeService } from "@/services/stripe/core.service";
 import {
@@ -17,8 +18,22 @@ import {
   Subscription,
 } from "@/services/stripe/stripe.service";
 
+import { emailConfig } from "@/config";
+
 // Note: This file contains webhook handlers that are used by the webhook controller
 // These handlers process Stripe webhook events and update the database accordingly
+
+/**
+ * Calculate the number of days until a date expires
+ * Returns 0 if the date has already passed (ensuring no negative values)
+ */
+function calculateDaysUntilExpiration(expiresAt: Date): number {
+  const daysUntilExpiration = Math.ceil(
+    (expiresAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+  );
+
+  return Math.max(0, daysUntilExpiration);
+}
 
 export async function handleCheckoutSessionCompleted(session: Session) {
   const userId = session.metadata?.userId;
@@ -33,7 +48,14 @@ export async function handleCheckoutSessionCompleted(session: Session) {
 
   // Handle license purchases differently from subscriptions
   if (purchaseType === "license") {
-    return handleLicensePurchase(session, userId, plan, billingInterval);
+    const subscriptionId = StripeService.extractSubscriptionId(session);
+    return handleLicensePurchase(
+      session,
+      userId,
+      plan,
+      billingInterval,
+      subscriptionId
+    );
   }
 
   try {
@@ -173,27 +195,28 @@ async function handleLicensePurchase(
   session: Session,
   userId: string,
   plan: UserPlan,
-  billingInterval: string | undefined
+  billingInterval: string | undefined,
+  subscriptionId: string | null = null
 ) {
   try {
     const customerId = StripeService.extractCustomerId(session);
-    const paymentIntentId =
-      CoreStripeService.extractPaymentIntentIdFromSession(session);
 
-    // Check if license already exists for this payment (idempotency check)
-    if (paymentIntentId) {
+    // Check if license already exists for this subscription (idempotency check)
+    // For subscription-mode checkouts, we use subscriptionId instead of paymentIntentId
+    // because payment_intent is null (payments happen via invoice)
+    if (subscriptionId) {
       const existingLicense = await prisma.license.findFirst({
-        where: { stripePaymentId: paymentIntentId },
+        where: { stripeSubscriptionId: subscriptionId },
       });
 
       if (existingLicense) {
         logger.info(
           {
             licenseId: existingLicense.id,
-            paymentIntentId,
+            subscriptionId,
             userId,
           },
-          "License already exists for this payment, skipping duplicate generation"
+          "License already exists for this subscription, skipping duplicate generation"
         );
         return;
       }
@@ -225,7 +248,7 @@ async function handleLicensePurchase(
       workspaceId: user.workspaceId || undefined,
       expiresAt,
       stripeCustomerId: customerId || undefined,
-      stripePaymentId: paymentIntentId || undefined,
+      stripeSubscriptionId: subscriptionId || undefined, // Link to subscription for renewals and idempotency
     });
 
     logger.info(
@@ -235,21 +258,46 @@ async function handleLicensePurchase(
         plan,
         customerEmail: user.email,
       },
-      "License generated for user"
+      "License created successfully"
     );
 
-    // Send license email
-    // TODO: Implement license purchase confirmation email
+    // Generate and save signed license file (version 1)
+    const features = getLicenseFeaturesForTier(plan);
+    const licenseFileResult = await licenseService.generateLicenseFile({
+      licenseKey,
+      tier: plan,
+      customerEmail: user.email,
+      expiresAt,
+      features,
+    });
+
+    // Save license file version for download
+    await licenseService.saveLicenseFileVersion(
+      licenseId,
+      1, // Initial version
+      JSON.stringify(licenseFileResult.licenseFile, null, 2),
+      expiresAt
+    );
+
     logger.info(
       {
-        to: user.email,
-        userName: getUserDisplayName(user),
-        licenseKey,
-        plan,
-        expiresAt,
+        licenseId,
+        version: 1,
+        expiresAt: expiresAt.toISOString(),
       },
-      "License purchase completed - email should be sent"
+      "License file generated and saved for initial purchase"
     );
+
+    // Send license delivery email
+    const portalUrl = emailConfig.portalFrontendUrl;
+    await EmailService.sendLicenseDeliveryEmail({
+      to: user.email,
+      userName: getUserDisplayName(user),
+      licenseKey,
+      tier: plan,
+      expiresAt,
+      downloadUrl: `${portalUrl}/licenses`,
+    });
   } catch (error) {
     logger.error({ error }, "Error handling license purchase");
     trackPaymentError("webhook", {
@@ -356,6 +404,7 @@ export async function handleCustomerSubscriptionDeleted(
 
     const existingSubscription = await prisma.subscription.findUnique({
       where: { stripeSubscriptionId: subscriptionId },
+      include: { user: true },
     });
 
     if (existingSubscription) {
@@ -367,6 +416,72 @@ export async function handleCustomerSubscriptionDeleted(
       });
 
       logger.info({ subscriptionId }, "Subscription canceled successfully");
+
+      // Deactivate associated licenses (if any)
+      const licenses = await prisma.license.findMany({
+        where: {
+          stripeSubscriptionId: subscriptionId,
+          isActive: true,
+        },
+      });
+
+      if (licenses.length > 0) {
+        await prisma.license.updateMany({
+          where: {
+            stripeSubscriptionId: subscriptionId,
+          },
+          data: {
+            isActive: false,
+          },
+        });
+
+        logger.info(
+          {
+            subscriptionId,
+            licenseCount: licenses.length,
+            licenseIds: licenses.map((l) => l.id),
+          },
+          "Licenses deactivated due to subscription cancellation"
+        );
+
+        // Send cancellation email for each license
+        for (const license of licenses) {
+          try {
+            // Calculate grace period days (remaining time until expiration)
+            const gracePeriodDays = calculateDaysUntilExpiration(
+              license.expiresAt
+            );
+
+            // Send license cancellation email
+            await EmailService.sendLicenseCancellationEmail({
+              to: license.customerEmail,
+              licenseKey: license.licenseKey,
+              tier: license.tier,
+              expiresAt: license.expiresAt,
+              gracePeriodDays,
+            });
+
+            logger.info(
+              {
+                licenseId: license.id,
+                gracePeriodDays,
+                expiresAt: license.expiresAt.toISOString(),
+              },
+              "License cancellation email sent"
+            );
+          } catch (emailError) {
+            logger.error(
+              {
+                error: emailError,
+                licenseId: license.id,
+                subscriptionId,
+              },
+              "Failed to send cancellation email for individual license"
+            );
+            // Continue processing other licenses even if one fails
+          }
+        }
+      }
     }
   } catch (error) {
     logger.error({ error }, "Error handling subscription deletion");
@@ -408,6 +523,127 @@ export async function handleInvoicePaymentSucceeded(invoice: Invoice) {
       },
     });
 
+    // Check if this subscription has associated licenses (annual self-hosted licenses)
+    const licenses = await prisma.license.findMany({
+      where: {
+        stripeSubscriptionId: subscriptionId,
+        isActive: true,
+      },
+    });
+
+    // Only process renewals if this is an actual renewal (subscription_cycle)
+    // Not initial subscription payment (subscription_create)
+    if (
+      licenses.length > 0 &&
+      invoice.billing_reason === "subscription_cycle"
+    ) {
+      logger.info(
+        {
+          subscriptionId,
+          licenseCount: licenses.length,
+          invoiceId: invoice.id,
+          billingReason: invoice.billing_reason,
+        },
+        "Processing license renewal for subscription cycle"
+      );
+
+      for (const license of licenses) {
+        try {
+          // Idempotency check: Has this invoice already been processed for this license?
+          const existingRenewal = await prisma.licenseFileVersion.findFirst({
+            where: {
+              licenseId: license.id,
+              stripeInvoiceId: invoice.id,
+            },
+          });
+
+          if (existingRenewal) {
+            logger.info(
+              {
+                licenseId: license.id,
+                invoiceId: invoice.id,
+                existingVersion: existingRenewal.version,
+              },
+              "License renewal already processed for this invoice, skipping"
+            );
+            continue;
+          }
+
+          // Calculate new expiration date (365 days from now)
+          const newExpiresAt = new Date();
+          newExpiresAt.setFullYear(newExpiresAt.getFullYear() + 1);
+
+          // Renew license (updates expiresAt and increments version)
+          const { newVersion } = await licenseService.renewLicense(
+            license.id,
+            newExpiresAt
+          );
+
+          // Generate new signed license file
+          const features = getLicenseFeaturesForTier(license.tier);
+          const licenseFileResult = await licenseService.generateLicenseFile({
+            licenseKey: license.licenseKey,
+            tier: license.tier,
+            customerEmail: license.customerEmail,
+            expiresAt: newExpiresAt,
+            features: features as string[],
+          });
+
+          // Save license file version for historical access with invoice ID for idempotency
+          await licenseService.saveLicenseFileVersion(
+            license.id,
+            newVersion,
+            JSON.stringify(licenseFileResult.licenseFile, null, 2),
+            newExpiresAt,
+            invoice.id
+          );
+
+          // Send license renewal email with new file
+          const portalUrl = emailConfig.portalFrontendUrl;
+          await EmailService.sendLicenseRenewalEmail({
+            to: license.customerEmail,
+            licenseKey: license.licenseKey,
+            tier: license.tier,
+            previousExpiresAt: license.expiresAt,
+            newExpiresAt,
+            downloadUrl: `${portalUrl}/licenses`,
+          });
+
+          logger.info(
+            {
+              licenseId: license.id,
+              invoiceId: invoice.id,
+              newVersion,
+              newExpiresAt: newExpiresAt.toISOString(),
+              previousExpiresAt: license.expiresAt.toISOString(),
+            },
+            "License renewed, new file generated, and renewal email sent"
+          );
+        } catch (licenseError) {
+          logger.error(
+            {
+              error: licenseError,
+              licenseId: license.id,
+              subscriptionId,
+            },
+            "Failed to renew individual license"
+          );
+          // Continue processing other licenses even if one fails
+        }
+      }
+    } else if (licenses.length > 0) {
+      // Licenses exist but this is not a renewal (likely initial subscription payment)
+      logger.info(
+        {
+          subscriptionId,
+          licenseCount: licenses.length,
+          invoiceId: invoice.id,
+          billingReason: invoice.billing_reason,
+        },
+        "Skipping renewal processing - not a subscription cycle (likely initial payment)"
+      );
+    }
+
     // Send payment confirmation email
     if (subscription.user) {
       await EmailService.sendPaymentConfirmationEmail({
@@ -424,7 +660,7 @@ export async function handleInvoicePaymentSucceeded(invoice: Invoice) {
     }
 
     logger.info(
-      { subscriptionId, invoiceId: invoice.id },
+      { subscriptionId, invoiceId: invoice.id, licenseCount: licenses.length },
       "Invoice payment processed successfully"
     );
   } catch (error) {
@@ -467,7 +703,56 @@ export async function handleInvoicePaymentFailed(invoice: Invoice) {
       },
     });
 
-    // Send payment failure email
+    // Check if subscription has associated licenses
+    const licenses = await prisma.license.findMany({
+      where: {
+        stripeSubscriptionId: subscriptionId,
+        isActive: true,
+      },
+    });
+
+    // Calculate days since first payment failure (for grace period tracking)
+    // Stripe retries for 7 days, we allow 7 more = 14 days total
+    const now = new Date();
+    const gracePeriodEnd = new Date(subscription.currentPeriodEnd);
+    gracePeriodEnd.setDate(gracePeriodEnd.getDate() + 14); // 14-day grace period
+
+    const isInGracePeriod = now < gracePeriodEnd;
+    const daysRemaining = Math.ceil(
+      (gracePeriodEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+    );
+
+    logger.info(
+      {
+        subscriptionId,
+        isInGracePeriod,
+        daysRemaining,
+        gracePeriodEnd: gracePeriodEnd.toISOString(),
+      },
+      "Payment failure - grace period status"
+    );
+
+    // If grace period expired, deactivate licenses
+    if (!isInGracePeriod && licenses.length > 0) {
+      await prisma.license.updateMany({
+        where: {
+          stripeSubscriptionId: subscriptionId,
+        },
+        data: {
+          isActive: false,
+        },
+      });
+
+      logger.info(
+        {
+          subscriptionId,
+          licenseCount: licenses.length,
+        },
+        "Licenses deactivated after grace period expired"
+      );
+    }
+
+    // Send payment failure email with grace period warning
     if (subscription.user) {
       await EmailService.sendPaymentFailedEmail({
         to: subscription.user.email,
@@ -475,10 +760,65 @@ export async function handleInvoicePaymentFailed(invoice: Invoice) {
         amount: invoice.amount_due / 100, // Convert from cents
         failureReason: CoreStripeService.mapInvoiceToFailureReason(invoice),
       });
+
+      // Send license-specific emails based on grace period status
+      if (licenses.length > 0) {
+        for (const license of licenses) {
+          try {
+            if (isInGracePeriod) {
+              // Still in grace period - send payment failed email with days remaining
+              await EmailService.sendLicensePaymentFailedEmail({
+                to: subscription.user.email,
+                userName: getUserDisplayName(subscription.user),
+                licenseKey: license.licenseKey,
+                tier: license.tier,
+                gracePeriodDays: daysRemaining,
+                isInGracePeriod: true,
+                willDeactivate: true,
+              });
+
+              logger.info(
+                {
+                  licenseId: license.id,
+                  gracePeriodDays: daysRemaining,
+                },
+                "License payment failure email sent (in grace period)"
+              );
+            } else {
+              // Grace period expired - send license expired email
+              await EmailService.sendLicenseExpiredEmail({
+                to: subscription.user.email,
+                userName: getUserDisplayName(subscription.user),
+                licenseKey: license.licenseKey,
+                tier: license.tier,
+                expiredAt: license.expiresAt || now,
+                renewalUrl: `${emailConfig.portalFrontendUrl}/licenses`,
+              });
+
+              logger.info(
+                {
+                  licenseId: license.id,
+                },
+                "License expired email sent (grace period ended)"
+              );
+            }
+          } catch (emailError) {
+            logger.error(
+              {
+                error: emailError,
+                licenseId: license.id,
+                subscriptionId,
+              },
+              "Failed to send payment failure email for individual license"
+            );
+            // Continue processing other licenses even if one fails
+          }
+        }
+      }
     }
 
     logger.info(
-      { subscriptionId, invoiceId: invoice.id },
+      { subscriptionId, invoiceId: invoice.id, licenseCount: licenses.length },
       "Invoice payment failure processed"
     );
   } catch (error) {

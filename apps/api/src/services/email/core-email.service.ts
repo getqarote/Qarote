@@ -49,16 +49,31 @@ export class CoreEmailService {
 
   private static initializeSMTP() {
     if (!this.smtpTransporter && emailConfig.smtp.host) {
+      // Check if OAuth2 is configured
+      const hasOAuth2 =
+        emailConfig.smtp.oauth?.clientId &&
+        emailConfig.smtp.oauth?.clientSecret &&
+        emailConfig.smtp.oauth?.refreshToken;
+
       this.smtpTransporter = nodemailer.createTransport({
         host: emailConfig.smtp.host,
         port: emailConfig.smtp.port || 587,
         secure: (emailConfig.smtp.port || 587) === 465,
-        auth: emailConfig.smtp.user
+        service: emailConfig.smtp.service, // Optional: 'gmail', 'outlook', etc.
+        auth: hasOAuth2
           ? {
+              type: "OAuth2",
               user: emailConfig.smtp.user,
-              pass: emailConfig.smtp.pass,
+              clientId: emailConfig.smtp.oauth.clientId,
+              clientSecret: emailConfig.smtp.oauth.clientSecret,
+              refreshToken: emailConfig.smtp.oauth.refreshToken,
             }
-          : undefined,
+          : emailConfig.smtp.user
+            ? {
+                user: emailConfig.smtp.user,
+                pass: emailConfig.smtp.pass,
+              }
+            : undefined,
       });
     }
     return this.smtpTransporter;

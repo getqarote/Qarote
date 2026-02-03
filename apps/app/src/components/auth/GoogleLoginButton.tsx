@@ -26,12 +26,9 @@ export const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  // Check if OAuth is enabled
+  // OAuth is only enabled for cloud deployments
   const deploymentMode = import.meta.env.VITE_DEPLOYMENT_MODE || "cloud";
-  const enableOAuth =
-    import.meta.env.VITE_ENABLE_OAUTH !== "false" &&
-    (deploymentMode === "cloud" ||
-      import.meta.env.VITE_ENABLE_OAUTH === "true");
+  const enableOAuth = deploymentMode === "cloud";
   const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
   // Always call hooks before any conditional returns

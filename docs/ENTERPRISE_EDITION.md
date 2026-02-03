@@ -59,24 +59,60 @@ Enterprise Edition requires a valid license file to unlock premium features.
 
 ### License Types
 
-- **Developer License** - Includes workspace management, alerting, and data export
-- **Enterprise License** - Includes all premium features
+- **Developer License** ($348/year) - Includes workspace management, alerting, and data export
+- **Enterprise License** ($1,188/year) - Includes all premium features
+
+### Annual Licensing Model
+
+**Self-hosted licenses are annual subscriptions:**
+- **365-day validity** - Each license is valid for one year from purchase
+- **Automatic renewal** - Subscriptions renew automatically each year
+- **New license file** - You'll receive a new license file via email after each renewal
+- **No trial period** - Use Community Edition for testing before purchasing
 
 ### Obtaining a License
 
 1. **Purchase a license** from the [Customer Portal](https://portal.qarote.io)
 2. **Download your license file** (JSON format, cryptographically signed)
-3. **Upload the license file** to your server
+3. **Upload the license file** to your server at `LICENSE_FILE_PATH` location
+
+### License Renewal Process
+
+**Before expiration:**
+- **30 days before**: Email reminder to prepare for renewal
+- **15 days before**: Email reminder with renewal status
+- **7 days before**: Final reminder email
+- **Renewal day**: Automatic payment and new license file generated
+- **After renewal**: Email with new license file attached
+
+**What you need to do:**
+1. Receive email with new license file
+2. Download the new license JSON file (format: `qarote-license-{uuid}.json`)
+3. Replace the old license file on your server
+4. Restart Qarote (if configured to reload on file change)
+
+**If renewal fails:**
+- **14-day grace period**: Your current license continues to work
+- **Payment retry**: Stripe automatically retries failed payments
+- **Warning emails**: You'll receive notifications during the grace period
+- **After 14 days**: License is deactivated if payment still fails
 
 ### License File Format
 
 License files are cryptographically signed JSON files that include:
-- License key
+- License key (unique identifier)
 - Tier (Developer or Enterprise)
 - Customer email
-- Expiration date (or null for perpetual licenses)
+- Expiration date (365 days from issue/renewal)
 - Enabled features
-- Optional instance ID (for license locking)
+- Cryptographic signature (for offline validation)
+
+### Offline Validation
+
+Qarote validates licenses **offline** (no internet required):
+- Validates cryptographic signature using public key
+- Checks expiration date locally
+- Works in air-gapped environments
 
 ## Installation
 
@@ -103,18 +139,24 @@ License files are cryptographically signed JSON files that include:
 
 3. **Place your license file:**
    ```bash
-   cp /path/to/your/license.json ./license.json
+   # License files are downloaded with format: qarote-license-{uuid}.json
+   cp /path/to/your/qarote-license-*.json ./qarote-license.json
    ```
 
 4. **Configure environment variables:**
    ```bash
    # Required
    DEPLOYMENT_MODE=enterprise
-   LICENSE_FILE_PATH=./license.json
-   LICENSE_PUBLIC_KEY=your-public-key-here
+   LICENSE_FILE_PATH=./qarote-license.json
+
+   # Public key for license validation (provided via email with your license)
+   # IMPORTANT: Wrap the entire key in double quotes, use \n for line breaks
+   LICENSE_PUBLIC_KEY="-----BEGIN PUBLIC KEY-----\nMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA...\n-----END PUBLIC KEY-----"
+
+   # Generate secure secrets with: pnpm setup:selfhosted
    JWT_SECRET=your-secret-key-min-32-chars
    ENCRYPTION_KEY=your-encryption-key-min-32-chars
-   POSTGRES_PASSWORD=your-secure-password
+   POSTGRES_PASSWORD=your-secure-postgres-password
    ```
 
 5. **Start services:**
@@ -139,17 +181,15 @@ License files are cryptographically signed JSON files that include:
 #### Required
 
 - `DEPLOYMENT_MODE=enterprise` - Set to enterprise mode
-- `LICENSE_FILE_PATH` - Path to your license file (default: `./license.json`)
+- `LICENSE_FILE_PATH` - Path to your license file (format: `qarote-license-{uuid}.json`)
 - `LICENSE_PUBLIC_KEY` - Public key for license verification
-- `JWT_SECRET` - Secret for JWT token signing (minimum 32 characters)
-- `ENCRYPTION_KEY` - Key for encrypting RabbitMQ credentials (minimum 32 characters)
-- `POSTGRES_PASSWORD` - PostgreSQL database password
+- `JWT_SECRET` - Secret for JWT token signing (minimum 32 characters) - Generate with: `pnpm setup:selfhosted`
+- `ENCRYPTION_KEY` - Key for encrypting RabbitMQ credentials (minimum 32 characters) - Generate with: `pnpm setup:selfhosted`
+- `POSTGRES_PASSWORD` - PostgreSQL database password - Generate with: `pnpm setup:selfhosted`
 
 #### Optional
 
-- `INSTANCE_ID` - Override instance fingerprint (for testing)
 - `ENABLE_EMAIL` - Enable email features
-- `ENABLE_SENTRY` - Enable error tracking
 
 **Note:** OAuth authentication (Google Sign-In) is only available in cloud deployments. Enterprise Edition self-hosted deployments use email/password authentication.
 
@@ -158,7 +198,7 @@ License files are cryptographically signed JSON files that include:
 For security, ensure your license file has restricted permissions:
 
 ```bash
-chmod 600 license.json
+chmod 600 qarote-license.json
 ```
 
 The license file should be readable only by the application user.
@@ -169,8 +209,7 @@ Enterprise Edition validates licenses offline using cryptographic signatures:
 
 1. **Signature Verification** - License files are signed with RSA-SHA256
 2. **Expiration Check** - Validates license expiration (if applicable)
-3. **Instance Locking** - Optional instance ID validation prevents license sharing
-4. **Feature Checking** - Validates that requested features are included in the license
+3. **Feature Checking** - Validates that requested features are included in the license
 
 License validation occurs on every premium feature access to ensure license compliance.
 
@@ -201,12 +240,6 @@ Enterprise Edition supports air-gapped (offline) deployments:
 **Error**: `License expired on [date]`
 
 **Solution**: Renew your license or contact support for a new license file.
-
-### Instance ID Mismatch
-
-**Error**: `License instance ID does not match current instance`
-
-**Solution**: Your license is locked to a specific server. Contact support if you need to transfer the license to a new server.
 
 ### Feature Not Included
 

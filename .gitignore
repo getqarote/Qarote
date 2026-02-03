@@ -41,5 +41,22 @@ bmad-config.json
 **/bmad-*.md
 **/BMAD-*.md
 
+# Development Documentation
+docs/architecture
+docs/development
 
-docs
+# Infrastructure
+infrastructure/
+# infrastructure/terraform/.terraform/
+# infrastructure/terraform/.terraform.lock.hcl
+# infrastructure/terraform/terraform.tfstate
+# infrastructure/terraform/terraform.tfstate.backup
+# infrastructure/terraform/terraform.tfvars
+# infrastructure/terraform/*.tfplan
+# infrastructure/ansible/inventory.ini
+# infrastructure/ansible/server_ip.txt
+# infrastructure/ansible/*.retry
+
+# License files
+qarote-license-*.json
+license.json

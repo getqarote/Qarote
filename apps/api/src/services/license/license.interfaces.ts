@@ -13,10 +13,9 @@ export interface LicenseData {
   tier: string;
   customerEmail: string;
   issuedAt: string;
-  expiresAt: string | null; // null means perpetual (never expires)
+  expiresAt: string;
   features: string[];
   maxInstances?: number;
-  instanceId?: string;
 }
 
 /**
@@ -28,10 +27,9 @@ export interface LicenseFile {
   tier: string;
   customerEmail: string;
   issuedAt: string;
-  expiresAt: string | null; // null means perpetual (never expires)
+  expiresAt: string;
   features: string[];
   maxInstances?: number;
-  instanceId?: string;
   signature: string;
 }
 
@@ -52,9 +50,10 @@ export interface GenerateLicenseOptions {
   tier: UserPlan;
   customerEmail: string;
   workspaceId?: string;
-  expiresAt?: Date;
+  expiresAt: Date;
   stripeCustomerId?: string;
   stripePaymentId?: string;
+  stripeSubscriptionId?: string; // For annual subscriptions with auto-renewal
 }
 
 /**
@@ -62,7 +61,6 @@ export interface GenerateLicenseOptions {
  */
 export interface ValidateLicenseOptions {
   licenseKey: string;
-  instanceId?: string;
 }
 
 /**
@@ -72,9 +70,8 @@ export interface GenerateLicenseFileOptions {
   licenseKey: string;
   tier: UserPlan;
   customerEmail: string;
-  expiresAt: Date | null;
+  expiresAt: Date;
   features: string[];
-  instanceId?: string;
   maxInstances?: number;
 }
 
@@ -91,7 +88,7 @@ export interface GenerateLicenseFileResult {
 interface ValidatedLicense {
   id: string;
   tier: UserPlan;
-  expiresAt: Date | null;
+  expiresAt: Date;
   isActive: boolean;
   customerEmail: string;
   workspaceId: string | null;
@@ -104,4 +101,26 @@ export interface LicenseValidationResponse {
   valid: boolean;
   license?: ValidatedLicense;
   message?: string;
+}
+
+/**
+ * Result of renewing a license
+ */
+export interface RenewLicenseResult {
+  license: {
+    id: string;
+    licenseKey: string;
+    tier: UserPlan;
+    customerEmail: string;
+    expiresAt: Date;
+    isActive: boolean;
+    workspaceId: string | null;
+    stripeCustomerId: string | null;
+    stripePaymentId: string | null;
+    stripeSubscriptionId: string | null;
+    currentVersion: number;
+    createdAt: Date;
+    updatedAt: Date;
+  };
+  newVersion: number;
 }

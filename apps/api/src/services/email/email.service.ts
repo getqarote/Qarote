@@ -3,6 +3,7 @@
 // Import services for internal use
 import { AuthEmailService } from "./auth-email.service";
 import { BillingEmailService } from "./billing-email.service";
+import { LicenseEmailService } from "./license-email.service";
 import { NotificationEmailService } from "./notification-email.service";
 
 /**
@@ -32,4 +33,16 @@ export class EmailService {
     NotificationEmailService.sendPaymentConfirmationEmail;
   static sendAlertNotificationEmail =
     NotificationEmailService.sendAlertNotificationEmail;
+
+  // License emails
+  static sendLicenseDeliveryEmail =
+    LicenseEmailService.sendLicenseDeliveryEmail;
+  static sendLicenseRenewalEmail = LicenseEmailService.sendLicenseRenewalEmail;
+  static sendLicenseExpirationReminderEmail =
+    LicenseEmailService.sendLicenseExpirationReminderEmail;
+  static sendLicenseExpiredEmail = LicenseEmailService.sendLicenseExpiredEmail;
+  static sendLicensePaymentFailedEmail =
+    LicenseEmailService.sendLicensePaymentFailedEmail;
+  static sendLicenseCancellationEmail =
+    LicenseEmailService.sendLicenseCancellationEmail;
 }

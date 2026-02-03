@@ -94,6 +94,7 @@ jobs:
       - name: 🔍 Verify GitHub Variables (non-sensitive)
         run: |
           echo "📋 Verifying GitHub Variables that will be set:"
+          echo "DEPLOYMENT_MODE: ${{ vars.DEPLOYMENT_MODE }}"
           echo "DOMAIN_BACKEND: ${{ vars.DOMAIN_BACKEND }}"
           echo "DOMAIN_FRONTEND: ${{ vars.DOMAIN_FRONTEND }}"
           echo "CORS_ORIGIN: ${{ vars.CORS_ORIGIN }}"
@@ -119,6 +120,7 @@ jobs:
       - name: 📝 Configure Environment Variables
         run: |
           ssh dokku@${{ vars.DOKKU_HOST_APP1 }} config:set ${{ env.APP_NAME }} \
+            DEPLOYMENT_MODE=${{ vars.DEPLOYMENT_MODE }} \
             DATABASE_URL=${{ secrets.DATABASE_URL }} \
             DOMAIN_BACKEND=${{ vars.DOMAIN_BACKEND }} \
             DOMAIN_FRONTEND=${{ vars.DOMAIN_FRONTEND }} \
@@ -131,6 +133,7 @@ jobs:
             ENCRYPTION_KEY=${{ secrets.ENCRYPTION_KEY }} \
             CORS_ORIGIN=${{ vars.CORS_ORIGIN }} \
             FRONTEND_URL=${{ vars.FRONTEND_URL }} \
+            PORTAL_FRONTEND_URL=${{ vars.PORTAL_FRONTEND_URL }} \
             RESEND_API_KEY=${{ secrets.RESEND_API_KEY }} \
             FROM_EMAIL=${{ vars.FROM_EMAIL }} \
             STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY }} \
@@ -145,8 +148,7 @@ jobs:
             NOTION_API_KEY=${{ secrets.NOTION_API_KEY }} \
             NOTION_DATABASE_ID=${{ vars.NOTION_DATABASE_ID }} \
             NOTION_SYNC_ENABLED=${{ vars.NOTION_SYNC_ENABLED }} \
-            ENABLE_NOTION=${{ vars.ENABLE_NOTION }} \
-            NODE_ID=app1
+            ENABLE_NOTION=${{ vars.ENABLE_NOTION }}
 
       - name: 🔍 Debug Dokku Environment
         run: |

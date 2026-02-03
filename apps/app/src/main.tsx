@@ -26,11 +26,9 @@ if (deploymentMode === "cloud") {
   initializeGA();
 }
 
-// Get Google OAuth client ID from environment variables
+// OAuth is only enabled for cloud deployments
 const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-const enableOAuth =
-  import.meta.env.VITE_ENABLE_OAUTH !== "false" &&
-  (deploymentMode === "cloud" || import.meta.env.VITE_ENABLE_OAUTH === "true");
+const enableOAuth = deploymentMode === "cloud";
 
 if (!googleClientId && enableOAuth) {
   logger.warn(
@@ -38,19 +36,14 @@ if (!googleClientId && enableOAuth) {
   );
 }
 
-const AppWrapper = () => {
-  if (enableOAuth && googleClientId) {
-    return (
+createRoot(document.getElementById("root")!).render(
+  <StrictMode>
+    {enableOAuth && googleClientId ? (
       <GoogleOAuthProvider clientId={googleClientId}>
         <App />
       </GoogleOAuthProvider>
-    );
-  }
-  return <App />;
-};
-
-createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <AppWrapper />
+    ) : (
+      <App />
+    )}
   </StrictMode>
 );

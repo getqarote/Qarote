@@ -6,7 +6,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
-import { getInstanceId } from "@/core/instance-fingerprint";
 import { logger } from "@/core/logger";
 
 import { licenseConfig } from "@/config";
@@ -95,33 +94,19 @@ export async function validateLicenseFileOffline(
     };
   }
 
-  // 2. Check expiration (skip if null - perpetual license)
-  if (licenseFile.expiresAt !== null) {
-    const expiresAt = new Date(licenseFile.expiresAt);
-    const now = new Date();
+  // 2. Check expiration
+  const expiresAt = new Date(licenseFile.expiresAt);
+  const now = new Date();
 
-    if (expiresAt < now) {
-      return {
-        valid: false,
-        reason: "expired",
-        message: `License expired on ${expiresAt.toISOString()}`,
-      };
-    }
+  if (expiresAt < now) {
+    return {
+      valid: false,
+      reason: "expired",
+      message: `License expired on ${expiresAt.toISOString()}`,
+    };
   }
 
-  // 3. Check instance ID if specified
-  if (licenseFile.instanceId) {
-    const currentInstanceId = getInstanceId();
-    if (currentInstanceId !== licenseFile.instanceId) {
-      return {
-        valid: false,
-        reason: "instance_mismatch",
-        message: "License instance ID does not match current instance",
-      };
-    }
-  }
-
-  // 4. License is valid
+  // 3. License is valid
   return {
     valid: true,
     license: licenseFile,
