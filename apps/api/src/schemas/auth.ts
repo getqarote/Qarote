@@ -9,6 +9,7 @@ export const RegisterUserSchema = z.object({
   acceptTerms: z.boolean().refine((val) => val === true, {
     message: "You must accept the terms of service to register",
   }),
+  sourceApp: z.enum(["app", "portal"]).optional().default("app"),
 });
 
 // Schema for user login
@@ -79,6 +80,7 @@ export const VerifyEmailSchema = z.object({
 export const ResendVerificationSchema = z.object({
   type: z.enum(["SIGNUP", "EMAIL_CHANGE"]).optional().default("SIGNUP"),
   email: z.string().email("Invalid email address").optional(),
+  sourceApp: z.enum(["app", "portal"]).optional().default("app"),
 });
 
 // Schema for invitation token

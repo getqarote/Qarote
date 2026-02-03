@@ -106,7 +106,7 @@ export const verificationRouter = router({
   resendVerification: rateLimitedPublicProcedure
     .input(ResendVerificationSchema)
     .mutation(async ({ input, ctx }) => {
-      const { type, email: inputEmail } = input;
+      const { type, email: inputEmail, sourceApp } = input;
 
       try {
         let user;
@@ -236,7 +236,8 @@ export const verificationRouter = router({
             emailToVerify,
             verificationToken,
             type,
-            user.firstName || undefined
+            user.firstName || undefined,
+            sourceApp
           );
 
         if (!emailResult.success) {

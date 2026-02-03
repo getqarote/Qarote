@@ -1,3 +1,5 @@
+import { Github } from "lucide-react";
+
 import { trackSignUpClick } from "@/lib/gtm";
 
 interface StickyNavProps {
@@ -57,6 +59,15 @@ const StickyNav = ({ onVideoClick }: StickyNavProps) => {
           </div>
 
           <div className="flex items-center gap-1 sm:gap-2">
+            <a
+              href="https://github.com/getqarote/Qarote"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="View on GitHub"
+              className="text-foreground hover:text-orange-500 transition-colors p-2"
+            >
+              <Github className="w-5 h-5" />
+            </a>
             <a
               href={`${import.meta.env.VITE_APP_BASE_URL}/auth/sign-in`}
               className="text-foreground hover:text-orange-500 px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium transition-colors"

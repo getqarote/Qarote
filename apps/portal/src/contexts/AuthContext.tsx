@@ -11,6 +11,7 @@ interface AuthContextType {
   isLoading: boolean;
   login: (token: string, user: User) => void;
   logout: () => void;
+  updateUser: (user: User) => void;
   refetchUser: () => Promise<void>;
 }
 
@@ -57,6 +58,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     localStorage.removeItem("auth_user");
   }, []);
 
+  const updateUser = useCallback((newUser: User) => {
+    setUser(newUser);
+    localStorage.setItem("auth_user", JSON.stringify(newUser));
+  }, []);
+
   useEffect(() => {
     const handleUnauthorized = () => {
       logout();
@@ -90,6 +96,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     isLoading,
     login,
     logout,
+    updateUser,
     refetchUser,
   };
 

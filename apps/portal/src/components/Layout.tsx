@@ -2,6 +2,7 @@ import { Link, Outlet, useLocation } from "react-router-dom";
 
 import {
   Download,
+  Github,
   LayoutDashboard,
   LogOut,
   Settings,
@@ -24,7 +25,7 @@ const Layout = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <nav className="border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
@@ -54,6 +55,15 @@ const Layout = () => {
               </div>
             </div>
             <div className="flex items-center space-x-4">
+              <a
+                href="https://github.com/getqarote/Qarote"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="View on GitHub"
+                className="text-foreground hover:text-orange-500 transition-colors p-2"
+              >
+                <Github className="w-5 h-5" />
+              </a>
               <span className="text-sm text-muted-foreground">
                 {user?.email}
               </span>
@@ -65,9 +75,43 @@ const Layout = () => {
           </div>
         </div>
       </nav>
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Outlet />
+      <main className="flex-1 w-full">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <Outlet />
+        </div>
       </main>
+      <footer className="bg-card text-card-foreground py-8 border-t border-border mt-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <div className="mb-4 md:mb-0">
+              <h3 className="text-lg font-bold">Qarote Portal</h3>
+            </div>
+            <div className="flex items-center gap-6">
+              <a
+                href="https://github.com/getqarote/Qarote"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="View on GitHub"
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <Github className="w-4 h-4 sm:w-5 sm:h-5" />
+              </a>
+              <Link
+                to="/privacy-policy"
+                className="text-muted-foreground hover:text-foreground transition-colors text-sm"
+              >
+                Privacy Policy
+              </Link>
+              <Link
+                to="/terms-of-service"
+                className="text-muted-foreground hover:text-foreground transition-colors text-sm"
+              >
+                Terms of Service
+              </Link>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };

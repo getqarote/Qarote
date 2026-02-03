@@ -54,8 +54,8 @@ const LicensePurchase = () => {
     {
       tier: "DEVELOPER" as const,
       name: "Developer",
-      monthlyPrice: "$29",
-      yearlyPrice: "$290",
+      monthlyPrice: "$34",
+      yearlyPrice: "$348",
       features: [
         "Up to 5 servers",
         "Queue management",
@@ -66,8 +66,8 @@ const LicensePurchase = () => {
     {
       tier: "ENTERPRISE" as const,
       name: "Enterprise",
-      monthlyPrice: "$99",
-      yearlyPrice: "$990",
+      monthlyPrice: "$124",
+      yearlyPrice: "$1,188",
       features: [
         "Unlimited servers",
         "Advanced monitoring",

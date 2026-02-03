@@ -26,6 +26,7 @@ interface SendVerificationEmailParams {
   userName?: string;
   verificationToken: string;
   type: "SIGNUP" | "EMAIL_CHANGE";
+  sourceApp?: "app" | "portal";
 }
 
 /**
@@ -109,10 +110,22 @@ export class AuthEmailService {
   static async sendVerificationEmail(
     params: SendVerificationEmailParams
   ): Promise<EmailResult> {
-    const { to, userName, verificationToken, type } = params;
+    const { to, userName, verificationToken, type, sourceApp } = params;
 
-    const { frontendUrl } = CoreEmailService.getConfig();
+    const config = CoreEmailService.getConfig();
     const expiryHours = 24;
+
+    // Determine which frontend URL to use based on source app
+    let frontendUrl = config.frontendUrl;
+    if (sourceApp === "portal") {
+      if (!config.portalFrontendUrl) {
+        throw new Error(
+          "PORTAL_FRONTEND_URL is not configured but portal registration was attempted. " +
+            "Please set PORTAL_FRONTEND_URL in your environment variables."
+        );
+      }
+      frontendUrl = config.portalFrontendUrl;
+    }
 
     // Render the React email template
     const template = EmailVerification({

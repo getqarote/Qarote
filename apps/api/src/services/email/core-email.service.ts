@@ -290,6 +290,7 @@ export class CoreEmailService {
   static getConfig() {
     return {
       frontendUrl: emailConfig.frontendUrl,
+      portalFrontendUrl: emailConfig.portalFrontendUrl,
       fromEmail: emailConfig.fromEmail,
     };
   }

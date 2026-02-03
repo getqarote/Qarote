@@ -43,6 +43,9 @@ const envSchema = z.object({
   RESEND_API_KEY: z.string().optional(),
   FROM_EMAIL: z.email().describe("noreply@qarote.io"),
   FRONTEND_URL: z.url("FRONTEND_URL must be a valid URL"),
+  PORTAL_FRONTEND_URL: z
+    .url("PORTAL_FRONTEND_URL must be a valid URL")
+    .optional(),
   ENABLE_EMAIL: z.coerce.boolean().default(false),
   EMAIL_PROVIDER: z.enum(["resend", "smtp"]).default("resend"),
   SMTP_HOST: z.string().optional(),
@@ -135,6 +138,7 @@ export const emailConfig = {
   resendApiKey: config.RESEND_API_KEY,
   fromEmail: config.FROM_EMAIL,
   frontendUrl: config.FRONTEND_URL,
+  portalFrontendUrl: config.PORTAL_FRONTEND_URL,
   enabled: config.ENABLE_EMAIL,
   provider: config.EMAIL_PROVIDER,
   smtp: {

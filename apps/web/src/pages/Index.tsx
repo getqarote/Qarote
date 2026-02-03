@@ -1,11 +1,13 @@
 import * as React from "react";
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 
 import type { LucideProps } from "lucide-react";
 import {
   Activity,
   BarChart3,
+  Building2,
   Check,
+  Github,
   Mail,
   MessageSquare,
   Play,
@@ -22,15 +24,11 @@ import AuthButtons from "@/components/AuthButtons";
 import FeatureCard from "@/components/FeatureCard";
 import SEO from "@/components/SEO";
 import StickyNav from "@/components/StickyNav";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+
+const FAQ = lazy(() => import("@/components/FAQ"));
 
 const Index = () => {
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">(
@@ -47,6 +45,8 @@ const Index = () => {
   const ActivityIcon = Activity as unknown as React.ComponentType<LucideProps>;
   const BarChart3Icon =
     BarChart3 as unknown as React.ComponentType<LucideProps>;
+  const Building2Icon =
+    Building2 as unknown as React.ComponentType<LucideProps>;
 
   const features = [
     {
@@ -324,18 +324,24 @@ const Index = () => {
               {!isVideoPlaying ? (
                 <>
                   <img
-                    src={"/images/dashboard.png"}
-                    alt={"Qarote Dashboard Interface"}
+                    src="/images/dashboard.png"
+                    alt="Qarote Dashboard Interface"
                     className="w-full h-full object-contain bg-card"
+                    width={1920}
+                    height={1080}
+                    loading="eager"
+                    decoding="async"
                   />
                   <div className="absolute inset-0 flex items-center justify-center bg-black/15 group-hover:bg-black/20 transition-colors">
                     <button
                       type="button"
+                      aria-label="Play demo video"
                       className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-white/90 hover:bg-white flex items-center justify-center transition-all hover:scale-110 pointer-events-none shadow-soft"
                     >
                       <PlayIcon
                         className="w-10 h-10 md:w-12 md:h-12 text-orange-600 ml-1"
                         fill="currentColor"
+                        aria-hidden="true"
                       />
                     </button>
                   </div>
@@ -529,6 +535,60 @@ const Index = () => {
               className="bg-gradient-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600 px-4 py-3 sm:px-8 sm:py-4 rounded-lg font-semibold transition-colors duration-200 text-base sm:text-lg"
             >
               Start monitoring for free
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Enterprise Licenses Section */}
+      <section className="py-20 bg-gradient-to-b from-background to-muted/20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-4xl mx-auto text-center">
+            <div className="inline-flex items-center justify-center p-2 bg-gradient-to-r from-orange-500/10 to-red-500/10 rounded-full mb-6">
+              <Building2Icon className="w-8 h-8 text-orange-600" />
+            </div>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-6">
+              Enterprise Self-Hosted Solution
+            </h2>
+            <p className="text-lg text-muted-foreground mb-8">
+              For organizations requiring on-premise deployment, complete data
+              control, and enterprise-grade features. Deploy Qarote in your own
+              infrastructure with full access to advanced capabilities.
+            </p>
+
+            <div className="grid md:grid-cols-2 gap-6 mb-12">
+              <div className="p-6 bg-card border border-border rounded-lg">
+                <ServerIcon className="w-8 h-8 text-orange-600 mb-3 mx-auto" />
+                <h3 className="font-semibold text-foreground mb-2">
+                  Unlimited Servers
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  Monitor as many RabbitMQ servers as you need
+                </p>
+              </div>
+              <div className="p-6 bg-card border border-border rounded-lg">
+                <Shield className="w-8 h-8 text-orange-600 mb-3 mx-auto" />
+                <h3 className="font-semibold text-foreground mb-2">
+                  Advanced Security
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  Complete control over your data and deployment
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={() => {
+                trackSignUpClick({
+                  source: "enterprise_section_cta",
+                  location: "landing_page",
+                });
+                const portalUrl = import.meta.env.VITE_PORTAL_URL;
+                window.location.href = portalUrl;
+              }}
+              className="bg-gradient-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600 px-4 py-3 sm:px-8 sm:py-4 rounded-lg font-semibold transition-colors duration-200 text-base sm:text-lg"
+            >
+              Self-Hosted Solution
             </button>
           </div>
         </div>
@@ -841,6 +901,9 @@ const Index = () => {
                     billingPeriod === "monthly" ? "yearly" : "monthly"
                   )
                 }
+                role="switch"
+                aria-checked={billingPeriod === "yearly"}
+                aria-label="Toggle between monthly and yearly billing"
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                   billingPeriod === "yearly"
                     ? "bg-gradient-to-r from-orange-500 to-red-500"
@@ -848,6 +911,7 @@ const Index = () => {
                 }`}
               >
                 <span
+                  aria-hidden="true"
                   className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
                     billingPeriod === "yearly"
                       ? "translate-x-6"
@@ -861,7 +925,7 @@ const Index = () => {
                 Billed yearly
               </span>
             </div>
-            <Badge className="bg-transparent text-green-600 border-0 mt-2 hover:bg-transparent">
+            <Badge className="bg-green-50 text-green-700 border border-green-200 mt-2 hover:bg-green-100">
               {billingPeriod === "yearly"
                 ? "Save up to 20% with annual billing"
                 : "Switch to yearly billing to save up to 20%"}
@@ -871,7 +935,7 @@ const Index = () => {
           {/* Plans Grid */}
           <div className="flex justify-center w-full">
             <div
-              className="flex gap-6 w-full max-w-6xl overflow-x-auto overflow-y-visible px-4 py-4 snap-x snap-mandatory md:px-6 md:py-6 lg:grid lg:grid-cols-3 lg:px-0 lg:py-0 lg:overflow-visible lg:snap-none"
+              className="flex gap-6 w-full max-w-7xl overflow-x-auto overflow-y-visible px-4 py-4 snap-x snap-mandatory md:px-6 md:py-6 lg:grid lg:grid-cols-4 lg:px-0 lg:py-0 lg:overflow-visible lg:snap-none"
               style={{
                 WebkitOverflowScrolling: "touch",
                 scrollPaddingLeft: "1rem",
@@ -1196,6 +1260,96 @@ const Index = () => {
                   </Card>
                 );
               })}
+
+              {/* Enterprise Edition Card */}
+              <Card className="relative flex h-full flex-col min-w-[78%] md:min-w-[60%] lg:min-w-0 snap-center last:mr-2 md:last:mr-4 lg:last:mr-0 bg-transparent rounded-xl shadow-soft ring-2 ring-gradient-to-r from-orange-500 to-red-500">
+                <CardContent className="p-6 flex flex-col h-full">
+                  <div className="text-left mb-2">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Building2Icon className="w-6 h-6 text-orange-600" />
+                      <h3 className="text-2xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
+                        Enterprise Edition
+                      </h3>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Self-Hosted Solution
+                    </p>
+
+                    <div className="mb-4 min-h-[60px] flex flex-col justify-start">
+                      <div className="flex items-center justify-start gap-2">
+                        <span className="text-3xl font-bold text-foreground">
+                          Custom Pricing
+                        </span>
+                      </div>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Contact sales for pricing
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-6 flex-1">
+                    <div>
+                      <h4 className="font-semibold text-foreground mb-3 text-xs sm:text-sm uppercase tracking-wide">
+                        Enterprise Features
+                      </h4>
+                      <ul className="space-y-2">
+                        <li className="flex items-start gap-3">
+                          <div className="mt-1">
+                            <CheckIcon className="w-4 h-4 text-green-500" />
+                          </div>
+                          <div className="flex-1">
+                            <span className="text-sm text-foreground">
+                              On-Premise Deployment
+                            </span>
+                            <div className="text-xs text-muted-foreground">
+                              Deploy in your own infrastructure
+                            </div>
+                          </div>
+                        </li>
+                        <li className="flex items-start gap-3">
+                          <div className="mt-1">
+                            <CheckIcon className="w-4 h-4 text-green-500" />
+                          </div>
+                          <div className="flex-1">
+                            <span className="text-sm text-foreground">
+                              Unlimited Servers
+                            </span>
+                            <div className="text-xs text-muted-foreground">
+                              Monitor as many servers as needed
+                            </div>
+                          </div>
+                        </li>
+                        <li className="flex items-start gap-3">
+                          <div className="mt-1">
+                            <CheckIcon className="w-4 h-4 text-green-500" />
+                          </div>
+                          <div className="flex-1">
+                            <span className="text-sm text-foreground">
+                              Custom License Tiers
+                            </span>
+                            <div className="text-xs text-muted-foreground">
+                              Flexible licensing options
+                            </div>
+                          </div>
+                        </li>
+                        <li className="flex items-start gap-3">
+                          <div className="mt-1">
+                            <CheckIcon className="w-4 h-4 text-green-500" />
+                          </div>
+                          <div className="flex-1">
+                            <span className="text-sm text-foreground">
+                              Complete Data Control
+                            </span>
+                            <div className="text-xs text-muted-foreground">
+                              All data stays in your infrastructure
+                            </div>
+                          </div>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </div>
@@ -1214,131 +1368,20 @@ const Index = () => {
           </div>
 
           <div className="space-y-4">
-            <Accordion type="single" collapsible>
-              <AccordionItem
-                value="item-1"
-                className="border border-border rounded-xl px-6 bg-transparent"
-              >
-                <AccordionTrigger className="text-left text-foreground font-semibold hover:no-underline">
-                  What is Qarote?
-                </AccordionTrigger>
-                <AccordionContent className="text-muted-foreground">
-                  Qarote is a modern, user-friendly dashboard that helps you
-                  monitor and manage your RabbitMQ servers effortlessly. Instead
-                  of using the outdated RabbitMQ admin panel or command line,
-                  Qarote gives you a clean, visual interface to see your queues,
-                  messages, and system health in real time.
-                </AccordionContent>
-              </AccordionItem>
-
-              <AccordionItem
-                value="item-2"
-                className="border border-border rounded-xl px-6 bg-transparent"
-              >
-                <AccordionTrigger className="text-left text-foreground font-semibold hover:no-underline">
-                  Who is Qarote for?
-                </AccordionTrigger>
-                <AccordionContent className="text-muted-foreground">
-                  Qarote is designed for developers, DevOps engineers, and teams
-                  who use RabbitMQ and want better visibility, easier
-                  monitoring, and faster troubleshooting. Whether you're running
-                  one broker or dozens, Qarote helps you save time and prevent
-                  message bottlenecks.
-                </AccordionContent>
-              </AccordionItem>
-
-              <AccordionItem
-                value="item-3"
-                className="border border-border rounded-xl px-6 bg-transparent"
-              >
-                <AccordionTrigger className="text-left text-foreground font-semibold hover:no-underline">
-                  Is Qarote secure?
-                </AccordionTrigger>
-                <AccordionContent className="text-muted-foreground">
-                  Absolutely. All connections to your RabbitMQ servers are
-                  encrypted (TLS), and no sensitive data is stored on our
-                  servers. You stay in full control of your credentials, and
-                  Qarote only reads the metrics and management data needed for
-                  your dashboard.
-                </AccordionContent>
-              </AccordionItem>
-
-              <AccordionItem
-                value="item-4"
-                className="border border-border rounded-xl px-6 bg-transparent"
-              >
-                <AccordionTrigger className="text-left text-foreground font-semibold hover:no-underline">
-                  What can I do with Qarote?
-                </AccordionTrigger>
-                <AccordionContent className="text-muted-foreground">
-                  With Qarote, you can:
-                  <ul className="list-disc list-inside mt-2 space-y-1">
-                    <li>
-                      View all your queues, exchanges, and bindings at a glance
-                    </li>
-                    <li>
-                      Monitor message rates, errors, and consumer activity in
-                      real time
-                    </li>
-                    <li>Create alerts for blocked or overloaded queues</li>
-                    <li>Manage users, vhosts, and permissions visually</li>
-                    <li>Connect multiple RabbitMQ instances in one place</li>
-                  </ul>
-                </AccordionContent>
-              </AccordionItem>
-
-              <AccordionItem
-                value="item-5"
-                className="border border-border rounded-xl px-6 bg-transparent"
-              >
-                <AccordionTrigger className="text-left text-foreground font-semibold hover:no-underline">
-                  How is Qarote different from the RabbitMQ Management UI?
-                </AccordionTrigger>
-                <AccordionContent className="text-muted-foreground">
-                  The built-in RabbitMQ Management Plugin works, but it's slow,
-                  cluttered, and hard to scale across multiple brokers. Qarote
-                  provides:
-                  <ul className="list-disc list-inside mt-2 space-y-1">
-                    <li>A modern, intuitive interface</li>
-                    <li>Centralized monitoring across environments</li>
-                    <li>Powerful search and filters</li>
-                    <li>Smart alerts and reporting</li>
-                    <li>A clean experience designed for teams</li>
-                  </ul>
-                </AccordionContent>
-              </AccordionItem>
-
-              <AccordionItem
-                value="item-6"
-                className="border border-border rounded-xl px-6 bg-transparent"
-              >
-                <AccordionTrigger className="text-left text-foreground font-semibold hover:no-underline">
-                  Is Qarote a better monitoring tool than Prometheus and
-                  Grafana?
-                </AccordionTrigger>
-                <AccordionContent className="text-muted-foreground">
-                  Qarote offers purpose-built monitoring specifically for
-                  RabbitMQ with zero configuration. While Prometheus and Grafana
-                  are powerful, they require significant setup and maintenance.
-                  Qarote provides comparable insights with much less overhead.
-                </AccordionContent>
-              </AccordionItem>
-
-              <AccordionItem
-                value="item-7"
-                className="border border-border rounded-xl px-6 bg-transparent"
-              >
-                <AccordionTrigger className="text-left text-foreground font-semibold hover:no-underline">
-                  Can I try Qarote for free?
-                </AccordionTrigger>
-                <AccordionContent className="text-muted-foreground">
-                  Yes! We offer a free tier that includes 1 server, 1 workspace,
-                  and 1 team member. You can start monitoring your RabbitMQ
-                  queues right away without a credit card. When you're ready to
-                  scale, you can upgrade to a paid plan.
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
+            <Suspense
+              fallback={
+                <div className="space-y-4">
+                  {[...Array(4)].map((_, i) => (
+                    <div
+                      key={i}
+                      className="h-14 border border-border rounded-xl bg-muted/30 animate-pulse"
+                    />
+                  ))}
+                </div>
+              }
+            >
+              <FAQ />
+            </Suspense>
           </div>
 
           <div className="text-center mt-16">
@@ -1409,6 +1452,15 @@ const Index = () => {
             </div>
 
             <div className="flex items-center gap-6">
+              <a
+                href="https://github.com/getqarote/Qarote"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="View on GitHub"
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <Github className="w-4 h-4 sm:w-5 sm:h-5" />
+              </a>
               <a
                 href="/privacy-policy"
                 className="text-muted-foreground hover:text-foreground transition-colors text-sm"

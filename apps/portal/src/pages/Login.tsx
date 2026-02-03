@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Github } from "lucide-react";
 
 import { logger } from "@/lib/logger";
 
@@ -213,7 +214,16 @@ const Login = () => {
 
             {/* Legal Links */}
             <div className="mt-6 text-center text-sm text-muted-foreground">
-              <div className="flex justify-center gap-4 mt-2">
+              <div className="flex justify-center gap-4 mt-2 items-center">
+                <a
+                  href="https://github.com/getqarote/Qarote"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="View on GitHub"
+                  className="hover:text-primary transition-colors"
+                >
+                  <Github className="w-4 h-4 sm:w-5 sm:h-5" />
+                </a>
                 <Link
                   to="/terms-of-service"
                   className="hover:text-primary transition-colors"

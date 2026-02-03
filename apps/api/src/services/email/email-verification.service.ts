@@ -56,7 +56,8 @@ export class EmailVerificationService {
     email: string,
     token: string,
     type: "SIGNUP" | "EMAIL_CHANGE",
-    userName?: string
+    userName?: string,
+    sourceApp?: "app" | "portal"
   ): Promise<{ success: boolean; error?: string }> {
     try {
       logger.debug(
@@ -64,6 +65,7 @@ export class EmailVerificationService {
           email,
           type,
           userName,
+          sourceApp,
           tokenLength: token.length,
         },
         "Sending verification email"
@@ -74,6 +76,7 @@ export class EmailVerificationService {
         userName,
         verificationToken: token,
         type,
+        sourceApp,
       });
 
       if (!result.success) {
@@ -287,7 +290,8 @@ export class EmailVerificationService {
    */
   static async resendVerificationEmail(
     userId: string,
-    type: "SIGNUP" | "EMAIL_CHANGE"
+    type: "SIGNUP" | "EMAIL_CHANGE",
+    sourceApp?: "app" | "portal"
   ): Promise<{
     success: boolean;
     error?: string;
@@ -321,7 +325,8 @@ export class EmailVerificationService {
         emailToVerify,
         token,
         type,
-        user.firstName
+        user.firstName || undefined,
+        sourceApp
       );
 
       if (!emailResult.success) {
