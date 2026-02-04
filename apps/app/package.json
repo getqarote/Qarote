@@ -49,7 +49,7 @@
     "@radix-ui/react-tooltip": "^1.1.4",
     "@react-oauth/google": "^0.12.2",
     "@sentry/react": "^9.33.0",
-    "@tanstack/react-query": "^5.56.2",
+    "@tanstack/react-query": "^5.90.20",
     "@trpc/client": "^11.0.0",
     "@trpc/react-query": "^11.0.0",
     "@tawk.to/tawk-messenger-react": "^2.0.2",
