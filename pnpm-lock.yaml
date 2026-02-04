@@ -21,8 +21,8 @@ importers:
         specifier: ^9.1.7
         version: 9.1.7
       knip:
-        specifier: ^5.0.0
-        version: 5.78.0(@types/node@24.10.4)(typescript@5.9.3)
+        specifier: ^5.79.0
+        version: 5.79.0(@types/node@24.10.4)(typescript@5.9.3)
       lint-staged:
         specifier: ^16.2.7
         version: 16.2.7
@@ -3676,8 +3676,8 @@ packages:
     resolution: {integrity: sha512-eRnCtTTtGZFpQCwhJiUOuxPQWRXVKYDn0b2PeHfXL6/Zi53SLAzAHfVhVWK2AryC/WH05kGfxhFIPvTF0SXQzg==}
     engines: {node: '>= 4.9.1'}
 
-  fastq@1.19.1:
-    resolution: {integrity: sha512-GwLTyxkCXjXbxqIhTsMI2Nui8huMPtnxg7krajPJAjnEG/iiOS7i+zCtWGZR9G0NBKbXKh6X9m9UIsYX/N6vvQ==}
+  fastq@1.20.1:
+    resolution: {integrity: sha512-GGToxJ/w1x32s/D2EKND7kTil4n8OVk/9mycTc4VDza13lOvpUZTGX3mFSCtV9ksdGBVzvsyAVLM6mHFThxXxw==}
 
   fd-package-json@2.0.0:
     resolution: {integrity: sha512-jKmm9YtsNXN789RS/0mSzOC1NUq9mkVd65vbSSVsKdjGvYXBuE4oWe2QOEoFeRmJg+lPuZxpmrfFclNhoRMneQ==}
@@ -4096,8 +4096,8 @@ packages:
     resolution: {integrity: sha512-eTIzlVOSUR+JxdDFepEYcBMtZ9Qqdef+rnzWdRZuMbOywu5tO2w2N7rqjoANZ5k9vywhL6Br1VRjUIgTQx4E8w==}
     engines: {node: '>=6'}
 
-  knip@5.78.0:
-    resolution: {integrity: sha512-nB7i/fgiJl7WVxdv5lX4ZPfDt9/zrw/lOgZtyioy988xtFhKuFJCRdHWT1Zg9Avc0yaojvnmEuAXU8SeMblKww==}
+  knip@5.79.0:
+    resolution: {integrity: sha512-rcg+mNdqm6UiTuRVyy6UuuHw1n4ABMpNXDtrfGaCeUtJoRBAvAENIebr8YMtOz6XE7iVHZ8+rY7skgEtosczhQ==}
     engines: {node: '>=18.18.0'}
     hasBin: true
     peerDependencies:
@@ -5452,8 +5452,8 @@ packages:
   zod@3.25.76:
     resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
 
-  zod@4.2.1:
-    resolution: {integrity: sha512-0wZ1IRqGGhMP76gLqz8EyfBXKk0J2qo2+H3fi4mcUP/KtTocoX08nmIAHl1Z2kJIZbZee8KOpBCSNPRgauucjw==}
+  zod@4.3.4:
+    resolution: {integrity: sha512-Zw/uYiiyF6pUT1qmKbZziChgNPRu+ZRneAsMUDU6IwmXdWt5JwcUfy2bvLOCUtz5UniaN/Zx5aFttZYbYc7O/A==}
 
 snapshots:
 
@@ -6415,7 +6415,7 @@ snapshots:
   '@nodelib/fs.walk@1.2.8':
     dependencies:
       '@nodelib/fs.scandir': 2.1.5
-      fastq: 1.19.1
+      fastq: 1.20.1
 
   '@notionhq/client@5.6.0': {}
 
@@ -9018,7 +9018,7 @@ snapshots:
 
   fastest-levenshtein@1.0.16: {}
 
-  fastq@1.19.1:
+  fastq@1.20.1:
     dependencies:
       reusify: 1.1.0
 
@@ -9437,7 +9437,7 @@ snapshots:
 
   kleur@3.0.3: {}
 
-  knip@5.78.0(@types/node@24.10.4)(typescript@5.9.3):
+  knip@5.79.0(@types/node@24.10.4)(typescript@5.9.3):
     dependencies:
       '@nodelib/fs.walk': 1.2.8
       '@types/node': 24.10.4
@@ -9452,7 +9452,7 @@ snapshots:
       smol-toml: 1.6.0
       strip-json-comments: 5.0.3
       typescript: 5.9.3
-      zod: 4.2.1
+      zod: 4.3.4
 
   known-css-properties@0.37.0: {}
 
@@ -10908,4 +10908,4 @@ snapshots:
 
   zod@3.25.76: {}
 
-  zod@4.2.1: {}
+  zod@4.3.4: {}

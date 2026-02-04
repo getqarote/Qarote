@@ -78,7 +78,7 @@
     "@commitlint/cli": "^20.3.0",
     "@commitlint/config-conventional": "^20.3.0",
     "husky": "^9.1.7",
-    "knip": "^5.0.0",
+    "knip": "^5.79.0",
     "lint-staged": "^16.2.7",
     "syncpack": "^13.0.4",
     "turbo": "^2.7.2"
