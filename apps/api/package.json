@@ -68,7 +68,7 @@
     "@react-email/components": "^0.1.0",
     "@react-email/render": "^1.1.2",
     "@sentry/node": "^10.24.0",
-    "@sentry/profiling-node": "^10.24.0",
+    "@sentry/profiling-node": "^10.32.1",
     "@types/react": "^18.3.3",
     "@types/uuid": "^10.0.0",
     "amqplib": "^0.10.8",
