@@ -9,6 +9,7 @@ import PaymentActionRequiredEmail from "./templates/payment-action-required-emai
 import PaymentConfirmationEmail from "./templates/payment-confirmation-email";
 import TrialEndingEmail from "./templates/trial-ending-email";
 import UpcomingInvoiceEmail from "./templates/upcoming-invoice-email";
+import UpdateAvailableEmail from "./templates/update-available-email";
 
 interface TrialEndingEmailParams {
   to: string;
@@ -67,6 +68,13 @@ interface AlertNotificationEmailParams {
   serverName: string;
   serverId: string;
   alerts: RabbitMQAlert[];
+}
+
+interface UpdateAvailableEmailParams {
+  to: string;
+  currentVersion: string;
+  latestVersion: string;
+  latestTagName: string;
 }
 
 /**
@@ -329,6 +337,31 @@ export class NotificationEmailService {
         criticalCount,
         warningCount,
       },
+    });
+  }
+
+  /**
+   * Send update available notification email to admin
+   */
+  static async sendUpdateAvailableEmail(
+    params: UpdateAvailableEmailParams
+  ): Promise<EmailResult> {
+    const { to, currentVersion, latestVersion, latestTagName } = params;
+
+    const releaseUrl = `https://github.com/getqarote/Qarote/releases/tag/${latestTagName}`;
+
+    const template = UpdateAvailableEmail({
+      currentVersion,
+      latestVersion,
+      releaseUrl,
+    });
+
+    return CoreEmailService.sendEmail({
+      to,
+      subject: `Qarote ${latestVersion} is available - Update your instance`,
+      template,
+      emailType: "update_available",
+      context: { currentVersion, latestVersion },
     });
   }
 }

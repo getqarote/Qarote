@@ -231,7 +231,8 @@ class LicenseService {
     licenseId: string,
     version: number,
     fileContent: string,
-    expiresAt: Date
+    expiresAt: Date,
+    stripeInvoiceId?: string
   ): Promise<void> {
     try {
       // Calculate deletion date (30 days from now)
@@ -245,6 +246,7 @@ class LicenseService {
           fileContent,
           expiresAt,
           deletesAt,
+          stripeInvoiceId,
         },
       });
 
@@ -252,6 +254,7 @@ class LicenseService {
         {
           licenseId,
           version,
+          stripeInvoiceId,
           deletesAt: deletesAt.toISOString(),
         },
         "License file version saved with 30-day grace period"
