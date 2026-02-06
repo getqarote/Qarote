@@ -34,7 +34,7 @@
     "@types/react-syntax-highlighter": "^15.5.13",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "date-fns": "^3.6.0",
+    "date-fns": "^4.1.0",
     "loglevel": "^1.9.2",
     "lucide-react": "^0.462.0",
     "react": "^18.3.1",
