@@ -6,7 +6,7 @@ WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@9.0.0 --activate
 
 # Copy root package files (for monorepo)
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml VERSION ./
 
 # Copy all workspace package.json files
 COPY apps/api/package.json ./apps/api/

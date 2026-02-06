@@ -702,23 +702,28 @@ docker compose logs postgres
 
 ### Updating Qarote
 
-1. **Pull latest changes:**
+Run the update script from the Qarote root directory:
 
-   ```bash
-   git pull origin main
-   ```
+```bash
+./scripts/update.sh
+```
 
-2. **Rebuild containers:**
+This will:
+1. Pull latest changes from git
+2. Rebuild Docker containers
+3. Restart services (database migrations run automatically on start)
 
-   ```bash
-   docker compose build
-   docker compose up -d
-   ```
+**Manual update (alternative):**
 
-3. **Run migrations:**
-   ```bash
-   docker exec qarote_backend npm run db:migrate:dev
-   ```
+```bash
+git pull origin main
+docker compose -f docker-compose.selfhosted.yml build
+docker compose -f docker-compose.selfhosted.yml up -d
+```
+
+### Update Notifications
+
+If you purchased an Enterprise license, Qarote will automatically notify you by email when a new version is available. Notifications are sent to the email address associated with your license once every 24 hours when a new release is detected.
 
 ## Air-Gapped Deployments
 

@@ -33,6 +33,8 @@ export class EmailService {
     NotificationEmailService.sendPaymentConfirmationEmail;
   static sendAlertNotificationEmail =
     NotificationEmailService.sendAlertNotificationEmail;
+  static sendUpdateAvailableEmail =
+    NotificationEmailService.sendUpdateAvailableEmail;
 
   // License emails
   static sendLicenseDeliveryEmail =
