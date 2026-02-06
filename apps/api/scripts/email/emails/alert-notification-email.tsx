@@ -1,7 +1,10 @@
 import React from "react";
 import AlertNotificationEmail from "../../../src/services/email/templates/alert-notification-email";
 import { emailConfig } from "../../../src/config";
-import { AlertSeverity, AlertCategory } from "../../../src/types/alert";
+import {
+  AlertSeverity,
+  AlertCategory,
+} from "../../../src/services/alerts/alert.interfaces";
 
 const { frontendUrl } = emailConfig;
 

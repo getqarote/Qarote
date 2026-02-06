@@ -2,15 +2,14 @@ import { UserPlan } from "@prisma/client";
 import { z } from "zod";
 
 // Schema for license purchase
+// Note: Self-hosted licenses are annual-only
 export const purchaseLicenseSchema = z.object({
   tier: z.enum([UserPlan.DEVELOPER, UserPlan.ENTERPRISE]),
-  billingInterval: z.enum(["monthly", "yearly"]),
 });
 
 // Schema for license validation
 export const validateLicenseSchema = z.object({
   licenseKey: z.string().min(1, "License key is required"),
-  instanceId: z.string().optional(),
 });
 
 // Schema for license download

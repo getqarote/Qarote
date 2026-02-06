@@ -159,6 +159,112 @@ const TermsOfService = () => {
                   period
                 </li>
               </ul>
+
+              <h3 className="text-xl font-medium text-foreground mt-6">
+                4.4 Enterprise Self-Hosted Licenses
+              </h3>
+              <p>
+                Enterprise Edition self-hosted licenses are subject to
+                additional terms:
+              </p>
+
+              <h4 className="text-lg font-medium text-foreground mt-4">
+                License Scope and Usage
+              </h4>
+              <ul className="list-disc pl-6 space-y-2">
+                <li>
+                  <strong>Organization License:</strong> Each license is valid
+                  for use by a single organization or company
+                </li>
+                <li>
+                  <strong>Unlimited Servers:</strong> You may deploy the
+                  software on unlimited servers within your organization
+                </li>
+                <li>
+                  <strong>Non-Transferable:</strong> Licenses may not be
+                  transferred, shared, or sold to other organizations or
+                  entities
+                </li>
+                <li>
+                  <strong>Internal Use Only:</strong> The license is for your
+                  organization's internal use and may not be used to provide
+                  services to third parties
+                </li>
+              </ul>
+
+              <h4 className="text-lg font-medium text-foreground mt-4">
+                License Validity and Renewal
+              </h4>
+              <ul className="list-disc pl-6 space-y-2">
+                <li>
+                  <strong>Annual Term:</strong> Licenses are valid for one year
+                  from the date of issuance
+                </li>
+                <li>
+                  <strong>Automatic Renewal:</strong> Licenses automatically
+                  renew unless canceled before the renewal date
+                </li>
+                <li>
+                  <strong>Expiration:</strong> Upon expiration, premium features
+                  will be disabled but your data remains accessible
+                </li>
+                <li>
+                  <strong>Grace Period:</strong> A 7-day grace period is
+                  provided after expiration to renew your license
+                </li>
+              </ul>
+
+              <h4 className="text-lg font-medium text-foreground mt-4">
+                Prohibited Activities
+              </h4>
+              <p>When using a self-hosted license, you may not:</p>
+              <ul className="list-disc pl-6 space-y-2">
+                <li>
+                  Share your license with other companies or organizations
+                </li>
+                <li>Rent, lease, or resell the software to third parties</li>
+                <li>Remove or modify license validation mechanisms</li>
+                <li>
+                  Use the software to provide commercial services to other
+                  entities
+                </li>
+                <li>Reverse engineer the license validation system</li>
+              </ul>
+
+              <h4 className="text-lg font-medium text-foreground mt-4">
+                License Enforcement
+              </h4>
+              <p>We reserve the right to:</p>
+              <ul className="list-disc pl-6 space-y-2">
+                <li>Monitor license validation requests for compliance</li>
+                <li>Investigate suspected license violations</li>
+                <li>
+                  Terminate licenses that are being used in violation of these
+                  terms
+                </li>
+                <li>
+                  Pursue legal action for license fraud or unauthorized
+                  distribution
+                </li>
+              </ul>
+
+              <h4 className="text-lg font-medium text-foreground mt-4">
+                Data Collection for License Validation
+              </h4>
+              <p>
+                For self-hosted deployments, we collect minimal data for license
+                validation purposes only:
+              </p>
+              <ul className="list-disc pl-6 space-y-2">
+                <li>License key</li>
+                <li>Validation timestamp</li>
+                <li>Software version</li>
+                <li>Server count (for monitoring compliance)</li>
+              </ul>
+              <p className="mt-2">
+                No business data, message content, or queue information is
+                transmitted during license validation.
+              </p>
             </div>
           </section>
 

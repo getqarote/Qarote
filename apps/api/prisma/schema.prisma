@@ -282,25 +282,58 @@ model WorkspaceMember {
 }
 
 model License {
-  id               String     @id @default(uuid())
-  licenseKey       String     @unique
-  tier             UserPlan
-  expiresAt        DateTime?
-  customerEmail    String
-  workspaceId      String?
-  lastValidatedAt  DateTime?
-  isActive         Boolean    @default(true)
-  stripeCustomerId String?
-  stripePaymentId  String?
-  instanceId       String?
-  createdAt        DateTime   @default(now())
-  updatedAt        DateTime   @updatedAt
-  workspace        Workspace? @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
+  id                   String                  @id @default(uuid())
+  licenseKey           String                  @unique
+  tier                 UserPlan
+  expiresAt            DateTime
+  customerEmail        String
+  workspaceId          String?
+  lastValidatedAt      DateTime?
+  isActive             Boolean                 @default(true)
+  stripeCustomerId     String?
+  stripePaymentId      String?
+  stripeSubscriptionId String? // Link to annual subscription for auto-renewal
+  currentVersion       Int                     @default(1) // Track license file version for renewals
+  createdAt            DateTime                @default(now())
+  updatedAt            DateTime                @updatedAt
+  workspace            Workspace?              @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
+  renewalEmails        LicenseRenewalEmail[]
+  fileVersions         LicenseFileVersion[]
 
   @@index([isActive], name: "license_active_idx")
   @@index([customerEmail], name: "license_customer_email_idx")
   @@index([licenseKey], name: "license_key_idx")
   @@index([workspaceId], name: "license_workspace_idx")
+  @@index([stripeSubscriptionId], name: "license_subscription_idx")
+}
+
+model LicenseRenewalEmail {
+  id           String   @id @default(uuid())
+  licenseId    String
+  reminderType String // "30_DAY", "15_DAY", "7_DAY", "EXPIRED"
+  sentAt       DateTime @default(now())
+  license      License  @relation(fields: [licenseId], references: [id], onDelete: Cascade)
+
+  @@unique([licenseId, reminderType])
+  @@index([licenseId])
+  @@index([sentAt])
+}
+
+model LicenseFileVersion {
+  id               String   @id @default(uuid())
+  licenseId        String
+  version          Int // 1, 2, 3, etc.
+  fileContent      String   @db.Text // Signed license JSON
+  expiresAt        DateTime
+  stripeInvoiceId  String? // Stripe invoice ID that triggered this renewal (for idempotency)
+  createdAt        DateTime @default(now())
+  deletesAt        DateTime // Deletion date - set when a newer version is created
+  license          License  @relation(fields: [licenseId], references: [id], onDelete: Cascade)
+
+  @@unique([licenseId, version])
+  @@index([licenseId])
+  @@index([deletesAt])
+  @@index([stripeInvoiceId])
 }
 
 model Payment {

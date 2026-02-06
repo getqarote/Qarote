@@ -16,6 +16,7 @@ import type {
   GenerateLicenseOptions,
   LicenseData,
   LicenseValidationResponse,
+  RenewLicenseResult,
   ValidateLicenseOptions,
 } from "./license.interfaces";
 import { signLicenseData } from "./license-crypto.service";
@@ -51,6 +52,8 @@ class LicenseService {
           expiresAt: options.expiresAt,
           stripeCustomerId: options.stripeCustomerId,
           stripePaymentId: options.stripePaymentId,
+          stripeSubscriptionId: options.stripeSubscriptionId,
+          currentVersion: 1, // Initial version
           isActive: true,
         },
       });
@@ -99,7 +102,7 @@ class LicenseService {
       }
 
       // Check expiration
-      if (license.expiresAt && license.expiresAt < new Date()) {
+      if (license.expiresAt < new Date()) {
         return {
           valid: false,
           message: "License has expired",
@@ -111,7 +114,6 @@ class LicenseService {
         where: { id: license.id },
         data: {
           lastValidatedAt: new Date(),
-          instanceId: options.instanceId || license.instanceId,
         },
       });
 
@@ -172,6 +174,161 @@ class LicenseService {
   }
 
   /**
+   * Renew a license - update expiration and increment version
+   * Used during annual subscription renewals
+   */
+  async renewLicense(
+    licenseId: string,
+    newExpiresAt: Date
+  ): Promise<RenewLicenseResult> {
+    try {
+      // Get current license
+      const currentLicense = await prisma.license.findUnique({
+        where: { id: licenseId },
+      });
+
+      if (!currentLicense) {
+        throw new Error(`License ${licenseId} not found`);
+      }
+
+      const newVersion = currentLicense.currentVersion + 1;
+
+      // Update license with new expiration and version
+      const updatedLicense = await prisma.license.update({
+        where: { id: licenseId },
+        data: {
+          expiresAt: newExpiresAt,
+          currentVersion: newVersion,
+          updatedAt: new Date(),
+        },
+      });
+
+      logger.info(
+        {
+          licenseId,
+          newVersion,
+          newExpiresAt: newExpiresAt.toISOString(),
+          previousExpiresAt: currentLicense.expiresAt.toISOString(),
+        },
+        "License renewed successfully"
+      );
+
+      return {
+        license: updatedLicense,
+        newVersion,
+      };
+    } catch (error) {
+      logger.error({ error, licenseId }, "Failed to renew license");
+      throw error;
+    }
+  }
+
+  /**
+   * Save a license file version for historical access
+   * Sets deletesAt to 30 days in the future for grace period
+   */
+  async saveLicenseFileVersion(
+    licenseId: string,
+    version: number,
+    fileContent: string,
+    expiresAt: Date
+  ): Promise<void> {
+    try {
+      // Calculate deletion date (30 days from now)
+      const deletesAt = new Date();
+      deletesAt.setDate(deletesAt.getDate() + 30);
+
+      await prisma.licenseFileVersion.create({
+        data: {
+          licenseId,
+          version,
+          fileContent,
+          expiresAt,
+          deletesAt,
+        },
+      });
+
+      logger.info(
+        {
+          licenseId,
+          version,
+          deletesAt: deletesAt.toISOString(),
+        },
+        "License file version saved with 30-day grace period"
+      );
+    } catch (error) {
+      logger.error(
+        { error, licenseId, version },
+        "Failed to save license file version"
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Clean up expired license file versions
+   * Deletes versions where deletesAt has passed
+   * Should be called by a scheduled worker (license-monitor)
+   */
+  async cleanupExpiredLicenseVersions(): Promise<void> {
+    try {
+      const now = new Date();
+
+      // Find expired versions
+      const expiredVersions = await prisma.licenseFileVersion.findMany({
+        where: {
+          deletesAt: { lt: now },
+        },
+        select: {
+          id: true,
+          licenseId: true,
+          version: true,
+        },
+      });
+
+      if (expiredVersions.length === 0) {
+        logger.debug("No expired license file versions to clean up");
+        return;
+      }
+
+      // Delete expired versions
+      const result = await prisma.licenseFileVersion.deleteMany({
+        where: {
+          deletesAt: { lt: now },
+        },
+      });
+
+      logger.info(
+        {
+          deletedCount: result.count,
+          expiredVersions: expiredVersions.map((v) => ({
+            licenseId: v.licenseId,
+            version: v.version,
+          })),
+        },
+        "Cleaned up expired license file versions"
+      );
+    } catch (error) {
+      logger.error(
+        { error },
+        "Failed to cleanup expired license file versions"
+      );
+      // Don't throw - this is cleanup, not critical
+    }
+  }
+
+  /**
+   * Get license file versions for a license
+   */
+  async getLicenseFileVersions(licenseId: string) {
+    return prisma.licenseFileVersion.findMany({
+      where: { licenseId },
+      orderBy: { version: "desc" },
+      take: 2, // Return only last 2 versions
+    });
+  }
+
+  /**
    * Generate a signed license file (SaaS only - requires private key)
    * This creates a cryptographically signed license file that can be validated offline
    */
@@ -189,10 +346,6 @@ class LicenseService {
 
     try {
       const now = new Date();
-      // Handle null expiration (perpetual license)
-      // null explicitly means perpetual (never expires), so preserve it
-      // Since expiresAt is Date | null (required), it's never undefined
-      const expiresAt = options.expiresAt;
 
       // Prepare license data
       const licenseData: LicenseData = {
@@ -200,10 +353,9 @@ class LicenseService {
         tier: options.tier,
         customerEmail: options.customerEmail,
         issuedAt: now.toISOString(),
-        expiresAt: expiresAt === null ? null : expiresAt.toISOString(),
+        expiresAt: options.expiresAt.toISOString(),
         features: options.features,
         maxInstances: options.maxInstances,
-        instanceId: options.instanceId,
       };
 
       // Sign license data

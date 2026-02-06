@@ -51,6 +51,7 @@ The Community Edition is free and open-source. It provides core RabbitMQ monitor
 1. **Install Dokku** on your server (see [Dokku Installation Guide](https://dokku.com/docs/getting-started/installation/))
 
 2. **Create the app and database:**
+
    ```bash
    ssh dokku@your-server apps:create qarote
    sudo dokku plugin:install https://github.com/dokku/dokku-postgres.git postgres
@@ -59,6 +60,7 @@ The Community Edition is free and open-source. It provides core RabbitMQ monitor
    ```
 
 3. **Set environment variables:**
+
    ```bash
    dokku config:set qarote \
      DEPLOYMENT_MODE=community \
@@ -69,13 +71,13 @@ The Community Edition is free and open-source. It provides core RabbitMQ monitor
      ENCRYPTION_KEY=$(openssl rand -base64 32) \
      CORS_ORIGIN=* \
      FRONTEND_URL=https://your-domain.com \
-     ENABLE_EMAIL=false \
-     ENABLE_SENTRY=false
+     ENABLE_EMAIL=false
    ```
 
    **Note:** `DATABASE_URL` is automatically set by Dokku when you link the PostgreSQL service. `PORT` and `HOST` are also set automatically by Dokku.
 
 4. **Deploy:**
+
    ```bash
    git remote add dokku dokku@your-server:qarote
    git push dokku main
@@ -139,7 +141,6 @@ If you prefer Docker Compose or need more control over the deployment:
 **Optional:**
 
 - `ENABLE_EMAIL=false` - Disable email features
-- `ENABLE_SENTRY=false` - Disable error tracking
 
 **Note:** OAuth authentication (Google Sign-In) is only available in cloud deployments. Self-hosted deployments use email/password authentication.
 
@@ -207,7 +208,6 @@ The Enterprise Edition requires a valid license file to unlock premium features.
 **Optional:**
 
 - `ENABLE_EMAIL=false` - Disable email features (or configure SMTP)
-- `ENABLE_SENTRY=false` - Disable error tracking
 
 **Note:** OAuth authentication (Google Sign-In) is only available in cloud deployments. Self-hosted deployments use email/password authentication.
 
@@ -296,18 +296,23 @@ LICENSE_PUBLIC_KEY=-----BEGIN PUBLIC KEY-----\n...\n-----END PUBLIC KEY-----
 
 # Optional Services
 ENABLE_EMAIL=false
-ENABLE_SENTRY=false
 
 # Note: OAuth (Google Sign-In) is only available in cloud deployments.
 # Self-hosted deployments use email/password authentication.
 
-# Email Configuration (if ENABLE_EMAIL=true)
-EMAIL_PROVIDER=smtp
+# SMTP Configuration (if ENABLE_EMAIL=true)
+# Option 1: Basic Authentication
 SMTP_HOST=smtp.example.com
 SMTP_PORT=587
 SMTP_USER=user@example.com
 SMTP_PASS=password
 FROM_EMAIL=noreply@qarote.io
+
+# Option 2: OAuth2 (Recommended - see SMTP Configuration section)
+# SMTP_SERVICE=gmail
+# SMTP_OAUTH_CLIENT_ID=your-client-id
+# SMTP_OAUTH_CLIENT_SECRET=your-client-secret
+# SMTP_OAUTH_REFRESH_TOKEN=your-refresh-token
 
 # CORS
 CORS_ORIGIN=*
@@ -321,15 +326,27 @@ VITE_API_URL=http://localhost:3000
 
 # Deployment Mode
 VITE_DEPLOYMENT_MODE=community  # or "enterprise"
-
-# Optional
-VITE_ENABLE_SENTRY=false
-VITE_SENTRY_DSN=
 ```
 
 ### Generating Secrets
 
-Generate secure random secrets:
+Use the built-in setup script to generate all required secrets:
+
+```bash
+# Generate and display secrets
+pnpm setup:selfhosted
+
+# Generate and write to .env file
+pnpm setup:selfhosted --write
+```
+
+This generates:
+
+- `JWT_SECRET` (64 bytes)
+- `ENCRYPTION_KEY` (64 bytes)
+- `POSTGRES_PASSWORD` (32 bytes)
+
+Alternatively, generate manually with OpenSSL:
 
 ```bash
 # JWT Secret (min 32 characters)
@@ -341,6 +358,204 @@ openssl rand -base64 32
 # Database Password
 openssl rand -base64 16
 ```
+
+### SMTP Configuration
+
+Email features are **disabled by default** for self-hosted deployments. To enable email (for password resets, invitations, notifications), configure SMTP settings.
+
+#### Authentication Methods
+
+**OAuth2 (Recommended)**
+
+For production environments, OAuth2 is the recommended authentication method as it's more secure than app passwords and doesn't require storing credentials directly. OAuth2 is especially recommended for Gmail and Office 365.
+
+**Benefits:**
+- More secure than app-specific passwords
+- Tokens can be revoked without changing account passwords
+- Better for enterprise and high-volume sending
+- Compliant with modern security standards
+
+**Setup Guide:**
+For detailed OAuth2 configuration instructions, see the [Nodemailer OAuth2 Documentation](https://nodemailer.com/smtp/oauth2/). The setup process varies by provider but generally involves:
+1. Creating OAuth2 credentials in your email provider's console
+2. Configuring the OAuth2 settings in your `.env` file
+3. Obtaining and refreshing access tokens
+
+See provider-specific OAuth2 examples below.
+
+#### Supported SMTP Providers
+
+**Gmail**
+
+*Option 1: App Password (Simple)*
+```env
+ENABLE_EMAIL=true
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your-email@gmail.com
+SMTP_PASS=your-app-password
+FROM_EMAIL=your-email@gmail.com
+```
+
+**Requirements:**
+- Enable 2FA on your Google account first
+- Generate an [App Password](https://support.google.com/accounts/answer/185833) (not your regular password)
+- **Sending limits:** 500 emails/day for free Gmail accounts, 2,000/day for Google Workspace
+
+*Option 2: OAuth2 (Recommended for production)*
+```env
+ENABLE_EMAIL=true
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your-email@gmail.com
+SMTP_SERVICE=gmail
+SMTP_OAUTH_CLIENT_ID=your-client-id.apps.googleusercontent.com
+SMTP_OAUTH_CLIENT_SECRET=your-client-secret
+SMTP_OAUTH_REFRESH_TOKEN=your-refresh-token
+FROM_EMAIL=your-email@gmail.com
+```
+
+**OAuth2 Setup Steps:**
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project (or use existing)
+3. Enable Gmail API for your project
+4. Create OAuth 2.0 credentials (OAuth client ID → Web application)
+5. Add `https://developers.google.com/oauthplayground` to authorized redirect URIs
+6. Use [OAuth2 Playground](https://developers.google.com/oauthplayground/) to get refresh token:
+   - Click the gear icon (⚙️) in top right
+   - Check "Use your own OAuth credentials"
+   - Enter your Client ID and Client Secret
+   - In "Select & authorize APIs", enter `https://mail.google.com/`
+   - Click "Authorize APIs" and grant access
+   - Click "Exchange authorization code for tokens"
+   - Copy the refresh token
+
+For detailed instructions, see [Nodemailer Gmail OAuth2 Guide](https://nodemailer.com/smtp/oauth2/#example-3)
+
+**SendGrid**
+```env
+ENABLE_EMAIL=true
+SMTP_HOST=smtp.sendgrid.net
+SMTP_PORT=587
+SMTP_USER=apikey
+SMTP_PASS=your-sendgrid-api-key
+FROM_EMAIL=noreply@yourdomain.com
+```
+
+**Requirements:**
+- Username is literally `apikey` (not your email address)
+- Password is your SendGrid API key (create at Settings → API Keys)
+- Verify your sender domain in SendGrid dashboard first
+- **Free tier:** 100 emails/day
+
+**Mailgun**
+```env
+ENABLE_EMAIL=true
+SMTP_HOST=smtp.mailgun.org
+SMTP_PORT=587
+SMTP_USER=postmaster@your-domain.mailgun.org
+SMTP_PASS=your-mailgun-password
+FROM_EMAIL=noreply@yourdomain.com
+```
+
+**Requirements:**
+- Add and verify your domain in Mailgun dashboard first
+- Username format: `postmaster@your-domain.mailgun.org`
+- Find SMTP credentials in Mailgun → Sending → Domain settings
+- **Free tier:** First 3 months free (up to 5,000/month), then paid only
+
+**Office 365 / Outlook (Business)**
+
+*Option 1: Basic Authentication (Requires SMTP AUTH enabled)*
+```env
+ENABLE_EMAIL=true
+SMTP_HOST=smtp.office365.com
+SMTP_PORT=587
+SMTP_USER=your-email@yourdomain.com
+SMTP_PASS=your-password
+FROM_EMAIL=your-email@yourdomain.com
+```
+
+**Important - Modern Authentication Required:**
+
+Office 365 uses Modern Authentication. Before using SMTP, you must:
+
+1. **Enable SMTP AUTH** in Microsoft 365 admin center:
+   - Go to Microsoft 365 admin center → Settings → Org settings
+   - Select "Modern authentication"
+   - Enable SMTP AUTH for your organization
+
+2. **For accounts with 2FA/MFA enabled:**
+   - Generate an App Password from your Microsoft account security settings
+   - Use the App Password instead of your regular password
+
+3. **Alternative:** Contact your Microsoft 365 administrator to enable SMTP AUTH for your account.
+
+*Option 2: OAuth2 (Recommended for enterprise)*
+
+OAuth2 is recommended for Office 365/Outlook as it doesn't require enabling legacy SMTP AUTH. See [Nodemailer OAuth2 Documentation](https://nodemailer.com/smtp/oauth2/) for detailed setup instructions for Microsoft 365.
+
+**Note**: Personal @outlook.com or @hotmail.com accounts should use `smtp-mail.outlook.com` instead of `smtp.office365.com`.
+
+**Custom SMTP Server**
+```env
+ENABLE_EMAIL=true
+SMTP_HOST=mail.yourcompany.com
+SMTP_PORT=587
+SMTP_USER=smtp-user
+SMTP_PASS=smtp-password
+FROM_EMAIL=noreply@yourcompany.com
+```
+
+**Additional OAuth2 Providers**
+
+For OAuth2 configuration with other providers (Outlook.com, Yahoo, AOL, etc.), refer to the comprehensive [Nodemailer OAuth2 Documentation](https://nodemailer.com/smtp/oauth2/). It includes:
+- Step-by-step setup guides for major providers
+- Code examples for token generation and refresh
+- Troubleshooting common OAuth2 issues
+- Security best practices
+
+#### Testing SMTP Configuration
+
+After configuring SMTP, verify your setup with the built-in testing script:
+
+**Test connection only:**
+```bash
+pnpm test:smtp
+```
+
+**Send test email via real SMTP:**
+```bash
+pnpm test:smtp --send admin@yourcompany.com
+
+# Or test with production React Email template
+pnpm test:smtp --send admin@yourcompany.com --template
+```
+
+**Development Testing with Ethereal:**
+
+For development and testing without a real SMTP server, use Ethereal Email:
+
+```bash
+# Verify Ethereal connection
+pnpm test:smtp:ethereal
+
+# Send simple test email and get preview URL
+pnpm test:smtp:ethereal --send test@example.com
+
+# Test with production React Email templates
+pnpm test:smtp:ethereal --send test@example.com --template
+```
+
+**What is Ethereal?**
+
+Ethereal is a fake SMTP service that:
+- Never actually delivers emails
+- Provides web preview URLs to view rendered emails
+- Requires no configuration or API keys
+- Perfect for testing email templates during development
+
+The script will display a preview URL where you can view the test email in your browser.
 
 ## License File Setup
 
@@ -365,7 +580,6 @@ Enterprise licenses are provided as JSON files with cryptographic signatures:
     "advanced_alert_rules"
   ],
   "maxInstances": 1,
-  "instanceId": "optional-instance-id",
   "signature": "base64-encoded-signature"
 }
 ```
@@ -402,21 +616,6 @@ Enterprise licenses are provided as JSON files with cryptographic signatures:
    docker compose restart backend
    ```
 
-### Instance ID (Optional)
-
-If your license specifies an `instanceId`, the license will only work on that specific server. The instance ID is generated from:
-
-- Hostname
-- Platform and architecture
-- Network interface MAC address
-
-To get your instance ID:
-
-```bash
-docker exec qarote_backend node -e "const {getInstanceId} = require('./dist/core/instance-fingerprint'); console.log(getInstanceId());"
-```
-
-When purchasing a license, you can optionally provide your instance ID to lock the license to that server.
 
 ## Troubleshooting
 
@@ -436,14 +635,6 @@ When purchasing a license, you can optionally provide your instance ID to lock t
 
 - Check license expiration date
 - Renew your license from Customer Portal
-
-**Error:** "License instance ID mismatch"
-
-**Solutions:**
-
-- Your license is locked to a specific instance ID
-- Ensure you're using the license on the correct server
-- Contact support to update instance ID
 
 ### Premium Features Not Available
 
@@ -538,19 +729,56 @@ For completely offline deployments:
    ```env
    ENABLE_EMAIL=false
    ENABLE_OAUTH=false
-   ENABLE_SENTRY=false
    ```
 
 2. **Use SMTP for email** (if needed):
 
+   **Gmail (App Password):**
    ```env
    ENABLE_EMAIL=true
-   EMAIL_PROVIDER=smtp
-   SMTP_HOST=your-smtp-server
+   SMTP_HOST=smtp.gmail.com
    SMTP_PORT=587
-   SMTP_USER=user@example.com
-   SMTP_PASS=password
+   SMTP_USER=your-email@gmail.com
+   SMTP_PASS=your-app-password
+   FROM_EMAIL=your-email@gmail.com
    ```
+   Note: Enable 2FA first, then generate an [App Password](https://support.google.com/accounts/answer/185833). Limit: 500 emails/day (free) or 2,000/day (Workspace).
+   
+   **For production, consider OAuth2** (more secure): See [SMTP Configuration](#smtp-configuration) section for OAuth2 setup.
+
+   **SendGrid:**
+   ```env
+   ENABLE_EMAIL=true
+   SMTP_HOST=smtp.sendgrid.net
+   SMTP_PORT=587
+   SMTP_USER=apikey
+   SMTP_PASS=your-sendgrid-api-key
+   FROM_EMAIL=noreply@yourdomain.com
+   ```
+   Note: Username is `apikey` (literal string). Password is your SendGrid API key. Verify sender domain first. Free tier: 100 emails/day.
+
+   **Mailgun:**
+   ```env
+   ENABLE_EMAIL=true
+   SMTP_HOST=smtp.mailgun.org
+   SMTP_PORT=587
+   SMTP_USER=postmaster@your-domain.mailgun.org
+   SMTP_PASS=your-mailgun-password
+   FROM_EMAIL=noreply@yourdomain.com
+   ```
+   Note: Verify domain first. Username format: `postmaster@your-domain.mailgun.org`. Find credentials in Mailgun dashboard (Sending → Domain settings).
+
+   **Office 365 / Outlook (Business):**
+   ```env
+   ENABLE_EMAIL=true
+   SMTP_HOST=smtp.office365.com
+   SMTP_PORT=587
+   SMTP_USER=your-email@yourdomain.com
+   SMTP_PASS=your-password
+   FROM_EMAIL=your-email@yourdomain.com
+   ```
+   
+   **Important:** Office 365 requires Modern Authentication. Enable SMTP AUTH in Microsoft 365 admin center (Settings → Org settings → Modern authentication). For 2FA/MFA accounts, use an App Password instead of your regular password.
 
 3. **License validation is offline** - no network required after initial license file setup
 

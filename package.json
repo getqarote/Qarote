@@ -53,6 +53,9 @@
     "act:test:portal:prod": "act workflow_dispatch -W .github/workflows/deploy-portal-production.yml --input confirm_production=DEPLOY",
     "act:test:worker": "act -j quality-checks -W .github/workflows/deploy-worker-staging.yml",
     "act:test:worker:prod": "act workflow_dispatch -W .github/workflows/deploy-worker-production.yml --input confirm_production=DEPLOY",
+    "setup:selfhosted": "pnpm --filter=qarote-api setup:selfhosted",
+    "test:smtp": "pnpm --filter=qarote-api test:smtp",
+    "test:smtp:ethereal": "pnpm --filter=qarote-api test:smtp:ethereal",
     "knip": "knip",
     "knip:fix": "knip --fix"
   },
@@ -81,7 +84,7 @@
     "knip": "^5.0.0",
     "lint-staged": "^16.2.7",
     "syncpack": "^13.0.4",
-    "turbo": "^2.7.2"
+    "turbo": "^2.8.3"
   },
   "overrides": {
     "vite": "7.2.7",

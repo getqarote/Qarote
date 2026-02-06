@@ -98,8 +98,7 @@ The following features require an Enterprise Edition license:
      ENCRYPTION_KEY=$(openssl rand -base64 32) \
      CORS_ORIGIN=* \
      FRONTEND_URL=https://your-domain.com \
-     ENABLE_EMAIL=false \
-     ENABLE_SENTRY=false
+     ENABLE_EMAIL=false
    ```
 
    **Note:**
@@ -159,7 +158,6 @@ If you prefer Docker Compose or need more control over the deployment, you can u
 
    # Optional
    ENABLE_EMAIL=false
-   ENABLE_SENTRY=false
    # Note: OAuth (Google Sign-In) is only available in cloud deployments
    ```
 
@@ -192,7 +190,6 @@ If you prefer Docker Compose or need more control over the deployment, you can u
 #### Optional
 
 - `ENABLE_EMAIL=false` - Disable email features (default: false)
-- `ENABLE_SENTRY=false` - Disable error tracking (default: false)
 - `CORS_ORIGIN` - CORS origin (default: `*`)
 - `LOG_LEVEL` - Logging level (default: `info`)
 

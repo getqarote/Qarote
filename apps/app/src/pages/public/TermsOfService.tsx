@@ -99,6 +99,46 @@ export default function TermsOfService() {
               We may change subscription fees at any time, but will provide you
               with reasonable notice before any changes in fees take effect.
             </p>
+
+            <h4 className="text-lg font-semibold mt-6 mb-3">
+              Enterprise Self-Hosted Licenses
+            </h4>
+            <p>
+              Enterprise Edition self-hosted licenses are subject to additional
+              terms:
+            </p>
+            <ul className="list-disc pl-6 space-y-2">
+              <li>
+                <strong>Organization License:</strong> Each license is valid for
+                use by a single organization or company
+              </li>
+              <li>
+                <strong>Unlimited Servers:</strong> You may deploy the software
+                on unlimited servers within your organization
+              </li>
+              <li>
+                <strong>Non-Transferable:</strong> Licenses may not be
+                transferred, shared, or sold to other organizations
+              </li>
+              <li>
+                <strong>Internal Use Only:</strong> The license is for your
+                organization's internal use and may not be used to provide
+                services to third parties
+              </li>
+              <li>
+                <strong>Annual Term:</strong> Licenses are valid for one year
+                and automatically renew unless canceled
+              </li>
+              <li>
+                <strong>Prohibited:</strong> Sharing licenses with other
+                companies, reselling, or removing license validation mechanisms
+              </li>
+            </ul>
+            <p className="mt-3">
+              We reserve the right to monitor license validation requests for
+              compliance and terminate licenses used in violation of these
+              terms.
+            </p>
           </CardContent>
         </Card>
 

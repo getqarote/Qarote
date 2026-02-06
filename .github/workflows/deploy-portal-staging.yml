@@ -83,8 +83,7 @@ jobs:
         env:
           VITE_API_URL: ${{ vars.VITE_API_URL }}
           VITE_GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          VITE_ENABLE_OAUTH: ${{ vars.VITE_ENABLE_OAUTH }}
-          VITE_DEPLOYMENT_MODE: ${{ vars.VITE_DEPLOYMENT_MODE }}
+          VITE_DEPLOYMENT_MODE: ${{ vars.DEPLOYMENT_MODE }}
           NODE_ENV: production
         run: pnpm run build
 

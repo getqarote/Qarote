@@ -35,12 +35,11 @@ export const licenseRouter = router({
   validate: rateLimitedPublicProcedure
     .input(validateLicenseSchema)
     .mutation(async ({ input, ctx }) => {
-      const { licenseKey, instanceId } = input;
+      const { licenseKey } = input;
 
       try {
         const validation = await licenseService.validateLicense({
           licenseKey,
-          instanceId,
         });
 
         if (!validation.valid) {
@@ -55,7 +54,7 @@ export const licenseRouter = router({
           license: validation.license
             ? {
                 ...validation.license,
-                expiresAt: validation.license.expiresAt?.toISOString() ?? null,
+                expiresAt: validation.license.expiresAt.toISOString(),
               }
             : null,
         };
@@ -104,7 +103,7 @@ export const licenseRouter = router({
     .input(purchaseLicenseSchema)
     .mutation(async ({ input, ctx }) => {
       const user = ctx.user;
-      const { tier, billingInterval } = input;
+      const { tier } = input;
 
       try {
         // Create Stripe customer if not exists
@@ -123,27 +122,30 @@ export const licenseRouter = router({
           });
         }
 
-        // Get price ID based on tier and billing interval
+        // Get yearly price ID (licenses are annual-only)
         const priceId =
-          billingInterval === "monthly"
-            ? tier === UserPlan.DEVELOPER
-              ? stripeConfig.priceIds.developer.monthly
-              : stripeConfig.priceIds.enterprise.monthly
-            : tier === UserPlan.DEVELOPER
-              ? stripeConfig.priceIds.developer.yearly
-              : stripeConfig.priceIds.enterprise.yearly;
+          tier === UserPlan.DEVELOPER
+            ? stripeConfig.priceIds.developer.yearly
+            : stripeConfig.priceIds.enterprise.yearly;
 
-        // For licenses, calculate expiration date based on billing interval
-        const expiresAt = new Date();
-        if (billingInterval === "monthly") {
-          expiresAt.setMonth(expiresAt.getMonth() + 1);
-        } else {
-          expiresAt.setFullYear(expiresAt.getFullYear() + 1);
+        if (!priceId) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: `Yearly price not configured for ${tier} tier`,
+          });
         }
 
-        // Create Stripe Checkout Session for one-time license purchase (payment mode)
+        const portalUrl = emailConfig.portalFrontendUrl;
+        if (!portalUrl) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Portal URL not configured",
+          });
+        }
+
+        // Create Stripe Checkout Session for annual subscription
         const session = await stripe.checkout.sessions.create({
-          mode: "payment", // One-time payment for licenses
+          mode: "subscription", // Annual subscription (not one-time payment)
           payment_method_types: ["card"],
           line_items: [
             {
@@ -151,19 +153,25 @@ export const licenseRouter = router({
               quantity: 1,
             },
           ],
-          success_url: `${emailConfig.frontendUrl}/portal/licenses?session_id={CHECKOUT_SESSION_ID}`,
-          cancel_url: `${emailConfig.frontendUrl}/portal/purchase`,
+          subscription_data: {
+            // No trial period for self-hosted licenses
+            metadata: {
+              tier,
+              licenseType: "annual",
+            },
+          },
+          success_url: `${portalUrl}/licenses?session_id={CHECKOUT_SESSION_ID}`,
+          cancel_url: `${portalUrl}/purchase`,
           customer: customerId,
           metadata: {
             userId: user.id,
             plan: tier,
-            billingInterval,
+            billingInterval: "yearly", // Always yearly for licenses
             type: "license", // Mark as license purchase
-            expiresAt: expiresAt.toISOString(),
           },
         });
 
-        return { checkoutUrl: session.url };
+        return { checkoutUrl: session.url! }; // session.url is always present for checkout sessions
       } catch (error) {
         ctx.logger.error({ error }, "Error creating license purchase checkout");
         if (error instanceof TRPCError) {
@@ -202,22 +210,45 @@ export const licenseRouter = router({
           });
         }
 
-        // Generate signed license file (JSON format)
-        const features = getLicenseFeaturesForTier(license.tier);
+        // Retrieve stored license file from database
+        const fileVersions =
+          await licenseService.getLicenseFileVersions(licenseId);
 
-        const licenseFile = await licenseService.generateLicenseFile({
-          licenseKey: license.licenseKey,
-          tier: license.tier,
-          customerEmail: license.customerEmail,
-          expiresAt: license.expiresAt,
-          features: features as string[], // Convert PremiumFeature[] to string[]
-          // Optional: instanceId if customer wants to lock to specific server
-          // maxInstances: 1, // Default to 1 instance per license
-        });
+        // Get the latest version (should match license.currentVersion)
+        const latestVersion = fileVersions[0];
 
-        // Return JSON license file
+        if (!latestVersion) {
+          // Fallback: Generate file if not found (backwards compatibility)
+          ctx.logger.warn(
+            { licenseId },
+            "No stored license file found, generating on-demand"
+          );
+
+          const features = getLicenseFeaturesForTier(license.tier);
+
+          const licenseFile = await licenseService.generateLicenseFile({
+            licenseKey: license.licenseKey,
+            tier: license.tier,
+            customerEmail: license.customerEmail,
+            expiresAt: license.expiresAt,
+            features,
+          });
+
+          return {
+            content: JSON.stringify(licenseFile.licenseFile, null, 2),
+            filename: `qarote-license-${licenseId}.json`,
+            mimeType: "application/json",
+          };
+        }
+
+        // Return stored license file
+        ctx.logger.info(
+          { licenseId, version: latestVersion.version },
+          "Returning stored license file"
+        );
+
         return {
-          content: JSON.stringify(licenseFile.licenseFile, null, 2),
+          content: latestVersion.fileContent,
           filename: `qarote-license-${licenseId}.json`,
           mimeType: "application/json",
         };

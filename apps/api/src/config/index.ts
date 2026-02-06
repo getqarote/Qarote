@@ -3,99 +3,46 @@ import path from "node:path";
 import dotenv from "dotenv";
 import { z } from "zod/v4";
 
+import { cloudSchema } from "./schemas/cloud.js";
+import { communitySchema } from "./schemas/community.js";
+import { enterpriseSchema } from "./schemas/enterprise.js";
+
 // Load .env file from the api directory (where process.cwd() points when running from apps/api)
 dotenv.config({ path: path.join(process.cwd(), ".env") });
 
-// Environment validation schema
-const envSchema = z.object({
-  // Server Configuration
-  NODE_ENV: z
-    .enum(["development", "test", "production"])
-    .describe("development"),
-  PORT: z.coerce.number().int().positive(),
-  HOST: z.string().describe("localhost"),
-  NODE_ID: z.string().describe("Unique identifier for this node"),
+// Union type of all possible configs (internal use only)
+type Config =
+  | z.infer<typeof cloudSchema>
+  | z.infer<typeof communitySchema>
+  | z.infer<typeof enterpriseSchema>;
 
-  // Deployment Mode
-  DEPLOYMENT_MODE: z
-    .enum(["cloud", "community", "enterprise"])
-    .describe("cloud")
-    .default("community"),
+/**
+ * Parse and validate environment variables based on deployment mode
+ * Different deployment modes have different requirements
+ */
+function parseConfig(): Config {
+  const deploymentMode = process.env.DEPLOYMENT_MODE || "community";
 
-  // Logging
-  LOG_LEVEL: z.enum(["error", "warn", "info", "debug"]).describe("info"),
+  // Create environment object with defaulted DEPLOYMENT_MODE
+  // This ensures validation doesn't fail when DEPLOYMENT_MODE is undefined
+  const envWithDefaults = {
+    ...process.env,
+    DEPLOYMENT_MODE: deploymentMode,
+  };
 
-  // Security
-  JWT_SECRET: z.string().min(1, "JWT_SECRET is required"),
-  ENCRYPTION_KEY: z
-    .string()
-    .min(32, "ENCRYPTION_KEY must be at least 32 characters"),
-
-  // Database
-  DATABASE_URL: z.string().startsWith("postgres://", {
-    message: "DATABASE_URL must start with 'postgres://'",
-  }),
-
-  // CORS
-  CORS_ORIGIN: z.string().describe("*"),
-
-  // Email Configuration
-  RESEND_API_KEY: z.string().optional(),
-  FROM_EMAIL: z.email().describe("noreply@qarote.io"),
-  FRONTEND_URL: z.url("FRONTEND_URL must be a valid URL"),
-  PORTAL_FRONTEND_URL: z
-    .url("PORTAL_FRONTEND_URL must be a valid URL")
-    .optional(),
-  ENABLE_EMAIL: z.coerce.boolean().default(false),
-  EMAIL_PROVIDER: z.enum(["resend", "smtp"]).default("resend"),
-  SMTP_HOST: z.string().optional(),
-  SMTP_PORT: z.coerce.number().optional(),
-  SMTP_USER: z.string().optional(),
-  SMTP_PASS: z.string().optional(),
-
-  // Stripe Configuration (optional - only required for cloud mode)
-  STRIPE_SECRET_KEY: z.string().optional(),
-  STRIPE_WEBHOOK_SECRET: z.string().optional(),
-
-  // Stripe Price IDs (optional - only required for cloud mode)
-  STRIPE_DEVELOPER_MONTHLY_PRICE_ID: z.string().optional(),
-  STRIPE_DEVELOPER_YEARLY_PRICE_ID: z.string().optional(),
-  STRIPE_ENTERPRISE_MONTHLY_PRICE_ID: z.string().optional(),
-  STRIPE_ENTERPRISE_YEARLY_PRICE_ID: z.string().optional(),
-
-  // Sentry Configuration
-  SENTRY_DSN: z.string().optional(),
-  SENTRY_ENABLED: z.coerce.boolean().default(false),
-
-  // Google OAuth Configuration
-  GOOGLE_CLIENT_ID: z.string().optional(),
-  ENABLE_OAUTH: z.coerce.boolean().default(false),
-
-  // License Configuration (for enterprise/self-hosted)
-  LICENSE_KEY: z.string().optional(),
-  LICENSE_VALIDATION_URL: z.string().optional(),
-  LICENSE_FILE_PATH: z.string().optional(),
-  LICENSE_PUBLIC_KEY: z.string().optional(),
-  LICENSE_PRIVATE_KEY: z.string().optional(),
-
-  // Notion Configuration
-  NOTION_API_KEY: z.string().optional(),
-  NOTION_DATABASE_ID: z.string().optional(),
-  NOTION_SYNC_ENABLED: z.coerce.boolean().default(false),
-  ENABLE_NOTION: z.coerce.boolean().default(false),
-
-  // Alert Monitoring Configuration
-  ALERT_CHECK_INTERVAL_MS: z.coerce.number().int().positive().default(300000), // 5 minutes
-  ALERT_CHECK_CONCURRENCY: z.coerce.number().int().positive().default(10),
-
-  // NPM package version (for Sentry releases)
-  npm_package_version: z.string().describe("1.0.0"),
-});
-
-// Parse and validate environment variables
-function parseConfig() {
   try {
-    return envSchema.parse(process.env);
+    switch (deploymentMode) {
+      case "cloud":
+        return cloudSchema.parse(envWithDefaults);
+      case "enterprise":
+        return enterpriseSchema.parse(envWithDefaults);
+      case "community":
+        return communitySchema.parse(envWithDefaults);
+      default:
+        throw new Error(
+          `Invalid DEPLOYMENT_MODE: ${deploymentMode}. Must be one of: cloud, community, enterprise`
+        );
+    }
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error(error);
@@ -104,7 +51,7 @@ function parseConfig() {
         (issue) => `${issue.path.join(".")}: ${issue.message}`
       );
       throw new Error(
-        `Configuration validation failed:\n${errorMessages.join("\n")}`
+        `Configuration validation failed for ${deploymentMode} mode:\n${errorMessages.join("\n")}`
       );
     }
     throw error;
@@ -135,7 +82,7 @@ export const corsConfig = {
 } as const;
 
 export const emailConfig = {
-  resendApiKey: config.RESEND_API_KEY,
+  resendApiKey: "RESEND_API_KEY" in config ? config.RESEND_API_KEY : undefined,
   fromEmail: config.FROM_EMAIL,
   frontendUrl: config.FRONTEND_URL,
   portalFrontendUrl: config.PORTAL_FRONTEND_URL,
@@ -146,6 +93,22 @@ export const emailConfig = {
     port: config.SMTP_PORT,
     user: config.SMTP_USER,
     pass: config.SMTP_PASS,
+    // OAuth2 support
+    service: "SMTP_SERVICE" in config ? config.SMTP_SERVICE : undefined,
+    oauth: {
+      clientId:
+        "SMTP_OAUTH_CLIENT_ID" in config
+          ? config.SMTP_OAUTH_CLIENT_ID
+          : undefined,
+      clientSecret:
+        "SMTP_OAUTH_CLIENT_SECRET" in config
+          ? config.SMTP_OAUTH_CLIENT_SECRET
+          : undefined,
+      refreshToken:
+        "SMTP_OAUTH_REFRESH_TOKEN" in config
+          ? config.SMTP_OAUTH_REFRESH_TOKEN
+          : undefined,
+    },
   },
 } as const;
 
@@ -185,7 +148,7 @@ export const googleConfig = {
 
 export const licenseConfig = {
   licenseKey: config.LICENSE_KEY,
-  licenseFilePath: config.LICENSE_FILE_PATH || "./license.json",
+  licenseFilePath: config.LICENSE_FILE_PATH || "./qarote-license.json",
   publicKey: config.LICENSE_PUBLIC_KEY,
   privateKey: config.LICENSE_PRIVATE_KEY,
 } as const;

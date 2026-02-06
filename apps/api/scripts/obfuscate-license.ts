@@ -14,7 +14,6 @@ const licenseFiles = [
   "dist/services/license/license-file.service.js",
   "dist/services/license/license-crypto.service.js",
   "dist/services/license/license-file-integrity.service.js",
-  "dist/core/instance-fingerprint.js",
 ];
 
 const obfuscatorConfig = {

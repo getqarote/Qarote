@@ -24,7 +24,7 @@ async function startWorker() {
     await prisma.$connect();
     logger.info("Connected to database");
 
-    // Start the cron service
+    // Start the RabbitMQ alerts cron service
     rabbitMQAlertsCronService.start();
     logger.info("RabbitMQ alerts cron service started");
 

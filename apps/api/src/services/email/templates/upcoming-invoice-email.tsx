@@ -92,8 +92,7 @@ export default function UpcomingInvoiceEmail({
     <Html>
       <Head />
       <Preview>
-        Your upcoming {planDisplayName} subscription invoice -{" "}
-        {currency.toUpperCase()} {amount}
+        {`Your upcoming ${planDisplayName} subscription invoice - ${currency.toUpperCase()} ${amount}`}
       </Preview>
       <Body style={baseStyles.main}>
         <Container style={baseStyles.container}>

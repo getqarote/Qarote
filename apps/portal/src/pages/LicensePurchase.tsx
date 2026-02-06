@@ -18,9 +18,6 @@ const LicensePurchase = () => {
   const [selectedTier, setSelectedTier] = useState<"DEVELOPER" | "ENTERPRISE">(
     "DEVELOPER"
   );
-  const [billingInterval, setBillingInterval] = useState<"monthly" | "yearly">(
-    "monthly"
-  );
   const [isLoading, setIsLoading] = useState(false);
 
   const purchaseLicenseMutation = trpc.license.purchaseLicense.useMutation({
@@ -40,7 +37,6 @@ const LicensePurchase = () => {
     try {
       purchaseLicenseMutation.mutate({
         tier: selectedTier,
-        billingInterval,
       });
     } catch (error) {
       toast.error(
@@ -54,8 +50,7 @@ const LicensePurchase = () => {
     {
       tier: "DEVELOPER" as const,
       name: "Developer",
-      monthlyPrice: "$34",
-      yearlyPrice: "$348",
+      annualPrice: "$348",
       features: [
         "Up to 5 servers",
         "Queue management",
@@ -66,8 +61,7 @@ const LicensePurchase = () => {
     {
       tier: "ENTERPRISE" as const,
       name: "Enterprise",
-      monthlyPrice: "$124",
-      yearlyPrice: "$1,188",
+      annualPrice: "$1,188",
       features: [
         "Unlimited servers",
         "Advanced monitoring",
@@ -84,31 +78,10 @@ const LicensePurchase = () => {
         <p className="text-muted-foreground mt-2">
           Choose a license tier for your self-hosted Qarote deployment
         </p>
-      </div>
-
-      <div className="flex justify-center mb-6">
-        <div className="billing-toggle">
-          <button
-            onClick={() => setBillingInterval("monthly")}
-            className={`billing-toggle-button ${
-              billingInterval === "monthly"
-                ? "billing-toggle-button-active"
-                : "billing-toggle-button-inactive"
-            }`}
-          >
-            Monthly
-          </button>
-          <button
-            onClick={() => setBillingInterval("yearly")}
-            className={`billing-toggle-button ${
-              billingInterval === "yearly"
-                ? "billing-toggle-button-active"
-                : "billing-toggle-button-inactive"
-            }`}
-          >
-            Yearly
-          </button>
-        </div>
+        <p className="text-sm text-muted-foreground mt-1">
+          Annual licensing for self-hosted deployments (365-day validity with
+          automatic renewal)
+        </p>
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
@@ -125,14 +98,8 @@ const LicensePurchase = () => {
             <CardHeader>
               <CardTitle>{plan.name}</CardTitle>
               <CardDescription>
-                <span className="text-2xl font-bold">
-                  {billingInterval === "monthly"
-                    ? plan.monthlyPrice
-                    : plan.yearlyPrice}
-                </span>
-                <span className="text-sm text-muted-foreground">
-                  /{billingInterval === "monthly" ? "month" : "year"}
-                </span>
+                <span className="text-2xl font-bold">{plan.annualPrice}</span>
+                <span className="text-sm text-muted-foreground">/year</span>
               </CardDescription>
             </CardHeader>
             <CardContent>

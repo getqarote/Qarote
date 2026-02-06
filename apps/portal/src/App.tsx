@@ -5,13 +5,12 @@ import { queryClient } from "@/lib/queryClient";
 import { TRPCProvider } from "@/lib/trpc/provider";
 
 import Layout from "@/components/Layout";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { Toaster } from "@/components/ui/toaster";
+import { Toaster } from "@/components/ui/sonner";
 
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 
 import AccountSettings from "@/pages/AccountSettings";
-import Downloads from "@/pages/Downloads";
+import Documentation from "@/pages/Documentation";
 import LicenseManagement from "@/pages/LicenseManagement";
 import LicensePurchase from "@/pages/LicensePurchase";
 import Login from "@/pages/Login";
@@ -44,7 +43,6 @@ const App = () => {
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <Toaster />
-          <Sonner />
           <BrowserRouter
             future={{
               v7_startTransition: true,
@@ -52,7 +50,7 @@ const App = () => {
             }}
           >
             <Routes>
-              {/* Redirect old /login route to new /auth/sign-in for backward compatibility */}
+              {/* Redirect old routes for backward compatibility */}
               <Route
                 path="/login"
                 element={<Navigate to="/auth/sign-in" replace />}
@@ -73,7 +71,12 @@ const App = () => {
                 <Route index element={<Navigate to="/licenses" replace />} />
                 <Route path="licenses" element={<LicenseManagement />} />
                 <Route path="purchase" element={<LicensePurchase />} />
-                <Route path="downloads" element={<Downloads />} />
+                <Route path="documentation" element={<Documentation />} />
+                {/* Redirect old /downloads route to /documentation for backward compatibility */}
+                <Route
+                  path="downloads"
+                  element={<Navigate to="/documentation" replace />}
+                />
                 <Route path="settings" element={<AccountSettings />} />
               </Route>
             </Routes>

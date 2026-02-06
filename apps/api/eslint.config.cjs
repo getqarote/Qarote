@@ -57,5 +57,12 @@ module.exports = tseslint.config(
       ],
       "simple-import-sort/exports": "error",
     },
+  },
+  // Allow any types in test files
+  {
+    files: ["**/__tests__/**/*.{ts,tsx}", "**/*.test.{ts,tsx}", "**/*.spec.{ts,tsx}"],
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off",
+    },
   }
 );

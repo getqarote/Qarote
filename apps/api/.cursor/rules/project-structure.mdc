@@ -115,7 +115,7 @@ Application configuration is located at:
 
 Core functionality is located in:
 
-- `api/src/core/` - Core modules (auth, logger, prisma, rabbitmq, utils, workspace-access, feature-flags, instance-fingerprint)
+- `api/src/core/` - Core modules (auth, logger, prisma, rabbitmq, utils, workspace-access, feature-flags)
 
 ## Middlewares
 
