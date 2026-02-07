@@ -77,9 +77,9 @@ export const googleRouter = router({
           });
         }
 
-        // Find or create user
+        // Find user by Google ID first (most secure)
         let user = await ctx.prisma.user.findUnique({
-          where: { email },
+          where: { googleId },
           select: {
             id: true,
             email: true,
@@ -108,82 +108,70 @@ export const googleRouter = router({
           },
         });
 
-        const isNewUser = !user;
+        let isNewUser = false;
 
         if (user) {
-          // Update existing user
-          if (!user.googleId) {
-            // Link Google account
-            user = await ctx.prisma.user.update({
-              where: { id: user.id },
-              data: {
+          // User already linked to this Google identity - just update last login
+          user = await ctx.prisma.user.update({
+            where: { id: user.id },
+            data: { lastLogin: new Date() },
+            select: {
+              id: true,
+              email: true,
+              firstName: true,
+              lastName: true,
+              role: true,
+              workspaceId: true,
+              isActive: true,
+              emailVerified: true,
+              lastLogin: true,
+              createdAt: true,
+              updatedAt: true,
+              googleId: true,
+              pendingEmail: true,
+              subscription: {
+                select: {
+                  plan: true,
+                  status: true,
+                },
+              },
+              workspace: {
+                select: {
+                  id: true,
+                },
+              },
+            },
+          });
+        } else {
+          // Check if email is already in use by another account
+          const existingUser = await ctx.prisma.user.findUnique({
+            where: { email },
+            select: { id: true, googleId: true, ssoSubjectId: true },
+          });
+
+          if (existingUser) {
+            // Security: Account exists with this email but different auth method
+            // Do NOT automatically link - this would enable account takeover
+            ctx.logger.warn(
+              {
+                email,
                 googleId,
-                emailVerified: email_verified || true,
-                emailVerifiedAt: email_verified ? new Date() : undefined,
-                lastLogin: new Date(),
-              },
-              select: {
-                id: true,
-                email: true,
-                firstName: true,
-                lastName: true,
-                role: true,
-                workspaceId: true,
-                isActive: true,
-                emailVerified: true,
-                lastLogin: true,
-                createdAt: true,
-                updatedAt: true,
-                googleId: true,
-                pendingEmail: true,
-                subscription: {
-                  select: {
-                    plan: true,
-                    status: true,
-                  },
-                },
-                workspace: {
-                  select: {
-                    id: true,
-                  },
+                existingAuthMethods: {
+                  hasGoogle: !!existingUser.googleId,
+                  hasSSO: !!existingUser.ssoSubjectId,
                 },
               },
-            });
-          } else {
-            // Update last login
-            user = await ctx.prisma.user.update({
-              where: { id: user.id },
-              data: { lastLogin: new Date() },
-              select: {
-                id: true,
-                email: true,
-                firstName: true,
-                lastName: true,
-                role: true,
-                workspaceId: true,
-                isActive: true,
-                emailVerified: true,
-                lastLogin: true,
-                createdAt: true,
-                updatedAt: true,
-                googleId: true,
-                pendingEmail: true,
-                subscription: {
-                  select: {
-                    plan: true,
-                    status: true,
-                  },
-                },
-                workspace: {
-                  select: {
-                    id: true,
-                  },
-                },
-              },
+              "Google OAuth attempted for email with existing account"
+            );
+            throw new TRPCError({
+              code: "CONFLICT",
+              message:
+                "An account with this email already exists using a different sign-in method. Please sign in with your existing method.",
             });
           }
-        } else {
-          // Create new user
+
+          // No existing account - create new user
+          isNewUser = true;
           try {
             user = await ctx.prisma.user.create({
               data: {

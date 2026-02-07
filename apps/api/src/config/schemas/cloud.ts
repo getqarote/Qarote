@@ -16,6 +16,9 @@ export const cloudSchema = baseSchema.extend({
     .min(1, "RESEND_API_KEY is required for cloud mode"),
   FROM_EMAIL: z.email().describe("noreply@qarote.io"),
   FRONTEND_URL: z.url("FRONTEND_URL must be a valid URL"),
+  API_URL: z
+    .url("API_URL must be a valid URL")
+    .describe("Backend API URL for OAuth callbacks"),
   PORTAL_FRONTEND_URL: z.url("PORTAL_FRONTEND_URL must be a valid URL"),
   ENABLE_EMAIL: z.coerce.boolean().default(true),
   EMAIL_PROVIDER: z.enum(["resend", "smtp"]).default("resend"),
