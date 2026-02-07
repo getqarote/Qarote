@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { logger } from "@/lib/logger";
 
 import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton";
+import { SSOLoginButton } from "@/components/auth/SSOLoginButton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -191,6 +192,13 @@ const SignIn: React.FC = () => {
             <GoogleLoginButton
               onError={(error) => {
                 logger.error("Google login error:", error);
+              }}
+            />
+
+            {/* SSO Login */}
+            <SSOLoginButton
+              onError={(error) => {
+                logger.error("SSO login error:", error);
               }}
             />
 

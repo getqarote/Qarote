@@ -17,13 +17,15 @@ import { secureHeaders } from "hono/secure-headers";
 import { logger } from "@/core/logger";
 import { prisma } from "@/core/prisma";
 
+import { ssoService } from "@/services/auth/sso.service";
+
 import { corsMiddleware } from "@/middlewares/cors";
 import {
   performanceMonitoring,
   requestIdMiddleware,
 } from "@/middlewares/request";
 
-import { serverConfig } from "@/config";
+import { serverConfig, ssoConfig } from "@/config";
 import { validateDeploymentMode } from "@/config/deployment";
 
 import { createContext } from "@/trpc/context";
@@ -33,6 +35,7 @@ import { standardRateLimiter } from "./middlewares/rateLimiter";
 
 import healthcheckController from "@/controllers/healthcheck.controller";
 import webhookController from "@/controllers/payment/webhook.controller";
+import ssoController from "@/controllers/sso.controller";
 
 const app = new Hono();
 
@@ -49,6 +52,17 @@ webhookApp.use("*", standardRateLimiter);
 // NO prettyJSON middleware here - it would modify the body and break signature verification!
 webhookApp.route("/", webhookController);
 
+// Create a separate app for SSO routes
+// SAML ACS endpoint receives form-encoded POST from IdP (like webhook needs raw body)
+const ssoApp = new Hono();
+ssoApp.use(honoLogger());
+ssoApp.use("*", secureHeaders());
+ssoApp.use("*", requestIdMiddleware);
+ssoApp.use("*", performanceMonitoring);
+ssoApp.use("*", corsMiddleware);
+ssoApp.use("*", standardRateLimiter);
+ssoApp.route("/", ssoController);
+
 // Core middlewares for main app
 app.use(honoLogger());
 app.use("*", prettyJSON());
@@ -60,6 +74,9 @@ app.use("*", standardRateLimiter);
 
 // Mount webhook app BEFORE other routes to ensure it's processed first
 app.route("/webhooks", webhookApp);
+
+// Mount SSO routes (SAML ACS needs form-encoded body access)
+app.route("/sso", ssoApp);
 
 // Mount tRPC router
 app.use(
@@ -85,6 +102,11 @@ async function startServer() {
 
     await prisma.$connect();
     logger.info("Connected to database");
+
+    // Initialize SSO service if enabled
+    if (ssoConfig.enabled) {
+      await ssoService.initialize();
+    }
 
     serve(
       {
