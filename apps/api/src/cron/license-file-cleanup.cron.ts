@@ -65,9 +65,7 @@ class LicenseFileCleanupCronService {
   private async cleanup(): Promise<void> {
     // Prevent overlapping cycles
     if (this.isCleaning) {
-      logger.debug(
-        "Skipping cleanup cycle - previous cycle still in progress"
-      );
+      logger.debug("Skipping cleanup cycle - previous cycle still in progress");
       return;
     }
 

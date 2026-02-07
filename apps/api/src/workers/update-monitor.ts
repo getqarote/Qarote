@@ -15,8 +15,15 @@ if (isCloudMode() || process.env.ENABLE_SENTRY === "true") {
 /**
  * Update Monitor Worker Process
  * Dedicated process for checking available Qarote updates and notifying admins
+ *
+ * Only runs in cloud mode — self-hosted users don't need this.
  */
 async function startWorker() {
+  if (!isCloudMode()) {
+    logger.info("Update Monitor worker skipped — only runs in cloud mode");
+    return;
+  }
+
   try {
     logger.info("Starting Update Monitor worker process...");
 

@@ -18,8 +18,15 @@ if (isCloudMode() || process.env.ENABLE_SENTRY === "true") {
  * Dedicated process for:
  * - Monitoring license expirations and sending renewal reminders
  * - Cleaning up expired license file versions
+ *
+ * Only runs in cloud mode — self-hosted users don't need this.
  */
 async function startWorker() {
+  if (!isCloudMode()) {
+    logger.info("License Monitor worker skipped — only runs in cloud mode");
+    return;
+  }
+
   try {
     logger.info("Starting License Monitor worker process...");
 
