@@ -195,6 +195,7 @@ model User {
   emailVerifiedAt                           DateTime?
   pendingEmail                              String?
   googleId                                  String?                  @unique
+  ssoSubjectId                              String?                  @unique
   stripeCustomerId                          String?                  @unique
   stripeSubscriptionId                      String?                  @unique
   discordJoined                             Boolean                  @default(false)

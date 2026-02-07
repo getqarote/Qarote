@@ -69,6 +69,7 @@
     "test:ui": "vitest --ui"
   },
   "dependencies": {
+    "@boxyhq/saml-jackson": "^1.52.2",
     "@hono/node-server": "^1.14.4",
     "@hono/trpc-server": "^0.4.1",
     "@notionhq/client": "^5.3.0",

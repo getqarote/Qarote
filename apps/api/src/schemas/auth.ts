@@ -101,3 +101,8 @@ export const AcceptInvitationWithGoogleSchema = z.object({
   token: z.string().min(1, "Token is required"),
   credential: z.string().min(1, "Google credential is required"),
 });
+
+// Schema for SSO auth code exchange
+export const SSOExchangeCodeSchema = z.object({
+  code: z.string().min(1, "Authorization code is required"),
+});
