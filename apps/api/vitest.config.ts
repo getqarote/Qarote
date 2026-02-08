@@ -7,6 +7,7 @@ export default defineConfig({
     environment: "node", // Use node environment for backend tests
     globals: true, // Enable global test functions (describe, it, expect)
     include: ["src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
+    setupFiles: ["./vitest.setup.ts"], // Run setup before tests
   },
   resolve: {
     alias: {
