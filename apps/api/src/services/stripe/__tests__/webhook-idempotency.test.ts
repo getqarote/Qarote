@@ -4,6 +4,25 @@ import { prisma } from "@/core/prisma";
 
 import { handleInvoicePaymentSucceeded } from "../webhook-handlers";
 
+// Mock the Prisma client
+vi.mock("@/core/prisma", () => ({
+  prisma: {
+    subscription: {
+      findUnique: vi.fn(),
+      update: vi.fn(),
+    },
+    license: {
+      findMany: vi.fn(),
+      findUnique: vi.fn(),
+      update: vi.fn(),
+    },
+    licenseFileVersion: {
+      findFirst: vi.fn(),
+      create: vi.fn(),
+    },
+  },
+}));
+
 /**
  * Test suite for webhook idempotency handling
  *
@@ -25,6 +44,7 @@ describe("Webhook Idempotency - License Renewal", () => {
   } as any;
 
   beforeEach(() => {
+    // Reset all mocks before each test
     vi.clearAllMocks();
   });
 
@@ -128,40 +148,53 @@ describe("Webhook Idempotency - License Renewal", () => {
     const licenseId = "license-123";
 
     // Mock database calls
-    vi.spyOn(prisma.subscription, "findUnique").mockResolvedValue({
+    vi.mocked(prisma.subscription.findUnique).mockResolvedValue({
+      id: "sub-id",
       stripeSubscriptionId: "sub_test",
-      user: { email: "test@example.com" },
+      userId: "user-id",
+      user: {
+        id: "user-id",
+        email: "test@example.com",
+        name: "Test User",
+      },
     } as any);
 
-    vi.spyOn(prisma.subscription, "update").mockResolvedValue({} as any);
+    vi.mocked(prisma.subscription.update).mockResolvedValue({} as any);
 
-    vi.spyOn(prisma.license, "findMany").mockResolvedValue([
+    vi.mocked(prisma.license.findMany).mockResolvedValue([
       {
         id: licenseId,
         licenseKey: "key",
         tier: "ENTERPRISE",
         customerEmail: "test@example.com",
-        expiresAt: new Date(),
+        expiresAt: new Date("2026-01-01"),
         currentVersion: 1,
+        isActive: true,
       },
     ] as any);
 
-    vi.spyOn(prisma.licenseFileVersion, "findFirst").mockResolvedValue(null);
-    vi.spyOn(prisma.license, "findUnique").mockResolvedValue({
+    vi.mocked(prisma.licenseFileVersion.findFirst).mockResolvedValue(null);
+    vi.mocked(prisma.license.findUnique).mockResolvedValue({
+      id: licenseId,
       currentVersion: 1,
+      expiresAt: new Date("2026-01-01"),
     } as any);
-    vi.spyOn(prisma.license, "update").mockResolvedValue({
+    vi.mocked(prisma.license.update).mockResolvedValue({
+      id: licenseId,
       currentVersion: 2,
+      expiresAt: new Date("2027-01-01"),
     } as any);
 
-    const createSpy = vi
-      .spyOn(prisma.licenseFileVersion, "create")
-      .mockResolvedValue({} as any);
+    const createSpy = vi.mocked(prisma.licenseFileVersion.create);
+    createSpy.mockResolvedValue({} as any);
 
     await handleInvoicePaymentSucceeded({
       id: invoiceId,
       subscription: "sub_test",
       billing_reason: "subscription_cycle",
+      amount_paid: 100000,
+      currency: "usd",
+      payment_intent: null,
     } as any);
 
     // Verify invoice ID was saved for idempotency
