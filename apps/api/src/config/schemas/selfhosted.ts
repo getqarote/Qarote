@@ -23,6 +23,13 @@ export const selfhostedBaseSchema = baseSchema.extend({
     .describe(
       "Frontend URL for email links - only needed if ENABLE_EMAIL=true"
     ),
+  API_URL: z
+    .url()
+    .optional()
+    .default("http://localhost:3000")
+    .describe(
+      "Backend API URL for OAuth callbacks - only needed if SSO_ENABLED=true"
+    ),
   PORTAL_FRONTEND_URL: z
     .url()
     .optional()
@@ -69,6 +76,18 @@ export const selfhostedBaseSchema = baseSchema.extend({
   // Google OAuth - Not available for self-hosted (email/password only)
   GOOGLE_CLIENT_ID: z.string().optional(),
   ENABLE_OAUTH: z.coerce.boolean().default(false),
+
+  // SSO Configuration (Ory Polis / Jackson)
+  SSO_ENABLED: z.coerce.boolean().default(false),
+  SSO_TYPE: z.enum(["oidc", "saml"]).optional().default("oidc"),
+  SSO_OIDC_DISCOVERY_URL: z.url().optional(),
+  SSO_OIDC_CLIENT_ID: z.string().optional(),
+  SSO_OIDC_CLIENT_SECRET: z.string().optional(),
+  SSO_SAML_METADATA_URL: z.url().optional(),
+  SSO_SAML_METADATA_RAW: z.string().optional(),
+  SSO_TENANT: z.string().optional().default("default"),
+  SSO_PRODUCT: z.string().optional().default("qarote"),
+  SSO_BUTTON_LABEL: z.string().optional().default("Sign in with SSO"),
 
   // Notion Configuration - Optional
   NOTION_API_KEY: z.string().optional(),

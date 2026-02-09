@@ -8,6 +8,7 @@ import { trackSignUp } from "@/lib/ga";
 import { logger } from "@/lib/logger";
 
 import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton";
+import { SSOLoginButton } from "@/components/auth/SSOLoginButton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -336,6 +337,14 @@ const SignUp: React.FC = () => {
                   mode="signup"
                   onError={(error) => {
                     logger.error("Google signup error:", error);
+                  }}
+                />
+
+                {/* SSO Sign Up */}
+                <SSOLoginButton
+                  mode="signup"
+                  onError={(error) => {
+                    logger.error("SSO signup error:", error);
                   }}
                 />
               </>

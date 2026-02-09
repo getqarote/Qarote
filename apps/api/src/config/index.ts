@@ -146,6 +146,40 @@ export const googleConfig = {
   enabled: config.ENABLE_OAUTH,
 } as const;
 
+export const ssoConfig = {
+  enabled: "SSO_ENABLED" in config ? config.SSO_ENABLED : false,
+  type: "SSO_TYPE" in config ? config.SSO_TYPE : ("oidc" as const),
+  oidc: {
+    discoveryUrl:
+      "SSO_OIDC_DISCOVERY_URL" in config
+        ? config.SSO_OIDC_DISCOVERY_URL
+        : undefined,
+    clientId:
+      "SSO_OIDC_CLIENT_ID" in config ? config.SSO_OIDC_CLIENT_ID : undefined,
+    clientSecret:
+      "SSO_OIDC_CLIENT_SECRET" in config
+        ? config.SSO_OIDC_CLIENT_SECRET
+        : undefined,
+  },
+  saml: {
+    metadataUrl:
+      "SSO_SAML_METADATA_URL" in config
+        ? config.SSO_SAML_METADATA_URL
+        : undefined,
+    metadataRaw:
+      "SSO_SAML_METADATA_RAW" in config
+        ? config.SSO_SAML_METADATA_RAW
+        : undefined,
+  },
+  tenant: "SSO_TENANT" in config ? (config.SSO_TENANT ?? "default") : "default",
+  product:
+    "SSO_PRODUCT" in config ? (config.SSO_PRODUCT ?? "qarote") : "qarote",
+  buttonLabel:
+    "SSO_BUTTON_LABEL" in config
+      ? (config.SSO_BUTTON_LABEL ?? "Sign in with SSO")
+      : "Sign in with SSO",
+} as const;
+
 export const licenseConfig = {
   licenseKey: config.LICENSE_KEY,
   licenseFilePath: config.LICENSE_FILE_PATH || "./qarote-license.json",

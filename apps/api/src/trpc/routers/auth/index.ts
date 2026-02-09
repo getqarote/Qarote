@@ -6,6 +6,7 @@ import { invitationRouter } from "./invitation";
 import { passwordRouter } from "./password";
 import { registrationRouter } from "./registration";
 import { sessionRouter } from "./session";
+import { ssoRouter } from "./sso";
 import { verificationRouter } from "./verification";
 
 /**
@@ -20,4 +21,5 @@ export const authRouter = router({
   email: emailRouter,
   google: googleRouter,
   invitation: invitationRouter,
+  sso: ssoRouter,
 });

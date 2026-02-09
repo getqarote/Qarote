@@ -195,6 +195,7 @@ model User {
   emailVerifiedAt                           DateTime?
   pendingEmail                              String?
   googleId                                  String?                  @unique
+  ssoSubjectId                              String?                  @unique
   stripeCustomerId                          String?                  @unique
   stripeSubscriptionId                      String?                  @unique
   discordJoined                             Boolean                  @default(false)
@@ -501,6 +502,27 @@ model SystemState {
   value     String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model SsoAuthCode {
+  id        String   @id @default(uuid())
+  code      String   @unique
+  jwt       String   @db.Text
+  userData  Json
+  isNewUser Boolean
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([expiresAt])
+}
+
+model SsoState {
+  id        String   @id @default(uuid())
+  state     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([expiresAt])
 }
 
 enum AlertSeverity {
