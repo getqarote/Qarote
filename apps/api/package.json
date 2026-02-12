@@ -60,7 +60,6 @@
     "stripe:test": "tsx scripts/stripe/setup-stripe.ts test",
     "stripe:login": "stripe login",
     "webhook:secret": "stripe listen --print-secret",
-    "setup:selfhosted": "tsx scripts/setup-selfhosted.ts",
     "test:smtp": "tsx scripts/email/nodemailer/test-smtp.ts",
     "test:smtp:ethereal": "tsx scripts/email/nodemailer/test-smtp.ts --ethereal",
     "notion:sync": "tsx scripts/notion/sync-users.ts",

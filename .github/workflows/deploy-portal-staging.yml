@@ -82,6 +82,7 @@ jobs:
         working-directory: apps/portal
         env:
           VITE_API_URL: ${{ vars.VITE_API_URL }}
+          VITE_PORTAL_URL: ${{ vars.VITE_PORTAL_URL }}
           VITE_GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           VITE_DEPLOYMENT_MODE: ${{ vars.DEPLOYMENT_MODE }}
           NODE_ENV: production

@@ -99,17 +99,10 @@ git push dokku main
 Both Community and Enterprise editions can be deployed with Docker Compose:
 
 ```bash
-# 1. Copy environment file
-cp .env.selfhosted.example .env
+# 1. Run the setup script (generates .env with secure secrets)
+./setup.sh community    # or: ./setup.sh enterprise
 
-# 2. Generate secure secrets
-pnpm setup:selfhosted --write
-
-# 3. Edit .env and set DEPLOYMENT_MODE
-#    - Community: DEPLOYMENT_MODE=community
-#    - Enterprise: DEPLOYMENT_MODE=enterprise (also configure license)
-
-# 4. Start services
+# 2. Start services
 docker compose -f docker-compose.selfhosted.yml up -d
 ```
 

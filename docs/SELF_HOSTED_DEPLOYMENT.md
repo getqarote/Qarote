@@ -64,12 +64,12 @@ The Community Edition is free and open-source. It provides core RabbitMQ monitor
    ```bash
    dokku config:set qarote \
      DEPLOYMENT_MODE=community \
-     NODE_ID=community-1 \
      NODE_ENV=production \
      LOG_LEVEL=info \
-     JWT_SECRET=$(openssl rand -base64 32) \
-     ENCRYPTION_KEY=$(openssl rand -base64 32) \
+     JWT_SECRET=$(openssl rand -hex 64) \
+     ENCRYPTION_KEY=$(openssl rand -hex 64) \
      CORS_ORIGIN=* \
+     API_URL=https://your-domain.com \
      FRONTEND_URL=https://your-domain.com \
      ENABLE_EMAIL=false
    ```
@@ -98,9 +98,11 @@ If you prefer Docker Compose or need more control over the deployment:
 1. **Clone the repository:**
 
    ```bash
-   git clone https://github.com/getqarote/Qarote.git
-   cd qarote
+   git clone https://github.com/getqarote/Qarote.git /opt/qarote
+   cd /opt/qarote
    ```
+
+   > `/opt/qarote` is the recommended path on Linux (follows the [FHS](https://refspecs.linuxfoundation.org/FHS_3.0/fhs/ch03s13.html) convention for optional software). On Windows (WSL2), use `C:\qarote`. Any directory works.
 
 2. **Copy environment file:**
 
@@ -159,9 +161,11 @@ The Enterprise Edition requires a valid license file to unlock premium features.
 1. **Clone the repository:**
 
    ```bash
-   git clone https://github.com/getqarote/Qarote.git
-   cd qarote
+   git clone https://github.com/getqarote/Qarote.git /opt/qarote
+   cd /opt/qarote
    ```
+
+   > `/opt/qarote` is the recommended path on Linux (follows the [FHS](https://refspecs.linuxfoundation.org/FHS_3.0/fhs/ch03s13.html) convention for optional software). On Windows (WSL2), use `C:\qarote`. Any directory works.
 
 2. **Copy environment file:**
 
@@ -224,13 +228,13 @@ The Enterprise Edition requires a valid license file to unlock premium features.
 
 ```bash
 # 1. Clone repository
-git clone https://github.com/getqarote/Qarote.git
-cd qarote
+git clone https://github.com/getqarote/Qarote.git /opt/qarote
+cd /opt/qarote
 
 # 2. Set required environment variables
-export JWT_SECRET=$(openssl rand -base64 32)
-export ENCRYPTION_KEY=$(openssl rand -base64 32)
-export POSTGRES_PASSWORD=$(openssl rand -base64 16)
+export JWT_SECRET=$(openssl rand -hex 64)
+export ENCRYPTION_KEY=$(openssl rand -hex 64)
+export POSTGRES_PASSWORD=$(openssl rand -hex 32)
 
 # 3. Start services
 export DEPLOYMENT_MODE=community
@@ -247,13 +251,13 @@ open http://localhost:8080
 
 ```bash
 # 1. Clone repository
-git clone https://github.com/getqarote/Qarote.git
-cd qarote
+git clone https://github.com/getqarote/Qarote.git /opt/qarote
+cd /opt/qarote
 
 # 2. Set required environment variables
-export JWT_SECRET=$(openssl rand -base64 32)
-export ENCRYPTION_KEY=$(openssl rand -base64 32)
-export POSTGRES_PASSWORD=$(openssl rand -base64 16)
+export JWT_SECRET=$(openssl rand -hex 64)
+export ENCRYPTION_KEY=$(openssl rand -hex 64)
+export POSTGRES_PASSWORD=$(openssl rand -hex 32)
 export LICENSE_PUBLIC_KEY="-----BEGIN PUBLIC KEY-----\n...\n-----END PUBLIC KEY-----"
 
 # 3. Place license file
@@ -306,7 +310,6 @@ SMTP_HOST=smtp.example.com
 SMTP_PORT=587
 SMTP_USER=user@example.com
 SMTP_PASS=password
-FROM_EMAIL=noreply@qarote.io
 
 # Option 2: OAuth2 (Recommended - see SMTP Configuration section)
 # SMTP_SERVICE=gmail
@@ -333,11 +336,11 @@ VITE_DEPLOYMENT_MODE=community  # or "enterprise"
 Use the built-in setup script to generate all required secrets:
 
 ```bash
-# Generate and display secrets
-pnpm setup:selfhosted
+# Community Edition
+./setup.sh community
 
-# Generate and write to .env file
-pnpm setup:selfhosted --write
+# Enterprise Edition
+./setup.sh enterprise
 ```
 
 This generates:
@@ -349,14 +352,14 @@ This generates:
 Alternatively, generate manually with OpenSSL:
 
 ```bash
-# JWT Secret (min 32 characters)
-openssl rand -base64 32
+# JWT Secret (64 bytes)
+openssl rand -hex 64
 
-# Encryption Key (min 32 characters)
-openssl rand -base64 32
+# Encryption Key (64 bytes)
+openssl rand -hex 64
 
-# Database Password
-openssl rand -base64 16
+# Database Password (32 bytes)
+openssl rand -hex 32
 ```
 
 ### SMTP Configuration
@@ -370,6 +373,7 @@ Email features are **disabled by default** for self-hosted deployments. To enabl
 For production environments, OAuth2 is the recommended authentication method as it's more secure than app passwords and doesn't require storing credentials directly. OAuth2 is especially recommended for Gmail and Office 365.
 
 **Benefits:**
+
 - More secure than app-specific passwords
 - Tokens can be revoked without changing account passwords
 - Better for enterprise and high-volume sending
@@ -377,6 +381,7 @@ For production environments, OAuth2 is the recommended authentication method as 
 
 **Setup Guide:**
 For detailed OAuth2 configuration instructions, see the [Nodemailer OAuth2 Documentation](https://nodemailer.com/smtp/oauth2/). The setup process varies by provider but generally involves:
+
 1. Creating OAuth2 credentials in your email provider's console
 2. Configuring the OAuth2 settings in your `.env` file
 3. Obtaining and refreshing access tokens
@@ -387,22 +392,24 @@ See provider-specific OAuth2 examples below.
 
 **Gmail**
 
-*Option 1: App Password (Simple)*
+_Option 1: App Password (Simple)_
+
 ```env
 ENABLE_EMAIL=true
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
 SMTP_USER=your-email@gmail.com
 SMTP_PASS=your-app-password
-FROM_EMAIL=your-email@gmail.com
 ```
 
 **Requirements:**
+
 - Enable 2FA on your Google account first
 - Generate an [App Password](https://support.google.com/accounts/answer/185833) (not your regular password)
 - **Sending limits:** 500 emails/day for free Gmail accounts, 2,000/day for Google Workspace
 
-*Option 2: OAuth2 (Recommended for production)*
+_Option 2: OAuth2 (Recommended for production)_
+
 ```env
 ENABLE_EMAIL=true
 SMTP_HOST=smtp.gmail.com
@@ -412,10 +419,10 @@ SMTP_SERVICE=gmail
 SMTP_OAUTH_CLIENT_ID=your-client-id.apps.googleusercontent.com
 SMTP_OAUTH_CLIENT_SECRET=your-client-secret
 SMTP_OAUTH_REFRESH_TOKEN=your-refresh-token
-FROM_EMAIL=your-email@gmail.com
 ```
 
 **OAuth2 Setup Steps:**
+
 1. Go to [Google Cloud Console](https://console.cloud.google.com/)
 2. Create a new project (or use existing)
 3. Enable Gmail API for your project
@@ -433,32 +440,34 @@ FROM_EMAIL=your-email@gmail.com
 For detailed instructions, see [Nodemailer Gmail OAuth2 Guide](https://nodemailer.com/smtp/oauth2/#example-3)
 
 **SendGrid**
+
 ```env
 ENABLE_EMAIL=true
 SMTP_HOST=smtp.sendgrid.net
 SMTP_PORT=587
 SMTP_USER=apikey
 SMTP_PASS=your-sendgrid-api-key
-FROM_EMAIL=noreply@yourdomain.com
 ```
 
 **Requirements:**
+
 - Username is literally `apikey` (not your email address)
 - Password is your SendGrid API key (create at Settings → API Keys)
 - Verify your sender domain in SendGrid dashboard first
 - **Free tier:** 100 emails/day
 
 **Mailgun**
+
 ```env
 ENABLE_EMAIL=true
 SMTP_HOST=smtp.mailgun.org
 SMTP_PORT=587
 SMTP_USER=postmaster@your-domain.mailgun.org
 SMTP_PASS=your-mailgun-password
-FROM_EMAIL=noreply@yourdomain.com
 ```
 
 **Requirements:**
+
 - Add and verify your domain in Mailgun dashboard first
 - Username format: `postmaster@your-domain.mailgun.org`
 - Find SMTP credentials in Mailgun → Sending → Domain settings
@@ -466,14 +475,14 @@ FROM_EMAIL=noreply@yourdomain.com
 
 **Office 365 / Outlook (Business)**
 
-*Option 1: Basic Authentication (Requires SMTP AUTH enabled)*
+_Option 1: Basic Authentication (Requires SMTP AUTH enabled)_
+
 ```env
 ENABLE_EMAIL=true
 SMTP_HOST=smtp.office365.com
 SMTP_PORT=587
 SMTP_USER=your-email@yourdomain.com
 SMTP_PASS=your-password
-FROM_EMAIL=your-email@yourdomain.com
 ```
 
 **Important - Modern Authentication Required:**
@@ -491,25 +500,26 @@ Office 365 uses Modern Authentication. Before using SMTP, you must:
 
 3. **Alternative:** Contact your Microsoft 365 administrator to enable SMTP AUTH for your account.
 
-*Option 2: OAuth2 (Recommended for enterprise)*
+_Option 2: OAuth2 (Recommended for enterprise)_
 
 OAuth2 is recommended for Office 365/Outlook as it doesn't require enabling legacy SMTP AUTH. See [Nodemailer OAuth2 Documentation](https://nodemailer.com/smtp/oauth2/) for detailed setup instructions for Microsoft 365.
 
 **Note**: Personal @outlook.com or @hotmail.com accounts should use `smtp-mail.outlook.com` instead of `smtp.office365.com`.
 
 **Custom SMTP Server**
+
 ```env
 ENABLE_EMAIL=true
 SMTP_HOST=mail.yourcompany.com
 SMTP_PORT=587
 SMTP_USER=smtp-user
 SMTP_PASS=smtp-password
-FROM_EMAIL=noreply@yourcompany.com
 ```
 
 **Additional OAuth2 Providers**
 
 For OAuth2 configuration with other providers (Outlook.com, Yahoo, AOL, etc.), refer to the comprehensive [Nodemailer OAuth2 Documentation](https://nodemailer.com/smtp/oauth2/). It includes:
+
 - Step-by-step setup guides for major providers
 - Code examples for token generation and refresh
 - Troubleshooting common OAuth2 issues
@@ -520,11 +530,13 @@ For OAuth2 configuration with other providers (Outlook.com, Yahoo, AOL, etc.), r
 After configuring SMTP, verify your setup with the built-in testing script:
 
 **Test connection only:**
+
 ```bash
 pnpm test:smtp
 ```
 
 **Send test email via real SMTP:**
+
 ```bash
 pnpm test:smtp --send admin@yourcompany.com
 
@@ -550,6 +562,7 @@ pnpm test:smtp:ethereal --send test@example.com --template
 **What is Ethereal?**
 
 Ethereal is a fake SMTP service that:
+
 - Never actually delivers emails
 - Provides web preview URLs to view rendered emails
 - Requires no configuration or API keys
@@ -615,7 +628,6 @@ Enterprise licenses are provided as JSON files with cryptographic signatures:
    ```bash
    docker compose restart backend
    ```
-
 
 ## Troubleshooting
 
@@ -709,6 +721,7 @@ Run the update script from the Qarote root directory:
 ```
 
 This will:
+
 1. Pull latest changes from git
 2. Rebuild Docker containers
 3. Restart services (database migrations run automatically on start)
@@ -739,50 +752,53 @@ For completely offline deployments:
 2. **Use SMTP for email** (if needed):
 
    **Gmail (App Password):**
+
    ```env
    ENABLE_EMAIL=true
    SMTP_HOST=smtp.gmail.com
    SMTP_PORT=587
    SMTP_USER=your-email@gmail.com
    SMTP_PASS=your-app-password
-   FROM_EMAIL=your-email@gmail.com
    ```
+
    Note: Enable 2FA first, then generate an [App Password](https://support.google.com/accounts/answer/185833). Limit: 500 emails/day (free) or 2,000/day (Workspace).
-   
+
    **For production, consider OAuth2** (more secure): See [SMTP Configuration](#smtp-configuration) section for OAuth2 setup.
 
    **SendGrid:**
+
    ```env
    ENABLE_EMAIL=true
    SMTP_HOST=smtp.sendgrid.net
    SMTP_PORT=587
    SMTP_USER=apikey
    SMTP_PASS=your-sendgrid-api-key
-   FROM_EMAIL=noreply@yourdomain.com
    ```
+
    Note: Username is `apikey` (literal string). Password is your SendGrid API key. Verify sender domain first. Free tier: 100 emails/day.
 
    **Mailgun:**
+
    ```env
    ENABLE_EMAIL=true
    SMTP_HOST=smtp.mailgun.org
    SMTP_PORT=587
    SMTP_USER=postmaster@your-domain.mailgun.org
    SMTP_PASS=your-mailgun-password
-   FROM_EMAIL=noreply@yourdomain.com
    ```
+
    Note: Verify domain first. Username format: `postmaster@your-domain.mailgun.org`. Find credentials in Mailgun dashboard (Sending → Domain settings).
 
    **Office 365 / Outlook (Business):**
+
    ```env
    ENABLE_EMAIL=true
    SMTP_HOST=smtp.office365.com
    SMTP_PORT=587
    SMTP_USER=your-email@yourdomain.com
    SMTP_PASS=your-password
-   FROM_EMAIL=your-email@yourdomain.com
    ```
-   
+
    **Important:** Office 365 requires Modern Authentication. Enable SMTP AUTH in Microsoft 365 admin center (Settings → Org settings → Modern authentication). For 2FA/MFA accounts, use an App Password instead of your regular password.
 
 3. **License validation is offline** - no network required after initial license file setup

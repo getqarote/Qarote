@@ -2,13 +2,11 @@
 # Supports both Community Edition (open-source) and Enterprise Edition (licensed)
 #
 # Quick Start:
-# 1. Copy .env.selfhosted.example to .env
-# 2. Generate secrets: pnpm setup:selfhosted --write
-# 3. Set DEPLOYMENT_MODE=community (or enterprise for licensed version)
-# 4. For Enterprise: Set LICENSE_FILE_PATH and LICENSE_PUBLIC_KEY
-# 5. Run: docker compose -f docker-compose.selfhosted.yml up -d
+# 1. Run: ./setup.sh community (or enterprise)
+# 2. For Enterprise: Set LICENSE_FILE_PATH and LICENSE_PUBLIC_KEY in .env
+# 3. Run: docker compose -f docker-compose.selfhosted.yml up -d
 #
-# Note: Email variables (FROM_EMAIL, FRONTEND_URL) are optional with sensible defaults
+# Note: Email variables are optional with sensible defaults
 # RabbitMQ servers are customer-provided (not included in this compose file)
 
 services:
@@ -82,11 +80,9 @@ services:
       dockerfile: ./apps/app/Dockerfile
       args:
         DEPLOYMENT_MODE: ${DEPLOYMENT_MODE:-community}
+        VITE_API_URL: ${VITE_API_URL}
     container_name: qarote_frontend_${DEPLOYMENT_MODE}
     restart: unless-stopped
-    environment:
-      VITE_API_URL: ${VITE_API_URL}
-      VITE_DEPLOYMENT_MODE: ${DEPLOYMENT_MODE}
     ports:
       - "${FRONTEND_PORT}:80"
     depends_on:

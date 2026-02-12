@@ -1,11 +1,18 @@
 import { useState } from "react";
 
-import { Search, X } from "lucide-react";
+import { FileCode, FileText, Search, X } from "lucide-react";
 
 import { DockerComposeSection } from "@/components/documentation/DockerComposeSection";
 import { EnvironmentConfigSection } from "@/components/documentation/EnvironmentConfigSection";
 import { InstallationGuideSection } from "@/components/documentation/InstallationGuideSection";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { BackToTop } from "@/components/ui/back-to-top";
+import { Heading } from "@/components/ui/heading";
 import { Input } from "@/components/ui/input";
 import { TableOfContents } from "@/components/ui/table-of-contents";
 
@@ -25,7 +32,7 @@ const Documentation = () => {
     "environment variables configuration env"
   );
   const showInstallation = matchesSearch(
-    "installation guide setup deploy prerequisites quick start updating troubleshooting security support"
+    "installation guide setup deploy prerequisites quick start updating troubleshooting security support dokku"
   );
 
   return (
@@ -63,14 +70,52 @@ const Documentation = () => {
             </p>
           </div>
 
-          {/* Docker Compose File */}
-          {showDockerCompose && <DockerComposeSection />}
-
-          {/* Environment Variables */}
-          {showEnvConfig && <EnvironmentConfigSection />}
-
-          {/* Installation Guide */}
+          {/* Installation Guide - primary content */}
           {showInstallation && <InstallationGuideSection />}
+
+          {/* Reference sections - collapsible */}
+          {(showDockerCompose || showEnvConfig) && (
+            <Accordion type="multiple" className="w-full space-y-4">
+              {showDockerCompose && (
+                <AccordionItem
+                  value="docker-compose"
+                  className="border rounded-lg"
+                >
+                  <div id="docker-compose">
+                    <AccordionTrigger className="px-6 py-4 hover:no-underline">
+                      <div className="flex items-center gap-2">
+                        <FileCode className="h-5 w-5" />
+                        <Heading level={3} id="docker-compose-heading">
+                          Docker Compose File
+                        </Heading>
+                      </div>
+                    </AccordionTrigger>
+                  </div>
+                  <AccordionContent className="px-6 pb-6">
+                    <DockerComposeSection />
+                  </AccordionContent>
+                </AccordionItem>
+              )}
+
+              {showEnvConfig && (
+                <AccordionItem value="env-config" className="border rounded-lg">
+                  <div id="environment-config">
+                    <AccordionTrigger className="px-6 py-4 hover:no-underline">
+                      <div className="flex items-center gap-2">
+                        <FileText className="h-5 w-5" />
+                        <Heading level={3} id="environment-config-heading">
+                          Environment Configuration
+                        </Heading>
+                      </div>
+                    </AccordionTrigger>
+                  </div>
+                  <AccordionContent className="px-6 pb-6">
+                    <EnvironmentConfigSection />
+                  </AccordionContent>
+                </AccordionItem>
+              )}
+            </Accordion>
+          )}
         </div>
 
         {/* Table of Contents Sidebar */}

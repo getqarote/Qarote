@@ -153,7 +153,7 @@ Qarote validates licenses **offline** (no internet required):
    # IMPORTANT: Wrap the entire key in double quotes, use \n for line breaks
    LICENSE_PUBLIC_KEY="-----BEGIN PUBLIC KEY-----\nMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA...\n-----END PUBLIC KEY-----"
 
-   # Generate secure secrets with: pnpm setup:selfhosted
+   # Secrets are generated automatically by ./setup.sh enterprise
    JWT_SECRET=your-secret-key-min-32-chars
    ENCRYPTION_KEY=your-encryption-key-min-32-chars
    POSTGRES_PASSWORD=your-secure-postgres-password
@@ -161,7 +161,6 @@ Qarote validates licenses **offline** (no internet required):
 
 5. **Start services:**
    ```bash
-   export DEPLOYMENT_MODE=enterprise
    docker compose -f docker-compose.selfhosted.yml up -d
    ```
 
@@ -183,9 +182,9 @@ Qarote validates licenses **offline** (no internet required):
 - `DEPLOYMENT_MODE=enterprise` - Set to enterprise mode
 - `LICENSE_FILE_PATH` - Path to your license file (format: `qarote-license-{uuid}.json`)
 - `LICENSE_PUBLIC_KEY` - Public key for license verification
-- `JWT_SECRET` - Secret for JWT token signing (minimum 32 characters) - Generate with: `pnpm setup:selfhosted`
-- `ENCRYPTION_KEY` - Key for encrypting RabbitMQ credentials (minimum 32 characters) - Generate with: `pnpm setup:selfhosted`
-- `POSTGRES_PASSWORD` - PostgreSQL database password - Generate with: `pnpm setup:selfhosted`
+- `JWT_SECRET` - Secret for JWT token signing (minimum 32 characters) - Generate with: `./setup.sh enterprise`
+- `ENCRYPTION_KEY` - Key for encrypting RabbitMQ credentials (minimum 32 characters) - Generate with: `./setup.sh enterprise`
+- `POSTGRES_PASSWORD` - PostgreSQL database password - Generate with: `./setup.sh enterprise`
 
 #### Optional
 

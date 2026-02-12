@@ -5,6 +5,7 @@ Qarote Community Edition is the open-source version of Qarote, released under th
 ## Overview
 
 The Community Edition includes all essential RabbitMQ monitoring features, making it perfect for:
+
 - Individual developers
 - Small teams
 - Development and testing environments
@@ -76,11 +77,13 @@ The following features require an Enterprise Edition license:
 1. **Install Dokku** on your server (see [Dokku Installation Guide](https://dokku.com/docs/getting-started/installation/))
 
 2. **Create the app:**
+
    ```bash
    ssh dokku@your-server apps:create qarote
    ```
 
 3. **Install PostgreSQL plugin:**
+
    ```bash
    sudo dokku plugin:install https://github.com/dokku/dokku-postgres.git postgres
    dokku postgres:create qarote-db
@@ -88,15 +91,16 @@ The following features require an Enterprise Edition license:
    ```
 
 4. **Set environment variables:**
+
    ```bash
    dokku config:set qarote \
      DEPLOYMENT_MODE=community \
-     NODE_ID=community-1 \
      NODE_ENV=production \
      LOG_LEVEL=info \
-     JWT_SECRET=$(openssl rand -base64 32) \
-     ENCRYPTION_KEY=$(openssl rand -base64 32) \
+     JWT_SECRET=$(openssl rand -hex 64) \
+     ENCRYPTION_KEY=$(openssl rand -hex 64) \
      CORS_ORIGIN=* \
+     API_URL=https://your-domain.com \
      FRONTEND_URL=https://your-domain.com \
      ENABLE_EMAIL=false
    ```
@@ -107,6 +111,7 @@ The following features require an Enterprise Edition license:
    - Replace `https://your-domain.com` with your actual domain (or set it after configuring the domain in step 6)
 
 5. **Deploy:**
+
    ```bash
    git remote add dokku dokku@your-server:qarote
    git push dokku main
@@ -132,47 +137,39 @@ If you prefer Docker Compose or need more control over the deployment, you can u
 
 - Docker and Docker Compose
 - PostgreSQL 15+ (or use the included PostgreSQL container)
-- Node.js 24+ (for development)
 
 #### Quick Start
 
 1. **Clone the repository:**
+
    ```bash
-   git clone https://github.com/getqarote/Qarote.git
-   cd qarote
+   git clone https://github.com/getqarote/Qarote.git /opt/qarote
+   cd /opt/qarote
    ```
 
-2. **Copy environment file:**
+   > `/opt/qarote` is the recommended path on Linux (follows the [FHS](https://refspecs.linuxfoundation.org/FHS_3.0/fhs/ch03s13.html) convention for optional software). On Windows (WSL2), use `C:\qarote`. Any directory works.
+
+2. **Run the setup script:**
+
    ```bash
-   cp .env.selfhosted.example .env
-   # Edit .env and set DEPLOYMENT_MODE=community
+   ./setup.sh community
    ```
 
-3. **Configure environment variables:**
-   ```bash
-   # Required
-   DEPLOYMENT_MODE=community
-   JWT_SECRET=your-secret-key-min-32-chars
-   ENCRYPTION_KEY=your-encryption-key-min-32-chars
-   POSTGRES_PASSWORD=your-secure-password
+   This creates a `.env` file with secure random secrets and sets `DEPLOYMENT_MODE=community`. No Node.js required.
 
-   # Optional
-   ENABLE_EMAIL=false
-   # Note: OAuth (Google Sign-In) is only available in cloud deployments
-   ```
+3. **Start services:**
 
-4. **Start services:**
    ```bash
-   export DEPLOYMENT_MODE=community
    docker compose -f docker-compose.selfhosted.yml up -d
    ```
 
-5. **Run database migrations:**
+4. **Run database migrations:**
+
    ```bash
    docker exec qarote_backend_community pnpm run db:migrate
    ```
 
-6. **Access the application:**
+5. **Access the application:**
    - Frontend: http://localhost:8080
    - Backend API: http://localhost:3000
 
@@ -243,4 +240,3 @@ Contributions are welcome! Please see our contributing guidelines for more infor
 ## Security
 
 For security vulnerabilities, please email security@qarote.io instead of using the public issue tracker.
-

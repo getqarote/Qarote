@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/card";
 import { CodeBlock } from "@/components/ui/code-block";
 import { Heading } from "@/components/ui/heading";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export function InstallationGuideSection() {
   return (
@@ -36,10 +37,25 @@ export function InstallationGuideSection() {
           <Heading level={4} id="prerequisites">
             Prerequisites
           </Heading>
+          <p className="text-sm text-muted-foreground">
+            Requirements depend on your deployment method:
+          </p>
           <ul className="list-disc list-inside space-y-2 text-sm text-muted-foreground">
-            <li>Docker and Docker Compose</li>
-            <li>PostgreSQL 15+ (or use the included PostgreSQL container)</li>
-            <li>For Enterprise Edition: Valid license file and public key</li>
+            <li>
+              <strong>Docker Compose:</strong> Docker and Docker Compose
+              (PostgreSQL is included)
+            </li>
+            <li>
+              <strong>Dokku:</strong> Dokku installed on your server
+            </li>
+            <li>
+              <strong>Manual:</strong> Node.js 24+, pnpm, PostgreSQL 15+, and
+              Nginx or Caddy
+            </li>
+            <li>
+              <strong>Enterprise Edition:</strong> Valid license file and public
+              key (all methods)
+            </li>
           </ul>
         </div>
 
@@ -49,140 +65,503 @@ export function InstallationGuideSection() {
             Quick Start
           </Heading>
 
-          <div className="space-y-3">
-            <h5 className="text-sm font-medium">1. Clone the Repository</h5>
-            <CodeBlock
-              code={`git clone https://github.com/getqarote/Qarote.git
-cd qarote`}
-              language="bash"
-            />
-          </div>
+          <Tabs defaultValue="docker-compose" className="w-full">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="docker-compose">Docker Compose</TabsTrigger>
+              <TabsTrigger value="dokku">Dokku</TabsTrigger>
+              <TabsTrigger value="manual">Manual</TabsTrigger>
+            </TabsList>
 
-          <div className="space-y-3">
-            <h5 className="text-sm font-medium">
-              2. Configure Environment Variables
-            </h5>
-            <CodeBlock
-              code={`# Copy the environment template
-cp .env.selfhosted.example .env
+            {/* Docker Compose Quick Start */}
+            <TabsContent value="docker-compose" className="space-y-4 mt-4">
+              <div className="space-y-3">
+                <h5 className="text-sm font-medium">1. Clone the Repository</h5>
+                <CodeBlock
+                  code={`git clone https://github.com/getqarote/Qarote.git /opt/qarote
+cd /opt/qarote`}
+                  language="bash"
+                />
+                <p className="text-sm text-muted-foreground">
+                  <code className="bg-muted px-1 rounded">/opt/qarote</code> is
+                  the recommended path on Linux — it follows the{" "}
+                  <a
+                    href="https://refspecs.linuxfoundation.org/FHS_3.0/fhs/ch03s13.html"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
+                    Filesystem Hierarchy Standard
+                  </a>{" "}
+                  for optional/add-on software. On Windows (WSL2 + Docker
+                  Desktop), use{" "}
+                  <code className="bg-muted px-1 rounded">C:\qarote</code>. Any
+                  directory works — just adjust the path in the commands below.
+                </p>
+              </div>
 
-# Edit .env and configure your deployment
-# For Community Edition: Set DEPLOYMENT_MODE=community
-# For Enterprise Edition: Set DEPLOYMENT_MODE=enterprise`}
-              language="bash"
-            />
+              <div className="space-y-3">
+                <h5 className="text-sm font-medium">2. Run the Setup Script</h5>
+                <CodeBlock
+                  code={`# Community Edition (open-source)
+./setup.sh community
 
-            <div className="bg-muted rounded-lg p-4">
-              <p className="font-semibold mb-2">⚠️ Required Configuration</p>
-              <p className="text-sm text-muted-foreground">
-                You must generate secure values for:
-              </p>
-              <ul className="list-disc list-inside text-sm text-muted-foreground mt-2 space-y-1">
-                <li>
-                  <code className="bg-background px-1 rounded">JWT_SECRET</code>{" "}
-                  - Minimum 32 characters
-                </li>
-                <li>
-                  <code className="bg-background px-1 rounded">
-                    ENCRYPTION_KEY
-                  </code>{" "}
-                  - Minimum 32 characters
-                </li>
-                <li>
-                  <code className="bg-background px-1 rounded">
-                    POSTGRES_PASSWORD
-                  </code>{" "}
-                  - Strong database password
-                </li>
-              </ul>
-              <p className="text-sm text-muted-foreground mt-3">
-                Generate these secrets automatically:
-              </p>
-            </div>
+# Enterprise Edition (licensed)
+./setup.sh enterprise`}
+                  language="bash"
+                />
 
-            <CodeBlock
-              code={`# Run setup script from project root
-pnpm setup:selfhosted
+                <div className="bg-muted rounded-lg p-4">
+                  <p className="text-sm text-muted-foreground">
+                    This creates a{" "}
+                    <code className="bg-background px-1 rounded">.env</code>{" "}
+                    file with secure random secrets (JWT_SECRET, ENCRYPTION_KEY,
+                    POSTGRES_PASSWORD) and sets your deployment mode.
+                  </p>
+                </div>
+              </div>
 
-# Or write directly to apps/api/.env file
-pnpm setup:selfhosted --write`}
-              language="bash"
-            />
-          </div>
-
-          <div className="space-y-3">
-            <h5 className="text-sm font-medium">
-              3. For Enterprise Edition: Add Your License
-            </h5>
-            <CodeBlock
-              code={`# Place your downloaded license file
+              <div className="space-y-3">
+                <h5 className="text-sm font-medium">
+                  3. For Enterprise Edition: Add Your License
+                </h5>
+                <CodeBlock
+                  code={`# Place your downloaded license file
 # License files are downloaded with format: qarote-license-{uuid}.json
 cp /path/to/your/qarote-license-*.json ./qarote-license.json
 
 # Update .env with your license configuration
-DEPLOYMENT_MODE=enterprise
-LICENSE_FILE_PATH=./qarote-license.json
+# LICENSE_FILE_PATH=./qarote-license.json
+# LICENSE_PUBLIC_KEY="-----BEGIN PUBLIC KEY-----\\nMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA...\\n-----END PUBLIC KEY-----"`}
+                  language="bash"
+                />
+              </div>
 
-# Public key for license validation (provided via email with your license)
-# IMPORTANT: Wrap the entire key in double quotes, use \\n for line breaks
-LICENSE_PUBLIC_KEY="-----BEGIN PUBLIC KEY-----\\nMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA...\\n-----END PUBLIC KEY-----"`}
-              language="bash"
-            />
-          </div>
-
-          <div className="space-y-3">
-            <h5 className="text-sm font-medium">4. Start the Services</h5>
-            <CodeBlock
-              code={`# Start all services
+              <div className="space-y-3">
+                <h5 className="text-sm font-medium">4. Start the Services</h5>
+                <CodeBlock
+                  code={`# Start all services
 docker compose -f docker-compose.selfhosted.yml up -d
 
 # View logs
 docker compose -f docker-compose.selfhosted.yml logs -f`}
-              language="bash"
-            />
-          </div>
+                  language="bash"
+                />
+              </div>
 
-          <div className="space-y-3">
-            <h5 className="text-sm font-medium">5. Run Database Migrations</h5>
-            <CodeBlock
-              code={`# For Community Edition
+              <div className="space-y-3">
+                <h5 className="text-sm font-medium">
+                  5. Run Database Migrations
+                </h5>
+                <CodeBlock
+                  code={`# For Community Edition
 docker exec qarote_backend_community pnpm run db:migrate
 
 # For Enterprise Edition
 docker exec qarote_backend_enterprise pnpm run db:migrate`}
-              language="bash"
-            />
-          </div>
+                  language="bash"
+                />
+              </div>
 
-          <div className="space-y-3">
-            <h5 className="text-sm font-medium">6. Access the Application</h5>
-            <div className="bg-muted rounded-lg p-4">
-              <ul className="text-sm space-y-2">
-                <li>
-                  <strong>Frontend:</strong>{" "}
+              <div className="space-y-3">
+                <h5 className="text-sm font-medium">
+                  6. Access the Application
+                </h5>
+                <div className="bg-muted rounded-lg p-4">
+                  <ul className="text-sm space-y-2">
+                    <li>
+                      <strong>Frontend:</strong>{" "}
+                      <a
+                        href="http://localhost:8080"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline"
+                      >
+                        http://localhost:8080
+                      </a>
+                    </li>
+                    <li>
+                      <strong>Backend API:</strong>{" "}
+                      <a
+                        href="http://localhost:3000"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline"
+                      >
+                        http://localhost:3000
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </TabsContent>
+
+            {/* Dokku Quick Start */}
+            <TabsContent value="dokku" className="space-y-4 mt-4">
+              <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                <h5 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
+                  Why Dokku?
+                </h5>
+                <ul className="text-sm text-blue-800 dark:text-blue-200 list-disc list-inside space-y-1">
+                  <li>
+                    <strong>Easy deployment:</strong> Git push to deploy, like
+                    Heroku
+                  </li>
+                  <li>
+                    <strong>Automatic SSL:</strong> Let's Encrypt certificates
+                    out of the box
+                  </li>
+                  <li>
+                    <strong>Process management:</strong> Built-in scaling and
+                    monitoring
+                  </li>
+                  <li>
+                    <strong>Database plugins:</strong> Easy PostgreSQL setup
+                  </li>
+                </ul>
+              </div>
+
+              <div className="space-y-3">
+                <h5 className="text-sm font-medium">1. Install Dokku</h5>
+                <p className="text-sm text-muted-foreground">
+                  See the{" "}
                   <a
-                    href="http://localhost:8080"
+                    href="https://dokku.com/docs/getting-started/installation/"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-primary hover:underline"
                   >
-                    http://localhost:8080
-                  </a>
-                </li>
-                <li>
-                  <strong>Backend API:</strong>{" "}
+                    Dokku Installation Guide
+                  </a>{" "}
+                  for your platform.
+                </p>
+              </div>
+
+              <div className="space-y-3">
+                <h5 className="text-sm font-medium">
+                  2. Create App and Database
+                </h5>
+                <CodeBlock
+                  code={`# Create the Qarote app
+ssh dokku@your-server apps:create qarote
+
+# Install PostgreSQL plugin and create database
+sudo dokku plugin:install https://github.com/dokku/dokku-postgres.git postgres
+dokku postgres:create qarote-db
+dokku postgres:link qarote-db qarote`}
+                  language="bash"
+                />
+                <p className="text-sm text-muted-foreground">
+                  <code className="bg-muted px-1 rounded">DATABASE_URL</code> is
+                  automatically set by Dokku when you link the database.
+                </p>
+              </div>
+
+              <div className="space-y-3">
+                <h5 className="text-sm font-medium">
+                  3. Set Environment Variables
+                </h5>
+                <CodeBlock
+                  code={`dokku config:set qarote \\
+  DEPLOYMENT_MODE=community \\
+  NODE_ENV=production \\
+  LOG_LEVEL=info \\
+  JWT_SECRET=$(openssl rand -hex 64) \\
+  ENCRYPTION_KEY=$(openssl rand -hex 64) \\
+  CORS_ORIGIN=* \\
+  API_URL=https://your-domain.com \\
+  FRONTEND_URL=https://your-domain.com \\
+  ENABLE_EMAIL=false`}
+                  language="bash"
+                />
+                <p className="text-sm text-muted-foreground">
+                  <code className="bg-muted px-1 rounded">PORT</code> and{" "}
+                  <code className="bg-muted px-1 rounded">HOST</code> are
+                  automatically set by Dokku. Replace{" "}
+                  <code className="bg-muted px-1 rounded">
+                    https://your-domain.com
+                  </code>{" "}
+                  with your actual domain.
+                </p>
+              </div>
+
+              <div className="space-y-3">
+                <h5 className="text-sm font-medium">4. Deploy</h5>
+                <CodeBlock
+                  code={`git remote add dokku dokku@your-server:qarote
+git push dokku main`}
+                  language="bash"
+                />
+              </div>
+
+              <div className="space-y-3">
+                <h5 className="text-sm font-medium">
+                  5. Run Database Migrations
+                </h5>
+                <CodeBlock
+                  code={`dokku run qarote pnpm run db:migrate`}
+                  language="bash"
+                />
+              </div>
+
+              <div className="space-y-3">
+                <h5 className="text-sm font-medium">
+                  6. Domain and SSL (Optional)
+                </h5>
+                <CodeBlock
+                  code={`dokku domains:set qarote your-domain.com
+dokku letsencrypt:enable qarote`}
+                  language="bash"
+                />
+                <p className="text-sm text-muted-foreground">
+                  Your app will be available at{" "}
+                  <code className="bg-muted px-1 rounded">
+                    https://your-domain.com
+                  </code>{" "}
+                  (or your server's IP).
+                </p>
+              </div>
+            </TabsContent>
+
+            {/* Manual (Bare Metal) Quick Start */}
+            <TabsContent value="manual" className="space-y-4 mt-4">
+              <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+                <h5 className="font-semibold text-amber-900 dark:text-amber-100 mb-2">
+                  Advanced Setup
+                </h5>
+                <p className="text-sm text-amber-800 dark:text-amber-200">
+                  Manual deployment gives you full control but requires managing
+                  Node.js, PostgreSQL, a reverse proxy, and process management
+                  yourself. <strong>Docker Compose is recommended</strong> for
+                  most users.
+                </p>
+              </div>
+
+              <div className="space-y-3">
+                <h5 className="text-sm font-medium">
+                  1. Install Prerequisites
+                </h5>
+                <CodeBlock
+                  code={`# Install Node.js 24+ (via nvm)
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+nvm install 24
+
+# Enable pnpm via corepack
+corepack enable
+
+# Install PostgreSQL 15+
+# Ubuntu/Debian:
+sudo apt install postgresql postgresql-contrib
+# macOS:
+brew install postgresql@15
+
+# Install Nginx (reverse proxy)
+# Ubuntu/Debian:
+sudo apt install nginx
+# macOS:
+brew install nginx`}
+                  language="bash"
+                />
+              </div>
+
+              <div className="space-y-3">
+                <h5 className="text-sm font-medium">
+                  2. Clone and Install Dependencies
+                </h5>
+                <CodeBlock
+                  code={`git clone https://github.com/getqarote/Qarote.git /opt/qarote
+cd /opt/qarote
+pnpm install`}
+                  language="bash"
+                />
+              </div>
+
+              <div className="space-y-3">
+                <h5 className="text-sm font-medium">3. Set Up the Database</h5>
+                <CodeBlock
+                  code={`# Create database and user
+sudo -u postgres psql -c "CREATE USER qarote WITH PASSWORD 'your-secure-password';"
+sudo -u postgres psql -c "CREATE DATABASE qarote OWNER qarote;"
+
+# Verify connection
+psql -h localhost -U qarote -d qarote -c "SELECT 1;"`}
+                  language="bash"
+                />
+              </div>
+
+              <div className="space-y-3">
+                <h5 className="text-sm font-medium">
+                  4. Configure Environment
+                </h5>
+                <CodeBlock
+                  code={`# Generate .env with secrets (recommended)
+./setup.sh community
+
+# Then update DATABASE_URL to point to your local PostgreSQL:
+# DATABASE_URL=postgresql://qarote:your-secure-password@localhost:5432/qarote`}
+                  language="bash"
+                />
+                <p className="text-sm text-muted-foreground">
+                  The setup script generates secrets. You only need to override{" "}
+                  <code className="bg-muted px-1 rounded">DATABASE_URL</code> to
+                  point to your local PostgreSQL instead of the Docker
+                  container.
+                </p>
+              </div>
+
+              <div className="space-y-3">
+                <h5 className="text-sm font-medium">
+                  5. Build and Start the Backend
+                </h5>
+                <CodeBlock
+                  code={`# Build the API (generates Prisma client + compiles TypeScript)
+pnpm run build:api
+
+# Run database migrations
+cd apps/api
+pnpm run db:migrate
+cd ../..
+
+# Start the backend
+cd apps/api
+node --require tsconfig-paths/register dist/index.js`}
+                  language="bash"
+                />
+                <p className="text-sm text-muted-foreground">
+                  For production, use a process manager like{" "}
                   <a
-                    href="http://localhost:3000"
+                    href="https://pm2.keymetrics.io/"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-primary hover:underline"
                   >
-                    http://localhost:3000
-                  </a>
-                </li>
-              </ul>
-            </div>
-          </div>
+                    pm2
+                  </a>{" "}
+                  or <strong>systemd</strong> to keep the backend running and
+                  restart on failure.
+                </p>
+              </div>
+
+              <div className="space-y-3">
+                <h5 className="text-sm font-medium">
+                  6. Build and Serve the Frontend
+                </h5>
+                <CodeBlock
+                  code={`# Build the frontend (output: apps/app/dist/)
+VITE_API_URL=http://localhost:3000 pnpm run build:app
+
+# Copy to Nginx webroot
+sudo mkdir -p /var/www/qarote
+sudo cp -r apps/app/dist/* /var/www/qarote/`}
+                  language="bash"
+                />
+                <p className="text-sm text-muted-foreground">
+                  <code className="bg-muted px-1 rounded">VITE_API_URL</code> is
+                  baked at build time. Set it to the URL where your backend API
+                  is reachable.
+                </p>
+              </div>
+
+              <div className="space-y-3">
+                <h5 className="text-sm font-medium">7. Configure Nginx</h5>
+                <CodeBlock
+                  code={`# /etc/nginx/sites-available/qarote
+server {
+    listen 80;
+    server_name your-domain.com;
+
+    # Frontend (SPA)
+    root /var/www/qarote;
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # Cache static assets
+    location ~* \\.(js|css|png|jpg|jpeg|gif|ico|svg|woff2?)$ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+}
+
+# Enable the site
+# sudo ln -s /etc/nginx/sites-available/qarote /etc/nginx/sites-enabled/
+# sudo nginx -t && sudo systemctl reload nginx`}
+                  language="nginx"
+                />
+                <p className="text-sm text-muted-foreground">
+                  For HTTPS, add{" "}
+                  <a
+                    href="https://certbot.eff.org/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
+                    Certbot
+                  </a>{" "}
+                  for free Let's Encrypt SSL certificates, or use{" "}
+                  <a
+                    href="https://caddyserver.com/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
+                    Caddy
+                  </a>{" "}
+                  which handles HTTPS automatically.
+                </p>
+              </div>
+
+              <div className="space-y-3">
+                <h5 className="text-sm font-medium">
+                  8. Process Management (Production)
+                </h5>
+                <CodeBlock
+                  code={`# Option A: pm2
+npm install -g pm2
+cd /opt/qarote/apps/api
+pm2 start "node --require tsconfig-paths/register dist/index.js" --name qarote-api
+pm2 save
+pm2 startup  # auto-start on boot
+
+# Option B: systemd
+# Create /etc/systemd/system/qarote-api.service
+# [Unit]
+# Description=Qarote API
+# After=postgresql.service
+#
+# [Service]
+# Type=simple
+# User=qarote
+# WorkingDirectory=/opt/qarote/apps/api
+# ExecStart=/usr/bin/node --require tsconfig-paths/register dist/index.js
+# Restart=on-failure
+# EnvironmentFile=/opt/qarote/.env
+#
+# [Install]
+# WantedBy=multi-user.target`}
+                  language="bash"
+                />
+              </div>
+
+              <div className="space-y-3">
+                <h5 className="text-sm font-medium">
+                  9. Access the Application
+                </h5>
+                <div className="bg-muted rounded-lg p-4">
+                  <ul className="text-sm space-y-2">
+                    <li>
+                      <strong>Frontend:</strong> http://your-domain.com (Nginx)
+                    </li>
+                    <li>
+                      <strong>Backend API:</strong> http://localhost:3000
+                      (direct, or proxied through Nginx)
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
         </div>
 
         {/* SMTP Configuration */}
@@ -198,7 +577,7 @@ docker exec qarote_backend_enterprise pnpm run db:migrate`}
 
           <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 my-6">
             <h5 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
-              🔐 OAuth2 Authentication (Recommended)
+              OAuth2 Authentication (Recommended)
             </h5>
             <p className="text-sm text-blue-800 dark:text-blue-200 mb-3">
               For production environments, <strong>OAuth2</strong> is the
@@ -238,8 +617,7 @@ docker exec qarote_backend_enterprise pnpm run db:migrate`}
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
 SMTP_USER=your-email@gmail.com
-SMTP_PASS=your-app-password
-FROM_EMAIL=your-email@gmail.com`}
+SMTP_PASS=your-app-password`}
                 language="bash"
               />
               <div className="text-sm text-muted-foreground mt-2 space-y-2">
@@ -282,8 +660,7 @@ SMTP_USER=your-email@gmail.com
 SMTP_SERVICE=gmail
 SMTP_OAUTH_CLIENT_ID=your-client-id.apps.googleusercontent.com
 SMTP_OAUTH_CLIENT_SECRET=your-client-secret
-SMTP_OAUTH_REFRESH_TOKEN=your-refresh-token
-FROM_EMAIL=your-email@gmail.com`}
+SMTP_OAUTH_REFRESH_TOKEN=your-refresh-token`}
                 language="bash"
               />
               <div className="text-sm text-muted-foreground mt-2 space-y-2">
@@ -327,9 +704,7 @@ FROM_EMAIL=your-email@gmail.com`}
                     </a>{" "}
                     to get refresh token:
                     <ul className="list-disc list-inside ml-4 mt-1 space-y-1">
-                      <li>
-                        Click gear icon (⚙️) → Use your own OAuth credentials
-                      </li>
+                      <li>Click gear icon → Use your own OAuth credentials</li>
                       <li>Enter Client ID and Client Secret</li>
                       <li>
                         In "Select & authorize APIs", enter{" "}
@@ -364,8 +739,7 @@ FROM_EMAIL=your-email@gmail.com`}
 SMTP_HOST=smtp.sendgrid.net
 SMTP_PORT=587
 SMTP_USER=apikey
-SMTP_PASS=your-sendgrid-api-key
-FROM_EMAIL=noreply@yourdomain.com`}
+SMTP_PASS=your-sendgrid-api-key`}
                 language="bash"
               />
               <div className="text-sm text-muted-foreground mt-2 space-y-2">
@@ -399,8 +773,7 @@ FROM_EMAIL=noreply@yourdomain.com`}
 SMTP_HOST=smtp.mailgun.org
 SMTP_PORT=587
 SMTP_USER=postmaster@your-domain.mailgun.org
-SMTP_PASS=your-mailgun-password
-FROM_EMAIL=noreply@yourdomain.com`}
+SMTP_PASS=your-mailgun-password`}
                 language="bash"
               />
               <div className="text-sm text-muted-foreground mt-2 space-y-2">
@@ -435,8 +808,7 @@ FROM_EMAIL=noreply@yourdomain.com`}
 SMTP_HOST=smtp.office365.com
 SMTP_PORT=587
 SMTP_USER=your-email@yourdomain.com
-SMTP_PASS=your-password
-FROM_EMAIL=your-email@yourdomain.com`}
+SMTP_PASS=your-password`}
                 language="bash"
               />
               <div className="text-sm text-muted-foreground mt-2 space-y-2">
@@ -495,8 +867,7 @@ FROM_EMAIL=your-email@yourdomain.com`}
 SMTP_HOST=mail.yourcompany.com
 SMTP_PORT=587
 SMTP_USER=smtp-user
-SMTP_PASS=smtp-password
-FROM_EMAIL=noreply@yourcompany.com`}
+SMTP_PASS=smtp-password`}
                 language="bash"
               />
             </div>
@@ -532,36 +903,84 @@ FROM_EMAIL=noreply@yourcompany.com`}
             <p className="text-sm text-muted-foreground mb-3">
               Use the built-in SMTP testing script to verify your configuration:
             </p>
-            <CodeBlock
-              code={`# Test connection only
-pnpm test:smtp
+            <Tabs defaultValue="smtp-docker" className="w-full">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="smtp-docker">Docker Compose</TabsTrigger>
+                <TabsTrigger value="smtp-dokku">Dokku</TabsTrigger>
+                <TabsTrigger value="smtp-manual">Manual</TabsTrigger>
+              </TabsList>
 
-# Send simple test email via real SMTP
-pnpm test:smtp --send admin@yourcompany.com
+              <TabsContent value="smtp-docker" className="mt-4">
+                <CodeBlock
+                  code={`# Replace <container> with your backend container name:
+#   qarote_backend_community  (Community Edition)
+#   qarote_backend_enterprise (Enterprise Edition)
+
+# Test SMTP connection
+docker exec <container> pnpm run test:smtp
+
+# Send test email
+docker exec <container> pnpm run test:smtp -- --send admin@yourcompany.com
 
 # Send with production React Email template
-pnpm test:smtp --send admin@yourcompany.com --template
+docker exec <container> pnpm run test:smtp -- --send admin@yourcompany.com --template
 
-# Test with Ethereal (fake SMTP for development)
-pnpm test:smtp:ethereal
+# Test with Ethereal (fake SMTP, no real delivery)
+docker exec <container> pnpm run test:smtp:ethereal
 
 # Send test via Ethereal and get preview URL
-pnpm test:smtp:ethereal --send test@example.com
+docker exec <container> pnpm run test:smtp:ethereal -- --send test@example.com`}
+                  language="bash"
+                />
+              </TabsContent>
 
-# Test React Email templates with Ethereal
-pnpm test:smtp:ethereal --send test@example.com --template`}
-              language="bash"
-            />
+              <TabsContent value="smtp-dokku" className="mt-4">
+                <CodeBlock
+                  code={`# Test SMTP connection
+dokku run qarote pnpm run test:smtp
+
+# Send test email
+dokku run qarote pnpm run test:smtp -- --send admin@yourcompany.com
+
+# Send with production React Email template
+dokku run qarote pnpm run test:smtp -- --send admin@yourcompany.com --template
+
+# Test with Ethereal (fake SMTP, no real delivery)
+dokku run qarote pnpm run test:smtp:ethereal
+
+# Send test via Ethereal and get preview URL
+dokku run qarote pnpm run test:smtp:ethereal -- --send test@example.com`}
+                  language="bash"
+                />
+              </TabsContent>
+
+              <TabsContent value="smtp-manual" className="mt-4">
+                <CodeBlock
+                  code={`# From the project root (/opt/qarote)
+cd apps/api
+
+# Test SMTP connection
+pnpm run test:smtp
+
+# Send test email
+pnpm run test:smtp -- --send admin@yourcompany.com
+
+# Send with production React Email template
+pnpm run test:smtp -- --send admin@yourcompany.com --template
+
+# Test with Ethereal (fake SMTP, no real delivery)
+pnpm run test:smtp:ethereal
+
+# Send test via Ethereal and get preview URL
+pnpm run test:smtp:ethereal -- --send test@example.com`}
+                  language="bash"
+                />
+              </TabsContent>
+            </Tabs>
+
             <p className="text-sm text-muted-foreground mt-3">
-              <strong>Ethereal Email:</strong> A fake SMTP service for
-              development testing. Test emails are never delivered but viewable
-              via a web preview URL. Perfect for testing email templates without
-              a real SMTP server.
-            </p>
-            <p className="text-sm text-muted-foreground mt-2">
-              <strong>--template flag:</strong> Uses the same production React
-              Email templates that your users receive. Perfect for verifying
-              templates render correctly via SMTP.
+              <strong>Ethereal Email</strong> is a fake SMTP service — test
+              emails are never delivered but viewable via a web preview URL.
             </p>
           </div>
         </div>
@@ -571,8 +990,16 @@ pnpm test:smtp:ethereal --send test@example.com --template`}
           <Heading level={4} id="updating-qarote">
             Updating Qarote
           </Heading>
-          <CodeBlock
-            code={`# Pull latest changes
+          <Tabs defaultValue="update-docker" className="w-full">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="update-docker">Docker Compose</TabsTrigger>
+              <TabsTrigger value="update-dokku">Dokku</TabsTrigger>
+              <TabsTrigger value="update-manual">Manual</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="update-docker" className="mt-4">
+              <CodeBlock
+                code={`# Pull latest changes
 git pull origin main
 
 # Rebuild and restart services
@@ -580,8 +1007,49 @@ docker compose -f docker-compose.selfhosted.yml up -d --build
 
 # Run any new migrations
 docker exec qarote_backend_\${DEPLOYMENT_MODE} pnpm run db:migrate`}
-            language="bash"
-          />
+                language="bash"
+              />
+            </TabsContent>
+
+            <TabsContent value="update-dokku" className="mt-4">
+              <CodeBlock
+                code={`# Push latest changes to Dokku (triggers rebuild automatically)
+git push dokku main
+
+# Run any new migrations
+dokku run qarote pnpm run db:migrate`}
+                language="bash"
+              />
+            </TabsContent>
+
+            <TabsContent value="update-manual" className="mt-4">
+              <CodeBlock
+                code={`# Pull latest changes
+cd /opt/qarote
+git pull origin main
+
+# Install any new dependencies
+pnpm install
+
+# Rebuild backend and frontend
+pnpm run build:api
+VITE_API_URL=http://localhost:3000 pnpm run build:app
+
+# Run any new migrations
+cd apps/api
+pnpm run db:migrate
+cd ../..
+
+# Restart the backend
+pm2 restart qarote-api
+# or: sudo systemctl restart qarote-api
+
+# Update frontend static files
+sudo cp -r apps/app/dist/* /var/www/qarote/`}
+                language="bash"
+              />
+            </TabsContent>
+          </Tabs>
         </div>
 
         {/* Troubleshooting */}

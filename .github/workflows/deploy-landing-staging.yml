@@ -82,6 +82,7 @@ jobs:
         working-directory: apps/web
         env:
           VITE_APP_BASE_URL: ${{ vars.VITE_APP_BASE_URL }}
+          VITE_PORTAL_URL: ${{ vars.VITE_PORTAL_URL }}
           NODE_ENV: production
         run: pnpm run build
 
