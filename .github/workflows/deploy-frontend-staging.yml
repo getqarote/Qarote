@@ -86,6 +86,7 @@ jobs:
         working-directory: apps/app
         env:
           VITE_API_URL: ${{ vars.VITE_API_URL }}
+          VITE_PORTAL_URL: ${{ vars.VITE_PORTAL_URL }}
           VITE_SENTRY_DSN: ${{ vars.VITE_SENTRY_DSN }}
           VITE_SENTRY_ENABLED: ${{ vars.VITE_SENTRY_ENABLED }}
           VITE_GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}

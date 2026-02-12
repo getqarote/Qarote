@@ -53,7 +53,6 @@
     "act:test:portal:prod": "act workflow_dispatch -W .github/workflows/deploy-portal-production.yml --input confirm_production=DEPLOY",
     "act:test:worker": "act -j quality-checks -W .github/workflows/deploy-worker-staging.yml",
     "act:test:worker:prod": "act workflow_dispatch -W .github/workflows/deploy-worker-production.yml --input confirm_production=DEPLOY",
-    "setup:selfhosted": "pnpm --filter=qarote-api setup:selfhosted",
     "test:smtp": "pnpm --filter=qarote-api test:smtp",
     "test:smtp:ethereal": "pnpm --filter=qarote-api test:smtp:ethereal",
     "update:selfhosted": "bash scripts/update.sh",

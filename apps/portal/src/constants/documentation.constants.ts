@@ -41,8 +41,6 @@ export const dockerComposeContent = `services:
       # Optional: For license file generation (SaaS only)
       LICENSE_PRIVATE_KEY: \${LICENSE_PRIVATE_KEY}
       # Optional: Email configuration (disabled by default)
-      # Only needed if ENABLE_EMAIL=true
-      # FROM_EMAIL defaults to noreply@localhost, FRONTEND_URL defaults to http://localhost:8080
       ENABLE_EMAIL: \${ENABLE_EMAIL:-false}
       # Optional: SMTP settings (only needed if ENABLE_EMAIL=true)
       # Basic Auth:
@@ -69,11 +67,9 @@ export const dockerComposeContent = `services:
       dockerfile: ./apps/app/Dockerfile
       args:
         DEPLOYMENT_MODE: \${DEPLOYMENT_MODE:-community}
+        VITE_API_URL: \${VITE_API_URL}
     container_name: qarote_frontend_\${DEPLOYMENT_MODE}
     restart: unless-stopped
-    environment:
-      VITE_API_URL: \${VITE_API_URL}
-      VITE_DEPLOYMENT_MODE: \${DEPLOYMENT_MODE}
     ports:
       - "\${FRONTEND_PORT}:80"
     depends_on:
@@ -105,7 +101,7 @@ DEPLOYMENT_MODE=community
 # =============================================================================
 # REQUIRED - Database Configuration
 # =============================================================================
-# Generate with: pnpm setup:selfhosted
+# Generate with: ./setup.sh community (or enterprise)
 POSTGRES_PASSWORD=your-secure-postgres-password
 POSTGRES_PORT=5432
 
@@ -116,11 +112,11 @@ POSTGRES_PORT=5432
 LOG_LEVEL=info
 
 # JWT secret for token signing (minimum 32 characters)
-# Generate with: pnpm setup:selfhosted
+# Generate with: ./setup.sh community (or enterprise)
 JWT_SECRET=your-jwt-secret-minimum-32-characters-long
 
 # Encryption key for sensitive data (minimum 32 characters)
-# Generate with: pnpm setup:selfhosted
+# Generate with: ./setup.sh community (or enterprise)
 ENCRYPTION_KEY=your-encryption-key-minimum-32-characters-long
 
 # CORS origin - allowed origins for API requests
@@ -146,7 +142,7 @@ LICENSE_PUBLIC_KEY=
 # =============================================================================
 # REQUIRED - Frontend Configuration
 # =============================================================================
-# Backend API URL (must match BACKEND_PORT)
+# Backend API URL for frontend (baked at build time, must match BACKEND_PORT)
 VITE_API_URL=http://localhost:3000
 
 # Frontend port mapping (host:container)
@@ -157,11 +153,6 @@ FRONTEND_PORT=8080
 # =============================================================================
 # Enable email features (disabled by default for self-hosted)
 ENABLE_EMAIL=false
-
-# Email sender address (only needed if ENABLE_EMAIL=true)
-# Defaults to noreply@localhost if not set
-# FROM_EMAIL=noreply@yourcompany.com
-
 # Frontend URL for email links (only needed if ENABLE_EMAIL=true)
 # Defaults to http://localhost:8080 if not set
 # FRONTEND_URL=https://yourcompany.com
@@ -221,8 +212,6 @@ interface TOCItem {
 }
 
 export const TOC_ITEMS: TOCItem[] = [
-  { id: "docker-compose", text: "Docker Compose File", level: 3 },
-  { id: "environment-config", text: "Environment Configuration", level: 3 },
   { id: "installation-guide", text: "Installation Guide", level: 3 },
   { id: "prerequisites", text: "Prerequisites", level: 4 },
   { id: "quick-start", text: "Quick Start", level: 4 },
@@ -231,4 +220,6 @@ export const TOC_ITEMS: TOCItem[] = [
   { id: "troubleshooting", text: "Troubleshooting", level: 4 },
   { id: "security", text: "Security Recommendations", level: 4 },
   { id: "support", text: "Support", level: 4 },
+  { id: "docker-compose", text: "Docker Compose File", level: 3 },
+  { id: "environment-config", text: "Environment Configuration", level: 3 },
 ];
