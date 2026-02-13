@@ -1,8 +1,8 @@
-import { UserPlan } from "@prisma/client";
-
 import { prisma } from "@/core/prisma";
 
 import { getPlanFeatures } from "./features.service";
+
+import { UserPlan } from "@/generated/prisma/client";
 
 // Re-export for convenience
 export { getPlanFeatures, PLAN_FEATURES } from "./features.service";

@@ -1,5 +1,6 @@
-import { UserPlan } from "@prisma/client";
 import { z } from "zod";
+
+import { UserPlan } from "@/generated/prisma/client";
 
 // Schema for license purchase
 // Note: Self-hosted licenses are annual-only

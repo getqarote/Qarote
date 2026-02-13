@@ -3,8 +3,6 @@
  * Handles email communications for license lifecycle events
  */
 
-import { UserPlan } from "@prisma/client";
-
 import { CoreEmailService, type EmailResult } from "./core-email.service";
 import LicenseCancellationEmail from "./templates/license-cancellation-email";
 import LicenseDeliveryEmail from "./templates/license-delivery-email";
@@ -12,6 +10,8 @@ import LicenseExpirationReminderEmail from "./templates/license-expiration-remin
 import LicenseExpiredEmail from "./templates/license-expired-email";
 import LicensePaymentFailedEmail from "./templates/license-payment-failed-email";
 import LicenseRenewalEmail from "./templates/license-renewal-email";
+
+import { UserPlan } from "@/generated/prisma/client";
 
 interface SendLicenseDeliveryEmailParams {
   to: string;

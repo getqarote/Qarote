@@ -1,4 +1,3 @@
-import { UserPlan } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 
 import { getUserDisplayName } from "@/core/utils";
@@ -10,6 +9,8 @@ import { createCheckoutSessionSchema } from "@/schemas/payment";
 import { emailConfig } from "@/config";
 
 import { router, strictRateLimitedProcedure } from "@/trpc/trpc";
+
+import { UserPlan } from "@/generated/prisma/client";
 
 /**
  * Checkout router

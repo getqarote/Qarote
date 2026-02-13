@@ -1,4 +1,3 @@
-import { UserPlan, UserRole } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 
 import { requirePremiumFeature } from "@/core/feature-flags";
@@ -29,6 +28,8 @@ import {
   router,
   workspaceProcedure,
 } from "@/trpc/trpc";
+
+import { UserPlan, UserRole } from "@/generated/prisma/client";
 
 /**
  * Workspace management router

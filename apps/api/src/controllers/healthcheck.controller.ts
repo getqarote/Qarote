@@ -31,7 +31,7 @@ healthcheckController.get("/health", async (c) => {
       timestamp: new Date().toISOString(),
       uptime: process.uptime(),
       environment: config.NODE_ENV,
-      version: process.env.npm_package_version || "1.0.0",
+      version: config.npm_package_version,
       database: {
         status: "connected",
         type: "postgresql",

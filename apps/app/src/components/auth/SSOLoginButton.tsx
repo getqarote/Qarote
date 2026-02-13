@@ -26,7 +26,15 @@ export const SSOLoginButton: React.FC<SSOLoginButtonProps> = ({
 
   const handleClick = () => {
     try {
-      const apiUrl = import.meta.env.VITE_API_URL;
+      // VITE_API_URL (build-time) wins over runtime config (binary mode fallback).
+      const apiUrl =
+        import.meta.env.VITE_API_URL ??
+        (
+          (window as unknown as Record<string, unknown>).__QAROTE_CONFIG__ as
+            | { apiUrl?: string }
+            | undefined
+        )?.apiUrl ??
+        "";
       // Full page redirect to the SSO authorize endpoint
       window.location.href = `${apiUrl}/sso/authorize`;
     } catch (error) {

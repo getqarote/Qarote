@@ -1,4 +1,3 @@
-import { UserRole } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 
 import type { MessageProperties } from "@/core/rabbitmq/rabbitmq.interfaces";
@@ -13,6 +12,8 @@ import {
 import { authorize, router } from "@/trpc/trpc";
 
 import { createRabbitMQClient, verifyServerAccess } from "./shared";
+
+import { UserRole } from "@/generated/prisma/client";
 
 /**
  * Messages router

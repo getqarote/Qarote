@@ -1,9 +1,9 @@
-import { WorkspaceAlertThresholds } from "@prisma/client";
-
 import { logger } from "@/core/logger";
 import { prisma } from "@/core/prisma";
 
 import { AlertThresholds } from "./alert.interfaces";
+
+import { WorkspaceAlertThresholds } from "@/generated/prisma/client";
 
 const DEFAULT_THRESHOLDS: AlertThresholds = {
   memory: { warning: 80, critical: 95 },

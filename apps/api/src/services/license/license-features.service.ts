@@ -3,9 +3,9 @@
  * Maps plan tiers to license features
  */
 
-import { UserPlan } from "@prisma/client";
-
 import { getAllPremiumFeatures, type PremiumFeature } from "@/config/features";
+
+import { UserPlan } from "@/generated/prisma/client";
 
 /**
  * Get premium features for a plan tier

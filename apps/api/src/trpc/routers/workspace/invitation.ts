@@ -1,4 +1,3 @@
-import { InvitationStatus, UserPlan } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 
 import { requirePremiumFeature } from "@/core/feature-flags";
@@ -21,6 +20,8 @@ import {
   rateLimitedProcedure,
   router,
 } from "@/trpc/trpc";
+
+import { InvitationStatus, UserPlan } from "@/generated/prisma/client";
 
 /**
  * Workspace invitation router

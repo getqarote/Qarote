@@ -1,4 +1,3 @@
-import { UserRole } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 
 import {
@@ -12,6 +11,8 @@ import {
 import { FeedbackMapper } from "@/mappers/feedback";
 
 import { authorize, rateLimitedProcedure, router } from "@/trpc/trpc";
+
+import { UserRole } from "@/generated/prisma/client";
 
 /**
  * Feedback router

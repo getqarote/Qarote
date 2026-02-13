@@ -1,9 +1,10 @@
-import { UserPlan } from "@prisma/client";
 import React from "react";
 
 import { CoreEmailService, EmailResult } from "./core-email.service";
 import { UpgradeConfirmationEmail } from "./templates/upgrade-confirmation-email";
 import { WelcomeBackEmail } from "./templates/welcome-back-email";
+
+import { UserPlan } from "@/generated/prisma/client";
 
 interface UpgradeConfirmationEmailParams {
   to: string;
