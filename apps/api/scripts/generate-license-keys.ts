@@ -8,6 +8,9 @@
 import { generateKeyPairSync } from "node:crypto";
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { getDirname } from "../src/core/utils";
+
+const __dirname = getDirname(import.meta.url);
 
 console.log("🔐 Generating RSA-4096 key pair for license signing...\n");
 

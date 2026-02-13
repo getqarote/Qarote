@@ -1,5 +1,6 @@
-import { UserRole } from "@prisma/client";
 import { z } from "zod/v4";
+
+import { UserRole } from "@/generated/prisma/client";
 
 // Schema for updating a user
 const UpdateUserSchema = z.object({

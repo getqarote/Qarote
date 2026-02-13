@@ -2,7 +2,6 @@ import crypto from "node:crypto";
 
 import type { JacksonOption } from "@boxyhq/saml-jackson";
 import { controllers } from "@boxyhq/saml-jackson";
-import type { Prisma } from "@prisma/client";
 
 import { logger } from "@/core/logger";
 import { prisma } from "@/core/prisma";
@@ -10,6 +9,8 @@ import { prisma } from "@/core/prisma";
 import { config, ssoConfig } from "@/config";
 
 import type { SSOExchangeCodeResult } from "./sso.interfaces";
+
+import type { Prisma } from "@/generated/prisma/client";
 
 /**
  * SSO Service using Ory Polis (BoxyHQ Jackson)

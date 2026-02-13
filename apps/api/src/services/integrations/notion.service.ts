@@ -5,7 +5,6 @@ import {
   isNotionClientError,
   LogLevel,
 } from "@notionhq/client";
-import type { User } from "@prisma/client";
 
 import { logger } from "@/core/logger";
 import { retryWithBackoff } from "@/core/retry";
@@ -25,6 +24,8 @@ import {
   NotionDatabaseResponseSchema,
   NotionPageResponseSchema,
 } from "./notion.interfaces";
+
+import type { User } from "@/generated/prisma/client";
 
 class NotionService {
   private client: Client;

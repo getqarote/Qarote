@@ -1,4 +1,3 @@
-import { InvitationStatus, UserRole } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { OAuth2Client } from "google-auth-library";
 
@@ -15,6 +14,8 @@ import {
 import { googleConfig } from "@/config";
 
 import { rateLimitedPublicProcedure, router } from "@/trpc/trpc";
+
+import { InvitationStatus, UserRole } from "@/generated/prisma/client";
 
 /**
  * Initialize Google OAuth client

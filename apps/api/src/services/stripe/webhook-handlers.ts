@@ -1,5 +1,3 @@
-import { BillingInterval, SubscriptionStatus, UserPlan } from "@prisma/client";
-
 import { logger } from "@/core/logger";
 import { prisma } from "@/core/prisma";
 import { getUserDisplayName } from "@/core/utils";
@@ -19,6 +17,12 @@ import {
 } from "@/services/stripe/stripe.service";
 
 import { emailConfig } from "@/config";
+
+import {
+  BillingInterval,
+  SubscriptionStatus,
+  UserPlan,
+} from "@/generated/prisma/client";
 
 // Note: This file contains webhook handlers that are used by the webhook controller
 // These handlers process Stripe webhook events and update the database accordingly

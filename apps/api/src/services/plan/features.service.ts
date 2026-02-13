@@ -1,4 +1,4 @@
-import { UserPlan } from "@prisma/client";
+import { UserPlan } from "@/generated/prisma/client";
 
 export interface PlanFeatures {
   // Core permissions

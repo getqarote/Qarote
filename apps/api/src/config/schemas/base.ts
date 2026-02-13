@@ -22,9 +22,15 @@ export const baseSchema = z.object({
     .min(32, "ENCRYPTION_KEY must be at least 32 characters"),
 
   // Database - ALWAYS required
-  DATABASE_URL: z.string().startsWith("postgres://", {
-    message: "DATABASE_URL must start with 'postgres://'",
-  }),
+  DATABASE_URL: z
+    .string()
+    .refine(
+      (s) => s.startsWith("postgres://") || s.startsWith("postgresql://"),
+      {
+        message:
+          "DATABASE_URL must start with 'postgres://' or 'postgresql://'",
+      }
+    ),
 
   // CORS
   CORS_ORIGIN: z.string().describe("*"),
@@ -34,5 +40,5 @@ export const baseSchema = z.object({
   ALERT_CHECK_CONCURRENCY: z.coerce.number().int().positive().default(10),
 
   // NPM package version (for Sentry releases)
-  npm_package_version: z.string().describe("1.0.0"),
+  npm_package_version: z.string().default("0.0.0"),
 });

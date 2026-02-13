@@ -1,4 +1,3 @@
-import { UserPlan } from "@prisma/client";
 import React from "react";
 
 import { RabbitMQAlert } from "@/services/alerts/alert.interfaces";
@@ -10,6 +9,8 @@ import PaymentConfirmationEmail from "./templates/payment-confirmation-email";
 import TrialEndingEmail from "./templates/trial-ending-email";
 import UpcomingInvoiceEmail from "./templates/upcoming-invoice-email";
 import UpdateAvailableEmail from "./templates/update-available-email";
+
+import { UserPlan } from "@/generated/prisma/client";
 
 interface TrialEndingEmailParams {
   to: string;

@@ -1,140 +1,26 @@
-import { initSentry } from "@/services/sentry";
-
-import { isCloudMode } from "@/config/deployment";
-
-// Initialize Sentry only if enabled
-if (isCloudMode() || process.env.ENABLE_SENTRY === "true") {
-  initSentry();
+// Subcommand routing — must run before any config/dotenv imports
+if (process.argv[2] === "setup") {
+  const { runSetup } = await import("./cli/setup.js");
+  await runSetup();
+  process.exit(0);
 }
 
-import { serve } from "@hono/node-server";
-import { trpcServer } from "@hono/trpc-server";
-import { Hono } from "hono";
-import { logger as honoLogger } from "hono/logger";
-import { prettyJSON } from "hono/pretty-json";
-import { secureHeaders } from "hono/secure-headers";
+import { parseArgs } from "node:util";
 
-import { logger } from "@/core/logger";
-import { prisma } from "@/core/prisma";
-
-import { ssoService } from "@/services/auth/sso.service";
-
-import { corsMiddleware } from "@/middlewares/cors";
-import {
-  performanceMonitoring,
-  requestIdMiddleware,
-} from "@/middlewares/request";
-
-import { serverConfig, ssoConfig } from "@/config";
-import { validateDeploymentMode } from "@/config/deployment";
-
-import { createContext } from "@/trpc/context";
-import { appRouter } from "@/trpc/router";
-
-import { standardRateLimiter } from "./middlewares/rateLimiter";
-
-import healthcheckController from "@/controllers/healthcheck.controller";
-import webhookController from "@/controllers/payment/webhook.controller";
-import ssoController from "@/controllers/sso.controller";
-
-const app = new Hono();
-
-// Create a completely separate app for webhooks
-// This ensures NO middleware touches the raw body needed for Stripe signature verification
-const webhookApp = new Hono();
-// Only add essential middlewares that don't touch the body
-webhookApp.use(honoLogger());
-webhookApp.use("*", secureHeaders());
-webhookApp.use("*", requestIdMiddleware);
-webhookApp.use("*", performanceMonitoring);
-webhookApp.use("*", corsMiddleware);
-webhookApp.use("*", standardRateLimiter);
-// NO prettyJSON middleware here - it would modify the body and break signature verification!
-webhookApp.route("/", webhookController);
-
-// Create a separate app for SSO routes
-// SAML ACS endpoint receives form-encoded POST from IdP (like webhook needs raw body)
-const ssoApp = new Hono();
-ssoApp.use(honoLogger());
-ssoApp.use("*", secureHeaders());
-ssoApp.use("*", requestIdMiddleware);
-ssoApp.use("*", performanceMonitoring);
-ssoApp.use("*", corsMiddleware);
-ssoApp.use("*", standardRateLimiter);
-ssoApp.route("/", ssoController);
-
-// Core middlewares for main app
-app.use(honoLogger());
-app.use("*", prettyJSON());
-app.use("*", secureHeaders());
-app.use("*", requestIdMiddleware);
-app.use("*", performanceMonitoring);
-app.use("*", corsMiddleware);
-app.use("*", standardRateLimiter);
-
-// Mount webhook app BEFORE other routes to ensure it's processed first
-app.route("/webhooks", webhookApp);
-
-// Mount SSO routes (SAML ACS needs form-encoded body access)
-app.route("/sso", ssoApp);
-
-// Mount tRPC router
-app.use(
-  "/trpc/*",
-  trpcServer({
-    router: appRouter,
-    createContext: async (opts, c) => {
-      return createContext({ req: c.req });
-    },
-  })
-);
-
-// 1. Health check (most basic)
-app.route("/", healthcheckController);
-
-const { port, host } = serverConfig;
-
-async function startServer() {
-  try {
-    // Validate deployment mode and required services
-    validateDeploymentMode();
-    logger.info("Deployment mode validation passed");
-
-    await prisma.$connect();
-    logger.info("Connected to database");
-
-    // Initialize SSO service if enabled
-    if (ssoConfig.enabled) {
-      await ssoService.initialize();
-    }
-
-    serve(
-      {
-        fetch: app.fetch,
-        port,
-        hostname: host,
-      },
-      (info) => {
-        logger.info(`Server is running on http://${info.address}:${info.port}`);
-      }
-    );
-  } catch (error) {
-    logger.error(error, "Failed to start server");
-    await prisma.$disconnect();
-    process.exit(1);
-  }
-}
-
-process.on("SIGINT", async () => {
-  logger.info("Shutting down server...");
-  await prisma.$disconnect();
-  process.exit(0);
+// CLI argument parsing — overrides env vars for binary mode.
+// read process.env at module evaluation time (import-time side effects).
+const { values: cliArgs } = parseArgs({
+  options: {
+    port: { type: "string", short: "p" },
+    host: { type: "string", short: "h" },
+    "database-url": { type: "string" },
+  },
+  strict: false,
 });
+if (typeof cliArgs["database-url"] === "string")
+  process.env.DATABASE_URL = cliArgs["database-url"];
+if (typeof cliArgs.port === "string") process.env.PORT = cliArgs.port;
+if (typeof cliArgs.host === "string") process.env.HOST = cliArgs.host;
 
-process.on("SIGTERM", async () => {
-  logger.info("Shutting down server...");
-  await prisma.$disconnect();
-  process.exit(0);
-});
-
-startServer();
+// Dynamic import — ensures env vars are set before config/prisma modules load
+await import("./server.js");

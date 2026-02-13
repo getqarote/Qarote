@@ -1,4 +1,3 @@
-import { UserPlan } from "@prisma/client";
 import {
   Body,
   Button,
@@ -24,6 +23,8 @@ import {
   textStyles,
   utilityStyles,
 } from "../shared/styles";
+
+import { UserPlan } from "@/generated/prisma/client";
 
 interface UpgradeConfirmationEmailProps {
   userName: string;

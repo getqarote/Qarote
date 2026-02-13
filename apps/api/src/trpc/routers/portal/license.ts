@@ -1,4 +1,3 @@
-import { UserPlan } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 
 import { getUserDisplayName } from "@/core/utils";
@@ -22,6 +21,8 @@ import {
   rateLimitedPublicProcedure,
   router,
 } from "@/trpc/trpc";
+
+import { UserPlan } from "@/generated/prisma/client";
 
 /**
  * License router
