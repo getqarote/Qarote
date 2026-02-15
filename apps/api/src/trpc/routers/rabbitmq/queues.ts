@@ -1,4 +1,3 @@
-import { UserRole } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 
 import { prisma } from "@/core/prisma";
@@ -31,6 +30,8 @@ import {
   createRabbitMQClient,
   verifyServerAccess,
 } from "./shared";
+
+import { UserRole } from "@/generated/prisma/client";
 
 /**
  * Queues router

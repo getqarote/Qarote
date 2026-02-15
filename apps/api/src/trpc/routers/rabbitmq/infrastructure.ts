@@ -1,4 +1,3 @@
-import { UserRole } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 
 import {
@@ -14,6 +13,8 @@ import { BindingMapper, ExchangeMapper, NodeMapper } from "@/mappers/rabbitmq";
 import { authorize, router, workspaceProcedure } from "@/trpc/trpc";
 
 import { createRabbitMQClient, verifyServerAccess } from "./shared";
+
+import { UserRole } from "@/generated/prisma/client";
 
 /**
  * Infrastructure router

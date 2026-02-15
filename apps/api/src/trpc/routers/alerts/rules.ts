@@ -1,4 +1,3 @@
-import { AlertSeverity, AlertType, ComparisonOperator } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 
 import { requirePremiumFeature } from "@/core/feature-flags";
@@ -12,6 +11,12 @@ import {
 import { FEATURES } from "@/config/features";
 
 import { router, workspaceProcedure } from "@/trpc/trpc";
+
+import {
+  AlertSeverity,
+  AlertType,
+  ComparisonOperator,
+} from "@/generated/prisma/client";
 
 /**
  * Alert rules router

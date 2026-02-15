@@ -1,4 +1,3 @@
-import { UserPlan } from "@prisma/client";
 import {
   Body,
   Container,
@@ -21,6 +20,8 @@ import {
   textStyles,
   utilityStyles,
 } from "../shared/styles";
+
+import { UserPlan } from "@/generated/prisma/client";
 
 interface WelcomeBackEmailProps {
   userName: string;

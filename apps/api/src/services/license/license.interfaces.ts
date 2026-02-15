@@ -3,7 +3,7 @@
  * Centralized interface definitions for license-related types
  */
 
-import { UserPlan } from "@prisma/client";
+import { UserPlan } from "@/generated/prisma/client";
 
 /**
  * License data structure used for signing and verification

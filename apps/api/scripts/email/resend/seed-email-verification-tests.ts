@@ -13,15 +13,24 @@ import dotenv from "dotenv";
 import path from "node:path";
 import { hashPassword } from "../../../src/core/auth";
 import { logger } from "../../../src/core/logger";
+import { getDirname } from "../../../src/core/utils";
 import { EmailVerificationService } from "../../../src/services/email/email-verification.service";
 import { subHours } from "date-fns";
-import { PrismaClient, UserPlan, UserRole } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import {
+  PrismaClient,
+  UserPlan,
+  UserRole,
+} from "../../../src/generated/prisma/client";
+
+const __dirname = getDirname(import.meta.url);
 
 // Load environment variables
-dotenv.config({ path: path.join(__dirname, "..", "..", ".env") });
+dotenv.config({ path: path.join(__dirname, "..", "..", "..", ".env") });
 
-// Use PrismaClient directly (reads DATABASE_URL from environment)
-const prisma = new PrismaClient();
+// Use PrismaClient with PrismaPg adapter (required by engineType = "client")
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
+const prisma = new PrismaClient({ adapter });
 
 interface EmailVerificationScenario {
   name: string;

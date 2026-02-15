@@ -1,4 +1,3 @@
-import { Prisma, UserPlan } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 
 import { prisma } from "@/core/prisma";
@@ -17,6 +16,8 @@ import { ServerWorkspaceInputSchema } from "@/schemas/rabbitmq";
 import { router, workspaceProcedure } from "@/trpc/trpc";
 
 import { verifyServerAccess } from "./shared";
+
+import { Prisma, UserPlan } from "@/generated/prisma/client";
 
 /**
  * Alerts router

@@ -3,12 +3,13 @@ import { prisma } from "@/core/prisma";
 
 import { initSentry } from "@/services/sentry";
 
+import { sentryConfig } from "@/config";
 import { isCloudMode } from "@/config/deployment";
 
 import { updateCheckerCronService } from "@/cron/update-checker.cron";
 
 // Initialize Sentry only if enabled
-if (isCloudMode() || process.env.ENABLE_SENTRY === "true") {
+if (isCloudMode() || sentryConfig.enabled) {
   initSentry();
 }
 

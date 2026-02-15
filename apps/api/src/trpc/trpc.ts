@@ -1,4 +1,3 @@
-import { UserRole } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { initTRPC } from "@trpc/server";
 
@@ -16,6 +15,8 @@ import {
   standardRateLimiter,
   strictRateLimiter,
 } from "./middlewares/rateLimiter";
+
+import { UserRole } from "@/generated/prisma/client";
 
 /**
  * Initialize tRPC with context

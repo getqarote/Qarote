@@ -1,7 +1,18 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
 /**
  * Core utility functions
  * Shared utilities used across the application
  */
+
+/**
+ * Get the directory name of the current ES module.
+ * ESM equivalent of CommonJS `__dirname`.
+ */
+export function getDirname(importMetaUrl: string): string {
+  return path.dirname(fileURLToPath(importMetaUrl));
+}
 
 /**
  * Get user display name from first and last name

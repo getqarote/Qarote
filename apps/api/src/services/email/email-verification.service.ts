@@ -1,4 +1,3 @@
-import type { User } from "@prisma/client";
 import { addHours } from "date-fns";
 
 import { logger } from "@/core/logger";
@@ -6,6 +5,8 @@ import { prisma } from "@/core/prisma";
 
 import { EncryptionService } from "../encryption.service";
 import { EmailService } from "./email.service";
+
+import type { User } from "@/generated/prisma/client";
 
 interface EmailVerificationOptions {
   userId: string;

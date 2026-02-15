@@ -1,9 +1,10 @@
-import { UserPlan } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 
 import { getPlanFeatures, PLAN_FEATURES } from "@/services/plan/plan.service";
 
 import { rateLimitedProcedure, router } from "@/trpc/trpc";
+
+import { UserPlan } from "@/generated/prisma/client";
 
 /**
  * Plan router

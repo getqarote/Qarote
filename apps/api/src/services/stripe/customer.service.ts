@@ -1,4 +1,3 @@
-import { UserPlan } from "@prisma/client";
 import Stripe from "stripe";
 
 import { logger } from "@/core/logger";
@@ -11,6 +10,8 @@ import {
   stripe,
   STRIPE_PRICE_IDS,
 } from "./core.service";
+
+import { UserPlan } from "@/generated/prisma/client";
 
 export class StripeCustomerService {
   /**

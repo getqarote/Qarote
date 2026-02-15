@@ -1,4 +1,3 @@
-import { BillingInterval, SubscriptionStatus, UserPlan } from "@prisma/client";
 import Stripe from "stripe";
 
 import { logger } from "@/core/logger";
@@ -6,6 +5,12 @@ import { logger } from "@/core/logger";
 import { Sentry, setSentryContext, trackPaymentError } from "@/services/sentry";
 
 import { stripeConfig } from "@/config";
+
+import {
+  BillingInterval,
+  SubscriptionStatus,
+  UserPlan,
+} from "@/generated/prisma/client";
 
 // Export types for use in controllers
 export type Event = Stripe.Event;
