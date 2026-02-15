@@ -7,6 +7,7 @@ This guide covers deploying Qarote as a self-hosted application in either Commun
 - [Overview](#overview)
 - [Community Edition](#community-edition)
 - [Enterprise Edition](#enterprise-edition)
+- [Binary (Single Executable)](#binary-single-executable)
 - [Prerequisites](#prerequisites)
 - [Quick Start](#quick-start)
 - [Configuration](#configuration)
@@ -221,6 +222,73 @@ The Enterprise Edition requires a valid license file to unlock premium features.
 - PostgreSQL database (included in Docker Compose)
 - Minimum 2GB RAM, 10GB disk space
 - For Enterprise: Valid license file and public key
+
+## Binary (Single Executable)
+
+Qarote is available as a single binary that embeds both the API and frontend. No Docker, Node.js, or web server required — only PostgreSQL.
+
+### Prerequisites
+
+- PostgreSQL 15+ installed and running
+
+### Quick Start
+
+```bash
+# 1. Download and extract for your platform
+# Available: linux-x64, linux-arm64, darwin-x64, darwin-arm64
+curl -L https://github.com/getqarote/Qarote/releases/latest/download/qarote-linux-x64.tar.gz | tar xz
+cd qarote
+
+# 2. Interactive setup (generates .env, tests database connection)
+./qarote setup
+
+# 3. Start Qarote
+./qarote
+```
+
+The `setup` command will:
+1. Ask for your deployment mode (community/enterprise)
+2. Ask for your PostgreSQL URL and verify the connection
+3. Generate secure secrets (`JWT_SECRET`, `ENCRYPTION_KEY`)
+4. Write a `.env` file in the current directory
+
+The binary serves both the API and frontend on a single port (default: 3000).
+
+### CLI Flags
+
+| Flag | Overrides | Example |
+|------|-----------|---------|
+| `--database-url` | `DATABASE_URL` | `./qarote --database-url postgresql://...` |
+| `--port` / `-p` | `PORT` | `./qarote -p 8080` |
+| `--host` | `HOST` | `./qarote --host 127.0.0.1` |
+
+### Commands
+
+| Command | Description |
+|---------|-------------|
+| `./qarote` | Start the server |
+| `./qarote setup` | Interactive setup wizard |
+
+### Environment Variables
+
+The binary uses the **same environment variables** as Docker Compose and other deployment methods. The `setup` command generates the `.env` file with secure secrets (`JWT_SECRET`, `ENCRYPTION_KEY`, `DEPLOYMENT_MODE`) and your `DATABASE_URL`.
+
+### Updating
+
+```bash
+# Download the latest release
+curl -L https://github.com/getqarote/Qarote/releases/latest/download/qarote-linux-x64.tar.gz | tar xz
+
+# Stop the running instance, swap, and restart
+kill $(pgrep -f './qarote') 2>/dev/null || true
+cp qarote/qarote ./qarote-bin && cp qarote/public ./public -r
+mv qarote-bin qarote
+./qarote
+```
+
+Your `.env` file is preserved — no reconfiguration needed.
+
+---
 
 ## Quick Start
 
@@ -472,6 +540,24 @@ SMTP_PASS=your-mailgun-password
 - Username format: `postmaster@your-domain.mailgun.org`
 - Find SMTP credentials in Mailgun → Sending → Domain settings
 - **Free tier:** First 3 months free (up to 5,000/month), then paid only
+
+**Amazon SES**
+
+```env
+ENABLE_EMAIL=true
+SMTP_HOST=email-smtp.us-east-1.amazonaws.com
+SMTP_PORT=587
+SMTP_USER=your-ses-smtp-username
+SMTP_PASS=your-ses-smtp-password
+```
+
+**Requirements:**
+
+- Replace `us-east-1` with your SES region (e.g., `eu-west-1`, `ap-southeast-1`)
+- SMTP credentials are **not** your AWS access keys — generate them in SES console → SMTP Settings
+- Verify your sender email or domain in SES before sending
+- New accounts start in **sandbox mode** (can only send to verified addresses) — request production access to remove limits
+- **Free tier:** 62,000 emails/month when sent from an EC2 instance, otherwise $0.10 per 1,000 emails
 
 **Office 365 / Outlook (Business)**
 
@@ -788,6 +874,18 @@ For completely offline deployments:
    ```
 
    Note: Verify domain first. Username format: `postmaster@your-domain.mailgun.org`. Find credentials in Mailgun dashboard (Sending → Domain settings).
+
+   **Amazon SES:**
+
+   ```env
+   ENABLE_EMAIL=true
+   SMTP_HOST=email-smtp.us-east-1.amazonaws.com
+   SMTP_PORT=587
+   SMTP_USER=your-ses-smtp-username
+   SMTP_PASS=your-ses-smtp-password
+   ```
+
+   Note: Replace `us-east-1` with your region. SMTP credentials are not your AWS access keys — generate them in SES console → SMTP Settings. Verify sender email/domain first. Free tier: 62,000/month from EC2.
 
    **Office 365 / Outlook (Business):**
 

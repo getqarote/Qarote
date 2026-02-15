@@ -1,4 +1,3 @@
-import { UserRole } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 
 import { WorkspaceIdParamSchema } from "@/schemas/workspace";
@@ -11,6 +10,8 @@ import {
   router,
   workspaceProcedure,
 } from "@/trpc/trpc";
+
+import { UserRole } from "@/generated/prisma/client";
 
 /**
  * Core workspace router

@@ -1,13 +1,13 @@
 // Re-export types and constants for backward compatibility
-export {
+export type {
   Customer,
   Event,
   Invoice,
   PaymentIntent,
   Session,
-  stripe,
   Subscription,
 } from "./core.service";
+export { stripe } from "./core.service";
 
 // Import services for internal use
 import { CoreStripeService } from "./core.service";

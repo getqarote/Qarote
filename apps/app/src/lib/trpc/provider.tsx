@@ -7,12 +7,20 @@ import { queryClient } from "@/lib/queryClient";
 import { trpc } from "./client";
 
 /**
- * Get the API URL from environment variables
+ * Get the API URL from runtime config (binary) or environment variables (Docker/Dokku)
  */
 const getApiUrl = () => {
-  const apiUrl = import.meta.env.VITE_API_URL;
-  if (!apiUrl) {
-    throw new Error("VITE_API_URL environment variable is not set");
+  // VITE_API_URL (build-time) wins — set in Docker/cloud deployments.
+  // __QAROTE_CONFIG__ (runtime) is the fallback — dynamically served in binary mode.
+  // The static public/config.js sets apiUrl:"" as a safe same-origin default;
+  // it must not shadow a build-time VITE_API_URL.
+  const config = (window as unknown as Record<string, unknown>)
+    .__QAROTE_CONFIG__ as { apiUrl?: string } | undefined;
+  const apiUrl = import.meta.env.VITE_API_URL ?? config?.apiUrl;
+  if (apiUrl == null) {
+    throw new Error(
+      "API URL not configured. Set VITE_API_URL or serve /config.js"
+    );
   }
   return `${apiUrl}/trpc`;
 };

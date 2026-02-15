@@ -1,6 +1,6 @@
-import { Prisma, UserRole } from "@prisma/client";
-
 import { prisma } from "@/core/prisma";
+
+import { Prisma, UserRole } from "@/generated/prisma/client";
 
 /**
  * Get user's role in a workspace (from WorkspaceMember or ADMIN if owner)

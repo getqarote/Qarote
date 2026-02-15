@@ -53,6 +53,10 @@ export function InstallationGuideSection() {
               Nginx or Caddy
             </li>
             <li>
+              <strong>Binary:</strong> PostgreSQL 15+ (no Docker, Node.js, or
+              web server needed)
+            </li>
+            <li>
               <strong>Enterprise Edition:</strong> Valid license file and public
               key (all methods)
             </li>
@@ -66,10 +70,11 @@ export function InstallationGuideSection() {
           </Heading>
 
           <Tabs defaultValue="docker-compose" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="docker-compose">Docker Compose</TabsTrigger>
               <TabsTrigger value="dokku">Dokku</TabsTrigger>
               <TabsTrigger value="manual">Manual</TabsTrigger>
+              <TabsTrigger value="binary">Binary</TabsTrigger>
             </TabsList>
 
             {/* Docker Compose Quick Start */}
@@ -423,7 +428,7 @@ cd ../..
 
 # Start the backend
 cd apps/api
-node --require tsconfig-paths/register dist/index.js`}
+node dist/index.js`}
                   language="bash"
                 />
                 <p className="text-sm text-muted-foreground">
@@ -520,7 +525,7 @@ server {
                   code={`# Option A: pm2
 npm install -g pm2
 cd /opt/qarote/apps/api
-pm2 start "node --require tsconfig-paths/register dist/index.js" --name qarote-api
+pm2 start "node dist/index.js" --name qarote-api
 pm2 save
 pm2 startup  # auto-start on boot
 
@@ -534,7 +539,7 @@ pm2 startup  # auto-start on boot
 # Type=simple
 # User=qarote
 # WorkingDirectory=/opt/qarote/apps/api
-# ExecStart=/usr/bin/node --require tsconfig-paths/register dist/index.js
+# ExecStart=/usr/bin/node dist/index.js
 # Restart=on-failure
 # EnvironmentFile=/opt/qarote/.env
 #
@@ -558,6 +563,68 @@ pm2 startup  # auto-start on boot
                       (direct, or proxied through Nginx)
                     </li>
                   </ul>
+                </div>
+              </div>
+            </TabsContent>
+
+            {/* Binary Quick Start */}
+            <TabsContent value="binary" className="space-y-4 mt-4">
+              <div className="space-y-3">
+                <p className="text-sm text-muted-foreground">
+                  Download a single binary — no Docker, Node.js, or Nginx
+                  required. Only PostgreSQL is needed.
+                </p>
+
+                <h5 className="text-sm font-medium">1. Download and Extract</h5>
+                <CodeBlock
+                  code={`# Download the latest release for your platform
+# Replace linux-x64 with: linux-arm64, darwin-x64, or darwin-arm64
+curl -L https://github.com/getqarote/Qarote/releases/latest/download/qarote-linux-x64.tar.gz | tar xz
+cd qarote`}
+                  language="bash"
+                />
+
+                <h5 className="text-sm font-medium">2. Interactive Setup</h5>
+                <CodeBlock
+                  code={`# Generates .env with secure secrets, tests your database connection
+./qarote setup`}
+                  language="bash"
+                />
+                <p className="text-sm text-muted-foreground">
+                  The setup wizard will ask for your deployment mode and
+                  PostgreSQL URL, verify the connection, and generate a{" "}
+                  <code className="bg-muted px-1 rounded">.env</code> file with
+                  secure secrets.
+                </p>
+
+                <h5 className="text-sm font-medium">3. Start Qarote</h5>
+                <CodeBlock
+                  code={`# Start the server (reads .env automatically)
+./qarote`}
+                  language="bash"
+                />
+
+                <h5 className="text-sm font-medium">4. Access Application</h5>
+                <div className="text-sm text-muted-foreground">
+                  <p>
+                    Open{" "}
+                    <code className="text-xs bg-muted px-1 py-0.5 rounded">
+                      http://localhost:3000
+                    </code>{" "}
+                    in your browser. The binary serves both the API and frontend
+                    from a single port.
+                  </p>
+                </div>
+
+                <div className="bg-muted rounded-lg p-4 mt-2">
+                  <p className="text-sm text-muted-foreground">
+                    <strong>Manual setup:</strong> You can also skip the wizard
+                    and configure directly with CLI flags:
+                  </p>
+                  <CodeBlock
+                    code={`./qarote --port 8080 --database-url postgresql://user:pass@localhost/qarote`}
+                    language="bash"
+                  />
                 </div>
               </div>
             </TabsContent>
@@ -800,6 +867,52 @@ SMTP_PASS=your-mailgun-password`}
             </div>
 
             <div>
+              <h5 className="font-semibold mb-3">Amazon SES</h5>
+              <CodeBlock
+                code={`ENABLE_EMAIL=true
+SMTP_HOST=email-smtp.us-east-1.amazonaws.com
+SMTP_PORT=587
+SMTP_USER=your-ses-smtp-username
+SMTP_PASS=your-ses-smtp-password`}
+                language="bash"
+              />
+              <div className="text-sm text-muted-foreground mt-2 space-y-2">
+                <p>
+                  <strong>Requirements:</strong>
+                </p>
+                <ul className="list-disc list-inside ml-2 space-y-1">
+                  <li>
+                    Replace{" "}
+                    <code className="text-xs bg-muted px-1 py-0.5 rounded">
+                      us-east-1
+                    </code>{" "}
+                    with your SES region (e.g.,{" "}
+                    <code className="text-xs bg-muted px-1 py-0.5 rounded">
+                      eu-west-1
+                    </code>
+                    )
+                  </li>
+                  <li>
+                    SMTP credentials are <strong>not</strong> your AWS access
+                    keys — generate them in SES console → SMTP Settings
+                  </li>
+                  <li>
+                    Verify your sender email or domain in SES before sending
+                  </li>
+                  <li>
+                    New accounts start in <strong>sandbox mode</strong> (can
+                    only send to verified addresses) — request production access
+                    to remove limits
+                  </li>
+                  <li>
+                    <strong>Free tier:</strong> 62,000 emails/month when sent
+                    from an EC2 instance, otherwise $0.10 per 1,000 emails
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div>
               <h5 className="font-semibold mb-3">
                 Office 365 / Outlook - Option 1: Basic Auth
               </h5>
@@ -904,10 +1017,11 @@ SMTP_PASS=smtp-password`}
               Use the built-in SMTP testing script to verify your configuration:
             </p>
             <Tabs defaultValue="smtp-docker" className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
+              <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="smtp-docker">Docker Compose</TabsTrigger>
                 <TabsTrigger value="smtp-dokku">Dokku</TabsTrigger>
                 <TabsTrigger value="smtp-manual">Manual</TabsTrigger>
+                <TabsTrigger value="smtp-binary">Binary</TabsTrigger>
               </TabsList>
 
               <TabsContent value="smtp-docker" className="mt-4">
@@ -976,6 +1090,16 @@ pnpm run test:smtp:ethereal -- --send test@example.com`}
                   language="bash"
                 />
               </TabsContent>
+
+              <TabsContent value="smtp-binary" className="mt-4">
+                <CodeBlock
+                  code={`# The binary does not include test scripts.
+# To test SMTP, use curl or a mail client to verify your SMTP settings,
+# then configure ENABLE_EMAIL=true and SMTP_* variables in .env.
+# Restart the binary for changes to take effect.`}
+                  language="bash"
+                />
+              </TabsContent>
             </Tabs>
 
             <p className="text-sm text-muted-foreground mt-3">
@@ -991,10 +1115,11 @@ pnpm run test:smtp:ethereal -- --send test@example.com`}
             Updating Qarote
           </Heading>
           <Tabs defaultValue="update-docker" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="update-docker">Docker Compose</TabsTrigger>
               <TabsTrigger value="update-dokku">Dokku</TabsTrigger>
               <TabsTrigger value="update-manual">Manual</TabsTrigger>
+              <TabsTrigger value="update-binary">Binary</TabsTrigger>
             </TabsList>
 
             <TabsContent value="update-docker" className="mt-4">
@@ -1046,6 +1171,21 @@ pm2 restart qarote-api
 
 # Update frontend static files
 sudo cp -r apps/app/dist/* /var/www/qarote/`}
+                language="bash"
+              />
+            </TabsContent>
+
+            <TabsContent value="update-binary" className="mt-4">
+              <CodeBlock
+                code={`# Download and extract the latest release
+curl -L https://github.com/getqarote/Qarote/releases/latest/download/qarote-linux-x64.tar.gz | tar xz
+
+# Stop the running instance, swap binary and assets, restart
+# (your .env file is preserved — no reconfiguration needed)
+kill $(pgrep -f './qarote') 2>/dev/null || true
+cp qarote/qarote ./qarote-bin && cp -r qarote/public ./public
+mv qarote-bin qarote
+./qarote`}
                 language="bash"
               />
             </TabsContent>

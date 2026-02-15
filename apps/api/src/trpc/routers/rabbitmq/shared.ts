@@ -1,11 +1,11 @@
-import { RabbitMQServer, Workspace } from "@prisma/client";
-
 import { logger } from "@/core/logger";
 import { prisma } from "@/core/prisma";
 import { QueuePauseState, RabbitMQAmqpClientFactory } from "@/core/rabbitmq";
 import { RabbitMQClient } from "@/core/rabbitmq/RabbitClient";
 
 import { EncryptionService } from "@/services/encryption.service";
+
+import { RabbitMQServer, Workspace } from "@/generated/prisma/client";
 
 /**
  * Helper function to decrypt server credentials for RabbitMQ client

@@ -1,0 +1,106 @@
+name: Release Binary
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - platform: linux-x64
+            os: ubuntu-latest
+          - platform: linux-arm64
+            os: ubuntu-latest
+          - platform: darwin-x64
+            os: macos-latest
+          - platform: darwin-arm64
+            os: macos-latest
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "pnpm"
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build frontend
+        run: pnpm run --filter qarote-app build
+
+      - name: Build backend
+        run: pnpm run --filter qarote-api build
+
+      - name: Embed frontend in backend
+        run: |
+          rm -rf apps/api/dist/public
+          mkdir -p apps/api/dist/public
+          cp -r apps/app/dist/* apps/api/dist/public/
+
+      - name: Compile binary
+        run: |
+          bun build apps/api/dist/index.js \
+            --compile \
+            --target=bun-${{ matrix.platform }} \
+            --outfile=qarote-${{ matrix.platform }} \
+            --external @sentry/node \
+            --external @sentry/profiling-node
+
+      - name: Package distribution
+        run: |
+          mkdir -p dist-package/qarote
+          cp qarote-${{ matrix.platform }} dist-package/qarote/qarote
+          cp -r apps/api/dist/public dist-package/qarote/public
+          tar czf qarote-${{ matrix.platform }}.tar.gz -C dist-package qarote
+          rm -rf dist-package
+
+      - name: Generate checksum
+        run: |
+          if [[ "${{ matrix.os }}" == "macos-latest" ]]; then
+            shasum -a 256 qarote-${{ matrix.platform }}.tar.gz > qarote-${{ matrix.platform }}.tar.gz.sha256
+          else
+            sha256sum qarote-${{ matrix.platform }}.tar.gz > qarote-${{ matrix.platform }}.tar.gz.sha256
+          fi
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: qarote-${{ matrix.platform }}
+          path: |
+            qarote-${{ matrix.platform }}.tar.gz
+            qarote-${{ matrix.platform }}.tar.gz.sha256
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            artifacts/qarote-*
