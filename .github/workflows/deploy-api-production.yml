@@ -113,6 +113,7 @@ jobs:
           echo "NOTION_DATABASE_ID: ${{ vars.NOTION_DATABASE_ID }}"
           echo "NOTION_SYNC_ENABLED: ${{ vars.NOTION_SYNC_ENABLED }}"
           echo "ENABLE_NOTION: ${{ vars.ENABLE_NOTION }}"
+          echo "API_URL: ${{ vars.API_URL }}"
           echo ""
           echo "⚠️  If any values above are incorrect, update them in GitHub Repository Settings > Secrets and variables > Actions > Variables tab"
 
@@ -148,7 +149,8 @@ jobs:
             NOTION_API_KEY=${{ secrets.NOTION_API_KEY }} \
             NOTION_DATABASE_ID=${{ vars.NOTION_DATABASE_ID }} \
             NOTION_SYNC_ENABLED=${{ vars.NOTION_SYNC_ENABLED }} \
-            ENABLE_NOTION=${{ vars.ENABLE_NOTION }}
+            ENABLE_NOTION=${{ vars.ENABLE_NOTION }} \
+            API_URL=${{ vars.API_URL }}
 
       - name: 🔍 Debug Dokku Environment
         run: |
