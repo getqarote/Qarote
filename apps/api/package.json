@@ -87,7 +87,7 @@
     "date-fns": "^3.6.0",
     "dotenv": "^16.6.1",
     "google-auth-library": "^10.3.0",
-    "hono": "^4.11.1",
+    "hono": "^4.11.7",
     "hono-rate-limiter": "^0.4.2",
     "nodemailer": "^7.0.11",
     "pg": "^8.16.0",
