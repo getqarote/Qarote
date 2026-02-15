@@ -122,7 +122,8 @@ jobs:
             NOTION_API_KEY=${{ secrets.NOTION_API_KEY }} \
             NOTION_DATABASE_ID=${{ vars.NOTION_DATABASE_ID }} \
             NOTION_SYNC_ENABLED=${{ vars.NOTION_SYNC_ENABLED }} \
-            ENABLE_NOTION=${{ vars.ENABLE_NOTION }}
+            ENABLE_NOTION=${{ vars.ENABLE_NOTION }} \
+            API_URL=${{ vars.API_URL }}
 
       - name: 🚫 Configure worker app to use app.worker.json
         run: |
