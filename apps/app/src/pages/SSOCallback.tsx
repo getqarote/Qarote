@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router";
 
 import type { User } from "@/lib/api";
 import { logger } from "@/lib/logger";
@@ -33,7 +33,18 @@ const SSOCallback: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { login } = useAuth();
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(() => {
+    const errorParam = searchParams.get("error");
+    if (errorParam) {
+      return (
+        ERROR_MESSAGES[errorParam] || `Authentication error: ${errorParam}`
+      );
+    }
+    if (!searchParams.get("code")) {
+      return "Missing authorization code. Please try signing in again.";
+    }
+    return null;
+  });
   const processedRef = useRef(false);
 
   const exchangeCodeMutation = trpc.auth.sso.exchangeCode.useMutation({
@@ -53,24 +64,15 @@ const SSOCallback: React.FC = () => {
     processedRef.current = true;
 
     const code = searchParams.get("code");
-    const errorParam = searchParams.get("error");
 
-    // Handle errors from the SSO callback
-    if (errorParam) {
-      setError(
-        ERROR_MESSAGES[errorParam] || `Authentication error: ${errorParam}`
-      );
-      return;
-    }
-
-    if (!code) {
-      setError("Missing authorization code. Please try signing in again.");
+    // Only exchange if we have a valid code and no initial error
+    if (!code || error) {
       return;
     }
 
     // Exchange the temp auth code for a JWT
     exchangeCodeMutation.mutate({ code });
-  }, [exchangeCodeMutation, searchParams]);
+  }, [exchangeCodeMutation, searchParams, error]);
 
   if (error) {
     return (

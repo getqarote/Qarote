@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useMemo, useState } from "react";
+import { useNavigate, useParams } from "react-router";
 
 import { AlertCircle, ArrowLeft, Lock } from "lucide-react";
 import { toast } from "sonner";
@@ -51,7 +51,10 @@ export default function VHostDetailsPage() {
   const [showEditModal, setShowEditModal] = useState(false);
 
   // Form states
-  const [selectedUser, setSelectedUser] = useState("admin");
+  // null means "use derived default from data", string means "user explicitly chose this"
+  const [selectedUserOverride, setSelectedUserOverride] = useState<
+    string | null
+  >(null);
   const [configureRegexp, setConfigureRegexp] = useState(".*");
   const [writeRegexp, setWriteRegexp] = useState(".*");
   const [readRegexp, setReadRegexp] = useState(".*");
@@ -83,12 +86,16 @@ export default function VHostDetailsPage() {
   const clearPermissionsMutation = useDeleteVHostPermissions();
   const { workspace } = useWorkspace();
 
-  // Set default user when users are loaded
-  useEffect(() => {
-    if (usersData?.users?.length && !selectedUser) {
-      setSelectedUser(usersData.users[0].name);
+  // Derive the default user from loaded data
+  const derivedDefaultUser = useMemo(() => {
+    if (usersData?.users?.length) {
+      return usersData.users[0].name;
     }
-  }, [usersData, selectedUser]);
+    return "admin";
+  }, [usersData]);
+
+  const selectedUser = selectedUserOverride ?? derivedDefaultUser;
+  const setSelectedUser = setSelectedUserOverride;
 
   // Handle form submissions
   const handleSetPermissions = async () => {

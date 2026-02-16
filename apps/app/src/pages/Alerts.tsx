@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useSearchParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router";
 
 import { AlertTriangle, Loader2, Mail, Settings } from "lucide-react";
 
@@ -40,7 +40,7 @@ const Alerts = () => {
     useFeatureFlags();
   // const [showConfigureModal, setShowConfigureModal] = useState(false);
   const [showNotificationSettingsModal, setShowNotificationSettingsModal] =
-    useState(false);
+    useState(() => searchParams.get("openNotificationSettings") === "true");
   const [showAlertRulesModal, setShowAlertRulesModal] = useState(false);
   const [viewMode, setViewMode] = useState<"active" | "resolved">("active");
 
@@ -86,14 +86,9 @@ const Alerts = () => {
 
   const currentServerId = serverId || selectedServerId;
 
-  // Check for query parameter to open notification settings modal
+  // Clean up the openNotificationSettings query parameter from URL after initial read
   useEffect(() => {
-    const openNotificationSettings = searchParams.get(
-      "openNotificationSettings"
-    );
-    if (openNotificationSettings === "true") {
-      setShowNotificationSettingsModal(true);
-      // Remove the query parameter from URL after opening modal
+    if (searchParams.get("openNotificationSettings") === "true") {
       searchParams.delete("openNotificationSettings");
       setSearchParams(searchParams, { replace: true });
     }

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Building, Loader2, Mail, Users } from "lucide-react";

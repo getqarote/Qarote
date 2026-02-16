@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useState } from "react";
+import { useSearchParams } from "react-router";
 
 import { Crown, MessageSquare, Shield, User } from "lucide-react";
 import { toast } from "sonner";
@@ -127,33 +127,34 @@ const Profile = () => {
     return currentUserCount + pendingInvitationCount < planFeatures.maxUsers;
   };
 
-  // Initialize forms when profile data loads
-  useEffect(() => {
-    if (profile) {
-      setProfileForm({
-        firstName: profile.firstName || "",
-        lastName: profile.lastName || "",
-      });
-    }
-    if (workspace) {
-      setWorkspaceForm({
-        name: workspace.name || "",
-        contactEmail: workspace.contactEmail || "",
-      });
-    }
-  }, [profile, workspace]);
+  // Initialize forms when profile/workspace data first loads
+  // Uses React's "adjusting state when a prop changes" pattern
+  const [prevProfileId, setPrevProfileId] = useState<string | null>(null);
+  if (profile?.id && profile.id !== prevProfileId) {
+    setPrevProfileId(profile.id);
+    setProfileForm({
+      firstName: profile.firstName || "",
+      lastName: profile.lastName || "",
+    });
+  }
+  const [prevWorkspaceId, setPrevWorkspaceId] = useState<string | null>(null);
+  if (workspace?.id && workspace.id !== prevWorkspaceId) {
+    setPrevWorkspaceId(workspace.id);
+    setWorkspaceForm({
+      name: workspace.name || "",
+      contactEmail: workspace.contactEmail || "",
+    });
+  }
 
   // Sync tab state with URL parameter changes
-  useEffect(() => {
-    const urlTab = searchParams.get("tab");
-    if (
-      urlTab &&
-      VALID_TABS.includes(urlTab as TabValue) &&
-      urlTab !== activeTab
-    ) {
-      setActiveTab(urlTab as TabValue);
-    }
-  }, [searchParams, activeTab]);
+  const urlTab = searchParams.get("tab");
+  const validUrlTab =
+    urlTab && VALID_TABS.includes(urlTab as TabValue)
+      ? (urlTab as TabValue)
+      : null;
+  if (validUrlTab && validUrlTab !== activeTab) {
+    setActiveTab(validUrlTab);
+  }
 
   const handleUpdateProfile = async () => {
     try {

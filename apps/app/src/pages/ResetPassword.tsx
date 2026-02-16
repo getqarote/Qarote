@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router";
 
 import { Check, Eye, EyeOff, Lock, Shield, X } from "lucide-react";
 import { toast } from "sonner";
@@ -44,23 +44,20 @@ const ResetPassword: React.FC = () => {
     }
   }, [token, navigate]);
 
-  const resetPasswordMutation = useResetPassword();
-
-  // Handle success/error with useEffect
-  useEffect(() => {
-    if (resetPasswordMutation.isSuccess) {
+  const resetPasswordMutation = useResetPassword({
+    onSuccess: () => {
       setResetSuccess(true);
       toast.success(
         "Password reset successfully! You can now sign in with your new password."
       );
-    }
-    if (resetPasswordMutation.isError) {
-      logger.error("Password reset error:", resetPasswordMutation.error);
+    },
+    onError: (error) => {
+      logger.error("Password reset error:", error);
       toast.error(
         "Failed to reset password. The link may be expired or invalid."
       );
-    }
-  }, [resetPasswordMutation.isSuccess, resetPasswordMutation.isError]);
+    },
+  });
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};

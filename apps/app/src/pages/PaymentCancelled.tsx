@@ -1,5 +1,5 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 
 import { ArrowLeft, CreditCard, Loader2, XCircle } from "lucide-react";
 

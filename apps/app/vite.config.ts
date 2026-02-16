@@ -33,7 +33,7 @@ export default defineConfig({
         manualChunks: {
           // CRITICAL: React must be in its own chunk to prevent bundling issues
           // This ensures React is properly resolved and prevents production errors
-          "vendor-react": ["react", "react-dom", "react-router-dom"],
+          "vendor-react": ["react", "react-dom", "react-router"],
           // UI components chunk
           "vendor-ui": [
             "@radix-ui/react-dialog",

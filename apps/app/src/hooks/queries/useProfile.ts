@@ -71,10 +71,16 @@ export const useVerificationStatus = () => {
 };
 
 // Password reset hooks
-export const useRequestPasswordReset = () => {
-  return trpc.auth.password.requestPasswordReset.useMutation();
+export const useRequestPasswordReset = (
+  options?: Parameters<
+    typeof trpc.auth.password.requestPasswordReset.useMutation
+  >[0]
+) => {
+  return trpc.auth.password.requestPasswordReset.useMutation(options);
 };
 
-export const useResetPassword = () => {
-  return trpc.auth.password.resetPassword.useMutation();
+export const useResetPassword = (
+  options?: Parameters<typeof trpc.auth.password.resetPassword.useMutation>[0]
+) => {
+  return trpc.auth.password.resetPassword.useMutation(options);
 };
