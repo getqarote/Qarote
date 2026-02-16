@@ -13,7 +13,7 @@ export class StripePaymentService {
 
       const invoice = await retryWithBackoff(
         () =>
-          stripe.invoices.retrieveUpcoming({
+          stripe.invoices.createPreview({
             subscription: subscriptionId,
           }),
         {

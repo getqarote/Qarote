@@ -32,7 +32,7 @@ function getStripe(): Stripe {
       );
     }
     stripeInstance = new Stripe(stripeConfig.secretKey, {
-      apiVersion: "2025-02-24.acacia",
+      apiVersion: "2026-01-28.clover",
     });
   }
   return stripeInstance;
@@ -172,10 +172,12 @@ export class CoreStripeService {
   static extractSubscriptionIdFromInvoice(
     invoice: Stripe.Invoice
   ): string | null {
-    if (typeof invoice.subscription === "string") {
-      return invoice.subscription;
+    if (invoice.parent?.type === "subscription_details") {
+      const sub = invoice.parent.subscription_details?.subscription;
+      if (typeof sub === "string") return sub;
+      return sub?.id ?? null;
     }
-    return invoice.subscription?.id || null;
+    return null;
   }
 
   /**
@@ -232,25 +234,14 @@ export class CoreStripeService {
    * Attempts to get the most specific error message available
    */
   static mapInvoiceToFailureReason(invoice: Stripe.Invoice): string {
-    // First, try to get failure_message from the charge object
-    if (
-      invoice.charge &&
-      typeof invoice.charge !== "string" &&
-      invoice.charge.failure_message
-    ) {
-      return invoice.charge.failure_message;
+    // In Stripe API v2025-03-31+ (basil), the charge field was removed from Invoice.
+    // Payment failure details are now in the payments expansion, which isn't
+    // available in webhook payloads by default.
+    // Use last_finalization_error if available, otherwise return default.
+    if (invoice.last_finalization_error?.message) {
+      return invoice.last_finalization_error.message;
     }
 
-    // Fallback to outcome reason if available
-    if (
-      invoice.charge &&
-      typeof invoice.charge !== "string" &&
-      invoice.charge.outcome?.reason
-    ) {
-      return invoice.charge.outcome.reason;
-    }
-
-    // Default fallback
     return "Payment failed";
   }
 

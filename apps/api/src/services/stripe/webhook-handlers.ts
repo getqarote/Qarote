@@ -115,13 +115,14 @@ export async function handleCheckoutSessionCompleted(session: Session) {
       "Subscription data from checkout session"
     );
 
-    // Get current period dates safely
-    const currentPeriodStart = subscriptionData?.current_period_start
-      ? new Date(subscriptionData.current_period_start * 1000)
+    // Get current period dates safely (moved to item level in Stripe API 2025-03-31+)
+    const firstItem = subscriptionData?.items?.data?.[0];
+    const currentPeriodStart = firstItem?.current_period_start
+      ? new Date(firstItem.current_period_start * 1000)
       : new Date(); // Fallback to current time
 
-    const currentPeriodEnd = subscriptionData?.current_period_end
-      ? new Date(subscriptionData.current_period_end * 1000)
+    const currentPeriodEnd = firstItem?.current_period_end
+      ? new Date(firstItem.current_period_end * 1000)
       : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // Fallback to 30 days from now
 
     logger.debug(
@@ -340,8 +341,9 @@ export async function handleSubscriptionChange(subscription: Subscription) {
       where: { stripeSubscriptionId: subscriptionId },
     });
 
-    const priceId = subscription.items?.data?.[0]?.price?.id || "";
-    const priceAmount = subscription.items?.data?.[0]?.price?.unit_amount || 0;
+    const subscriptionFirstItem = subscription.items?.data?.[0];
+    const priceId = subscriptionFirstItem?.price?.id || "";
+    const priceAmount = subscriptionFirstItem?.price?.unit_amount || 0;
 
     const subscriptionData = {
       stripePriceId: priceId,
@@ -354,14 +356,14 @@ export async function handleSubscriptionChange(subscription: Subscription) {
         subscription.status
       ),
       billingInterval: CoreStripeService.mapStripeBillingInterval(
-        subscription.items?.data?.[0]?.price?.recurring?.interval
+        subscriptionFirstItem?.price?.recurring?.interval
       ),
       pricePerMonth: priceAmount,
-      currentPeriodStart: subscription.current_period_start
-        ? new Date(subscription.current_period_start * 1000)
+      currentPeriodStart: subscriptionFirstItem?.current_period_start
+        ? new Date(subscriptionFirstItem.current_period_start * 1000)
         : new Date(),
-      currentPeriodEnd: subscription.current_period_end
-        ? new Date(subscription.current_period_end * 1000)
+      currentPeriodEnd: subscriptionFirstItem?.current_period_end
+        ? new Date(subscriptionFirstItem.current_period_end * 1000)
         : new Date(),
       trialStart: subscription.trial_start
         ? new Date(subscription.trial_start * 1000)
@@ -655,11 +657,9 @@ export async function handleInvoicePaymentSucceeded(invoice: Invoice) {
         userName: getUserDisplayName(subscription.user),
         amount: invoice.amount_paid / 100, // Convert from cents
         currency: invoice.currency.toUpperCase(),
-        paymentMethod: invoice.payment_intent
-          ? typeof invoice.payment_intent === "string"
-            ? "card"
-            : invoice.payment_intent.payment_method_types?.[0] || "card"
-          : "card",
+        // In Stripe API 2025-03-31+, payment_intent was removed from Invoice.
+        // Default to "card" since payment method details require payments expansion.
+        paymentMethod: "card",
       });
     }
 
