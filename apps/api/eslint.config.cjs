@@ -20,6 +20,9 @@ module.exports = tseslint.config(
       },
     },
     rules: {
+      // ESLint 10 new rules - disabled for now, enable gradually
+      "no-useless-assignment": "off",
+      "preserve-caught-error": "off",
       "@typescript-eslint/no-unused-vars": [
         "error",
         { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
