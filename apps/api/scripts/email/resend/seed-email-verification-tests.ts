@@ -26,7 +26,10 @@ import {
 const __dirname = getDirname(import.meta.url);
 
 // Load environment variables
-dotenv.config({ path: path.join(__dirname, "..", "..", "..", ".env") });
+dotenv.config({
+  path: path.join(__dirname, "..", "..", "..", ".env"),
+  quiet: true,
+});
 
 // Use PrismaClient with PrismaPg adapter (required by engineType = "client")
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
