@@ -110,7 +110,9 @@ export async function createAmqpClient(serverId: string, workspaceId: string) {
       { error },
       `Failed to decrypt credentials for server ${server.name}`
     );
-    throw new Error(`Failed to decrypt server credentials for ${server.name}`);
+    throw new Error(`Failed to decrypt server credentials for ${server.name}`, {
+      cause: error,
+    });
   }
 
   // Create client using factory with decrypted credentials

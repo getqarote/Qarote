@@ -83,7 +83,8 @@ const verifyToken = async (token: string): Promise<JWTPayload> => {
     throw new Error(
       `Invalid token: ${
         error instanceof Error ? error.message : "Unknown error"
-      }`
+      }`,
+      { cause: error }
     );
   }
 };

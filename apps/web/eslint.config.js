@@ -24,9 +24,6 @@ export default tseslint.config(
       "simple-import-sort": simpleImportSort,
     },
     rules: {
-      // ESLint 10 new rules - disabled for now, enable gradually
-      "no-useless-assignment": "off",
-      "preserve-caught-error": "off",
       ...reactHooks.configs.recommended.rules,
       "react-refresh/only-export-components": [
         "warn",

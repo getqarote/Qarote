@@ -51,7 +51,8 @@ function parseConfig(): Config {
         (issue) => `${issue.path.join(".")}: ${issue.message}`
       );
       throw new Error(
-        `Configuration validation failed for ${deploymentMode} mode:\n${errorMessages.join("\n")}`
+        `Configuration validation failed for ${deploymentMode} mode:\n${errorMessages.join("\n")}`,
+        { cause: error }
       );
     }
     throw error;

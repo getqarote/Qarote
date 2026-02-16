@@ -620,8 +620,6 @@ export const queuesRouter = router({
     .mutation(async ({ input, ctx }) => {
       const { serverId, workspaceId, queueName } = input;
 
-      let amqpClient: RabbitMQAmqpClient | null = null;
-
       try {
         // Verify server access
         const server = await verifyServerAccess(serverId, workspaceId);
@@ -633,7 +631,7 @@ export const queuesRouter = router({
         }
 
         // Create AMQP client for direct queue control
-        amqpClient = await createAmqpClient(serverId, workspaceId);
+        const amqpClient = await createAmqpClient(serverId, workspaceId);
 
         // Connect and pause the queue
         await amqpClient.connect();
