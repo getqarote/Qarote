@@ -72,8 +72,10 @@ export const subscriptionRouter = router({
             id: subscription.id,
             status: subscription.status,
             cancelAtPeriodEnd: subscription.cancel_at_period_end,
-            currentPeriodEnd: subscription.current_period_end
-              ? new Date(subscription.current_period_end * 1000).toISOString()
+            currentPeriodEnd: subscription.items?.data?.[0]?.current_period_end
+              ? new Date(
+                  subscription.items.data[0].current_period_end * 1000
+                ).toISOString()
               : null,
             canceledAt: subscription.canceled_at
               ? new Date(subscription.canceled_at * 1000).toISOString()

@@ -195,8 +195,10 @@ export const billingRouter = router({
           ? {
               id: stripeSubscription.id,
               status: stripeSubscription.status,
-              current_period_start: stripeSubscription.current_period_start,
-              current_period_end: stripeSubscription.current_period_end,
+              current_period_start:
+                stripeSubscription.items?.data?.[0]?.current_period_start,
+              current_period_end:
+                stripeSubscription.items?.data?.[0]?.current_period_end,
               cancel_at_period_end: stripeSubscription.cancel_at_period_end,
               canceled_at: stripeSubscription.canceled_at,
               default_payment_method: stripeSubscription.default_payment_method,
