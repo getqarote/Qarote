@@ -35,7 +35,7 @@ export function signLicenseData(data: LicenseData, privateKey: string): string {
     return signature;
   } catch (error) {
     logger.error({ error }, "Failed to sign license data");
-    throw new Error("License signing failed");
+    throw new Error("License signing failed", { cause: error });
   }
 }
 
