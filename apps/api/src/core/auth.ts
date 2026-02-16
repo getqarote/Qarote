@@ -78,7 +78,7 @@ export const generateToken = async (user: {
 // Token verification
 const verifyToken = async (token: string): Promise<JWTPayload> => {
   try {
-    return (await verify(token, authConfig.jwtSecret)) as JWTPayload;
+    return (await verify(token, authConfig.jwtSecret, "HS256")) as JWTPayload;
   } catch (error) {
     throw new Error(
       `Invalid token: ${

@@ -3,15 +3,12 @@ import type { KnipConfig } from "knip";
 const config: KnipConfig = {
   workspaces: {
     "apps/app": {
-      entry: ["src/main.tsx"],
       project: ["src/**/*.{ts,tsx}"],
     },
     "apps/web": {
-      entry: ["src/main.tsx"],
       project: ["src/**/*.{ts,tsx}"],
     },
     "apps/portal": {
-      entry: ["src/main.tsx"],
       project: ["src/**/*.{ts,tsx}"],
     },
     "apps/api": {

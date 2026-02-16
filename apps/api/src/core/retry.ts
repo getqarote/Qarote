@@ -5,7 +5,7 @@ import { logger } from "./logger";
 /**
  * Configuration for retry behavior
  */
-export interface RetryConfig {
+interface RetryConfig {
   maxRetries?: number;
   retryDelayMs?: number;
   timeoutMs?: number;
