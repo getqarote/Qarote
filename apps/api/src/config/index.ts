@@ -8,7 +8,7 @@ import { communitySchema } from "./schemas/community.js";
 import { enterpriseSchema } from "./schemas/enterprise.js";
 
 // Load .env file from the api directory (where process.cwd() points when running from apps/api)
-dotenv.config({ path: path.join(process.cwd(), ".env") });
+dotenv.config({ path: path.join(process.cwd(), ".env"), quiet: true });
 
 // Union type of all possible configs (internal use only)
 type Config =
