@@ -431,7 +431,7 @@ const Connections = () => {
                                       (channel) => (
                                         <div
                                           key={channel.name}
-                                          className="border rounded-lg p-3 bg-gradient-to-r from-gray-50 to-gray-100"
+                                          className="border rounded-lg p-3 bg-linear-to-r from-gray-50 to-gray-100"
                                         >
                                           <div className="flex items-center justify-between mb-2">
                                             <div className="flex items-center gap-3">

@@ -143,7 +143,7 @@ const AcceptInvitation = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-auth py-12 px-4 sm:px-6 lg:px-8">
-        <Card className="w-full max-w-md bg-white/95 backdrop-blur-sm border-white/20 shadow-2xl">
+        <Card className="w-full max-w-md bg-white/95 backdrop-blur-xs border-white/20 shadow-2xl">
           <CardContent className="flex items-center justify-center py-8">
             <Loader2 className="h-8 w-8 animate-spin" />
           </CardContent>
@@ -155,7 +155,7 @@ const AcceptInvitation = () => {
   if (error && !invitation) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-auth py-12 px-4 sm:px-6 lg:px-8">
-        <Card className="w-full max-w-md bg-white/95 backdrop-blur-sm border-white/20 shadow-2xl">
+        <Card className="w-full max-w-md bg-white/95 backdrop-blur-xs border-white/20 shadow-2xl">
           <CardHeader className="text-center">
             <CardTitle className="text-red-600">Invalid Invitation</CardTitle>
             <CardDescription>{error}</CardDescription>
@@ -182,7 +182,7 @@ const AcceptInvitation = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-auth py-12 px-4 sm:px-6 lg:px-8">
-      <Card className="w-full max-w-md bg-white/95 backdrop-blur-sm border-white/20 shadow-2xl">
+      <Card className="w-full max-w-md bg-white/95 backdrop-blur-xs border-white/20 shadow-2xl">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
             <Mail className="h-6 w-6 text-blue-600" />

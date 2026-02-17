@@ -19,7 +19,7 @@ export const BillingLayout: React.FC<BillingLayoutProps> = ({
   if (isLoading) {
     return (
       <SidebarProvider>
-        <div className="min-h-screen flex w-full bg-gradient-to-br from-background to-card">
+        <div className="min-h-screen flex w-full bg-linear-to-br from-background to-card">
           <AppSidebar />
           <main className="main-content-scrollable">
             <div className="container mx-auto px-4 py-8">
@@ -41,7 +41,7 @@ export const BillingLayout: React.FC<BillingLayoutProps> = ({
   if (error) {
     return (
       <SidebarProvider>
-        <div className="min-h-screen flex w-full bg-gradient-to-br from-background to-card">
+        <div className="min-h-screen flex w-full bg-linear-to-br from-background to-card">
           <AppSidebar />
           <main className="main-content-scrollable">
             <div className="container mx-auto px-4 py-8">
@@ -63,7 +63,7 @@ export const BillingLayout: React.FC<BillingLayoutProps> = ({
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-gradient-to-br from-background to-card">
+      <div className="min-h-screen flex w-full bg-linear-to-br from-background to-card">
         <AppSidebar />
         <main className="main-content-scrollable">
           <div className="container mx-auto px-4 py-8 space-y-8">

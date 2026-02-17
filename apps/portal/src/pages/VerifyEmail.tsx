@@ -36,15 +36,23 @@ export default function VerifyEmail() {
   const redirectTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [userEmail, setUserEmail] = useState<string>("");
   const [showEmailInput, setShowEmailInput] = useState(false);
+  const token = searchParams.get("token");
+
   const [verificationState, setVerificationState] = useState<{
     loading: boolean;
     result: VerificationResult | null;
-  }>({
-    loading: true,
-    result: null,
+  }>(() => {
+    if (!token) {
+      return {
+        loading: false,
+        result: {
+          success: false,
+          error: "No verification token provided",
+        },
+      };
+    }
+    return { loading: true, result: null };
   });
-
-  const token = searchParams.get("token");
 
   // tRPC mutations
   const verifyEmailMutation = trpc.auth.verification.verifyEmail.useMutation({
@@ -104,37 +112,16 @@ export default function VerifyEmail() {
     });
 
   useEffect(() => {
-    logger.log("VerifyEmail useEffect triggered", {
-      token,
-      verificationAttempted: verificationAttempted.current,
-    });
-
     if (!token) {
-      logger.log("No token found in URL");
-      setVerificationState({
-        loading: false,
-        result: {
-          success: false,
-          error: "No verification token provided",
-        },
-      });
       return;
     }
 
     // Prevent duplicate verification attempts
     if (verificationAttempted.current) {
-      logger.log("Verification already attempted, skipping");
       return;
     }
 
     verificationAttempted.current = true;
-
-    logger.log("Starting verification with token:", {
-      tokenLength: token.length,
-      tokenPrefix: token.substring(0, 8),
-    });
-
-    setVerificationState({ loading: true, result: null });
     verifyEmailMutation.mutate({ token });
   }, [token]);
 
@@ -306,7 +293,7 @@ export default function VerifyEmail() {
                       placeholder="Enter your email address"
                       value={userEmail}
                       onChange={(e) => setUserEmail(e.target.value)}
-                      className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                      className="w-full px-3 py-2 border border-border rounded-md focus:outline-hidden focus:ring-2 focus:ring-primary"
                     />
                   </div>
                 )}

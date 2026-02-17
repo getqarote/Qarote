@@ -33,7 +33,7 @@ export function UpgradePrompt({
 
   return (
     <div
-      className={`absolute inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm ${className || ""}`}
+      className={`absolute inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-xs ${className || ""}`}
     >
       <Card className="w-full max-w-md border-2">
         <CardHeader>

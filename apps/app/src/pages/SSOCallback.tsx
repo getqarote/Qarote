@@ -75,7 +75,7 @@ const SSOCallback: React.FC = () => {
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-auth py-12 px-4">
-        <Card className="max-w-md w-full bg-white/95 backdrop-blur-sm">
+        <Card className="max-w-md w-full bg-white/95 backdrop-blur-xs">
           <CardHeader>
             <CardTitle className="text-gray-900">
               Authentication Error

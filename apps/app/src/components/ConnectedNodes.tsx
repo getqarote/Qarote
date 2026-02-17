@@ -68,7 +68,7 @@ export const ConnectedNodes = ({
   };
 
   return (
-    <Card className="border-0 shadow-md bg-card backdrop-blur-sm">
+    <Card className="border-0 shadow-md bg-card backdrop-blur-xs">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>

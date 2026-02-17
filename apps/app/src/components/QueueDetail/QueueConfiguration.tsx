@@ -11,7 +11,7 @@ interface QueueConfigurationProps {
 
 export function QueueConfiguration({ queue }: QueueConfigurationProps) {
   return (
-    <Card className="border-0 shadow-md bg-card backdrop-blur-sm">
+    <Card className="border-0 shadow-md bg-card backdrop-blur-xs">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Settings className="w-5 h-5" />
@@ -45,19 +45,21 @@ export function QueueConfiguration({ queue }: QueueConfigurationProps) {
           <div className="grid grid-cols-2 gap-4">
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">Durable</span>
-              <Badge variant={queue.durable ? "default" : "outline"}>
+              <Badge variant={queue.durable ? "default" : "outline-solid"}>
                 {queue.durable ? "Yes" : "No"}
               </Badge>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">Auto Delete</span>
-              <Badge variant={queue.auto_delete ? "destructive" : "outline"}>
+              <Badge
+                variant={queue.auto_delete ? "destructive" : "outline-solid"}
+              >
                 {queue.auto_delete ? "Yes" : "No"}
               </Badge>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">Exclusive</span>
-              <Badge variant={queue.exclusive ? "default" : "outline"}>
+              <Badge variant={queue.exclusive ? "default" : "outline-solid"}>
                 {queue.exclusive ? "Yes" : "No"}
               </Badge>
             </div>
@@ -109,7 +111,9 @@ export function QueueConfiguration({ queue }: QueueConfigurationProps) {
                     {key}:
                   </span>
                   <Badge
-                    variant={key.startsWith("x-") ? "secondary" : "outline"}
+                    variant={
+                      key.startsWith("x-") ? "secondary" : "outline-solid"
+                    }
                     className="font-mono"
                   >
                     {typeof value === "boolean"

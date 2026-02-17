@@ -50,7 +50,7 @@ export const RecentAlerts = () => {
 
   if (error) {
     return (
-      <Card className="border-0 shadow-md bg-card backdrop-blur-sm">
+      <Card className="border-0 shadow-md bg-card backdrop-blur-xs">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
@@ -73,7 +73,7 @@ export const RecentAlerts = () => {
   }
 
   return (
-    <Card className="border-0 shadow-md bg-card backdrop-blur-sm">
+    <Card className="border-0 shadow-md bg-card backdrop-blur-xs">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
@@ -154,7 +154,7 @@ export const RecentAlerts = () => {
                   )
                 }
               >
-                <div className="flex-shrink-0 mt-0.5">
+                <div className="shrink-0 mt-0.5">
                   {getSeverityIcon(alert.severity, {
                     showColors: true,
                   })}
@@ -216,7 +216,7 @@ export const RecentAlerts = () => {
                     </p>
                   )}
                 </div>
-                <div className="flex-shrink-0 text-right">
+                <div className="shrink-0 text-right">
                   <div className="text-xs text-muted-foreground">
                     {formatRelativeTime(alert.timestamp)}
                   </div>

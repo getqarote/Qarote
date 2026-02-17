@@ -21,7 +21,7 @@ export function Layout({ children }: LayoutProps) {
       <div className="flex-1">{children}</div>
 
       {/* Footer - positioned to account for sidebar */}
-      <footer className="border-t bg-background/80 backdrop-blur-sm ml-0 md:ml-64 transition-[margin] duration-200 ease-linear">
+      <footer className="border-t bg-background/80 backdrop-blur-xs ml-0 md:ml-64 transition-[margin] duration-200 ease-linear">
         <div className="max-w-5xl mx-auto px-6 py-6">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             {/* Left side - Help */}
