@@ -16,7 +16,7 @@ import {
 
 // Alert utility functions for consistent alert rendering across the application
 
-type BadgeVariant = "default" | "secondary" | "destructive" | "outline-solid";
+type BadgeVariant = "default" | "secondary" | "destructive" | "outline";
 
 /**
  * Get the badge variant for a given alert severity
@@ -32,7 +32,7 @@ export const getSeverityBadgeVariant = (
     case RabbitMQAlertSeverity.INFO:
       return "secondary";
     default:
-      return "outline-solid";
+      return "outline";
   }
 };
 

@@ -155,7 +155,7 @@ export const EnhancedTeamTab = ({
                   variant={
                     totalUsers + pendingInvitations >= maxUsers
                       ? "destructive"
-                      : "outline-solid"
+                      : "outline"
                   }
                 >
                   {totalUsers + pendingInvitations}/{maxUsers} limit
