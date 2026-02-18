@@ -40,10 +40,10 @@ importers:
         version: 1.52.2(@azure/core-client@1.10.1)(gcp-metadata@8.1.2)(socks@2.8.7)
       '@hono/node-server':
         specifier: ^1.19.9
-        version: 1.19.9(hono@4.11.9)
+        version: 1.19.9(hono@4.11.10)
       '@hono/trpc-server':
         specifier: ^0.4.2
-        version: 0.4.2(@trpc/server@11.10.0(typescript@5.9.3))(hono@4.11.9)
+        version: 0.4.2(@trpc/server@11.10.0(typescript@5.9.3))(hono@4.11.10)
       '@notionhq/client':
         specifier: ^5.9.0
         version: 5.9.0
@@ -87,11 +87,11 @@ importers:
         specifier: ^10.3.0
         version: 10.5.0
       hono:
-        specifier: ^4.11.7
-        version: 4.11.9
+        specifier: ^4.11.10
+        version: 4.11.10
       hono-rate-limiter:
         specifier: ^0.5.3
-        version: 0.5.3(hono@4.11.9)
+        version: 0.5.3(hono@4.11.10)
       nodemailer:
         specifier: ^8.0.1
         version: 8.0.1
@@ -4694,6 +4694,7 @@ packages:
 
   glob@10.5.0:
     resolution: {integrity: sha512-DfXN8DfhJ7NH3Oe7cFmu3NCu1wKbkReJ8TorzSAFbSKrlNaQSKfIzqYqVY8zlbs2NLBbWpRiU52GX2PbaBVNkg==}
+    deprecated: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
     hasBin: true
 
   glob@11.1.0:
@@ -4838,12 +4839,12 @@ packages:
       unstorage:
         optional: true
 
-  hono@4.11.4:
-    resolution: {integrity: sha512-U7tt8JsyrxSRKspfhtLET79pU8K+tInj5QZXs1jSugO1Vq5dFj3kmZsRldo29mTBfcjDRVRXrEZ6LS63Cog9ZA==}
+  hono@4.11.10:
+    resolution: {integrity: sha512-kyWP5PAiMooEvGrA9jcD3IXF7ATu8+o7B3KCbPXid5se52NPqnOpM/r9qeW2heMnOekF4kqR1fXJqCYeCLKrZg==}
     engines: {node: '>=16.9.0'}
 
-  hono@4.11.9:
-    resolution: {integrity: sha512-Eaw2YTGM6WOxA6CXbckaEvslr2Ne4NFsKrvc0v97JD5awbmeBLO5w9Ho9L9kmKonrwF9RJlW6BxT1PVv/agBHQ==}
+  hono@4.11.4:
+    resolution: {integrity: sha512-U7tt8JsyrxSRKspfhtLET79pU8K+tInj5QZXs1jSugO1Vq5dFj3kmZsRldo29mTBfcjDRVRXrEZ6LS63Cog9ZA==}
     engines: {node: '>=16.9.0'}
 
   hookified@1.15.1:
@@ -8430,18 +8431,18 @@ snapshots:
       protobufjs: 7.5.4
       yargs: 17.7.2
 
+  '@hono/node-server@1.19.9(hono@4.11.10)':
+    dependencies:
+      hono: 4.11.10
+
   '@hono/node-server@1.19.9(hono@4.11.4)':
     dependencies:
       hono: 4.11.4
 
-  '@hono/node-server@1.19.9(hono@4.11.9)':
-    dependencies:
-      hono: 4.11.9
-
-  '@hono/trpc-server@0.4.2(@trpc/server@11.10.0(typescript@5.9.3))(hono@4.11.9)':
+  '@hono/trpc-server@0.4.2(@trpc/server@11.10.0(typescript@5.9.3))(hono@4.11.10)':
     dependencies:
       '@trpc/server': 11.10.0(typescript@5.9.3)
-      hono: 4.11.9
+      hono: 4.11.10
 
   '@hookform/resolvers@5.2.2(react-hook-form@7.71.1(react@19.2.4))':
     dependencies:
@@ -12040,13 +12041,13 @@ snapshots:
 
   highlightjs-vue@1.0.0: {}
 
-  hono-rate-limiter@0.5.3(hono@4.11.9):
+  hono-rate-limiter@0.5.3(hono@4.11.10):
     dependencies:
-      hono: 4.11.9
+      hono: 4.11.10
+
+  hono@4.11.10: {}
 
   hono@4.11.4: {}
-
-  hono@4.11.9: {}
 
   hookified@1.15.1: {}
 
