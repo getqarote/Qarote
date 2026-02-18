@@ -2,6 +2,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { prisma } from "@/core/prisma";
 
+import { licenseService } from "@/services/license/license.service";
+
 import { handleInvoicePaymentSucceeded } from "../webhook-handlers";
 
 // Mock the Prisma client
@@ -13,14 +15,70 @@ vi.mock("@/core/prisma", () => ({
     },
     license: {
       findMany: vi.fn(),
-      findUnique: vi.fn(),
-      update: vi.fn(),
     },
     licenseFileVersion: {
       findFirst: vi.fn(),
-      create: vi.fn(),
     },
   },
+}));
+
+// Mock license service (renewLicense, generateLicenseFile, saveLicenseFileVersion)
+vi.mock("@/services/license/license.service", () => ({
+  licenseService: {
+    renewLicense: vi.fn(),
+    generateLicenseFile: vi.fn(),
+    saveLicenseFileVersion: vi.fn(),
+  },
+}));
+
+// Mock license features service
+vi.mock("@/services/license/license-features.service", () => ({
+  getLicenseFeaturesForTier: vi.fn().mockReturnValue(["feature1"]),
+}));
+
+// Mock email service
+vi.mock("@/services/email/email.service", () => ({
+  EmailService: {
+    sendLicenseRenewalEmail: vi.fn().mockResolvedValue(undefined),
+    sendPaymentConfirmationEmail: vi.fn().mockResolvedValue(undefined),
+  },
+}));
+
+// Mock sentry
+vi.mock("@/services/sentry", () => ({
+  trackPaymentError: vi.fn(),
+}));
+
+// Mock logger
+vi.mock("@/core/logger", () => ({
+  logger: {
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+  },
+}));
+
+// Mock config
+vi.mock("@/config", () => ({
+  emailConfig: {
+    portalFrontendUrl: "https://portal.test.com",
+  },
+  stripeConfig: {
+    secretKey: null,
+    priceIds: {
+      developer: { monthly: null, yearly: null },
+      enterprise: { monthly: null, yearly: null },
+    },
+  },
+  licenseConfig: {
+    privateKey: null,
+  },
+}));
+
+// Mock utils
+vi.mock("@/core/utils", () => ({
+  getUserDisplayName: vi.fn().mockReturnValue("Test User"),
 }));
 
 /**
@@ -34,17 +92,21 @@ vi.mock("@/core/prisma", () => ({
  * - Duplicate renewal emails
  */
 describe("Webhook Idempotency - License Renewal", () => {
+  // Stripe v20 invoice format: subscription ID is in parent.subscription_details
   const mockInvoice = {
     id: "in_test_renewal_invoice_123",
-    subscription: "sub_test_123",
+    parent: {
+      type: "subscription_details",
+      subscription_details: {
+        subscription: "sub_test_123",
+      },
+    },
     billing_reason: "subscription_cycle",
     amount_paid: 100000, // $1000
     currency: "usd",
-    payment_intent: null,
   } as any;
 
   beforeEach(() => {
-    // Reset all mocks before each test
     vi.clearAllMocks();
   });
 
@@ -57,7 +119,7 @@ describe("Webhook Idempotency - License Renewal", () => {
     const subscriptionId = "sub_test_123";
 
     // Mock subscription exists
-    vi.spyOn(prisma.subscription, "findUnique").mockResolvedValue({
+    vi.mocked(prisma.subscription.findUnique).mockResolvedValue({
       id: "sub-id",
       stripeSubscriptionId: subscriptionId,
       userId: "user-id",
@@ -68,11 +130,11 @@ describe("Webhook Idempotency - License Renewal", () => {
       },
     } as any);
 
-    // Mock subscription update
-    vi.spyOn(prisma.subscription, "update").mockResolvedValue({} as any);
+    vi.mocked(prisma.subscription.update).mockResolvedValue({} as any);
 
-    // First call: No existing renewal
-    vi.spyOn(prisma.license, "findMany")
+    // First call: license with version 1
+    // Second call: same license (already renewed on second webhook delivery)
+    vi.mocked(prisma.license.findMany)
       .mockResolvedValueOnce([
         {
           id: licenseId,
@@ -84,22 +146,21 @@ describe("Webhook Idempotency - License Renewal", () => {
           isActive: true,
         },
       ] as any)
-      // Second call: Same license
       .mockResolvedValueOnce([
         {
           id: licenseId,
           licenseKey: "test-key",
           tier: "ENTERPRISE",
           customerEmail: "test@example.com",
-          expiresAt: new Date("2027-01-01"), // Already extended
-          currentVersion: 2, // Already incremented
+          expiresAt: new Date("2027-01-01"),
+          currentVersion: 2,
           isActive: true,
         },
       ] as any);
 
-    // First call: No existing renewal found (null)
-    // Second call: Existing renewal found (returns the created record)
-    vi.spyOn(prisma.licenseFileVersion, "findFirst")
+    // First call: No existing renewal found (null) → process renewal
+    // Second call: Existing renewal found → skip
+    vi.mocked(prisma.licenseFileVersion.findFirst)
       .mockResolvedValueOnce(null)
       .mockResolvedValueOnce({
         id: "version-id",
@@ -112,42 +173,39 @@ describe("Webhook Idempotency - License Renewal", () => {
         deletesAt: new Date(),
       } as any);
 
-    // Mock other operations
-    vi.spyOn(prisma.license, "findUnique").mockResolvedValue({
-      id: licenseId,
-      currentVersion: 1,
-      expiresAt: new Date("2026-01-01"),
+    // Mock license service operations
+    vi.mocked(licenseService.renewLicense).mockResolvedValue({
+      newVersion: 2,
     } as any);
 
-    vi.spyOn(prisma.license, "update").mockResolvedValue({
-      id: licenseId,
-      currentVersion: 2,
-      expiresAt: new Date("2027-01-01"),
+    vi.mocked(licenseService.generateLicenseFile).mockResolvedValue({
+      licenseFile: { key: "test-signed-file" },
     } as any);
 
-    vi.spyOn(prisma.licenseFileVersion, "create").mockResolvedValue({} as any);
+    vi.mocked(licenseService.saveLicenseFileVersion).mockResolvedValue(
+      undefined
+    );
 
     // Process webhook first time
     await handleInvoicePaymentSucceeded(mockInvoice);
 
     // Verify renewal was processed
-    expect(prisma.license.update).toHaveBeenCalledTimes(1);
-    expect(prisma.licenseFileVersion.create).toHaveBeenCalledTimes(1);
+    expect(licenseService.renewLicense).toHaveBeenCalledTimes(1);
+    expect(licenseService.saveLicenseFileVersion).toHaveBeenCalledTimes(1);
 
     // Process webhook second time (duplicate)
     await handleInvoicePaymentSucceeded(mockInvoice);
 
     // Verify renewal was NOT processed again
     // Still only 1 call from first processing
-    expect(prisma.license.update).toHaveBeenCalledTimes(1);
-    expect(prisma.licenseFileVersion.create).toHaveBeenCalledTimes(1);
+    expect(licenseService.renewLicense).toHaveBeenCalledTimes(1);
+    expect(licenseService.saveLicenseFileVersion).toHaveBeenCalledTimes(1);
   });
 
   it("should create LicenseFileVersion with invoice ID for audit trail", async () => {
     const invoiceId = "in_test_renewal_789";
     const licenseId = "license-123";
 
-    // Mock database calls
     vi.mocked(prisma.subscription.findUnique).mockResolvedValue({
       id: "sub-id",
       stripeSubscriptionId: "sub_test",
@@ -174,38 +232,38 @@ describe("Webhook Idempotency - License Renewal", () => {
     ] as any);
 
     vi.mocked(prisma.licenseFileVersion.findFirst).mockResolvedValue(null);
-    vi.mocked(prisma.license.findUnique).mockResolvedValue({
-      id: licenseId,
-      currentVersion: 1,
-      expiresAt: new Date("2026-01-01"),
-    } as any);
-    vi.mocked(prisma.license.update).mockResolvedValue({
-      id: licenseId,
-      currentVersion: 2,
-      expiresAt: new Date("2027-01-01"),
+
+    vi.mocked(licenseService.renewLicense).mockResolvedValue({
+      newVersion: 2,
     } as any);
 
-    const createSpy = vi.mocked(prisma.licenseFileVersion.create);
-    createSpy.mockResolvedValue({} as any);
+    vi.mocked(licenseService.generateLicenseFile).mockResolvedValue({
+      licenseFile: { key: "test-signed-file" },
+    } as any);
+
+    const saveVersionSpy = vi.mocked(licenseService.saveLicenseFileVersion);
+    saveVersionSpy.mockResolvedValue(undefined);
 
     await handleInvoicePaymentSucceeded({
       id: invoiceId,
-      subscription: "sub_test",
+      parent: {
+        type: "subscription_details",
+        subscription_details: {
+          subscription: "sub_test",
+        },
+      },
       billing_reason: "subscription_cycle",
       amount_paid: 100000,
       currency: "usd",
-      payment_intent: null,
     } as any);
 
-    // Verify invoice ID was saved for idempotency
-    expect(createSpy).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({
-          licenseId,
-          version: 2,
-          stripeInvoiceId: invoiceId, // ← Key assertion
-        }),
-      })
+    // Verify invoice ID was passed for idempotency
+    expect(saveVersionSpy).toHaveBeenCalledWith(
+      licenseId,
+      2,
+      expect.any(String),
+      expect.any(Date),
+      invoiceId // ← Key assertion: invoice ID saved for audit trail
     );
   });
 });
