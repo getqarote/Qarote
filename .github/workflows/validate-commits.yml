@@ -8,6 +8,10 @@ on:
       - main
       - develop
 
+env:
+  # Dummy URL for prisma generate (postinstall) — no actual DB connection is made
+  DATABASE_URL: postgresql://localhost:5432/dummy
+
 jobs:
   validate-commits:
     name: Validate Conventional Commits

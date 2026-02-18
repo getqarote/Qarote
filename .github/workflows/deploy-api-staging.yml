@@ -2,6 +2,8 @@ name: Deploy Backend to Staging
 
 env:
   APP_NAME: qarote-staging
+  # Dummy URL for prisma generate (postinstall) — no actual DB connection is made
+  DATABASE_URL: postgresql://localhost:5432/dummy
 
 on:
   push:
