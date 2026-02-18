@@ -1,0 +1,68 @@
+name: PR Quality Checks
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  code-quality:
+    name: Code Quality
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🔍 Checkout code
+        uses: actions/checkout@v6
+
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: "pnpm"
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: 📥 Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: 🔍 Check package version consistency
+        run: pnpm run syncpack:check
+
+      - name: 🔍 Type Check
+        working-directory: apps/api
+        run: pnpm run type-check
+
+      - name: 🔍 Knip (unused code check)
+        run: pnpm run knip
+
+      - name: 🧹 Lint
+        working-directory: apps/api
+        run: pnpm run lint
+
+      - name: 💅 Format Check
+        working-directory: apps/api
+        run: pnpm run format
+
+  tests:
+    name: Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🔍 Checkout code
+        uses: actions/checkout@v6
+
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: "pnpm"
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: 📥 Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: 🧪 Run Tests
+        working-directory: apps/api
+        run: pnpm run test:run
