@@ -63,7 +63,7 @@ export const SecondaryMetricsCards = ({
             Connected Nodes
           </CardTitle>
           {nodesError && isRabbitMQAuthError(nodesError) ? (
-            <ShieldAlert className="h-5 w-5 text-orange-600" />
+            <ShieldAlert className="h-5 w-5 text-primary" />
           ) : (
             <Server className="h-5 w-5 text-cyan-600" />
           )}
@@ -73,12 +73,10 @@ export const SecondaryMetricsCards = ({
             <Skeleton className="h-6 w-8" />
           ) : nodesError && isRabbitMQAuthError(nodesError) ? (
             <div>
-              <div className="text-lg font-semibold text-orange-600 mb-1">
+              <div className="text-lg font-semibold text-primary mb-1">
                 Permission Required
               </div>
-              <p className="text-xs text-orange-600">
-                Need 'monitor' permission
-              </p>
+              <p className="text-xs text-primary">Need 'monitor' permission</p>
             </div>
           ) : (
             <div>
@@ -99,7 +97,7 @@ export const SecondaryMetricsCards = ({
             CPU Usage
           </CardTitle>
           {metricsError && isRabbitMQAuthError(metricsError) ? (
-            <ShieldAlert className="h-5 w-5 text-orange-600" />
+            <ShieldAlert className="h-5 w-5 text-primary" />
           ) : (
             <Cpu className="h-5 w-5 text-yellow-600" />
           )}
@@ -109,12 +107,10 @@ export const SecondaryMetricsCards = ({
             <Skeleton className="h-6 w-16" />
           ) : metricsError && isRabbitMQAuthError(metricsError) ? (
             <div>
-              <div className="text-lg font-semibold text-orange-600 mb-1">
+              <div className="text-lg font-semibold text-primary mb-1">
                 Permission Required
               </div>
-              <p className="text-xs text-orange-600">
-                Need 'monitor' permission
-              </p>
+              <p className="text-xs text-primary">Need 'monitor' permission</p>
             </div>
           ) : (
             <div>
@@ -135,7 +131,7 @@ export const SecondaryMetricsCards = ({
             Memory Usage
           </CardTitle>
           {metricsError && isRabbitMQAuthError(metricsError) ? (
-            <ShieldAlert className="h-5 w-5 text-orange-600" />
+            <ShieldAlert className="h-5 w-5 text-primary" />
           ) : (
             <HardDrive className="h-5 w-5 text-red-600" />
           )}
@@ -145,12 +141,10 @@ export const SecondaryMetricsCards = ({
             <Skeleton className="h-6 w-20" />
           ) : metricsError && isRabbitMQAuthError(metricsError) ? (
             <div>
-              <div className="text-lg font-semibold text-orange-600 mb-1">
+              <div className="text-lg font-semibold text-primary mb-1">
                 Permission Required
               </div>
-              <p className="text-xs text-orange-600">
-                Need 'monitor' permission
-              </p>
+              <p className="text-xs text-primary">Need 'monitor' permission</p>
             </div>
           ) : (
             <div>

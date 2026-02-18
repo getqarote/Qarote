@@ -124,15 +124,15 @@ export const CompactEmailChangeForm: React.FC<CompactEmailChangeFormProps> = ({
 
       {/* Pending Email Change Status */}
       {hasPendingEmailChange && pendingEmail && (
-        <Alert className="border-orange-200 bg-orange-50">
-          <AlertCircle className="h-4 w-4 text-orange-600" />
+        <Alert className="border-primary/20 bg-primary/5">
+          <AlertCircle className="h-4 w-4 text-primary" />
           <AlertDescription className="flex items-center justify-between">
             <div className="flex-1">
-              <div className="font-medium text-orange-800">
+              <div className="font-medium text-primary">
                 Email change pending
               </div>
-              <div className="text-sm text-orange-700 mt-1">{pendingEmail}</div>
-              <div className="text-xs text-orange-600 mt-1">
+              <div className="text-sm text-primary mt-1">{pendingEmail}</div>
+              <div className="text-xs text-primary mt-1">
                 Check your new email inbox and verify to complete the change
               </div>
             </div>

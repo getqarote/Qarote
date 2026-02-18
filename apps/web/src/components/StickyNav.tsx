@@ -51,7 +51,7 @@ const StickyNav = ({ onVideoClick }: StickyNavProps) => {
               <button
                 key={section.id}
                 onClick={() => scrollToSection(section.id)}
-                className="px-4 py-2 text-sm font-medium text-foreground hover:text-orange-500 transition-colors"
+                className="px-4 py-2 text-sm font-medium text-foreground hover:text-primary transition-colors"
               >
                 {section.label}
               </button>
@@ -64,13 +64,13 @@ const StickyNav = ({ onVideoClick }: StickyNavProps) => {
               target="_blank"
               rel="noopener noreferrer"
               aria-label="View on GitHub"
-              className="text-foreground hover:text-orange-500 transition-colors p-2"
+              className="text-foreground hover:text-primary transition-colors p-2"
             >
               <Github className="w-5 h-5" />
             </a>
             <a
               href={`${import.meta.env.VITE_APP_BASE_URL}/auth/sign-in`}
-              className="text-foreground hover:text-orange-500 px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium transition-colors"
+              className="text-foreground hover:text-primary px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium transition-colors"
             >
               Login
             </a>
@@ -83,7 +83,7 @@ const StickyNav = ({ onVideoClick }: StickyNavProps) => {
                 });
                 window.location.href = `${authBaseUrl}/auth/sign-up`;
               }}
-              className="bg-linear-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600 px-2 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-colors whitespace-nowrap"
+              className="bg-gradient-button hover:bg-gradient-button-hover text-white px-2 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-colors whitespace-nowrap"
             >
               Try for free
             </button>

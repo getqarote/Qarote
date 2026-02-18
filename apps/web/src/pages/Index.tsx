@@ -54,7 +54,7 @@ const Index = () => {
       title: "Live Queue Monitoring",
       description:
         "Monitor queue depths, message rates, and consumer counts with live updates. Track message accumulation and processing performance.",
-      gradient: "from-yellow-500 to-orange-500",
+      gradient: "from-yellow-500 to-primary",
     },
     {
       icon: Shield,
@@ -113,7 +113,7 @@ const Index = () => {
       description: "Perfect for getting started",
       color: "text-gray-600",
       bgColor: "bg-gray-50",
-      borderColor: "border-orange-200",
+      borderColor: "border-primary/20",
       features: {
         servers: "Up to 1",
         rabbitMQVersionSupport: "Only LTS versions",
@@ -274,9 +274,9 @@ const Index = () => {
       >
         {/* Decorative elements - subtle colored accents */}
         <div className="absolute inset-0 opacity-5 overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-32 bg-linear-to-b from-orange-400/20 to-transparent"></div>
-          <div className="absolute -top-20 -right-20 sm:-top-40 sm:-right-40 w-40 h-40 sm:w-80 sm:h-80 bg-orange-300 rounded-full filter blur-3xl opacity-20"></div>
-          <div className="absolute top-1/2 -left-20 sm:-left-40 w-32 h-32 sm:w-60 sm:h-60 bg-red-300 rounded-full filter blur-3xl opacity-20"></div>
+          <div className="absolute top-0 left-0 w-full h-32 bg-linear-to-b from-primary/20 to-transparent"></div>
+          <div className="absolute -top-20 -right-20 sm:-top-40 sm:-right-40 w-40 h-40 sm:w-80 sm:h-80 bg-primary/30 rounded-full filter blur-3xl opacity-20"></div>
+          <div className="absolute top-1/2 -left-20 sm:-left-40 w-32 h-32 sm:w-60 sm:h-60 bg-primary/30 rounded-full filter blur-3xl opacity-20"></div>
         </div>
 
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-3.5 md:pt-32">
@@ -339,7 +339,7 @@ const Index = () => {
                       className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-white/90 hover:bg-white flex items-center justify-center transition-all hover:scale-110 pointer-events-none shadow-soft"
                     >
                       <PlayIcon
-                        className="w-10 h-10 md:w-12 md:h-12 text-orange-600 ml-1"
+                        className="w-10 h-10 md:w-12 md:h-12 text-primary ml-1"
                         fill="currentColor"
                         aria-hidden="true"
                       />
@@ -532,7 +532,7 @@ const Index = () => {
                 const appBaseUrl = import.meta.env.VITE_APP_BASE_URL;
                 window.location.href = `${appBaseUrl}/auth/sign-up`;
               }}
-              className="bg-linear-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600 px-4 py-3 sm:px-8 sm:py-4 rounded-lg font-semibold transition-colors duration-200 text-base sm:text-lg"
+              className="bg-gradient-button hover:bg-gradient-button-hover text-white px-4 py-3 sm:px-8 sm:py-4 rounded-lg font-semibold transition-colors duration-200 text-base sm:text-lg"
             >
               Start monitoring for free
             </button>
@@ -544,8 +544,8 @@ const Index = () => {
       <section className="py-20 bg-linear-to-b from-background to-muted/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto text-center">
-            <div className="inline-flex items-center justify-center p-2 bg-linear-to-r from-orange-500/10 to-red-500/10 rounded-full mb-6">
-              <Building2Icon className="w-8 h-8 text-orange-600" />
+            <div className="inline-flex items-center justify-center p-2 bg-linear-to-r from-primary/10 to-primary/5 rounded-full mb-6">
+              <Building2Icon className="w-8 h-8 text-primary" />
             </div>
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-6">
               Enterprise Self-Hosted Solution
@@ -558,7 +558,7 @@ const Index = () => {
 
             <div className="grid md:grid-cols-2 gap-6 mb-12">
               <div className="p-6 bg-card border border-border rounded-lg">
-                <ServerIcon className="w-8 h-8 text-orange-600 mb-3 mx-auto" />
+                <ServerIcon className="w-8 h-8 text-primary mb-3 mx-auto" />
                 <h3 className="font-semibold text-foreground mb-2">
                   Unlimited Servers
                 </h3>
@@ -567,7 +567,7 @@ const Index = () => {
                 </p>
               </div>
               <div className="p-6 bg-card border border-border rounded-lg">
-                <Shield className="w-8 h-8 text-orange-600 mb-3 mx-auto" />
+                <Shield className="w-8 h-8 text-primary mb-3 mx-auto" />
                 <h3 className="font-semibold text-foreground mb-2">
                   Advanced Security
                 </h3>
@@ -586,7 +586,7 @@ const Index = () => {
                 const portalUrl = import.meta.env.VITE_PORTAL_URL;
                 window.location.href = portalUrl;
               }}
-              className="bg-linear-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600 px-4 py-3 sm:px-8 sm:py-4 rounded-lg font-semibold transition-colors duration-200 text-base sm:text-lg"
+              className="bg-gradient-button hover:bg-gradient-button-hover text-white px-4 py-3 sm:px-8 sm:py-4 rounded-lg font-semibold transition-colors duration-200 text-base sm:text-lg"
             >
               Self-Hosted Solution
             </button>
@@ -615,7 +615,7 @@ const Index = () => {
               <div className="bg-transparent border border-border rounded-xl pt-6 px-6 pb-0 flex gap-6 flex-col relative overflow-visible shadow-soft">
                 <div className="flex gap-6">
                   <div className="shrink-0">
-                    <div className="w-12 h-12 rounded-full bg-linear-to-r from-orange-500 to-red-500 flex items-center justify-center">
+                    <div className="w-12 h-12 rounded-full bg-gradient-button flex items-center justify-center">
                       <span className="text-white font-bold text-xl">1</span>
                     </div>
                   </div>
@@ -655,7 +655,7 @@ const Index = () => {
                         }}
                         className="w-full bg-background border border-border rounded-lg p-3 flex items-center justify-center gap-3 hover:bg-muted/50 transition-colors"
                       >
-                        <MailIcon className="w-5 h-5 text-orange-600" />
+                        <MailIcon className="w-5 h-5 text-primary" />
                         <span className="text-sm font-medium text-foreground">
                           Continue with Email
                         </span>
@@ -710,7 +710,7 @@ const Index = () => {
               <div className="bg-transparent border border-border rounded-xl pt-6 px-6 pb-0 flex gap-6 flex-col relative overflow-visible shadow-soft">
                 <div className="flex gap-6">
                   <div className="shrink-0">
-                    <div className="w-12 h-12 rounded-full bg-linear-to-r from-orange-500 to-red-500 flex items-center justify-center">
+                    <div className="w-12 h-12 rounded-full bg-gradient-button flex items-center justify-center">
                       <span className="text-white font-bold text-xl">2</span>
                     </div>
                   </div>
@@ -729,7 +729,7 @@ const Index = () => {
                     <div className="space-y-3">
                       <div className="bg-background border border-border rounded-lg p-4 flex items-center gap-4">
                         <div className="shrink-0">
-                          <ServerIcon className="w-6 h-6 text-orange-600" />
+                          <ServerIcon className="w-6 h-6 text-primary" />
                         </div>
                         <div className="flex-1">
                           <div className="font-semibold text-foreground mb-1">
@@ -742,7 +742,7 @@ const Index = () => {
                       </div>
                       <div className="bg-background border border-border rounded-lg p-4 flex items-center gap-4">
                         <div className="shrink-0">
-                          <ServerIcon className="w-6 h-6 text-orange-600" />
+                          <ServerIcon className="w-6 h-6 text-primary" />
                         </div>
                         <div className="flex-1">
                           <div className="font-semibold text-foreground mb-1">
@@ -755,7 +755,7 @@ const Index = () => {
                       </div>
                       <div className="bg-background border border-border rounded-lg p-4 flex items-center gap-4">
                         <div className="shrink-0">
-                          <ServerIcon className="w-6 h-6 text-orange-600" />
+                          <ServerIcon className="w-6 h-6 text-primary" />
                         </div>
                         <div className="flex-1">
                           <div className="font-semibold text-foreground mb-1">
@@ -775,7 +775,7 @@ const Index = () => {
               <div className="bg-transparent border border-border rounded-xl pt-6 px-6 pb-0 flex gap-6 flex-col relative overflow-visible shadow-soft">
                 <div className="flex gap-6">
                   <div className="shrink-0">
-                    <div className="w-12 h-12 rounded-full bg-linear-to-r from-orange-500 to-red-500 flex items-center justify-center">
+                    <div className="w-12 h-12 rounded-full bg-gradient-button flex items-center justify-center">
                       <span className="text-white font-bold text-xl">3</span>
                     </div>
                   </div>
@@ -796,7 +796,7 @@ const Index = () => {
                       <div className="grid grid-cols-2 gap-3">
                         <div className="bg-background border border-border rounded-lg p-3">
                           <div className="flex items-center gap-2 mb-2">
-                            <ActivityIcon className="w-4 h-4 text-orange-600" />
+                            <ActivityIcon className="w-4 h-4 text-primary" />
                             <span className="text-xs text-muted-foreground">
                               Messages/sec
                             </span>
@@ -807,7 +807,7 @@ const Index = () => {
                         </div>
                         <div className="bg-background border border-border rounded-lg p-3">
                           <div className="flex items-center gap-2 mb-2">
-                            <BarChart3Icon className="w-4 h-4 text-orange-600" />
+                            <BarChart3Icon className="w-4 h-4 text-primary" />
                             <span className="text-xs text-muted-foreground">
                               Queues
                             </span>
@@ -827,31 +827,31 @@ const Index = () => {
                         </div>
                         <div className="h-20 bg-muted/30 rounded flex items-end justify-between gap-1 p-2">
                           <div
-                            className="flex-1 bg-orange-500 rounded-t"
+                            className="flex-1 bg-primary rounded-t"
                             style={{ height: "40%" }}
                           ></div>
                           <div
-                            className="flex-1 bg-orange-500 rounded-t"
+                            className="flex-1 bg-primary rounded-t"
                             style={{ height: "60%" }}
                           ></div>
                           <div
-                            className="flex-1 bg-orange-500 rounded-t"
+                            className="flex-1 bg-primary rounded-t"
                             style={{ height: "45%" }}
                           ></div>
                           <div
-                            className="flex-1 bg-orange-500 rounded-t"
+                            className="flex-1 bg-primary rounded-t"
                             style={{ height: "75%" }}
                           ></div>
                           <div
-                            className="flex-1 bg-orange-500 rounded-t"
+                            className="flex-1 bg-primary rounded-t"
                             style={{ height: "55%" }}
                           ></div>
                           <div
-                            className="flex-1 bg-orange-500 rounded-t"
+                            className="flex-1 bg-primary rounded-t"
                             style={{ height: "80%" }}
                           ></div>
                           <div
-                            className="flex-1 bg-orange-500 rounded-t"
+                            className="flex-1 bg-primary rounded-t"
                             style={{ height: "65%" }}
                           ></div>
                         </div>
@@ -905,9 +905,7 @@ const Index = () => {
                 aria-checked={billingPeriod === "yearly"}
                 aria-label="Toggle between monthly and yearly billing"
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  billingPeriod === "yearly"
-                    ? "bg-linear-to-r from-orange-500 to-red-500"
-                    : "bg-muted"
+                  billingPeriod === "yearly" ? "bg-gradient-button" : "bg-muted"
                 }`}
               >
                 <span
@@ -955,7 +953,7 @@ const Index = () => {
                   <Card
                     key={plan.id}
                     className={`relative flex h-full flex-col min-w-[78%] md:min-w-[60%] lg:min-w-0 snap-center first:ml-2 last:mr-2 md:first:ml-4 md:last:mr-4 lg:first:ml-0 lg:last:mr-0 bg-transparent rounded-xl shadow-soft ${
-                      isPopular ? "ring-2 ring-orange-500" : ""
+                      isPopular ? "ring-2 ring-primary" : ""
                     }`}
                   >
                     <CardContent className="p-6 flex flex-col h-full">
@@ -1228,7 +1226,7 @@ const Index = () => {
                         </div>
                         <Button
                           size={undefined}
-                          className="w-full bg-linear-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600 px-4 py-3 sm:px-8 sm:py-4 rounded-lg font-semibold transition-colors duration-200 text-base sm:text-lg h-auto"
+                          className="w-full bg-gradient-button hover:bg-gradient-button-hover text-white px-4 py-3 sm:px-8 sm:py-4 rounded-lg font-semibold transition-colors duration-200 text-base sm:text-lg h-auto"
                           onClick={() => {
                             const appBaseUrl = import.meta.env
                               .VITE_APP_BASE_URL;
@@ -1262,12 +1260,12 @@ const Index = () => {
               })}
 
               {/* Enterprise Edition Card */}
-              <Card className="relative flex h-full flex-col min-w-[78%] md:min-w-[60%] lg:min-w-0 snap-center last:mr-2 md:last:mr-4 lg:last:mr-0 bg-transparent rounded-xl shadow-soft ring-2 ring-gradient-to-r from-orange-500 to-red-500">
+              <Card className="relative flex h-full flex-col min-w-[78%] md:min-w-[60%] lg:min-w-0 snap-center last:mr-2 md:last:mr-4 lg:last:mr-0 bg-transparent rounded-xl shadow-soft ring-2 ring-primary">
                 <CardContent className="p-6 flex flex-col h-full">
                   <div className="text-left mb-2">
                     <div className="flex items-center gap-2 mb-2">
-                      <Building2Icon className="w-6 h-6 text-orange-600" />
-                      <h3 className="text-2xl font-bold bg-linear-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
+                      <Building2Icon className="w-6 h-6 text-primary" />
+                      <h3 className="text-2xl font-bold title-gradient">
                         Enterprise Edition
                       </h3>
                     </div>
@@ -1399,7 +1397,7 @@ const Index = () => {
                   window.Tawk_API.maximize();
                 }
               }}
-              className="inline-flex items-center justify-center bg-linear-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600 px-4 py-3 sm:px-8 sm:py-4 rounded-lg font-semibold transition-colors duration-200 text-base sm:text-lg"
+              className="inline-flex items-center justify-center bg-gradient-button hover:bg-gradient-button-hover text-white px-4 py-3 sm:px-8 sm:py-4 rounded-lg font-semibold transition-colors duration-200 text-base sm:text-lg"
             >
               Contact us
             </button>

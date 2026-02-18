@@ -527,8 +527,8 @@ export const PlansPage: React.FC<PlansPageProps> = ({ onUpgrade }) => {
                     </p>
                   </div>
                   <div className="flex flex-col items-center p-4">
-                    <div className="bg-orange-100 p-3 rounded-full mb-3">
-                      <Headphones className="w-6 h-6 text-orange-600" />
+                    <div className="bg-primary/10 p-3 rounded-full mb-3">
+                      <Headphones className="w-6 h-6 text-primary" />
                     </div>
                     <h3 className="font-semibold text-foreground mb-1">
                       24/7 Support

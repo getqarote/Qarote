@@ -218,7 +218,7 @@ export const EnhancedNodesOverview = ({
       description:
         runningNodes.length > 0 ? "Total sockets in use" : "No running nodes",
       icon: Network,
-      color: "text-orange-600",
+      color: "text-primary",
     },
   ];
 

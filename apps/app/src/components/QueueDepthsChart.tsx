@@ -85,7 +85,7 @@ export const QueueDepthsChart = ({
           <p className="font-medium text-gray-900">
             {originalQueue?.name || label}
           </p>
-          <p className="text-orange-600">
+          <p className="text-primary">
             Messages: {payload[0].value.toLocaleString()}
           </p>
           {originalQueue?.vhost && originalQueue.vhost !== "/" && (
@@ -105,7 +105,7 @@ export const QueueDepthsChart = ({
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="flex items-center gap-2 text-xl font-semibold text-foreground">
-              <BarChart3 className="h-5 w-5 text-orange-600" />
+              <BarChart3 className="h-5 w-5 text-primary" />
               Queue Depths
             </CardTitle>
             <p className="text-sm text-muted-foreground">
@@ -123,7 +123,7 @@ export const QueueDepthsChart = ({
       <CardContent>
         {isLoading ? (
           <div className="h-80 flex items-center justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>
         ) : queues.length === 0 ? (
           <div className="h-80 flex items-center justify-center">

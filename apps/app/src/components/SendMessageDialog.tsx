@@ -691,7 +691,7 @@ export function SendMessageDialog({
                                         : ex.type === "fanout"
                                           ? "bg-blue-500"
                                           : ex.type === "topic"
-                                            ? "bg-orange-500"
+                                            ? "bg-primary"
                                             : ex.type === "headers"
                                               ? "bg-purple-500"
                                               : "bg-gray-500"
@@ -1284,7 +1284,7 @@ export function SendMessageDialog({
                     !form.watch("exchange") ||
                     !form.watch("payload")
                   }
-                  className="gap-2 bg-linear-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white"
+                  className="gap-2 bg-gradient-button hover:bg-gradient-button-hover text-white"
                 >
                   {publishMutation.isPending ? (
                     <>

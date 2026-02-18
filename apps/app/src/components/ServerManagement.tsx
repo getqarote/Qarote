@@ -154,7 +154,7 @@ function ServerCard({ server, onServerUpdated }: ServerCardProps) {
     <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent">
       <div className="flex items-center gap-3">
         <div className="p-2 bg-white-100 rounded-lg">
-          <ServerIcon className="h-4 w-4 text-orange-600" />
+          <ServerIcon className="h-4 w-4 text-primary" />
         </div>
         <div>
           <div className="flex items-center gap-2">

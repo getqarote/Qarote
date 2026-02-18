@@ -32,7 +32,7 @@ export function MessageStatistics({ queue }: MessageStatisticsProps) {
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Unacknowledged</p>
-            <p className="text-xl font-bold text-orange-600">
+            <p className="text-xl font-bold text-primary">
               {queue.messages_unacknowledged.toLocaleString()}
             </p>
           </div>

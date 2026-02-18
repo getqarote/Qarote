@@ -15,8 +15,8 @@ const FeatureCard = ({ icon: Icon, title, description }: FeatureCardProps) => {
 
   return (
     <div className="group relative p-6 bg-transparent border border-border rounded-xl transition-all duration-300 hover:-translate-y-1 shadow-soft">
-      <div className="inline-flex p-3 rounded-lg bg-orange-100 mb-4">
-        <IconComponent className="h-6 w-6 text-orange-600" />
+      <div className="inline-flex p-3 rounded-lg bg-primary/10 mb-4">
+        <IconComponent className="h-6 w-6 text-primary" />
       </div>
       <h3 className="text-xl font-semibold text-card-foreground mb-2">
         {title}

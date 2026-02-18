@@ -62,7 +62,7 @@ export const PrimaryMetricsCards = ({
             Messages/sec
           </CardTitle>
           {metricsError && isRabbitMQAuthError(metricsError) ? (
-            <ShieldAlert className="h-5 w-5 text-orange-600" />
+            <ShieldAlert className="h-5 w-5 text-primary" />
           ) : (
             <MessageSquare className="h-5 w-5 text-blue-600" />
           )}
@@ -72,12 +72,10 @@ export const PrimaryMetricsCards = ({
             <Skeleton className="h-8 w-20" />
           ) : metricsError && isRabbitMQAuthError(metricsError) ? (
             <div>
-              <div className="text-lg font-semibold text-orange-600 mb-1">
+              <div className="text-lg font-semibold text-primary mb-1">
                 Permission Required
               </div>
-              <p className="text-xs text-orange-600">
-                Need 'monitor' permission
-              </p>
+              <p className="text-xs text-primary">Need 'monitor' permission</p>
             </div>
           ) : (
             <div>
@@ -98,7 +96,7 @@ export const PrimaryMetricsCards = ({
             Active Queues
           </CardTitle>
           {metricsError && isRabbitMQAuthError(metricsError) ? (
-            <ShieldAlert className="h-5 w-5 text-orange-600" />
+            <ShieldAlert className="h-5 w-5 text-primary" />
           ) : (
             <Activity className="h-5 w-5 text-green-600" />
           )}
@@ -108,12 +106,10 @@ export const PrimaryMetricsCards = ({
             <Skeleton className="h-8 w-16" />
           ) : metricsError && isRabbitMQAuthError(metricsError) ? (
             <div>
-              <div className="text-lg font-semibold text-orange-600 mb-1">
+              <div className="text-lg font-semibold text-primary mb-1">
                 Permission Required
               </div>
-              <p className="text-xs text-orange-600">
-                Need 'monitor' permission
-              </p>
+              <p className="text-xs text-primary">Need 'monitor' permission</p>
             </div>
           ) : (
             <div>
@@ -134,9 +130,9 @@ export const PrimaryMetricsCards = ({
             Queues Depth
           </CardTitle>
           {metricsError && isRabbitMQAuthError(metricsError) ? (
-            <ShieldAlert className="h-5 w-5 text-orange-600" />
+            <ShieldAlert className="h-5 w-5 text-primary" />
           ) : (
-            <Zap className="h-5 w-5 text-orange-600" />
+            <Zap className="h-5 w-5 text-primary" />
           )}
         </CardHeader>
         <CardContent>
@@ -144,19 +140,17 @@ export const PrimaryMetricsCards = ({
             <Skeleton className="h-8 w-20" />
           ) : metricsError && isRabbitMQAuthError(metricsError) ? (
             <div>
-              <div className="text-lg font-semibold text-orange-600 mb-1">
+              <div className="text-lg font-semibold text-primary mb-1">
                 Permission Required
               </div>
-              <p className="text-xs text-orange-600">
-                Need 'monitor' permission
-              </p>
+              <p className="text-xs text-primary">Need 'monitor' permission</p>
             </div>
           ) : (
             <div>
               <div className="text-3xl font-bold text-foreground">
                 {metrics.queueDepth}
               </div>
-              <p className="text-xs text-orange-600 mt-1">
+              <p className="text-xs text-primary mt-1">
                 Updates every 10s{showOverviewUpdating && " (updating...)"}
               </p>
             </div>
@@ -170,7 +164,7 @@ export const PrimaryMetricsCards = ({
             Avg Latency
           </CardTitle>
           {metricsError && isRabbitMQAuthError(metricsError) ? (
-            <ShieldAlert className="h-5 w-5 text-orange-600" />
+            <ShieldAlert className="h-5 w-5 text-primary" />
           ) : (
             <Clock className="h-5 w-5 text-purple-600" />
           )}
@@ -180,12 +174,10 @@ export const PrimaryMetricsCards = ({
             <Skeleton className="h-8 w-16" />
           ) : metricsError && isRabbitMQAuthError(metricsError) ? (
             <div>
-              <div className="text-lg font-semibold text-orange-600 mb-1">
+              <div className="text-lg font-semibold text-primary mb-1">
                 Permission Required
               </div>
-              <p className="text-xs text-orange-600">
-                Need 'monitor' permission
-              </p>
+              <p className="text-xs text-primary">Need 'monitor' permission</p>
             </div>
           ) : (
             <div>

@@ -111,7 +111,7 @@ export function QueueTable({
                           onClick={() =>
                             onNavigateToQueue(encodeURIComponent(queue.name))
                           }
-                          className="text-left font-medium text-orange-600 hover:text-orange-700 hover:underline transition-colors cursor-pointer"
+                          className="text-left font-medium text-primary hover:text-primary hover:underline transition-colors cursor-pointer"
                         >
                           {queue.name}
                         </button>
@@ -134,7 +134,7 @@ export function QueueTable({
                     <TableCell className="font-mono text-blue-600">
                       {metrics.messagesReady}
                     </TableCell>
-                    <TableCell className="font-mono text-orange-600">
+                    <TableCell className="font-mono text-primary">
                       {metrics.messagesUnacked}
                     </TableCell>
                     <TableCell>
