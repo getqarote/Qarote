@@ -4,7 +4,15 @@ const tseslint = require("typescript-eslint");
 const simpleImportSort = require("eslint-plugin-simple-import-sort");
 
 module.exports = tseslint.config(
-  { ignores: ["dist", "node_modules", "scripts", "vitest.config.ts"] },
+  {
+    ignores: [
+      "dist",
+      "node_modules",
+      "scripts",
+      "vitest.config.ts",
+      "prisma.config.ts",
+    ],
+  },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ["**/*.{ts,tsx}"],

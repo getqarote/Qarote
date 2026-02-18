@@ -43,7 +43,7 @@ export async function ensureWorkspaceMember(
   role: UserRole,
   tx?: Omit<
     Prisma.TransactionClient,
-    "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends"
+    "$connect" | "$disconnect" | "$on" | "$transaction" | "$extends"
   >
 ): Promise<void> {
   const client = tx || prisma;

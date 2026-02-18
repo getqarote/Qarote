@@ -1,5 +1,4 @@
 import { PrismaPg } from "@prisma/adapter-pg";
-import type {} from "@prisma/client"; // Generated Prisma client imports @prisma/client/runtime internally
 
 import { config } from "@/config";
 
