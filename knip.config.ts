@@ -13,6 +13,7 @@ const config: KnipConfig = {
     },
     "apps/api": {
       project: ["src/**/*.ts"],
+      prisma: false, // Prisma plugin loads prisma.config.ts which requires DATABASE_URL at load time
     },
   },
   ignore: [
@@ -49,6 +50,7 @@ const config: KnipConfig = {
     // API dependencies that are used but not directly imported
     "pino-pretty", // Used in logger config
     "@react-email/components", // Used in email templates but knip doesn't detect it
+    "@prisma/client", // Peer dependency of generated Prisma client
     // Tailwind v4 dependencies referenced via CSS @plugin/@import directives
     "tailwindcss",
     "tailwindcss-animate",
