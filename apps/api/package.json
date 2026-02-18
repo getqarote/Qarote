@@ -75,7 +75,7 @@
     "@notionhq/client": "^5.9.0",
     "@prisma/adapter-pg": "^7.4.0",
     "@prisma/client": "^7.4.0",
-    "@react-email/components": "^1.0.7",
+    "@react-email/components": "^1.0.8",
     "@react-email/render": "^2.0.4",
     "@sentry/node": "^10.39.0",
     "@sentry/profiling-node": "^10.39.0",
