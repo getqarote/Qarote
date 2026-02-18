@@ -1,5 +1,5 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 
 import { Crown, Loader2, Server, TrendingUp, Users, Zap } from "lucide-react";
 

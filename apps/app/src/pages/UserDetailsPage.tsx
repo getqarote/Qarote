@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useMemo, useState } from "react";
+import { useNavigate, useParams } from "react-router";
 
 import { AlertCircle, ArrowLeft, HelpCircle } from "lucide-react";
 import { toast } from "sonner";
@@ -62,7 +62,10 @@ export default function UserDetailsPage() {
   const [removePassword, setRemovePassword] = useState(false);
 
   // Form states for setting permissions
-  const [selectedVHost, setSelectedVHost] = useState("/");
+  // null means "use derived default from data", string means "user explicitly chose this"
+  const [selectedVHostOverride, setSelectedVHostOverride] = useState<
+    string | null
+  >(null);
   const [configureRegexp, setConfigureRegexp] = useState(".*");
   const [writeRegexp, setWriteRegexp] = useState(".*");
   const [readRegexp, setReadRegexp] = useState(".*");
@@ -89,25 +92,24 @@ export default function UserDetailsPage() {
     serverExists
   );
 
-  // Update selected vhost when vhosts data is loaded
-  useEffect(() => {
-    if (vhostsData?.vhosts?.length > 0 && selectedVHost === "/") {
+  // Derive the default vhost from loaded data
+  const derivedDefaultVHost = useMemo(() => {
+    if (vhostsData?.vhosts?.length > 0) {
       // If user has existing permissions, default to the first permission's vhost
       if (userData?.permissions?.length > 0) {
-        setSelectedVHost(userData.permissions[0].vhost);
-      } else {
-        // Check if "/" exists in the vhosts, otherwise use the first available
-        const hasDefaultVhost = vhostsData.vhosts.some(
-          (vhost) => vhost.name === "/"
-        );
-        if (hasDefaultVhost) {
-          setSelectedVHost("/");
-        } else {
-          setSelectedVHost(vhostsData.vhosts[0].name);
-        }
+        return userData.permissions[0].vhost;
       }
+      // Check if "/" exists in the vhosts, otherwise use the first available
+      const hasDefaultVhost = vhostsData.vhosts.some(
+        (vhost) => vhost.name === "/"
+      );
+      return hasDefaultVhost ? "/" : vhostsData.vhosts[0].name;
     }
-  }, [vhostsData, userData?.permissions, selectedVHost]);
+    return "/";
+  }, [vhostsData, userData?.permissions]);
+
+  const selectedVHost = selectedVHostOverride ?? derivedDefaultVHost;
+  const setSelectedVHost = setSelectedVHostOverride;
 
   const deleteUserMutation = useDeleteUser();
   const updateUserMutation = useUpdateUser();
@@ -283,7 +285,7 @@ export default function UserDetailsPage() {
       });
       toast.success("Permissions set successfully");
       // Clear the form fields
-      setSelectedVHost("/");
+      setSelectedVHost(null);
       setConfigureRegexp(".*");
       setWriteRegexp(".*");
       setReadRegexp(".*");

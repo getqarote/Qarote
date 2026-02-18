@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router";
 
 import { CheckCircle, Mail, RefreshCw, XCircle } from "lucide-react";
 import { toast } from "sonner";
@@ -33,15 +33,25 @@ export default function VerifyEmail() {
   const queryClient = useQueryClient();
   const { isAuthenticated, updateUser } = useAuth();
   const verificationAttempted = useRef(false);
+  const token = searchParams.get("token");
   const [verificationState, setVerificationState] = useState<{
     loading: boolean;
     result: VerificationResult | null;
-  }>({
-    loading: true,
-    result: null,
+  }>(() => {
+    if (!token) {
+      return {
+        loading: false,
+        result: {
+          success: false,
+          error: "No verification token provided",
+        },
+      };
+    }
+    return {
+      loading: true,
+      result: null,
+    };
   });
-
-  const token = searchParams.get("token");
 
   // tRPC mutations
   const verifyEmailMutation = trpc.auth.verification.verifyEmail.useMutation({
@@ -108,13 +118,6 @@ export default function VerifyEmail() {
 
     if (!token) {
       logger.log("No token found in URL");
-      setVerificationState({
-        loading: false,
-        result: {
-          success: false,
-          error: "No verification token provided",
-        },
-      });
       return;
     }
 
@@ -131,7 +134,6 @@ export default function VerifyEmail() {
       tokenPrefix: token.substring(0, 8),
     });
 
-    setVerificationState({ loading: true, result: null });
     verifyEmailMutation.mutate({ token });
   }, [token]);
 

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 
 import { logger } from "@/lib/logger";
 import { trpc } from "@/lib/trpc/client";

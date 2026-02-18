@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router";
 
 import { ArrowLeft, Mail, Send } from "lucide-react";
 import { toast } from "sonner";
@@ -25,22 +25,16 @@ const ForgotPassword: React.FC = () => {
   const [email, setEmail] = useState("");
   const [emailSent, setEmailSent] = useState(false);
 
-  const resetPasswordMutation = useRequestPasswordReset();
-
-  // Handle success/error with useEffect or in the mutation
-  useEffect(() => {
-    if (resetPasswordMutation.isSuccess) {
+  const resetPasswordMutation = useRequestPasswordReset({
+    onSuccess: () => {
       setEmailSent(true);
       toast.success("Password reset instructions sent to your email");
-    }
-    if (resetPasswordMutation.isError) {
-      logger.error(
-        "Password reset request error:",
-        resetPasswordMutation.error
-      );
+    },
+    onError: (error: Error) => {
+      logger.error("Password reset request error:", error);
       toast.error("Failed to send password reset email. Please try again.");
-    }
-  }, [resetPasswordMutation.isSuccess, resetPasswordMutation.isError]);
+    },
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

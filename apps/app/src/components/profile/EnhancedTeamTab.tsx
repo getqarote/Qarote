@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 
 import { Clock, Lock, Mail, UserPlus, Users, X } from "lucide-react";
 

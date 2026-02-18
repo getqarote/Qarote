@@ -1,5 +1,5 @@
 import { QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router";
 
 import { queryClient } from "@/lib/queryClient";
 import { TRPCProvider } from "@/lib/trpc/provider";
@@ -43,12 +43,7 @@ const App = () => {
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <Toaster />
-          <BrowserRouter
-            future={{
-              v7_startTransition: true,
-              v7_relativeSplatPath: true,
-            }}
-          >
+          <BrowserRouter>
             <Routes>
               {/* Redirect old routes for backward compatibility */}
               <Route

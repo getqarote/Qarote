@@ -2,7 +2,7 @@ import "@/styles/google-auth.css";
 
 import React from "react";
 import { CredentialResponse, GoogleLogin } from "@react-oauth/google";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 
 import { logger } from "@/lib/logger";
 import { trpc } from "@/lib/trpc/client";
