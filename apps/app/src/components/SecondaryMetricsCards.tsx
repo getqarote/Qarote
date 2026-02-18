@@ -57,7 +57,7 @@ export const SecondaryMetricsCards = ({
   }, [enhancedMetricsFetching]);
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <Card className="hover:shadow-lg transition-all duration-300 border-0 shadow-md bg-card backdrop-blur-sm">
+      <Card className="hover:shadow-lg transition-all duration-300 border-0 shadow-md bg-card backdrop-blur-xs">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">
             Connected Nodes
@@ -93,7 +93,7 @@ export const SecondaryMetricsCards = ({
         </CardContent>
       </Card>
 
-      <Card className="hover:shadow-lg transition-all duration-300 border-0 shadow-md bg-card backdrop-blur-sm">
+      <Card className="hover:shadow-lg transition-all duration-300 border-0 shadow-md bg-card backdrop-blur-xs">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">
             CPU Usage
@@ -129,7 +129,7 @@ export const SecondaryMetricsCards = ({
         </CardContent>
       </Card>
 
-      <Card className="hover:shadow-lg transition-all duration-300 border-0 shadow-md bg-card backdrop-blur-sm">
+      <Card className="hover:shadow-lg transition-all duration-300 border-0 shadow-md bg-card backdrop-blur-xs">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">
             Memory Usage

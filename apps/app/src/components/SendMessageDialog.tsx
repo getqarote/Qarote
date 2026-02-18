@@ -95,7 +95,7 @@ function LabelWithTooltip({
           side={side}
           sideOffset={5}
           align="start"
-          className="max-w-sm z-[9999] border shadow-md"
+          className="max-w-sm z-9999 border shadow-md"
           avoidCollisions={true}
           collisionPadding={20}
           sticky="always"
@@ -592,7 +592,7 @@ export function SendMessageDialog({
                             key={index}
                             className="flex items-start gap-2 text-sm"
                           >
-                            <div className="w-1 h-1 bg-current rounded-full mt-2 flex-shrink-0" />
+                            <div className="w-1 h-1 bg-current rounded-full mt-2 shrink-0" />
                             <div className="flex-1">{suggestion}</div>
                             {(suggestion.includes("default exchange") ||
                               suggestion.includes("Consider using")) && (
@@ -627,7 +627,7 @@ export function SendMessageDialog({
                                 key={index}
                                 className="flex items-start gap-2 text-sm text-gray-600"
                               >
-                                <div className="w-1 h-1 bg-gray-400 rounded-full mt-2 flex-shrink-0" />
+                                <div className="w-1 h-1 bg-gray-400 rounded-full mt-2 shrink-0" />
                                 <div className="flex-1">{cause}</div>
                               </div>
                             )
@@ -1284,7 +1284,7 @@ export function SendMessageDialog({
                     !form.watch("exchange") ||
                     !form.watch("payload")
                   }
-                  className="gap-2 bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white"
+                  className="gap-2 bg-linear-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white"
                 >
                   {publishMutation.isPending ? (
                     <>

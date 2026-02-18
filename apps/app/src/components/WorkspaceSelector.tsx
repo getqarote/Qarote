@@ -145,17 +145,17 @@ export function WorkspaceSelector() {
             disabled={switchWorkspaceMutation.isPending}
           >
             <div className="flex items-center gap-2 min-w-0">
-              <Building2 className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+              <Building2 className="w-4 h-4 text-muted-foreground shrink-0" />
               <span className="truncate font-medium text-foreground">
                 {currentWorkspace?.name || workspace?.name}
               </span>
               {currentWorkspace && (
-                <div className="flex items-center gap-1 flex-shrink-0">
+                <div className="flex items-center gap-1 shrink-0">
                   {getRoleIcon(currentWorkspace)}
                 </div>
               )}
             </div>
-            <ChevronDown className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+            <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />
           </Button>
         </DropdownMenuTrigger>
 
@@ -187,7 +187,7 @@ export function WorkspaceSelector() {
                 >
                   <div className="flex items-center justify-between w-full">
                     <div className="flex items-center gap-3 min-w-0">
-                      <Building2 className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                      <Building2 className="w-4 h-4 text-muted-foreground shrink-0" />
                       <div className="min-w-0">
                         <div className="font-medium text-foreground truncate">
                           {ws.name}
@@ -203,7 +203,7 @@ export function WorkspaceSelector() {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 flex-shrink-0">
+                    <div className="flex items-center gap-2 shrink-0">
                       {ws.id === workspace?.id && (
                         <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                       )}

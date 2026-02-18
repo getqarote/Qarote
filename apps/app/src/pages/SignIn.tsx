@@ -72,7 +72,7 @@ const SignIn: React.FC = () => {
           </p>
         </div>
 
-        <Card className="bg-white/95 backdrop-blur-sm border-white/20 shadow-2xl">
+        <Card className="bg-white/95 backdrop-blur-xs border-white/20 shadow-2xl">
           <CardHeader>
             <CardTitle className="text-gray-900">Welcome back</CardTitle>
             <CardDescription>

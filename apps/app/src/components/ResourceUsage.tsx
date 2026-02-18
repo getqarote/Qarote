@@ -143,7 +143,7 @@ export const ResourceUsage = ({
   ];
 
   return (
-    <Card className="border-0 shadow-md bg-card backdrop-blur-sm">
+    <Card className="border-0 shadow-md bg-card backdrop-blur-xs">
       <CardHeader>
         <CardTitle className="text-lg font-semibold text-foreground flex items-center gap-2">
           <Cpu className="w-5 h-5 text-yellow-600" />

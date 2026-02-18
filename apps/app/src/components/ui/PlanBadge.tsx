@@ -30,7 +30,7 @@ export function PlanBadge({ size = "md", showIcon = true }: PlanBadgeProps) {
 
   return (
     <div
-      className={`flex items-center gap-2 ${color} rounded-full ${sizeClasses[size]} font-medium shadow-sm border border-white/20 backdrop-blur-sm`}
+      className={`flex items-center gap-2 ${color} rounded-full ${sizeClasses[size]} font-medium shadow-xs border border-white/20 backdrop-blur-xs`}
     >
       {showIcon && <Crown className={`${iconSizes[size]} text-yellow-500`} />}
       <span>{displayName}</span>

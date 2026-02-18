@@ -274,7 +274,7 @@ const Index = () => {
       >
         {/* Decorative elements - subtle colored accents */}
         <div className="absolute inset-0 opacity-5 overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-orange-400/20 to-transparent"></div>
+          <div className="absolute top-0 left-0 w-full h-32 bg-linear-to-b from-orange-400/20 to-transparent"></div>
           <div className="absolute -top-20 -right-20 sm:-top-40 sm:-right-40 w-40 h-40 sm:w-80 sm:h-80 bg-orange-300 rounded-full filter blur-3xl opacity-20"></div>
           <div className="absolute top-1/2 -left-20 sm:-left-40 w-32 h-32 sm:w-60 sm:h-60 bg-red-300 rounded-full filter blur-3xl opacity-20"></div>
         </div>
@@ -318,7 +318,7 @@ const Index = () => {
         <div id="video" className="relative pb-12">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div
-              className="relative w-full aspect-video rounded-[1rem] overflow-hidden group cursor-pointer shadow-soft"
+              className="relative w-full aspect-video rounded-2xl overflow-hidden group cursor-pointer shadow-soft"
               onClick={() => setIsVideoPlaying(true)}
             >
               {!isVideoPlaying ? (
@@ -383,28 +383,28 @@ const Index = () => {
                 </h3>
                 <div className="space-y-5 mb-16">
                   <div className="flex gap-4 items-start">
-                    <XIcon className="w-6 h-6 text-red-500 flex-shrink-0 mt-0.5" />
+                    <XIcon className="w-6 h-6 text-red-500 shrink-0 mt-0.5" />
                     <p className="text-foreground">
                       An outdated UI that slows you down
                     </p>
                   </div>
 
                   <div className="flex gap-4 items-start">
-                    <XIcon className="w-6 h-6 text-red-500 flex-shrink-0 mt-0.5" />
+                    <XIcon className="w-6 h-6 text-red-500 shrink-0 mt-0.5" />
                     <p className="text-foreground">
                       No unified view across servers or environments
                     </p>
                   </div>
 
                   <div className="flex gap-4 items-start">
-                    <XIcon className="w-6 h-6 text-red-500 flex-shrink-0 mt-0.5" />
+                    <XIcon className="w-6 h-6 text-red-500 shrink-0 mt-0.5" />
                     <p className="text-foreground">
                       No reliable, actionable alerts
                     </p>
                   </div>
 
                   <div className="flex gap-4 items-start">
-                    <XIcon className="w-6 h-6 text-red-500 flex-shrink-0 mt-0.5" />
+                    <XIcon className="w-6 h-6 text-red-500 shrink-0 mt-0.5" />
                     <p className="text-foreground">
                       DIY dashboards and scripts everywhere
                     </p>
@@ -431,28 +431,28 @@ const Index = () => {
                 </h3>
                 <div className="space-y-5 mb-16">
                   <div className="flex gap-4 items-start">
-                    <CheckIcon className="w-6 h-6 text-green-500 flex-shrink-0 mt-0.5" />
+                    <CheckIcon className="w-6 h-6 text-green-500 shrink-0 mt-0.5" />
                     <p className="text-foreground">
                       A clean, modern UI built for speed and clarity
                     </p>
                   </div>
 
                   <div className="flex gap-4 items-start">
-                    <CheckIcon className="w-6 h-6 text-green-500 flex-shrink-0 mt-0.5" />
+                    <CheckIcon className="w-6 h-6 text-green-500 shrink-0 mt-0.5" />
                     <p className="text-foreground">
                       A unified dashboard for all your servers and environments
                     </p>
                   </div>
 
                   <div className="flex gap-4 items-start">
-                    <CheckIcon className="w-6 h-6 text-green-500 flex-shrink-0 mt-0.5" />
+                    <CheckIcon className="w-6 h-6 text-green-500 shrink-0 mt-0.5" />
                     <p className="text-foreground">
                       Smart, actionable alerts that catch issues early
                     </p>
                   </div>
 
                   <div className="flex gap-4 items-start">
-                    <CheckIcon className="w-6 h-6 text-green-500 flex-shrink-0 mt-0.5" />
+                    <CheckIcon className="w-6 h-6 text-green-500 shrink-0 mt-0.5" />
                     <p className="text-foreground">
                       Zero-setup monitoring, no scripts, no maintenance
                     </p>
@@ -532,7 +532,7 @@ const Index = () => {
                 const appBaseUrl = import.meta.env.VITE_APP_BASE_URL;
                 window.location.href = `${appBaseUrl}/auth/sign-up`;
               }}
-              className="bg-gradient-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600 px-4 py-3 sm:px-8 sm:py-4 rounded-lg font-semibold transition-colors duration-200 text-base sm:text-lg"
+              className="bg-linear-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600 px-4 py-3 sm:px-8 sm:py-4 rounded-lg font-semibold transition-colors duration-200 text-base sm:text-lg"
             >
               Start monitoring for free
             </button>
@@ -541,10 +541,10 @@ const Index = () => {
       </section>
 
       {/* Enterprise Licenses Section */}
-      <section className="py-20 bg-gradient-to-b from-background to-muted/20">
+      <section className="py-20 bg-linear-to-b from-background to-muted/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto text-center">
-            <div className="inline-flex items-center justify-center p-2 bg-gradient-to-r from-orange-500/10 to-red-500/10 rounded-full mb-6">
+            <div className="inline-flex items-center justify-center p-2 bg-linear-to-r from-orange-500/10 to-red-500/10 rounded-full mb-6">
               <Building2Icon className="w-8 h-8 text-orange-600" />
             </div>
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-6">
@@ -586,7 +586,7 @@ const Index = () => {
                 const portalUrl = import.meta.env.VITE_PORTAL_URL;
                 window.location.href = portalUrl;
               }}
-              className="bg-gradient-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600 px-4 py-3 sm:px-8 sm:py-4 rounded-lg font-semibold transition-colors duration-200 text-base sm:text-lg"
+              className="bg-linear-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600 px-4 py-3 sm:px-8 sm:py-4 rounded-lg font-semibold transition-colors duration-200 text-base sm:text-lg"
             >
               Self-Hosted Solution
             </button>
@@ -614,8 +614,8 @@ const Index = () => {
               {/* Step 1: Sign up */}
               <div className="bg-transparent border border-border rounded-xl pt-6 px-6 pb-0 flex gap-6 flex-col relative overflow-visible shadow-soft">
                 <div className="flex gap-6">
-                  <div className="flex-shrink-0">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-r from-orange-500 to-red-500 flex items-center justify-center">
+                  <div className="shrink-0">
+                    <div className="w-12 h-12 rounded-full bg-linear-to-r from-orange-500 to-red-500 flex items-center justify-center">
                       <span className="text-white font-bold text-xl">1</span>
                     </div>
                   </div>
@@ -709,8 +709,8 @@ const Index = () => {
               {/* Step 2: Add your servers */}
               <div className="bg-transparent border border-border rounded-xl pt-6 px-6 pb-0 flex gap-6 flex-col relative overflow-visible shadow-soft">
                 <div className="flex gap-6">
-                  <div className="flex-shrink-0">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-r from-orange-500 to-red-500 flex items-center justify-center">
+                  <div className="shrink-0">
+                    <div className="w-12 h-12 rounded-full bg-linear-to-r from-orange-500 to-red-500 flex items-center justify-center">
                       <span className="text-white font-bold text-xl">2</span>
                     </div>
                   </div>
@@ -728,7 +728,7 @@ const Index = () => {
                   <div className="bg-card border-t border-l border-r border-border rounded-t-xl p-6 max-w-sm mx-auto">
                     <div className="space-y-3">
                       <div className="bg-background border border-border rounded-lg p-4 flex items-center gap-4">
-                        <div className="flex-shrink-0">
+                        <div className="shrink-0">
                           <ServerIcon className="w-6 h-6 text-orange-600" />
                         </div>
                         <div className="flex-1">
@@ -741,7 +741,7 @@ const Index = () => {
                         </div>
                       </div>
                       <div className="bg-background border border-border rounded-lg p-4 flex items-center gap-4">
-                        <div className="flex-shrink-0">
+                        <div className="shrink-0">
                           <ServerIcon className="w-6 h-6 text-orange-600" />
                         </div>
                         <div className="flex-1">
@@ -754,7 +754,7 @@ const Index = () => {
                         </div>
                       </div>
                       <div className="bg-background border border-border rounded-lg p-4 flex items-center gap-4">
-                        <div className="flex-shrink-0">
+                        <div className="shrink-0">
                           <ServerIcon className="w-6 h-6 text-orange-600" />
                         </div>
                         <div className="flex-1">
@@ -774,8 +774,8 @@ const Index = () => {
               {/* Step 3: Monitor and collaborate */}
               <div className="bg-transparent border border-border rounded-xl pt-6 px-6 pb-0 flex gap-6 flex-col relative overflow-visible shadow-soft">
                 <div className="flex gap-6">
-                  <div className="flex-shrink-0">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-r from-orange-500 to-red-500 flex items-center justify-center">
+                  <div className="shrink-0">
+                    <div className="w-12 h-12 rounded-full bg-linear-to-r from-orange-500 to-red-500 flex items-center justify-center">
                       <span className="text-white font-bold text-xl">3</span>
                     </div>
                   </div>
@@ -906,7 +906,7 @@ const Index = () => {
                 aria-label="Toggle between monthly and yearly billing"
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                   billingPeriod === "yearly"
-                    ? "bg-gradient-to-r from-orange-500 to-red-500"
+                    ? "bg-linear-to-r from-orange-500 to-red-500"
                     : "bg-muted"
                 }`}
               >
@@ -1228,7 +1228,7 @@ const Index = () => {
                         </div>
                         <Button
                           size={undefined}
-                          className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600 px-4 py-3 sm:px-8 sm:py-4 rounded-lg font-semibold transition-colors duration-200 text-base sm:text-lg h-auto"
+                          className="w-full bg-linear-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600 px-4 py-3 sm:px-8 sm:py-4 rounded-lg font-semibold transition-colors duration-200 text-base sm:text-lg h-auto"
                           onClick={() => {
                             const appBaseUrl = import.meta.env
                               .VITE_APP_BASE_URL;
@@ -1267,7 +1267,7 @@ const Index = () => {
                   <div className="text-left mb-2">
                     <div className="flex items-center gap-2 mb-2">
                       <Building2Icon className="w-6 h-6 text-orange-600" />
-                      <h3 className="text-2xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
+                      <h3 className="text-2xl font-bold bg-linear-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
                         Enterprise Edition
                       </h3>
                     </div>
@@ -1399,7 +1399,7 @@ const Index = () => {
                   window.Tawk_API.maximize();
                 }
               }}
-              className="inline-flex items-center justify-center bg-gradient-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600 px-4 py-3 sm:px-8 sm:py-4 rounded-lg font-semibold transition-colors duration-200 text-base sm:text-lg"
+              className="inline-flex items-center justify-center bg-linear-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600 px-4 py-3 sm:px-8 sm:py-4 rounded-lg font-semibold transition-colors duration-200 text-base sm:text-lg"
             >
               Contact us
             </button>
@@ -1411,7 +1411,7 @@ const Index = () => {
       <section className="pt-12 pb-20 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div
-            className="text-white rounded-xl py-20 px-12 lg:px-16 relative overflow-hidden bg-gradient-auth bg-[length:200%_200%] animate-gradient-shift"
+            className="text-white rounded-xl py-20 px-12 lg:px-16 relative overflow-hidden bg-gradient-auth bg-size-[200%_200%] animate-gradient-shift"
             style={{
               animationDuration: "8s",
             }}

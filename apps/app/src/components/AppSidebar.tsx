@@ -142,7 +142,7 @@ export function AppSidebar() {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   return (
-    <Sidebar className="border-r-0 bg-sidebar backdrop-blur-sm">
+    <Sidebar className="border-r-0 bg-sidebar backdrop-blur-xs">
       <SidebarHeader className="border-b border-sidebar-border p-6">
         <div className="flex items-center gap-3">
           <img src="/images/new_icon.svg" alt="Qarote" className="w-6 h-6" />
@@ -183,7 +183,7 @@ export function AppSidebar() {
                   {selectedServerId &&
                     servers.find((s) => s.id === selectedServerId) && (
                       <div className="flex items-center gap-2 w-full min-w-0">
-                        <Server className="h-3 w-3 flex-shrink-0" />
+                        <Server className="h-3 w-3 shrink-0" />
                         <div className="flex flex-col min-w-0 flex-1">
                           <span
                             className="truncate font-medium"
@@ -212,7 +212,7 @@ export function AppSidebar() {
                 {servers.map((server) => (
                   <SelectItem key={server.id} value={server.id}>
                     <div className="flex items-center gap-2 w-full min-w-0">
-                      <Server className="h-3 w-3 flex-shrink-0" />
+                      <Server className="h-3 w-3 shrink-0" />
                       <div className="flex flex-col min-w-0 flex-1">
                         <span className="font-medium" title={server.host}>
                           {shortenHost(server.host)}
@@ -267,7 +267,7 @@ export function AppSidebar() {
                     <SelectValue placeholder="Select a vhost...">
                       {selectedVHost && (
                         <div className="flex items-center gap-2 w-full min-w-0">
-                          <FolderTree className="h-3 w-3 flex-shrink-0" />
+                          <FolderTree className="h-3 w-3 shrink-0" />
                           <span className="truncate font-medium">
                             {selectedVHost === "/" ? "Default" : selectedVHost}
                           </span>
@@ -279,7 +279,7 @@ export function AppSidebar() {
                     {availableVHosts.map((vhost) => (
                       <SelectItem key={vhost.name} value={vhost.name}>
                         <div className="flex items-center gap-2 w-full min-w-0">
-                          <FolderTree className="h-3 w-3 flex-shrink-0" />
+                          <FolderTree className="h-3 w-3 shrink-0" />
                           <span className="font-medium">
                             {vhost.name === "/" ? "Default" : vhost.name}
                           </span>
@@ -325,7 +325,7 @@ export function AppSidebar() {
                         asChild
                         className={`w-full justify-start transition-all duration-200 ${
                           isActive
-                            ? "bg-gradient-to-r from-orange-600 to-red-600 text-white hover:from-orange-700 hover:to-red-700"
+                            ? "bg-linear-to-r from-orange-600 to-red-600 text-white hover:from-orange-700 hover:to-red-700"
                             : "hover:bg-sidebar-accent text-sidebar-foreground"
                         }`}
                       >

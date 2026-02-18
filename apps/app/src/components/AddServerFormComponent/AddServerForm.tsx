@@ -245,7 +245,7 @@ export const AddServerForm = ({
         </DialogTrigger>
       )}
       <DialogContent className="sm:max-w-[700px] lg:max-w-[800px] max-h-[90vh] flex flex-col bg-card">
-        <DialogHeader className="flex-shrink-0">
+        <DialogHeader className="shrink-0">
           <DialogTitle className="flex items-center gap-2">
             {mode === "edit" ? (
               <>
@@ -289,7 +289,7 @@ export const AddServerForm = ({
           </Form>
         </div>
 
-        <DialogFooter className="flex gap-2 flex-shrink-0 pt-6 border-t border-gray-200">
+        <DialogFooter className="flex gap-2 shrink-0 pt-6 border-t border-gray-200">
           <TestConnectionButton
             onTestConnection={testConnection}
             isTestingConnection={isTestingConnection}

@@ -107,7 +107,7 @@ export const RabbitMqVersionInfo = ({
       {/* Version Support Information */}
       <Alert className="[&>svg]:top-1/2 [&>svg]:-translate-y-1/2">
         <InfoIcon className="h-4 w-4" />
-        <AlertDescription className="!translate-y-0">
+        <AlertDescription className="translate-y-0!">
           <div className="flex items-center justify-between mb-2">
             <div className="font-medium">
               RabbitMQ Version Support ({workspace.plan} Plan)

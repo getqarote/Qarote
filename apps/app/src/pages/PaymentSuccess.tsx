@@ -112,7 +112,7 @@ const PaymentSuccess: React.FC = () => {
   }, [sessionId, purchaseTracked, workspace?.id, utils]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-600 via-red-600 to-orange-700 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-linear-to-br from-orange-600 via-red-600 to-orange-700 flex items-center justify-center p-4">
       <div className="bg-white rounded-lg shadow-lg max-w-md w-full p-8 text-center">
         <div className="mb-6">
           <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />

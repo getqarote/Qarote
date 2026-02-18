@@ -107,7 +107,7 @@ export const CancelSubscriptionModal: React.FC<
           <Card className="border-destructive/20 bg-destructive/10">
             <CardContent className="pt-6">
               <div className="flex items-start gap-3">
-                <AlertTriangle className="h-5 w-5 text-destructive mt-0.5 flex-shrink-0" />
+                <AlertTriangle className="h-5 w-5 text-destructive mt-0.5 shrink-0" />
                 <div className="space-y-2">
                   <h3 className="font-semibold text-destructive">
                     Important: What happens when you cancel

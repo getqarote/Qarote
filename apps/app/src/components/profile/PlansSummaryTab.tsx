@@ -183,7 +183,7 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
 
       {/* Upgrade Suggestion */}
       {nextPlan && nextPlanInfo && (
-        <Card className="border border-purple-200 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20">
+        <Card className="border border-purple-200 bg-linear-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20">
           <CardContent className="p-6">
             <div className="flex items-start justify-between">
               <div className="flex-1">

@@ -49,6 +49,9 @@ const config: KnipConfig = {
     // API dependencies that are used but not directly imported
     "pino-pretty", // Used in logger config
     "@react-email/components", // Used in email templates but knip doesn't detect it
+    // Tailwind v4 dependencies referenced via CSS @plugin/@import directives
+    "tailwindcss",
+    "tailwindcss-animate",
   ],
   ignoreBinaries: ["stripe", "act"],
 };
