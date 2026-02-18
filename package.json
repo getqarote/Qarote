@@ -84,7 +84,7 @@
     "knip": "^5.79.0",
     "lint-staged": "^16.2.7",
     "syncpack": "^13.0.4",
-    "turbo": "^2.8.9"
+    "turbo": "^2.8.10"
   },
   "overrides": {
     "vite": "7.2.7",
