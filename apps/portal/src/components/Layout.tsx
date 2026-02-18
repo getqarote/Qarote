@@ -68,7 +68,7 @@ const Layout = () => {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="View on GitHub"
-                className="text-foreground hover:text-orange-500 transition-colors p-2"
+                className="text-foreground hover:text-primary transition-colors p-2"
               >
                 <Github className="w-5 h-5" />
               </a>

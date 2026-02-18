@@ -700,7 +700,7 @@ export const EnhancedNodesTable = ({
                                     <span className="text-gray-600">
                                       Connections Closed:
                                     </span>
-                                    <span className="font-medium text-orange-700">
+                                    <span className="font-medium text-primary">
                                       {node.connection_closed
                                         ? formatNumber(node.connection_closed)
                                         : "N/A"}
@@ -720,7 +720,7 @@ export const EnhancedNodesTable = ({
                                     <span className="text-gray-600">
                                       Channels Closed:
                                     </span>
-                                    <span className="font-medium text-orange-600">
+                                    <span className="font-medium text-primary">
                                       {node.channel_closed
                                         ? formatNumber(node.channel_closed)
                                         : "N/A"}
@@ -808,7 +808,7 @@ export const EnhancedNodesTable = ({
                                     <span className="text-gray-600">
                                       Mnesia Disk Tx:
                                     </span>
-                                    <span className="font-medium text-orange-700">
+                                    <span className="font-medium text-primary">
                                       {node.mnesia_disk_tx_count
                                         ? formatNumber(
                                             node.mnesia_disk_tx_count

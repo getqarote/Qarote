@@ -181,7 +181,7 @@ const CreateExchangeDialog = ({
                   onChange={(e) => setExchangeName(e.target.value)}
                   placeholder="Enter exchange name"
                   disabled={createExchangeMutation.isPending}
-                  className="h-11 focus:ring-2 focus:ring-orange-200 focus:border-orange-400 focus:ring-offset-0"
+                  className="h-11 focus:ring-2 focus:ring-primary/20 focus:border-primary/60 focus:ring-offset-0"
                 />
               </div>
               <div className="space-y-2">
@@ -192,7 +192,7 @@ const CreateExchangeDialog = ({
                   Exchange Type
                 </Label>
                 <Select value={exchangeType} onValueChange={setExchangeType}>
-                  <SelectTrigger className="h-11 focus:ring-2 focus:ring-orange-200 focus:border-orange-400 focus:ring-offset-0">
+                  <SelectTrigger className="h-11 focus:ring-2 focus:ring-primary/20 focus:border-primary/60 focus:ring-offset-0">
                     <SelectValue placeholder="Select exchange type" />
                   </SelectTrigger>
                   <SelectContent>
@@ -214,7 +214,7 @@ const CreateExchangeDialog = ({
                     checked={durable}
                     onCheckedChange={(checked) => setDurable(checked === true)}
                     disabled={createExchangeMutation.isPending}
-                    className="focus:ring-2 focus:ring-orange-200 focus:ring-offset-0"
+                    className="focus:ring-2 focus:ring-primary/20 focus:ring-offset-0"
                   />
                   <Label htmlFor="durable" className="text-sm font-medium">
                     Durable
@@ -239,7 +239,7 @@ const CreateExchangeDialog = ({
                       setAutoDelete(checked === true)
                     }
                     disabled={createExchangeMutation.isPending}
-                    className="focus:ring-2 focus:ring-orange-200 focus:ring-offset-0"
+                    className="focus:ring-2 focus:ring-primary/20 focus:ring-offset-0"
                   />
                   <Label htmlFor="auto-delete" className="text-sm font-medium">
                     Auto Delete
@@ -262,7 +262,7 @@ const CreateExchangeDialog = ({
                     checked={internal}
                     onCheckedChange={(checked) => setInternal(checked === true)}
                     disabled={createExchangeMutation.isPending}
-                    className="focus:ring-2 focus:ring-orange-200 focus:ring-offset-0"
+                    className="focus:ring-2 focus:ring-primary/20 focus:ring-offset-0"
                   />
                   <Label htmlFor="internal" className="text-sm font-medium">
                     Internal
@@ -292,7 +292,7 @@ const CreateExchangeDialog = ({
                 onChange={(e) => setArguments(e.target.value)}
                 placeholder='{ "key": value }'
                 disabled={createExchangeMutation.isPending}
-                className="min-h-[120px] font-mono text-sm focus:ring-2 focus:ring-orange-200 focus:border-orange-400 focus:ring-offset-0"
+                className="min-h-[120px] font-mono text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary/60 focus:ring-offset-0"
               />
               <div className="space-y-2">
                 <p className="text-sm font-medium text-gray-700">
@@ -322,7 +322,7 @@ const CreateExchangeDialog = ({
                             );
                           }
                         }}
-                        className="px-3 py-1.5 text-xs bg-gray-100 hover:bg-orange-100 text-gray-700 hover:text-orange-800 rounded-md border hover:border-orange-300 transition-colors"
+                        className="px-3 py-1.5 text-xs bg-gray-100 hover:bg-primary/10 text-gray-700 hover:text-primary rounded-md border hover:border-primary/30 transition-colors"
                       >
                         alternate-exchange
                       </button>
@@ -356,7 +356,7 @@ const CreateExchangeDialog = ({
                             );
                           }
                         }}
-                        className="px-3 py-1.5 text-xs bg-gray-100 hover:bg-orange-100 text-gray-700 hover:text-orange-800 rounded-md border hover:border-orange-300 transition-colors"
+                        className="px-3 py-1.5 text-xs bg-gray-100 hover:bg-primary/10 text-gray-700 hover:text-primary rounded-md border hover:border-primary/30 transition-colors"
                       >
                         x-message-deduplication
                       </button>
@@ -389,7 +389,7 @@ const CreateExchangeDialog = ({
                             );
                           }
                         }}
-                        className="px-3 py-1.5 text-xs bg-gray-100 hover:bg-orange-100 text-gray-700 hover:text-orange-800 rounded-md border hover:border-orange-300 transition-colors"
+                        className="px-3 py-1.5 text-xs bg-gray-100 hover:bg-primary/10 text-gray-700 hover:text-primary rounded-md border hover:border-primary/30 transition-colors"
                       >
                         x-cache-size
                       </button>
@@ -423,7 +423,7 @@ const CreateExchangeDialog = ({
                             );
                           }
                         }}
-                        className="px-3 py-1.5 text-xs bg-gray-100 hover:bg-orange-100 text-gray-700 hover:text-orange-800 rounded-md border hover:border-orange-300 transition-colors"
+                        className="px-3 py-1.5 text-xs bg-gray-100 hover:bg-primary/10 text-gray-700 hover:text-primary rounded-md border hover:border-primary/30 transition-colors"
                       >
                         x-cache-ttl
                       </button>
@@ -457,7 +457,7 @@ const CreateExchangeDialog = ({
                             );
                           }
                         }}
-                        className="px-3 py-1.5 text-xs bg-gray-100 hover:bg-orange-100 text-gray-700 hover:text-orange-800 rounded-md border hover:border-orange-300 transition-colors"
+                        className="px-3 py-1.5 text-xs bg-gray-100 hover:bg-primary/10 text-gray-700 hover:text-primary rounded-md border hover:border-primary/30 transition-colors"
                       >
                         x-cache-persistence
                       </button>

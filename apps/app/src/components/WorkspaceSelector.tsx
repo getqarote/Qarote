@@ -98,7 +98,7 @@ export function WorkspaceSelector() {
         return {
           text: "Create New Workspace",
           badge: "Upgrade",
-          badgeColor: "bg-orange-500",
+          badgeColor: "bg-primary",
           title: "Upgrade to create multiple workspaces",
         };
       case UserPlan.DEVELOPER:
@@ -119,7 +119,7 @@ export function WorkspaceSelector() {
         return {
           text: "Create New Workspace",
           badge: "Upgrade",
-          badgeColor: "bg-orange-500",
+          badgeColor: "bg-primary",
           title: "Upgrade to create multiple workspaces",
         };
     }

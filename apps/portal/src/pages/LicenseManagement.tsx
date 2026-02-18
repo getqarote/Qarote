@@ -76,7 +76,7 @@ const LicenseManagement = () => {
           </p>
         </div>
         <Link to="/purchase">
-          <Button>Purchase New License</Button>
+          <Button className="btn-primary">Purchase New License</Button>
         </Link>
       </div>
 

@@ -42,8 +42,8 @@ const AuthButtons = ({
 
   const primaryButtonStyles =
     variant === "light"
-      ? "bg-white text-orange-600 hover:bg-gray-50"
-      : "bg-linear-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600";
+      ? "bg-white text-primary hover:bg-gray-50"
+      : "bg-gradient-button hover:bg-gradient-button-hover text-white";
 
   const secondaryButtonStyles =
     variant === "light"

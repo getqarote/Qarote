@@ -34,7 +34,7 @@ export const AddServerButton = () => {
         return {
           text: "Add Server",
           badge: "Upgrade",
-          badgeColor: "bg-orange-500",
+          badgeColor: "bg-primary",
           title: "Upgrade to add servers",
         };
       case UserPlan.DEVELOPER:
@@ -57,7 +57,7 @@ export const AddServerButton = () => {
         return {
           text: "Add Server",
           badge: "Upgrade",
-          badgeColor: "bg-orange-500",
+          badgeColor: "bg-primary",
           title: "Upgrade to add servers",
         };
     }

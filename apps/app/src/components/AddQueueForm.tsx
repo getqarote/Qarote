@@ -383,7 +383,7 @@ export function AddQueueForm({
                                         : ex.type === "fanout"
                                           ? "bg-blue-500"
                                           : ex.type === "topic"
-                                            ? "bg-orange-500"
+                                            ? "bg-primary"
                                             : ex.type === "headers"
                                               ? "bg-purple-500"
                                               : "bg-gray-500"
@@ -460,7 +460,7 @@ export function AddQueueForm({
                 onChange={(e) => setArguments(e.target.value)}
                 placeholder='{ "key": value }'
                 disabled={createQueueMutation.isPending}
-                className="min-h-[120px] font-mono text-sm focus:ring-2 focus:ring-orange-200 focus:border-orange-400 focus:ring-offset-0"
+                className="min-h-[120px] font-mono text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary/60 focus:ring-offset-0"
               />
               <div className="space-y-2">
                 <p className="text-sm font-medium text-gray-700">
@@ -490,7 +490,7 @@ export function AddQueueForm({
                               );
                             }
                           }}
-                          className="px-3 py-1.5 text-xs bg-gray-100 hover:bg-orange-100 text-gray-700 hover:text-orange-800 rounded-md border hover:border-orange-300 transition-colors"
+                          className="px-3 py-1.5 text-xs bg-gray-100 hover:bg-primary/10 text-gray-700 hover:text-primary rounded-md border hover:border-primary/30 transition-colors"
                         >
                           x-max-length
                         </button>
@@ -523,7 +523,7 @@ export function AddQueueForm({
                               );
                             }
                           }}
-                          className="px-3 py-1.5 text-xs bg-gray-100 hover:bg-orange-100 text-gray-700 hover:text-orange-800 rounded-md border hover:border-orange-300 transition-colors"
+                          className="px-3 py-1.5 text-xs bg-gray-100 hover:bg-primary/10 text-gray-700 hover:text-primary rounded-md border hover:border-primary/30 transition-colors"
                         >
                           x-message-ttl
                         </button>
@@ -557,7 +557,7 @@ export function AddQueueForm({
                               );
                             }
                           }}
-                          className="px-3 py-1.5 text-xs bg-gray-100 hover:bg-orange-100 text-gray-700 hover:text-orange-800 rounded-md border hover:border-orange-300 transition-colors"
+                          className="px-3 py-1.5 text-xs bg-gray-100 hover:bg-primary/10 text-gray-700 hover:text-primary rounded-md border hover:border-primary/30 transition-colors"
                         >
                           x-expires
                         </button>
@@ -591,7 +591,7 @@ export function AddQueueForm({
                               );
                             }
                           }}
-                          className="px-3 py-1.5 text-xs bg-gray-100 hover:bg-orange-100 text-gray-700 hover:text-orange-800 rounded-md border hover:border-orange-300 transition-colors"
+                          className="px-3 py-1.5 text-xs bg-gray-100 hover:bg-primary/10 text-gray-700 hover:text-primary rounded-md border hover:border-primary/30 transition-colors"
                         >
                           x-max-priority
                         </button>
@@ -625,7 +625,7 @@ export function AddQueueForm({
                               );
                             }
                           }}
-                          className="px-3 py-1.5 text-xs bg-gray-100 hover:bg-orange-100 text-gray-700 hover:text-orange-800 rounded-md border hover:border-orange-300 transition-colors"
+                          className="px-3 py-1.5 text-xs bg-gray-100 hover:bg-primary/10 text-gray-700 hover:text-primary rounded-md border hover:border-primary/30 transition-colors"
                         >
                           x-overflow
                         </button>
@@ -660,7 +660,7 @@ export function AddQueueForm({
                               );
                             }
                           }}
-                          className="px-3 py-1.5 text-xs bg-gray-100 hover:bg-orange-100 text-gray-700 hover:text-orange-800 rounded-md border hover:border-orange-300 transition-colors"
+                          className="px-3 py-1.5 text-xs bg-gray-100 hover:bg-primary/10 text-gray-700 hover:text-primary rounded-md border hover:border-primary/30 transition-colors"
                         >
                           x-dead-letter-exchange
                         </button>
@@ -694,7 +694,7 @@ export function AddQueueForm({
                               );
                             }
                           }}
-                          className="px-3 py-1.5 text-xs bg-gray-100 hover:bg-orange-100 text-gray-700 hover:text-orange-800 rounded-md border hover:border-orange-300 transition-colors"
+                          className="px-3 py-1.5 text-xs bg-gray-100 hover:bg-primary/10 text-gray-700 hover:text-primary rounded-md border hover:border-primary/30 transition-colors"
                         >
                           x-dead-letter-routing-key
                         </button>
@@ -727,7 +727,7 @@ export function AddQueueForm({
                               );
                             }
                           }}
-                          className="px-3 py-1.5 text-xs bg-gray-100 hover:bg-orange-100 text-gray-700 hover:text-orange-800 rounded-md border hover:border-orange-300 transition-colors"
+                          className="px-3 py-1.5 text-xs bg-gray-100 hover:bg-primary/10 text-gray-700 hover:text-primary rounded-md border hover:border-primary/30 transition-colors"
                         >
                           x-single-active-consumer
                         </button>
@@ -827,7 +827,7 @@ export function AddQueueForm({
                 disabled={
                   createQueueMutation.isPending || !form.formState.isValid
                 }
-                className="bg-linear-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white"
+                className="bg-gradient-button hover:bg-gradient-button-hover text-white"
               >
                 {createQueueMutation.isPending ? (
                   <>

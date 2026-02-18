@@ -82,7 +82,7 @@ export const ConnectedNodes = ({
           </div>
           <Link
             to="/nodes"
-            className="flex items-center gap-1 text-sm text-orange-600 hover:text-orange-700 transition-colors font-medium"
+            className="flex items-center gap-1 text-sm text-primary hover:text-primary transition-colors font-medium"
           >
             See more
             <ArrowRight className="h-4 w-4" />

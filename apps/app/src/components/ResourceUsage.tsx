@@ -119,7 +119,7 @@ export const ResourceUsage = ({
       value: overview?.object_totals?.channels || 0,
       unit: "",
       icon: Zap,
-      color: "text-orange-600",
+      color: "text-primary",
       type: "count" as const,
       max: 200,
       tooltip:
@@ -159,7 +159,7 @@ export const ResourceUsage = ({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 {resource.hasError ? (
-                  <ShieldAlert className="w-4 h-4 text-orange-600" />
+                  <ShieldAlert className="w-4 h-4 text-primary" />
                 ) : (
                   <resource.icon className={`w-4 h-4 ${resource.color}`} />
                 )}
@@ -170,7 +170,7 @@ export const ResourceUsage = ({
               </div>
               {resource.hasError ? (
                 <div className="text-sm">
-                  <span className="font-bold text-orange-600">
+                  <span className="font-bold text-primary">
                     Permission Required
                   </span>
                 </div>
@@ -195,8 +195,8 @@ export const ResourceUsage = ({
             </div>
 
             {resource.hasError ? (
-              <div className="w-full bg-orange-100 rounded-full h-2">
-                <div className="h-2 rounded-full bg-orange-400 w-0"></div>
+              <div className="w-full bg-primary/10 rounded-full h-2">
+                <div className="h-2 rounded-full bg-primary/80 w-0"></div>
               </div>
             ) : (
               <div className="w-full bg-gray-200 rounded-full h-2">

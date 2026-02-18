@@ -11,8 +11,22 @@ All styling must be done through Tailwind CSS classes and configuration, not inl
 1. **No inline styles** - Never use `style={{}}` prop in React components
 2. **No CSS-in-JS** - Do not use styled-components, emotion, or similar libraries
 3. **Use Tailwind classes** - All styling should use Tailwind utility classes via `className`
-4. **Extend Tailwind config** - Custom colors, animations, and utilities go in `tailwind.config.ts`
-5. **Component classes in CSS** - Reusable component patterns go in `index.css` using `@layer components`
+4. **Extend @theme block** - Custom colors, animations, and utilities go in the `@theme` block in `index.css`
+5. **Custom utilities via @utility** - Reusable component patterns go in `index.css` using `@utility` directives
+
+## Font System
+
+- **Body text**: Uses `IBM Plex Mono` via `--font-sans` (Tailwind default body font)
+- **Headings (h1-h6)**: Uses `Inter` via `--font-heading` (applied automatically in base styles)
+- Apply `font-heading` class to override individual elements to use Inter
+- Never load fonts via CSS `@import` — use `<link>` tags in `index.html`
+
+## Color System
+
+- **Primary orange**: `#FF570A` — use `text-primary`, `bg-primary`, `border-primary` etc.
+- **DO NOT** use hardcoded Tailwind palette colors like `text-orange-600`, `bg-orange-500`
+- Use design tokens: `text-primary`, `bg-primary/10`, `border-primary/20`, `hover:text-primary`
+- Gradients use `bg-gradient-button`, `bg-gradient-title`, `bg-gradient-auth` tokens
 
 ## Allowed Approaches
 
@@ -27,50 +41,47 @@ All styling must be done through Tailwind CSS classes and configuration, not inl
 </div>
 ```
 
-### ✅ Extend Tailwind Config
+### ✅ Extend @theme Block (Tailwind v4)
 
-**`tailwind.config.ts`**:
-```typescript
-export default {
-  theme: {
-    extend: {
-      colors: {
-        primary: {
-          DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))",
-        },
-      },
-      backgroundImage: {
-        "gradient-button": "linear-gradient(to right, rgb(194 65 12), rgb(185 28 28))",
-      },
-      animation: {
-        "slide-in-right": "slide-in-right 1s ease-out forwards",
-      },
-    },
-  },
-} satisfies Config;
+**`index.css`**:
+```css
+@theme {
+  --font-sans: 'IBM Plex Mono', monospace;
+  --font-heading: 'Inter', sans-serif;
+
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+
+  --background-image-gradient-button: linear-gradient(
+    to right,
+    rgb(255 87 10),
+    rgb(220 80 20)
+  );
+}
 ```
 
 **Component**:
 ```tsx
-// ✅ Correct - Using custom Tailwind utilities from config
-<button className="bg-gradient-button hover:bg-gradient-button-hover">
+// ✅ Correct - Using custom Tailwind utilities from @theme
+<button className="bg-gradient-button hover:bg-gradient-button-hover text-white">
   Click me
 </button>
 ```
 
-### ✅ Use Component Classes in CSS
+### ✅ Use Custom Utilities in CSS
 
 **`index.css`**:
 ```css
-@layer components {
-  .btn-primary {
-    @apply bg-gradient-button hover:bg-gradient-button-hover text-white font-medium px-6 py-2 rounded-md;
-  }
-  
-  .card-unified {
-    @apply bg-card border border-border rounded-lg shadow-sm;
-  }
+@utility btn-primary {
+  @apply bg-gradient-button hover:bg-gradient-button-hover text-white font-medium px-6 py-2 rounded-md transition-all duration-200;
+}
+
+@utility card-unified {
+  @apply bg-card border border-border rounded-lg shadow-xs;
+}
+
+@utility btn-card {
+  @apply w-full flex items-center gap-4 bg-card border border-border rounded-md px-6 py-4 text-foreground font-medium transition-colors hover:border-primary/50 hover:bg-primary/5 cursor-pointer;
 }
 ```
 
@@ -79,6 +90,9 @@ export default {
 // ✅ Correct - Using component classes from CSS
 <button className="btn-primary">Click me</button>
 <Card className="card-unified">Content</Card>
+<button className="btn-card">
+  <Icon /> Select option
+</button>
 ```
 
 ## Prohibited Approaches
@@ -110,12 +124,31 @@ const StyledButton = styled.button`
 <button className="bg-gradient-button px-4 py-2">Click me</button>
 ```
 
+### ❌ Hardcoded Tailwind Palette Colors
+
+```tsx
+// ❌ Incorrect - Using hardcoded orange/red colors
+<span className="text-orange-600">Text</span>
+<div className="bg-orange-100">Background</div>
+<button className="bg-linear-to-r from-orange-500 to-red-500">Button</button>
+
+// ✅ Correct - Use design tokens
+<span className="text-primary">Text</span>
+<div className="bg-primary/10">Background</div>
+<button className="bg-gradient-button">Button</button>
+```
+
 ## Button Styling
 
 - **Primary action buttons (CTAs) MUST use the gradient button classes:**
   - Use `bg-gradient-button hover:bg-gradient-button-hover text-white` for all primary action buttons
+  - Or use the `btn-primary` / `btn-primary-large` utility classes
   - This applies to submit buttons, save buttons, create buttons, and any other primary CTAs
   - **DO NOT** use hardcoded colors like `bg-orange-500 hover:bg-orange-600`
+
+- **Card-style selection buttons MUST use `btn-card`:**
+  - Use for provider selectors, option cards, and selection-style buttons
+  - White/card background with thin border, hover highlight
 
 ## Toggle Input Styling
 
@@ -126,14 +159,17 @@ const StyledButton = styled.button`
 
 ## File Organization
 
-- **`tailwind.config.ts`** - Custom theme extensions (colors, animations, utilities)
-- **`index.css`** - Global styles, CSS variables, component classes (`@layer components`)
+- **`index.css` @theme block** - Custom theme extensions (colors, fonts, gradients, animations)
+- **`index.css` @utility blocks** - Reusable component utilities (btn-primary, card-unified, etc.)
+- **`index.css` @layer base** - CSS variables, base styles, heading font rules
 - **`styles/*.css`** - Third-party component overrides only (e.g., `google-auth.css`)
 
-## Benefits
+## Cross-App Consistency
 
-- **Consistency**: All styles follow the same system
-- **Maintainability**: Styles are centralized and easy to update
-- **Performance**: Tailwind purges unused styles
-- **Type safety**: Tailwind classes are validated
-- **Reusability**: Custom utilities and components can be reused across the app
+All 3 apps (`web`, `app`, `portal`) MUST share identical:
+- Font tokens (`--font-sans`, `--font-heading`)
+- Color variables (`:root` and `.dark` blocks)
+- Gradient definitions (`gradient-button`, `gradient-title`, `gradient-auth`)
+- Core utility definitions (`btn-primary`, `card-unified`, `btn-card`, `title-gradient`, etc.)
+
+Portal-specific utilities (`billing-toggle`, `license-card-*`, `icon-*`) only exist in portal's CSS.

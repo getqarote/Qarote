@@ -161,7 +161,7 @@ const Exchanges = () => {
       case "topic":
         return "bg-purple-100 text-purple-800";
       case "headers":
-        return "bg-orange-100 text-orange-800";
+        return "bg-primary/10 text-primary";
       default:
         return "bg-gray-100 text-gray-800";
     }

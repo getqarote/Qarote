@@ -325,7 +325,7 @@ export function AppSidebar() {
                         asChild
                         className={`w-full justify-start transition-all duration-200 ${
                           isActive
-                            ? "bg-linear-to-r from-orange-600 to-red-600 text-white hover:from-orange-700 hover:to-red-700"
+                            ? "bg-gradient-button hover:bg-gradient-button-hover text-white"
                             : "hover:bg-sidebar-accent text-sidebar-foreground"
                         }`}
                       >

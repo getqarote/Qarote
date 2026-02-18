@@ -54,7 +54,7 @@ export const RecentAlerts = () => {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-orange-500" />
+              <AlertTriangle className="h-5 w-5 text-primary" />
               Recent Alerts
               <Badge variant="outline">Error</Badge>
             </CardTitle>
@@ -62,7 +62,7 @@ export const RecentAlerts = () => {
         </CardHeader>
         <CardContent>
           <div className="text-center py-4">
-            <AlertTriangle className="h-8 w-8 mx-auto text-orange-500 mb-2" />
+            <AlertTriangle className="h-8 w-8 mx-auto text-primary mb-2" />
             <p className="text-sm text-muted-foreground">
               Failed to load alerts data
             </p>
@@ -96,7 +96,7 @@ export const RecentAlerts = () => {
           </div>
           <Link
             to="/alerts"
-            className="flex items-center gap-1 text-sm text-orange-600 hover:text-orange-700 transition-colors font-medium"
+            className="flex items-center gap-1 text-sm text-primary hover:text-primary transition-colors font-medium"
           >
             View All
             <ArrowRight className="h-4 w-4" />

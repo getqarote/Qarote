@@ -97,11 +97,11 @@ const SignUp: React.FC = () => {
           <h2 className="mt-6 text-3xl font-extrabold text-white">
             Create your account
           </h2>
-          <p className="mt-2 text-sm text-orange-100">
+          <p className="mt-2 text-sm text-primary-foreground">
             Or{" "}
             <Link
               to="/auth/sign-in"
-              className="font-medium text-orange-300 hover:text-orange-200 transition-colors"
+              className="font-medium text-primary/60 hover:text-primary/30 transition-colors"
             >
               sign in to your existing account
             </Link>
@@ -279,7 +279,7 @@ const SignUp: React.FC = () => {
                             I agree to the{" "}
                             <Link
                               to="/terms-of-service"
-                              className="font-medium text-orange-600 hover:text-orange-500 underline"
+                              className="font-medium text-primary hover:text-primary underline"
                               target="_blank"
                               rel="noopener noreferrer"
                             >
@@ -288,7 +288,7 @@ const SignUp: React.FC = () => {
                             and the{" "}
                             <Link
                               to="/privacy-policy"
-                              className="font-medium text-orange-600 hover:text-orange-500 underline"
+                              className="font-medium text-primary hover:text-primary underline"
                               target="_blank"
                               rel="noopener noreferrer"
                             >

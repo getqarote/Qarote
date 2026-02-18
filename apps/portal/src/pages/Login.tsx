@@ -68,11 +68,11 @@ const Login = () => {
           <h2 className="mt-6 text-3xl font-extrabold text-white">
             Sign in to your account
           </h2>
-          <p className="mt-2 text-sm text-orange-100">
+          <p className="mt-2 text-sm text-primary-foreground">
             Or{" "}
             <Link
               to="/auth/sign-up"
-              className="font-medium text-orange-300 hover:text-orange-200 transition-colors"
+              className="font-medium text-primary/60 hover:text-primary/30 transition-colors"
             >
               create a new account
             </Link>

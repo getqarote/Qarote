@@ -149,7 +149,7 @@ const Workspace = () => {
               Redirecting you to your dashboard...
             </p>
             <div className="flex items-center justify-center">
-              <Loader2 className="h-5 w-5 animate-spin text-orange-600" />
+              <Loader2 className="h-5 w-5 animate-spin text-primary" />
             </div>
           </div>
         ) : (
@@ -171,8 +171,8 @@ const Workspace = () => {
             <div className="max-w-lg mx-auto">
               <Card className="border-0 shadow-lg">
                 <CardHeader className="text-center">
-                  <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-lg bg-orange-100 dark:bg-orange-900/30 mb-4">
-                    <Plus className="h-6 w-6 text-orange-600" />
+                  <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-lg bg-primary/10 dark:bg-primary/30 mb-4">
+                    <Plus className="h-6 w-6 text-primary" />
                   </div>
                   <CardTitle className="text-xl">New Workspace</CardTitle>
                 </CardHeader>

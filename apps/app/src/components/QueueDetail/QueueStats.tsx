@@ -79,7 +79,7 @@ export function QueueStats({ queue }: QueueStatsProps) {
                 {formatBytes(queue.memory)}
               </p>
             </div>
-            <HardDrive className="w-8 h-8 text-orange-600" />
+            <HardDrive className="w-8 h-8 text-primary" />
           </div>
         </CardContent>
       </Card>

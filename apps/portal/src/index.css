@@ -16,6 +16,9 @@
 }
 
 @theme {
+  --font-sans: 'IBM Plex Mono', monospace;
+  --font-heading: 'Inter', sans-serif;
+
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
@@ -36,10 +39,10 @@
 
   --color-accent: hsl(var(--accent));
   --color-accent-foreground: hsl(var(--accent-foreground));
-  --color-accent-orange: rgb(249 115 22);
-  --color-accent-orange-hover: rgb(234 88 12);
-  --color-accent-red: rgb(239 68 68);
-  --color-accent-red-hover: rgb(220 38 38);
+  --color-accent-orange: rgb(255 120 50);
+  --color-accent-orange-hover: rgb(255 87 10);
+  --color-accent-red: rgb(255 120 50);
+  --color-accent-red-hover: rgb(220 80 20);
 
   --color-popover: hsl(var(--popover));
   --color-popover-foreground: hsl(var(--popover-foreground));
@@ -67,41 +70,41 @@
 
   --background-image-gradient-page: linear-gradient(
     to bottom right,
-    rgb(254 215 170),
-    rgb(254 202 202)
+    rgb(255 200 160),
+    rgb(255 170 140)
   );
   --background-image-gradient-button: linear-gradient(
     to right,
-    rgb(194 65 12),
-    rgb(185 28 28)
+    rgb(255 87 10),
+    rgb(220 80 20)
   );
   --background-image-gradient-button-hover: linear-gradient(
     to right,
-    rgb(154 52 18),
-    rgb(153 27 27)
+    rgb(220 70 8),
+    rgb(190 65 15)
   );
   --background-image-gradient-title: linear-gradient(
     to right,
-    rgb(234 88 12),
-    rgb(220 38 38)
+    rgb(255 87 10),
+    rgb(220 80 20)
   );
   --background-image-gradient-accent: linear-gradient(
     to right,
-    rgb(249 115 22),
-    rgb(239 68 68)
+    rgb(255 120 50),
+    rgb(255 87 10)
   );
   --background-image-gradient-accent-hover: linear-gradient(
     to right,
-    rgb(234 88 12),
-    rgb(220 38 38)
+    rgb(255 87 10),
+    rgb(220 80 20)
   );
   --background-image-gradient-auth: linear-gradient(
     135deg,
-    rgb(234 88 12) 0%,
-    rgb(249 115 22) 25%,
-    rgb(220 38 38) 50%,
-    rgb(234 88 12) 75%,
-    rgb(249 115 22) 100%
+    rgb(255 87 10) 0%,
+    rgb(255 120 50) 25%,
+    rgb(220 80 20) 50%,
+    rgb(255 87 10) 75%,
+    rgb(255 120 50) 100%
   );
 
   --background-color-card-unified: rgb(252 250 246);
@@ -173,12 +176,10 @@
 }
 
 @utility page-layout {
-  /* Page Layout Components */
   @apply flex h-screen bg-background;
 }
 
 @utility btn-primary {
-  /* Button Components */
   @apply bg-gradient-button hover:bg-gradient-button-hover text-white font-medium px-6 py-2 rounded-md transition-all duration-200;
 }
 
@@ -186,9 +187,12 @@
   @apply bg-gradient-button hover:bg-gradient-button-hover text-white font-medium px-8 py-3 rounded-lg transition-all duration-200;
 }
 
+@utility btn-card {
+  @apply w-full flex items-center gap-4 bg-card border border-border rounded-md px-6 py-4 text-foreground font-medium transition-colors hover:border-primary/50 hover:bg-primary/5 cursor-pointer;
+}
+
 @utility title-gradient {
-  /* Title Components */
-  @apply bg-linear-to-r from-primary to-primary/80 bg-clip-text text-transparent;
+  @apply bg-gradient-title bg-clip-text text-transparent font-bold;
 }
 
 @utility title-page {
@@ -274,7 +278,7 @@
     --popover-foreground: 20 14.3% 4.1%;
 
     /* Orange primary theme */
-    --primary: 25 95% 53%;
+    --primary: 19 100% 52%;
     --primary-foreground: 0 0% 98%;
 
     --secondary: 30 25% 94%;
@@ -291,7 +295,7 @@
 
     --border: 30 25% 89%;
     --input: 30 25% 89%;
-    --ring: 25 95% 53%;
+    --ring: 19 100% 52%;
 
     /* Smaller radius */
     --radius: 0.25rem;
@@ -299,12 +303,12 @@
     /* Orange sidebar theme */
     --sidebar-background: 30 54% 98%;
     --sidebar-foreground: 25 25% 20%;
-    --sidebar-primary: 25 95% 53%;
+    --sidebar-primary: 19 100% 52%;
     --sidebar-primary-foreground: 0 0% 98%;
     --sidebar-accent: 30 35% 92%;
     --sidebar-accent-foreground: 25 45% 17%;
     --sidebar-border: 30 25% 89%;
-    --sidebar-ring: 25 95% 53%;
+    --sidebar-ring: 19 100% 52%;
   }
 
   .dark {
@@ -316,7 +320,7 @@
     --popover-foreground: 0 0% 95%;
 
     /* Orange primary theme for dark mode */
-    --primary: 25 95% 53%;
+    --primary: 19 100% 52%;
     --primary-foreground: 0 0% 98%;
 
     --secondary: 25 14% 12%;
@@ -333,17 +337,17 @@
 
     --border: 25 14% 12%;
     --input: 25 14% 12%;
-    --ring: 25 95% 53%;
+    --ring: 19 100% 52%;
 
     /* Orange sidebar theme for dark mode */
     --sidebar-background: 25 20% 8%;
     --sidebar-foreground: 30 25% 85%;
-    --sidebar-primary: 25 95% 53%;
+    --sidebar-primary: 19 100% 52%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 25 15% 15%;
     --sidebar-accent-foreground: 30 25% 85%;
     --sidebar-border: 25 14% 12%;
-    --sidebar-ring: 25 95% 53%;
+    --sidebar-ring: 19 100% 52%;
   }
 }
 
@@ -354,5 +358,9 @@
 
   body {
     @apply bg-background text-foreground;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
   }
 }

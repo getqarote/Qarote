@@ -56,10 +56,10 @@ const AccordionTrigger = React.forwardRef<
     >
       {children}
       <div className="relative h-8 w-8 shrink-0">
-        <span className="plus absolute inset-0 flex items-center justify-center text-orange-600 font-light text-3xl transition-all duration-200 opacity-100 rotate-0 group-data-[state=open]:opacity-0 group-data-[state=open]:rotate-90">
+        <span className="plus absolute inset-0 flex items-center justify-center text-primary font-light text-3xl transition-all duration-200 opacity-100 rotate-0 group-data-[state=open]:opacity-0 group-data-[state=open]:rotate-90">
           +
         </span>
-        <span className="minus absolute inset-0 flex items-center justify-center text-orange-600 font-light text-3xl transition-all duration-200 opacity-0 -rotate-90 group-data-[state=open]:opacity-100 group-data-[state=open]:rotate-0">
+        <span className="minus absolute inset-0 flex items-center justify-center text-primary font-light text-3xl transition-all duration-200 opacity-0 -rotate-90 group-data-[state=open]:opacity-100 group-data-[state=open]:rotate-0">
           −
         </span>
       </div>
