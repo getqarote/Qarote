@@ -4,6 +4,10 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
 
+env:
+  # Dummy URL for prisma generate (postinstall) — no actual DB connection is made
+  DATABASE_URL: postgresql://localhost:5432/dummy
+
 jobs:
   code-quality:
     name: Code Quality
