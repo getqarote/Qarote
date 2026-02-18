@@ -1,0 +1,18 @@
+language: en-US
+reviews:
+  profile: assertive
+  auto_review:
+    enabled: true
+    base_branches:
+      - main
+  path_instructions:
+    - path: "apps/api/**"
+      instructions: "Backend API using Hono.js, tRPC, and Prisma with PostgreSQL. Pay attention to security, proper error handling, and database query efficiency."
+    - path: "apps/app/**"
+      instructions: "React frontend with TypeScript, Vite, and Tailwind CSS. Check for accessibility, proper state management, and component best practices."
+    - path: "apps/web/**"
+      instructions: "Landing page frontend. Check for accessibility, SEO best practices, performance, and responsive design."
+    - path: "apps/portal/**"
+      instructions: "Customer portal frontend. Check for accessibility, proper state management, security of customer-facing flows, and component best practices."
+chat:
+  auto_reply: true
