@@ -1,8 +1,17 @@
+import { useState } from "react";
+
 import { trpc } from "@/lib/trpc/client";
 
 import { TimeRange } from "@/components/TimeRangeSelector";
 
 import { useWorkspace } from "../ui/useWorkspace";
+
+/** Extract the data type yielded by a tRPC subscription hook. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type SubData<T extends { useSubscription: (input: any, opts: any) => void }> =
+  Parameters<T["useSubscription"]>[1] extends { onData?: (d: infer D) => void }
+    ? D
+    : never;
 
 /**
  * RabbitMQ data hooks
@@ -29,21 +38,27 @@ export const useOverview = (serverId: string | null) => {
 
 export const useQueues = (serverId: string | null, vhost?: string | null) => {
   const { workspace } = useWorkspace();
+  const enabled = !!serverId && !!workspace?.id;
 
-  const query = trpc.rabbitmq.queues.getQueues.useQuery(
+  const [data, setData] = useState<
+    SubData<typeof trpc.rabbitmq.queues.watchQueues> | undefined
+  >();
+  const [error, setError] = useState<Error | null>(null);
+
+  trpc.rabbitmq.queues.watchQueues.useSubscription(
     {
       serverId: serverId || "",
       workspaceId: workspace?.id || "",
       vhost: vhost ? encodeURIComponent(vhost) : undefined,
     },
     {
-      enabled: !!serverId && !!workspace?.id,
-      staleTime: 5000, // 5 seconds
-      refetchInterval: 5000, // Refetch every 5 seconds
+      enabled,
+      onData: setData,
+      onError: setError,
     }
   );
 
-  return query;
+  return { data, error, isLoading: enabled && !data, isError: !!error };
 };
 
 export const useNodes = (serverId: string | null) => {
@@ -90,20 +105,26 @@ export const useQueue = (
 
 export const useMetrics = (serverId: string | null) => {
   const { workspace } = useWorkspace();
+  const enabled = !!serverId && !!workspace?.id;
 
-  const query = trpc.rabbitmq.metrics.getMetrics.useQuery(
+  const [data, setData] = useState<
+    SubData<typeof trpc.rabbitmq.metrics.watchMetrics> | undefined
+  >();
+  const [error, setError] = useState<Error | null>(null);
+
+  trpc.rabbitmq.metrics.watchMetrics.useSubscription(
     {
       serverId: serverId || "",
       workspaceId: workspace?.id || "",
     },
     {
-      enabled: !!serverId && !!workspace?.id,
-      staleTime: 5000, // 5 seconds
-      refetchInterval: 15000, // Refetch every 15 seconds
+      enabled,
+      onData: setData,
+      onError: setError,
     }
   );
 
-  return query;
+  return { data, error, isLoading: enabled && !data, isError: !!error };
 };
 
 // Connections and Channels hooks
@@ -252,21 +273,27 @@ export const useLiveRatesMetrics = (
   timeRange: TimeRange = "1d"
 ) => {
   const { workspace } = useWorkspace();
+  const enabled = !!serverId && !!workspace?.id;
 
-  const query = trpc.rabbitmq.metrics.getRates.useQuery(
+  const [data, setData] = useState<
+    SubData<typeof trpc.rabbitmq.metrics.watchRates> | undefined
+  >();
+  const [error, setError] = useState<Error | null>(null);
+
+  trpc.rabbitmq.metrics.watchRates.useSubscription(
     {
       serverId: serverId || "",
       workspaceId: workspace?.id || "",
       timeRange,
     },
     {
-      enabled: !!serverId && !!workspace?.id,
-      staleTime: 5000, // 5 seconds
-      refetchInterval: 5000, // Refetch every 5 seconds
+      enabled,
+      onData: setData,
+      onError: setError,
     }
   );
 
-  return query;
+  return { data, error, isLoading: enabled && !data, isError: !!error };
 };
 
 export const useQueueLiveRates = (

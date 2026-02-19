@@ -1,6 +1,7 @@
 import { TRPCError } from "@trpc/server";
 
 import { RabbitMQMetricsCalculator } from "@/core/rabbitmq/MetricsCalculator";
+import { abortableSleep } from "@/core/utils";
 
 import {
   GetMetricsSchema,
@@ -287,6 +288,131 @@ export const metricsRouter = router({
           code: "INTERNAL_SERVER_ERROR",
           message: "Failed to fetch live rates data for queue",
         });
+      }
+    }),
+
+  /**
+   * Live system metrics stream — SSE subscription replacing 15s polling (ALL USERS)
+   * Fetches CPU/memory/disk metrics from RabbitMQ every 10s.
+   */
+  watchMetrics: workspaceProcedure
+    .input(ServerWorkspaceInputSchema)
+    .subscription(async function* ({ input, ctx, signal }) {
+      const { serverId, workspaceId } = input;
+
+      const server = await verifyServerAccess(serverId, workspaceId);
+      if (!server) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Server not found or access denied",
+        });
+      }
+
+      const sig = signal ?? new AbortController().signal;
+
+      while (!sig.aborted) {
+        try {
+          const client = await createRabbitMQClient(serverId, workspaceId);
+          const enhancedMetrics = await client.getMetrics();
+          const mappedNodes = NodeMapper.toApiResponseArray(
+            enhancedMetrics.nodes
+          );
+          const mappedOverview = OverviewMapper.toApiResponse(
+            enhancedMetrics.overview
+          );
+
+          yield {
+            metrics: {
+              ...enhancedMetrics,
+              overview: mappedOverview,
+              nodes: mappedNodes,
+            },
+          };
+        } catch (err) {
+          if (err instanceof Error && err.message.includes("401")) {
+            yield {
+              metrics: null,
+              permissionStatus: {
+                hasPermission: false,
+                requiredPermission: "monitor",
+                message:
+                  "User does not have 'monitor' permissions to view metrics data. Please contact your RabbitMQ administrator to grant the necessary permissions.",
+              },
+            };
+          } else {
+            ctx.logger.warn({ err, serverId }, "watchMetrics fetch error");
+          }
+        }
+
+        await abortableSleep(10000, sig);
+      }
+    }),
+
+  /**
+   * Live message rates stream — SSE subscription replacing 5s polling (ALL USERS)
+   * Fetches message rates from RabbitMQ every 4s.
+   */
+  watchRates: workspaceProcedure
+    .input(GetMetricsSchema)
+    .subscription(async function* ({ input, ctx, signal }) {
+      const { serverId, workspaceId, timeRange = "1m" } = input;
+
+      const server = await verifyServerAccess(serverId, workspaceId);
+      if (!server) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Server not found or access denied",
+        });
+      }
+
+      const sig = signal ?? new AbortController().signal;
+
+      while (!sig.aborted) {
+        try {
+          const client = await createRabbitMQClient(serverId, workspaceId);
+          const timeConfig = timeRangeConfigs[timeRange];
+          const overview = await client.getOverviewWithTimeRange(timeConfig);
+          const messagesRates = RabbitMQMetricsCalculator.extractMessageRates(
+            overview,
+            { disk: true }
+          );
+          const queueTotals =
+            RabbitMQMetricsCalculator.extractQueueTotals(overview);
+
+          yield {
+            serverId,
+            timeRange,
+            dataSource: "live_rates_with_time_range",
+            timestamp: new Date().toISOString(),
+            messagesRates,
+            queueTotals,
+          };
+        } catch (err) {
+          if (err instanceof Error && err.message.includes("401")) {
+            yield {
+              serverId,
+              timeRange,
+              dataSource: "permission_denied",
+              timestamp: new Date().toISOString(),
+              messagesRates: [],
+              permissionStatus: {
+                hasPermission: false,
+                requiredPermission: "monitor",
+                message:
+                  "User does not have 'monitor' permissions to view metrics data. Please contact your RabbitMQ administrator to grant the necessary permissions.",
+              },
+              metadata: {
+                plan: null,
+                updateInterval: "real-time",
+                dataPoints: 0,
+              },
+            };
+          } else {
+            ctx.logger.warn({ err, serverId }, "watchRates fetch error");
+          }
+        }
+
+        await abortableSleep(4000, sig);
       }
     }),
 });

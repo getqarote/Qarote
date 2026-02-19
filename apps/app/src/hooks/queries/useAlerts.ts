@@ -1,6 +1,15 @@
+import { useState } from "react";
+
 import { trpc } from "@/lib/trpc/client";
 
 import { useWorkspace } from "../ui/useWorkspace";
+
+/** Extract the data type yielded by a tRPC subscription hook. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type SubData<T extends { useSubscription: (input: any, opts: any) => void }> =
+  Parameters<T["useSubscription"]>[1] extends { onData?: (d: infer D) => void }
+    ? D
+    : never;
 
 /**
  * Alert-related hooks
@@ -70,8 +79,15 @@ export const useRabbitMQAlerts = (
   }
 ) => {
   const { workspace } = useWorkspace();
+  const enabled =
+    (options?.enabled ?? true) && !!serverId && !!workspace?.id && !!vhost;
 
-  const query = trpc.rabbitmq.alerts.getAlerts.useQuery(
+  const [data, setData] = useState<
+    SubData<typeof trpc.rabbitmq.alerts.watchAlerts> | undefined
+  >();
+  const [error, setError] = useState<Error | null>(null);
+
+  trpc.rabbitmq.alerts.watchAlerts.useSubscription(
     {
       serverId: serverId || "",
       workspaceId: workspace?.id || "",
@@ -83,14 +99,13 @@ export const useRabbitMQAlerts = (
       resolved: options?.resolved ? "true" : undefined,
     },
     {
-      enabled:
-        (options?.enabled ?? true) && !!serverId && !!workspace?.id && !!vhost,
-      staleTime: 5000, // 5 seconds
-      refetchInterval: 30000, // Refetch every 30 seconds
+      enabled,
+      onData: setData,
+      onError: setError,
     }
   );
 
-  return query;
+  return { data, error, isLoading: enabled && !data, isError: !!error };
 };
 
 export const useResolvedAlerts = (

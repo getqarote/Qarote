@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server";
 
 import { prisma } from "@/core/prisma";
 import { RabbitMQAmqpClient } from "@/core/rabbitmq/AmqpClient";
+import { abortableSleep } from "@/core/utils";
 
 import {
   getOverLimitWarningMessage,
@@ -748,6 +749,129 @@ export const queuesRouter = router({
             );
           }
         }
+      }
+    }),
+
+  /**
+   * Live queue stream — SSE subscription replacing 5s polling (ALL USERS)
+   * Fetches queues from RabbitMQ every 4s and pushes updates to the client.
+   */
+  watchQueues: workspaceProcedure
+    .input(ServerWorkspaceInputSchema.merge(VHostOptionalQuerySchema))
+    .subscription(async function* ({ input, ctx, signal }) {
+      const { serverId, workspaceId, vhost: vhostParam } = input;
+
+      // Verify access once at connection time — throws if unauthorized
+      const server = await verifyServerAccess(serverId, workspaceId, true);
+      if (!server || !server.workspace) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Server not found or access denied",
+        });
+      }
+
+      const vhost = vhostParam ? decodeURIComponent(vhostParam) : undefined;
+      const sig = signal ?? new AbortController().signal;
+
+      while (!sig.aborted) {
+        try {
+          const client = await createRabbitMQClient(serverId, workspaceId);
+          const queues = await client.getQueues(vhost);
+
+          // Persist queue data and metrics to DB (same as getQueues query)
+          for (const queue of queues) {
+            const queueData = {
+              name: queue.name,
+              vhost: queue.vhost,
+              messages: queue.messages || 0,
+              messagesReady: queue.messages_ready || 0,
+              messagesUnack: queue.messages_unacknowledged || 0,
+              lastFetched: new Date(),
+              serverId,
+            };
+
+            const existingQueue = await prisma.queue.findFirst({
+              where: { name: queue.name, vhost: queue.vhost, serverId },
+            });
+
+            if (existingQueue) {
+              await prisma.queue.update({
+                where: { id: existingQueue.id },
+                data: queueData,
+              });
+              await prisma.queueMetric.create({
+                data: {
+                  queueId: existingQueue.id,
+                  messages: queue.messages || 0,
+                  messagesReady: queue.messages_ready || 0,
+                  messagesUnack: queue.messages_unacknowledged || 0,
+                  publishRate: queue.message_stats?.publish_details?.rate || 0,
+                  consumeRate: queue.message_stats?.deliver_details?.rate || 0,
+                },
+              });
+            } else {
+              const newQueue = await prisma.queue.create({ data: queueData });
+              await prisma.queueMetric.create({
+                data: {
+                  queueId: newQueue.id,
+                  messages: queue.messages || 0,
+                  messagesReady: queue.messages_ready || 0,
+                  messagesUnack: queue.messages_unacknowledged || 0,
+                  publishRate: queue.message_stats?.publish_details?.rate || 0,
+                  consumeRate: queue.message_stats?.deliver_details?.rate || 0,
+                },
+              });
+            }
+          }
+
+          // Sort: most messages first, then alphabetically
+          queues.sort((a, b) => {
+            const diff = (b.messages || 0) - (a.messages || 0);
+            return diff !== 0 ? diff : a.name.localeCompare(b.name);
+          });
+
+          const mappedQueues = QueueMapper.toApiResponseArray(queues);
+
+          const response: {
+            queues: typeof mappedQueues;
+            warning?: {
+              isOverLimit: boolean;
+              message: string;
+              currentQueueCount: number;
+              queueCountAtConnect: number | null;
+              upgradeRecommendation: string;
+              recommendedPlan: string;
+              warningShown: boolean;
+            };
+          } = { queues: mappedQueues };
+
+          if (server.isOverQueueLimit && server.workspace) {
+            const userPlan = await getUserPlan(ctx.user.id);
+            const warningMessage = getOverLimitWarningMessage(
+              userPlan,
+              queues.length
+            );
+            const upgradeRecommendation =
+              getUpgradeRecommendationForOverLimit(userPlan);
+            response.warning = {
+              isOverLimit: true,
+              message: warningMessage,
+              currentQueueCount: queues.length,
+              queueCountAtConnect: server.queueCountAtConnect,
+              upgradeRecommendation: upgradeRecommendation.message,
+              recommendedPlan: upgradeRecommendation.recommendedPlan
+                ? getPlanDisplayName(upgradeRecommendation.recommendedPlan)
+                : "N/A",
+              warningShown: server.overLimitWarningShown,
+            };
+          }
+
+          yield response;
+        } catch (err) {
+          ctx.logger.warn({ err, serverId }, "watchQueues fetch error");
+        }
+
+        await abortableSleep(4000, sig);
       }
     }),
 
