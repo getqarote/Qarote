@@ -28,6 +28,24 @@ export function getUserDisplayName(user: {
 }
 
 /**
+ * Sleep for a given number of milliseconds, resolving early if the signal is aborted.
+ * Use in subscription loops to avoid blocking clean shutdown.
+ */
+export function abortableSleep(ms: number, signal: AbortSignal): Promise<void> {
+  return new Promise((resolve) => {
+    const t = setTimeout(resolve, ms);
+    signal.addEventListener(
+      "abort",
+      () => {
+        clearTimeout(t);
+        resolve();
+      },
+      { once: true }
+    );
+  });
+}
+
+/**
  * Format invitedBy user for API response
  * Returns null if the user is null, otherwise returns formatted object
  */
