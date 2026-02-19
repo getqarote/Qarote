@@ -1,6 +1,7 @@
 import { TRPCError } from "@trpc/server";
 
 import { prisma } from "@/core/prisma";
+import { abortableSleep } from "@/core/utils";
 
 import type { AlertThresholds } from "@/services/alerts/alert.interfaces";
 import { alertService } from "@/services/alerts/alert.service";
@@ -514,6 +515,98 @@ export const alertsRouter = router({
           code: "INTERNAL_SERVER_ERROR",
           message: "Failed to update alert settings",
         });
+      }
+    }),
+
+  /**
+   * Live alerts stream — SSE subscription replacing 30s polling (ALL USERS)
+   * Fetches active alerts every 10s and pushes updates to the client.
+   */
+  watchAlerts: workspaceProcedure
+    .input(ServerWorkspaceInputSchema.merge(AlertsQueryWithOptionalVHostSchema))
+    .subscription(async function* ({ input, ctx, signal }) {
+      const { serverId, workspaceId, vhost: vhostParam, ...query } = input;
+
+      const server = await verifyServerAccess(serverId, workspaceId);
+      if (!server) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Server not found or access denied",
+        });
+      }
+
+      const vhost = vhostParam ? decodeURIComponent(vhostParam) : "/";
+      const sig = signal ?? new AbortController().signal;
+
+      while (!sig.aborted) {
+        try {
+          const userPlan = await getUserPlan(ctx.user.id);
+          const { alerts, summary } = await alertService.getServerAlerts(
+            serverId,
+            server.name,
+            workspaceId,
+            vhost
+          );
+          const thresholds =
+            await alertService.getWorkspaceThresholds(workspaceId);
+
+          if (userPlan === UserPlan.FREE) {
+            yield {
+              success: true,
+              alerts: [],
+              summary,
+              thresholds,
+              total: summary.total,
+              timestamp: new Date().toISOString(),
+            };
+          } else {
+            let filteredAlerts = alerts;
+
+            if (query.severity) {
+              filteredAlerts = filteredAlerts.filter(
+                (a) => a.severity === query.severity
+              );
+            }
+            if (query.category) {
+              filteredAlerts = filteredAlerts.filter(
+                (a) => a.category === query.category
+              );
+            }
+            if (query.resolved !== undefined) {
+              const isResolved = query.resolved === "true";
+              filteredAlerts = filteredAlerts.filter(
+                (a) => a.resolved === isResolved
+              );
+            }
+
+            filteredAlerts.sort(
+              (a, b) =>
+                new Date(b.timestamp).getTime() -
+                new Date(a.timestamp).getTime()
+            );
+
+            const total = filteredAlerts.length;
+            const offset = query.offset || 0;
+            const limit = query.limit;
+            const paginatedAlerts =
+              limit !== undefined
+                ? filteredAlerts.slice(offset, offset + limit)
+                : filteredAlerts;
+
+            yield {
+              success: true,
+              alerts: paginatedAlerts,
+              summary,
+              thresholds,
+              total,
+              timestamp: new Date().toISOString(),
+            };
+          }
+        } catch (err) {
+          ctx.logger.warn({ err, serverId }, "watchAlerts fetch error");
+        }
+
+        await abortableSleep(10000, sig);
       }
     }),
 });
