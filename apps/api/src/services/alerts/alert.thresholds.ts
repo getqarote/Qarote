@@ -3,7 +3,7 @@ import { prisma } from "@/core/prisma";
 
 import { AlertThresholds } from "./alert.interfaces";
 
-import { WorkspaceAlertThresholds } from "@/generated/prisma/client";
+import { UserPlan, WorkspaceAlertThresholds } from "@/generated/prisma/client";
 
 const DEFAULT_THRESHOLDS: AlertThresholds = {
   memory: { warning: 80, critical: 95 },
@@ -47,9 +47,8 @@ class AlertThresholdsService {
 
       const plan = ownerSubscription?.plan || "FREE";
 
-      // Allow modifications for startup and business plans
-      const allowedPlans = ["STARTUP", "BUSINESS"];
-      return allowedPlans.includes(plan);
+      // Allow modifications for developer and enterprise plans
+      return plan === UserPlan.DEVELOPER || plan === UserPlan.ENTERPRISE;
     } catch (error) {
       logger.error(
         { error },
