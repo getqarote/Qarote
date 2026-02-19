@@ -1,17 +1,11 @@
 import { useState } from "react";
 
 import { trpc } from "@/lib/trpc/client";
+import { SubData } from "@/lib/trpc/types";
 
 import { TimeRange } from "@/components/TimeRangeSelector";
 
 import { useWorkspace } from "../ui/useWorkspace";
-
-/** Extract the data type yielded by a tRPC subscription hook. */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type SubData<T extends { useSubscription: (input: any, opts: any) => void }> =
-  Parameters<T["useSubscription"]>[1] extends { onData?: (d: infer D) => void }
-    ? D
-    : never;
 
 /**
  * RabbitMQ data hooks
@@ -53,7 +47,10 @@ export const useQueues = (serverId: string | null, vhost?: string | null) => {
     },
     {
       enabled,
-      onData: setData,
+      onData: (d) => {
+        setError(null);
+        setData(d);
+      },
       onError: setError,
     }
   );
@@ -119,7 +116,10 @@ export const useMetrics = (serverId: string | null) => {
     },
     {
       enabled,
-      onData: setData,
+      onData: (d) => {
+        setError(null);
+        setData(d);
+      },
       onError: setError,
     }
   );
@@ -288,7 +288,10 @@ export const useLiveRatesMetrics = (
     },
     {
       enabled,
-      onData: setData,
+      onData: (d) => {
+        setError(null);
+        setData(d);
+      },
       onError: setError,
     }
   );

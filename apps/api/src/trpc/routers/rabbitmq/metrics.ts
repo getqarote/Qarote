@@ -309,6 +309,17 @@ export const metricsRouter = router({
       }
 
       const sig = signal ?? new AbortController().signal;
+      type MappedOverview = ReturnType<typeof OverviewMapper.toApiResponse>;
+      type MappedNodes = ReturnType<typeof NodeMapper.toApiResponseArray>;
+      let lastMappedOverview: MappedOverview | undefined;
+      let lastMappedNodes: MappedNodes | undefined;
+      let lastEnhancedMetrics:
+        | Awaited<
+            ReturnType<
+              Awaited<ReturnType<typeof createRabbitMQClient>>["getMetrics"]
+            >
+          >
+        | undefined;
 
       while (!sig.aborted) {
         try {
@@ -320,6 +331,10 @@ export const metricsRouter = router({
           const mappedOverview = OverviewMapper.toApiResponse(
             enhancedMetrics.overview
           );
+
+          lastEnhancedMetrics = enhancedMetrics;
+          lastMappedOverview = mappedOverview;
+          lastMappedNodes = mappedNodes;
 
           yield {
             metrics: {
@@ -341,6 +356,16 @@ export const metricsRouter = router({
             };
           } else {
             ctx.logger.warn({ err, serverId }, "watchMetrics fetch error");
+            if (lastEnhancedMetrics && lastMappedOverview && lastMappedNodes) {
+              yield {
+                metrics: {
+                  ...lastEnhancedMetrics,
+                  overview: lastMappedOverview,
+                  nodes: lastMappedNodes,
+                },
+                stale: true,
+              };
+            }
           }
         }
 
@@ -349,7 +374,7 @@ export const metricsRouter = router({
     }),
 
   /**
-   * Live message rates stream — SSE subscription replacing 5s polling (ALL USERS)
+   * Live message rates stream — SSE subscription replacing 4s polling (ALL USERS)
    * Fetches message rates from RabbitMQ every 4s.
    */
   watchRates: workspaceProcedure
@@ -366,6 +391,16 @@ export const metricsRouter = router({
       }
 
       const sig = signal ?? new AbortController().signal;
+      let lastRatesPayload:
+        | {
+            messagesRates: ReturnType<
+              typeof RabbitMQMetricsCalculator.extractMessageRates
+            >;
+            queueTotals: ReturnType<
+              typeof RabbitMQMetricsCalculator.extractQueueTotals
+            >;
+          }
+        | undefined;
 
       while (!sig.aborted) {
         try {
@@ -378,6 +413,8 @@ export const metricsRouter = router({
           );
           const queueTotals =
             RabbitMQMetricsCalculator.extractQueueTotals(overview);
+
+          lastRatesPayload = { messagesRates, queueTotals };
 
           yield {
             serverId,
@@ -409,6 +446,16 @@ export const metricsRouter = router({
             };
           } else {
             ctx.logger.warn({ err, serverId }, "watchRates fetch error");
+            if (lastRatesPayload) {
+              yield {
+                serverId,
+                timeRange,
+                dataSource: "stale_rates",
+                timestamp: new Date().toISOString(),
+                ...lastRatesPayload,
+                stale: true,
+              };
+            }
           }
         }
 
