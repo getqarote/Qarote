@@ -159,18 +159,18 @@ jobs:
           mkdir -p ~/.ssh
           ssh-keyscan -H ${{ vars.DOKKU_HOST_APP1 }} >> ~/.ssh/known_hosts
 
-      # Deploy the application
+      # Deploy the application.
+      # The worker is a long-running cron process that never exits, so Dokku streams its
+      # stdout indefinitely during the git push. We cap the step at 5 minutes and treat a
+      # timeout as acceptable; a subsequent verification step confirms the process is up.
       - name: 🐳 Deploy to Dokku
         uses: dokku/github-action@master
+        timeout-minutes: 5
+        continue-on-error: true
         with:
           git_remote_url: "ssh://dokku@${{ vars.DOKKU_HOST_APP1 }}:22/${{ env.APP_NAME }}"
           ssh_private_key: ${{ secrets.DOKKU_SSH_PRIVATE_KEY }}
           git_push_flags: "--force"
-
-      - name: 🔍 Verify worker app status
-        run: |
-          echo "Checking worker app status..."
-          ssh dokku@${{ vars.DOKKU_HOST_APP1 }} ps:report ${{ env.APP_NAME }}
 
       - name: 📈 Scale processes (disable web, enable worker)
         run: |
@@ -178,10 +178,22 @@ jobs:
           ssh dokku@${{ vars.DOKKU_HOST_APP1 }} ps:scale ${{ env.APP_NAME }} web=0 worker=1 || \
             echo "Note: Process scaling may need to be done manually"
 
+      - name: 🔍 Verify worker is running
+        run: |
+          echo "Verifying worker process is running..."
+          REPORT=$(ssh dokku@${{ vars.DOKKU_HOST_APP1 }} ps:report ${{ env.APP_NAME }})
+          echo "$REPORT"
+          if echo "$REPORT" | grep -q "running"; then
+            echo "✅ Worker is running!"
+          else
+            echo "❌ Worker process is not running after deploy!"
+            exit 1
+          fi
+
       - name: 📋 Show worker logs
         run: |
           echo "Recent worker logs:"
-          ssh dokku@${{ vars.DOKKU_HOST_APP1 }} logs ${{ env.APP_NAME }} --tail 20 || true
+          ssh dokku@${{ vars.DOKKU_HOST_APP1 }} logs ${{ env.APP_NAME }} -n 20 || true
 
       - name: ✅ Deployment complete
         run: |
