@@ -32,6 +32,7 @@ export function getUserDisplayName(user: {
  * Use in subscription loops to avoid blocking clean shutdown.
  */
 export function abortableSleep(ms: number, signal: AbortSignal): Promise<void> {
+  if (signal.aborted) return Promise.resolve();
   return new Promise((resolve) => {
     const t = setTimeout(resolve, ms);
     signal.addEventListener(
