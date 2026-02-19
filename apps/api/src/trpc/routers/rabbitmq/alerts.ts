@@ -1,6 +1,7 @@
 import { TRPCError } from "@trpc/server";
 
 import { prisma } from "@/core/prisma";
+import { abortableSleep } from "@/core/utils";
 
 import type { AlertThresholds } from "@/services/alerts/alert.interfaces";
 import { alertService } from "@/services/alerts/alert.service";
@@ -18,6 +19,49 @@ import { router, workspaceProcedure } from "@/trpc/trpc";
 import { verifyServerAccess } from "./shared";
 
 import { Prisma, UserPlan } from "@/generated/prisma/client";
+
+type ServerAlert = Awaited<
+  ReturnType<typeof alertService.getServerAlerts>
+>["alerts"][number];
+
+type AlertsQuery = {
+  severity?: string;
+  category?: string;
+  resolved?: string;
+  offset?: number;
+  limit?: number;
+};
+
+/** Filter, sort and paginate alerts — shared by getAlerts and watchAlerts. */
+function processAlerts(
+  alerts: ServerAlert[],
+  query: AlertsQuery
+): { alerts: ServerAlert[]; total: number } {
+  let filtered = alerts;
+
+  if (query.severity) {
+    filtered = filtered.filter((a) => a.severity === query.severity);
+  }
+  if (query.category) {
+    filtered = filtered.filter((a) => a.category === query.category);
+  }
+  if (query.resolved !== undefined) {
+    const isResolved = query.resolved === "true";
+    filtered = filtered.filter((a) => a.resolved === isResolved);
+  }
+
+  filtered.sort(
+    (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+  );
+
+  const total = filtered.length;
+  const offset = query.offset || 0;
+  const limit = query.limit;
+  const paginated =
+    limit !== undefined ? filtered.slice(offset, offset + limit) : filtered;
+
+  return { alerts: paginated, total };
+}
 
 /**
  * Alerts router
@@ -72,55 +116,14 @@ export const alertsRouter = router({
         }
 
         // For Developer and Enterprise users, return full alerts
-        // Apply filtering and pagination
-        let filteredAlerts = alerts;
-
-        // Filter by severity
-        if (query.severity) {
-          filteredAlerts = filteredAlerts.filter(
-            (alert) => alert.severity === query.severity
-          );
-        }
-
-        // Filter by category
-        if (query.category) {
-          filteredAlerts = filteredAlerts.filter(
-            (alert) => alert.category === query.category
-          );
-        }
-
-        // Filter by resolved status
-        if (query.resolved !== undefined) {
-          const isResolved = query.resolved === "true";
-          filteredAlerts = filteredAlerts.filter(
-            (alert) => alert.resolved === isResolved
-          );
-        }
-
-        // Sort by timestamp (newest first)
-        filteredAlerts.sort(
-          (a, b) =>
-            new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-        );
-
-        // Calculate total count before pagination
-        const total = filteredAlerts.length;
-
-        // Apply pagination
-        const offset = query.offset || 0;
-        const limit = query.limit;
-
-        let paginatedAlerts = filteredAlerts;
-        if (limit !== undefined) {
-          paginatedAlerts = filteredAlerts.slice(offset, offset + limit);
-        }
+        const { alerts: paginatedAlerts, total } = processAlerts(alerts, query);
 
         return {
           success: true,
           alerts: paginatedAlerts,
           summary,
           thresholds,
-          total, // Total count of filtered alerts (before pagination)
+          total,
           timestamp: new Date().toISOString(),
         };
       } catch (error) {
@@ -514,6 +517,70 @@ export const alertsRouter = router({
           code: "INTERNAL_SERVER_ERROR",
           message: "Failed to update alert settings",
         });
+      }
+    }),
+
+  /**
+   * Live alerts stream — SSE subscription replacing 30s polling (ALL USERS)
+   * Fetches active alerts every 10s and pushes updates to the client.
+   */
+  watchAlerts: workspaceProcedure
+    .input(ServerWorkspaceInputSchema.merge(AlertsQueryWithOptionalVHostSchema))
+    .subscription(async function* ({ input, ctx, signal }) {
+      const { serverId, workspaceId, vhost: vhostParam, ...query } = input;
+
+      const server = await verifyServerAccess(serverId, workspaceId);
+      if (!server) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Server not found or access denied",
+        });
+      }
+
+      const vhost = vhostParam ? decodeURIComponent(vhostParam) : "/";
+      const sig = signal ?? new AbortController().signal;
+
+      while (!sig.aborted) {
+        try {
+          const userPlan = await getUserPlan(ctx.user.id);
+          const { alerts, summary } = await alertService.getServerAlerts(
+            serverId,
+            server.name,
+            workspaceId,
+            vhost
+          );
+          const thresholds =
+            await alertService.getWorkspaceThresholds(workspaceId);
+
+          if (userPlan === UserPlan.FREE) {
+            yield {
+              success: true,
+              alerts: [],
+              summary,
+              thresholds,
+              total: summary.total,
+              timestamp: new Date().toISOString(),
+            };
+          } else {
+            const { alerts: paginatedAlerts, total } = processAlerts(
+              alerts,
+              query
+            );
+
+            yield {
+              success: true,
+              alerts: paginatedAlerts,
+              summary,
+              thresholds,
+              total,
+              timestamp: new Date().toISOString(),
+            };
+          }
+        } catch (err) {
+          ctx.logger.warn({ err, serverId }, "watchAlerts fetch error");
+        }
+
+        await abortableSleep(10000, sig);
       }
     }),
 });

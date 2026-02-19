@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server";
 
 import { prisma } from "@/core/prisma";
 import { RabbitMQAmqpClient } from "@/core/rabbitmq/AmqpClient";
+import { abortableSleep } from "@/core/utils";
 
 import {
   getOverLimitWarningMessage,
@@ -33,6 +34,121 @@ import {
 
 import { UserRole } from "@/generated/prisma/client";
 
+type RawQueue = Parameters<typeof QueueMapper.toApiResponseArray>[0][number];
+
+type QueuesServerInfo = {
+  isOverQueueLimit: boolean;
+  workspace?: unknown;
+  queueCountAtConnect: number | null;
+  overLimitWarningShown: boolean;
+};
+
+/**
+ * Persist queue data and metrics to the database.
+ * Shared by getQueues (query) and watchQueues (subscription).
+ */
+async function persistQueueData(
+  queues: RawQueue[],
+  serverId: string
+): Promise<void> {
+  for (const queue of queues) {
+    const queueData = {
+      name: queue.name,
+      vhost: queue.vhost,
+      messages: queue.messages || 0,
+      messagesReady: queue.messages_ready || 0,
+      messagesUnack: queue.messages_unacknowledged || 0,
+      lastFetched: new Date(),
+      serverId,
+    };
+
+    const existingQueue = await prisma.queue.findFirst({
+      where: { name: queue.name, vhost: queue.vhost, serverId },
+    });
+
+    if (existingQueue) {
+      await prisma.queue.update({
+        where: { id: existingQueue.id },
+        data: queueData,
+      });
+      await prisma.queueMetric.create({
+        data: {
+          queueId: existingQueue.id,
+          messages: queue.messages || 0,
+          messagesReady: queue.messages_ready || 0,
+          messagesUnack: queue.messages_unacknowledged || 0,
+          publishRate: queue.message_stats?.publish_details?.rate || 0,
+          consumeRate: queue.message_stats?.deliver_details?.rate || 0,
+        },
+      });
+    } else {
+      const newQueue = await prisma.queue.create({ data: queueData });
+      await prisma.queueMetric.create({
+        data: {
+          queueId: newQueue.id,
+          messages: queue.messages || 0,
+          messagesReady: queue.messages_ready || 0,
+          messagesUnack: queue.messages_unacknowledged || 0,
+          publishRate: queue.message_stats?.publish_details?.rate || 0,
+          consumeRate: queue.message_stats?.deliver_details?.rate || 0,
+        },
+      });
+    }
+  }
+}
+
+/**
+ * Sort queues, map to API shape, and attach over-limit warning if applicable.
+ * Shared by getQueues (query) and watchQueues (subscription).
+ */
+async function buildQueuesResponse(
+  queues: RawQueue[],
+  server: QueuesServerInfo,
+  userId: string
+): Promise<{
+  queues: ReturnType<typeof QueueMapper.toApiResponseArray>;
+  warning?: {
+    isOverLimit: boolean;
+    message: string;
+    currentQueueCount: number;
+    queueCountAtConnect: number | null;
+    upgradeRecommendation: string;
+    recommendedPlan: string;
+    warningShown: boolean;
+  };
+}> {
+  // Sort: most messages first, then alphabetically
+  queues.sort((a, b) => {
+    const diff = (b.messages || 0) - (a.messages || 0);
+    return diff !== 0 ? diff : a.name.localeCompare(b.name);
+  });
+
+  const mappedQueues = QueueMapper.toApiResponseArray(queues);
+  const response: Awaited<ReturnType<typeof buildQueuesResponse>> = {
+    queues: mappedQueues,
+  };
+
+  if (server.isOverQueueLimit && server.workspace) {
+    const userPlan = await getUserPlan(userId);
+    const warningMessage = getOverLimitWarningMessage(userPlan, queues.length);
+    const upgradeRecommendation =
+      getUpgradeRecommendationForOverLimit(userPlan);
+    response.warning = {
+      isOverLimit: true,
+      message: warningMessage,
+      currentQueueCount: queues.length,
+      queueCountAtConnect: server.queueCountAtConnect,
+      upgradeRecommendation: upgradeRecommendation.message,
+      recommendedPlan: upgradeRecommendation.recommendedPlan
+        ? getPlanDisplayName(upgradeRecommendation.recommendedPlan)
+        : "N/A",
+      warningShown: server.overLimitWarningShown,
+    };
+  }
+
+  return response;
+}
+
 /**
  * Queues router
  * Handles RabbitMQ queue management operations
@@ -62,121 +178,9 @@ export const queuesRouter = router({
         const vhost = vhostParam ? decodeURIComponent(vhostParam) : undefined;
         const queues = await client.getQueues(vhost);
 
-        // Store queue data in the database
-        for (const queue of queues) {
-          const queueData = {
-            name: queue.name,
-            vhost: queue.vhost,
-            messages: queue.messages || 0,
-            messagesReady: queue.messages_ready || 0,
-            messagesUnack: queue.messages_unacknowledged || 0,
-            lastFetched: new Date(),
-            serverId: serverId,
-          };
+        await persistQueueData(queues, serverId);
 
-          // Try to find existing queue record
-          const existingQueue = await prisma.queue.findFirst({
-            where: {
-              name: queue.name,
-              vhost: queue.vhost,
-              serverId: serverId,
-            },
-          });
-
-          if (existingQueue) {
-            // Update existing queue
-            await prisma.queue.update({
-              where: { id: existingQueue.id },
-              data: queueData,
-            });
-
-            // Add metrics record
-            await prisma.queueMetric.create({
-              data: {
-                queueId: existingQueue.id,
-                messages: queue.messages || 0,
-                messagesReady: queue.messages_ready || 0,
-                messagesUnack: queue.messages_unacknowledged || 0,
-                publishRate: queue.message_stats?.publish_details?.rate || 0,
-                consumeRate: queue.message_stats?.deliver_details?.rate || 0,
-              },
-            });
-          } else {
-            // Create new queue
-            const newQueue = await prisma.queue.create({
-              data: queueData,
-            });
-
-            // Add metrics record
-            await prisma.queueMetric.create({
-              data: {
-                queueId: newQueue.id,
-                messages: queue.messages || 0,
-                messagesReady: queue.messages_ready || 0,
-                messagesUnack: queue.messages_unacknowledged || 0,
-                publishRate: queue.message_stats?.publish_details?.rate || 0,
-                consumeRate: queue.message_stats?.deliver_details?.rate || 0,
-              },
-            });
-          }
-        }
-
-        // Sort queues: first by messages (descending), then alphabetically by name
-        queues.sort((a, b) => {
-          // First sort by message count (queues with messages first)
-          const aMessages = a.messages || 0;
-          const bMessages = b.messages || 0;
-
-          if (aMessages !== bMessages) {
-            return bMessages - aMessages; // Descending order (more messages first)
-          }
-
-          // If message counts are equal, sort alphabetically by name
-          return a.name.localeCompare(b.name);
-        });
-
-        // Map queues to API response format (only include fields used by web)
-        const mappedQueues = QueueMapper.toApiResponseArray(queues);
-
-        // Prepare response with over-limit warning information
-        const response: {
-          queues: typeof mappedQueues;
-          warning?: {
-            isOverLimit: boolean;
-            message: string;
-            currentQueueCount: number;
-            queueCountAtConnect: number | null;
-            upgradeRecommendation: string;
-            recommendedPlan: string;
-            warningShown: boolean;
-          };
-        } = { queues: mappedQueues };
-
-        // Add warning information if server is over the queue limit
-        if (server.isOverQueueLimit && server.workspace) {
-          const userPlan = await getUserPlan(ctx.user.id);
-          const warningMessage = getOverLimitWarningMessage(
-            userPlan,
-            queues.length
-          );
-
-          const upgradeRecommendation =
-            getUpgradeRecommendationForOverLimit(userPlan);
-
-          response.warning = {
-            isOverLimit: true,
-            message: warningMessage,
-            currentQueueCount: queues.length,
-            queueCountAtConnect: server.queueCountAtConnect,
-            upgradeRecommendation: upgradeRecommendation.message,
-            recommendedPlan: upgradeRecommendation.recommendedPlan
-              ? getPlanDisplayName(upgradeRecommendation.recommendedPlan)
-              : "N/A",
-            warningShown: server.overLimitWarningShown,
-          };
-        }
-
-        return response;
+        return await buildQueuesResponse(queues, server, ctx.user.id);
       } catch (error) {
         ctx.logger.error(
           { error, serverId },
@@ -748,6 +752,53 @@ export const queuesRouter = router({
             );
           }
         }
+      }
+    }),
+
+  /**
+   * Live queue stream — SSE subscription replacing 5s polling (ALL USERS)
+   * Fetches queues from RabbitMQ every 4s and pushes updates to the client.
+   */
+  watchQueues: workspaceProcedure
+    .input(ServerWorkspaceInputSchema.merge(VHostOptionalQuerySchema))
+    .subscription(async function* ({ input, ctx, signal }) {
+      const { serverId, workspaceId, vhost: vhostParam } = input;
+
+      // Verify access once at connection time — throws if unauthorized
+      const server = await verifyServerAccess(serverId, workspaceId, true);
+      if (!server || !server.workspace) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Server not found or access denied",
+        });
+      }
+
+      const vhost = vhostParam ? decodeURIComponent(vhostParam) : undefined;
+      const sig = signal ?? new AbortController().signal;
+
+      while (!sig.aborted) {
+        try {
+          // Re-fetch server status each iteration for fresh over-limit info
+          const freshServer = await verifyServerAccess(
+            serverId,
+            workspaceId,
+            true
+          );
+          if (!freshServer || !freshServer.workspace) {
+            break; // Server removed or access revoked — terminate stream
+          }
+
+          const client = await createRabbitMQClient(serverId, workspaceId);
+          const queues = await client.getQueues(vhost);
+
+          await persistQueueData(queues, serverId);
+
+          yield await buildQueuesResponse(queues, freshServer, ctx.user.id);
+        } catch (err) {
+          ctx.logger.warn({ err, serverId }, "watchQueues fetch error");
+        }
+
+        await abortableSleep(4000, sig);
       }
     }),
 

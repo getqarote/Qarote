@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { httpBatchLink } from "@trpc/react-query";
+import { httpBatchLink, httpSubscriptionLink, splitLink } from "@trpc/client";
 
 import { queryClient } from "@/lib/queryClient";
 
@@ -32,6 +32,11 @@ const getAuthToken = (): string | null => {
   return localStorage.getItem("auth_token");
 };
 
+const getAuthHeaders = () => {
+  const token = getAuthToken();
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
+
 /**
  * tRPC Provider component
  * Wraps the app with tRPC React Query provider
@@ -40,16 +45,16 @@ export function TRPCProvider({ children }: { children: React.ReactNode }) {
   const [trpcClient] = useState(() =>
     trpc.createClient({
       links: [
-        httpBatchLink({
-          url: getApiUrl(),
-          headers: () => {
-            const token = getAuthToken();
-            return token
-              ? {
-                  Authorization: `Bearer ${token}`,
-                }
-              : {};
-          },
+        splitLink({
+          condition: (op) => op.type === "subscription",
+          true: httpSubscriptionLink({
+            url: getApiUrl(),
+            headers: getAuthHeaders,
+          }),
+          false: httpBatchLink({
+            url: getApiUrl(),
+            headers: getAuthHeaders,
+          }),
         }),
       ],
     })

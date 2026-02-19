@@ -1,4 +1,7 @@
+import { useState } from "react";
+
 import { trpc } from "@/lib/trpc/client";
+import { SubData } from "@/lib/trpc/types";
 
 import { useWorkspace } from "../ui/useWorkspace";
 
@@ -70,8 +73,15 @@ export const useRabbitMQAlerts = (
   }
 ) => {
   const { workspace } = useWorkspace();
+  const enabled =
+    (options?.enabled ?? true) && !!serverId && !!workspace?.id && !!vhost;
 
-  const query = trpc.rabbitmq.alerts.getAlerts.useQuery(
+  const [data, setData] = useState<
+    SubData<typeof trpc.rabbitmq.alerts.watchAlerts> | undefined
+  >();
+  const [error, setError] = useState<Error | null>(null);
+
+  trpc.rabbitmq.alerts.watchAlerts.useSubscription(
     {
       serverId: serverId || "",
       workspaceId: workspace?.id || "",
@@ -83,14 +93,16 @@ export const useRabbitMQAlerts = (
       resolved: options?.resolved ? "true" : undefined,
     },
     {
-      enabled:
-        (options?.enabled ?? true) && !!serverId && !!workspace?.id && !!vhost,
-      staleTime: 5000, // 5 seconds
-      refetchInterval: 30000, // Refetch every 30 seconds
+      enabled,
+      onData: (d) => {
+        setError(null);
+        setData(d);
+      },
+      onError: setError,
     }
   );
 
-  return query;
+  return { data, error, isLoading: enabled && !data, isError: !!error };
 };
 
 export const useResolvedAlerts = (
