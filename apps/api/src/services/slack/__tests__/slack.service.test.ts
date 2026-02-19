@@ -478,8 +478,12 @@ describe("SlackService", () => {
     });
 
     it("handles rejected promises with slackConfigId 'unknown'", async () => {
-      vi.mocked(fetch)
-        .mockResolvedValueOnce(makeResponse(200))
+      // sendMessage catches all fetch errors internally, so to exercise the
+      // Promise.allSettled rejection branch we must make sendAlertNotification
+      // itself throw (bypassing its internal try/catch).
+      const spy = vi
+        .spyOn(SlackService, "sendAlertNotification")
+        .mockResolvedValueOnce({ success: true, statusCode: 200 })
         .mockRejectedValueOnce(new Error("Unexpected failure"));
 
       const slackConfigs = [
@@ -494,10 +498,13 @@ describe("SlackService", () => {
         "My Server"
       );
 
+      spy.mockRestore();
+
       expect(results).toHaveLength(2);
-      // One should succeed, one should have "unknown" or fail
       const successResult = results.find((r) => r.result.success === true);
       expect(successResult).toBeDefined();
+      const failedResult = results.find((r) => r.result.success !== true);
+      expect(failedResult?.slackConfigId).toBe("unknown");
     });
   });
 });

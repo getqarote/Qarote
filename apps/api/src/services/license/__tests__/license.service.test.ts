@@ -49,7 +49,7 @@ describe("LicenseService", () => {
       const result = await licenseService.generateLicense({
         tier: UserPlan.ENTERPRISE,
         customerEmail: "customer@example.com",
-        expiresAt: new Date("2025-12-31"),
+        expiresAt: new Date(Date.now() + 365 * 86_400_000),
       });
 
       expect(result.licenseKey).toMatch(
@@ -65,7 +65,7 @@ describe("LicenseService", () => {
       const result = await licenseService.generateLicense({
         tier: UserPlan.ENTERPRISE,
         customerEmail: "customer@example.com",
-        expiresAt: new Date("2025-12-31"),
+        expiresAt: new Date(Date.now() + 365 * 86_400_000),
       });
 
       expect(result.licenseKey.startsWith("RABBIT-ENT-")).toBe(true);
@@ -79,7 +79,7 @@ describe("LicenseService", () => {
       const result = await licenseService.generateLicense({
         tier: UserPlan.DEVELOPER,
         customerEmail: "customer@example.com",
-        expiresAt: new Date("2025-12-31"),
+        expiresAt: new Date(Date.now() + 365 * 86_400_000),
       });
 
       expect(result.licenseKey.startsWith("RABBIT-DEV-")).toBe(true);
@@ -93,7 +93,7 @@ describe("LicenseService", () => {
       await licenseService.generateLicense({
         tier: UserPlan.ENTERPRISE,
         customerEmail: "customer@example.com",
-        expiresAt: new Date("2025-12-31"),
+        expiresAt: new Date(Date.now() + 365 * 86_400_000),
       });
 
       expect(prisma.license.create).toHaveBeenCalledWith(
@@ -116,7 +116,7 @@ describe("LicenseService", () => {
       const result = await licenseService.generateLicense({
         tier: UserPlan.ENTERPRISE,
         customerEmail: "customer@example.com",
-        expiresAt: new Date("2025-12-31"),
+        expiresAt: new Date(Date.now() + 365 * 86_400_000),
       });
 
       expect(result.licenseId).toBe("lic-abc-123");
@@ -130,7 +130,7 @@ describe("LicenseService", () => {
         licenseService.generateLicense({
           tier: UserPlan.ENTERPRISE,
           customerEmail: "customer@example.com",
-          expiresAt: new Date("2025-12-31"),
+          expiresAt: new Date(Date.now() + 365 * 86_400_000),
         })
       ).rejects.toThrow("DB error");
     });
@@ -246,7 +246,10 @@ describe("LicenseService", () => {
       vi.mocked(prisma.license.findUnique).mockResolvedValue(null);
 
       await expect(
-        licenseService.renewLicense("lic-nonexistent", new Date("2026-01-01"))
+        licenseService.renewLicense(
+          "lic-nonexistent",
+          new Date(Date.now() + 365 * 86_400_000)
+        )
       ).rejects.toThrow("not found");
     });
 
@@ -262,12 +265,12 @@ describe("LicenseService", () => {
       vi.mocked(prisma.license.update).mockResolvedValue({
         ...currentLicense,
         currentVersion: 4,
-        expiresAt: new Date("2025-12-31"),
+        expiresAt: new Date(Date.now() + 365 * 86_400_000),
       } as never);
 
       const result = await licenseService.renewLicense(
         "lic-1",
-        new Date("2025-12-31")
+        new Date(Date.now() + 365 * 86_400_000)
       );
 
       expect(result.newVersion).toBe(4);
@@ -284,7 +287,7 @@ describe("LicenseService", () => {
         currentVersion: 1,
         expiresAt: new Date("2024-12-31"),
       };
-      const newExpiresAt = new Date("2026-01-01");
+      const newExpiresAt = new Date(Date.now() + 365 * 86_400_000);
       vi.mocked(prisma.license.findUnique).mockResolvedValue(
         currentLicense as never
       );
@@ -309,7 +312,10 @@ describe("LicenseService", () => {
       );
 
       await expect(
-        licenseService.renewLicense("lic-1", new Date("2026-01-01"))
+        licenseService.renewLicense(
+          "lic-1",
+          new Date(Date.now() + 365 * 86_400_000)
+        )
       ).rejects.toThrow("DB error");
     });
   });
@@ -320,7 +326,7 @@ describe("LicenseService", () => {
         {} as never
       );
 
-      const expiresAt = new Date("2026-01-01");
+      const expiresAt = new Date(Date.now() + 365 * 86_400_000);
       await licenseService.saveLicenseFileVersion(
         "lic-1",
         2,
@@ -347,7 +353,7 @@ describe("LicenseService", () => {
         {} as never
       );
 
-      const expiresAt = new Date("2026-01-01");
+      const expiresAt = new Date(Date.now() + 365 * 86_400_000);
       await licenseService.saveLicenseFileVersion(
         "lic-1",
         2,
@@ -425,7 +431,7 @@ describe("LicenseService", () => {
         licenseKey: "RABBIT-ENT-KEY-12345678",
         tier: UserPlan.ENTERPRISE,
         customerEmail: "customer@example.com",
-        expiresAt: new Date("2025-12-31"),
+        expiresAt: new Date(Date.now() + 365 * 86_400_000),
         features: ["workspace_management"],
       });
 
@@ -433,7 +439,7 @@ describe("LicenseService", () => {
     });
 
     it("includes all license data fields in the returned file", async () => {
-      const expiresAt = new Date("2025-12-31");
+      const expiresAt = new Date(Date.now() + 365 * 86_400_000);
       const result = await licenseService.generateLicenseFile({
         licenseKey: "RABBIT-ENT-KEY-12345678",
         tier: UserPlan.ENTERPRISE,
@@ -455,7 +461,7 @@ describe("LicenseService", () => {
         licenseKey: "RABBIT-ENT-KEY-12345678",
         tier: UserPlan.ENTERPRISE,
         customerEmail: "customer@example.com",
-        expiresAt: new Date("2025-12-31"),
+        expiresAt: new Date(Date.now() + 365 * 86_400_000),
         features: [],
       });
 
