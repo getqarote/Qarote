@@ -1,9 +1,3 @@
-import { initSentry } from "@/services/sentry";
-
-import { isCloudMode } from "@/config/deployment";
-
-initSentry();
-
 import fs from "node:fs";
 import path from "node:path";
 
@@ -28,6 +22,7 @@ import {
 } from "@/middlewares/request";
 
 import { serverConfig, ssoConfig } from "@/config";
+import { isCloudMode } from "@/config/deployment";
 import { validateDeploymentMode } from "@/config/deployment";
 
 import { createContext } from "@/trpc/context";
