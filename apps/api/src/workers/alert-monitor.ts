@@ -1,17 +1,7 @@
 import { logger } from "@/core/logger";
 import { prisma } from "@/core/prisma";
 
-import { initSentry } from "@/services/sentry";
-
-import { sentryConfig } from "@/config";
-import { isCloudMode } from "@/config/deployment";
-
 import { rabbitMQAlertsCronService } from "@/cron/rabbitmq-alerts.cron";
-
-// Initialize Sentry only if enabled
-if (isCloudMode() || sentryConfig.enabled) {
-  initSentry();
-}
 
 /**
  * Alert Monitor Worker Process

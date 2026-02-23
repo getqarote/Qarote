@@ -1,18 +1,10 @@
 import { logger } from "@/core/logger";
 import { prisma } from "@/core/prisma";
 
-import { initSentry } from "@/services/sentry";
-
-import { sentryConfig } from "@/config";
 import { isCloudMode } from "@/config/deployment";
 
 import { licenseExpirationRemindersCronService } from "@/cron/license-expiration-reminders.cron";
 import { licenseFileCleanupCronService } from "@/cron/license-file-cleanup.cron";
-
-// Initialize Sentry only if enabled
-if (isCloudMode() || sentryConfig.enabled) {
-  initSentry();
-}
 
 /**
  * License Monitor Worker Process
