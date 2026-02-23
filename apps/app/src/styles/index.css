@@ -283,4 +283,10 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  a,
+  button,
+  [role="button"] {
+    cursor: pointer;
+  }
 }
