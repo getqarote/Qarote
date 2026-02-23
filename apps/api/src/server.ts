@@ -1,22 +1,8 @@
-import { sentryConfig } from "@/config";
+import { initSentry } from "@/services/sentry";
+
 import { isCloudMode } from "@/config/deployment";
 
-// Initialize Sentry only if enabled and available.
-// Sentry is marked as --external in the binary build (native profiling deps),
-// so it won't be available in single-binary mode. Gracefully skip if missing.
-if (isCloudMode() || sentryConfig.enabled) {
-  try {
-    const { initSentry } = await import("@/services/sentry/index.js");
-    initSentry();
-  } catch (err) {
-    // In binary mode, Sentry native deps are excluded — import fails expectedly.
-    // Log other errors so misconfiguration isn't silently swallowed.
-    const msg = err instanceof Error ? err.message : String(err);
-    if (!msg.includes("Cannot find") && !msg.includes("MODULE_NOT_FOUND")) {
-      logger.warn("Sentry initialization failed: %s", msg);
-    }
-  }
-}
+initSentry();
 
 import fs from "node:fs";
 import path from "node:path";

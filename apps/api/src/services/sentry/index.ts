@@ -1,6 +1,3 @@
-import * as Sentry from "@sentry/node";
-import { nodeProfilingIntegration } from "@sentry/profiling-node";
-
 import { sentryConfig } from "@/config";
 
 import { logger } from "../../core/logger";
@@ -14,6 +11,25 @@ import type {
   SentryUser,
   SignUpErrorType,
 } from "./interfaces";
+
+// Lazy-loaded Sentry SDK.
+// @sentry/node is marked --external in the binary build (native profiling deps
+// can't be bundled), so it won't exist in single-binary mode.  We resolve once
+// on first use and silently no-op when the module is missing.
+let _sentry: typeof import("@sentry/node") | null = null;
+let _sentryResolved = false;
+
+function getSentry(): typeof import("@sentry/node") | null {
+  if (_sentryResolved) return _sentry;
+  _sentryResolved = true;
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    _sentry = require("@sentry/node");
+  } catch {
+    _sentry = null;
+  }
+  return _sentry;
+}
 
 /**
  * Check if metrics should be tracked (only in production)
@@ -34,6 +50,9 @@ export function trackMetricCount(
   if (!shouldTrackMetrics()) {
     return;
   }
+
+  const Sentry = getSentry();
+  if (!Sentry) return;
 
   try {
     Sentry.metrics.count(name, value, {
@@ -58,6 +77,9 @@ export function trackMetricDistribution(
   if (!shouldTrackMetrics()) {
     return;
   }
+
+  const Sentry = getSentry();
+  if (!Sentry) return;
 
   try {
     Sentry.metrics.distribution(name, value, {
@@ -97,6 +119,43 @@ export function initSentry() {
     return;
   }
 
+  const Sentry = getSentry();
+  if (!Sentry) {
+    logger.warn("Sentry SDK not available - monitoring disabled");
+    return;
+  }
+
+  let profilingIntegration: ReturnType<
+    typeof import("@sentry/profiling-node").nodeProfilingIntegration
+  > | null = null;
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { nodeProfilingIntegration } = require("@sentry/profiling-node");
+    profilingIntegration = nodeProfilingIntegration();
+  } catch {
+    logger.info(
+      "Sentry profiling not available - skipping profiling integration"
+    );
+  }
+
+  const integrations = [
+    // HTTP integration for API monitoring
+    Sentry.httpIntegration(),
+
+    // Prisma integration for database monitoring
+    Sentry.prismaIntegration(),
+
+    // send console.log, console.warn, and console.error calls as logs to Sentry
+    Sentry.consoleLoggingIntegration({ levels: ["log", "warn", "error"] }),
+
+    // Pino integration for structured logging
+    Sentry.pinoIntegration(),
+  ];
+
+  if (profilingIntegration) {
+    integrations.unshift(profilingIntegration);
+  }
+
   Sentry.init({
     dsn: dsn,
     environment: sentryConfig.environment,
@@ -112,21 +171,7 @@ export function initSentry() {
     // Profiling
     profilesSampleRate: sentryConfig.profilesSampleRate,
 
-    integrations: [
-      nodeProfilingIntegration(),
-
-      // HTTP integration for API monitoring
-      Sentry.httpIntegration(),
-
-      // Prisma integration for database monitoring
-      Sentry.prismaIntegration(),
-
-      // send console.log, console.warn, and console.error calls as logs to Sentry
-      Sentry.consoleLoggingIntegration({ levels: ["log", "warn", "error"] }),
-
-      // Pino integration for structured logging
-      Sentry.pinoIntegration(),
-    ],
+    integrations,
 
     // Configure what gets sent to Sentry
     beforeSend(event) {
@@ -172,6 +217,9 @@ export function initSentry() {
 }
 
 export function setSentryUser(user: SentryUser) {
+  const Sentry = getSentry();
+  if (!Sentry) return;
+
   Sentry.setUser({
     id: user.id,
     workspace_id: user.workspaceId || undefined,
@@ -180,6 +228,9 @@ export function setSentryUser(user: SentryUser) {
 }
 
 export function setSentryContext(context: string, data: SentryContextData) {
+  const Sentry = getSentry();
+  if (!Sentry) return;
+
   Sentry.setContext(context, data);
 }
 
@@ -187,6 +238,9 @@ export function captureRabbitMQError(
   error: Error,
   context: RabbitMQErrorContext
 ) {
+  const Sentry = getSentry();
+  if (!Sentry) return;
+
   Sentry.withScope((scope) => {
     scope.setTag("component", "rabbitmq");
     scope.setContext("rabbitmq", context);
@@ -198,6 +252,9 @@ export function captureMessageProcessingError(
   error: Error,
   context: MessageProcessingErrorContext
 ) {
+  const Sentry = getSentry();
+  if (!Sentry) return;
+
   Sentry.withScope((scope) => {
     scope.setTag("component", "message-processing");
     scope.setContext("message", context);
@@ -237,4 +294,17 @@ export function trackPaymentError(
   });
 }
 
-export { Sentry };
+// Re-export Sentry for callers that need direct access (e.g. `Sentry.captureException`).
+// Returns the real SDK when available, or a safe no-op proxy in binary mode.
+const SentryProxy = new Proxy(
+  {},
+  {
+    get(_target, prop) {
+      const sentry = getSentry();
+      if (!sentry) return () => {};
+      return (sentry as Record<string | symbol, unknown>)[prop];
+    },
+  }
+) as typeof import("@sentry/node");
+
+export { SentryProxy as Sentry };
