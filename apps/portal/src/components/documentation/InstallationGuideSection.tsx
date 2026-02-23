@@ -600,6 +600,7 @@ cd qarote`}
                 <h5 className="text-sm font-medium">3. Start Qarote</h5>
                 <CodeBlock
                   code={`# Start the server (reads .env automatically)
+# Database migrations run automatically on first start
 ./qarote`}
                   language="bash"
                 />
@@ -1177,14 +1178,16 @@ sudo cp -r apps/app/dist/* /var/www/qarote/`}
 
             <TabsContent value="update-binary" className="mt-4">
               <CodeBlock
-                code={`# Download and extract the latest release
-curl -L https://github.com/getqarote/Qarote/releases/latest/download/qarote-linux-x64.tar.gz | tar xz
-
-# Stop the running instance, swap binary and assets, restart
-# (your .env file is preserved — no reconfiguration needed)
+                code={`# Stop the running instance
 kill $(pgrep -f './qarote') 2>/dev/null || true
-cp qarote/qarote ./qarote-bin && cp -r qarote/public ./public
-mv qarote-bin qarote
+
+# Download and extract in-place (overwrites binary, public/, migrations/)
+# Replace linux-x64 with: linux-arm64, darwin-x64, or darwin-arm64
+curl -L https://github.com/getqarote/Qarote/releases/latest/download/qarote-linux-x64.tar.gz \\
+  | tar xz --strip-components=1
+
+# Restart — new migrations are applied automatically on startup
+# (your .env file is preserved — no reconfiguration needed)
 ./qarote`}
                 language="bash"
               />

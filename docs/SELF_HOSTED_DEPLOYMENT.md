@@ -252,7 +252,7 @@ The `setup` command will:
 3. Generate secure secrets (`JWT_SECRET`, `ENCRYPTION_KEY`)
 4. Write a `.env` file in the current directory
 
-The binary serves both the API and frontend on a single port (default: 3000).
+The binary serves both the API and frontend on a single port (default: 3000). Database migrations run automatically on startup — no manual migration step needed. The `migrations/` directory must remain alongside the binary; do not move only the `qarote` executable to another location (e.g. `/usr/local/bin`), or automatic migrations will not run.
 
 ### CLI Flags
 
@@ -276,17 +276,21 @@ The binary uses the **same environment variables** as Docker Compose and other d
 ### Updating
 
 ```bash
-# Download the latest release
-curl -L https://github.com/getqarote/Qarote/releases/latest/download/qarote-linux-x64.tar.gz | tar xz
-
-# Stop the running instance, swap, and restart
+# Stop the running instance
 kill $(pgrep -f './qarote') 2>/dev/null || true
-cp qarote/qarote ./qarote-bin && cp qarote/public ./public -r
-mv qarote-bin qarote
+
+# Download and extract in-place (overwrites binary, public/, migrations/)
+# Replace linux-x64 with your platform: linux-arm64, darwin-x64, or darwin-arm64
+curl -L https://github.com/getqarote/Qarote/releases/latest/download/qarote-linux-x64.tar.gz \
+  | tar xz --strip-components=1
+
+# Restart — new migrations are applied automatically on startup
 ./qarote
 ```
 
-Your `.env` file is preserved — no reconfiguration needed.
+> **Note:** Make sure to download the correct artifact for your platform. Using the wrong one will produce an incompatible binary that fails to start.
+
+Your `.env` file is preserved — no reconfiguration needed. New database migrations are applied automatically on startup.
 
 ---
 

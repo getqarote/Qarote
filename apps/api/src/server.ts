@@ -10,6 +10,7 @@ import { prettyJSON } from "hono/pretty-json";
 import { secureHeaders } from "hono/secure-headers";
 
 import { logger } from "@/core/logger";
+import { runMigrations } from "@/core/migrate";
 import { prisma } from "@/core/prisma";
 import { getDirname } from "@/core/utils";
 
@@ -21,9 +22,8 @@ import {
   requestIdMiddleware,
 } from "@/middlewares/request";
 
-import { serverConfig, ssoConfig } from "@/config";
-import { isCloudMode } from "@/config/deployment";
-import { validateDeploymentMode } from "@/config/deployment";
+import { config, serverConfig, ssoConfig } from "@/config";
+import { isCloudMode, validateDeploymentMode } from "@/config/deployment";
 
 import { createContext } from "@/trpc/context";
 import { appRouter } from "@/trpc/router";
@@ -138,12 +138,19 @@ if (!isCloudMode() && publicDir) {
 const { port, host } = serverConfig;
 
 async function startServer() {
+  let dbConnected = false;
   try {
     // Validate deployment mode and required services
     validateDeploymentMode();
     logger.info("Deployment mode validation passed");
 
+    // Apply pending database migrations if a migrations/ directory exists.
+    // Only the binary tarball ships this directory — Docker/Dokku/cloud
+    // deployments use `prisma migrate deploy` via their own scripts instead.
+    await runMigrations(config.DATABASE_URL);
+
     await prisma.$connect();
+    dbConnected = true;
     logger.info("Connected to database");
 
     // Initialize SSO service if enabled
@@ -162,8 +169,10 @@ async function startServer() {
       }
     );
   } catch (error) {
-    logger.error(error, "Failed to start server");
-    await prisma.$disconnect();
+    logger.error({ error }, "Failed to start server");
+    if (dbConnected) {
+      await prisma.$disconnect();
+    }
     process.exit(1);
   }
 }

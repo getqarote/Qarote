@@ -5,7 +5,7 @@ set -euo pipefail
 # Qarote Single Binary Build Script
 # Compiles the API + frontend into a standalone distribution using Bun.
 #
-# Output: a .tar.gz containing the binary + public/ directory.
+# Output: a .tar.gz containing the binary + public/ + migrations/ directories.
 # bun build --compile bundles the JS module graph but NOT files accessed via
 # fs at runtime, so static frontend assets must ship alongside the binary.
 #
@@ -81,13 +81,16 @@ BUN_BUILD_ARGS+=("--outfile" "$OUTNAME")
 
 bun build "${BUN_BUILD_ARGS[@]}"
 
-# --- Step 5: Package binary + frontend assets into tarball ---
+# --- Step 5: Package binary + frontend assets + migrations into tarball ---
 info "Step 5/5: Packaging distribution..."
 
 DIST_DIR="$(mktemp -d)"
 mkdir -p "$DIST_DIR/qarote"
 cp "$OUTNAME" "$DIST_DIR/qarote/qarote"
 cp -r apps/api/dist/public "$DIST_DIR/qarote/public"
+
+# Include Prisma migration files so the binary can auto-migrate on first start
+"$SCRIPT_DIR/copy-migrations.sh" "$DIST_DIR/qarote/migrations"
 
 TARBALL="${OUTNAME}.tar.gz"
 tar czf "$TARBALL" -C "$DIST_DIR" qarote

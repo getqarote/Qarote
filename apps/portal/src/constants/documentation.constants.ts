@@ -93,6 +93,11 @@ export const envExampleContent = `# Qarote Self-Hosted Deployment
 # Set DEPLOYMENT_MODE=enterprise for Enterprise Edition (licensed)
 
 # =============================================================================
+# REQUIRED - Environment
+# =============================================================================
+NODE_ENV=production
+
+# =============================================================================
 # REQUIRED - Deployment Mode
 # =============================================================================
 # Set to 'community' for open-source edition or 'enterprise' for licensed edition

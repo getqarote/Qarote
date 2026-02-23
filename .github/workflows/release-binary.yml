@@ -67,6 +67,10 @@ jobs:
           mkdir -p dist-package/qarote
           cp qarote-${{ matrix.platform }} dist-package/qarote/qarote
           cp -r apps/api/dist/public dist-package/qarote/public
+
+          # Include Prisma migration files for auto-migration on first start
+          ./scripts/copy-migrations.sh dist-package/qarote/migrations
+
           tar czf qarote-${{ matrix.platform }}.tar.gz -C dist-package qarote
           rm -rf dist-package
 
