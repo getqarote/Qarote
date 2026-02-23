@@ -308,7 +308,13 @@ export const metricsRouter = router({
         });
       }
 
-      const sig = signal ?? new AbortController().signal;
+      if (!signal) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Subscription requires an abort signal",
+        });
+      }
+      const sig = signal;
       type MappedOverview = ReturnType<typeof OverviewMapper.toApiResponse>;
       type MappedNodes = ReturnType<typeof NodeMapper.toApiResponseArray>;
       let lastMappedOverview: MappedOverview | undefined;
@@ -390,7 +396,13 @@ export const metricsRouter = router({
         });
       }
 
-      const sig = signal ?? new AbortController().signal;
+      if (!signal) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Subscription requires an abort signal",
+        });
+      }
+      const sig = signal;
       let lastRatesPayload:
         | {
             messagesRates: ReturnType<

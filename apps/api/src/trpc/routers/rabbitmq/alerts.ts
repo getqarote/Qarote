@@ -538,7 +538,13 @@ export const alertsRouter = router({
       }
 
       const vhost = vhostParam ? decodeURIComponent(vhostParam) : "/";
-      const sig = signal ?? new AbortController().signal;
+      if (!signal) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Subscription requires an abort signal",
+        });
+      }
+      const sig = signal;
       let lastPayload:
         | {
             success: boolean;
