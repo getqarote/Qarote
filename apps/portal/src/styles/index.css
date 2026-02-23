@@ -356,12 +356,13 @@
     @apply bg-background text-foreground;
   }
 
-  a,
+  a:not([aria-disabled="true"]),
   button:not(:disabled),
   [role="button"]:not([aria-disabled="true"]) {
     cursor: pointer;
   }
 
+  a[aria-disabled="true"],
   button:disabled,
   [role="button"][aria-disabled="true"] {
     cursor: not-allowed;
