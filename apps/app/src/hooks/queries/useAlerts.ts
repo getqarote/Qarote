@@ -70,11 +70,16 @@ export const useRabbitMQAlerts = (
     category?: string;
     resolved?: boolean;
     enabled?: boolean;
-  }
+  },
+  serverExists: boolean = true
 ) => {
   const { workspace } = useWorkspace();
   const enabled =
-    (options?.enabled ?? true) && !!serverId && !!workspace?.id && !!vhost;
+    serverExists &&
+    (options?.enabled ?? true) &&
+    !!serverId &&
+    !!workspace?.id &&
+    !!vhost;
 
   const [data, setData] = useState<
     SubData<typeof trpc.rabbitmq.alerts.watchAlerts> | undefined
