@@ -325,7 +325,7 @@
   }
 
   a:not([aria-disabled="true"]),
-  button:not(:disabled):not([aria-disabled="true"]),
+  button:not(:disabled, [aria-disabled="true"]),
   [role="button"]:not([aria-disabled="true"]) {
     cursor: pointer;
   }
