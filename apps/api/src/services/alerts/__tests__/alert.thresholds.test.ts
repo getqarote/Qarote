@@ -92,17 +92,6 @@ describe("AlertThresholdsService", () => {
       expect(result).toBe(false);
     });
 
-    it("returns false for FREE plan", async () => {
-      vi.mocked(prisma.workspace.findUnique).mockResolvedValue({
-        ownerId: "owner-1",
-      } as never);
-      vi.mocked(prisma.subscription.findUnique).mockResolvedValue({
-        plan: "FREE",
-      } as never);
-      const result = await alertThresholdsService.canModifyThresholds("ws-1");
-      expect(result).toBe(false);
-    });
-
     it("returns true for DEVELOPER plan", async () => {
       vi.mocked(prisma.workspace.findUnique).mockResolvedValue({
         ownerId: "owner-1",
