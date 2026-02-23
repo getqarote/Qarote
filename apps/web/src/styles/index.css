@@ -325,13 +325,14 @@
   }
 
   a:not([aria-disabled="true"]),
-  button:not(:disabled),
+  button:not(:disabled):not([aria-disabled="true"]),
   [role="button"]:not([aria-disabled="true"]) {
     cursor: pointer;
   }
 
   a[aria-disabled="true"],
   button:disabled,
+  button[aria-disabled="true"],
   [role="button"][aria-disabled="true"] {
     cursor: not-allowed;
   }
