@@ -264,6 +264,11 @@ describe("AlertThresholdsService", () => {
       expect(prisma.workspaceAlertThresholds.upsert).toHaveBeenCalledWith(
         expect.objectContaining({
           where: { workspaceId: "ws-1" },
+          create: expect.objectContaining({
+            workspaceId: "ws-1",
+            memoryWarning: 70,
+            memoryCritical: 85,
+          }),
           update: expect.objectContaining({
             memoryWarning: 70,
             memoryCritical: 85,
