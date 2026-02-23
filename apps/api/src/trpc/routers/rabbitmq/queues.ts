@@ -756,7 +756,7 @@ export const queuesRouter = router({
     }),
 
   /**
-   * Live queue stream — SSE subscription replacing 5s polling (ALL USERS)
+   * Live queue stream — SSE subscription replacing client polling (ALL USERS)
    * Fetches queues from RabbitMQ every 4s and pushes updates to the client.
    */
   watchQueues: workspaceProcedure
@@ -775,6 +775,9 @@ export const queuesRouter = router({
 
       const vhost = vhostParam ? decodeURIComponent(vhostParam) : undefined;
       const sig = signal ?? new AbortController().signal;
+      let lastPayload:
+        | Awaited<ReturnType<typeof buildQueuesResponse>>
+        | undefined;
 
       while (!sig.aborted) {
         try {
@@ -793,9 +796,17 @@ export const queuesRouter = router({
 
           await persistQueueData(queues, serverId);
 
-          yield await buildQueuesResponse(queues, freshServer, ctx.user.id);
+          lastPayload = await buildQueuesResponse(
+            queues,
+            freshServer,
+            ctx.user.id
+          );
+          yield lastPayload;
         } catch (err) {
           ctx.logger.warn({ err, serverId }, "watchQueues fetch error");
+          if (lastPayload) {
+            yield { ...lastPayload, stale: true };
+          }
         }
 
         await abortableSleep(4000, sig);
