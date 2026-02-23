@@ -539,6 +539,16 @@ export const alertsRouter = router({
 
       const vhost = vhostParam ? decodeURIComponent(vhostParam) : "/";
       const sig = signal ?? new AbortController().signal;
+      let lastPayload:
+        | {
+            success: boolean;
+            alerts: unknown[];
+            summary: unknown;
+            thresholds: unknown;
+            total: number;
+            timestamp: string;
+          }
+        | undefined;
 
       while (!sig.aborted) {
         try {
@@ -553,7 +563,7 @@ export const alertsRouter = router({
             await alertService.getWorkspaceThresholds(workspaceId);
 
           if (userPlan === UserPlan.FREE) {
-            yield {
+            lastPayload = {
               success: true,
               alerts: [],
               summary,
@@ -567,7 +577,7 @@ export const alertsRouter = router({
               query
             );
 
-            yield {
+            lastPayload = {
               success: true,
               alerts: paginatedAlerts,
               summary,
@@ -576,8 +586,12 @@ export const alertsRouter = router({
               timestamp: new Date().toISOString(),
             };
           }
+          yield lastPayload;
         } catch (err) {
           ctx.logger.warn({ err, serverId }, "watchAlerts fetch error");
+          if (lastPayload) {
+            yield { ...lastPayload, stale: true };
+          }
         }
 
         await abortableSleep(10000, sig);
