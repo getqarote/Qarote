@@ -30,9 +30,13 @@ export const useOverview = (serverId: string | null) => {
   return query;
 };
 
-export const useQueues = (serverId: string | null, vhost?: string | null) => {
+export const useQueues = (
+  serverId: string | null,
+  vhost?: string | null,
+  serverExists: boolean = true
+) => {
   const { workspace } = useWorkspace();
-  const enabled = !!serverId && !!workspace?.id;
+  const enabled = serverExists && !!serverId && !!workspace?.id;
 
   const [data, setData] = useState<
     SubData<typeof trpc.rabbitmq.queues.watchQueues> | undefined
@@ -100,9 +104,12 @@ export const useQueue = (
   return query;
 };
 
-export const useMetrics = (serverId: string | null) => {
+export const useMetrics = (
+  serverId: string | null,
+  serverExists: boolean = true
+) => {
   const { workspace } = useWorkspace();
-  const enabled = !!serverId && !!workspace?.id;
+  const enabled = serverExists && !!serverId && !!workspace?.id;
 
   const [data, setData] = useState<
     SubData<typeof trpc.rabbitmq.metrics.watchMetrics> | undefined
@@ -270,10 +277,11 @@ export const useQueueBindings = (
 
 export const useLiveRatesMetrics = (
   serverId: string | null,
-  timeRange: TimeRange = "1d"
+  timeRange: TimeRange = "1d",
+  serverExists: boolean = true
 ) => {
   const { workspace } = useWorkspace();
-  const enabled = !!serverId && !!workspace?.id;
+  const enabled = serverExists && !!serverId && !!workspace?.id;
 
   const [data, setData] = useState<
     SubData<typeof trpc.rabbitmq.metrics.watchRates> | undefined
