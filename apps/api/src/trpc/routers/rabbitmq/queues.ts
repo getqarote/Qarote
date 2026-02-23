@@ -51,18 +51,18 @@ async function persistQueueData(
   queues: RawQueue[],
   serverId: string
 ): Promise<void> {
-  for (const queue of queues) {
-    const queueData = {
-      name: queue.name,
-      vhost: queue.vhost,
-      messages: queue.messages || 0,
-      messagesReady: queue.messages_ready || 0,
-      messagesUnack: queue.messages_unacknowledged || 0,
-      lastFetched: new Date(),
-      serverId,
-    };
+  await prisma.$transaction(async (tx) => {
+    for (const queue of queues) {
+      const queueData = {
+        name: queue.name,
+        vhost: queue.vhost,
+        messages: queue.messages || 0,
+        messagesReady: queue.messages_ready || 0,
+        messagesUnack: queue.messages_unacknowledged || 0,
+        lastFetched: new Date(),
+        serverId,
+      };
 
-    await prisma.$transaction(async (tx) => {
       const upsertedQueue = await tx.queue.upsert({
         where: {
           name_vhost_serverId: {
@@ -85,8 +85,8 @@ async function persistQueueData(
           consumeRate: queue.message_stats?.deliver_details?.rate || 0,
         },
       });
-    });
-  }
+    }
+  });
 }
 
 /**
@@ -99,6 +99,7 @@ async function buildQueuesResponse(
   userId: string
 ): Promise<{
   queues: ReturnType<typeof QueueMapper.toApiResponseArray>;
+  stale?: boolean;
   warning?: {
     isOverLimit: boolean;
     message: string;
@@ -766,7 +767,13 @@ export const queuesRouter = router({
       }
 
       const vhost = vhostParam ? decodeURIComponent(vhostParam) : undefined;
-      const sig = signal ?? new AbortController().signal;
+      if (!signal) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Subscription requires an abort signal",
+        });
+      }
+      const sig = signal;
       let lastPayload:
         | Awaited<ReturnType<typeof buildQueuesResponse>>
         | undefined;
