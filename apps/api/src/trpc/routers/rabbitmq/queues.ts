@@ -62,18 +62,22 @@ async function persistQueueData(
       serverId,
     };
 
-    const existingQueue = await prisma.queue.findFirst({
-      where: { name: queue.name, vhost: queue.vhost, serverId },
-    });
+    await prisma.$transaction(async (tx) => {
+      const upsertedQueue = await tx.queue.upsert({
+        where: {
+          name_vhost_serverId: {
+            name: queue.name,
+            vhost: queue.vhost,
+            serverId,
+          },
+        },
+        update: queueData,
+        create: queueData,
+      });
 
-    if (existingQueue) {
-      await prisma.queue.update({
-        where: { id: existingQueue.id },
-        data: queueData,
-      });
-      await prisma.queueMetric.create({
+      await tx.queueMetric.create({
         data: {
-          queueId: existingQueue.id,
+          queueId: upsertedQueue.id,
           messages: queue.messages || 0,
           messagesReady: queue.messages_ready || 0,
           messagesUnack: queue.messages_unacknowledged || 0,
@@ -81,19 +85,7 @@ async function persistQueueData(
           consumeRate: queue.message_stats?.deliver_details?.rate || 0,
         },
       });
-    } else {
-      const newQueue = await prisma.queue.create({ data: queueData });
-      await prisma.queueMetric.create({
-        data: {
-          queueId: newQueue.id,
-          messages: queue.messages || 0,
-          messagesReady: queue.messages_ready || 0,
-          messagesUnack: queue.messages_unacknowledged || 0,
-          publishRate: queue.message_stats?.publish_details?.rate || 0,
-          consumeRate: queue.message_stats?.deliver_details?.rate || 0,
-        },
-      });
-    }
+    });
   }
 }
 
