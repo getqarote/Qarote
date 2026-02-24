@@ -57,7 +57,11 @@
     "test:smtp:ethereal": "pnpm --filter=qarote-api test:smtp:ethereal",
     "update:selfhosted": "bash scripts/update.sh",
     "knip": "knip",
-    "knip:fix": "knip --fix"
+    "knip:fix": "knip --fix",
+    "test:e2e": "pnpm --filter=qarote-e2e test",
+    "test:e2e:community": "pnpm --filter=qarote-e2e test:community",
+    "test:e2e:cloud": "pnpm --filter=qarote-e2e test:cloud",
+    "test:e2e:enterprise": "pnpm --filter=qarote-e2e test:enterprise"
   },
   "lint-staged": {
     "apps/api/**/*.{ts,tsx}": [

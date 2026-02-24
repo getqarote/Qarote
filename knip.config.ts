@@ -17,6 +17,8 @@ const config: KnipConfig = {
     },
   },
   ignore: [
+    // Ignore E2E test package (has its own dependency management)
+    "apps/e2e/**",
     // Ignore infrastructure folder
     // Ignore UI component directories (as requested)
     "apps/app/src/components/ui/**",
