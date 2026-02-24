@@ -28,6 +28,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 
+import { useShowAlternativeAuth } from "@/hooks/queries/useSsoConfig";
 import { useLogin } from "@/hooks/ui/useAuth";
 
 import { type SignInFormData, signInSchema } from "@/schemas";
@@ -36,6 +37,7 @@ const SignIn: React.FC = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const loginMutation = useLogin();
+  const { showAlternativeAuth } = useShowAlternativeAuth();
 
   // Initialize form with react-hook-form
   const form = useForm<SignInFormData>({
@@ -176,31 +178,35 @@ const SignIn: React.FC = () => {
               </form>
             </Form>
 
-            {/* Divider */}
-            <div className="relative my-6">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white px-2 text-muted-foreground">
-                  Or continue with
-                </span>
-              </div>
-            </div>
+            {showAlternativeAuth && (
+              <>
+                {/* Divider */}
+                <div className="relative my-6">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-white px-2 text-muted-foreground">
+                      Or continue with
+                    </span>
+                  </div>
+                </div>
 
-            {/* Google Login */}
-            <GoogleLoginButton
-              onError={(error) => {
-                logger.error("Google login error:", error);
-              }}
-            />
+                {/* Google Login */}
+                <GoogleLoginButton
+                  onError={(error) => {
+                    logger.error("Google login error:", error);
+                  }}
+                />
 
-            {/* SSO Login */}
-            <SSOLoginButton
-              onError={(error) => {
-                logger.error("SSO login error:", error);
-              }}
-            />
+                {/* SSO Login */}
+                <SSOLoginButton
+                  onError={(error) => {
+                    logger.error("SSO login error:", error);
+                  }}
+                />
+              </>
+            )}
 
             {/* Forgot Password Link */}
             <div className="mt-4 text-center">

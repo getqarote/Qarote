@@ -47,8 +47,12 @@ fi
 cd "$PROJECT_ROOT"
 
 # --- Step 1: Build frontend (no VITE_API_URL — runtime config via /config.js) ---
+# Explicitly clear VITE_API_URL so apps/app/.env doesn't bake localhost:3000
+# into the bundle. The binary serves /config.js at runtime instead.
+# Set VITE_DEPLOYMENT_MODE=community so the frontend disables cloud-only
+# features (Google OAuth, Sentry, GA) at build time.
 info "Step 1/5: Building frontend..."
-pnpm run --filter qarote-app build 2>&1 | tail -5
+VITE_API_URL="" VITE_DEPLOYMENT_MODE="community" pnpm run --filter qarote-app build 2>&1 | tail -5
 
 # --- Step 2: Build backend (ESM + Prisma Rust-free) ---
 info "Step 2/5: Building backend..."

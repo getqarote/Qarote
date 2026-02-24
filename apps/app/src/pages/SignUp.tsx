@@ -33,6 +33,7 @@ import { PasswordRequirements } from "@/components/ui/password-requirements";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
 
+import { useShowAlternativeAuth } from "@/hooks/queries/useSsoConfig";
 import { useRegister } from "@/hooks/ui/useAuth";
 
 import { type SignUpFormData, signUpSchema } from "@/schemas";
@@ -44,6 +45,7 @@ const SignUp: React.FC = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const { showAlternativeAuth } = useShowAlternativeAuth();
 
   // Get the page the user was trying to access
   const from = location.state?.from?.pathname || "/";
@@ -123,9 +125,9 @@ const SignUp: React.FC = () => {
                     Account created successfully!
                   </div>
                   <p className="text-sm mb-3">
-                    We've sent a verification email to your address. Please
-                    check your inbox and click the verification link to activate
-                    your account and access the dashboard.
+                    {registerMutation.data?.autoVerified
+                      ? "Your account is ready. You can now sign in."
+                      : "We've sent a verification email to your address. Please check your inbox and click the verification link to activate your account and access the dashboard."}
                   </p>
                   <div className="flex flex-col sm:flex-row gap-2">
                     <Button
@@ -317,8 +319,8 @@ const SignUp: React.FC = () => {
               </Form>
             )}
 
-            {/* Only show Google signup option if account creation hasn't been successful */}
-            {!registerMutation.isSuccess && (
+            {/* Only show alternative auth if available and account creation hasn't succeeded */}
+            {!registerMutation.isSuccess && showAlternativeAuth && (
               <>
                 {/* Divider */}
                 <div className="relative my-6">

@@ -12,15 +12,29 @@ export type PremiumFeature =
   | "advanced_alert_rules";
 
 /**
- * Get deployment mode from environment
+ * Get deployment mode from environment.
+ * Checks build-time env first, then runtime config (served by /config.js in binary mode).
  */
 function getDeploymentMode(): "cloud" | "community" | "enterprise" {
-  return (
-    (import.meta.env.VITE_DEPLOYMENT_MODE as
-      | "cloud"
-      | "community"
-      | "enterprise") || "cloud"
-  );
+  const buildTime = import.meta.env.VITE_DEPLOYMENT_MODE as
+    | "cloud"
+    | "community"
+    | "enterprise"
+    | undefined;
+  if (buildTime) return buildTime;
+
+  if (typeof window !== "undefined") {
+    const runtimeConfig = (window as unknown as Record<string, unknown>)
+      .__QAROTE_CONFIG__ as { deploymentMode?: string } | undefined;
+    if (
+      runtimeConfig?.deploymentMode === "community" ||
+      runtimeConfig?.deploymentMode === "enterprise"
+    ) {
+      return runtimeConfig.deploymentMode;
+    }
+  }
+
+  return "cloud";
 }
 
 /**

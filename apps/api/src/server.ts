@@ -111,8 +111,9 @@ if (!isCloudMode() && publicDir) {
   // Users can override via API_URL env var for reverse-proxy setups.
   app.get("/config.js", (c) => {
     const apiUrl = process.env.API_URL || "";
+    const deploymentMode = config.DEPLOYMENT_MODE;
     return c.text(
-      `window.__QAROTE_CONFIG__=${JSON.stringify({ apiUrl })};`,
+      `window.__QAROTE_CONFIG__=${JSON.stringify({ apiUrl, deploymentMode })};`,
       200,
       { "Content-Type": "application/javascript" }
     );
