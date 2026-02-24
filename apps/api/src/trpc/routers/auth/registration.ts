@@ -8,6 +8,8 @@ import { trackSignUpError } from "@/services/sentry";
 
 import { RegisterUserSchema } from "@/schemas/auth";
 
+import { emailConfig } from "@/config";
+
 import { UserMapper } from "@/mappers/auth";
 
 import { rateLimitedPublicProcedure, router } from "@/trpc/trpc";
@@ -50,6 +52,10 @@ export const registrationRouter = router({
 
         const hashedPassword = await hashPassword(password);
 
+        // When email is disabled (default for community/binary deployments),
+        // auto-verify the user so they can log in immediately.
+        const autoVerify = !emailConfig.enabled;
+
         // Create user without workspace (workspace will be created later on the dedicated page)
         const user = await ctx.prisma.user.create({
           data: {
@@ -58,6 +64,10 @@ export const registrationRouter = router({
             firstName,
             lastName,
             // workspaceId is undefined - no workspace assigned yet
+            ...(autoVerify && {
+              emailVerified: true,
+              emailVerifiedAt: new Date(),
+            }),
           },
           select: {
             id: true,
@@ -74,33 +84,35 @@ export const registrationRouter = router({
           },
         });
 
-        // Generate verification token and send email
-        try {
-          const verificationToken =
-            await EmailVerificationService.generateVerificationToken({
-              userId: user.id,
-              email: user.email,
-              type: "SIGNUP",
-            });
+        // Generate verification token and send email (skip if email is disabled)
+        if (!autoVerify) {
+          try {
+            const verificationToken =
+              await EmailVerificationService.generateVerificationToken({
+                userId: user.id,
+                email: user.email,
+                type: "SIGNUP",
+              });
 
-          await EmailVerificationService.sendVerificationEmail(
-            user.email,
-            verificationToken,
-            "SIGNUP",
-            firstName,
-            sourceApp
-          );
+            await EmailVerificationService.sendVerificationEmail(
+              user.email,
+              verificationToken,
+              "SIGNUP",
+              firstName,
+              sourceApp
+            );
 
-          ctx.logger.info(
-            { userId: user.id, email: user.email },
-            "Verification email sent successfully"
-          );
-        } catch (emailError) {
-          ctx.logger.error(
-            { emailError, userId: user.id },
-            "Failed to send verification email"
-          );
-          // Don't fail registration if email sending fails
+            ctx.logger.info(
+              { userId: user.id, email: user.email },
+              "Verification email sent successfully"
+            );
+          } catch (error) {
+            ctx.logger.error(
+              { error, userId: user.id },
+              "Failed to send verification email"
+            );
+            // Don't fail registration if email sending fails
+          }
         }
 
         // Update user in Notion (non-blocking)
@@ -122,9 +134,11 @@ export const registrationRouter = router({
           });
 
         return {
-          message:
-            "Registration successful. Please check your email to verify your account.",
+          message: autoVerify
+            ? "Registration successful. You can now sign in."
+            : "Registration successful. Please check your email to verify your account.",
           user: UserMapper.toApiResponse(user),
+          autoVerified: autoVerify,
         };
       } catch (error) {
         if (error instanceof TRPCError) {

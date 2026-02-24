@@ -4,6 +4,7 @@ import React from "react";
 import { CredentialResponse, GoogleLogin } from "@react-oauth/google";
 import { useNavigate } from "react-router";
 
+import { isCloudMode } from "@/lib/featureFlags";
 import { trackSignUp } from "@/lib/ga";
 import { logger } from "@/lib/logger";
 import { trpc } from "@/lib/trpc/client";
@@ -27,8 +28,7 @@ export const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
   const navigate = useNavigate();
 
   // OAuth is only enabled for cloud deployments
-  const deploymentMode = import.meta.env.VITE_DEPLOYMENT_MODE || "cloud";
-  const enableOAuth = deploymentMode === "cloud";
+  const enableOAuth = isCloudMode();
   const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
   // Always call hooks before any conditional returns
