@@ -1,0 +1,134 @@
+name: E2E Tests
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Deployment mode to test"
+        required: false
+        default: "community"
+        type: choice
+        options:
+          - community
+          - cloud
+          - enterprise
+          - all
+      grep:
+        description: "Test filter (e.g. @p0, @smoke)"
+        required: false
+        default: "@p0"
+        type: string
+
+env:
+  DATABASE_URL: postgres://postgres:password@localhost:5433/qarote_e2e
+
+jobs:
+  e2e-community:
+    name: "E2E - Community Mode"
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: qarote_e2e
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d qarote_e2e"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      rabbitmq:
+        image: rabbitmq:3.12-management-alpine
+        env:
+          RABBITMQ_DEFAULT_USER: admin
+          RABBITMQ_DEFAULT_PASS: admin123
+        ports:
+          - 5682:5672
+          - 15682:15672
+        options: >-
+          --health-cmd "rabbitmq-diagnostics -q ping"
+          --health-interval 15s
+          --health-timeout 10s
+          --health-retries 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: "pnpm"
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        working-directory: apps/e2e
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run Prisma migrations
+        working-directory: apps/api
+        run: pnpm exec prisma migrate deploy
+        env:
+          DATABASE_URL: ${{ env.DATABASE_URL }}
+
+      - name: Run E2E tests (Community)
+        working-directory: apps/e2e
+        run: pnpm exec playwright test --project=community --grep "${{ github.event.inputs.grep || '@p0' }}"
+        env:
+          DEPLOYMENT_MODE: community
+          VITE_DEPLOYMENT_MODE: community
+          NODE_ENV: test
+          PORT: "3001"
+          HOST: localhost
+          LOG_LEVEL: warn
+          JWT_SECRET: e2e-test-jwt-secret-key-at-least-32-chars
+          ENCRYPTION_KEY: e2e-test-encryption-key-32-chars-long!
+          CORS_ORIGIN: "*"
+          FRONTEND_URL: http://localhost:8081
+          PORTAL_FRONTEND_URL: http://localhost:8082
+          ENABLE_EMAIL: "false"
+          EMAIL_PROVIDER: smtp
+          FROM_EMAIL: noreply@test.local
+          ENABLE_OAUTH: "false"
+          ENABLE_SENTRY: "false"
+          SENTRY_ENABLED: "false"
+          ENABLE_NOTION: "false"
+          API_URL: http://localhost:3001
+          VITE_API_URL: http://localhost:3001
+          E2E_RABBITMQ_HOST: localhost
+          E2E_RABBITMQ_MGMT_PORT: "15682"
+          E2E_RABBITMQ_AMQP_PORT: "5682"
+          E2E_RABBITMQ_USER: admin
+          E2E_RABBITMQ_PASS: admin123
+          CI: "true"
+
+      - name: Upload test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-community
+          path: apps/e2e/playwright-report/
+          retention-days: 7
+
+      - name: Upload traces on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-traces-community
+          path: apps/e2e/test-results/
+          retention-days: 3

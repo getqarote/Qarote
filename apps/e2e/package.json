@@ -1,0 +1,25 @@
+{
+  "name": "qarote-e2e",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "test": "playwright test",
+    "test:community": "playwright test --project=community",
+    "test:cloud": "playwright test --project=cloud",
+    "test:enterprise": "playwright test --project=enterprise",
+    "test:p0": "playwright test --grep @p0",
+    "test:p1": "playwright test --grep @p1",
+    "test:smoke": "playwright test --grep @smoke",
+    "test:ui": "playwright test --ui",
+    "test:codegen": "playwright codegen http://localhost:8080",
+    "report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.52.0",
+    "@prisma/client": "^7.4.0",
+    "bcryptjs": "^3.0.2",
+    "dotenv": "^17.3.1",
+    "prisma": "^7.4.0"
+  }
+}
