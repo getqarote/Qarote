@@ -23,24 +23,26 @@ async function globalSetup() {
   const adapter = new PrismaPg({ connectionString: DATABASE_URL });
   const prisma = new PrismaClient({ adapter });
 
-  // 1. Wait for database
-  await waitForDb(prisma);
+  try {
+    // 1. Wait for database
+    await waitForDb(prisma);
 
-  // 2. Run migrations
-  const apiDir = path.resolve(import.meta.dirname, "../api");
-  execSync("npx prisma migrate deploy", {
-    cwd: apiDir,
-    env: { ...process.env, DATABASE_URL },
-    stdio: "pipe",
-  });
+    // 2. Run migrations
+    const apiDir = path.resolve(import.meta.dirname, "../api");
+    execSync("npx prisma migrate deploy", {
+      cwd: apiDir,
+      env: { ...process.env, DATABASE_URL },
+      stdio: "pipe",
+    });
 
-  // 3. Clean all test data
-  await cleanDatabase(prisma);
+    // 3. Clean all test data
+    await cleanDatabase(prisma);
 
-  // 4. Seed base data
-  await seedBaseData(prisma);
-
-  await prisma.$disconnect();
+    // 4. Seed base data
+    await seedBaseData(prisma);
+  } finally {
+    await prisma.$disconnect();
+  }
 
   // 5. Pre-acquire auth tokens and save to file (avoids rate limiting across workers)
   await acquireAuthTokens();
@@ -96,7 +98,7 @@ async function cleanDatabase(prisma: InstanceType<any>) {
       );
     } catch (err: any) {
       const msg = err?.message ?? "";
-      if (msg.includes("does not exist") || msg.includes("relation")) continue;
+      if (msg.includes("does not exist")) continue;
       throw err;
     }
   }
