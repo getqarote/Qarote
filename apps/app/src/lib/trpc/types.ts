@@ -1,5 +1,5 @@
 /** Extract the data type yielded by a tRPC subscription hook. */
-/* eslint-disable @typescript-eslint/no-explicit-any -- generic constraint requires any */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type SubData<
   T extends { useSubscription: (input: any, opts: any) => void },
 > = Parameters<T["useSubscription"]>[1] extends {
@@ -7,4 +7,3 @@ export type SubData<
 }
   ? D
   : never;
-/* eslint-enable @typescript-eslint/no-explicit-any */
