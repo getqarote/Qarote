@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { BarChart3 } from "lucide-react";
 import {
@@ -83,6 +83,12 @@ export const QueueDepthsChart = ({
       return () => clearTimeout(timer);
     }
   }, [isFetching]);
+  const tooltipContent = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (props: any) => <CustomTooltip {...props} queues={queues} />,
+    [queues]
+  );
+
   // Prepare data for the chart - show all queues, prioritize those with messages
   const chartData: QueueDepthData[] = [...queues]
     .sort((a, b) => b.messages - a.messages) // Sort by message count descending (queues with messages first)
@@ -158,11 +164,7 @@ export const QueueDepthsChart = ({
                   domain={[yAxisMin, yAxisMax]}
                   allowDataOverflow={false}
                 />
-                <Tooltip
-                  content={(props) => (
-                    <CustomTooltip {...props} queues={queues} />
-                  )}
-                />
+                <Tooltip content={tooltipContent} />
                 <Bar
                   dataKey="messages"
                   fill="url(#barGradient)"
