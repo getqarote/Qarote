@@ -40,7 +40,7 @@ export default defineConfig({
       timeout: 60_000,
       cwd: path.resolve(import.meta.dirname, "../.."),
       env: {
-        ...process.env,
+        ...(process.env as Record<string, string>),
         DEPLOYMENT_MODE: process.env.DEPLOYMENT_MODE || "community",
         PORT: String(API_PORT),
         NODE_ENV: "test",
@@ -59,7 +59,7 @@ export default defineConfig({
       timeout: 30_000,
       cwd: path.resolve(import.meta.dirname, "../.."),
       env: {
-        ...process.env,
+        ...(process.env as Record<string, string>),
         VITE_API_URL: API_URL,
         VITE_DEPLOYMENT_MODE: process.env.DEPLOYMENT_MODE || "community",
       },

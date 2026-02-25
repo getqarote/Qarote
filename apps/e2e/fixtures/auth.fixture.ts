@@ -15,7 +15,12 @@ type AuthFixtures = {
  */
 function getAuthToken(email: string): { token: string; user: Record<string, unknown> } {
   const raw = fs.readFileSync(AUTH_TOKENS_FILE, "utf-8");
-  const tokens = JSON.parse(raw);
+  let tokens: Record<string, { token: string; user: Record<string, unknown> }>;
+  try {
+    tokens = JSON.parse(raw);
+  } catch (cause) {
+    throw new Error(`Failed to parse ${AUTH_TOKENS_FILE}: ${cause}`, { cause });
+  }
   const entry = tokens[email];
   if (!entry) {
     throw new Error(`No cached auth token for ${email}. Did global-setup run?`);

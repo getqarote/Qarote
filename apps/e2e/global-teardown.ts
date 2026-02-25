@@ -25,42 +25,50 @@ async function globalTeardown() {
     const adapter = new PrismaPg({ connectionString: DATABASE_URL });
     const prisma = new PrismaClient({ adapter });
 
-    const tables = [
-      "QueueMetric",
-      "Queue",
-      "SeenAlert",
-      "ResolvedAlert",
-      "AlertRule",
-      "Alert",
-      "SlackConfig",
-      "Webhook",
-      "WorkspaceAlertThresholds",
-      "WorkspaceMember",
-      "Payment",
-      "Subscription",
-      "License",
-      "LicenseFileVersion",
-      "LicenseRenewalEmail",
-      "Invitation",
-      "PasswordReset",
-      "EmailVerificationToken",
-      "Feedback",
-      "StripeWebhookEvent",
-      "SsoAuthCode",
-      "SsoState",
-      "RabbitMQServer",
-      "User",
-      "Workspace",
-      "SystemState",
-    ];
+    try {
+      const tables = [
+        "QueueMetric",
+        "Queue",
+        "SeenAlert",
+        "ResolvedAlert",
+        "AlertRule",
+        "Alert",
+        "SlackConfig",
+        "Webhook",
+        "WorkspaceAlertThresholds",
+        "WorkspaceMember",
+        "Payment",
+        "Subscription",
+        "License",
+        "LicenseFileVersion",
+        "LicenseRenewalEmail",
+        "Invitation",
+        "PasswordReset",
+        "EmailVerificationToken",
+        "Feedback",
+        "StripeWebhookEvent",
+        "SsoAuthCode",
+        "SsoState",
+        "RabbitMQServer",
+        "User",
+        "Workspace",
+        "SystemState",
+      ];
 
-    for (const table of tables) {
-      await prisma.$executeRawUnsafe(
-        `TRUNCATE TABLE "${table}" CASCADE`
-      ).catch(() => {});
+      for (const table of tables) {
+        try {
+          await prisma.$executeRawUnsafe(
+            `TRUNCATE TABLE "${table}" CASCADE`
+          );
+        } catch (err: any) {
+          const msg = err?.message ?? "";
+          if (msg.includes("does not exist")) continue;
+          throw err;
+        }
+      }
+    } finally {
+      await prisma.$disconnect();
     }
-
-    await prisma.$disconnect();
   }
 }
 

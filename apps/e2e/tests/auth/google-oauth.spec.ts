@@ -4,6 +4,11 @@ test.describe("Google OAuth Visibility @p1", () => {
   test("should not show Google login button in community mode @community", async ({
     page,
   }) => {
+    test.skip(
+      process.env.DEPLOYMENT_MODE === "cloud",
+      "Google OAuth is enabled in cloud mode"
+    );
+
     await page.goto("/auth/sign-in");
     await page.waitForLoadState("domcontentloaded");
     // In community mode with ENABLE_OAUTH=false, the Google button should not appear
@@ -15,6 +20,11 @@ test.describe("Google OAuth Visibility @p1", () => {
   test("should not show Google login on sign-up in community mode @community", async ({
     page,
   }) => {
+    test.skip(
+      process.env.DEPLOYMENT_MODE === "cloud",
+      "Google OAuth is enabled in cloud mode"
+    );
+
     await page.goto("/auth/sign-up");
     await page.waitForLoadState("domcontentloaded");
     await expect(

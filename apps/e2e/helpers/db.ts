@@ -38,7 +38,11 @@ export class DbHelper {
     this.createdIds.push({ table, id });
   }
 
-  /** Clean up records created during this test (reverse order for FK constraints) */
+  /**
+   * Clean up records created during this test (reverse order for FK constraints).
+   * SAFETY: table names are developer-controlled via track() — never from user input.
+   * The id values are parameterized ($1) to prevent SQL injection.
+   */
   async cleanup() {
     const prisma = await getPrisma();
     const idsToDelete = [...this.createdIds].reverse();
