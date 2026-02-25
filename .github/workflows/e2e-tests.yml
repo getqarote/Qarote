@@ -237,8 +237,19 @@ jobs:
           SMTP_PORT: "1025"
           FROM_EMAIL: noreply@test.local
           ENABLE_OAUTH: "true"
+          GOOGLE_CLIENT_ID: "test-google-client-id.apps.googleusercontent.com"
           VITE_GOOGLE_CLIENT_ID: "test-google-client-id.apps.googleusercontent.com"
-          # SENTRY_ENABLED and ENABLE_NOTION omitted — default to false
+          # Cloud mode requires these for Zod validation.
+          # Dummy values — Stripe/Sentry/Resend are not exercised in E2E tests.
+          RESEND_API_KEY: e2e-test-resend-key
+          STRIPE_SECRET_KEY: sk_test_e2e_dummy
+          STRIPE_WEBHOOK_SECRET: whsec_e2e_dummy
+          STRIPE_DEVELOPER_MONTHLY_PRICE_ID: price_e2e_dev_monthly
+          STRIPE_DEVELOPER_YEARLY_PRICE_ID: price_e2e_dev_yearly
+          STRIPE_ENTERPRISE_MONTHLY_PRICE_ID: price_e2e_ent_monthly
+          STRIPE_ENTERPRISE_YEARLY_PRICE_ID: price_e2e_ent_yearly
+          SENTRY_DSN: https://e2e@sentry.test/0
+          LICENSE_PRIVATE_KEY: e2e-test-private-key
           API_URL: http://localhost:3001
           VITE_API_URL: http://localhost:3001
           E2E_RABBITMQ_HOST: localhost
