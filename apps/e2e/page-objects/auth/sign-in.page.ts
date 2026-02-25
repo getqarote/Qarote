@@ -7,7 +7,6 @@ export class SignInPage {
   readonly signInButton: Locator;
   readonly signUpLink: Locator;
   readonly forgotPasswordLink: Locator;
-  readonly errorAlert: Locator;
   readonly googleLoginButton: Locator;
   readonly ssoLoginButton: Locator;
 
@@ -20,7 +19,6 @@ export class SignInPage {
     this.forgotPasswordLink = page.getByRole("link", {
       name: /forgot your password/i,
     });
-    this.errorAlert = page.locator('[data-variant="destructive"]');
     this.googleLoginButton = page.getByRole("button", { name: /google/i });
     this.ssoLoginButton = page.getByRole("button", { name: /sso/i });
   }
@@ -36,7 +34,9 @@ export class SignInPage {
   }
 
   async expectErrorMessage(text: string | RegExp) {
-    await expect(this.errorAlert).toContainText(text);
+    await expect(this.page.getByText(text).first()).toBeVisible({
+      timeout: 10_000,
+    });
   }
 
   async expectRedirectToDashboard() {

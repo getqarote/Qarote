@@ -1,5 +1,6 @@
 import path from "node:path";
 
+import { PrismaPg } from "@prisma/adapter-pg";
 import dotenv from "dotenv";
 
 dotenv.config({ path: path.resolve(import.meta.dirname, "../.env.test") });
@@ -19,7 +20,8 @@ async function getPrisma() {
     const { PrismaClient } = await import(
       "../../api/src/generated/prisma/client.js"
     );
-    prismaInstance = new PrismaClient({ datasourceUrl: DATABASE_URL });
+    const adapter = new PrismaPg({ connectionString: DATABASE_URL });
+    prismaInstance = new PrismaClient({ adapter });
   }
   return prismaInstance;
 }

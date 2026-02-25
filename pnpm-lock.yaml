@@ -367,6 +367,9 @@ importers:
       '@playwright/test':
         specifier: ^1.52.0
         version: 1.58.2
+      '@prisma/adapter-pg':
+        specifier: ^7.4.0
+        version: 7.4.0
       '@prisma/client':
         specifier: ^7.4.0
         version: 7.4.0(prisma@7.4.0(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3))(typescript@5.9.3)

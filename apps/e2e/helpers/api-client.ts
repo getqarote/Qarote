@@ -43,7 +43,7 @@ export class ApiClient {
     }
 
     const params = input
-      ? `?input=${encodeURIComponent(JSON.stringify({ json: input }))}`
+      ? `?input=${encodeURIComponent(JSON.stringify(input))}`
       : "";
     const url = `${this.baseUrl}/trpc/${procedure}${params}`;
 
@@ -56,7 +56,7 @@ export class ApiClient {
       );
     }
 
-    return data.result?.data?.json;
+    return data.result?.data;
   }
 
   async mutation(procedure: string, input: Record<string, unknown>) {
@@ -73,7 +73,7 @@ export class ApiClient {
     const response = await fetch(url, {
       method: "POST",
       headers,
-      body: JSON.stringify({ json: input }),
+      body: JSON.stringify(input),
     });
 
     const data = await response.json();
@@ -84,6 +84,6 @@ export class ApiClient {
       );
     }
 
-    return data.result?.data?.json;
+    return data.result?.data;
   }
 }

@@ -5,7 +5,7 @@ test.describe("Plans Page @p2", () => {
     page,
   }) => {
     await page.goto("/plans");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     await expect(
       page.getByRole("heading", { name: /choose your plan/i })
@@ -14,7 +14,7 @@ test.describe("Plans Page @p2", () => {
 
   test("should show three plan tiers @cloud", async ({ page }) => {
     await page.goto("/plans");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Should show Free, Developer, and Enterprise plans
     await expect(page.getByText(/free/i).first()).toBeVisible({
@@ -28,7 +28,7 @@ test.describe("Plans Page @p2", () => {
     page,
   }) => {
     await page.goto("/plans");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     await expect(page.getByText(/monthly/i)).toBeVisible({ timeout: 15_000 });
     await expect(page.getByText(/yearly/i)).toBeVisible();
@@ -36,7 +36,7 @@ test.describe("Plans Page @p2", () => {
 
   test("should show feature highlights @cloud", async ({ page }) => {
     await page.goto("/plans");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     await expect(page.getByText(/live monitoring/i)).toBeVisible({
       timeout: 15_000,
@@ -46,7 +46,7 @@ test.describe("Plans Page @p2", () => {
 
   test("should show plan pricing details @cloud", async ({ page }) => {
     await page.goto("/plans");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Developer plan should show $10/month
     await expect(page.getByText(/\$10/)).toBeVisible({ timeout: 15_000 });

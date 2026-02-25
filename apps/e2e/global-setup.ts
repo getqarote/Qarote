@@ -1,6 +1,8 @@
 import { execSync } from "node:child_process";
+import fs from "node:fs";
 import path from "node:path";
 
+import { PrismaPg } from "@prisma/adapter-pg";
 import { hashSync } from "bcryptjs";
 import dotenv from "dotenv";
 
@@ -10,12 +12,16 @@ const DATABASE_URL =
   process.env.DATABASE_URL ||
   "postgres://postgres:password@localhost:5433/qarote_e2e";
 
+const API_URL = process.env.API_URL || "http://localhost:3001";
+const AUTH_TOKENS_FILE = path.resolve(import.meta.dirname, ".auth-tokens.json");
+
 async function globalSetup() {
   // Dynamically import PrismaClient (generated in the api package)
   const { PrismaClient } = await import(
     "../api/src/generated/prisma/client.js"
   );
-  const prisma = new PrismaClient({ datasourceUrl: DATABASE_URL });
+  const adapter = new PrismaPg({ connectionString: DATABASE_URL });
+  const prisma = new PrismaClient({ adapter });
 
   // 1. Wait for database
   await waitForDb(prisma);
@@ -35,6 +41,9 @@ async function globalSetup() {
   await seedBaseData(prisma);
 
   await prisma.$disconnect();
+
+  // 5. Pre-acquire auth tokens and save to file (avoids rate limiting across workers)
+  await acquireAuthTokens();
 }
 
 async function waitForDb(prisma: InstanceType<any>, maxRetries = 30) {
@@ -157,6 +166,52 @@ async function seedBaseData(prisma: InstanceType<any>) {
   process.env.E2E_READONLY_EMAIL = "readonly@e2e-test.local";
   process.env.E2E_READONLY_PASSWORD = "TestPassword123!";
   process.env.E2E_WORKSPACE_ID = workspace.id;
+}
+
+async function loginViaApi(
+  email: string,
+  password: string,
+  maxRetries = 5
+): Promise<{ token: string; user: Record<string, unknown> }> {
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    const response = await fetch(`${API_URL}/trpc/auth.session.login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+
+    if (response.status === 429) {
+      // Rate limited — wait and retry
+      const waitMs = 2000 * (attempt + 1);
+      console.log(`Rate limited on login for ${email}, waiting ${waitMs}ms...`);
+      await new Promise((r) => setTimeout(r, waitMs));
+      continue;
+    }
+
+    if (!response.ok) {
+      const body = await response.text();
+      throw new Error(`Login failed for ${email}: ${response.status} ${body}`);
+    }
+
+    const data = await response.json();
+    return data.result.data;
+  }
+  throw new Error(`Login failed for ${email}: rate limited after ${maxRetries} retries`);
+}
+
+async function acquireAuthTokens() {
+  const tokens: Record<string, { token: string; user: Record<string, unknown> }> = {};
+
+  tokens["admin@e2e-test.local"] = await loginViaApi(
+    "admin@e2e-test.local",
+    "TestPassword123!"
+  );
+  tokens["readonly@e2e-test.local"] = await loginViaApi(
+    "readonly@e2e-test.local",
+    "TestPassword123!"
+  );
+
+  fs.writeFileSync(AUTH_TOKENS_FILE, JSON.stringify(tokens, null, 2));
 }
 
 export default globalSetup;
