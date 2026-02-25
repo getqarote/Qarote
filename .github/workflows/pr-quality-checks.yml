@@ -4,11 +4,6 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
 
-permissions:
-  contents: read
-  checks: write
-  pull-requests: write
-
 env:
   # Dummy URL for prisma generate (postinstall) — no actual DB connection is made
   DATABASE_URL: postgresql://localhost:5432/dummy
@@ -68,7 +63,7 @@ jobs:
         run: |
           changed_apps=()
           for app in app portal web; do
-            if git diff --name-only origin/main...HEAD | grep -q "^apps/$app/"; then
+            if git diff --name-only origin/${{ github.base_ref || 'main' }}...HEAD | grep -q "^apps/$app/"; then
               changed_apps+=("\"$app\"")
             fi
           done
@@ -83,6 +78,11 @@ jobs:
     needs: detect-frontend-changes
     if: needs.detect-frontend-changes.outputs.apps != '[]'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    env:
+      NO_COLOR: "1"
     strategy:
       matrix:
         app: ${{ fromJson(needs.detect-frontend-changes.outputs.apps) }}
@@ -92,11 +92,14 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: 🔀 Fetch base branch
+        run: git fetch origin ${{ github.base_ref }}
+
       - name: 🩺 React Doctor
-        uses: millionco/react-doctor@main
+        uses: millionco/react-doctor@97b21f18ee4c5b530d683ae6626548081a4aad76 # main
         with:
           directory: apps/${{ matrix.app }}
-          diff: main
+          diff: ${{ github.base_ref || 'main' }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
   tests:
