@@ -41,12 +41,20 @@ export class DbHelper {
   /** Clean up records created during this test (reverse order for FK constraints) */
   async cleanup() {
     const prisma = await getPrisma();
-    for (const { table, id } of this.createdIds.reverse()) {
-      await prisma.$executeRawUnsafe(
-        `DELETE FROM "${table}" WHERE id = $1`,
-        id
-      ).catch(() => {});
+    const idsToDelete = [...this.createdIds].reverse();
+    for (const { table, id } of idsToDelete) {
+      try {
+        await prisma.$executeRawUnsafe(
+          `DELETE FROM "${table}" WHERE id = $1`,
+          id
+        );
+      } catch (err: any) {
+        const msg = err?.message ?? "";
+        if (msg.includes("does not exist")) continue;
+        console.warn(`Cleanup failed for ${table}/${id}: ${msg}`);
+      }
     }
+    this.createdIds = [];
   }
 
   async getUserByEmail(email: string) {

@@ -25,7 +25,7 @@ export async function createUser(
   const user = await prisma.user.create({
     data: {
       email,
-      passwordHash: hashSync(password, 10),
+      passwordHash: hashSync(password, 1),
       firstName: overrides.firstName || "Test",
       lastName: overrides.lastName || "User",
       role: overrides.role || "MEMBER",

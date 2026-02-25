@@ -16,16 +16,17 @@ test.describe("SSO Visibility @p2", () => {
   test("should show SSO button when SSO is enabled @enterprise", async ({
     page,
   }) => {
-    // This test only passes when SSO_ENABLED=true is configured
+    test.skip(
+      process.env.DEPLOYMENT_MODE !== "enterprise",
+      "SSO only available in enterprise mode"
+    );
+
     await page.goto("/auth/sign-in");
     await page.waitForLoadState("domcontentloaded");
 
-    // In enterprise mode with SSO enabled, the button should be visible
-    // The button text comes from SSO_BUTTON_LABEL config (default: "Sign in with SSO")
     const ssoButton = page.getByRole("button", { name: /sso/i });
-    if (await ssoButton.isVisible()) {
-      await expect(ssoButton).toBeEnabled();
-    }
+    await expect(ssoButton).toBeVisible({ timeout: 10_000 });
+    await expect(ssoButton).toBeEnabled();
   });
 
   test("should not show SSO on sign-up when disabled @community", async ({

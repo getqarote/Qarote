@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "../../fixtures/test-base.js";
 
 test.describe("Google OAuth Visibility @p1", () => {
   test("should not show Google login button in community mode @community", async ({

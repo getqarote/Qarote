@@ -90,16 +90,20 @@ async function cleanDatabase(prisma: InstanceType<any>) {
   ];
 
   for (const table of tables) {
-    await prisma.$executeRawUnsafe(
-      `TRUNCATE TABLE "${table}" CASCADE`
-    ).catch(() => {
-      // Table might not exist yet — ignore
-    });
+    try {
+      await prisma.$executeRawUnsafe(
+        `TRUNCATE TABLE "${table}" CASCADE`
+      );
+    } catch (err: any) {
+      const msg = err?.message ?? "";
+      if (msg.includes("does not exist") || msg.includes("relation")) continue;
+      throw err;
+    }
   }
 }
 
 async function seedBaseData(prisma: InstanceType<any>) {
-  const passwordHash = hashSync("TestPassword123!", 10);
+  const passwordHash = hashSync("TestPassword123!", 1);
 
   // Create workspace
   const workspace = await prisma.workspace.create({
