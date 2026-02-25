@@ -1,3 +1,5 @@
+import type { HonoRequest } from "hono";
+
 import type { SafeUser } from "@/core/auth";
 import { extractUserFromToken } from "@/core/auth";
 import { logger } from "@/core/logger";
@@ -13,8 +15,6 @@ export interface Context extends Record<string, unknown> {
   prisma: typeof prisma;
   logger: typeof logger;
 }
-
-import type { HonoRequest } from "hono";
 
 /**
  * Extract workspace ID from request
@@ -58,9 +58,12 @@ export async function createContext(opts: {
   let token: string | null = null;
 
   if (authHeader && authHeader.startsWith("Bearer ")) {
-    token = authHeader.split(" ")[1];
-  } else {
-    // For httpSubscriptionLink (SSE), auth is passed via connectionParams query param
+    token = authHeader.slice(7).trim();
+  }
+
+  // For httpSubscriptionLink (SSE), auth is passed via connectionParams query param.
+  // Always check connectionParams as a fallback when no Bearer token was found.
+  if (!token) {
     const url = new URL(req.url);
     const connectionParamsStr = url.searchParams.get("connectionParams");
     if (connectionParamsStr) {

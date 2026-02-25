@@ -14,6 +14,9 @@ import { useVHostContext } from "@/contexts/VHostContextDefinition";
 import { useQueues } from "@/hooks/queries/useRabbitMQ";
 import { useUser } from "@/hooks/ui/useUser";
 
+// No-op: data is kept fresh via the subscription automatically
+const handleRefetch = () => {};
+
 const Queues = () => {
   const navigate = useNavigate();
   const { isLoading: workspaceLoading } = useUser();
@@ -27,9 +30,6 @@ const Queues = () => {
 
   const queues = useMemo(() => queuesData?.queues || [], [queuesData?.queues]);
   const queueCount = queues.length;
-
-  // No-op: data is kept fresh via the subscription automatically
-  const handleRefetch = () => {};
 
   const filteredQueues = useMemo(() => {
     if (!filterRegex) return queues;
