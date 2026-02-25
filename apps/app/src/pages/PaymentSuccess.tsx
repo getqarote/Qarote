@@ -24,10 +24,11 @@ const PaymentSuccess: React.FC = () => {
     const refreshData = async () => {
       try {
         // await refetch();
-        await refetchPlan();
-        // Invalidate all plan-related queries
-        await queryClient.invalidateQueries({ queryKey: ["plans"] });
-        await queryClient.invalidateQueries({ queryKey: ["workspace"] });
+        await Promise.all([
+          refetchPlan(),
+          queryClient.invalidateQueries({ queryKey: ["plans"] }),
+          queryClient.invalidateQueries({ queryKey: ["workspace"] }),
+        ]);
         logger.info("Workspace data refreshed after successful payment");
       } catch (error) {
         logger.error("Failed to refresh workspace data:", error);

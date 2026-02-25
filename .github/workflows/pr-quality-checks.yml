@@ -52,12 +52,40 @@ jobs:
         working-directory: apps/api
         run: pnpm run format
 
+  detect-frontend-changes:
+    name: Detect Frontend Changes
+    runs-on: ubuntu-latest
+    outputs:
+      apps: ${{ steps.filter.outputs.apps }}
+    steps:
+      - name: 🔍 Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: 🔎 Detect changed frontend apps
+        id: filter
+        run: |
+          changed_apps=()
+          for app in app portal web; do
+            if git diff --name-only origin/main...HEAD | grep -q "^apps/$app/"; then
+              changed_apps+=("\"$app\"")
+            fi
+          done
+          if [ ${#changed_apps[@]} -eq 0 ]; then
+            echo "apps=[]" >> "$GITHUB_OUTPUT"
+          else
+            echo "apps=[$(IFS=,; echo "${changed_apps[*]}")]" >> "$GITHUB_OUTPUT"
+          fi
+
   react-doctor:
     name: React Doctor
+    needs: detect-frontend-changes
+    if: needs.detect-frontend-changes.outputs.apps != '[]'
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        app: [app, portal, web]
+        app: ${{ fromJson(needs.detect-frontend-changes.outputs.apps) }}
     steps:
       - name: 🔍 Checkout code
         uses: actions/checkout@v6

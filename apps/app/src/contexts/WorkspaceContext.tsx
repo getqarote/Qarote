@@ -20,7 +20,6 @@ export const WorkspaceProvider: React.FC<WorkspaceProviderProps> = ({
   children,
 }) => {
   const [workspace, setWorkspace] = useState<ExtendedWorkspace | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { isAuthenticated, user } = useAuth();
 
@@ -70,9 +69,7 @@ export const WorkspaceProvider: React.FC<WorkspaceProviderProps> = ({
     }
   }, [data, queryError]);
 
-  useEffect(() => {
-    setIsLoading(queryLoading);
-  }, [queryLoading]);
+  const isLoading = queryLoading;
 
   // Fetch workspace data when user authenticates
   // Only fetch if user has a workspaceId (meaning they already have a workspace)

@@ -18,18 +18,57 @@ interface QueueDepthData {
   messages: number;
 }
 
+interface QueueData {
+  name: string;
+  messages: number;
+  vhost: string;
+}
+
 interface QueueDepthsChartProps {
-  queues: Array<{
-    name: string;
-    messages: number;
-    vhost: string;
-  }>;
+  queues: Array<QueueData>;
   isLoading: boolean;
   isFetching?: boolean;
 }
 
+const EMPTY_QUEUES: QueueData[] = [];
+
+const CustomTooltip = ({
+  active,
+  payload,
+  label,
+  queues,
+}: {
+  active?: boolean;
+  payload?: ReadonlyArray<{ value: number }>;
+  label?: string | number;
+  queues: Array<QueueData>;
+  [key: string]: unknown;
+}) => {
+  if (active && payload && payload.length) {
+    const labelStr = String(label);
+    const originalQueue = queues.find(
+      (q) =>
+        (q.name.length > 15 ? `${q.name.slice(0, 15)}...` : q.name) === labelStr
+    );
+    return (
+      <div className="bg-white p-3 border rounded-lg shadow-lg">
+        <p className="font-medium text-gray-900">
+          {originalQueue?.name || label}
+        </p>
+        <p className="text-orange-600">
+          Messages: {payload[0].value.toLocaleString()}
+        </p>
+        {originalQueue?.vhost && originalQueue.vhost !== "/" && (
+          <p className="text-gray-500 text-sm">VHost: {originalQueue.vhost}</p>
+        )}
+      </div>
+    );
+  }
+  return null;
+};
+
 export const QueueDepthsChart = ({
-  queues = [],
+  queues = EMPTY_QUEUES,
   isLoading,
   isFetching = false,
 }: QueueDepthsChartProps) => {
@@ -64,40 +103,6 @@ export const QueueDepthsChart = ({
   // Add some padding to the scale (10% on top, start from 0 or slightly below min if negative)
   const yAxisMax = maxMessages === 0 ? 10 : Math.ceil(maxMessages * 1.1);
   const yAxisMin = minMessages < 0 ? Math.floor(minMessages * 1.1) : 0;
-
-  // Custom tooltip to show full queue name and message count
-  const CustomTooltip = ({
-    active,
-    payload,
-    label,
-  }: {
-    active?: boolean;
-    payload?: Array<{ value: number }>;
-    label?: string;
-  }) => {
-    if (active && payload && payload.length) {
-      const originalQueue = queues.find(
-        (q) =>
-          (q.name.length > 15 ? `${q.name.slice(0, 15)}...` : q.name) === label
-      );
-      return (
-        <div className="bg-white p-3 border rounded-lg shadow-lg">
-          <p className="font-medium text-gray-900">
-            {originalQueue?.name || label}
-          </p>
-          <p className="text-orange-600">
-            Messages: {payload[0].value.toLocaleString()}
-          </p>
-          {originalQueue?.vhost && originalQueue.vhost !== "/" && (
-            <p className="text-gray-500 text-sm">
-              VHost: {originalQueue.vhost}
-            </p>
-          )}
-        </div>
-      );
-    }
-    return null;
-  };
 
   return (
     <Card className="border-0 shadow-md bg-card backdrop-blur-xs">
@@ -154,7 +159,11 @@ export const QueueDepthsChart = ({
                   domain={[yAxisMin, yAxisMax]}
                   allowDataOverflow={false}
                 />
-                <Tooltip content={<CustomTooltip />} />
+                <Tooltip
+                  content={(props) => (
+                    <CustomTooltip {...props} queues={queues} />
+                  )}
+                />
                 <Bar
                   dataKey="messages"
                   fill="url(#barGradient)"
