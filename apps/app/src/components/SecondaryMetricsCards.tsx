@@ -19,7 +19,6 @@ interface SecondaryMetricsCardsProps {
   metricsError?: Error | null;
   nodesError?: Error | null;
   nodesFetching?: boolean;
-  enhancedMetricsFetching?: boolean;
 }
 
 export const SecondaryMetricsCards = ({
@@ -28,12 +27,10 @@ export const SecondaryMetricsCards = ({
   metricsError,
   nodesError,
   nodesFetching = false,
-  enhancedMetricsFetching = false,
 }: SecondaryMetricsCardsProps) => {
   const [showNodesUpdating, setShowNodesUpdating] = useState(false);
-  const [showEnhancedUpdating, setShowEnhancedUpdating] = useState(false);
 
-  // Handle delayed updating indicators
+  // Handle delayed updating indicator
   useEffect(() => {
     if (nodesFetching) {
       setShowNodesUpdating(true);
@@ -44,17 +41,6 @@ export const SecondaryMetricsCards = ({
       return () => clearTimeout(timer);
     }
   }, [nodesFetching]);
-
-  useEffect(() => {
-    if (enhancedMetricsFetching) {
-      setShowEnhancedUpdating(true);
-    } else {
-      const timer = setTimeout(() => {
-        setShowEnhancedUpdating(false);
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-  }, [enhancedMetricsFetching]);
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       <Card className="hover:shadow-lg transition-all duration-300 border-0 shadow-md bg-card backdrop-blur-xs">
@@ -122,7 +108,7 @@ export const SecondaryMetricsCards = ({
                 {metrics.cpuUsage.toFixed(1)}%
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                Updates every 15s{showEnhancedUpdating && " (updating...)"}
+                Updates every 15s{" "}
               </p>
             </div>
           )}
@@ -158,7 +144,7 @@ export const SecondaryMetricsCards = ({
                 {metrics.totalMemory.toFixed(1)} GB
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                Updates every 15s{showEnhancedUpdating && " (updating...)"}
+                Updates every 15s{" "}
               </p>
             </div>
           )}

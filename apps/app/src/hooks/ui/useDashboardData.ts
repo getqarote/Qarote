@@ -42,23 +42,18 @@ export const useDashboardData = (
     isLoading: overviewLoading,
     isFetching: overviewFetching,
   } = useOverview(selectedServerId);
-  const {
-    data: queuesData,
-    isLoading: queuesLoading,
-    isFetching: queuesFetching,
-  } = useQueues(selectedServerId, selectedVHost);
+  const { data: queuesData, isLoading: queuesLoading } = useQueues(
+    selectedServerId,
+    selectedVHost
+  );
   const {
     data: nodesData,
     isLoading: nodesLoading,
     isFetching: nodesFetching,
   } = useNodes(selectedServerId);
-  const { data: enhancedMetricsData, isFetching: enhancedMetricsFetching } =
-    useMetrics(selectedServerId);
-  const {
-    data: liveRatesData,
-    isLoading: liveRatesLoading,
-    isFetching: liveRatesFetching,
-  } = useLiveRatesMetrics(selectedServerId, timeRange);
+  const { data: enhancedMetricsData } = useMetrics(selectedServerId);
+  const { data: liveRatesData, isLoading: liveRatesLoading } =
+    useLiveRatesMetrics(selectedServerId, timeRange);
   const {
     data: connectionsData,
     isLoading: connectionsLoading,
@@ -157,11 +152,11 @@ export const useDashboardData = (
     });
 
     if (filteredData.length === 0) {
-      return [];
+      return INITIAL_CHART_DATA;
     }
 
     return filteredData.map((point) => ({
-      time: new Date(point.timestamp).toLocaleTimeString([], {
+      time: new Date(point.timestamp).toLocaleTimeString("en", {
         hour: "2-digit",
         minute: "2-digit",
       }),
@@ -200,13 +195,10 @@ export const useDashboardData = (
     liveRatesLoading,
     connectionsLoading,
 
-    // Fetching states
-    liveRatesFetching,
+    // Fetching states (query-based hooks only; subscriptions are always live)
     connectionsFetching,
-    queuesFetching,
     overviewFetching,
     nodesFetching,
-    enhancedMetricsFetching,
 
     // Error states
     metricsError,
