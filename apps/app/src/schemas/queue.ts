@@ -3,9 +3,9 @@ import { z } from "zod";
 // Add queue form schema
 export const addQueueSchema = z.object({
   name: z.string().min(1, "Queue name is required"),
-  durable: z.boolean().default(true),
-  autoDelete: z.boolean().default(false),
-  exclusive: z.boolean().default(false),
+  durable: z.boolean(),
+  autoDelete: z.boolean(),
+  exclusive: z.boolean(),
   maxLength: z.string().optional(),
   messageTtl: z.string().optional(),
   bindToExchange: z.string().optional(),

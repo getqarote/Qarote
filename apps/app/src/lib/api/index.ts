@@ -8,10 +8,8 @@
 
 // Export all types for external use (types are still needed)
 export type * from "./authTypes";
-export type * from "./exchangeTypes";
 export type * from "./logTypes";
 export type * from "./messageTypes";
-export type * from "./paymentClient";
 export type * from "./planClient";
 export type * from "./rabbitmqTypes";
 export type * from "./types";

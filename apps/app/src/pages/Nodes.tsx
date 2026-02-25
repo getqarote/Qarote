@@ -8,14 +8,11 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { useServerContext } from "@/contexts/ServerContext";
 
 import { useNodes } from "@/hooks/queries/useRabbitMQ";
-import { useUser } from "@/hooks/ui/useUser";
 
 import { RabbitMQAuthorizationError } from "@/types/apiErrors";
 
 const Nodes = () => {
   const { selectedServerId, hasServers } = useServerContext();
-  const { userPlan } = useUser();
-
   // Single useNodes call for all child components
   const { data: nodesData, isLoading: nodesLoading } =
     useNodes(selectedServerId);
@@ -92,7 +89,7 @@ const Nodes = () => {
                   </p>
                 </div>
               </div>
-              <PlanBadge workspacePlan={userPlan} />
+              <PlanBadge />
             </div>
 
             {/* Cluster Overview */}

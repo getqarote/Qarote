@@ -245,7 +245,7 @@ export const MessagesRatesChart = ({
                     ]}
                     labelFormatter={(
                       time: string,
-                      payload: Array<{ payload: { dateTime: string } }>
+                      payload: ReadonlyArray<{ payload?: { dateTime: string } }>
                     ) => {
                       if (payload && payload[0] && payload[0].payload) {
                         return `Date & Time: ${payload[0].payload.dateTime}`;

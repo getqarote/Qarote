@@ -53,12 +53,30 @@ export async function createContext(opts: {
 }): Promise<Context> {
   const { req } = opts;
 
-  // Extract user from Authorization header (HonoRequest has header() method)
+  // Extract auth token from Authorization header or SSE connectionParams
   const authHeader = req.header("Authorization");
-  let user: SafeUser | null = null;
+  let token: string | null = null;
 
   if (authHeader && authHeader.startsWith("Bearer ")) {
-    const token = authHeader.split(" ")[1];
+    token = authHeader.split(" ")[1];
+  } else {
+    // For httpSubscriptionLink (SSE), auth is passed via connectionParams query param
+    const url = new URL(req.url);
+    const connectionParamsStr = url.searchParams.get("connectionParams");
+    if (connectionParamsStr) {
+      try {
+        const params = JSON.parse(decodeURIComponent(connectionParamsStr));
+        if (typeof params.token === "string") {
+          token = params.token;
+        }
+      } catch {
+        // ignore malformed connectionParams
+      }
+    }
+  }
+
+  let user: SafeUser | null = null;
+  if (token) {
     user = await extractUserFromToken(token);
   }
 

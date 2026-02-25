@@ -1,8 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 
-import { logger } from "@/lib/logger";
-
 import { AppSidebar } from "@/components/AppSidebar";
 import { NoServerConfigured } from "@/components/NoServerConfigured";
 import { QueueHeader } from "@/components/Queues/QueueHeader";
@@ -22,26 +20,16 @@ const Queues = () => {
   const [filterRegex, setFilterRegex] = useState("");
   const { selectedServerId, hasServers } = useServerContext();
   const { selectedVHost } = useVHostContext();
-  const {
-    data: queuesData,
-    isLoading,
-    refetch,
-  } = useQueues(selectedServerId, selectedVHost);
+  const { data: queuesData, isLoading } = useQueues(
+    selectedServerId,
+    selectedVHost
+  );
 
   const queues = useMemo(() => queuesData?.queues || [], [queuesData?.queues]);
   const queueCount = queues.length;
 
-  // Wrapper for refetch with logging to debug refresh issues
-  const handleRefetch = async () => {
-    logger.info("Queues page: Refetching queue data...");
-    try {
-      await refetch();
-
-      logger.info("Queues page: Refetch completed successfully");
-    } catch (error) {
-      logger.error("Queues page: Refetch failed:", error);
-    }
-  };
+  // No-op: data is kept fresh via the subscription automatically
+  const handleRefetch = () => {};
 
   const filteredQueues = useMemo(() => {
     if (!filterRegex) return queues;
