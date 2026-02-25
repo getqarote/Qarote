@@ -1,0 +1,78 @@
+{
+  "title": "简单定价。强大监控。",
+  "billedMonthly": "按月计费",
+  "billedYearly": "按年计费",
+  "saveUpTo20Yearly": "按年计费最多可节省 20%",
+  "switchToYearly": "切换到按年计费，最多可节省 20%",
+  "perMonth": "/月",
+  "startFree": "免费开始",
+  "currentPlan": "当前计划",
+  "coreFeatures": "核心功能",
+  "support": "支持",
+  "enterpriseFeatures": "企业级功能",
+  "plans": {
+    "starter": {
+      "name": "入门版",
+      "description": "入门的理想选择"
+    },
+    "pro": {
+      "name": "专业版",
+      "description": "适合独立开发者和小型项目"
+    },
+    "business": {
+      "name": "商业版",
+      "description": "适合大型团队和企业"
+    },
+    "enterprise": {
+      "name": "企业版",
+      "selfHosted": "私有化部署方案",
+      "customPricing": "定制定价",
+      "contactSales": "联系销售团队获取报价"
+    }
+  },
+  "featureNames": {
+    "servers": "{{count}} 个 RabbitMQ 服务器",
+    "servers_plural": "{{count}} 个 RabbitMQ 服务器",
+    "serversDesc": "连接并监控你的服务器",
+    "rabbitMQVersionSupport": "RabbitMQ 版本支持",
+    "onlyLTS": "仅 LTS 版本",
+    "allVersions": "所有 3.x 和 4.x 版本",
+    "workspaces": "{{count}} 个工作区",
+    "workspaces_plural": "{{count}} 个工作区",
+    "workspacesDesc": "按环境组织你的服务器",
+    "teamMembers": "{{count}} 个团队成员",
+    "teamMembers_plural": "{{count}} 个团队成员",
+    "teamMembersDesc": "与你的团队协作",
+    "advancedAnalytics": "高级分析",
+    "advancedAnalyticsDesc": "详细的洞察和报告",
+    "queueManagement": "队列管理",
+    "queueManagementDesc": "创建和管理队列",
+    "exchangeManagement": "交换器管理",
+    "exchangeManagementDesc": "创建和管理交换器",
+    "virtualHostManagement": "虚拟主机管理",
+    "virtualHostManagementDesc": "创建和管理虚拟主机",
+    "rabbitMQUserManagement": "RabbitMQ 用户管理",
+    "rabbitMQUserManagementDesc": "创建和管理 RabbitMQ 用户",
+    "soc2Compliance": "SOC 2 合规",
+    "soc2ComplianceDesc": "数据安全与合规政策",
+    "alertsNotification": "告警通知",
+    "alertsNotificationDesc": "实时告警（邮件、Slack、浏览器和 Webhook）",
+    "communitySupport": "社区支持",
+    "communitySupportDesc": "私人 Discord 服务器",
+    "prioritySupport": "优先支持",
+    "prioritySupportDesc": "优先邮件支持",
+    "onPremiseDeployment": "本地部署",
+    "onPremiseDeploymentDesc": "在你自己的基础设施中部署",
+    "unlimitedServers": "无限服务器",
+    "unlimitedServersDesc": "监控你所需的任意数量的服务器",
+    "customLicenseTiers": "自定义许可证等级",
+    "customLicenseTiersDesc": "灵活的许可证选项",
+    "completeDataControl": "完整数据控制",
+    "completeDataControlDesc": "所有数据保留在你的基础设施中"
+  },
+  "limits": {
+    "upTo1": "最多 1 个",
+    "upTo3": "最多 3 个",
+    "unlimited": "无限"
+  }
+}

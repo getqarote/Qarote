@@ -1,0 +1,11 @@
+{
+  "pageTitle": "Alertas",
+  "pageSubtitle": "Monitorea alertas y notificaciones del sistema",
+  "noServerTitle": "Alertas",
+  "noServerDescription": "Monitorea alertas y notificaciones del sistema",
+  "alertRules": "Reglas de alertas",
+  "notificationSettings": "Configuraci\u00f3n de notificaciones",
+  "activeAlerts": "Alertas activas",
+  "resolvedAlerts": "Alertas resueltas",
+  "failedToLoad": "No se pudieron cargar los datos de alertas. Por favor int\u00e9ntalo de nuevo."
+}

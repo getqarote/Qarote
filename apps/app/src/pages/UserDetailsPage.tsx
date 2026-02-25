@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 
 import { AlertCircle, ArrowLeft, HelpCircle } from "lucide-react";
@@ -46,6 +47,7 @@ import { useServers } from "@/hooks/queries/useServer";
 import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 export default function UserDetailsPage() {
+  const { t } = useTranslation("users");
   const { serverId, username } = useParams<{
     serverId?: string;
     username: string;
@@ -127,10 +129,7 @@ export default function UserDetailsPage() {
             <div className="container mx-auto">
               <Alert>
                 <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                  Access denied. User management is only available to
-                  administrators.
-                </AlertDescription>
+                <AlertDescription>{t("accessDenied")}</AlertDescription>
               </Alert>
             </div>
           </main>
@@ -148,9 +147,7 @@ export default function UserDetailsPage() {
             <div className="container mx-auto">
               <Alert>
                 <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                  Please select a server to view user details.
-                </AlertDescription>
+                <AlertDescription>{t("selectServer")}</AlertDescription>
               </Alert>
             </div>
           </main>
@@ -182,7 +179,7 @@ export default function UserDetailsPage() {
               <Alert>
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
-                  Failed to load user details: {(error as Error).message}
+                  {t("failedToLoad")}: {(error as Error).message}
                 </AlertDescription>
               </Alert>
             </div>
@@ -204,7 +201,7 @@ export default function UserDetailsPage() {
             <div className="container mx-auto">
               <Alert>
                 <AlertCircle className="h-4 w-4" />
-                <AlertDescription>User not found.</AlertDescription>
+                <AlertDescription>{t("notFound")}</AlertDescription>
               </Alert>
             </div>
           </main>
@@ -244,7 +241,7 @@ export default function UserDetailsPage() {
 
     if (Object.keys(updateData).length > 0) {
       if (!workspace?.id) {
-        toast.error("Workspace ID is required");
+        toast.error(t("requiredWorkspace"));
         return;
       }
       updateUserMutation
@@ -257,20 +254,20 @@ export default function UserDetailsPage() {
           removePassword: updateData.removePassword,
         })
         .then(() => {
-          toast.success("User updated successfully");
+          toast.success(t("updateSuccess"));
           setNewPassword("");
           setNewTags("");
           setRemovePassword(false);
         })
         .catch((error: Error) => {
-          toast.error(error.message || "Failed to update user");
+          toast.error(error.message || t("updateError"));
         });
     }
   };
 
   const handleSetPermissions = async () => {
     if (!workspace?.id) {
-      toast.error("Workspace ID is required");
+      toast.error(t("requiredWorkspace"));
       return;
     }
     try {
@@ -283,7 +280,7 @@ export default function UserDetailsPage() {
         write: writeRegexp,
         read: readRegexp,
       });
-      toast.success("Permissions set successfully");
+      toast.success(t("permissionsSet"));
       // Clear the form fields
       setSelectedVHost(null);
       setConfigureRegexp(".*");
@@ -315,7 +312,9 @@ export default function UserDetailsPage() {
                   >
                     <ArrowLeft className="h-4 w-4" />
                   </Button>
-                  <h1 className="title-page">User / {decodedUsername}</h1>
+                  <h1 className="title-page">
+                    {t("userPrefix", { name: decodedUsername })}
+                  </h1>
                 </div>
                 <ConnectionStatus />
               </div>
@@ -323,13 +322,13 @@ export default function UserDetailsPage() {
               {/* User Details */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">Details</CardTitle>
+                  <CardTitle className="text-lg">{t("details")}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     <div>
                       <div className="text-sm text-muted-foreground mb-1">
-                        Tags
+                        {t("tags")}
                       </div>
                       <div className="text-lg font-medium">
                         {formatTagsDisplay(userDetails.tags)}
@@ -337,24 +336,30 @@ export default function UserDetailsPage() {
                     </div>
                     <div>
                       <div className="text-sm text-muted-foreground mb-1">
-                        Has password
+                        {t("hasPassword")}
                       </div>
                       <div className="flex items-center gap-2">
                         <div
                           className={`w-2 h-2 rounded-full ${userDetails.password_hash ? "bg-green-500" : "bg-red-500"}`}
                         ></div>
-                        <span>{userDetails.password_hash ? "Yes" : "No"}</span>
+                        <span>
+                          {userDetails.password_hash
+                            ? t("common:yes")
+                            : t("common:no")}
+                        </span>
                       </div>
                     </div>
                     {userDetails.limits && (
                       <div>
                         <div className="text-sm text-muted-foreground mb-2">
-                          Limits
+                          {t("limitsLabel")}
                         </div>
                         <div className="space-y-2">
                           {userDetails.limits.max_connections !== undefined && (
                             <div className="flex items-center justify-between">
-                              <span className="text-sm">Max Connections:</span>
+                              <span className="text-sm">
+                                {t("maxConnections")}:
+                              </span>
                               <Badge variant="outline">
                                 {userDetails.limits.max_connections}
                               </Badge>
@@ -362,7 +367,9 @@ export default function UserDetailsPage() {
                           )}
                           {userDetails.limits.max_channels !== undefined && (
                             <div className="flex items-center justify-between">
-                              <span className="text-sm">Max Channels:</span>
+                              <span className="text-sm">
+                                {t("maxChannels")}:
+                              </span>
                               <Badge variant="outline">
                                 {userDetails.limits.max_channels}
                               </Badge>
@@ -379,7 +386,7 @@ export default function UserDetailsPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg">
-                    Permissions{" "}
+                    {t("permissions")}{" "}
                     <Badge variant="secondary" className="ml-2">
                       {permissions.length}
                     </Badge>
@@ -390,11 +397,13 @@ export default function UserDetailsPage() {
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Virtual Host</TableHead>
-                          <TableHead>Configure regexp</TableHead>
-                          <TableHead>Write regexp</TableHead>
-                          <TableHead>Read regexp</TableHead>
-                          <TableHead className="w-[100px]">Actions</TableHead>
+                          <TableHead>{t("virtualHost")}</TableHead>
+                          <TableHead>{t("configureRegexp")}</TableHead>
+                          <TableHead>{t("writeRegexp")}</TableHead>
+                          <TableHead>{t("readRegexp")}</TableHead>
+                          <TableHead className="w-[100px]">
+                            {t("common:actions")}
+                          </TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -413,7 +422,7 @@ export default function UserDetailsPage() {
                                 onClick={async () => {
                                   try {
                                     if (!workspace?.id) {
-                                      toast.error("Workspace ID is required");
+                                      toast.error(t("requiredWorkspace"));
                                       return;
                                     }
                                     await clearPermissionsMutation.mutateAsync({
@@ -422,9 +431,7 @@ export default function UserDetailsPage() {
                                       username: decodedUsername,
                                       vhost: permission.vhost,
                                     });
-                                    toast.success(
-                                      "Permissions cleared successfully"
-                                    );
+                                    toast.success(t("permissionsCleared"));
                                   } catch (error) {
                                     toast.error(
                                       error instanceof Error
@@ -436,8 +443,8 @@ export default function UserDetailsPage() {
                                 disabled={clearPermissionsMutation.isPending}
                               >
                                 {clearPermissionsMutation.isPending
-                                  ? "CLEARING..."
-                                  : "CLEAR"}
+                                  ? t("clearing")
+                                  : t("clear")}
                               </Button>
                             </TableCell>
                           </TableRow>
@@ -448,7 +455,7 @@ export default function UserDetailsPage() {
                               colSpan={5}
                               className="text-center text-muted-foreground"
                             >
-                              No permissions set
+                              {t("noPermissions")}
                             </TableCell>
                           </TableRow>
                         )}
@@ -463,14 +470,16 @@ export default function UserDetailsPage() {
                 {/* Set permission */}
                 <Card className="flex flex-col">
                   <CardHeader>
-                    <CardTitle className="text-lg">Set permission</CardTitle>
+                    <CardTitle className="text-lg">
+                      {t("setPermission")}
+                    </CardTitle>
                   </CardHeader>
                   <CardContent className="flex-1">
                     <div className="flex flex-col gap-4 h-full">
                       <div className="flex-1 space-y-4">
                         <div>
                           <label className="block text-sm font-medium mb-2">
-                            Virtual host
+                            {t("virtualHost")}
                           </label>
                           <select
                             className="w-full p-2 border rounded-md bg-background"
@@ -479,7 +488,7 @@ export default function UserDetailsPage() {
                             disabled={vhostsLoading}
                           >
                             {vhostsLoading ? (
-                              <option value="/">Loading...</option>
+                              <option value="/">{t("common:loading")}</option>
                             ) : (
                               vhostsData?.vhosts?.map((vhost) => (
                                 <option key={vhost.name} value={vhost.name}>
@@ -493,7 +502,7 @@ export default function UserDetailsPage() {
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <label className="text-sm font-medium mb-2 cursor-help flex items-center gap-1">
-                                Configure regexp
+                                {t("configureRegexp")}
                                 <HelpCircle className="h-3 w-3 text-muted-foreground" />
                               </label>
                             </TooltipTrigger>
@@ -517,7 +526,7 @@ export default function UserDetailsPage() {
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <label className="text-sm font-medium mb-2 cursor-help flex items-center gap-1">
-                                Write regexp
+                                {t("writeRegexp")}
                                 <HelpCircle className="h-3 w-3 text-muted-foreground" />
                               </label>
                             </TooltipTrigger>
@@ -541,7 +550,7 @@ export default function UserDetailsPage() {
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <label className="text-sm font-medium mb-2 cursor-help flex items-center gap-1">
-                                Read regexp
+                                {t("readRegexp")}
                                 <HelpCircle className="h-3 w-3 text-muted-foreground" />
                               </label>
                             </TooltipTrigger>
@@ -569,8 +578,8 @@ export default function UserDetailsPage() {
                           disabled={setPermissionsMutation.isPending}
                         >
                           {setPermissionsMutation.isPending
-                            ? "Setting..."
-                            : "Set permission"}
+                            ? t("setting")
+                            : t("setPermission")}
                         </Button>
                       </div>
                     </div>
@@ -580,7 +589,7 @@ export default function UserDetailsPage() {
                 {/* Update user */}
                 <Card className="flex flex-col">
                   <CardHeader>
-                    <CardTitle className="text-lg">Update user</CardTitle>
+                    <CardTitle className="text-lg">{t("updateUser")}</CardTitle>
                   </CardHeader>
                   <CardContent className="flex-1">
                     <div className="flex flex-col gap-4 h-full">
@@ -599,30 +608,30 @@ export default function UserDetailsPage() {
                               htmlFor="remove-password"
                               className="text-sm font-medium"
                             >
-                              Remove password
+                              {t("removePassword")}
                             </label>
                           </div>
                         </div>
                         <div>
                           <label className="block text-sm font-medium mb-2">
-                            Password
+                            {t("password")}
                           </label>
                           <Input
                             type="password"
                             value={newPassword}
                             onChange={(e) => setNewPassword(e.target.value)}
-                            placeholder="Leave empty to only update tags"
+                            placeholder={t("passwordUpdatePlaceholder")}
                             disabled={removePassword}
                           />
                         </div>
                         <div>
                           <label className="block text-sm font-medium mb-2">
-                            Tags
+                            {t("tags")}
                           </label>
                           <Input
                             value={newTags}
                             onChange={(e) => setNewTags(e.target.value)}
-                            placeholder="administrator"
+                            placeholder={t("tagPlaceholder")}
                           />
                           <div className="mt-2 text-sm text-muted-foreground">
                             <span
@@ -636,7 +645,7 @@ export default function UserDetailsPage() {
                                 }
                               }}
                             >
-                              Administrator
+                              {t("administrator")}
                             </span>{" "}
                             |{" "}
                             <span
@@ -650,7 +659,7 @@ export default function UserDetailsPage() {
                                 }
                               }}
                             >
-                              Policymaker
+                              {t("policymaker")}
                             </span>{" "}
                             |{" "}
                             <span
@@ -664,7 +673,7 @@ export default function UserDetailsPage() {
                                 }
                               }}
                             >
-                              Monitoring
+                              {t("monitoring")}
                             </span>{" "}
                             |{" "}
                             <span
@@ -678,7 +687,7 @@ export default function UserDetailsPage() {
                                 }
                               }}
                             >
-                              Management
+                              {t("management")}
                             </span>{" "}
                             |{" "}
                             <span
@@ -692,7 +701,7 @@ export default function UserDetailsPage() {
                                 }
                               }}
                             >
-                              Impersonator
+                              {t("impersonator")}
                             </span>{" "}
                             |{" "}
                             <span
@@ -701,7 +710,7 @@ export default function UserDetailsPage() {
                                 setNewTags("");
                               }}
                             >
-                              None
+                              {t("none")}
                             </span>
                           </div>
                         </div>
@@ -713,8 +722,8 @@ export default function UserDetailsPage() {
                           disabled={updateUserMutation.isPending}
                         >
                           {updateUserMutation.isPending
-                            ? "Updating..."
-                            : "Update user"}
+                            ? t("updating")
+                            : t("updateUser")}
                         </Button>
                       </div>
                     </div>
@@ -726,7 +735,7 @@ export default function UserDetailsPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg text-red-600">
-                    Danger zone
+                    {t("dangerZone")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -735,11 +744,11 @@ export default function UserDetailsPage() {
                     onClick={() => setShowDeleteModal(true)}
                     disabled={decodedUsername === "admin"}
                   >
-                    Delete user
+                    {t("deleteUser")}
                   </Button>
                   {decodedUsername === "admin" && (
                     <p className="text-sm text-muted-foreground mt-2">
-                      Cannot delete the admin user
+                      {t("cannotDeleteAdmin")}
                     </p>
                   )}
                 </CardContent>
@@ -754,7 +763,7 @@ export default function UserDetailsPage() {
                   onConfirm={async () => {
                     try {
                       if (!workspace?.id) {
-                        toast.error("Workspace ID is required");
+                        toast.error(t("requiredWorkspace"));
                         return;
                       }
                       await deleteUserMutation.mutateAsync({
@@ -762,13 +771,13 @@ export default function UserDetailsPage() {
                         workspaceId: workspace.id,
                         username: decodedUsername,
                       });
-                      toast.success("User deleted successfully");
+                      toast.success(t("deleteSuccess"));
                       navigate("/users");
                     } catch (error) {
                       toast.error(
                         error instanceof Error
                           ? error.message
-                          : "Failed to delete user"
+                          : t("deleteError")
                       );
                     }
                   }}

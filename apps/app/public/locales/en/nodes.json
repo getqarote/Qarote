@@ -1,0 +1,7 @@
+{
+  "pageTitle": "Nodes",
+  "pageSubtitle": "Detailed view of cluster nodes and their metrics",
+  "noServerTitle": "Nodes",
+  "noServerDescription": "Add a RabbitMQ server connection to view cluster nodes and their metrics.",
+  "selectServerPrompt": "Please select a RabbitMQ server to view its nodes"
+}

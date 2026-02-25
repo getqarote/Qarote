@@ -1,8 +1,12 @@
+import { useTranslation } from "react-i18next";
+
 import { ArrowLeft } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
 const PrivacyPolicy = () => {
+  const { t } = useTranslation("legal");
+
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -14,13 +18,13 @@ const PrivacyPolicy = () => {
             className="mb-6"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
+            {t("back")}
           </Button>
           <h1 className="text-4xl font-bold text-foreground mb-4">
-            Privacy Policy
+            {t("privacyPolicy")}
           </h1>
           <p className="text-muted-foreground">
-            Last updated: {new Date().toLocaleDateString()}
+            {t("lastUpdated", { date: new Date().toLocaleDateString() })}
           </p>
         </div>
 
@@ -317,7 +321,7 @@ const PrivacyPolicy = () => {
                   <strong>Email:</strong> support@qarote.io
                 </li>
                 <li>
-                  <strong>Address:</strong> 229 rue Saint-Honoré, 75001, Paris,
+                  <strong>Address:</strong> 229 rue Saint-Honore, 75001, Paris,
                   France
                 </li>
               </ul>

@@ -1,0 +1,16 @@
+{
+  "pageTitle": "队列",
+  "noServerTitle": "队列",
+  "noServerDescription": "添加 RabbitMQ 服务器连接以查看和管理集群中的队列。",
+  "selectServerPrompt": "请选择一个 RabbitMQ 服务器以查看队列",
+  "filterRegex": "正则表达式筛选",
+  "queueNotFound": "队列未找到",
+  "queueNotFoundDesc": "请选择一个服务器和队列以查看详情。",
+  "notFoundMessage": "队列 \"{{queueName}}\" 未找到。",
+  "deleteTitle": "删除队列",
+  "deleteDescription": "您确定要删除队列 \"{{queueName}}\" 吗？此操作无法撤销，将永久删除该队列及其所有消息。",
+  "deleteQueue": "删除队列",
+  "deleting": "删除中...",
+  "deleteSuccess": "队列 \"{{queueName}}\" 已成功删除",
+  "deleteError": "删除队列失败"
+}

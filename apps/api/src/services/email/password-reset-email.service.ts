@@ -3,6 +3,8 @@ import React from "react";
 import { CoreEmailService } from "./core-email.service";
 import { PasswordResetEmail } from "./templates/password-reset-email";
 
+import { tEmail } from "@/i18n";
+
 class PasswordResetEmailService {
   /**
    * Send password reset email
@@ -10,7 +12,8 @@ class PasswordResetEmailService {
   static async sendPasswordResetEmail(
     to: string,
     resetToken: string,
-    userName?: string
+    userName?: string,
+    locale: string = "en"
   ): Promise<void> {
     const expiresAt = new Date(
       Date.now() + 24 * 60 * 60 * 1000
@@ -27,7 +30,7 @@ class PasswordResetEmailService {
 
     await CoreEmailService.sendEmail({
       to,
-      subject: "Reset your password - RabbitMQ Dashboard",
+      subject: tEmail(locale, "subjects.resetPassword"),
       template: emailTemplate,
       emailType: "password-reset",
       context: {

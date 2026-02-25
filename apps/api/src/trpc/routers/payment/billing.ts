@@ -11,6 +11,8 @@ import {
   router,
 } from "@/trpc/trpc";
 
+import { te } from "@/i18n";
+
 /**
  * Billing router
  * Handles billing overview and portal session creation
@@ -34,7 +36,7 @@ export const billingRouter = router({
       if (!userWithSubscription) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "User not found",
+          message: te(ctx.locale, "auth.userNotFound"),
         });
       }
 
@@ -249,7 +251,7 @@ export const billingRouter = router({
       ctx.logger.error({ error }, "Error fetching billing overview");
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
-        message: "Failed to fetch billing overview",
+        message: te(ctx.locale, "billing.failedToFetchBillingOverview"),
       });
     }
   }),
@@ -264,7 +266,7 @@ export const billingRouter = router({
       if (!user.stripeCustomerId) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "No Stripe customer ID found",
+          message: te(ctx.locale, "billing.noStripeCustomerId"),
         });
       }
 
@@ -281,7 +283,7 @@ export const billingRouter = router({
       ctx.logger.error({ error }, "Error creating billing portal session");
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
-        message: "Failed to create billing portal session",
+        message: te(ctx.locale, "billing.failedToCreateBillingPortal"),
       });
     }
   }),
@@ -296,7 +298,7 @@ export const billingRouter = router({
       if (!user.stripeCustomerId) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "No Stripe customer found",
+          message: te(ctx.locale, "billing.noStripeCustomerFound"),
         });
       }
 
@@ -313,7 +315,7 @@ export const billingRouter = router({
       ctx.logger.error({ error }, "Error creating portal session");
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
-        message: "Failed to create portal session",
+        message: te(ctx.locale, "billing.failedToCreatePortalSession"),
       });
     }
   }),

@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Github } from "lucide-react";
 
 import { trackSignUpClick } from "@/lib/gtm";
@@ -7,10 +9,12 @@ interface StickyNavProps {
 }
 
 const StickyNav = ({ onVideoClick }: StickyNavProps) => {
+  const { t } = useTranslation("nav");
+
   const sections = [
-    { id: "video", label: "How it works" },
-    { id: "features", label: "Features" },
-    { id: "pricing", label: "Pricing" },
+    { id: "video", label: t("howItWorks") },
+    { id: "features", label: t("features") },
+    { id: "pricing", label: t("pricing") },
   ];
 
   const scrollToSection = (id: string) => {
@@ -72,7 +76,7 @@ const StickyNav = ({ onVideoClick }: StickyNavProps) => {
               href={`${import.meta.env.VITE_APP_BASE_URL}/auth/sign-in`}
               className="text-foreground hover:text-orange-500 px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium transition-colors"
             >
-              Login
+              {t("login")}
             </a>
             <button
               onClick={() => {
@@ -85,7 +89,7 @@ const StickyNav = ({ onVideoClick }: StickyNavProps) => {
               }}
               className="bg-linear-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600 px-2 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-colors whitespace-nowrap"
             >
-              Try for free
+              {t("tryForFree")}
             </button>
           </div>
         </div>

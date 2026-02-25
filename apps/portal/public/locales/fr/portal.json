@@ -1,0 +1,85 @@
+{
+  "layout": {
+    "title": "Portail Qarote",
+    "licenses": "Licences",
+    "documentation": "Documentation",
+    "account": "Compte",
+    "settings": "Paramètres",
+    "logout": "Déconnexion"
+  },
+  "footer": {
+    "privacyPolicy": "Politique de confidentialité",
+    "termsOfService": "Conditions d'utilisation"
+  },
+  "licenseManagement": {
+    "title": "Mes licences",
+    "description": "Gérez vos licences Qarote auto-hébergées",
+    "purchaseNew": "Acheter une nouvelle licence",
+    "noLicenses": "Vous n'avez pas encore de licences.",
+    "copiedToClipboard": "Clé de licence copiée dans le presse-papiers",
+    "licenseKey": "Clé de licence",
+    "downloading": "Téléchargement...",
+    "download": "Télécharger",
+    "downloadFailed": "Échec du téléchargement de la licence",
+    "downloaded": "Licence téléchargée",
+    "license": "Licence",
+    "expires": "Expire le : {{date}}",
+    "noExpiration": "Sans expiration",
+    "loadingLicenses": "Chargement des licences..."
+  },
+  "licensePurchase": {
+    "title": "Acheter une licence",
+    "description": "Choisissez un niveau de licence pour votre déploiement Qarote auto-hébergé",
+    "annualLicensing": "Licence annuelle pour les déploiements auto-hébergés (validité de 365 jours avec renouvellement automatique)",
+    "processing": "Traitement en cours...",
+    "purchaseLicense": "Acheter la licence",
+    "purchaseFailed": "Échec de l'achat",
+    "perYear": "/an",
+    "plans": {
+      "developer": {
+        "name": "Développeur",
+        "features": {
+          "servers": "Jusqu'à 5 serveurs",
+          "queueManagement": "Gestion des files d'attente",
+          "basicAlerts": "Alertes de base",
+          "emailSupport": "Support par e-mail"
+        }
+      },
+      "enterprise": {
+        "name": "Entreprise",
+        "features": {
+          "unlimitedServers": "Serveurs illimités",
+          "advancedMonitoring": "Surveillance avancée",
+          "prioritySupport": "Support prioritaire",
+          "customIntegrations": "Intégrations personnalisées"
+        }
+      }
+    }
+  },
+  "accountSettings": {
+    "title": "Paramètres du compte",
+    "description": "Gérez les informations de votre compte",
+    "profileInfo": "Informations du profil",
+    "profileDescription": "Les détails de votre compte",
+    "email": "E-mail",
+    "name": "Nom",
+    "role": "Rôle"
+  },
+  "documentation": {
+    "searchPlaceholder": "Rechercher dans la documentation...",
+    "title": "Déploiement auto-hébergé",
+    "description": "Tout ce dont vous avez besoin pour déployer Qarote sur votre propre infrastructure",
+    "dockerComposeFile": "Fichier Docker Compose",
+    "environmentConfiguration": "Configuration de l'environnement",
+    "installationGuide": "Guide d'installation",
+    "installationGuideDescription": "Instructions étape par étape pour déployer Qarote",
+    "dockerComposeDescription": "Configuration Docker Compose prête pour la production pour les éditions Community et Enterprise",
+    "environmentConfigDescription": "Modèle de variables d'environnement — copiez-le dans .env et mettez à jour avec vos valeurs"
+  },
+  "codeBlock": {
+    "copied": "Copié",
+    "copy": "Copier"
+  },
+  "signupVerifiedExtra": " Vous pouvez maintenant acheter et gérer vos licences.",
+  "goToLicenses": "Aller aux licences"
+}

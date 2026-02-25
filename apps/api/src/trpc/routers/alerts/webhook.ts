@@ -12,6 +12,8 @@ import { FEATURES } from "@/config/features";
 
 import { router, workspaceProcedure } from "@/trpc/trpc";
 
+import { te } from "@/i18n";
+
 /**
  * Webhook router
  * Handles webhook CRUD operations for alert notifications
@@ -44,7 +46,7 @@ export const webhookRouter = router({
         ctx.logger.error({ error }, "Error getting webhooks");
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to get webhooks",
+          message: te(ctx.locale, "alerts.failedToGetWebhooks"),
         });
       }
     }),
@@ -79,7 +81,7 @@ export const webhookRouter = router({
         ctx.logger.error({ error }, "Error creating webhook");
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to create webhook",
+          message: te(ctx.locale, "alerts.failedToCreateWebhook"),
         });
       }
     }),
@@ -106,7 +108,7 @@ export const webhookRouter = router({
         if (!existingWebhook) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Webhook not found",
+            message: te(ctx.locale, "alerts.webhookNotFound"),
           });
         }
 
@@ -137,7 +139,7 @@ export const webhookRouter = router({
         ctx.logger.error({ error }, "Error updating webhook");
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to update webhook",
+          message: te(ctx.locale, "alerts.failedToUpdateWebhook"),
         });
       }
     }),
@@ -164,7 +166,7 @@ export const webhookRouter = router({
         if (!existingWebhook) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Webhook not found",
+            message: te(ctx.locale, "alerts.webhookNotFound"),
           });
         }
 
@@ -180,7 +182,7 @@ export const webhookRouter = router({
         ctx.logger.error({ error }, "Error deleting webhook");
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to delete webhook",
+          message: te(ctx.locale, "alerts.failedToDeleteWebhook"),
         });
       }
     }),

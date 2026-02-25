@@ -14,6 +14,8 @@ import { UserMapper } from "@/mappers/auth";
 
 import { rateLimitedPublicProcedure, router } from "@/trpc/trpc";
 
+import { te } from "@/i18n";
+
 /**
  * Registration router
  * Handles user registration
@@ -32,7 +34,7 @@ export const registrationRouter = router({
       if (!acceptTerms) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "You must accept the terms of service to register",
+          message: te(ctx.locale, "auth.mustAcceptTerms"),
         });
       }
 
@@ -46,7 +48,7 @@ export const registrationRouter = router({
           trackSignUpError("email_exists", { email });
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: "Email already in use",
+            message: te(ctx.locale, "auth.emailAlreadyInUse"),
           });
         }
 
@@ -99,7 +101,8 @@ export const registrationRouter = router({
               verificationToken,
               "SIGNUP",
               firstName,
-              sourceApp
+              sourceApp,
+              ctx.locale
             );
 
             ctx.logger.info(
@@ -147,7 +150,7 @@ export const registrationRouter = router({
         ctx.logger.error({ error }, "Registration error");
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to register user",
+          message: te(ctx.locale, "auth.failedToRegister"),
         });
       }
     }),

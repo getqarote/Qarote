@@ -1,0 +1,22 @@
+{
+  "dashboard": "Dashboard",
+  "queues": "Queues",
+  "connections": "Connections",
+  "nodes": "Nodes",
+  "exchanges": "Exchanges",
+  "virtualHosts": "Virtual Hosts",
+  "users": "Users",
+  "alerts": "Alerts",
+  "profile": "Profile",
+  "helpSupport": "Help & Support",
+  "server": "Server",
+  "virtualHost": "Virtual Host",
+  "management": "Management",
+  "selectServer": "Select a server...",
+  "selectVhost": "Select a vhost...",
+  "noServersConfigured": "No servers configured",
+  "noVhostsAvailable": "No vhosts available",
+  "loadingVhosts": "Loading vhosts...",
+  "addServer": "Add Server",
+  "theme": "Theme"
+}

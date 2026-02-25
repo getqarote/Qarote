@@ -1,0 +1,78 @@
+{
+  "title": "Simple pricing. Powerful monitoring.",
+  "billedMonthly": "Billed monthly",
+  "billedYearly": "Billed yearly",
+  "saveUpTo20Yearly": "Save up to 20% with annual billing",
+  "switchToYearly": "Switch to yearly billing to save up to 20%",
+  "perMonth": "/month",
+  "startFree": "Start free",
+  "currentPlan": "Current Plan",
+  "coreFeatures": "Core Features",
+  "support": "Support",
+  "enterpriseFeatures": "Enterprise Features",
+  "plans": {
+    "starter": {
+      "name": "Starter",
+      "description": "Perfect for getting started"
+    },
+    "pro": {
+      "name": "Pro",
+      "description": "For solo developers and small projects"
+    },
+    "business": {
+      "name": "Business",
+      "description": "For large teams and enterprises"
+    },
+    "enterprise": {
+      "name": "Enterprise Edition",
+      "selfHosted": "Self-Hosted Solution",
+      "customPricing": "Custom Pricing",
+      "contactSales": "Contact sales for pricing"
+    }
+  },
+  "featureNames": {
+    "servers": "RabbitMQ {{count}} Server",
+    "servers_plural": "RabbitMQ {{count}} Servers",
+    "serversDesc": "Connect and monitor your servers",
+    "rabbitMQVersionSupport": "RabbitMQ Version Support",
+    "onlyLTS": "Only LTS versions",
+    "allVersions": "All versions 3.x and 4.x",
+    "workspaces": "{{count}} Workspace",
+    "workspaces_plural": "{{count}} Workspaces",
+    "workspacesDesc": "Organize your servers by environment",
+    "teamMembers": "{{count}} Team Member",
+    "teamMembers_plural": "{{count}} Team Members",
+    "teamMembersDesc": "Collaborate with your team",
+    "advancedAnalytics": "Advanced analytics",
+    "advancedAnalyticsDesc": "Detailed insights and reports",
+    "queueManagement": "Queue Management",
+    "queueManagementDesc": "Create and manage queues",
+    "exchangeManagement": "Exchange Management",
+    "exchangeManagementDesc": "Create and manage exchanges",
+    "virtualHostManagement": "Virtual Host Management",
+    "virtualHostManagementDesc": "Create and manage virtual hosts",
+    "rabbitMQUserManagement": "RabbitMQ User Management",
+    "rabbitMQUserManagementDesc": "Create and manage RabbitMQ users",
+    "soc2Compliance": "SOC 2 compliance",
+    "soc2ComplianceDesc": "Data security and policy",
+    "alertsNotification": "Alerts Notification",
+    "alertsNotificationDesc": "Real-time alerts (Email, Slack, Browser and Webhook)",
+    "communitySupport": "Community Support",
+    "communitySupportDesc": "Private Discord server",
+    "prioritySupport": "Priority Support",
+    "prioritySupportDesc": "Priority mail support",
+    "onPremiseDeployment": "On-Premise Deployment",
+    "onPremiseDeploymentDesc": "Deploy in your own infrastructure",
+    "unlimitedServers": "Unlimited Servers",
+    "unlimitedServersDesc": "Monitor as many servers as needed",
+    "customLicenseTiers": "Custom License Tiers",
+    "customLicenseTiersDesc": "Flexible licensing options",
+    "completeDataControl": "Complete Data Control",
+    "completeDataControlDesc": "All data stays in your infrastructure"
+  },
+  "limits": {
+    "upTo1": "Up to 1",
+    "upTo3": "Up to 3",
+    "unlimited": "Unlimited"
+  }
+}

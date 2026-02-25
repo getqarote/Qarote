@@ -16,6 +16,8 @@ import { router, workspaceProcedure } from "@/trpc/trpc";
 
 import { createRabbitMQClient, verifyServerAccess } from "./shared";
 
+import { te } from "@/i18n";
+
 // Time range configurations for RabbitMQ API
 const timeRangeConfigs = {
   "1m": { age: 60, increment: 10 }, // Last minute, 10-second intervals
@@ -44,7 +46,7 @@ export const metricsRouter = router({
         if (!server) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Server not found or access denied",
+            message: te(ctx.locale, "rabbitmq.serverNotFoundOrAccessDenied"),
           });
         }
 
@@ -95,7 +97,7 @@ export const metricsRouter = router({
 
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to fetch metrics",
+          message: te(ctx.locale, "rabbitmq.failedToFetchMetrics"),
         });
       }
     }),
@@ -116,7 +118,7 @@ export const metricsRouter = router({
         if (!server) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Server not found or access denied",
+            message: te(ctx.locale, "rabbitmq.serverNotFoundOrAccessDenied"),
           });
         }
 
@@ -182,7 +184,7 @@ export const metricsRouter = router({
 
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to fetch live rates data",
+          message: te(ctx.locale, "rabbitmq.failedToFetchLiveRates"),
         });
       }
     }),
@@ -209,7 +211,7 @@ export const metricsRouter = router({
         if (!server) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Server not found or access denied",
+            message: te(ctx.locale, "rabbitmq.serverNotFoundOrAccessDenied"),
           });
         }
 
@@ -286,7 +288,7 @@ export const metricsRouter = router({
 
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to fetch live rates data for queue",
+          message: te(ctx.locale, "rabbitmq.failedToFetchLiveRatesQueue"),
         });
       }
     }),
@@ -304,14 +306,14 @@ export const metricsRouter = router({
       if (!server) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Server not found or access denied",
+          message: te(ctx.locale, "rabbitmq.serverNotFoundOrAccessDenied"),
         });
       }
 
       if (!signal) {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Subscription requires an abort signal",
+          message: te(ctx.locale, "rabbitmq.subscriptionRequiresAbortSignal"),
         });
       }
       const sig = signal;
@@ -392,14 +394,14 @@ export const metricsRouter = router({
       if (!server) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Server not found or access denied",
+          message: te(ctx.locale, "rabbitmq.serverNotFoundOrAccessDenied"),
         });
       }
 
       if (!signal) {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Subscription requires an abort signal",
+          message: te(ctx.locale, "rabbitmq.subscriptionRequiresAbortSignal"),
         });
       }
       const sig = signal;

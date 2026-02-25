@@ -8,6 +8,8 @@ import { ssoConfig } from "@/config";
 
 import { rateLimitedPublicProcedure, router } from "@/trpc/trpc";
 
+import { te } from "@/i18n";
+
 /**
  * SSO router
  * Handles SSO configuration queries and auth code exchange
@@ -31,11 +33,11 @@ export const ssoRouter = router({
    */
   exchangeCode: rateLimitedPublicProcedure
     .input(SSOExchangeCodeSchema)
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       if (!ssoConfig.enabled) {
         throw new TRPCError({
           code: "SERVICE_UNAVAILABLE",
-          message: "SSO is not enabled for this deployment",
+          message: te(ctx.locale, "auth.ssoNotEnabled"),
         });
       }
 
@@ -44,7 +46,7 @@ export const ssoRouter = router({
       if (!result) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "Invalid or expired SSO code. Please try signing in again.",
+          message: te(ctx.locale, "auth.invalidOrExpiredSSOCode"),
         });
       }
 

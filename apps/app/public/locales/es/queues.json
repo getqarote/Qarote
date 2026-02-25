@@ -1,0 +1,16 @@
+{
+  "pageTitle": "Colas",
+  "noServerTitle": "Colas",
+  "noServerDescription": "Agrega una conexi\u00f3n de servidor RabbitMQ para ver y administrar colas en tus cl\u00fasteres.",
+  "selectServerPrompt": "Por favor selecciona un servidor RabbitMQ para ver las colas",
+  "filterRegex": "Filtro regex",
+  "queueNotFound": "Cola no encontrada",
+  "queueNotFoundDesc": "Por favor selecciona un servidor y una cola para ver los detalles.",
+  "notFoundMessage": "No se pudo encontrar la cola \"{{queueName}}\".",
+  "deleteTitle": "Eliminar cola",
+  "deleteDescription": "\u00bfEst\u00e1s seguro de que deseas eliminar la cola \"{{queueName}}\"? Esta acci\u00f3n no se puede deshacer y eliminar\u00e1 permanentemente la cola y todos sus mensajes.",
+  "deleteQueue": "Eliminar cola",
+  "deleting": "Eliminando...",
+  "deleteSuccess": "La cola \"{{queueName}}\" ha sido eliminada exitosamente",
+  "deleteError": "No se pudo eliminar la cola"
+}

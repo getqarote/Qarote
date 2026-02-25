@@ -1,0 +1,16 @@
+{
+  "pageTitle": "Queues",
+  "noServerTitle": "Queues",
+  "noServerDescription": "Add a RabbitMQ server connection to view and manage queues across your clusters.",
+  "selectServerPrompt": "Please select a RabbitMQ server to view queues",
+  "filterRegex": "Filter regex",
+  "queueNotFound": "Queue Not Found",
+  "queueNotFoundDesc": "Please select a server and queue to view details.",
+  "notFoundMessage": "The queue \"{{queueName}}\" could not be found.",
+  "deleteTitle": "Delete Queue",
+  "deleteDescription": "Are you sure you want to delete the queue \"{{queueName}}\"? This action cannot be undone and will permanently remove the queue and all its messages.",
+  "deleteQueue": "Delete Queue",
+  "deleting": "Deleting...",
+  "deleteSuccess": "Queue \"{{queueName}}\" has been deleted successfully",
+  "deleteError": "Failed to delete queue"
+}

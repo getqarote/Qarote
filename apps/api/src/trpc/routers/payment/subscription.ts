@@ -12,6 +12,8 @@ import { config } from "@/config";
 
 import { router, strictRateLimitedProcedure } from "@/trpc/trpc";
 
+import { te } from "@/i18n";
+
 /**
  * Subscription router
  * Handles subscription cancellation and renewal
@@ -30,7 +32,7 @@ export const subscriptionRouter = router({
         if (!user.stripeSubscriptionId) {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: "No active subscription found",
+            message: te(ctx.locale, "billing.noActiveSubscription"),
           });
         }
 
@@ -92,7 +94,7 @@ export const subscriptionRouter = router({
         ctx.logger.error({ error }, "Error canceling subscription");
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to cancel subscription",
+          message: te(ctx.locale, "billing.failedToCancelSubscription"),
         });
       }
     }),
@@ -110,7 +112,7 @@ export const subscriptionRouter = router({
         if (!plan) {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: "Plan is required",
+            message: te(ctx.locale, "billing.planRequired"),
           });
         }
 
@@ -131,7 +133,7 @@ export const subscriptionRouter = router({
         ctx.logger.error({ error }, "Error renewing subscription");
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to renew subscription",
+          message: te(ctx.locale, "billing.failedToRenewSubscription"),
         });
       }
     }),

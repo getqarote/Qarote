@@ -20,6 +20,7 @@ import { authorize, router } from "@/trpc/trpc";
 import { createRabbitMQClient, verifyServerAccess } from "./shared";
 
 import { UserRole } from "@/generated/prisma/client";
+import { te } from "@/i18n";
 
 /**
  * VHost router
@@ -40,7 +41,7 @@ export const vhostRouter = router({
         if (!result) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Server not found or access denied",
+            message: te(ctx.locale, "rabbitmq.serverNotFoundOrAccessDenied"),
           });
         }
 
@@ -125,7 +126,7 @@ export const vhostRouter = router({
         );
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to fetch virtual hosts",
+          message: te(ctx.locale, "rabbitmq.failedToFetchVhosts"),
         });
       }
     }),
@@ -144,7 +145,7 @@ export const vhostRouter = router({
         if (!server) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Server not found or access denied",
+            message: te(ctx.locale, "rabbitmq.serverNotFoundOrAccessDenied"),
           });
         }
 
@@ -207,7 +208,7 @@ export const vhostRouter = router({
         );
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to fetch virtual host",
+          message: te(ctx.locale, "rabbitmq.failedToFetchVhost"),
         });
       }
     }),
@@ -226,7 +227,7 @@ export const vhostRouter = router({
         if (!server) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Server not found or access denied",
+            message: te(ctx.locale, "rabbitmq.serverNotFoundOrAccessDenied"),
           });
         }
 
@@ -234,7 +235,7 @@ export const vhostRouter = router({
         if (vhostName === "/") {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: "Cannot delete the default virtual host",
+            message: te(ctx.locale, "rabbitmq.cannotDeleteDefaultVhost"),
           });
         }
 
@@ -259,7 +260,7 @@ export const vhostRouter = router({
         );
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to delete virtual host",
+          message: te(ctx.locale, "rabbitmq.failedToDeleteVhost"),
         });
       }
     }),
@@ -290,7 +291,7 @@ export const vhostRouter = router({
         if (!server) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Server not found or access denied",
+            message: te(ctx.locale, "rabbitmq.serverNotFoundOrAccessDenied"),
           });
         }
 
@@ -320,7 +321,7 @@ export const vhostRouter = router({
         );
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to set permissions",
+          message: te(ctx.locale, "rabbitmq.failedToSetPermissions"),
         });
       }
     }),
@@ -339,7 +340,7 @@ export const vhostRouter = router({
         if (!server) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Server not found or access denied",
+            message: te(ctx.locale, "rabbitmq.serverNotFoundOrAccessDenied"),
           });
         }
 
@@ -364,7 +365,7 @@ export const vhostRouter = router({
         );
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to delete permissions",
+          message: te(ctx.locale, "rabbitmq.failedToDeletePermissions"),
         });
       }
     }),
@@ -383,7 +384,7 @@ export const vhostRouter = router({
         if (!server) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Server not found or access denied",
+            message: te(ctx.locale, "rabbitmq.serverNotFoundOrAccessDenied"),
           });
         }
 
@@ -417,7 +418,7 @@ export const vhostRouter = router({
         );
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to create virtual host",
+          message: te(ctx.locale, "rabbitmq.failedToCreateVhost"),
         });
       }
     }),
@@ -436,7 +437,7 @@ export const vhostRouter = router({
         if (!server) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Server not found or access denied",
+            message: te(ctx.locale, "rabbitmq.serverNotFoundOrAccessDenied"),
           });
         }
 
@@ -461,7 +462,7 @@ export const vhostRouter = router({
         );
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to update virtual host",
+          message: te(ctx.locale, "rabbitmq.failedToUpdateVhost"),
         });
       }
     }),
@@ -485,7 +486,7 @@ export const vhostRouter = router({
         if (!server) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Server not found or access denied",
+            message: te(ctx.locale, "rabbitmq.serverNotFoundOrAccessDenied"),
           });
         }
 
@@ -512,7 +513,7 @@ export const vhostRouter = router({
         );
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to set limit",
+          message: te(ctx.locale, "rabbitmq.failedToSetLimit"),
         });
       }
     }),
@@ -535,7 +536,7 @@ export const vhostRouter = router({
         if (!server) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Server not found or access denied",
+            message: te(ctx.locale, "rabbitmq.serverNotFoundOrAccessDenied"),
           });
         }
 
@@ -560,7 +561,7 @@ export const vhostRouter = router({
         );
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to delete limit",
+          message: te(ctx.locale, "rabbitmq.failedToDeleteLimit"),
         });
       }
     }),

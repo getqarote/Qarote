@@ -43,6 +43,13 @@ export default defineConfig({
           ],
           // Data fetching and state management
           "vendor-data": ["@tanstack/react-query"],
+          // i18n
+          "vendor-i18n": [
+            "i18next",
+            "react-i18next",
+            "i18next-http-backend",
+            "i18next-browser-languagedetector",
+          ],
           // Icons
           "vendor-icons": ["lucide-react"],
           // Date and time utilities

@@ -16,6 +16,7 @@ import { googleConfig } from "@/config";
 import { rateLimitedPublicProcedure, router } from "@/trpc/trpc";
 
 import { InvitationStatus, UserRole } from "@/generated/prisma/client";
+import { te } from "@/i18n";
 
 /**
  * Initialize Google OAuth client
@@ -68,7 +69,7 @@ export const publicInvitationRouter = router({
         if (!invitation) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Invalid or expired invitation",
+            message: te(ctx.locale, "auth.invalidOrExpiredInvitation"),
           });
         }
 
@@ -81,7 +82,7 @@ export const publicInvitationRouter = router({
         if (!ownerSubscription) {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: "Workspace owner has no active subscription",
+            message: te(ctx.locale, "auth.workspaceOwnerNoSubscription"),
           });
         }
 
@@ -109,7 +110,7 @@ export const publicInvitationRouter = router({
         ctx.logger.error({ error }, "Error fetching invitation details");
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to fetch invitation details",
+          message: te(ctx.locale, "auth.failedToFetchInvitationDetails"),
         });
       }
     }),
@@ -153,7 +154,7 @@ export const publicInvitationRouter = router({
         if (!invitation) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Invalid or expired invitation",
+            message: te(ctx.locale, "auth.invalidOrExpiredInvitation"),
           });
         }
 
@@ -164,7 +165,7 @@ export const publicInvitationRouter = router({
         if (existingUser) {
           throw new TRPCError({
             code: "CONFLICT",
-            message: "User with this email already exists",
+            message: te(ctx.locale, "auth.userWithEmailAlreadyExists"),
           });
         }
 
@@ -234,7 +235,7 @@ export const publicInvitationRouter = router({
         ctx.logger.error({ error }, "Error accepting invitation");
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to accept invitation",
+          message: te(ctx.locale, "auth.failedToAcceptInvitation"),
         });
       }
     }),
@@ -253,7 +254,7 @@ export const publicInvitationRouter = router({
         if (!googleConfig.clientId) {
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
-            message: "Google OAuth client ID not configured",
+            message: te(ctx.locale, "auth.googleOAuthClientIdNotConfigured"),
           });
         }
 
@@ -266,7 +267,7 @@ export const publicInvitationRouter = router({
         if (!payload) {
           throw new TRPCError({
             code: "UNAUTHORIZED",
-            message: "Invalid Google token",
+            message: te(ctx.locale, "auth.invalidGoogleToken"),
           });
         }
 
@@ -275,7 +276,7 @@ export const publicInvitationRouter = router({
         if (!email) {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: "Email not provided by Google",
+            message: te(ctx.locale, "auth.emailNotProvidedByGoogle"),
           });
         }
 
@@ -309,7 +310,7 @@ export const publicInvitationRouter = router({
         if (!invitation) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Invalid or expired invitation",
+            message: te(ctx.locale, "auth.invalidOrExpiredInvitation"),
           });
         }
 
@@ -317,7 +318,7 @@ export const publicInvitationRouter = router({
         if (email.toLowerCase() !== invitation.email.toLowerCase()) {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: "Google account email does not match invitation email",
+            message: te(ctx.locale, "auth.googleEmailMismatchInvitation"),
           });
         }
 
@@ -423,7 +424,7 @@ export const publicInvitationRouter = router({
         }
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to accept invitation with Google",
+          message: te(ctx.locale, "auth.failedToAcceptInvitationGoogle"),
         });
       }
     }),

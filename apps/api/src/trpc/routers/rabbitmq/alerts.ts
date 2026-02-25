@@ -19,6 +19,7 @@ import { router, workspaceProcedure } from "@/trpc/trpc";
 import { verifyServerAccess } from "./shared";
 
 import { Prisma, UserPlan } from "@/generated/prisma/client";
+import { te } from "@/i18n";
 
 type ServerAlert = Awaited<
   ReturnType<typeof alertService.getServerAlerts>
@@ -82,7 +83,7 @@ export const alertsRouter = router({
         if (!server) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Server not found or access denied",
+            message: te(ctx.locale, "rabbitmq.serverNotFoundOrAccessDenied"),
           });
         }
 
@@ -133,7 +134,7 @@ export const alertsRouter = router({
         ctx.logger.error({ error }, "Error getting alerts");
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to get alerts",
+          message: te(ctx.locale, "rabbitmq.failedToGetAlerts"),
         });
       }
     }),
@@ -152,7 +153,7 @@ export const alertsRouter = router({
         if (!server) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Server not found or access denied",
+            message: te(ctx.locale, "rabbitmq.serverNotFoundOrAccessDenied"),
           });
         }
 
@@ -184,7 +185,7 @@ export const alertsRouter = router({
         ctx.logger.error({ error }, "Error getting resolved alerts");
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to get resolved alerts",
+          message: te(ctx.locale, "rabbitmq.failedToGetResolvedAlerts"),
         });
       }
     }),
@@ -203,7 +204,7 @@ export const alertsRouter = router({
         if (!server) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Server not found or access denied",
+            message: te(ctx.locale, "rabbitmq.serverNotFoundOrAccessDenied"),
           });
         }
 
@@ -223,7 +224,7 @@ export const alertsRouter = router({
         ctx.logger.error({ error }, "Error getting health check");
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to get health check",
+          message: te(ctx.locale, "rabbitmq.failedToGetHealthCheck"),
         });
       }
     }),
@@ -244,7 +245,7 @@ export const alertsRouter = router({
       if (!workspace) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Workspace not found",
+          message: te(ctx.locale, "workspace.notFound"),
         });
       }
 
@@ -264,7 +265,7 @@ export const alertsRouter = router({
       ctx.logger.error({ error }, "Error getting thresholds");
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
-        message: "Failed to get thresholds",
+        message: te(ctx.locale, "rabbitmq.failedToGetThresholds"),
       });
     }
   }),
@@ -288,7 +289,7 @@ export const alertsRouter = router({
         if (!workspace) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Workspace not found",
+            message: te(ctx.locale, "workspace.notFound"),
           });
         }
 
@@ -319,7 +320,7 @@ export const alertsRouter = router({
         ctx.logger.error({ error }, "Error updating thresholds");
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to update thresholds",
+          message: te(ctx.locale, "rabbitmq.failedToUpdateThresholds"),
         });
       }
     }),
@@ -346,7 +347,7 @@ export const alertsRouter = router({
       if (!workspace) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Workspace not found",
+          message: te(ctx.locale, "workspace.notFound"),
         });
       }
 
@@ -384,7 +385,7 @@ export const alertsRouter = router({
       ctx.logger.error({ error }, "Error getting alert settings");
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
-        message: "Failed to get alert settings",
+        message: te(ctx.locale, "rabbitmq.failedToGetAlertSettings"),
       });
     }
   }),
@@ -415,14 +416,14 @@ export const alertsRouter = router({
         if (!workspace) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Workspace not found",
+            message: te(ctx.locale, "workspace.notFound"),
           });
         }
 
         if (workspace.ownerId !== user.id) {
           throw new TRPCError({
             code: "FORBIDDEN",
-            message: "Only workspace owners can update alert settings",
+            message: te(ctx.locale, "rabbitmq.onlyOwnerCanUpdateAlertSettings"),
           });
         }
 
@@ -515,7 +516,7 @@ export const alertsRouter = router({
         ctx.logger.error({ error }, "Error updating alert settings");
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to update alert settings",
+          message: te(ctx.locale, "rabbitmq.failedToUpdateAlertSettings"),
         });
       }
     }),
@@ -533,7 +534,7 @@ export const alertsRouter = router({
       if (!server) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Server not found or access denied",
+          message: te(ctx.locale, "rabbitmq.serverNotFoundOrAccessDenied"),
         });
       }
 
@@ -541,7 +542,7 @@ export const alertsRouter = router({
       if (!signal) {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Subscription requires an abort signal",
+          message: te(ctx.locale, "rabbitmq.subscriptionRequiresAbortSignal"),
         });
       }
       const sig = signal;

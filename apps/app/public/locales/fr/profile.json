@@ -1,0 +1,9 @@
+{
+  "pageTitle": "Profil",
+  "personalInfo": "Informations personnelles",
+  "workspace": "Espace de travail",
+  "plans": "Forfaits",
+  "team": "Equipe",
+  "sendFeedback": "Envoyer un commentaire",
+  "failedToLoad": "Echec du chargement des informations du profil."
+}

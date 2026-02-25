@@ -12,6 +12,8 @@ import { FEATURES } from "@/config/features";
 
 import { router, workspaceProcedure } from "@/trpc/trpc";
 
+import { te } from "@/i18n";
+
 /**
  * Slack router
  * Handles Slack configuration CRUD operations for alert notifications
@@ -44,7 +46,7 @@ export const slackRouter = router({
         ctx.logger.error({ error }, "Error getting Slack configurations");
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to get Slack configurations",
+          message: te(ctx.locale, "alerts.failedToGetSlackConfigs"),
         });
       }
     }),
@@ -78,7 +80,7 @@ export const slackRouter = router({
         ctx.logger.error({ error }, "Error creating Slack configuration");
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to create Slack configuration",
+          message: te(ctx.locale, "alerts.failedToCreateSlackConfig"),
         });
       }
     }),
@@ -105,7 +107,7 @@ export const slackRouter = router({
         if (!existingConfig) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Slack configuration not found",
+            message: te(ctx.locale, "alerts.slackConfigNotFound"),
           });
         }
 
@@ -138,7 +140,7 @@ export const slackRouter = router({
         ctx.logger.error({ error }, "Error updating Slack configuration");
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to update Slack configuration",
+          message: te(ctx.locale, "alerts.failedToUpdateSlackConfig"),
         });
       }
     }),
@@ -165,7 +167,7 @@ export const slackRouter = router({
         if (!existingConfig) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Slack configuration not found",
+            message: te(ctx.locale, "alerts.slackConfigNotFound"),
           });
         }
 
@@ -181,7 +183,7 @@ export const slackRouter = router({
         ctx.logger.error({ error }, "Error deleting Slack configuration");
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to delete Slack configuration",
+          message: te(ctx.locale, "alerts.failedToDeleteSlackConfig"),
         });
       }
     }),

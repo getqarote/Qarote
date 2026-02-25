@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
 import { Server } from "lucide-react";
@@ -27,6 +28,7 @@ import { useServerContext } from "@/contexts/ServerContext";
 import { useDashboardData } from "@/hooks/ui/useDashboardData";
 
 const Index = () => {
+  const { t } = useTranslation("dashboard");
   const { selectedServerId, hasServers } = useServerContext();
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
@@ -68,8 +70,8 @@ const Index = () => {
               <SidebarTrigger />
             </div>
             <NoServerConfigured
-              title="RabbitMQ Dashboard"
-              description="Add a RabbitMQ server connection to start monitoring your queues and messages."
+              title={t("rabbitMQDashboard")}
+              description={t("addServerDescription")}
             />
           </main>
         </div>
@@ -88,10 +90,8 @@ const Index = () => {
                 <div className="flex items-center gap-4">
                   <SidebarTrigger />
                   <div>
-                    <h1 className="title-page">RabbitMQ Dashboard</h1>
-                    <p className="text-gray-500">
-                      Please select a RabbitMQ server to view the dashboard
-                    </p>
+                    <h1 className="title-page">{t("rabbitMQDashboard")}</h1>
+                    <p className="text-gray-500">{t("selectServerPrompt")}</p>
                   </div>
                 </div>
                 <PlanBadge />
@@ -101,11 +101,10 @@ const Index = () => {
                   <div className="text-center">
                     <Server className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                     <h2 className="text-xl font-semibold text-gray-900 mb-2">
-                      Please Select a Server
+                      {t("pleaseSelectServer")}
                     </h2>
                     <p className="text-gray-600 mb-4">
-                      Choose a RabbitMQ server from the sidebar to view its
-                      dashboard.
+                      {t("chooseServerFromSidebar")}
                     </p>
                   </div>
                 </CardContent>
@@ -128,7 +127,7 @@ const Index = () => {
               <div className="flex items-center gap-4">
                 <SidebarTrigger />
                 <div>
-                  <h1 className="title-page">Dashboard</h1>
+                  <h1 className="title-page">{t("pageTitle")}</h1>
                   <ConnectionStatus />
                 </div>
               </div>

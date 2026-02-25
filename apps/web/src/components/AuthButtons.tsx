@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useTranslation } from "react-i18next";
 
 import type { LucideProps } from "lucide-react";
 import { Play } from "lucide-react";
@@ -18,6 +19,7 @@ const AuthButtons = ({
   hideHowItWorks = false,
   align = "center",
 }: AuthButtonsProps) => {
+  const { t } = useTranslation("landing");
   const authBaseUrl = import.meta.env.VITE_APP_BASE_URL;
 
   const handleSignUp = () => {
@@ -72,7 +74,7 @@ const AuthButtons = ({
         onClick={handleSignUp}
         className={`${primaryButtonStyles} px-4 py-3 sm:px-8 sm:py-4 rounded-lg font-semibold transition-colors duration-200 flex items-center justify-center text-base sm:text-lg w-full sm:w-auto`}
       >
-        <span className="whitespace-nowrap">Get started for free</span>
+        <span className="whitespace-nowrap">{t("cta.getStartedForFree")}</span>
       </button>
       {!hideHowItWorks && (
         <button
@@ -80,7 +82,7 @@ const AuthButtons = ({
           className={`${secondaryButtonStyles} px-4 py-3 sm:px-8 sm:py-4 rounded-lg font-semibold transition-colors duration-200 flex items-center justify-center gap-2 text-base sm:text-lg`}
         >
           <PlayIcon className="h-[1em] w-[1em] fill-current" />
-          <span className="whitespace-nowrap">How it works</span>
+          <span className="whitespace-nowrap">{t("cta.howItWorks")}</span>
         </button>
       )}
     </div>

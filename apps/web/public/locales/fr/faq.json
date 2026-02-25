@@ -1,0 +1,45 @@
+{
+  "q1": {
+    "question": "Qu'est-ce que Qarote ?",
+    "answer": "Qarote est un tableau de bord moderne et intuitif qui vous aide à surveiller et gérer vos serveurs RabbitMQ sans effort. Au lieu d'utiliser des outils en ligne de commande peu pratiques ou le plugin de gestion RabbitMQ par défaut, Qarote vous offre une interface visuelle claire pour consulter vos files d'attente, messages et l'état de votre système en temps réel."
+  },
+  "q2": {
+    "question": "À qui s'adresse Qarote ?",
+    "answer": "Qarote est conçu pour les développeurs, les ingénieurs DevOps et les équipes qui utilisent RabbitMQ et souhaitent une meilleure visibilité, un dépannage plus facile et des alertes plus intelligentes. Que vous gériez un seul broker ou des dizaines, Qarote vous aide à gagner du temps et à prévenir les goulets d'étranglement de messages."
+  },
+  "q3": {
+    "question": "Qarote est-il sécurisé ?",
+    "answer": "Absolument. Toutes les connexions à vos serveurs RabbitMQ sont chiffrées (TLS), et aucune donnée sensible n'est stockée sur nos serveurs — uniquement votre configuration et vos préférences d'alertes. Qarote ne lit que les métriques et les données de gestion nécessaires à votre tableau de bord."
+  },
+  "q4": {
+    "question": "Que puis-je faire avec Qarote ?",
+    "answer": "Avec Qarote, vous pouvez :",
+    "list": [
+      "Surveiller la profondeur des files, le débit de messages et le nombre de consommateurs",
+      "Configurer des alertes pour les retards de files ou les problèmes de santé des serveurs",
+      "Visualiser l'utilisation mémoire, les descripteurs de fichiers et bien plus",
+      "Mettre en pause, reprendre ou supprimer des files en un clic",
+      "Publier des messages directement dans les files ou les échanges",
+      "Connecter plusieurs instances RabbitMQ au même endroit"
+    ]
+  },
+  "q5": {
+    "question": "En quoi Qarote est-il différent de l'interface de gestion RabbitMQ ?",
+    "answer": "Le plugin de gestion RabbitMQ intégré fonctionne, mais il est lent, encombré et difficile à utiliser sur plusieurs brokers. Qarote propose :",
+    "list": [
+      "Une interface plus rapide et plus intuitive",
+      "Le support multi-serveurs dans un seul tableau de bord",
+      "Des alertes intelligentes et personnalisables",
+      "De superbes graphiques et métriques en temps réel",
+      "Une expérience claire conçue pour les équipes"
+    ]
+  },
+  "q6": {
+    "question": "Qarote est-il un meilleur outil de monitoring que Prometheus et Grafana ?",
+    "answer": "Qarote offre un monitoring spécialement conçu pour RabbitMQ, sans aucune configuration. Bien que Prometheus et Grafana soient des outils puissants, ils nécessitent une mise en place et une maintenance importantes. Qarote fournit des informations comparables avec beaucoup moins d'efforts."
+  },
+  "q7": {
+    "question": "Puis-je essayer Qarote gratuitement ?",
+    "answer": "Oui ! Nous proposons une offre gratuite qui inclut 1 serveur, 1 espace de travail et 1 membre d'équipe. Vous pouvez commencer à surveiller vos files RabbitMQ immédiatement, sans carte de crédit. Lorsque vous êtes prêt à évoluer, vous pouvez passer à un forfait payant."
+  }
+}

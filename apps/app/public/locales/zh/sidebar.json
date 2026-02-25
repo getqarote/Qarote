@@ -1,0 +1,22 @@
+{
+  "dashboard": "仪表盘",
+  "queues": "队列",
+  "connections": "连接",
+  "nodes": "节点",
+  "exchanges": "交换机",
+  "virtualHosts": "虚拟主机",
+  "users": "用户",
+  "alerts": "告警",
+  "profile": "个人资料",
+  "helpSupport": "帮助与支持",
+  "server": "服务器",
+  "virtualHost": "虚拟主机",
+  "management": "管理",
+  "selectServer": "选择服务器...",
+  "selectVhost": "选择虚拟主机...",
+  "noServersConfigured": "未配置服务器",
+  "noVhostsAvailable": "无可用虚拟主机",
+  "loadingVhosts": "加载虚拟主机中...",
+  "addServer": "添加服务器",
+  "theme": "主题"
+}

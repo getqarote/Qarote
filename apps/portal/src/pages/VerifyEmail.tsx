@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useSearchParams } from "react-router";
 
@@ -37,6 +38,8 @@ export default function VerifyEmail() {
   const [userEmail, setUserEmail] = useState<string>("");
   const [showEmailInput, setShowEmailInput] = useState(false);
   const token = searchParams.get("token");
+  const { t } = useTranslation("auth");
+  const { t: tPortal } = useTranslation("portal");
 
   const [verificationState, setVerificationState] = useState<{
     loading: boolean;
@@ -47,7 +50,7 @@ export default function VerifyEmail() {
         loading: false,
         result: {
           success: false,
-          error: "No verification token provided",
+          error: t("noVerificationToken"),
         },
       };
     }
@@ -76,7 +79,7 @@ export default function VerifyEmail() {
         },
       });
 
-      toast.success("Email verified successfully!");
+      toast.success(t("emailVerifiedToast"));
 
       // Redirect based on authentication status
       redirectTimerRef.current = setTimeout(() => {
@@ -94,7 +97,7 @@ export default function VerifyEmail() {
         loading: false,
         result: {
           success: false,
-          error: error.message || "Failed to verify email. Please try again.",
+          error: error.message || t("failedVerifyEmail"),
         },
       });
     },
@@ -103,11 +106,11 @@ export default function VerifyEmail() {
   const resendVerificationMutation =
     trpc.auth.verification.resendVerification.useMutation({
       onSuccess: () => {
-        toast.success("Verification email sent! Please check your inbox.");
+        toast.success(t("verificationSentToast"));
       },
       onError: (error) => {
         logger.error("Resend verification error:", error);
-        toast.error(error.message || "Failed to resend verification email");
+        toast.error(error.message || t("failedResendVerification"));
       },
     });
 
@@ -153,7 +156,7 @@ export default function VerifyEmail() {
 
     // Validate email before sending
     if (!userEmail || !userEmail.includes("@")) {
-      toast.error("Please enter a valid email address");
+      toast.error(t("pleaseEnterValidEmail"));
       return;
     }
 
@@ -195,10 +198,8 @@ export default function VerifyEmail() {
             <div className="mx-auto mb-4 w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
               <RefreshCw className="h-6 w-6 text-blue-600 animate-spin" />
             </div>
-            <CardTitle>Verifying Your Email</CardTitle>
-            <CardDescription>
-              Please wait while we verify your email address...
-            </CardDescription>
+            <CardTitle>{t("verifyingEmail")}</CardTitle>
+            <CardDescription>{t("verifyingEmailDescription")}</CardDescription>
           </CardHeader>
         </Card>
       </div>
@@ -227,13 +228,13 @@ export default function VerifyEmail() {
             )}
           </div>
           <CardTitle>
-            {result.success ? "Email Verified!" : "Verification Failed"}
+            {result.success ? t("emailVerified") : t("verificationFailed")}
           </CardTitle>
           <CardDescription>
             {result.success
               ? result.type === "EMAIL_CHANGE"
-                ? "Your new email address has been verified successfully."
-                : "Your email address has been verified successfully."
+                ? t("emailChangeVerified")
+                : t("emailVerifiedSuccess")
               : result.error}
           </CardDescription>
         </CardHeader>
@@ -244,10 +245,8 @@ export default function VerifyEmail() {
               <Alert className="border-green-200 bg-green-50">
                 <CheckCircle className="h-4 w-4 text-green-600" />
                 <AlertDescription className="text-green-800">
-                  {result.message ||
-                    "Email verification completed successfully."}
-                  {result.type === "SIGNUP" &&
-                    " You can now purchase and manage your licenses."}
+                  {result.message || t("emailVerificationComplete")}
+                  {result.type === "SIGNUP" && tPortal("signupVerifiedExtra")}
                 </AlertDescription>
               </Alert>
 
@@ -258,10 +257,12 @@ export default function VerifyEmail() {
                   }
                   className="w-full bg-gradient-button hover:bg-gradient-button-hover"
                 >
-                  {isAuthenticated ? "Go to Licenses" : "Sign In to Continue"}
+                  {isAuthenticated
+                    ? tPortal("goToLicenses")
+                    : t("signInToContinue")}
                 </Button>
                 <p className="text-sm text-gray-500 text-center">
-                  Redirecting automatically in 3 seconds...
+                  {t("redirectingAutomatically")}
                 </p>
               </div>
             </>
@@ -282,7 +283,7 @@ export default function VerifyEmail() {
                     className="w-full"
                   >
                     <RefreshCw className="h-4 w-4 mr-2" />
-                    Try Again
+                    {t("tryAgain")}
                   </Button>
                 )}
 
@@ -290,7 +291,7 @@ export default function VerifyEmail() {
                   <div className="space-y-2">
                     <input
                       type="email"
-                      placeholder="Enter your email address"
+                      placeholder={t("enterEmailAddress")}
                       value={userEmail}
                       onChange={(e) => setUserEmail(e.target.value)}
                       className="w-full px-3 py-2 border border-border rounded-md focus:outline-hidden focus:ring-2 focus:ring-primary"
@@ -306,8 +307,8 @@ export default function VerifyEmail() {
                 >
                   <Mail className="h-4 w-4 mr-2" />
                   {!isAuthenticated && showEmailInput
-                    ? "Send Verification Email"
-                    : "Resend Verification Email"}
+                    ? t("resendVerificationEmail")
+                    : t("resendVerificationEmail")}
                 </Button>
 
                 {!isAuthenticated && (
@@ -316,7 +317,7 @@ export default function VerifyEmail() {
                     variant="ghost"
                     className="w-full"
                   >
-                    Back to Sign In
+                    {t("backToSignIn")}
                   </Button>
                 )}
 
@@ -326,7 +327,7 @@ export default function VerifyEmail() {
                     variant="ghost"
                     className="w-full"
                   >
-                    Go to Licenses
+                    {tPortal("goToLicenses")}
                   </Button>
                 )}
               </div>

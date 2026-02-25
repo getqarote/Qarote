@@ -22,6 +22,7 @@ import {
 } from "@/trpc/trpc";
 
 import { InvitationStatus, UserPlan } from "@/generated/prisma/client";
+import { te } from "@/i18n";
 
 /**
  * Workspace invitation router
@@ -38,7 +39,10 @@ export const invitationRouter = router({
       if (!user.workspaceId) {
         throw new TRPCError({
           code: "UNAUTHORIZED",
-          message: "User not authenticated or not in workspace",
+          message: te(
+            ctx.locale,
+            "workspace.userNotAuthenticatedOrNotInWorkspace"
+          ),
         });
       }
 
@@ -85,7 +89,7 @@ export const invitationRouter = router({
       ctx.logger.error({ error }, "Error fetching invitations");
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
-        message: "Failed to fetch invitations",
+        message: te(ctx.locale, "workspace.failedToFetchInvitations"),
       });
     }
   }),
@@ -104,7 +108,10 @@ export const invitationRouter = router({
         if (!user.workspaceId) {
           throw new TRPCError({
             code: "UNAUTHORIZED",
-            message: "User not authenticated or not in workspace",
+            message: te(
+              ctx.locale,
+              "workspace.userNotAuthenticatedOrNotInWorkspace"
+            ),
           });
         }
 
@@ -121,7 +128,7 @@ export const invitationRouter = router({
         if (!workspace) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Workspace not found",
+            message: te(ctx.locale, "workspace.notFound"),
           });
         }
 
@@ -165,7 +172,7 @@ export const invitationRouter = router({
           if (isMember) {
             throw new TRPCError({
               code: "BAD_REQUEST",
-              message: "User is already a member of this workspace",
+              message: te(ctx.locale, "workspace.userAlreadyMember"),
             });
           }
         }
@@ -209,6 +216,7 @@ export const invitationRouter = router({
             inviterName: getUserDisplayName(user),
             inviterEmail: user.email,
             plan,
+            locale: ctx.locale,
           });
           ctx.logger.info(
             { invitationId: invitation.id, email },
@@ -238,7 +246,7 @@ export const invitationRouter = router({
         ctx.logger.error({ error }, "Error sending invitation");
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to send invitation",
+          message: te(ctx.locale, "workspace.failedToSendInvitation"),
         });
       }
     }),
@@ -256,7 +264,10 @@ export const invitationRouter = router({
         if (!user.workspaceId) {
           throw new TRPCError({
             code: "UNAUTHORIZED",
-            message: "User not authenticated or not in workspace",
+            message: te(
+              ctx.locale,
+              "workspace.userNotAuthenticatedOrNotInWorkspace"
+            ),
           });
         }
 
@@ -272,7 +283,7 @@ export const invitationRouter = router({
         if (!invitation) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Invitation not found or already used",
+            message: te(ctx.locale, "workspace.invitationNotFoundOrUsed"),
           });
         }
 
@@ -293,7 +304,7 @@ export const invitationRouter = router({
         ctx.logger.error({ error }, "Error revoking invitation");
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to revoke invitation",
+          message: te(ctx.locale, "workspace.failedToRevokeInvitation"),
         });
       }
     }),

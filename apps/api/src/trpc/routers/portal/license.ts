@@ -23,6 +23,7 @@ import {
 } from "@/trpc/trpc";
 
 import { UserPlan } from "@/generated/prisma/client";
+import { te } from "@/i18n";
 
 /**
  * License router
@@ -46,7 +47,8 @@ export const licenseRouter = router({
         if (!validation.valid) {
           throw new TRPCError({
             code: "FORBIDDEN",
-            message: validation.message || "License validation failed",
+            message:
+              validation.message || te(ctx.locale, "license.validationFailed"),
           });
         }
 
@@ -68,7 +70,7 @@ export const licenseRouter = router({
 
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "License validation failed",
+          message: te(ctx.locale, "license.validationFailed"),
         });
       }
     }),
@@ -91,7 +93,7 @@ export const licenseRouter = router({
       ctx.logger.error({ error }, "Error fetching licenses");
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
-        message: "Failed to fetch licenses",
+        message: te(ctx.locale, "license.failedToFetchLicenses"),
       });
     }
   }),
@@ -132,7 +134,9 @@ export const licenseRouter = router({
         if (!priceId) {
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
-            message: `Yearly price not configured for ${tier} tier`,
+            message: te(ctx.locale, "license.yearlyPriceNotConfigured", {
+              tier,
+            }),
           });
         }
 
@@ -140,7 +144,7 @@ export const licenseRouter = router({
         if (!portalUrl) {
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
-            message: "Portal URL not configured",
+            message: te(ctx.locale, "license.portalUrlNotConfigured"),
           });
         }
 
@@ -180,7 +184,7 @@ export const licenseRouter = router({
         }
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to create checkout session",
+          message: te(ctx.locale, "billing.failedToCreateCheckoutSession"),
         });
       }
     }),
@@ -207,7 +211,7 @@ export const licenseRouter = router({
         if (!license) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "License not found",
+            message: te(ctx.locale, "license.notFound"),
           });
         }
 
@@ -260,7 +264,7 @@ export const licenseRouter = router({
         }
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to download license",
+          message: te(ctx.locale, "license.failedToDownload"),
         });
       }
     }),

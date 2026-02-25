@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useSearchParams } from "react-router";
 
 import { Check, Eye, EyeOff, Lock, Shield, X } from "lucide-react";
@@ -21,6 +22,7 @@ import { Label } from "@/components/ui/label";
 import { useResetPassword } from "@/hooks/queries/useProfile";
 
 const ResetPassword: React.FC = () => {
+  const { t } = useTranslation("auth");
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
@@ -39,7 +41,7 @@ const ResetPassword: React.FC = () => {
   // Redirect if no token provided
   useEffect(() => {
     if (!token) {
-      toast.error("Invalid reset link");
+      toast.error(t("invalidResetLink"));
       navigate("/auth/sign-in");
     }
   }, [token, navigate]);
@@ -47,15 +49,11 @@ const ResetPassword: React.FC = () => {
   const resetPasswordMutation = useResetPassword({
     onSuccess: () => {
       setResetSuccess(true);
-      toast.success(
-        "Password reset successfully! You can now sign in with your new password."
-      );
+      toast.success(t("resetSuccessToast"));
     },
     onError: (error) => {
       logger.error("Password reset error:", error);
-      toast.error(
-        "Failed to reset password. The link may be expired or invalid."
-      );
+      toast.error(t("failedResetPassword"));
     },
   });
 
@@ -63,15 +61,15 @@ const ResetPassword: React.FC = () => {
     const newErrors: Record<string, string> = {};
 
     if (!formData.password) {
-      newErrors.password = "Password is required";
+      newErrors.password = t("passwordIsRequired");
     } else if (formData.password.length < 8) {
-      newErrors.password = "Password must be at least 8 characters long";
+      newErrors.password = t("passwordMinLengthError");
     }
 
     if (!formData.confirmPassword) {
-      newErrors.confirmPassword = "Please confirm your password";
+      newErrors.confirmPassword = t("pleaseConfirmPassword");
     } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match";
+      newErrors.confirmPassword = t("passwordsDoNotMatch");
     }
 
     setErrors(newErrors);
@@ -116,13 +114,13 @@ const ResetPassword: React.FC = () => {
   // Password strength indicators
   const getPasswordStrength = (password: string) => {
     const checks = [
-      { test: password.length >= 8, label: "At least 8 characters" },
-      { test: /[A-Z]/.test(password), label: "One uppercase letter" },
-      { test: /[a-z]/.test(password), label: "One lowercase letter" },
-      { test: /\d/.test(password), label: "One number" },
+      { test: password.length >= 8, label: t("passwordMinLength") },
+      { test: /[A-Z]/.test(password), label: t("passwordUppercase") },
+      { test: /[a-z]/.test(password), label: t("passwordLowercase") },
+      { test: /\d/.test(password), label: t("passwordNumber") },
       {
         test: /[!@#$%^&*(),.?":{}|<>]/.test(password),
-        label: "One special character",
+        label: t("passwordSpecialChar"),
       },
     ];
 
@@ -138,11 +136,10 @@ const ResetPassword: React.FC = () => {
               <Check className="h-6 w-6 text-green-600" />
             </div>
             <CardTitle className="text-2xl">
-              Password Reset Successful!
+              {t("resetPasswordSuccessTitle")}
             </CardTitle>
             <CardDescription>
-              Your password has been successfully reset. You can now sign in
-              with your new password.
+              {t("resetPasswordSuccessDescription")}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -150,7 +147,7 @@ const ResetPassword: React.FC = () => {
               onClick={() => navigate("/auth/sign-in")}
               className="w-full bg-gradient-button hover:bg-gradient-button-hover"
             >
-              Continue to Sign In
+              {t("continueToSignIn")}
             </Button>
           </CardContent>
         </Card>
@@ -170,20 +167,20 @@ const ResetPassword: React.FC = () => {
         <CardHeader className="text-center">
           <CardTitle className="text-2xl flex items-center justify-center gap-2">
             <Lock className="h-6 w-6" />
-            Reset Your Password
+            {t("resetPassword")}
           </CardTitle>
-          <CardDescription>Enter your new password below</CardDescription>
+          <CardDescription>{t("resetPasswordDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* New Password */}
             <div className="space-y-2">
-              <Label htmlFor="password">New Password</Label>
+              <Label htmlFor="password">{t("newPassword")}</Label>
               <div className="relative">
                 <Input
                   id="password"
                   type={showPasswords.password ? "text" : "password"}
-                  placeholder="Enter your new password"
+                  placeholder={t("enterNewPassword")}
                   value={formData.password}
                   onChange={(e) =>
                     handleInputChange("password", e.target.value)
@@ -216,7 +213,7 @@ const ResetPassword: React.FC = () => {
             {formData.password && (
               <div className="space-y-2">
                 <Label className="text-sm text-muted-foreground">
-                  Password Requirements
+                  {t("passwordRequirementsLabel")}
                 </Label>
                 <div className="space-y-1">
                   {passwordStrength.map((check, index) => (
@@ -246,12 +243,12 @@ const ResetPassword: React.FC = () => {
 
             {/* Confirm Password */}
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm New Password</Label>
+              <Label htmlFor="confirmPassword">{t("confirmNewPassword")}</Label>
               <div className="relative">
                 <Input
                   id="confirmPassword"
                   type={showPasswords.confirm ? "text" : "password"}
-                  placeholder="Confirm your new password"
+                  placeholder={t("confirmYourNewPassword")}
                   value={formData.confirmPassword}
                   onChange={(e) =>
                     handleInputChange("confirmPassword", e.target.value)
@@ -283,10 +280,7 @@ const ResetPassword: React.FC = () => {
             {/* Security Info */}
             <Alert>
               <Shield className="h-4 w-4" />
-              <AlertDescription>
-                Choose a strong password that you haven't used before on other
-                accounts.
-              </AlertDescription>
+              <AlertDescription>{t("securityAdvice")}</AlertDescription>
             </Alert>
 
             {/* Submit Button */}
@@ -298,19 +292,19 @@ const ResetPassword: React.FC = () => {
               {resetPasswordMutation.isPending ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                  Resetting Password...
+                  {t("resettingPassword")}
                 </>
               ) : (
-                "Reset Password"
+                t("resetPasswordButton")
               )}
             </Button>
           </form>
 
           <div className="mt-6 text-center">
             <p className="text-sm text-muted-foreground">
-              Remember your password?{" "}
+              {t("rememberPassword")}{" "}
               <Link to="/auth/sign-in" className="text-primary hover:underline">
-                Sign in here
+                {t("signInHere")}
               </Link>
             </p>
           </div>

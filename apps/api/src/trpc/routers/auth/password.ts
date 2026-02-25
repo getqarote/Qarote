@@ -20,6 +20,8 @@ import {
   strictRateLimitedProcedure,
 } from "@/trpc/trpc";
 
+import { te } from "@/i18n";
+
 /**
  * Password router
  * Handles password reset and change operations
@@ -59,8 +61,7 @@ export const passwordRouter = router({
 
           // Return success even if user doesn't exist for security
           return {
-            message:
-              "If your email is registered, you will receive a password reset link",
+            message: te(ctx.locale, "messages.passwordResetEmailSent"),
           };
         }
 
@@ -90,7 +91,8 @@ export const passwordRouter = router({
             resetToken,
             user.firstName
               ? `${user.firstName} ${user.lastName}`.trim()
-              : undefined
+              : undefined,
+            ctx.locale
           );
           ctx.logger.info(
             { userId: user.id, email: user.email },
@@ -114,8 +116,7 @@ export const passwordRouter = router({
         }
 
         return {
-          message:
-            "If your email is registered, you will receive a password reset link",
+          message: te(ctx.locale, "messages.passwordResetEmailSent"),
           // Only return token in development for testing
           ...(isDevelopment() ? { token: resetToken } : {}),
         };
@@ -123,7 +124,7 @@ export const passwordRouter = router({
         ctx.logger.error({ error }, "Password reset request error");
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to process password reset request",
+          message: te(ctx.locale, "auth.failedToProcessPasswordReset"),
         });
       }
     }),
@@ -164,7 +165,7 @@ export const passwordRouter = router({
           );
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: "Invalid or expired password reset token",
+            message: te(ctx.locale, "auth.invalidOrExpiredResetToken"),
           });
         }
 
@@ -182,7 +183,7 @@ export const passwordRouter = router({
           );
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: "Password reset token has expired",
+            message: te(ctx.locale, "auth.resetTokenExpired"),
           });
         }
 
@@ -196,7 +197,7 @@ export const passwordRouter = router({
           );
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: "Password reset token has already been used",
+            message: te(ctx.locale, "auth.resetTokenAlreadyUsed"),
           });
         }
 
@@ -228,7 +229,7 @@ export const passwordRouter = router({
           userAgent
         );
 
-        return { message: "Password has been reset successfully" };
+        return { message: te(ctx.locale, "messages.passwordResetSuccess") };
       } catch (error) {
         if (error instanceof TRPCError) {
           throw error;
@@ -236,7 +237,7 @@ export const passwordRouter = router({
         ctx.logger.error({ error }, "Password reset error");
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to reset password",
+          message: te(ctx.locale, "auth.failedToResetPassword"),
         });
       }
     }),
@@ -267,7 +268,7 @@ export const passwordRouter = router({
         if (!userWithPassword) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "User not found",
+            message: te(ctx.locale, "auth.userNotFound"),
           });
         }
 
@@ -275,8 +276,7 @@ export const passwordRouter = router({
         if (!userWithPassword.passwordHash) {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message:
-              "This account uses Google sign-in. Password changes are not available for OAuth accounts.",
+            message: te(ctx.locale, "auth.googleSignInNoPasswordChange"),
           });
         }
 
@@ -289,7 +289,7 @@ export const passwordRouter = router({
         if (!isPasswordValid) {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: "Current password is incorrect",
+            message: te(ctx.locale, "auth.currentPasswordIncorrect"),
           });
         }
 
@@ -310,7 +310,7 @@ export const passwordRouter = router({
           userAgent
         );
 
-        return { message: "Password updated successfully" };
+        return { message: te(ctx.locale, "messages.passwordUpdatedSuccess") };
       } catch (error) {
         if (error instanceof TRPCError) {
           throw error;
@@ -318,7 +318,7 @@ export const passwordRouter = router({
         ctx.logger.error({ error }, "Password change error");
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to change password",
+          message: te(ctx.locale, "auth.failedToChangePassword"),
         });
       }
     }),

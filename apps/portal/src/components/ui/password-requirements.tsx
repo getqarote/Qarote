@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 import { Check, X } from "lucide-react";
 
@@ -13,25 +14,27 @@ const PasswordRequirements: React.FC<PasswordRequirementsProps> = ({
   password,
   className,
 }) => {
+  const { t } = useTranslation("auth");
+
   const requirements = [
     {
-      text: "At least 8 characters",
+      text: t("passwordMinLength"),
       test: (pwd: string) => pwd.length >= 8,
     },
     {
-      text: "At least one lowercase letter",
+      text: t("passwordLowercase"),
       test: (pwd: string) => /[a-z]/.test(pwd),
     },
     {
-      text: "At least one uppercase letter",
+      text: t("passwordUppercase"),
       test: (pwd: string) => /[A-Z]/.test(pwd),
     },
     {
-      text: "At least one number",
+      text: t("passwordNumber"),
       test: (pwd: string) => /[0-9]/.test(pwd),
     },
     {
-      text: "At least one special character",
+      text: t("passwordSpecialChar"),
       test: (pwd: string) => /[^a-zA-Z0-9]/.test(pwd),
     },
   ];
@@ -39,7 +42,7 @@ const PasswordRequirements: React.FC<PasswordRequirementsProps> = ({
   return (
     <div className={cn("space-y-2", className)}>
       <p className="text-sm font-medium text-muted-foreground">
-        Password requirements:
+        {t("passwordRequirementsLabel")}
       </p>
       <div className="space-y-1">
         {requirements.map((requirement, index) => {

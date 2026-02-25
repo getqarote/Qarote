@@ -13,6 +13,8 @@ import {
   router,
 } from "@/trpc/trpc";
 
+import { te } from "@/i18n";
+
 /**
  * Verification router
  * Handles email verification
@@ -27,12 +29,16 @@ export const verificationRouter = router({
       const { token } = input;
 
       try {
-        const result = await EmailVerificationService.verifyToken(token);
+        const result = await EmailVerificationService.verifyToken(
+          token,
+          ctx.locale
+        );
 
         if (!result.success) {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: result.error || "Invalid verification token",
+            message:
+              result.error || te(ctx.locale, "auth.invalidVerificationToken"),
           });
         }
 
@@ -78,7 +84,7 @@ export const verificationRouter = router({
         if (!updatedUser) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "User not found",
+            message: te(ctx.locale, "auth.userNotFound"),
           });
         }
 
@@ -93,7 +99,7 @@ export const verificationRouter = router({
         ctx.logger.error({ error }, "Email verification error");
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to verify email",
+          message: te(ctx.locale, "auth.failedToVerifyEmail"),
         });
       }
     }),
@@ -133,14 +139,14 @@ export const verificationRouter = router({
             if (!dbUser) {
               throw new TRPCError({
                 code: "NOT_FOUND",
-                message: "User not found",
+                message: te(ctx.locale, "auth.userNotFound"),
               });
             }
 
             if (!dbUser.pendingEmail) {
               throw new TRPCError({
                 code: "BAD_REQUEST",
-                message: "No pending email change request found",
+                message: te(ctx.locale, "auth.noPendingEmailChange"),
               });
             }
 
@@ -155,7 +161,7 @@ export const verificationRouter = router({
           if (!emailToVerify) {
             throw new TRPCError({
               code: "BAD_REQUEST",
-              message: "No email to verify",
+              message: te(ctx.locale, "auth.noEmailToVerify"),
             });
           }
         } else {
@@ -163,7 +169,7 @@ export const verificationRouter = router({
           if (!inputEmail) {
             throw new TRPCError({
               code: "BAD_REQUEST",
-              message: "Email is required for unauthenticated requests",
+              message: te(ctx.locale, "auth.emailRequiredForUnauthenticated"),
             });
           }
 
@@ -171,7 +177,7 @@ export const verificationRouter = router({
           if (type === "EMAIL_CHANGE") {
             throw new TRPCError({
               code: "UNAUTHORIZED",
-              message: "Email change verification requires authentication",
+              message: te(ctx.locale, "auth.emailChangeRequiresAuth"),
             });
           }
 
@@ -206,7 +212,7 @@ export const verificationRouter = router({
           if (type === "SIGNUP" && foundUser.emailVerified) {
             throw new TRPCError({
               code: "BAD_REQUEST",
-              message: "Email is already verified",
+              message: te(ctx.locale, "auth.emailAlreadyVerified"),
             });
           }
 
@@ -214,7 +220,7 @@ export const verificationRouter = router({
           if (!foundUser.isActive) {
             throw new TRPCError({
               code: "FORBIDDEN",
-              message: "Account is inactive",
+              message: te(ctx.locale, "auth.accountInactive"),
             });
           }
 
@@ -237,13 +243,14 @@ export const verificationRouter = router({
             verificationToken,
             type,
             user.firstName || undefined,
-            sourceApp
+            sourceApp,
+            ctx.locale
           );
 
         if (!emailResult.success) {
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
-            message: "Failed to send verification email",
+            message: te(ctx.locale, "auth.failedToSendVerificationEmail"),
           });
         }
 
@@ -265,7 +272,7 @@ export const verificationRouter = router({
         ctx.logger.error({ error }, "Resend verification error");
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to resend verification email",
+          message: te(ctx.locale, "auth.failedToResendVerification"),
         });
       }
     }),
@@ -289,7 +296,7 @@ export const verificationRouter = router({
       if (!fullUser) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "User not found",
+          message: te(ctx.locale, "auth.userNotFound"),
         });
       }
 
@@ -305,7 +312,7 @@ export const verificationRouter = router({
       ctx.logger.error({ error }, "Error fetching verification status");
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
-        message: "Failed to fetch verification status",
+        message: te(ctx.locale, "auth.failedToFetchVerificationStatus"),
       });
     }
   }),

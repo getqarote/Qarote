@@ -33,6 +33,7 @@ import {
 } from "./shared";
 
 import { UserRole } from "@/generated/prisma/client";
+import { te } from "@/i18n";
 
 type RawQueue = Parameters<typeof QueueMapper.toApiResponseArray>[0][number];
 
@@ -162,7 +163,7 @@ export const queuesRouter = router({
         if (!server || !server.workspace) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Server not found or access denied",
+            message: te(ctx.locale, "rabbitmq.serverNotFoundOrAccessDenied"),
           });
         }
 
@@ -186,7 +187,7 @@ export const queuesRouter = router({
 
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to fetch queues",
+          message: te(ctx.locale, "rabbitmq.failedToFetchQueues"),
         });
       }
     }),
@@ -205,7 +206,7 @@ export const queuesRouter = router({
       if (!server || !server.workspace) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Server not found or access denied",
+          message: te(ctx.locale, "rabbitmq.serverNotFoundOrAccessDenied"),
         });
       }
 
@@ -231,7 +232,7 @@ export const queuesRouter = router({
 
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to fetch queue",
+          message: te(ctx.locale, "rabbitmq.failedToFetchQueue"),
         });
       }
     }),
@@ -249,7 +250,7 @@ export const queuesRouter = router({
       if (!server || !server.workspace) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Server not found or access denied",
+          message: te(ctx.locale, "rabbitmq.serverNotFoundOrAccessDenied"),
         });
       }
 
@@ -280,7 +281,7 @@ export const queuesRouter = router({
 
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to fetch queue consumers",
+          message: te(ctx.locale, "rabbitmq.failedToFetchQueueConsumers"),
         });
       }
     }),
@@ -298,7 +299,7 @@ export const queuesRouter = router({
       if (!server || !server.workspace) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Server not found or access denied",
+          message: te(ctx.locale, "rabbitmq.serverNotFoundOrAccessDenied"),
         });
       }
 
@@ -329,7 +330,7 @@ export const queuesRouter = router({
 
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to fetch queue bindings",
+          message: te(ctx.locale, "rabbitmq.failedToFetchQueueBindings"),
         });
       }
     }),
@@ -361,7 +362,7 @@ export const queuesRouter = router({
         if (!server) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Server not found or access denied",
+            message: te(ctx.locale, "rabbitmq.serverNotFoundOrAccessDenied"),
           });
         }
 
@@ -369,7 +370,7 @@ export const queuesRouter = router({
         if (!server.workspaceId) {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: "Server workspace not found",
+            message: te(ctx.locale, "rabbitmq.serverWorkspaceNotFound"),
           });
         }
 
@@ -456,7 +457,7 @@ export const queuesRouter = router({
 
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to create queue",
+          message: te(ctx.locale, "rabbitmq.failedToCreateQueue"),
         });
       }
     }),
@@ -475,7 +476,7 @@ export const queuesRouter = router({
         if (!server) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Server not found or access denied",
+            message: te(ctx.locale, "rabbitmq.serverNotFoundOrAccessDenied"),
           });
         }
 
@@ -502,7 +503,7 @@ export const queuesRouter = router({
 
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to purge queue",
+          message: te(ctx.locale, "rabbitmq.failedToPurgeQueue"),
         });
       }
     }),
@@ -532,7 +533,7 @@ export const queuesRouter = router({
         if (!server) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Server not found or access denied",
+            message: te(ctx.locale, "rabbitmq.serverNotFoundOrAccessDenied"),
           });
         }
 
@@ -604,7 +605,7 @@ export const queuesRouter = router({
 
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to delete queue",
+          message: te(ctx.locale, "rabbitmq.failedToDeleteQueue"),
         });
       }
     }),
@@ -623,7 +624,7 @@ export const queuesRouter = router({
         if (!server) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Server not found or access denied",
+            message: te(ctx.locale, "rabbitmq.serverNotFoundOrAccessDenied"),
           });
         }
 
@@ -666,7 +667,7 @@ export const queuesRouter = router({
 
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to pause queue",
+          message: te(ctx.locale, "rabbitmq.failedToPauseQueue"),
         });
       }
       // Note: Don't disconnect here - keep the connection for resume operations
@@ -688,7 +689,7 @@ export const queuesRouter = router({
         if (!server) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Server not found or access denied",
+            message: te(ctx.locale, "rabbitmq.serverNotFoundOrAccessDenied"),
           });
         }
 
@@ -731,7 +732,7 @@ export const queuesRouter = router({
 
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to resume queue",
+          message: te(ctx.locale, "rabbitmq.failedToResumeQueue"),
         });
       } finally {
         // Cleanup the connection after resume
@@ -762,7 +763,7 @@ export const queuesRouter = router({
       if (!server || !server.workspace) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Server not found or access denied",
+          message: te(ctx.locale, "rabbitmq.serverNotFoundOrAccessDenied"),
         });
       }
 
@@ -770,7 +771,7 @@ export const queuesRouter = router({
       if (!signal) {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Subscription requires an abort signal",
+          message: te(ctx.locale, "rabbitmq.subscriptionRequiresAbortSignal"),
         });
       }
       const sig = signal;
@@ -828,7 +829,7 @@ export const queuesRouter = router({
         if (!server) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Server not found or access denied",
+            message: te(ctx.locale, "rabbitmq.serverNotFoundOrAccessDenied"),
           });
         }
 
@@ -860,7 +861,7 @@ export const queuesRouter = router({
 
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to check pause status",
+          message: te(ctx.locale, "rabbitmq.failedToCheckPauseStatus"),
         });
       } finally {
         if (amqpClient) {

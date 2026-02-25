@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 
 import { AlertCircle, ArrowLeft, Lock } from "lucide-react";
@@ -39,6 +40,7 @@ import { useServers } from "@/hooks/queries/useServer";
 import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 export default function VHostDetailsPage() {
+  const { t } = useTranslation("vhosts");
   const { serverId, vhostName } = useParams<{
     serverId?: string;
     vhostName: string;
@@ -100,7 +102,7 @@ export default function VHostDetailsPage() {
   // Handle form submissions
   const handleSetPermissions = async () => {
     if (!selectedUser || !configureRegexp || !writeRegexp || !readRegexp) {
-      toast.error("Please fill in all permission fields");
+      toast.error(t("requiredFields"));
       return;
     }
     if (!workspace?.id) {
@@ -117,7 +119,7 @@ export default function VHostDetailsPage() {
         write: writeRegexp,
         read: readRegexp,
       });
-      toast.success("Permissions set successfully");
+      toast.success(t("permissionsSet"));
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Failed to set permissions"
@@ -127,7 +129,7 @@ export default function VHostDetailsPage() {
 
   const handleSetLimits = async () => {
     if (!maxConnections && !maxQueues) {
-      toast.error("Please set at least one limit");
+      toast.error(t("setLimitsError"));
       return;
     }
     if (!workspace?.id) {
@@ -159,7 +161,7 @@ export default function VHostDetailsPage() {
         );
       }
       await Promise.all(promises);
-      toast.success("Limits set successfully");
+      toast.success(t("limitsSet"));
       setMaxConnections("");
       setMaxQueues("");
     } catch (error) {
@@ -181,7 +183,7 @@ export default function VHostDetailsPage() {
         vhostName: decodedVHostName,
         username,
       });
-      toast.success("Permissions cleared successfully");
+      toast.success(t("permissionsCleared"));
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Failed to clear permissions"
@@ -199,10 +201,7 @@ export default function VHostDetailsPage() {
             <div className="container mx-auto">
               <Alert>
                 <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                  Access denied. Virtual host management is only available to
-                  administrators.
-                </AlertDescription>
+                <AlertDescription>{t("accessDenied")}</AlertDescription>
               </Alert>
             </div>
           </main>
@@ -220,9 +219,7 @@ export default function VHostDetailsPage() {
             <div className="container mx-auto">
               <Alert>
                 <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                  Please select a server to view virtual host details.
-                </AlertDescription>
+                <AlertDescription>{t("selectServer")}</AlertDescription>
               </Alert>
             </div>
           </main>
@@ -254,8 +251,7 @@ export default function VHostDetailsPage() {
               <Alert>
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
-                  Failed to load virtual host details:{" "}
-                  {(error as Error).message}
+                  {t("failedToLoad")}: {(error as Error).message}
                 </AlertDescription>
               </Alert>
             </div>
@@ -276,7 +272,7 @@ export default function VHostDetailsPage() {
             <div className="container mx-auto">
               <Alert>
                 <AlertCircle className="h-4 w-4" />
-                <AlertDescription>Virtual host not found.</AlertDescription>
+                <AlertDescription>{t("notFound")}</AlertDescription>
               </Alert>
             </div>
           </main>
@@ -305,16 +301,16 @@ export default function VHostDetailsPage() {
                 </Button>
                 <div className="flex items-center gap-2">
                   <h1 className="title-page">
-                    Virtual host / {decodedVHostName}
+                    {t("virtualHostPrefix", { name: decodedVHostName })}
                   </h1>
                   {vhost.protected_from_deletion && (
                     <Badge
                       variant="secondary"
                       className="flex items-center gap-1"
-                      title="This vhost is protected from deletion"
+                      title={t("protectedTooltip")}
                     >
                       <Lock className="w-3 h-3" />
-                      Protected
+                      {t("protected")}
                     </Badge>
                   )}
                 </div>
@@ -325,13 +321,13 @@ export default function VHostDetailsPage() {
             {/* Message stats */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Virtual host stats</CardTitle>
+                <CardTitle className="text-lg">{t("stats")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-3 gap-8">
                   <div>
                     <div className="text-sm text-muted-foreground mb-1">
-                      Queues
+                      {t("vhostQueues")}
                     </div>
                     <div className="text-lg font-medium">
                       {vhost.stats?.queueCount || 0}
@@ -339,7 +335,7 @@ export default function VHostDetailsPage() {
                   </div>
                   <div>
                     <div className="text-sm text-muted-foreground mb-1">
-                      Exchanges
+                      {t("vhostExchanges")}
                     </div>
                     <div className="text-lg font-medium">
                       {vhost.stats?.exchangeCount || 0}
@@ -347,7 +343,7 @@ export default function VHostDetailsPage() {
                   </div>
                   <div>
                     <div className="text-sm text-muted-foreground mb-1">
-                      Total Messages
+                      {t("totalMessages")}
                     </div>
                     <div className="text-lg font-medium">
                       {vhost.stats?.totalMessages || 0}
@@ -357,13 +353,13 @@ export default function VHostDetailsPage() {
                 {vhost.message_stats && (
                   <div className="mt-6 pt-6 border-t">
                     <h4 className="text-sm font-medium mb-4">
-                      Message Statistics
+                      {t("messageStatistics")}
                     </h4>
                     <div className="grid grid-cols-3 gap-8">
                       {vhost.message_stats.publish !== undefined && (
                         <div>
                           <div className="text-sm text-muted-foreground mb-1">
-                            Published
+                            {t("published")}
                           </div>
                           <div className="text-lg font-medium">
                             {vhost.message_stats.publish.toLocaleString()}
@@ -381,7 +377,7 @@ export default function VHostDetailsPage() {
                       {vhost.message_stats.deliver !== undefined && (
                         <div>
                           <div className="text-sm text-muted-foreground mb-1">
-                            Delivered
+                            {t("delivered")}
                           </div>
                           <div className="text-lg font-medium">
                             {vhost.message_stats.deliver.toLocaleString()}
@@ -399,7 +395,7 @@ export default function VHostDetailsPage() {
                       {vhost.message_stats.ack !== undefined && (
                         <div>
                           <div className="text-sm text-muted-foreground mb-1">
-                            Acknowledged
+                            {t("acknowledged")}
                           </div>
                           <div className="text-lg font-medium">
                             {vhost.message_stats.ack.toLocaleString()}
@@ -421,13 +417,13 @@ export default function VHostDetailsPage() {
             {/* Limits */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Limits</CardTitle>
+                <CardTitle className="text-lg">{t("limits")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 gap-8">
                   <div>
                     <div className="text-sm text-muted-foreground mb-1">
-                      Max connections
+                      {t("maxConnections")}
                     </div>
                     <div className="text-lg font-medium">
                       {vhost.limits?.[0]?.value?.["max-connections"] || "-"}
@@ -435,7 +431,7 @@ export default function VHostDetailsPage() {
                   </div>
                   <div>
                     <div className="text-sm text-muted-foreground mb-1">
-                      Max queues
+                      {t("maxQueues")}
                     </div>
                     <div className="text-lg font-medium">
                       {vhost.limits?.[0]?.value?.["max-queues"] || "-"}
@@ -449,7 +445,7 @@ export default function VHostDetailsPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg">
-                  Permissions{" "}
+                  {t("permissions")}{" "}
                   <Badge variant="secondary" className="ml-2">
                     {vhostData?.vhost?.permissions?.length || 0}
                   </Badge>
@@ -460,11 +456,13 @@ export default function VHostDetailsPage() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>User</TableHead>
-                        <TableHead>Configure regexp</TableHead>
-                        <TableHead>Write regexp</TableHead>
-                        <TableHead>Read regexp</TableHead>
-                        <TableHead className="w-[100px]">Actions</TableHead>
+                        <TableHead>{t("user")}</TableHead>
+                        <TableHead>{t("configureRegexp")}</TableHead>
+                        <TableHead>{t("writeRegexp")}</TableHead>
+                        <TableHead>{t("readRegexp")}</TableHead>
+                        <TableHead className="w-[100px]">
+                          {t("common:actions")}
+                        </TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -487,8 +485,8 @@ export default function VHostDetailsPage() {
                                 disabled={clearPermissionsMutation.isPending}
                               >
                                 {clearPermissionsMutation.isPending
-                                  ? "Clearing..."
-                                  : "CLEAR"}
+                                  ? t("clearing")
+                                  : t("clear")}
                               </Button>
                             </TableCell>
                           </TableRow>
@@ -499,7 +497,7 @@ export default function VHostDetailsPage() {
                             colSpan={5}
                             className="text-center text-muted-foreground"
                           >
-                            No permissions set for this virtual host
+                            {t("noPermissions")}
                           </TableCell>
                         </TableRow>
                       )}
@@ -514,13 +512,15 @@ export default function VHostDetailsPage() {
               {/* Set permission */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">Set permission</CardTitle>
+                  <CardTitle className="text-lg">
+                    {t("setPermission")}
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 gap-4">
                     <div>
                       <label className="block text-sm font-medium mb-2">
-                        User
+                        {t("user")}
                       </label>
                       <select
                         className="w-full p-2 border rounded-md bg-background"
@@ -536,7 +536,7 @@ export default function VHostDetailsPage() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-2">
-                        Configure regexp
+                        {t("configureRegexp")}
                       </label>
                       <Input
                         value={configureRegexp}
@@ -546,7 +546,7 @@ export default function VHostDetailsPage() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-2">
-                        Write regexp
+                        {t("writeRegexp")}
                       </label>
                       <Input
                         value={writeRegexp}
@@ -556,7 +556,7 @@ export default function VHostDetailsPage() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-2">
-                        Read regexp
+                        {t("readRegexp")}
                       </label>
                       <Input
                         value={readRegexp}
@@ -571,8 +571,8 @@ export default function VHostDetailsPage() {
                         disabled={setPermissionsMutation.isPending}
                       >
                         {setPermissionsMutation.isPending
-                          ? "Setting..."
-                          : "Set permission"}
+                          ? t("setting")
+                          : t("setPermission")}
                       </Button>
                     </div>
                   </div>
@@ -582,32 +582,32 @@ export default function VHostDetailsPage() {
               {/* Set limits */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">Set limits</CardTitle>
+                  <CardTitle className="text-lg">{t("setLimits")}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 gap-4">
                     <div>
                       <label className="block text-sm font-medium mb-2">
-                        Max connections
+                        {t("maxConnections")}
                       </label>
                       <Input
                         type="number"
                         min="0"
                         value={maxConnections}
                         onChange={(e) => setMaxConnections(e.target.value)}
-                        placeholder="Leave empty for no limit"
+                        placeholder={t("leaveEmptyForNoLimit")}
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-2">
-                        Max queues
+                        {t("maxQueues")}
                       </label>
                       <Input
                         type="number"
                         min="0"
                         value={maxQueues}
                         onChange={(e) => setMaxQueues(e.target.value)}
-                        placeholder="Leave empty for no limit"
+                        placeholder={t("leaveEmptyForNoLimit")}
                       />
                     </div>
                     <div>
@@ -617,8 +617,8 @@ export default function VHostDetailsPage() {
                         disabled={setLimitsMutation.isPending}
                       >
                         {setLimitsMutation.isPending
-                          ? "Setting..."
-                          : "Set limits"}
+                          ? t("setting")
+                          : t("setLimits")}
                       </Button>
                     </div>
                   </div>
@@ -630,7 +630,7 @@ export default function VHostDetailsPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg text-red-600">
-                  Danger zone
+                  {t("dangerZone")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -639,11 +639,11 @@ export default function VHostDetailsPage() {
                   onClick={() => setShowDeleteModal(true)}
                   disabled={vhost.name === "/"}
                 >
-                  Delete vhost
+                  {t("deleteVhost")}
                 </Button>
                 {vhost.name === "/" && (
                   <p className="text-sm text-muted-foreground mt-2">
-                    Cannot delete the default virtual host
+                    {t("cannotDeleteDefault")}
                   </p>
                 )}
               </CardContent>
@@ -675,7 +675,7 @@ export default function VHostDetailsPage() {
                       workspaceId: workspace.id,
                       vhostName: decodedVHostName,
                     });
-                    toast.success("Virtual host deleted successfully");
+                    toast.success(t("deleteSuccess"));
                     navigate("/vhosts");
                   } catch (error) {
                     toast.error(

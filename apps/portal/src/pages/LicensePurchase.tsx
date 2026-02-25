@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Check } from "lucide-react";
 import { toast } from "sonner";
@@ -19,6 +20,7 @@ const LicensePurchase = () => {
     "DEVELOPER"
   );
   const [isLoading, setIsLoading] = useState(false);
+  const { t } = useTranslation("portal");
 
   const purchaseLicenseMutation = trpc.license.purchaseLicense.useMutation({
     onSuccess: (data) => {
@@ -26,7 +28,7 @@ const LicensePurchase = () => {
       window.location.href = data.checkoutUrl;
     },
     onError: (error) => {
-      toast.error(error.message || "Failed to initiate purchase");
+      toast.error(error.message || t("licensePurchase.purchaseFailed"));
       setIsLoading(false);
     },
   });
@@ -40,7 +42,9 @@ const LicensePurchase = () => {
       });
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to initiate purchase"
+        error instanceof Error
+          ? error.message
+          : t("licensePurchase.purchaseFailed")
       );
       setIsLoading(false);
     }
@@ -49,24 +53,24 @@ const LicensePurchase = () => {
   const plans = [
     {
       tier: "DEVELOPER" as const,
-      name: "Developer",
+      name: t("licensePurchase.plans.developer.name"),
       annualPrice: "$348",
       features: [
-        "Up to 5 servers",
-        "Queue management",
-        "Basic alerts",
-        "Email support",
+        t("licensePurchase.plans.developer.features.servers"),
+        t("licensePurchase.plans.developer.features.queueManagement"),
+        t("licensePurchase.plans.developer.features.basicAlerts"),
+        t("licensePurchase.plans.developer.features.emailSupport"),
       ],
     },
     {
       tier: "ENTERPRISE" as const,
-      name: "Enterprise",
+      name: t("licensePurchase.plans.enterprise.name"),
       annualPrice: "$1,188",
       features: [
-        "Unlimited servers",
-        "Advanced monitoring",
-        "Priority support",
-        "Custom integrations",
+        t("licensePurchase.plans.enterprise.features.unlimitedServers"),
+        t("licensePurchase.plans.enterprise.features.advancedMonitoring"),
+        t("licensePurchase.plans.enterprise.features.prioritySupport"),
+        t("licensePurchase.plans.enterprise.features.customIntegrations"),
       ],
     },
   ];
@@ -74,13 +78,12 @@ const LicensePurchase = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Purchase License</h1>
+        <h1 className="text-3xl font-bold">{t("licensePurchase.title")}</h1>
         <p className="text-muted-foreground mt-2">
-          Choose a license tier for your self-hosted Qarote deployment
+          {t("licensePurchase.description")}
         </p>
         <p className="text-sm text-muted-foreground mt-1">
-          Annual licensing for self-hosted deployments (365-day validity with
-          automatic renewal)
+          {t("licensePurchase.annualLicensing")}
         </p>
       </div>
 
@@ -99,7 +102,9 @@ const LicensePurchase = () => {
               <CardTitle>{plan.name}</CardTitle>
               <CardDescription>
                 <span className="text-2xl font-bold">{plan.annualPrice}</span>
-                <span className="text-sm text-muted-foreground">/year</span>
+                <span className="text-sm text-muted-foreground">
+                  {t("licensePurchase.perYear")}
+                </span>
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -123,7 +128,9 @@ const LicensePurchase = () => {
           size="lg"
           className="px-8"
         >
-          {isLoading ? "Processing..." : "Purchase License"}
+          {isLoading
+            ? t("licensePurchase.processing")
+            : t("licensePurchase.purchaseLicense")}
         </Button>
       </div>
     </div>

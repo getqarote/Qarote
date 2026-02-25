@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { logger } from "@/lib/logger";
@@ -30,6 +31,7 @@ interface ExtendedStripeSubscription {
 }
 
 const Billing: React.FC = () => {
+  const { t } = useTranslation("billing");
   const { user } = useUser();
   const { workspace } = useWorkspace();
   const { handleUpgrade } = usePlanUpgrade();
@@ -86,7 +88,7 @@ const Billing: React.FC = () => {
   }) => {
     try {
       if (!workspace?.id) {
-        throw new Error("Workspace ID is required");
+        throw new Error(t("error.workspaceIdRequired"));
       }
       return await cancelSubscriptionMutation.mutateAsync(data);
     } catch (error) {
@@ -108,7 +110,7 @@ const Billing: React.FC = () => {
   const handleOpenBillingPortal = async () => {
     try {
       if (!workspace?.id) {
-        throw new Error("Workspace ID is required");
+        throw new Error(t("error.workspaceIdRequired"));
       }
       createBillingPortalMutation.mutate();
     } catch (error) {
@@ -129,7 +131,7 @@ const Billing: React.FC = () => {
   const handleRenewSubscription = async () => {
     try {
       if (!workspace?.id) {
-        throw new Error("Workspace ID is required");
+        throw new Error(t("error.workspaceIdRequired"));
       }
       // Determine the plan to renew based on subscription history
       const planToRenew = billingData?.subscription?.plan || UserPlan.DEVELOPER;

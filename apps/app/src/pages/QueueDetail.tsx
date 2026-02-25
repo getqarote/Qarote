@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 
 import { logger } from "@/lib/logger";
@@ -43,6 +44,7 @@ import { useToast } from "@/hooks/ui/useToast";
 import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 const QueueDetail = () => {
+  const { t } = useTranslation("queues");
   const { queueName } = useParams<{ queueName: string }>();
   const navigate = useNavigate();
   const { selectedServerId } = useServerContext();
@@ -92,8 +94,8 @@ const QueueDetail = () => {
       });
 
       toast({
-        title: "Success",
-        description: `Queue "${queueName}" has been deleted successfully`,
+        title: t("common:success"),
+        description: t("deleteSuccess", { queueName }),
       });
 
       setDeleteDialogOpen(false);
@@ -101,9 +103,8 @@ const QueueDetail = () => {
     } catch (error) {
       logger.error("Failed to delete queue:", error);
       toast({
-        title: "Error",
-        description:
-          error instanceof Error ? error.message : "Failed to delete queue",
+        title: t("common:error"),
+        description: error instanceof Error ? error.message : t("deleteError"),
         variant: "destructive",
       });
     }
@@ -121,8 +122,8 @@ const QueueDetail = () => {
           <main className="main-content-scrollable">
             <div className="content-container-large">
               <NotFound
-                title="Queue Not Found"
-                description="Please select a server and queue to view details."
+                title={t("queueNotFound")}
+                description={t("queueNotFoundDesc")}
                 onNavigateBack={handleNavigateBack}
               />
             </div>
@@ -198,8 +199,8 @@ const QueueDetail = () => {
                 </>
               ) : (
                 <NotFound
-                  title="Queue Not Found"
-                  description={`The queue "${queueName}" could not be found.`}
+                  title={t("queueNotFound")}
+                  description={t("notFoundMessage", { queueName })}
                   onNavigateBack={handleNavigateBack}
                 />
               )}
@@ -211,11 +212,9 @@ const QueueDetail = () => {
         <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Delete Queue</DialogTitle>
+              <DialogTitle>{t("deleteTitle")}</DialogTitle>
               <DialogDescription>
-                Are you sure you want to delete the queue "{queueName}"? This
-                action cannot be undone and will permanently remove the queue
-                and all its messages.
+                {t("deleteDescription", { queueName })}
               </DialogDescription>
             </DialogHeader>
             <DialogFooter>
@@ -224,14 +223,16 @@ const QueueDetail = () => {
                 onClick={() => setDeleteDialogOpen(false)}
                 disabled={deleteQueueMutation.isPending}
               >
-                Cancel
+                {t("common:cancel")}
               </Button>
               <Button
                 variant="destructive"
                 onClick={handleDeleteQueue}
                 disabled={deleteQueueMutation.isPending}
               >
-                {deleteQueueMutation.isPending ? "Deleting..." : "Delete Queue"}
+                {deleteQueueMutation.isPending
+                  ? t("deleting")
+                  : t("deleteQueue")}
               </Button>
             </DialogFooter>
           </DialogContent>

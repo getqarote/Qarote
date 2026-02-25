@@ -12,6 +12,7 @@ import LicensePaymentFailedEmail from "./templates/license-payment-failed-email"
 import LicenseRenewalEmail from "./templates/license-renewal-email";
 
 import { UserPlan } from "@/generated/prisma/client";
+import { tEmail } from "@/i18n";
 
 interface SendLicenseDeliveryEmailParams {
   to: string;
@@ -20,6 +21,7 @@ interface SendLicenseDeliveryEmailParams {
   tier: UserPlan;
   expiresAt: Date;
   downloadUrl: string;
+  locale?: string;
 }
 
 interface SendLicenseRenewalEmailParams {
@@ -30,6 +32,7 @@ interface SendLicenseRenewalEmailParams {
   previousExpiresAt: Date;
   newExpiresAt: Date;
   downloadUrl: string;
+  locale?: string;
 }
 
 interface SendLicenseExpirationReminderEmailParams {
@@ -40,6 +43,7 @@ interface SendLicenseExpirationReminderEmailParams {
   daysUntilExpiration: number;
   expiresAt: Date;
   renewalUrl: string;
+  locale?: string;
 }
 
 interface SendLicenseExpiredEmailParams {
@@ -49,6 +53,7 @@ interface SendLicenseExpiredEmailParams {
   tier: UserPlan;
   expiredAt: Date;
   renewalUrl: string;
+  locale?: string;
 }
 
 interface SendLicensePaymentFailedEmailParams {
@@ -59,6 +64,7 @@ interface SendLicensePaymentFailedEmailParams {
   gracePeriodDays: number;
   isInGracePeriod: boolean;
   willDeactivate: boolean;
+  locale?: string;
 }
 
 interface SendLicenseCancellationEmailParams {
@@ -68,6 +74,7 @@ interface SendLicenseCancellationEmailParams {
   tier: UserPlan;
   expiresAt: Date;
   gracePeriodDays: number;
+  locale?: string;
 }
 
 /**
@@ -80,7 +87,15 @@ export class LicenseEmailService {
   static async sendLicenseDeliveryEmail(
     params: SendLicenseDeliveryEmailParams
   ): Promise<EmailResult> {
-    const { to, userName, licenseKey, tier, expiresAt, downloadUrl } = params;
+    const {
+      to,
+      userName,
+      licenseKey,
+      tier,
+      expiresAt,
+      downloadUrl,
+      locale = "en",
+    } = params;
 
     const { portalFrontendUrl } = CoreEmailService.getConfig();
     const portalUrl = portalFrontendUrl;
@@ -99,7 +114,7 @@ export class LicenseEmailService {
 
     return CoreEmailService.sendEmail({
       to,
-      subject: "Your Qarote License is Ready!",
+      subject: tEmail(locale, "subjects.licenseReady"),
       template,
       emailType: "license-delivery",
       context: {
@@ -124,6 +139,7 @@ export class LicenseEmailService {
       previousExpiresAt,
       newExpiresAt,
       downloadUrl,
+      locale = "en",
     } = params;
 
     const { portalFrontendUrl } = CoreEmailService.getConfig();
@@ -144,7 +160,7 @@ export class LicenseEmailService {
 
     return CoreEmailService.sendEmail({
       to,
-      subject: "Your Qarote License Has Been Renewed",
+      subject: tEmail(locale, "subjects.licenseRenewed"),
       template,
       emailType: "license-renewal",
       context: {
@@ -170,6 +186,7 @@ export class LicenseEmailService {
       daysUntilExpiration,
       expiresAt,
       renewalUrl,
+      locale = "en",
     } = params;
 
     const { portalFrontendUrl } = CoreEmailService.getConfig();
@@ -190,7 +207,9 @@ export class LicenseEmailService {
 
     return CoreEmailService.sendEmail({
       to,
-      subject: `Your Qarote License Expires in ${daysUntilExpiration} Days`,
+      subject: tEmail(locale, "subjects.licenseExpiresSoon", {
+        daysUntilExpiration,
+      }),
       template,
       emailType: "license-expiration-reminder",
       context: {
@@ -208,7 +227,15 @@ export class LicenseEmailService {
   static async sendLicenseExpiredEmail(
     params: SendLicenseExpiredEmailParams
   ): Promise<EmailResult> {
-    const { to, userName, licenseKey, tier, expiredAt, renewalUrl } = params;
+    const {
+      to,
+      userName,
+      licenseKey,
+      tier,
+      expiredAt,
+      renewalUrl,
+      locale = "en",
+    } = params;
 
     const { portalFrontendUrl } = CoreEmailService.getConfig();
     const portalUrl = portalFrontendUrl;
@@ -227,7 +254,7 @@ export class LicenseEmailService {
 
     return CoreEmailService.sendEmail({
       to,
-      subject: "Your Qarote License Has Expired",
+      subject: tEmail(locale, "subjects.licenseExpired"),
       template,
       emailType: "license-expired",
       context: {
@@ -252,6 +279,7 @@ export class LicenseEmailService {
       gracePeriodDays,
       isInGracePeriod,
       willDeactivate,
+      locale = "en",
     } = params;
 
     const { portalFrontendUrl } = CoreEmailService.getConfig();
@@ -272,7 +300,7 @@ export class LicenseEmailService {
 
     return CoreEmailService.sendEmail({
       to,
-      subject: "Action Required: License Payment Failed",
+      subject: tEmail(locale, "subjects.licensePaymentFailed"),
       template,
       emailType: "license-payment-failed",
       context: {
@@ -291,8 +319,15 @@ export class LicenseEmailService {
   static async sendLicenseCancellationEmail(
     params: SendLicenseCancellationEmailParams
   ): Promise<EmailResult> {
-    const { to, userName, licenseKey, tier, expiresAt, gracePeriodDays } =
-      params;
+    const {
+      to,
+      userName,
+      licenseKey,
+      tier,
+      expiresAt,
+      gracePeriodDays,
+      locale = "en",
+    } = params;
 
     const { portalFrontendUrl } = CoreEmailService.getConfig();
     const portalUrl = portalFrontendUrl;
@@ -311,7 +346,7 @@ export class LicenseEmailService {
 
     return CoreEmailService.sendEmail({
       to,
-      subject: "Your Qarote License Has Been Cancelled",
+      subject: tEmail(locale, "subjects.licenseCancelled"),
       template,
       emailType: "license-cancellation",
       context: {

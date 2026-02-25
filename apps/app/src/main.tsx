@@ -4,6 +4,8 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 
+import "@/i18n";
+
 import { initializeGA } from "@/lib/ga";
 import { logger } from "@/lib/logger";
 import { initSentry } from "@/lib/sentry";

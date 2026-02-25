@@ -1,0 +1,185 @@
+{
+  "subjects": {
+    "invitedToWorkspace": "You're invited to join {{workspaceName}} on Qarote",
+    "welcome": "Welcome to Qarote, {{name}}!",
+    "verifyEmailSignup": "Please verify your email address - Qarote",
+    "verifyEmailChange": "Verify your new email address - Qarote",
+    "resetPassword": "Reset your password - Qarote",
+    "upgradePlanConfirmed": "Welcome to {{plan}} Plan - Upgrade Confirmed!",
+    "planRenewed": "Welcome Back to Qarote - {{plan}} Plan Renewed!",
+    "trialEndsSoon": "Your {{plan}} trial ends soon - {{usageText}}",
+    "completePayment": "Action required: Complete your payment for {{workspaceName}}",
+    "usageReport": "{{workspaceName}} usage report & upcoming invoice",
+    "paymentConfirmed": "Payment Confirmed - {{amount}}",
+    "paymentFailed": "Payment Failed - Action Required",
+    "criticalAlerts": "{{criticalCount}} Critical Alert(s) on {{serverName}}",
+    "warningAlerts": "{{warningCount}} Warning Alert(s) on {{serverName}}",
+    "updateAvailable": "Qarote {{latestVersion}} is available - Update your instance",
+    "licenseReady": "Your Qarote License is Ready!",
+    "licenseRenewed": "Your Qarote License Has Been Renewed",
+    "licenseExpiresSoon": "Your Qarote License Expires in {{daysUntilExpiration}} Days",
+    "licenseExpired": "Your Qarote License Has Expired",
+    "licensePaymentFailed": "Action Required: License Payment Failed",
+    "licenseCancelled": "Your Qarote License Has Been Cancelled"
+  },
+  "common": {
+    "greeting": "Hi {{name}},",
+    "greetingGeneric": "Hello,",
+    "happyMonitoring": "Happy monitoring! 🐰",
+    "signature": "The Qarote Team",
+    "supportTeam": "support team",
+    "ifButtonDoesntWork": "If the button above doesn't work, you can also copy and paste this link into your browser:",
+    "automatedNotification": "This is an automated notification from Qarote."
+  },
+  "verification": {
+    "titleSignup": "Please verify your email address",
+    "titleEmailChange": "Verify your new email address",
+    "previewSignup": "Verify your email to get started with Qarote",
+    "previewEmailChange": "Confirm your new email address",
+    "bodySignup": "Thank you for signing up for Qarote! To complete your registration and access your account, please verify your email address by clicking the button below.",
+    "bodyEmailChange": "You've requested to change your email address on Qarote. To confirm this change, please verify your new email address by clicking the button below.",
+    "emailLabel": "Email:",
+    "verifyButton": "Verify Email Address",
+    "expiryWarning": "This verification link will expire in {{expiryHours}} hours. If you didn't request this {{requestType}}, you can safely ignore this email.",
+    "requestTypeAccount": "account",
+    "requestTypeEmailChange": "email change",
+    "havingTrouble": "If you're having trouble, feel free to contact our"
+  },
+  "welcome": {
+    "title": "Welcome to Qarote!",
+    "bodyWithWorkspace": "Welcome to Qarote! Your workspace <strong>{{workspaceName}}</strong> has been successfully set up on the <strong>{{planName}}</strong> plan.",
+    "bodyWithoutWorkspace": "Welcome to Qarote! Your account has been successfully created on the <strong>{{planName}}</strong> plan. Get started by creating your first workspace!",
+    "workspaceExplanation": "A workspace helps you organize your RabbitMQ servers, manage team members, and track your monitoring data. You can create one right away!",
+    "canMonitorNow": "You can now start monitoring your RabbitMQ clusters and managing your message queues with ease.",
+    "canMonitorAfterWorkspace": "Once you create your workspace, you can start monitoring your RabbitMQ clusters and managing your message queues with ease.",
+    "featuresHeadingWithWorkspace": "What you can do now:",
+    "featuresHeadingWithoutWorkspace": "What you can do once you create your workspace:",
+    "featureCreateWorkspace": "🏢 Create your first workspace to get started",
+    "featureAddServer": "🚀 Add your first RabbitMQ server",
+    "featureExploreDashboard": "📊 Explore dashboard and metrics",
+    "featureSetupAlerts": "🔔 Set up alerts for your queues",
+    "featureAdvancedAnalytics": "📈 Access advanced analytics",
+    "featureInviteTeam": "👥 Invite team members to collaborate",
+    "featureMemoryMetrics": "🧠 View detailed memory metrics and optimization tips",
+    "featurePrioritySupport": "🎯 Get priority support and expert insights",
+    "ctaWithWorkspace": "Go to Dashboard",
+    "ctaWithoutWorkspace": "Create Your Workspace",
+    "needHelp": "If you need help getting started, check out our"
+  },
+  "invitation": {
+    "preview": "{{inviterName}} has invited you to join {{workspaceName}} on Qarote",
+    "title": "You're invited to join {{workspaceName}}!",
+    "body": "{{inviterName}} ({{inviterEmail}}) has invited you to join the <strong>{{workspaceName}}</strong> workspace on Qarote.",
+    "aboutQarote": "Qarote is a powerful RabbitMQ monitoring dashboard that helps teams manage their message queues effectively.",
+    "acceptButton": "Accept Invitation",
+    "expiryWarning": "This invitation will expire in 7 days. If you didn't expect this invitation, you can safely ignore this email.",
+    "havingTrouble": "If you're having trouble, feel free to contact our"
+  },
+  "passwordReset": {
+    "title": "Reset your password",
+    "body": "We received a request to reset the password for your Qarote account. Click the button below to create a new password.",
+    "resetButton": "Reset Password",
+    "expiryWarning": "This link will expire in {{expiryHours}} hours. If you didn't request a password reset, you can safely ignore this email.",
+    "securityNote": "For security, this password reset link can only be used once."
+  },
+  "alertNotification": {
+    "titleCritical": "🔴 Critical Alert",
+    "titleWarning": "⚠️ Warning Alert",
+    "previewCritical": "{{count}} critical alert(s) detected on {{serverName}}",
+    "previewWarning": "{{count}} warning alert(s) detected on {{serverName}}",
+    "body": "New alert(s) detected on your RabbitMQ server <strong>{{serverName}}</strong> in workspace <strong>{{workspaceName}}</strong>.",
+    "criticalAttention": "{{count}} Critical Alert(s) Require Immediate Attention",
+    "categoryAlerts": "{{category}} Alerts",
+    "virtualHost": "Virtual Host:",
+    "current": "Current:",
+    "threshold": "Threshold: {{value}}",
+    "recommended": "Recommended:",
+    "affected": "Affected:",
+    "detected": "Detected:",
+    "viewAlerts": "View Alerts in Dashboard",
+    "managePreferences": "You can manage alert thresholds and preferences in your",
+    "alertsSettings": "alerts settings",
+    "automatedNotice": "This is an automated notification from Qarote. You're receiving this because new alerts were detected on your monitored server."
+  },
+  "paymentConfirmation": {
+    "title": "Payment Confirmed",
+    "body": "Your payment of <strong>{{amount}}</strong> has been successfully processed.",
+    "invoiceNumber": "Invoice:",
+    "date": "Date:",
+    "plan": "Plan:",
+    "viewBilling": "View Billing Details"
+  },
+  "paymentActionRequired": {
+    "title": "Payment Action Required",
+    "body": "Your payment for <strong>{{workspaceName}}</strong> requires attention. Please update your payment method to continue using Qarote.",
+    "updatePayment": "Update Payment Method",
+    "warning": "If payment is not completed, your subscription may be interrupted."
+  },
+  "trialEnding": {
+    "title": "Your trial is ending soon",
+    "body": "Your <strong>{{plan}}</strong> trial for <strong>{{workspaceName}}</strong> will end soon. {{usageText}}",
+    "upgradeCta": "Upgrade Now",
+    "keepAccess": "Upgrade now to keep access to all features."
+  },
+  "upgradeConfirmation": {
+    "title": "Welcome to the {{plan}} Plan!",
+    "body": "Your upgrade to the <strong>{{plan}}</strong> plan has been confirmed. Thank you for your support!",
+    "viewDashboard": "Go to Dashboard"
+  },
+  "welcomeBack": {
+    "title": "Welcome Back to Qarote!",
+    "body": "Your <strong>{{plan}}</strong> plan has been renewed. Welcome back!",
+    "viewDashboard": "Go to Dashboard"
+  },
+  "upcomingInvoice": {
+    "title": "Upcoming Invoice",
+    "body": "Your next invoice for <strong>{{workspaceName}}</strong> is coming up.",
+    "amount": "Amount:",
+    "dueDate": "Due Date:",
+    "viewBilling": "View Billing Details"
+  },
+  "updateAvailable": {
+    "title": "A new version of Qarote is available!",
+    "body": "Qarote <strong>{{latestVersion}}</strong> is now available. You are currently running <strong>{{currentVersion}}</strong>.",
+    "viewChangelog": "View Changelog",
+    "updateNow": "Update Now"
+  },
+  "licenseDelivery": {
+    "title": "Your Qarote License is Ready!",
+    "body": "Your <strong>{{tier}}</strong> license for Qarote has been generated and is ready to use.",
+    "licenseKey": "License Key:",
+    "expiresOn": "Expires On:",
+    "downloadLicense": "Download License",
+    "installInstructions": "To install, place the license file in your Qarote installation directory."
+  },
+  "licenseRenewal": {
+    "title": "Your Qarote License Has Been Renewed",
+    "body": "Your <strong>{{tier}}</strong> license has been successfully renewed.",
+    "newExpiry": "New Expiry Date:",
+    "viewLicense": "View License Details"
+  },
+  "licenseExpirationReminder": {
+    "title": "Your Qarote License Expires Soon",
+    "body": "Your <strong>{{tier}}</strong> license will expire in <strong>{{daysUntilExpiration}} days</strong>.",
+    "renewNow": "Renew Now",
+    "warning": "After expiration, Enterprise features will no longer be available."
+  },
+  "licenseExpired": {
+    "title": "Your Qarote License Has Expired",
+    "body": "Your <strong>{{tier}}</strong> license has expired. Enterprise features are no longer available.",
+    "renewNow": "Renew License",
+    "revertNotice": "Your instance has reverted to Community Edition features."
+  },
+  "licensePaymentFailed": {
+    "title": "License Payment Failed",
+    "body": "We were unable to process your license payment. Please update your payment method to maintain your license.",
+    "updatePayment": "Update Payment Method",
+    "warning": "If payment is not resolved, your license may be suspended."
+  },
+  "licenseCancellation": {
+    "title": "Your Qarote License Has Been Cancelled",
+    "body": "Your <strong>{{tier}}</strong> license has been cancelled and will remain active until <strong>{{endDate}}</strong>.",
+    "reactivate": "Reactivate License",
+    "notice": "After this date, your instance will revert to Community Edition features."
+  }
+}
