@@ -14,7 +14,7 @@ export class SignInPage {
     this.page = page;
     this.emailInput = page.getByPlaceholder("Enter your email");
     this.passwordInput = page.getByPlaceholder("Enter your password");
-    this.signInButton = page.getByRole("button", { name: "Sign In", exact: true });
+    this.signInButton = page.getByRole("button", { name: "Sign in", exact: true });
     this.signUpLink = page.getByRole("link", { name: /create a new account/i });
     this.forgotPasswordLink = page.getByRole("link", {
       name: /forgot your password/i,
