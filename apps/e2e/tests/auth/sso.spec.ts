@@ -4,6 +4,11 @@ test.describe("SSO Visibility @p2", () => {
   test("should not show SSO button when SSO is disabled @community", async ({
     page,
   }) => {
+    test.skip(
+      process.env.DEPLOYMENT_MODE === "enterprise",
+      "SSO is enabled in enterprise mode"
+    );
+
     await page.goto("/auth/sign-in");
     await page.waitForLoadState("domcontentloaded");
 
@@ -32,6 +37,11 @@ test.describe("SSO Visibility @p2", () => {
   test("should not show SSO on sign-up when disabled @community", async ({
     page,
   }) => {
+    test.skip(
+      process.env.DEPLOYMENT_MODE === "enterprise",
+      "SSO is enabled in enterprise mode"
+    );
+
     await page.goto("/auth/sign-up");
     await page.waitForLoadState("domcontentloaded");
 

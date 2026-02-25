@@ -29,7 +29,7 @@ async function globalSetup() {
 
     // 2. Run migrations
     const apiDir = path.resolve(import.meta.dirname, "../api");
-    execSync("npx prisma migrate deploy", {
+    execSync("pnpm exec prisma migrate deploy", {
       cwd: apiDir,
       env: { ...process.env, DATABASE_URL },
       stdio: "pipe",
@@ -165,13 +165,6 @@ async function seedBaseData(prisma: InstanceType<any>) {
       role: "READONLY",
     },
   });
-
-  // Store credentials for fixtures (via env vars passed through process)
-  process.env.E2E_ADMIN_EMAIL = "admin@e2e-test.local";
-  process.env.E2E_ADMIN_PASSWORD = "TestPassword123!";
-  process.env.E2E_READONLY_EMAIL = "readonly@e2e-test.local";
-  process.env.E2E_READONLY_PASSWORD = "TestPassword123!";
-  process.env.E2E_WORKSPACE_ID = workspace.id;
 }
 
 async function loginViaApi(
