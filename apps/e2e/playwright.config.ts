@@ -1,11 +1,12 @@
+import path from "node:path";
+
 import { defineConfig, devices } from "@playwright/test";
 import dotenv from "dotenv";
-import path from "node:path";
 
 dotenv.config({ path: path.resolve(import.meta.dirname, ".env.test") });
 
 const API_PORT = Number(process.env.PORT) || 3001;
-const APP_PORT = 8081;
+const APP_PORT = Number(process.env.APP_PORT) || 8081;
 const BASE_URL = `http://localhost:${APP_PORT}`;
 const API_URL = process.env.API_URL || `http://localhost:${API_PORT}`;
 

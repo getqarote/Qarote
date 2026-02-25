@@ -12,9 +12,12 @@ test.describe("Invitation Flow @p1", () => {
     const admin = await prisma.user.findUnique({
       where: { email: "admin@e2e-test.local" },
     });
+    expect(admin, "Seeded admin user not found — did global-setup run?").toBeTruthy();
+
     const workspace = await prisma.workspace.findFirst({
       where: { ownerId: admin!.id },
     });
+    expect(workspace, "Seeded workspace not found — did global-setup run?").toBeTruthy();
 
     const inviteToken = `e2e-invite-${Date.now()}`;
     const invitation = await prisma.invitation.create({

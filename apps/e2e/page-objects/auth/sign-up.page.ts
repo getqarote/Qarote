@@ -18,7 +18,7 @@ export class SignUpPage {
     this.emailInput = page.getByRole("textbox", { name: /email/i });
     this.passwordInput = page.getByPlaceholder("Create a password");
     this.confirmPasswordInput = page.getByPlaceholder("Confirm your password");
-    this.acceptTermsCheckbox = page.getByRole("checkbox");
+    this.acceptTermsCheckbox = page.getByRole("checkbox", { name: /terms|privacy|agree/i });
     this.createAccountButton = page.getByRole("button", {
       name: /create account/i,
     });

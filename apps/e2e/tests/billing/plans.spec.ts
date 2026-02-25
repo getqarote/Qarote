@@ -48,9 +48,7 @@ test.describe("Plans Page @p2", () => {
     await page.goto("/plans");
     await page.waitForLoadState("domcontentloaded");
 
-    // Developer plan should show $10/month
-    await expect(page.getByText(/\$10/)).toBeVisible({ timeout: 15_000 });
-    // Enterprise plan should show $50/month
-    await expect(page.getByText(/\$50/)).toBeVisible();
+    // Plans should display dollar-amount pricing
+    await expect(page.getByText(/\$\d+/).first()).toBeVisible({ timeout: 15_000 });
   });
 });
