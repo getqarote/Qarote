@@ -5,7 +5,7 @@ test.describe("SSO Visibility @p2", () => {
     page,
   }) => {
     await page.goto("/auth/sign-in");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // SSO button should not be visible in community mode (SSO disabled by default)
     await expect(
@@ -18,7 +18,7 @@ test.describe("SSO Visibility @p2", () => {
   }) => {
     // This test only passes when SSO_ENABLED=true is configured
     await page.goto("/auth/sign-in");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // In enterprise mode with SSO enabled, the button should be visible
     // The button text comes from SSO_BUTTON_LABEL config (default: "Sign in with SSO")
@@ -32,7 +32,7 @@ test.describe("SSO Visibility @p2", () => {
     page,
   }) => {
     await page.goto("/auth/sign-up");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     await expect(
       page.getByRole("button", { name: /sso/i })

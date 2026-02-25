@@ -1,14 +1,8 @@
+import fs from "node:fs";
+import path from "node:path";
 import { type BrowserContext, type Page, test as base } from "@playwright/test";
 
-const ADMIN_CREDS = {
-  email: "admin@e2e-test.local",
-  password: "TestPassword123!",
-};
-
-const READONLY_CREDS = {
-  email: "readonly@e2e-test.local",
-  password: "TestPassword123!",
-};
+const AUTH_TOKENS_FILE = path.resolve(import.meta.dirname, "../.auth-tokens.json");
 
 type AuthFixtures = {
   adminPage: Page;
@@ -16,26 +10,17 @@ type AuthFixtures = {
 };
 
 /**
- * Call the login tRPC endpoint directly and return the JWT + user object.
- * This bypasses the UI login flow for speed.
+ * Read pre-acquired auth tokens from the file written by global-setup.
+ * This avoids hitting the login API rate limiter across workers.
  */
-async function loginViaApi(
-  apiUrl: string,
-  email: string,
-  password: string
-): Promise<{ token: string; user: Record<string, unknown> }> {
-  const response = await fetch(`${apiUrl}/trpc/auth.session.login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ json: { email, password } }),
-  });
-
-  if (!response.ok) {
-    throw new Error(`Login failed for ${email}: ${response.status}`);
+function getAuthToken(email: string): { token: string; user: Record<string, unknown> } {
+  const raw = fs.readFileSync(AUTH_TOKENS_FILE, "utf-8");
+  const tokens = JSON.parse(raw);
+  const entry = tokens[email];
+  if (!entry) {
+    throw new Error(`No cached auth token for ${email}. Did global-setup run?`);
   }
-
-  const data = await response.json();
-  return data.result.data.json;
+  return entry;
 }
 
 /**
@@ -44,10 +29,9 @@ async function loginViaApi(
  */
 async function createAuthenticatedPage(
   context: BrowserContext,
-  apiUrl: string,
-  creds: { email: string; password: string }
+  email: string
 ): Promise<Page> {
-  const { token, user } = await loginViaApi(apiUrl, creds.email, creds.password);
+  const { token, user } = getAuthToken(email);
 
   const page = await context.newPage();
 
@@ -65,21 +49,15 @@ async function createAuthenticatedPage(
 
 export const test = base.extend<AuthFixtures>({
   adminPage: async ({ browser }, use) => {
-    const apiUrl = process.env.API_URL || "http://localhost:3001";
     const context = await browser.newContext();
-    const page = await createAuthenticatedPage(context, apiUrl, ADMIN_CREDS);
+    const page = await createAuthenticatedPage(context, "admin@e2e-test.local");
     await use(page);
     await context.close();
   },
 
   readonlyPage: async ({ browser }, use) => {
-    const apiUrl = process.env.API_URL || "http://localhost:3001";
     const context = await browser.newContext();
-    const page = await createAuthenticatedPage(
-      context,
-      apiUrl,
-      READONLY_CREDS
-    );
+    const page = await createAuthenticatedPage(context, "readonly@e2e-test.local");
     await use(page);
     await context.close();
   },

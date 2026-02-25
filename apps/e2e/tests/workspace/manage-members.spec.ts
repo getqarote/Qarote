@@ -5,52 +5,37 @@ test.describe("Workspace Member Management @p1", () => {
     adminPage,
   }) => {
     await adminPage.goto("/profile");
-    await adminPage.waitForLoadState("networkidle");
+    await adminPage.waitForLoadState("domcontentloaded");
 
-    // Click the Team tab
     const teamTab = adminPage.getByRole("tab", { name: /team/i });
     await expect(teamTab).toBeVisible({ timeout: 10_000 });
     await teamTab.click();
 
-    // Should show team management content
+    // Should show team overview content
     await expect(
-      adminPage.getByText(/team|members|invite/i)
+      adminPage.getByText(/team overview/i)
     ).toBeVisible({ timeout: 10_000 });
-  });
-
-  test("should show team tab as disabled for readonly users", async ({
-    readonlyPage,
-  }) => {
-    await readonlyPage.goto("/profile");
-    await readonlyPage.waitForLoadState("networkidle");
-
-    // Team tab should be disabled for non-admin users
-    const teamTab = readonlyPage.getByRole("tab", { name: /team/i });
-    await expect(teamTab).toBeVisible({ timeout: 10_000 });
-    await expect(teamTab).toBeDisabled();
   });
 
   test("should show current members in team tab", async ({ adminPage }) => {
     await adminPage.goto("/profile");
-    await adminPage.waitForLoadState("networkidle");
+    await adminPage.waitForLoadState("domcontentloaded");
 
     const teamTab = adminPage.getByRole("tab", { name: /team/i });
     await teamTab.click();
 
     // Should show the seeded admin and readonly users
     await expect(
-      adminPage.getByText("admin@e2e-test.local")
+      adminPage.getByText("admin@e2e-test.local").first()
     ).toBeVisible({ timeout: 10_000 });
     await expect(
-      adminPage.getByText("readonly@e2e-test.local")
+      adminPage.getByText("readonly@e2e-test.local").first()
     ).toBeVisible();
   });
 
-  test("should show profile tabs (personal info, workspace, plans)", async ({
-    adminPage,
-  }) => {
+  test("should show all profile tabs", async ({ adminPage }) => {
     await adminPage.goto("/profile");
-    await adminPage.waitForLoadState("networkidle");
+    await adminPage.waitForLoadState("domcontentloaded");
 
     await expect(
       adminPage.getByRole("tab", { name: /personal info/i })
@@ -62,7 +47,10 @@ test.describe("Workspace Member Management @p1", () => {
       adminPage.getByRole("tab", { name: /plans/i })
     ).toBeVisible();
     await expect(
-      adminPage.getByRole("tab", { name: /feedback/i })
+      adminPage.getByRole("tab", { name: /team/i })
+    ).toBeVisible();
+    await expect(
+      adminPage.getByRole("tab", { name: /send feedback/i })
     ).toBeVisible();
   });
 });

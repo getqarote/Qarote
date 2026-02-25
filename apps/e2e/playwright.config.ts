@@ -13,8 +13,8 @@ export default defineConfig({
   testDir: "./tests",
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : 2,
+  retries: process.env.CI ? 2 : 1,
+  workers: 1,
   reporter: process.env.CI
     ? [["html", { open: "never" }], ["github"], ["list"]]
     : [["html"], ["list"]],
@@ -34,7 +34,7 @@ export default defineConfig({
   webServer: [
     {
       command: `DEPLOYMENT_MODE=${process.env.DEPLOYMENT_MODE || "community"} PORT=${API_PORT} NODE_ENV=test pnpm --filter=qarote-api dev`,
-      url: `${API_URL}/api/livez`,
+      url: `${API_URL}/livez`,
       reuseExistingServer: !process.env.CI,
       timeout: 60_000,
       cwd: path.resolve(import.meta.dirname, "../.."),

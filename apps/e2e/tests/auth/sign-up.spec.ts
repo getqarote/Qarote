@@ -25,14 +25,14 @@ test.describe("User Registration @p0", () => {
     await signUpPage.fillForm({
       firstName: "Duplicate",
       lastName: "User",
-      email: "admin@e2e-test.local", // Seeded in global setup
+      email: "admin@e2e-test.local",
       password: "SecurePass123!",
     });
     await signUpPage.submit();
 
     // Should show an error about existing email
     await expect(
-      page.locator('[data-variant="destructive"]')
+      page.getByText(/already in use|already exists|already registered|email.*taken/i).first()
     ).toBeVisible({ timeout: 10_000 });
   });
 
@@ -47,7 +47,6 @@ test.describe("User Registration @p0", () => {
     const signUpPage = new SignUpPage(page);
     await signUpPage.goto();
     await signUpPage.passwordInput.fill("weak");
-    // Password requirements component should be visible
-    await expect(page.getByText(/at least/i)).toBeVisible();
+    await expect(page.getByText(/at least 8 characters/i)).toBeVisible();
   });
 });
