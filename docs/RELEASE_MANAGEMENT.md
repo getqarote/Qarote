@@ -69,7 +69,7 @@ Before creating a release:
 - [ ] Commit is tagged with `v{VERSION}` format
 - [ ] GitHub release is published
 
-## How Update Notifications Work
+## How Release Notifications Work
 
 The **release notifier worker** runs in cloud mode (Dokku) and notifies self-hosted Enterprise license holders when a new version is available:
 
@@ -82,4 +82,4 @@ The **release notifier worker** runs in cloud mode (Dokku) and notifies self-hos
 
 The worker is scaled via `DOKKU_SCALE` (`release_notifier=1`) and defined in the `Procfile`.
 
-Tag naming convention matters: tags **must** follow the `v{MAJOR}.{MINOR}.{PATCH}` format (e.g., `v1.2.3`) for the update checker to parse them correctly.
+Tag naming convention matters: tags **must** follow the `v{MAJOR}.{MINOR}.{PATCH}` format (e.g., `v1.2.3`) for the release notifier to parse them correctly.
