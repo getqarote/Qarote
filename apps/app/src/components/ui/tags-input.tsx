@@ -73,6 +73,7 @@ const TagsInput: React.FC<TagsInputProps> = ({
       role="group"
       onClick={() => inputRef.current?.focus()}
       onKeyDown={(e) => {
+        if (e.target !== e.currentTarget) return;
         if (e.key === "Enter" || e.key === " ") {
           inputRef.current?.focus();
         }
