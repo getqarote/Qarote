@@ -15,6 +15,10 @@ const config: KnipConfig = {
       project: ["src/**/*.ts"],
       prisma: false, // Prisma plugin loads prisma.config.ts which requires DATABASE_URL at load time
     },
+    "packages/i18n": {
+      project: ["src/**/*.ts"],
+      ignoreDependencies: ["react"],
+    },
   },
   ignore: [
     // Ignore E2E test package (has its own dependency management)
