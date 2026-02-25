@@ -291,6 +291,9 @@ importers:
       react-hook-form:
         specifier: ^7.70.0
         version: 7.71.1(react@19.2.4)
+      react-i18next:
+        specifier: ^15.6.1
+        version: 15.7.4(i18next@25.8.13(typescript@5.9.3))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3)
       react-router:
         specifier: ^7.13.0
         version: 7.13.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -454,6 +457,9 @@ importers:
       react-hook-form:
         specifier: ^7.70.0
         version: 7.71.1(react@19.2.4)
+      react-i18next:
+        specifier: ^15.6.1
+        version: 15.7.4(i18next@25.8.13(typescript@5.9.3))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3)
       react-router:
         specifier: ^7.13.0
         version: 7.13.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -575,6 +581,9 @@ importers:
       react-helmet-async:
         specifier: ^2.0.5
         version: 2.0.5(react@19.2.4)
+      react-i18next:
+        specifier: ^15.6.1
+        version: 15.7.4(i18next@25.8.13(typescript@5.9.3))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3)
       react-router:
         specifier: ^7.13.0
         version: 7.13.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -659,7 +668,7 @@ importers:
         version: 19.2.4
       react-i18next:
         specifier: ^15.6.1
-        version: 15.7.4(i18next@25.8.13(typescript@5.9.3))(react@19.2.4)(typescript@5.9.3)
+        version: 15.7.4(i18next@25.8.13(typescript@5.9.3))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3)
 
 packages:
 
@@ -13426,13 +13435,14 @@ snapshots:
     dependencies:
       react: 19.2.4
 
-  react-i18next@15.7.4(i18next@25.8.13(typescript@5.9.3))(react@19.2.4)(typescript@5.9.3):
+  react-i18next@15.7.4(i18next@25.8.13(typescript@5.9.3))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3):
     dependencies:
       '@babel/runtime': 7.28.6
       html-parse-stringify: 3.0.1
       i18next: 25.8.13(typescript@5.9.3)
       react: 19.2.4
     optionalDependencies:
+      react-dom: 19.2.4(react@19.2.4)
       typescript: 5.9.3
 
   react-is@18.3.1: {}

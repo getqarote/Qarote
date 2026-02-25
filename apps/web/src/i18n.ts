@@ -6,4 +6,5 @@ const i18n = createI18nInstance({
   loadPath: "/locales/{{lng}}/{{ns}}.json",
 });
 
-export default i18n;
+// Side-effect only: imported in main.tsx to initialize i18n
+void i18n;
