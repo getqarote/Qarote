@@ -23,7 +23,6 @@ const PaymentSuccess: React.FC = () => {
     // Refresh workspace data to get updated plan
     const refreshData = async () => {
       try {
-        // await refetch();
         await Promise.all([
           refetchPlan(),
           queryClient.invalidateQueries({ queryKey: ["plans"] }),

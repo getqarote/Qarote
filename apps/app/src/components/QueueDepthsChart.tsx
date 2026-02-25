@@ -46,10 +46,7 @@ const CustomTooltip = ({
 }) => {
   if (active && payload && payload.length) {
     const labelStr = String(label);
-    const originalQueue = queues.find(
-      (q) =>
-        (q.name.length > 15 ? `${q.name.slice(0, 15)}...` : q.name) === labelStr
-    );
+    const originalQueue = queues.find((q) => q.name === labelStr);
     return (
       <div className="bg-white p-3 border rounded-lg shadow-lg">
         <p className="font-medium text-gray-900">
@@ -87,12 +84,11 @@ export const QueueDepthsChart = ({
     }
   }, [isFetching]);
   // Prepare data for the chart - show all queues, prioritize those with messages
-  const chartData: QueueDepthData[] = queues
+  const chartData: QueueDepthData[] = [...queues]
     .sort((a, b) => b.messages - a.messages) // Sort by message count descending (queues with messages first)
     .slice(0, 10) // Take top 10 queues (including empty ones)
     .map((queue) => ({
-      name:
-        queue.name.length > 15 ? `${queue.name.slice(0, 15)}...` : queue.name,
+      name: queue.name,
       messages: queue.messages,
     }));
 
@@ -148,6 +144,9 @@ export const QueueDepthsChart = ({
                 <XAxis
                   dataKey="name"
                   tick={{ fontSize: 12, fill: "#6b7280" }}
+                  tickFormatter={(name) =>
+                    name.length > 15 ? `${name.slice(0, 15)}...` : name
+                  }
                   angle={-45}
                   textAnchor="end"
                   height={80}
