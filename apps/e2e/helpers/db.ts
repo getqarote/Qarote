@@ -3,19 +3,21 @@ import path from "node:path";
 import { PrismaPg } from "@prisma/adapter-pg";
 import dotenv from "dotenv";
 
+import type { PrismaClient } from "../../api/src/generated/prisma/client.js";
+
 dotenv.config({ path: path.resolve(import.meta.dirname, "../.env.test") });
 
 const DATABASE_URL =
   process.env.DATABASE_URL ||
   "postgres://postgres:password@localhost:5433/qarote_e2e";
 
-let prismaInstance: any = null;
+let prismaInstance: PrismaClient | null = null;
 
 /**
  * Get a shared Prisma client instance for test helpers.
  * Lazily initialized to avoid import issues.
  */
-async function getPrisma() {
+async function getPrisma(): Promise<PrismaClient> {
   if (!prismaInstance) {
     const { PrismaClient } = await import(
       "../../api/src/generated/prisma/client.js"

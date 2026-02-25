@@ -6,6 +6,8 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { hashSync } from "bcryptjs";
 import dotenv from "dotenv";
 
+import type { PrismaClient } from "../api/src/generated/prisma/client.js";
+
 dotenv.config({ path: path.resolve(import.meta.dirname, ".env.test") });
 
 const DATABASE_URL =
@@ -48,7 +50,7 @@ async function globalSetup() {
   await acquireAuthTokens();
 }
 
-async function waitForDb(prisma: InstanceType<any>, maxRetries = 30) {
+async function waitForDb(prisma: PrismaClient, maxRetries = 30) {
   for (let i = 0; i < maxRetries; i++) {
     try {
       await prisma.$connect();
@@ -60,7 +62,7 @@ async function waitForDb(prisma: InstanceType<any>, maxRetries = 30) {
   throw new Error("Database not available after 30 seconds");
 }
 
-async function cleanDatabase(prisma: InstanceType<any>) {
+async function cleanDatabase(prisma: PrismaClient) {
   // Truncate in reverse dependency order
   const tables = [
     "QueueMetric",
@@ -104,7 +106,7 @@ async function cleanDatabase(prisma: InstanceType<any>) {
   }
 }
 
-async function seedBaseData(prisma: InstanceType<any>) {
+async function seedBaseData(prisma: PrismaClient) {
   const passwordHash = hashSync("TestPassword123!", 1);
 
   // Create workspace
