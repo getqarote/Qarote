@@ -348,6 +348,10 @@ jobs:
           # omitted — default to false in the selfhosted Zod schema.
           EMAIL_PROVIDER: smtp
           FROM_EMAIL: noreply@test.local
+          # Enterprise mode requires license config to pass Zod validation.
+          # Dummy values — license file doesn't need to exist for E2E auth tests.
+          LICENSE_FILE_PATH: /tmp/e2e-license.json
+          LICENSE_PUBLIC_KEY: e2e-test-public-key
           API_URL: http://localhost:3001
           VITE_API_URL: http://localhost:3001
           E2E_RABBITMQ_HOST: localhost
