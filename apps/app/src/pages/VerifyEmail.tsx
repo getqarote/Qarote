@@ -54,50 +54,51 @@ export default function VerifyEmail() {
   });
 
   // tRPC mutations
-  const verifyEmailMutation = trpc.auth.verification.verifyEmail.useMutation({
-    onSuccess: (data) => {
-      logger.log("Verification successful:", data);
+  const { mutate: verifyEmail } =
+    trpc.auth.verification.verifyEmail.useMutation({
+      onSuccess: (data) => {
+        logger.log("Verification successful:", data);
 
-      // Update user context with the verified user data
-      if (data.user) {
-        updateUser(data.user);
-      }
-
-      // Invalidate verification status query to refresh any cached data
-      queryClient.invalidateQueries({ queryKey: ["verification-status"] });
-
-      setVerificationState({
-        loading: false,
-        result: {
-          success: true,
-          message: data.message,
-          type: data.type,
-        },
-      });
-
-      toast.success("Email verified successfully!");
-
-      // Redirect based on authentication status
-      setTimeout(() => {
-        if (isAuthenticated) {
-          navigate("/workspace", { replace: true });
-        } else {
-          navigate("/auth/sign-in", { replace: true });
+        // Update user context with the verified user data
+        if (data.user) {
+          updateUser(data.user);
         }
-      }, 3000);
-    },
-    onError: (error) => {
-      logger.error("Email verification error:", error);
 
-      setVerificationState({
-        loading: false,
-        result: {
-          success: false,
-          error: error.message || "Failed to verify email. Please try again.",
-        },
-      });
-    },
-  });
+        // Invalidate verification status query to refresh any cached data
+        queryClient.invalidateQueries({ queryKey: ["verification-status"] });
+
+        setVerificationState({
+          loading: false,
+          result: {
+            success: true,
+            message: data.message,
+            type: data.type,
+          },
+        });
+
+        toast.success("Email verified successfully!");
+
+        // Redirect based on authentication status
+        setTimeout(() => {
+          if (isAuthenticated) {
+            navigate("/workspace", { replace: true });
+          } else {
+            navigate("/auth/sign-in", { replace: true });
+          }
+        }, 3000);
+      },
+      onError: (error) => {
+        logger.error("Email verification error:", error);
+
+        setVerificationState({
+          loading: false,
+          result: {
+            success: false,
+            error: error.message || "Failed to verify email. Please try again.",
+          },
+        });
+      },
+    });
 
   const resendVerificationMutation =
     trpc.auth.verification.resendVerification.useMutation({
@@ -134,8 +135,8 @@ export default function VerifyEmail() {
       tokenPrefix: token.substring(0, 8),
     });
 
-    verifyEmailMutation.mutate({ token });
-  }, [token]);
+    verifyEmail({ token });
+  }, [token, verifyEmail]);
 
   const handleResendVerification = () => {
     resendVerificationMutation.mutate({ type: "SIGNUP", sourceApp: "app" });

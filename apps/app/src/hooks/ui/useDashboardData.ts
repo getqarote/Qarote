@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 
 import { TimeRange } from "@/components/TimeRangeSelector";
 
@@ -21,19 +21,20 @@ interface ChartData {
   consumed: number;
 }
 
+const INITIAL_CHART_DATA: ChartData[] = [
+  { time: "00:00", published: 0, consumed: 0 },
+  { time: "04:00", published: 0, consumed: 0 },
+  { time: "08:00", published: 0, consumed: 0 },
+  { time: "12:00", published: 0, consumed: 0 },
+  { time: "16:00", published: 0, consumed: 0 },
+  { time: "20:00", published: 0, consumed: 0 },
+];
+
 export const useDashboardData = (
   selectedServerId: string | null,
   timeRange: TimeRange = "1d"
 ) => {
   const { selectedVHost } = useVHostContext();
-  const [chartData, setChartData] = useState<ChartData[]>([
-    { time: "00:00", published: 0, consumed: 0 },
-    { time: "04:00", published: 0, consumed: 0 },
-    { time: "08:00", published: 0, consumed: 0 },
-    { time: "12:00", published: 0, consumed: 0 },
-    { time: "16:00", published: 0, consumed: 0 },
-    { time: "20:00", published: 0, consumed: 0 },
-  ]);
 
   // API calls
   const {
@@ -141,34 +142,32 @@ export const useDashboardData = (
     };
   }, [enhancedMetrics, nodes, queues, liveRatesData]);
 
-  // Update chart data from live rates API
-  useEffect(() => {
+  // Derive chart data from live rates API
+  const chartData = useMemo<ChartData[]>(() => {
     if (
-      liveRatesData?.messagesRates &&
-      liveRatesData.messagesRates.length > 1
+      !liveRatesData?.messagesRates ||
+      liveRatesData.messagesRates.length <= 1
     ) {
-      // Filter out data points where both published and consumed are 0
-      const filteredData = liveRatesData.messagesRates.filter((point) => {
-        return (point.publish || 0) > 0 || (point.deliver || 0) > 0;
-      });
-
-      // Only update chart data if we have actual activity
-      if (filteredData.length > 0) {
-        const formattedData = filteredData.map((point) => ({
-          time: new Date(point.timestamp).toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
-          published: Math.round((point.publish || 0) * 100) / 100,
-          consumed: Math.round((point.deliver || 0) * 100) / 100,
-        }));
-
-        setChartData(formattedData);
-      } else {
-        // If no activity, show empty chart data
-        setChartData([]);
-      }
+      return INITIAL_CHART_DATA;
     }
+
+    // Filter out data points where both published and consumed are 0
+    const filteredData = liveRatesData.messagesRates.filter((point) => {
+      return (point.publish || 0) > 0 || (point.deliver || 0) > 0;
+    });
+
+    if (filteredData.length === 0) {
+      return [];
+    }
+
+    return filteredData.map((point) => ({
+      time: new Date(point.timestamp).toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+      published: Math.round((point.publish || 0) * 100) / 100,
+      consumed: Math.round((point.deliver || 0) * 100) / 100,
+    }));
   }, [liveRatesData]);
 
   // For live data, we don't need time range selection
