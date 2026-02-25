@@ -34,6 +34,10 @@ jobs:
     name: "E2E - Community Mode"
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    if: >-
+      github.event_name != 'workflow_dispatch' ||
+      github.event.inputs.mode == 'community' ||
+      github.event.inputs.mode == 'all'
 
     services:
       postgres:
@@ -141,8 +145,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     if: >-
-      github.event_name == 'workflow_dispatch' &&
-      (github.event.inputs.mode == 'cloud' || github.event.inputs.mode == 'all')
+      github.event_name != 'workflow_dispatch' ||
+      github.event.inputs.mode == 'cloud' ||
+      github.event.inputs.mode == 'all'
 
     services:
       postgres:
@@ -264,8 +269,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     if: >-
-      github.event_name == 'workflow_dispatch' &&
-      (github.event.inputs.mode == 'enterprise' || github.event.inputs.mode == 'all')
+      github.event_name != 'workflow_dispatch' ||
+      github.event.inputs.mode == 'enterprise' ||
+      github.event.inputs.mode == 'all'
 
     services:
       postgres:
