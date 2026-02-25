@@ -15,6 +15,8 @@ import { UserMapper } from "@/mappers/auth";
 
 import { rateLimitedPublicProcedure, router } from "@/trpc/trpc";
 
+import { te } from "@/i18n";
+
 // Initialize Google OAuth client
 const client = new OAuth2Client();
 
@@ -35,7 +37,7 @@ export const googleRouter = router({
       if (!googleConfig.enabled) {
         throw new TRPCError({
           code: "SERVICE_UNAVAILABLE",
-          message: "Google OAuth is not enabled for this deployment",
+          message: te(ctx.locale, "auth.googleOAuthNotEnabled"),
         });
       }
 
@@ -43,7 +45,7 @@ export const googleRouter = router({
       if (isCloudMode() && !googleConfig.clientId) {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Google OAuth is required for cloud deployments",
+          message: te(ctx.locale, "auth.googleOAuthRequiredForCloud"),
         });
       }
 
@@ -58,7 +60,7 @@ export const googleRouter = router({
         if (!payload) {
           throw new TRPCError({
             code: "UNAUTHORIZED",
-            message: "Invalid Google token",
+            message: te(ctx.locale, "auth.invalidGoogleToken"),
           });
         }
 
@@ -73,7 +75,7 @@ export const googleRouter = router({
         if (!email) {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: "Email not provided by Google",
+            message: te(ctx.locale, "auth.emailNotProvidedByGoogle"),
           });
         }
 
@@ -165,8 +167,7 @@ export const googleRouter = router({
             );
             throw new TRPCError({
               code: "CONFLICT",
-              message:
-                "An account with this email already exists using a different sign-in method. Please sign in with your existing method.",
+              message: te(ctx.locale, "auth.accountExistsDifferentMethod"),
             });
           }
 
@@ -239,7 +240,7 @@ export const googleRouter = router({
             });
             throw new TRPCError({
               code: "INTERNAL_SERVER_ERROR",
-              message: "Failed to create user account",
+              message: te(ctx.locale, "auth.failedToCreateUserAccount"),
             });
           }
         }
@@ -247,7 +248,7 @@ export const googleRouter = router({
         if (!user.isActive) {
           throw new TRPCError({
             code: "FORBIDDEN",
-            message: "Account is inactive",
+            message: te(ctx.locale, "auth.accountInactive"),
           });
         }
 
@@ -278,7 +279,7 @@ export const googleRouter = router({
         ctx.logger.error({ error }, "Google login error");
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to authenticate with Google",
+          message: te(ctx.locale, "auth.failedToAuthenticateWithGoogle"),
         });
       }
     }),

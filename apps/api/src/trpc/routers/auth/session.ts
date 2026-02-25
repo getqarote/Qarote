@@ -14,6 +14,8 @@ import {
   router,
 } from "@/trpc/trpc";
 
+import { te } from "@/i18n";
+
 /**
  * Session router
  * Handles login and session management
@@ -64,29 +66,28 @@ export const sessionRouter = router({
         if (!user) {
           throw new TRPCError({
             code: "UNAUTHORIZED",
-            message: "Invalid email or password",
+            message: te(ctx.locale, "auth.invalidEmailOrPassword"),
           });
         }
 
         if (!user.isActive) {
           throw new TRPCError({
             code: "FORBIDDEN",
-            message: "Account is inactive",
+            message: te(ctx.locale, "auth.accountInactive"),
           });
         }
 
         if (!user.emailVerified) {
           throw new TRPCError({
             code: "FORBIDDEN",
-            message: "Please verify your email before logging in",
+            message: te(ctx.locale, "auth.pleaseVerifyEmail"),
           });
         }
 
         if (!user.passwordHash) {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message:
-              "This account uses Google sign-in. Please use Google login.",
+            message: te(ctx.locale, "auth.accountUsesGoogleSignIn"),
           });
         }
 
@@ -98,7 +99,7 @@ export const sessionRouter = router({
         if (!isPasswordValid) {
           throw new TRPCError({
             code: "UNAUTHORIZED",
-            message: "Invalid email or password",
+            message: te(ctx.locale, "auth.invalidEmailOrPassword"),
           });
         }
 
@@ -134,7 +135,7 @@ export const sessionRouter = router({
         ctx.logger.error({ error }, "Login error");
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to login",
+          message: te(ctx.locale, "auth.failedToLogin"),
         });
       }
     }),
@@ -178,7 +179,7 @@ export const sessionRouter = router({
       if (!fullUser) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "User not found",
+          message: te(ctx.locale, "auth.userNotFound"),
         });
       }
 
@@ -192,7 +193,7 @@ export const sessionRouter = router({
       ctx.logger.error({ error }, "Error fetching session");
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
-        message: "Failed to fetch session",
+        message: te(ctx.locale, "auth.failedToFetchSession"),
       });
     }
   }),

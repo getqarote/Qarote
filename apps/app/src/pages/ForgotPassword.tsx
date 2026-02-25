@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router";
 
 import { ArrowLeft, Mail, Send } from "lucide-react";
@@ -21,6 +22,7 @@ import { Label } from "@/components/ui/label";
 import { useRequestPasswordReset } from "@/hooks/queries/useProfile";
 
 const ForgotPassword: React.FC = () => {
+  const { t } = useTranslation("auth");
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [emailSent, setEmailSent] = useState(false);
@@ -28,11 +30,11 @@ const ForgotPassword: React.FC = () => {
   const resetPasswordMutation = useRequestPasswordReset({
     onSuccess: () => {
       setEmailSent(true);
-      toast.success("Password reset instructions sent to your email");
+      toast.success(t("passwordResetSentToast"));
     },
     onError: (error: Error) => {
       logger.error("Password reset request error:", error);
-      toast.error("Failed to send password reset email. Please try again.");
+      toast.error(t("failedSendResetEmail"));
     },
   });
 
@@ -40,12 +42,12 @@ const ForgotPassword: React.FC = () => {
     e.preventDefault();
 
     if (!email.trim()) {
-      toast.error("Please enter your email address");
+      toast.error(t("pleaseEnterEmail"));
       return;
     }
 
     if (!email.includes("@")) {
-      toast.error("Please enter a valid email address");
+      toast.error(t("pleaseEnterValidEmail"));
       return;
     }
 
@@ -60,18 +62,15 @@ const ForgotPassword: React.FC = () => {
             <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
               <Mail className="h-6 w-6 text-green-600" />
             </div>
-            <CardTitle className="text-2xl">Check Your Email</CardTitle>
+            <CardTitle className="text-2xl">{t("checkYourEmail")}</CardTitle>
             <CardDescription>
-              We've sent password reset instructions to {email}
+              {t("resetInstructionsSent", { email })}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <Alert>
               <Mail className="h-4 w-4" />
-              <AlertDescription>
-                If you don't see the email in your inbox, please check your spam
-                folder. The reset link will expire in 24 hours.
-              </AlertDescription>
+              <AlertDescription>{t("checkSpamFolder")}</AlertDescription>
             </Alert>
 
             <div className="flex flex-col gap-2">
@@ -81,12 +80,12 @@ const ForgotPassword: React.FC = () => {
                 disabled={resetPasswordMutation.isPending}
               >
                 <Send className="h-4 w-4" />
-                Resend Email
+                {t("resendEmail")}
               </Button>
 
               <Button onClick={() => navigate("/auth/sign-in")} variant="ghost">
                 <ArrowLeft className="h-4 w-4" />
-                Back to Sign In
+                {t("backToSignIn")}
               </Button>
             </div>
           </CardContent>
@@ -99,20 +98,17 @@ const ForgotPassword: React.FC = () => {
     <div className="min-h-screen flex items-center justify-center page-layout p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Forgot Password?</CardTitle>
-          <CardDescription>
-            Enter your email address and we'll send you a link to reset your
-            password
-          </CardDescription>
+          <CardTitle className="text-2xl">{t("forgotPasswordTitle")}</CardTitle>
+          <CardDescription>{t("forgotPasswordDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email Address</Label>
+              <Label htmlFor="email">{t("emailAddress")}</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="Enter your email address"
+                placeholder={t("enterEmailAddress")}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={resetPasswordMutation.isPending}
@@ -129,12 +125,12 @@ const ForgotPassword: React.FC = () => {
               {resetPasswordMutation.isPending ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                  Sending...
+                  {t("sendingResetLink")}
                 </>
               ) : (
                 <>
                   <Send className="h-4 w-4 mr-2" />
-                  Send Reset Link
+                  {t("sendResetLink")}
                 </>
               )}
             </Button>
@@ -142,9 +138,9 @@ const ForgotPassword: React.FC = () => {
 
           <div className="mt-6 text-center">
             <p className="text-sm text-muted-foreground">
-              Remember your password?{" "}
+              {t("rememberPassword")}{" "}
               <Link to="/sign-in" className="text-primary hover:underline">
-                Sign in here
+                {t("signInHere")}
               </Link>
             </p>
           </div>

@@ -11,6 +11,7 @@ import { emailConfig } from "@/config";
 import { router, strictRateLimitedProcedure } from "@/trpc/trpc";
 
 import { UserPlan } from "@/generated/prisma/client";
+import { te } from "@/i18n";
 
 /**
  * Checkout router
@@ -29,7 +30,7 @@ export const checkoutRouter = router({
       if (plan === UserPlan.FREE) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "Cannot create checkout for FREE plan",
+          message: te(ctx.locale, "billing.cannotCheckoutFreePlan"),
         });
       }
 
@@ -77,7 +78,7 @@ export const checkoutRouter = router({
         ctx.logger.error({ error }, "Error creating checkout session");
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to create checkout session",
+          message: te(ctx.locale, "billing.failedToCreateCheckoutSession"),
         });
       }
     }),

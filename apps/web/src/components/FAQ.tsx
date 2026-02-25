@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import {
   Accordion,
   AccordionContent,
@@ -6,6 +8,8 @@ import {
 } from "@/components/ui/accordion";
 
 const FAQ = () => {
+  const { t } = useTranslation("faq");
+
   return (
     <Accordion type="single" collapsible>
       <AccordionItem
@@ -13,14 +17,10 @@ const FAQ = () => {
         className="border border-border rounded-xl px-6 bg-transparent"
       >
         <AccordionTrigger className="text-left text-foreground font-semibold hover:no-underline">
-          What is Qarote?
+          {t("q1.question")}
         </AccordionTrigger>
         <AccordionContent className="text-muted-foreground">
-          Qarote is a modern, user-friendly dashboard that helps you monitor and
-          manage your RabbitMQ servers effortlessly. Instead of using clunky
-          command-line tools or the default RabbitMQ management plugin, Qarote
-          gives you a clean, visual interface to see your queues, messages, and
-          system health in real time.
+          {t("q1.answer")}
         </AccordionContent>
       </AccordionItem>
 
@@ -29,13 +29,10 @@ const FAQ = () => {
         className="border border-border rounded-xl px-6 bg-transparent"
       >
         <AccordionTrigger className="text-left text-foreground font-semibold hover:no-underline">
-          Who is Qarote for?
+          {t("q2.question")}
         </AccordionTrigger>
         <AccordionContent className="text-muted-foreground">
-          Qarote is designed for developers, DevOps engineers, and teams who use
-          RabbitMQ and want better visibility, easier troubleshooting, and
-          smarter alerts. Whether you manage one broker or dozens, Qarote helps
-          you save time and prevent message bottlenecks.
+          {t("q2.answer")}
         </AccordionContent>
       </AccordionItem>
 
@@ -44,13 +41,10 @@ const FAQ = () => {
         className="border border-border rounded-xl px-6 bg-transparent"
       >
         <AccordionTrigger className="text-left text-foreground font-semibold hover:no-underline">
-          Is Qarote secure?
+          {t("q3.question")}
         </AccordionTrigger>
         <AccordionContent className="text-muted-foreground">
-          Absolutely. All connections to your RabbitMQ servers are encrypted
-          (TLS), and no sensitive data is stored on our servers—only your
-          configuration and alert preferences. Qarote only reads the metrics and
-          management data needed for your dashboard.
+          {t("q3.answer")}
         </AccordionContent>
       </AccordionItem>
 
@@ -59,17 +53,16 @@ const FAQ = () => {
         className="border border-border rounded-xl px-6 bg-transparent"
       >
         <AccordionTrigger className="text-left text-foreground font-semibold hover:no-underline">
-          What can I do with Qarote?
+          {t("q4.question")}
         </AccordionTrigger>
         <AccordionContent className="text-muted-foreground">
-          With Qarote, you can:
+          {t("q4.answer")}
           <ul className="list-disc list-inside mt-2 space-y-1">
-            <li>Monitor queue depths, message rates, and consumer counts</li>
-            <li>Set up alerts for queue backlogs or server health issues</li>
-            <li>Visualize memory usage, file descriptors, and more</li>
-            <li>Pause, resume, or delete queues with one click</li>
-            <li>Publish messages directly to queues or exchanges</li>
-            <li>Connect multiple RabbitMQ instances in one place</li>
+            {(t("q4.list", { returnObjects: true }) as string[]).map(
+              (item, index) => (
+                <li key={index}>{item}</li>
+              )
+            )}
           </ul>
         </AccordionContent>
       </AccordionItem>
@@ -79,17 +72,16 @@ const FAQ = () => {
         className="border border-border rounded-xl px-6 bg-transparent"
       >
         <AccordionTrigger className="text-left text-foreground font-semibold hover:no-underline">
-          How is Qarote different from the RabbitMQ Management UI?
+          {t("q5.question")}
         </AccordionTrigger>
         <AccordionContent className="text-muted-foreground">
-          The built-in RabbitMQ Management Plugin works, but it's slow,
-          cluttered, and hard to scale across multiple brokers. Qarote offers:
+          {t("q5.answer")}
           <ul className="list-disc list-inside mt-2 space-y-1">
-            <li>A faster, more intuitive interface</li>
-            <li>Multi-server support in one dashboard</li>
-            <li>Smart, customizable alerts</li>
-            <li>Beautiful, real-time charts and metrics</li>
-            <li>A clean experience designed for teams</li>
+            {(t("q5.list", { returnObjects: true }) as string[]).map(
+              (item, index) => (
+                <li key={index}>{item}</li>
+              )
+            )}
           </ul>
         </AccordionContent>
       </AccordionItem>
@@ -99,13 +91,10 @@ const FAQ = () => {
         className="border border-border rounded-xl px-6 bg-transparent"
       >
         <AccordionTrigger className="text-left text-foreground font-semibold hover:no-underline">
-          Is Qarote a better monitoring tool than Prometheus and Grafana?
+          {t("q6.question")}
         </AccordionTrigger>
         <AccordionContent className="text-muted-foreground">
-          Qarote offers purpose-built monitoring specifically for RabbitMQ with
-          zero configuration. While Prometheus and Grafana are powerful, they
-          require significant setup and maintenance. Qarote provides comparable
-          insights with much less overhead.
+          {t("q6.answer")}
         </AccordionContent>
       </AccordionItem>
 
@@ -114,13 +103,10 @@ const FAQ = () => {
         className="border border-border rounded-xl px-6 bg-transparent"
       >
         <AccordionTrigger className="text-left text-foreground font-semibold hover:no-underline">
-          Can I try Qarote for free?
+          {t("q7.question")}
         </AccordionTrigger>
         <AccordionContent className="text-muted-foreground">
-          Yes! We offer a free tier that includes 1 server, 1 workspace, and 1
-          team member. You can start monitoring your RabbitMQ queues right away
-          without a credit card. When you're ready to scale, you can upgrade to
-          a paid plan.
+          {t("q7.answer")}
         </AccordionContent>
       </AccordionItem>
     </Accordion>

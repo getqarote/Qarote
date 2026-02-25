@@ -1,3 +1,4 @@
+import { SUPPORTED_LOCALES } from "@qarote/i18n";
 import { TRPCError } from "@trpc/server";
 
 import { getUserWorkspaceRole } from "@/core/workspace-access";
@@ -11,6 +12,7 @@ import {
   GetUserSchema,
   GetWorkspaceUsersSchema,
   RemoveUserFromWorkspaceSchema,
+  UpdateLocaleSchema,
   UpdateProfileSchema,
   UpdateUserWithIdSchema,
 } from "@/schemas/user";
@@ -26,6 +28,7 @@ import {
 } from "@/trpc/trpc";
 
 import { UserRole } from "@/generated/prisma/client";
+import { te } from "@/i18n";
 
 /**
  * User router
@@ -82,7 +85,7 @@ export const userRouter = router({
         );
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to fetch users",
+          message: te(ctx.locale, "user.failedToFetchUsers"),
         });
       }
     }),
@@ -131,7 +134,7 @@ export const userRouter = router({
       if (!profile) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Profile not found",
+          message: te(ctx.locale, "user.profileNotFound"),
         });
       }
 
@@ -156,7 +159,7 @@ export const userRouter = router({
       ctx.logger.error({ error }, `Error fetching profile for user ${user.id}`);
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
-        message: "Failed to fetch profile",
+        message: te(ctx.locale, "user.failedToFetchProfile"),
       });
     }
   }),
@@ -207,7 +210,9 @@ export const userRouter = router({
                 data.email,
                 verificationToken,
                 "EMAIL_CHANGE",
-                user.firstName
+                user.firstName,
+                undefined,
+                ctx.locale
               );
 
             if (!emailResult.success) {
@@ -300,7 +305,7 @@ export const userRouter = router({
         );
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to update profile",
+          message: te(ctx.locale, "user.failedToUpdateProfile"),
         });
       }
     }),
@@ -339,7 +344,7 @@ export const userRouter = router({
         );
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to fetch invitations",
+          message: te(ctx.locale, "workspace.failedToFetchInvitations"),
         });
       }
     }),
@@ -380,7 +385,7 @@ export const userRouter = router({
         if (!user) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "User not found",
+            message: te(ctx.locale, "auth.userNotFound"),
           });
         }
 
@@ -391,7 +396,7 @@ export const userRouter = router({
           if (!userIsMember) {
             throw new TRPCError({
               code: "FORBIDDEN",
-              message: "Cannot access this user",
+              message: te(ctx.locale, "user.cannotAccessUser"),
             });
           }
         }
@@ -410,7 +415,7 @@ export const userRouter = router({
         ctx.logger.error({ error }, `Error fetching user ${id}`);
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to fetch user",
+          message: te(ctx.locale, "user.failedToFetchUser"),
         });
       }
     }),
@@ -432,7 +437,7 @@ export const userRouter = router({
         if (!existingUser) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "User not found",
+            message: te(ctx.locale, "auth.userNotFound"),
           });
         }
 
@@ -444,7 +449,7 @@ export const userRouter = router({
         if (!userIsMember) {
           throw new TRPCError({
             code: "FORBIDDEN",
-            message: "User does not belong to this workspace",
+            message: te(ctx.locale, "user.doesNotBelongToWorkspace"),
           });
         }
 
@@ -477,7 +482,7 @@ export const userRouter = router({
         ctx.logger.error({ error }, `Error updating user ${id}`);
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to update user",
+          message: te(ctx.locale, "user.failedToUpdateUser"),
         });
       }
     }),
@@ -494,7 +499,7 @@ export const userRouter = router({
       if (!user.workspaceId) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "No workspace assigned",
+          message: te(ctx.locale, "workspace.noWorkspaceAssigned"),
         });
       }
 
@@ -532,7 +537,7 @@ export const userRouter = router({
         );
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to update workspace information",
+          message: te(ctx.locale, "workspace.failedToUpdateInfo"),
         });
       }
     }),
@@ -563,7 +568,7 @@ export const userRouter = router({
         if (!userToRemove) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "User not found",
+            message: te(ctx.locale, "auth.userNotFound"),
           });
         }
 
@@ -576,7 +581,7 @@ export const userRouter = router({
         if (!workspaceRole) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "User is not a member of this workspace",
+            message: te(ctx.locale, "user.isNotMemberOfWorkspace"),
           });
         }
 
@@ -584,7 +589,7 @@ export const userRouter = router({
         if (userToRemove.id === currentUser.id) {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: "Cannot remove yourself from the workspace",
+            message: te(ctx.locale, "user.cannotRemoveSelf"),
           });
         }
 
@@ -601,7 +606,7 @@ export const userRouter = router({
           if (!workspace) {
             throw new TRPCError({
               code: "FORBIDDEN",
-              message: "Only workspace owners can remove admin users",
+              message: te(ctx.locale, "user.onlyOwnerCanRemoveAdmin"),
             });
           }
         }
@@ -655,8 +660,31 @@ export const userRouter = router({
         );
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to remove user from workspace",
+          message: te(ctx.locale, "user.failedToRemoveFromWorkspace"),
         });
       }
+    }),
+
+  /**
+   * Update user locale preference
+   */
+  updateLocale: rateLimitedProcedure
+    .input(UpdateLocaleSchema)
+    .mutation(async ({ input, ctx }) => {
+      const { locale } = input;
+
+      if (!SUPPORTED_LOCALES.includes(locale as never)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: `Unsupported locale: ${locale}`,
+        });
+      }
+
+      await ctx.prisma.user.update({
+        where: { id: ctx.user.id },
+        data: { locale },
+      });
+
+      return { locale };
     }),
 });

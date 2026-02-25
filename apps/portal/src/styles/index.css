@@ -3,6 +3,7 @@
 @plugin 'tailwindcss-animate';
 
 @custom-variant dark (&:is(.dark *));
+@custom-variant rtl (&:is([dir="rtl"] *));
 
 @utility container {
   margin-inline: auto;

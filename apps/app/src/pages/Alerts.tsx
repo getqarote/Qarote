@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useParams, useSearchParams } from "react-router";
 
 import { AlertTriangle, Loader2, Mail, Settings } from "lucide-react";
@@ -30,6 +31,7 @@ import { useUser } from "@/hooks/ui/useUser";
 import { useFeatureFlags } from "@/hooks/useFeatureFlags";
 
 const Alerts = () => {
+  const { t } = useTranslation("alerts");
   const { serverId } = useParams<{ serverId: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
   const { selectedServerId, hasServers, setSelectedServerId } =
@@ -149,8 +151,8 @@ const Alerts = () => {
               <SidebarTrigger />
             </div>
             <NoServerConfigured
-              title="Alerts"
-              description="Monitor system alerts and notifications"
+              title={t("noServerTitle")}
+              description={t("noServerDescription")}
             />
           </main>
         </div>
@@ -175,10 +177,8 @@ const Alerts = () => {
               <div className="flex items-center gap-4">
                 <SidebarTrigger />
                 <div>
-                  <h1 className="title-page">Alerts</h1>
-                  <p className="text-gray-500">
-                    Monitor system alerts and notifications
-                  </p>
+                  <h1 className="title-page">{t("pageTitle")}</h1>
+                  <p className="text-gray-500">{t("pageSubtitle")}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -191,7 +191,7 @@ const Alerts = () => {
                   className="flex items-center gap-2"
                 >
                   <Settings className="h-4 w-4" />
-                  Alert Rules
+                  {t("alertRules")}
                 </Button>
                 <Button
                   onClick={() => setShowNotificationSettingsModal(true)}
@@ -199,7 +199,7 @@ const Alerts = () => {
                   className="flex items-center gap-2"
                 >
                   <Mail className="h-4 w-4" />
-                  Notification Settings
+                  {t("notificationSettings")}
                 </Button>
               </div>
             </div>
@@ -210,9 +210,7 @@ const Alerts = () => {
             ) : alertsError ? (
               <Alert>
                 <AlertTriangle className="h-4 w-4" />
-                <AlertDescription>
-                  Failed to load alerts data. Please try again.
-                </AlertDescription>
+                <AlertDescription>{t("failedToLoad")}</AlertDescription>
               </Alert>
             ) : (
               <>
@@ -233,7 +231,7 @@ const Alerts = () => {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <AlertTriangle className="h-5 w-5" />
-                      Alerts
+                      {t("pageTitle")}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -244,9 +242,11 @@ const Alerts = () => {
                       }
                     >
                       <TabsList className="grid w-full grid-cols-2 mb-6">
-                        <TabsTrigger value="active">Active Alerts</TabsTrigger>
+                        <TabsTrigger value="active">
+                          {t("activeAlerts")}
+                        </TabsTrigger>
                         <TabsTrigger value="resolved">
-                          Resolved Alerts
+                          {t("resolvedAlerts")}
                         </TabsTrigger>
                       </TabsList>
 

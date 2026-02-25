@@ -5,6 +5,8 @@
 
 import { TRPCError } from "@trpc/server";
 
+import { te } from "@/i18n";
+
 interface RateLimitEntry {
   count: number;
   resetAt: number;
@@ -91,7 +93,7 @@ function createRateLimiter(
   keyGenerator?: (userId: string | null, path: string) => string
 ) {
   return async (opts: {
-    ctx: { user?: { id: string } | null };
+    ctx: { user?: { id: string } | null; locale?: string };
     path: string;
     type: string;
     next: () => Promise<unknown>;
@@ -114,9 +116,10 @@ function createRateLimiter(
 
     if (result.limited) {
       const resetIn = Math.ceil((result.resetAt - Date.now()) / 1000);
+      const locale = ctx.locale || "en";
       throw new TRPCError({
         code: "TOO_MANY_REQUESTS",
-        message: `Rate limit exceeded. Try again in ${resetIn} seconds.`,
+        message: te(locale, "rateLimit.exceeded", { resetIn }),
         cause: {
           resetIn,
           resetAt: result.resetAt,

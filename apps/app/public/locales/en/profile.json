@@ -1,0 +1,9 @@
+{
+  "pageTitle": "Profile",
+  "personalInfo": "Personal Info",
+  "workspace": "Workspace",
+  "plans": "Plans",
+  "team": "Team",
+  "sendFeedback": "Send Feedback",
+  "failedToLoad": "Failed to load profile information."
+}

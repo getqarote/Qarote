@@ -36,6 +36,7 @@ export interface SafeUser {
   lastLogin: Date | null;
   createdAt: Date;
   updatedAt: Date;
+  locale?: string;
   stripeCustomerId?: string | null;
   stripeSubscriptionId?: string | null;
   subscription?: {
@@ -110,6 +111,7 @@ export const extractUserFromToken = async (
         lastLogin: true,
         createdAt: true,
         updatedAt: true,
+        locale: true,
         stripeCustomerId: true,
         stripeSubscriptionId: true,
         subscription: {

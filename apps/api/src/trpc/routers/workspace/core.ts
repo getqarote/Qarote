@@ -12,6 +12,7 @@ import {
 } from "@/trpc/trpc";
 
 import { UserRole } from "@/generated/prisma/client";
+import { te } from "@/i18n";
 
 /**
  * Core workspace router
@@ -29,7 +30,7 @@ export const coreRouter = router({
       if (!user.workspaceId) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "No workspace assigned",
+          message: te(ctx.locale, "workspace.noWorkspaceAssigned"),
         });
       }
 
@@ -48,7 +49,7 @@ export const coreRouter = router({
       if (!workspace) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Workspace not found",
+          message: te(ctx.locale, "workspace.notFound"),
         });
       }
 
@@ -60,7 +61,7 @@ export const coreRouter = router({
       ctx.logger.error({ error }, "Error fetching current workspace:");
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
-        message: "Failed to fetch workspace",
+        message: te(ctx.locale, "workspace.failedToFetchWorkspace"),
       });
     }
   }),
@@ -89,7 +90,7 @@ export const coreRouter = router({
         if (!workspace) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Workspace not found",
+            message: te(ctx.locale, "workspace.notFound"),
           });
         }
 
@@ -101,7 +102,7 @@ export const coreRouter = router({
         ctx.logger.error({ error }, `Error fetching workspace ${workspaceId}:`);
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to fetch workspace",
+          message: te(ctx.locale, "workspace.failedToFetchWorkspace"),
         });
       }
     }),
@@ -127,7 +128,7 @@ export const coreRouter = router({
       ctx.logger.error({ error }, "Error fetching workspaces:");
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
-        message: "Failed to fetch workspaces",
+        message: te(ctx.locale, "workspace.failedToFetchWorkspaces"),
       });
     }
   }),

@@ -1,0 +1,9 @@
+{
+  "pageTitle": "个人资料",
+  "personalInfo": "个人信息",
+  "workspace": "工作区",
+  "plans": "方案",
+  "team": "团队",
+  "sendFeedback": "发送反馈",
+  "failedToLoad": "加载个人资料信息失败。"
+}

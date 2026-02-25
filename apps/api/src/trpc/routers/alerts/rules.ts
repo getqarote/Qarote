@@ -17,6 +17,7 @@ import {
   AlertType,
   ComparisonOperator,
 } from "@/generated/prisma/client";
+import { te } from "@/i18n";
 
 /**
  * Alert rules router
@@ -72,7 +73,7 @@ export const rulesRouter = router({
         ctx.logger.error({ error }, "Error getting alert rules");
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to get alert rules",
+          message: te(ctx.locale, "alerts.failedToGetRules"),
         });
       }
     }),
@@ -120,7 +121,7 @@ export const rulesRouter = router({
         if (!alertRule) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Alert rule not found",
+            message: te(ctx.locale, "alerts.ruleNotFound"),
           });
         }
 
@@ -136,7 +137,7 @@ export const rulesRouter = router({
         ctx.logger.error({ error }, "Error getting alert rule");
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to get alert rule",
+          message: te(ctx.locale, "alerts.failedToGetRule"),
         });
       }
     }),
@@ -163,7 +164,7 @@ export const rulesRouter = router({
         if (!server) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Server not found or access denied",
+            message: te(ctx.locale, "rabbitmq.serverNotFoundOrAccessDenied"),
           });
         }
 
@@ -216,7 +217,7 @@ export const rulesRouter = router({
         ctx.logger.error({ error }, "Error creating alert rule");
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to create alert rule",
+          message: te(ctx.locale, "alerts.failedToCreateRule"),
         });
       }
     }),
@@ -243,7 +244,7 @@ export const rulesRouter = router({
         if (!existingRule) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Alert rule not found",
+            message: te(ctx.locale, "alerts.ruleNotFound"),
           });
         }
 
@@ -259,7 +260,7 @@ export const rulesRouter = router({
           if (!server) {
             throw new TRPCError({
               code: "NOT_FOUND",
-              message: "Server not found or access denied",
+              message: te(ctx.locale, "rabbitmq.serverNotFoundOrAccessDenied"),
             });
           }
         }
@@ -326,7 +327,7 @@ export const rulesRouter = router({
         ctx.logger.error({ error }, "Error updating alert rule");
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to update alert rule",
+          message: te(ctx.locale, "alerts.failedToUpdateRule"),
         });
       }
     }),
@@ -353,7 +354,7 @@ export const rulesRouter = router({
         if (!existingRule) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Alert rule not found",
+            message: te(ctx.locale, "alerts.ruleNotFound"),
           });
         }
 
@@ -369,7 +370,7 @@ export const rulesRouter = router({
         ctx.logger.error({ error }, "Error deleting alert rule");
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to delete alert rule",
+          message: te(ctx.locale, "alerts.failedToDeleteRule"),
         });
       }
     }),

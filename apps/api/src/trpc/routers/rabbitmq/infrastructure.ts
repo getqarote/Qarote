@@ -15,6 +15,7 @@ import { authorize, router, workspaceProcedure } from "@/trpc/trpc";
 import { createRabbitMQClient, verifyServerAccess } from "./shared";
 
 import { UserRole } from "@/generated/prisma/client";
+import { te } from "@/i18n";
 
 /**
  * Infrastructure router
@@ -35,7 +36,7 @@ export const infrastructureRouter = router({
         if (!server) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Server not found or access denied",
+            message: te(ctx.locale, "rabbitmq.serverNotFoundOrAccessDenied"),
           });
         }
 
@@ -71,7 +72,7 @@ export const infrastructureRouter = router({
 
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to fetch nodes",
+          message: te(ctx.locale, "rabbitmq.failedToFetchNodes"),
         });
       }
     }),
@@ -90,7 +91,7 @@ export const infrastructureRouter = router({
         if (!server) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Server not found or access denied",
+            message: te(ctx.locale, "rabbitmq.serverNotFoundOrAccessDenied"),
           });
         }
 
@@ -120,7 +121,7 @@ export const infrastructureRouter = router({
 
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to fetch connections",
+          message: te(ctx.locale, "rabbitmq.failedToFetchConnections"),
         });
       }
     }),
@@ -139,7 +140,7 @@ export const infrastructureRouter = router({
         if (!server) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Server not found or access denied",
+            message: te(ctx.locale, "rabbitmq.serverNotFoundOrAccessDenied"),
           });
         }
 
@@ -163,7 +164,7 @@ export const infrastructureRouter = router({
 
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to fetch channels",
+          message: te(ctx.locale, "rabbitmq.failedToFetchChannels"),
         });
       }
     }),
@@ -182,7 +183,7 @@ export const infrastructureRouter = router({
         if (!server) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Server not found or access denied",
+            message: te(ctx.locale, "rabbitmq.serverNotFoundOrAccessDenied"),
           });
         }
 
@@ -241,7 +242,7 @@ export const infrastructureRouter = router({
 
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to fetch exchanges",
+          message: te(ctx.locale, "rabbitmq.failedToFetchExchanges"),
         });
       }
     }),
@@ -274,7 +275,7 @@ export const infrastructureRouter = router({
         if (!server) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Server not found or access denied",
+            message: te(ctx.locale, "rabbitmq.serverNotFoundOrAccessDenied"),
           });
         }
 
@@ -283,7 +284,9 @@ export const infrastructureRouter = router({
         if (!validTypes.includes(type)) {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: `Invalid exchange type. Must be one of: ${validTypes.join(", ")}`,
+            message: te(ctx.locale, "rabbitmq.invalidExchangeType", {
+              validTypes: validTypes.join(", "),
+            }),
           });
         }
 
@@ -322,7 +325,7 @@ export const infrastructureRouter = router({
 
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to create exchange",
+          message: te(ctx.locale, "rabbitmq.failedToCreateExchange"),
         });
       }
     }),
@@ -351,7 +354,7 @@ export const infrastructureRouter = router({
         if (!server) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Server not found or access denied",
+            message: te(ctx.locale, "rabbitmq.serverNotFoundOrAccessDenied"),
           });
         }
 
@@ -378,8 +381,12 @@ export const infrastructureRouter = router({
           throw new TRPCError({
             code: "BAD_REQUEST",
             message: ifUnused
-              ? `Cannot delete exchange "${exchangeName}" because it has bindings or is being used. Try force delete to remove it anyway.`
-              : `Failed to delete exchange "${exchangeName}". It may be in use or there may be a configuration issue.`,
+              ? te(ctx.locale, "rabbitmq.exchangeInUseCannotDelete", {
+                  exchangeName,
+                })
+              : te(ctx.locale, "rabbitmq.exchangeDeleteFailed", {
+                  exchangeName,
+                }),
             cause: "EXCHANGE_IN_USE",
           });
         }
@@ -390,7 +397,7 @@ export const infrastructureRouter = router({
 
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to delete exchange",
+          message: te(ctx.locale, "rabbitmq.failedToDeleteExchange"),
         });
       }
     }),

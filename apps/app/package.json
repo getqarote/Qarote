@@ -29,6 +29,7 @@
     "test:ui": "vitest --ui"
   },
   "dependencies": {
+    "@qarote/i18n": "workspace:*",
     "@hookform/resolvers": "^5.2.2",
     "@radix-ui/react-alert-dialog": "^1.1.1",
     "@radix-ui/react-avatar": "^1.1.0",

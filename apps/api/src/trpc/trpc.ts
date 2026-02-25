@@ -17,6 +17,7 @@ import {
 } from "./middlewares/rateLimiter";
 
 import { UserRole } from "@/generated/prisma/client";
+import { te } from "@/i18n";
 
 /**
  * Initialize tRPC with context
@@ -38,14 +39,14 @@ const protectedProcedure = publicProcedure.use(async (opts) => {
   if (!ctx.user) {
     throw new TRPCError({
       code: "UNAUTHORIZED",
-      message: "Authentication required",
+      message: te(ctx.locale, "auth.authenticationRequired"),
     });
   }
 
   if (!ctx.user.isActive) {
     throw new TRPCError({
       code: "FORBIDDEN",
-      message: "Account is inactive",
+      message: te(ctx.locale, "auth.accountInactive"),
     });
   }
 
@@ -66,7 +67,7 @@ const adminProcedure = protectedProcedure.use(async (opts) => {
   if (ctx.user.role !== UserRole.ADMIN) {
     throw new TRPCError({
       code: "FORBIDDEN",
-      message: "Insufficient permissions - Admin role required",
+      message: te(ctx.locale, "auth.insufficientPermissionsAdmin"),
     });
   }
 
@@ -99,7 +100,7 @@ export const authorize = (allowedRoles: UserRole[]) => {
     if (!allowedRoles.includes(ctx.user.role)) {
       throw new TRPCError({
         code: "FORBIDDEN",
-        message: "Insufficient permissions",
+        message: te(ctx.locale, "auth.insufficientPermissions"),
       });
     }
 
@@ -167,7 +168,7 @@ export const workspaceProcedure = rateLimitedProcedure.use(async (opts) => {
   if (!workspaceId) {
     throw new TRPCError({
       code: "BAD_REQUEST",
-      message: "Workspace ID is required",
+      message: te(ctx.locale, "workspace.idRequired"),
     });
   }
 
@@ -186,7 +187,7 @@ export const workspaceProcedure = rateLimitedProcedure.use(async (opts) => {
   if (!hasAccess) {
     throw new TRPCError({
       code: "FORBIDDEN",
-      message: "Cannot access resources for this workspace",
+      message: te(ctx.locale, "workspace.cannotAccessResources"),
     });
   }
 

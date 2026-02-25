@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { AppSidebar } from "@/components/AppSidebar";
 import { EnhancedNodesOverview } from "@/components/nodes/EnhancedNodesOverview";
 import { EnhancedNodesTable } from "@/components/nodes/EnhancedNodesTable";
@@ -12,6 +14,7 @@ import { useNodes } from "@/hooks/queries/useRabbitMQ";
 import { RabbitMQAuthorizationError } from "@/types/apiErrors";
 
 const Nodes = () => {
+  const { t } = useTranslation("nodes");
   const { selectedServerId, hasServers } = useServerContext();
   // Single useNodes call for all child components
   const { data: nodesData, isLoading: nodesLoading } =
@@ -40,8 +43,8 @@ const Nodes = () => {
               <SidebarTrigger />
             </div>
             <NoServerConfigured
-              title="Nodes"
-              description="Add a RabbitMQ server connection to view cluster nodes and their metrics."
+              title={t("noServerTitle")}
+              description={t("noServerDescription")}
             />
           </main>
         </div>
@@ -59,10 +62,8 @@ const Nodes = () => {
               <div className="flex items-center gap-4">
                 <SidebarTrigger />
                 <div>
-                  <h1 className="title-page">Nodes</h1>
-                  <p className="text-gray-500">
-                    Please select a RabbitMQ server to view its nodes
-                  </p>
+                  <h1 className="title-page">{t("pageTitle")}</h1>
+                  <p className="text-gray-500">{t("selectServerPrompt")}</p>
                 </div>
               </div>
             </div>
@@ -83,10 +84,8 @@ const Nodes = () => {
               <div className="flex items-center gap-4">
                 <SidebarTrigger />
                 <div>
-                  <h1 className="title-page">Nodes</h1>
-                  <p className="text-gray-500">
-                    Detailed view of cluster nodes and their metrics
-                  </p>
+                  <h1 className="title-page">{t("pageTitle")}</h1>
+                  <p className="text-gray-500">{t("pageSubtitle")}</p>
                 </div>
               </div>
               <PlanBadge />

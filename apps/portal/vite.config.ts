@@ -38,6 +38,13 @@ export default defineConfig({
           "vendor-icons": ["lucide-react"],
           // Form and validation
           "vendor-forms": ["react-hook-form", "@hookform/resolvers", "zod"],
+          // i18n
+          "vendor-i18n": [
+            "i18next",
+            "react-i18next",
+            "i18next-http-backend",
+            "i18next-browser-languagedetector",
+          ],
           // Date and time utilities
           "vendor-utils": [
             "clsx",

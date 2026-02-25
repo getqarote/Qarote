@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -55,6 +56,7 @@ interface InvitationDetails {
 }
 
 const AcceptInvitation = () => {
+  const { t } = useTranslation("auth");
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -82,7 +84,7 @@ const AcceptInvitation = () => {
   useEffect(() => {
     const fetchInvitationDetails = async () => {
       if (!token) {
-        setError("Invalid invitation link");
+        setError(t("invalidInvitationLink"));
         setLoading(false);
         return;
       }
@@ -94,13 +96,11 @@ const AcceptInvitation = () => {
         if (response.success) {
           setInvitation(response.invitation);
         } else {
-          setError("Invalid or expired invitation");
+          setError(t("invalidOrExpiredInvitation"));
         }
       } catch (err: unknown) {
         const errorMessage =
-          err instanceof Error
-            ? err.message
-            : "Failed to load invitation details";
+          err instanceof Error ? err.message : t("failedLoadInvitation");
         setError(errorMessage);
       } finally {
         setLoading(false);
@@ -125,15 +125,17 @@ const AcceptInvitation = () => {
       {
         onSuccess: () => {
           toast({
-            title: "Welcome to Qarote!",
-            description: `You've successfully joined ${invitation?.workspace.name}`,
+            title: t("welcomeToQarote"),
+            description: t("successfullyJoinedWorkspace", {
+              workspace: invitation?.workspace.name,
+            }),
           });
           // Redirect to dashboard
           navigate("/", { replace: true });
         },
         onError: (err: unknown) => {
           const errorMessage =
-            err instanceof Error ? err.message : "Failed to accept invitation";
+            err instanceof Error ? err.message : t("failedAcceptInvitation");
           setError(errorMessage);
         },
       }
@@ -157,7 +159,9 @@ const AcceptInvitation = () => {
       <div className="min-h-screen flex items-center justify-center bg-gradient-auth py-12 px-4 sm:px-6 lg:px-8">
         <Card className="w-full max-w-md bg-white/95 backdrop-blur-xs border-white/20 shadow-2xl">
           <CardHeader className="text-center">
-            <CardTitle className="text-red-600">Invalid Invitation</CardTitle>
+            <CardTitle className="text-red-600">
+              {t("invalidInvitation")}
+            </CardTitle>
             <CardDescription>{error}</CardDescription>
           </CardHeader>
           <CardContent>
@@ -165,7 +169,7 @@ const AcceptInvitation = () => {
               onClick={() => navigate("/auth/sign-in")}
               className="w-full bg-gradient-button hover:bg-gradient-button-hover"
             >
-              Go to Sign In
+              {t("goToSignIn")}
             </Button>
           </CardContent>
         </Card>
@@ -187,11 +191,8 @@ const AcceptInvitation = () => {
           <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
             <Mail className="h-6 w-6 text-blue-600" />
           </div>
-          <CardTitle>Join Qarote</CardTitle>
-          <CardDescription>
-            You've been invited to join{" "}
-            <strong>{invitation?.workspace.name}</strong>
-          </CardDescription>
+          <CardTitle>{t("joinQaroteTitle")}</CardTitle>
+          <CardDescription>{t("setUpAccount")}</CardDescription>
         </CardHeader>
 
         <CardContent className="space-y-6">
@@ -200,17 +201,18 @@ const AcceptInvitation = () => {
             <div className="flex items-center gap-2 text-sm text-gray-600">
               <Building className="h-4 w-4" />
               <span>
-                Workspace: <strong>{invitation?.workspace.name}</strong>
+                {t("workspace")}: <strong>{invitation?.workspace.name}</strong>
               </span>
             </div>
             <div className="flex items-center gap-2 text-sm text-gray-600">
               <Users className="h-4 w-4" />
               <span>
-                Plan: <strong>{planDisplayName}</strong>
+                {t("plan")}: <strong>{planDisplayName}</strong>
               </span>
             </div>
             <div className="text-sm text-gray-600">
-              Invited by: <strong>{invitation?.invitedBy.displayName}</strong>
+              {t("invitedBy")}:{" "}
+              <strong>{invitation?.invitedBy.displayName}</strong>
             </div>
           </div>
 
@@ -228,7 +230,7 @@ const AcceptInvitation = () => {
               </div>
               <div className="relative flex justify-center text-xs uppercase">
                 <span className="bg-background px-2 text-muted-foreground">
-                  Or continue with
+                  {t("orContinueWith")}
                 </span>
               </div>
             </div>
@@ -245,7 +247,7 @@ const AcceptInvitation = () => {
             </div>
             <div className="relative flex justify-center text-xs uppercase">
               <span className="bg-background px-2 text-muted-foreground">
-                Or create account manually
+                {t("orCreateAccountManually")}
               </span>
             </div>
           </div>
@@ -258,10 +260,10 @@ const AcceptInvitation = () => {
                   name="firstName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>First Name</FormLabel>
+                      <FormLabel>{t("firstName")}</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="John"
+                          placeholder={t("firstNamePlaceholder")}
                           disabled={acceptInvitationMutation.isPending}
                           {...field}
                         />
@@ -275,10 +277,10 @@ const AcceptInvitation = () => {
                   name="lastName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Last Name</FormLabel>
+                      <FormLabel>{t("lastName")}</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="Doe"
+                          placeholder={t("lastNamePlaceholder")}
                           disabled={acceptInvitationMutation.isPending}
                           {...field}
                         />
@@ -290,7 +292,7 @@ const AcceptInvitation = () => {
               </div>
 
               <div className="space-y-2">
-                <FormLabel>Email</FormLabel>
+                <FormLabel>{t("email")}</FormLabel>
                 <Input
                   type="email"
                   value={invitation?.email || ""}
@@ -305,10 +307,10 @@ const AcceptInvitation = () => {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Password</FormLabel>
+                    <FormLabel>{t("password")}</FormLabel>
                     <FormControl>
                       <PasswordInput
-                        placeholder="Enter your password"
+                        placeholder={t("enterYourPassword")}
                         disabled={acceptInvitationMutation.isPending}
                         showPassword={showPassword}
                         onToggleVisibility={() =>
@@ -332,10 +334,10 @@ const AcceptInvitation = () => {
                 name="confirmPassword"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Confirm Password</FormLabel>
+                    <FormLabel>{t("confirmPassword")}</FormLabel>
                     <FormControl>
                       <PasswordInput
-                        placeholder="Confirm your password"
+                        placeholder={t("confirmYourPassword")}
                         disabled={acceptInvitationMutation.isPending}
                         showPassword={showConfirmPassword}
                         onToggleVisibility={() =>
@@ -360,10 +362,10 @@ const AcceptInvitation = () => {
                 {acceptInvitationMutation.isPending ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    Creating Account...
+                    {t("creatingAccount")}
                   </>
                 ) : (
-                  "Accept Invitation & Create Account"
+                  t("acceptInvitationAndCreate")
                 )}
               </Button>
             </form>
@@ -371,12 +373,12 @@ const AcceptInvitation = () => {
 
           <div className="text-center">
             <p className="text-sm text-gray-500">
-              Already have an account?{" "}
+              {t("alreadyHaveAccount")}{" "}
               <button
                 onClick={() => navigate("/auth/sign-in")}
                 className="text-blue-600 hover:underline"
               >
-                Sign in instead
+                {t("signInInstead")}
               </button>
             </p>
           </div>

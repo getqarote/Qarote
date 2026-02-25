@@ -14,6 +14,8 @@ import { router, workspaceProcedure } from "@/trpc/trpc";
 
 import { createRabbitMQClient, verifyServerAccess } from "./shared";
 
+import { te } from "@/i18n";
+
 /**
  * Overview router
  * Handles RabbitMQ overview operations
@@ -34,7 +36,7 @@ export const overviewRouter = router({
         if (!server) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Server not found or access denied",
+            message: te(ctx.locale, "rabbitmq.serverNotFoundOrAccessDenied"),
           });
         }
 
@@ -96,7 +98,7 @@ export const overviewRouter = router({
 
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to fetch server overview",
+          message: te(ctx.locale, "rabbitmq.failedToFetchOverview"),
         });
       }
     }),

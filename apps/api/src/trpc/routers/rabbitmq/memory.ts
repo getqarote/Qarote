@@ -8,6 +8,8 @@ import { router, workspaceProcedure } from "@/trpc/trpc";
 
 import { createRabbitMQClient, verifyServerAccess } from "./shared";
 
+import { te } from "@/i18n";
+
 /**
  * Memory router
  * Handles RabbitMQ node memory operations
@@ -32,14 +34,14 @@ export const memoryRouter = router({
         if (!server) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Server not found or access denied",
+            message: te(ctx.locale, "rabbitmq.serverNotFoundOrAccessDenied"),
           });
         }
 
         if (!server.workspace) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Server workspace not found",
+            message: te(ctx.locale, "rabbitmq.serverWorkspaceNotFound"),
           });
         }
 
@@ -50,7 +52,7 @@ export const memoryRouter = router({
         if (!node) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Node not found",
+            message: te(ctx.locale, "rabbitmq.nodeNotFound"),
           });
         }
 
@@ -271,7 +273,7 @@ export const memoryRouter = router({
 
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to fetch node memory details",
+          message: te(ctx.locale, "rabbitmq.failedToFetchNodeMemory"),
         });
       }
     }),

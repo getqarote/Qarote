@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 
@@ -14,6 +15,7 @@ interface CodeBlockProps {
 
 export function CodeBlock({ code, language, filename }: CodeBlockProps) {
   const [copied, setCopied] = useState(false);
+  const { t } = useTranslation("portal");
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(code);
@@ -37,12 +39,12 @@ export function CodeBlock({ code, language, filename }: CodeBlockProps) {
             {copied ? (
               <>
                 <Check className="h-4 w-4 mr-1" />
-                Copied
+                {t("codeBlock.copied")}
               </>
             ) : (
               <>
                 <Copy className="h-4 w-4 mr-1" />
-                Copy
+                {t("codeBlock.copy")}
               </>
             )}
           </Button>
@@ -59,12 +61,12 @@ export function CodeBlock({ code, language, filename }: CodeBlockProps) {
             {copied ? (
               <>
                 <Check className="h-4 w-4 mr-1" />
-                Copied
+                {t("codeBlock.copied")}
               </>
             ) : (
               <>
                 <Copy className="h-4 w-4 mr-1" />
-                Copy
+                {t("codeBlock.copy")}
               </>
             )}
           </Button>

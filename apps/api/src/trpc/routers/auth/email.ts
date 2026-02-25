@@ -9,6 +9,8 @@ import { EmailChangeRequestSchema } from "@/schemas/auth";
 
 import { router, strictRateLimitedProcedure } from "@/trpc/trpc";
 
+import { te } from "@/i18n";
+
 /**
  * Email router
  * Handles email change operations
@@ -42,7 +44,7 @@ export const emailRouter = router({
         if (!userWithPassword) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "User not found",
+            message: te(ctx.locale, "auth.userNotFound"),
           });
         }
 
@@ -50,8 +52,7 @@ export const emailRouter = router({
         if (!userWithPassword.passwordHash) {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message:
-              "This account uses Google sign-in. Email changes are not available for OAuth accounts.",
+            message: te(ctx.locale, "auth.googleSignInNoEmailChange"),
           });
         }
 
@@ -64,7 +65,7 @@ export const emailRouter = router({
         if (!isPasswordValid) {
           throw new TRPCError({
             code: "UNAUTHORIZED",
-            message: "Password is incorrect",
+            message: te(ctx.locale, "auth.passwordIsIncorrect"),
           });
         }
 
@@ -76,7 +77,7 @@ export const emailRouter = router({
         if (existingUser) {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: "Email already in use",
+            message: te(ctx.locale, "auth.emailAlreadyInUse"),
           });
         }
 
@@ -100,7 +101,9 @@ export const emailRouter = router({
             newEmail,
             verificationToken,
             "EMAIL_CHANGE",
-            userWithPassword.firstName
+            userWithPassword.firstName,
+            undefined,
+            ctx.locale
           );
 
         if (!emailResult.success) {
@@ -110,7 +113,7 @@ export const emailRouter = router({
           );
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
-            message: "Failed to send verification email",
+            message: te(ctx.locale, "auth.failedToSendVerificationEmail"),
           });
         }
 
@@ -125,8 +128,7 @@ export const emailRouter = router({
         });
 
         return {
-          message:
-            "Email change requested. Please check your new email to verify the change.",
+          message: te(ctx.locale, "messages.emailChangeRequested"),
           pendingEmail: newEmail,
         };
       } catch (error) {
@@ -136,7 +138,7 @@ export const emailRouter = router({
         ctx.logger.error({ error }, "Email change request error");
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to request email change",
+          message: te(ctx.locale, "auth.failedToRequestEmailChange"),
         });
       }
     }),
@@ -154,13 +156,13 @@ export const emailRouter = router({
       });
 
       return {
-        message: "Email change cancelled successfully",
+        message: te(ctx.locale, "messages.emailChangeCancelled"),
       };
     } catch (error) {
       ctx.logger.error({ error }, "Cancel email change error");
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
-        message: "Failed to cancel email change",
+        message: te(ctx.locale, "auth.failedToCancelEmailChange"),
       });
     }
   }),

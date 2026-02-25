@@ -14,6 +14,7 @@ import { authorize, router } from "@/trpc/trpc";
 import { createRabbitMQClient, verifyServerAccess } from "./shared";
 
 import { UserRole } from "@/generated/prisma/client";
+import { te } from "@/i18n";
 
 /**
  * Messages router
@@ -44,7 +45,7 @@ export const messagesRouter = router({
         if (!server) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Server not found or access denied",
+            message: te(ctx.locale, "rabbitmq.serverNotFoundOrAccessDenied"),
           });
         }
 
@@ -52,7 +53,7 @@ export const messagesRouter = router({
         if (!server.workspaceId) {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: "Server workspace not found",
+            message: te(ctx.locale, "rabbitmq.serverWorkspaceNotFound"),
           });
         }
 
@@ -134,7 +135,7 @@ export const messagesRouter = router({
 
           throw new TRPCError({
             code: "UNPROCESSABLE_CONTENT",
-            message: "Message was published but not routed to any queue",
+            message: te(ctx.locale, "rabbitmq.messageNotRouted"),
             cause: {
               routed: false,
               exchange: targetExchange,
@@ -179,7 +180,7 @@ export const messagesRouter = router({
 
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to send message",
+          message: te(ctx.locale, "rabbitmq.failedToSendMessage"),
         });
       }
     }),

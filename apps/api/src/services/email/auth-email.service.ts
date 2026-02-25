@@ -4,6 +4,7 @@ import { InvitationEmail } from "./templates/invitation-email";
 import WelcomeEmail from "./templates/welcome-email";
 
 import { UserPlan } from "@/generated/prisma/client";
+import { tEmail } from "@/i18n";
 
 interface SendInvitationEmailParams {
   to: string;
@@ -12,6 +13,7 @@ interface SendInvitationEmailParams {
   workspaceName: string;
   invitationToken: string;
   plan: UserPlan;
+  locale?: string;
 }
 
 interface SendWelcomeEmailParams {
@@ -19,6 +21,7 @@ interface SendWelcomeEmailParams {
   name: string;
   workspaceName?: string;
   plan: UserPlan;
+  locale?: string;
 }
 
 interface SendVerificationEmailParams {
@@ -27,6 +30,7 @@ interface SendVerificationEmailParams {
   verificationToken: string;
   type: "SIGNUP" | "EMAIL_CHANGE";
   sourceApp?: "app" | "portal";
+  locale?: string;
 }
 
 /**
@@ -46,6 +50,7 @@ export class AuthEmailService {
       workspaceName,
       invitationToken,
       plan,
+      locale = "en",
     } = params;
 
     // Get plan information for the email
@@ -62,7 +67,7 @@ export class AuthEmailService {
 
     return CoreEmailService.sendEmail({
       to,
-      subject: `You're invited to join ${workspaceName} on Qarote`,
+      subject: tEmail(locale, "subjects.invitedToWorkspace", { workspaceName }),
       template,
       emailType: "invitation",
       context: {
@@ -79,7 +84,7 @@ export class AuthEmailService {
   static async sendWelcomeEmail(
     params: SendWelcomeEmailParams
   ): Promise<EmailResult> {
-    const { to, name, workspaceName, plan } = params;
+    const { to, name, workspaceName, plan, locale = "en" } = params;
 
     const { frontendUrl } = CoreEmailService.getConfig();
 
@@ -93,7 +98,7 @@ export class AuthEmailService {
 
     return CoreEmailService.sendEmail({
       to,
-      subject: `Welcome to Qarote, ${name}!`,
+      subject: tEmail(locale, "subjects.welcome", { name }),
       template,
       emailType: "welcome",
       context: {
@@ -110,7 +115,14 @@ export class AuthEmailService {
   static async sendVerificationEmail(
     params: SendVerificationEmailParams
   ): Promise<EmailResult> {
-    const { to, userName, verificationToken, type, sourceApp } = params;
+    const {
+      to,
+      userName,
+      verificationToken,
+      type,
+      sourceApp,
+      locale = "en",
+    } = params;
 
     const config = CoreEmailService.getConfig();
     const expiryHours = 24;
@@ -139,8 +151,8 @@ export class AuthEmailService {
 
     const subject =
       type === "SIGNUP"
-        ? "Please verify your email address - Qarote"
-        : "Verify your new email address - Qarote";
+        ? tEmail(locale, "subjects.verifyEmailSignup")
+        : tEmail(locale, "subjects.verifyEmailChange");
 
     return await CoreEmailService.sendEmail({
       to,

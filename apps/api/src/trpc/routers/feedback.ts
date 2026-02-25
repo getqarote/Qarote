@@ -13,6 +13,7 @@ import { FeedbackMapper } from "@/mappers/feedback";
 import { authorize, rateLimitedProcedure, router } from "@/trpc/trpc";
 
 import { UserRole } from "@/generated/prisma/client";
+import { te } from "@/i18n";
 
 /**
  * Feedback router
@@ -67,7 +68,7 @@ export const feedbackRouter = router({
         ctx.logger.error({ error }, "Error submitting feedback");
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to submit feedback",
+          message: te(ctx.locale, "feedback.failedToSubmit"),
         });
       }
     }),
@@ -137,7 +138,7 @@ export const feedbackRouter = router({
         ctx.logger.error({ error }, "Error fetching feedback");
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to fetch feedback",
+          message: te(ctx.locale, "feedback.failedToFetch"),
         });
       }
     }),
@@ -182,7 +183,7 @@ export const feedbackRouter = router({
         if (!feedback) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Feedback not found",
+            message: te(ctx.locale, "feedback.notFound"),
           });
         }
 
@@ -194,7 +195,7 @@ export const feedbackRouter = router({
         ctx.logger.error({ error }, "Error fetching feedback");
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to fetch feedback",
+          message: te(ctx.locale, "feedback.failedToFetch"),
         });
       }
     }),
@@ -254,7 +255,7 @@ export const feedbackRouter = router({
         ctx.logger.error({ error }, "Error updating feedback");
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to update feedback",
+          message: te(ctx.locale, "feedback.failedToUpdate"),
         });
       }
     }),
@@ -277,7 +278,7 @@ export const feedbackRouter = router({
         ctx.logger.error({ error }, "Error deleting feedback");
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to delete feedback",
+          message: te(ctx.locale, "feedback.failedToDelete"),
         });
       }
     }),
@@ -316,7 +317,7 @@ export const feedbackRouter = router({
         ctx.logger.error({ error }, "Error getting feedback stats");
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to get feedback stats",
+          message: te(ctx.locale, "feedback.failedToGetStats"),
         });
       }
     }),

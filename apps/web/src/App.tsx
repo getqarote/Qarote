@@ -3,6 +3,7 @@ import { HelmetProvider } from "react-helmet-async";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router";
 
+import { LocaleWrapper } from "@/components/LocaleWrapper";
 import { TawkTo } from "@/components/TawkTo";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
@@ -36,10 +37,18 @@ const App = () => {
           <Sonner />
           <BrowserRouter>
             <Routes>
+              {/* English routes at root (no prefix, backward compatible) */}
               <Route path="/" element={<Index />} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/terms-of-service" element={<TermsOfService />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+
+              {/* Localized routes: /:locale/ prefix (e.g., /fr/, /es/, /zh/) */}
+              <Route path="/:locale" element={<LocaleWrapper />}>
+                <Route index element={<Index />} />
+                <Route path="privacy-policy" element={<PrivacyPolicy />} />
+                <Route path="terms-of-service" element={<TermsOfService />} />
+              </Route>
+
               <Route path="*" element={<NotFound />} />
             </Routes>
             <TawkTo />

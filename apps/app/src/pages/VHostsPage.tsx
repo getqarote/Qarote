@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 
 import {
@@ -45,6 +46,7 @@ import { useServers } from "@/hooks/queries/useServer";
 import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 export default function VHostsPage() {
+  const { t } = useTranslation("vhosts");
   const { serverId } = useParams<{ serverId: string }>();
   const { selectedServerId, hasServers } = useServerContext();
   const { user } = useAuth();
@@ -86,10 +88,7 @@ export default function VHostsPage() {
               </div>
               <Alert>
                 <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                  Access denied. Virtual host management is only available to
-                  administrators.
-                </AlertDescription>
+                <AlertDescription>{t("accessDenied")}</AlertDescription>
               </Alert>
             </div>
           </main>
@@ -109,8 +108,8 @@ export default function VHostsPage() {
               <SidebarTrigger />
             </div>
             <NoServerConfigured
-              title="Virtual Hosts"
-              description="Add a RabbitMQ server connection to manage virtual hosts and namespace isolation."
+              title={t("noServerTitle")}
+              description={t("noServerDescription")}
             />
           </main>
         </div>
@@ -128,10 +127,8 @@ export default function VHostsPage() {
               <div className="flex items-center gap-4">
                 <SidebarTrigger />
                 <div>
-                  <h1 className="title-page">Virtual Hosts</h1>
-                  <p className="text-gray-500">
-                    Manage RabbitMQ virtual hosts and namespace isolation
-                  </p>
+                  <h1 className="title-page">{t("pageTitle")}</h1>
+                  <p className="text-gray-500">{t("pageSubtitle")}</p>
                 </div>
               </div>
               <Card className="border-0 shadow-md bg-card">
@@ -139,11 +136,9 @@ export default function VHostsPage() {
                   <div className="text-center">
                     <Server className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                     <h2 className="text-2xl font-semibold text-gray-900 mb-2">
-                      No Server Selected
+                      {t("noServerSelected")}
                     </h2>
-                    <p className="text-gray-600">
-                      Please select a RabbitMQ server to manage virtual hosts.
-                    </p>
+                    <p className="text-gray-600">{t("selectServerPrompt")}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -217,10 +212,8 @@ export default function VHostsPage() {
               <div className="flex items-center gap-4">
                 <SidebarTrigger />
                 <div>
-                  <h1 className="title-page">Virtual Hosts</h1>
-                  <p className="text-gray-500">
-                    Manage RabbitMQ virtual hosts and namespace isolation
-                  </p>
+                  <h1 className="title-page">{t("pageTitle")}</h1>
+                  <p className="text-gray-500">{t("pageSubtitle")}</p>
                 </div>
                 <Badge variant="secondary" className="ml-2">
                   {vhosts.length}
@@ -234,7 +227,7 @@ export default function VHostsPage() {
             {/* Filter */}
             <div className="flex items-center gap-4">
               <Input
-                placeholder="Filter regex"
+                placeholder={t("common:filter")}
                 value={filterRegex}
                 onChange={(e) => setFilterRegex(e.target.value)}
                 className="max-w-xs"
@@ -247,7 +240,7 @@ export default function VHostsPage() {
             {/* VHosts Table */}
             <Card className="border-0 shadow-md bg-card">
               <CardHeader>
-                <CardTitle className="text-lg">Virtual Hosts</CardTitle>
+                <CardTitle className="text-lg">{t("title")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="border rounded-lg">
@@ -256,30 +249,32 @@ export default function VHostsPage() {
                       <TableRow>
                         <TableHead className="w-[200px]">
                           <div className="flex items-center gap-1">
-                            Name
+                            {t("name")}
                             <ChevronUp className="h-3 w-3" />
                           </div>
                         </TableHead>
-                        <TableHead>Users</TableHead>
+                        <TableHead>{t("usersCol")}</TableHead>
                         <TableHead>
                           <div className="flex items-center gap-1">
-                            Ready
-                            <ChevronUp className="h-3 w-3" />
-                          </div>
-                        </TableHead>
-                        <TableHead>
-                          <div className="flex items-center gap-1">
-                            Unacked
+                            {t("ready")}
                             <ChevronUp className="h-3 w-3" />
                           </div>
                         </TableHead>
                         <TableHead>
                           <div className="flex items-center gap-1">
-                            Total
+                            {t("unacked")}
                             <ChevronUp className="h-3 w-3" />
                           </div>
                         </TableHead>
-                        <TableHead className="w-[100px]">Actions</TableHead>
+                        <TableHead>
+                          <div className="flex items-center gap-1">
+                            {t("total")}
+                            <ChevronUp className="h-3 w-3" />
+                          </div>
+                        </TableHead>
+                        <TableHead className="w-[100px]">
+                          {t("common:actions")}
+                        </TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -301,7 +296,7 @@ export default function VHostsPage() {
                                 <Badge
                                   variant="secondary"
                                   className="text-xs flex items-center gap-1"
-                                  title="Protected from deletion"
+                                  title={t("protectedFromDeletion")}
                                 >
                                   <Lock className="w-3 h-3" />
                                 </Badge>
@@ -355,7 +350,7 @@ export default function VHostsPage() {
             {/* Add Virtual Host Form */}
             <Card className="border-0 shadow-md bg-card">
               <CardHeader>
-                <CardTitle className="text-lg">Add virtual host</CardTitle>
+                <CardTitle className="text-lg">{t("addVhost")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex items-end gap-4">
@@ -364,13 +359,13 @@ export default function VHostsPage() {
                       htmlFor="vhost-name"
                       className="block text-sm font-medium mb-2"
                     >
-                      Name
+                      {t("vhostName")}
                     </label>
                     <Input
                       id="vhost-name"
                       value={newVHostName}
                       onChange={(e) => setNewVHostName(e.target.value)}
-                      placeholder="Enter virtual host name"
+                      placeholder={t("vhostPlaceholder")}
                       className="max-w-md"
                     />
                   </div>
@@ -408,7 +403,7 @@ export default function VHostsPage() {
                       workspaceId: workspace.id,
                       vhostName: deleteVHost.name,
                     });
-                    toast.success("Virtual host deleted successfully");
+                    toast.success(t("deleteSuccess"));
                     setDeleteVHost(null);
                   } catch (error) {
                     toast.error(

@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
 import { AppSidebar } from "@/components/AppSidebar";
@@ -18,6 +19,7 @@ import { useUser } from "@/hooks/ui/useUser";
 const handleRefetch = () => {};
 
 const Queues = () => {
+  const { t } = useTranslation("queues");
   const navigate = useNavigate();
   const { isLoading: workspaceLoading } = useUser();
   const [filterRegex, setFilterRegex] = useState("");
@@ -57,8 +59,8 @@ const Queues = () => {
               <SidebarTrigger />
             </div>
             <NoServerConfigured
-              title="Queues"
-              description="Add a RabbitMQ server connection to view and manage queues across your clusters."
+              title={t("noServerTitle")}
+              description={t("noServerDescription")}
             />
           </main>
         </div>
@@ -77,10 +79,8 @@ const Queues = () => {
                 <div className="flex items-center gap-4">
                   <SidebarTrigger />
                   <div>
-                    <h1 className="title-page">Queues</h1>
-                    <p className="text-gray-500">
-                      Please select a RabbitMQ server to view queues
-                    </p>
+                    <h1 className="title-page">{t("pageTitle")}</h1>
+                    <p className="text-gray-500">{t("selectServerPrompt")}</p>
                   </div>
                 </div>
               </div>
@@ -115,7 +115,7 @@ const Queues = () => {
             {/* Filter */}
             <div className="flex items-center gap-4">
               <Input
-                placeholder="Filter regex"
+                placeholder={t("filterRegex")}
                 value={filterRegex}
                 onChange={(e) => setFilterRegex(e.target.value)}
                 className="max-w-xs"

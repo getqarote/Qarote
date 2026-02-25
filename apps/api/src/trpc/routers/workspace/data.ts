@@ -8,6 +8,8 @@ import { FEATURES } from "@/config/features";
 
 import { rateLimitedAdminProcedure, router } from "@/trpc/trpc";
 
+import { te } from "@/i18n";
+
 /**
  * Workspace data router
  * Handles workspace data export and related operations
@@ -32,7 +34,7 @@ export const dataRouter = router({
         if (!workspace) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Workspace not found",
+            message: te(ctx.locale, "workspace.notFound"),
           });
         }
 
@@ -75,7 +77,7 @@ export const dataRouter = router({
         if (!fullWorkspace) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Workspace not found",
+            message: te(ctx.locale, "workspace.notFound"),
           });
         }
 
@@ -136,7 +138,7 @@ export const dataRouter = router({
         ctx.logger.error({ error }, "Error exporting workspace data");
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to export workspace data",
+          message: te(ctx.locale, "workspace.failedToExportData"),
         });
       }
     }),

@@ -20,6 +20,7 @@ import { WorkspaceMapper } from "@/mappers/workspace";
 import { rateLimitedPublicProcedure, router } from "@/trpc/trpc";
 
 import { InvitationStatus, UserRole } from "@/generated/prisma/client";
+import { te } from "@/i18n";
 
 /**
  * Initialize Google OAuth client
@@ -71,7 +72,7 @@ export const invitationRouter = router({
         if (!invitation) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Invalid or expired invitation",
+            message: te(ctx.locale, "auth.invalidOrExpiredInvitation"),
           });
         }
 
@@ -84,7 +85,7 @@ export const invitationRouter = router({
         if (!ownerSubscription) {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: "Workspace owner has no active subscription",
+            message: te(ctx.locale, "auth.workspaceOwnerNoSubscription"),
           });
         }
 
@@ -112,7 +113,7 @@ export const invitationRouter = router({
         ctx.logger.error({ error }, "Error fetching invitation details");
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to fetch invitation details",
+          message: te(ctx.locale, "auth.failedToFetchInvitationDetails"),
         });
       }
     }),
@@ -135,14 +136,14 @@ export const invitationRouter = router({
         if (!invitation) {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: "Invalid invitation token",
+            message: te(ctx.locale, "auth.invalidInvitationToken"),
           });
         }
 
         if (invitation.status !== InvitationStatus.PENDING) {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: "Invitation has already been used or expired",
+            message: te(ctx.locale, "auth.invitationAlreadyUsedOrExpired"),
           });
         }
 
@@ -155,7 +156,7 @@ export const invitationRouter = router({
           });
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: "Invitation has expired",
+            message: te(ctx.locale, "auth.invitationExpired"),
           });
         }
 
@@ -184,8 +185,7 @@ export const invitationRouter = router({
           if (!password) {
             throw new TRPCError({
               code: "UNAUTHORIZED",
-              message:
-                "Password is required to accept invitation for existing account",
+              message: te(ctx.locale, "auth.passwordRequiredForExisting"),
             });
           }
 
@@ -193,8 +193,7 @@ export const invitationRouter = router({
           if (!user.passwordHash) {
             throw new TRPCError({
               code: "BAD_REQUEST",
-              message:
-                "Account exists but has no password. Please use password reset or Google login.",
+              message: te(ctx.locale, "auth.accountNoPasswordUseReset"),
             });
           }
 
@@ -206,7 +205,7 @@ export const invitationRouter = router({
           if (!isPasswordValid) {
             throw new TRPCError({
               code: "UNAUTHORIZED",
-              message: "Invalid password",
+              message: te(ctx.locale, "auth.invalidPassword"),
             });
           }
         } else {
@@ -214,8 +213,7 @@ export const invitationRouter = router({
           if (!password || !firstName || !lastName) {
             throw new TRPCError({
               code: "BAD_REQUEST",
-              message:
-                "Password, first name, and last name are required for new users",
+              message: te(ctx.locale, "auth.requiredFieldsForNewUser"),
             });
           }
         }
@@ -298,7 +296,7 @@ export const invitationRouter = router({
         }
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to accept invitation",
+          message: te(ctx.locale, "auth.failedToAcceptInvitation"),
         });
       }
     }),
@@ -341,7 +339,7 @@ export const invitationRouter = router({
         if (!invitation) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Invalid or expired invitation",
+            message: te(ctx.locale, "auth.invalidOrExpiredInvitation"),
           });
         }
 
@@ -352,7 +350,7 @@ export const invitationRouter = router({
         if (existingUser) {
           throw new TRPCError({
             code: "CONFLICT",
-            message: "User with this email already exists",
+            message: te(ctx.locale, "auth.userWithEmailAlreadyExists"),
           });
         }
 
@@ -414,7 +412,7 @@ export const invitationRouter = router({
         });
 
         return {
-          message: "Invitation accepted successfully",
+          message: te(ctx.locale, "messages.invitationAccepted"),
           user: UserMapper.toApiResponse(newUser),
           workspace: {
             id: invitation.workspace.id,
@@ -429,7 +427,7 @@ export const invitationRouter = router({
         ctx.logger.error({ error }, "Error accepting invitation");
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to accept invitation",
+          message: te(ctx.locale, "auth.failedToAcceptInvitation"),
         });
       }
     }),
@@ -447,7 +445,7 @@ export const invitationRouter = router({
         if (!googleConfig.clientId) {
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
-            message: "Google OAuth client ID not configured",
+            message: te(ctx.locale, "auth.googleOAuthClientIdNotConfigured"),
           });
         }
 
@@ -460,7 +458,7 @@ export const invitationRouter = router({
         if (!payload) {
           throw new TRPCError({
             code: "UNAUTHORIZED",
-            message: "Invalid Google token",
+            message: te(ctx.locale, "auth.invalidGoogleToken"),
           });
         }
 
@@ -469,7 +467,7 @@ export const invitationRouter = router({
         if (!email) {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: "Email not provided by Google",
+            message: te(ctx.locale, "auth.emailNotProvidedByGoogle"),
           });
         }
 
@@ -503,7 +501,7 @@ export const invitationRouter = router({
         if (!invitation) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Invalid or expired invitation",
+            message: te(ctx.locale, "auth.invalidOrExpiredInvitation"),
           });
         }
 
@@ -511,7 +509,7 @@ export const invitationRouter = router({
         if (email.toLowerCase() !== invitation.email.toLowerCase()) {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: "Google account email does not match invitation email",
+            message: te(ctx.locale, "auth.googleEmailMismatchInvitation"),
           });
         }
 
@@ -583,7 +581,7 @@ export const invitationRouter = router({
         });
 
         return {
-          message: "Invitation accepted successfully with Google",
+          message: te(ctx.locale, "messages.invitationAcceptedGoogle"),
           user: UserMapper.toApiResponse(result),
           workspace: {
             id: invitation.workspace.id,
@@ -605,7 +603,7 @@ export const invitationRouter = router({
         }
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to accept invitation with Google",
+          message: te(ctx.locale, "auth.failedToAcceptInvitationGoogle"),
         });
       }
     }),

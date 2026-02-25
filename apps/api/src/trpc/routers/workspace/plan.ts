@@ -5,6 +5,7 @@ import { getPlanFeatures, PLAN_FEATURES } from "@/services/plan/plan.service";
 import { rateLimitedProcedure, router } from "@/trpc/trpc";
 
 import { UserPlan } from "@/generated/prisma/client";
+import { te } from "@/i18n";
 
 /**
  * Plan router
@@ -28,7 +29,7 @@ export const planRouter = router({
       ctx.logger.error({ error }, "Error fetching plan information");
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
-        message: "Failed to fetch plan information",
+        message: te(ctx.locale, "billing.failedToFetchPlanInfo"),
       });
     }
   }),
@@ -67,7 +68,7 @@ export const planRouter = router({
       if (!userWithSubscription) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "User not found",
+          message: te(ctx.locale, "auth.userNotFound"),
         });
       }
 
@@ -174,7 +175,7 @@ export const planRouter = router({
       );
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
-        message: "Failed to fetch plan information",
+        message: te(ctx.locale, "billing.failedToFetchPlanInfo"),
       });
     }
   }),

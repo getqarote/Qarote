@@ -2,6 +2,8 @@ import { TRPCError } from "@trpc/server";
 
 import { rateLimitedProcedure, router } from "@/trpc/trpc";
 
+import { te } from "@/i18n";
+
 /**
  * Discord router
  * Handles Discord community integration
@@ -42,7 +44,7 @@ export const discordRouter = router({
       ctx.logger.error({ error }, "Error marking user as joined Discord");
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
-        message: "Failed to update Discord status",
+        message: te(ctx.locale, "discord.failedToUpdateStatus"),
       });
     }
   }),
@@ -65,7 +67,7 @@ export const discordRouter = router({
       if (!userData) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "User not found",
+          message: te(ctx.locale, "auth.userNotFound"),
         });
       }
 
@@ -80,7 +82,7 @@ export const discordRouter = router({
       ctx.logger.error({ error }, "Error fetching Discord status");
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
-        message: "Failed to fetch Discord status",
+        message: te(ctx.locale, "discord.failedToFetchStatus"),
       });
     }
   }),

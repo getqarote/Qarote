@@ -15,6 +15,7 @@ import { authorize, router } from "@/trpc/trpc";
 import { createRabbitMQClient, verifyServerAccess } from "./shared";
 
 import { UserRole } from "@/generated/prisma/client";
+import { te } from "@/i18n";
 
 /**
  * Users router
@@ -35,7 +36,7 @@ export const usersRouter = router({
         if (!verifiedServer) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Server not found or access denied",
+            message: te(ctx.locale, "rabbitmq.serverNotFoundOrAccessDenied"),
           });
         }
 
@@ -53,7 +54,7 @@ export const usersRouter = router({
         ctx.logger.error({ error }, "Error fetching users:");
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to fetch users",
+          message: te(ctx.locale, "user.failedToFetchUsers"),
         });
       }
     }),
@@ -72,7 +73,7 @@ export const usersRouter = router({
         if (!verifiedServer) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Server not found or access denied",
+            message: te(ctx.locale, "rabbitmq.serverNotFoundOrAccessDenied"),
           });
         }
 
@@ -94,7 +95,7 @@ export const usersRouter = router({
         ctx.logger.error({ error }, "Error fetching user details:");
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to fetch user details",
+          message: te(ctx.locale, "rabbitmq.failedToFetchUserDetails"),
         });
       }
     }),
@@ -113,7 +114,7 @@ export const usersRouter = router({
         if (!verifiedServer) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Server not found or access denied",
+            message: te(ctx.locale, "rabbitmq.serverNotFoundOrAccessDenied"),
           });
         }
 
@@ -135,7 +136,7 @@ export const usersRouter = router({
         ctx.logger.error({ error }, "Error creating user:");
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to create user",
+          message: te(ctx.locale, "rabbitmq.failedToCreateUser"),
         });
       }
     }),
@@ -165,7 +166,7 @@ export const usersRouter = router({
         if (!verifiedServer) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Server not found or access denied",
+            message: te(ctx.locale, "rabbitmq.serverNotFoundOrAccessDenied"),
           });
         }
 
@@ -210,7 +211,7 @@ export const usersRouter = router({
         ctx.logger.error({ error }, "Error updating user:");
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to update user",
+          message: te(ctx.locale, "rabbitmq.failedToUpdateUser"),
         });
       }
     }),
@@ -229,7 +230,7 @@ export const usersRouter = router({
         if (!verifiedServer) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Server not found or access denied",
+            message: te(ctx.locale, "rabbitmq.serverNotFoundOrAccessDenied"),
           });
         }
 
@@ -248,7 +249,7 @@ export const usersRouter = router({
         ctx.logger.error({ error }, "Error deleting user:");
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to delete user",
+          message: te(ctx.locale, "rabbitmq.failedToDeleteUser"),
         });
       }
     }),
@@ -272,7 +273,7 @@ export const usersRouter = router({
         if (!verifiedServer) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Server not found or access denied",
+            message: te(ctx.locale, "rabbitmq.serverNotFoundOrAccessDenied"),
           });
         }
 
@@ -296,7 +297,7 @@ export const usersRouter = router({
         ctx.logger.error({ error }, "Error setting permissions:");
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to set permissions",
+          message: te(ctx.locale, "rabbitmq.failedToSetPermissions"),
         });
       }
     }),
@@ -319,7 +320,7 @@ export const usersRouter = router({
         if (!verifiedServer) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Server not found or access denied",
+            message: te(ctx.locale, "rabbitmq.serverNotFoundOrAccessDenied"),
           });
         }
 
@@ -338,7 +339,7 @@ export const usersRouter = router({
         ctx.logger.error({ error }, "Error deleting permissions:");
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to delete permissions",
+          message: te(ctx.locale, "rabbitmq.failedToDeletePermissions"),
         });
       }
     }),

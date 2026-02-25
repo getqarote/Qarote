@@ -5,6 +5,7 @@ import { UpgradeConfirmationEmail } from "./templates/upgrade-confirmation-email
 import { WelcomeBackEmail } from "./templates/welcome-back-email";
 
 import { UserPlan } from "@/generated/prisma/client";
+import { tEmail } from "@/i18n";
 
 interface UpgradeConfirmationEmailParams {
   to: string;
@@ -12,6 +13,7 @@ interface UpgradeConfirmationEmailParams {
   workspaceName: string;
   plan: UserPlan;
   billingInterval: "monthly" | "yearly";
+  locale?: string;
 }
 
 interface WelcomeBackEmailParams {
@@ -21,6 +23,7 @@ interface WelcomeBackEmailParams {
   plan: UserPlan;
   billingInterval: "monthly" | "yearly";
   previousCancelDate?: string;
+  locale?: string;
 }
 
 /**
@@ -33,7 +36,14 @@ export class BillingEmailService {
   static async sendUpgradeConfirmationEmail(
     params: UpgradeConfirmationEmailParams
   ): Promise<EmailResult> {
-    const { to, userName, workspaceName, plan, billingInterval } = params;
+    const {
+      to,
+      userName,
+      workspaceName,
+      plan,
+      billingInterval,
+      locale = "en",
+    } = params;
 
     const { frontendUrl } = CoreEmailService.getConfig();
 
@@ -47,7 +57,7 @@ export class BillingEmailService {
 
     const result = await CoreEmailService.sendEmail({
       to,
-      subject: `Welcome to ${plan} Plan - Upgrade Confirmed!`,
+      subject: tEmail(locale, "subjects.upgradePlanConfirmed", { plan }),
       template,
       emailType: "upgrade_confirmation",
       context: {
@@ -75,6 +85,7 @@ export class BillingEmailService {
       plan,
       billingInterval,
       previousCancelDate,
+      locale = "en",
     } = params;
 
     const { frontendUrl } = CoreEmailService.getConfig();
@@ -90,7 +101,7 @@ export class BillingEmailService {
 
     const result = await CoreEmailService.sendEmail({
       to,
-      subject: `🎉 Welcome Back to Qarote - ${plan} Plan Renewed!`,
+      subject: tEmail(locale, "subjects.planRenewed", { plan }),
       template,
       emailType: "welcome_back",
       context: {

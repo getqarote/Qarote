@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
 import {
@@ -63,6 +64,8 @@ const PlanCard: React.FC<PlanCardProps> = ({
   isCurrentPlan,
   onUpgrade,
 }) => {
+  const { t } = useTranslation("billing");
+
   // Determine ring color: show blue ring for current plan
   const ringClass = isCurrentPlan
     ? "ring-2 ring-blue-500 shadow-lg scale-105"
@@ -75,7 +78,7 @@ const PlanCard: React.FC<PlanCardProps> = ({
       {isCurrentPlan && (
         <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
           <Badge className="bg-gradient-button text-white px-4 py-1 text-sm font-medium">
-            Current Plan
+            {t("plans.currentPlan")}
           </Badge>
         </div>
       )}
@@ -94,7 +97,7 @@ const PlanCard: React.FC<PlanCardProps> = ({
               <span className="text-4xl font-bold text-foreground">
                 {price}
               </span>
-              {price !== "Free" && (
+              {price !== t("plans.pricing.free") && (
                 <span className="text-muted-foreground">/{period}</span>
               )}
             </div>
@@ -104,7 +107,7 @@ const PlanCard: React.FC<PlanCardProps> = ({
                   {originalPrice}
                 </span>
                 <Badge variant="secondary" className="text-xs">
-                  Save 20%
+                  {t("plans.save20")}
                 </Badge>
               </div>
             )}
@@ -114,7 +117,7 @@ const PlanCard: React.FC<PlanCardProps> = ({
         <div className="space-y-6 mb-6">
           <div>
             <h4 className="font-semibold text-foreground mb-3 text-sm uppercase tracking-wide">
-              Core Features
+              {t("plans.features.coreFeatures")}
             </h4>
             <ul className="space-y-2">
               <li className="flex items-start gap-3">
@@ -123,7 +126,7 @@ const PlanCard: React.FC<PlanCardProps> = ({
                 </div>
                 <div className="flex-1">
                   <span className="text-sm text-foreground">
-                    RabbitMQ Servers
+                    {t("plans.features.rabbitMQServers")}
                   </span>
                   <div className="text-xs text-muted-foreground">
                     {plan.features.servers}
@@ -136,7 +139,7 @@ const PlanCard: React.FC<PlanCardProps> = ({
                 </div>
                 <div className="flex-1">
                   <span className="text-sm text-foreground">
-                    RabbitMQ Version Support
+                    {t("plans.features.rabbitMQVersionSupport")}
                   </span>
                   <div className="text-xs text-muted-foreground">
                     {plan.features.rabbitMQVersionSupport}
@@ -148,7 +151,9 @@ const PlanCard: React.FC<PlanCardProps> = ({
                   <Check className="w-4 h-4 text-green-500" />
                 </div>
                 <div className="flex-1">
-                  <span className="text-sm text-foreground">Workspaces</span>
+                  <span className="text-sm text-foreground">
+                    {t("plans.features.workspaces")}
+                  </span>
                   <div className="text-xs text-muted-foreground">
                     {plan.features.workspaces}
                   </div>
@@ -159,7 +164,9 @@ const PlanCard: React.FC<PlanCardProps> = ({
                   <Check className="w-4 h-4 text-green-500" />
                 </div>
                 <div className="flex-1">
-                  <span className="text-sm text-foreground">Team Members</span>
+                  <span className="text-sm text-foreground">
+                    {t("plans.features.teamMembers")}
+                  </span>
                   <div className="text-xs text-muted-foreground">
                     {plan.features.teamMembers}
                   </div>
@@ -177,12 +184,12 @@ const PlanCard: React.FC<PlanCardProps> = ({
                   <span
                     className={`text-sm ${plan.features.queueManagement ? "text-foreground" : "text-muted-foreground"}`}
                   >
-                    Queue Management
+                    {t("plans.features.queueManagement")}
                   </span>
                   <div
                     className={`text-xs ${plan.features.queueManagement ? "text-muted-foreground" : "text-muted-foreground"}`}
                   >
-                    Create and manage queues
+                    {t("plans.features.queueManagementDesc")}
                   </div>
                 </div>
               </li>
@@ -198,12 +205,12 @@ const PlanCard: React.FC<PlanCardProps> = ({
                   <span
                     className={`text-sm ${plan.features.exchangeManagement ? "text-foreground" : "text-muted-foreground"}`}
                   >
-                    Exchange Management
+                    {t("plans.features.exchangeManagement")}
                   </span>
                   <div
                     className={`text-xs ${plan.features.exchangeManagement ? "text-muted-foreground" : "text-muted-foreground"}`}
                   >
-                    Create and manage exchanges
+                    {t("plans.features.exchangeManagementDesc")}
                   </div>
                 </div>
               </li>
@@ -219,12 +226,12 @@ const PlanCard: React.FC<PlanCardProps> = ({
                   <span
                     className={`text-sm ${plan.features.virtualHostManagement ? "text-foreground" : "text-muted-foreground"}`}
                   >
-                    Virtual Host Management
+                    {t("plans.features.virtualHostManagement")}
                   </span>
                   <div
                     className={`text-xs ${plan.features.virtualHostManagement ? "text-muted-foreground" : "text-muted-foreground"}`}
                   >
-                    Create and manage virtual hosts
+                    {t("plans.features.virtualHostManagementDesc")}
                   </div>
                 </div>
               </li>
@@ -240,12 +247,12 @@ const PlanCard: React.FC<PlanCardProps> = ({
                   <span
                     className={`text-sm ${plan.features.rabbitMQUserManagement ? "text-foreground" : "text-muted-foreground"}`}
                   >
-                    RabbitMQ User Management
+                    {t("plans.features.rabbitMQUserManagement")}
                   </span>
                   <div
                     className={`text-xs ${plan.features.rabbitMQUserManagement ? "text-muted-foreground" : "text-muted-foreground"}`}
                   >
-                    Create and manage RabbitMQ users
+                    {t("plans.features.rabbitMQUserManagementDesc")}
                   </div>
                 </div>
               </li>
@@ -261,12 +268,12 @@ const PlanCard: React.FC<PlanCardProps> = ({
                   <span
                     className={`text-sm ${plan.features.alertsNotification ? "text-foreground" : "text-muted-foreground"}`}
                   >
-                    Alerts Notification
+                    {t("plans.features.alertsNotification")}
                   </span>
                   <div
                     className={`text-xs ${plan.features.alertsNotification ? "text-muted-foreground" : "text-muted-foreground"}`}
                   >
-                    Real-time alerts and notifications
+                    {t("plans.features.alertsNotificationDesc")}
                   </div>
                 </div>
               </li>
@@ -275,7 +282,7 @@ const PlanCard: React.FC<PlanCardProps> = ({
 
           <div>
             <h4 className="font-semibold text-foreground mb-3 text-sm uppercase tracking-wide">
-              Support
+              {t("plans.features.support")}
             </h4>
             <ul className="space-y-2">
               <li className="flex items-start gap-3">
@@ -284,10 +291,10 @@ const PlanCard: React.FC<PlanCardProps> = ({
                 </div>
                 <div className="flex-1">
                   <span className="text-sm text-foreground">
-                    Community Support
+                    {t("plans.features.communitySupport")}
                   </span>
                   <div className="text-xs text-muted-foreground">
-                    Community forums
+                    {t("plans.features.communitySupportDesc")}
                   </div>
                 </div>
               </li>
@@ -303,12 +310,12 @@ const PlanCard: React.FC<PlanCardProps> = ({
                   <span
                     className={`text-sm ${plan.features.prioritySupport ? "text-foreground" : "text-muted-foreground"}`}
                   >
-                    Priority Support
+                    {t("plans.features.prioritySupport")}
                   </span>
                   <div
                     className={`text-xs ${plan.features.prioritySupport ? "text-muted-foreground" : "text-muted-foreground"}`}
                   >
-                    Priority mail support
+                    {t("plans.features.prioritySupportDesc")}
                   </div>
                 </div>
               </li>
@@ -324,12 +331,12 @@ const PlanCard: React.FC<PlanCardProps> = ({
                   <span
                     className={`text-sm ${plan.features.emailAlerts ? "text-foreground" : "text-muted-foreground"}`}
                   >
-                    Email Alerts
+                    {t("plans.features.emailAlerts")}
                   </span>
                   <div
                     className={`text-xs ${plan.features.emailAlerts ? "text-muted-foreground" : "text-muted-foreground"}`}
                   >
-                    Critical and warning notifications
+                    {t("plans.features.emailAlertsDesc")}
                   </div>
                 </div>
               </li>
@@ -350,7 +357,7 @@ const PlanCard: React.FC<PlanCardProps> = ({
           }
           disabled={isCurrentPlan}
         >
-          {isCurrentPlan ? "Current Plan" : "Start free"}
+          {isCurrentPlan ? t("plans.currentPlan") : t("plans.startFree")}
         </Button>
       </CardContent>
     </Card>
@@ -362,6 +369,7 @@ interface PlansPageProps {
 }
 
 export const PlansPage: React.FC<PlansPageProps> = ({ onUpgrade }) => {
+  const { t } = useTranslation("billing");
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">(
     "monthly"
   );
@@ -370,12 +378,12 @@ export const PlansPage: React.FC<PlansPageProps> = ({ onUpgrade }) => {
 
   const planPricing = {
     monthly: {
-      FREE: { price: "Free", originalPrice: undefined },
+      FREE: { price: t("plans.pricing.free"), originalPrice: undefined },
       DEVELOPER: { price: "$10", originalPrice: undefined },
       ENTERPRISE: { price: "$50", originalPrice: undefined },
     },
     yearly: {
-      FREE: { price: "Free", originalPrice: undefined },
+      FREE: { price: t("plans.pricing.free"), originalPrice: undefined },
       DEVELOPER: { price: "$100", originalPrice: "$120" },
       ENTERPRISE: { price: "$500", originalPrice: "$600" },
     },
@@ -384,16 +392,16 @@ export const PlansPage: React.FC<PlansPageProps> = ({ onUpgrade }) => {
   const plans = [
     {
       id: "FREE",
-      name: "Free",
-      description: "Perfect for getting started",
+      name: t("plans.free.name"),
+      description: t("plans.free.description"),
       color: "text-gray-600",
       bgColor: "bg-gray-50",
       borderColor: "border-gray-200",
       features: {
-        servers: "Up to 1",
-        rabbitMQVersionSupport: "Only LTS versions",
-        workspaces: "Up to 1",
-        teamMembers: "Up to 1",
+        servers: t("plans.free.features.servers"),
+        rabbitMQVersionSupport: t("plans.free.features.rabbitMQVersionSupport"),
+        workspaces: t("plans.free.features.workspaces"),
+        teamMembers: t("plans.free.features.teamMembers"),
         queueManagement: true,
         exchangeManagement: true,
         virtualHostManagement: true,
@@ -406,16 +414,18 @@ export const PlansPage: React.FC<PlansPageProps> = ({ onUpgrade }) => {
     },
     {
       id: "DEVELOPER",
-      name: "Developer",
-      description: "For solo developers and small projects",
+      name: t("plans.developer.name"),
+      description: t("plans.developer.description"),
       color: "text-blue-600",
       bgColor: "bg-blue-50",
       borderColor: "border-blue-200",
       features: {
-        servers: "Up to 2",
-        rabbitMQVersionSupport: "All versions 3.x and 4.x",
-        workspaces: "Up to 2",
-        teamMembers: "Up to 2",
+        servers: t("plans.developer.features.servers"),
+        rabbitMQVersionSupport: t(
+          "plans.developer.features.rabbitMQVersionSupport"
+        ),
+        workspaces: t("plans.developer.features.workspaces"),
+        teamMembers: t("plans.developer.features.teamMembers"),
         queueManagement: true,
         exchangeManagement: true,
         virtualHostManagement: true,
@@ -428,16 +438,18 @@ export const PlansPage: React.FC<PlansPageProps> = ({ onUpgrade }) => {
     },
     {
       id: "ENTERPRISE",
-      name: "Enterprise",
-      description: "For large teams and enterprises",
+      name: t("plans.enterprise.name"),
+      description: t("plans.enterprise.description"),
       color: "text-gray-600",
       bgColor: "bg-gray-50",
       borderColor: "border-gray-200",
       features: {
-        servers: "Unlimited",
-        rabbitMQVersionSupport: "All versions 3.x and 4.x",
-        workspaces: "Unlimited",
-        teamMembers: "Unlimited",
+        servers: t("plans.enterprise.features.servers"),
+        rabbitMQVersionSupport: t(
+          "plans.enterprise.features.rabbitMQVersionSupport"
+        ),
+        workspaces: t("plans.enterprise.features.workspaces"),
+        teamMembers: t("plans.enterprise.features.teamMembers"),
         queueManagement: true,
         exchangeManagement: true,
         virtualHostManagement: true,
@@ -463,16 +475,13 @@ export const PlansPage: React.FC<PlansPageProps> = ({ onUpgrade }) => {
                 <button
                   onClick={() => navigate("/profile?tab=plans")}
                   className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                  title="Back to Profile"
+                  title={t("plans.backToProfile")}
                 >
                   <ArrowLeft className="w-4 h-4" />
                 </button>
                 <div>
-                  <h1 className="title-page">Choose Your Plan</h1>
-                  <p className="text-gray-500">
-                    Scale your RabbitMQ monitoring with plans designed for teams
-                    of all sizes.
-                  </p>
+                  <h1 className="title-page">{t("plans.chooseYourPlan")}</h1>
+                  <p className="text-gray-500">{t("plans.subtitle")}</p>
                 </div>
               </div>
               <PlanBadge />
@@ -482,11 +491,10 @@ export const PlansPage: React.FC<PlansPageProps> = ({ onUpgrade }) => {
             <div className="py-8">
               <div className="text-center mb-12">
                 <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
-                  Simple, transparent pricing
+                  {t("plans.pricingTitle")}
                 </h2>
                 <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-                  Scale your RabbitMQ monitoring with plans designed for teams
-                  of all sizes.
+                  {t("plans.subtitle")}
                 </p>
               </div>
 
@@ -498,10 +506,10 @@ export const PlansPage: React.FC<PlansPageProps> = ({ onUpgrade }) => {
                       <Zap className="w-6 h-6 text-blue-600" />
                     </div>
                     <h3 className="font-semibold text-foreground mb-1">
-                      Live Monitoring
+                      {t("plans.highlights.liveMonitoring")}
                     </h3>
                     <p className="text-sm text-muted-foreground text-center">
-                      Monitor your RabbitMQ servers with second precision
+                      {t("plans.highlights.liveMonitoringDesc")}
                     </p>
                   </div>
                   <div className="flex flex-col items-center p-4">
@@ -509,10 +517,10 @@ export const PlansPage: React.FC<PlansPageProps> = ({ onUpgrade }) => {
                       <TrendingUp className="w-6 h-6 text-purple-600" />
                     </div>
                     <h3 className="font-semibold text-foreground mb-1">
-                      Smart Analytics
+                      {t("plans.highlights.smartAnalytics")}
                     </h3>
                     <p className="text-sm text-muted-foreground text-center">
-                      Insights and memory optimization tips
+                      {t("plans.highlights.smartAnalyticsDesc")}
                     </p>
                   </div>
                   <div className="flex flex-col items-center p-4">
@@ -520,10 +528,10 @@ export const PlansPage: React.FC<PlansPageProps> = ({ onUpgrade }) => {
                       <Shield className="w-6 h-6 text-green-600" />
                     </div>
                     <h3 className="font-semibold text-foreground mb-1">
-                      Enterprise Security
+                      {t("plans.highlights.enterpriseSecurity")}
                     </h3>
                     <p className="text-sm text-muted-foreground text-center">
-                      SOC 2 compliant with enterprise-grade encryption
+                      {t("plans.highlights.enterpriseSecurityDesc")}
                     </p>
                   </div>
                   <div className="flex flex-col items-center p-4">
@@ -531,10 +539,10 @@ export const PlansPage: React.FC<PlansPageProps> = ({ onUpgrade }) => {
                       <Headphones className="w-6 h-6 text-orange-600" />
                     </div>
                     <h3 className="font-semibold text-foreground mb-1">
-                      24/7 Support
+                      {t("plans.highlights.support247")}
                     </h3>
                     <p className="text-sm text-muted-foreground text-center">
-                      Expert support when you need it most
+                      {t("plans.highlights.support247Desc")}
                     </p>
                   </div>
                 </div>
@@ -545,7 +553,7 @@ export const PlansPage: React.FC<PlansPageProps> = ({ onUpgrade }) => {
                 <span
                   className={`text-sm font-medium ${billingPeriod === "monthly" ? "text-foreground" : "text-muted-foreground"}`}
                 >
-                  Monthly
+                  {t("plans.billingToggle.monthly")}
                 </span>
                 <button
                   onClick={() =>
@@ -568,11 +576,11 @@ export const PlansPage: React.FC<PlansPageProps> = ({ onUpgrade }) => {
                 <span
                   className={`text-sm font-medium ${billingPeriod === "yearly" ? "text-foreground" : "text-muted-foreground"}`}
                 >
-                  Yearly
+                  {t("plans.billingToggle.yearly")}
                 </span>
                 {billingPeriod === "yearly" && (
                   <Badge className="bg-green-100 text-green-800">
-                    Save 20%
+                    {t("plans.save20")}
                   </Badge>
                 )}
               </div>

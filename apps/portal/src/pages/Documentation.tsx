@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { FileCode, FileText, Search, X } from "lucide-react";
 
@@ -20,6 +21,7 @@ import { TOC_ITEMS } from "@/constants/documentation.constants";
 
 const Documentation = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const { t } = useTranslation("portal");
 
   // Filter sections based on search query
   const matchesSearch = (text: string) => {
@@ -43,7 +45,7 @@ const Documentation = () => {
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             type="text"
-            placeholder="Search documentation..."
+            placeholder={t("documentation.searchPlaceholder")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10 pr-10"
@@ -64,9 +66,9 @@ const Documentation = () => {
         {/* Main Content */}
         <div className="flex-1 min-w-0 space-y-6 max-w-4xl">
           <div>
-            <h1 className="text-3xl font-bold">Self-Hosted Deployment</h1>
+            <h1 className="text-3xl font-bold">{t("documentation.title")}</h1>
             <p className="text-muted-foreground mt-2">
-              Everything you need to deploy Qarote on your own infrastructure
+              {t("documentation.description")}
             </p>
           </div>
 
@@ -86,7 +88,7 @@ const Documentation = () => {
                       <div className="flex items-center gap-2">
                         <FileCode className="h-5 w-5" />
                         <Heading level={3} id="docker-compose-heading">
-                          Docker Compose File
+                          {t("documentation.dockerComposeFile")}
                         </Heading>
                       </div>
                     </AccordionTrigger>
@@ -104,7 +106,7 @@ const Documentation = () => {
                       <div className="flex items-center gap-2">
                         <FileText className="h-5 w-5" />
                         <Heading level={3} id="environment-config-heading">
-                          Environment Configuration
+                          {t("documentation.environmentConfiguration")}
                         </Heading>
                       </div>
                     </AccordionTrigger>

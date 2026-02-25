@@ -30,6 +30,7 @@ import {
 } from "@/trpc/trpc";
 
 import { UserPlan, UserRole } from "@/generated/prisma/client";
+import { te } from "@/i18n";
 
 /**
  * Workspace management router
@@ -93,7 +94,7 @@ export const managementRouter = router({
       ctx.logger.error({ error }, "Error fetching user workspaces:");
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
-        message: "Failed to fetch workspaces",
+        message: te(ctx.locale, "workspace.failedToFetchWorkspaces"),
       });
     }
   }),
@@ -149,7 +150,7 @@ export const managementRouter = router({
       ctx.logger.error({ error }, "Error fetching workspace creation info:");
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
-        message: "Failed to fetch workspace creation info",
+        message: te(ctx.locale, "workspace.failedToFetchCreationInfo"),
       });
     }
   }),
@@ -202,7 +203,7 @@ export const managementRouter = router({
         if (existingWorkspace) {
           throw new TRPCError({
             code: "CONFLICT",
-            message: "A workspace with this name already exists",
+            message: te(ctx.locale, "workspace.nameAlreadyExists"),
           });
         }
 
@@ -271,7 +272,7 @@ export const managementRouter = router({
         ctx.logger.error({ error }, "Error creating workspace:");
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to create workspace",
+          message: te(ctx.locale, "workspace.failedToCreate"),
         });
       }
     }),
@@ -298,8 +299,7 @@ export const managementRouter = router({
         if (!workspace) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message:
-              "Workspace not found or you don't have permission to update it",
+            message: te(ctx.locale, "workspace.notFoundOrNoPermissionUpdate"),
           });
         }
 
@@ -316,7 +316,7 @@ export const managementRouter = router({
           if (existingWorkspace) {
             throw new TRPCError({
               code: "CONFLICT",
-              message: "A workspace with this name already exists",
+              message: te(ctx.locale, "workspace.nameAlreadyExists"),
             });
           }
         }
@@ -358,7 +358,7 @@ export const managementRouter = router({
         ctx.logger.error({ error }, "Error updating workspace:");
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to update workspace",
+          message: te(ctx.locale, "workspace.failedToUpdate"),
         });
       }
     }),
@@ -385,8 +385,7 @@ export const managementRouter = router({
         if (!workspace) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message:
-              "Workspace not found or you don't have permission to delete it",
+            message: te(ctx.locale, "workspace.notFoundOrNoPermissionDelete"),
           });
         }
 
@@ -394,7 +393,7 @@ export const managementRouter = router({
         if (workspaceId === user.workspaceId) {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: "Cannot delete your current active workspace",
+            message: te(ctx.locale, "workspace.cannotDeleteCurrentActive"),
           });
         }
 
@@ -411,7 +410,7 @@ export const managementRouter = router({
           "Workspace deleted successfully"
         );
 
-        return { message: "Workspace deleted successfully" };
+        return { message: te(ctx.locale, "messages.workspaceDeletedSuccess") };
       } catch (error) {
         if (error instanceof TRPCError) {
           throw error;
@@ -419,7 +418,7 @@ export const managementRouter = router({
         ctx.logger.error({ error }, "Error deleting workspace:");
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to delete workspace",
+          message: te(ctx.locale, "workspace.failedToDelete"),
         });
       }
     }),
@@ -443,7 +442,7 @@ export const managementRouter = router({
         if (!workspace) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Workspace not found",
+            message: te(ctx.locale, "workspace.notFound"),
           });
         }
 
@@ -463,7 +462,7 @@ export const managementRouter = router({
         );
 
         return {
-          message: "Workspace switched successfully",
+          message: te(ctx.locale, "messages.workspaceSwitchedSuccess"),
           workspaceId,
         };
       } catch (error) {
@@ -473,7 +472,7 @@ export const managementRouter = router({
         ctx.logger.error({ error }, "Error switching workspace:");
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to switch workspace",
+          message: te(ctx.locale, "workspace.failedToSwitch"),
         });
       }
     }),

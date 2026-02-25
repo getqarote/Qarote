@@ -1,0 +1,115 @@
+{
+  "hero": {
+    "title": "The modern RabbitMQ management interface your team deserves",
+    "subtitle": "Qarote gives you a clean, unified view of your queues, exchanges and messages, with real monitoring, alerts and multi-workspace support.",
+    "noCreditCard": "No credit card required \u2022 Start managing queues in minutes"
+  },
+  "cta": {
+    "getStartedForFree": "Get started for free",
+    "howItWorks": "How it works",
+    "startMonitoringForFree": "Start monitoring for free",
+    "selfHostedSolution": "Self-Hosted Solution",
+    "contactUs": "Contact us"
+  },
+  "comparison": {
+    "title": "Managing RabbitMQ servers",
+    "titleLine2": "doesn't have to be painful",
+    "traditional": {
+      "title": "Traditional management interfaces",
+      "point1": "An outdated UI that slows you down",
+      "point2": "No unified view across servers or environments",
+      "point3": "No reliable, actionable alerts",
+      "point4": "DIY dashboards and scripts everywhere"
+    },
+    "qarote": {
+      "title": "Qarote",
+      "point1": "A clean, modern UI built for speed and clarity",
+      "point2": "A unified dashboard for all your servers and environments",
+      "point3": "Smart, actionable alerts that catch issues early",
+      "point4": "Zero-setup monitoring, no scripts, no maintenance"
+    },
+    "messagesPerSec": "Messages/sec",
+    "activeQueues": "Active Queues",
+    "allSystemsOperational": "All systems operational"
+  },
+  "features": {
+    "title": "All you really care about.",
+    "titleLine2": "Monitored in one place.",
+    "liveQueueMonitoring": {
+      "title": "Live Queue Monitoring",
+      "description": "Monitor queue depths, message rates, and consumer counts with live updates. Track message accumulation and processing performance."
+    },
+    "smartAlertingSystem": {
+      "title": "Smart Alerting System",
+      "description": "Intelligent alerts for queue backlogs, memory usage, and performance issues. Customizable thresholds with severity-based notifications."
+    },
+    "queueManagement": {
+      "title": "Queue Management",
+      "description": "Pause, resume, and delete queues with one click. Create exchanges, bind queues, and manage routing keys through an intuitive interface."
+    },
+    "performanceAnalytics": {
+      "title": "Performance Analytics",
+      "description": "Detailed metrics on memory usage, disk space, file descriptors, and message throughput. Visualize trends with beautiful charts and graphs."
+    },
+    "multiServerSupport": {
+      "title": "Multi-Server Support",
+      "description": "Connect to multiple RabbitMQ clusters and switch between them seamlessly. Support for different environments and configurations."
+    },
+    "messagePublishing": {
+      "title": "Message Publishing",
+      "description": "Test and debug your applications by publishing messages directly to queues and exchanges. Perfect for development and troubleshooting."
+    }
+  },
+  "enterprise": {
+    "title": "Enterprise Self-Hosted Solution",
+    "description": "For organizations requiring on-premise deployment, complete data control, and enterprise-grade features. Deploy Qarote in your own infrastructure with full access to advanced capabilities.",
+    "unlimitedServers": "Unlimited Servers",
+    "unlimitedServersDesc": "Monitor as many RabbitMQ servers as you need",
+    "advancedSecurity": "Advanced Security",
+    "advancedSecurityDesc": "Complete control over your data and deployment"
+  },
+  "connection": {
+    "title": "Connect easily with your RabbitMQ servers",
+    "subtitle": "Don't change the way your RabbitMQ servers work, Qarote is specially made for this message broker.",
+    "step1": {
+      "title": "Sign up",
+      "description": "Create your account in seconds. No credit card required. Start monitoring your RabbitMQ infrastructure immediately.",
+      "createAccount": "Create your Qarote account",
+      "transformMonitoring": "Transform the way you monitor RabbitMQ.",
+      "continueWithEmail": "Continue with Email",
+      "or": "or",
+      "continueWithGoogle": "Continue with Google"
+    },
+    "step2": {
+      "title": "Add your servers",
+      "description": "Connect your RabbitMQ servers with a simple connection. Support for multiple environments and clusters.",
+      "productionServer": "Production Server",
+      "stagingServer": "Staging Server",
+      "developmentServer": "Development Server",
+      "nodes": "3 nodes"
+    },
+    "step3": {
+      "title": "Monitor and collaborate",
+      "description": "Get real-time insights into your queues, exchanges, and message flow. Monitor with your team and set up alerts.",
+      "messagesPerSec": "Messages/sec",
+      "queues": "Queues",
+      "queueDepths": "Queue Depths",
+      "allSystemsOperational": "All systems operational"
+    }
+  },
+  "finalCta": {
+    "title": "Ready to upgrade your RabbitMQ experience?",
+    "subtitle": "Start monitoring your RabbitMQ servers for free today.",
+    "noCreditCard": "No credit card required"
+  },
+  "footer": {
+    "privacyPolicy": "Privacy Policy",
+    "termsOfService": "Terms of Service"
+  },
+  "faqSection": {
+    "title": "Frequently Asked Questions",
+    "subtitle": "Everything you need to know about Qarote",
+    "stillHaveQuestions": "Still have questions?",
+    "stillHaveQuestionsDesc": "Can't find the answer you're looking for? Please chat to our friendly team."
+  }
+}

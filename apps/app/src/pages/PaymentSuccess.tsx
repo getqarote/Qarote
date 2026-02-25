@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useSearchParams } from "react-router";
 
@@ -12,6 +13,7 @@ import { useUser } from "@/hooks/ui/useUser";
 import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 const PaymentSuccess: React.FC = () => {
+  const { t } = useTranslation("billing");
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { refetchPlan, planData } = useUser();
@@ -117,12 +119,9 @@ const PaymentSuccess: React.FC = () => {
         <div className="mb-6">
           <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            Payment Successful!
+            {t("paymentSuccess.title")}
           </h1>
-          <p className="text-gray-600">
-            Your subscription has been activated successfully. You now have
-            access to all premium features.
-          </p>
+          <p className="text-gray-600">{t("paymentSuccess.description")}</p>
         </div>
 
         {/* Show plan information instead of session ID */}
@@ -131,11 +130,13 @@ const PaymentSuccess: React.FC = () => {
             <div className="flex items-center justify-center mb-2">
               <CreditCard className="w-5 h-5 text-green-600 mr-2" />
               <span className="font-medium text-green-800">
-                {planData.user.plan} Plan Activated
+                {t("paymentSuccess.planActivated", {
+                  plan: planData.user.plan,
+                })}
               </span>
             </div>
             <p className="text-sm text-green-600">
-              Welcome to your enhanced Qarote experience!
+              {t("paymentSuccess.welcomeMessage")}
             </p>
           </div>
         )}
@@ -145,7 +146,7 @@ const PaymentSuccess: React.FC = () => {
             onClick={() => navigate("/")}
             className="w-full bg-gradient-button hover:bg-gradient-button-hover text-white py-2 px-4 rounded-lg font-medium transition-colors flex items-center justify-center"
           >
-            Explore Your Dashboard
+            {t("paymentSuccess.exploreDashboard")}
             <ArrowRight className="w-4 h-4 ml-2" />
           </button>
 
@@ -153,13 +154,13 @@ const PaymentSuccess: React.FC = () => {
             onClick={() => navigate("/billing")}
             className="w-full bg-gray-100 hover:bg-gray-200 text-gray-900 py-2 px-4 rounded-lg font-medium transition-colors"
           >
-            Manage Subscription
+            {t("paymentSuccess.manageSubscription")}
           </button>
         </div>
 
         <div className="mt-6 pt-4 border-t border-gray-200">
           <p className="text-xs text-gray-500">
-            Need help? Contact our support team
+            {t("paymentSuccess.needHelp")}
           </p>
         </div>
       </div>

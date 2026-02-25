@@ -1,4 +1,5 @@
 import { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
 import { ExternalLink, HelpCircle } from "lucide-react";
@@ -12,6 +13,8 @@ interface LayoutProps {
 }
 
 export function Layout({ children }: LayoutProps) {
+  const { t } = useTranslation("common");
+
   return (
     <div className="min-h-screen flex flex-col">
       {/* App Header with workspace selector */}
@@ -33,14 +36,14 @@ export function Layout({ children }: LayoutProps) {
                   className="text-muted-foreground hover:text-foreground gap-2"
                 >
                   <HelpCircle className="w-4 h-4" />
-                  Help & Support
+                  {t("helpAndSupport")}
                 </Button>
               </Link>
             </div>
 
             {/* Right side - App info and links */}
             <div className="flex flex-col sm:flex-row items-center gap-4 text-sm text-muted-foreground">
-              <span>RabbitMQ Dashboard</span>
+              <span>{t("rabbitMQDashboard")}</span>
               <div className="flex items-center gap-4">
                 <a
                   href="https://www.rabbitmq.com/documentation.html"
@@ -48,7 +51,7 @@ export function Layout({ children }: LayoutProps) {
                   rel="noopener noreferrer"
                   className="hover:text-foreground transition-colors flex items-center gap-1"
                 >
-                  Documentation
+                  {t("documentation")}
                   <ExternalLink className="w-3 h-3" />
                 </a>
               </div>

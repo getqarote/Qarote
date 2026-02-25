@@ -1,0 +1,85 @@
+{
+  "layout": {
+    "title": "Qarote 门户",
+    "licenses": "许可证",
+    "documentation": "文档",
+    "account": "账户",
+    "settings": "设置",
+    "logout": "退出登录"
+  },
+  "footer": {
+    "privacyPolicy": "隐私政策",
+    "termsOfService": "服务条款"
+  },
+  "licenseManagement": {
+    "title": "我的许可证",
+    "description": "管理您的 Qarote 自托管许可证",
+    "purchaseNew": "购买新许可证",
+    "noLicenses": "您还没有任何许可证。",
+    "copiedToClipboard": "许可证密钥已复制到剪贴板",
+    "licenseKey": "许可证密钥",
+    "downloading": "下载中...",
+    "download": "下载",
+    "downloadFailed": "许可证下载失败",
+    "downloaded": "许可证已下载",
+    "license": "许可证",
+    "expires": "到期日期：{{date}}",
+    "noExpiration": "永不过期",
+    "loadingLicenses": "正在加载许可证..."
+  },
+  "licensePurchase": {
+    "title": "购买许可证",
+    "description": "为您的 Qarote 自托管部署选择许可证级别",
+    "annualLicensing": "自托管部署年度许可（365 天有效期，自动续订）",
+    "processing": "处理中...",
+    "purchaseLicense": "购买许可证",
+    "purchaseFailed": "购买发起失败",
+    "perYear": "/年",
+    "plans": {
+      "developer": {
+        "name": "开发者版",
+        "features": {
+          "servers": "最多 5 台服务器",
+          "queueManagement": "队列管理",
+          "basicAlerts": "基础告警",
+          "emailSupport": "电子邮件支持"
+        }
+      },
+      "enterprise": {
+        "name": "企业版",
+        "features": {
+          "unlimitedServers": "无限服务器",
+          "advancedMonitoring": "高级监控",
+          "prioritySupport": "优先支持",
+          "customIntegrations": "自定义集成"
+        }
+      }
+    }
+  },
+  "accountSettings": {
+    "title": "账户设置",
+    "description": "管理您的账户信息",
+    "profileInfo": "个人资料",
+    "profileDescription": "您的账户详情",
+    "email": "电子邮件",
+    "name": "姓名",
+    "role": "角色"
+  },
+  "documentation": {
+    "searchPlaceholder": "搜索文档...",
+    "title": "自托管部署",
+    "description": "在您自己的基础设施上部署 Qarote 所需的一切",
+    "dockerComposeFile": "Docker Compose 文件",
+    "environmentConfiguration": "环境配置",
+    "installationGuide": "安装指南",
+    "installationGuideDescription": "部署 Qarote 的分步说明",
+    "dockerComposeDescription": "适用于 Community 和 Enterprise 版本的生产就绪 Docker Compose 配置",
+    "environmentConfigDescription": "环境变量模板 -- 将其复制到 .env 文件并更新为您的值"
+  },
+  "codeBlock": {
+    "copied": "已复制",
+    "copy": "复制"
+  },
+  "signupVerifiedExtra": " 您现在可以购买和管理您的许可证。",
+  "goToLicenses": "前往许可证"
+}

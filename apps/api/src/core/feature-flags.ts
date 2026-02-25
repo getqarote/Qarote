@@ -21,6 +21,8 @@ import {
 } from "@/config/deployment";
 import { FEATURE_DESCRIPTIONS, PremiumFeature } from "@/config/features";
 
+import { te } from "@/i18n";
+
 /**
  * Check if a premium feature is enabled
  * This is the main function that determines feature availability
@@ -88,24 +90,25 @@ export function requirePremiumFeature(feature: PremiumFeature) {
 
     if (!enabled) {
       const featureName = FEATURE_DESCRIPTIONS[feature];
+      const locale = opts.ctx?.locale || "en";
 
       if (isCommunityMode()) {
         throw new TRPCError({
           code: "FORBIDDEN",
-          message: `${featureName} requires Enterprise Edition. Upgrade from Community Edition to unlock this feature.`,
+          message: te(locale, "feature.requiresEnterprise", { featureName }),
         });
       }
 
       if (isEnterpriseMode()) {
         throw new TRPCError({
           code: "FORBIDDEN",
-          message: `${featureName} is not included in your license or your license is invalid. Please check your license file.`,
+          message: te(locale, "feature.notIncludedInLicense", { featureName }),
         });
       }
 
       throw new TRPCError({
         code: "FORBIDDEN",
-        message: `${featureName} is not available.`,
+        message: te(locale, "feature.notAvailable", { featureName }),
       });
     }
 

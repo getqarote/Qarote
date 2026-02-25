@@ -29,6 +29,7 @@ import {
 } from "@/trpc/trpc";
 
 import { UserRole } from "@/generated/prisma/client";
+import { te } from "@/i18n";
 
 /**
  * Server router
@@ -92,7 +93,7 @@ export const serverRouter = router({
         ctx.logger.error({ error }, "Error fetching servers");
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to fetch servers",
+          message: te(ctx.locale, "rabbitmq.failedToFetchServers"),
         });
       }
     }),
@@ -133,7 +134,7 @@ export const serverRouter = router({
         if (!server) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Server not found or access denied",
+            message: te(ctx.locale, "rabbitmq.serverNotFoundOrAccessDenied"),
           });
         }
 
@@ -165,7 +166,7 @@ export const serverRouter = router({
         ctx.logger.error({ error, id }, "Error fetching server");
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to fetch server",
+          message: te(ctx.locale, "rabbitmq.failedToFetchServer"),
         });
       }
     }),
@@ -251,7 +252,9 @@ export const serverRouter = router({
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message:
-            error instanceof Error ? error.message : "Failed to create server",
+            error instanceof Error
+              ? error.message
+              : te(ctx.locale, "rabbitmq.failedToCreateServer"),
         });
       }
     }),
@@ -276,7 +279,7 @@ export const serverRouter = router({
         if (!existingServer) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Server not found or access denied",
+            message: te(ctx.locale, "rabbitmq.serverNotFoundOrAccessDenied"),
           });
         }
 
@@ -354,7 +357,9 @@ export const serverRouter = router({
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message:
-            error instanceof Error ? error.message : "Failed to update server",
+            error instanceof Error
+              ? error.message
+              : te(ctx.locale, "rabbitmq.failedToUpdateServer"),
         });
       }
     }),
@@ -379,7 +384,7 @@ export const serverRouter = router({
         if (!existingServer) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Server not found or access denied",
+            message: te(ctx.locale, "rabbitmq.serverNotFoundOrAccessDenied"),
           });
         }
 
@@ -388,7 +393,7 @@ export const serverRouter = router({
         });
 
         return {
-          message: "Server deleted successfully",
+          message: te(ctx.locale, "messages.serverDeletedSuccess"),
         };
       } catch (error) {
         if (error instanceof TRPCError) {
@@ -397,7 +402,7 @@ export const serverRouter = router({
         ctx.logger.error({ error, id }, "Error deleting server");
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to delete server",
+          message: te(ctx.locale, "rabbitmq.failedToDeleteServer"),
         });
       }
     }),
@@ -421,7 +426,7 @@ export const serverRouter = router({
 
         return {
           success: true,
-          message: "Connection successful",
+          message: te(ctx.locale, "messages.connectionSuccessful"),
           version: overview.rabbitmq_version,
           cluster_name: overview.cluster_name,
         };
@@ -429,7 +434,10 @@ export const serverRouter = router({
         ctx.logger.error({ error }, "Connection test failed");
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: error instanceof Error ? error.message : "Connection failed",
+          message:
+            error instanceof Error
+              ? error.message
+              : te(ctx.locale, "rabbitmq.connectionFailed"),
         });
       }
     }),

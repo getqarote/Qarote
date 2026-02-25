@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Link, Outlet, useLocation, useNavigate } from "react-router";
 
 import {
@@ -26,10 +27,11 @@ const Layout = () => {
   const { user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  const { t } = useTranslation("portal");
 
   const navigation = [
-    { name: "Licenses", href: "/licenses", icon: LayoutDashboard },
-    { name: "Documentation", href: "/documentation", icon: BookOpen },
+    { name: t("layout.licenses"), href: "/licenses", icon: LayoutDashboard },
+    { name: t("layout.documentation"), href: "/documentation", icon: BookOpen },
   ];
 
   return (
@@ -39,7 +41,7 @@ const Layout = () => {
           <div className="flex justify-between h-16">
             <div className="flex">
               <div className="shrink-0 flex items-center">
-                <h1 className="text-xl font-bold">Qarote Portal</h1>
+                <h1 className="text-xl font-bold">{t("layout.title")}</h1>
               </div>
               <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
                 {navigation.map((item) => {
@@ -89,7 +91,7 @@ const Layout = () => {
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
                       <p className="text-sm font-medium leading-none">
-                        Account
+                        {t("layout.account")}
                       </p>
                       <p className="text-xs leading-none text-muted-foreground">
                         {user?.email}
@@ -99,12 +101,12 @@ const Layout = () => {
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => navigate("/settings")}>
                     <Settings className="mr-2 h-4 w-4" />
-                    <span>Settings</span>
+                    <span>{t("layout.settings")}</span>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={logout}>
                     <LogOut className="mr-2 h-4 w-4" />
-                    <span>Logout</span>
+                    <span>{t("layout.logout")}</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -121,7 +123,7 @@ const Layout = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="mb-4 md:mb-0">
-              <h3 className="text-lg font-bold">Qarote Portal</h3>
+              <h3 className="text-lg font-bold">{t("layout.title")}</h3>
             </div>
             <div className="flex items-center gap-6">
               <a
@@ -137,13 +139,13 @@ const Layout = () => {
                 to="/privacy-policy"
                 className="text-muted-foreground hover:text-foreground transition-colors text-sm"
               >
-                Privacy Policy
+                {t("footer.privacyPolicy")}
               </Link>
               <Link
                 to="/terms-of-service"
                 className="text-muted-foreground hover:text-foreground transition-colors text-sm"
               >
-                Terms of Service
+                {t("footer.termsOfService")}
               </Link>
             </div>
           </div>

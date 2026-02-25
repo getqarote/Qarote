@@ -45,3 +45,8 @@ export const RemoveUserFromWorkspaceSchema = z.object({
   workspaceId: z.string(),
   userId: z.string(),
 });
+
+// Schema for updating user locale preference
+export const UpdateLocaleSchema = z.object({
+  locale: z.string().min(2).max(5),
+});

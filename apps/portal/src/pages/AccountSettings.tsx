@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import {
   Card,
   CardContent,
@@ -10,31 +12,34 @@ import { useAuth } from "@/contexts/AuthContext";
 
 const AccountSettings = () => {
   const { user } = useAuth();
+  const { t } = useTranslation("portal");
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Account Settings</h1>
+        <h1 className="text-3xl font-bold">{t("accountSettings.title")}</h1>
         <p className="text-muted-foreground mt-2">
-          Manage your account information
+          {t("accountSettings.description")}
         </p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Profile Information</CardTitle>
-          <CardDescription>Your account details</CardDescription>
+          <CardTitle>{t("accountSettings.profileInfo")}</CardTitle>
+          <CardDescription>
+            {t("accountSettings.profileDescription")}
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
             <label className="text-sm font-medium text-muted-foreground">
-              Email
+              {t("accountSettings.email")}
             </label>
             <p className="mt-1">{user?.email}</p>
           </div>
           <div>
             <label className="text-sm font-medium text-muted-foreground">
-              Name
+              {t("accountSettings.name")}
             </label>
             <p className="mt-1">
               {user?.firstName} {user?.lastName}
@@ -42,7 +47,7 @@ const AccountSettings = () => {
           </div>
           <div>
             <label className="text-sm font-medium text-muted-foreground">
-              Role
+              {t("accountSettings.role")}
             </label>
             <p className="mt-1">{user?.role}</p>
           </div>

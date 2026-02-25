@@ -24,6 +24,8 @@ import { UserProvider } from "@/contexts/UserContext";
 import { VHostProvider } from "@/contexts/VHostContext";
 import { WorkspaceProvider } from "@/contexts/WorkspaceContext";
 
+import i18n from "@/i18n";
+
 // Lazy load all pages
 const Index = lazy(() => import("./pages/Index"));
 const Queues = lazy(() => import("./pages/Queues"));
@@ -343,16 +345,14 @@ const App = withSentryProfiling(
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center space-y-4 p-8">
           <h1 className="text-2xl font-bold text-destructive">
-            Something went wrong
+            {i18n.t("common:error")}
           </h1>
-          <p className="text-muted-foreground">
-            An unexpected error occurred. Our team has been notified.
-          </p>
+          <p className="text-muted-foreground">{i18n.t("common:tryAgain")}</p>
           <button
             onClick={resetError}
             className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
           >
-            Try again
+            {i18n.t("common:tryAgain")}
           </button>
         </div>
       </div>

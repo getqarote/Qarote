@@ -1,5 +1,6 @@
 import * as React from "react";
 import { lazy, Suspense, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import type { LucideProps } from "lucide-react";
 import {
@@ -31,6 +32,10 @@ import { Card, CardContent } from "@/components/ui/card";
 const FAQ = lazy(() => import("@/components/FAQ"));
 
 const Index = () => {
+  const { t } = useTranslation("landing");
+  const { t: tPricing } = useTranslation("pricing");
+  const { t: tFaq } = useTranslation("faq");
+
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">(
     "yearly"
   );
@@ -51,44 +56,38 @@ const Index = () => {
   const features = [
     {
       icon: Activity,
-      title: "Live Queue Monitoring",
-      description:
-        "Monitor queue depths, message rates, and consumer counts with live updates. Track message accumulation and processing performance.",
+      title: t("features.liveQueueMonitoring.title"),
+      description: t("features.liveQueueMonitoring.description"),
       gradient: "from-yellow-500 to-orange-500",
     },
     {
       icon: Shield,
-      title: "Smart Alerting System",
-      description:
-        "Intelligent alerts for queue backlogs, memory usage, and performance issues. Customizable thresholds with severity-based notifications.",
+      title: t("features.smartAlertingSystem.title"),
+      description: t("features.smartAlertingSystem.description"),
       gradient: "from-green-500 to-emerald-500",
     },
     {
       icon: MessageSquare,
-      title: "Queue Management",
-      description:
-        "Pause, resume, and delete queues with one click. Create exchanges, bind queues, and manage routing keys through an intuitive interface.",
+      title: t("features.queueManagement.title"),
+      description: t("features.queueManagement.description"),
       gradient: "from-blue-500 to-cyan-500",
     },
     {
       icon: BarChart3,
-      title: "Performance Analytics",
-      description:
-        "Detailed metrics on memory usage, disk space, file descriptors, and message throughput. Visualize trends with beautiful charts and graphs.",
+      title: t("features.performanceAnalytics.title"),
+      description: t("features.performanceAnalytics.description"),
       gradient: "from-purple-500 to-pink-500",
     },
     {
       icon: Settings,
-      title: "Multi-Server Support",
-      description:
-        "Connect to multiple RabbitMQ clusters and switch between them seamlessly. Support for different environments and configurations.",
+      title: t("features.multiServerSupport.title"),
+      description: t("features.multiServerSupport.description"),
       gradient: "from-red-500 to-rose-500",
     },
     {
       icon: Rocket,
-      title: "Message Publishing",
-      description:
-        "Test and debug your applications by publishing messages directly to queues and exchanges. Perfect for development and troubleshooting.",
+      title: t("features.messagePublishing.title"),
+      description: t("features.messagePublishing.description"),
       gradient: "from-indigo-500 to-blue-500",
     },
   ];
@@ -109,16 +108,16 @@ const Index = () => {
   const plans = [
     {
       id: "FREE",
-      name: "Starter",
-      description: "Perfect for getting started",
+      name: tPricing("plans.starter.name"),
+      description: tPricing("plans.starter.description"),
       color: "text-gray-600",
       bgColor: "bg-gray-50",
       borderColor: "border-orange-200",
       features: {
-        servers: "Up to 1",
-        rabbitMQVersionSupport: "Only LTS versions",
-        workspaces: "Up to 1",
-        teamMembers: "Up to 1",
+        servers: tPricing("limits.upTo1"),
+        rabbitMQVersionSupport: tPricing("featureNames.onlyLTS"),
+        workspaces: tPricing("limits.upTo1"),
+        teamMembers: tPricing("limits.upTo1"),
         queueManagement: true,
         exchangeManagement: true,
         virtualHostManagement: true,
@@ -131,17 +130,17 @@ const Index = () => {
     },
     {
       id: "DEVELOPER",
-      name: "Pro",
-      description: "For solo developers and small projects",
+      name: tPricing("plans.pro.name"),
+      description: tPricing("plans.pro.description"),
       color: "text-gray-600",
       bgColor: "bg-gray-50",
       borderColor: "border-gray-200",
       isPopular: true,
       features: {
-        servers: "Up to 3",
-        rabbitMQVersionSupport: "All versions 3.x and 4.x",
-        workspaces: "Up to 3",
-        teamMembers: "Up to 3",
+        servers: tPricing("limits.upTo3"),
+        rabbitMQVersionSupport: tPricing("featureNames.allVersions"),
+        workspaces: tPricing("limits.upTo3"),
+        teamMembers: tPricing("limits.upTo3"),
         queueManagement: true,
         exchangeManagement: true,
         virtualHostManagement: true,
@@ -154,16 +153,16 @@ const Index = () => {
     },
     {
       id: "ENTERPRISE",
-      name: "Business",
-      description: "For large teams and enterprises",
+      name: tPricing("plans.business.name"),
+      description: tPricing("plans.business.description"),
       color: "text-gray-600",
       bgColor: "bg-gray-50",
       borderColor: "border-gray-200",
       features: {
-        servers: "Unlimited",
-        rabbitMQVersionSupport: "All versions 3.x and 4.x",
-        workspaces: "Unlimited",
-        teamMembers: "Unlimited",
+        servers: tPricing("limits.unlimited"),
+        rabbitMQVersionSupport: tPricing("featureNames.allVersions"),
+        workspaces: tPricing("limits.unlimited"),
+        teamMembers: tPricing("limits.unlimited"),
         queueManagement: true,
         exchangeManagement: true,
         virtualHostManagement: true,
@@ -173,6 +172,38 @@ const Index = () => {
         prioritySupport: true,
         emailAlerts: true,
       },
+    },
+  ];
+
+  // SEO FAQ items using the faq namespace
+  const seoFaqItems = [
+    {
+      question: tFaq("q1.question"),
+      answer: tFaq("q1.answer"),
+    },
+    {
+      question: tFaq("q2.question"),
+      answer: tFaq("q2.answer"),
+    },
+    {
+      question: tFaq("q3.question"),
+      answer: tFaq("q3.answer"),
+    },
+    {
+      question: tFaq("q4.question"),
+      answer: tFaq("q4.answer"),
+    },
+    {
+      question: tFaq("q5.question"),
+      answer: tFaq("q5.answer"),
+    },
+    {
+      question: tFaq("q6.question"),
+      answer: tFaq("q6.answer"),
+    },
+    {
+      question: tFaq("q7.question"),
+      answer: tFaq("q7.answer"),
     },
   ];
 
@@ -203,45 +234,7 @@ const Index = () => {
           "Best RabbitMQ monitoring tools",
           "Modern RabbitMQ management interface",
         ]}
-        faq={[
-          {
-            question: "What is Qarote?",
-            answer:
-              "Qarote is a modern, user-friendly dashboard that helps you monitor and manage your RabbitMQ servers effortlessly. Instead of using the outdated RabbitMQ admin panel or command line, Qarote gives you a clean, visual interface to see your queues, messages, and system health in real time.",
-          },
-          {
-            question: "Who is Qarote for?",
-            answer:
-              "Qarote is designed for developers, DevOps engineers, and teams who use RabbitMQ and want better visibility, easier monitoring, and faster troubleshooting. Whether you're running one broker or dozens, Qarote helps you save time and prevent message bottlenecks.",
-          },
-          {
-            question: "Is Qarote secure?",
-            answer:
-              "Absolutely. All connections to your RabbitMQ servers are encrypted (TLS), and no sensitive data is stored on our servers. You stay in full control of your credentials, and Qarote only reads the metrics and management data needed for your dashboard.",
-          },
-          {
-            question: "What can I do with Qarote?",
-            answer:
-              "With Qarote, you can: View all your queues, exchanges, and bindings at a glance; Monitor message rates, errors, and consumer activity in real time; Create alerts for blocked or overloaded queues; Manage users, vhosts, and permissions visually; Connect multiple RabbitMQ instances in one place.",
-          },
-          {
-            question:
-              "How is Qarote different from the RabbitMQ Management UI?",
-            answer:
-              "The built-in RabbitMQ Management Plugin works, but it's slow, cluttered, and hard to scale across multiple brokers. Qarote provides: A modern, intuitive interface; Centralized monitoring across environments; Powerful search and filters; Smart alerts and reporting; A clean experience designed for teams.",
-          },
-          {
-            question:
-              "Is Qarote a better monitoring tool than Prometheus and Grafana?",
-            answer:
-              "Qarote offers purpose-built monitoring specifically for RabbitMQ with zero configuration. While Prometheus and Grafana are powerful, they require significant setup and maintenance. Qarote provides comparable insights with much less overhead.",
-          },
-          {
-            question: "Can I try Qarote for free?",
-            answer:
-              "Yes! We offer a free tier that includes 1 server, 1 workspace, and 1 team member. You can start monitoring your RabbitMQ queues right away without a credit card. When you're ready to scale, you can upgrade to a paid plan.",
-          },
-        ]}
+        faq={seoFaqItems}
         structuredData={{
           "@context": "https://schema.org",
           "@type": "SoftwareApplication",
@@ -282,13 +275,11 @@ const Index = () => {
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-3.5 md:pt-32">
           <div className="w-full text-center">
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6 leading-tight max-w-4xl mx-auto px-2">
-              The modern RabbitMQ management interface your team deserves
+              {t("hero.title")}
             </h1>
 
             <p className="text-base sm:text-lg md:text-xl text-muted-foreground mb-12 leading-relaxed max-w-3xl mx-auto px-2">
-              Qarote gives you a clean, unified view of your queues, exchanges
-              and messages, with real monitoring, alerts and multi-workspace
-              support.
+              {t("hero.subtitle")}
             </p>
 
             <div className="mb-12">
@@ -308,7 +299,7 @@ const Index = () => {
                 }}
               />
               <p className="text-xs sm:text-sm text-muted-foreground mt-3 px-4">
-                No credit card required • Start managing queues in minutes
+                {t("hero.noCreditCard")}
               </p>
             </div>
           </div>
@@ -365,10 +356,10 @@ const Index = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4">
-              Managing RabbitMQ servers
+              {t("comparison.title")}
               <br />
               <span className="text-foreground">
-                doesn't have to be painful
+                {t("comparison.titleLine2")}
               </span>
             </h2>
           </div>
@@ -379,34 +370,34 @@ const Index = () => {
               {/* Left Column - Traditional */}
               <div className="pt-8 lg:pt-12 px-8 lg:px-12 pb-0 flex flex-col relative overflow-visible">
                 <h3 className="text-2xl font-bold text-foreground mb-8">
-                  Traditional management interfaces
+                  {t("comparison.traditional.title")}
                 </h3>
                 <div className="space-y-5 mb-16">
                   <div className="flex gap-4 items-start">
                     <XIcon className="w-6 h-6 text-red-500 shrink-0 mt-0.5" />
                     <p className="text-foreground">
-                      An outdated UI that slows you down
+                      {t("comparison.traditional.point1")}
                     </p>
                   </div>
 
                   <div className="flex gap-4 items-start">
                     <XIcon className="w-6 h-6 text-red-500 shrink-0 mt-0.5" />
                     <p className="text-foreground">
-                      No unified view across servers or environments
+                      {t("comparison.traditional.point2")}
                     </p>
                   </div>
 
                   <div className="flex gap-4 items-start">
                     <XIcon className="w-6 h-6 text-red-500 shrink-0 mt-0.5" />
                     <p className="text-foreground">
-                      No reliable, actionable alerts
+                      {t("comparison.traditional.point3")}
                     </p>
                   </div>
 
                   <div className="flex gap-4 items-start">
                     <XIcon className="w-6 h-6 text-red-500 shrink-0 mt-0.5" />
                     <p className="text-foreground">
-                      DIY dashboards and scripts everywhere
+                      {t("comparison.traditional.point4")}
                     </p>
                   </div>
                 </div>
@@ -419,7 +410,7 @@ const Index = () => {
                     <div className="w-3 h-3 bg-green-400 rounded-full"></div>
                   </div>
                   <div className="bg-background rounded flex-1 flex items-center justify-center">
-                    <div className="text-red-500 text-4xl">⚠️</div>
+                    <div className="text-red-500 text-4xl">&#9888;&#65039;</div>
                   </div>
                 </div>
               </div>
@@ -427,34 +418,34 @@ const Index = () => {
               {/* Right Column - Qarote */}
               <div className="pt-8 lg:pt-12 px-8 lg:px-12 pb-0 flex flex-col relative overflow-visible">
                 <h3 className="text-2xl font-bold text-foreground mb-8">
-                  Qarote
+                  {t("comparison.qarote.title")}
                 </h3>
                 <div className="space-y-5 mb-16">
                   <div className="flex gap-4 items-start">
                     <CheckIcon className="w-6 h-6 text-green-500 shrink-0 mt-0.5" />
                     <p className="text-foreground">
-                      A clean, modern UI built for speed and clarity
+                      {t("comparison.qarote.point1")}
                     </p>
                   </div>
 
                   <div className="flex gap-4 items-start">
                     <CheckIcon className="w-6 h-6 text-green-500 shrink-0 mt-0.5" />
                     <p className="text-foreground">
-                      A unified dashboard for all your servers and environments
+                      {t("comparison.qarote.point2")}
                     </p>
                   </div>
 
                   <div className="flex gap-4 items-start">
                     <CheckIcon className="w-6 h-6 text-green-500 shrink-0 mt-0.5" />
                     <p className="text-foreground">
-                      Smart, actionable alerts that catch issues early
+                      {t("comparison.qarote.point3")}
                     </p>
                   </div>
 
                   <div className="flex gap-4 items-start">
                     <CheckIcon className="w-6 h-6 text-green-500 shrink-0 mt-0.5" />
                     <p className="text-foreground">
-                      Zero-setup monitoring, no scripts, no maintenance
+                      {t("comparison.qarote.point4")}
                     </p>
                   </div>
                 </div>
@@ -478,19 +469,19 @@ const Index = () => {
                     <div className="grid grid-cols-2 gap-2">
                       <div className="bg-muted/30 rounded p-1.5">
                         <div className="text-xs text-muted-foreground">
-                          Messages/sec
+                          {t("comparison.messagesPerSec")}
                         </div>
                         <div className="text-sm font-bold">4.2k</div>
                       </div>
                       <div className="bg-muted/30 rounded p-1.5">
                         <div className="text-xs text-muted-foreground">
-                          Active Queues
+                          {t("comparison.activeQueues")}
                         </div>
                         <div className="text-sm font-bold">127</div>
                       </div>
                     </div>
                     <div className="bg-green-100 border border-green-200 rounded p-1.5 text-xs text-green-700">
-                      ✓ All systems operational
+                      &#10003; {t("comparison.allSystemsOperational")}
                     </div>
                   </div>
                 </div>
@@ -505,9 +496,9 @@ const Index = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4">
-              All you really care about.
+              {t("features.title")}
               <br />
-              Monitored in one place.
+              {t("features.titleLine2")}
             </h2>
           </div>
 
@@ -534,7 +525,7 @@ const Index = () => {
               }}
               className="bg-linear-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600 px-4 py-3 sm:px-8 sm:py-4 rounded-lg font-semibold transition-colors duration-200 text-base sm:text-lg"
             >
-              Start monitoring for free
+              {t("cta.startMonitoringForFree")}
             </button>
           </div>
         </div>
@@ -548,31 +539,29 @@ const Index = () => {
               <Building2Icon className="w-8 h-8 text-orange-600" />
             </div>
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-6">
-              Enterprise Self-Hosted Solution
+              {t("enterprise.title")}
             </h2>
             <p className="text-lg text-muted-foreground mb-8">
-              For organizations requiring on-premise deployment, complete data
-              control, and enterprise-grade features. Deploy Qarote in your own
-              infrastructure with full access to advanced capabilities.
+              {t("enterprise.description")}
             </p>
 
             <div className="grid md:grid-cols-2 gap-6 mb-12">
               <div className="p-6 bg-card border border-border rounded-lg">
                 <ServerIcon className="w-8 h-8 text-orange-600 mb-3 mx-auto" />
                 <h3 className="font-semibold text-foreground mb-2">
-                  Unlimited Servers
+                  {t("enterprise.unlimitedServers")}
                 </h3>
                 <p className="text-sm text-muted-foreground">
-                  Monitor as many RabbitMQ servers as you need
+                  {t("enterprise.unlimitedServersDesc")}
                 </p>
               </div>
               <div className="p-6 bg-card border border-border rounded-lg">
                 <Shield className="w-8 h-8 text-orange-600 mb-3 mx-auto" />
                 <h3 className="font-semibold text-foreground mb-2">
-                  Advanced Security
+                  {t("enterprise.advancedSecurity")}
                 </h3>
                 <p className="text-sm text-muted-foreground">
-                  Complete control over your data and deployment
+                  {t("enterprise.advancedSecurityDesc")}
                 </p>
               </div>
             </div>
@@ -588,7 +577,7 @@ const Index = () => {
               }}
               className="bg-linear-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600 px-4 py-3 sm:px-8 sm:py-4 rounded-lg font-semibold transition-colors duration-200 text-base sm:text-lg"
             >
-              Self-Hosted Solution
+              {t("cta.selfHostedSolution")}
             </button>
           </div>
         </div>
@@ -601,11 +590,10 @@ const Index = () => {
             {/* Left side - Title and description */}
             <div className="lg:sticky lg:top-20">
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-6">
-                Connect easily with your RabbitMQ servers
+                {t("connection.title")}
               </h2>
               <p className="text-lg text-muted-foreground">
-                Don't change the way your RabbitMQ servers work, Qarote is
-                specially made for this message broker.
+                {t("connection.subtitle")}
               </p>
             </div>
 
@@ -621,11 +609,10 @@ const Index = () => {
                   </div>
                   <div className="flex-1">
                     <h3 className="text-xl font-bold text-foreground mb-2">
-                      Sign up
+                      {t("connection.step1.title")}
                     </h3>
                     <p className="text-muted-foreground mb-4">
-                      Create your account in seconds. No credit card required.
-                      Start monitoring your RabbitMQ infrastructure immediately.
+                      {t("connection.step1.description")}
                     </p>
                   </div>
                 </div>
@@ -642,10 +629,10 @@ const Index = () => {
                       </span>
                     </div>
                     <h4 className="text-lg font-bold text-foreground text-center mb-2">
-                      Create your Qarote account
+                      {t("connection.step1.createAccount")}
                     </h4>
                     <p className="text-sm text-muted-foreground text-center mb-6">
-                      Transform the way you monitor RabbitMQ.
+                      {t("connection.step1.transformMonitoring")}
                     </p>
                     <div className="space-y-3">
                       <button
@@ -657,7 +644,7 @@ const Index = () => {
                       >
                         <MailIcon className="w-5 h-5 text-orange-600" />
                         <span className="text-sm font-medium text-foreground">
-                          Continue with Email
+                          {t("connection.step1.continueWithEmail")}
                         </span>
                       </button>
                       <div className="relative">
@@ -666,7 +653,7 @@ const Index = () => {
                         </div>
                         <div className="relative flex justify-center text-xs uppercase">
                           <span className="bg-card px-2 text-muted-foreground">
-                            or
+                            {t("connection.step1.or")}
                           </span>
                         </div>
                       </div>
@@ -698,7 +685,7 @@ const Index = () => {
                           </svg>
                         </div>
                         <span className="text-sm font-medium text-foreground">
-                          Continue with Google
+                          {t("connection.step1.continueWithGoogle")}
                         </span>
                       </button>
                     </div>
@@ -716,11 +703,10 @@ const Index = () => {
                   </div>
                   <div className="flex-1">
                     <h3 className="text-xl font-bold text-foreground mb-2">
-                      Add your servers
+                      {t("connection.step2.title")}
                     </h3>
                     <p className="text-muted-foreground mb-4">
-                      Connect your RabbitMQ servers with a simple connection.
-                      Support for multiple environments and clusters.
+                      {t("connection.step2.description")}
                     </p>
                   </div>
                 </div>
@@ -733,10 +719,10 @@ const Index = () => {
                         </div>
                         <div className="flex-1">
                           <div className="font-semibold text-foreground mb-1">
-                            Production Server
+                            {t("connection.step2.productionServer")}
                           </div>
                           <div className="text-sm text-muted-foreground">
-                            3 nodes
+                            {t("connection.step2.nodes")}
                           </div>
                         </div>
                       </div>
@@ -746,10 +732,10 @@ const Index = () => {
                         </div>
                         <div className="flex-1">
                           <div className="font-semibold text-foreground mb-1">
-                            Staging Server
+                            {t("connection.step2.stagingServer")}
                           </div>
                           <div className="text-sm text-muted-foreground">
-                            3 nodes
+                            {t("connection.step2.nodes")}
                           </div>
                         </div>
                       </div>
@@ -759,10 +745,10 @@ const Index = () => {
                         </div>
                         <div className="flex-1">
                           <div className="font-semibold text-foreground mb-1">
-                            Development Server
+                            {t("connection.step2.developmentServer")}
                           </div>
                           <div className="text-sm text-muted-foreground">
-                            3 nodes
+                            {t("connection.step2.nodes")}
                           </div>
                         </div>
                       </div>
@@ -781,11 +767,10 @@ const Index = () => {
                   </div>
                   <div className="flex-1">
                     <h3 className="text-xl font-bold text-foreground mb-2">
-                      Monitor and collaborate
+                      {t("connection.step3.title")}
                     </h3>
                     <p className="text-muted-foreground mb-4">
-                      Get real-time insights into your queues, exchanges, and
-                      message flow. Monitor with your team and set up alerts.
+                      {t("connection.step3.description")}
                     </p>
                   </div>
                 </div>
@@ -798,7 +783,7 @@ const Index = () => {
                           <div className="flex items-center gap-2 mb-2">
                             <ActivityIcon className="w-4 h-4 text-orange-600" />
                             <span className="text-xs text-muted-foreground">
-                              Messages/sec
+                              {t("connection.step3.messagesPerSec")}
                             </span>
                           </div>
                           <div className="text-lg font-bold text-foreground">
@@ -809,7 +794,7 @@ const Index = () => {
                           <div className="flex items-center gap-2 mb-2">
                             <BarChart3Icon className="w-4 h-4 text-orange-600" />
                             <span className="text-xs text-muted-foreground">
-                              Queues
+                              {t("connection.step3.queues")}
                             </span>
                           </div>
                           <div className="text-lg font-bold text-foreground">
@@ -822,7 +807,7 @@ const Index = () => {
                       <div className="bg-background border border-border rounded-lg p-4">
                         <div className="flex items-center justify-between mb-3">
                           <span className="text-sm font-semibold text-foreground">
-                            Queue Depths
+                            {t("connection.step3.queueDepths")}
                           </span>
                         </div>
                         <div className="h-20 bg-muted/30 rounded flex items-end justify-between gap-1 p-2">
@@ -863,7 +848,7 @@ const Index = () => {
                           <div className="flex items-center gap-2">
                             <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                             <span className="text-sm font-semibold text-foreground">
-                              All systems operational
+                              {t("connection.step3.allSystemsOperational")}
                             </span>
                           </div>
                           <CheckIcon className="w-4 h-4 text-green-600" />
@@ -883,7 +868,7 @@ const Index = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4">
-              Simple pricing. Powerful monitoring.
+              {tPricing("title")}
             </h2>
           </div>
 
@@ -893,7 +878,7 @@ const Index = () => {
               <span
                 className={`text-sm font-medium ${billingPeriod === "monthly" ? "text-foreground" : "text-muted-foreground"}`}
               >
-                Billed monthly
+                {tPricing("billedMonthly")}
               </span>
               <button
                 onClick={() =>
@@ -922,13 +907,13 @@ const Index = () => {
               <span
                 className={`text-sm font-medium ${billingPeriod === "yearly" ? "text-foreground" : "text-muted-foreground"}`}
               >
-                Billed yearly
+                {tPricing("billedYearly")}
               </span>
             </div>
             <Badge className="bg-green-50 text-green-700 border border-green-200 mt-2 hover:bg-green-100">
               {billingPeriod === "yearly"
-                ? "Save up to 20% with annual billing"
-                : "Switch to yearly billing to save up to 20%"}
+                ? tPricing("saveUpTo20Yearly")
+                : tPricing("switchToYearly")}
             </Badge>
           </div>
 
@@ -976,7 +961,7 @@ const Index = () => {
                             </span>
                             {currentPricing.price !== "$0" && (
                               <span className="text-muted-foreground">
-                                /month
+                                {tPricing("perMonth")}
                               </span>
                             )}
                           </div>
@@ -986,7 +971,7 @@ const Index = () => {
                       <div className="space-y-6 flex-1">
                         <div>
                           <h4 className="font-semibold text-foreground mb-3 text-xs sm:text-sm uppercase tracking-wide whitespace-nowrap">
-                            Core Features
+                            {tPricing("coreFeatures")}
                           </h4>
                           <ul className="space-y-2">
                             <li className="flex items-start gap-3">
@@ -995,13 +980,18 @@ const Index = () => {
                               </div>
                               <div className="flex-1">
                                 <span className="text-sm text-foreground">
-                                  {plan.features.servers} RabbitMQ{" "}
-                                  {plan.features.servers === "Up to 1"
-                                    ? "Server"
-                                    : "Servers"}
+                                  {plan.features.servers}{" "}
+                                  {plan.features.servers ===
+                                  tPricing("limits.upTo1")
+                                    ? tPricing("featureNames.servers", {
+                                        count: 1,
+                                      })
+                                    : tPricing("featureNames.servers_plural", {
+                                        count: 1,
+                                      })}
                                 </span>
                                 <div className="text-xs text-muted-foreground">
-                                  Connect and monitor your servers
+                                  {tPricing("featureNames.serversDesc")}
                                 </div>
                               </div>
                             </li>
@@ -1011,7 +1001,9 @@ const Index = () => {
                               </div>
                               <div className="flex-1">
                                 <span className="text-sm text-foreground">
-                                  RabbitMQ Version Support
+                                  {tPricing(
+                                    "featureNames.rabbitMQVersionSupport"
+                                  )}
                                 </span>
                                 <div className="text-xs text-muted-foreground">
                                   {plan.features.rabbitMQVersionSupport}
@@ -1025,12 +1017,18 @@ const Index = () => {
                               <div className="flex-1">
                                 <span className="text-sm text-foreground">
                                   {plan.features.workspaces}{" "}
-                                  {plan.features.workspaces === "Up to 1"
-                                    ? "Workspace"
-                                    : "Workspaces"}
+                                  {plan.features.workspaces ===
+                                  tPricing("limits.upTo1")
+                                    ? tPricing("featureNames.workspaces", {
+                                        count: 1,
+                                      })
+                                    : tPricing(
+                                        "featureNames.workspaces_plural",
+                                        { count: 1 }
+                                      )}
                                 </span>
                                 <div className="text-xs text-muted-foreground">
-                                  Organize your servers by environment
+                                  {tPricing("featureNames.workspacesDesc")}
                                 </div>
                               </div>
                             </li>
@@ -1040,13 +1038,19 @@ const Index = () => {
                               </div>
                               <div className="flex-1">
                                 <span className="text-sm text-foreground">
-                                  {plan.features.teamMembers} Team{" "}
-                                  {plan.features.teamMembers === "Up to 1"
-                                    ? "Member"
-                                    : "Members"}
+                                  {plan.features.teamMembers}{" "}
+                                  {plan.features.teamMembers ===
+                                  tPricing("limits.upTo1")
+                                    ? tPricing("featureNames.teamMembers", {
+                                        count: 1,
+                                      })
+                                    : tPricing(
+                                        "featureNames.teamMembers_plural",
+                                        { count: 1 }
+                                      )}
                                 </span>
                                 <div className="text-xs text-muted-foreground">
-                                  Collaborate with your team
+                                  {tPricing("featureNames.teamMembersDesc")}
                                 </div>
                               </div>
                             </li>
@@ -1056,10 +1060,12 @@ const Index = () => {
                               </div>
                               <div className="flex-1">
                                 <span className="text-sm text-foreground">
-                                  Advanced analytics
+                                  {tPricing("featureNames.advancedAnalytics")}
                                 </span>
                                 <div className="text-xs text-muted-foreground">
-                                  Detailed insights and reports
+                                  {tPricing(
+                                    "featureNames.advancedAnalyticsDesc"
+                                  )}
                                 </div>
                               </div>
                             </li>
@@ -1075,12 +1081,12 @@ const Index = () => {
                                 <span
                                   className={`text-sm ${plan.features.queueManagement ? "text-foreground" : "text-muted-foreground"}`}
                                 >
-                                  Queue Management
+                                  {tPricing("featureNames.queueManagement")}
                                 </span>
                                 <div
                                   className={`text-xs ${plan.features.queueManagement ? "text-muted-foreground" : "text-muted-foreground"}`}
                                 >
-                                  Create and manage queues
+                                  {tPricing("featureNames.queueManagementDesc")}
                                 </div>
                               </div>
                             </li>
@@ -1096,12 +1102,14 @@ const Index = () => {
                                 <span
                                   className={`text-sm ${plan.features.exchangeManagement ? "text-foreground" : "text-muted-foreground"}`}
                                 >
-                                  Exchange Management
+                                  {tPricing("featureNames.exchangeManagement")}
                                 </span>
                                 <div
                                   className={`text-xs ${plan.features.exchangeManagement ? "text-muted-foreground" : "text-muted-foreground"}`}
                                 >
-                                  Create and manage exchanges
+                                  {tPricing(
+                                    "featureNames.exchangeManagementDesc"
+                                  )}
                                 </div>
                               </div>
                             </li>
@@ -1117,12 +1125,16 @@ const Index = () => {
                                 <span
                                   className={`text-sm ${plan.features.virtualHostManagement ? "text-foreground" : "text-muted-foreground"}`}
                                 >
-                                  Virtual Host Management
+                                  {tPricing(
+                                    "featureNames.virtualHostManagement"
+                                  )}
                                 </span>
                                 <div
                                   className={`text-xs ${plan.features.virtualHostManagement ? "text-muted-foreground" : "text-muted-foreground"}`}
                                 >
-                                  Create and manage virtual hosts
+                                  {tPricing(
+                                    "featureNames.virtualHostManagementDesc"
+                                  )}
                                 </div>
                               </div>
                             </li>
@@ -1138,12 +1150,16 @@ const Index = () => {
                                 <span
                                   className={`text-sm ${plan.features.rabbitMQUserManagement ? "text-foreground" : "text-muted-foreground"}`}
                                 >
-                                  RabbitMQ User Management
+                                  {tPricing(
+                                    "featureNames.rabbitMQUserManagement"
+                                  )}
                                 </span>
                                 <div
                                   className={`text-xs ${plan.features.rabbitMQUserManagement ? "text-muted-foreground" : "text-muted-foreground"}`}
                                 >
-                                  Create and manage RabbitMQ users
+                                  {tPricing(
+                                    "featureNames.rabbitMQUserManagementDesc"
+                                  )}
                                 </div>
                               </div>
                             </li>
@@ -1153,10 +1169,10 @@ const Index = () => {
                               </div>
                               <div className="flex-1">
                                 <span className="text-sm text-foreground">
-                                  SOC 2 compliance
+                                  {tPricing("featureNames.soc2Compliance")}
                                 </span>
                                 <div className="text-xs text-muted-foreground">
-                                  Data security and policy
+                                  {tPricing("featureNames.soc2ComplianceDesc")}
                                 </div>
                               </div>
                             </li>
@@ -1172,13 +1188,14 @@ const Index = () => {
                                 <span
                                   className={`text-sm ${plan.features.alertsNotification ? "text-foreground" : "text-muted-foreground"}`}
                                 >
-                                  Alerts Notification
+                                  {tPricing("featureNames.alertsNotification")}
                                 </span>
                                 <div
                                   className={`text-xs ${plan.features.alertsNotification ? "text-muted-foreground" : "text-muted-foreground"}`}
                                 >
-                                  Real-time alerts (Email, Slack, Browser and
-                                  Webhook)
+                                  {tPricing(
+                                    "featureNames.alertsNotificationDesc"
+                                  )}
                                 </div>
                               </div>
                             </li>
@@ -1187,7 +1204,7 @@ const Index = () => {
 
                         <div className="mt-auto space-y-4">
                           <h4 className="font-semibold text-foreground mb-3 text-sm uppercase tracking-wide">
-                            Support
+                            {tPricing("support")}
                           </h4>
                           <ul className="space-y-2">
                             <li className="flex items-start gap-3">
@@ -1196,10 +1213,12 @@ const Index = () => {
                               </div>
                               <div className="flex-1">
                                 <span className="text-sm text-foreground">
-                                  Community Support
+                                  {tPricing("featureNames.communitySupport")}
                                 </span>
                                 <div className="text-xs text-muted-foreground">
-                                  Private Discord server
+                                  {tPricing(
+                                    "featureNames.communitySupportDesc"
+                                  )}
                                 </div>
                               </div>
                             </li>
@@ -1215,12 +1234,12 @@ const Index = () => {
                                 <span
                                   className={`text-sm ${plan.features.prioritySupport ? "text-foreground" : "text-muted-foreground"}`}
                                 >
-                                  Priority Support
+                                  {tPricing("featureNames.prioritySupport")}
                                 </span>
                                 <div
                                   className={`text-xs ${plan.features.prioritySupport ? "text-muted-foreground" : "text-muted-foreground"}`}
                                 >
-                                  Priority mail support
+                                  {tPricing("featureNames.prioritySupportDesc")}
                                 </div>
                               </div>
                             </li>
@@ -1253,7 +1272,7 @@ const Index = () => {
                             }
                           }}
                         >
-                          Start free
+                          {tPricing("startFree")}
                         </Button>
                       </div>
                     </CardContent>
@@ -1268,21 +1287,21 @@ const Index = () => {
                     <div className="flex items-center gap-2 mb-2">
                       <Building2Icon className="w-6 h-6 text-orange-600" />
                       <h3 className="text-2xl font-bold bg-linear-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
-                        Enterprise Edition
+                        {tPricing("plans.enterprise.name")}
                       </h3>
                     </div>
                     <p className="text-sm text-muted-foreground mb-4">
-                      Self-Hosted Solution
+                      {tPricing("plans.enterprise.selfHosted")}
                     </p>
 
                     <div className="mb-4 min-h-[60px] flex flex-col justify-start">
                       <div className="flex items-center justify-start gap-2">
                         <span className="text-3xl font-bold text-foreground">
-                          Custom Pricing
+                          {tPricing("plans.enterprise.customPricing")}
                         </span>
                       </div>
                       <p className="text-sm text-muted-foreground mt-1">
-                        Contact sales for pricing
+                        {tPricing("plans.enterprise.contactSales")}
                       </p>
                     </div>
                   </div>
@@ -1290,7 +1309,7 @@ const Index = () => {
                   <div className="space-y-6 flex-1">
                     <div>
                       <h4 className="font-semibold text-foreground mb-3 text-xs sm:text-sm uppercase tracking-wide">
-                        Enterprise Features
+                        {tPricing("enterpriseFeatures")}
                       </h4>
                       <ul className="space-y-2">
                         <li className="flex items-start gap-3">
@@ -1299,10 +1318,10 @@ const Index = () => {
                           </div>
                           <div className="flex-1">
                             <span className="text-sm text-foreground">
-                              On-Premise Deployment
+                              {tPricing("featureNames.onPremiseDeployment")}
                             </span>
                             <div className="text-xs text-muted-foreground">
-                              Deploy in your own infrastructure
+                              {tPricing("featureNames.onPremiseDeploymentDesc")}
                             </div>
                           </div>
                         </li>
@@ -1312,10 +1331,10 @@ const Index = () => {
                           </div>
                           <div className="flex-1">
                             <span className="text-sm text-foreground">
-                              Unlimited Servers
+                              {tPricing("featureNames.unlimitedServers")}
                             </span>
                             <div className="text-xs text-muted-foreground">
-                              Monitor as many servers as needed
+                              {tPricing("featureNames.unlimitedServersDesc")}
                             </div>
                           </div>
                         </li>
@@ -1325,10 +1344,10 @@ const Index = () => {
                           </div>
                           <div className="flex-1">
                             <span className="text-sm text-foreground">
-                              Custom License Tiers
+                              {tPricing("featureNames.customLicenseTiers")}
                             </span>
                             <div className="text-xs text-muted-foreground">
-                              Flexible licensing options
+                              {tPricing("featureNames.customLicenseTiersDesc")}
                             </div>
                           </div>
                         </li>
@@ -1338,10 +1357,10 @@ const Index = () => {
                           </div>
                           <div className="flex-1">
                             <span className="text-sm text-foreground">
-                              Complete Data Control
+                              {tPricing("featureNames.completeDataControl")}
                             </span>
                             <div className="text-xs text-muted-foreground">
-                              All data stays in your infrastructure
+                              {tPricing("featureNames.completeDataControlDesc")}
                             </div>
                           </div>
                         </li>
@@ -1360,10 +1379,10 @@ const Index = () => {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4">
-              Frequently Asked Questions
+              {t("faqSection.title")}
             </h2>
             <p className="text-xl text-muted-foreground">
-              Everything you need to know about Qarote
+              {t("faqSection.subtitle")}
             </p>
           </div>
 
@@ -1386,11 +1405,10 @@ const Index = () => {
 
           <div className="text-center mt-16">
             <h3 className="text-2xl font-bold text-foreground mb-4">
-              Still have questions?
+              {t("faqSection.stillHaveQuestions")}
             </h3>
             <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-              Can't find the answer you're looking for? Please chat to our
-              friendly team.
+              {t("faqSection.stillHaveQuestionsDesc")}
             </p>
             <button
               onClick={() => {
@@ -1401,7 +1419,7 @@ const Index = () => {
               }}
               className="inline-flex items-center justify-center bg-linear-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600 px-4 py-3 sm:px-8 sm:py-4 rounded-lg font-semibold transition-colors duration-200 text-base sm:text-lg"
             >
-              Contact us
+              {t("cta.contactUs")}
             </button>
           </div>
         </div>
@@ -1419,12 +1437,12 @@ const Index = () => {
             <div className="grid md:grid-cols-2 gap-12 lg:gap-16 items-center">
               <div>
                 <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">
-                  Ready to upgrade your RabbitMQ experience?
+                  {t("finalCta.title")}
                 </h2>
               </div>
               <div className="text-center md:text-left">
                 <p className="text-xl text-white mb-8">
-                  Start monitoring your RabbitMQ servers for free today.
+                  {t("finalCta.subtitle")}
                 </p>
                 <div className="flex flex-col items-center md:items-start">
                   <AuthButtons
@@ -1434,7 +1452,7 @@ const Index = () => {
                     align="left"
                   />
                   <p className="text-xs sm:text-sm text-white mt-3">
-                    No credit card required
+                    {t("finalCta.noCreditCard")}
                   </p>
                 </div>
               </div>
@@ -1465,13 +1483,13 @@ const Index = () => {
                 href="/privacy-policy"
                 className="text-muted-foreground hover:text-foreground transition-colors text-sm"
               >
-                Privacy Policy
+                {t("footer.privacyPolicy")}
               </a>
               <a
                 href="/terms-of-service"
                 className="text-muted-foreground hover:text-foreground transition-colors text-sm"
               >
-                Terms of Service
+                {t("footer.termsOfService")}
               </a>
             </div>
           </div>

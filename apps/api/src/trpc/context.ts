@@ -1,3 +1,4 @@
+import { DEFAULT_LOCALE, SUPPORTED_LOCALES } from "@qarote/i18n";
 import type { HonoRequest } from "hono";
 
 import type { SafeUser } from "@/core/auth";
@@ -12,6 +13,7 @@ import { prisma } from "@/core/prisma";
 export interface Context extends Record<string, unknown> {
   user: SafeUser | null;
   workspaceId: string | null;
+  locale: string;
   prisma: typeof prisma;
   logger: typeof logger;
 }
@@ -86,10 +88,50 @@ export async function createContext(opts: {
   // Extract workspace ID
   const workspaceId = extractWorkspaceId(req);
 
+  // Resolve locale: user preference > Accept-Language header > default
+  const locale = resolveLocale(req, user);
+
   return {
     user,
     workspaceId,
+    locale,
     prisma,
     logger,
   };
+}
+
+/**
+ * Resolve the user's preferred locale
+ * Priority: user's stored locale > Accept-Language header > default
+ */
+function resolveLocale(req: HonoRequest, user: SafeUser | null): string {
+  // 1. User's stored locale preference (if authenticated)
+  if (user?.locale && SUPPORTED_LOCALES.includes(user.locale as never)) {
+    return user.locale;
+  }
+
+  // 2. Accept-Language header
+  const acceptLanguage = req.header("Accept-Language");
+  if (acceptLanguage) {
+    // Parse "en-US,en;q=0.9,fr;q=0.8" format
+    const languages = acceptLanguage
+      .split(",")
+      .map((lang) => {
+        const [code, quality] = lang.trim().split(";q=");
+        return {
+          code: code.split("-")[0].toLowerCase(),
+          quality: quality ? parseFloat(quality) : 1,
+        };
+      })
+      .sort((a, b) => b.quality - a.quality);
+
+    for (const lang of languages) {
+      if (SUPPORTED_LOCALES.includes(lang.code as never)) {
+        return lang.code;
+      }
+    }
+  }
+
+  // 3. Default
+  return DEFAULT_LOCALE;
 }

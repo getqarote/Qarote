@@ -1,0 +1,17 @@
+{
+  "pageTitle": "Qarote",
+  "heading": "Crea tu espacio de trabajo",
+  "subheading": "\u00a1Bienvenido a Qarote! Comencemos creando tu primer espacio de trabajo. Los espacios de trabajo te ayudan a organizar tus servidores RabbitMQ y colaborar con tu equipo.",
+  "formTitle": "Nuevo espacio de trabajo",
+  "workspaceName": "Nombre del espacio de trabajo *",
+  "workspacePlaceholder": "Mi espacio de trabajo",
+  "tags": "Etiquetas (opcional)",
+  "tagsPlaceholder": "Agrega etiquetas para organizar tu espacio de trabajo",
+  "tagsHint": "Usa etiquetas como \"producci\u00f3n\", \"desarrollo\" o \"pruebas\" para organizar tu espacio de trabajo",
+  "createButton": "Crear espacio de trabajo",
+  "creatingButton": "Creando espacio de trabajo...",
+  "successTitle": "\u00a1Espacio de trabajo creado exitosamente!",
+  "successMessage": "Redirigiendo a tu panel...",
+  "loadingMessage": "Cargando...",
+  "failedToCreate": "No se pudo crear el espacio de trabajo. Por favor int\u00e9ntalo de nuevo."
+}
