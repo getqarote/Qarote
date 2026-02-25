@@ -47,6 +47,25 @@ jobs:
         working-directory: apps/api
         run: pnpm run format
 
+  react-doctor:
+    name: React Doctor
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        app: [app, portal, web]
+    steps:
+      - name: 🔍 Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: 🩺 React Doctor
+        uses: millionco/react-doctor@main
+        with:
+          directory: apps/${{ matrix.app }}
+          diff: main
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
   tests:
     name: Tests
     runs-on: ubuntu-latest
