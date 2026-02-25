@@ -71,7 +71,7 @@ Before creating a release:
 
 ## How Update Notifications Work
 
-The **update monitor worker** runs in cloud mode (Dokku) and notifies self-hosted Enterprise license holders when a new version is available:
+The **release notifier worker** runs in cloud mode (Dokku) and notifies self-hosted Enterprise license holders when a new version is available:
 
 1. The worker checks every 24 hours
 2. It reads the current deployed version from the `VERSION` file
@@ -80,6 +80,6 @@ The **update monitor worker** runs in cloud mode (Dokku) and notifies self-hoste
 5. It sends an update notification email to each license holder's email address
 6. Each new version triggers only one round of notifications
 
-The worker is scaled via `DOKKU_SCALE` (`update_worker=1`) and defined in the `Procfile`.
+The worker is scaled via `DOKKU_SCALE` (`release_notifier=1`) and defined in the `Procfile`.
 
 Tag naming convention matters: tags **must** follow the `v{MAJOR}.{MINOR}.{PATCH}` format (e.g., `v1.2.3`) for the update checker to parse them correctly.

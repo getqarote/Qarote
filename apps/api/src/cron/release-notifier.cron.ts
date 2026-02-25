@@ -21,12 +21,12 @@ const githubTagsSchema = z.array(
 );
 
 /**
- * Update Checker Cron Service
+ * Release Notifier Cron Service
  * Runs in cloud mode to check for new Qarote versions on GitHub
  * and notify self-hosted license holders via email
  * Runs once every 24 hours
  */
-class UpdateCheckerCronService {
+class ReleaseNotifierCronService {
   private isRunning = false;
   private isChecking = false;
   private intervalId: NodeJS.Timeout | null = null;
@@ -42,23 +42,23 @@ class UpdateCheckerCronService {
   }
 
   /**
-   * Start the update checker service
+   * Start the release notifier service
    */
   start(): void {
     if (this.isRunning) {
-      logger.info("Update checker service is already running");
+      logger.info("Release notifier service is already running");
       return;
     }
 
     if (!emailConfig.enabled) {
-      logger.info("Update checker service not started - email is disabled");
+      logger.info("Release notifier service not started - email is disabled");
       return;
     }
 
     this.isRunning = true;
     logger.info(
       { checkInterval: this.checkInterval },
-      "Starting update checker service..."
+      "Starting release notifier service..."
     );
 
     // Run immediately, then at intervals
@@ -73,7 +73,7 @@ class UpdateCheckerCronService {
    */
   stop(): void {
     if (!this.isRunning) {
-      logger.info("Update checker service is not running");
+      logger.info("Release notifier service is not running");
       return;
     }
 
@@ -82,7 +82,7 @@ class UpdateCheckerCronService {
       clearInterval(this.intervalId);
       this.intervalId = null;
     }
-    logger.info("Update checker service stopped");
+    logger.info("Release notifier service stopped");
   }
 
   /**
@@ -200,7 +200,7 @@ class UpdateCheckerCronService {
   private async getLastNotifiedVersion(): Promise<string | null> {
     try {
       const state = await prisma.systemState.findUnique({
-        where: { key: UpdateCheckerCronService.SYSTEM_STATE_KEY },
+        where: { key: ReleaseNotifierCronService.SYSTEM_STATE_KEY },
       });
       return state?.value || null;
     } catch (error) {
@@ -215,10 +215,10 @@ class UpdateCheckerCronService {
   private async setLastNotifiedVersion(version: string): Promise<void> {
     try {
       await prisma.systemState.upsert({
-        where: { key: UpdateCheckerCronService.SYSTEM_STATE_KEY },
+        where: { key: ReleaseNotifierCronService.SYSTEM_STATE_KEY },
         update: { value: version },
         create: {
-          key: UpdateCheckerCronService.SYSTEM_STATE_KEY,
+          key: ReleaseNotifierCronService.SYSTEM_STATE_KEY,
           value: version,
         },
       });
@@ -287,11 +287,11 @@ class UpdateCheckerCronService {
       // Fetch up to 100 tags to ensure we find the latest semantic version
       // GitHub API returns tags by creation date, not semantic version
       const response = await fetch(
-        `https://api.github.com/repos/${UpdateCheckerCronService.GITHUB_REPO}/tags?per_page=100`,
+        `https://api.github.com/repos/${ReleaseNotifierCronService.GITHUB_REPO}/tags?per_page=100`,
         {
-          headers: { "User-Agent": "Qarote-Update-Checker" },
+          headers: { "User-Agent": "Qarote-Release-Notifier" },
           signal: AbortSignal.timeout(
-            UpdateCheckerCronService.GITHUB_API_TIMEOUT
+            ReleaseNotifierCronService.GITHUB_API_TIMEOUT
           ),
         }
       );
@@ -366,4 +366,4 @@ class UpdateCheckerCronService {
 }
 
 // Export a singleton instance
-export const updateCheckerCronService = new UpdateCheckerCronService();
+export const releaseNotifierCronService = new ReleaseNotifierCronService();

@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 - One-command update script (`./scripts/update.sh`) for self-hosted deployments
 - Email notifications to Enterprise license holders when a new Qarote version is available (cloud-side)
-- Update monitor worker for periodic version checks (cloud mode)
+- Release notifier worker for periodic version checks (cloud mode)
 - Release management documentation (`docs/RELEASE_MANAGEMENT.md`)
 
 ## [1.0.0] - 2026-02-06
