@@ -49,7 +49,10 @@ export function TRPCProvider({ children }: { children: React.ReactNode }) {
           condition: (op) => op.type === "subscription",
           true: httpSubscriptionLink({
             url: getApiUrl(),
-            headers: getAuthHeaders,
+            connectionParams: () => {
+              const token = getAuthToken();
+              return token ? { token } : {};
+            },
           }),
           false: httpBatchLink({
             url: getApiUrl(),

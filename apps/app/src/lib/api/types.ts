@@ -3,15 +3,6 @@
  * Contains all TypeScript interfaces and types used across the API
  */
 
-import { RateDetail } from "./rabbitmqTypes";
-
-type _ApiResponse<_T> = {
-  success?: boolean;
-  error?: string;
-  message?: string;
-  [key: string]: unknown;
-};
-
 export interface ApiError {
   message: string;
   status?: number;
@@ -44,27 +35,6 @@ interface QueueArguments {
   "x-single-active-consumer"?: boolean;
   "x-queue-type"?: string;
 }
-
-type _EffectivePolicyDefinition = {
-  "ha-mode"?: string;
-  "ha-sync-mode"?: string;
-  [key: string]: unknown;
-};
-
-type _GarbageCollection = {
-  fullsweep_after: number;
-  max_heap_size: number;
-  min_bin_vheap_size: number;
-  min_heap_size: number;
-  minor_gcs: number;
-};
-
-type _QueueMessageStats = {
-  publish_details?: RateDetail;
-  deliver_details?: RateDetail;
-  ack_details?: RateDetail;
-  [key: string]: unknown;
-};
 
 export interface Queue {
   // Basic queue information
@@ -119,37 +89,6 @@ export interface Queue {
   synchronised_slave_nodes?: string[];
   recoverable_slaves?: string[] | null;
 }
-
-type _Application = {
-  name: string;
-  description: string;
-  version: string;
-};
-
-type _Context = {
-  description: string;
-  path: string;
-  cowboy_opts?: string;
-  ip?: string;
-  port: string;
-  protocol?: string;
-};
-
-type _RaOpenFileMetrics = {
-  ra_log_wal: number;
-  ra_log_segment_writer: number;
-};
-
-type _MetricsGcQueueLength = {
-  connection_closed: number;
-  channel_closed: number;
-  consumer_deleted: number;
-  exchange_deleted: number;
-  queue_deleted: number;
-  vhost_deleted: number;
-  node_node_deleted: number;
-  channel_consumer_deleted: number;
-};
 
 export interface ExchangeType {
   name: string;

@@ -124,6 +124,8 @@ export function WorkspaceSelector() {
         };
     }
   };
+  type WorkspaceInfo = (typeof workspaces)[number];
+
   const getRoleIcon = (workspace: WorkspaceInfo) => {
     if (workspace.isOwner) {
       return <Crown className="w-3 h-3 text-yellow-600" />;
