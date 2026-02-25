@@ -51,7 +51,8 @@ export const useDashboardData = (
     isLoading: nodesLoading,
     isFetching: nodesFetching,
   } = useNodes(selectedServerId);
-  const { data: enhancedMetricsData } = useMetrics(selectedServerId);
+  const { data: enhancedMetricsData, isLoading: metricsLoading } =
+    useMetrics(selectedServerId);
   const { data: liveRatesData, isLoading: liveRatesLoading } =
     useLiveRatesMetrics(selectedServerId, timeRange);
   const {
@@ -62,7 +63,7 @@ export const useDashboardData = (
 
   // Processed data
   const overview = overviewData?.overview;
-  const queues = queuesData?.queues || [];
+  const queues = useMemo(() => queuesData?.queues || [], [queuesData?.queues]);
   const nodes = useMemo(() => nodesData?.nodes || [], [nodesData?.nodes]);
   const enhancedMetrics = enhancedMetricsData?.metrics;
   const connections = connectionsData?.connections || [];
@@ -172,6 +173,7 @@ export const useDashboardData = (
     overviewLoading ||
     queuesLoading ||
     nodesLoading ||
+    metricsLoading ||
     liveRatesLoading ||
     connectionsLoading;
 
