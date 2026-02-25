@@ -32,15 +32,6 @@ const i18n = createServerI18nInstance({
   },
 });
 
-export default i18n;
-
-/**
- * Get a translation function fixed to a specific locale and namespace
- */
-export function getTranslator(locale: string, namespace: string = "errors") {
-  return i18n.getFixedT(locale, namespace);
-}
-
 /**
  * Get a translated error message
  * Convenience wrapper for the most common use case
