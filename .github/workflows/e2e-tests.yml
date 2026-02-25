@@ -101,13 +101,11 @@ jobs:
           CORS_ORIGIN: "*"
           FRONTEND_URL: http://localhost:8081
           PORTAL_FRONTEND_URL: http://localhost:8082
-          ENABLE_EMAIL: "false"
+          # Note: ENABLE_EMAIL, ENABLE_OAUTH, SENTRY_ENABLED, ENABLE_NOTION
+          # are NOT set here — they default to false in the selfhosted Zod schema.
+          # Setting them to "false" would coerce to true via z.coerce.boolean().
           EMAIL_PROVIDER: smtp
           FROM_EMAIL: noreply@test.local
-          ENABLE_OAUTH: "false"
-          ENABLE_SENTRY: "false"
-          SENTRY_ENABLED: "false"
-          ENABLE_NOTION: "false"
           API_URL: http://localhost:3001
           VITE_API_URL: http://localhost:3001
           E2E_RABBITMQ_HOST: localhost
@@ -170,6 +168,12 @@ jobs:
           --health-timeout 10s
           --health-retries 10
 
+      mailpit:
+        image: axllent/mailpit:latest
+        ports:
+          - 1025:1025
+          - 8025:8025
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -212,13 +216,14 @@ jobs:
           CORS_ORIGIN: "*"
           FRONTEND_URL: http://localhost:8081
           PORTAL_FRONTEND_URL: http://localhost:8082
-          ENABLE_EMAIL: "false"
+          ENABLE_EMAIL: "true"
           EMAIL_PROVIDER: smtp
+          SMTP_HOST: localhost
+          SMTP_PORT: "1025"
           FROM_EMAIL: noreply@test.local
           ENABLE_OAUTH: "true"
-          ENABLE_SENTRY: "false"
-          SENTRY_ENABLED: "false"
-          ENABLE_NOTION: "false"
+          VITE_GOOGLE_CLIENT_ID: "test-google-client-id.apps.googleusercontent.com"
+          # SENTRY_ENABLED and ENABLE_NOTION omitted — default to false
           API_URL: http://localhost:3001
           VITE_API_URL: http://localhost:3001
           E2E_RABBITMQ_HOST: localhost
@@ -323,13 +328,10 @@ jobs:
           CORS_ORIGIN: "*"
           FRONTEND_URL: http://localhost:8081
           PORTAL_FRONTEND_URL: http://localhost:8082
-          ENABLE_EMAIL: "false"
+          # ENABLE_EMAIL, ENABLE_OAUTH, SENTRY_ENABLED, ENABLE_NOTION
+          # omitted — default to false in the selfhosted Zod schema.
           EMAIL_PROVIDER: smtp
           FROM_EMAIL: noreply@test.local
-          ENABLE_OAUTH: "false"
-          ENABLE_SENTRY: "false"
-          SENTRY_ENABLED: "false"
-          ENABLE_NOTION: "false"
           API_URL: http://localhost:3001
           VITE_API_URL: http://localhost:3001
           E2E_RABBITMQ_HOST: localhost

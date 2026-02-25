@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "../../fixtures/test-base.js";
 
 test.describe("SSO Visibility @p2", () => {
   test("should not show SSO button when SSO is disabled @community", async ({

@@ -69,6 +69,12 @@ export class SignUpPage {
     }).toPass({ timeout: 15_000 });
   }
 
+  async expectSuccessMessage() {
+    await expect(
+      this.page.getByText("Account created successfully!")
+    ).toBeVisible({ timeout: 15_000 });
+  }
+
   async expectError(text: string | RegExp) {
     await expect(this.page.getByText(text).first()).toBeVisible({
       timeout: 10_000,
