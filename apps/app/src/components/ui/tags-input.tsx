@@ -17,8 +17,10 @@ interface TagsInputProps {
   className?: string;
 }
 
+const EMPTY_TAGS: string[] = [];
+
 const TagsInput: React.FC<TagsInputProps> = ({
-  value = [],
+  value = EMPTY_TAGS,
   onChange,
   placeholder = "Add tags...",
   maxTags = 10,

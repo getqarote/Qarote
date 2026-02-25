@@ -702,6 +702,7 @@ export function AlertNotificationSettingsModal({
                       type="button"
                       variant="outline"
                       role="combobox"
+                      aria-controls="server-search-list"
                       aria-expanded={serverSearchOpen}
                       className="w-full justify-between"
                       disabled={updateSettingsMutation.isPending}
@@ -723,7 +724,7 @@ export function AlertNotificationSettingsModal({
                         value={serverSearchTerm}
                         onValueChange={setServerSearchTerm}
                       />
-                      <CommandList>
+                      <CommandList id="server-search-list">
                         <CommandEmpty>
                           {serverSearchTerm
                             ? `No servers found matching "${serverSearchTerm}"`
