@@ -25,7 +25,8 @@ const Queues = () => {
   const { selectedVHost } = useVHostContext();
   const { data: queuesData, isLoading } = useQueues(
     selectedServerId,
-    selectedVHost
+    selectedVHost,
+    hasServers
   );
 
   const queues = useMemo(() => queuesData?.queues || [], [queuesData?.queues]);
