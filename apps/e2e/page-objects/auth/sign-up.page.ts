@@ -16,8 +16,8 @@ export class SignUpPage {
     this.firstNameInput = page.getByRole("textbox", { name: /first name/i });
     this.lastNameInput = page.getByRole("textbox", { name: /last name/i });
     this.emailInput = page.getByRole("textbox", { name: /email/i });
-    this.passwordInput = page.getByPlaceholder("Create a password");
-    this.confirmPasswordInput = page.getByPlaceholder("Confirm your password");
+    this.passwordInput = page.getByLabel(/^password$/i);
+    this.confirmPasswordInput = page.getByLabel(/confirm password/i);
     this.acceptTermsCheckbox = page.getByRole("checkbox", { name: /terms|privacy|agree/i });
     this.createAccountButton = page.getByRole("button", {
       name: /create account/i,
@@ -53,12 +53,14 @@ export class SignUpPage {
   }
 
   async expectSuccess() {
-    // In community mode (email disabled), user is auto-verified and redirected
-    // to the dashboard or workspace setup. Check for either success message or redirect.
+    // In community mode (email disabled), user is auto-verified and redirected.
+    // Only consider specific post-signup paths as valid redirects.
+    const allowedPaths = ["/", "/workspace", "/dashboard", "/onboarding"];
     await expect(async () => {
-      const url = this.page.url();
-      const hasRedirected =
-        !url.includes("/auth/sign-up") || url === "/" || url.includes("/workspace");
+      const { pathname } = new URL(this.page.url());
+      const hasRedirected = allowedPaths.some(
+        (p) => pathname === p || pathname.startsWith(`${p}/`)
+      );
       const hasSuccessMessage = await this.page
         .getByText(/account created|welcome|dashboard/i)
         .isVisible()

@@ -34,18 +34,27 @@ export default defineConfig({
 
   webServer: [
     {
-      command: `DEPLOYMENT_MODE=${process.env.DEPLOYMENT_MODE || "community"} PORT=${API_PORT} NODE_ENV=test pnpm --filter=qarote-api dev`,
+      command: "pnpm --filter=qarote-api dev",
       url: `${API_URL}/livez`,
       reuseExistingServer: !process.env.CI,
       timeout: 60_000,
       cwd: path.resolve(import.meta.dirname, "../.."),
+      env: {
+        DEPLOYMENT_MODE: process.env.DEPLOYMENT_MODE || "community",
+        PORT: String(API_PORT),
+        NODE_ENV: "test",
+      },
     },
     {
-      command: `VITE_API_URL=${API_URL} VITE_DEPLOYMENT_MODE=${process.env.DEPLOYMENT_MODE || "community"} pnpm --filter=qarote-app dev --port ${APP_PORT}`,
+      command: `pnpm --filter=qarote-app dev --port ${APP_PORT}`,
       url: BASE_URL,
       reuseExistingServer: !process.env.CI,
       timeout: 30_000,
       cwd: path.resolve(import.meta.dirname, "../.."),
+      env: {
+        VITE_API_URL: API_URL,
+        VITE_DEPLOYMENT_MODE: process.env.DEPLOYMENT_MODE || "community",
+      },
     },
   ],
 

@@ -51,7 +51,7 @@ export class DbHelper {
       } catch (err: any) {
         const msg = err?.message ?? "";
         if (msg.includes("does not exist")) continue;
-        console.warn(`Cleanup failed for ${table}/${id}: ${msg}`);
+        throw err;
       }
     }
     this.createdIds = [];
