@@ -47,6 +47,9 @@ export function TRPCProvider({ children }: { children: React.ReactNode }) {
       links: [
         splitLink({
           condition: (op) => op.type === "subscription",
+          // TODO: connectionParams serializes the JWT in the URL query string, which
+          // may appear in server access logs. Migrate to HttpOnly session cookies or an
+          // EventSource ponyfill that supports custom headers (Authorization) when feasible.
           true: httpSubscriptionLink({
             url: getApiUrl(),
             connectionParams: () => {

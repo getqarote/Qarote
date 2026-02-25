@@ -67,6 +67,8 @@ export function WorkspaceSelector() {
   }, [switchWorkspaceMutation.isSuccess, switchWorkspaceMutation.isError]);
 
   const workspaces = workspacesData?.workspaces || [];
+  type WorkspaceInfo = (typeof workspaces)[number];
+
   const currentWorkspace =
     workspaces.find((w) => w.id === workspace?.id) || workspaces[0];
 
@@ -124,7 +126,6 @@ export function WorkspaceSelector() {
         };
     }
   };
-  type WorkspaceInfo = (typeof workspaces)[number];
 
   const getRoleIcon = (workspace: WorkspaceInfo) => {
     if (workspace.isOwner) {
