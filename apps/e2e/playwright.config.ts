@@ -40,9 +40,16 @@ export default defineConfig({
       timeout: 60_000,
       cwd: path.resolve(import.meta.dirname, "../.."),
       env: {
+        ...process.env,
         DEPLOYMENT_MODE: process.env.DEPLOYMENT_MODE || "community",
         PORT: String(API_PORT),
         NODE_ENV: "test",
+        // z.coerce.boolean() treats "false" as true (Boolean("false") === true).
+        // Use empty string so Boolean("") === false, or "true" to enable.
+        ENABLE_EMAIL: process.env.ENABLE_EMAIL || "",
+        ENABLE_OAUTH: process.env.ENABLE_OAUTH || "",
+        SENTRY_ENABLED: "",
+        ENABLE_NOTION: "",
       },
     },
     {
@@ -52,6 +59,7 @@ export default defineConfig({
       timeout: 30_000,
       cwd: path.resolve(import.meta.dirname, "../.."),
       env: {
+        ...process.env,
         VITE_API_URL: API_URL,
         VITE_DEPLOYMENT_MODE: process.env.DEPLOYMENT_MODE || "community",
       },
