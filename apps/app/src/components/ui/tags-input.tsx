@@ -70,7 +70,13 @@ const TagsInput: React.FC<TagsInputProps> = ({
         disabled && "cursor-not-allowed opacity-50",
         className
       )}
+      role="group"
       onClick={() => inputRef.current?.focus()}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          inputRef.current?.focus();
+        }
+      }}
     >
       {value.map((tag) => (
         <Badge
