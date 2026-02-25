@@ -19,7 +19,6 @@ interface PrimaryMetricsCardsProps {
   isLoading: boolean;
   metricsError?: Error | null;
   overviewFetching?: boolean;
-  enhancedMetricsFetching?: boolean;
 }
 
 export const PrimaryMetricsCards = ({
@@ -27,12 +26,10 @@ export const PrimaryMetricsCards = ({
   isLoading,
   metricsError,
   overviewFetching = false,
-  enhancedMetricsFetching = false,
 }: PrimaryMetricsCardsProps) => {
   const [showOverviewUpdating, setShowOverviewUpdating] = useState(false);
-  const [showEnhancedUpdating, setShowEnhancedUpdating] = useState(false);
 
-  // Handle delayed updating indicators
+  // Handle delayed updating indicator
   useEffect(() => {
     if (overviewFetching) {
       setShowOverviewUpdating(true);
@@ -43,17 +40,6 @@ export const PrimaryMetricsCards = ({
       return () => clearTimeout(timer);
     }
   }, [overviewFetching]);
-
-  useEffect(() => {
-    if (enhancedMetricsFetching) {
-      setShowEnhancedUpdating(true);
-    } else {
-      const timer = setTimeout(() => {
-        setShowEnhancedUpdating(false);
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-  }, [enhancedMetricsFetching]);
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       <Card className="hover:shadow-lg transition-all duration-300 border-0 shadow-md bg-card backdrop-blur-xs">
@@ -192,9 +178,7 @@ export const PrimaryMetricsCards = ({
               <div className="text-3xl font-bold text-foreground">
                 {metrics.avgLatency.toFixed(1)}ms
               </div>
-              <p className="text-xs text-gray-500 mt-1">
-                Updates every 15s{showEnhancedUpdating && " (updating...)"}
-              </p>
+              <p className="text-xs text-gray-500 mt-1">Updates every 15s</p>
             </div>
           )}
         </CardContent>

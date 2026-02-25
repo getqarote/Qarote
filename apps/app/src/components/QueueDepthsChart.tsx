@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback } from "react";
 
 import { BarChart3 } from "lucide-react";
 import {
@@ -27,7 +27,6 @@ interface QueueData {
 interface QueueDepthsChartProps {
   queues: Array<QueueData>;
   isLoading: boolean;
-  isFetching?: boolean;
 }
 
 const EMPTY_QUEUES: QueueData[] = [];
@@ -67,22 +66,7 @@ const CustomTooltip = ({
 export const QueueDepthsChart = ({
   queues = EMPTY_QUEUES,
   isLoading,
-  isFetching = false,
 }: QueueDepthsChartProps) => {
-  const [showUpdating, setShowUpdating] = useState(false);
-
-  // Handle delayed updating indicator
-  useEffect(() => {
-    if (isFetching) {
-      setShowUpdating(true);
-    } else {
-      // Keep showing "updating..." for 500ms after fetch completes
-      const timer = setTimeout(() => {
-        setShowUpdating(false);
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-  }, [isFetching]);
   const tooltipContent = useCallback(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (props: any) => <CustomTooltip {...props} queues={queues} />,
@@ -122,7 +106,7 @@ export const QueueDepthsChart = ({
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
             <span className="text-xs text-muted-foreground">
-              Updates every 5 seconds{showUpdating && " (updating...)"}
+              Updates every 5 seconds
             </span>
           </div>
         </div>

@@ -51,11 +51,8 @@ const Index = () => {
     isLoading,
     queuesLoading,
     liveRatesLoading,
-    liveRatesFetching,
-    queuesFetching,
     overviewFetching,
     nodesFetching,
-    enhancedMetricsFetching,
     metricsError,
     liveRatesError,
     nodesError,
@@ -147,7 +144,6 @@ const Index = () => {
               isLoading={isLoading}
               metricsError={metricsError}
               overviewFetching={overviewFetching}
-              enhancedMetricsFetching={enhancedMetricsFetching}
             />
 
             {/* Secondary Metrics */}
@@ -157,7 +153,6 @@ const Index = () => {
               metricsError={metricsError}
               nodesError={nodesError}
               nodesFetching={nodesFetching}
-              enhancedMetricsFetching={enhancedMetricsFetching}
             />
 
             {/* Charts - Full Width Stacked */}
@@ -165,7 +160,6 @@ const Index = () => {
             <QueuedMessagesChart
               queueTotals={queueTotals}
               isLoading={liveRatesLoading}
-              isFetching={liveRatesFetching}
               error={liveRatesError}
               timeRange={liveRatesTimeRange}
               onTimeRangeChange={setLiveRatesTimeRange}
@@ -175,18 +169,13 @@ const Index = () => {
             <MessagesRatesChart
               messagesRates={liveRatesData?.messagesRates}
               isLoading={liveRatesLoading}
-              isFetching={liveRatesFetching}
               error={liveRatesError}
               timeRange={liveRatesTimeRange}
               onTimeRangeChange={setLiveRatesTimeRange}
             />
 
             {/* Queue Depths Chart - Full Width */}
-            <QueueDepthsChart
-              queues={queues}
-              isLoading={queuesLoading}
-              isFetching={queuesFetching}
-            />
+            <QueueDepthsChart queues={queues} isLoading={queuesLoading} />
 
             {/* Connected Nodes - Full Width */}
             <ConnectedNodes
