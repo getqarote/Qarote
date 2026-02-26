@@ -210,21 +210,21 @@ ENABLE_EMAIL=false
 # For other providers (Office 365, Outlook.com, etc.), see:
 # https://nodemailer.com/smtp/oauth2/`;
 
-interface TOCItem {
+export interface TOCItem {
   id: string;
-  text: string;
+  key: string;
   level: number;
 }
 
 export const TOC_ITEMS: TOCItem[] = [
-  { id: "installation-guide", text: "Installation Guide", level: 3 },
-  { id: "prerequisites", text: "Prerequisites", level: 4 },
-  { id: "quick-start", text: "Quick Start", level: 4 },
-  { id: "smtp-configuration", text: "SMTP Configuration", level: 4 },
-  { id: "updating-qarote", text: "Updating Qarote", level: 4 },
-  { id: "troubleshooting", text: "Troubleshooting", level: 4 },
-  { id: "security", text: "Security Recommendations", level: 4 },
-  { id: "support", text: "Support", level: 4 },
-  { id: "docker-compose", text: "Docker Compose File", level: 3 },
-  { id: "environment-config", text: "Environment Configuration", level: 3 },
+  { id: "installation-guide", key: "toc.installationGuide", level: 3 },
+  { id: "prerequisites", key: "toc.prerequisites", level: 4 },
+  { id: "quick-start", key: "toc.quickStart", level: 4 },
+  { id: "smtp-configuration", key: "toc.smtpConfiguration", level: 4 },
+  { id: "updating-qarote", key: "toc.updatingQarote", level: 4 },
+  { id: "troubleshooting", key: "toc.troubleshooting", level: 4 },
+  { id: "security", key: "toc.security", level: 4 },
+  { id: "support", key: "toc.support", level: 4 },
+  { id: "docker-compose", key: "toc.dockerCompose", level: 3 },
+  { id: "environment-config", key: "toc.environmentConfig", level: 3 },
 ];
