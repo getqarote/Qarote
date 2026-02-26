@@ -1,10 +1,7 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
-interface TOCItem {
-  id: string;
-  text: string;
-  level: number;
-}
+import type { TOCItem } from "@/constants/documentation.constants";
 
 interface TableOfContentsProps {
   items: TOCItem[];
@@ -12,6 +9,7 @@ interface TableOfContentsProps {
 
 export function TableOfContents({ items }: TableOfContentsProps) {
   const [activeId, setActiveId] = useState<string>("");
+  const { t } = useTranslation("docs");
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -69,7 +67,7 @@ export function TableOfContents({ items }: TableOfContentsProps) {
                   : "text-muted-foreground"
               }`}
             >
-              {item.text}
+              {t(item.key)}
             </button>
           </li>
         ))}
