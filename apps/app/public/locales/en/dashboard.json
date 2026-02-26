@@ -1,6 +1,6 @@
 {
   "pageTitle": "Dashboard",
-  "rabbitMQDashboard": "RabbitMQ Dashboard",
+  "rabbitMQDashboard": "Dashboard",
   "addServerDescription": "Add a RabbitMQ server connection to start monitoring your queues and messages.",
   "selectServerPrompt": "Please select a RabbitMQ server to view the dashboard",
   "pleaseSelectServer": "Please Select a Server",
