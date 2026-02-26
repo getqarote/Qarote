@@ -11,6 +11,7 @@ import {
   User,
 } from "lucide-react";
 
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -65,6 +66,7 @@ const Layout = () => {
               </div>
             </div>
             <div className="flex items-center space-x-4">
+              <LanguageSwitcher />
               <a
                 href="https://github.com/getqarote/Qarote"
                 target="_blank"
