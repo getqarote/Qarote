@@ -67,5 +67,5 @@
   "theme": "Theme",
   "language": "Langue",
   "manageServers": "Gerer les serveurs",
-  "rabbitMQDashboard": "Tableau de bord RabbitMQ"
+  "rabbitMQDashboard": "Tableau de bord"
 }

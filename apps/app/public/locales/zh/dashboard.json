@@ -1,6 +1,6 @@
 {
   "pageTitle": "仪表盘",
-  "rabbitMQDashboard": "RabbitMQ 仪表盘",
+  "rabbitMQDashboard": "仪表盘",
   "addServerDescription": "添加 RabbitMQ 服务器连接以开始监控您的队列和消息。",
   "selectServerPrompt": "请选择一个 RabbitMQ 服务器以查看仪表盘",
   "pleaseSelectServer": "请选择一个服务器",
