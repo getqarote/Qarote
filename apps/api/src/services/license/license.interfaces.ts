@@ -19,34 +19,6 @@ export interface LicenseJwtPayload {
 }
 
 /**
- * License data structure used for signing and verification
- */
-export interface LicenseData {
-  licenseKey: string;
-  tier: string;
-  customerEmail: string;
-  issuedAt: string;
-  expiresAt: string;
-  features: string[];
-  maxInstances?: number;
-}
-
-/**
- * License file structure as stored on disk
- */
-export interface LicenseFile {
-  version: string;
-  licenseKey: string;
-  tier: string;
-  customerEmail: string;
-  issuedAt: string;
-  expiresAt: string;
-  features: string[];
-  maxInstances?: number;
-  signature: string;
-}
-
-/**
  * Options for generating a new license
  */
 export interface GenerateLicenseOptions {
@@ -64,25 +36,6 @@ export interface GenerateLicenseOptions {
  */
 export interface ValidateLicenseOptions {
   licenseKey: string;
-}
-
-/**
- * Options for generating a license file
- */
-export interface GenerateLicenseFileOptions {
-  licenseKey: string;
-  tier: UserPlan;
-  customerEmail: string;
-  expiresAt: Date;
-  features: string[];
-  maxInstances?: number;
-}
-
-/**
- * Result of generating a license file
- */
-export interface GenerateLicenseFileResult {
-  licenseFile: LicenseFile;
 }
 
 /**

@@ -31,7 +31,6 @@ vi.mock("@/core/logger", () => ({
 }));
 
 vi.mock("../license-crypto.service", () => ({
-  signLicenseData: vi.fn().mockReturnValue("mocked-signature"),
   signLicenseJwt: vi.fn().mockResolvedValue("mocked-jwt-token"),
 }));
 
@@ -480,50 +479,6 @@ describe("LicenseService", () => {
         (config.licenseConfig as { privateKey: string | null }).privateKey =
           original;
       }
-    });
-  });
-
-  describe("generateLicenseFile", () => {
-    it("returns licenseFile with version '1.0'", async () => {
-      const result = await licenseService.generateLicenseFile({
-        licenseKey: "RABBIT-ENT-KEY-12345678",
-        tier: UserPlan.ENTERPRISE,
-        customerEmail: "customer@example.com",
-        expiresAt: new Date(Date.now() + 365 * 86_400_000),
-        features: ["workspace_management"],
-      });
-
-      expect(result.licenseFile.version).toBe("1.0");
-    });
-
-    it("includes all license data fields in the returned file", async () => {
-      const expiresAt = new Date(Date.now() + 365 * 86_400_000);
-      const result = await licenseService.generateLicenseFile({
-        licenseKey: "RABBIT-ENT-KEY-12345678",
-        tier: UserPlan.ENTERPRISE,
-        customerEmail: "customer@example.com",
-        expiresAt,
-        features: ["workspace_management"],
-        maxInstances: 3,
-      });
-
-      expect(result.licenseFile.licenseKey).toBe("RABBIT-ENT-KEY-12345678");
-      expect(result.licenseFile.tier).toBe(UserPlan.ENTERPRISE);
-      expect(result.licenseFile.customerEmail).toBe("customer@example.com");
-      expect(result.licenseFile.features).toEqual(["workspace_management"]);
-      expect(result.licenseFile.maxInstances).toBe(3);
-    });
-
-    it("includes the signature from signLicenseData", async () => {
-      const result = await licenseService.generateLicenseFile({
-        licenseKey: "RABBIT-ENT-KEY-12345678",
-        tier: UserPlan.ENTERPRISE,
-        customerEmail: "customer@example.com",
-        expiresAt: new Date(Date.now() + 365 * 86_400_000),
-        features: [],
-      });
-
-      expect(result.licenseFile.signature).toBe("mocked-signature");
     });
   });
 });

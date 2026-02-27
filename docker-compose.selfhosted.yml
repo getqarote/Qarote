@@ -1,13 +1,11 @@
 # Qarote Self-Hosted Deployment
-# Supports both Community Edition (open-source) and Enterprise Edition (licensed)
 #
 # Quick Start:
-# 1. Run: ./setup.sh community (or enterprise)
-# 2. For Enterprise: Set LICENSE_FILE_PATH and LICENSE_PUBLIC_KEY in .env
-# 3. Run: docker compose -f docker-compose.selfhosted.yml up -d
+# 1. Run: ./setup.sh
+# 2. Run: docker compose -f docker-compose.selfhosted.yml up -d
 #
-# Note: Email variables are optional with sensible defaults
-# RabbitMQ servers are customer-provided (not included in this compose file)
+# Premium features are activated via the UI with a license JWT.
+# RabbitMQ servers are customer-provided (not included in this compose file).
 
 services:
   postgres:
@@ -46,11 +44,6 @@ services:
       ENCRYPTION_KEY: ${ENCRYPTION_KEY}
       CORS_ORIGIN: ${CORS_ORIGIN}
       DEPLOYMENT_MODE: ${DEPLOYMENT_MODE}
-      # License configuration (required for enterprise, ignored for community)
-      LICENSE_FILE_PATH: ${LICENSE_FILE_PATH}
-      LICENSE_PUBLIC_KEY: ${LICENSE_PUBLIC_KEY}
-      # Optional: For license file generation (SaaS only)
-      LICENSE_PRIVATE_KEY: ${LICENSE_PRIVATE_KEY}
       # Optional: Email configuration (disabled by default)
       # Only needed if ENABLE_EMAIL=true
       # FROM_EMAIL defaults to noreply@localhost, FRONTEND_URL defaults to http://localhost:8080
@@ -79,7 +72,7 @@ services:
       context: .
       dockerfile: ./apps/app/Dockerfile
       args:
-        DEPLOYMENT_MODE: ${DEPLOYMENT_MODE:-community}
+        DEPLOYMENT_MODE: ${DEPLOYMENT_MODE:-selfhosted}
         VITE_API_URL: ${VITE_API_URL}
     container_name: qarote_frontend_${DEPLOYMENT_MODE}
     restart: unless-stopped

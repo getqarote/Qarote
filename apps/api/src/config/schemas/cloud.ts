@@ -69,9 +69,6 @@ export const cloudSchema = baseSchema.extend({
       "LICENSE_PRIVATE_KEY is required for cloud mode to generate licenses"
     ),
   LICENSE_PUBLIC_KEY: z.string().optional(),
-  LICENSE_FILE_PATH: z.string().optional(),
-  LICENSE_KEY: z.string().optional(),
-  LICENSE_VALIDATION_URL: z.string().optional(),
 
   // Notion Configuration - Optional
   NOTION_API_KEY: z.string().optional(),

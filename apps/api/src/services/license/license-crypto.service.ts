@@ -1,15 +1,13 @@
 /**
  * Cryptographic License Service
- * Handles RSA-SHA256 signing/verification (legacy) and JWT RS256 signing/verification (new)
+ * Handles JWT RS256 signing/verification for license keys
  */
-
-import crypto from "node:crypto";
 
 import * as jose from "jose";
 
 import { logger } from "@/core/logger";
 
-import type { LicenseData, LicenseJwtPayload } from "./license.interfaces";
+import type { LicenseJwtPayload } from "./license.interfaces";
 import { LICENSE_PUBLIC_KEY } from "./license-public-key";
 
 // ─── JWT (new format) ────────────────────────────────────────────────
@@ -97,65 +95,5 @@ export async function verifyLicenseJwt(
       logger.error({ error }, "Failed to verify license JWT");
     }
     return null;
-  }
-}
-
-// ─── Legacy RSA-SHA256 (kept for migration compatibility) ────────────
-
-/**
- * Sign license data with private key (legacy format)
- * @deprecated Use signLicenseJwt instead
- */
-export function signLicenseData(data: LicenseData, privateKey: string): string {
-  try {
-    const dataToSign = JSON.stringify({
-      licenseKey: data.licenseKey,
-      tier: data.tier,
-      customerEmail: data.customerEmail,
-      issuedAt: data.issuedAt,
-      expiresAt: data.expiresAt,
-      features: data.features,
-      maxInstances: data.maxInstances,
-    });
-
-    const sign = crypto.createSign("RSA-SHA256");
-    sign.update(dataToSign);
-    sign.end();
-
-    return sign.sign(privateKey, "base64");
-  } catch (error) {
-    logger.error({ error }, "Failed to sign license data");
-    throw new Error("License signing failed", { cause: error });
-  }
-}
-
-/**
- * Verify license signature with public key (legacy format)
- * @deprecated Use verifyLicenseJwt instead
- */
-export function verifyLicenseSignature(
-  data: LicenseData,
-  signature: string,
-  publicKey: string
-): boolean {
-  try {
-    const dataToVerify = JSON.stringify({
-      licenseKey: data.licenseKey,
-      tier: data.tier,
-      customerEmail: data.customerEmail,
-      issuedAt: data.issuedAt,
-      expiresAt: data.expiresAt,
-      features: data.features,
-      maxInstances: data.maxInstances,
-    });
-
-    const verify = crypto.createVerify("RSA-SHA256");
-    verify.update(dataToVerify);
-    verify.end();
-
-    return verify.verify(publicKey, signature, "base64");
-  } catch (error) {
-    logger.error({ error }, "Failed to verify license signature");
-    return false;
   }
 }
