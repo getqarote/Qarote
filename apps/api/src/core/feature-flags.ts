@@ -8,15 +8,8 @@ import { TRPCError } from "@trpc/server";
 import { logger } from "@/core/logger";
 import { prisma } from "@/core/prisma";
 
-import type {
-  LicenseFile,
-  LicenseJwtPayload,
-} from "@/services/license/license.interfaces";
-import {
-  verifyLicenseJwt,
-  verifyLicenseSignature,
-} from "@/services/license/license-crypto.service";
-import { LICENSE_PUBLIC_KEY } from "@/services/license/license-public-key";
+import type { LicenseJwtPayload } from "@/services/license/license.interfaces";
+import { verifyLicenseJwt } from "@/services/license/license-crypto.service";
 
 import { isCloudMode } from "@/config/deployment";
 import { FEATURE_DESCRIPTIONS, type PremiumFeature } from "@/config/features";
@@ -38,50 +31,6 @@ export function invalidateLicenseCache(): void {
   cachedPayload = null;
   cachedAt = 0;
   cacheChecked = false;
-}
-
-/**
- * Parse a legacy JSON license file into a LicenseJwtPayload
- * Used for backward compatibility with old enterprise license files
- */
-function parseLegacyLicense(json: string): LicenseJwtPayload | null {
-  try {
-    const file: LicenseFile = JSON.parse(json);
-
-    if (!file.signature) return null;
-
-    const publicKey = process.env.LICENSE_PUBLIC_KEY || LICENSE_PUBLIC_KEY;
-    const valid = verifyLicenseSignature(
-      {
-        licenseKey: file.licenseKey,
-        tier: file.tier,
-        customerEmail: file.customerEmail,
-        issuedAt: file.issuedAt,
-        expiresAt: file.expiresAt,
-        features: file.features,
-        maxInstances: file.maxInstances,
-      },
-      file.signature,
-      publicKey
-    );
-
-    if (!valid) return null;
-
-    const expiresAt = new Date(file.expiresAt);
-    if (expiresAt < new Date()) return null;
-
-    return {
-      sub: file.licenseKey,
-      tier: file.tier as LicenseJwtPayload["tier"],
-      features: file.features,
-      iss: "qarote",
-      iat: Math.floor(new Date(file.issuedAt).getTime() / 1000),
-      exp: Math.floor(expiresAt.getTime() / 1000),
-    };
-  } catch (error) {
-    logger.error({ error }, "Failed to parse legacy license");
-    return null;
-  }
 }
 
 /**
@@ -108,10 +57,7 @@ async function getLicensePayload(): Promise<LicenseJwtPayload | null> {
       return null;
     }
 
-    // Detect format and verify accordingly
-    const payload = setting.value.startsWith("legacy:")
-      ? parseLegacyLicense(setting.value.slice("legacy:".length))
-      : await verifyLicenseJwt(setting.value);
+    const payload = await verifyLicenseJwt(setting.value);
 
     cachedPayload = payload;
     cachedAt = now;

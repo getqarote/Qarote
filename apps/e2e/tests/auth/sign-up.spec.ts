@@ -51,13 +51,13 @@ test.describe("User Registration @p0", () => {
     await expect(page.getByText(/at least 8 characters/i)).toBeVisible();
   });
 
-  test("should auto-verify and allow immediate sign-in (community) @community", async ({
+  test("should auto-verify and allow immediate sign-in (selfhosted) @selfhosted", async ({
     page,
     db,
   }) => {
     test.skip(
       process.env.DEPLOYMENT_MODE === "cloud",
-      "Community mode only — email disabled, auto-verifies"
+      "Selfhosted mode only — email disabled, auto-verifies"
     );
 
     const signUpPage = new SignUpPage(page);
