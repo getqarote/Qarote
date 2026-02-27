@@ -8,7 +8,7 @@ import {
   isRTL,
   LOCALE_STORAGE_KEY,
   SUPPORTED_LOCALES,
-} from "./config";
+} from "./config.js";
 
 export interface CreateI18nOptions {
   /** Namespace names to load (e.g. ['common', 'dashboard']) */

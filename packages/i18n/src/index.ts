@@ -8,4 +8,4 @@ export {
   RTL_LOCALES,
   SUPPORTED_LOCALES,
   type SupportedLocale,
-} from "./config";
+} from "./config.js";

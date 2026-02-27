@@ -1,6 +1,6 @@
 import i18n, { type i18n as I18nInstance } from "i18next";
 
-import { FALLBACK_LOCALE, SUPPORTED_LOCALES } from "./config";
+import { FALLBACK_LOCALE, SUPPORTED_LOCALES } from "./config.js";
 
 export function createServerI18nInstance(
   resources: Record<string, Record<string, object>>

@@ -10,7 +10,7 @@ on:
     branches: [main]
     paths:
       - "apps/api/**"
-      - "apps/api/app.json"
+      - "packages/i18n/**"
       - ".github/workflows/deploy-api-staging.yml"
   workflow_dispatch:
 

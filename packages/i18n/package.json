@@ -3,10 +3,22 @@
   "version": "0.0.1",
   "private": true,
   "type": "module",
+  "scripts": {
+    "build": "tsc"
+  },
   "exports": {
-    ".": "./src/index.ts",
-    "./react": "./src/react.ts",
-    "./server": "./src/server.ts"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./react": {
+      "types": "./dist/react.d.ts",
+      "default": "./dist/react.js"
+    },
+    "./server": {
+      "types": "./dist/server.d.ts",
+      "default": "./dist/server.js"
+    }
   },
   "dependencies": {
     "i18next": "^25.2.1",
@@ -21,5 +33,8 @@
     "react": {
       "optional": true
     }
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
   }
 }

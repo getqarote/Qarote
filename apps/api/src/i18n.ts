@@ -1,13 +1,17 @@
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
 import { createServerI18nInstance } from "@qarote/i18n/server";
 
-import emails from "../locales/en/emails.json";
-import errors from "../locales/en/errors.json";
-import esEmails from "../locales/es/emails.json";
-import esErrors from "../locales/es/errors.json";
-import frEmails from "../locales/fr/emails.json";
-import frErrors from "../locales/fr/errors.json";
-import zhEmails from "../locales/zh/emails.json";
-import zhErrors from "../locales/zh/errors.json";
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const localesDir = path.join(__dirname, "..", "locales");
+
+function loadJSON(locale: string, ns: string): object {
+  return JSON.parse(
+    fs.readFileSync(path.join(localesDir, locale, `${ns}.json`), "utf-8")
+  );
+}
 
 /**
  * Server-side i18n instance for the API
@@ -15,20 +19,20 @@ import zhErrors from "../locales/zh/errors.json";
  */
 const i18n = createServerI18nInstance({
   en: {
-    errors,
-    emails,
+    errors: loadJSON("en", "errors"),
+    emails: loadJSON("en", "emails"),
   },
   fr: {
-    errors: frErrors,
-    emails: frEmails,
+    errors: loadJSON("fr", "errors"),
+    emails: loadJSON("fr", "emails"),
   },
   es: {
-    errors: esErrors,
-    emails: esEmails,
+    errors: loadJSON("es", "errors"),
+    emails: loadJSON("es", "emails"),
   },
   zh: {
-    errors: zhErrors,
-    emails: zhEmails,
+    errors: loadJSON("zh", "errors"),
+    emails: loadJSON("zh", "emails"),
   },
 });
 
