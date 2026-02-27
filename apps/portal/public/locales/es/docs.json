@@ -19,27 +19,24 @@
       "description": "Los requisitos dependen de tu metodo de despliegue:",
       "dockerCompose": "<strong>Docker Compose:</strong> Docker y Docker Compose (PostgreSQL esta incluido)",
       "dokku": "<strong>Dokku:</strong> Dokku instalado en tu servidor",
-      "manual": "<strong>Manual:</strong> Node.js 24+, pnpm, PostgreSQL 15+ y Nginx o Caddy",
-      "binary": "<strong>Binary:</strong> PostgreSQL 15+ (no se necesita Docker, Node.js ni servidor web)",
-      "enterprise": "<strong>Edicion Enterprise:</strong> Archivo de licencia y clave publica validos (todos los metodos)"
+      "binary": "<strong>Manual:</strong> PostgreSQL 15+ (no se necesita Docker, Node.js ni servidor web)",
+      "enterprise": "<strong>Funciones Premium:</strong> Activa una clave de licencia en Configuracion → Licencia (todos los metodos)"
     },
     "quickStart": {
       "title": "Inicio rapido",
       "tabs": {
         "dockerCompose": "Docker Compose",
         "dokku": "Dokku",
-        "manual": "Manual",
-        "binary": "Binary"
+        "binary": "Manual"
       },
       "dockerCompose": {
         "step1Title": "1. Clonar el repositorio",
-        "step1Description": "<code>/opt/qarote</code> es la ruta recomendada en Linux — sigue el <fhsLink>Filesystem Hierarchy Standard</fhsLink> para software opcional/complementario. En Windows (WSL2 + Docker Desktop), usa <code>C:\\qarote</code>. Cualquier directorio funciona — simplemente ajusta la ruta en los comandos siguientes.",
+
         "step2Title": "2. Ejecutar el script de configuracion",
         "step2Note": "Esto crea un archivo <code>.env</code> con secretos aleatorios seguros (JWT_SECRET, ENCRYPTION_KEY, POSTGRES_PASSWORD) y establece tu modo de despliegue.",
-        "step3Title": "3. Para la edicion Enterprise: agregar tu licencia",
-        "step4Title": "4. Iniciar los servicios",
-        "step5Title": "5. Ejecutar las migraciones de base de datos",
-        "step6Title": "6. Acceder a la aplicacion",
+        "step4Title": "3. Iniciar los servicios",
+        "step5Title": "4. Ejecutar las migraciones de base de datos",
+        "step6Title": "5. Acceder a la aplicacion",
         "step6Frontend": "<strong>Frontend:</strong>",
         "step6BackendApi": "<strong>API Backend:</strong>"
       },
@@ -60,34 +57,17 @@
         "step6Title": "6. Dominio y SSL (Opcional)",
         "step6Note": "Tu aplicacion estara disponible en <code>https://your-domain.com</code> (o la IP de tu servidor)."
       },
-      "manual": {
-        "advancedSetupTitle": "Configuracion avanzada",
-        "advancedSetupDescription": "El despliegue manual te da control total, pero requiere gestionar Node.js, PostgreSQL, un reverse proxy y la gestion de procesos por tu cuenta. <strong>Docker Compose es lo recomendado</strong> para la mayoria de los usuarios.",
-        "step1Title": "1. Instalar los requisitos previos",
-        "step2Title": "2. Clonar e instalar dependencias",
-        "step3Title": "3. Configurar la base de datos",
-        "step4Title": "4. Configurar el entorno",
-        "step4Note": "El script de configuracion genera los secretos. Solo necesitas modificar <code>DATABASE_URL</code> para apuntar a tu PostgreSQL local en lugar del contenedor Docker.",
-        "step5Title": "5. Compilar e iniciar el backend",
-        "step5Note": "En produccion, usa un gestor de procesos como <pm2Link>pm2</pm2Link> o <strong>systemd</strong> para mantener el backend en ejecucion y reiniciarlo en caso de fallo.",
-        "step6Title": "6. Compilar y servir el frontend",
-        "step6Note": "<code>VITE_API_URL</code> se incorpora en tiempo de compilacion. Configuralo con la URL donde tu API backend es accesible.",
-        "step7Title": "7. Configurar Nginx",
-        "step7Note": "Para HTTPS, agrega <certbotLink>Certbot</certbotLink> para certificados SSL Let's Encrypt gratuitos, o usa <caddyLink>Caddy</caddyLink> que gestiona HTTPS automaticamente.",
-        "step8Title": "8. Gestion de procesos (Produccion)",
-        "step9Title": "9. Acceder a la aplicacion",
-        "step9Frontend": "<strong>Frontend:</strong> http://your-domain.com (Nginx)",
-        "step9BackendApi": "<strong>API Backend:</strong> http://localhost:3000 (directo, o a traves del proxy Nginx)"
-      },
       "binary": {
-        "description": "Descarga un unico binario — no se necesita Docker, Node.js ni Nginx. Solo se requiere PostgreSQL.",
+        "description": "Descarga un unico binario — no se necesita Docker, Node.js ni Nginx. Solo se requiere PostgreSQL. Los usuarios de Windows pueden ejecutar el binario de Linux dentro de WSL2.",
+        "postgresInstallTitle": "Instala PostgreSQL si no lo tienes:",
         "step1Title": "1. Descargar y extraer",
         "step2Title": "2. Configuracion interactiva",
         "step2Note": "El asistente de configuracion te pedira tu modo de despliegue y la URL de PostgreSQL, verificara la conexion y generara un archivo <code>.env</code> con secretos seguros.",
         "step3Title": "3. Iniciar Qarote",
         "step4Title": "4. Acceder a la aplicacion",
         "step4Description": "Abre <code>http://localhost:3000</code> en tu navegador. El binario sirve tanto la API como el frontend desde un unico puerto.",
-        "step4ManualSetup": "<strong>Configuracion manual:</strong> Tambien puedes omitir el asistente y configurar directamente con opciones de linea de comandos:"
+        "step4ManualSetup": "<strong>Configuracion manual:</strong> Tambien puedes omitir el asistente y configurar directamente:",
+        "cliFlagsTitle": "<strong>Opciones CLI disponibles:</strong>"
       }
     },
     "smtp": {
@@ -165,33 +145,47 @@
       "tabs": {
         "dockerCompose": "Docker Compose",
         "dokku": "Dokku",
-        "manual": "Manual",
-        "binary": "Binary"
+        "binary": "Manual"
       }
     },
     "troubleshooting": {
       "title": "Solucion de problemas",
-      "servicesTitle": "Los servicios no inician",
-      "servicesItem1": "Revisa los registros de Docker: <code>docker compose -f docker-compose.selfhosted.yml logs</code>",
-      "servicesItem2": "Verifica las variables de entorno en el archivo .env",
-      "servicesItem3": "Asegurate de que los puertos 3000 y 8080 esten disponibles (o configura puertos diferentes)",
+      "wontStartTitle": "No inicia",
+      "binary": {
+        "wontStartItem1": "Revisa la salida del terminal para mensajes de error",
+        "wontStartItem2": "Verifica que tu archivo <code>.env</code> existe o pasa todos los flags CLI requeridos",
+        "wontStartItem3": "Asegurate de que el puerto este disponible: <code>lsof -i :3000</code>",
+        "databaseItem1": "Verifica que tu <code>DATABASE_URL</code> sea correcto y que PostgreSQL este ejecutandose",
+        "databaseItem2": "Prueba la conexion: <code>psql tu-url-de-base</code>",
+        "databaseItem3": "Las migraciones se ejecutan automaticamente al iniciar — revisa la salida para errores"
+      },
+      "dockerCompose": {
+        "wontStartItem1": "Revisa los registros: <code>docker compose -f docker-compose.selfhosted.yml logs</code>",
+        "wontStartItem2": "Verifica las variables de entorno en el archivo <code>.env</code>",
+        "wontStartItem3": "Asegurate de que los puertos esten disponibles (o cambia <code>BACKEND_PORT</code> / <code>FRONTEND_PORT</code> en <code>.env</code>)",
+        "databaseItem1": "Espera a que PostgreSQL se inicialice completamente (verifica el estado de salud)",
+        "databaseItem2": "Verifica que <code>POSTGRES_PASSWORD</code> coincida en <code>.env</code>",
+        "databaseItem3": "Ejecuta las migraciones: <code>docker exec qarote_backend pnpm run db:migrate</code>"
+      },
+      "dokku": {
+        "wontStartItem1": "Revisa los registros: <code>dokku logs qarote</code>",
+        "wontStartItem2": "Verifica la config: <code>dokku config:show qarote</code>",
+        "wontStartItem3": "Verifica que la app fue desplegada: <code>dokku ps:report qarote</code>",
+        "databaseItem1": "Verifica que la base de datos este vinculada: <code>dokku postgres:info qarote-db</code>",
+        "databaseItem2": "Verifica que <code>DATABASE_URL</code> este configurado: <code>dokku config:get qarote DATABASE_URL</code>",
+        "databaseItem3": "Las migraciones se ejecutan automaticamente al desplegar — revisa los registros para errores"
+      },
       "databaseTitle": "Errores de conexion a la base de datos",
-      "databaseItem1": "Espera a que PostgreSQL se inicialice completamente (verifica el estado de salud)",
-      "databaseItem2": "Verifica que POSTGRES_PASSWORD coincida en el archivo .env",
-      "databaseItem3": "Asegurate de que las migraciones de base de datos se hayan ejecutado",
-      "licenseTitle": "Problemas de licencia Enterprise",
-      "licenseItem1": "Verifica que LICENSE_FILE_PATH apunte al archivo correcto",
-      "licenseItem2": "Asegurate de que LICENSE_PUBLIC_KEY coincida con tu licencia",
+      "licenseTitle": "Problemas de licencia",
+      "licenseItem1": "Verifica que tu clave de licencia sea valida y no haya expirado",
+      "licenseItem2": "Reactiva tu licencia desde Configuracion → Licencia",
       "licenseItem3": "Verifica la fecha de expiracion de la licencia"
     },
     "security": {
       "title": "Recomendaciones de seguridad",
-      "item1": "Usa valores fuertes y generados aleatoriamente para JWT_SECRET y ENCRYPTION_KEY",
-      "item2": "Establece permisos de archivo restrictivos en tu archivo de licencia (chmod 600 qarote-license.json)",
-      "item3": "Configura CORS_ORIGIN con tu dominio especifico (no *)",
-      "item4": "Usa HTTPS en produccion con un reverse proxy",
-      "item5": "Actualiza regularmente a la ultima version",
-      "item6": "Activa el seguimiento de errores con Sentry para la monitorizacion en produccion"
+      "item1": "Usa valores fuertes y generados aleatoriamente para JWT_SECRET y ENCRYPTION_KEY si no usas los generados por defecto",
+      "item2": "Mantén tu clave de licencia privada — no la compartas publicamente",
+      "item3": "Actualiza regularmente a la ultima version"
     },
     "support": {
       "title": "Soporte",
@@ -202,9 +196,9 @@
     }
   },
   "dockerCompose": {
-    "description": "Configuracion Docker Compose lista para produccion para las ediciones Community y Enterprise"
+    "description": "Configuracion Docker Compose lista para produccion para despliegues autoalojados. No es necesaria para despliegues binario o Dokku."
   },
   "envConfig": {
-    "description": "Plantilla de variables de entorno — copiala a un archivo .env y actualiza con tus valores"
+    "description": "Referencia de variables de entorno para despliegues Docker Compose y Dokku. Los usuarios de la instalacion manual deben ejecutar <code>./qarote setup</code> en su lugar."
   }
 }

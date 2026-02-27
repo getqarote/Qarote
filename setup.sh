@@ -6,9 +6,8 @@ set -euo pipefail
 # Generates a .env file with secure random secrets — no Node.js required.
 #
 # Usage:
-#   ./setup.sh community          # Community Edition (open-source)
-#   ./setup.sh enterprise         # Enterprise Edition (licensed)
-#   ./setup.sh community --force  # Overwrite existing .env without prompting
+#   ./setup.sh              # Generate .env with secure secrets
+#   ./setup.sh --force      # Overwrite existing .env without prompting
 # =============================================================================
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -32,29 +31,21 @@ success() { echo -e "${GREEN}$1${NC}"; }
 warn() { echo -e "${YELLOW}$1${NC}"; }
 
 # --- Argument parsing ---
-DEPLOYMENT_MODE=""
 FORCE=false
 
 for arg in "$@"; do
   case "$arg" in
-    community|enterprise) DEPLOYMENT_MODE="$arg" ;;
     --force) FORCE=true ;;
     -h|--help)
-      echo "Usage: ./setup.sh <community|enterprise> [--force]"
+      echo "Usage: ./setup.sh [--force]"
       echo ""
-      echo "Arguments:"
-      echo "  community    Set up Community Edition (open-source)"
-      echo "  enterprise   Set up Enterprise Edition (licensed)"
+      echo "Options:"
       echo "  --force      Overwrite existing .env without prompting"
       exit 0
       ;;
     *) error "Unknown argument: $arg. Use --help for usage." ;;
   esac
 done
-
-if [ -z "$DEPLOYMENT_MODE" ]; then
-  error "Deployment mode required. Usage: ./setup.sh <community|enterprise>"
-fi
 
 # --- Validation ---
 if ! command -v openssl &> /dev/null; then
@@ -95,40 +86,25 @@ sed_inplace() {
 }
 
 # --- Replace values ---
-sed_inplace "s|^DEPLOYMENT_MODE=.*|DEPLOYMENT_MODE=$DEPLOYMENT_MODE|" "$ENV_FILE"
 sed_inplace "s|^POSTGRES_PASSWORD=.*|POSTGRES_PASSWORD=$POSTGRES_PASSWORD|" "$ENV_FILE"
 sed_inplace "s|^JWT_SECRET=.*|JWT_SECRET=$JWT_SECRET|" "$ENV_FILE"
 sed_inplace "s|^ENCRYPTION_KEY=.*|ENCRYPTION_KEY=$ENCRYPTION_KEY|" "$ENV_FILE"
 
 # --- Output ---
 echo ""
-success "Qarote $DEPLOYMENT_MODE edition configured!"
+success "Qarote configured!"
 echo ""
 echo "  .env file created at: $ENV_FILE"
 echo ""
 echo "  Generated secrets:"
-echo "    DEPLOYMENT_MODE = $DEPLOYMENT_MODE"
 echo "    POSTGRES_PASSWORD = ${POSTGRES_PASSWORD:0:16}..."
 echo "    JWT_SECRET        = ${JWT_SECRET:0:16}..."
 echo "    ENCRYPTION_KEY    = ${ENCRYPTION_KEY:0:16}..."
 echo ""
 
-if [ "$DEPLOYMENT_MODE" = "enterprise" ]; then
-  warn "Enterprise Edition: Don't forget to configure your license in .env:"
-  echo "    LICENSE_FILE_PATH=./qarote-license.json"
-  echo "    LICENSE_PUBLIC_KEY=\"-----BEGIN PUBLIC KEY-----\\n...\\n-----END PUBLIC KEY-----\""
-  echo ""
-fi
-
 info "Next steps:"
-if [ "$DEPLOYMENT_MODE" = "enterprise" ]; then
-  echo "  1. Place your license file: cp /path/to/qarote-license-*.json ./qarote-license.json"
-  echo "  2. Set LICENSE_FILE_PATH and LICENSE_PUBLIC_KEY in .env"
-  echo "  3. Start services: docker compose -f docker-compose.selfhosted.yml up -d"
-  echo "  4. Run migrations: docker exec qarote_backend_enterprise pnpm run db:migrate"
-else
-  echo "  1. Start services: docker compose -f docker-compose.selfhosted.yml up -d"
-  echo "  2. Run migrations: docker exec qarote_backend_community pnpm run db:migrate"
-  echo "  3. Open http://localhost:8080"
-fi
+echo "  1. Start services: docker compose -f docker-compose.selfhosted.yml up -d"
+echo "  2. Run migrations: docker exec qarote_backend pnpm run db:migrate"
+echo "  3. Open http://localhost:8080"
+echo "  4. To activate a license, go to Settings → License and paste your license key"
 echo ""

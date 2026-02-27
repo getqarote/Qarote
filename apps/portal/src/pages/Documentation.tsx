@@ -1,19 +1,10 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { FileCode, FileText, Search, X } from "lucide-react";
+import { Search, X } from "lucide-react";
 
-import { DockerComposeSection } from "@/components/documentation/DockerComposeSection";
-import { EnvironmentConfigSection } from "@/components/documentation/EnvironmentConfigSection";
 import { InstallationGuideSection } from "@/components/documentation/InstallationGuideSection";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import { BackToTop } from "@/components/ui/back-to-top";
-import { Heading } from "@/components/ui/heading";
 import { Input } from "@/components/ui/input";
 import { TableOfContents } from "@/components/ui/table-of-contents";
 
@@ -21,6 +12,7 @@ import { TOC_ITEMS } from "@/constants/documentation.constants";
 
 const Documentation = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeDeployment, setActiveDeployment] = useState("binary");
   const { t } = useTranslation("portal");
 
   // Filter sections based on search query
@@ -29,12 +21,24 @@ const Documentation = () => {
     return text.toLowerCase().includes(searchQuery.toLowerCase());
   };
 
-  const showDockerCompose = matchesSearch("docker compose yaml configuration");
-  const showEnvConfig = matchesSearch(
-    "environment variables configuration env"
-  );
   const showInstallation = matchesSearch(
     "installation guide setup deploy prerequisites quick start updating troubleshooting security support dokku"
+  );
+
+  // Filter TOC items based on active deployment
+  const filteredTocItems = useMemo(
+    () =>
+      TOC_ITEMS.filter((item) => {
+        if (
+          item.id === "docker-compose" &&
+          activeDeployment !== "docker-compose"
+        )
+          return false;
+        if (item.id === "environment-config" && activeDeployment === "binary")
+          return false;
+        return true;
+      }),
+    [activeDeployment]
   );
 
   return (
@@ -73,56 +77,17 @@ const Documentation = () => {
           </div>
 
           {/* Installation Guide - primary content */}
-          {showInstallation && <InstallationGuideSection />}
-
-          {/* Reference sections - collapsible */}
-          {(showDockerCompose || showEnvConfig) && (
-            <Accordion type="multiple" className="w-full space-y-4">
-              {showDockerCompose && (
-                <AccordionItem
-                  value="docker-compose"
-                  className="border rounded-lg"
-                >
-                  <div id="docker-compose">
-                    <AccordionTrigger className="px-6 py-4 hover:no-underline">
-                      <div className="flex items-center gap-2">
-                        <FileCode className="h-5 w-5" />
-                        <Heading level={3} id="docker-compose-heading">
-                          {t("documentation.dockerComposeFile")}
-                        </Heading>
-                      </div>
-                    </AccordionTrigger>
-                  </div>
-                  <AccordionContent className="px-6 pb-6">
-                    <DockerComposeSection />
-                  </AccordionContent>
-                </AccordionItem>
-              )}
-
-              {showEnvConfig && (
-                <AccordionItem value="env-config" className="border rounded-lg">
-                  <div id="environment-config">
-                    <AccordionTrigger className="px-6 py-4 hover:no-underline">
-                      <div className="flex items-center gap-2">
-                        <FileText className="h-5 w-5" />
-                        <Heading level={3} id="environment-config-heading">
-                          {t("documentation.environmentConfiguration")}
-                        </Heading>
-                      </div>
-                    </AccordionTrigger>
-                  </div>
-                  <AccordionContent className="px-6 pb-6">
-                    <EnvironmentConfigSection />
-                  </AccordionContent>
-                </AccordionItem>
-              )}
-            </Accordion>
+          {showInstallation && (
+            <InstallationGuideSection
+              activeDeployment={activeDeployment}
+              onDeploymentChange={setActiveDeployment}
+            />
           )}
         </div>
 
         {/* Table of Contents Sidebar */}
         <aside className="w-64 shrink-0 hidden lg:block">
-          <TableOfContents items={[...TOC_ITEMS]} />
+          <TableOfContents items={filteredTocItems} />
         </aside>
       </div>
 

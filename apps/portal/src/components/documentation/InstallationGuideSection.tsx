@@ -1,7 +1,9 @@
 import { Trans, useTranslation } from "react-i18next";
 
-import { FileText } from "lucide-react";
+import { FileCode, FileText } from "lucide-react";
 
+import { DockerComposeSection } from "@/components/documentation/DockerComposeSection";
+import { EnvironmentConfigSection } from "@/components/documentation/EnvironmentConfigSection";
 import {
   Accordion,
   AccordionContent,
@@ -19,7 +21,15 @@ import { CodeBlock } from "@/components/ui/code-block";
 import { Heading } from "@/components/ui/heading";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-export function InstallationGuideSection() {
+interface InstallationGuideSectionProps {
+  activeDeployment: string;
+  onDeploymentChange: (value: string) => void;
+}
+
+export function InstallationGuideSection({
+  activeDeployment,
+  onDeploymentChange,
+}: InstallationGuideSectionProps) {
   const { t } = useTranslation("docs");
 
   return (
@@ -55,11 +65,6 @@ export function InstallationGuideSection() {
             />
             <li
               dangerouslySetInnerHTML={{
-                __html: t("installGuide.prerequisites.manual"),
-              }}
-            />
-            <li
-              dangerouslySetInnerHTML={{
                 __html: t("installGuide.prerequisites.binary"),
               }}
             />
@@ -77,19 +82,20 @@ export function InstallationGuideSection() {
             {t("installGuide.quickStart.title")}
           </Heading>
 
-          <Tabs defaultValue="docker-compose" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
+          <Tabs
+            value={activeDeployment}
+            onValueChange={onDeploymentChange}
+            className="w-full"
+          >
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="binary">
+                {t("installGuide.quickStart.tabs.binary")}
+              </TabsTrigger>
               <TabsTrigger value="docker-compose">
                 {t("installGuide.quickStart.tabs.dockerCompose")}
               </TabsTrigger>
               <TabsTrigger value="dokku">
                 {t("installGuide.quickStart.tabs.dokku")}
-              </TabsTrigger>
-              <TabsTrigger value="manual">
-                {t("installGuide.quickStart.tabs.manual")}
-              </TabsTrigger>
-              <TabsTrigger value="binary">
-                {t("installGuide.quickStart.tabs.binary")}
               </TabsTrigger>
             </TabsList>
 
@@ -100,41 +106,17 @@ export function InstallationGuideSection() {
                   {t("installGuide.quickStart.dockerCompose.step1Title")}
                 </h5>
                 <CodeBlock
-                  code={`git clone https://github.com/getqarote/Qarote.git /opt/qarote
-cd /opt/qarote`}
+                  code={`git clone https://github.com/getqarote/Qarote.git qarote
+cd qarote`}
                   language="bash"
                 />
-                <p className="text-sm text-muted-foreground">
-                  <Trans
-                    i18nKey="installGuide.quickStart.dockerCompose.step1Description"
-                    ns="docs"
-                    components={{
-                      code: <code className="bg-muted px-1 rounded" />,
-                      fhsLink: (
-                        <a
-                          href="https://refspecs.linuxfoundation.org/FHS_3.0/fhs/ch03s13.html"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-primary hover:underline"
-                        />
-                      ),
-                    }}
-                  />
-                </p>
               </div>
 
               <div className="space-y-3">
                 <h5 className="text-sm font-medium">
                   {t("installGuide.quickStart.dockerCompose.step2Title")}
                 </h5>
-                <CodeBlock
-                  code={`# Community Edition (open-source)
-./setup.sh community
-
-# Enterprise Edition (licensed)
-./setup.sh enterprise`}
-                  language="bash"
-                />
+                <CodeBlock code={`./setup.sh`} language="bash" />
 
                 <div className="bg-muted rounded-lg p-4">
                   <p
@@ -146,22 +128,42 @@ cd /opt/qarote`}
                     }}
                   />
                 </div>
-              </div>
 
-              <div className="space-y-3">
-                <h5 className="text-sm font-medium">
-                  {t("installGuide.quickStart.dockerCompose.step3Title")}
-                </h5>
-                <CodeBlock
-                  code={`# Place your downloaded license file
-# License files are downloaded with format: qarote-license-{uuid}.json
-cp /path/to/your/qarote-license-*.json ./qarote-license.json
+                <Accordion type="multiple" className="w-full space-y-2 mt-2">
+                  <AccordionItem
+                    value="docker-compose-file"
+                    className="border rounded-lg"
+                  >
+                    <AccordionTrigger className="px-4 py-3 hover:no-underline">
+                      <div className="flex items-center gap-2">
+                        <FileCode className="h-4 w-4" />
+                        <span className="text-sm font-medium">
+                          docker-compose.selfhosted.yml
+                        </span>
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="px-4 pb-4">
+                      <DockerComposeSection />
+                    </AccordionContent>
+                  </AccordionItem>
 
-# Update .env with your license configuration
-# LICENSE_FILE_PATH=./qarote-license.json
-# LICENSE_PUBLIC_KEY="-----BEGIN PUBLIC KEY-----\\nMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA...\\n-----END PUBLIC KEY-----"`}
-                  language="bash"
-                />
+                  <AccordionItem
+                    value="env-config"
+                    className="border rounded-lg"
+                  >
+                    <AccordionTrigger className="px-4 py-3 hover:no-underline">
+                      <div className="flex items-center gap-2">
+                        <FileText className="h-4 w-4" />
+                        <span className="text-sm font-medium">
+                          .env.selfhosted.example
+                        </span>
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="px-4 pb-4">
+                      <EnvironmentConfigSection />
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
               </div>
 
               <div className="space-y-3">
@@ -183,11 +185,7 @@ docker compose -f docker-compose.selfhosted.yml logs -f`}
                   {t("installGuide.quickStart.dockerCompose.step5Title")}
                 </h5>
                 <CodeBlock
-                  code={`# For Community Edition
-docker exec qarote_backend_community pnpm run db:migrate
-
-# For Enterprise Edition
-docker exec qarote_backend_enterprise pnpm run db:migrate`}
+                  code={`docker exec qarote_backend pnpm run db:migrate`}
                   language="bash"
                 />
               </div>
@@ -325,15 +323,17 @@ dokku postgres:link qarote-db qarote`}
                 </h5>
                 <CodeBlock
                   code={`dokku config:set qarote \\
-  DEPLOYMENT_MODE=community \\
-  NODE_ENV=production \\
-  LOG_LEVEL=info \\
   JWT_SECRET=$(openssl rand -hex 64) \\
   ENCRYPTION_KEY=$(openssl rand -hex 64) \\
-  CORS_ORIGIN=* \\
-  API_URL=https://your-domain.com \\
-  FRONTEND_URL=https://your-domain.com \\
-  ENABLE_EMAIL=false`}
+  ENABLE_EMAIL=false
+
+# To enable email, set ENABLE_EMAIL=true and add SMTP settings:
+# dokku config:set qarote \\
+#   ENABLE_EMAIL=true \\
+#   SMTP_HOST=smtp.gmail.com \\
+#   SMTP_PORT=587 \\
+#   SMTP_USER=your-email@gmail.com \\
+#   SMTP_PASS=your-app-password`}
                   language="bash"
                 />
                 <p
@@ -383,267 +383,6 @@ dokku letsencrypt:enable qarote`}
               </div>
             </TabsContent>
 
-            {/* Manual (Bare Metal) Quick Start */}
-            <TabsContent value="manual" className="space-y-4 mt-4">
-              <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
-                <h5 className="font-semibold text-amber-900 dark:text-amber-100 mb-2">
-                  {t("installGuide.quickStart.manual.advancedSetupTitle")}
-                </h5>
-                <p
-                  className="text-sm text-amber-800 dark:text-amber-200"
-                  dangerouslySetInnerHTML={{
-                    __html: t(
-                      "installGuide.quickStart.manual.advancedSetupDescription"
-                    ),
-                  }}
-                />
-              </div>
-
-              <div className="space-y-3">
-                <h5 className="text-sm font-medium">
-                  {t("installGuide.quickStart.manual.step1Title")}
-                </h5>
-                <CodeBlock
-                  code={`# Install Node.js 24+ (via nvm)
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
-nvm install 24
-
-# Enable pnpm via corepack
-corepack enable
-
-# Install PostgreSQL 15+
-# Ubuntu/Debian:
-sudo apt install postgresql postgresql-contrib
-# macOS:
-brew install postgresql@15
-
-# Install Nginx (reverse proxy)
-# Ubuntu/Debian:
-sudo apt install nginx
-# macOS:
-brew install nginx`}
-                  language="bash"
-                />
-              </div>
-
-              <div className="space-y-3">
-                <h5 className="text-sm font-medium">
-                  {t("installGuide.quickStart.manual.step2Title")}
-                </h5>
-                <CodeBlock
-                  code={`git clone https://github.com/getqarote/Qarote.git /opt/qarote
-cd /opt/qarote
-pnpm install`}
-                  language="bash"
-                />
-              </div>
-
-              <div className="space-y-3">
-                <h5 className="text-sm font-medium">
-                  {t("installGuide.quickStart.manual.step3Title")}
-                </h5>
-                <CodeBlock
-                  code={`# Create database and user
-sudo -u postgres psql -c "CREATE USER qarote WITH PASSWORD 'your-secure-password';"
-sudo -u postgres psql -c "CREATE DATABASE qarote OWNER qarote;"
-
-# Verify connection
-psql -h localhost -U qarote -d qarote -c "SELECT 1;"`}
-                  language="bash"
-                />
-              </div>
-
-              <div className="space-y-3">
-                <h5 className="text-sm font-medium">
-                  {t("installGuide.quickStart.manual.step4Title")}
-                </h5>
-                <CodeBlock
-                  code={`# Generate .env with secrets (recommended)
-./setup.sh community
-
-# Then update DATABASE_URL to point to your local PostgreSQL:
-# DATABASE_URL=postgresql://qarote:your-secure-password@localhost:5432/qarote`}
-                  language="bash"
-                />
-                <p
-                  className="text-sm text-muted-foreground"
-                  dangerouslySetInnerHTML={{
-                    __html: t("installGuide.quickStart.manual.step4Note"),
-                  }}
-                />
-              </div>
-
-              <div className="space-y-3">
-                <h5 className="text-sm font-medium">
-                  {t("installGuide.quickStart.manual.step5Title")}
-                </h5>
-                <CodeBlock
-                  code={`# Build the API (generates Prisma client + compiles TypeScript)
-pnpm run build:api
-
-# Run database migrations
-cd apps/api
-pnpm run db:migrate
-cd ../..
-
-# Start the backend
-cd apps/api
-node dist/index.js`}
-                  language="bash"
-                />
-                <p className="text-sm text-muted-foreground">
-                  <Trans
-                    i18nKey="installGuide.quickStart.manual.step5Note"
-                    ns="docs"
-                    components={{
-                      pm2Link: (
-                        <a
-                          href="https://pm2.keymetrics.io/"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-primary hover:underline"
-                        />
-                      ),
-                      strong: <strong />,
-                    }}
-                  />
-                </p>
-              </div>
-
-              <div className="space-y-3">
-                <h5 className="text-sm font-medium">
-                  {t("installGuide.quickStart.manual.step6Title")}
-                </h5>
-                <CodeBlock
-                  code={`# Build the frontend (output: apps/app/dist/)
-VITE_API_URL=http://localhost:3000 pnpm run build:app
-
-# Copy to Nginx webroot
-sudo mkdir -p /var/www/qarote
-sudo cp -r apps/app/dist/* /var/www/qarote/`}
-                  language="bash"
-                />
-                <p
-                  className="text-sm text-muted-foreground"
-                  dangerouslySetInnerHTML={{
-                    __html: t("installGuide.quickStart.manual.step6Note"),
-                  }}
-                />
-              </div>
-
-              <div className="space-y-3">
-                <h5 className="text-sm font-medium">
-                  {t("installGuide.quickStart.manual.step7Title")}
-                </h5>
-                <CodeBlock
-                  code={`# /etc/nginx/sites-available/qarote
-server {
-    listen 80;
-    server_name your-domain.com;
-
-    # Frontend (SPA)
-    root /var/www/qarote;
-    index index.html;
-
-    location / {
-        try_files $uri $uri/ /index.html;
-    }
-
-    # Cache static assets
-    location ~* \\.(js|css|png|jpg|jpeg|gif|ico|svg|woff2?)$ {
-        expires 1y;
-        add_header Cache-Control "public, immutable";
-    }
-}
-
-# Enable the site
-# sudo ln -s /etc/nginx/sites-available/qarote /etc/nginx/sites-enabled/
-# sudo nginx -t && sudo systemctl reload nginx`}
-                  language="nginx"
-                />
-                <p className="text-sm text-muted-foreground">
-                  <Trans
-                    i18nKey="installGuide.quickStart.manual.step7Note"
-                    ns="docs"
-                    components={{
-                      certbotLink: (
-                        <a
-                          href="https://certbot.eff.org/"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-primary hover:underline"
-                        />
-                      ),
-                      caddyLink: (
-                        <a
-                          href="https://caddyserver.com/"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-primary hover:underline"
-                        />
-                      ),
-                    }}
-                  />
-                </p>
-              </div>
-
-              <div className="space-y-3">
-                <h5 className="text-sm font-medium">
-                  {t("installGuide.quickStart.manual.step8Title")}
-                </h5>
-                <CodeBlock
-                  code={`# Option A: pm2
-npm install -g pm2
-cd /opt/qarote/apps/api
-pm2 start "node dist/index.js" --name qarote-api
-pm2 save
-pm2 startup  # auto-start on boot
-
-# Option B: systemd
-# Create /etc/systemd/system/qarote-api.service
-# [Unit]
-# Description=Qarote API
-# After=postgresql.service
-#
-# [Service]
-# Type=simple
-# User=qarote
-# WorkingDirectory=/opt/qarote/apps/api
-# ExecStart=/usr/bin/node dist/index.js
-# Restart=on-failure
-# EnvironmentFile=/opt/qarote/.env
-#
-# [Install]
-# WantedBy=multi-user.target`}
-                  language="bash"
-                />
-              </div>
-
-              <div className="space-y-3">
-                <h5 className="text-sm font-medium">
-                  {t("installGuide.quickStart.manual.step9Title")}
-                </h5>
-                <div className="bg-muted rounded-lg p-4">
-                  <ul className="text-sm space-y-2">
-                    <li
-                      dangerouslySetInnerHTML={{
-                        __html: t(
-                          "installGuide.quickStart.manual.step9Frontend"
-                        ),
-                      }}
-                    />
-                    <li
-                      dangerouslySetInnerHTML={{
-                        __html: t(
-                          "installGuide.quickStart.manual.step9BackendApi"
-                        ),
-                      }}
-                    />
-                  </ul>
-                </div>
-              </div>
-            </TabsContent>
-
             {/* Binary Quick Start */}
             <TabsContent value="binary" className="space-y-4 mt-4">
               <div className="space-y-3">
@@ -651,12 +390,33 @@ pm2 startup  # auto-start on boot
                   {t("installGuide.quickStart.binary.description")}
                 </p>
 
+                <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                  <p
+                    className="text-sm text-blue-900 dark:text-blue-100 font-medium mb-2"
+                    dangerouslySetInnerHTML={{
+                      __html: t(
+                        "installGuide.quickStart.binary.postgresInstallTitle"
+                      ),
+                    }}
+                  />
+                  <CodeBlock
+                    code={`# macOS
+brew install postgresql@15
+
+# Ubuntu / Debian / WSL2
+sudo apt install postgresql`}
+                    language="bash"
+                  />
+                </div>
+
                 <h5 className="text-sm font-medium">
                   {t("installGuide.quickStart.binary.step1Title")}
                 </h5>
+
                 <CodeBlock
                   code={`# Download the latest release for your platform
-# Replace linux-x64 with: linux-arm64, darwin-x64, or darwin-arm64
+# Available: linux-x64, linux-arm64, darwin-x64, darwin-arm64
+# Windows users: use linux-x64 inside WSL2
 curl -L https://github.com/getqarote/Qarote/releases/latest/download/qarote-linux-x64.tar.gz | tar xz
 cd qarote`}
                   language="bash"
@@ -707,7 +467,34 @@ cd qarote`}
                     }}
                   />
                   <CodeBlock
-                    code={`./qarote --port 8080 --database-url postgresql://user:pass@localhost/qarote`}
+                    code={`./qarote \\
+  --database-url postgresql://user:pass@localhost/qarote \\
+  --jwt-secret $(openssl rand -hex 64) \\
+  --encryption-key $(openssl rand -hex 64)`}
+                    language="bash"
+                  />
+                  <p
+                    className="text-sm text-muted-foreground mt-3 mb-1"
+                    dangerouslySetInnerHTML={{
+                      __html: t("installGuide.quickStart.binary.cliFlagsTitle"),
+                    }}
+                  />
+                  <CodeBlock
+                    code={`./qarote setup                  # Interactive setup wizard (generates .env)
+--database-url <url>            # PostgreSQL connection URL
+--jwt-secret <secret>           # JWT signing secret (min 32 chars)
+--encryption-key <key>          # Encryption key (min 32 chars)
+-p, --port <port>               # Server port (default: 3000)
+-h, --host <host>               # Server host (default: localhost)
+--enable-email <bool>           # Enable email features (default: false)
+--smtp-host <host>              # SMTP server hostname
+--smtp-port <port>              # SMTP server port (default: 587)
+--smtp-user <user>              # SMTP username
+--smtp-pass <pass>              # SMTP password
+--smtp-service <name>           # SMTP service for OAuth2 (e.g. gmail)
+--smtp-oauth-client-id <id>    # OAuth2 client ID
+--smtp-oauth-client-secret <s> # OAuth2 client secret
+--smtp-oauth-refresh-token <t> # OAuth2 refresh token`}
                     language="bash"
                   />
                 </div>
@@ -1133,99 +920,17 @@ SMTP_PASS=smtp-password`}
             <p className="text-sm text-muted-foreground mb-3">
               {t("installGuide.smtp.testingDescription")}
             </p>
-            <Tabs defaultValue="smtp-docker" className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="smtp-docker">
-                  {t("installGuide.quickStart.tabs.dockerCompose")}
-                </TabsTrigger>
-                <TabsTrigger value="smtp-dokku">
-                  {t("installGuide.quickStart.tabs.dokku")}
-                </TabsTrigger>
-                <TabsTrigger value="smtp-manual">
-                  {t("installGuide.quickStart.tabs.manual")}
-                </TabsTrigger>
-                <TabsTrigger value="smtp-binary">
-                  {t("installGuide.quickStart.tabs.binary")}
-                </TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="smtp-docker" className="mt-4">
-                <CodeBlock
-                  code={`# Replace <container> with your backend container name:
-#   qarote_backend_community  (Community Edition)
-#   qarote_backend_enterprise (Enterprise Edition)
-
-# Test SMTP connection
+            <CodeBlock
+              code={`# Docker Compose: replace <container> with your backend container name
 docker exec <container> pnpm run test:smtp
 
-# Send test email
+# Send a test email
 docker exec <container> pnpm run test:smtp -- --send admin@yourcompany.com
 
-# Send with production React Email template
-docker exec <container> pnpm run test:smtp -- --send admin@yourcompany.com --template
-
-# Test with Ethereal (fake SMTP, no real delivery)
-docker exec <container> pnpm run test:smtp:ethereal
-
-# Send test via Ethereal and get preview URL
-docker exec <container> pnpm run test:smtp:ethereal -- --send test@example.com`}
-                  language="bash"
-                />
-              </TabsContent>
-
-              <TabsContent value="smtp-dokku" className="mt-4">
-                <CodeBlock
-                  code={`# Test SMTP connection
-dokku run qarote pnpm run test:smtp
-
-# Send test email
-dokku run qarote pnpm run test:smtp -- --send admin@yourcompany.com
-
-# Send with production React Email template
-dokku run qarote pnpm run test:smtp -- --send admin@yourcompany.com --template
-
-# Test with Ethereal (fake SMTP, no real delivery)
-dokku run qarote pnpm run test:smtp:ethereal
-
-# Send test via Ethereal and get preview URL
-dokku run qarote pnpm run test:smtp:ethereal -- --send test@example.com`}
-                  language="bash"
-                />
-              </TabsContent>
-
-              <TabsContent value="smtp-manual" className="mt-4">
-                <CodeBlock
-                  code={`# From the project root (/opt/qarote)
-cd apps/api
-
-# Test SMTP connection
-pnpm run test:smtp
-
-# Send test email
-pnpm run test:smtp -- --send admin@yourcompany.com
-
-# Send with production React Email template
-pnpm run test:smtp -- --send admin@yourcompany.com --template
-
-# Test with Ethereal (fake SMTP, no real delivery)
-pnpm run test:smtp:ethereal
-
-# Send test via Ethereal and get preview URL
-pnpm run test:smtp:ethereal -- --send test@example.com`}
-                  language="bash"
-                />
-              </TabsContent>
-
-              <TabsContent value="smtp-binary" className="mt-4">
-                <CodeBlock
-                  code={`# The binary does not include test scripts.
-# To test SMTP, use curl or a mail client to verify your SMTP settings,
-# then configure ENABLE_EMAIL=true and SMTP_* variables in .env.
-# Restart the binary for changes to take effect.`}
-                  language="bash"
-                />
-              </TabsContent>
-            </Tabs>
+# Dokku
+dokku run qarote pnpm run test:smtp -- --send admin@yourcompany.com`}
+              language="bash"
+            />
 
             <p
               className="text-sm text-muted-foreground mt-3"
@@ -1241,78 +946,9 @@ pnpm run test:smtp:ethereal -- --send test@example.com`}
           <Heading level={4} id="updating-qarote">
             {t("installGuide.updating.title")}
           </Heading>
-          <Tabs defaultValue="update-docker" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="update-docker">
-                {t("installGuide.updating.tabs.dockerCompose")}
-              </TabsTrigger>
-              <TabsTrigger value="update-dokku">
-                {t("installGuide.updating.tabs.dokku")}
-              </TabsTrigger>
-              <TabsTrigger value="update-manual">
-                {t("installGuide.updating.tabs.manual")}
-              </TabsTrigger>
-              <TabsTrigger value="update-binary">
-                {t("installGuide.updating.tabs.binary")}
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="update-docker" className="mt-4">
-              <CodeBlock
-                code={`# Pull latest changes
-git pull origin main
-
-# Rebuild and restart services
-docker compose -f docker-compose.selfhosted.yml up -d --build
-
-# Run any new migrations
-docker exec qarote_backend_\${DEPLOYMENT_MODE} pnpm run db:migrate`}
-                language="bash"
-              />
-            </TabsContent>
-
-            <TabsContent value="update-dokku" className="mt-4">
-              <CodeBlock
-                code={`# Push latest changes to Dokku (triggers rebuild automatically)
-git push dokku main
-
-# Run any new migrations
-dokku run qarote pnpm run db:migrate`}
-                language="bash"
-              />
-            </TabsContent>
-
-            <TabsContent value="update-manual" className="mt-4">
-              <CodeBlock
-                code={`# Pull latest changes
-cd /opt/qarote
-git pull origin main
-
-# Install any new dependencies
-pnpm install
-
-# Rebuild backend and frontend
-pnpm run build:api
-VITE_API_URL=http://localhost:3000 pnpm run build:app
-
-# Run any new migrations
-cd apps/api
-pnpm run db:migrate
-cd ../..
-
-# Restart the backend
-pm2 restart qarote-api
-# or: sudo systemctl restart qarote-api
-
-# Update frontend static files
-sudo cp -r apps/app/dist/* /var/www/qarote/`}
-                language="bash"
-              />
-            </TabsContent>
-
-            <TabsContent value="update-binary" className="mt-4">
-              <CodeBlock
-                code={`# Stop the running instance
+          {activeDeployment === "binary" && (
+            <CodeBlock
+              code={`# Stop the running instance
 kill $(pgrep -f './qarote') 2>/dev/null || true
 
 # Download and extract in-place (overwrites binary, public/, migrations/)
@@ -1323,10 +959,34 @@ curl -L https://github.com/getqarote/Qarote/releases/latest/download/qarote-linu
 # Restart — new migrations are applied automatically on startup
 # (your .env file is preserved — no reconfiguration needed)
 ./qarote`}
-                language="bash"
-              />
-            </TabsContent>
-          </Tabs>
+              language="bash"
+            />
+          )}
+
+          {activeDeployment === "docker-compose" && (
+            <CodeBlock
+              code={`# Pull latest changes
+git pull origin main
+
+# Rebuild and restart services
+docker compose -f docker-compose.selfhosted.yml up -d --build
+
+# Run any new migrations
+docker exec qarote_backend pnpm run db:migrate`}
+              language="bash"
+            />
+          )}
+
+          {activeDeployment === "dokku" && (
+            <CodeBlock
+              code={`# Push latest changes to Dokku (triggers rebuild automatically)
+git push dokku main
+
+# Run any new migrations
+dokku run qarote pnpm run db:migrate`}
+              language="bash"
+            />
+          )}
         </div>
 
         {/* Troubleshooting */}
@@ -1335,54 +995,96 @@ curl -L https://github.com/getqarote/Qarote/releases/latest/download/qarote-linu
             {t("installGuide.troubleshooting.title")}
           </Heading>
 
-          <Accordion
-            type="multiple"
-            defaultValue={["services", "database", "license"]}
-            className="w-full"
-          >
-            <AccordionItem value="services">
-              <AccordionTrigger className="text-sm font-medium">
-                {t("installGuide.troubleshooting.servicesTitle")}
-              </AccordionTrigger>
-              <AccordionContent>
-                <ul className="list-disc list-inside space-y-2 text-sm text-muted-foreground">
-                  <li
-                    dangerouslySetInnerHTML={{
-                      __html: t("installGuide.troubleshooting.servicesItem1"),
-                    }}
-                  />
-                  <li>{t("installGuide.troubleshooting.servicesItem2")}</li>
-                  <li>{t("installGuide.troubleshooting.servicesItem3")}</li>
-                </ul>
-              </AccordionContent>
-            </AccordionItem>
+          {(() => {
+            const method =
+              activeDeployment === "docker-compose"
+                ? "dockerCompose"
+                : activeDeployment === "dokku"
+                  ? "dokku"
+                  : "binary";
+            return (
+              <Accordion
+                type="multiple"
+                defaultValue={["wont-start", "database", "license"]}
+                className="w-full"
+              >
+                <AccordionItem value="wont-start">
+                  <AccordionTrigger className="text-sm font-medium">
+                    {t("installGuide.troubleshooting.wontStartTitle")}
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <ul className="list-disc list-inside space-y-2 text-sm text-muted-foreground">
+                      <li
+                        dangerouslySetInnerHTML={{
+                          __html: t(
+                            `installGuide.troubleshooting.${method}.wontStartItem1`
+                          ),
+                        }}
+                      />
+                      <li
+                        dangerouslySetInnerHTML={{
+                          __html: t(
+                            `installGuide.troubleshooting.${method}.wontStartItem2`
+                          ),
+                        }}
+                      />
+                      <li
+                        dangerouslySetInnerHTML={{
+                          __html: t(
+                            `installGuide.troubleshooting.${method}.wontStartItem3`
+                          ),
+                        }}
+                      />
+                    </ul>
+                  </AccordionContent>
+                </AccordionItem>
 
-            <AccordionItem value="database">
-              <AccordionTrigger className="text-sm font-medium">
-                {t("installGuide.troubleshooting.databaseTitle")}
-              </AccordionTrigger>
-              <AccordionContent>
-                <ul className="list-disc list-inside space-y-2 text-sm text-muted-foreground">
-                  <li>{t("installGuide.troubleshooting.databaseItem1")}</li>
-                  <li>{t("installGuide.troubleshooting.databaseItem2")}</li>
-                  <li>{t("installGuide.troubleshooting.databaseItem3")}</li>
-                </ul>
-              </AccordionContent>
-            </AccordionItem>
+                <AccordionItem value="database">
+                  <AccordionTrigger className="text-sm font-medium">
+                    {t("installGuide.troubleshooting.databaseTitle")}
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <ul className="list-disc list-inside space-y-2 text-sm text-muted-foreground">
+                      <li
+                        dangerouslySetInnerHTML={{
+                          __html: t(
+                            `installGuide.troubleshooting.${method}.databaseItem1`
+                          ),
+                        }}
+                      />
+                      <li
+                        dangerouslySetInnerHTML={{
+                          __html: t(
+                            `installGuide.troubleshooting.${method}.databaseItem2`
+                          ),
+                        }}
+                      />
+                      <li
+                        dangerouslySetInnerHTML={{
+                          __html: t(
+                            `installGuide.troubleshooting.${method}.databaseItem3`
+                          ),
+                        }}
+                      />
+                    </ul>
+                  </AccordionContent>
+                </AccordionItem>
 
-            <AccordionItem value="license">
-              <AccordionTrigger className="text-sm font-medium">
-                {t("installGuide.troubleshooting.licenseTitle")}
-              </AccordionTrigger>
-              <AccordionContent>
-                <ul className="list-disc list-inside space-y-2 text-sm text-muted-foreground">
-                  <li>{t("installGuide.troubleshooting.licenseItem1")}</li>
-                  <li>{t("installGuide.troubleshooting.licenseItem2")}</li>
-                  <li>{t("installGuide.troubleshooting.licenseItem3")}</li>
-                </ul>
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
+                <AccordionItem value="license">
+                  <AccordionTrigger className="text-sm font-medium">
+                    {t("installGuide.troubleshooting.licenseTitle")}
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <ul className="list-disc list-inside space-y-2 text-sm text-muted-foreground">
+                      <li>{t("installGuide.troubleshooting.licenseItem1")}</li>
+                      <li>{t("installGuide.troubleshooting.licenseItem2")}</li>
+                      <li>{t("installGuide.troubleshooting.licenseItem3")}</li>
+                    </ul>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+            );
+          })()}
         </div>
 
         {/* Security Recommendations */}
@@ -1393,10 +1095,7 @@ curl -L https://github.com/getqarote/Qarote/releases/latest/download/qarote-linu
           <ul className="list-disc list-inside space-y-2 text-sm text-muted-foreground">
             <li>{t("installGuide.security.item1")}</li>
             <li>{t("installGuide.security.item2")}</li>
-            <li>{t("installGuide.security.item3")}</li>
-            <li>{t("installGuide.security.item4")}</li>
             <li>{t("installGuide.security.item5")}</li>
-            <li>{t("installGuide.security.item6")}</li>
           </ul>
         </div>
 

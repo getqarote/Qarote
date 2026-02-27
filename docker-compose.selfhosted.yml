@@ -10,7 +10,7 @@
 services:
   postgres:
     image: postgres:15-alpine
-    container_name: qarote_postgres_${DEPLOYMENT_MODE}
+    container_name: qarote_postgres
     restart: unless-stopped
     environment:
       POSTGRES_DB: qarote
@@ -32,18 +32,14 @@ services:
     build:
       context: .
       dockerfile: ./apps/api/Dockerfile
-    container_name: qarote_backend_${DEPLOYMENT_MODE}
+    container_name: qarote_backend
     restart: unless-stopped
     environment:
-      NODE_ENV: production
       PORT: 3000
       HOST: 0.0.0.0
-      LOG_LEVEL: ${LOG_LEVEL}
       DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD}@postgres:5432/qarote
       JWT_SECRET: ${JWT_SECRET}
       ENCRYPTION_KEY: ${ENCRYPTION_KEY}
-      CORS_ORIGIN: ${CORS_ORIGIN}
-      DEPLOYMENT_MODE: ${DEPLOYMENT_MODE}
       # Optional: Email configuration (disabled by default)
       # Only needed if ENABLE_EMAIL=true
       # FROM_EMAIL defaults to noreply@localhost, FRONTEND_URL defaults to http://localhost:8080
@@ -72,9 +68,8 @@ services:
       context: .
       dockerfile: ./apps/app/Dockerfile
       args:
-        DEPLOYMENT_MODE: ${DEPLOYMENT_MODE:-selfhosted}
         VITE_API_URL: ${VITE_API_URL}
-    container_name: qarote_frontend_${DEPLOYMENT_MODE}
+    container_name: qarote_frontend
     restart: unless-stopped
     ports:
       - "${FRONTEND_PORT}:80"
