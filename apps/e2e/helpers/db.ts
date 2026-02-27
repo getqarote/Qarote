@@ -71,8 +71,10 @@ export class DbHelper {
         `DELETE FROM "SystemSetting" WHERE key = $1`,
         key
       );
-    } catch {
-      // Ignore if table or row doesn't exist
+    } catch (err: any) {
+      const msg = err?.message ?? "";
+      if (msg.includes("does not exist")) return;
+      throw err;
     }
   }
 

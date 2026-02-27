@@ -23,7 +23,7 @@ import {
 } from "@/middlewares/request";
 
 import { config, serverConfig, ssoConfig } from "@/config";
-import { isCloudMode, validateDeploymentMode } from "@/config/deployment";
+import { isCloudMode } from "@/config/deployment";
 
 import { createContext } from "@/trpc/context";
 import { appRouter } from "@/trpc/router";
@@ -142,10 +142,6 @@ const { port, host } = serverConfig;
 async function startServer() {
   let dbConnected = false;
   try {
-    // Validate deployment mode and required services
-    validateDeploymentMode();
-    logger.info("Deployment mode validation passed");
-
     // Apply pending database migrations if a migrations/ directory exists.
     // Only the binary tarball ships this directory — Docker/Dokku/cloud
     // deployments use `prisma migrate deploy` via their own scripts instead.

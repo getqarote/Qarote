@@ -13,7 +13,11 @@ function getAdminToken(): string {
 }
 
 test.describe("License Page @p1", () => {
-  // Clean up license after each test
+  // Clean up license before and after each test so every test starts with known state
+  test.beforeEach(async ({ db }) => {
+    await db.clearSystemSetting("license_jwt");
+  });
+
   test.afterEach(async ({ db }) => {
     await db.clearSystemSetting("license_jwt");
   });

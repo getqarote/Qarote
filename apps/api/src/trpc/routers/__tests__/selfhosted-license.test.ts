@@ -204,13 +204,23 @@ describe("selfhostedLicenseRouter", () => {
       expect(result).toEqual({ success: true });
     });
 
-    it("handles gracefully when no license exists", async () => {
-      mockDelete.mockRejectedValue(new Error("Record not found"));
+    it("handles gracefully when no license exists (Prisma P2025)", async () => {
+      const prismaError = Object.assign(new Error("Record not found"), {
+        code: "P2025",
+      });
+      mockDelete.mockRejectedValue(prismaError);
 
       const caller = selfhostedLicenseRouter.createCaller(makeCtx() as never);
       const result = await caller.deactivate();
 
       expect(result).toEqual({ success: true });
+    });
+
+    it("rethrows unexpected database errors", async () => {
+      mockDelete.mockRejectedValue(new Error("Connection refused"));
+
+      const caller = selfhostedLicenseRouter.createCaller(makeCtx() as never);
+      await expect(caller.deactivate()).rejects.toThrow("Connection refused");
     });
 
     it("throws FORBIDDEN when not in selfhosted mode", async () => {

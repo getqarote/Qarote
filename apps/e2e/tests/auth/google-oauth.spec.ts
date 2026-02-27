@@ -68,7 +68,7 @@ test.describe("Google OAuth Visibility @p1", () => {
   }) => {
     test.skip(
       process.env.DEPLOYMENT_MODE === "cloud",
-      "Selfhosted mode — no Google OAuth, no SSO"
+      "selfhosted mode — no Google OAuth, no SSO"
     );
 
     await page.goto("/auth/sign-in");
@@ -84,7 +84,7 @@ test.describe("Google OAuth Visibility @p1", () => {
   }) => {
     test.skip(
       process.env.DEPLOYMENT_MODE === "cloud",
-      "Selfhosted mode — no Google OAuth, no SSO"
+      "selfhosted mode — no Google OAuth, no SSO"
     );
 
     await page.goto("/auth/sign-up");
