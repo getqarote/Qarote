@@ -33,8 +33,7 @@ jobs:
         run: pnpm run syncpack:check
 
       - name: 🔍 Type Check
-        working-directory: apps/web
-        run: pnpm run type-check
+        run: pnpm turbo run type-check --filter=qarote-web
 
       - name: 🔍 Knip (unused code check)
         run: pnpm run knip
