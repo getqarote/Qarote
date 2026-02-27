@@ -13,12 +13,12 @@ on:
       mode:
         description: "Deployment mode to test"
         required: false
-        default: "community"
+        default: "selfhosted"
         type: choice
         options:
-          - community
+          - selfhosted
           - cloud
-          - enterprise
+          - selfhosted-licensed
           - all
       grep:
         description: "Test filter (e.g. @p0, @smoke)"
@@ -30,13 +30,13 @@ env:
   DATABASE_URL: postgres://postgres:password@localhost:5433/qarote_e2e
 
 jobs:
-  e2e-community:
-    name: "E2E - Community Mode"
+  e2e-selfhosted:
+    name: "E2E - Self-Hosted Mode"
     runs-on: ubuntu-latest
     timeout-minutes: 30
     if: >-
       github.event_name != 'workflow_dispatch' ||
-      github.event.inputs.mode == 'community' ||
+      github.event.inputs.mode == 'selfhosted' ||
       github.event.inputs.mode == 'all'
 
     services:
@@ -95,12 +95,12 @@ jobs:
         env:
           DATABASE_URL: ${{ env.DATABASE_URL }}
 
-      - name: Run E2E tests (Community)
+      - name: Run E2E tests (Self-Hosted)
         working-directory: apps/e2e
-        run: pnpm exec playwright test --project=community --grep "${{ github.event.inputs.grep || '@p0' }}"
+        run: pnpm exec playwright test --project=selfhosted --grep "${{ github.event.inputs.grep || '@p0' }}"
         env:
-          DEPLOYMENT_MODE: community
-          VITE_DEPLOYMENT_MODE: community
+          DEPLOYMENT_MODE: selfhosted
+          VITE_DEPLOYMENT_MODE: selfhosted
           NODE_ENV: test
           PORT: "3001"
           HOST: localhost
@@ -115,6 +115,8 @@ jobs:
           # Setting them to "false" would coerce to true via z.coerce.boolean().
           EMAIL_PROVIDER: smtp
           FROM_EMAIL: noreply@test.local
+          # Test RSA public key for license JWT verification (matches E2E private key in helpers/license.ts)
+          LICENSE_PUBLIC_KEY: "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA00/Ccc/s9iVDqJNRD8Pe\njGZzAi5zec5Hqe8y0H9XysdfU5+QI/PvjuqXaMfbknMTEoKnJcxKAde18DrqIVG3\nrme8rajl9TzeaasXXzSO/hLkKECzepOdiZnuOGyaqGiBoz1D38xpXHc7EsXQbGLx\nJY/LFiql6MVYGeC4qEMmYlIYJoNuWHTvKktuC6Khme6nUcy7MvRDBj9OxoWiPgEw\nJJeXVMwz6XnWvK8x1TvqiV5juvvBcXjOuzr8IZaMcz5cSZlKsSwLKvqHJas+8nUM\nmNruFlJuOeSEkGS8VlhSdAKd1Hyq2z1KKSdlZ1U9lmNAqUrmuwUnPbOIntDCl8Ou\nawIDAQAB\n-----END PUBLIC KEY-----"
           API_URL: http://localhost:3001
           VITE_API_URL: http://localhost:3001
           E2E_RABBITMQ_HOST: localhost
@@ -275,13 +277,13 @@ jobs:
           path: apps/e2e/test-results/
           retention-days: 3
 
-  e2e-enterprise:
-    name: "E2E - Enterprise Mode"
+  e2e-selfhosted-licensed:
+    name: "E2E - Self-Hosted Licensed Mode"
     runs-on: ubuntu-latest
     timeout-minutes: 30
     if: >-
       github.event_name != 'workflow_dispatch' ||
-      github.event.inputs.mode == 'enterprise' ||
+      github.event.inputs.mode == 'selfhosted-licensed' ||
       github.event.inputs.mode == 'all'
 
     services:
@@ -340,12 +342,12 @@ jobs:
         env:
           DATABASE_URL: ${{ env.DATABASE_URL }}
 
-      - name: Run E2E tests (Enterprise)
+      - name: Run E2E tests (Self-Hosted Licensed)
         working-directory: apps/e2e
-        run: pnpm exec playwright test --project=enterprise --grep "${{ github.event.inputs.grep || '@p0' }}"
+        run: pnpm exec playwright test --project=selfhosted-licensed --grep "${{ github.event.inputs.grep || '@p0' }}"
         env:
-          DEPLOYMENT_MODE: enterprise
-          VITE_DEPLOYMENT_MODE: enterprise
+          DEPLOYMENT_MODE: selfhosted
+          VITE_DEPLOYMENT_MODE: selfhosted
           NODE_ENV: test
           PORT: "3001"
           HOST: localhost
@@ -359,10 +361,8 @@ jobs:
           # omitted — default to false in the selfhosted Zod schema.
           EMAIL_PROVIDER: smtp
           FROM_EMAIL: noreply@test.local
-          # Enterprise mode requires license config to pass Zod validation.
-          # Dummy values — license file doesn't need to exist for E2E auth tests.
-          LICENSE_FILE_PATH: /tmp/e2e-license.json
-          LICENSE_PUBLIC_KEY: e2e-test-public-key
+          # Test RSA public key for license JWT verification (matches E2E private key in helpers/license.ts)
+          LICENSE_PUBLIC_KEY: "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA00/Ccc/s9iVDqJNRD8Pe\njGZzAi5zec5Hqe8y0H9XysdfU5+QI/PvjuqXaMfbknMTEoKnJcxKAde18DrqIVG3\nrme8rajl9TzeaasXXzSO/hLkKECzepOdiZnuOGyaqGiBoz1D38xpXHc7EsXQbGLx\nJY/LFiql6MVYGeC4qEMmYlIYJoNuWHTvKktuC6Khme6nUcy7MvRDBj9OxoWiPgEw\nJJeXVMwz6XnWvK8x1TvqiV5juvvBcXjOuzr8IZaMcz5cSZlKsSwLKvqHJas+8nUM\nmNruFlJuOeSEkGS8VlhSdAKd1Hyq2z1KKSdlZ1U9lmNAqUrmuwUnPbOIntDCl8Ou\nawIDAQAB\n-----END PUBLIC KEY-----"
           API_URL: http://localhost:3001
           VITE_API_URL: http://localhost:3001
           E2E_RABBITMQ_HOST: localhost
