@@ -1,7 +1,7 @@
 export const dockerComposeContent = `services:
   postgres:
     image: postgres:15-alpine
-    container_name: qarote_postgres_\${DEPLOYMENT_MODE}
+    container_name: qarote_postgres
     restart: unless-stopped
     environment:
       POSTGRES_DB: qarote
@@ -23,23 +23,14 @@ export const dockerComposeContent = `services:
     build:
       context: .
       dockerfile: ./apps/api/Dockerfile
-    container_name: qarote_backend_\${DEPLOYMENT_MODE}
+    container_name: qarote_backend
     restart: unless-stopped
     environment:
-      NODE_ENV: production
       PORT: 3000
       HOST: 0.0.0.0
-      LOG_LEVEL: \${LOG_LEVEL}
       DATABASE_URL: postgres://postgres:\${POSTGRES_PASSWORD}@postgres:5432/qarote
       JWT_SECRET: \${JWT_SECRET}
       ENCRYPTION_KEY: \${ENCRYPTION_KEY}
-      CORS_ORIGIN: \${CORS_ORIGIN}
-      DEPLOYMENT_MODE: \${DEPLOYMENT_MODE}
-      # License configuration (required for enterprise, ignored for community)
-      LICENSE_FILE_PATH: \${LICENSE_FILE_PATH}
-      LICENSE_PUBLIC_KEY: \${LICENSE_PUBLIC_KEY}
-      # Optional: For license file generation (SaaS only)
-      LICENSE_PRIVATE_KEY: \${LICENSE_PRIVATE_KEY}
       # Optional: Email configuration (disabled by default)
       ENABLE_EMAIL: \${ENABLE_EMAIL:-false}
       # Optional: SMTP settings (only needed if ENABLE_EMAIL=true)
@@ -66,9 +57,8 @@ export const dockerComposeContent = `services:
       context: .
       dockerfile: ./apps/app/Dockerfile
       args:
-        DEPLOYMENT_MODE: \${DEPLOYMENT_MODE:-community}
         VITE_API_URL: \${VITE_API_URL}
-    container_name: qarote_frontend_\${DEPLOYMENT_MODE}
+    container_name: qarote_frontend
     restart: unless-stopped
     ports:
       - "\${FRONTEND_PORT}:80"
@@ -88,61 +78,27 @@ networks:
 export const envExampleContent = `# Qarote Self-Hosted Deployment
 # Copy this file to .env and update with your values
 # cp .env.selfhosted.example .env
-#
-# Set DEPLOYMENT_MODE=community for Community Edition (open-source)
-# Set DEPLOYMENT_MODE=enterprise for Enterprise Edition (licensed)
-
-# =============================================================================
-# REQUIRED - Environment
-# =============================================================================
-NODE_ENV=production
-
-# =============================================================================
-# REQUIRED - Deployment Mode
-# =============================================================================
-# Set to 'community' for open-source edition or 'enterprise' for licensed edition
-DEPLOYMENT_MODE=community
 
 # =============================================================================
 # REQUIRED - Database Configuration
 # =============================================================================
-# Generate with: ./setup.sh community (or enterprise)
+# Generate with: ./setup.sh
 POSTGRES_PASSWORD=your-secure-postgres-password
 POSTGRES_PORT=5432
 
 # =============================================================================
-# REQUIRED - Backend Configuration
+# REQUIRED - Security
 # =============================================================================
-# Logging level: debug, info, warn, error
-LOG_LEVEL=info
-
 # JWT secret for token signing (minimum 32 characters)
-# Generate with: ./setup.sh community (or enterprise)
+# Generate with: ./setup.sh
 JWT_SECRET=your-jwt-secret-minimum-32-characters-long
 
 # Encryption key for sensitive data (minimum 32 characters)
-# Generate with: ./setup.sh community (or enterprise)
+# Generate with: ./setup.sh
 ENCRYPTION_KEY=your-encryption-key-minimum-32-characters-long
-
-# CORS origin - allowed origins for API requests
-CORS_ORIGIN=*
 
 # Backend port mapping (host:container)
 BACKEND_PORT=3000
-
-# =============================================================================
-# REQUIRED - License Configuration (Enterprise Edition Only)
-# =============================================================================
-# Path to license file (relative to docker-compose file or absolute path)
-# Required only for Enterprise Edition, ignored for Community Edition
-# License files are named: qarote-license-{uuid}.json
-LICENSE_FILE_PATH=./qarote-license.json
-
-# Public key for license validation (provided via email with your license)
-# Required only for Enterprise Edition, ignored for Community Edition
-# Format: LICENSE_PUBLIC_KEY="-----BEGIN PUBLIC KEY-----\\nMIICIjAN...\\n-----END PUBLIC KEY-----"
-# IMPORTANT: Wrap the entire key in double quotes, use \\n for line breaks
-LICENSE_PUBLIC_KEY=
 
 # =============================================================================
 # REQUIRED - Frontend Configuration

@@ -1,10 +1,10 @@
-# Qarote Enterprise Edition
+# Qarote Licensed Features
 
-Qarote Enterprise Edition is the licensed version of Qarote that unlocks premium features including workspace management, alerting, and integrations.
+Qarote offers premium features that are unlocked by activating a license key through the application UI. No env vars, file management, or restarts needed.
 
 ## Overview
 
-Enterprise Edition is designed for organizations that need:
+Licensed features are designed for organizations that need:
 - Team collaboration and workspace management
 - Advanced alerting and monitoring
 - Integration with external services (Slack, webhooks)
@@ -13,9 +13,9 @@ Enterprise Edition is designed for organizations that need:
 
 ## Features
 
-Enterprise Edition includes all Community Edition features plus:
+Licensed editions include all free features plus:
 
-### ✅ Premium Features
+### Premium Features
 
 - **Workspace Management**
   - Create and manage multiple workspaces
@@ -55,8 +55,6 @@ Enterprise Edition includes all Community Edition features plus:
 
 ## Licensing
 
-Enterprise Edition requires a valid license file to unlock premium features.
-
 ### License Types
 
 - **Developer License** ($348/year) - Includes workspace management, alerting, and data export
@@ -67,14 +65,14 @@ Enterprise Edition requires a valid license file to unlock premium features.
 **Self-hosted licenses are annual subscriptions:**
 - **365-day validity** - Each license is valid for one year from purchase
 - **Automatic renewal** - Subscriptions renew automatically each year
-- **New license file** - You'll receive a new license file via email after each renewal
-- **No trial period** - Use Community Edition for testing before purchasing
+- **New license key** - You'll receive a new license key via email after each renewal
+- **No trial period** - Use the free tier for testing before purchasing
 
 ### Obtaining a License
 
 1. **Purchase a license** from the [Customer Portal](https://portal.qarote.io)
-2. **Download your license file** (JSON format, cryptographically signed)
-3. **Upload the license file** to your server at `LICENSE_FILE_PATH` location
+2. **Copy your license key** (a JWT string provided after purchase)
+3. **In Qarote**, go to **Settings → License** and paste your key
 
 ### License Renewal Process
 
@@ -82,14 +80,13 @@ Enterprise Edition requires a valid license file to unlock premium features.
 - **30 days before**: Email reminder to prepare for renewal
 - **15 days before**: Email reminder with renewal status
 - **7 days before**: Final reminder email
-- **Renewal day**: Automatic payment and new license file generated
-- **After renewal**: Email with new license file attached
+- **Renewal day**: Automatic payment and new license key generated
+- **After renewal**: Email with new license key
 
 **What you need to do:**
-1. Receive email with new license file
-2. Download the new license JSON file (format: `qarote-license-{uuid}.json`)
-3. Replace the old license file on your server
-4. Restart Qarote (if configured to reload on file change)
+1. Receive email with new license key
+2. Go to Settings → License in Qarote
+3. Paste the new license key and click Activate
 
 **If renewal fails:**
 - **14-day grace period**: Your current license continues to work
@@ -97,12 +94,11 @@ Enterprise Edition requires a valid license file to unlock premium features.
 - **Warning emails**: You'll receive notifications during the grace period
 - **After 14 days**: License is deactivated if payment still fails
 
-### License File Format
+### License Format
 
-License files are cryptographically signed JSON files that include:
-- License key (unique identifier)
+Licenses are cryptographically signed JWTs that contain:
+- License ID (unique identifier)
 - Tier (Developer or Enterprise)
-- Customer email
 - Expiration date (365 days from issue/renewal)
 - Enabled features
 - Cryptographic signature (for offline validation)
@@ -110,135 +106,30 @@ License files are cryptographically signed JSON files that include:
 ### Offline Validation
 
 Qarote validates licenses **offline** (no internet required):
-- Validates cryptographic signature using public key
+- Validates cryptographic signature using a baked-in public key
 - Checks expiration date locally
 - Works in air-gapped environments
 
-## Installation
+## Activation
 
-### Prerequisites
+### Activating a License
 
-- Docker and Docker Compose
-- PostgreSQL 15+ (or use the included PostgreSQL container)
-- Valid Enterprise Edition license file
-- License public key (provided with your license)
+1. Open Qarote and navigate to **Settings → License**
+2. Paste your license key in the input field
+3. Click **Activate**
+4. Features unlock immediately — no restart required
 
-### Quick Start
+### Deactivating a License
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/getqarote/Qarote.git
-   cd qarote
-   ```
-
-2. **Copy environment file:**
-   ```bash
-   cp .env.selfhosted.example .env
-   # Edit .env and set DEPLOYMENT_MODE=enterprise
-   ```
-
-3. **Place your license file:**
-   ```bash
-   # License files are downloaded with format: qarote-license-{uuid}.json
-   cp /path/to/your/qarote-license-*.json ./qarote-license.json
-   ```
-
-4. **Configure environment variables:**
-   ```bash
-   # Required
-   DEPLOYMENT_MODE=enterprise
-   LICENSE_FILE_PATH=./qarote-license.json
-
-   # Public key for license validation (provided via email with your license)
-   # IMPORTANT: Wrap the entire key in double quotes, use \n for line breaks
-   LICENSE_PUBLIC_KEY="-----BEGIN PUBLIC KEY-----\nMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA...\n-----END PUBLIC KEY-----"
-
-   # Secrets are generated automatically by ./setup.sh enterprise
-   JWT_SECRET=your-secret-key-min-32-chars
-   ENCRYPTION_KEY=your-encryption-key-min-32-chars
-   POSTGRES_PASSWORD=your-secure-postgres-password
-   ```
-
-5. **Start services:**
-   ```bash
-   docker compose -f docker-compose.selfhosted.yml up -d
-   ```
-
-6. **Run database migrations:**
-   ```bash
-   docker exec qarote_backend_enterprise pnpm run db:migrate
-   ```
-
-7. **Access the application:**
-   - Frontend: http://localhost:8080
-   - Backend API: http://localhost:3000
-
-## Configuration
-
-### Environment Variables
-
-#### Required
-
-- `DEPLOYMENT_MODE=enterprise` - Set to enterprise mode
-- `LICENSE_FILE_PATH` - Path to your license file (format: `qarote-license-{uuid}.json`)
-- `LICENSE_PUBLIC_KEY` - Public key for license verification
-- `JWT_SECRET` - Secret for JWT token signing (minimum 32 characters) - Generate with: `./setup.sh enterprise`
-- `ENCRYPTION_KEY` - Key for encrypting RabbitMQ credentials (minimum 32 characters) - Generate with: `./setup.sh enterprise`
-- `POSTGRES_PASSWORD` - PostgreSQL database password - Generate with: `./setup.sh enterprise`
-
-#### Optional
-
-- `ENABLE_EMAIL` - Enable email features
-
-**Note:** OAuth authentication (Google Sign-In) is only available in cloud deployments. Enterprise Edition self-hosted deployments use email/password authentication.
-
-### License File Security
-
-For security, ensure your license file has restricted permissions:
-
-```bash
-chmod 600 qarote-license.json
-```
-
-The license file should be readable only by the application user.
-
-## License Validation
-
-Enterprise Edition validates licenses offline using cryptographic signatures:
-
-1. **Signature Verification** - License files are signed with RSA-SHA256
-2. **Expiration Check** - Validates license expiration (if applicable)
-3. **Feature Checking** - Validates that requested features are included in the license
-
-License validation occurs on every premium feature access to ensure license compliance.
-
-## Air-Gapped Deployments
-
-Enterprise Edition supports air-gapped (offline) deployments:
-
-- No network connection required for license validation
-- License files are validated using embedded public keys
-- All validation happens locally
+1. Navigate to **Settings → License**
+2. Click **Deactivate**
+3. Premium features will be disabled
 
 ## Troubleshooting
 
-### License File Not Found
-
-**Error**: `License file not found`
-
-**Solution**: Ensure `LICENSE_FILE_PATH` points to the correct location and the file exists.
-
-### Invalid License Signature
-
-**Error**: `License signature verification failed`
-
-**Solution**: Verify that `LICENSE_PUBLIC_KEY` matches the public key used to sign your license file.
-
 ### License Expired
 
-**Error**: `License expired on [date]`
-
-**Solution**: Renew your license or contact support for a new license file.
+**Solution**: Renew your license at the [Customer Portal](https://portal.qarote.io) and activate the new key in Settings → License.
 
 ### Feature Not Included
 
@@ -246,13 +137,19 @@ Enterprise Edition supports air-gapped (offline) deployments:
 
 **Solution**: The requested feature is not included in your license tier. Upgrade to Enterprise tier for all features.
 
+### Premium Features Not Available
+
+- Verify your license is active in Settings → License
+- Check that the license includes the required features
+- Check backend logs for license validation errors
+
 ## Support
 
-Enterprise Edition customers receive priority support:
+Licensed customers receive priority support:
 
 - **Email**: support@qarote.io
 - **Customer Portal**: https://portal.qarote.io
-- **Documentation**: [docs/README.md](README.md)
+- **Documentation**: [Self-Hosted Deployment Guide](SELF_HOSTED_DEPLOYMENT.md)
 
 ## Upgrading License
 
@@ -261,15 +158,13 @@ To upgrade your license or add features:
 1. Log in to the [Customer Portal](https://portal.qarote.io)
 2. Navigate to your licenses
 3. Purchase an upgrade or additional features
-4. Download the new license file
-5. Replace the existing license file
-6. Restart the application
+4. Copy the new license key
+5. Activate in Settings → License
 
 ## License Terms
 
-Enterprise Edition licenses are subject to the commercial license terms. See your license agreement for details.
+Licensed features are subject to the commercial license terms. See your license agreement for details.
 
 ## Security
 
 For security vulnerabilities, please email security@qarote.io instead of using the public issue tracker.
-

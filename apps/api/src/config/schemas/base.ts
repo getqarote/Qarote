@@ -6,14 +6,12 @@ import { z } from "zod/v4";
  */
 export const baseSchema = z.object({
   // Server Configuration
-  NODE_ENV: z
-    .enum(["development", "test", "production"])
-    .describe("development"),
+  NODE_ENV: z.enum(["development", "test", "production"]).default("production"),
   PORT: z.coerce.number().int().positive(),
   HOST: z.string().describe("localhost"),
 
   // Logging
-  LOG_LEVEL: z.enum(["error", "warn", "info", "debug"]).describe("info"),
+  LOG_LEVEL: z.enum(["error", "warn", "info", "debug"]).default("info"),
 
   // Security - ALWAYS required
   JWT_SECRET: z.string().min(1, "JWT_SECRET is required"),
@@ -33,7 +31,7 @@ export const baseSchema = z.object({
     ),
 
   // CORS
-  CORS_ORIGIN: z.string().describe("*"),
+  CORS_ORIGIN: z.string().default("*"),
 
   // Alert Monitoring Configuration
   ALERT_CHECK_INTERVAL_MS: z.coerce.number().int().positive().default(300000), // 5 minutes

@@ -143,19 +143,17 @@ If you prefer Docker Compose or need more control over the deployment, you can u
 1. **Clone the repository:**
 
    ```bash
-   git clone https://github.com/getqarote/Qarote.git /opt/qarote
-   cd /opt/qarote
+   git clone https://github.com/getqarote/Qarote.git qarote
+   cd qarote
    ```
-
-   > `/opt/qarote` is the recommended path on Linux (follows the [FHS](https://refspecs.linuxfoundation.org/FHS_3.0/fhs/ch03s13.html) convention for optional software). On Windows (WSL2), use `C:\qarote`. Any directory works.
 
 2. **Run the setup script:**
 
    ```bash
-   ./setup.sh community
+   ./setup.sh
    ```
 
-   This creates a `.env` file with secure random secrets and sets `DEPLOYMENT_MODE=community`. No Node.js required.
+   This creates a `.env` file with secure random secrets (JWT_SECRET, ENCRYPTION_KEY, POSTGRES_PASSWORD).
 
 3. **Start services:**
 

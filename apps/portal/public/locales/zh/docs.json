@@ -19,27 +19,24 @@
       "description": "具体要求取决于你的部署方式：",
       "dockerCompose": "<strong>Docker Compose：</strong>Docker 和 Docker Compose（已包含 PostgreSQL）",
       "dokku": "<strong>Dokku：</strong>在服务器上安装 Dokku",
-      "manual": "<strong>手动部署：</strong>Node.js 24+、pnpm、PostgreSQL 15+ 以及 Nginx 或 Caddy",
-      "binary": "<strong>Binary：</strong>PostgreSQL 15+（无需 Docker、Node.js 或 Web 服务器）",
-      "enterprise": "<strong>企业版：</strong>有效的许可证文件和公钥（所有部署方式均需要）"
+      "binary": "<strong>手动安装：</strong>PostgreSQL 15+（无需 Docker、Node.js 或 Web 服务器）",
+      "enterprise": "<strong>高级功能：</strong>在设置 → 许可证中激活许可证密钥（所有部署方式）"
     },
     "quickStart": {
       "title": "快速开始",
       "tabs": {
         "dockerCompose": "Docker Compose",
         "dokku": "Dokku",
-        "manual": "手动部署",
-        "binary": "Binary"
+        "binary": "手动安装"
       },
       "dockerCompose": {
         "step1Title": "1. 克隆仓库",
-        "step1Description": "<code>/opt/qarote</code> 是 Linux 上推荐的路径——它遵循 <fhsLink>Filesystem Hierarchy Standard</fhsLink> 中关于可选/附加软件的规范。在 Windows（WSL2 + Docker Desktop）上，请使用 <code>C:\\qarote</code>。任何目录都可以——只需在下面的命令中调整路径即可。",
+
         "step2Title": "2. 运行配置脚本",
         "step2Note": "这将创建一个 <code>.env</code> 文件，其中包含安全的随机密钥（JWT_SECRET、ENCRYPTION_KEY、POSTGRES_PASSWORD），并设置你的部署模式。",
-        "step3Title": "3. 企业版：添加你的许可证",
-        "step4Title": "4. 启动服务",
-        "step5Title": "5. 运行数据库迁移",
-        "step6Title": "6. 访问应用程序",
+        "step4Title": "3. 启动服务",
+        "step5Title": "4. 运行数据库迁移",
+        "step6Title": "5. 访问应用程序",
         "step6Frontend": "<strong>前端：</strong>",
         "step6BackendApi": "<strong>后端 API：</strong>"
       },
@@ -60,34 +57,17 @@
         "step6Title": "6. 域名和 SSL（可选）",
         "step6Note": "你的应用将可通过 <code>https://your-domain.com</code>（或你的服务器 IP）访问。"
       },
-      "manual": {
-        "advancedSetupTitle": "高级配置",
-        "advancedSetupDescription": "手动部署可让你完全控制，但需要自行管理 Node.js、PostgreSQL、反向代理和进程管理。对于大多数用户，<strong>推荐使用 Docker Compose</strong>。",
-        "step1Title": "1. 安装前提条件",
-        "step2Title": "2. 克隆并安装依赖",
-        "step3Title": "3. 配置数据库",
-        "step4Title": "4. 配置环境",
-        "step4Note": "配置脚本会生成密钥。你只需要将 <code>DATABASE_URL</code> 修改为指向本地 PostgreSQL，而不是 Docker 容器。",
-        "step5Title": "5. 构建并启动后端",
-        "step5Note": "在生产环境中，请使用进程管理器（如 <pm2Link>pm2</pm2Link> 或 <strong>systemd</strong>）来保持后端持续运行，并在故障时自动重启。",
-        "step6Title": "6. 构建并部署前端",
-        "step6Note": "<code>VITE_API_URL</code> 在构建时嵌入。请将其设置为后端 API 可访问的 URL。",
-        "step7Title": "7. 配置 Nginx",
-        "step7Note": "如需 HTTPS，可添加 <certbotLink>Certbot</certbotLink> 获取免费的 Let's Encrypt SSL 证书，或使用 <caddyLink>Caddy</caddyLink>（自动处理 HTTPS）。",
-        "step8Title": "8. 进程管理（生产环境）",
-        "step9Title": "9. 访问应用程序",
-        "step9Frontend": "<strong>前端：</strong>http://your-domain.com（Nginx）",
-        "step9BackendApi": "<strong>后端 API：</strong>http://localhost:3000（直接访问，或通过 Nginx 代理）"
-      },
       "binary": {
-        "description": "下载单个二进制文件——无需 Docker、Node.js 或 Nginx。仅需要 PostgreSQL。",
+        "description": "下载单个二进制文件——无需 Docker、Node.js 或 Nginx。仅需要 PostgreSQL。Windows 用户可以在 WSL2 中运行 Linux 二进制文件。",
+        "postgresInstallTitle": "如果尚未安装 PostgreSQL，请先安装：",
         "step1Title": "1. 下载并解压",
         "step2Title": "2. 交互式配置",
         "step2Note": "配置向导将询问你的部署模式和 PostgreSQL URL，验证连接，并生成包含安全密钥的 <code>.env</code> 文件。",
         "step3Title": "3. 启动 Qarote",
         "step4Title": "4. 访问应用程序",
         "step4Description": "在浏览器中打开 <code>http://localhost:3000</code>。该二进制文件通过单个端口同时提供 API 和前端服务。",
-        "step4ManualSetup": "<strong>手动配置：</strong>你也可以跳过向导，直接使用命令行参数进行配置："
+        "step4ManualSetup": "<strong>手动配置：</strong>你也可以跳过向导，直接进行配置：",
+        "cliFlagsTitle": "<strong>可用 CLI 选项：</strong>"
       }
     },
     "smtp": {
@@ -165,33 +145,47 @@
       "tabs": {
         "dockerCompose": "Docker Compose",
         "dokku": "Dokku",
-        "manual": "手动部署",
-        "binary": "Binary"
+        "binary": "手动安装"
       }
     },
     "troubleshooting": {
       "title": "故障排除",
-      "servicesTitle": "服务无法启动",
-      "servicesItem1": "检查 Docker 日志：<code>docker compose -f docker-compose.selfhosted.yml logs</code>",
-      "servicesItem2": "验证 .env 文件中的环境变量",
-      "servicesItem3": "确保端口 3000 和 8080 可用（或配置不同的端口）",
+      "wontStartTitle": "无法启动",
+      "binary": {
+        "wontStartItem1": "检查终端输出中的错误信息",
+        "wontStartItem2": "确认 <code>.env</code> 文件存在或传递所有必需的 CLI 参数",
+        "wontStartItem3": "确保端口可用：<code>lsof -i :3000</code>",
+        "databaseItem1": "确认 <code>DATABASE_URL</code> 正确且 PostgreSQL 正在运行",
+        "databaseItem2": "测试连接：<code>psql 你的数据库URL</code>",
+        "databaseItem3": "迁移在启动时自动运行——检查输出中的错误"
+      },
+      "dockerCompose": {
+        "wontStartItem1": "检查日志：<code>docker compose -f docker-compose.selfhosted.yml logs</code>",
+        "wontStartItem2": "验证 <code>.env</code> 文件中的环境变量",
+        "wontStartItem3": "确保端口可用（或在 <code>.env</code> 中更改 <code>BACKEND_PORT</code> / <code>FRONTEND_PORT</code>）",
+        "databaseItem1": "等待 PostgreSQL 完全初始化（检查健康状态）",
+        "databaseItem2": "验证 <code>.env</code> 中的 <code>POSTGRES_PASSWORD</code> 是否匹配",
+        "databaseItem3": "运行迁移：<code>docker exec qarote_backend pnpm run db:migrate</code>"
+      },
+      "dokku": {
+        "wontStartItem1": "检查日志：<code>dokku logs qarote</code>",
+        "wontStartItem2": "验证配置：<code>dokku config:show qarote</code>",
+        "wontStartItem3": "确认应用已部署：<code>dokku ps:report qarote</code>",
+        "databaseItem1": "确认数据库已链接：<code>dokku postgres:info qarote-db</code>",
+        "databaseItem2": "检查 <code>DATABASE_URL</code> 是否已设置：<code>dokku config:get qarote DATABASE_URL</code>",
+        "databaseItem3": "迁移在部署时自动运行——检查日志中的错误"
+      },
       "databaseTitle": "数据库连接错误",
-      "databaseItem1": "等待 PostgreSQL 完全初始化（检查健康状态）",
-      "databaseItem2": "验证 .env 中的 POSTGRES_PASSWORD 是否匹配",
-      "databaseItem3": "确保已运行数据库迁移",
-      "licenseTitle": "企业版许可证问题",
-      "licenseItem1": "验证 LICENSE_FILE_PATH 是否指向正确的文件",
-      "licenseItem2": "确保 LICENSE_PUBLIC_KEY 与你的许可证匹配",
+      "licenseTitle": "许可证问题",
+      "licenseItem1": "验证你的许可证密钥是否有效且未过期",
+      "licenseItem2": "从设置 → 许可证重新激活你的许可证",
       "licenseItem3": "检查许可证到期日期"
     },
     "security": {
       "title": "安全建议",
-      "item1": "为 JWT_SECRET 和 ENCRYPTION_KEY 使用强随机生成的值",
-      "item2": "为许可证文件设置严格的文件权限（chmod 600 qarote-license.json）",
-      "item3": "将 CORS_ORIGIN 配置为你的特定域名（而非 *）",
-      "item4": "在生产环境中通过反向代理使用 HTTPS",
-      "item5": "定期更新至最新版本",
-      "item6": "启用 Sentry 错误跟踪以进行生产环境监控"
+      "item1": "如果未使用默认生成的值，请为 JWT_SECRET 和 ENCRYPTION_KEY 使用强随机生成的值",
+      "item2": "保管好你的许可证密钥——不要公开分享",
+      "item3": "定期更新至最新版本"
     },
     "support": {
       "title": "支持",
@@ -202,9 +196,9 @@
     }
   },
   "dockerCompose": {
-    "description": "适用于社区版和企业版的生产就绪 Docker Compose 配置"
+    "description": "适用于自托管部署的生产就绪 Docker Compose 配置。二进制或 Dokku 部署不需要此文件。"
   },
   "envConfig": {
-    "description": "环境变量模板——将其复制为 .env 文件并更新为你的值"
+    "description": "Docker Compose 和 Dokku 部署的环境变量参考。手动安装用户应运行 <code>./qarote setup</code>。"
   }
 }
