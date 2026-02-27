@@ -41,7 +41,7 @@ export default defineConfig({
       cwd: path.resolve(import.meta.dirname, "../.."),
       env: {
         ...(process.env as Record<string, string>),
-        DEPLOYMENT_MODE: process.env.DEPLOYMENT_MODE || "community",
+        DEPLOYMENT_MODE: process.env.DEPLOYMENT_MODE || "selfhosted",
         PORT: String(API_PORT),
         NODE_ENV: "test",
         // z.coerce.boolean() treats "false" as true (Boolean("false") === true).
@@ -61,15 +61,15 @@ export default defineConfig({
       env: {
         ...(process.env as Record<string, string>),
         VITE_API_URL: API_URL,
-        VITE_DEPLOYMENT_MODE: process.env.DEPLOYMENT_MODE || "community",
+        VITE_DEPLOYMENT_MODE: process.env.DEPLOYMENT_MODE || "selfhosted",
       },
     },
   ],
 
   projects: [
-    // --- Community Mode (Primary — most tests run here) ---
+    // --- Self-Hosted Mode (Primary — most tests run here, no license) ---
     {
-      name: "community",
+      name: "selfhosted",
       testMatch: [
         "smoke/**",
         "auth/sign-up.spec.ts",
@@ -82,6 +82,7 @@ export default defineConfig({
         "rabbitmq/**",
         "alerts/**",
         "profile/**",
+        "license/**",
       ],
       use: {
         ...devices["Desktop Chrome"],
@@ -103,9 +104,9 @@ export default defineConfig({
       },
     },
 
-    // --- Enterprise Mode (SSO, license validation) ---
+    // --- Self-Hosted Licensed Mode (SSO, license validation, all features) ---
     {
-      name: "enterprise",
+      name: "selfhosted-licensed",
       testMatch: [
         "smoke/**",
         "auth/sign-in.spec.ts",

@@ -8,16 +8,15 @@ test.describe("Alerts Page @p1", () => {
     await expect(adminPage).toHaveURL(/\/alerts/);
   });
 
-  test("should show premium feature paywall in community mode", async ({
+  test("should show premium feature paywall without license", async ({
     adminPage,
   }) => {
     await adminPage.goto("/alerts");
     await adminPage.waitForLoadState("domcontentloaded");
 
-    // In community mode, alerts is a premium feature behind a paywall
-    // "Upgrade to Enterprise Edition to unlock Alerting System."
+    // Without a license, alerts is a premium feature behind a paywall
     await expect(
-      adminPage.getByText(/upgrade to enterprise edition/i)
+      adminPage.getByText(/activate a license to unlock/i)
     ).toBeVisible({ timeout: 15_000 });
   });
 
@@ -26,14 +25,10 @@ test.describe("Alerts Page @p1", () => {
     await adminPage.waitForLoadState("domcontentloaded");
 
     await expect(
-      adminPage.getByRole("button", { name: /view plans/i }).or(
-        adminPage.getByRole("link", { name: /view plans/i })
-      )
+      adminPage.getByRole("button", { name: /activate license/i })
     ).toBeVisible({ timeout: 15_000 });
     await expect(
-      adminPage.getByRole("button", { name: /contact sales/i }).or(
-        adminPage.getByRole("link", { name: /contact sales/i })
-      )
+      adminPage.getByRole("button", { name: /purchase license/i })
     ).toBeVisible();
   });
 });
