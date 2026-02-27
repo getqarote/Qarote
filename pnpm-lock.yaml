@@ -276,6 +276,12 @@ importers:
       i18next:
         specifier: ^25.2.1
         version: 25.8.13(typescript@5.9.3)
+      i18next-browser-languagedetector:
+        specifier: ^8.0.6
+        version: 8.2.1
+      i18next-http-backend:
+        specifier: ^3.0.2
+        version: 3.0.2(encoding@0.1.13)
       loglevel:
         specifier: ^1.9.2
         version: 1.9.2
@@ -457,6 +463,12 @@ importers:
       i18next:
         specifier: ^25.2.1
         version: 25.8.13(typescript@5.9.3)
+      i18next-browser-languagedetector:
+        specifier: ^8.0.6
+        version: 8.2.1
+      i18next-http-backend:
+        specifier: ^3.0.2
+        version: 3.0.2(encoding@0.1.13)
       loglevel:
         specifier: ^1.9.2
         version: 1.9.2
@@ -584,6 +596,12 @@ importers:
       i18next:
         specifier: ^25.2.1
         version: 25.8.13(typescript@5.9.3)
+      i18next-browser-languagedetector:
+        specifier: ^8.0.6
+        version: 8.2.1
+      i18next-http-backend:
+        specifier: ^3.0.2
+        version: 3.0.2(encoding@0.1.13)
       loglevel:
         specifier: ^1.9.2
         version: 1.9.2

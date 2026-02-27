@@ -60,6 +60,9 @@ const config: KnipConfig = {
     // Tailwind v4 dependencies referenced via CSS @plugin/@import directives
     "tailwindcss",
     "tailwindcss-animate",
+    // i18n transitive deps required by @qarote/i18n but needed as direct deps for pnpm strict hoisting
+    "i18next-browser-languagedetector",
+    "i18next-http-backend",
   ],
   ignoreBinaries: ["stripe", "act"],
 };
