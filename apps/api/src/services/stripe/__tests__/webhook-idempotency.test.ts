@@ -191,6 +191,7 @@ describe("Webhook Idempotency - License Renewal", () => {
 
     // Verify renewal was processed
     expect(licenseService.renewLicense).toHaveBeenCalledTimes(1);
+    expect(licenseService.generateLicenseJwt).toHaveBeenCalledTimes(1);
     expect(licenseService.saveLicenseFileVersion).toHaveBeenCalledTimes(1);
 
     // Process webhook second time (duplicate)
@@ -199,6 +200,7 @@ describe("Webhook Idempotency - License Renewal", () => {
     // Verify renewal was NOT processed again
     // Still only 1 call from first processing
     expect(licenseService.renewLicense).toHaveBeenCalledTimes(1);
+    expect(licenseService.generateLicenseJwt).toHaveBeenCalledTimes(1);
     expect(licenseService.saveLicenseFileVersion).toHaveBeenCalledTimes(1);
   });
 
@@ -257,11 +259,12 @@ describe("Webhook Idempotency - License Renewal", () => {
       currency: "usd",
     } as any);
 
-    // Verify invoice ID was passed for idempotency
+    // Verify invoice ID and exact JWT were passed for idempotency
+    expect(licenseService.generateLicenseJwt).toHaveBeenCalledTimes(1);
     expect(saveVersionSpy).toHaveBeenCalledWith(
       licenseId,
       2,
-      expect.any(String),
+      "test-jwt-token",
       expect.any(Date),
       invoiceId // ← Key assertion: invoice ID saved for audit trail
     );

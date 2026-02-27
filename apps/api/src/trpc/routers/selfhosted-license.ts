@@ -114,8 +114,14 @@ export const selfhostedLicenseRouter = router({
       await ctx.prisma.systemSetting.delete({
         where: { key: "license_jwt" },
       });
-    } catch {
-      // Already deleted or never existed — that's fine
+    } catch (error: unknown) {
+      // Prisma P2025 = record not found — already deleted or never existed
+      const isNotFound =
+        error != null &&
+        typeof error === "object" &&
+        "code" in error &&
+        (error as { code: string }).code === "P2025";
+      if (!isNotFound) throw error;
     }
 
     invalidateLicenseCache();

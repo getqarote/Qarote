@@ -53,19 +53,39 @@ export async function verifyLicenseJwt(
   try {
     const pem =
       publicKeyPem || process.env.LICENSE_PUBLIC_KEY || LICENSE_PUBLIC_KEY;
+
+    if (pem.includes("REPLACE_WITH_YOUR_ACTUAL_RSA_PUBLIC_KEY")) {
+      logger.error(
+        "LICENSE_PUBLIC_KEY is still set to the placeholder value. " +
+          "Set the LICENSE_PUBLIC_KEY environment variable to a real RSA public key."
+      );
+      return null;
+    }
+
     const publicKey = await jose.importSPKI(pem, "RS256");
 
     const { payload } = await jose.jwtVerify(jwt, publicKey, {
       issuer: "qarote",
     });
 
+    // Validate required claims are present
+    if (!payload.sub || payload.iat == null || payload.exp == null) {
+      logger.warn("License JWT missing required claims (sub, iat, or exp)");
+      return null;
+    }
+
+    if (!payload.tier || !Array.isArray(payload.features)) {
+      logger.warn("License JWT missing required fields (tier or features)");
+      return null;
+    }
+
     return {
-      sub: payload.sub!,
+      sub: payload.sub,
       tier: payload.tier as LicenseJwtPayload["tier"],
       features: payload.features as LicenseJwtPayload["features"],
       iss: "qarote",
-      iat: payload.iat!,
-      exp: payload.exp!,
+      iat: payload.iat,
+      exp: payload.exp,
     };
   } catch (error) {
     // Expected for expired/invalid tokens — don't log as error

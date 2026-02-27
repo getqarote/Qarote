@@ -14,6 +14,8 @@ import { verifyLicenseJwt } from "@/services/license/license-crypto.service";
 import { isCloudMode } from "@/config/deployment";
 import { FEATURE_DESCRIPTIONS, type PremiumFeature } from "@/config/features";
 
+import { te } from "@/i18n";
+
 // ─── In-memory cache for decoded license ─────────────────────────────
 // Avoids hitting the DB on every feature check (which happens per-request)
 
@@ -39,8 +41,12 @@ export function invalidateLicenseCache(): void {
 async function getLicensePayload(): Promise<LicenseJwtPayload | null> {
   const now = Date.now();
 
-  // Return cached value if still fresh
+  // Return cached value if still fresh and not expired
   if (cacheChecked && now - cachedAt < CACHE_TTL_MS) {
+    // Also check JWT exp — evict if the license has expired since we cached it
+    if (cachedPayload && cachedPayload.exp * 1000 < now) {
+      cachedPayload = null;
+    }
     return cachedPayload;
   }
 
@@ -69,8 +75,6 @@ async function getLicensePayload(): Promise<LicenseJwtPayload | null> {
     return cachedPayload; // return stale value if any
   }
 }
-
-import { te } from "@/i18n";
 
 /**
  * Check if a premium feature is enabled

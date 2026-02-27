@@ -12,18 +12,17 @@ import { initSentry } from "@/lib/sentry";
 
 import App from "./App.tsx";
 
-// Initialize Sentry only if enabled (cloud mode or explicit opt-in)
+// Initialize Sentry only when explicitly enabled or in cloud mode
 const enableSentry =
   import.meta.env.VITE_ENABLE_SENTRY === "true" ||
-  import.meta.env.VITE_DEPLOYMENT_MODE === "cloud" ||
-  !import.meta.env.VITE_DEPLOYMENT_MODE;
+  import.meta.env.VITE_DEPLOYMENT_MODE === "cloud";
 
 if (enableSentry) {
   initSentry();
 }
 
-// Initialize GA only in cloud mode
-const deploymentMode = import.meta.env.VITE_DEPLOYMENT_MODE || "cloud";
+// Initialize GA only when explicitly in cloud mode (undefined = selfhosted)
+const deploymentMode = import.meta.env.VITE_DEPLOYMENT_MODE || "selfhosted";
 if (deploymentMode === "cloud") {
   initializeGA();
 }

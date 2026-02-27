@@ -1,6 +1,11 @@
 import { test, expect } from "../../fixtures/test-base.js";
 
 test.describe("Alerts Page @p1", () => {
+  // Ensure no license is active before each test so paywall assertions are reliable
+  test.beforeEach(async ({ db }) => {
+    await db.clearSystemSetting("license_jwt");
+  });
+
   test("should navigate to alerts page", async ({ adminPage }) => {
     await adminPage.goto("/alerts");
     await adminPage.waitForLoadState("domcontentloaded");

@@ -457,8 +457,9 @@ describe("LicenseService", () => {
       );
     });
 
-    it("throws when LICENSE_PRIVATE_KEY is not set", async () => {
+    it("throws when LICENSE_PRIVATE_KEY is not set and does not call signLicenseJwt", async () => {
       const config = await import("@/config");
+      const { signLicenseJwt } = await import("../license-crypto.service");
       const original = config.licenseConfig.privateKey as string | null;
       // Temporarily unset the private key
       (config.licenseConfig as { privateKey: string | null }).privateKey = null;
@@ -472,6 +473,9 @@ describe("LicenseService", () => {
             expiresAt: new Date(Date.now() + 86_400_000),
           })
         ).rejects.toThrow("private key");
+
+        // Ensure signing was never attempted
+        expect(signLicenseJwt).not.toHaveBeenCalled();
       } finally {
         (config.licenseConfig as { privateKey: string | null }).privateKey =
           original;

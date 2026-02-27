@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Navigate } from "react-router";
 
 import {
   CheckCircle,
@@ -26,7 +27,10 @@ import {
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Textarea } from "@/components/ui/textarea";
 
+import { useAuth } from "@/contexts/AuthContextDefinition";
+
 function LicensePage() {
+  const { user } = useAuth();
   const [licenseKey, setLicenseKey] = useState("");
 
   const utils = trpc.useUtils();
@@ -74,6 +78,11 @@ function LicensePage() {
   const handleDeactivate = () => {
     deactivateMutation.mutate();
   };
+
+  // Only accessible in self-hosted mode by admin users
+  if (!isSelfHostedMode() || (user && user.role !== "ADMIN")) {
+    return <Navigate to="/" replace />;
+  }
 
   if (isLoading) {
     return (
@@ -142,9 +151,14 @@ function LicensePage() {
                     <div className="space-y-1">
                       <p className="text-sm text-muted-foreground">Expires</p>
                       <p className="font-medium">
-                        {new Date(
-                          status.license.expiresAt
-                        ).toLocaleDateString()}
+                        {new Date(status.license.expiresAt).toLocaleDateString(
+                          undefined,
+                          {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          }
+                        )}
                       </p>
                     </div>
                     <div className="space-y-1">

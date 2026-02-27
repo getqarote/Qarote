@@ -3,6 +3,8 @@
  * Shows a non-dismissible overlay prompting users to activate a license
  */
 
+import { useNavigate } from "react-router";
+
 import { AlertCircle, Lock } from "lucide-react";
 
 import {
@@ -32,6 +34,7 @@ export function UpgradePrompt({
   message,
   className,
 }: UpgradePromptProps) {
+  const navigate = useNavigate();
   const featureName = getFeatureDescription(feature);
   const cloud = isCloudMode();
   const defaultMessage = cloud
@@ -69,9 +72,7 @@ export function UpgradePrompt({
               <Button
                 variant="default"
                 className="flex-1"
-                onClick={() => {
-                  window.location.href = "/plans";
-                }}
+                onClick={() => navigate("/plans")}
               >
                 View Plans
               </Button>
@@ -89,9 +90,7 @@ export function UpgradePrompt({
               <Button
                 variant="default"
                 className="flex-1"
-                onClick={() => {
-                  window.location.href = "/settings/license";
-                }}
+                onClick={() => navigate("/settings/license")}
               >
                 Activate License
               </Button>
