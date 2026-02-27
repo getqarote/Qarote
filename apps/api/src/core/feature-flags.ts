@@ -70,9 +70,12 @@ async function getLicensePayload(): Promise<LicenseJwtPayload | null> {
     cacheChecked = true;
     return payload;
   } catch (error) {
-    logger.error({ error }, "Error reading license from database");
+    logger.error(
+      { error, hasStaleCache: cachedPayload != null },
+      "Error reading license from database, returning stale cache"
+    );
     // On error, don't cache — retry next time
-    return cachedPayload; // return stale value if any
+    return cachedPayload;
   }
 }
 
