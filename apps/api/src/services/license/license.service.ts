@@ -19,7 +19,7 @@ import type {
   RenewLicenseResult,
   ValidateLicenseOptions,
 } from "./license.interfaces";
-import { signLicenseData } from "./license-crypto.service";
+import { signLicenseData, signLicenseJwt } from "./license-crypto.service";
 
 class LicenseService {
   /**
@@ -332,13 +332,53 @@ class LicenseService {
   }
 
   /**
-   * Generate a signed license file (SaaS only - requires private key)
-   * This creates a cryptographically signed license file that can be validated offline
+   * Generate a signed license JWT (cloud-side only — requires private key)
+   * This creates a compact JWT string that self-hosted instances paste in the UI
+   */
+  async generateLicenseJwt(options: {
+    licenseId: string;
+    tier: GenerateLicenseFileOptions["tier"];
+    features: string[];
+    expiresAt: Date;
+  }): Promise<string> {
+    const privateKey = licenseConfig.privateKey;
+    if (!privateKey) {
+      throw new Error(
+        "License JWT generation requires private key (cloud only). " +
+          "Please set LICENSE_PRIVATE_KEY environment variable."
+      );
+    }
+
+    try {
+      const jwt = await signLicenseJwt(
+        {
+          sub: options.licenseId,
+          tier: options.tier,
+          features: options.features,
+          exp: Math.floor(options.expiresAt.getTime() / 1000),
+        },
+        privateKey
+      );
+
+      logger.info(
+        { licenseId: options.licenseId, tier: options.tier },
+        "License JWT generated successfully"
+      );
+
+      return jwt;
+    } catch (error) {
+      logger.error({ error }, "Failed to generate license JWT");
+      throw error;
+    }
+  }
+
+  /**
+   * Generate a signed license file (legacy format — SaaS only)
+   * @deprecated Use generateLicenseJwt instead
    */
   async generateLicenseFile(
     options: GenerateLicenseFileOptions
   ): Promise<GenerateLicenseFileResult> {
-    // Check if private key is available (SaaS only)
     const privateKey = licenseConfig.privateKey;
     if (!privateKey) {
       throw new Error(
@@ -350,7 +390,6 @@ class LicenseService {
     try {
       const now = new Date();
 
-      // Prepare license data
       const licenseData: LicenseData = {
         licenseKey: options.licenseKey,
         tier: options.tier,
@@ -361,10 +400,8 @@ class LicenseService {
         maxInstances: options.maxInstances,
       };
 
-      // Sign license data
       const signature = signLicenseData(licenseData, privateKey);
 
-      // Create license file
       const licenseFile = {
         version: "1.0",
         ...licenseData,

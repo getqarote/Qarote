@@ -9,6 +9,7 @@ import {
   Database,
   FolderTree,
   HelpCircle,
+  KeyRound,
   LogOut,
   MessageSquare,
   Plus,
@@ -16,6 +17,8 @@ import {
   Settings,
   User,
 } from "lucide-react";
+
+import { isCloudMode } from "@/lib/featureFlags";
 
 import { AddServerForm } from "@/components/AddServerFormComponent";
 import { DiscordLink } from "@/components/DiscordLink";
@@ -65,6 +68,16 @@ const menuItems = [
   { titleKey: "sidebar:users", url: "/users", icon: User, adminOnly: true },
   { titleKey: "sidebar:alerts", url: "/alerts", icon: AlertTriangle },
   { titleKey: "sidebar:profile", url: "/profile", icon: User },
+  ...(!isCloudMode()
+    ? [
+        {
+          titleKey: "sidebar:license" as const,
+          url: "/settings/license",
+          icon: KeyRound,
+          adminOnly: true,
+        },
+      ]
+    : []),
   { titleKey: "sidebar:helpSupport", url: "/help", icon: HelpCircle },
 ];
 

@@ -100,8 +100,7 @@
     "failedToRemoveFromWorkspace": "Failed to remove user from workspace"
   },
   "feature": {
-    "requiresEnterprise": "{{featureName}} requires Enterprise Edition. Upgrade from Community Edition to unlock this feature.",
-    "notIncludedInLicense": "{{featureName}} is not included in your license or your license is invalid. Please check your license file.",
+    "requiresLicense": "{{featureName}} requires an active license. Activate a license in Settings to unlock this feature.",
     "notAvailable": "{{featureName}} is not available."
   },
   "billing": {

@@ -4,27 +4,44 @@ import dotenv from "dotenv";
 import { z } from "zod/v4";
 
 import { cloudSchema } from "./schemas/cloud.js";
-import { communitySchema } from "./schemas/community.js";
-import { enterpriseSchema } from "./schemas/enterprise.js";
+import { selfhostedSchema } from "./schemas/selfhosted.js";
 
 // Load .env file from the api directory (where process.cwd() points when running from apps/api)
 dotenv.config({ path: path.join(process.cwd(), ".env"), quiet: true });
 
 // Union type of all possible configs (internal use only)
-type Config =
-  | z.infer<typeof cloudSchema>
-  | z.infer<typeof communitySchema>
-  | z.infer<typeof enterpriseSchema>;
+type Config = z.infer<typeof cloudSchema> | z.infer<typeof selfhostedSchema>;
+
+// Deprecated aliases that map to "selfhosted"
+const SELFHOSTED_ALIASES = ["community", "enterprise"] as const;
+
+/**
+ * Normalize deployment mode, mapping deprecated aliases to "selfhosted"
+ */
+function normalizeDeploymentMode(raw: string): "cloud" | "selfhosted" {
+  if (raw === "cloud") return "cloud";
+  if (raw === "selfhosted") return "selfhosted";
+  if (SELFHOSTED_ALIASES.includes(raw as (typeof SELFHOSTED_ALIASES)[number])) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      `[Qarote] DEPLOYMENT_MODE="${raw}" is deprecated. Use "selfhosted" instead. This alias will be removed in a future version.`
+    );
+    return "selfhosted";
+  }
+  throw new Error(
+    `Invalid DEPLOYMENT_MODE: ${raw}. Must be one of: cloud, selfhosted`
+  );
+}
 
 /**
  * Parse and validate environment variables based on deployment mode
  * Different deployment modes have different requirements
  */
 function parseConfig(): Config {
-  const deploymentMode = process.env.DEPLOYMENT_MODE || "community";
+  const rawMode = process.env.DEPLOYMENT_MODE || "selfhosted";
+  const deploymentMode = normalizeDeploymentMode(rawMode);
 
-  // Create environment object with defaulted DEPLOYMENT_MODE
-  // This ensures validation doesn't fail when DEPLOYMENT_MODE is undefined
+  // Create environment object with normalized DEPLOYMENT_MODE
   const envWithDefaults = {
     ...process.env,
     DEPLOYMENT_MODE: deploymentMode,
@@ -34,14 +51,8 @@ function parseConfig(): Config {
     switch (deploymentMode) {
       case "cloud":
         return cloudSchema.parse(envWithDefaults);
-      case "enterprise":
-        return enterpriseSchema.parse(envWithDefaults);
-      case "community":
-        return communitySchema.parse(envWithDefaults);
-      default:
-        throw new Error(
-          `Invalid DEPLOYMENT_MODE: ${deploymentMode}. Must be one of: cloud, community, enterprise`
-        );
+      case "selfhosted":
+        return selfhostedSchema.parse(envWithDefaults);
     }
   } catch (error) {
     // eslint-disable-next-line no-console
@@ -122,8 +133,8 @@ export const stripeConfig = {
       yearly: config.STRIPE_DEVELOPER_YEARLY_PRICE_ID,
     },
     enterprise: {
-      monthly: config.STRIPE_ENTERPRISE_MONTHLY_PRICE_ID, // Reuse business prices for enterprise
-      yearly: config.STRIPE_ENTERPRISE_YEARLY_PRICE_ID, // Reuse business prices for enterprise
+      monthly: config.STRIPE_ENTERPRISE_MONTHLY_PRICE_ID,
+      yearly: config.STRIPE_ENTERPRISE_YEARLY_PRICE_ID,
     },
   },
 } as const;
@@ -182,10 +193,8 @@ export const ssoConfig = {
 } as const;
 
 export const licenseConfig = {
-  licenseKey: config.LICENSE_KEY,
-  licenseFilePath: config.LICENSE_FILE_PATH || "./qarote-license.json",
-  publicKey: config.LICENSE_PUBLIC_KEY,
-  privateKey: config.LICENSE_PRIVATE_KEY,
+  privateKey:
+    "LICENSE_PRIVATE_KEY" in config ? config.LICENSE_PRIVATE_KEY : undefined,
 } as const;
 
 export const notionConfig = {
@@ -203,9 +212,5 @@ export const alertConfig = {
 export const deploymentConfig = {
   mode: config.DEPLOYMENT_MODE,
   isCloud: () => config.DEPLOYMENT_MODE === "cloud",
-  isCommunity: () => config.DEPLOYMENT_MODE === "community",
-  isEnterprise: () => config.DEPLOYMENT_MODE === "enterprise",
-  isSelfHosted: () =>
-    config.DEPLOYMENT_MODE === "enterprise" ||
-    config.DEPLOYMENT_MODE === "community",
+  isSelfHosted: () => config.DEPLOYMENT_MODE === "selfhosted",
 } as const;

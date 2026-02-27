@@ -6,6 +6,19 @@
 import { UserPlan } from "@/generated/prisma/client";
 
 /**
+ * JWT license payload — the new compact format
+ * Signed with RS256 via jose, verified offline with baked-in public key
+ */
+export interface LicenseJwtPayload {
+  sub: string; // licenseId
+  tier: UserPlan;
+  features: string[];
+  iss: "qarote";
+  iat: number; // issued at (unix seconds)
+  exp: number; // expires at (unix seconds)
+}
+
+/**
  * License data structure used for signing and verification
  */
 export interface LicenseData {

@@ -6,6 +6,7 @@ import { paymentRouter } from "./routers/payment/index";
 import { licenseRouter } from "./routers/portal/license";
 import { publicRouter } from "./routers/public/index";
 import { rabbitmqRouter } from "./routers/rabbitmq";
+import { selfhostedLicenseRouter } from "./routers/selfhosted-license";
 import { userRouter } from "./routers/user";
 import { workspaceRouter } from "./routers/workspace/index";
 import { router } from "./trpc";
@@ -24,6 +25,7 @@ export const appRouter = router({
   payment: paymentRouter,
   rabbitmq: rabbitmqRouter,
   discord: discordRouter,
+  selfhostedLicense: selfhostedLicenseRouter,
   public: publicRouter,
 });
 

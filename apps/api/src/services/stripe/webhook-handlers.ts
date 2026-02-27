@@ -266,21 +266,20 @@ async function handleLicensePurchase(
       "License created successfully"
     );
 
-    // Generate and save signed license file (version 1)
+    // Generate and save signed license JWT (version 1)
     const features = getLicenseFeaturesForTier(plan);
-    const licenseFileResult = await licenseService.generateLicenseFile({
-      licenseKey,
+    const licenseJwt = await licenseService.generateLicenseJwt({
+      licenseId,
       tier: plan,
-      customerEmail: user.email,
-      expiresAt,
       features,
+      expiresAt,
     });
 
-    // Save license file version for download
+    // Save license JWT version for download
     await licenseService.saveLicenseFileVersion(
       licenseId,
       1, // Initial version
-      JSON.stringify(licenseFileResult.licenseFile, null, 2),
+      licenseJwt,
       expiresAt
     );
 
@@ -290,7 +289,7 @@ async function handleLicensePurchase(
         version: 1,
         expiresAt: expiresAt.toISOString(),
       },
-      "License file generated and saved for initial purchase"
+      "License JWT generated and saved for initial purchase"
     );
 
     // Send license delivery email
@@ -585,26 +584,25 @@ export async function handleInvoicePaymentSucceeded(invoice: Invoice) {
             newExpiresAt
           );
 
-          // Generate new signed license file
+          // Generate new signed license JWT
           const features = getLicenseFeaturesForTier(license.tier);
-          const licenseFileResult = await licenseService.generateLicenseFile({
-            licenseKey: license.licenseKey,
+          const licenseJwt = await licenseService.generateLicenseJwt({
+            licenseId: license.id,
             tier: license.tier,
-            customerEmail: license.customerEmail,
-            expiresAt: newExpiresAt,
             features: features as string[],
+            expiresAt: newExpiresAt,
           });
 
-          // Save license file version for historical access with invoice ID for idempotency
+          // Save license JWT version for historical access with invoice ID for idempotency
           await licenseService.saveLicenseFileVersion(
             license.id,
             newVersion,
-            JSON.stringify(licenseFileResult.licenseFile, null, 2),
+            licenseJwt,
             newExpiresAt,
             invoice.id
           );
 
-          // Send license renewal email with new file
+          // Send license renewal email
           const portalUrl = emailConfig.portalFrontendUrl;
           await EmailService.sendLicenseRenewalEmail({
             to: license.customerEmail,
@@ -623,7 +621,7 @@ export async function handleInvoicePaymentSucceeded(invoice: Invoice) {
               newExpiresAt: newExpiresAt.toISOString(),
               previousExpiresAt: license.expiresAt.toISOString(),
             },
-            "License renewed, new file generated, and renewal email sent"
+            "License renewed, new JWT generated, and renewal email sent"
           );
         } catch (licenseError) {
           logger.error(
