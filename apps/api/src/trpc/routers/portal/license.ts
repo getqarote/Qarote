@@ -190,9 +190,9 @@ export const licenseRouter = router({
     }),
 
   /**
-   * Download license file
+   * Get license key (JWT string)
    * Protected endpoint - portal only
-   * Returns file content and filename for client-side download
+   * Returns the JWT that users paste into their self-hosted instance
    */
   downloadLicense: rateLimitedProcedure
     .input(downloadLicenseSchema)
@@ -215,50 +215,44 @@ export const licenseRouter = router({
           });
         }
 
-        // Retrieve stored license file from database
+        // Check stored versions first (JWT is stored in fileContent)
         const fileVersions =
           await licenseService.getLicenseFileVersions(licenseId);
-
-        // Get the latest version (should match license.currentVersion)
         const latestVersion = fileVersions[0];
 
-        if (!latestVersion) {
-          // Fallback: Generate file if not found (backwards compatibility)
-          ctx.logger.warn(
-            { licenseId },
-            "No stored license file found, generating on-demand"
+        if (latestVersion) {
+          ctx.logger.info(
+            { licenseId, version: latestVersion.version },
+            "Returning stored license JWT"
           );
 
-          const features = getLicenseFeaturesForTier(license.tier);
-
-          const licenseFile = await licenseService.generateLicenseFile({
-            licenseKey: license.licenseKey,
-            tier: license.tier,
-            customerEmail: license.customerEmail,
-            expiresAt: license.expiresAt,
-            features,
-          });
-
           return {
-            content: JSON.stringify(licenseFile.licenseFile, null, 2),
-            filename: `qarote-license-${licenseId}.json`,
-            mimeType: "application/json",
+            content: latestVersion.fileContent,
+            mimeType: "text/plain",
           };
         }
 
-        // Return stored license file
-        ctx.logger.info(
-          { licenseId, version: latestVersion.version },
-          "Returning stored license file"
+        // Fallback: Generate JWT on-demand if no stored version
+        ctx.logger.warn(
+          { licenseId },
+          "No stored license JWT found, generating on-demand"
         );
 
+        const features = getLicenseFeaturesForTier(license.tier);
+
+        const jwt = await licenseService.generateLicenseJwt({
+          licenseId: license.id,
+          tier: license.tier,
+          features,
+          expiresAt: license.expiresAt,
+        });
+
         return {
-          content: latestVersion.fileContent,
-          filename: `qarote-license-${licenseId}.json`,
-          mimeType: "application/json",
+          content: jwt,
+          mimeType: "text/plain",
         };
       } catch (error) {
-        ctx.logger.error({ error }, "Error downloading license");
+        ctx.logger.error({ error }, "Error fetching license key");
         if (error instanceof TRPCError) {
           throw error;
         }

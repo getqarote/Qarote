@@ -11,9 +11,8 @@ import { execSync } from "node:child_process";
 
 const licenseFiles = [
   "dist/core/feature-flags.js",
-  "dist/services/license/license-file.service.js",
   "dist/services/license/license-crypto.service.js",
-  "dist/services/license/license-file-integrity.service.js",
+  "dist/services/license/license-public-key.js",
 ];
 
 const obfuscatorConfig = {

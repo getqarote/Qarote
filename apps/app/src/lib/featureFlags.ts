@@ -14,23 +14,23 @@ export type PremiumFeature =
 /**
  * Get deployment mode from environment.
  * Checks build-time env first, then runtime config (served by /config.js in binary mode).
+ * Normalizes deprecated "community" and "enterprise" to "selfhosted".
  */
-function getDeploymentMode(): "cloud" | "community" | "enterprise" {
-  const buildTime = import.meta.env.VITE_DEPLOYMENT_MODE as
-    | "cloud"
-    | "community"
-    | "enterprise"
-    | undefined;
-  if (buildTime) return buildTime;
+function getDeploymentMode(): "cloud" | "selfhosted" {
+  const buildTime = import.meta.env.VITE_DEPLOYMENT_MODE as string | undefined;
+  if (buildTime) {
+    if (buildTime === "cloud") return "cloud";
+    return "selfhosted"; // "selfhosted", "community", "enterprise" all map here
+  }
 
   if (typeof window !== "undefined") {
     const runtimeConfig = (window as unknown as Record<string, unknown>)
       .__QAROTE_CONFIG__ as { deploymentMode?: string } | undefined;
     if (
-      runtimeConfig?.deploymentMode === "community" ||
-      runtimeConfig?.deploymentMode === "enterprise"
+      runtimeConfig?.deploymentMode &&
+      runtimeConfig.deploymentMode !== "cloud"
     ) {
-      return runtimeConfig.deploymentMode;
+      return "selfhosted";
     }
   }
 
@@ -42,6 +42,13 @@ function getDeploymentMode(): "cloud" | "community" | "enterprise" {
  */
 export function isCloudMode(): boolean {
   return getDeploymentMode() === "cloud";
+}
+
+/**
+ * Check if running in self-hosted mode
+ */
+export function isSelfHostedMode(): boolean {
+  return getDeploymentMode() === "selfhosted";
 }
 
 /**

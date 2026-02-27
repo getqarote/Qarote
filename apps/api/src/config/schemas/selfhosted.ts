@@ -3,11 +3,23 @@ import { z } from "zod/v4";
 import { baseSchema } from "./base.js";
 
 /**
- * Self-hosted base schema
- * Shared by both Community and Enterprise modes
- * Most third-party services are optional
+ * Self-hosted deployment mode schema
+ * Used for all self-hosted deployments (formerly community + enterprise)
+ * Premium features are gated by license activation through the UI, not env vars
  */
-export const selfhostedBaseSchema = baseSchema.extend({
+export const selfhostedSchema = baseSchema.extend({
+  // Deployment Mode
+  DEPLOYMENT_MODE: z.literal("selfhosted"),
+
+  // License Configuration
+  // Self-hosted instances don't need license env vars — license is activated via the UI
+  // These are kept optional for backward compat with old enterprise configs
+  LICENSE_PRIVATE_KEY: z.string().optional(),
+  LICENSE_FILE_PATH: z.string().optional(),
+  LICENSE_PUBLIC_KEY: z.string().optional(),
+  LICENSE_KEY: z.string().optional(),
+  LICENSE_VALIDATION_URL: z.string().optional(),
+
   // Email Configuration - All optional with sensible defaults
   ENABLE_EMAIL: z.coerce.boolean().default(false),
   EMAIL_PROVIDER: z.literal("smtp").default("smtp"),

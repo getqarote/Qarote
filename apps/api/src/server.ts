@@ -15,6 +15,7 @@ import { prisma } from "@/core/prisma";
 import { getDirname } from "@/core/utils";
 
 import { ssoService } from "@/services/auth/sso.service";
+import { migrateLegacyLicenseFile } from "@/services/license/license-migration.service";
 
 import { corsMiddleware } from "@/middlewares/cors";
 import {
@@ -23,7 +24,11 @@ import {
 } from "@/middlewares/request";
 
 import { config, serverConfig, ssoConfig } from "@/config";
-import { isCloudMode, validateDeploymentMode } from "@/config/deployment";
+import {
+  isCloudMode,
+  isSelfHostedMode,
+  validateDeploymentMode,
+} from "@/config/deployment";
 
 import { createContext } from "@/trpc/context";
 import { appRouter } from "@/trpc/router";
@@ -111,6 +116,7 @@ if (!isCloudMode() && publicDir) {
   // Users can override via API_URL env var for reverse-proxy setups.
   app.get("/config.js", (c) => {
     const apiUrl = process.env.API_URL || "";
+    // Always serve normalized mode ("cloud" or "selfhosted")
     const deploymentMode = config.DEPLOYMENT_MODE;
     return c.text(
       `window.__QAROTE_CONFIG__=${JSON.stringify({ apiUrl, deploymentMode })};`,
@@ -153,6 +159,11 @@ async function startServer() {
     await prisma.$connect();
     dbConnected = true;
     logger.info("Connected to database");
+
+    // Migrate legacy license files (enterprise → selfhosted transition)
+    if (isSelfHostedMode()) {
+      await migrateLegacyLicenseFile();
+    }
 
     // Initialize SSO service if enabled
     if (ssoConfig.enabled) {

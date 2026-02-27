@@ -1,11 +1,15 @@
 /**
  * Upgrade Prompt Component
- * Shows a non-dismissible overlay prompting users to upgrade to Enterprise Edition
+ * Shows a non-dismissible overlay prompting users to activate a license
  */
 
 import { AlertCircle, Lock } from "lucide-react";
 
-import { getFeatureDescription, type PremiumFeature } from "@/lib/featureFlags";
+import {
+  getFeatureDescription,
+  isCloudMode,
+  type PremiumFeature,
+} from "@/lib/featureFlags";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -29,7 +33,10 @@ export function UpgradePrompt({
   className,
 }: UpgradePromptProps) {
   const featureName = getFeatureDescription(feature);
-  const defaultMessage = `Upgrade to Enterprise Edition to unlock ${featureName}.`;
+  const cloud = isCloudMode();
+  const defaultMessage = cloud
+    ? `Upgrade your plan to unlock ${featureName}.`
+    : `Activate a license to unlock ${featureName}.`;
 
   return (
     <div
@@ -47,35 +54,57 @@ export function UpgradePrompt({
           <div className="flex items-start gap-3 rounded-lg border bg-muted/50 p-4">
             <AlertCircle className="h-5 w-5 text-muted-foreground mt-0.5" />
             <div className="space-y-1">
-              <p className="text-sm font-medium">Enterprise Edition Required</p>
+              <p className="text-sm font-medium">License Required</p>
               <p className="text-sm text-muted-foreground">
-                This feature is available in Enterprise Edition. Upgrade to
-                unlock workspace management, alerting, and advanced
-                integrations.
+                {cloud
+                  ? "This feature requires an upgraded plan. View available plans to unlock it."
+                  : "This feature requires an active license. Activate a license in Settings to unlock it."}
               </p>
             </div>
           </div>
         </CardContent>
         <CardFooter className="flex gap-2">
-          <Button
-            variant="default"
-            className="flex-1"
-            onClick={() => {
-              // Navigate to upgrade page or open upgrade modal
-              window.location.href = "/plans";
-            }}
-          >
-            View Plans
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => {
-              // Could open a contact/sales modal
-              window.open("https://qarote.io/contact", "_blank");
-            }}
-          >
-            Contact Sales
-          </Button>
+          {cloud ? (
+            <>
+              <Button
+                variant="default"
+                className="flex-1"
+                onClick={() => {
+                  window.location.href = "/plans";
+                }}
+              >
+                View Plans
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  window.open("https://qarote.io/contact", "_blank");
+                }}
+              >
+                Contact Sales
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                variant="default"
+                className="flex-1"
+                onClick={() => {
+                  window.location.href = "/settings/license";
+                }}
+              >
+                Activate License
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  window.open("https://qarote.io/pricing", "_blank");
+                }}
+              >
+                Purchase License
+              </Button>
+            </>
+          )}
         </CardFooter>
       </Card>
     </div>

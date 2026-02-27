@@ -12,11 +12,11 @@ import { initSentry } from "@/lib/sentry";
 
 import App from "./App.tsx";
 
-// Initialize Sentry only if enabled
+// Initialize Sentry only if enabled (cloud mode or explicit opt-in)
 const enableSentry =
   import.meta.env.VITE_ENABLE_SENTRY === "true" ||
-  (import.meta.env.VITE_DEPLOYMENT_MODE !== "community" &&
-    import.meta.env.VITE_DEPLOYMENT_MODE !== "enterprise");
+  import.meta.env.VITE_DEPLOYMENT_MODE === "cloud" ||
+  !import.meta.env.VITE_DEPLOYMENT_MODE;
 
 if (enableSentry) {
   initSentry();

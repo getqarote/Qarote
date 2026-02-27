@@ -627,3 +627,13 @@ enum UserRole {
   MEMBER
   READONLY
 }
+
+// ─── Self-hosted Configuration ───────────────────────────────────────
+// Generic key-value store for self-hosted instance settings
+// Primary use: storing the license JWT activated via the UI
+
+model SystemSetting {
+  key       String   @id
+  value     String   @db.Text
+  updatedAt DateTime @updatedAt
+}
