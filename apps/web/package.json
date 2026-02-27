@@ -29,6 +29,7 @@
     "@qarote/i18n": "workspace:*",
     "@radix-ui/react-accordion": "^1.2.0",
     "@radix-ui/react-select": "^2.1.1",
+    "i18next": "^25.2.1",
     "react-i18next": "^15.6.1",
     "@radix-ui/react-slot": "^1.1.0",
     "@radix-ui/react-toast": "^1.2.1",
