@@ -11,15 +11,14 @@ import { prisma } from "@/core/prisma";
 import { licenseConfig } from "@/config";
 
 import type {
-  GenerateLicenseFileOptions,
-  GenerateLicenseFileResult,
   GenerateLicenseOptions,
-  LicenseData,
   LicenseValidationResponse,
   RenewLicenseResult,
   ValidateLicenseOptions,
 } from "./license.interfaces";
-import { signLicenseData, signLicenseJwt } from "./license-crypto.service";
+import { signLicenseJwt } from "./license-crypto.service";
+
+import { UserPlan } from "@/generated/prisma/client";
 
 class LicenseService {
   /**
@@ -337,7 +336,7 @@ class LicenseService {
    */
   async generateLicenseJwt(options: {
     licenseId: string;
-    tier: GenerateLicenseFileOptions["tier"];
+    tier: UserPlan;
     features: string[];
     expiresAt: Date;
   }): Promise<string> {
@@ -368,58 +367,6 @@ class LicenseService {
       return jwt;
     } catch (error) {
       logger.error({ error }, "Failed to generate license JWT");
-      throw error;
-    }
-  }
-
-  /**
-   * Generate a signed license file (legacy format — SaaS only)
-   * @deprecated Use generateLicenseJwt instead
-   */
-  async generateLicenseFile(
-    options: GenerateLicenseFileOptions
-  ): Promise<GenerateLicenseFileResult> {
-    const privateKey = licenseConfig.privateKey;
-    if (!privateKey) {
-      throw new Error(
-        "License generation requires private key (SaaS only). " +
-          "Please set LICENSE_PRIVATE_KEY environment variable."
-      );
-    }
-
-    try {
-      const now = new Date();
-
-      const licenseData: LicenseData = {
-        licenseKey: options.licenseKey,
-        tier: options.tier,
-        customerEmail: options.customerEmail,
-        issuedAt: now.toISOString(),
-        expiresAt: options.expiresAt.toISOString(),
-        features: options.features,
-        maxInstances: options.maxInstances,
-      };
-
-      const signature = signLicenseData(licenseData, privateKey);
-
-      const licenseFile = {
-        version: "1.0",
-        ...licenseData,
-        signature,
-      };
-
-      logger.info(
-        {
-          licenseKey: options.licenseKey,
-          tier: options.tier,
-          customerEmail: options.customerEmail,
-        },
-        "License file generated successfully"
-      );
-
-      return { licenseFile };
-    } catch (error) {
-      logger.error({ error }, "Failed to generate license file");
       throw error;
     }
   }

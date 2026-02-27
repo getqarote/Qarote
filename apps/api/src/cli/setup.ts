@@ -103,18 +103,8 @@ export async function runSetup(): Promise<void> {
   // ─── Deployment Mode ───────────────────────────────────────────────
   section("Deployment");
 
-  let mode = "";
-  while (!mode) {
-    const input = await ask(
-      "Deployment mode (community/enterprise)",
-      "community"
-    );
-    if (input === "community" || input === "enterprise") {
-      mode = input;
-    } else {
-      console.log(c.red("    Must be 'community' or 'enterprise'"));
-    }
-  }
+  const mode = "selfhosted";
+  console.log(`  Deployment mode: ${c.green(mode)}`);
 
   // ─── Database ──────────────────────────────────────────────────────
   section("Database");
@@ -143,28 +133,6 @@ export async function runSetup(): Promise<void> {
         console.log("\n  Aborted.\n");
         rl.close();
         process.exit(1);
-      }
-    }
-  }
-
-  // ─── License (Enterprise only) ────────────────────────────────────
-  let licenseFilePath = "";
-  let licensePublicKey = "";
-
-  if (mode === "enterprise") {
-    section("License (required for Enterprise)");
-
-    licenseFilePath = await ask("License file path", "./qarote-license.json");
-
-    while (!licensePublicKey) {
-      licensePublicKey = await ask("License public key (single line with \\n)");
-      if (!licensePublicKey) {
-        console.log(
-          c.red("    Required for Enterprise.") +
-            c.dim(
-              " Paste the single-line key from generate-license-keys (with \\n)"
-            )
-        );
       }
     }
   }
@@ -268,13 +236,6 @@ export async function runSetup(): Promise<void> {
     `ENCRYPTION_KEY=${encryptionKey}`,
   ];
 
-  // License (enterprise)
-  if (mode === "enterprise") {
-    lines.push("", "# License (Enterprise Edition)");
-    lines.push(`LICENSE_FILE_PATH=${licenseFilePath}`);
-    lines.push(`LICENSE_PUBLIC_KEY="${licensePublicKey}"`);
-  }
-
   // Email
   lines.push("", "# Email");
   lines.push(`ENABLE_EMAIL=${enableEmail}`);
@@ -302,10 +263,6 @@ export async function runSetup(): Promise<void> {
   console.log(c.dim(`    Database: ${dbUrl.replace(/:[^@]*@/, ":***@")}`));
   console.log(c.dim(`    Port:     ${port}`));
   console.log(c.dim(`    Email:    ${enableEmail ? "enabled" : "disabled"}`));
-  if (mode === "enterprise") {
-    console.log(c.dim(`    License:  ${licenseFilePath}`));
-  }
-
   console.log("");
   console.log("  Next steps:");
   console.log(`    ${c.bold("Start Qarote:")}  ./qarote`);
