@@ -70,8 +70,7 @@ export function UpgradePrompt({
           {cloud ? (
             <>
               <Button
-                variant="default"
-                className="flex-1"
+                className="flex-1 bg-gradient-button hover:bg-gradient-button-hover text-white"
                 onClick={() => navigate("/plans")}
               >
                 View Plans
@@ -88,8 +87,7 @@ export function UpgradePrompt({
           ) : (
             <>
               <Button
-                variant="default"
-                className="flex-1"
+                className="flex-1 bg-gradient-button hover:bg-gradient-button-hover text-white"
                 onClick={() => navigate("/settings/license")}
               >
                 Activate License

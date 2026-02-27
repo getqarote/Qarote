@@ -11,7 +11,6 @@ import {
 import { toast } from "sonner";
 
 import { isSelfHostedMode } from "@/lib/featureFlags";
-import { trpc } from "@/lib/trpc/client";
 
 import { AppSidebar } from "@/components/AppSidebar";
 import { Badge } from "@/components/ui/badge";
@@ -29,37 +28,31 @@ import { Textarea } from "@/components/ui/textarea";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
 
+import {
+  useActivateLicense,
+  useDeactivateLicense,
+  useLicenseStatus,
+} from "@/hooks/queries/useLicenseManagement";
+
 function LicensePage() {
   const { user } = useAuth();
   const [licenseKey, setLicenseKey] = useState("");
 
-  const utils = trpc.useUtils();
+  const { data: status, isLoading } = useLicenseStatus();
 
-  const { data: status, isLoading } = trpc.selfhostedLicense.status.useQuery(
-    undefined,
-    {
-      enabled: isSelfHostedMode(),
-      staleTime: 30_000,
-    }
-  );
-
-  const activateMutation = trpc.selfhostedLicense.activate.useMutation({
+  const activateMutation = useActivateLicense({
     onSuccess: (data) => {
       toast.success(`License activated — ${data.tier} tier`);
       setLicenseKey("");
-      utils.selfhostedLicense.status.invalidate();
-      utils.public.getFeatureFlags.invalidate();
     },
     onError: (error) => {
       toast.error(error.message || "Failed to activate license");
     },
   });
 
-  const deactivateMutation = trpc.selfhostedLicense.deactivate.useMutation({
+  const deactivateMutation = useDeactivateLicense({
     onSuccess: () => {
       toast.success("License deactivated");
-      utils.selfhostedLicense.status.invalidate();
-      utils.public.getFeatureFlags.invalidate();
     },
     onError: (error) => {
       toast.error(error.message || "Failed to deactivate license");
@@ -222,6 +215,7 @@ function LicensePage() {
               </CardContent>
               <CardFooter className="flex justify-between">
                 <Button
+                  className="bg-gradient-button hover:bg-gradient-button-hover text-white"
                   onClick={handleActivate}
                   disabled={!licenseKey.trim() || activateMutation.isPending}
                 >

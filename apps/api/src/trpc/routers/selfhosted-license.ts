@@ -14,28 +14,25 @@ import { isSelfHostedMode } from "@/config/deployment";
 
 import { rateLimitedAdminProcedure, router } from "@/trpc/trpc";
 
-/**
- * Guard: only available in self-hosted mode
- */
-function assertSelfHosted() {
+/** Admin procedure that only runs in self-hosted mode */
+const selfHostedProcedure = rateLimitedAdminProcedure.use(async (opts) => {
   if (!isSelfHostedMode()) {
     throw new TRPCError({
       code: "FORBIDDEN",
       message: "License activation is only available for self-hosted instances",
     });
   }
-}
+  return opts.next();
+});
 
 export const selfhostedLicenseRouter = router({
   /**
    * Activate a license by pasting a JWT
    * Verifies the JWT offline, then stores it in the database
    */
-  activate: rateLimitedAdminProcedure
+  activate: selfHostedProcedure
     .input(z.object({ licenseKey: z.string().min(1) }))
     .mutation(async ({ input, ctx }) => {
-      assertSelfHosted();
-
       const { licenseKey } = input;
 
       // Verify JWT signature + expiry with baked-in public key
@@ -75,9 +72,7 @@ export const selfhostedLicenseRouter = router({
    * Get current license status
    * Returns decoded license info if a valid JWT is stored, null otherwise
    */
-  status: rateLimitedAdminProcedure.query(async ({ ctx }) => {
-    assertSelfHosted();
-
+  status: selfHostedProcedure.query(async ({ ctx }) => {
     const setting = await ctx.prisma.systemSetting.findUnique({
       where: { key: "license_jwt" },
     });
@@ -107,9 +102,7 @@ export const selfhostedLicenseRouter = router({
    * Deactivate the current license
    * Removes the JWT from the database — features revert to free tier
    */
-  deactivate: rateLimitedAdminProcedure.mutation(async ({ ctx }) => {
-    assertSelfHosted();
-
+  deactivate: selfHostedProcedure.mutation(async ({ ctx }) => {
     try {
       await ctx.prisma.systemSetting.delete({
         where: { key: "license_jwt" },

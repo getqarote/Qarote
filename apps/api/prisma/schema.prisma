@@ -497,6 +497,8 @@ model Webhook {
   @@index([workspaceId])
 }
 
+/// Internal process state used by cron jobs to track cursors
+/// (e.g. last notified release version).
 model SystemState {
   id        String   @id @default(uuid())
   key       String   @unique
@@ -630,10 +632,11 @@ enum UserRole {
 
 // ─── Self-hosted Configuration ───────────────────────────────────────
 // Generic key-value store for self-hosted instance settings
-// Primary use: storing the license JWT activated via the UI
-
+/// User-facing configuration persisted across restarts.
+/// Primary use: storing the activated license JWT (key = "license").
 model SystemSetting {
   key       String   @id
   value     String   @db.Text
+  createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
