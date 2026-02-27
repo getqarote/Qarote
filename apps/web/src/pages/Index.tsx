@@ -23,6 +23,7 @@ import { trackSignUpClick } from "@/lib/gtm";
 
 import AuthButtons from "@/components/AuthButtons";
 import FeatureCard from "@/components/FeatureCard";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import SEO from "@/components/SEO";
 import StickyNav from "@/components/StickyNav";
 import { Badge } from "@/components/ui/badge";
@@ -1470,6 +1471,7 @@ const Index = () => {
             </div>
 
             <div className="flex items-center gap-6">
+              <LanguageSwitcher />
               <a
                 href="https://github.com/getqarote/Qarote"
                 target="_blank"

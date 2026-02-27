@@ -4,8 +4,6 @@ import { Github } from "lucide-react";
 
 import { trackSignUpClick } from "@/lib/gtm";
 
-import { LanguageSwitcher } from "@/components/LanguageSwitcher";
-
 interface StickyNavProps {
   onVideoClick?: () => void;
 }
@@ -65,7 +63,6 @@ const StickyNav = ({ onVideoClick }: StickyNavProps) => {
           </div>
 
           <div className="flex items-center gap-1 sm:gap-2">
-            <LanguageSwitcher />
             <a
               href="https://github.com/getqarote/Qarote"
               target="_blank"

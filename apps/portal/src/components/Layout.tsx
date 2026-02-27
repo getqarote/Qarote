@@ -66,7 +66,6 @@ const Layout = () => {
               </div>
             </div>
             <div className="flex items-center space-x-4">
-              <LanguageSwitcher />
               <a
                 href="https://github.com/getqarote/Qarote"
                 target="_blank"
@@ -128,6 +127,7 @@ const Layout = () => {
               <h3 className="text-lg font-bold">{t("layout.title")}</h3>
             </div>
             <div className="flex items-center gap-6">
+              <LanguageSwitcher />
               <a
                 href="https://github.com/getqarote/Qarote"
                 target="_blank"

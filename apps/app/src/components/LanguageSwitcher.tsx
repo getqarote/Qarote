@@ -37,7 +37,7 @@ export function LanguageSwitcher() {
 
   return (
     <Select value={currentLocale} onValueChange={handleChange}>
-      <SelectTrigger className="w-full text-sm">
+      <SelectTrigger className="w-auto text-sm">
         <SelectValue>
           <div className="flex items-center gap-2">
             <Globe className="h-3 w-3 shrink-0" />
