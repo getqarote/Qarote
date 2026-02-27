@@ -1,7 +1,7 @@
 import { expect, test } from "../../fixtures/test-base.js";
 
 test.describe("Google OAuth Visibility @p1", () => {
-  test("should not show Google login button in community mode @community", async ({
+  test("should not show Google login button in selfhosted mode @selfhosted", async ({
     page,
   }) => {
     test.skip(
@@ -11,13 +11,13 @@ test.describe("Google OAuth Visibility @p1", () => {
 
     await page.goto("/auth/sign-in");
     await page.waitForLoadState("domcontentloaded");
-    // In community mode with ENABLE_OAUTH=false, the Google button should not appear
+    // In selfhosted mode with ENABLE_OAUTH=false, the Google button should not appear
     await expect(
       page.getByRole("button", { name: /google/i })
     ).not.toBeVisible();
   });
 
-  test("should not show Google login on sign-up in community mode @community", async ({
+  test("should not show Google login on sign-up in selfhosted mode @selfhosted", async ({
     page,
   }) => {
     test.skip(
@@ -63,12 +63,12 @@ test.describe("Google OAuth Visibility @p1", () => {
     ).toBeVisible({ timeout: 10_000 });
   });
 
-  test("should hide 'Or continue with' divider when no alt auth @community", async ({
+  test("should hide 'Or continue with' divider when no alt auth @selfhosted", async ({
     page,
   }) => {
     test.skip(
       process.env.DEPLOYMENT_MODE === "cloud",
-      "Community/enterprise mode — no Google OAuth, no SSO"
+      "Selfhosted mode — no Google OAuth, no SSO"
     );
 
     await page.goto("/auth/sign-in");
@@ -79,12 +79,12 @@ test.describe("Google OAuth Visibility @p1", () => {
     ).not.toBeVisible();
   });
 
-  test("should hide 'Or continue with' divider on sign-up when no alt auth @community", async ({
+  test("should hide 'Or continue with' divider on sign-up when no alt auth @selfhosted", async ({
     page,
   }) => {
     test.skip(
       process.env.DEPLOYMENT_MODE === "cloud",
-      "Community/enterprise mode — no Google OAuth, no SSO"
+      "Selfhosted mode — no Google OAuth, no SSO"
     );
 
     await page.goto("/auth/sign-up");

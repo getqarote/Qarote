@@ -15,7 +15,6 @@ import { prisma } from "@/core/prisma";
 import { getDirname } from "@/core/utils";
 
 import { ssoService } from "@/services/auth/sso.service";
-import { migrateLegacyLicenseFile } from "@/services/license/license-migration.service";
 
 import { corsMiddleware } from "@/middlewares/cors";
 import {
@@ -24,11 +23,7 @@ import {
 } from "@/middlewares/request";
 
 import { config, serverConfig, ssoConfig } from "@/config";
-import {
-  isCloudMode,
-  isSelfHostedMode,
-  validateDeploymentMode,
-} from "@/config/deployment";
+import { isCloudMode, validateDeploymentMode } from "@/config/deployment";
 
 import { createContext } from "@/trpc/context";
 import { appRouter } from "@/trpc/router";
@@ -159,11 +154,6 @@ async function startServer() {
     await prisma.$connect();
     dbConnected = true;
     logger.info("Connected to database");
-
-    // Migrate legacy license files (enterprise → selfhosted transition)
-    if (isSelfHostedMode()) {
-      await migrateLegacyLicenseFile();
-    }
 
     // Initialize SSO service if enabled
     if (ssoConfig.enabled) {

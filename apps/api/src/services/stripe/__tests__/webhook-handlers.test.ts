@@ -40,7 +40,7 @@ vi.mock("@/services/license/license.service", () => ({
   licenseService: {
     generateLicense: vi.fn(),
     renewLicense: vi.fn(),
-    generateLicenseFile: vi.fn(),
+    generateLicenseJwt: vi.fn(),
     saveLicenseFileVersion: vi.fn(),
   },
 }));

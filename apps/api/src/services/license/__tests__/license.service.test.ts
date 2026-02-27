@@ -32,6 +32,11 @@ vi.mock("@/core/logger", () => ({
 
 vi.mock("../license-crypto.service", () => ({
   signLicenseData: vi.fn().mockReturnValue("mocked-signature"),
+  signLicenseJwt: vi.fn().mockResolvedValue("mocked-jwt-token"),
+}));
+
+vi.mock("@/config", () => ({
+  licenseConfig: { privateKey: "mocked-private-key" },
 }));
 
 describe("LicenseService", () => {
@@ -326,7 +331,8 @@ describe("LicenseService", () => {
         {} as never
       );
 
-      const expiresAt = new Date(Date.now() + 365 * 86_400_000);
+      const now = Date.now();
+      const expiresAt = new Date(now + 365 * 86_400_000);
       await licenseService.saveLicenseFileVersion(
         "lic-1",
         2,
@@ -340,12 +346,14 @@ describe("LicenseService", () => {
       const callArgs = vi.mocked(prisma.licenseFileVersion.create).mock
         .calls[0][0];
       const deletesAt = callArgs.data.deletesAt as Date;
-      const now = Date.now();
-      const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
 
-      // deletesAt should be approximately 30 days from now (within a 60s buffer)
-      expect(deletesAt.getTime()).toBeGreaterThan(now + thirtyDaysMs - 60_000);
-      expect(deletesAt.getTime()).toBeLessThan(now + thirtyDaysMs + 60_000);
+      // The implementation uses setDate(getDate() + 30), which respects DST.
+      // Mirror that logic here to avoid flaky DST-related failures.
+      const expected = new Date(now);
+      expected.setDate(expected.getDate() + 30);
+      expect(Math.abs(deletesAt.getTime() - expected.getTime())).toBeLessThan(
+        60_000
+      );
     });
 
     it("passes licenseId, version, fileContent, expiresAt, and stripeInvoiceId", async () => {
@@ -422,6 +430,52 @@ describe("LicenseService", () => {
       await expect(
         licenseService.cleanupExpiredLicenseVersions()
       ).resolves.toBeUndefined();
+    });
+  });
+
+  describe("generateLicenseJwt", () => {
+    it("calls signLicenseJwt with correct payload and returns the JWT string", async () => {
+      const { signLicenseJwt } = await import("../license-crypto.service");
+      const expiresAt = new Date(Date.now() + 365 * 86_400_000);
+
+      const result = await licenseService.generateLicenseJwt({
+        licenseId: "lic-1",
+        tier: UserPlan.DEVELOPER,
+        features: ["alerting", "slack_integration"],
+        expiresAt,
+      });
+
+      expect(result).toBe("mocked-jwt-token");
+      expect(signLicenseJwt).toHaveBeenCalledWith(
+        expect.objectContaining({
+          sub: "lic-1",
+          tier: UserPlan.DEVELOPER,
+          features: ["alerting", "slack_integration"],
+          exp: Math.floor(expiresAt.getTime() / 1000),
+        }),
+        "mocked-private-key"
+      );
+    });
+
+    it("throws when LICENSE_PRIVATE_KEY is not set", async () => {
+      const config = await import("@/config");
+      const original = config.licenseConfig.privateKey as string | null;
+      // Temporarily unset the private key
+      (config.licenseConfig as { privateKey: string | null }).privateKey = null;
+
+      try {
+        await expect(
+          licenseService.generateLicenseJwt({
+            licenseId: "lic-1",
+            tier: UserPlan.DEVELOPER,
+            features: [],
+            expiresAt: new Date(Date.now() + 86_400_000),
+          })
+        ).rejects.toThrow("private key");
+      } finally {
+        (config.licenseConfig as { privateKey: string | null }).privateKey =
+          original;
+      }
     });
   });
 
