@@ -22,11 +22,11 @@ vi.mock("@/core/prisma", () => ({
   },
 }));
 
-// Mock license service (renewLicense, generateLicenseFile, saveLicenseFileVersion)
+// Mock license service (renewLicense, generateLicenseJwt, saveLicenseFileVersion)
 vi.mock("@/services/license/license.service", () => ({
   licenseService: {
     renewLicense: vi.fn(),
-    generateLicenseFile: vi.fn(),
+    generateLicenseJwt: vi.fn(),
     saveLicenseFileVersion: vi.fn(),
   },
 }));
@@ -178,9 +178,9 @@ describe("Webhook Idempotency - License Renewal", () => {
       newVersion: 2,
     } as any);
 
-    vi.mocked(licenseService.generateLicenseFile).mockResolvedValue({
-      licenseFile: { key: "test-signed-file" },
-    } as any);
+    vi.mocked(licenseService.generateLicenseJwt).mockResolvedValue(
+      "test-jwt-token"
+    );
 
     vi.mocked(licenseService.saveLicenseFileVersion).mockResolvedValue(
       undefined
@@ -237,9 +237,9 @@ describe("Webhook Idempotency - License Renewal", () => {
       newVersion: 2,
     } as any);
 
-    vi.mocked(licenseService.generateLicenseFile).mockResolvedValue({
-      licenseFile: { key: "test-signed-file" },
-    } as any);
+    vi.mocked(licenseService.generateLicenseJwt).mockResolvedValue(
+      "test-jwt-token"
+    );
 
     const saveVersionSpy = vi.mocked(licenseService.saveLicenseFileVersion);
     saveVersionSpy.mockResolvedValue(undefined);
