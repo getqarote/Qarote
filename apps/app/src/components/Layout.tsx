@@ -7,6 +7,7 @@ import { ExternalLink, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 import { AppHeader } from "./AppHeader";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 
 interface LayoutProps {
   children: ReactNode;
@@ -40,6 +41,9 @@ export function Layout({ children }: LayoutProps) {
                 </Button>
               </Link>
             </div>
+
+            {/* Center - Language Switcher */}
+            <LanguageSwitcher />
 
             {/* Right side - App info and links */}
             <div className="flex flex-col sm:flex-row items-center gap-4 text-sm text-muted-foreground">

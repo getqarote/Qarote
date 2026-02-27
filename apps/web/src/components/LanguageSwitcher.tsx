@@ -22,18 +22,23 @@ export function LanguageSwitcher() {
 
   return (
     <Select value={currentLocale} onValueChange={(v) => i18n.changeLanguage(v)}>
-      <SelectTrigger className="h-9 w-auto gap-1.5 border-none bg-transparent px-2 text-sm shadow-none hover:text-orange-500 focus:ring-0">
+      <SelectTrigger className="w-auto text-sm">
         <SelectValue>
-          <Globe className="h-4 w-4" />
+          <div className="flex items-center gap-2">
+            <Globe className="h-3 w-3 shrink-0" />
+            <span>
+              {LOCALE_FLAGS[currentLocale]} {LOCALE_LABELS[currentLocale]}
+            </span>
+          </div>
         </SelectValue>
       </SelectTrigger>
       <SelectContent>
         {SUPPORTED_LOCALES.map((locale) => (
           <SelectItem key={locale} value={locale}>
-            <span className="flex items-center gap-2">
+            <div className="flex items-center gap-2">
               <span>{LOCALE_FLAGS[locale]}</span>
               <span>{LOCALE_LABELS[locale]}</span>
-            </span>
+            </div>
           </SelectItem>
         ))}
       </SelectContent>

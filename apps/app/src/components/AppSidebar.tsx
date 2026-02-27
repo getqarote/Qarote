@@ -19,7 +19,6 @@ import {
 
 import { AddServerForm } from "@/components/AddServerFormComponent";
 import { DiscordLink } from "@/components/DiscordLink";
-import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { PlanUpgradeModal } from "@/components/plans/PlanUpgradeModal";
 import { ServerManagement } from "@/components/ServerManagement";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -320,9 +319,6 @@ export function AppSidebar() {
       <SidebarFooter className="border-t border-sidebar-border p-4 space-y-4">
         {/* Community Support */}
         <DiscordLink userId={user?.id} userEmail={user?.email} />
-
-        {/* Language Switcher */}
-        <LanguageSwitcher />
 
         {/* Theme Toggle */}
         <div className="flex items-center justify-between">
