@@ -53,7 +53,7 @@ export class SignUpPage {
   }
 
   async expectSuccess() {
-    // In community mode (email disabled), user is auto-verified and redirected.
+    // In self-hosted mode (email disabled), user is auto-verified and redirected.
     // Only consider specific post-signup paths as valid redirects.
     const allowedPaths = ["/", "/workspace", "/dashboard", "/onboarding"];
     await expect(async () => {
