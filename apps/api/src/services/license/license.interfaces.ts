@@ -47,16 +47,6 @@ export interface LicenseFile {
 }
 
 /**
- * Result of license file validation
- */
-export interface LicenseValidationResult {
-  valid: boolean;
-  license?: LicenseFile;
-  reason?: string;
-  message?: string;
-}
-
-/**
  * Options for generating a new license
  */
 export interface GenerateLicenseOptions {
