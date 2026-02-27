@@ -63,6 +63,19 @@ export class DbHelper {
     this.createdIds = [];
   }
 
+  /** Delete a SystemSetting by key (uses key as PK, not id) */
+  async clearSystemSetting(key: string) {
+    const prisma = await getPrisma();
+    try {
+      await prisma.$executeRawUnsafe(
+        `DELETE FROM "SystemSetting" WHERE key = $1`,
+        key
+      );
+    } catch {
+      // Ignore if table or row doesn't exist
+    }
+  }
+
   async getUserByEmail(email: string) {
     const prisma = await getPrisma();
     return prisma.user.findUnique({ where: { email } });

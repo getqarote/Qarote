@@ -51,7 +51,8 @@ export async function verifyLicenseJwt(
   publicKeyPem?: string
 ): Promise<LicenseJwtPayload | null> {
   try {
-    const pem = publicKeyPem || LICENSE_PUBLIC_KEY;
+    const pem =
+      publicKeyPem || process.env.LICENSE_PUBLIC_KEY || LICENSE_PUBLIC_KEY;
     const publicKey = await jose.importSPKI(pem, "RS256");
 
     const { payload } = await jose.jwtVerify(jwt, publicKey, {

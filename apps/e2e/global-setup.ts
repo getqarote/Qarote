@@ -90,6 +90,7 @@ async function cleanDatabase(prisma: PrismaClient) {
     "RabbitMQServer",
     "User",
     "Workspace",
+    "SystemSetting",
     "SystemState",
   ];
 
