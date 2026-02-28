@@ -56,7 +56,7 @@ export function CodeBlock({ code, language, filename }: CodeBlockProps) {
             variant="ghost"
             size="sm"
             onClick={handleCopy}
-            className="absolute top-2 right-2 h-8 px-2 z-10 bg-black/30 hover:bg-black/50"
+            className="absolute top-2 right-2 h-8 px-2 z-10 bg-black/30 hover:bg-black/50 text-white hover:text-white"
           >
             {copied ? (
               <>
