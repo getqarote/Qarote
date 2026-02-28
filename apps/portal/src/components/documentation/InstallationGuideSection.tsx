@@ -32,6 +32,13 @@ export function InstallationGuideSection({
 }: InstallationGuideSectionProps) {
   const { t } = useTranslation("docs");
 
+  const troubleshootingMethod =
+    activeDeployment === "docker-compose"
+      ? "dockerCompose"
+      : activeDeployment === "dokku"
+        ? "dokku"
+        : "binary";
+
   return (
     <Card>
       <CardHeader>
@@ -995,96 +1002,86 @@ dokku run qarote pnpm run db:migrate`}
             {t("installGuide.troubleshooting.title")}
           </Heading>
 
-          {(() => {
-            const method =
-              activeDeployment === "docker-compose"
-                ? "dockerCompose"
-                : activeDeployment === "dokku"
-                  ? "dokku"
-                  : "binary";
-            return (
-              <Accordion
-                type="multiple"
-                defaultValue={["wont-start", "database", "license"]}
-                className="w-full"
-              >
-                <AccordionItem value="wont-start">
-                  <AccordionTrigger className="text-sm font-medium">
-                    {t("installGuide.troubleshooting.wontStartTitle")}
-                  </AccordionTrigger>
-                  <AccordionContent>
-                    <ul className="list-disc list-inside space-y-2 text-sm text-muted-foreground">
-                      <li
-                        dangerouslySetInnerHTML={{
-                          __html: t(
-                            `installGuide.troubleshooting.${method}.wontStartItem1`
-                          ),
-                        }}
-                      />
-                      <li
-                        dangerouslySetInnerHTML={{
-                          __html: t(
-                            `installGuide.troubleshooting.${method}.wontStartItem2`
-                          ),
-                        }}
-                      />
-                      <li
-                        dangerouslySetInnerHTML={{
-                          __html: t(
-                            `installGuide.troubleshooting.${method}.wontStartItem3`
-                          ),
-                        }}
-                      />
-                    </ul>
-                  </AccordionContent>
-                </AccordionItem>
+          <Accordion
+            type="multiple"
+            defaultValue={["wont-start", "database", "license"]}
+            className="w-full"
+          >
+            <AccordionItem value="wont-start">
+              <AccordionTrigger className="text-sm font-medium">
+                {t("installGuide.troubleshooting.wontStartTitle")}
+              </AccordionTrigger>
+              <AccordionContent>
+                <ul className="list-disc list-inside space-y-2 text-sm text-muted-foreground">
+                  <li
+                    dangerouslySetInnerHTML={{
+                      __html: t(
+                        `installGuide.troubleshooting.${troubleshootingMethod}.wontStartItem1`
+                      ),
+                    }}
+                  />
+                  <li
+                    dangerouslySetInnerHTML={{
+                      __html: t(
+                        `installGuide.troubleshooting.${troubleshootingMethod}.wontStartItem2`
+                      ),
+                    }}
+                  />
+                  <li
+                    dangerouslySetInnerHTML={{
+                      __html: t(
+                        `installGuide.troubleshooting.${troubleshootingMethod}.wontStartItem3`
+                      ),
+                    }}
+                  />
+                </ul>
+              </AccordionContent>
+            </AccordionItem>
 
-                <AccordionItem value="database">
-                  <AccordionTrigger className="text-sm font-medium">
-                    {t("installGuide.troubleshooting.databaseTitle")}
-                  </AccordionTrigger>
-                  <AccordionContent>
-                    <ul className="list-disc list-inside space-y-2 text-sm text-muted-foreground">
-                      <li
-                        dangerouslySetInnerHTML={{
-                          __html: t(
-                            `installGuide.troubleshooting.${method}.databaseItem1`
-                          ),
-                        }}
-                      />
-                      <li
-                        dangerouslySetInnerHTML={{
-                          __html: t(
-                            `installGuide.troubleshooting.${method}.databaseItem2`
-                          ),
-                        }}
-                      />
-                      <li
-                        dangerouslySetInnerHTML={{
-                          __html: t(
-                            `installGuide.troubleshooting.${method}.databaseItem3`
-                          ),
-                        }}
-                      />
-                    </ul>
-                  </AccordionContent>
-                </AccordionItem>
+            <AccordionItem value="database">
+              <AccordionTrigger className="text-sm font-medium">
+                {t("installGuide.troubleshooting.databaseTitle")}
+              </AccordionTrigger>
+              <AccordionContent>
+                <ul className="list-disc list-inside space-y-2 text-sm text-muted-foreground">
+                  <li
+                    dangerouslySetInnerHTML={{
+                      __html: t(
+                        `installGuide.troubleshooting.${troubleshootingMethod}.databaseItem1`
+                      ),
+                    }}
+                  />
+                  <li
+                    dangerouslySetInnerHTML={{
+                      __html: t(
+                        `installGuide.troubleshooting.${troubleshootingMethod}.databaseItem2`
+                      ),
+                    }}
+                  />
+                  <li
+                    dangerouslySetInnerHTML={{
+                      __html: t(
+                        `installGuide.troubleshooting.${troubleshootingMethod}.databaseItem3`
+                      ),
+                    }}
+                  />
+                </ul>
+              </AccordionContent>
+            </AccordionItem>
 
-                <AccordionItem value="license">
-                  <AccordionTrigger className="text-sm font-medium">
-                    {t("installGuide.troubleshooting.licenseTitle")}
-                  </AccordionTrigger>
-                  <AccordionContent>
-                    <ul className="list-disc list-inside space-y-2 text-sm text-muted-foreground">
-                      <li>{t("installGuide.troubleshooting.licenseItem1")}</li>
-                      <li>{t("installGuide.troubleshooting.licenseItem2")}</li>
-                      <li>{t("installGuide.troubleshooting.licenseItem3")}</li>
-                    </ul>
-                  </AccordionContent>
-                </AccordionItem>
-              </Accordion>
-            );
-          })()}
+            <AccordionItem value="license">
+              <AccordionTrigger className="text-sm font-medium">
+                {t("installGuide.troubleshooting.licenseTitle")}
+              </AccordionTrigger>
+              <AccordionContent>
+                <ul className="list-disc list-inside space-y-2 text-sm text-muted-foreground">
+                  <li>{t("installGuide.troubleshooting.licenseItem1")}</li>
+                  <li>{t("installGuide.troubleshooting.licenseItem2")}</li>
+                  <li>{t("installGuide.troubleshooting.licenseItem3")}</li>
+                </ul>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         </div>
 
         {/* Security Recommendations */}

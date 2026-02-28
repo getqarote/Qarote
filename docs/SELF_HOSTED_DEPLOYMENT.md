@@ -190,6 +190,7 @@ docker exec qarote_backend pnpm run db:migrate
    ```
 
 5. **Domain and SSL (optional):**
+
    ```bash
    dokku domains:set qarote your-domain.com
    dokku letsencrypt:enable qarote
