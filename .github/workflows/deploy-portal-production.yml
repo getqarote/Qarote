@@ -73,6 +73,9 @@ jobs:
       - name: 📦 Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts # Ignore scripts to avoid husky errors
 
+      - name: 📦 Build i18n package
+        run: pnpm turbo run build --filter=@qarote/i18n
+
       - name: Install Wrangler CLI globally
         run: npm install -g wrangler@3.90.0
 
