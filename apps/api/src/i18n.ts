@@ -1,38 +1,34 @@
-import fs from "node:fs";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-
 import { createServerI18nInstance } from "@qarote/i18n/server";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const localesDir = path.join(__dirname, "..", "locales");
-
-function loadJSON(locale: string, ns: string): object {
-  return JSON.parse(
-    fs.readFileSync(path.join(localesDir, locale, `${ns}.json`), "utf-8")
-  );
-}
+import enEmails from "../locales/en/emails.json";
+import enErrors from "../locales/en/errors.json";
+import esEmails from "../locales/es/emails.json";
+import esErrors from "../locales/es/errors.json";
+import frEmails from "../locales/fr/emails.json";
+import frErrors from "../locales/fr/errors.json";
+import zhEmails from "../locales/zh/emails.json";
+import zhErrors from "../locales/zh/errors.json";
 
 /**
  * Server-side i18n instance for the API
- * Loads all locale resources at startup (no lazy loading needed server-side)
+ * Uses static imports so locale data is embedded in the Bun binary
  */
 const i18n = createServerI18nInstance({
   en: {
-    errors: loadJSON("en", "errors"),
-    emails: loadJSON("en", "emails"),
+    errors: enErrors,
+    emails: enEmails,
   },
   fr: {
-    errors: loadJSON("fr", "errors"),
-    emails: loadJSON("fr", "emails"),
+    errors: frErrors,
+    emails: frEmails,
   },
   es: {
-    errors: loadJSON("es", "errors"),
-    emails: loadJSON("es", "emails"),
+    errors: esErrors,
+    emails: esEmails,
   },
   zh: {
-    errors: loadJSON("zh", "errors"),
-    emails: loadJSON("zh", "emails"),
+    errors: zhErrors,
+    emails: zhEmails,
   },
 });
 
