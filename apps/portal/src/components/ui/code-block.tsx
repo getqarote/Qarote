@@ -18,7 +18,14 @@ export function CodeBlock({ code, language, filename }: CodeBlockProps) {
   const { t } = useTranslation("portal");
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(code);
+    const textToCopy = filename
+      ? code
+      : code
+          .split("\n")
+          .filter((line) => !/^\s*#/.test(line))
+          .join("\n")
+          .trim();
+    await navigator.clipboard.writeText(textToCopy);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
