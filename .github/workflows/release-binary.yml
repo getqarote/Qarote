@@ -45,7 +45,7 @@ jobs:
         run: pnpm run --filter qarote-app build
         env:
           VITE_API_URL: ""
-          VITE_DEPLOYMENT_MODE: community
+          VITE_DEPLOYMENT_MODE: selfhosted
 
       - name: Build backend
         run: pnpm run --filter qarote-api build
