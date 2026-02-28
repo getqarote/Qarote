@@ -164,7 +164,7 @@ If you prefer Docker Compose or need more control over the deployment, you can u
 4. **Run database migrations:**
 
    ```bash
-   docker exec qarote_backend_community pnpm run db:migrate
+   docker exec qarote_backend pnpm run db:migrate
    ```
 
 5. **Access the application:**
