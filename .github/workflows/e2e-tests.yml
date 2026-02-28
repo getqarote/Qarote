@@ -87,6 +87,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Build i18n package
+        run: pnpm turbo run build --filter=@qarote/i18n
+
       - name: Install Playwright browsers
         working-directory: apps/e2e
         run: pnpm exec playwright install --with-deps chromium
@@ -207,6 +210,9 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Build i18n package
+        run: pnpm turbo run build --filter=@qarote/i18n
 
       - name: Install Playwright browsers
         working-directory: apps/e2e
@@ -331,6 +337,9 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Build i18n package
+        run: pnpm turbo run build --filter=@qarote/i18n
 
       - name: Install Playwright browsers
         working-directory: apps/e2e

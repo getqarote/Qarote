@@ -122,6 +122,9 @@ jobs:
       - name: 📥 Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: 📦 Build i18n package
+        run: pnpm turbo run build --filter=@qarote/i18n
+
       - name: 🧪 Run Tests
         working-directory: apps/api
         run: pnpm run test:run
