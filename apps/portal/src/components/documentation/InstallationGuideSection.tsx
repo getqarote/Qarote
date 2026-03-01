@@ -419,25 +419,21 @@ sudo apt install postgresql`}
                 <h5 className="text-sm font-medium">
                   {t("installGuide.quickStart.binary.dbSetupTitle")}
                 </h5>
-                <p
-                  className="text-sm text-muted-foreground"
-                  dangerouslySetInnerHTML={{
-                    __html: t(
-                      "installGuide.quickStart.binary.dbSetupDescription"
-                    ),
-                  }}
-                />
+                <p className="text-sm text-muted-foreground">
+                  {t("installGuide.quickStart.binary.dbSetupDescription")}
+                </p>
                 <CodeBlock
                   code={`sudo -u postgres psql -c "CREATE USER qarote WITH PASSWORD 'your-secure-password';"
 sudo -u postgres psql -c "CREATE DATABASE qarote OWNER qarote;"`}
                   language="bash"
                 />
-                <p
-                  className="text-sm text-muted-foreground"
-                  dangerouslySetInnerHTML={{
-                    __html: t("installGuide.quickStart.binary.dbSetupNote"),
-                  }}
-                />
+                <p className="text-sm text-muted-foreground">
+                  <Trans
+                    i18nKey="installGuide.quickStart.binary.dbSetupNote"
+                    ns="docs"
+                    components={{ code: <code /> }}
+                  />
+                </p>
 
                 <h5 className="text-sm font-medium">
                   {t("installGuide.quickStart.binary.step1Title")}
