@@ -57,6 +57,18 @@ Qarote is available as a single binary that embeds both the API and frontend. No
 > - **Ubuntu/Debian:** `sudo apt install postgresql`
 > - **Windows (WSL2):** `sudo apt install postgresql`
 
+### Database Setup
+
+After installing PostgreSQL, create a dedicated user and database:
+
+```bash
+# Create a user and database for Qarote
+sudo -u postgres psql -c "CREATE USER qarote WITH PASSWORD 'your-secure-password';"
+sudo -u postgres psql -c "CREATE DATABASE qarote OWNER qarote;"
+```
+
+Your database URL will be: `postgresql://qarote:your-secure-password@localhost:5432/qarote`
+
 ```bash
 # 1. Download and extract for your platform
 # Available: linux-x64, linux-arm64, darwin-x64, darwin-arm64
