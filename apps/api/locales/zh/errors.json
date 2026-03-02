@@ -10,6 +10,7 @@
     "userNotFound": "未找到用户",
     "mustAcceptTerms": "您必须接受服务条款才能注册",
     "emailAlreadyInUse": "该邮箱地址已被使用",
+    "registrationDisabled": "公开注册目前已被禁用。请联系您的管理员获取邀请。",
     "failedToRegister": "用户注册失败",
     "googleOAuthNotEnabled": "此部署未启用 Google OAuth 认证",
     "googleOAuthRequiredForCloud": "云部署需要 Google OAuth 认证",

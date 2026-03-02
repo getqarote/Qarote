@@ -2,10 +2,17 @@ import { useLocation } from "react-router";
 
 import TawkMessengerReact from "@tawk.to/tawk-messenger-react";
 
+import { isCloudMode } from "@/lib/featureFlags";
+
 const noop = () => {};
 
 export const TawkTo = () => {
   const location = useLocation();
+
+  // Only show Tawk.to in cloud mode, not in self-hosted deployments
+  if (!isCloudMode()) {
+    return null;
+  }
 
   // Don't show Tawk.to on sign-in or sign-up pages
   const excludedPaths = ["/auth/sign-in", "/auth/sign-up"];

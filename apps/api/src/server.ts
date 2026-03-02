@@ -9,6 +9,7 @@ import { logger as honoLogger } from "hono/logger";
 import { prettyJSON } from "hono/pretty-json";
 import { secureHeaders } from "hono/secure-headers";
 
+import { bootstrapAdmin } from "@/core/bootstrap-admin";
 import { logger } from "@/core/logger";
 import { runMigrations } from "@/core/migrate";
 import { prisma } from "@/core/prisma";
@@ -150,6 +151,9 @@ async function startServer() {
     await prisma.$connect();
     dbConnected = true;
     logger.info("Connected to database");
+
+    // Bootstrap admin account on first boot (if configured via setup CLI)
+    await bootstrapAdmin();
 
     // Initialize SSO service if enabled
     if (ssoConfig.enabled) {

@@ -10,6 +10,7 @@
     "userNotFound": "User not found",
     "mustAcceptTerms": "You must accept the terms of service to register",
     "emailAlreadyInUse": "Email already in use",
+    "registrationDisabled": "Public registration is currently disabled. Please contact your administrator for an invitation.",
     "failedToRegister": "Failed to register user",
     "googleOAuthNotEnabled": "Google OAuth is not enabled for this deployment",
     "googleOAuthRequiredForCloud": "Google OAuth is required for cloud deployments",

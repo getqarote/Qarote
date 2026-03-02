@@ -1,7 +1,16 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 
-import { Clock, Lock, Mail, UserPlus, Users, X } from "lucide-react";
+import {
+  Check,
+  Clock,
+  Copy,
+  Lock,
+  Mail,
+  UserPlus,
+  Users,
+  X,
+} from "lucide-react";
 
 import { User } from "@/lib/api/authTypes";
 import { InvitationWithInviter } from "@/lib/api/authTypes";
@@ -84,6 +93,9 @@ export const EnhancedTeamTab = ({
 
   // Check if current user is the workspace owner
   const isWorkspaceOwner = workspace?.ownerId === user?.id;
+
+  // State for copy feedback
+  const [copiedToken, setCopiedToken] = useState<string | null>(null);
 
   // State for confirmation dialog
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
@@ -381,17 +393,47 @@ export const EnhancedTeamTab = ({
                         {formatDate(invitation.expiresAt)}
                       </TableCell>
                       <TableCell>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() =>
-                            onRevokeInvitation(invitation.id, invitation.email)
-                          }
-                          disabled={isRevoking}
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
+                        <div className="flex items-center gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={async () => {
+                              try {
+                                const inviteUrl = `${window.location.origin}/invite/${invitation.token}`;
+                                await navigator.clipboard.writeText(inviteUrl);
+                                setCopiedToken(invitation.id);
+                                setTimeout(() => setCopiedToken(null), 2000);
+                              } catch {
+                                // Clipboard write failed (e.g. permissions denied)
+                              }
+                            }}
+                            className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                            title="Copy invite link"
+                            aria-label="Copy invite link"
+                          >
+                            {copiedToken === invitation.id ? (
+                              <Check className="h-4 w-4" />
+                            ) : (
+                              <Copy className="h-4 w-4" />
+                            )}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() =>
+                              onRevokeInvitation(
+                                invitation.id,
+                                invitation.email
+                              )
+                            }
+                            disabled={isRevoking}
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            title="Revoke invitation"
+                            aria-label="Revoke invitation"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}

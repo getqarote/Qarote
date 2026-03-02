@@ -1,4 +1,5 @@
 import { test, expect } from "../../fixtures/test-base.js";
+import { mockTrpcQuery } from "../../helpers/trpc-mock.js";
 import { SignInPage } from "../../page-objects/auth/sign-in.page.js";
 
 test.describe("User Login @p0", () => {
@@ -55,5 +56,38 @@ test.describe("User Login @p0", () => {
     await signInPage.goto();
     await signInPage.forgotPasswordLink.click();
     await page.waitForURL("**/forgot-password");
+  });
+
+  test("should hide create account link when registration is disabled", async ({
+    page,
+  }) => {
+    // Intercept public.getConfig to simulate registration disabled
+    // Uses batch-aware helper because tRPC httpBatchLink may batch this with other queries
+    await mockTrpcQuery(page, "public.getConfig", {
+      registrationEnabled: false,
+      emailEnabled: false,
+      oauthEnabled: false,
+      ssoEnabled: false,
+    });
+
+    const signInPage = new SignInPage(page);
+    await signInPage.goto();
+    await page.waitForLoadState("domcontentloaded");
+
+    // "Create a new account" link should NOT be visible
+    await expect(signInPage.signUpLink).not.toBeVisible({ timeout: 5_000 });
+
+    // Sign-in form should still work
+    await expect(signInPage.signInButton).toBeVisible();
+  });
+
+  test("should show create account link when registration is enabled", async ({
+    page,
+  }) => {
+    const signInPage = new SignInPage(page);
+    await signInPage.goto();
+
+    // "Create a new account" link should be visible (default: registration enabled)
+    await expect(signInPage.signUpLink).toBeVisible({ timeout: 5_000 });
   });
 });

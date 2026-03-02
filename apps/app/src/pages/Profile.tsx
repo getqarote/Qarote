@@ -257,13 +257,22 @@ const Profile = () => {
       setInviteDialogOpen(false);
       setInviteForm({ email: "", role: "MEMBER" });
 
-      toast.success(
-        `${t("toast.invitationSent", { email: inviteForm.email })} ${
-          result.invitation.monthlyCost > 0
-            ? t("toast.additionalCost", { cost: result.invitation.monthlyCost })
-            : ""
-        }`
-      );
+      if (result.emailSent) {
+        toast.success(t("toast.invitationSent", { email: inviteForm.email }));
+      } else {
+        // Email not sent (SMTP disabled) — show invite URL for manual sharing
+        const inviteUrl =
+          result.inviteUrl ||
+          `${window.location.origin}/invite/${result.invitation.token}`;
+        toast.success(t("toast.invitationSent", { email: inviteForm.email }), {
+          description: t("toast.copyInviteLink"),
+          action: {
+            label: t("toast.copyLink"),
+            onClick: () => navigator.clipboard.writeText(inviteUrl),
+          },
+          duration: 10000,
+        });
+      }
     } catch (error) {
       logger.error("Invitation error:", error);
       const errorMessage = extractErrorMessage(error);

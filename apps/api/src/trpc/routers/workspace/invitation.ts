@@ -5,14 +5,12 @@ import { formatInvitedBy, getUserDisplayName } from "@/core/utils";
 
 import { EmailService } from "@/services/email/email.service";
 import { EncryptionService } from "@/services/encryption.service";
-import {
-  getUserPlan,
-  validateUserInvitation,
-} from "@/services/plan/plan.service";
+import { validateUserInvitation } from "@/services/plan/plan.service";
 
 import { inviteUserSchema } from "@/schemas/invitation";
 import { InvitationIdParamSchema } from "@/schemas/workspace";
 
+import { emailConfig } from "@/config";
 import { FEATURES } from "@/config/features";
 
 import {
@@ -206,28 +204,34 @@ export const invitationRouter = router({
           },
         });
 
-        // Send invitation email
-        try {
-          const plan = await getUserPlan(user.id);
-          await EmailService.sendInvitationEmail({
-            to: email,
-            invitationToken: token,
-            workspaceName: workspace.name,
-            inviterName: getUserDisplayName(user),
-            inviterEmail: user.email,
-            plan,
-            locale: ctx.locale,
-          });
-          ctx.logger.info(
-            { invitationId: invitation.id, email },
-            "Invitation email sent successfully"
-          );
-        } catch (emailError) {
-          ctx.logger.error(
-            { emailError, invitationId: invitation.id },
-            "Failed to send invitation email"
-          );
-          // Don't fail the request if email sending fails
+        // Build invite URL for sharing (useful when email is disabled)
+        const inviteUrl = `${emailConfig.frontendUrl}/invite/${token}`;
+
+        // Send invitation email (only attempt if email is enabled)
+        let emailSent = false;
+        if (emailConfig.enabled) {
+          try {
+            await EmailService.sendInvitationEmail({
+              to: email,
+              invitationToken: token,
+              workspaceName: workspace.name,
+              inviterName: getUserDisplayName(user),
+              inviterEmail: user.email,
+              plan: ownerPlan,
+              locale: ctx.locale,
+            });
+            emailSent = true;
+            ctx.logger.info(
+              { invitationId: invitation.id, email },
+              "Invitation email sent successfully"
+            );
+          } catch (emailError) {
+            ctx.logger.error(
+              { error: emailError, invitationId: invitation.id, email },
+              "Failed to send invitation email"
+            );
+            // Don't fail the request if email sending fails
+          }
         }
 
         return {
@@ -238,6 +242,8 @@ export const invitationRouter = router({
             createdAt: invitation.createdAt.toISOString(),
             invitedBy: formatInvitedBy(invitation.invitedBy),
           },
+          inviteUrl,
+          emailSent,
         };
       } catch (error) {
         if (error instanceof TRPCError) {

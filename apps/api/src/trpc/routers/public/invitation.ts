@@ -15,7 +15,11 @@ import { googleConfig } from "@/config";
 
 import { rateLimitedPublicProcedure, router } from "@/trpc/trpc";
 
-import { InvitationStatus, UserRole } from "@/generated/prisma/client";
+import {
+  InvitationStatus,
+  UserPlan,
+  UserRole,
+} from "@/generated/prisma/client";
 import { te } from "@/i18n";
 
 /**
@@ -74,16 +78,16 @@ export const publicInvitationRouter = router({
         }
 
         // Get workspace owner's subscription to determine plan
-        const ownerSubscription = await ctx.prisma.subscription.findUnique({
-          where: { userId: invitation.workspace.ownerId! },
-          select: { plan: true },
-        });
-
-        if (!ownerSubscription) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: te(ctx.locale, "auth.workspaceOwnerNoSubscription"),
+        // Self-hosted deployments may not have a Subscription record — default to FREE
+        let ownerPlan: UserPlan = UserPlan.FREE;
+        if (invitation.workspace.ownerId) {
+          const ownerSubscription = await ctx.prisma.subscription.findUnique({
+            where: { userId: invitation.workspace.ownerId },
+            select: { plan: true },
           });
+          if (ownerSubscription) {
+            ownerPlan = ownerSubscription.plan;
+          }
         }
 
         return {
@@ -98,7 +102,7 @@ export const publicInvitationRouter = router({
               id: invitation.workspace.id,
               name: invitation.workspace.name,
               contactEmail: invitation.workspace.contactEmail,
-              plan: ownerSubscription.plan,
+              plan: ownerPlan,
             },
             invitedBy: formatInvitedBy(invitation.invitedBy),
           },

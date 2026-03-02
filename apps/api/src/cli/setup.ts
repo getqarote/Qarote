@@ -3,6 +3,7 @@ import { randomBytes } from "node:crypto";
 import { existsSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { createInterface } from "node:readline";
+import { Writable } from "node:stream";
 
 // Colors (disabled if not a terminal)
 const isTTY = process.stdout.isTTY;
@@ -34,7 +35,26 @@ function createPrompt() {
       });
     });
 
-  return { rl, ask, confirm };
+  /** Prompt for sensitive input without echoing to the terminal. */
+  const askSecret = (question: string): Promise<string> =>
+    new Promise((resolve) => {
+      rl.pause();
+      const mutedOutput = new Writable({ write: (_c, _e, cb) => cb() });
+      const secretRl = createInterface({
+        input: process.stdin,
+        output: mutedOutput,
+        terminal: true,
+      });
+      process.stdout.write(`  ${question}: `);
+      secretRl.question("", (answer) => {
+        secretRl.close();
+        process.stdout.write("\n");
+        rl.resume();
+        resolve(answer.trim());
+      });
+    });
+
+  return { rl, ask, confirm, askSecret };
 }
 
 async function testDatabaseConnection(
@@ -78,7 +98,7 @@ export async function runSetup(): Promise<void> {
     process.exit(1);
   }
 
-  const { rl, ask, confirm } = createPrompt();
+  const { rl, ask, confirm, askSecret } = createPrompt();
 
   console.log("");
   console.log(c.bold("  Qarote Setup"));
@@ -163,6 +183,66 @@ export async function runSetup(): Promise<void> {
     smtpPass = await ask("SMTP password");
   }
 
+  // ─── Admin Account ───────────────────────────────────────────────
+  section("Admin Account");
+
+  const createAdmin = await confirm(
+    "Create an admin account during first boot?",
+    true
+  );
+
+  let adminEmail = "";
+  let adminPassword = "";
+
+  if (createAdmin) {
+    while (!adminEmail) {
+      const input = await ask("Admin email");
+      if (!input) {
+        console.log(
+          c.red("    Required.") + c.dim(" Example: admin@example.com")
+        );
+        continue;
+      }
+      if (!input.includes("@") || !input.includes(".")) {
+        console.log(c.red("    Please enter a valid email address."));
+        continue;
+      }
+      adminEmail = input;
+    }
+
+    while (!adminPassword) {
+      const input = await askSecret("Admin password");
+      if (!input || input.length < 8) {
+        console.log(c.red("    Must be at least 8 characters."));
+        continue;
+      }
+      const confirm2 = await askSecret("Confirm admin password");
+      if (input !== confirm2) {
+        console.log(c.red("    Passwords do not match. Try again."));
+        continue;
+      }
+      adminPassword = input;
+    }
+  }
+
+  // ─── Registration ───────────────────────────────────────────────
+  section("Registration");
+
+  let enableRegistration = await confirm(
+    "Allow public user registration?",
+    true
+  );
+
+  if (!createAdmin && !enableRegistration) {
+    console.log(
+      c.red(
+        "    You must enable registration or create an admin account for first boot."
+      )
+    );
+    enableRegistration = true;
+    console.log(c.yellow("    Registration has been enabled automatically."));
+  }
+
   // ─── Generate secrets ──────────────────────────────────────────────
   section("Security");
 
@@ -198,6 +278,19 @@ export async function runSetup(): Promise<void> {
     lines.push(`SMTP_PASS=${smtpPass}`);
   }
 
+  // Registration
+  lines.push("", "# Registration");
+  lines.push(`ENABLE_REGISTRATION=${enableRegistration}`);
+
+  // Admin bootstrap
+  if (adminEmail && adminPassword) {
+    lines.push("", "# Admin (auto-removed after first boot)");
+    const escapeEnvValue = (v: string) =>
+      `"${v.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
+    lines.push(`ADMIN_EMAIL=${escapeEnvValue(adminEmail)}`);
+    lines.push(`ADMIN_PASSWORD=${escapeEnvValue(adminPassword)}`);
+  }
+
   lines.push(""); // trailing newline
 
   writeFileSync(envPath, lines.join("\n"), { mode: 0o600 });
@@ -208,9 +301,21 @@ export async function runSetup(): Promise<void> {
   console.log("");
 
   console.log(c.dim("  Configuration summary:"));
-  console.log(c.dim(`    Database: ${dbUrl.replace(/:[^@]*@/, ":***@")}`));
-  console.log(c.dim(`    Port:     ${port}`));
-  console.log(c.dim(`    Email:    ${enableEmail ? "enabled" : "disabled"}`));
+  console.log(c.dim(`    Database:     ${dbUrl.replace(/:[^@]*@/, ":***@")}`));
+  console.log(c.dim(`    Port:         ${port}`));
+  console.log(
+    c.dim(`    Email:        ${enableEmail ? "enabled" : "disabled"}`)
+  );
+  console.log(
+    c.dim(
+      `    Admin:        ${adminEmail ? adminEmail : "none (register via web)"}`
+    )
+  );
+  console.log(
+    c.dim(
+      `    Registration: ${enableRegistration ? "open" : "invitation-only"}`
+    )
+  );
   console.log("");
   console.log("  Next steps:");
   console.log(`    ${c.bold("Start Qarote:")}  ./qarote`);

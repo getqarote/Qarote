@@ -7,5 +7,9 @@
     "team": "Equipo",
     "sendFeedback": "Enviar comentarios"
   },
-  "failedToLoad": "No se pudo cargar la información del perfil."
+  "failedToLoad": "No se pudo cargar la información del perfil.",
+  "toast": {
+    "copyInviteLink": "El correo electrónico está deshabilitado. Comparta este enlace con el usuario invitado.",
+    "copyLink": "Copiar enlace"
+  }
 }

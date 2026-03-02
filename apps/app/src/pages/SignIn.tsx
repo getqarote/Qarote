@@ -29,6 +29,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 
+import { usePublicConfig } from "@/hooks/queries/usePublicConfig";
 import { useShowAlternativeAuth } from "@/hooks/queries/useSsoConfig";
 import { useLogin } from "@/hooks/ui/useAuth";
 
@@ -40,6 +41,7 @@ const SignIn: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const loginMutation = useLogin();
   const { showAlternativeAuth } = useShowAlternativeAuth();
+  const { data: publicConfig } = usePublicConfig();
 
   // Initialize form with react-hook-form
   const form = useForm<SignInFormData>({
@@ -65,15 +67,17 @@ const SignIn: React.FC = () => {
           <h2 className="mt-6 text-3xl font-extrabold text-white">
             {t("signInToAccount")}
           </h2>
-          <p className="mt-2 text-sm text-orange-100">
-            {t("or")}{" "}
-            <Link
-              to="/auth/sign-up"
-              className="font-medium text-orange-300 hover:text-orange-200 transition-colors"
-            >
-              {t("createAccount")}
-            </Link>
-          </p>
+          {publicConfig?.registrationEnabled === true && (
+            <p className="mt-2 text-sm text-orange-100">
+              {t("or")}{" "}
+              <Link
+                to="/auth/sign-up"
+                className="font-medium text-orange-300 hover:text-orange-200 transition-colors"
+              >
+                {t("createAccount")}
+              </Link>
+            </p>
+          )}
         </div>
 
         <Card className="bg-white/95 backdrop-blur-xs border-white/20 shadow-2xl">

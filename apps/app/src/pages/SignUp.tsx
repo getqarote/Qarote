@@ -34,6 +34,7 @@ import { PasswordRequirements } from "@/components/ui/password-requirements";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
 
+import { usePublicConfig } from "@/hooks/queries/usePublicConfig";
 import { useShowAlternativeAuth } from "@/hooks/queries/useSsoConfig";
 import { useRegister } from "@/hooks/ui/useAuth";
 
@@ -48,6 +49,7 @@ const SignUp: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { showAlternativeAuth } = useShowAlternativeAuth();
+  const { data: publicConfig } = usePublicConfig();
 
   // Get the page the user was trying to access
   const from = location.state?.from?.pathname || "/";
@@ -118,7 +120,26 @@ const SignUp: React.FC = () => {
             <CardDescription>{t("createAccountDescription")}</CardDescription>
           </CardHeader>
           <CardContent>
-            {registerMutation.isSuccess ? (
+            {publicConfig?.registrationEnabled === false ? (
+              <Alert className="border-amber-200 bg-amber-50">
+                <AlertDescription className="text-amber-800">
+                  <div className="font-medium mb-2">
+                    {t("registrationDisabled")}
+                  </div>
+                  <p className="text-sm mb-3">
+                    {t("registrationDisabledDescription")}
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigate("/auth/sign-in")}
+                    className="bg-white border-amber-300 text-amber-700 hover:bg-amber-100"
+                  >
+                    {t("goToSignIn")}
+                  </Button>
+                </AlertDescription>
+              </Alert>
+            ) : registerMutation.isSuccess ? (
               <Alert className="border-green-200 bg-green-50">
                 <AlertDescription className="text-green-800">
                   <div className="font-medium mb-2">
