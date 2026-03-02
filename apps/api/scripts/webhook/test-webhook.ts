@@ -16,7 +16,7 @@ import {
   RabbitMQAlert,
   AlertSeverity,
   AlertCategory,
-} from "../../src/types/alert";
+} from "../../src/services/alerts/alert.interfaces";
 
 // Mock alert data for testing
 const createMockAlert = (

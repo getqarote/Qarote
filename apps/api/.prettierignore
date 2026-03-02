@@ -1,7 +1,0 @@
-node_modules
-dist
-src/generated
-*.lock
-package-lock.json
-bun.lockb
-

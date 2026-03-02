@@ -5,10 +5,9 @@
  * to automatically configure RabbitMQ connections for localhost servers.
  */
 
-import type { TunnelConfig } from "@/types/rabbitmq";
+import type { TunnelConfig } from "./rabbitmq.interfaces";
 
 // Re-export type for convenience
-export type { TunnelConfig } from "@/types/rabbitmq";
 
 /**
  * Detects if a host URL is a tunnel service

@@ -12,6 +12,7 @@ interface WorkspaceFormFieldsProps {
     name: string;
     contactEmail?: string;
   };
+  userEmail?: string;
 }
 
 export const WorkspaceFormFields = ({
@@ -20,6 +21,7 @@ export const WorkspaceFormFields = ({
   workspaceForm,
   setWorkspaceForm,
   workspace,
+  userEmail,
 }: WorkspaceFormFieldsProps) => {
   return (
     <>
@@ -56,6 +58,7 @@ export const WorkspaceFormFields = ({
                   contactEmail: e.target.value,
                 })
               }
+              placeholder={userEmail || "contact@company.com"}
             />
           ) : (
             <p className="text-sm p-2 border rounded-md bg-muted">

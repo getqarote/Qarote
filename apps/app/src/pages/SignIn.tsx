@@ -1,12 +1,14 @@
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
-import { Link, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { Link, useNavigate } from "react-router";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { logger } from "@/lib/logger";
 
 import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton";
+import { SSOLoginButton } from "@/components/auth/SSOLoginButton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,14 +29,17 @@ import {
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 
-import { useLogin } from "@/hooks/useAuth";
+import { useShowAlternativeAuth } from "@/hooks/queries/useSsoConfig";
+import { useLogin } from "@/hooks/ui/useAuth";
 
 import { type SignInFormData, signInSchema } from "@/schemas";
 
 const SignIn: React.FC = () => {
+  const { t } = useTranslation("auth");
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const loginMutation = useLogin();
+  const { showAlternativeAuth } = useShowAlternativeAuth();
 
   // Initialize form with react-hook-form
   const form = useForm<SignInFormData>({
@@ -58,25 +63,23 @@ const SignIn: React.FC = () => {
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <h2 className="mt-6 text-3xl font-extrabold text-white">
-            Sign in to your account
+            {t("signInToAccount")}
           </h2>
           <p className="mt-2 text-sm text-orange-100">
-            Or{" "}
+            {t("or")}{" "}
             <Link
               to="/auth/sign-up"
               className="font-medium text-orange-300 hover:text-orange-200 transition-colors"
             >
-              create a new account
+              {t("createAccount")}
             </Link>
           </p>
         </div>
 
-        <Card className="bg-white/95 backdrop-blur-sm border-white/20 shadow-2xl">
+        <Card className="bg-white/95 backdrop-blur-xs border-white/20 shadow-2xl">
           <CardHeader>
-            <CardTitle className="text-gray-900">Welcome back</CardTitle>
-            <CardDescription>
-              Enter your credentials to access your RabbitMQ dashboard
-            </CardDescription>
+            <CardTitle className="text-gray-900">{t("welcomeBack")}</CardTitle>
+            <CardDescription>{t("enterCredentials")}</CardDescription>
           </CardHeader>
           <CardContent>
             <Form {...form}>
@@ -95,12 +98,10 @@ const SignIn: React.FC = () => {
                             return (
                               <div>
                                 <div className="font-medium mb-2">
-                                  Email not verified
+                                  {t("emailNotVerified")}
                                 </div>
                                 <p className="text-sm mb-3">
-                                  Please verify your email address before
-                                  logging in. Check your inbox for a
-                                  verification email.
+                                  {t("emailNotVerifiedDescription")}
                                 </p>
                                 <Button
                                   type="button"
@@ -109,14 +110,14 @@ const SignIn: React.FC = () => {
                                   onClick={() => navigate("/verify-email")}
                                   className="bg-white text-red-700 border-red-300 hover:bg-red-50"
                                 >
-                                  Go to verification page
+                                  {t("goToVerification")}
                                 </Button>
                               </div>
                             );
                           }
                           return message;
                         }
-                        return "Failed to sign in. Please check your credentials.";
+                        return t("failedSignIn");
                       })()}
                     </AlertDescription>
                   </Alert>
@@ -127,11 +128,11 @@ const SignIn: React.FC = () => {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email address</FormLabel>
+                      <FormLabel>{t("emailAddress")}</FormLabel>
                       <FormControl>
                         <Input
                           type="email"
-                          placeholder="Enter your email"
+                          placeholder={t("enterEmail")}
                           disabled={loginMutation.isPending}
                           autoComplete="username"
                           {...field}
@@ -147,10 +148,10 @@ const SignIn: React.FC = () => {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Password</FormLabel>
+                      <FormLabel>{t("password")}</FormLabel>
                       <FormControl>
                         <PasswordInput
-                          placeholder="Enter your password"
+                          placeholder={t("enterPassword")}
                           disabled={loginMutation.isPending}
                           showPassword={showPassword}
                           onToggleVisibility={() =>
@@ -170,29 +171,40 @@ const SignIn: React.FC = () => {
                   className="w-full bg-gradient-button hover:bg-gradient-button-hover"
                   disabled={loginMutation.isPending || !form.formState.isValid}
                 >
-                  {loginMutation.isPending ? "Signing in..." : "Sign in"}
+                  {loginMutation.isPending ? t("signingIn") : t("signIn")}
                 </Button>
               </form>
             </Form>
 
-            {/* Divider */}
-            <div className="relative my-6">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white px-2 text-muted-foreground">
-                  Or continue with
-                </span>
-              </div>
-            </div>
+            {showAlternativeAuth && (
+              <>
+                {/* Divider */}
+                <div className="relative my-6">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-white px-2 text-muted-foreground">
+                      {t("orContinueWith")}
+                    </span>
+                  </div>
+                </div>
 
-            {/* Google Login */}
-            <GoogleLoginButton
-              onError={(error) => {
-                logger.error("Google login error:", error);
-              }}
-            />
+                {/* Google Login */}
+                <GoogleLoginButton
+                  onError={(error) => {
+                    logger.error("Google login error:", error);
+                  }}
+                />
+
+                {/* SSO Login */}
+                <SSOLoginButton
+                  onError={(error) => {
+                    logger.error("SSO login error:", error);
+                  }}
+                />
+              </>
+            )}
 
             {/* Forgot Password Link */}
             <div className="mt-4 text-center">
@@ -200,7 +212,7 @@ const SignIn: React.FC = () => {
                 to="/forgot-password"
                 className="text-sm text-muted-foreground hover:text-primary transition-colors"
               >
-                Forgot your password?
+                {t("forgotPassword")}
               </Link>
             </div>
 
@@ -211,13 +223,13 @@ const SignIn: React.FC = () => {
                   to="/terms-of-service"
                   className="hover:text-primary transition-colors"
                 >
-                  Terms of Service
+                  {t("common:termsOfService")}
                 </Link>
                 <Link
                   to="/privacy-policy"
                   className="hover:text-primary transition-colors"
                 >
-                  Privacy Policy
+                  {t("common:privacyPolicy")}
                 </Link>
               </div>
             </div>

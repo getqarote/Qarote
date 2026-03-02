@@ -1,0 +1,17 @@
+{
+  "required": "Este campo es obligatorio",
+  "invalidEmail": "Por favor ingresa una direcci\u00f3n de correo electr\u00f3nico v\u00e1lida",
+  "passwordRequired": "La contrase\u00f1a es obligatoria",
+  "passwordMinLength": "La contrase\u00f1a debe tener al menos 8 caracteres",
+  "passwordLowercase": "La contrase\u00f1a debe contener al menos una letra min\u00fascula",
+  "passwordUppercase": "La contrase\u00f1a debe contener al menos una letra may\u00fascula",
+  "passwordNumber": "La contrase\u00f1a debe contener al menos un n\u00famero",
+  "passwordSpecial": "La contrase\u00f1a debe contener al menos un car\u00e1cter especial",
+  "passwordsDoNotMatch": "Las contrase\u00f1as no coinciden",
+  "firstNameRequired": "El nombre es obligatorio",
+  "lastNameRequired": "El apellido es obligatorio",
+  "acceptTermsRequired": "Debes aceptar los T\u00e9rminos de servicio y la Pol\u00edtica de privacidad",
+  "invalidUrl": "Por favor ingresa una URL v\u00e1lida",
+  "minLength": "Debe tener al menos {{min}} caracteres",
+  "maxLength": "Debe tener como m\u00e1ximo {{max}} caracteres"
+}

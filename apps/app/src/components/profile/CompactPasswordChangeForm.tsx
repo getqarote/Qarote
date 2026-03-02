@@ -266,5 +266,3 @@ export const CompactPasswordChangeForm: React.FC<
     </div>
   );
 };
-
-export default CompactPasswordChangeForm;

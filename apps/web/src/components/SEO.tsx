@@ -1,5 +1,8 @@
 import React, { type ComponentType } from "react";
 import { Helmet } from "react-helmet-async";
+import { useTranslation } from "react-i18next";
+
+import { SUPPORTED_LOCALES } from "@qarote/i18n";
 
 interface SEOProps {
   title?: string;
@@ -17,7 +20,7 @@ interface FAQItem {
   answer: string;
 }
 
-export const SEO = ({
+const SEO = ({
   title = "Qarote - Best RabbitMQ Monitoring & Management Interface",
   description = "The best RabbitMQ monitoring and management interface for developers. Monitor queues, track performance, and manage your message broker with a modern dashboard. Cleaner than Management Plugin, simpler than Prometheus.",
   image = "https://qarote.io/images/social_card.png",
@@ -46,6 +49,9 @@ export const SEO = ({
   faq,
   structuredData,
 }: SEOProps) => {
+  const { i18n } = useTranslation();
+  const currentLang = i18n.language;
+
   const siteTitle = "Qarote";
   const fullTitle = title === siteTitle ? title : `${title} | ${siteTitle}`;
 
@@ -79,6 +85,9 @@ export const SEO = ({
       <meta name="robots" content="index, follow" />
       <meta name="googlebot" content="index, follow" />
 
+      {/* Language */}
+      <html lang={currentLang} />
+
       {/* Mobile Optimization */}
       <meta name="viewport" content="width=device-width, initial-scale=1" />
       <meta name="theme-color" content="#4f46e5" />
@@ -99,7 +108,10 @@ export const SEO = ({
       <meta property="og:image:height" content="630" />
       <meta property="og:image:type" content="image/png" />
       <meta property="og:image:alt" content={title} />
-      <meta property="og:locale" content="en_US" />
+      <meta
+        property="og:locale"
+        content={currentLang === "en" ? "en_US" : currentLang}
+      />
       <meta property="og:site_name" content="Qarote" />
 
       {/* Twitter */}
@@ -113,6 +125,17 @@ export const SEO = ({
 
       {/* Canonical URL */}
       <link rel="canonical" href={url} />
+
+      {/* Hreflang tags for all supported locales */}
+      {SUPPORTED_LOCALES.map((locale) => (
+        <link
+          key={locale}
+          rel="alternate"
+          hrefLang={locale}
+          href={locale === "en" ? url : `${url}/${locale}`}
+        />
+      ))}
+      <link rel="alternate" hrefLang="x-default" href={url} />
 
       {/* Structured Data - FAQ */}
       {faq && (

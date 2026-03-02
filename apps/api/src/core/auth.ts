@@ -1,10 +1,15 @@
-import { SubscriptionStatus, UserPlan, UserRole } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { sign, verify } from "hono/jwt";
 
 import { authConfig } from "@/config";
 
 import { prisma } from "./prisma";
+
+import {
+  SubscriptionStatus,
+  UserPlan,
+  UserRole,
+} from "@/generated/prisma/client";
 
 // JWT Token interfaces
 interface JWTPayload {
@@ -31,6 +36,7 @@ export interface SafeUser {
   lastLogin: Date | null;
   createdAt: Date;
   updatedAt: Date;
+  locale?: string;
   stripeCustomerId?: string | null;
   stripeSubscriptionId?: string | null;
   subscription?: {
@@ -71,14 +77,15 @@ export const generateToken = async (user: {
 };
 
 // Token verification
-export const verifyToken = async (token: string): Promise<JWTPayload> => {
+const verifyToken = async (token: string): Promise<JWTPayload> => {
   try {
-    return (await verify(token, authConfig.jwtSecret)) as JWTPayload;
+    return (await verify(token, authConfig.jwtSecret, "HS256")) as JWTPayload;
   } catch (error) {
     throw new Error(
       `Invalid token: ${
         error instanceof Error ? error.message : "Unknown error"
-      }`
+      }`,
+      { cause: error }
     );
   }
 };
@@ -104,6 +111,7 @@ export const extractUserFromToken = async (
         lastLogin: true,
         createdAt: true,
         updatedAt: true,
+        locale: true,
         stripeCustomerId: true,
         stripeSubscriptionId: true,
         subscription: {

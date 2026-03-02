@@ -1,4 +1,3 @@
-import { UserPlan } from "@prisma/client";
 import {
   Body,
   Button,
@@ -22,6 +21,8 @@ import {
   textStyles,
   utilityStyles,
 } from "../shared/styles";
+
+import { UserPlan } from "@/generated/prisma/client";
 
 interface UpcomingInvoiceEmailProps {
   name: string;
@@ -92,8 +93,7 @@ export default function UpcomingInvoiceEmail({
     <Html>
       <Head />
       <Preview>
-        Your upcoming {planDisplayName} subscription invoice -{" "}
-        {currency.toUpperCase()} {amount}
+        {`Your upcoming ${planDisplayName} subscription invoice - ${currency.toUpperCase()} ${amount}`}
       </Preview>
       <Body style={baseStyles.main}>
         <Container style={baseStyles.container}>

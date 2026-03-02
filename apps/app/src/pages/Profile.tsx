@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useSearchParams } from "react-router";
 
 import { Crown, MessageSquare, Shield, User } from "lucide-react";
 import { toast } from "sonner";
@@ -25,19 +26,21 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   useCancelEmailChange,
   useChangePassword,
-  useInvitations,
   useProfile,
-  useRemoveUserFromWorkspace,
   useRequestEmailChange,
+  useUpdateProfile,
+  useVerificationStatus,
+} from "@/hooks/queries/useProfile";
+import {
+  useInvitations,
+  useRemoveUserFromWorkspace,
   useRevokeInvitation,
   useSendInvitation,
-  useUpdateProfile,
   useUpdateWorkspace,
-  useVerificationStatus,
   useWorkspaceUsers,
-} from "@/hooks/useApi";
-import { useUser } from "@/hooks/useUser";
-import { useWorkspace } from "@/hooks/useWorkspace";
+} from "@/hooks/queries/useWorkspaceApi";
+import { useUser } from "@/hooks/ui/useUser";
+import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 // Valid tab values - defined outside component to avoid dependency issues
 const VALID_TABS = [
@@ -50,6 +53,7 @@ const VALID_TABS = [
 type TabValue = (typeof VALID_TABS)[number];
 
 const Profile = () => {
+  const { t } = useTranslation("profile");
   const [searchParams, setSearchParams] = useSearchParams();
   const { planData, userPlan } = useUser();
   const { workspace, refetch: refetchWorkspace } = useWorkspace();
@@ -106,10 +110,10 @@ const Profile = () => {
   // Invite form state
   const [inviteForm, setInviteForm] = useState<InviteFormState>({
     email: "",
-    role: "USER",
+    role: "MEMBER",
   });
 
-  const profile = profileData?.profile;
+  const profile = profileData?.user;
   const workspaceUsers = workspaceUsersData?.users || [];
   const invitations = invitationsData?.invitations || [];
   const isAdmin = profile?.role === "ADMIN";
@@ -125,41 +129,42 @@ const Profile = () => {
     return currentUserCount + pendingInvitationCount < planFeatures.maxUsers;
   };
 
-  // Initialize forms when profile data loads
-  useEffect(() => {
-    if (profile) {
-      setProfileForm({
-        firstName: profile.firstName || "",
-        lastName: profile.lastName || "",
-      });
-    }
-    if (workspace) {
-      setWorkspaceForm({
-        name: workspace.name || "",
-        contactEmail: workspace.contactEmail || "",
-      });
-    }
-  }, [profile, workspace]);
+  // Initialize forms when profile/workspace data first loads
+  // Uses React's "adjusting state when a prop changes" pattern
+  const [prevProfileId, setPrevProfileId] = useState<string | null>(null);
+  if (profile?.id && profile.id !== prevProfileId) {
+    setPrevProfileId(profile.id);
+    setProfileForm({
+      firstName: profile.firstName || "",
+      lastName: profile.lastName || "",
+    });
+  }
+  const [prevWorkspaceId, setPrevWorkspaceId] = useState<string | null>(null);
+  if (workspace?.id && workspace.id !== prevWorkspaceId) {
+    setPrevWorkspaceId(workspace.id);
+    setWorkspaceForm({
+      name: workspace.name || "",
+      contactEmail: workspace.contactEmail || "",
+    });
+  }
 
   // Sync tab state with URL parameter changes
-  useEffect(() => {
-    const urlTab = searchParams.get("tab");
-    if (
-      urlTab &&
-      VALID_TABS.includes(urlTab as TabValue) &&
-      urlTab !== activeTab
-    ) {
-      setActiveTab(urlTab as TabValue);
-    }
-  }, [searchParams, activeTab]);
+  const urlTab = searchParams.get("tab");
+  const validUrlTab =
+    urlTab && VALID_TABS.includes(urlTab as TabValue)
+      ? (urlTab as TabValue)
+      : null;
+  if (validUrlTab && validUrlTab !== activeTab) {
+    setActiveTab(validUrlTab);
+  }
 
   const handleUpdateProfile = async () => {
     try {
       await updateProfileMutation.mutateAsync(profileForm);
       setEditingProfile(false);
-      toast.success("Profile updated successfully");
+      toast.success(t("toast.profileUpdated"));
     } catch {
-      toast.error("Failed to update profile");
+      toast.error(t("toast.profileUpdateFailed"));
     }
   };
 
@@ -169,7 +174,7 @@ const Profile = () => {
   }) => {
     try {
       await changePasswordMutation.mutateAsync(data);
-      toast.success("Password changed successfully");
+      toast.success(t("toast.passwordChanged"));
     } catch (error) {
       logger.error("Password change error:", error);
       const errorMessage = extractErrorMessage(error);
@@ -184,7 +189,7 @@ const Profile = () => {
   }) => {
     try {
       await requestEmailChangeMutation.mutateAsync(data);
-      toast.success("Verification email sent to your new email address");
+      toast.success(t("toast.verificationEmailSent"));
     } catch (error) {
       logger.error("Email change request error:", error);
       const errorMessage = extractErrorMessage(error);
@@ -196,7 +201,7 @@ const Profile = () => {
   const handleCancelEmailChange = async () => {
     try {
       await cancelEmailChangeMutation.mutateAsync();
-      toast.success("Email change request cancelled");
+      toast.success(t("toast.emailChangeCancelled"));
     } catch (error) {
       logger.error("Cancel email change error:", error);
       const errorMessage = extractErrorMessage(error);
@@ -206,19 +211,26 @@ const Profile = () => {
   };
 
   const handleUpdateWorkspace = async () => {
+    if (!workspace?.id) {
+      toast.error(t("toast.noWorkspaceFound"));
+      return;
+    }
     try {
-      await updateWorkspaceMutation.mutateAsync(workspaceForm);
+      await updateWorkspaceMutation.mutateAsync({
+        workspaceId: workspace.id,
+        ...workspaceForm,
+      });
       setEditingWorkspace(false);
       await refetchWorkspace(); // Refresh workspace data
-      toast.success("Workspace information updated successfully");
+      toast.success(t("toast.workspaceUpdated"));
     } catch {
-      toast.error("Failed to update workspace information");
+      toast.error(t("toast.workspaceUpdateFailed"));
     }
   };
 
   const handleInviteUser = async () => {
     if (!workspace?.id) {
-      toast.error("No workspace found");
+      toast.error(t("toast.noWorkspaceFound"));
       return;
     }
 
@@ -226,7 +238,12 @@ const Profile = () => {
     if (!canInviteMoreUsers()) {
       const maxUsers = planFeatures.maxUsers;
       toast.error(
-        `Cannot invite more users. Your ${userPlan} plan allows up to ${maxUsers} users. You currently have ${currentUserCount} users and ${pendingInvitationCount} pending invitations.`
+        t("toast.cannotInviteMoreUsers", {
+          plan: userPlan,
+          maxUsers,
+          currentUsers: currentUserCount,
+          pendingInvitations: pendingInvitationCount,
+        })
       );
       return;
     }
@@ -238,12 +255,12 @@ const Profile = () => {
       });
 
       setInviteDialogOpen(false);
-      setInviteForm({ email: "", role: "USER" });
+      setInviteForm({ email: "", role: "MEMBER" });
 
       toast.success(
-        `Invitation sent successfully to ${inviteForm.email}! ${
+        `${t("toast.invitationSent", { email: inviteForm.email })} ${
           result.invitation.monthlyCost > 0
-            ? `Additional cost: $${result.invitation.monthlyCost}/month.`
+            ? t("toast.additionalCost", { cost: result.invitation.monthlyCost })
             : ""
         }`
       );
@@ -260,7 +277,7 @@ const Profile = () => {
   ) => {
     try {
       await revokeInvitationMutation.mutateAsync(invitationId);
-      toast.success(`Invitation to ${email} has been revoked`);
+      toast.success(t("toast.invitationRevoked", { email }));
     } catch (error) {
       logger.error("Revoke invitation error:", error);
       const errorMessage = extractErrorMessage(error);
@@ -269,9 +286,16 @@ const Profile = () => {
   };
 
   const handleRemoveUser = async (userId: string, userName: string) => {
+    if (!workspace?.id) {
+      toast.error(t("toast.noWorkspaceFound"));
+      return;
+    }
     try {
-      await removeUserMutation.mutateAsync(userId);
-      toast.success(`${userName} has been removed from the workspace`);
+      await removeUserMutation.mutateAsync({
+        workspaceId: workspace.id,
+        userId,
+      });
+      toast.success(t("toast.userRemoved", { name: userName }));
     } catch (error) {
       logger.error("Remove user error:", error);
       const errorMessage = extractErrorMessage(error);
@@ -301,7 +325,7 @@ const Profile = () => {
             <div className="container mx-auto p-6">
               <Alert>
                 <AlertDescription>
-                  Failed to load profile information.
+                  {t("error.failedToLoadProfile")}
                 </AlertDescription>
               </Alert>
             </div>
@@ -320,7 +344,7 @@ const Profile = () => {
             <div className="flex items-center gap-3">
               <SidebarTrigger />
               <User className="h-8 w-8" />
-              <h1 className="title-page">Profile</h1>
+              <h1 className="title-page">{t("title")}</h1>
             </div>
 
             <Tabs
@@ -329,18 +353,23 @@ const Profile = () => {
               className="space-y-6"
             >
               <TabsList className="grid w-full grid-cols-5">
-                <TabsTrigger value="personal">Personal Info</TabsTrigger>
-                <TabsTrigger value="workspace">Workspace</TabsTrigger>
+                <TabsTrigger value="personal">
+                  {t("tabs.personalInfo")}
+                </TabsTrigger>
+                <TabsTrigger value="workspace">
+                  {t("tabs.workspace")}
+                </TabsTrigger>
                 <TabsTrigger value="plans">
                   <Crown className="h-4 w-4 mr-2" />
-                  Plans
+                  {t("tabs.plans")}
                 </TabsTrigger>
                 <TabsTrigger value="team" disabled={!isAdmin}>
-                  Team {!isAdmin && <Shield className="h-4 w-4 ml-2" />}
+                  {t("tabs.team")}{" "}
+                  {!isAdmin && <Shield className="h-4 w-4 ml-2" />}
                 </TabsTrigger>
                 <TabsTrigger value="feedback">
                   <MessageSquare className="h-4 w-4 mr-2" />
-                  Send Feedback
+                  {t("tabs.sendFeedback")}
                 </TabsTrigger>
               </TabsList>
 
@@ -436,7 +465,7 @@ interface ApiError extends Error {
 
 // Helper function to extract error message from API response
 const extractErrorMessage = (error: unknown): string => {
-  let errorMessage = "Failed to send invitation";
+  let errorMessage = "Failed to send invitation"; // Fallback, not user-facing directly
 
   if (error && typeof error === "object" && "response" in error) {
     const apiError = error as ApiError;

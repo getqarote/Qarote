@@ -6,7 +6,7 @@ services:
     container_name: rabbit_dashboard_postgres
     restart: unless-stopped
     environment:
-      POSTGRES_DB: rabbit_dashboard
+      POSTGRES_DB: qarote
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
     ports:
@@ -16,7 +16,7 @@ services:
     networks:
       - rabbit_dashboard_network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d rabbit_dashboard"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d qarote"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -132,7 +132,7 @@ services:
       timeout: 10s
       retries: 3
 
-  # RabbitMQ 3.12 LTS - Available for all plans (FREE, DEVELOPER, STARTUP, BUSINESS)
+  # RabbitMQ 3.12 LTS - Available for all plans (FREE, DEVELOPER, ENTERPRISE)
   rabbitmq-3-12:
     image: rabbitmq:3.12-management-alpine
     container_name: rabbit_dashboard_qarote_3_12
@@ -156,7 +156,7 @@ services:
       timeout: 10s
       retries: 5
 
-  # RabbitMQ 3.13 LTS - Available for STARTUP and BUSINESS plans only
+  # RabbitMQ 3.13 LTS - Available for STARTUP and ENTERPRISE plans only
   rabbitmq-3-13:
     image: rabbitmq:3.13-management-alpine
     container_name: rabbit_dashboard_qarote_3_13
@@ -180,7 +180,7 @@ services:
       timeout: 10s
       retries: 5
 
-  # RabbitMQ 4.0 LTS - Available for STARTUP and BUSINESS plans only
+  # RabbitMQ 4.0 LTS - Available for STARTUP and ENTERPRISE plans only
   rabbitmq-4-0:
     image: rabbitmq:4.0-management-alpine
     container_name: rabbit_dashboard_qarote_4_0
@@ -204,7 +204,7 @@ services:
       timeout: 10s
       retries: 5
 
-  # RabbitMQ 4.1 LTS - Available for STARTUP and BUSINESS plans only
+  # RabbitMQ 4.1 LTS - Available for STARTUP and ENTERPRISE plans only
   rabbitmq-4-1:
     image: rabbitmq:4.1-management-alpine
     container_name: rabbit_dashboard_qarote_4_1

@@ -18,18 +18,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 🔍 Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: 📦 Setup pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 9
+        uses: pnpm/action-setup@v4
 
       - name: 📦 Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: "24"
-          cache: 'pnpm'
+          cache: "pnpm"
           cache-dependency-path: pnpm-lock.yaml
 
       - name: 📥 Install dependencies
@@ -39,8 +37,10 @@ jobs:
         run: pnpm run syncpack:check
 
       - name: 🔍 Type Check
-        working-directory: apps/api
-        run: pnpm run type-check
+        run: pnpm turbo run type-check --filter=qarote-api
+
+      - name: 🔍 Knip (unused code check)
+        run: pnpm run knip
 
       - name: 🧹 Lint
         working-directory: apps/api
@@ -63,7 +63,7 @@ jobs:
 
     steps:
       - name: 🔍 Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: 🔑 Validate Dokku SSH key
         run: |
@@ -74,7 +74,7 @@ jobs:
           echo "✓ Dokku SSH key is present"
 
       - name: 🔑 Setup SSH
-        uses: webfactory/ssh-agent@v0.9.0
+        uses: webfactory/ssh-agent@v0.9.1
         with:
           ssh-private-key: ${{ secrets.DOKKU_SSH_PRIVATE_KEY }}
 
@@ -91,6 +91,7 @@ jobs:
       - name: 📝 Configure Environment Variables
         run: |
           ssh dokku@${{ vars.DOKKU_HOST_APP1 }} config:set ${{ env.APP_NAME }} \
+            DEPLOYMENT_MODE=${{ vars.DEPLOYMENT_MODE }} \
             DATABASE_URL=${{ secrets.DATABASE_URL }} \
             DOMAIN_BACKEND=${{ vars.DOMAIN_BACKEND }} \
             DOMAIN_FRONTEND=${{ vars.DOMAIN_FRONTEND }} \
@@ -103,6 +104,7 @@ jobs:
             ENCRYPTION_KEY=${{ secrets.ENCRYPTION_KEY }} \
             CORS_ORIGIN=${{ vars.CORS_ORIGIN }} \
             FRONTEND_URL=${{ vars.FRONTEND_URL }} \
+            PORTAL_FRONTEND_URL=${{ vars.PORTAL_FRONTEND_URL }} \
             RESEND_API_KEY=${{ secrets.RESEND_API_KEY }} \
             FROM_EMAIL=${{ vars.FROM_EMAIL }} \
             STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY }} \
@@ -118,7 +120,7 @@ jobs:
             NOTION_DATABASE_ID=${{ vars.NOTION_DATABASE_ID }} \
             NOTION_SYNC_ENABLED=${{ vars.NOTION_SYNC_ENABLED }} \
             ENABLE_NOTION=${{ vars.ENABLE_NOTION }} \
-            NODE_ID=app1
+            API_URL=${{ vars.API_URL }}
 
       - name: 🚫 Configure worker app to use app.worker.json
         run: |
@@ -134,7 +136,7 @@ jobs:
 
     steps:
       - name: 🔍 Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -147,7 +149,7 @@ jobs:
           echo "✓ Dokku SSH key is present"
 
       - name: 🔑 Setup SSH
-        uses: webfactory/ssh-agent@v0.9.0
+        uses: webfactory/ssh-agent@v0.9.1
         with:
           ssh-private-key: ${{ secrets.DOKKU_SSH_PRIVATE_KEY }}
 
@@ -156,29 +158,40 @@ jobs:
           mkdir -p ~/.ssh
           ssh-keyscan -H ${{ vars.DOKKU_HOST_APP1 }} >> ~/.ssh/known_hosts
 
-      # Deploy the application
+      # Deploy the application.
+      # The worker is a long-running cron process that never exits, so Dokku streams its
+      # stdout indefinitely during the git push. We cap the step at 5 minutes and treat a
+      # timeout as acceptable; a subsequent verification step confirms the process is up.
       - name: 🐳 Deploy to Dokku
         uses: dokku/github-action@master
+        timeout-minutes: 5
+        continue-on-error: true
         with:
           git_remote_url: "ssh://dokku@${{ vars.DOKKU_HOST_APP1 }}:22/${{ env.APP_NAME }}"
           ssh_private_key: ${{ secrets.DOKKU_SSH_PRIVATE_KEY }}
           git_push_flags: "--force"
 
-      - name: 🔍 Verify worker app status
+      - name: 📈 Scale processes (disable web, enable workers)
         run: |
-          echo "Checking worker app status..."
-          ssh dokku@${{ vars.DOKKU_HOST_APP1 }} ps:report ${{ env.APP_NAME }}
+          echo "Scaling processes: web=0, worker=1, license_worker=1, release_notifier=1..."
+          ssh dokku@${{ vars.DOKKU_HOST_APP1 }} ps:scale ${{ env.APP_NAME }} web=0 worker=1 license_worker=1 release_notifier=1
 
-      - name: 📈 Scale processes (disable web, enable worker)
+      - name: 🔍 Verify worker is running
         run: |
-          echo "Scaling processes: web=0, worker=1..."
-          ssh dokku@${{ vars.DOKKU_HOST_APP1 }} ps:scale ${{ env.APP_NAME }} web=0 worker=1 || \
-            echo "Note: Process scaling may need to be done manually"
+          echo "Verifying worker process is running..."
+          REPORT=$(ssh dokku@${{ vars.DOKKU_HOST_APP1 }} ps:report ${{ env.APP_NAME }})
+          echo "$REPORT"
+          if echo "$REPORT" | grep -q "running"; then
+            echo "✅ Worker is running!"
+          else
+            echo "❌ Worker process is not running after deploy!"
+            exit 1
+          fi
 
       - name: 📋 Show worker logs
         run: |
           echo "Recent worker logs:"
-          ssh dokku@${{ vars.DOKKU_HOST_APP1 }} logs ${{ env.APP_NAME }} --tail 20 || true
+          ssh dokku@${{ vars.DOKKU_HOST_APP1 }} logs ${{ env.APP_NAME }} -n 20 || true
 
       - name: ✅ Deployment complete
         run: |

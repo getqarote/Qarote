@@ -17,8 +17,10 @@ interface TagsInputProps {
   className?: string;
 }
 
+const EMPTY_TAGS: string[] = [];
+
 const TagsInput: React.FC<TagsInputProps> = ({
-  value = [],
+  value = EMPTY_TAGS,
   onChange,
   placeholder = "Add tags...",
   maxTags = 10,
@@ -64,11 +66,18 @@ const TagsInput: React.FC<TagsInputProps> = ({
   return (
     <div
       className={cn(
-        "flex min-h-[2.5rem] w-full flex-wrap items-center gap-1 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2",
+        "flex min-h-10 w-full flex-wrap items-center gap-1 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2",
         disabled && "cursor-not-allowed opacity-50",
         className
       )}
+      role="group"
       onClick={() => inputRef.current?.focus()}
+      onKeyDown={(e) => {
+        if (e.target !== e.currentTarget) return;
+        if (e.key === "Enter" || e.key === " ") {
+          inputRef.current?.focus();
+        }
+      }}
     >
       {value.map((tag) => (
         <Badge

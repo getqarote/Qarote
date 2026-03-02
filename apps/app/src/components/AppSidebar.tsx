@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { Link, useLocation } from "react-router";
 
 import {
   Activity,
@@ -8,6 +9,7 @@ import {
   Database,
   FolderTree,
   HelpCircle,
+  KeyRound,
   LogOut,
   MessageSquare,
   Plus,
@@ -15,6 +17,8 @@ import {
   Settings,
   User,
 } from "lucide-react";
+
+import { isCloudMode } from "@/lib/featureFlags";
 
 import { AddServerForm } from "@/components/AddServerFormComponent";
 import { DiscordLink } from "@/components/DiscordLink";
@@ -46,62 +50,35 @@ import { useAuth } from "@/contexts/AuthContextDefinition";
 import { useServerContext } from "@/contexts/ServerContext";
 import { useVHostContext } from "@/contexts/VHostContextDefinition";
 
-import { useServers } from "@/hooks/useApi";
-import { useLogout } from "@/hooks/useAuth";
+import { useServers } from "@/hooks/queries/useServer";
+import { useLogout } from "@/hooks/ui/useAuth";
 
 const menuItems = [
+  { titleKey: "sidebar:dashboard", url: "/", icon: Activity },
+  { titleKey: "sidebar:queues", url: "/queues", icon: MessageSquare },
+  { titleKey: "sidebar:connections", url: "/connections", icon: Clock },
+  { titleKey: "sidebar:nodes", url: "/nodes", icon: Server },
+  { titleKey: "sidebar:exchanges", url: "/exchanges", icon: Activity },
   {
-    title: "Dashboard",
-    url: "/",
-    icon: Activity,
-  },
-  {
-    title: "Queues",
-    url: "/queues",
-    icon: MessageSquare,
-  },
-  {
-    title: "Connections",
-    url: "/connections",
-    icon: Clock,
-  },
-  {
-    title: "Nodes",
-    url: "/nodes",
-    icon: Server,
-  },
-  {
-    title: "Exchanges",
-    url: "/exchanges",
-    icon: Activity,
-  },
-  {
-    title: "Virtual Hosts",
+    titleKey: "sidebar:virtualHosts",
     url: "/vhosts",
     icon: Database,
     adminOnly: true,
   },
-  {
-    title: "Users",
-    url: "/users",
-    icon: User,
-    adminOnly: true,
-  },
-  {
-    title: "Alerts",
-    url: "/alerts",
-    icon: AlertTriangle,
-  },
-  {
-    title: "Profile",
-    url: "/profile",
-    icon: User,
-  },
-  {
-    title: "Help & Support",
-    url: "/help",
-    icon: HelpCircle,
-  },
+  { titleKey: "sidebar:users", url: "/users", icon: User, adminOnly: true },
+  { titleKey: "sidebar:alerts", url: "/alerts", icon: AlertTriangle },
+  { titleKey: "sidebar:profile", url: "/profile", icon: User },
+  ...(!isCloudMode()
+    ? [
+        {
+          titleKey: "sidebar:license" as const,
+          url: "/settings/license",
+          icon: KeyRound,
+          adminOnly: true,
+        },
+      ]
+    : []),
+  { titleKey: "sidebar:helpSupport", url: "/help", icon: HelpCircle },
 ];
 
 // Helper function to shorten hostnames
@@ -125,6 +102,7 @@ const shortenHost = (host: string, maxLength: number = 25) => {
 };
 
 export function AppSidebar() {
+  const { t } = useTranslation("sidebar");
   const location = useLocation();
   const { selectedServerId, setSelectedServerId } = useServerContext();
   const {
@@ -142,7 +120,7 @@ export function AppSidebar() {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   return (
-    <Sidebar className="border-r-0 bg-sidebar backdrop-blur-sm">
+    <Sidebar className="border-r-0 bg-sidebar backdrop-blur-xs">
       <SidebarHeader className="border-b border-sidebar-border p-6">
         <div className="flex items-center gap-3">
           <img src="/images/new_icon.svg" alt="Qarote" className="w-6 h-6" />
@@ -155,7 +133,7 @@ export function AppSidebar() {
         <div className="mt-4 space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-sidebar-foreground/70 uppercase tracking-wider">
-              Server
+              {t("server")}
             </span>
             <div className="flex items-center gap-1">
               <ServerManagement
@@ -164,7 +142,7 @@ export function AppSidebar() {
                     size="sm"
                     variant="ghost"
                     className="h-6 w-6 p-0"
-                    title="Manage servers"
+                    title={t("common:manageServers")}
                   >
                     <Settings className="h-3 w-3" />
                   </Button>
@@ -179,11 +157,11 @@ export function AppSidebar() {
               onValueChange={setSelectedServerId}
             >
               <SelectTrigger className="w-full text-sm">
-                <SelectValue placeholder="Select a server...">
+                <SelectValue placeholder={t("selectServer")}>
                   {selectedServerId &&
                     servers.find((s) => s.id === selectedServerId) && (
                       <div className="flex items-center gap-2 w-full min-w-0">
-                        <Server className="h-3 w-3 flex-shrink-0" />
+                        <Server className="h-3 w-3 shrink-0" />
                         <div className="flex flex-col min-w-0 flex-1">
                           <span
                             className="truncate font-medium"
@@ -212,7 +190,7 @@ export function AppSidebar() {
                 {servers.map((server) => (
                   <SelectItem key={server.id} value={server.id}>
                     <div className="flex items-center gap-2 w-full min-w-0">
-                      <Server className="h-3 w-3 flex-shrink-0" />
+                      <Server className="h-3 w-3 shrink-0" />
                       <div className="flex flex-col min-w-0 flex-1">
                         <span className="font-medium" title={server.host}>
                           {shortenHost(server.host)}
@@ -230,13 +208,13 @@ export function AppSidebar() {
             <div className="text-center p-3 bg-sidebar-accent rounded-lg border-2 border-dashed border-sidebar-border">
               <Server className="h-8 w-8 text-sidebar-foreground/70 mx-auto mb-2" />
               <p className="text-xs text-sidebar-foreground/70 mb-2">
-                No servers configured
+                {t("noServersConfigured")}
               </p>
               <AddServerForm
                 trigger={
                   <Button size="sm" variant="outline" className="text-xs">
                     <Plus className="h-3 w-3 mr-1" />
-                    Add Server
+                    {t("addServer")}
                   </Button>
                 }
               />
@@ -248,14 +226,14 @@ export function AppSidebar() {
             <div className="mt-4 space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-sidebar-foreground/70 uppercase tracking-wider">
-                  Virtual Host
+                  {t("virtualHost")}
                 </span>
               </div>
 
               {vhostsLoading ? (
                 <div className="text-center p-3 bg-sidebar-accent rounded-lg">
                   <p className="text-xs text-sidebar-foreground/70">
-                    Loading vhosts...
+                    {t("loadingVhosts")}
                   </p>
                 </div>
               ) : availableVHosts.length > 0 ? (
@@ -264,12 +242,14 @@ export function AppSidebar() {
                   onValueChange={setSelectedVHost}
                 >
                   <SelectTrigger className="w-full text-sm">
-                    <SelectValue placeholder="Select a vhost...">
+                    <SelectValue placeholder={t("selectVhost")}>
                       {selectedVHost && (
                         <div className="flex items-center gap-2 w-full min-w-0">
-                          <FolderTree className="h-3 w-3 flex-shrink-0" />
+                          <FolderTree className="h-3 w-3 shrink-0" />
                           <span className="truncate font-medium">
-                            {selectedVHost === "/" ? "Default" : selectedVHost}
+                            {selectedVHost === "/"
+                              ? t("common:default")
+                              : selectedVHost}
                           </span>
                         </div>
                       )}
@@ -279,9 +259,11 @@ export function AppSidebar() {
                     {availableVHosts.map((vhost) => (
                       <SelectItem key={vhost.name} value={vhost.name}>
                         <div className="flex items-center gap-2 w-full min-w-0">
-                          <FolderTree className="h-3 w-3 flex-shrink-0" />
+                          <FolderTree className="h-3 w-3 shrink-0" />
                           <span className="font-medium">
-                            {vhost.name === "/" ? "Default" : vhost.name}
+                            {vhost.name === "/"
+                              ? t("common:default")
+                              : vhost.name}
                           </span>
                         </div>
                       </SelectItem>
@@ -292,7 +274,7 @@ export function AppSidebar() {
                 <div className="text-center p-3 bg-sidebar-accent rounded-lg border-2 border-dashed border-sidebar-border">
                   <FolderTree className="h-8 w-8 text-sidebar-foreground/70 mx-auto mb-2" />
                   <p className="text-xs text-sidebar-foreground/70">
-                    No vhosts available
+                    {t("noVhostsAvailable")}
                   </p>
                 </div>
               )}
@@ -304,7 +286,7 @@ export function AppSidebar() {
       <SidebarContent className="px-4">
         <SidebarGroup>
           <SidebarGroupLabel className="text-xs font-semibold text-sidebar-foreground/70 uppercase tracking-wider mb-2">
-            Management
+            {t("management")}
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
@@ -320,12 +302,12 @@ export function AppSidebar() {
                   const isActive = location.pathname === item.url;
 
                   return (
-                    <SidebarMenuItem key={item.title}>
+                    <SidebarMenuItem key={item.titleKey}>
                       <SidebarMenuButton
                         asChild
                         className={`w-full justify-start transition-all duration-200 ${
                           isActive
-                            ? "bg-gradient-to-r from-orange-600 to-red-600 text-white hover:from-orange-700 hover:to-red-700"
+                            ? "bg-linear-to-r from-orange-600 to-red-600 text-white hover:from-orange-700 hover:to-red-700"
                             : "hover:bg-sidebar-accent text-sidebar-foreground"
                         }`}
                       >
@@ -334,7 +316,9 @@ export function AppSidebar() {
                           className="flex items-center gap-3 px-3 py-2 rounded-lg"
                         >
                           <item.icon className="w-4 h-4" />
-                          <span className="font-medium">{item.title}</span>
+                          <span className="font-medium">
+                            {t(item.titleKey)}
+                          </span>
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -351,7 +335,9 @@ export function AppSidebar() {
 
         {/* Theme Toggle */}
         <div className="flex items-center justify-between">
-          <span className="text-sm text-sidebar-foreground/70">Theme</span>
+          <span className="text-sm text-sidebar-foreground/70">
+            {t("theme")}
+          </span>
           <ThemeToggle />
         </div>
 

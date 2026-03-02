@@ -1,12 +1,14 @@
+import { useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CheckCircle, Loader2, Plus } from "lucide-react";
 import { toast } from "sonner";
 
-import { apiClient } from "@/lib/api";
+import { User } from "@/lib/api";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -24,91 +26,112 @@ import { TagsInput } from "@/components/ui/tags-input";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
 
+import {
+  useCreateWorkspace,
+  useUserWorkspaces,
+} from "@/hooks/queries/useWorkspaceApi";
+
 import { WorkspaceFormData, workspaceSchema } from "@/schemas";
 
 const Workspace = () => {
+  const { t } = useTranslation("workspace");
   const navigate = useNavigate();
-  const { user, refetchUser } = useAuth();
+  const { user, updateUser } = useAuth();
   const queryClient = useQueryClient();
+  const successHandled = useRef(false);
 
   // Check if user already has workspaces
-  const { isLoading: workspacesLoading } = useQuery({
-    queryKey: ["workspaces"],
-    queryFn: () => apiClient.getUserWorkspaces(),
-    enabled: !!user,
-  });
+  const { isLoading: workspacesLoading } = useUserWorkspaces();
 
   const form = useForm<WorkspaceFormData>({
     resolver: zodResolver(workspaceSchema),
     defaultValues: {
       name: "",
-      contactEmail: "",
       tags: [],
     },
   });
 
   // Create workspace mutation
-  const createWorkspaceMutation = useMutation({
-    mutationFn: (data: {
-      name: string;
-      contactEmail?: string;
-      tags?: string[];
-    }) => apiClient.createWorkspace(data),
-    onSuccess: async () => {
-      toast.success("Workspace created successfully!");
+  const createWorkspaceMutation = useCreateWorkspace();
+
+  // Handle success - use ref to prevent multiple executions
+  // Dependencies intentionally limited to prevent infinite loops from user/updateUser
+  useEffect(() => {
+    if (
+      createWorkspaceMutation.isSuccess &&
+      createWorkspaceMutation.data &&
+      !successHandled.current
+    ) {
+      successHandled.current = true;
+      toast.success(t("toast.workspaceCreated"));
       queryClient.invalidateQueries({ queryKey: ["workspaces"] });
 
-      // Refetch user data to get updated workspaceId
-      await refetchUser();
+      // Update user state directly with the new workspaceId
+      const newWorkspaceId = createWorkspaceMutation.data.workspace.id;
+      if (user) {
+        const updatedUser: User = {
+          ...user,
+          workspaceId: newWorkspaceId,
+        };
+        updateUser(updatedUser);
+      }
 
-      // Redirect to dashboard after successful creation
+      // Redirect to dashboard after showing success message
       setTimeout(() => {
         navigate("/", { replace: true });
       }, 1000);
-    },
-    onError: (error: Error) => {
-      toast.error(`Failed to create workspace: ${error.message}`);
-    },
-  });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [createWorkspaceMutation.isSuccess, createWorkspaceMutation.data]);
+
+  // Handle error separately
+  useEffect(() => {
+    if (createWorkspaceMutation.isError) {
+      toast.error(
+        t("toast.workspaceCreateFailed", {
+          error: createWorkspaceMutation.error?.message || t("error.unknown"),
+        })
+      );
+    }
+  }, [createWorkspaceMutation.isError, createWorkspaceMutation.error, t]);
 
   const onSubmit = (data: WorkspaceFormData) => {
     createWorkspaceMutation.mutate({
       name: data.name.trim(),
-      contactEmail: data.contactEmail?.trim() || undefined,
-      tags: data.tags?.filter((tag) => tag.trim().length > 0) || undefined,
+      tags:
+        data.tags && data.tags.length > 0
+          ? data.tags.filter((tag) => tag.trim().length > 0)
+          : undefined,
     });
   };
 
   if (workspacesLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="flex items-center gap-2">
           <Loader2 className="h-6 w-6 animate-spin" />
-          <span>Loading...</span>
+          <span>{t("loading")}</span>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200">
+      <header className="bg-card border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-gradient-to-br from-orange-600 to-red-600 rounded-lg flex items-center justify-center">
-                <img
-                  src="/images/new_icon.svg"
-                  alt="Qarote"
-                  className="w-4 h-4"
-                />
-              </div>
+              <img
+                src="/images/new_icon.svg"
+                alt="Qarote"
+                className="w-8 h-8"
+              />
               <div>
-                <h1 className="text-xl font-semibold text-gray-900">Qarote</h1>
-                <p className="text-sm text-gray-500">
-                  The next GUI for RabbitMQ
-                </p>
+                <h1 className="text-xl font-semibold text-foreground">
+                  Qarote
+                </h1>
               </div>
             </div>
           </div>
@@ -120,14 +143,14 @@ const Workspace = () => {
         {createWorkspaceMutation.isSuccess ? (
           // Success State
           <div className="text-center">
-            <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-6">
+            <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 dark:bg-green-900/30 mb-6">
               <CheckCircle className="h-8 w-8 text-green-600" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
-              Workspace Created Successfully!
+            <h2 className="text-2xl font-bold text-foreground mb-4">
+              {t("success.title")}
             </h2>
-            <p className="text-gray-600 mb-6">
-              Redirecting you to your dashboard...
+            <p className="text-muted-foreground mb-6">
+              {t("success.redirecting")}
             </p>
             <div className="flex items-center justify-center">
               <Loader2 className="h-5 w-5 animate-spin text-orange-600" />
@@ -138,13 +161,11 @@ const Workspace = () => {
           <div className="space-y-8">
             {/* Welcome Section */}
             <div className="text-center">
-              <h1 className="text-3xl font-bold text-gray-900 mb-4">
-                Create Your Workspace
+              <h1 className="text-3xl font-bold text-foreground mb-4">
+                {t("create.title")}
               </h1>
-              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                Welcome to Qarote! Let's start by creating your first workspace.
-                Workspaces help you organize your RabbitMQ servers and
-                collaborate with your team.
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                {t("create.description")}
               </p>
             </div>
 
@@ -152,10 +173,12 @@ const Workspace = () => {
             <div className="max-w-lg mx-auto">
               <Card className="border-0 shadow-lg">
                 <CardHeader className="text-center">
-                  <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-lg bg-orange-100 mb-4">
+                  <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-lg bg-orange-100 dark:bg-orange-900/30 mb-4">
                     <Plus className="h-6 w-6 text-orange-600" />
                   </div>
-                  <CardTitle className="text-xl">New Workspace</CardTitle>
+                  <CardTitle className="text-xl">
+                    {t("create.cardTitle")}
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <Form {...form}>
@@ -167,7 +190,7 @@ const Workspace = () => {
                         <Alert variant="destructive">
                           <AlertDescription>
                             {createWorkspaceMutation.error?.message ||
-                              "Failed to create workspace. Please try again."}
+                              t("error.createFailed")}
                           </AlertDescription>
                         </Alert>
                       )}
@@ -177,43 +200,20 @@ const Workspace = () => {
                         name="name"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-sm font-medium text-gray-700">
-                              Workspace Name *
+                            <FormLabel className="text-sm font-medium">
+                              {t("create.workspaceName")}
                             </FormLabel>
                             <FormControl>
                               <Input
                                 {...field}
-                                placeholder="My Workspace"
+                                placeholder={t(
+                                  "create.workspaceNamePlaceholder"
+                                )}
                                 className="h-11"
                                 disabled={createWorkspaceMutation.isPending}
                               />
                             </FormControl>
                             <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="contactEmail"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-sm font-medium text-gray-700">
-                              Contact Email (Optional)
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                {...field}
-                                type="email"
-                                placeholder="contact@company.com"
-                                className="h-11"
-                                disabled={createWorkspaceMutation.isPending}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                            <p className="text-xs text-gray-500">
-                              Used for workspace-related notifications
-                            </p>
                           </FormItem>
                         )}
                       />
@@ -223,23 +223,22 @@ const Workspace = () => {
                         name="tags"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-sm font-medium text-gray-700">
-                              Tags (Optional)
+                            <FormLabel className="text-sm font-medium">
+                              {t("create.tagsLabel")}
                             </FormLabel>
                             <FormControl>
                               <TagsInput
                                 value={field.value || []}
                                 onChange={field.onChange}
-                                placeholder="Add tags to organize your workspace"
+                                placeholder={t("create.tagsPlaceholder")}
                                 maxTags={10}
                                 maxTagLength={20}
                                 disabled={createWorkspaceMutation.isPending}
                               />
                             </FormControl>
                             <FormMessage />
-                            <p className="text-xs text-gray-500">
-                              Use tags like "production", "development", or
-                              "testing" to organize your workspace
+                            <p className="text-xs text-muted-foreground">
+                              {t("create.tagsHint")}
                             </p>
                           </FormItem>
                         )}
@@ -256,12 +255,12 @@ const Workspace = () => {
                         {createWorkspaceMutation.isPending ? (
                           <div className="flex items-center gap-2">
                             <Loader2 className="h-4 w-4 animate-spin" />
-                            Creating Workspace...
+                            {t("create.creating")}
                           </div>
                         ) : (
                           <div className="flex items-center gap-2">
                             <Plus className="h-4 w-4" />
-                            Create Workspace
+                            {t("create.submit")}
                           </div>
                         )}
                       </Button>

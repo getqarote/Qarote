@@ -50,7 +50,7 @@ export interface DataSourceIdResult extends NotionServiceResult {
 /**
  * Schema for Notion data source
  */
-export const NotionDataSourceSchema = z.object({
+const NotionDataSourceSchema = z.object({
   id: z.string(),
   name: z.string(),
 });
@@ -70,19 +70,10 @@ export const NotionPageResponseSchema = z.object({
 });
 
 /**
- * TypeScript types inferred from Zod schemas
- */
-export type NotionDataSource = z.infer<typeof NotionDataSourceSchema>;
-export type NotionDatabaseResponse = z.infer<
-  typeof NotionDatabaseResponseSchema
->;
-export type NotionPageResponse = z.infer<typeof NotionPageResponseSchema>;
-
-/**
  * Notion page property value types
  * Union type for all possible Notion property values
  */
-export type NotionPageProperty =
+type NotionPageProperty =
   | { title: Array<{ text: { content: string } }> }
   | { rich_text: Array<{ text: { content: string } }> }
   | { checkbox: boolean }

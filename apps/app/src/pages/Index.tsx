@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router";
 
 import { Server } from "lucide-react";
 
@@ -24,25 +25,23 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { useAuth } from "@/contexts/AuthContextDefinition";
 import { useServerContext } from "@/contexts/ServerContext";
 
-import { useDashboardData } from "@/hooks/useDashboardData";
+import { useDashboardData } from "@/hooks/ui/useDashboardData";
 
 const Index = () => {
+  const { t } = useTranslation("dashboard");
   const { selectedServerId, hasServers } = useServerContext();
-  const { user, isAuthenticated, refetchUser } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [liveRatesTimeRange, setLiveRatesTimeRange] = useState<TimeRange>("1d");
 
   // Check if user needs to create a workspace
   useEffect(() => {
-    if (isAuthenticated) {
-      if (!user?.workspaceId) {
-        navigate("/workspace", { replace: true });
-      } else {
-        navigate("/", { replace: true });
-      }
+    if (isAuthenticated && !user?.workspaceId) {
+      navigate("/workspace", { replace: true });
     }
-  }, [isAuthenticated, user, navigate, refetchUser]);
+    // Don't navigate to "/" when already on "/" - this prevents redirect loops
+  }, [isAuthenticated, user?.workspaceId, navigate]);
 
   const {
     overview,
@@ -54,11 +53,8 @@ const Index = () => {
     isLoading,
     queuesLoading,
     liveRatesLoading,
-    liveRatesFetching,
-    queuesFetching,
     overviewFetching,
     nodesFetching,
-    enhancedMetricsFetching,
     metricsError,
     liveRatesError,
     nodesError,
@@ -74,8 +70,8 @@ const Index = () => {
               <SidebarTrigger />
             </div>
             <NoServerConfigured
-              title="RabbitMQ Dashboard"
-              description="Add a RabbitMQ server connection to start monitoring your queues and messages."
+              title={t("rabbitMQDashboard")}
+              description={t("addServerDescription")}
             />
           </main>
         </div>
@@ -94,10 +90,8 @@ const Index = () => {
                 <div className="flex items-center gap-4">
                   <SidebarTrigger />
                   <div>
-                    <h1 className="title-page">RabbitMQ Dashboard</h1>
-                    <p className="text-gray-500">
-                      Please select a RabbitMQ server to view the dashboard
-                    </p>
+                    <h1 className="title-page">{t("rabbitMQDashboard")}</h1>
+                    <p className="text-gray-500">{t("selectServerPrompt")}</p>
                   </div>
                 </div>
                 <PlanBadge />
@@ -107,11 +101,10 @@ const Index = () => {
                   <div className="text-center">
                     <Server className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                     <h2 className="text-xl font-semibold text-gray-900 mb-2">
-                      Please Select a Server
+                      {t("pleaseSelectServer")}
                     </h2>
                     <p className="text-gray-600 mb-4">
-                      Choose a RabbitMQ server from the sidebar to view its
-                      dashboard.
+                      {t("chooseServerFromSidebar")}
                     </p>
                   </div>
                 </CardContent>
@@ -134,7 +127,7 @@ const Index = () => {
               <div className="flex items-center gap-4">
                 <SidebarTrigger />
                 <div>
-                  <h1 className="title-page">Dashboard</h1>
+                  <h1 className="title-page">{t("pageTitle")}</h1>
                   <ConnectionStatus />
                 </div>
               </div>
@@ -150,7 +143,6 @@ const Index = () => {
               isLoading={isLoading}
               metricsError={metricsError}
               overviewFetching={overviewFetching}
-              enhancedMetricsFetching={enhancedMetricsFetching}
             />
 
             {/* Secondary Metrics */}
@@ -160,7 +152,6 @@ const Index = () => {
               metricsError={metricsError}
               nodesError={nodesError}
               nodesFetching={nodesFetching}
-              enhancedMetricsFetching={enhancedMetricsFetching}
             />
 
             {/* Charts - Full Width Stacked */}
@@ -168,7 +159,6 @@ const Index = () => {
             <QueuedMessagesChart
               queueTotals={queueTotals}
               isLoading={liveRatesLoading}
-              isFetching={liveRatesFetching}
               error={liveRatesError}
               timeRange={liveRatesTimeRange}
               onTimeRangeChange={setLiveRatesTimeRange}
@@ -178,18 +168,13 @@ const Index = () => {
             <MessagesRatesChart
               messagesRates={liveRatesData?.messagesRates}
               isLoading={liveRatesLoading}
-              isFetching={liveRatesFetching}
               error={liveRatesError}
               timeRange={liveRatesTimeRange}
               onTimeRangeChange={setLiveRatesTimeRange}
             />
 
             {/* Queue Depths Chart - Full Width */}
-            <QueueDepthsChart
-              queues={queues}
-              isLoading={queuesLoading}
-              isFetching={queuesFetching}
-            />
+            <QueueDepthsChart queues={queues} isLoading={queuesLoading} />
 
             {/* Connected Nodes - Full Width */}
             <ConnectedNodes

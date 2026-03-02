@@ -1,0 +1,130 @@
+name: PR Quality Checks
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+env:
+  # Dummy URL for prisma generate (postinstall) — no actual DB connection is made
+  DATABASE_URL: postgresql://localhost:5432/dummy
+
+jobs:
+  code-quality:
+    name: Code Quality
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🔍 Checkout code
+        uses: actions/checkout@v6
+
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: "pnpm"
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: 📥 Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: 🔍 Check package version consistency
+        run: pnpm run syncpack:check
+
+      - name: 🔍 Type Check
+        run: pnpm turbo run type-check --filter=qarote-api
+
+      - name: 🔍 Knip (unused code check)
+        run: pnpm run knip
+
+      - name: 🧹 Lint
+        working-directory: apps/api
+        run: pnpm run lint
+
+      - name: 💅 Format Check
+        working-directory: apps/api
+        run: pnpm run format
+
+  detect-frontend-changes:
+    name: Detect Frontend Changes
+    runs-on: ubuntu-latest
+    outputs:
+      apps: ${{ steps.filter.outputs.apps }}
+    steps:
+      - name: 🔍 Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: 🔎 Detect changed frontend apps
+        id: filter
+        run: |
+          changed_apps=()
+          for app in app portal web; do
+            if git diff --name-only origin/${{ github.base_ref || 'main' }}...HEAD | grep -q "^apps/$app/"; then
+              changed_apps+=("\"$app\"")
+            fi
+          done
+          if [ ${#changed_apps[@]} -eq 0 ]; then
+            echo "apps=[]" >> "$GITHUB_OUTPUT"
+          else
+            echo "apps=[$(IFS=,; echo "${changed_apps[*]}")]" >> "$GITHUB_OUTPUT"
+          fi
+
+  react-doctor:
+    name: React Doctor
+    needs: detect-frontend-changes
+    if: needs.detect-frontend-changes.outputs.apps != '[]'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    env:
+      NO_COLOR: "1"
+    strategy:
+      matrix:
+        app: ${{ fromJson(needs.detect-frontend-changes.outputs.apps) }}
+    steps:
+      - name: 🔍 Checkout code
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+
+      - name: 🔀 Fetch base branch
+        run: git fetch origin ${{ github.base_ref }}:${{ github.base_ref }}
+
+      - name: 🩺 React Doctor
+        uses: millionco/react-doctor@97b21f18ee4c5b530d683ae6626548081a4aad76 # main
+        with:
+          directory: apps/${{ matrix.app }}
+          diff: ${{ github.base_ref || 'main' }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+  tests:
+    name: Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🔍 Checkout code
+        uses: actions/checkout@v6
+
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: "pnpm"
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: 📥 Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: 📦 Build i18n package
+        run: pnpm turbo run build --filter=@qarote/i18n
+
+      - name: 🧪 Run Tests
+        working-directory: apps/api
+        run: pnpm run test:run

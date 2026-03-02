@@ -3,94 +3,57 @@ import path from "node:path";
 import dotenv from "dotenv";
 import { z } from "zod/v4";
 
+import { cloudSchema } from "./schemas/cloud.js";
+import { selfhostedSchema } from "./schemas/selfhosted.js";
+
 // Load .env file from the api directory (where process.cwd() points when running from apps/api)
-dotenv.config({ path: path.join(process.cwd(), ".env") });
+dotenv.config({ path: path.join(process.cwd(), ".env"), quiet: true });
 
-// Environment validation schema
-const envSchema = z.object({
-  // Server Configuration
-  NODE_ENV: z
-    .enum(["development", "test", "production"])
-    .describe("development"),
-  PORT: z.coerce.number().int().positive(),
-  HOST: z.string().describe("localhost"),
-  NODE_ID: z.string().describe("Unique identifier for this node"),
+// Union type of all possible configs (internal use only)
+type Config = z.infer<typeof cloudSchema> | z.infer<typeof selfhostedSchema>;
 
-  // Deployment Mode
-  DEPLOYMENT_MODE: z
-    .enum(["cloud", "self-hosted"])
-    .describe("cloud")
-    .default("cloud"),
+// Deprecated aliases that map to "selfhosted"
+const SELFHOSTED_ALIASES = ["community", "enterprise"] as const;
 
-  // Logging
-  LOG_LEVEL: z.enum(["error", "warn", "info", "debug"]).describe("info"),
+/**
+ * Normalize deployment mode, mapping deprecated aliases to "selfhosted"
+ */
+function normalizeDeploymentMode(raw: string): "cloud" | "selfhosted" {
+  if (raw === "cloud") return "cloud";
+  if (raw === "selfhosted") return "selfhosted";
+  if (SELFHOSTED_ALIASES.includes(raw as (typeof SELFHOSTED_ALIASES)[number])) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      `[Qarote] DEPLOYMENT_MODE="${raw}" is deprecated. Use "selfhosted" instead. This alias will be removed in a future version.`
+    );
+    return "selfhosted";
+  }
+  throw new Error(
+    `Invalid DEPLOYMENT_MODE: ${raw}. Must be one of: cloud, selfhosted`
+  );
+}
 
-  // Security
-  JWT_SECRET: z.string().min(1, "JWT_SECRET is required"),
-  ENCRYPTION_KEY: z
-    .string()
-    .min(32, "ENCRYPTION_KEY must be at least 32 characters"),
+/**
+ * Parse and validate environment variables based on deployment mode
+ * Different deployment modes have different requirements
+ */
+function parseConfig(): Config {
+  const rawMode = process.env.DEPLOYMENT_MODE || "selfhosted";
+  const deploymentMode = normalizeDeploymentMode(rawMode);
 
-  // Database
-  DATABASE_URL: z.string().startsWith("postgres://", {
-    message: "DATABASE_URL must start with 'postgres://'",
-  }),
+  // Create environment object with normalized DEPLOYMENT_MODE
+  const envWithDefaults = {
+    ...process.env,
+    DEPLOYMENT_MODE: deploymentMode,
+  };
 
-  // CORS
-  CORS_ORIGIN: z.string().describe("*"),
-
-  // Email Configuration
-  RESEND_API_KEY: z.string().optional(),
-  FROM_EMAIL: z.email().describe("noreply@qarote.io"),
-  FRONTEND_URL: z.url("FRONTEND_URL must be a valid URL"),
-  ENABLE_EMAIL: z.coerce.boolean().default(true),
-  EMAIL_PROVIDER: z.enum(["resend", "smtp"]).default("resend"),
-  SMTP_HOST: z.string().optional(),
-  SMTP_PORT: z.coerce.number().optional(),
-  SMTP_USER: z.string().optional(),
-  SMTP_PASS: z.string().optional(),
-
-  // Stripe Configuration
-  STRIPE_SECRET_KEY: z.string().describe("sk_test_... or sk_live_..."),
-  STRIPE_WEBHOOK_SECRET: z.string().describe("sk_test_... or sk_live_..."),
-
-  // Stripe Price IDs
-  STRIPE_DEVELOPER_MONTHLY_PRICE_ID: z.string(),
-  STRIPE_DEVELOPER_YEARLY_PRICE_ID: z.string(),
-  STRIPE_ENTERPRISE_MONTHLY_PRICE_ID: z.string(),
-  STRIPE_ENTERPRISE_YEARLY_PRICE_ID: z.string(),
-
-  // Sentry Configuration
-  SENTRY_DSN: z.string().optional(),
-  SENTRY_ENABLED: z.coerce.boolean().default(false),
-  ENABLE_SENTRY: z.coerce.boolean().default(true),
-
-  // Google OAuth Configuration
-  GOOGLE_CLIENT_ID: z.string().optional(),
-  ENABLE_OAUTH: z.coerce.boolean().default(true),
-
-  // License Configuration (for self-hosted)
-  LICENSE_KEY: z.string().optional(),
-  LICENSE_VALIDATION_URL: z.string().optional(),
-
-  // Notion Configuration
-  NOTION_API_KEY: z.string().optional(),
-  NOTION_DATABASE_ID: z.string().optional(),
-  NOTION_SYNC_ENABLED: z.coerce.boolean().default(false),
-  ENABLE_NOTION: z.coerce.boolean().default(false),
-
-  // Alert Monitoring Configuration
-  ALERT_CHECK_INTERVAL_MS: z.coerce.number().int().positive().default(300000), // 5 minutes
-  ALERT_CHECK_CONCURRENCY: z.coerce.number().int().positive().default(10),
-
-  // NPM package version (for Sentry releases)
-  npm_package_version: z.string().describe("1.0.0"),
-});
-
-// Parse and validate environment variables
-function parseConfig() {
   try {
-    return envSchema.parse(process.env);
+    switch (deploymentMode) {
+      case "cloud":
+        return cloudSchema.parse(envWithDefaults);
+      case "selfhosted":
+        return selfhostedSchema.parse(envWithDefaults);
+    }
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error(error);
@@ -99,7 +62,8 @@ function parseConfig() {
         (issue) => `${issue.path.join(".")}: ${issue.message}`
       );
       throw new Error(
-        `Configuration validation failed:\n${errorMessages.join("\n")}`
+        `Configuration validation failed for ${deploymentMode} mode:\n${errorMessages.join("\n")}`,
+        { cause: error }
       );
     }
     throw error;
@@ -109,13 +73,9 @@ function parseConfig() {
 // Export validated config
 export const config = parseConfig();
 
-// Export types for TypeScript
-export type Config = z.infer<typeof envSchema>;
-
 // Helper functions to check configuration
 export const isDevelopment = () => config.NODE_ENV === "development";
 export const isProduction = () => config.NODE_ENV === "production";
-export const isTest = () => config.NODE_ENV === "test";
 
 // Specific config getters with validation
 export const serverConfig = {
@@ -129,18 +89,15 @@ export const authConfig = {
   encryptionKey: config.ENCRYPTION_KEY,
 } as const;
 
-export const databaseConfig = {
-  url: config.DATABASE_URL,
-} as const;
-
 export const corsConfig = {
   origin: config.CORS_ORIGIN,
 } as const;
 
 export const emailConfig = {
-  resendApiKey: config.RESEND_API_KEY,
+  resendApiKey: "RESEND_API_KEY" in config ? config.RESEND_API_KEY : undefined,
   fromEmail: config.FROM_EMAIL,
   frontendUrl: config.FRONTEND_URL,
+  portalFrontendUrl: config.PORTAL_FRONTEND_URL,
   enabled: config.ENABLE_EMAIL,
   provider: config.EMAIL_PROVIDER,
   smtp: {
@@ -148,6 +105,22 @@ export const emailConfig = {
     port: config.SMTP_PORT,
     user: config.SMTP_USER,
     pass: config.SMTP_PASS,
+    // OAuth2 support
+    service: "SMTP_SERVICE" in config ? config.SMTP_SERVICE : undefined,
+    oauth: {
+      clientId:
+        "SMTP_OAUTH_CLIENT_ID" in config
+          ? config.SMTP_OAUTH_CLIENT_ID
+          : undefined,
+      clientSecret:
+        "SMTP_OAUTH_CLIENT_SECRET" in config
+          ? config.SMTP_OAUTH_CLIENT_SECRET
+          : undefined,
+      refreshToken:
+        "SMTP_OAUTH_REFRESH_TOKEN" in config
+          ? config.SMTP_OAUTH_REFRESH_TOKEN
+          : undefined,
+    },
   },
 } as const;
 
@@ -160,8 +133,8 @@ export const stripeConfig = {
       yearly: config.STRIPE_DEVELOPER_YEARLY_PRICE_ID,
     },
     enterprise: {
-      monthly: config.STRIPE_ENTERPRISE_MONTHLY_PRICE_ID, // Reuse business prices for enterprise
-      yearly: config.STRIPE_ENTERPRISE_YEARLY_PRICE_ID, // Reuse business prices for enterprise
+      monthly: config.STRIPE_ENTERPRISE_MONTHLY_PRICE_ID,
+      yearly: config.STRIPE_ENTERPRISE_YEARLY_PRICE_ID,
     },
   },
 } as const;
@@ -173,7 +146,7 @@ export const logConfig = {
 
 export const sentryConfig = {
   dsn: config.SENTRY_DSN,
-  enabled: config.SENTRY_ENABLED && config.ENABLE_SENTRY,
+  enabled: config.SENTRY_ENABLED,
   environment: config.NODE_ENV,
   release: `qarote-backend@${config.npm_package_version || "unknown"}`,
   tracesSampleRate: isProduction() ? 0.1 : 1.0,
@@ -185,9 +158,43 @@ export const googleConfig = {
   enabled: config.ENABLE_OAUTH,
 } as const;
 
+export const ssoConfig = {
+  enabled: "SSO_ENABLED" in config ? config.SSO_ENABLED : false,
+  type: "SSO_TYPE" in config ? config.SSO_TYPE : ("oidc" as const),
+  oidc: {
+    discoveryUrl:
+      "SSO_OIDC_DISCOVERY_URL" in config
+        ? config.SSO_OIDC_DISCOVERY_URL
+        : undefined,
+    clientId:
+      "SSO_OIDC_CLIENT_ID" in config ? config.SSO_OIDC_CLIENT_ID : undefined,
+    clientSecret:
+      "SSO_OIDC_CLIENT_SECRET" in config
+        ? config.SSO_OIDC_CLIENT_SECRET
+        : undefined,
+  },
+  saml: {
+    metadataUrl:
+      "SSO_SAML_METADATA_URL" in config
+        ? config.SSO_SAML_METADATA_URL
+        : undefined,
+    metadataRaw:
+      "SSO_SAML_METADATA_RAW" in config
+        ? config.SSO_SAML_METADATA_RAW
+        : undefined,
+  },
+  tenant: "SSO_TENANT" in config ? (config.SSO_TENANT ?? "default") : "default",
+  product:
+    "SSO_PRODUCT" in config ? (config.SSO_PRODUCT ?? "qarote") : "qarote",
+  buttonLabel:
+    "SSO_BUTTON_LABEL" in config
+      ? (config.SSO_BUTTON_LABEL ?? "Sign in with SSO")
+      : "Sign in with SSO",
+} as const;
+
 export const licenseConfig = {
-  licenseKey: config.LICENSE_KEY,
-  validationUrl: config.LICENSE_VALIDATION_URL || "https://api.qarote.io",
+  privateKey:
+    "LICENSE_PRIVATE_KEY" in config ? config.LICENSE_PRIVATE_KEY : undefined,
 } as const;
 
 export const notionConfig = {
@@ -205,5 +212,5 @@ export const alertConfig = {
 export const deploymentConfig = {
   mode: config.DEPLOYMENT_MODE,
   isCloud: () => config.DEPLOYMENT_MODE === "cloud",
-  isSelfHosted: () => config.DEPLOYMENT_MODE === "self-hosted",
+  isSelfHosted: () => config.DEPLOYMENT_MODE === "selfhosted",
 } as const;

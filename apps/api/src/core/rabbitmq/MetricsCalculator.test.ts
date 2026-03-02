@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
+import { RabbitMQMetricsCalculator } from "./MetricsCalculator";
 import type {
   MessageRates,
   MessageStats,
@@ -9,9 +10,7 @@ import type {
   RabbitMQOverview,
   RabbitMQQueue,
   RateSample,
-} from "@/types/rabbitmq";
-
-import { RabbitMQMetricsCalculator } from "./MetricsCalculator";
+} from "./rabbitmq.interfaces";
 
 // Mock logger to avoid console output during tests
 vi.mock("../logger", () => ({

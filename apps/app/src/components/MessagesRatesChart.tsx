@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { HelpCircle, RefreshCw } from "lucide-react";
 import {
@@ -40,7 +40,6 @@ interface MessagesRatesChartProps {
     disk_writes?: number;
   }>;
   isLoading: boolean;
-  isFetching?: boolean;
   error?: Error | null;
   timeRange?: TimeRange;
   onTimeRangeChange?: (timeRange: TimeRange) => void;
@@ -49,13 +48,10 @@ interface MessagesRatesChartProps {
 export const MessagesRatesChart = ({
   messagesRates,
   isLoading,
-  isFetching = false,
   error,
   timeRange = "1d",
   onTimeRangeChange,
 }: MessagesRatesChartProps) => {
-  const [showUpdating, setShowUpdating] = useState(false);
-
   // State for toggling line visibility
   const [visibleLines, setVisibleLines] = useState({
     publish: true,
@@ -80,19 +76,6 @@ export const MessagesRatesChart = ({
       [metricName]: !prev[metricName],
     }));
   };
-
-  // Handle delayed updating indicator
-  useEffect(() => {
-    if (isFetching) {
-      setShowUpdating(true);
-    } else {
-      // Keep showing "updating..." for 500ms after fetch completes
-      const timer = setTimeout(() => {
-        setShowUpdating(false);
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-  }, [isFetching]);
 
   // Handle permission errors
   if (error && isRabbitMQAuthError(error)) {
@@ -135,7 +118,7 @@ export const MessagesRatesChart = ({
   }));
 
   return (
-    <Card className="border-0 shadow-md bg-card backdrop-blur-sm">
+    <Card className="border-0 shadow-md bg-card backdrop-blur-xs">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -209,7 +192,7 @@ export const MessagesRatesChart = ({
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
               <span className="text-xs text-gray-500">
-                Updates every 5 seconds{showUpdating && " (updating...)"}
+                Updates every 5 seconds
               </span>
             </div>
             {onTimeRangeChange && (
@@ -262,7 +245,7 @@ export const MessagesRatesChart = ({
                     ]}
                     labelFormatter={(
                       time: string,
-                      payload: Array<{ payload: { dateTime: string } }>
+                      payload: ReadonlyArray<{ payload?: { dateTime: string } }>
                     ) => {
                       if (payload && payload[0] && payload[0].payload) {
                         return `Date & Time: ${payload[0].payload.dateTime}`;

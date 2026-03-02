@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { Link } from "react-router";
 
 import {
   Book,
@@ -31,75 +32,72 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
 
-import { useToast } from "@/hooks/useToast";
+import { useToast } from "@/hooks/ui/useToast";
 
-const faqs = [
-  {
-    question: "How do I connect to my RabbitMQ server?",
-    answer:
-      "Go to the Dashboard and look for the server selector or 'Add Server' option. Enter your RabbitMQ connection details including host, port, username, and password. You can test the connection before saving.",
-  },
-  {
-    question: "Why can't I see my queues?",
-    answer:
-      "Make sure your RabbitMQ server is running and accessible. Check that your user has the necessary permissions to view queues. You can test the connection from the Dashboard or by selecting a different server from the server dropdown.",
-  },
-  {
-    question: "What data does the dashboard store?",
-    answer: "The dashboard operates in live mode with no persistent storage.",
-  },
-  {
-    question: "How do I set up alerts?",
-    answer:
-      "Go to the Alerts page and create alert rules based on queue metrics like message count, consumer count, or memory usage. You can set thresholds preferences.",
-  },
-  {
-    question: "How do I manage user permissions?",
-    answer:
-      "Workspace administrators can manage user roles and permissions from the Users page. Different roles have different levels of access to features and data.",
-  },
-];
-
-const quickLinks = [
-  {
-    title: "Dashboard & Servers",
-    description: "View overview and manage your RabbitMQ server connections",
-    icon: Zap,
-    link: "/",
-    external: false,
-  },
-  {
-    title: "Queue Management",
-    description: "View and manage your RabbitMQ queues",
-    icon: MessageSquare,
-    link: "/queues",
-    external: false,
-  },
-  {
-    title: "RabbitMQ Documentation",
-    description: "Official RabbitMQ documentation and guides",
-    icon: Book,
-    link: "https://www.rabbitmq.com/documentation.html",
-    external: true,
-  },
-];
-
-export function HelpSupport() {
+function HelpSupport() {
+  const { t } = useTranslation("help");
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const { toast } = useToast();
   const { user: _user } = useAuth();
+
+  const faqs = [
+    {
+      question: t("faqs.connectServer.question"),
+      answer: t("faqs.connectServer.answer"),
+    },
+    {
+      question: t("faqs.cantSeeQueues.question"),
+      answer: t("faqs.cantSeeQueues.answer"),
+    },
+    {
+      question: t("faqs.dataStorage.question"),
+      answer: t("faqs.dataStorage.answer"),
+    },
+    {
+      question: t("faqs.setupAlerts.question"),
+      answer: t("faqs.setupAlerts.answer"),
+    },
+    {
+      question: t("faqs.managePermissions.question"),
+      answer: t("faqs.managePermissions.answer"),
+    },
+  ];
+
+  const quickLinks = [
+    {
+      title: t("quickLinks.dashboard.title"),
+      description: t("quickLinks.dashboard.description"),
+      icon: Zap,
+      link: "/",
+      external: false,
+    },
+    {
+      title: t("quickLinks.queueManagement.title"),
+      description: t("quickLinks.queueManagement.description"),
+      icon: MessageSquare,
+      link: "/queues",
+      external: false,
+    },
+    {
+      title: t("quickLinks.rabbitMQDocs.title"),
+      description: t("quickLinks.rabbitMQDocs.description"),
+      icon: Book,
+      link: "https://www.rabbitmq.com/documentation.html",
+      external: true,
+    },
+  ];
 
   const handleEmailCopy = async () => {
     try {
       await navigator.clipboard.writeText("support@qarote.io");
       toast({
-        title: "Email copied!",
-        description: "support@qarote.io has been copied to your clipboard.",
+        title: t("toast.emailCopied"),
+        description: t("toast.emailCopiedDescription"),
       });
     } catch {
       toast({
-        title: "Copy failed",
-        description: "Please manually copy: support@qarote.io",
+        title: t("toast.copyFailed"),
+        description: t("toast.copyFailedDescription"),
         variant: "destructive",
       });
     }
@@ -128,11 +126,8 @@ export function HelpSupport() {
               <div className="flex items-center gap-4">
                 <SidebarTrigger />
                 <div>
-                  <h1 className="title-page">Help & Support</h1>
-                  <p className="text-muted-foreground">
-                    Find answers to common questions, submit feedback, or get
-                    help with the RabbitMQ Dashboard.
-                  </p>
+                  <h1 className="title-page">{t("title")}</h1>
+                  <p className="text-muted-foreground">{t("subtitle")}</p>
                 </div>
               </div>
               <PlanBadge />
@@ -143,7 +138,7 @@ export function HelpSupport() {
               <div className="lg:col-span-2 space-y-6">
                 <div>
                   <h2 className="text-xl font-semibold mb-4 text-foreground">
-                    Quick Links
+                    {t("quickLinksTitle")}
                   </h2>
                   <div className="grid gap-3">
                     {quickLinks.map((link, index) => {
@@ -205,15 +200,17 @@ export function HelpSupport() {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Mail className="w-5 h-5" />
-                      Contact Support
+                      {t("contact.title")}
                     </CardTitle>
                     <CardDescription>
-                      Need personalized help? Reach out to our support team.
+                      {t("contact.description")}
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-3">
                     <div>
-                      <p className="text-sm font-medium">General Support</p>
+                      <p className="text-sm font-medium">
+                        {t("contact.generalSupport")}
+                      </p>
                       <div className="flex items-center gap-2">
                         <a
                           href="mailto:support@qarote.io?subject=Qarote Support Request"
@@ -234,9 +231,7 @@ export function HelpSupport() {
                     </div>
                     <div className="pt-2">
                       <p className="text-xs text-muted-foreground">
-                        We typically respond within 24 hours during business
-                        days. Can't open your email client? Use the copy button
-                        to get our email address.
+                        {t("contact.responseTime")}
                       </p>
                     </div>
                   </CardContent>
@@ -247,7 +242,7 @@ export function HelpSupport() {
               <div className="lg:col-span-3 space-y-6">
                 <div>
                   <h2 className="text-xl font-semibold mb-4 text-foreground">
-                    Frequently Asked Questions
+                    {t("faqTitle")}
                   </h2>
                   <div className="space-y-3">
                     {faqs.map((faq, index) => (

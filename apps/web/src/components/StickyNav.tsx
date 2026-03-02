@@ -1,3 +1,7 @@
+import { useTranslation } from "react-i18next";
+
+import { Github } from "lucide-react";
+
 import { trackSignUpClick } from "@/lib/gtm";
 
 interface StickyNavProps {
@@ -5,10 +9,12 @@ interface StickyNavProps {
 }
 
 const StickyNav = ({ onVideoClick }: StickyNavProps) => {
+  const { t } = useTranslation("nav");
+
   const sections = [
-    { id: "video", label: "How it works" },
-    { id: "features", label: "Features" },
-    { id: "pricing", label: "Pricing" },
+    { id: "video", label: t("howItWorks") },
+    { id: "features", label: t("features") },
+    { id: "pricing", label: t("pricing") },
   ];
 
   const scrollToSection = (id: string) => {
@@ -30,7 +36,10 @@ const StickyNav = ({ onVideoClick }: StickyNavProps) => {
   };
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-border" style={{ backgroundColor: '#ffffff' }}>
+    <nav
+      className="sticky top-0 z-50 border-b border-border"
+      style={{ backgroundColor: "#ffffff" }}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center gap-1">
@@ -39,7 +48,10 @@ const StickyNav = ({ onVideoClick }: StickyNavProps) => {
               alt="Qarote"
               className="w-6 h-6 sm:w-8 sm:h-8"
             />
-            <span className="text-foreground" style={{ fontWeight: 400, fontSize: '1.2rem' }}>
+            <span
+              className="text-foreground"
+              style={{ fontWeight: 400, fontSize: "1.2rem" }}
+            >
               Qarote
             </span>
           </div>
@@ -58,10 +70,19 @@ const StickyNav = ({ onVideoClick }: StickyNavProps) => {
 
           <div className="flex items-center gap-1 sm:gap-2">
             <a
+              href="https://github.com/getqarote/Qarote"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="View on GitHub"
+              className="text-foreground hover:text-orange-500 transition-colors p-2"
+            >
+              <Github className="w-5 h-5" />
+            </a>
+            <a
               href={`${import.meta.env.VITE_APP_BASE_URL}/auth/sign-in`}
               className="text-foreground hover:text-orange-500 px-2 sm:px-4 py-2 text-base font-medium transition-colors"
             >
-              Login
+              {t("login")}
             </a>
             <button
               onClick={() => {
@@ -74,12 +95,15 @@ const StickyNav = ({ onVideoClick }: StickyNavProps) => {
               }}
               className="bg-[#FF691B] text-white hover:bg-[#E55A0F] px-2 sm:px-4 py-2 text-base transition-colors whitespace-nowrap rounded-full inline-flex items-center justify-center gap-2"
             >
-              <span>Try for free</span>
+              <span>{t("tryForFree")}</span>
               <img
                 src="/images/arrow-right.svg"
                 alt="Arrow right"
                 className="h-[0.8em] w-auto"
-                style={{ imageRendering: "crisp-edges", verticalAlign: "middle" }}
+                style={{
+                  imageRendering: "crisp-edges",
+                  verticalAlign: "middle",
+                }}
               />
             </button>
           </div>

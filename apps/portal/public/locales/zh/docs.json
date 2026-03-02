@@ -1,0 +1,204 @@
+{
+  "toc": {
+    "installationGuide": "安装指南",
+    "prerequisites": "前提条件",
+    "quickStart": "快速开始",
+    "smtpConfiguration": "SMTP 配置",
+    "updatingQarote": "更新 Qarote",
+    "troubleshooting": "故障排除",
+    "security": "安全建议",
+    "support": "支持",
+    "dockerCompose": "Docker Compose 文件",
+    "environmentConfig": "环境配置"
+  },
+  "installGuide": {
+    "title": "安装指南",
+    "description": "逐步部署 Qarote 的说明",
+    "prerequisites": {
+      "title": "前提条件",
+      "description": "具体要求取决于你的部署方式：",
+      "dockerCompose": "<strong>Docker Compose：</strong>Docker 和 Docker Compose（已包含 PostgreSQL）",
+      "dokku": "<strong>Dokku：</strong>在服务器上安装 Dokku",
+      "binary": "<strong>手动安装：</strong>PostgreSQL 15+（无需 Docker、Node.js 或 Web 服务器）",
+      "enterprise": "<strong>高级功能：</strong>在设置 → 许可证中激活许可证密钥（所有部署方式）"
+    },
+    "quickStart": {
+      "title": "快速开始",
+      "tabs": {
+        "dockerCompose": "Docker Compose",
+        "dokku": "Dokku",
+        "binary": "手动安装"
+      },
+      "dockerCompose": {
+        "step1Title": "1. 克隆仓库",
+
+        "step2Title": "2. 运行配置脚本",
+        "step2Note": "这将创建一个 <code>.env</code> 文件，其中包含安全的随机密钥（JWT_SECRET、ENCRYPTION_KEY、POSTGRES_PASSWORD），并设置你的部署模式。",
+        "step4Title": "3. 启动服务",
+        "step5Title": "4. 运行数据库迁移",
+        "step6Title": "5. 访问应用程序",
+        "step6Frontend": "<strong>前端：</strong>",
+        "step6BackendApi": "<strong>后端 API：</strong>"
+      },
+      "dokku": {
+        "whyDokkuTitle": "为什么选择 Dokku？",
+        "whyDokkuEasyDeployment": "<strong>轻松部署：</strong>通过 git push 部署，类似 Heroku",
+        "whyDokkuAutoSsl": "<strong>自动 SSL：</strong>开箱即用的 Let's Encrypt 证书",
+        "whyDokkuProcessMgmt": "<strong>进程管理：</strong>内置扩展和监控功能",
+        "whyDokkuDbPlugins": "<strong>数据库插件：</strong>轻松配置 PostgreSQL",
+        "step1Title": "1. 安装 Dokku",
+        "step1Description": "请参阅 <dokkuLink>Dokku 安装指南</dokkuLink> 了解你所用平台的安装方法。",
+        "step2Title": "2. 创建应用和数据库",
+        "step2Note": "当你关联数据库时，Dokku 会自动设置 <code>DATABASE_URL</code>。",
+        "step3Title": "3. 设置环境变量",
+        "step3Note": "<code>PORT</code> 和 <code>HOST</code> 由 Dokku 自动设置。请将 <code>https://your-domain.com</code> 替换为你的实际域名。",
+        "step4Title": "4. 部署",
+        "step5Title": "5. 运行数据库迁移",
+        "step6Title": "6. 域名和 SSL（可选）",
+        "step6Note": "你的应用将可通过 <code>https://your-domain.com</code>（或你的服务器 IP）访问。"
+      },
+      "binary": {
+        "description": "下载单个二进制文件——无需 Docker、Node.js 或 Nginx。仅需要 PostgreSQL。Windows 用户可以在 WSL2 中运行 Linux 二进制文件。",
+        "postgresInstallTitle": "如果尚未安装 PostgreSQL，请先安装：",
+        "step1Title": "1. 下载并解压",
+        "step2Title": "2. 交互式配置",
+        "step2Note": "配置向导将询问你的部署模式和 PostgreSQL URL，验证连接，并生成包含安全密钥的 <code>.env</code> 文件。",
+        "step3Title": "3. 启动 Qarote",
+        "step4Title": "4. 访问应用程序",
+        "step4Description": "在浏览器中打开 <code>http://localhost:3000</code>。该二进制文件通过单个端口同时提供 API 和前端服务。",
+        "step4ManualSetup": "<strong>手动配置：</strong>你也可以跳过向导，直接进行配置：",
+        "cliFlagsTitle": "<strong>可用 CLI 选项：</strong>"
+      }
+    },
+    "smtp": {
+      "title": "SMTP 配置",
+      "description": "自托管部署中，邮件功能<strong>默认禁用</strong>。要启用邮件功能（密码重置、邀请、通知），请配置 SMTP 设置。",
+      "oauth2Title": "OAuth2 身份验证（推荐）",
+      "oauth2Description": "对于生产环境，<strong>OAuth2</strong> 是推荐的身份验证方式。它比应用密码更安全，且无需直接存储凭据。",
+      "oauth2BenefitsTitle": "<strong>优势：</strong>",
+      "oauth2Benefit1": "比应用专用密码更安全",
+      "oauth2Benefit2": "可以在不更改密码的情况下撤销令牌",
+      "oauth2Benefit3": "更适合企业和大批量发送",
+      "oauth2Benefit4": "符合现代安全标准",
+      "oauth2DocsLink": "有关 OAuth2 配置的详细说明，请参阅 <nodemailerLink>Nodemailer OAuth2 文档</nodemailerLink>。以下展示了 Gmail 和 Office 365 的示例。",
+      "gmailAppPasswordTitle": "Gmail - 方式 1：应用密码（简单）",
+      "gmailAppPasswordRequirements": "<strong>要求：</strong>",
+      "gmailAppPasswordReq1": "首先在你的 Google 账户上<strong>启用两步验证</strong>",
+      "gmailAppPasswordReq2": "生成一个<appPasswordLink>应用密码</appPasswordLink>（不是你的常规密码）",
+      "gmailAppPasswordReq3": "<strong>发送限制：</strong>免费 Gmail 账户每天 500 封，Google Workspace 每天 2,000 封",
+      "gmailOauth2Title": "Gmail - 方式 2：OAuth2（推荐用于生产环境）",
+      "gmailOauth2SetupTitle": "<strong>OAuth2 配置步骤：</strong>",
+      "gmailOauth2Step1": "前往 <googleCloudLink>Google Cloud 控制台</googleCloudLink>",
+      "gmailOauth2Step2": "创建新项目（或使用现有项目）",
+      "gmailOauth2Step3": "为你的项目启用 Gmail API",
+      "gmailOauth2Step4": "创建 OAuth 2.0 凭据（OAuth 客户端 ID → Web 应用程序）",
+      "gmailOauth2Step5": "将 <code>https://developers.google.com/oauthplayground</code> 添加到授权重定向 URI",
+      "gmailOauth2Step6": "使用 <oauthPlaygroundLink>OAuth2 Playground</oauthPlaygroundLink> 获取刷新令牌：",
+      "gmailOauth2Step6Sub1": "点击齿轮图标 → 使用你自己的 OAuth 凭据",
+      "gmailOauth2Step6Sub2": "输入 Client ID 和 Client Secret",
+      "gmailOauth2Step6Sub3": "在 \"Select & authorize APIs\" 中，输入 <code>https://mail.google.com/</code>",
+      "gmailOauth2Step6Sub4": "授权 API 并授予访问权限",
+      "gmailOauth2Step6Sub5": "用授权码换取令牌",
+      "gmailOauth2Step6Sub6": "复制刷新令牌",
+      "gmailOauth2DetailedInstructions": "有关详细说明，请参阅 <nodemailerGmailLink>Nodemailer Gmail OAuth2 指南</nodemailerGmailLink>",
+      "sendgridTitle": "SendGrid",
+      "sendgridRequirements": "<strong>要求：</strong>",
+      "sendgridReq1": "用户名固定为 <code>apikey</code>（不是你的邮箱地址）",
+      "sendgridReq2": "密码是你的 SendGrid API 密钥（在 Settings → API Keys 中创建）",
+      "sendgridReq3": "请先在 SendGrid 控制面板中验证你的发件人域名",
+      "sendgridReq4": "<strong>免费额度：</strong>每天 100 封",
+      "mailgunTitle": "Mailgun",
+      "mailgunRequirements": "<strong>要求：</strong>",
+      "mailgunReq1": "请先在 Mailgun 控制面板中添加并验证你的域名",
+      "mailgunReq2": "用户名格式：<code>postmaster@your-domain.mailgun.org</code>",
+      "mailgunReq3": "在 Mailgun → Sending → Domain settings 中找到 SMTP 凭据",
+      "mailgunReq4": "<strong>免费额度：</strong>前 3 个月免费（每月最多 5,000 封），之后仅限付费使用",
+      "amazonSesTitle": "Amazon SES",
+      "amazonSesRequirements": "<strong>要求：</strong>",
+      "amazonSesReq1": "将 <code>us-east-1</code> 替换为你的 SES 区域（例如 <code>eu-west-1</code>）",
+      "amazonSesReq2": "SMTP 凭据<strong>不是</strong>你的 AWS 访问密钥——请在 SES 控制台 → SMTP Settings 中生成",
+      "amazonSesReq3": "发送前，请先在 SES 中验证你的发件人邮箱或域名",
+      "amazonSesReq4": "新账户在<strong>沙盒模式</strong>下启动（只能向已验证的地址发送）——请申请生产访问权限以解除限制",
+      "amazonSesReq5": "<strong>免费额度：</strong>从 EC2 实例发送时每月 62,000 封，否则每 1,000 封 $0.10",
+      "office365BasicTitle": "Office 365 / Outlook - 方式 1：基本身份验证",
+      "office365BasicImportant": "<strong>重要提示：</strong>Office 365 要求使用现代身份验证。你必须在 Microsoft 365 管理中心启用 <strong>SMTP AUTH</strong>：",
+      "office365BasicReq1": "前往 Microsoft 365 管理中心 → Settings → Org settings",
+      "office365BasicReq2": "选择 \"Modern authentication\" 并启用 SMTP AUTH",
+      "office365BasicReq3": "如果使用两步验证/MFA，请生成应用密码代替常规密码",
+      "office365BasicNote": "<strong>注意：</strong>个人 @outlook.com 账户应改用 <code>smtp-mail.outlook.com</code>。",
+      "office365Oauth2Title": "Office 365 / Outlook - 方式 2：OAuth2（推荐）",
+      "office365Oauth2Description": "推荐 Office 365/Outlook 使用 OAuth2，因为它不需要启用旧版 SMTP AUTH。",
+      "office365Oauth2DocsLink": "有关 Microsoft 365 OAuth2 配置的详细说明，请参阅 <nodemailerLink>Nodemailer OAuth2 文档</nodemailerLink>。",
+      "customSmtpTitle": "自定义 SMTP 服务器",
+      "additionalOauth2Title": "其他 OAuth2 提供商",
+      "additionalOauth2Description": "关于其他提供商（Outlook.com、Yahoo、AOL 等）的 OAuth2 配置，请参阅 <nodemailerLink>Nodemailer OAuth2 完整文档</nodemailerLink>。其中包括：",
+      "additionalOauth2Item1": "主要提供商的逐步配置指南",
+      "additionalOauth2Item2": "令牌生成和刷新的代码示例",
+      "additionalOauth2Item3": "常见 OAuth2 问题的故障排除",
+      "additionalOauth2Item4": "安全最佳实践",
+      "testingTitle": "测试 SMTP 配置",
+      "testingDescription": "使用内置的 SMTP 测试脚本来验证你的配置：",
+      "testingEtherealNote": "<strong>Ethereal Email</strong> 是一个虚拟 SMTP 服务——测试邮件不会实际发送，但可以通过 Web 预览 URL 查看。"
+    },
+    "updating": {
+      "title": "更新 Qarote",
+      "tabs": {
+        "dockerCompose": "Docker Compose",
+        "dokku": "Dokku",
+        "binary": "手动安装"
+      }
+    },
+    "troubleshooting": {
+      "title": "故障排除",
+      "wontStartTitle": "无法启动",
+      "binary": {
+        "wontStartItem1": "检查终端输出中的错误信息",
+        "wontStartItem2": "确认 <code>.env</code> 文件存在或传递所有必需的 CLI 参数",
+        "wontStartItem3": "确保端口可用：<code>lsof -i :3000</code>",
+        "databaseItem1": "确认 <code>DATABASE_URL</code> 正确且 PostgreSQL 正在运行",
+        "databaseItem2": "测试连接：<code>psql 你的数据库URL</code>",
+        "databaseItem3": "迁移在启动时自动运行——检查输出中的错误"
+      },
+      "dockerCompose": {
+        "wontStartItem1": "检查日志：<code>docker compose -f docker-compose.selfhosted.yml logs</code>",
+        "wontStartItem2": "验证 <code>.env</code> 文件中的环境变量",
+        "wontStartItem3": "确保端口可用（或在 <code>.env</code> 中更改 <code>BACKEND_PORT</code> / <code>FRONTEND_PORT</code>）",
+        "databaseItem1": "等待 PostgreSQL 完全初始化（检查健康状态）",
+        "databaseItem2": "验证 <code>.env</code> 中的 <code>POSTGRES_PASSWORD</code> 是否匹配",
+        "databaseItem3": "运行迁移：<code>docker exec qarote_backend pnpm run db:migrate</code>"
+      },
+      "dokku": {
+        "wontStartItem1": "检查日志：<code>dokku logs qarote</code>",
+        "wontStartItem2": "验证配置：<code>dokku config:show qarote</code>",
+        "wontStartItem3": "确认应用已部署：<code>dokku ps:report qarote</code>",
+        "databaseItem1": "确认数据库已链接：<code>dokku postgres:info qarote-db</code>",
+        "databaseItem2": "检查 <code>DATABASE_URL</code> 是否已设置：<code>dokku config:get qarote DATABASE_URL</code>",
+        "databaseItem3": "迁移在部署时自动运行——检查日志中的错误"
+      },
+      "databaseTitle": "数据库连接错误",
+      "licenseTitle": "许可证问题",
+      "licenseItem1": "验证你的许可证密钥是否有效且未过期",
+      "licenseItem2": "从设置 → 许可证重新激活你的许可证",
+      "licenseItem3": "检查许可证到期日期"
+    },
+    "security": {
+      "title": "安全建议",
+      "item1": "如果未使用默认生成的值，请为 JWT_SECRET 和 ENCRYPTION_KEY 使用强随机生成的值",
+      "item2": "保管好你的许可证密钥——不要公开分享",
+      "item3": "定期更新至最新版本"
+    },
+    "support": {
+      "title": "支持",
+      "needHelp": "需要帮助？",
+      "communitySupport": "<strong>社区支持：</strong>",
+      "communitySupportLink": "GitHub Issues",
+      "enterpriseSupport": "<strong>企业支持：</strong>support@qarote.io"
+    }
+  },
+  "dockerCompose": {
+    "description": "适用于自托管部署的生产就绪 Docker Compose 配置。二进制或 Dokku 部署不需要此文件。"
+  },
+  "envConfig": {
+    "description": "Docker Compose 和 Dokku 部署的环境变量参考。手动安装用户应运行 <code>./qarote setup</code>。"
+  }
+}

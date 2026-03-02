@@ -1,11 +1,11 @@
-import { WorkspaceAlertThresholds } from "@prisma/client";
-
 import { logger } from "@/core/logger";
 import { prisma } from "@/core/prisma";
 
 import { AlertThresholds } from "./alert.interfaces";
 
-export const DEFAULT_THRESHOLDS: AlertThresholds = {
+import { UserPlan, WorkspaceAlertThresholds } from "@/generated/prisma/client";
+
+const DEFAULT_THRESHOLDS: AlertThresholds = {
   memory: { warning: 80, critical: 95 },
   disk: { warning: 15, critical: 10 }, // percentage free
   fileDescriptors: { warning: 80, critical: 90 },
@@ -22,7 +22,7 @@ export const DEFAULT_THRESHOLDS: AlertThresholds = {
  * Alert Thresholds Service
  * Handles all threshold-related operations
  */
-export class AlertThresholdsService {
+class AlertThresholdsService {
   /**
    * Check if user can modify alert thresholds based on subscription plan
    */
@@ -47,9 +47,8 @@ export class AlertThresholdsService {
 
       const plan = ownerSubscription?.plan || "FREE";
 
-      // Allow modifications for startup and business plans
-      const allowedPlans = ["STARTUP", "BUSINESS"];
-      return allowedPlans.includes(plan);
+      // Allow modifications for developer and enterprise plans
+      return plan === UserPlan.DEVELOPER || plan === UserPlan.ENTERPRISE;
     } catch (error) {
       logger.error(
         { error },

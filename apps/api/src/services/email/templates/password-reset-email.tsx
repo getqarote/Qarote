@@ -98,5 +98,3 @@ const styles = {
     margin: "0 0 8px",
   },
 } as const;
-
-export default PasswordResetEmail;

@@ -1,36 +1,48 @@
-import { Link, Outlet, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { Link, Outlet, useLocation, useNavigate } from "react-router";
 
 import {
-  Download,
+  BookOpen,
+  ChevronDown,
+  Github,
   LayoutDashboard,
   LogOut,
   Settings,
-  ShoppingCart,
+  User,
 } from "lucide-react";
 
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 import { useAuth } from "@/contexts/AuthContext";
 
 const Layout = () => {
   const { user, logout } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
+  const { t } = useTranslation("portal");
 
   const navigation = [
-    { name: "Licenses", href: "/licenses", icon: LayoutDashboard },
-    { name: "Purchase", href: "/purchase", icon: ShoppingCart },
-    { name: "Downloads", href: "/downloads", icon: Download },
-    { name: "Settings", href: "/settings", icon: Settings },
+    { name: t("layout.licenses"), href: "/licenses", icon: LayoutDashboard },
+    { name: t("layout.documentation"), href: "/documentation", icon: BookOpen },
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <nav className="border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex">
-              <div className="flex-shrink-0 flex items-center">
-                <h1 className="text-xl font-bold">Qarote Portal</h1>
+              <div className="shrink-0 flex items-center">
+                <h1 className="text-xl font-bold">{t("layout.title")}</h1>
               </div>
               <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
                 {navigation.map((item) => {
@@ -54,20 +66,93 @@ const Layout = () => {
               </div>
             </div>
             <div className="flex items-center space-x-4">
-              <span className="text-sm text-muted-foreground">
-                {user?.email}
-              </span>
-              <Button variant="ghost" onClick={logout}>
-                <LogOut className="h-4 w-4 mr-2" />
-                Logout
-              </Button>
+              <a
+                href="https://github.com/getqarote/Qarote"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="View on GitHub"
+                className="text-foreground hover:text-orange-500 transition-colors p-2"
+              >
+                <Github className="w-5 h-5" />
+              </a>
+
+              {/* User Profile Dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="flex items-center gap-2 text-sm"
+                  >
+                    <User className="h-4 w-4" />
+                    <span className="hidden sm:inline">{user?.email}</span>
+                    <ChevronDown className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">
+                        {t("layout.account")}
+                      </p>
+                      <p className="text-xs leading-none text-muted-foreground">
+                        {user?.email}
+                      </p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => navigate("/settings")}>
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>{t("layout.settings")}</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={logout}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>{t("layout.logout")}</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </div>
       </nav>
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Outlet />
+      <main className="flex-1 w-full">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <Outlet />
+        </div>
       </main>
+      <footer className="bg-card text-card-foreground py-8 border-t border-border mt-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <div className="mb-4 md:mb-0">
+              <h3 className="text-lg font-bold">{t("layout.title")}</h3>
+            </div>
+            <div className="flex items-center gap-6">
+              <LanguageSwitcher />
+              <a
+                href="https://github.com/getqarote/Qarote"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="View on GitHub"
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <Github className="w-4 h-4 sm:w-5 sm:h-5" />
+              </a>
+              <Link
+                to="/privacy-policy"
+                className="text-muted-foreground hover:text-foreground transition-colors text-sm"
+              >
+                {t("footer.privacyPolicy")}
+              </Link>
+              <Link
+                to="/terms-of-service"
+                className="text-muted-foreground hover:text-foreground transition-colors text-sm"
+              >
+                {t("footer.termsOfService")}
+              </Link>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };

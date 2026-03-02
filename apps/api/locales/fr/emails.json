@@ -1,0 +1,185 @@
+{
+  "subjects": {
+    "invitedToWorkspace": "Vous êtes invité(e) à rejoindre {{workspaceName}} sur Qarote",
+    "welcome": "Bienvenue sur Qarote, {{name}} !",
+    "verifyEmailSignup": "Veuillez vérifier votre adresse e-mail - Qarote",
+    "verifyEmailChange": "Vérifiez votre nouvelle adresse e-mail - Qarote",
+    "resetPassword": "Réinitialisez votre mot de passe - Qarote",
+    "upgradePlanConfirmed": "Bienvenue sur le plan {{plan}} — Mise à niveau confirmée !",
+    "planRenewed": "Bon retour sur Qarote — Plan {{plan}} renouvelé !",
+    "trialEndsSoon": "Votre essai {{plan}} se termine bientôt — {{usageText}}",
+    "completePayment": "Action requise : Finalisez votre paiement pour {{workspaceName}}",
+    "usageReport": "Rapport d'utilisation et prochaine facture pour {{workspaceName}}",
+    "paymentConfirmed": "Paiement confirmé — {{amount}}",
+    "paymentFailed": "Échec du paiement — Action requise",
+    "criticalAlerts": "{{criticalCount}} alerte(s) critique(s) sur {{serverName}}",
+    "warningAlerts": "{{warningCount}} avertissement(s) sur {{serverName}}",
+    "updateAvailable": "Qarote {{latestVersion}} est disponible — Mettez à jour votre instance",
+    "licenseReady": "Votre licence Qarote est prête !",
+    "licenseRenewed": "Votre licence Qarote a été renouvelée",
+    "licenseExpiresSoon": "Votre licence Qarote expire dans {{daysUntilExpiration}} jours",
+    "licenseExpired": "Votre licence Qarote a expiré",
+    "licensePaymentFailed": "Action requise : Échec du paiement de la licence",
+    "licenseCancelled": "Votre licence Qarote a été annulée"
+  },
+  "common": {
+    "greeting": "Bonjour {{name}},",
+    "greetingGeneric": "Bonjour,",
+    "happyMonitoring": "Bon monitoring ! 🐰",
+    "signature": "L'équipe Qarote",
+    "supportTeam": "l'équipe de support",
+    "ifButtonDoesntWork": "Si le bouton ci-dessus ne fonctionne pas, vous pouvez également copier et coller ce lien dans votre navigateur :",
+    "automatedNotification": "Ceci est une notification automatique de Qarote."
+  },
+  "verification": {
+    "titleSignup": "Veuillez vérifier votre adresse e-mail",
+    "titleEmailChange": "Vérifiez votre nouvelle adresse e-mail",
+    "previewSignup": "Vérifiez votre adresse e-mail pour commencer avec Qarote",
+    "previewEmailChange": "Confirmez votre nouvelle adresse e-mail",
+    "bodySignup": "Merci de vous être inscrit(e) sur Qarote ! Pour finaliser votre inscription et accéder à votre compte, veuillez vérifier votre adresse e-mail en cliquant sur le bouton ci-dessous.",
+    "bodyEmailChange": "Vous avez demandé à modifier votre adresse e-mail sur Qarote. Pour confirmer ce changement, veuillez vérifier votre nouvelle adresse e-mail en cliquant sur le bouton ci-dessous.",
+    "emailLabel": "E-mail :",
+    "verifyButton": "Vérifier l'adresse e-mail",
+    "expiryWarning": "Ce lien de vérification expirera dans {{expiryHours}} heures. Si vous n'avez pas demandé cette {{requestType}}, vous pouvez ignorer cet e-mail en toute sécurité.",
+    "requestTypeAccount": "création de compte",
+    "requestTypeEmailChange": "modification d'adresse e-mail",
+    "havingTrouble": "Si vous rencontrez des difficultés, n'hésitez pas à contacter notre"
+  },
+  "welcome": {
+    "title": "Bienvenue sur Qarote !",
+    "bodyWithWorkspace": "Bienvenue sur Qarote ! Votre espace de travail <strong>{{workspaceName}}</strong> a été configuré avec succès sur le plan <strong>{{planName}}</strong>.",
+    "bodyWithoutWorkspace": "Bienvenue sur Qarote ! Votre compte a été créé avec succès sur le plan <strong>{{planName}}</strong>. Commencez par créer votre premier espace de travail !",
+    "workspaceExplanation": "Un espace de travail vous aide à organiser vos serveurs RabbitMQ, à gérer les membres de votre équipe et à suivre vos données de surveillance. Vous pouvez en créer un dès maintenant !",
+    "canMonitorNow": "Vous pouvez désormais surveiller vos clusters RabbitMQ et gérer vos files d'attente de messages en toute simplicité.",
+    "canMonitorAfterWorkspace": "Une fois votre espace de travail créé, vous pourrez surveiller vos clusters RabbitMQ et gérer vos files d'attente de messages en toute simplicité.",
+    "featuresHeadingWithWorkspace": "Ce que vous pouvez faire maintenant :",
+    "featuresHeadingWithoutWorkspace": "Ce que vous pourrez faire une fois votre espace de travail créé :",
+    "featureCreateWorkspace": "🏢 Créez votre premier espace de travail pour commencer",
+    "featureAddServer": "🚀 Ajoutez votre premier serveur RabbitMQ",
+    "featureExploreDashboard": "📊 Explorez le tableau de bord et les métriques",
+    "featureSetupAlerts": "🔔 Configurez des alertes pour vos files d'attente",
+    "featureAdvancedAnalytics": "📈 Accédez aux analyses avancées",
+    "featureInviteTeam": "👥 Invitez des membres de votre équipe à collaborer",
+    "featureMemoryMetrics": "🧠 Consultez les métriques mémoire détaillées et les conseils d'optimisation",
+    "featurePrioritySupport": "🎯 Bénéficiez d'un support prioritaire et de conseils d'experts",
+    "ctaWithWorkspace": "Accéder au tableau de bord",
+    "ctaWithoutWorkspace": "Créer votre espace de travail",
+    "needHelp": "Si vous avez besoin d'aide pour commencer, consultez notre"
+  },
+  "invitation": {
+    "preview": "{{inviterName}} vous a invité(e) à rejoindre {{workspaceName}} sur Qarote",
+    "title": "Vous êtes invité(e) à rejoindre {{workspaceName}} !",
+    "body": "{{inviterName}} ({{inviterEmail}}) vous a invité(e) à rejoindre l'espace de travail <strong>{{workspaceName}}</strong> sur Qarote.",
+    "aboutQarote": "Qarote est un puissant tableau de bord de surveillance RabbitMQ qui aide les équipes à gérer efficacement leurs files d'attente de messages.",
+    "acceptButton": "Accepter l'invitation",
+    "expiryWarning": "Cette invitation expirera dans 7 jours. Si vous n'attendiez pas cette invitation, vous pouvez ignorer cet e-mail en toute sécurité.",
+    "havingTrouble": "Si vous rencontrez des difficultés, n'hésitez pas à contacter notre"
+  },
+  "passwordReset": {
+    "title": "Réinitialisez votre mot de passe",
+    "body": "Nous avons reçu une demande de réinitialisation du mot de passe de votre compte Qarote. Cliquez sur le bouton ci-dessous pour créer un nouveau mot de passe.",
+    "resetButton": "Réinitialiser le mot de passe",
+    "expiryWarning": "Ce lien expirera dans {{expiryHours}} heures. Si vous n'avez pas demandé de réinitialisation de mot de passe, vous pouvez ignorer cet e-mail en toute sécurité.",
+    "securityNote": "Pour des raisons de sécurité, ce lien de réinitialisation ne peut être utilisé qu'une seule fois."
+  },
+  "alertNotification": {
+    "titleCritical": "🔴 Alerte critique",
+    "titleWarning": "⚠️ Avertissement",
+    "previewCritical": "{{count}} alerte(s) critique(s) détectée(s) sur {{serverName}}",
+    "previewWarning": "{{count}} avertissement(s) détecté(s) sur {{serverName}}",
+    "body": "De nouvelles alertes ont été détectées sur votre serveur RabbitMQ <strong>{{serverName}}</strong> dans l'espace de travail <strong>{{workspaceName}}</strong>.",
+    "criticalAttention": "{{count}} alerte(s) critique(s) nécessitant une intervention immédiate",
+    "categoryAlerts": "Alertes {{category}}",
+    "virtualHost": "Hôte virtuel :",
+    "current": "Actuel :",
+    "threshold": "Seuil : {{value}}",
+    "recommended": "Recommandé :",
+    "affected": "Affecté :",
+    "detected": "Détecté :",
+    "viewAlerts": "Voir les alertes dans le tableau de bord",
+    "managePreferences": "Vous pouvez gérer les seuils et les préférences d'alerte dans vos",
+    "alertsSettings": "paramètres d'alerte",
+    "automatedNotice": "Ceci est une notification automatique de Qarote. Vous recevez ce message car de nouvelles alertes ont été détectées sur votre serveur surveillé."
+  },
+  "paymentConfirmation": {
+    "title": "Paiement confirmé",
+    "body": "Votre paiement de <strong>{{amount}}</strong> a été traité avec succès.",
+    "invoiceNumber": "Facture :",
+    "date": "Date :",
+    "plan": "Plan :",
+    "viewBilling": "Voir les détails de facturation"
+  },
+  "paymentActionRequired": {
+    "title": "Action de paiement requise",
+    "body": "Votre paiement pour <strong>{{workspaceName}}</strong> nécessite votre attention. Veuillez mettre à jour votre moyen de paiement pour continuer à utiliser Qarote.",
+    "updatePayment": "Mettre à jour le moyen de paiement",
+    "warning": "Si le paiement n'est pas effectué, votre abonnement pourrait être interrompu."
+  },
+  "trialEnding": {
+    "title": "Votre essai se termine bientôt",
+    "body": "Votre essai <strong>{{plan}}</strong> pour <strong>{{workspaceName}}</strong> se termine bientôt. {{usageText}}",
+    "upgradeCta": "Passer à la version supérieure",
+    "keepAccess": "Passez à la version supérieure dès maintenant pour conserver l'accès à toutes les fonctionnalités."
+  },
+  "upgradeConfirmation": {
+    "title": "Bienvenue sur le plan {{plan}} !",
+    "body": "Votre passage au plan <strong>{{plan}}</strong> a été confirmé. Merci pour votre soutien !",
+    "viewDashboard": "Accéder au tableau de bord"
+  },
+  "welcomeBack": {
+    "title": "Bon retour sur Qarote !",
+    "body": "Votre plan <strong>{{plan}}</strong> a été renouvelé. Bon retour !",
+    "viewDashboard": "Accéder au tableau de bord"
+  },
+  "upcomingInvoice": {
+    "title": "Prochaine facture",
+    "body": "Votre prochaine facture pour <strong>{{workspaceName}}</strong> arrive bientôt.",
+    "amount": "Montant :",
+    "dueDate": "Date d'échéance :",
+    "viewBilling": "Voir les détails de facturation"
+  },
+  "updateAvailable": {
+    "title": "Une nouvelle version de Qarote est disponible !",
+    "body": "Qarote <strong>{{latestVersion}}</strong> est maintenant disponible. Vous utilisez actuellement la version <strong>{{currentVersion}}</strong>.",
+    "viewChangelog": "Voir le journal des modifications",
+    "updateNow": "Mettre à jour maintenant"
+  },
+  "licenseDelivery": {
+    "title": "Votre licence Qarote est prête !",
+    "body": "Votre licence <strong>{{tier}}</strong> pour Qarote a été générée et est prête à l'emploi.",
+    "licenseKey": "Clé de licence :",
+    "expiresOn": "Date d'expiration :",
+    "downloadLicense": "Télécharger la licence",
+    "installInstructions": "Pour l'installer, placez le fichier de licence dans le répertoire d'installation de Qarote."
+  },
+  "licenseRenewal": {
+    "title": "Votre licence Qarote a été renouvelée",
+    "body": "Votre licence <strong>{{tier}}</strong> a été renouvelée avec succès.",
+    "newExpiry": "Nouvelle date d'expiration :",
+    "viewLicense": "Voir les détails de la licence"
+  },
+  "licenseExpirationReminder": {
+    "title": "Votre licence Qarote expire bientôt",
+    "body": "Votre licence <strong>{{tier}}</strong> expirera dans <strong>{{daysUntilExpiration}} jours</strong>.",
+    "renewNow": "Renouveler maintenant",
+    "warning": "Après expiration, les fonctionnalités Enterprise ne seront plus disponibles."
+  },
+  "licenseExpired": {
+    "title": "Votre licence Qarote a expiré",
+    "body": "Votre licence <strong>{{tier}}</strong> a expiré. Les fonctionnalités Enterprise ne sont plus disponibles.",
+    "renewNow": "Renouveler la licence",
+    "revertNotice": "Votre instance a été ramenée aux fonctionnalités de l'édition Community."
+  },
+  "licensePaymentFailed": {
+    "title": "Échec du paiement de la licence",
+    "body": "Nous n'avons pas pu traiter le paiement de votre licence. Veuillez mettre à jour votre moyen de paiement pour conserver votre licence.",
+    "updatePayment": "Mettre à jour le moyen de paiement",
+    "warning": "Si le paiement n'est pas résolu, votre licence pourrait être suspendue."
+  },
+  "licenseCancellation": {
+    "title": "Votre licence Qarote a été annulée",
+    "body": "Votre licence <strong>{{tier}}</strong> a été annulée et restera active jusqu'au <strong>{{endDate}}</strong>.",
+    "reactivate": "Réactiver la licence",
+    "notice": "Après cette date, votre instance sera ramenée aux fonctionnalités de l'édition Community."
+  }
+}

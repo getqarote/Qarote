@@ -1,28 +1,9 @@
 // Re-export all email services and types for backward compatibility
-export {
-  AuthEmailService,
-  SendInvitationEmailParams,
-  SendVerificationEmailParams,
-  SendWelcomeEmailParams,
-} from "./auth-email.service";
-export {
-  BillingEmailService,
-  UpgradeConfirmationEmailParams,
-  WelcomeBackEmailParams,
-} from "./billing-email.service";
-export { CoreEmailService, EmailResult } from "./core-email.service";
-export {
-  AlertNotificationEmailParams,
-  NotificationEmailService,
-  PaymentActionRequiredEmailParams,
-  PaymentConfirmationEmailParams,
-  TrialEndingEmailParams,
-  UpcomingInvoiceEmailParams,
-} from "./notification-email.service";
 
 // Import services for internal use
 import { AuthEmailService } from "./auth-email.service";
 import { BillingEmailService } from "./billing-email.service";
+import { LicenseEmailService } from "./license-email.service";
 import { NotificationEmailService } from "./notification-email.service";
 
 /**
@@ -52,4 +33,18 @@ export class EmailService {
     NotificationEmailService.sendPaymentConfirmationEmail;
   static sendAlertNotificationEmail =
     NotificationEmailService.sendAlertNotificationEmail;
+  static sendUpdateAvailableEmail =
+    NotificationEmailService.sendUpdateAvailableEmail;
+
+  // License emails
+  static sendLicenseDeliveryEmail =
+    LicenseEmailService.sendLicenseDeliveryEmail;
+  static sendLicenseRenewalEmail = LicenseEmailService.sendLicenseRenewalEmail;
+  static sendLicenseExpirationReminderEmail =
+    LicenseEmailService.sendLicenseExpirationReminderEmail;
+  static sendLicenseExpiredEmail = LicenseEmailService.sendLicenseExpiredEmail;
+  static sendLicensePaymentFailedEmail =
+    LicenseEmailService.sendLicensePaymentFailedEmail;
+  static sendLicenseCancellationEmail =
+    LicenseEmailService.sendLicenseCancellationEmail;
 }

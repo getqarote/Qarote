@@ -1,11 +1,10 @@
-import { useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router";
 
 import { Building2, ChevronDown, Crown, Lock, Plus, User } from "lucide-react";
 import { toast } from "sonner";
 
-import { apiClient, type WorkspaceInfo } from "@/lib/api";
 import { logger } from "@/lib/logger";
 
 import { Button } from "@/components/ui/button";
@@ -18,8 +17,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdownMenu";
 
-import { useUser } from "@/hooks/useUser";
-import { useWorkspace } from "@/hooks/useWorkspace";
+import {
+  useSwitchWorkspace,
+  useUserWorkspaces,
+} from "@/hooks/queries/useWorkspaceApi";
+import { useUser } from "@/hooks/ui/useUser";
+import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 import { UserPlan } from "@/types/plans";
 
@@ -34,18 +37,15 @@ export function WorkspaceSelector() {
   const [showCreateModal, setShowCreateModal] = useState(false);
 
   // Fetch all user workspaces
-  const { data: workspacesData, isLoading } = useQuery({
-    queryKey: ["workspaces"],
-    queryFn: () => apiClient.getUserWorkspaces(),
-    refetchOnWindowFocus: false,
-  });
+  const { data: workspacesData, isLoading } = useUserWorkspaces();
 
   // Switch workspace mutation
-  const switchWorkspaceMutation = useMutation({
-    mutationFn: (workspaceId: string) => apiClient.switchWorkspace(workspaceId),
-    onSuccess: () => {
+  const switchWorkspaceMutation = useSwitchWorkspace();
+
+  // Handle success/error
+  useEffect(() => {
+    if (switchWorkspaceMutation.isSuccess) {
       // Invalidate all workspace-related queries
-      // TODO: fix this shit - too many queries
       queryClient.invalidateQueries({ queryKey: ["workspace"] });
       queryClient.invalidateQueries({ queryKey: ["workspaces"] });
       queryClient.invalidateQueries({ queryKey: ["current-workspace"] });
@@ -56,14 +56,19 @@ export function WorkspaceSelector() {
 
       // Refresh the page to ensure all components reload with new workspace context
       window.location.reload();
-    },
-    onError: (error) => {
-      logger.error("Failed to switch workspace:", error);
+    }
+    if (switchWorkspaceMutation.isError) {
+      logger.error(
+        "Failed to switch workspace:",
+        switchWorkspaceMutation.error
+      );
       toast.error("Failed to switch workspace. Please try again.");
-    },
-  });
+    }
+  }, [switchWorkspaceMutation.isSuccess, switchWorkspaceMutation.isError]);
 
   const workspaces = workspacesData?.workspaces || [];
+  type WorkspaceInfo = (typeof workspaces)[number];
+
   const currentWorkspace =
     workspaces.find((w) => w.id === workspace?.id) || workspaces[0];
 
@@ -73,7 +78,7 @@ export function WorkspaceSelector() {
       return;
     }
 
-    switchWorkspaceMutation.mutate(workspaceId);
+    switchWorkspaceMutation.mutate({ workspaceId });
     setIsOpen(false);
   };
 
@@ -121,6 +126,7 @@ export function WorkspaceSelector() {
         };
     }
   };
+
   const getRoleIcon = (workspace: WorkspaceInfo) => {
     if (workspace.isOwner) {
       return <Crown className="w-3 h-3 text-yellow-600" />;
@@ -142,17 +148,17 @@ export function WorkspaceSelector() {
             disabled={switchWorkspaceMutation.isPending}
           >
             <div className="flex items-center gap-2 min-w-0">
-              <Building2 className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+              <Building2 className="w-4 h-4 text-muted-foreground shrink-0" />
               <span className="truncate font-medium text-foreground">
                 {currentWorkspace?.name || workspace?.name}
               </span>
               {currentWorkspace && (
-                <div className="flex items-center gap-1 flex-shrink-0">
+                <div className="flex items-center gap-1 shrink-0">
                   {getRoleIcon(currentWorkspace)}
                 </div>
               )}
             </div>
-            <ChevronDown className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+            <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />
           </Button>
         </DropdownMenuTrigger>
 
@@ -184,7 +190,7 @@ export function WorkspaceSelector() {
                 >
                   <div className="flex items-center justify-between w-full">
                     <div className="flex items-center gap-3 min-w-0">
-                      <Building2 className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                      <Building2 className="w-4 h-4 text-muted-foreground shrink-0" />
                       <div className="min-w-0">
                         <div className="font-medium text-foreground truncate">
                           {ws.name}
@@ -200,7 +206,7 @@ export function WorkspaceSelector() {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 flex-shrink-0">
+                    <div className="flex items-center gap-2 shrink-0">
                       {ws.id === workspace?.id && (
                         <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                       )}

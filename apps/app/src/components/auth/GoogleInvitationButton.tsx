@@ -2,15 +2,14 @@ import "@/styles/google-auth.css";
 
 import React from "react";
 import { CredentialResponse, GoogleLogin } from "@react-oauth/google";
-import { useMutation } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 
-import { apiClient } from "@/lib/api";
 import { logger } from "@/lib/logger";
+import { trpc } from "@/lib/trpc/client";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
 
-import { useToast } from "@/hooks/useToast";
+import { useToast } from "@/hooks/ui/useToast";
 
 interface GoogleInvitationButtonProps {
   invitationToken: string;
@@ -30,48 +29,43 @@ export const GoogleInvitationButton: React.FC<GoogleInvitationButtonProps> = ({
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const googleInvitationMutation = useMutation({
-    mutationFn: async (credentialResponse: CredentialResponse) => {
-      if (!credentialResponse.credential) {
-        throw new Error("No credential received from Google");
-      }
-      return await apiClient.acceptInvitationWithGoogle(
-        invitationToken,
-        credentialResponse.credential
-      );
-    },
-    onSuccess: (data) => {
-      // Set authentication state
-      login(data.token, data.user);
+  const googleInvitationMutation =
+    trpc.public.invitation.acceptWithGoogle.useMutation({
+      onSuccess: (data) => {
+        // Set authentication state
+        login(data.token, data.user);
 
-      // Show success message
-      toast({
-        title: "Welcome to Qarote!",
-        description: `You've successfully joined ${data.workspace.name}${data.isNewUser ? " with Google" : ""}`,
-      });
+        // Show success message
+        toast({
+          title: "Welcome to Qarote!",
+          description: `You've successfully joined ${data.workspace.name}${data.isNewUser ? " with Google" : ""}`,
+        });
 
-      onSuccess?.();
+        onSuccess?.();
 
-      // Redirect to dashboard
-      navigate("/", { replace: true });
-    },
-    onError: (error: Error) => {
-      logger.error("Google invitation acceptance failed:", error);
-      const errorMessage =
-        error.message || "Failed to accept invitation with Google";
-      onError?.(errorMessage);
+        // Redirect to dashboard
+        navigate("/", { replace: true });
+      },
+      onError: (error: Error) => {
+        logger.error("Google invitation acceptance failed:", error);
+        const errorMessage =
+          error.message || "Failed to accept invitation with Google";
+        onError?.(errorMessage);
 
-      toast({
-        title: "Error",
-        description: errorMessage,
-        variant: "destructive",
-      });
-    },
-  });
+        toast({
+          title: "Error",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      },
+    });
 
   const handleGoogleSuccess = (credentialResponse: CredentialResponse) => {
     if (credentialResponse.credential) {
-      googleInvitationMutation.mutate(credentialResponse);
+      googleInvitationMutation.mutate({
+        token: invitationToken,
+        credential: credentialResponse.credential,
+      });
     } else {
       onError?.("No credential received from Google");
     }

@@ -1,20 +1,18 @@
 import * as React from "react";
+import { useTranslation } from "react-i18next";
 
 import { trackSignUpClick } from "@/lib/gtm";
 
 interface AuthButtonsProps {
   variant?: "default" | "light";
-  onHowItWorksClick?: () => void;
-  hideHowItWorks?: boolean;
   align?: "left" | "center" | "right";
 }
 
 const AuthButtons = ({
   variant = "default",
-  onHowItWorksClick,
-  hideHowItWorks = false,
   align = "center",
 }: AuthButtonsProps) => {
+  const { t } = useTranslation("landing");
   const authBaseUrl = import.meta.env.VITE_APP_BASE_URL;
 
   const handleSignUp = () => {
@@ -25,27 +23,10 @@ const AuthButtons = ({
     window.location.href = `${authBaseUrl}/auth/sign-up`;
   };
 
-  const handleHowItWorks = () => {
-    if (onHowItWorksClick) {
-      onHowItWorksClick();
-    } else {
-      // Fallback: scroll to video section
-      const videoElement = document.getElementById("video");
-      if (videoElement) {
-        videoElement.scrollIntoView({ behavior: "smooth" });
-      }
-    }
-  };
-
   const primaryButtonStyles =
     variant === "light"
       ? "bg-[#FF691B] text-white hover:bg-[#E55A0F]"
       : "bg-[#FF691B] text-white hover:bg-[#E55A0F]";
-
-  const secondaryButtonStyles =
-    variant === "light"
-      ? "bg-transparent border-2 border-white text-white hover:bg-white/10"
-      : "bg-gray-100 text-foreground hover:bg-gray-200";
 
   const alignClass =
     align === "left"
@@ -66,7 +47,7 @@ const AuthButtons = ({
         onClick={handleSignUp}
         className={`${primaryButtonStyles} px-4 py-3 sm:px-8 sm:py-4 transition-colors duration-200 flex items-center justify-center gap-3 text-base sm:text-lg w-full sm:w-auto rounded-full`}
       >
-        <span className="whitespace-nowrap">Get started for free</span>
+        <span className="whitespace-nowrap">{t("cta.getStartedForFree")}</span>
         <img
           src="/images/arrow-right.svg"
           alt="Arrow right"

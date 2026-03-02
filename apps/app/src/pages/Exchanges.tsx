@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import {
   Activity,
@@ -45,12 +46,14 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useServerContext } from "@/contexts/ServerContext";
 import { useVHostContext } from "@/contexts/VHostContextDefinition";
 
-import { useDeleteExchange, useExchanges } from "@/hooks/useApi";
-import { useToast } from "@/hooks/useToast";
+import { useDeleteExchange, useExchanges } from "@/hooks/queries/useRabbitMQ";
+import { useToast } from "@/hooks/ui/useToast";
+import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 import { ApiErrorWithCode } from "@/types/apiErrors";
 
 const Exchanges = () => {
+  const { t } = useTranslation("exchanges");
   const { selectedServerId, hasServers } = useServerContext();
   const { selectedVHost } = useVHostContext();
   const { toast } = useToast();
@@ -72,20 +75,25 @@ const Exchanges = () => {
   } = useExchanges(selectedServerId, selectedVHost);
 
   const deleteExchangeMutation = useDeleteExchange();
+  const { workspace } = useWorkspace();
 
   const handleDeleteExchange = async (exchangeName: string) => {
-    if (!selectedServerId) return;
+    if (!selectedServerId || !workspace?.id) return;
 
     try {
       await deleteExchangeMutation.mutateAsync({
         serverId: selectedServerId,
+        workspaceId: workspace.id,
         exchangeName,
-        options: forceDelete ? {} : { if_unused: true },
+        ifUnused: forceDelete ? undefined : true,
+        vhost: selectedVHost
+          ? encodeURIComponent(selectedVHost)
+          : encodeURIComponent("/"),
       });
 
       toast({
-        title: "Success",
-        description: `Exchange "${exchangeName}" has been deleted successfully`,
+        title: t("common:success"),
+        description: t("deleteSuccess", { exchangeName }),
       });
 
       setDeleteDialogOpen(false);
@@ -95,7 +103,7 @@ const Exchanges = () => {
       logger.error("Failed to delete exchange:", error);
 
       // Extract error message and code
-      let errorMessage = "Failed to delete exchange";
+      let errorMessage = t("deleteError");
       let errorCode = null;
 
       if (error instanceof ApiErrorWithCode) {
@@ -112,13 +120,13 @@ const Exchanges = () => {
         errorMessage.includes("being used")
       ) {
         toast({
-          title: "Cannot Delete Exchange",
+          title: t("cannotDeleteExchange"),
           description: errorMessage,
           variant: "destructive",
         });
       } else {
         toast({
-          title: "Error",
+          title: t("common:error"),
           description: errorMessage,
           variant: "destructive",
         });
@@ -185,8 +193,8 @@ const Exchanges = () => {
               <SidebarTrigger />
             </div>
             <NoServerConfigured
-              title="Exchanges"
-              description="Add a RabbitMQ server connection to manage exchanges and routing."
+              title={t("noServerTitle")}
+              description={t("noServerDescription")}
             />
           </main>
         </div>
@@ -204,10 +212,8 @@ const Exchanges = () => {
               <div className="flex items-center gap-4">
                 <SidebarTrigger />
                 <div>
-                  <h1 className="title-page">Exchanges</h1>
-                  <p className="text-gray-500">
-                    Manage RabbitMQ exchanges and routing
-                  </p>
+                  <h1 className="title-page">{t("pageTitle")}</h1>
+                  <p className="text-gray-500">{t("pageSubtitle")}</p>
                 </div>
               </div>
               <Card className="border-0 shadow-md bg-card">
@@ -215,11 +221,9 @@ const Exchanges = () => {
                   <div className="text-center">
                     <Server className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                     <h2 className="text-2xl font-semibold text-gray-900 mb-2">
-                      No Server Selected
+                      {t("noServerSelected")}
                     </h2>
-                    <p className="text-gray-600">
-                      Please select a RabbitMQ server to view exchanges.
-                    </p>
+                    <p className="text-gray-600">{t("selectServerPrompt")}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -241,10 +245,8 @@ const Exchanges = () => {
               <div className="flex items-center gap-4">
                 <SidebarTrigger />
                 <div>
-                  <h1 className="title-page">Exchanges</h1>
-                  <p className="text-gray-500">
-                    Manage RabbitMQ exchanges and routing
-                  </p>
+                  <h1 className="title-page">{t("pageTitle")}</h1>
+                  <p className="text-gray-500">{t("pageSubtitle")}</p>
                 </div>
               </div>
               <div className="flex items-center gap-4">
@@ -260,7 +262,7 @@ const Exchanges = () => {
               <Card className="border-0 shadow-md bg-card">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">
-                    Total Exchanges
+                    {t("totalExchanges")}
                   </CardTitle>
                   <Activity className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
@@ -271,14 +273,16 @@ const Exchanges = () => {
                       : (exchangesData?.totalExchanges ?? 0)}
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Active exchanges
+                    {t("activeExchanges")}
                   </p>
                 </CardContent>
               </Card>
 
               <Card className="border-0 shadow-md bg-card">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Direct</CardTitle>
+                  <CardTitle className="text-sm font-medium">
+                    {t("direct")}
+                  </CardTitle>
                   <GitBranch className="h-4 w-4 text-blue-600" />
                 </CardHeader>
                 <CardContent>
@@ -288,14 +292,16 @@ const Exchanges = () => {
                       : (exchangesData?.exchangeTypes?.direct ?? 0)}
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Point-to-point routing
+                    {t("pointToPointRouting")}
                   </p>
                 </CardContent>
               </Card>
 
               <Card className="border-0 shadow-md bg-card">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Fanout</CardTitle>
+                  <CardTitle className="text-sm font-medium">
+                    {t("fanout")}
+                  </CardTitle>
                   <Radio className="h-4 w-4 text-green-600" />
                 </CardHeader>
                 <CardContent>
@@ -305,14 +311,16 @@ const Exchanges = () => {
                       : (exchangesData?.exchangeTypes?.fanout ?? 0)}
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Broadcast routing
+                    {t("broadcastRouting")}
                   </p>
                 </CardContent>
               </Card>
 
               <Card className="border-0 shadow-md bg-card">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Topic</CardTitle>
+                  <CardTitle className="text-sm font-medium">
+                    {t("topic")}
+                  </CardTitle>
                   <Share2 className="h-4 w-4 text-purple-600" />
                 </CardHeader>
                 <CardContent>
@@ -322,7 +330,7 @@ const Exchanges = () => {
                       : (exchangesData?.exchangeTypes?.topic ?? 0)}
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Pattern routing
+                    {t("patternRouting")}
                   </p>
                 </CardContent>
               </Card>
@@ -330,7 +338,7 @@ const Exchanges = () => {
               <Card className="border-0 shadow-md bg-card">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">
-                    Total Bindings
+                    {t("totalBindings")}
                   </CardTitle>
                   <Link2 className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
@@ -341,7 +349,7 @@ const Exchanges = () => {
                       : (exchangesData?.totalBindings ?? 0)}
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Exchange-queue bindings
+                    {t("exchangeQueueBindings")}
                   </p>
                 </CardContent>
               </Card>
@@ -353,18 +361,18 @@ const Exchanges = () => {
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-2">
                     <Shuffle className="h-5 w-5" />
-                    Exchanges
+                    {t("exchangesTitle")}
                   </CardTitle>
                   <Tabs
                     value={selectedExchangeType}
                     onValueChange={setSelectedExchangeType}
                   >
                     <TabsList>
-                      <TabsTrigger value="all">All</TabsTrigger>
-                      <TabsTrigger value="direct">Direct</TabsTrigger>
-                      <TabsTrigger value="fanout">Fanout</TabsTrigger>
-                      <TabsTrigger value="topic">Topic</TabsTrigger>
-                      <TabsTrigger value="headers">Headers</TabsTrigger>
+                      <TabsTrigger value="all">{t("all")}</TabsTrigger>
+                      <TabsTrigger value="direct">{t("direct")}</TabsTrigger>
+                      <TabsTrigger value="fanout">{t("fanout")}</TabsTrigger>
+                      <TabsTrigger value="topic">{t("topic")}</TabsTrigger>
+                      <TabsTrigger value="headers">{t("headers")}</TabsTrigger>
                     </TabsList>
                   </Tabs>
                 </div>
@@ -373,26 +381,30 @@ const Exchanges = () => {
                 {exchangesError ? (
                   <div className="text-center py-8">
                     <div className="text-red-600 mb-2">
-                      Failed to load exchanges: {exchangesError.message}
+                      {t("failedToLoad")}: {exchangesError.message}
                     </div>
                   </div>
                 ) : exchangesLoading ? (
                   <div className="text-center py-8">
                     <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4" />
-                    <p>Loading exchanges...</p>
+                    <p>{t("loadingExchanges")}</p>
                   </div>
                 ) : filteredExchanges.length === 0 ? (
                   <div className="text-center py-8">
                     <Activity className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                     <h3 className="text-lg font-semibold text-gray-900 mb-2">
                       {selectedExchangeType === "all"
-                        ? "No Exchanges Found"
-                        : `No ${selectedExchangeType} exchanges`}
+                        ? t("noExchangesFound")
+                        : t("noExchangesOfType", {
+                            type: selectedExchangeType,
+                          })}
                     </h3>
                     <p className="text-gray-600">
                       {selectedExchangeType === "all"
-                        ? "There are currently no exchanges configured on this server."
-                        : `There are no ${selectedExchangeType} type exchanges configured.`}
+                        ? t("noExchangesDesc")
+                        : t("noExchangesOfTypeDesc", {
+                            type: selectedExchangeType,
+                          })}
                     </p>
                   </div>
                 ) : (
@@ -434,7 +446,7 @@ const Exchanges = () => {
                                       variant="outline"
                                       className="text-xs"
                                     >
-                                      Durable
+                                      {t("durable")}
                                     </Badge>
                                   )}
                                   {exchange.auto_delete && (
@@ -442,7 +454,7 @@ const Exchanges = () => {
                                       variant="outline"
                                       className="text-xs"
                                     >
-                                      Auto-delete
+                                      {t("autoDelete")}
                                     </Badge>
                                   )}
                                   {exchange.internal && (
@@ -450,7 +462,7 @@ const Exchanges = () => {
                                       variant="outline"
                                       className="text-xs"
                                     >
-                                      Internal
+                                      {t("internal")}
                                     </Badge>
                                   )}
                                 </div>
@@ -461,7 +473,7 @@ const Exchanges = () => {
                                     {exchange.bindingCount}
                                   </div>
                                   <div className="text-xs text-gray-500">
-                                    Bindings
+                                    {t("bindings")}
                                   </div>
                                 </div>
                                 {exchange.message_stats?.publish_in !==
@@ -471,7 +483,7 @@ const Exchanges = () => {
                                       {exchange.message_stats.publish_in}
                                     </div>
                                     <div className="text-xs text-gray-500">
-                                      Messages In
+                                      {t("messagesIn")}
                                     </div>
                                   </div>
                                 )}
@@ -482,7 +494,7 @@ const Exchanges = () => {
                                       {exchange.message_stats.publish_out}
                                     </div>
                                     <div className="text-xs text-gray-500">
-                                      Messages Out
+                                      {t("messagesOut")}
                                     </div>
                                   </div>
                                 )}
@@ -495,43 +507,49 @@ const Exchanges = () => {
                               <div className="grid grid-cols-2 gap-4 mb-4">
                                 <div>
                                   <h4 className="font-medium mb-2">
-                                    Exchange Properties
+                                    {t("exchangesTitle")}
                                   </h4>
                                   <div className="space-y-1 text-sm">
                                     <div>
                                       <span className="text-gray-500">
-                                        Type:
+                                        {t("type")}:
                                       </span>{" "}
                                       {exchange.type}
                                     </div>
                                     <div>
                                       <span className="text-gray-500">
-                                        Virtual Host:
+                                        {t("vhost")}:
                                       </span>{" "}
                                       {exchange.vhost}
                                     </div>
                                     <div>
                                       <span className="text-gray-500">
-                                        Durable:
+                                        {t("durable")}:
                                       </span>{" "}
-                                      {exchange.durable ? "Yes" : "No"}
+                                      {exchange.durable
+                                        ? t("common:yes")
+                                        : t("common:no")}
                                     </div>
                                     <div>
                                       <span className="text-gray-500">
-                                        Auto-delete:
+                                        {t("autoDelete")}:
                                       </span>{" "}
-                                      {exchange.auto_delete ? "Yes" : "No"}
+                                      {exchange.auto_delete
+                                        ? t("common:yes")
+                                        : t("common:no")}
                                     </div>
                                     <div>
                                       <span className="text-gray-500">
-                                        Internal:
+                                        {t("internal")}:
                                       </span>{" "}
-                                      {exchange.internal ? "Yes" : "No"}
+                                      {exchange.internal
+                                        ? t("common:yes")
+                                        : t("common:no")}
                                     </div>
                                     {exchange.policy && (
                                       <div>
                                         <span className="text-gray-500">
-                                          Policy:
+                                          {t("policy")}:
                                         </span>{" "}
                                         <Badge
                                           variant="outline"
@@ -556,7 +574,7 @@ const Exchanges = () => {
                                         0 && (
                                         <div>
                                           <span className="text-gray-500">
-                                            Arguments:
+                                            {t("arguments")}:
                                           </span>
                                           <div className="mt-1 p-2 bg-gray-50 rounded text-xs font-mono">
                                             {JSON.stringify(
@@ -571,26 +589,26 @@ const Exchanges = () => {
                                 </div>
                                 <div>
                                   <h4 className="font-medium mb-2">
-                                    Message Statistics
+                                    {t("messagesPublishedIn")}
                                   </h4>
                                   <div className="space-y-1 text-sm">
                                     <div>
                                       <span className="text-gray-500">
-                                        Messages Published In:
+                                        {t("messagesPublishedIn")}:
                                       </span>{" "}
                                       {exchange.message_stats?.publish_in ??
                                         "N/A"}
                                     </div>
                                     <div>
                                       <span className="text-gray-500">
-                                        Messages Published Out:
+                                        {t("messagesPublishedOut")}:
                                       </span>{" "}
                                       {exchange.message_stats?.publish_out ??
                                         "N/A"}
                                     </div>
                                     <div>
                                       <span className="text-gray-500">
-                                        Total Bindings:
+                                        {t("totalBindings")}:
                                       </span>{" "}
                                       {exchange.bindingCount}
                                     </div>
@@ -609,14 +627,14 @@ const Exchanges = () => {
                                   disabled={deleteExchangeMutation.isPending}
                                 >
                                   <Trash2 className="mr-2 h-4 w-4" />
-                                  Delete Exchange
+                                  {t("deleteExchange")}
                                 </Button>
                               </div>
 
                               {exchange.bindings?.length > 0 && (
                                 <div>
                                   <h4 className="font-medium mb-2">
-                                    Bindings ({exchange.bindings.length})
+                                    {t("bindings")} ({exchange.bindings.length})
                                   </h4>
                                   <div className="space-y-2">
                                     {exchange.bindings.map((binding, index) => (
@@ -653,7 +671,7 @@ const Exchanges = () => {
                                               Object.keys(binding.arguments)
                                                 .length
                                             }{" "}
-                                            arguments
+                                            {t("arguments")}
                                           </div>
                                         )}
                                       </div>
@@ -678,11 +696,9 @@ const Exchanges = () => {
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete Exchange</DialogTitle>
+            <DialogTitle>{t("deleteTitle")}</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete the exchange "{exchangeToDelete}"?
-              This action cannot be undone and may affect message routing if the
-              exchange is currently in use.
+              {t("deleteDescription", { exchangeName: exchangeToDelete })}
             </DialogDescription>
           </DialogHeader>
           <div className="flex items-center space-x-2 py-4">
@@ -697,7 +713,7 @@ const Exchanges = () => {
               htmlFor="force-delete"
               className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
             >
-              Force delete (remove even if exchange has bindings)
+              {t("forceDelete")}
             </label>
           </div>
           <DialogFooter>
@@ -709,7 +725,7 @@ const Exchanges = () => {
               }}
               disabled={deleteExchangeMutation.isPending}
             >
-              Cancel
+              {t("common:cancel")}
             </Button>
             <Button
               variant="destructive"
@@ -717,10 +733,10 @@ const Exchanges = () => {
               disabled={deleteExchangeMutation.isPending}
             >
               {deleteExchangeMutation.isPending
-                ? "Deleting..."
+                ? t("deleting")
                 : forceDelete
-                  ? "Force Delete Exchange"
-                  : "Delete Exchange"}
+                  ? t("forceDeleteExchange")
+                  : t("deleteExchange")}
             </Button>
           </DialogFooter>
         </DialogContent>

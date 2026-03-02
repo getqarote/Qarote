@@ -3,8 +3,8 @@
  * Provides link to Discord community
  */
 
-import { apiClient } from "@/lib/api/client";
 import { logger } from "@/lib/logger";
+import { trpc } from "@/lib/trpc/client";
 
 import { Button } from "@/components/ui/button";
 
@@ -19,6 +19,8 @@ export const DiscordLink: React.FC<DiscordLinkProps> = ({
   userId,
   userEmail,
 }) => {
+  const markJoinedMutation = trpc.discord.markJoined.useMutation();
+
   const handleClick = async () => {
     if (!userId || !userEmail) {
       window.location.href = "/auth/sign-in";
@@ -27,7 +29,7 @@ export const DiscordLink: React.FC<DiscordLinkProps> = ({
 
     try {
       // Mark user as joined Discord in the database
-      await apiClient.markDiscordJoined();
+      await markJoinedMutation.mutateAsync();
 
       // Open Discord invite in new tab
       window.open(DISCORD_INVITE_URL, "_blank");

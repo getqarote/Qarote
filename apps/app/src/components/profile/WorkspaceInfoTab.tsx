@@ -17,7 +17,7 @@ import { Separator } from "@/components/ui/separator";
 
 import { ExtendedWorkspace } from "@/contexts/WorkspaceContextDefinition";
 
-import { useUser } from "@/hooks/useUser";
+import { useUser } from "@/hooks/ui/useUser";
 
 import { NoWorkspaceCard } from "./NoWorkspaceCard";
 import { formatDate, getPlanColor, WorkspaceFormState } from "./profileUtils";
@@ -44,7 +44,7 @@ export const WorkspaceInfoTab = ({
   onUpdateWorkspace,
   isUpdating,
 }: WorkspaceInfoTabProps) => {
-  const { userPlan, planData } = useUser();
+  const { user, userPlan, planData } = useUser();
 
   if (!workspace) {
     return <NoWorkspaceCard />;
@@ -68,6 +68,7 @@ export const WorkspaceInfoTab = ({
           editingWorkspace={editingWorkspace}
           workspaceForm={workspaceForm}
           setWorkspaceForm={setWorkspaceForm}
+          userEmail={user.email}
         />
 
         <Separator />

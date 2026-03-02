@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useState } from "react";
 
 import { User } from "@/lib/api";
-import { apiClient } from "@/lib/api";
 import { logger } from "@/lib/logger";
 import { setSentryUser } from "@/lib/sentry";
+import { trpc } from "@/lib/trpc/client";
 
 import { AuthContext, AuthContextType } from "./AuthContextDefinition";
 
@@ -15,6 +15,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const utils = trpc.useUtils();
 
   useEffect(() => {
     // Check for stored auth data on mount
@@ -104,8 +105,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         return;
       }
 
-      const response = await apiClient.getProfile(workspaceId);
-      const updatedUser = response.profile;
+      const response = await utils.auth.getSession.fetch();
+      const updatedUser = response.user;
       // Ensure workspaceId is set from workspace object if not directly available
       updatedUser.workspaceId = updatedUser.workspace?.id;
       setUser(updatedUser);
@@ -120,7 +121,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } catch (error) {
       logger.error("Failed to refetch user data:", error);
     }
-  }, [token]);
+  }, [token, utils]);
 
   const value: AuthContextType = {
     user,

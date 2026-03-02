@@ -3,7 +3,7 @@
   "description": "RabbitMQ Dashboard Monitoring Tool",
   "private": true,
   "author": "La  Griffe",
-  "license": "ISC",
+  "license": "MIT",
   "keywords": [
     "rabbitmq",
     "dashboard",
@@ -25,6 +25,8 @@
     "build:app": "turbo run build --filter=qarote-app",
     "build:web": "turbo run build --filter=qarote-web",
     "build:portal": "turbo run build --filter=qarote-portal",
+    "build:community": "turbo run build --filter=qarote-api --filter=qarote-app",
+    "build:enterprise": "turbo run build --filter=qarote-api --filter=qarote-app",
     "test": "turbo run test",
     "lint": "turbo run lint",
     "type-check": "turbo run type-check",
@@ -50,7 +52,16 @@
     "act:test:portal": "act -j quality-checks -W .github/workflows/deploy-portal-staging.yml",
     "act:test:portal:prod": "act workflow_dispatch -W .github/workflows/deploy-portal-production.yml --input confirm_production=DEPLOY",
     "act:test:worker": "act -j quality-checks -W .github/workflows/deploy-worker-staging.yml",
-    "act:test:worker:prod": "act workflow_dispatch -W .github/workflows/deploy-worker-production.yml --input confirm_production=DEPLOY"
+    "act:test:worker:prod": "act workflow_dispatch -W .github/workflows/deploy-worker-production.yml --input confirm_production=DEPLOY",
+    "test:smtp": "pnpm --filter=qarote-api test:smtp",
+    "test:smtp:ethereal": "pnpm --filter=qarote-api test:smtp:ethereal",
+    "update:selfhosted": "bash scripts/update.sh",
+    "knip": "knip",
+    "knip:fix": "knip --fix",
+    "test:e2e": "pnpm --filter=qarote-e2e test",
+    "test:e2e:selfhosted": "pnpm --filter=qarote-e2e test:selfhosted",
+    "test:e2e:cloud": "pnpm --filter=qarote-e2e test:cloud",
+    "test:e2e:selfhosted-licensed": "pnpm --filter=qarote-e2e test:selfhosted-licensed"
   },
   "lint-staged": {
     "apps/api/**/*.{ts,tsx}": [
@@ -71,10 +82,14 @@
     ]
   },
   "devDependencies": {
+    "@commitlint/cli": "^20.4.1",
+    "@commitlint/config-conventional": "^20.4.1",
     "husky": "^9.1.7",
+    "knip": "^5.79.0",
     "lint-staged": "^16.2.7",
     "syncpack": "^13.0.4",
-    "turbo": "^2.0.0"
+    "turbo": "^2.8.9",
+    "typescript": "^5.9.3"
   },
   "overrides": {
     "vite": "7.2.7",

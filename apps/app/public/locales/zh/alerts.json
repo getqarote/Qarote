@@ -1,0 +1,11 @@
+{
+  "pageTitle": "告警",
+  "pageSubtitle": "监控系统告警和通知",
+  "noServerTitle": "告警",
+  "noServerDescription": "监控系统告警和通知",
+  "alertRules": "告警规则",
+  "notificationSettings": "通知设置",
+  "activeAlerts": "活跃告警",
+  "resolvedAlerts": "已解决告警",
+  "failedToLoad": "加载告警数据失败，请重试。"
+}

@@ -1,12 +1,13 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { Link } from "react-router";
 
 import { format } from "date-fns";
 import { CheckCircle, Copy, Download, XCircle } from "lucide-react";
 import { toast } from "sonner";
 
-import { type License, licenseClient } from "@/lib/api";
+import { trpc } from "@/lib/trpc/client";
+import { type License } from "@/lib/types";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -18,39 +19,51 @@ import {
 } from "@/components/ui/card";
 
 const LicenseManagement = () => {
-  const { data, isLoading } = useQuery({
-    queryKey: ["licenses"],
-    queryFn: () => licenseClient.getLicenses(),
-  });
+  const { data, isLoading } = trpc.license.getLicenses.useQuery();
+  const { t } = useTranslation("portal");
 
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   const copyToClipboard = (text: string, licenseId: string) => {
     navigator.clipboard.writeText(text);
     setCopiedId(licenseId);
-    toast.success("License key copied to clipboard");
+    toast.success(t("licenseManagement.copiedToClipboard"));
     setTimeout(() => setCopiedId(null), 2000);
   };
 
+  const utils = trpc.useUtils();
+
   const handleDownload = async (licenseId: string) => {
+    // Prevent duplicate downloads
+    if (downloadingId) return;
+
+    setDownloadingId(licenseId);
     try {
-      const blob = await licenseClient.downloadLicense(licenseId);
+      const result = await utils.license.downloadLicense.fetch({
+        licenseId,
+      });
+
+      // Create blob from content string
+      const blob = new Blob([result.content], { type: result.mimeType });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `license-${licenseId}.txt`;
+      a.download = result.filename;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
-      toast.success("License downloaded");
+      toast.success(t("licenseManagement.downloaded"));
     } catch (error) {
-      toast.error("Failed to download license");
+      toast.error(t("licenseManagement.downloadFailed"));
+    } finally {
+      setDownloadingId(null);
     }
   };
 
   if (isLoading) {
-    return <div>Loading licenses...</div>;
+    return <div>{t("licenseManagement.loadingLicenses")}</div>;
   }
 
   const licenses = data?.licenses || [];
@@ -59,25 +72,22 @@ const LicenseManagement = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">My Licenses</h1>
+          <h1 className="text-3xl font-bold">{t("licenseManagement.title")}</h1>
           <p className="text-muted-foreground mt-2">
-            Manage your Qarote self-hosted licenses
+            {t("licenseManagement.description")}
           </p>
         </div>
         <Link to="/purchase">
-          <Button>Purchase New License</Button>
+          <Button>{t("licenseManagement.purchaseNew")}</Button>
         </Link>
       </div>
 
       {licenses.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
-            <p className="text-muted-foreground mb-4">
-              You don't have any licenses yet.
+            <p className="text-muted-foreground">
+              {t("licenseManagement.noLicenses")}
             </p>
-            <Link to="/purchase">
-              <Button>Purchase Your First License</Button>
-            </Link>
           </CardContent>
         </Card>
       ) : (
@@ -88,7 +98,7 @@ const LicenseManagement = () => {
                 <div className="flex justify-between items-start">
                   <div>
                     <CardTitle className="flex items-center gap-2">
-                      {license.tier} License
+                      {license.tier} {t("licenseManagement.license")}
                       {license.isActive ? (
                         <CheckCircle className="h-5 w-5 icon-success" />
                       ) : (
@@ -97,11 +107,10 @@ const LicenseManagement = () => {
                     </CardTitle>
                     <CardDescription>
                       {license.expiresAt
-                        ? `Expires: ${format(
-                            new Date(license.expiresAt),
-                            "PPP"
-                          )}`
-                        : "No expiration"}
+                        ? t("licenseManagement.expires", {
+                            date: format(new Date(license.expiresAt), "PPP"),
+                          })
+                        : t("licenseManagement.noExpiration")}
                     </CardDescription>
                   </div>
                 </div>
@@ -110,7 +119,7 @@ const LicenseManagement = () => {
                 <div className="space-y-4">
                   <div>
                     <label className="text-sm font-medium text-muted-foreground">
-                      License Key
+                      {t("licenseManagement.licenseKey")}
                     </label>
                     <div className="flex items-center gap-2 mt-1">
                       <code className="flex-1 px-3 py-2 bg-muted rounded-md text-sm font-mono break-all">
@@ -135,9 +144,12 @@ const LicenseManagement = () => {
                     <Button
                       variant="outline"
                       onClick={() => handleDownload(license.id)}
+                      disabled={downloadingId === license.id}
                     >
                       <Download className="h-4 w-4 mr-2" />
-                      Download
+                      {downloadingId === license.id
+                        ? t("licenseManagement.downloading")
+                        : t("licenseManagement.download")}
                     </Button>
                   </div>
                 </div>

@@ -4,32 +4,32 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 
+import "@/i18n";
+
 import { initializeGA } from "@/lib/ga";
 import { logger } from "@/lib/logger";
 import { initSentry } from "@/lib/sentry";
 
 import App from "./App.tsx";
 
-// Initialize Sentry only if enabled
+// Initialize Sentry only when explicitly enabled or in cloud mode
 const enableSentry =
   import.meta.env.VITE_ENABLE_SENTRY === "true" ||
-  import.meta.env.VITE_DEPLOYMENT_MODE !== "self-hosted";
+  import.meta.env.VITE_DEPLOYMENT_MODE === "cloud";
 
 if (enableSentry) {
   initSentry();
 }
 
-// Initialize GA only in cloud mode
-const deploymentMode = import.meta.env.VITE_DEPLOYMENT_MODE || "cloud";
+// Initialize GA only when explicitly in cloud mode (undefined = selfhosted)
+const deploymentMode = import.meta.env.VITE_DEPLOYMENT_MODE || "selfhosted";
 if (deploymentMode === "cloud") {
   initializeGA();
 }
 
-// Get Google OAuth client ID from environment variables
+// OAuth is only enabled for cloud deployments
 const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-const enableOAuth =
-  import.meta.env.VITE_ENABLE_OAUTH !== "false" &&
-  (deploymentMode === "cloud" || import.meta.env.VITE_ENABLE_OAUTH === "true");
+const enableOAuth = deploymentMode === "cloud";
 
 if (!googleClientId && enableOAuth) {
   logger.warn(
@@ -37,19 +37,14 @@ if (!googleClientId && enableOAuth) {
   );
 }
 
-const AppWrapper = () => {
-  if (enableOAuth && googleClientId) {
-    return (
+createRoot(document.getElementById("root")!).render(
+  <StrictMode>
+    {enableOAuth && googleClientId ? (
       <GoogleOAuthProvider clientId={googleClientId}>
         <App />
       </GoogleOAuthProvider>
-    );
-  }
-  return <App />;
-};
-
-createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <AppWrapper />
+    ) : (
+      <App />
+    )}
   </StrictMode>
 );

@@ -2,13 +2,12 @@ import "@/styles/google-auth.css";
 
 import React from "react";
 import { CredentialResponse, GoogleLogin } from "@react-oauth/google";
-import { useMutation } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 
 import { toast } from "sonner";
 
-import { authClient } from "@/lib/api";
 import { logger } from "@/lib/logger";
+import { trpc } from "@/lib/trpc/client";
 
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -16,24 +15,20 @@ interface GoogleLoginButtonProps {
   onSuccess?: () => void;
   onError?: (error: string) => void;
   className?: string;
+  mode?: "signin" | "signup";
 }
 
 export const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
   onSuccess,
   onError,
   className,
+  mode = "signin",
 }) => {
   const { login } = useAuth();
   const navigate = useNavigate();
 
   // Hooks must be called before any early returns
-  const googleLoginMutation = useMutation({
-    mutationFn: async (credentialResponse: CredentialResponse) => {
-      if (!credentialResponse.credential) {
-        throw new Error("No credential received from Google");
-      }
-      return await authClient.googleLogin(credentialResponse.credential);
-    },
+  const googleLoginMutation = trpc.auth.google.googleLogin.useMutation({
     onSuccess: (data) => {
       // Set authentication state
       login(data.token, data.user);
@@ -41,7 +36,7 @@ export const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
       onSuccess?.();
       navigate("/licenses", { replace: true });
     },
-    onError: (error: Error) => {
+    onError: (error) => {
       logger.error("Google login failed:", error);
       const errorMessage = error.message || "Google login failed";
       toast.error(errorMessage);
@@ -49,12 +44,9 @@ export const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
     },
   });
 
-  // Check if OAuth is enabled
+  // OAuth is only enabled for cloud deployments
   const deploymentMode = import.meta.env.VITE_DEPLOYMENT_MODE || "cloud";
-  const enableOAuth =
-    import.meta.env.VITE_ENABLE_OAUTH !== "false" &&
-    (deploymentMode === "cloud" ||
-      import.meta.env.VITE_ENABLE_OAUTH === "true");
+  const enableOAuth = deploymentMode === "cloud";
   const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
   // Don't render if OAuth is disabled or client ID is missing
@@ -64,7 +56,9 @@ export const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
 
   const handleGoogleSuccess = (credentialResponse: CredentialResponse) => {
     if (credentialResponse.credential) {
-      googleLoginMutation.mutate(credentialResponse);
+      googleLoginMutation.mutate({
+        credential: credentialResponse.credential,
+      });
     } else {
       onError?.("No credential received from Google");
     }
@@ -86,7 +80,7 @@ export const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
         useOneTap={false}
         theme="outline"
         size="large"
-        text="signin_with"
+        text={mode === "signup" ? "signup_with" : "signin_with"}
         shape="rectangular"
         logo_alignment="left"
         width={200}

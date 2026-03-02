@@ -19,7 +19,7 @@ export type AlertType =
   | "EXCHANGE_ERROR";
 
 export type AlertSeverity = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
-export type AlertStatus = "ACTIVE" | "ACKNOWLEDGED" | "RESOLVED";
+type AlertStatus = "ACTIVE" | "ACKNOWLEDGED" | "RESOLVED";
 export type ComparisonOperator =
   | "GREATER_THAN"
   | "LESS_THAN"
@@ -57,7 +57,7 @@ export interface AlertRule {
   alerts?: AlertInstance[];
 }
 
-export interface AlertInstance {
+interface AlertInstance {
   id: string;
   title: string;
   description: string;
@@ -87,33 +87,6 @@ export interface AlertInstance {
     lastName?: string | null;
     email: string;
   };
-}
-
-export interface AlertQuery {
-  status?: AlertStatus | AlertStatus[];
-  severity?: AlertSeverity | AlertSeverity[];
-  serverId?: string;
-  limit?: number;
-  offset?: number;
-}
-
-export interface AlertsResponse {
-  alerts: AlertInstance[];
-  pagination: {
-    total: number;
-    limit: number;
-    offset: number;
-    hasMore: boolean;
-  };
-}
-
-export interface AlertStats {
-  total: number;
-  active: number;
-  acknowledged: number;
-  resolved: number;
-  critical: number;
-  recent: AlertInstance[];
 }
 
 export interface CreateAlertRuleInput {
@@ -181,110 +154,4 @@ export interface RabbitMQAlert {
     type: "node" | "queue" | "cluster";
     name: string;
   };
-}
-
-export interface AlertThresholds {
-  memory: {
-    warning: number;
-    critical: number;
-  };
-  disk: {
-    warning: number;
-    critical: number;
-  };
-  fileDescriptors: {
-    warning: number;
-    critical: number;
-  };
-  queueMessages: {
-    warning: number;
-    critical: number;
-  };
-  connections: {
-    warning: number;
-    critical: number;
-  };
-}
-
-export interface RabbitMQAlertsResponse {
-  success: boolean;
-  alerts: RabbitMQAlert[];
-  summary: {
-    total: number;
-    critical: number;
-    warning: number;
-    info: number;
-  };
-  thresholds: AlertThresholds;
-  total: number; // Total count of alerts (after filtering, before pagination)
-  timestamp: string;
-}
-
-export interface AlertsSummaryResponse {
-  success: boolean;
-  clusterHealth: "healthy" | "warning" | "critical";
-  summary: {
-    critical: number;
-    warning: number;
-    total: number;
-  };
-  issues: string[];
-  timestamp: string;
-}
-
-export interface ThresholdsResponse {
-  success: boolean;
-  thresholds: AlertThresholds;
-  canModify: boolean;
-  defaults: AlertThresholds;
-}
-
-export interface UpdateThresholdsResponse {
-  success: boolean;
-  message: string;
-  thresholds: AlertThresholds;
-}
-
-export interface ResolvedAlert {
-  id: string;
-  serverId: string;
-  serverName: string;
-  severity: string;
-  category: string;
-  title: string;
-  description: string;
-  details: Record<string, unknown>;
-  vhost?: string; // Virtual host for queue-related alerts
-  source: { type: string; name: string };
-  firstSeenAt: string;
-  resolvedAt: string;
-  duration: number | null;
-}
-
-export interface ResolvedAlertsResponse {
-  success: boolean;
-  alerts: ResolvedAlert[];
-  total: number;
-  timestamp: string;
-}
-
-export interface AlertNotificationSettings {
-  success: boolean;
-  settings: {
-    emailNotificationsEnabled: boolean;
-    contactEmail: string | null;
-    notificationSeverities?: string[];
-    notificationServerIds?: string[] | null;
-    browserNotificationsEnabled: boolean;
-    browserNotificationSeverities?: string[];
-  };
-}
-
-export interface UpdateAlertNotificationSettingsRequest {
-  emailNotificationsEnabled?: boolean;
-  contactEmail?: string | null;
-  notificationSeverities?: string[];
-  notificationServerIds?: string[] | null;
-  browserNotificationsEnabled?: boolean;
-  browserNotificationSeverities?: string[];
 }

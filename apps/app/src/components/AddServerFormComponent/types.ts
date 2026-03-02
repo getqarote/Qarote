@@ -1,14 +1,3 @@
-export interface AddServerFormData {
-  name: string;
-  host: string;
-  port: number;
-  amqpPort: number;
-  username: string;
-  password: string;
-  vhost: string;
-  useHttps: boolean;
-}
-
 export interface ConnectionStatus {
   status: "idle" | "success" | "error";
   message?: string;
@@ -18,7 +7,7 @@ export interface ConnectionStatus {
   };
 }
 
-export interface Server {
+interface Server {
   id: string;
   name: string;
   host: string;

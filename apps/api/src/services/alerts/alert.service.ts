@@ -1,6 +1,8 @@
 import { logger } from "@/core/logger";
 import { prisma } from "@/core/prisma";
 
+import { createRabbitMQClient } from "@/trpc/routers/rabbitmq/shared";
+
 import { analyzeNodeHealth, analyzeQueueHealth } from "./alert.analyzer";
 import { alertHealthService } from "./alert.health";
 import {
@@ -14,13 +16,11 @@ import {
 import { alertNotificationService } from "./alert.notification";
 import { alertThresholdsService } from "./alert.thresholds";
 
-import { createRabbitMQClient } from "@/controllers/rabbitmq/shared";
-
 /**
  * Alert Service class
  * Main orchestrator for alert-related operations
  */
-export class AlertService {
+class AlertService {
   /**
    * Get alerts for a server
    * @param vhost - Optional vhost to filter queue-related alerts. Node alerts are not filtered by vhost.

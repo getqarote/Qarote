@@ -1,4 +1,3 @@
-import { UserPlan } from "@prisma/client";
 import React from "react";
 
 import { RabbitMQAlert } from "@/services/alerts/alert.interfaces";
@@ -9,8 +8,12 @@ import PaymentActionRequiredEmail from "./templates/payment-action-required-emai
 import PaymentConfirmationEmail from "./templates/payment-confirmation-email";
 import TrialEndingEmail from "./templates/trial-ending-email";
 import UpcomingInvoiceEmail from "./templates/upcoming-invoice-email";
+import UpdateAvailableEmail from "./templates/update-available-email";
 
-export interface TrialEndingEmailParams {
+import { UserPlan } from "@/generated/prisma/client";
+import { tEmail } from "@/i18n";
+
+interface TrialEndingEmailParams {
   to: string;
   name: string;
   workspaceName: string;
@@ -19,9 +22,10 @@ export interface TrialEndingEmailParams {
   currentUsage?: {
     servers: number;
   };
+  locale?: string;
 }
 
-export interface PaymentActionRequiredEmailParams {
+interface PaymentActionRequiredEmailParams {
   to: string;
   name: string;
   workspaceName: string;
@@ -29,9 +33,10 @@ export interface PaymentActionRequiredEmailParams {
   invoiceUrl: string;
   amount: string;
   currency: string;
+  locale?: string;
 }
 
-export interface UpcomingInvoiceEmailParams {
+interface UpcomingInvoiceEmailParams {
   to: string;
   name: string;
   workspaceName: string;
@@ -43,30 +48,42 @@ export interface UpcomingInvoiceEmailParams {
   usageReport?: {
     servers: number;
   };
+  locale?: string;
 }
 
-export interface PaymentFailedEmailParams {
+interface PaymentFailedEmailParams {
   to: string;
   userName: string;
   amount: number;
   failureReason: string;
+  locale?: string;
 }
 
-export interface PaymentConfirmationEmailParams {
+interface PaymentConfirmationEmailParams {
   to: string;
   userName: string;
   amount: number;
   currency: string;
   paymentMethod: string;
+  locale?: string;
 }
 
-export interface AlertNotificationEmailParams {
+interface AlertNotificationEmailParams {
   to: string;
   workspaceName: string;
   workspaceId: string;
   serverName: string;
   serverId: string;
   alerts: RabbitMQAlert[];
+  locale?: string;
+}
+
+interface UpdateAvailableEmailParams {
+  to: string;
+  currentVersion: string;
+  latestVersion: string;
+  latestTagName: string;
+  locale?: string;
 }
 
 /**
@@ -79,8 +96,15 @@ export class NotificationEmailService {
   static async sendTrialEndingEmail(
     params: TrialEndingEmailParams
   ): Promise<EmailResult> {
-    const { to, name, workspaceName, plan, trialEndDate, currentUsage } =
-      params;
+    const {
+      to,
+      name,
+      workspaceName,
+      plan,
+      trialEndDate,
+      currentUsage,
+      locale = "en",
+    } = params;
 
     const { frontendUrl } = CoreEmailService.getConfig();
 
@@ -100,7 +124,10 @@ export class NotificationEmailService {
 
     return CoreEmailService.sendEmail({
       to,
-      subject: `Your ${plan.toLowerCase()} trial ends soon - ${usageText}`,
+      subject: tEmail(locale, "subjects.trialEndsSoon", {
+        plan: plan.toLowerCase(),
+        usageText,
+      }),
       template,
       emailType: "trial_ending",
       context: {
@@ -118,8 +145,16 @@ export class NotificationEmailService {
   static async sendPaymentActionRequiredEmail(
     params: PaymentActionRequiredEmailParams
   ): Promise<EmailResult> {
-    const { to, name, workspaceName, plan, invoiceUrl, amount, currency } =
-      params;
+    const {
+      to,
+      name,
+      workspaceName,
+      plan,
+      invoiceUrl,
+      amount,
+      currency,
+      locale = "en",
+    } = params;
 
     const { frontendUrl } = CoreEmailService.getConfig();
 
@@ -136,7 +171,7 @@ export class NotificationEmailService {
 
     return CoreEmailService.sendEmail({
       to,
-      subject: `Action required: Complete your payment for ${workspaceName}`,
+      subject: tEmail(locale, "subjects.completePayment", { workspaceName }),
       template,
       emailType: "payment_action_required",
       context: {
@@ -162,6 +197,7 @@ export class NotificationEmailService {
       currency,
       invoiceDate,
       nextBillingDate,
+      locale = "en",
     } = params;
 
     const { frontendUrl } = CoreEmailService.getConfig();
@@ -180,7 +216,7 @@ export class NotificationEmailService {
 
     return CoreEmailService.sendEmail({
       to,
-      subject: `${workspaceName} usage report & upcoming invoice`,
+      subject: tEmail(locale, "subjects.usageReport", { workspaceName }),
       template,
       emailType: "upcoming_invoice",
       context: {
@@ -197,7 +233,14 @@ export class NotificationEmailService {
   static async sendPaymentConfirmationEmail(
     params: PaymentConfirmationEmailParams
   ): Promise<EmailResult> {
-    const { to, userName, amount, currency, paymentMethod } = params;
+    const {
+      to,
+      userName,
+      amount,
+      currency,
+      paymentMethod,
+      locale = "en",
+    } = params;
 
     const { frontendUrl } = CoreEmailService.getConfig();
 
@@ -210,12 +253,16 @@ export class NotificationEmailService {
       frontendUrl,
     });
 
+    const formattedAmount = new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: currency.toUpperCase(),
+    }).format(amount);
+
     return CoreEmailService.sendEmail({
       to,
-      subject: `✅ Payment Confirmed - ${new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: currency.toUpperCase(),
-      }).format(amount)}`,
+      subject: tEmail(locale, "subjects.paymentConfirmed", {
+        amount: formattedAmount,
+      }),
       template,
       emailType: "payment_confirmation",
       context: {
@@ -233,7 +280,7 @@ export class NotificationEmailService {
   static async sendPaymentFailedEmail(
     params: PaymentFailedEmailParams
   ): Promise<EmailResult> {
-    const { to, userName, amount, failureReason } = params;
+    const { to, userName, amount, failureReason, locale = "en" } = params;
 
     const { frontendUrl } = CoreEmailService.getConfig();
 
@@ -272,7 +319,7 @@ export class NotificationEmailService {
 
     return CoreEmailService.sendEmail({
       to,
-      subject: `Payment Failed - Action Required`,
+      subject: tEmail(locale, "subjects.paymentFailed"),
       template,
       emailType: "payment_failed",
       context: {
@@ -289,8 +336,15 @@ export class NotificationEmailService {
   static async sendAlertNotificationEmail(
     params: AlertNotificationEmailParams
   ): Promise<EmailResult> {
-    const { to, workspaceName, workspaceId, serverName, serverId, alerts } =
-      params;
+    const {
+      to,
+      workspaceName,
+      workspaceId,
+      serverName,
+      serverId,
+      alerts,
+      locale = "en",
+    } = params;
 
     const { frontendUrl } = CoreEmailService.getConfig();
 
@@ -312,9 +366,15 @@ export class NotificationEmailService {
 
     let subject: string;
     if (criticalCount > 0) {
-      subject = `🔴 ${criticalCount} Critical Alert${criticalCount > 1 ? "s" : ""} on ${serverName}`;
+      subject = tEmail(locale, "subjects.criticalAlerts", {
+        criticalCount,
+        serverName,
+      });
     } else {
-      subject = `⚠️ ${warningCount} Warning Alert${warningCount > 1 ? "s" : ""} on ${serverName}`;
+      subject = tEmail(locale, "subjects.warningAlerts", {
+        warningCount,
+        serverName,
+      });
     }
 
     return CoreEmailService.sendEmail({
@@ -329,6 +389,37 @@ export class NotificationEmailService {
         criticalCount,
         warningCount,
       },
+    });
+  }
+
+  /**
+   * Send update available notification email to admin
+   */
+  static async sendUpdateAvailableEmail(
+    params: UpdateAvailableEmailParams
+  ): Promise<EmailResult> {
+    const {
+      to,
+      currentVersion,
+      latestVersion,
+      latestTagName,
+      locale = "en",
+    } = params;
+
+    const releaseUrl = `https://github.com/getqarote/Qarote/releases/tag/${latestTagName}`;
+
+    const template = UpdateAvailableEmail({
+      currentVersion,
+      latestVersion,
+      releaseUrl,
+    });
+
+    return CoreEmailService.sendEmail({
+      to,
+      subject: tEmail(locale, "subjects.updateAvailable", { latestVersion }),
+      template,
+      emailType: "update_available",
+      context: { currentVersion, latestVersion },
     });
   }
 }

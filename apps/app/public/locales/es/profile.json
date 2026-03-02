@@ -1,0 +1,11 @@
+{
+  "pageTitle": "Perfil",
+  "tabs": {
+    "personalInfo": "Información personal",
+    "workspace": "Espacio de trabajo",
+    "plans": "Planes",
+    "team": "Equipo",
+    "sendFeedback": "Enviar comentarios"
+  },
+  "failedToLoad": "No se pudo cargar la información del perfil."
+}

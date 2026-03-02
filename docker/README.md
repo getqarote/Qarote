@@ -31,10 +31,10 @@ This setup creates a 3-node RabbitMQ cluster with high availability and load bal
 
 ```bash
 # Start all services
-docker-compose up -d
+docker compose up -d
 
 # Check cluster status
-docker-compose logs rabbitmq-node1 | grep "Cluster status"
+docker compose logs rabbitmq-node1 | grep "Cluster status"
 
 # View HAProxy stats
 open http://localhost:8404/stats
@@ -70,7 +70,7 @@ Access the load balanced management interface:
 
 - **Cluster Status**: Check any node's management UI under "Admin" > "Cluster"
 - **HAProxy Stats**: http://localhost:8404/stats
-- **Node Health**: `docker-compose ps` shows health status
+- **Node Health**: `docker compose ps` shows health status
 
 ## Scaling
 
@@ -90,12 +90,12 @@ docker exec rabbit_dashboard_qarote_node1 rabbitmqctl cluster_status
 docker exec rabbit_dashboard_qarote_node1 rabbitmqctl node_health_check
 
 # View logs
-docker-compose logs rabbitmq-node1
-docker-compose logs rabbitmq-haproxy
+docker compose logs rabbitmq-node1
+docker compose logs rabbitmq-haproxy
 
 # Reset cluster (WARNING: This will delete all data)
-docker-compose down -v
-docker-compose up -d
+docker compose down -v
+docker compose up -d
 ```
 
 # 🏗️ RabbitMQ Cluster Architecture
@@ -124,7 +124,7 @@ docker-compose up -d
 
 ### Start the entire cluster
 
-docker-compose up -d
+docker compose up -d
 
 ### Check cluster status
 

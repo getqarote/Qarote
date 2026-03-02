@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router";
 
 import { CheckCircle, Mail, RefreshCw, XCircle } from "lucide-react";
 import { toast } from "sonner";
 
-import { apiClient } from "@/lib/api";
 import { logger } from "@/lib/logger";
+import { trpc } from "@/lib/trpc/client";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -28,58 +29,36 @@ interface VerificationResult {
 }
 
 export default function VerifyEmail() {
+  const { t } = useTranslation("auth");
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { isAuthenticated, updateUser } = useAuth();
   const verificationAttempted = useRef(false);
+  const token = searchParams.get("token");
   const [verificationState, setVerificationState] = useState<{
     loading: boolean;
     result: VerificationResult | null;
-  }>({
-    loading: true,
-    result: null,
-  });
-
-  const token = searchParams.get("token");
-
-  useEffect(() => {
-    logger.log("VerifyEmail useEffect triggered", {
-      token,
-      verificationAttempted: verificationAttempted.current,
-    });
-
+  }>(() => {
     if (!token) {
-      logger.log("No token found in URL");
-      setVerificationState({
+      return {
         loading: false,
         result: {
           success: false,
-          error: "No verification token provided",
+          error: t("noVerificationToken"),
         },
-      });
-      return;
+      };
     }
+    return {
+      loading: true,
+      result: null,
+    };
+  });
 
-    // Prevent duplicate verification attempts
-    if (verificationAttempted.current) {
-      logger.log("Verification already attempted, skipping");
-      return;
-    }
-
-    verificationAttempted.current = true;
-
-    const verifyEmailToken = async (verificationToken: string) => {
-      try {
-        logger.log("Starting verification with token:", {
-          tokenLength: verificationToken.length,
-          tokenPrefix: verificationToken.substring(0, 8),
-        });
-
-        setVerificationState({ loading: true, result: null });
-
-        const data = await apiClient.verifyEmail(verificationToken);
-
+  // tRPC mutations
+  const { mutate: verifyEmail } =
+    trpc.auth.verification.verifyEmail.useMutation({
+      onSuccess: (data) => {
         logger.log("Verification successful:", data);
 
         // Update user context with the verified user data
@@ -99,63 +78,70 @@ export default function VerifyEmail() {
           },
         });
 
-        toast.success("Email verified successfully!");
+        toast.success(t("emailVerifiedToast"));
 
         // Redirect based on authentication status
         setTimeout(() => {
           if (isAuthenticated) {
-            // User is logged in, always go to workspace creation
-            // The workspace page will handle redirecting to dashboard if user already has workspaces
             navigate("/workspace", { replace: true });
           } else {
-            // User is not logged in, go to sign in page
             navigate("/auth/sign-in", { replace: true });
           }
         }, 3000);
-      } catch (error: unknown) {
+      },
+      onError: (error) => {
         logger.error("Email verification error:", error);
-
-        // Check if the error is an HTTP error with response data
-        let errorMessage = "Failed to verify email. Please try again.";
-        if (error instanceof Error) {
-          errorMessage = error.message;
-          logger.log("Error details:", {
-            message: error.message,
-            name: error.name,
-            stack: error.stack,
-          });
-        }
-
-        // Log additional details if it's a fetch error
-        if (error && typeof error === "object" && "response" in error) {
-          logger.log("Response error details:", error);
-        }
 
         setVerificationState({
           loading: false,
           result: {
             success: false,
-            error: errorMessage,
+            error: error.message || t("failedVerifyEmail"),
           },
         });
-      }
-    };
+      },
+    });
 
-    verifyEmailToken(token);
-  }, [token, navigate, isAuthenticated, updateUser, queryClient]);
+  const resendVerificationMutation =
+    trpc.auth.verification.resendVerification.useMutation({
+      onSuccess: () => {
+        toast.success(t("verificationSentToast"));
+      },
+      onError: (error) => {
+        logger.error("Resend verification error:", error);
+        toast.error(error.message || t("failedResendVerification"));
+      },
+    });
 
-  const handleResendVerification = async () => {
-    try {
-      await apiClient.resendVerificationEmail("SIGNUP");
-      toast.success("Verification email sent! Please check your inbox.");
-    } catch (error: unknown) {
-      logger.error("Resend verification error:", error);
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : "Failed to resend verification email"
-      );
+  useEffect(() => {
+    logger.log("VerifyEmail useEffect triggered", {
+      token,
+      verificationAttempted: verificationAttempted.current,
+    });
+
+    if (!token) {
+      logger.log("No token found in URL");
+      return;
     }
+
+    // Prevent duplicate verification attempts
+    if (verificationAttempted.current) {
+      logger.log("Verification already attempted, skipping");
+      return;
+    }
+
+    verificationAttempted.current = true;
+
+    logger.log("Starting verification with token:", {
+      tokenLength: token.length,
+      tokenPrefix: token.substring(0, 8),
+    });
+
+    verifyEmail({ token });
+  }, [token, verifyEmail]);
+
+  const handleResendVerification = () => {
+    resendVerificationMutation.mutate({ type: "SIGNUP", sourceApp: "app" });
   };
 
   const handleGoToSignIn = () => {
@@ -178,10 +164,8 @@ export default function VerifyEmail() {
             <div className="mx-auto mb-4 w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
               <RefreshCw className="h-6 w-6 text-blue-600 animate-spin" />
             </div>
-            <CardTitle>Verifying Your Email</CardTitle>
-            <CardDescription>
-              Please wait while we verify your email address...
-            </CardDescription>
+            <CardTitle>{t("verifyingEmail")}</CardTitle>
+            <CardDescription>{t("verifyingEmailDescription")}</CardDescription>
           </CardHeader>
         </Card>
       </div>
@@ -210,13 +194,13 @@ export default function VerifyEmail() {
             )}
           </div>
           <CardTitle>
-            {result.success ? "Email Verified!" : "Verification Failed"}
+            {result.success ? t("emailVerified") : t("verificationFailed")}
           </CardTitle>
           <CardDescription>
             {result.success
               ? result.type === "EMAIL_CHANGE"
-                ? "Your new email address has been verified successfully."
-                : "Your email address has been verified successfully."
+                ? t("emailChangeVerified")
+                : t("emailVerifiedSuccess")
               : result.error}
           </CardDescription>
         </CardHeader>
@@ -227,10 +211,8 @@ export default function VerifyEmail() {
               <Alert className="border-green-200 bg-green-50">
                 <CheckCircle className="h-4 w-4 text-green-600" />
                 <AlertDescription className="text-green-800">
-                  {result.message ||
-                    "Email verification completed successfully."}
-                  {result.type === "SIGNUP" &&
-                    " You can now access all features of the application."}
+                  {result.message || t("emailVerificationComplete")}
+                  {result.type === "SIGNUP" && t("signupVerifiedExtra")}
                 </AlertDescription>
               </Alert>
 
@@ -241,10 +223,10 @@ export default function VerifyEmail() {
                   }
                   className="w-full bg-gradient-button hover:bg-gradient-button-hover"
                 >
-                  {isAuthenticated ? "Go to Dashboard" : "Sign In to Continue"}
+                  {isAuthenticated ? t("goToDashboard") : t("signInToContinue")}
                 </Button>
                 <p className="text-sm text-gray-500 text-center">
-                  Redirecting automatically in 3 seconds...
+                  {t("redirectingAutomatically")}
                 </p>
               </div>
             </>
@@ -265,7 +247,7 @@ export default function VerifyEmail() {
                     className="w-full"
                   >
                     <RefreshCw className="h-4 w-4 mr-2" />
-                    Try Again
+                    {t("tryAgain")}
                   </Button>
                 )}
 
@@ -275,7 +257,7 @@ export default function VerifyEmail() {
                   className="w-full"
                 >
                   <Mail className="h-4 w-4 mr-2" />
-                  Resend Verification Email
+                  {t("resendVerificationEmail")}
                 </Button>
 
                 {!isAuthenticated && (
@@ -284,7 +266,7 @@ export default function VerifyEmail() {
                     variant="ghost"
                     className="w-full"
                   >
-                    Back to Sign In
+                    {t("backToSignIn")}
                   </Button>
                 )}
 
@@ -294,7 +276,7 @@ export default function VerifyEmail() {
                     variant="ghost"
                     className="w-full"
                   >
-                    Go to Dashboard
+                    {t("goToDashboard")}
                   </Button>
                 )}
               </div>

@@ -32,7 +32,7 @@ export interface VHost {
   stats?: VHostStats;
 }
 
-export interface VHostPermission {
+interface VHostPermission {
   user: string;
   vhost: string;
   configure: string;
@@ -40,7 +40,7 @@ export interface VHostPermission {
   read: string;
 }
 
-export interface VHostLimits {
+interface VHostLimits {
   max_connections?: number;
   max_queues?: number;
   max_message_ttl?: number;
@@ -48,15 +48,15 @@ export interface VHostLimits {
   max_connection_duration?: number;
 }
 
-export interface VHostTopicPermission {
+type _VHostTopicPermission = {
   user: string;
   vhost: string;
   exchange: string;
   write: string;
   read: string;
-}
+};
 
-export interface VHostStats {
+interface VHostStats {
   queueCount: number;
   exchangeCount: number;
   connectionCount: number;
@@ -64,37 +64,37 @@ export interface VHostStats {
   totalConsumers: number;
 }
 
-export interface CreateVHostRequest {
+type _CreateVHostRequest = {
   name: string;
   description?: string;
   tracing?: boolean;
-}
+};
 
-export interface UpdateVHostRequest {
+type _UpdateVHostRequest = {
   description?: string;
   tracing?: boolean;
-}
+};
 
-export interface SetVHostPermissionsRequest {
+type _SetVHostPermissionsRequest = {
   username: string;
   configure: string;
   write: string;
   read: string;
-}
+};
 
-export interface SetVHostLimitRequest {
+type _SetVHostLimitRequest = {
   value: number;
   limitType: "max-connections" | "max-queues" | "max-channels";
-}
+};
 
 // API Response Types
-export interface VHostsResponse {
+type _VHostsResponse = {
   success: boolean;
   vhosts: VHost[];
   total: number;
-}
+};
 
-export interface VHostDetailsResponse {
+type _VHostDetailsResponse = {
   success: boolean;
   vhost: VHost & {
     stats: VHostStats;
@@ -115,9 +115,9 @@ export interface VHostDetailsResponse {
       [key: string]: unknown;
     }>;
   };
-}
+};
 
-export interface VHostActionResponse {
+type _VHostActionResponse = {
   success: boolean;
   message: string;
   vhost?: {
@@ -125,4 +125,4 @@ export interface VHostActionResponse {
     description?: string;
     tracing?: boolean;
   };
-}
+};

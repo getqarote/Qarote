@@ -1,0 +1,204 @@
+{
+  "toc": {
+    "installationGuide": "Guia de instalacion",
+    "prerequisites": "Requisitos previos",
+    "quickStart": "Inicio rapido",
+    "smtpConfiguration": "Configuracion SMTP",
+    "updatingQarote": "Actualizacion de Qarote",
+    "troubleshooting": "Solucion de problemas",
+    "security": "Recomendaciones de seguridad",
+    "support": "Soporte",
+    "dockerCompose": "Archivo Docker Compose",
+    "environmentConfig": "Configuracion del entorno"
+  },
+  "installGuide": {
+    "title": "Guia de instalacion",
+    "description": "Instrucciones paso a paso para desplegar Qarote",
+    "prerequisites": {
+      "title": "Requisitos previos",
+      "description": "Los requisitos dependen de tu metodo de despliegue:",
+      "dockerCompose": "<strong>Docker Compose:</strong> Docker y Docker Compose (PostgreSQL esta incluido)",
+      "dokku": "<strong>Dokku:</strong> Dokku instalado en tu servidor",
+      "binary": "<strong>Manual:</strong> PostgreSQL 15+ (no se necesita Docker, Node.js ni servidor web)",
+      "enterprise": "<strong>Funciones Premium:</strong> Activa una clave de licencia en Configuracion → Licencia (todos los metodos)"
+    },
+    "quickStart": {
+      "title": "Inicio rapido",
+      "tabs": {
+        "dockerCompose": "Docker Compose",
+        "dokku": "Dokku",
+        "binary": "Manual"
+      },
+      "dockerCompose": {
+        "step1Title": "1. Clonar el repositorio",
+
+        "step2Title": "2. Ejecutar el script de configuracion",
+        "step2Note": "Esto crea un archivo <code>.env</code> con secretos aleatorios seguros (JWT_SECRET, ENCRYPTION_KEY, POSTGRES_PASSWORD) y establece tu modo de despliegue.",
+        "step4Title": "3. Iniciar los servicios",
+        "step5Title": "4. Ejecutar las migraciones de base de datos",
+        "step6Title": "5. Acceder a la aplicacion",
+        "step6Frontend": "<strong>Frontend:</strong>",
+        "step6BackendApi": "<strong>API Backend:</strong>"
+      },
+      "dokku": {
+        "whyDokkuTitle": "¿Por que Dokku?",
+        "whyDokkuEasyDeployment": "<strong>Despliegue facil:</strong> Despliega con git push, como Heroku",
+        "whyDokkuAutoSsl": "<strong>SSL automatico:</strong> Certificados Let's Encrypt listos para usar",
+        "whyDokkuProcessMgmt": "<strong>Gestion de procesos:</strong> Escalado y monitoreo integrados",
+        "whyDokkuDbPlugins": "<strong>Plugins de base de datos:</strong> Configuracion sencilla de PostgreSQL",
+        "step1Title": "1. Instalar Dokku",
+        "step1Description": "Consulta la <dokkuLink>Guia de instalacion de Dokku</dokkuLink> para tu plataforma.",
+        "step2Title": "2. Crear la aplicacion y la base de datos",
+        "step2Note": "<code>DATABASE_URL</code> se establece automaticamente por Dokku al vincular la base de datos.",
+        "step3Title": "3. Establecer las variables de entorno",
+        "step3Note": "<code>PORT</code> y <code>HOST</code> se establecen automaticamente por Dokku. Reemplaza <code>https://your-domain.com</code> con tu dominio real.",
+        "step4Title": "4. Desplegar",
+        "step5Title": "5. Ejecutar las migraciones de base de datos",
+        "step6Title": "6. Dominio y SSL (Opcional)",
+        "step6Note": "Tu aplicacion estara disponible en <code>https://your-domain.com</code> (o la IP de tu servidor)."
+      },
+      "binary": {
+        "description": "Descarga un unico binario — no se necesita Docker, Node.js ni Nginx. Solo se requiere PostgreSQL. Los usuarios de Windows pueden ejecutar el binario de Linux dentro de WSL2.",
+        "postgresInstallTitle": "Instala PostgreSQL si no lo tienes:",
+        "step1Title": "1. Descargar y extraer",
+        "step2Title": "2. Configuracion interactiva",
+        "step2Note": "El asistente de configuracion te pedira tu modo de despliegue y la URL de PostgreSQL, verificara la conexion y generara un archivo <code>.env</code> con secretos seguros.",
+        "step3Title": "3. Iniciar Qarote",
+        "step4Title": "4. Acceder a la aplicacion",
+        "step4Description": "Abre <code>http://localhost:3000</code> en tu navegador. El binario sirve tanto la API como el frontend desde un unico puerto.",
+        "step4ManualSetup": "<strong>Configuracion manual:</strong> Tambien puedes omitir el asistente y configurar directamente:",
+        "cliFlagsTitle": "<strong>Opciones CLI disponibles:</strong>"
+      }
+    },
+    "smtp": {
+      "title": "Configuracion SMTP",
+      "description": "Las funciones de correo electronico estan <strong>desactivadas por defecto</strong> para los despliegues autoalojados. Para activar el correo electronico (restablecimiento de contrasena, invitaciones, notificaciones), configura los ajustes SMTP.",
+      "oauth2Title": "Autenticacion OAuth2 (Recomendado)",
+      "oauth2Description": "Para entornos de produccion, <strong>OAuth2</strong> es el metodo de autenticacion recomendado. Es mas seguro que las contrasenas de aplicacion y no requiere almacenar credenciales directamente.",
+      "oauth2BenefitsTitle": "<strong>Ventajas:</strong>",
+      "oauth2Benefit1": "Mas seguro que las contrasenas especificas de aplicaciones",
+      "oauth2Benefit2": "Los tokens pueden revocarse sin cambiar las contrasenas",
+      "oauth2Benefit3": "Mejor para empresas y envios de alto volumen",
+      "oauth2Benefit4": "Cumple con los estandares de seguridad modernos",
+      "oauth2DocsLink": "Para instrucciones detalladas sobre la configuracion de OAuth2, consulta la <nodemailerLink>documentacion de OAuth2 de Nodemailer</nodemailerLink>. A continuacion se muestran ejemplos para Gmail y Office 365.",
+      "gmailAppPasswordTitle": "Gmail - Opcion 1: Contrasena de aplicacion (Simple)",
+      "gmailAppPasswordRequirements": "<strong>Requisitos:</strong>",
+      "gmailAppPasswordReq1": "<strong>Activa la 2FA</strong> en tu cuenta de Google primero",
+      "gmailAppPasswordReq2": "Genera una <appPasswordLink>Contrasena de aplicacion</appPasswordLink> (no tu contrasena habitual)",
+      "gmailAppPasswordReq3": "<strong>Limites de envio:</strong> 500 correos/dia para cuentas Gmail gratuitas, 2.000/dia para Google Workspace",
+      "gmailOauth2Title": "Gmail - Opcion 2: OAuth2 (Recomendado para produccion)",
+      "gmailOauth2SetupTitle": "<strong>Pasos de configuracion OAuth2:</strong>",
+      "gmailOauth2Step1": "Ve a la <googleCloudLink>Consola de Google Cloud</googleCloudLink>",
+      "gmailOauth2Step2": "Crea un nuevo proyecto (o usa uno existente)",
+      "gmailOauth2Step3": "Activa la API de Gmail para tu proyecto",
+      "gmailOauth2Step4": "Crea credenciales OAuth 2.0 (ID de cliente OAuth → Aplicacion web)",
+      "gmailOauth2Step5": "Agrega <code>https://developers.google.com/oauthplayground</code> a los URI de redireccion autorizados",
+      "gmailOauth2Step6": "Usa el <oauthPlaygroundLink>OAuth2 Playground</oauthPlaygroundLink> para obtener el token de actualizacion:",
+      "gmailOauth2Step6Sub1": "Haz clic en el icono de engranaje → Usar tus propias credenciales OAuth",
+      "gmailOauth2Step6Sub2": "Ingresa el Client ID y el Client Secret",
+      "gmailOauth2Step6Sub3": "En \"Select & authorize APIs\", ingresa <code>https://mail.google.com/</code>",
+      "gmailOauth2Step6Sub4": "Autoriza las API y concede acceso",
+      "gmailOauth2Step6Sub5": "Intercambia el codigo de autorizacion por tokens",
+      "gmailOauth2Step6Sub6": "Copia el token de actualizacion",
+      "gmailOauth2DetailedInstructions": "Para instrucciones detalladas, consulta la <nodemailerGmailLink>Guia de OAuth2 para Gmail de Nodemailer</nodemailerGmailLink>",
+      "sendgridTitle": "SendGrid",
+      "sendgridRequirements": "<strong>Requisitos:</strong>",
+      "sendgridReq1": "El nombre de usuario es literalmente <code>apikey</code> (no tu correo electronico)",
+      "sendgridReq2": "La contrasena es tu clave API de SendGrid (creala en Settings → API Keys)",
+      "sendgridReq3": "Verifica primero tu dominio de remitente en el panel de SendGrid",
+      "sendgridReq4": "<strong>Plan gratuito:</strong> 100 correos/dia",
+      "mailgunTitle": "Mailgun",
+      "mailgunRequirements": "<strong>Requisitos:</strong>",
+      "mailgunReq1": "Agrega y verifica primero tu dominio en el panel de Mailgun",
+      "mailgunReq2": "Formato del nombre de usuario: <code>postmaster@your-domain.mailgun.org</code>",
+      "mailgunReq3": "Encuentra las credenciales SMTP en Mailgun → Sending → Domain settings",
+      "mailgunReq4": "<strong>Plan gratuito:</strong> Primeros 3 meses gratis (hasta 5.000/mes), luego solo de pago",
+      "amazonSesTitle": "Amazon SES",
+      "amazonSesRequirements": "<strong>Requisitos:</strong>",
+      "amazonSesReq1": "Reemplaza <code>us-east-1</code> con tu region de SES (por ej., <code>eu-west-1</code>)",
+      "amazonSesReq2": "Las credenciales SMTP <strong>no</strong> son tus claves de acceso de AWS — generalas en la consola de SES → SMTP Settings",
+      "amazonSesReq3": "Verifica tu correo electronico o dominio de remitente en SES antes de enviar",
+      "amazonSesReq4": "Las cuentas nuevas comienzan en <strong>modo sandbox</strong> (solo pueden enviar a direcciones verificadas) — solicita acceso de produccion para eliminar los limites",
+      "amazonSesReq5": "<strong>Plan gratuito:</strong> 62.000 correos/mes cuando se envian desde una instancia EC2, de lo contrario $0,10 por cada 1.000 correos",
+      "office365BasicTitle": "Office 365 / Outlook - Opcion 1: Autenticacion basica",
+      "office365BasicImportant": "<strong>Importante:</strong> Office 365 requiere autenticacion moderna. Debes habilitar <strong>SMTP AUTH</strong> en tu centro de administracion de Microsoft 365:",
+      "office365BasicReq1": "Ve al centro de administracion de Microsoft 365 → Settings → Org settings",
+      "office365BasicReq2": "Selecciona \"Modern authentication\" y habilita SMTP AUTH",
+      "office365BasicReq3": "Si usas 2FA/MFA, genera una contrasena de aplicacion en lugar de tu contrasena habitual",
+      "office365BasicNote": "<strong>Nota:</strong> Las cuentas personales @outlook.com deben usar <code>smtp-mail.outlook.com</code> en su lugar.",
+      "office365Oauth2Title": "Office 365 / Outlook - Opcion 2: OAuth2 (Recomendado)",
+      "office365Oauth2Description": "OAuth2 es lo recomendado para Office 365/Outlook ya que no requiere habilitar SMTP AUTH heredado.",
+      "office365Oauth2DocsLink": "Para instrucciones detalladas sobre la configuracion de OAuth2 con Microsoft 365, consulta la <nodemailerLink>documentacion de OAuth2 de Nodemailer</nodemailerLink>.",
+      "customSmtpTitle": "Servidor SMTP personalizado",
+      "additionalOauth2Title": "Proveedores OAuth2 adicionales",
+      "additionalOauth2Description": "Para la configuracion de OAuth2 con otros proveedores (Outlook.com, Yahoo, AOL, etc.), consulta la <nodemailerLink>documentacion completa de OAuth2 de Nodemailer</nodemailerLink>. Incluye:",
+      "additionalOauth2Item1": "Guias de configuracion paso a paso para los principales proveedores",
+      "additionalOauth2Item2": "Ejemplos de codigo para la generacion y actualizacion de tokens",
+      "additionalOauth2Item3": "Solucion de problemas comunes de OAuth2",
+      "additionalOauth2Item4": "Mejores practicas de seguridad",
+      "testingTitle": "Prueba de la configuracion SMTP",
+      "testingDescription": "Usa el script de prueba SMTP integrado para verificar tu configuracion:",
+      "testingEtherealNote": "<strong>Ethereal Email</strong> es un servicio SMTP ficticio — los correos de prueba nunca se entregan, pero se pueden ver a traves de una URL de vista previa web."
+    },
+    "updating": {
+      "title": "Actualizacion de Qarote",
+      "tabs": {
+        "dockerCompose": "Docker Compose",
+        "dokku": "Dokku",
+        "binary": "Manual"
+      }
+    },
+    "troubleshooting": {
+      "title": "Solucion de problemas",
+      "wontStartTitle": "No inicia",
+      "binary": {
+        "wontStartItem1": "Revisa la salida del terminal para mensajes de error",
+        "wontStartItem2": "Verifica que tu archivo <code>.env</code> existe o pasa todos los flags CLI requeridos",
+        "wontStartItem3": "Asegurate de que el puerto este disponible: <code>lsof -i :3000</code>",
+        "databaseItem1": "Verifica que tu <code>DATABASE_URL</code> sea correcto y que PostgreSQL este ejecutandose",
+        "databaseItem2": "Prueba la conexion: <code>psql tu-url-de-base</code>",
+        "databaseItem3": "Las migraciones se ejecutan automaticamente al iniciar — revisa la salida para errores"
+      },
+      "dockerCompose": {
+        "wontStartItem1": "Revisa los registros: <code>docker compose -f docker-compose.selfhosted.yml logs</code>",
+        "wontStartItem2": "Verifica las variables de entorno en el archivo <code>.env</code>",
+        "wontStartItem3": "Asegurate de que los puertos esten disponibles (o cambia <code>BACKEND_PORT</code> / <code>FRONTEND_PORT</code> en <code>.env</code>)",
+        "databaseItem1": "Espera a que PostgreSQL se inicialice completamente (verifica el estado de salud)",
+        "databaseItem2": "Verifica que <code>POSTGRES_PASSWORD</code> coincida en <code>.env</code>",
+        "databaseItem3": "Ejecuta las migraciones: <code>docker exec qarote_backend pnpm run db:migrate</code>"
+      },
+      "dokku": {
+        "wontStartItem1": "Revisa los registros: <code>dokku logs qarote</code>",
+        "wontStartItem2": "Verifica la config: <code>dokku config:show qarote</code>",
+        "wontStartItem3": "Verifica que la app fue desplegada: <code>dokku ps:report qarote</code>",
+        "databaseItem1": "Verifica que la base de datos este vinculada: <code>dokku postgres:info qarote-db</code>",
+        "databaseItem2": "Verifica que <code>DATABASE_URL</code> este configurado: <code>dokku config:get qarote DATABASE_URL</code>",
+        "databaseItem3": "Las migraciones se ejecutan automaticamente al desplegar — revisa los registros para errores"
+      },
+      "databaseTitle": "Errores de conexion a la base de datos",
+      "licenseTitle": "Problemas de licencia",
+      "licenseItem1": "Verifica que tu clave de licencia sea valida y no haya expirado",
+      "licenseItem2": "Reactiva tu licencia desde Configuracion → Licencia",
+      "licenseItem3": "Verifica la fecha de expiracion de la licencia"
+    },
+    "security": {
+      "title": "Recomendaciones de seguridad",
+      "item1": "Usa valores fuertes y generados aleatoriamente para JWT_SECRET y ENCRYPTION_KEY si no usas los generados por defecto",
+      "item2": "Mantén tu clave de licencia privada — no la compartas publicamente",
+      "item3": "Actualiza regularmente a la ultima version"
+    },
+    "support": {
+      "title": "Soporte",
+      "needHelp": "¿Necesitas ayuda?",
+      "communitySupport": "<strong>Soporte comunitario:</strong>",
+      "communitySupportLink": "GitHub Issues",
+      "enterpriseSupport": "<strong>Soporte Enterprise:</strong> support@qarote.io"
+    }
+  },
+  "dockerCompose": {
+    "description": "Configuracion Docker Compose lista para produccion para despliegues autoalojados. No es necesaria para despliegues binario o Dokku."
+  },
+  "envConfig": {
+    "description": "Referencia de variables de entorno para despliegues Docker Compose y Dokku. Los usuarios de la instalacion manual deben ejecutar <code>./qarote setup</code> en su lugar."
+  }
+}

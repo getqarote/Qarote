@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { useParams, useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { useParams, useSearchParams } from "react-router";
 
 import { AlertTriangle, Loader2, Mail, Settings } from "lucide-react";
 
@@ -24,20 +25,24 @@ import {
   useAlertNotificationSettings,
   useRabbitMQAlerts,
   useResolvedAlerts,
-} from "@/hooks/useApi";
-import { useBrowserNotifications } from "@/hooks/useBrowserNotifications";
-import { useUser } from "@/hooks/useUser";
+} from "@/hooks/queries/useAlerts";
+import { useBrowserNotifications } from "@/hooks/ui/useBrowserNotifications";
+import { useUser } from "@/hooks/ui/useUser";
+import { useFeatureFlags } from "@/hooks/useFeatureFlags";
 
 const Alerts = () => {
+  const { t } = useTranslation("alerts");
   const { serverId } = useParams<{ serverId: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
   const { selectedServerId, hasServers, setSelectedServerId } =
     useServerContext();
   const { selectedVHost, setSelectedVHost } = useVHostContext();
   const { userPlan } = useUser();
+  const { hasFeature: hasAlertingFeature, isLoading: featureFlagsLoading } =
+    useFeatureFlags();
   // const [showConfigureModal, setShowConfigureModal] = useState(false);
   const [showNotificationSettingsModal, setShowNotificationSettingsModal] =
-    useState(false);
+    useState(() => searchParams.get("openNotificationSettings") === "true");
   const [showAlertRulesModal, setShowAlertRulesModal] = useState(false);
   const [viewMode, setViewMode] = useState<"active" | "resolved">("active");
 
@@ -83,14 +88,9 @@ const Alerts = () => {
 
   const currentServerId = serverId || selectedServerId;
 
-  // Check for query parameter to open notification settings modal
+  // Clean up the openNotificationSettings query parameter from URL after initial read
   useEffect(() => {
-    const openNotificationSettings = searchParams.get(
-      "openNotificationSettings"
-    );
-    if (openNotificationSettings === "true") {
-      setShowNotificationSettingsModal(true);
-      // Remove the query parameter from URL after opening modal
+    if (searchParams.get("openNotificationSettings") === "true") {
       searchParams.delete("openNotificationSettings");
       setSearchParams(searchParams, { replace: true });
     }
@@ -99,7 +99,11 @@ const Alerts = () => {
   // Ensure vhost is always set (use "/" as default if not selected)
   const currentVHost = selectedVHost || "/";
 
+  // Check if alerting feature is enabled before making API calls
+  const isAlertingEnabled = hasAlertingFeature("alerting");
+
   // Query for alerts with the RabbitMQ alerts hook (filtered by vhost, with pagination)
+  // Only enable queries if the feature is available
   const {
     data: alertsData,
     isLoading: alertsLoading,
@@ -107,9 +111,11 @@ const Alerts = () => {
   } = useRabbitMQAlerts(currentServerId, currentVHost, {
     limit: activeAlertsPageSize,
     offset: (activeAlertsPage - 1) * activeAlertsPageSize,
+    enabled: isAlertingEnabled,
   });
 
   // Query for resolved alerts (with pagination)
+  // Only enable queries if the feature is available
   const {
     data: resolvedAlertsData,
     isLoading: resolvedAlertsLoading,
@@ -117,17 +123,24 @@ const Alerts = () => {
   } = useResolvedAlerts(currentServerId, currentVHost, {
     limit: resolvedAlertsPageSize,
     offset: (resolvedAlertsPage - 1) * resolvedAlertsPageSize,
+    enabled: isAlertingEnabled,
   });
 
   // Get browser notification settings
-  const { data: notificationSettings } = useAlertNotificationSettings(true);
+  // Only enable if feature is available
+  const { data: notificationSettings } =
+    useAlertNotificationSettings(isAlertingEnabled);
 
-  // Set up browser notifications
+  // Set up browser notifications (only if feature is enabled and settings are available)
   useBrowserNotifications(alertsData?.alerts, {
-    enabled: notificationSettings.settings.browserNotificationsEnabled,
-    severities: notificationSettings.settings.browserNotificationSeverities,
+    enabled:
+      isAlertingEnabled &&
+      notificationSettings?.settings?.browserNotificationsEnabled,
+    severities:
+      notificationSettings?.settings?.browserNotificationSeverities || [],
   });
 
+  // Early return for "no servers" case - this is not feature-gated
   if (!hasServers) {
     return (
       <SidebarProvider>
@@ -138,8 +151,8 @@ const Alerts = () => {
               <SidebarTrigger />
             </div>
             <NoServerConfigured
-              title="Alerts"
-              description="Monitor system alerts and notifications"
+              title={t("noServerTitle")}
+              description={t("noServerDescription")}
             />
           </main>
         </div>
@@ -147,50 +160,10 @@ const Alerts = () => {
     );
   }
 
+  // FeatureGate is handled at the route level in App.tsx
+  // No need to wrap here to avoid double-wrapping issues
   if (!currentServerId) {
     return <PageLoader />;
-  }
-
-  // Render main content
-  const alerts = alertsData?.alerts || [];
-  const summary = alertsData?.summary || {
-    total: 0,
-    critical: 0,
-    warning: 0,
-    info: 0,
-  };
-
-  if (alertsLoading && !alertsData) {
-    return <PageLoader />;
-  }
-
-  if (alertsError) {
-    return (
-      <SidebarProvider>
-        <div className="page-layout">
-          <AppSidebar />
-          <main className="main-content-scrollable">
-            <div className="content-container-large">
-              <div className="flex items-center gap-4">
-                <SidebarTrigger />
-                <div>
-                  <h1 className="title-page">Alerts</h1>
-                  <p className="text-gray-500">
-                    Monitor system alerts and notifications
-                  </p>
-                </div>
-              </div>
-              <Alert>
-                <AlertTriangle className="h-4 w-4" />
-                <AlertDescription>
-                  Failed to load alerts data. Please try again.
-                </AlertDescription>
-              </Alert>
-            </div>
-          </main>
-        </div>
-      </SidebarProvider>
-    );
   }
 
   return (
@@ -204,10 +177,8 @@ const Alerts = () => {
               <div className="flex items-center gap-4">
                 <SidebarTrigger />
                 <div>
-                  <h1 className="title-page">Alerts</h1>
-                  <p className="text-gray-500">
-                    Monitor system alerts and notifications
-                  </p>
+                  <h1 className="title-page">{t("pageTitle")}</h1>
+                  <p className="text-gray-500">{t("pageSubtitle")}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -220,7 +191,7 @@ const Alerts = () => {
                   className="flex items-center gap-2"
                 >
                   <Settings className="h-4 w-4" />
-                  Alert Rules
+                  {t("alertRules")}
                 </Button>
                 <Button
                   onClick={() => setShowNotificationSettingsModal(true)}
@@ -228,71 +199,105 @@ const Alerts = () => {
                   className="flex items-center gap-2"
                 >
                   <Mail className="h-4 w-4" />
-                  Notification Settings
+                  {t("notificationSettings")}
                 </Button>
               </div>
             </div>
-            {/* Alerts Summary */}
-            <AlertsSummary summary={summary} />
 
-            {/* Alerts with Tabs */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <AlertTriangle className="h-5 w-5" />
-                  Alerts
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Tabs
-                  value={viewMode}
-                  onValueChange={(value) =>
-                    setViewMode(value as "active" | "resolved")
+            {/* Loading state */}
+            {featureFlagsLoading || (alertsLoading && !alertsData) ? (
+              <PageLoader />
+            ) : alertsError ? (
+              <Alert>
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription>{t("failedToLoad")}</AlertDescription>
+              </Alert>
+            ) : (
+              <>
+                {/* Alerts Summary */}
+                <AlertsSummary
+                  summary={
+                    alertsData?.summary || {
+                      total: 0,
+                      critical: 0,
+                      warning: 0,
+                      info: 0,
+                    }
                   }
-                >
-                  <TabsList className="grid w-full grid-cols-2 mb-6">
-                    <TabsTrigger value="active">Active Alerts</TabsTrigger>
-                    <TabsTrigger value="resolved">Resolved Alerts</TabsTrigger>
-                  </TabsList>
+                />
 
-                  <TabsContent value="active">
-                    <ActiveAlertsList
-                      alerts={alerts}
-                      summary={summary}
-                      userPlan={userPlan}
-                      total={alertsData?.total || 0}
-                      page={activeAlertsPage}
-                      pageSize={activeAlertsPageSize}
-                      onPageChange={setActiveAlertsPage}
-                      onPageSizeChange={(size) => {
-                        setActiveAlertsPageSize(size);
-                        setActiveAlertsPage(1); // Reset to first page when changing page size
-                      }}
-                    />
-                  </TabsContent>
+                {/* Alerts with Tabs */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <AlertTriangle className="h-5 w-5" />
+                      {t("pageTitle")}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <Tabs
+                      value={viewMode}
+                      onValueChange={(value) =>
+                        setViewMode(value as "active" | "resolved")
+                      }
+                    >
+                      <TabsList className="grid w-full grid-cols-2 mb-6">
+                        <TabsTrigger value="active">
+                          {t("activeAlerts")}
+                        </TabsTrigger>
+                        <TabsTrigger value="resolved">
+                          {t("resolvedAlerts")}
+                        </TabsTrigger>
+                      </TabsList>
 
-                  <TabsContent value="resolved">
-                    <ResolvedAlertsList
-                      alerts={resolvedAlertsData?.alerts || []}
-                      isLoading={resolvedAlertsLoading && !resolvedAlertsData}
-                      error={resolvedAlertsError}
-                      total={resolvedAlertsData?.total || 0}
-                      page={resolvedAlertsPage}
-                      pageSize={resolvedAlertsPageSize}
-                      onPageChange={setResolvedAlertsPage}
-                      onPageSizeChange={(size) => {
-                        setResolvedAlertsPageSize(size);
-                        setResolvedAlertsPage(1); // Reset to first page when changing page size
-                      }}
-                    />
-                  </TabsContent>
-                </Tabs>
-              </CardContent>
-            </Card>
+                      <TabsContent value="active">
+                        <ActiveAlertsList
+                          alerts={alertsData?.alerts || []}
+                          summary={
+                            alertsData?.summary || {
+                              total: 0,
+                              critical: 0,
+                              warning: 0,
+                              info: 0,
+                            }
+                          }
+                          userPlan={userPlan}
+                          total={alertsData?.total || 0}
+                          page={activeAlertsPage}
+                          pageSize={activeAlertsPageSize}
+                          onPageChange={setActiveAlertsPage}
+                          onPageSizeChange={(size) => {
+                            setActiveAlertsPageSize(size);
+                            setActiveAlertsPage(1); // Reset to first page when changing page size
+                          }}
+                        />
+                      </TabsContent>
+
+                      <TabsContent value="resolved">
+                        <ResolvedAlertsList
+                          alerts={resolvedAlertsData?.alerts || []}
+                          isLoading={
+                            resolvedAlertsLoading && !resolvedAlertsData
+                          }
+                          error={resolvedAlertsError}
+                          total={resolvedAlertsData?.total || 0}
+                          page={resolvedAlertsPage}
+                          pageSize={resolvedAlertsPageSize}
+                          onPageChange={setResolvedAlertsPage}
+                          onPageSizeChange={(size) => {
+                            setResolvedAlertsPageSize(size);
+                            setResolvedAlertsPage(1); // Reset to first page when changing page size
+                          }}
+                        />
+                      </TabsContent>
+                    </Tabs>
+                  </CardContent>
+                </Card>
+              </>
+            )}
           </div>
         </main>
       </div>
-
       {/* Notification Settings Modal */}
       <AlertNotificationSettingsModal
         isOpen={showNotificationSettingsModal}

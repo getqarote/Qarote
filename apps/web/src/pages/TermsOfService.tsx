@@ -166,6 +166,43 @@ const TermsOfService = () => {
                   period
                 </li>
               </ul>
+
+              <h3 className="text-xl font-medium text-foreground">
+                4.4 Enterprise Self-Hosted Licenses
+              </h3>
+              <p>
+                For Enterprise Edition self-hosted licenses, the following terms
+                apply:
+              </p>
+              <ul className="list-disc pl-6 space-y-2">
+                <li>
+                  <strong>License Scope:</strong> Valid for one production
+                  deployment. Each license key is cryptographically signed and
+                  tied to your account.
+                </li>
+                <li>
+                  <strong>License Validity:</strong> Active licenses remain
+                  valid until expiration. Your instance validates the license
+                  signature locally without requiring internet connectivity.
+                </li>
+                <li>
+                  <strong>Annual Renewal:</strong> Licenses are valid for one
+                  year from purchase. Upon renewal, a new license file is
+                  automatically generated and must be installed to continue
+                  service.
+                </li>
+                <li>
+                  <strong>Prohibited Activities:</strong> You may not share,
+                  sell, distribute, or transfer your license. Violation may
+                  result in immediate license revocation.
+                </li>
+                <li>
+                  <strong>Trust-Based Licensing:</strong> We operate on a
+                  trust-based model. Your license is tied to your purchase, not
+                  to specific hardware. We reserve the right to verify license
+                  usage and revoke licenses if abuse is detected.
+                </li>
+              </ul>
             </div>
           </section>
 

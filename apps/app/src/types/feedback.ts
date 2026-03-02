@@ -18,22 +18,3 @@ export interface FeedbackRequest {
     timestamp: string;
   };
 }
-
-export interface Feedback extends FeedbackRequest {
-  id: string;
-  userId?: string;
-  workspaceId?: string;
-  status: "OPEN" | "IN_PROGRESS" | "RESOLVED" | "CLOSED";
-  createdAt: string;
-  updatedAt: string;
-  response?: string;
-  respondedBy?: string;
-  respondedAt?: string;
-}
-
-export interface FeedbackStats {
-  total: number;
-  byType: Record<FeedbackRequest["type"], number>;
-  byStatus: Record<Feedback["status"], number>;
-  byPriority: Record<FeedbackRequest["priority"], number>;
-}

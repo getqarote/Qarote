@@ -1,0 +1,7 @@
+{
+  "pageTitle": "节点",
+  "pageSubtitle": "集群节点及其指标的详细视图",
+  "noServerTitle": "节点",
+  "noServerDescription": "添加 RabbitMQ 服务器连接以查看集群节点及其指标。",
+  "selectServerPrompt": "请选择一个 RabbitMQ 服务器以查看其节点"
+}

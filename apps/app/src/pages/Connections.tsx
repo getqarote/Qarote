@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import {
   Activity,
@@ -29,9 +30,10 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 
 import { useServerContext } from "@/contexts/ServerContext";
 
-import { useChannels, useConnections } from "@/hooks/useApi";
+import { useChannels, useConnections } from "@/hooks/queries/useRabbitMQ";
 
 const Connections = () => {
+  const { t } = useTranslation("connections");
   const { selectedServerId, hasServers } = useServerContext();
   const [expandedConnections, setExpandedConnections] = useState<Set<string>>(
     new Set()
@@ -126,8 +128,8 @@ const Connections = () => {
               <SidebarTrigger />
             </div>
             <NoServerConfigured
-              title="Connections"
-              description="Add a RabbitMQ server connection to monitor connections and channels."
+              title={t("noServerTitle")}
+              description={t("noServerDescription")}
             />
           </main>
         </div>
@@ -145,10 +147,8 @@ const Connections = () => {
               <div className="flex items-center gap-4">
                 <SidebarTrigger />
                 <div>
-                  <h1 className="title-page">Connections</h1>
-                  <p className="text-muted-foreground">
-                    Monitor RabbitMQ connections and channels
-                  </p>
+                  <h1 className="title-page">{t("pageTitle")}</h1>
+                  <p className="text-muted-foreground">{t("pageSubtitle")}</p>
                 </div>
               </div>
               <Card className="border-0 shadow-md bg-card">
@@ -156,10 +156,10 @@ const Connections = () => {
                   <div className="text-center">
                     <Server className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
                     <h2 className="text-2xl font-semibold text-foreground mb-2">
-                      No Server Selected
+                      {t("noServerSelected")}
                     </h2>
                     <p className="text-muted-foreground">
-                      Please select a RabbitMQ server to view connections.
+                      {t("selectServerPrompt")}
                     </p>
                   </div>
                 </CardContent>
@@ -182,10 +182,8 @@ const Connections = () => {
               <div className="flex items-center gap-4">
                 <SidebarTrigger />
                 <div>
-                  <h1 className="title-page">Connections</h1>
-                  <p className="text-muted-foreground">
-                    Monitor RabbitMQ connections and channels
-                  </p>
+                  <h1 className="title-page">{t("pageTitle")}</h1>
+                  <p className="text-muted-foreground">{t("pageSubtitle")}</p>
                 </div>
               </div>
               <PlanBadge />
@@ -196,7 +194,7 @@ const Connections = () => {
               <Card className="border-0 shadow-md bg-card">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">
-                    Total Connections
+                    {t("totalConnections")}
                   </CardTitle>
                   <Network className="h-4 w-4 text-blue-600" />
                 </CardHeader>
@@ -207,7 +205,7 @@ const Connections = () => {
                       : (connectionsData?.totalConnections ?? 0)}
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Active client connections
+                    {t("activeClientConnections")}
                   </p>
                 </CardContent>
               </Card>
@@ -215,7 +213,7 @@ const Connections = () => {
               <Card className="border-0 shadow-md bg-card">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">
-                    Total Channels
+                    {t("totalChannels")}
                   </CardTitle>
                   <Zap className="h-4 w-4 text-yellow-600" />
                 </CardHeader>
@@ -226,7 +224,7 @@ const Connections = () => {
                       : (channelsData?.totalChannels ?? 0)}
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Active communication channels
+                    {t("activeCommunicationChannels")}
                   </p>
                 </CardContent>
               </Card>
@@ -234,7 +232,7 @@ const Connections = () => {
               <Card className="border-0 shadow-md bg-card">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">
-                    Avg Channels/Connection
+                    {t("avgChannelsPerConnection")}
                   </CardTitle>
                   <Activity className="h-4 w-4 text-green-600" />
                 </CardHeader>
@@ -252,7 +250,7 @@ const Connections = () => {
                         : 0}
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Channels per connection
+                    {t("channelsPerConnection")}
                   </p>
                 </CardContent>
               </Card>
@@ -263,30 +261,29 @@ const Connections = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Network className="h-5 w-5" />
-                  Active Connections
+                  {t("activeConnections")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 {connectionsError ? (
                   <div className="text-center py-8">
                     <div className="text-red-600 mb-2">
-                      Failed to load connections: {connectionsError.message}
+                      {t("failedToLoad")}: {connectionsError.message}
                     </div>
                   </div>
                 ) : connectionsLoading ? (
                   <div className="text-center py-8">
                     <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4" />
-                    <p>Loading connections...</p>
+                    <p>{t("common:loading")}</p>
                   </div>
                 ) : connectionsData?.connections?.length === 0 ? (
                   <div className="text-center py-8">
                     <Network className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
                     <h3 className="text-lg font-semibold text-foreground mb-2">
-                      No Active Connections
+                      {t("noActiveConnections")}
                     </h3>
                     <p className="text-muted-foreground">
-                      There are currently no active connections to this RabbitMQ
-                      server.
+                      {t("noActiveConnectionsDesc")}
                     </p>
                   </div>
                 ) : (
@@ -335,7 +332,7 @@ const Connections = () => {
                                     {connection.channelCount}
                                   </div>
                                   <div className="text-xs text-muted-foreground">
-                                    Channels
+                                    {t("totalChannels")}
                                   </div>
                                 </div>
                                 <div className="text-center">
@@ -343,7 +340,7 @@ const Connections = () => {
                                     {formatBytes(connection.recv_oct || 0)}
                                   </div>
                                   <div className="text-xs text-muted-foreground">
-                                    Received
+                                    {t("bytesReceived")}
                                   </div>
                                 </div>
                                 <div className="text-center">
@@ -351,7 +348,7 @@ const Connections = () => {
                                     {formatBytes(connection.send_oct || 0)}
                                   </div>
                                   <div className="text-xs text-muted-foreground">
-                                    Sent
+                                    {t("bytesSent")}
                                   </div>
                                 </div>
                                 <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
@@ -363,30 +360,30 @@ const Connections = () => {
                               <div className="grid grid-cols-2 gap-4 mb-4">
                                 <div>
                                   <h4 className="font-medium mb-2">
-                                    Connection Details
+                                    {t("connectionDetails")}
                                   </h4>
                                   <div className="space-y-1 text-sm">
                                     <div>
                                       <span className="text-muted-foreground">
-                                        Protocol:
+                                        {t("protocol")}:
                                       </span>{" "}
                                       {connection.protocol}
                                     </div>
                                     <div>
                                       <span className="text-muted-foreground">
-                                        Virtual Host:
+                                        {t("virtualHost")}:
                                       </span>{" "}
                                       {connection.vhost}
                                     </div>
                                     <div>
                                       <span className="text-muted-foreground">
-                                        Packets Received:
+                                        {t("packetsReceived")}:
                                       </span>{" "}
                                       {connection.recv_cnt?.toLocaleString()}
                                     </div>
                                     <div>
                                       <span className="text-muted-foreground">
-                                        Packets Sent:
+                                        {t("packetsSent")}:
                                       </span>{" "}
                                       {connection.send_cnt?.toLocaleString()}
                                     </div>
@@ -394,24 +391,24 @@ const Connections = () => {
                                 </div>
                                 <div>
                                   <h4 className="font-medium mb-2">
-                                    Traffic Statistics
+                                    {t("trafficStatistics")}
                                   </h4>
                                   <div className="space-y-1 text-sm">
                                     <div>
                                       <span className="text-muted-foreground">
-                                        Bytes Received:
+                                        {t("bytesReceived")}:
                                       </span>{" "}
                                       {formatBytes(connection.recv_oct || 0)}
                                     </div>
                                     <div>
                                       <span className="text-muted-foreground">
-                                        Bytes Sent:
+                                        {t("bytesSent")}:
                                       </span>{" "}
                                       {formatBytes(connection.send_oct || 0)}
                                     </div>
                                     <div>
                                       <span className="text-muted-foreground">
-                                        Active Channels:
+                                        {t("activeChannels")}:
                                       </span>{" "}
                                       {connection.channelCount}
                                     </div>
@@ -423,7 +420,7 @@ const Connections = () => {
                                 <div>
                                   <h4 className="font-medium mb-3 flex items-center gap-2">
                                     <Zap className="h-4 w-4" />
-                                    Active Channels (
+                                    {t("activeChannels")} (
                                     {connection.channelDetails.length})
                                   </h4>
                                   <div className="grid gap-3">
@@ -431,7 +428,7 @@ const Connections = () => {
                                       (channel) => (
                                         <div
                                           key={channel.name}
-                                          className="border rounded-lg p-3 bg-gradient-to-r from-gray-50 to-gray-100"
+                                          className="border rounded-lg p-3 bg-linear-to-r from-gray-50 to-gray-100"
                                         >
                                           <div className="flex items-center justify-between mb-2">
                                             <div className="flex items-center gap-3">
@@ -468,7 +465,7 @@ const Connections = () => {
                                           <div className="grid grid-cols-3 gap-4 text-xs">
                                             <div>
                                               <span className="text-muted-foreground">
-                                                User:
+                                                {t("user")}:
                                               </span>
                                               <div className="font-medium">
                                                 {channel.user}
@@ -476,7 +473,7 @@ const Connections = () => {
                                             </div>
                                             <div>
                                               <span className="text-muted-foreground">
-                                                VHost:
+                                                {t("vhost")}:
                                               </span>
                                               <div className="font-medium">
                                                 {channel.vhost}
@@ -484,7 +481,7 @@ const Connections = () => {
                                             </div>
                                             <div>
                                               <span className="text-muted-foreground">
-                                                Node:
+                                                {t("node")}:
                                               </span>
                                               <div className="font-medium">
                                                 {channel.node}

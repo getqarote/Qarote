@@ -67,6 +67,9 @@ const logger = pino({
       "jwt",
       "session",
       "sessionId",
+
+      // Email data
+      "to",
     ],
     censor: "[REDACTED]",
   },

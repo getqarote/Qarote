@@ -15,8 +15,9 @@ import {
 
 import { useServerContext } from "@/contexts/ServerContext";
 
-import { usePauseQueue, useResumeQueue } from "@/hooks/useApi";
-import { useToast } from "@/hooks/useToast";
+import { usePauseQueue, useResumeQueue } from "@/hooks/queries/useRabbitMQ";
+import { useToast } from "@/hooks/ui/useToast";
+import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 interface PauseQueueDialogProps {
   queueName: string;
@@ -35,16 +36,18 @@ export function PauseQueueDialog({
 }: PauseQueueDialogProps) {
   const [open, setOpen] = useState(false);
   const { selectedServerId } = useServerContext();
+  const { workspace } = useWorkspace();
   const { toast } = useToast();
   const pauseQueueMutation = usePauseQueue();
   const resumeQueueMutation = useResumeQueue();
 
   const handlePauseQueue = async () => {
-    if (!selectedServerId) return;
+    if (!selectedServerId || !workspace?.id) return;
 
     try {
       const result = await pauseQueueMutation.mutateAsync({
         serverId: selectedServerId,
+        workspaceId: workspace.id,
         queueName,
       });
 
@@ -66,11 +69,12 @@ export function PauseQueueDialog({
   };
 
   const handleResumeQueue = async () => {
-    if (!selectedServerId) return;
+    if (!selectedServerId || !workspace?.id) return;
 
     try {
       const result = await resumeQueueMutation.mutateAsync({
         serverId: selectedServerId,
+        workspaceId: workspace.id,
         queueName,
       });
 

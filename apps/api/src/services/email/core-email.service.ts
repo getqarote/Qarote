@@ -4,6 +4,7 @@ import type { ReactElement } from "react";
 import { Resend } from "resend";
 
 import { logger } from "@/core/logger";
+import { retryWithBackoff } from "@/core/retry";
 
 import { Sentry, setSentryContext } from "@/services/sentry";
 
@@ -16,7 +17,7 @@ export interface EmailResult {
   error?: string | null;
 }
 
-export interface BaseEmailParams {
+interface BaseEmailParams {
   to: string;
   subject: string;
   template: ReactElement;
@@ -48,16 +49,31 @@ export class CoreEmailService {
 
   private static initializeSMTP() {
     if (!this.smtpTransporter && emailConfig.smtp.host) {
+      // Check if OAuth2 is configured
+      const hasOAuth2 =
+        emailConfig.smtp.oauth?.clientId &&
+        emailConfig.smtp.oauth?.clientSecret &&
+        emailConfig.smtp.oauth?.refreshToken;
+
       this.smtpTransporter = nodemailer.createTransport({
         host: emailConfig.smtp.host,
         port: emailConfig.smtp.port || 587,
         secure: (emailConfig.smtp.port || 587) === 465,
-        auth: emailConfig.smtp.user
+        service: emailConfig.smtp.service, // Optional: 'gmail', 'outlook', etc.
+        auth: hasOAuth2
           ? {
+              type: "OAuth2",
               user: emailConfig.smtp.user,
-              pass: emailConfig.smtp.pass,
+              clientId: emailConfig.smtp.oauth.clientId,
+              clientSecret: emailConfig.smtp.oauth.clientSecret,
+              refreshToken: emailConfig.smtp.oauth.refreshToken,
             }
-          : undefined,
+          : emailConfig.smtp.user
+            ? {
+                user: emailConfig.smtp.user,
+                pass: emailConfig.smtp.pass,
+              }
+            : undefined,
       });
     }
     return this.smtpTransporter;
@@ -162,18 +178,50 @@ export class CoreEmailService {
       throw new Error("Resend API key not configured");
     }
 
-    const { data, error } = await resend.emails.send({
-      from: emailConfig.fromEmail,
-      to,
-      subject,
-      html,
-    });
+    // Use retry logic with exponential backoff for 5xx errors and timeouts
+    const { data, error } = await retryWithBackoff(
+      async () => {
+        const result = await resend.emails.send({
+          from: emailConfig.fromEmail,
+          to,
+          subject,
+          html,
+        });
+
+        // If there's an error with a 5xx status code, throw it so retry can handle it
+        if (result.error) {
+          const errorObj = result.error as {
+            message?: string;
+            status?: number;
+            statusCode?: number;
+          };
+
+          // Check if it's a 5xx error
+          const statusCode = errorObj.status ?? errorObj.statusCode;
+          if (typeof statusCode === "number" && statusCode >= 500) {
+            throw result.error;
+          }
+
+          // For 4xx errors, return as-is (don't retry)
+          return result;
+        }
+
+        return result;
+      },
+      {
+        maxRetries: 3,
+        retryDelayMs: 1_000,
+        timeoutMs: 10_000,
+      },
+      "resend"
+    );
 
     if (error) {
       logger.error(error, `Failed to send ${emailType} email via Resend`);
       return {
         success: false,
-        error: error.message || "Failed to send email",
+        error:
+          (error as { message?: string }).message || "Failed to send email",
       };
     }
 
@@ -257,6 +305,7 @@ export class CoreEmailService {
   static getConfig() {
     return {
       frontendUrl: emailConfig.frontendUrl,
+      portalFrontendUrl: emailConfig.portalFrontendUrl,
       fromEmail: emailConfig.fromEmail,
     };
   }

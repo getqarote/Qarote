@@ -1,13 +1,10 @@
-import React from "react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Database } from "lucide-react";
 import { toast } from "sonner";
-
-import { apiClient } from "@/lib/api";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -31,7 +28,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
-import { useWorkspace } from "@/hooks/useWorkspace";
+import { useCreateVHost } from "@/hooks/queries/useRabbitMQVHosts";
+import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 import { type CreateVHostForm, createVHostSchema } from "@/schemas";
 
@@ -69,35 +67,40 @@ export function CreateVHostModal({
     }
   }, [initialName, form]);
 
-  const createVHostMutation = useMutation({
-    mutationFn: (data: CreateVHostForm) => {
-      if (!workspace?.id) {
-        throw new Error("Workspace ID is required");
-      }
-      return apiClient.createVHost(
-        serverId,
-        {
-          name: data.name,
-          description: data.description,
-          tracing: data.tracing,
-        },
-        workspace.id
-      );
-    },
-    onSuccess: () => {
+  const createVHostMutation = useCreateVHost();
+
+  // Handle success/error
+  useEffect(() => {
+    if (createVHostMutation.isSuccess) {
       queryClient.invalidateQueries({ queryKey: ["vhosts", serverId] });
       toast.success("Virtual host created successfully");
       form.reset();
       onSuccess?.();
       onClose();
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || "Failed to create virtual host");
-    },
-  });
+    }
+    if (createVHostMutation.isError) {
+      toast.error(
+        createVHostMutation.error?.message || "Failed to create virtual host"
+      );
+    }
+  }, [
+    createVHostMutation.isSuccess,
+    createVHostMutation.isError,
+    createVHostMutation.error,
+  ]);
 
   const onSubmit = (data: CreateVHostForm) => {
-    createVHostMutation.mutate(data);
+    if (!workspace?.id) {
+      toast.error("Workspace ID is required");
+      return;
+    }
+    createVHostMutation.mutate({
+      serverId,
+      workspaceId: workspace.id,
+      name: data.name,
+      description: data.description,
+      tracing: data.tracing,
+    });
   };
 
   const handleClose = () => {

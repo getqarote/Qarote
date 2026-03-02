@@ -53,7 +53,7 @@ export const AlertItem = ({ alert, isResolved = false }: AlertItemProps) => {
         isResolved ? "bg-muted/50" : ""
       }`}
     >
-      <div className="flex-shrink-0 mt-1">
+      <div className="shrink-0 mt-1">
         {isResolved ? (
           <CheckCircle className="h-5 w-5 text-green-500" />
         ) : (
@@ -146,7 +146,7 @@ export const AlertItem = ({ alert, isResolved = false }: AlertItemProps) => {
               </div>
             )}
           </div>
-          <div className="flex-shrink-0 text-right">
+          <div className="shrink-0 text-right">
             <div className="text-xs text-muted-foreground">
               {isResolved && "resolvedAt" in alert && alert.resolvedAt
                 ? `Resolved: ${formatTimestamp(alert.resolvedAt)}`

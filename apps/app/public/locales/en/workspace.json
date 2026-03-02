@@ -1,0 +1,17 @@
+{
+  "pageTitle": "Qarote",
+  "heading": "Create Your Workspace",
+  "subheading": "Welcome to Qarote! Let's start by creating your first workspace. Workspaces help you organize your RabbitMQ servers and collaborate with your team.",
+  "formTitle": "New Workspace",
+  "workspaceName": "Workspace Name *",
+  "workspacePlaceholder": "My Workspace",
+  "tags": "Tags (Optional)",
+  "tagsPlaceholder": "Add tags to organize your workspace",
+  "tagsHint": "Use tags like \"production\", \"development\", or \"testing\" to organize your workspace",
+  "createButton": "Create Workspace",
+  "creatingButton": "Creating Workspace...",
+  "successTitle": "Workspace Created Successfully!",
+  "successMessage": "Redirecting you to your dashboard...",
+  "loadingMessage": "Loading...",
+  "failedToCreate": "Failed to create workspace. Please try again."
+}

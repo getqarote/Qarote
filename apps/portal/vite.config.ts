@@ -15,6 +15,10 @@ export default defineConfig({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
+    // CRITICAL: Prevents duplicate React instances which can cause production errors
+    // like "Cannot read properties of null (reading 'useEffect')"
+    // Never remove this - it ensures a single React instance across all dependencies
+    dedupe: ["react", "react-dom"],
   },
   build: {
     target: "esnext",
@@ -23,35 +27,37 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          // Vendor chunk for React and related libraries
-          "vendor-react": ["react", "react-dom", "react-router-dom"],
+          // CRITICAL: React must be in its own chunk to prevent bundling issues
+          // This ensures React is properly resolved and prevents production errors
+          "vendor-react": ["react", "react-dom", "react-router"],
           // UI components chunk
-          "vendor-ui": [
-            "@radix-ui/react-dialog",
-            "@radix-ui/react-dropdown-menu",
-            "@radix-ui/react-select",
-            "@radix-ui/react-slot",
-            "@radix-ui/react-tabs",
-            "@radix-ui/react-toast",
-            "@radix-ui/react-tooltip",
-          ],
+          "vendor-ui": ["@radix-ui/react-label", "@radix-ui/react-slot"],
           // Data fetching and state management
           "vendor-data": ["@tanstack/react-query"],
           // Icons
           "vendor-icons": ["lucide-react"],
           // Form and validation
           "vendor-forms": ["react-hook-form", "@hookform/resolvers", "zod"],
+          // i18n
+          "vendor-i18n": [
+            "i18next",
+            "react-i18next",
+            "i18next-http-backend",
+            "i18next-browser-languagedetector",
+          ],
           // Date and time utilities
           "vendor-utils": [
-            "date-fns",
             "clsx",
             "class-variance-authority",
             "tailwind-merge",
           ],
-          // Stripe
-          "vendor-stripe": ["@stripe/stripe-js"],
         },
       },
+    },
+    // Ensure React is properly bundled
+    commonjsOptions: {
+      include: [/node_modules/],
+      transformMixedEsModules: true,
     },
     // Increase chunk size warning limit
     chunkSizeWarningLimit: 1000,

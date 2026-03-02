@@ -5,11 +5,11 @@
  * RabbitMQ types to lean API response types.
  */
 
-export { BindingMapper } from "./BindingMapper";
-export { ConsumerMapper } from "./ConsumerMapper";
-export { ExchangeMapper } from "./ExchangeMapper";
-export { NodeMapper } from "./NodeMapper";
-export { OverviewMapper } from "./OverviewMapper";
-export { QueueMapper } from "./QueueMapper";
-export { UserMapper } from "./UserMapper";
-export { VHostMapper } from "./VHostMapper";
+export { ConsumerMapper } from "./consumer/consumer.mapper";
+export { BindingMapper } from "./exchange/binding.mapper";
+export { ExchangeMapper } from "./exchange/exchange.mapper";
+export { NodeMapper } from "./node/node.mapper";
+export { OverviewMapper } from "./overview/overview.mapper";
+export { QueueMapper } from "./queue/queue.mapper";
+export { UserMapper } from "./user/user.mapper";
+export { VHostMapper } from "./vhost/vhost.mapper";

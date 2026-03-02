@@ -1,21 +1,19 @@
-import { UserPlan } from "@prisma/client";
-import { z } from "zod/v4";
+import { z } from "zod";
+
+import { UserPlan } from "@/generated/prisma/client";
 
 export const createCheckoutSessionSchema = z.object({
-  plan: z.enum(UserPlan),
+  plan: z.nativeEnum(UserPlan),
   billingInterval: z.enum(["monthly", "yearly"]),
-  successUrl: z.url().optional(),
-  cancelUrl: z.url().optional(),
 });
 
-export const stripeWebhookSchema = z.object({
-  type: z.string(),
-  data: z.object({
-    object: z.any(),
-  }),
+export const cancelSubscriptionSchema = z.object({
+  cancelImmediately: z.boolean().optional().default(false),
+  reason: z.string().optional().default(""),
+  feedback: z.string().optional().default(""),
 });
 
-export type CreateCheckoutSessionRequest = z.infer<
-  typeof createCheckoutSessionSchema
->;
-export type StripeWebhookRequest = z.infer<typeof stripeWebhookSchema>;
+export const renewSubscriptionSchema = z.object({
+  plan: z.nativeEnum(UserPlan),
+  interval: z.enum(["monthly", "yearly"]).optional().default("monthly"),
+});

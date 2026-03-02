@@ -1,13 +1,13 @@
 import React, { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 
 import { Check, Loader2, X, Zap } from "lucide-react";
 
-import { apiClient } from "@/lib/api";
 import { logger } from "@/lib/logger";
+import { trpc } from "@/lib/trpc/client";
 
-import { useUser } from "@/hooks/useUser";
-import { useWorkspace } from "@/hooks/useWorkspace";
+import { useAllPlans } from "@/hooks/queries/usePlans";
+import { useUser } from "@/hooks/ui/useUser";
+import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 import { UserPlan } from "@/types/plans";
 
@@ -28,11 +28,20 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
   const [error, setError] = useState<string | null>(null);
 
   // Fetch all plans data
-  const { data: allPlansData } = useQuery({
-    queryKey: ["plans", "all", workspace?.id],
-    queryFn: () => apiClient.getAllPlans(),
-    enabled: !!workspace?.id,
-  });
+  const { data: allPlansData } = useAllPlans();
+
+  const createCheckoutMutation =
+    trpc.payment.checkout.createCheckoutSession.useMutation({
+      onSuccess: (data) => {
+        // Redirect to Stripe checkout
+        window.location.href = data.url;
+      },
+      onError: (error) => {
+        logger.error("Failed to create checkout session:", error);
+        setError("Failed to start upgrade process. Please try again.");
+        setIsUpgrading(null);
+      },
+    });
 
   const handleUpgrade = async (targetPlan: UserPlan) => {
     try {
@@ -46,13 +55,10 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
       }
 
       // Create Stripe checkout session
-      const response = await apiClient.createCheckoutSession(workspace.id, {
+      createCheckoutMutation.mutate({
         plan: targetPlan,
         billingInterval: "monthly", // Default to monthly, could be made configurable
       });
-
-      // Redirect to Stripe checkout
-      window.location.href = response.url;
     } catch (error) {
       logger.error("Failed to create checkout session:", error);
       setError("Failed to start upgrade process. Please try again.");

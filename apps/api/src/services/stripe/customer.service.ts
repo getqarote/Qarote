@@ -1,7 +1,7 @@
-import { UserPlan } from "@prisma/client";
 import Stripe from "stripe";
 
 import { logger } from "@/core/logger";
+import { retryWithBackoff } from "@/core/retry";
 
 import {
   CoreStripeService,
@@ -11,6 +11,8 @@ import {
   STRIPE_PRICE_IDS,
 } from "./core.service";
 
+import { UserPlan } from "@/generated/prisma/client";
+
 export class StripeCustomerService {
   /**
    * Create a new Stripe customer
@@ -19,13 +21,22 @@ export class StripeCustomerService {
     try {
       logger.info({ email, userId }, "Creating Stripe customer");
 
-      const customer = await stripe.customers.create({
-        email,
-        name,
-        metadata: {
-          userId,
+      const customer = await retryWithBackoff(
+        () =>
+          stripe.customers.create({
+            email,
+            name,
+            metadata: {
+              userId,
+            },
+          }),
+        {
+          maxRetries: 3,
+          retryDelayMs: 1_000,
+          timeoutMs: 10_000,
         },
-      });
+        "stripe"
+      );
 
       // Set Sentry context for payment tracking
       CoreStripeService.setSentryContext("stripe_customer", {
@@ -59,10 +70,19 @@ export class StripeCustomerService {
     try {
       logger.info({ customerId }, "Creating Stripe portal session");
 
-      const session = await stripe.billingPortal.sessions.create({
-        customer: customerId,
-        return_url: returnUrl,
-      });
+      const session = await retryWithBackoff(
+        () =>
+          stripe.billingPortal.sessions.create({
+            customer: customerId,
+            return_url: returnUrl,
+          }),
+        {
+          maxRetries: 3,
+          retryDelayMs: 1_000,
+          timeoutMs: 10_000,
+        },
+        "stripe"
+      );
 
       logger.info(
         {
@@ -108,6 +128,12 @@ export class StripeCustomerService {
         "Creating Stripe checkout session"
       );
 
+      if (!STRIPE_PRICE_IDS) {
+        throw new Error(
+          "Stripe is not configured. STRIPE_PRICE_IDS are required for creating checkout sessions."
+        );
+      }
+
       const priceId = STRIPE_PRICE_IDS[plan][billingInterval];
 
       const sessionParams: Stripe.Checkout.SessionCreateParams = {
@@ -145,7 +171,15 @@ export class StripeCustomerService {
         sessionParams.customer_email = customerEmail;
       }
 
-      const session = await stripe.checkout.sessions.create(sessionParams);
+      const session = await retryWithBackoff(
+        () => stripe.checkout.sessions.create(sessionParams),
+        {
+          maxRetries: 3,
+          retryDelayMs: 1_000,
+          timeoutMs: 10_000,
+        },
+        "stripe"
+      );
 
       // Set Sentry context for checkout tracking
       CoreStripeService.setSentryContext("stripe_checkout", {

@@ -1,0 +1,17 @@
+{
+  "required": "此字段为必填项",
+  "invalidEmail": "请输入有效的电子邮件地址",
+  "passwordRequired": "密码为必填项",
+  "passwordMinLength": "密码长度至少为 8 个字符",
+  "passwordLowercase": "密码必须包含至少一个小写字母",
+  "passwordUppercase": "密码必须包含至少一个大写字母",
+  "passwordNumber": "密码必须包含至少一个数字",
+  "passwordSpecial": "密码必须包含至少一个特殊字符",
+  "passwordsDoNotMatch": "两次输入的密码不一致",
+  "firstNameRequired": "名字为必填项",
+  "lastNameRequired": "姓氏为必填项",
+  "acceptTermsRequired": "您必须接受服务条款和隐私政策",
+  "invalidUrl": "请输入有效的网址",
+  "minLength": "至少需要 {{min}} 个字符",
+  "maxLength": "最多不超过 {{max}} 个字符"
+}

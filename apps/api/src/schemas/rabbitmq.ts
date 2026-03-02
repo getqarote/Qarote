@@ -1,4 +1,4 @@
-import { z } from "zod/v4";
+import { z } from "zod";
 // import isValidHostname from "is-valid-hostname";
 
 const HostSchema = z
@@ -10,7 +10,7 @@ const HostSchema = z
   .trim();
 
 // Schema for RabbitMQ server credentials
-export const RabbitMQCredentialsSchema = z.object({
+const RabbitMQCredentialsSchema = z.object({
   host: HostSchema,
   port: z.number().int().positive().default(15672), // Management API port
   amqpPort: z.number().int().positive().default(5672), // AMQP protocol port
@@ -21,7 +21,7 @@ export const RabbitMQCredentialsSchema = z.object({
 });
 
 // Schema for creating a new RabbitMQ server
-export const CreateServerSchema = z.object({
+const CreateServerSchema = z.object({
   name: z.string().min(1, "Server name is required"),
   host: HostSchema,
   port: z.number().int().positive().default(15672), // Management API port
@@ -33,7 +33,7 @@ export const CreateServerSchema = z.object({
 });
 
 // Schema for updating a RabbitMQ server
-export const UpdateServerSchema = CreateServerSchema.partial();
+const UpdateServerSchema = CreateServerSchema.partial();
 
 // Schema for vhost query parameter (required)
 export const VHostRequiredQuerySchema = z.object({
@@ -43,36 +43,6 @@ export const VHostRequiredQuerySchema = z.object({
 // Schema for vhost query parameter (optional)
 export const VHostOptionalQuerySchema = z.object({
   vhost: z.string().optional(),
-});
-
-// Type exports
-export type VHostRequiredQuery = z.infer<typeof VHostRequiredQuerySchema>;
-export type VHostOptionalQuery = z.infer<typeof VHostOptionalQuerySchema>;
-
-// Schema for publishing a message to an exchange
-export const PublishMessageSchema = z.object({
-  exchange: z.string().min(1, "Exchange name is required"),
-  routingKey: z.string().default(""),
-  payload: z.string().min(1, "Message payload is required"),
-  properties: z
-    .object({
-      delivery_mode: z.number().int().min(1).max(2).default(2),
-      priority: z.number().int().min(0).max(255).optional(),
-      expiration: z.string().optional(),
-      user_id: z.string().optional(),
-      app_id: z.string().optional(),
-      content_type: z.string().optional(),
-      content_encoding: z.string().optional(),
-      correlation_id: z.string().optional(),
-      reply_to: z.string().optional(),
-      message_id: z.string().optional(),
-      timestamp: z.number().optional(),
-      type: z.string().optional(),
-      headers: z
-        .record(z.string(), z.union([z.string(), z.number(), z.boolean()]))
-        .optional(),
-    })
-    .default(() => ({ delivery_mode: 2 })),
 });
 
 // Schema for creating a new queue
@@ -90,7 +60,7 @@ export const CreateQueueSchema = z.object({
 });
 
 // Schema for publishing a message to a queue (alternative to exchange publishing)
-export const publishMessageToQueueSchema = z.object({
+const publishMessageToQueueSchema = z.object({
   message: z.string(),
   exchange: z.string().optional().default(""), // Default exchange for direct queue publishing
   routingKey: z.string().optional(), // Optional routing key, defaults to queue name
@@ -132,14 +102,96 @@ export const SetPermissionsSchema = z.object({
   read: z.string().default(".*"),
 });
 
-export type RabbitMQCredentials = z.infer<typeof RabbitMQCredentialsSchema>;
-export type CreateServerInput = z.infer<typeof CreateServerSchema>;
-export type UpdateServerInput = z.infer<typeof UpdateServerSchema>;
-export type PublishMessageInput = z.infer<typeof PublishMessageSchema>;
-export type PublishMessageToQueueInput = z.infer<
-  typeof publishMessageToQueueSchema
->;
-export type CreateQueueInput = z.infer<typeof CreateQueueSchema>;
-export type CreateUserInput = z.infer<typeof CreateUserSchema>;
-export type UpdateUserInput = z.infer<typeof UpdateUserSchema>;
-export type SetPermissionsInput = z.infer<typeof SetPermissionsSchema>;
+// Base schema for server and workspace input
+export const ServerWorkspaceInputSchema = z.object({
+  serverId: z.string(),
+  workspaceId: z.string(),
+});
+
+// Schema for creating an exchange
+export const CreateExchangeSchema = z.object({
+  name: z.string().min(1, "Exchange name is required"),
+  type: z.enum(["direct", "fanout", "topic", "headers"]),
+  durable: z.boolean().optional().default(true),
+  auto_delete: z.boolean().optional().default(false),
+  internal: z.boolean().optional().default(false),
+  arguments: z
+    .record(z.string(), z.union([z.string(), z.number(), z.boolean()]))
+    .optional()
+    .default({}),
+});
+
+// Schema for deleting an exchange
+export const DeleteExchangeSchema = z.object({
+  exchangeName: z.string(),
+  ifUnused: z.boolean().optional().default(false),
+});
+
+// Extended schemas with additional fields
+export const ServerWorkspaceWithQueueNameSchema =
+  ServerWorkspaceInputSchema.extend({
+    queueName: z.string(),
+  });
+
+export const ServerWorkspaceWithNodeNameSchema =
+  ServerWorkspaceInputSchema.extend({
+    nodeName: z.string(),
+  });
+
+export const ServerWorkspaceWithVHostNameSchema =
+  ServerWorkspaceInputSchema.extend({
+    vhostName: z.string(),
+  });
+
+// Time range schema for metrics
+const TimeRangeSchema = z.enum(["1m", "10m", "1h", "8h", "1d"]);
+
+// Queue operation schemas
+export const DeleteQueueSchema = z.object({
+  queueName: z.string(),
+  ifUnused: z.boolean().optional().default(false),
+  ifEmpty: z.boolean().optional().default(false),
+});
+
+// Workspace-only schema
+const WorkspaceIdOnlySchema = z.object({
+  workspaceId: z.string(),
+});
+
+// Server operation schemas
+export const GetServersInputSchema = WorkspaceIdOnlySchema;
+
+export const GetServerInputSchema = WorkspaceIdOnlySchema.extend({
+  id: z.string(),
+});
+
+export const CreateServerWithWorkspaceSchema = CreateServerSchema.extend({
+  workspaceId: z.string(),
+});
+
+export const UpdateServerWithWorkspaceSchema = UpdateServerSchema.extend({
+  workspaceId: z.string(),
+  id: z.string(),
+});
+
+export const DeleteServerInputSchema = WorkspaceIdOnlySchema.extend({
+  id: z.string(),
+});
+
+export const TestConnectionWithWorkspaceSchema =
+  RabbitMQCredentialsSchema.extend({
+    workspaceId: z.string(),
+  });
+
+// Metrics schemas
+export const GetMetricsSchema = ServerWorkspaceInputSchema.extend({
+  timeRange: TimeRangeSchema.optional().default("1m"),
+});
+
+export const GetQueueRatesSchema = ServerWorkspaceWithQueueNameSchema.extend({
+  timeRange: TimeRangeSchema.optional().default("1m"),
+});
+
+// Publish message with queue schema
+export const PublishMessageWithQueueSchema =
+  ServerWorkspaceWithQueueNameSchema.merge(publishMessageToQueueSchema);

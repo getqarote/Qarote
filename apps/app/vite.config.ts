@@ -1,5 +1,6 @@
+import path from "node:path";
+
 import react from "@vitejs/plugin-react";
-import path from "path";
 import { defineConfig } from "vite";
 
 // https://vitejs.dev/config/
@@ -16,6 +17,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      "@api": path.resolve(__dirname, "../api/src"),
     },
     // CRITICAL: Prevents duplicate React instances which can cause production errors
     // like "Cannot read properties of null (reading 'useEffect')"
@@ -31,7 +33,7 @@ export default defineConfig({
         manualChunks: {
           // CRITICAL: React must be in its own chunk to prevent bundling issues
           // This ensures React is properly resolved and prevents production errors
-          "vendor-react": ["react", "react-dom", "react-router-dom"],
+          "vendor-react": ["react", "react-dom", "react-router"],
           // UI components chunk
           "vendor-ui": [
             "@radix-ui/react-dialog",
@@ -47,9 +49,15 @@ export default defineConfig({
           "vendor-icons": ["lucide-react"],
           // Form and validation
           "vendor-forms": ["react-hook-form", "@hookform/resolvers"],
+          // i18n
+          "vendor-i18n": [
+            "i18next",
+            "react-i18next",
+            "i18next-http-backend",
+            "i18next-browser-languagedetector",
+          ],
           // Date and time utilities
           "vendor-utils": [
-            "date-fns",
             "clsx",
             "class-variance-authority",
             "tailwind-merge",

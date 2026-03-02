@@ -15,6 +15,12 @@ export class StripeWebhookService {
     try {
       const webhookSecret = stripeConfig.webhookSecret;
 
+      if (!webhookSecret) {
+        throw new Error(
+          "Stripe is not configured. STRIPE_WEBHOOK_SECRET is required for webhook processing."
+        );
+      }
+
       logger.info("Constructing Stripe webhook event");
       const event = stripe.webhooks.constructEvent(
         payload,

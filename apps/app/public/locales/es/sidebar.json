@@ -1,0 +1,23 @@
+{
+  "dashboard": "Panel",
+  "queues": "Colas",
+  "connections": "Conexiones",
+  "nodes": "Nodos",
+  "exchanges": "Intercambios",
+  "virtualHosts": "Hosts virtuales",
+  "users": "Usuarios",
+  "alerts": "Alertas",
+  "profile": "Perfil",
+  "license": "Licencia",
+  "helpSupport": "Ayuda y soporte",
+  "server": "Servidor",
+  "virtualHost": "Host virtual",
+  "management": "Administraci\u00f3n",
+  "selectServer": "Seleccionar un servidor...",
+  "selectVhost": "Seleccionar un vhost...",
+  "noServersConfigured": "No hay servidores configurados",
+  "noVhostsAvailable": "No hay vhosts disponibles",
+  "loadingVhosts": "Cargando vhosts...",
+  "addServer": "Agregar servidor",
+  "theme": "Tema"
+}

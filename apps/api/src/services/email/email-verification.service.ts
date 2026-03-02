@@ -1,4 +1,3 @@
-import type { User } from "@prisma/client";
 import { addHours } from "date-fns";
 
 import { logger } from "@/core/logger";
@@ -7,7 +6,9 @@ import { prisma } from "@/core/prisma";
 import { EncryptionService } from "../encryption.service";
 import { EmailService } from "./email.service";
 
-export interface EmailVerificationOptions {
+import type { User } from "@/generated/prisma/client";
+
+interface EmailVerificationOptions {
   userId: string;
   email: string;
   type: "SIGNUP" | "EMAIL_CHANGE";
@@ -56,7 +57,9 @@ export class EmailVerificationService {
     email: string,
     token: string,
     type: "SIGNUP" | "EMAIL_CHANGE",
-    userName?: string
+    userName?: string,
+    sourceApp?: "app" | "portal",
+    locale: string = "en"
   ): Promise<{ success: boolean; error?: string }> {
     try {
       logger.debug(
@@ -64,6 +67,7 @@ export class EmailVerificationService {
           email,
           type,
           userName,
+          sourceApp,
           tokenLength: token.length,
         },
         "Sending verification email"
@@ -74,6 +78,8 @@ export class EmailVerificationService {
         userName,
         verificationToken: token,
         type,
+        sourceApp,
+        locale,
       });
 
       if (!result.success) {
@@ -122,7 +128,10 @@ export class EmailVerificationService {
   /**
    * Verify an email verification token
    */
-  static async verifyToken(token: string): Promise<{
+  static async verifyToken(
+    token: string,
+    locale: string = "en"
+  ): Promise<{
     success: boolean;
     user?: User;
     email?: string;
@@ -205,12 +214,6 @@ export class EmailVerificationService {
             emailVerifiedAt: new Date(),
           },
           include: {
-            workspace: {
-              select: {
-                name: true,
-                ownerId: true,
-              },
-            },
             subscription: {
               select: {
                 plan: true,
@@ -221,22 +224,17 @@ export class EmailVerificationService {
 
         // Send welcome email after successful email verification
         try {
-          if (!updatedUser.workspace) {
-            throw new Error(`User ${updatedUser.id} has no workspace assigned`);
-          }
-
           await EmailService.sendWelcomeEmail({
             to: updatedUser.email,
             name: updatedUser.firstName || updatedUser.email,
-            workspaceName: updatedUser.workspace.name,
             plan: updatedUser.subscription?.plan || "FREE",
+            locale,
           });
 
           logger.info(
             {
               userId: updatedUser.id,
               email: updatedUser.email,
-              workspaceName: updatedUser.workspace.name,
             },
             "Welcome email sent after email verification"
           );
@@ -299,7 +297,9 @@ export class EmailVerificationService {
    */
   static async resendVerificationEmail(
     userId: string,
-    type: "SIGNUP" | "EMAIL_CHANGE"
+    type: "SIGNUP" | "EMAIL_CHANGE",
+    sourceApp?: "app" | "portal",
+    locale: string = "en"
   ): Promise<{
     success: boolean;
     error?: string;
@@ -333,7 +333,9 @@ export class EmailVerificationService {
         emailToVerify,
         token,
         type,
-        user.firstName
+        user.firstName || undefined,
+        sourceApp,
+        locale
       );
 
       if (!emailResult.success) {

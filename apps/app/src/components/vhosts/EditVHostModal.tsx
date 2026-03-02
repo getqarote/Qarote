@@ -1,11 +1,11 @@
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Database } from "lucide-react";
 import { toast } from "sonner";
 
-import { apiClient } from "@/lib/api";
 import { VHost } from "@/lib/api/vhostTypes";
 
 import { Button } from "@/components/ui/button";
@@ -29,7 +29,8 @@ import {
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 
-import { useWorkspace } from "@/hooks/useWorkspace";
+import { useUpdateVHost } from "@/hooks/queries/useRabbitMQVHosts";
+import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 import { type EditVHostForm, editVHostSchema } from "@/schemas";
 
@@ -57,28 +58,40 @@ export function EditVHostModal({
     },
   });
 
-  const updateVHostMutation = useMutation({
-    mutationFn: (data: EditVHostForm) => {
-      if (!workspace?.id) {
-        throw new Error("Workspace ID is required");
-      }
-      return apiClient.updateVHost(serverId, vhost.name, data, workspace.id);
-    },
-    onSuccess: () => {
+  const updateVHostMutation = useUpdateVHost();
+
+  // Handle success/error
+  useEffect(() => {
+    if (updateVHostMutation.isSuccess) {
       queryClient.invalidateQueries({
         queryKey: ["vhost", serverId, vhost.name],
       });
       queryClient.invalidateQueries({ queryKey: ["vhosts", serverId] });
       toast.success("Virtual host updated successfully");
       onClose();
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || "Failed to update virtual host");
-    },
-  });
+    }
+    if (updateVHostMutation.isError) {
+      toast.error(
+        updateVHostMutation.error?.message || "Failed to update virtual host"
+      );
+    }
+  }, [
+    updateVHostMutation.isSuccess,
+    updateVHostMutation.isError,
+    updateVHostMutation.error,
+  ]);
 
   const onSubmit = (data: EditVHostForm) => {
-    updateVHostMutation.mutate(data);
+    if (!workspace?.id) {
+      toast.error("Workspace ID is required");
+      return;
+    }
+    updateVHostMutation.mutate({
+      serverId,
+      workspaceId: workspace.id,
+      vhostName: vhost.name,
+      ...data,
+    });
   };
 
   const handleClose = () => {

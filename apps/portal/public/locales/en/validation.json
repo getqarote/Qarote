@@ -1,0 +1,17 @@
+{
+  "required": "This field is required",
+  "invalidEmail": "Please enter a valid email address",
+  "passwordRequired": "Password is required",
+  "passwordMinLength": "Password must be at least 8 characters long",
+  "passwordLowercase": "Password must contain at least one lowercase letter",
+  "passwordUppercase": "Password must contain at least one uppercase letter",
+  "passwordNumber": "Password must contain at least one number",
+  "passwordSpecial": "Password must contain at least one special character",
+  "passwordsDoNotMatch": "Passwords do not match",
+  "firstNameRequired": "First name is required",
+  "lastNameRequired": "Last name is required",
+  "acceptTermsRequired": "You must accept the Terms of Service and Privacy Policy",
+  "invalidUrl": "Please enter a valid URL",
+  "minLength": "Must be at least {{min}} characters",
+  "maxLength": "Must be at most {{max}} characters"
+}

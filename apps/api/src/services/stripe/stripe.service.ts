@@ -1,24 +1,13 @@
 // Re-export types and constants for backward compatibility
-export {
-  CoreStripeService,
-  CreateCheckoutSessionParams,
-  CreateCustomerParams,
+export type {
   Customer,
   Event,
   Invoice,
   PaymentIntent,
-  PLAN_PRICING,
   Session,
-  stripe,
-  STRIPE_PRICE_IDS,
   Subscription,
 } from "./core.service";
-
-// Re-export services
-export { StripeCustomerService } from "./customer.service";
-export { StripePaymentService } from "./payment.service";
-export { StripeSubscriptionService } from "./subscription.service";
-export { StripeWebhookService } from "./webhook.service";
+export { stripe } from "./core.service";
 
 // Import services for internal use
 import { CoreStripeService } from "./core.service";

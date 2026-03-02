@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { Link, useLocation, useNavigate } from "react-router";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -8,6 +9,7 @@ import { trackSignUp } from "@/lib/ga";
 import { logger } from "@/lib/logger";
 
 import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton";
+import { SSOLoginButton } from "@/components/auth/SSOLoginButton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,17 +34,20 @@ import { PasswordRequirements } from "@/components/ui/password-requirements";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
 
-import { useRegister } from "@/hooks/useAuth";
+import { useShowAlternativeAuth } from "@/hooks/queries/useSsoConfig";
+import { useRegister } from "@/hooks/ui/useAuth";
 
 import { type SignUpFormData, signUpSchema } from "@/schemas";
 
 const SignUp: React.FC = () => {
+  const { t } = useTranslation("auth");
   const { isAuthenticated } = useAuth();
   const registerMutation = useRegister();
   const location = useLocation();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const { showAlternativeAuth } = useShowAlternativeAuth();
 
   // Get the page the user was trying to access
   const from = location.state?.from?.pathname || "/";
@@ -94,37 +99,35 @@ const SignUp: React.FC = () => {
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <h2 className="mt-6 text-3xl font-extrabold text-white">
-            Create your account
+            {t("createYourAccount")}
           </h2>
           <p className="mt-2 text-sm text-orange-100">
-            Or{" "}
+            {t("or")}{" "}
             <Link
               to="/auth/sign-in"
               className="font-medium text-orange-300 hover:text-orange-200 transition-colors"
             >
-              sign in to your existing account
+              {t("signInToExisting")}
             </Link>
           </p>
         </div>
 
-        <Card className="bg-white/95 backdrop-blur-sm border-white/20 shadow-2xl">
+        <Card className="bg-white/95 backdrop-blur-xs border-white/20 shadow-2xl">
           <CardHeader>
-            <CardTitle className="text-gray-900">Get started</CardTitle>
-            <CardDescription>
-              Create your account to access the RabbitMQ dashboard
-            </CardDescription>
+            <CardTitle className="text-gray-900">{t("getStarted")}</CardTitle>
+            <CardDescription>{t("createAccountDescription")}</CardDescription>
           </CardHeader>
           <CardContent>
             {registerMutation.isSuccess ? (
               <Alert className="border-green-200 bg-green-50">
                 <AlertDescription className="text-green-800">
                   <div className="font-medium mb-2">
-                    Account created successfully!
+                    {t("accountCreatedSuccess")}
                   </div>
                   <p className="text-sm mb-3">
-                    We've sent a verification email to your address. Please
-                    check your inbox and click the verification link to activate
-                    your account and access the dashboard.
+                    {registerMutation.data?.autoVerified
+                      ? t("accountReadySignIn")
+                      : t("verificationEmailSent")}
                   </p>
                   <div className="flex flex-col sm:flex-row gap-2">
                     <Button
@@ -133,7 +136,7 @@ const SignUp: React.FC = () => {
                       onClick={() => navigate("/auth/sign-in")}
                       className="bg-white border-green-300 text-green-700 hover:bg-green-100"
                     >
-                      Go to Sign In
+                      {t("goToSignIn")}
                     </Button>
                   </div>
                 </AlertDescription>
@@ -149,7 +152,7 @@ const SignUp: React.FC = () => {
                       <AlertDescription>
                         {registerMutation.error instanceof Error
                           ? registerMutation.error.message
-                          : "Failed to create account. Please try again."}
+                          : t("failedCreateAccount")}
                       </AlertDescription>
                     </Alert>
                   )}
@@ -160,10 +163,10 @@ const SignUp: React.FC = () => {
                       name="firstName"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>First name</FormLabel>
+                          <FormLabel>{t("firstName")}</FormLabel>
                           <FormControl>
                             <Input
-                              placeholder="John"
+                              placeholder={t("firstNamePlaceholder")}
                               disabled={registerMutation.isPending}
                               {...field}
                             />
@@ -177,10 +180,10 @@ const SignUp: React.FC = () => {
                       name="lastName"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Last name</FormLabel>
+                          <FormLabel>{t("lastName")}</FormLabel>
                           <FormControl>
                             <Input
-                              placeholder="Doe"
+                              placeholder={t("lastNamePlaceholder")}
                               disabled={registerMutation.isPending}
                               {...field}
                             />
@@ -196,11 +199,11 @@ const SignUp: React.FC = () => {
                     name="email"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Email address</FormLabel>
+                        <FormLabel>{t("emailAddress")}</FormLabel>
                         <FormControl>
                           <Input
                             type="email"
-                            placeholder="john@example.com"
+                            placeholder={t("emailPlaceholder")}
                             disabled={registerMutation.isPending}
                             autoComplete="username"
                             {...field}
@@ -216,10 +219,10 @@ const SignUp: React.FC = () => {
                     name="password"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Password</FormLabel>
+                        <FormLabel>{t("password")}</FormLabel>
                         <FormControl>
                           <PasswordInput
-                            placeholder="Create a password"
+                            placeholder={t("createAPassword")}
                             disabled={registerMutation.isPending}
                             showPassword={showPassword}
                             onToggleVisibility={() =>
@@ -243,10 +246,10 @@ const SignUp: React.FC = () => {
                     name="confirmPassword"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Confirm password</FormLabel>
+                        <FormLabel>{t("confirmPassword")}</FormLabel>
                         <FormControl>
                           <PasswordInput
-                            placeholder="Confirm your password"
+                            placeholder={t("confirmYourPassword")}
                             disabled={registerMutation.isPending}
                             showPassword={showConfirmPassword}
                             onToggleVisibility={() =>
@@ -275,23 +278,23 @@ const SignUp: React.FC = () => {
                         </FormControl>
                         <div className="space-y-1 leading-none">
                           <FormLabel className="text-sm font-normal">
-                            I agree to the{" "}
+                            {t("agreeToTerms")}{" "}
                             <Link
                               to="/terms-of-service"
                               className="font-medium text-orange-600 hover:text-orange-500 underline"
                               target="_blank"
                               rel="noopener noreferrer"
                             >
-                              Terms of Service
+                              {t("common:termsOfService")}
                             </Link>{" "}
-                            and the{" "}
+                            {t("andThe")}{" "}
                             <Link
                               to="/privacy-policy"
                               className="font-medium text-orange-600 hover:text-orange-500 underline"
                               target="_blank"
                               rel="noopener noreferrer"
                             >
-                              Privacy Policy
+                              {t("common:privacyPolicy")}
                             </Link>
                             .
                           </FormLabel>
@@ -309,15 +312,15 @@ const SignUp: React.FC = () => {
                     }
                   >
                     {registerMutation.isPending
-                      ? "Creating account..."
-                      : "Create account"}
+                      ? t("creatingAccount")
+                      : t("createAccountButton")}
                   </Button>
                 </form>
               </Form>
             )}
 
-            {/* Only show Google signup option if account creation hasn't been successful */}
-            {!registerMutation.isSuccess && (
+            {/* Only show alternative auth if available and account creation hasn't succeeded */}
+            {!registerMutation.isSuccess && showAlternativeAuth && (
               <>
                 {/* Divider */}
                 <div className="relative my-6">
@@ -326,7 +329,7 @@ const SignUp: React.FC = () => {
                   </div>
                   <div className="relative flex justify-center text-xs uppercase">
                     <span className="bg-white px-2 text-muted-foreground">
-                      Or continue with
+                      {t("orContinueWith")}
                     </span>
                   </div>
                 </div>
@@ -336,6 +339,14 @@ const SignUp: React.FC = () => {
                   mode="signup"
                   onError={(error) => {
                     logger.error("Google signup error:", error);
+                  }}
+                />
+
+                {/* SSO Sign Up */}
+                <SSOLoginButton
+                  mode="signup"
+                  onError={(error) => {
+                    logger.error("SSO signup error:", error);
                   }}
                 />
               </>

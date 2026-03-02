@@ -1,32 +1,39 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router";
+
+import { queryClient } from "@/lib/queryClient";
+import { TRPCProvider } from "@/lib/trpc/provider";
 
 import Layout from "@/components/Layout";
-import { Toaster } from "@/components/ui/toaster";
+import { Toaster } from "@/components/ui/sonner";
 
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 
 import AccountSettings from "@/pages/AccountSettings";
-import Downloads from "@/pages/Downloads";
+import Documentation from "@/pages/Documentation";
 import LicenseManagement from "@/pages/LicenseManagement";
 import LicensePurchase from "@/pages/LicensePurchase";
 import Login from "@/pages/Login";
-
-const queryClient = new QueryClient();
+import PrivacyPolicy from "@/pages/PrivacyPolicy";
+import SignUp from "@/pages/SignUp";
+import TermsOfService from "@/pages/TermsOfService";
+import VerifyEmail from "@/pages/VerifyEmail";
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, isLoading } = useAuth();
+  const { t } = useTranslation();
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-lg">Loading...</div>
+        <div className="text-lg">{t("loading")}</div>
       </div>
     );
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/auth/sign-in" replace />;
   }
 
   return <>{children}</>;
@@ -34,35 +41,46 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
 const App = () => {
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <Toaster />
-        <BrowserRouter
-          future={{
-            v7_startTransition: true,
-            v7_relativeSplatPath: true,
-          }}
-        >
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route
-              path="/"
-              element={
-                <ProtectedRoute>
-                  <Layout />
-                </ProtectedRoute>
-              }
-            >
-              <Route index element={<Navigate to="/licenses" replace />} />
-              <Route path="licenses" element={<LicenseManagement />} />
-              <Route path="purchase" element={<LicensePurchase />} />
-              <Route path="downloads" element={<Downloads />} />
-              <Route path="settings" element={<AccountSettings />} />
-            </Route>
-          </Routes>
-        </BrowserRouter>
-      </AuthProvider>
-    </QueryClientProvider>
+    <TRPCProvider>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <Toaster />
+          <BrowserRouter>
+            <Routes>
+              {/* Redirect old routes for backward compatibility */}
+              <Route
+                path="/login"
+                element={<Navigate to="/auth/sign-in" replace />}
+              />
+              <Route path="/auth/sign-in" element={<Login />} />
+              <Route path="/auth/sign-up" element={<SignUp />} />
+              <Route path="/verify-email" element={<VerifyEmail />} />
+              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+              <Route path="/terms-of-service" element={<TermsOfService />} />
+              <Route
+                path="/"
+                element={
+                  <ProtectedRoute>
+                    <Layout />
+                  </ProtectedRoute>
+                }
+              >
+                <Route index element={<Navigate to="/licenses" replace />} />
+                <Route path="licenses" element={<LicenseManagement />} />
+                <Route path="purchase" element={<LicensePurchase />} />
+                <Route path="documentation" element={<Documentation />} />
+                {/* Redirect old /downloads route to /documentation for backward compatibility */}
+                <Route
+                  path="downloads"
+                  element={<Navigate to="/documentation" replace />}
+                />
+                <Route path="settings" element={<AccountSettings />} />
+              </Route>
+            </Routes>
+          </BrowserRouter>
+        </AuthProvider>
+      </QueryClientProvider>
+    </TRPCProvider>
   );
 };
 

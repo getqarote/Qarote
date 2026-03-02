@@ -65,6 +65,26 @@ type SortField =
   | "connections";
 type SortDirection = "asc" | "desc";
 
+const SortButton = ({
+  field,
+  children,
+  onSort,
+}: {
+  field: SortField;
+  children: React.ReactNode;
+  onSort: (field: SortField) => void;
+}) => (
+  <Button
+    variant="ghost"
+    size="sm"
+    className="h-auto p-0 font-medium hover:bg-transparent"
+    onClick={() => onSort(field)}
+  >
+    {children}
+    <ArrowUpDown className="ml-1 h-3 w-3" />
+  </Button>
+);
+
 export const EnhancedNodesTable = ({
   nodes,
   isLoading,
@@ -212,27 +232,9 @@ export const EnhancedNodesTable = ({
       : Number(bValue) - Number(aValue);
   });
 
-  const SortButton = ({
-    field,
-    children,
-  }: {
-    field: SortField;
-    children: React.ReactNode;
-  }) => (
-    <Button
-      variant="ghost"
-      size="sm"
-      className="h-auto p-0 font-medium hover:bg-transparent"
-      onClick={() => handleSort(field)}
-    >
-      {children}
-      <ArrowUpDown className="ml-1 h-3 w-3" />
-    </Button>
-  );
-
   if (nodesError && isRabbitMQAuthError(nodesError)) {
     return (
-      <Card className="border-0 shadow-md bg-card backdrop-blur-sm">
+      <Card className="border-0 shadow-md bg-card backdrop-blur-xs">
         <CardHeader>
           <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
             <Server className="h-5 w-5" />
@@ -251,7 +253,7 @@ export const EnhancedNodesTable = ({
   }
 
   return (
-    <Card className="border-0 shadow-md bg-card backdrop-blur-sm">
+    <Card className="border-0 shadow-md bg-card backdrop-blur-xs">
       <CardHeader>
         <CardTitle className="text-lg font-semibold text-foreground flex items-center gap-2">
           <Server className="h-5 w-5 text-blue-600" />
@@ -275,26 +277,40 @@ export const EnhancedNodesTable = ({
               <TableRow>
                 <TableHead className="w-12"></TableHead>
                 <TableHead>
-                  <SortButton field="name">RabbitMQNode Name</SortButton>
+                  <SortButton onSort={handleSort} field="name">
+                    RabbitMQNode Name
+                  </SortButton>
                 </TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>
-                  <SortButton field="memUsed">Memory Usage</SortButton>
+                  <SortButton onSort={handleSort} field="memUsed">
+                    Memory Usage
+                  </SortButton>
                 </TableHead>
                 <TableHead>
-                  <SortButton field="diskFree">Disk Free</SortButton>
+                  <SortButton onSort={handleSort} field="diskFree">
+                    Disk Free
+                  </SortButton>
                 </TableHead>
                 <TableHead>
-                  <SortButton field="uptime">Uptime</SortButton>
+                  <SortButton onSort={handleSort} field="uptime">
+                    Uptime
+                  </SortButton>
                 </TableHead>
                 <TableHead>
-                  <SortButton field="ioActivity">I/O Activity</SortButton>
+                  <SortButton onSort={handleSort} field="ioActivity">
+                    I/O Activity
+                  </SortButton>
                 </TableHead>
                 <TableHead>
-                  <SortButton field="connections">Connections</SortButton>
+                  <SortButton onSort={handleSort} field="connections">
+                    Connections
+                  </SortButton>
                 </TableHead>
                 <TableHead>
-                  <SortButton field="fdUsed">File Descriptors</SortButton>
+                  <SortButton onSort={handleSort} field="fdUsed">
+                    File Descriptors
+                  </SortButton>
                 </TableHead>
               </TableRow>
             </TableHeader>

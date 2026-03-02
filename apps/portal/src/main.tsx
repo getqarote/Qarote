@@ -1,17 +1,17 @@
-import "./index.css";
+import "./styles/index.css";
 
 import { createRoot } from "react-dom/client";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 
+import "./i18n";
+
 import App from "./App.tsx";
 import { logger } from "./lib/logger";
 
-// Get Google OAuth client ID from environment variables
+// OAuth is only enabled for cloud deployments
 const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 const deploymentMode = import.meta.env.VITE_DEPLOYMENT_MODE || "cloud";
-const enableOAuth =
-  import.meta.env.VITE_ENABLE_OAUTH !== "false" &&
-  (deploymentMode === "cloud" || import.meta.env.VITE_ENABLE_OAUTH === "true");
+const enableOAuth = deploymentMode === "cloud";
 
 if (!googleClientId && enableOAuth) {
   logger.warn(
@@ -19,15 +19,12 @@ if (!googleClientId && enableOAuth) {
   );
 }
 
-const AppWrapper = () => {
-  if (enableOAuth && googleClientId) {
-    return (
-      <GoogleOAuthProvider clientId={googleClientId}>
-        <App />
-      </GoogleOAuthProvider>
-    );
-  }
-  return <App />;
-};
-
-createRoot(document.getElementById("root")!).render(<AppWrapper />);
+createRoot(document.getElementById("root")!).render(
+  enableOAuth && googleClientId ? (
+    <GoogleOAuthProvider clientId={googleClientId}>
+      <App />
+    </GoogleOAuthProvider>
+  ) : (
+    <App />
+  )
+);

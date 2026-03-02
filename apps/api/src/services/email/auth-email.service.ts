@@ -1,31 +1,36 @@
-import { UserPlan } from "@prisma/client";
-
 import { CoreEmailService, EmailResult } from "./core-email.service";
 import { EmailVerification } from "./templates/email-verification";
 import { InvitationEmail } from "./templates/invitation-email";
 import WelcomeEmail from "./templates/welcome-email";
 
-export interface SendInvitationEmailParams {
+import { UserPlan } from "@/generated/prisma/client";
+import { tEmail } from "@/i18n";
+
+interface SendInvitationEmailParams {
   to: string;
   inviterName: string;
   inviterEmail: string;
   workspaceName: string;
   invitationToken: string;
   plan: UserPlan;
+  locale?: string;
 }
 
-export interface SendWelcomeEmailParams {
+interface SendWelcomeEmailParams {
   to: string;
   name: string;
-  workspaceName: string;
+  workspaceName?: string;
   plan: UserPlan;
+  locale?: string;
 }
 
-export interface SendVerificationEmailParams {
+interface SendVerificationEmailParams {
   to: string;
   userName?: string;
   verificationToken: string;
   type: "SIGNUP" | "EMAIL_CHANGE";
+  sourceApp?: "app" | "portal";
+  locale?: string;
 }
 
 /**
@@ -45,6 +50,7 @@ export class AuthEmailService {
       workspaceName,
       invitationToken,
       plan,
+      locale = "en",
     } = params;
 
     // Get plan information for the email
@@ -61,7 +67,7 @@ export class AuthEmailService {
 
     return CoreEmailService.sendEmail({
       to,
-      subject: `You're invited to join ${workspaceName} on Qarote`,
+      subject: tEmail(locale, "subjects.invitedToWorkspace", { workspaceName }),
       template,
       emailType: "invitation",
       context: {
@@ -78,7 +84,7 @@ export class AuthEmailService {
   static async sendWelcomeEmail(
     params: SendWelcomeEmailParams
   ): Promise<EmailResult> {
-    const { to, name, workspaceName, plan } = params;
+    const { to, name, workspaceName, plan, locale = "en" } = params;
 
     const { frontendUrl } = CoreEmailService.getConfig();
 
@@ -92,7 +98,7 @@ export class AuthEmailService {
 
     return CoreEmailService.sendEmail({
       to,
-      subject: `Welcome to Qarote, ${name}!`,
+      subject: tEmail(locale, "subjects.welcome", { name }),
       template,
       emailType: "welcome",
       context: {
@@ -109,10 +115,29 @@ export class AuthEmailService {
   static async sendVerificationEmail(
     params: SendVerificationEmailParams
   ): Promise<EmailResult> {
-    const { to, userName, verificationToken, type } = params;
+    const {
+      to,
+      userName,
+      verificationToken,
+      type,
+      sourceApp,
+      locale = "en",
+    } = params;
 
-    const { frontendUrl } = CoreEmailService.getConfig();
+    const config = CoreEmailService.getConfig();
     const expiryHours = 24;
+
+    // Determine which frontend URL to use based on source app
+    let frontendUrl = config.frontendUrl;
+    if (sourceApp === "portal") {
+      if (!config.portalFrontendUrl) {
+        throw new Error(
+          "PORTAL_FRONTEND_URL is not configured but portal registration was attempted. " +
+            "Please set PORTAL_FRONTEND_URL in your environment variables."
+        );
+      }
+      frontendUrl = config.portalFrontendUrl;
+    }
 
     // Render the React email template
     const template = EmailVerification({
@@ -126,8 +151,8 @@ export class AuthEmailService {
 
     const subject =
       type === "SIGNUP"
-        ? "Please verify your email address - Qarote"
-        : "Verify your new email address - Qarote";
+        ? tEmail(locale, "subjects.verifyEmailSignup")
+        : tEmail(locale, "subjects.verifyEmailChange");
 
     return await CoreEmailService.sendEmail({
       to,

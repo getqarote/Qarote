@@ -1,7 +1,6 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback } from "react";
 
-import { apiClient, type CurrentPlanResponse } from "@/lib/api";
-import { logger } from "@/lib/logger";
+import { useCurrentPlan } from "@/hooks/queries/usePlans";
 
 import { UserPlan } from "@/types/plans";
 
@@ -13,39 +12,24 @@ interface UserProviderProps {
 }
 
 export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
-  const [planData, setPlanData] = useState<CurrentPlanResponse | null>(null);
-  const [isPlanLoading, setIsPlanLoading] = useState(false);
-  const [planError, setPlanError] = useState<string | null>(null);
-  const { isAuthenticated, user } = useAuth();
+  const { user } = useAuth();
+  const {
+    data: planResponse,
+    isLoading: isPlanLoading,
+    error: planQueryError,
+    refetch: refetchPlan,
+  } = useCurrentPlan();
+
+  const planData = planResponse || null;
+  const planError = planQueryError
+    ? planQueryError instanceof Error
+      ? planQueryError.message
+      : "Failed to fetch plan data"
+    : null;
 
   const fetchPlan = useCallback(async () => {
-    if (!isAuthenticated || !user?.workspaceId) {
-      return;
-    }
-
-    setIsPlanLoading(true);
-    setPlanError(null);
-
-    try {
-      const response = await apiClient.getCurrentPlan();
-      setPlanData(response);
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Failed to fetch plan data";
-      setPlanError(errorMessage);
-      logger.error("Failed to fetch plan data:", err);
-    } finally {
-      setIsPlanLoading(false);
-    }
-  }, [isAuthenticated, user]);
-
-  // Fetch plan data when user authenticates
-  // Only fetch if user has a workspaceId (meaning they already have a workspace)
-  useEffect(() => {
-    if (isAuthenticated && user && user.workspaceId) {
-      fetchPlan();
-    }
-  }, [isAuthenticated, user, fetchPlan]);
+    await refetchPlan();
+  }, [refetchPlan]);
 
   // Derive values from plan data or user
   const userPlan = planData?.user?.plan || UserPlan.FREE;

@@ -1,0 +1,62 @@
+---
+alwaysApply: true
+---
+
+# React Applications Rules
+
+This file applies to all React applications in the monorepo: `apps/app`, `apps/web`, and `apps/portal`.
+
+## Tailwind Config Reference
+
+- **ALWAYS reference the `tailwind.config.ts` file in the current app directory before creating or updating components**
+  - For `apps/app/`: reference `apps/app/tailwind.config.ts`
+  - For `apps/web/`: reference `apps/web/tailwind.config.ts`
+  - For `apps/portal/`: reference `apps/portal/tailwind.config.ts`
+  - Check available custom colors, animations, and design tokens defined in the config
+  - Use the predefined color palette (primary, secondary, destructive, muted, accent, etc.)
+  - Use custom background gradients (`gradient-page`, `gradient-button`, `gradient-title`) when appropriate
+  - Reference custom animations and keyframes if needed
+  - Ensure consistency with the existing design system
+
+## React Query Hooks (where applicable)
+
+- **All `useQuery` hooks MUST be located in `src/hooks/queries/` or `src/hooks/`**
+  - Do not create inline `useQuery` calls in components or pages
+  - Create custom hooks in appropriate hook directories for all data fetching operations
+  - Export hooks from hook files and import them in components
+
+- **All `useMutation` hooks SHOULD be located in hook directories**
+  - Prefer creating mutation hooks in hook files for consistency
+  - Exceptions: Simple, component-specific mutations that don't need reuse can remain in components
+  - All server-related mutations (users, vhosts, queues, etc.) should be in hook files
+
+- **Query hooks should:**
+  - Accept `serverId: string | null` when applicable
+  - Include `serverExists: boolean = true` parameter to prevent queries for deleted servers
+  - Handle query invalidation in `onSuccess` callbacks for mutations
+  - Use consistent query keys defined in `queryKeys` object
+
+- **Components should:**
+  - Import hooks from appropriate hook directories (`@/hooks/queries/` or `@/hooks/`)
+  - Handle UI-specific concerns (toast notifications, navigation, state updates) in components
+  - Pass `serverExists` validation to hooks when checking if server exists
+
+## Component Structure
+
+- **All React components should follow consistent patterns:**
+  - Use functional components with TypeScript
+  - Use hooks for state management and side effects
+  - Keep components focused and single-purpose
+  - Extract reusable logic into custom hooks
+  - Use proper TypeScript types for props and state
+
+## File Organization
+
+- **Follow the standard React app structure:**
+  - `src/components/` - Reusable UI components
+  - `src/pages/` - Page-level components
+  - `src/hooks/` - Custom React hooks
+  - `src/lib/` - Utility functions and helpers
+  - `src/contexts/` - React context providers
+  - `src/types/` - TypeScript type definitions
+  - `src/schemas/` - Zod validation schemas

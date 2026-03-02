@@ -1,10 +1,10 @@
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model Alert {
@@ -95,7 +95,7 @@ model Invitation {
   token                               String           @unique
   invitedById                         String
   invitedUserId                       String?
-  role                                UserRole         @default(USER)
+  role                                UserRole         @default(MEMBER)
   status                              InvitationStatus @default(PENDING)
   expiresAt                           DateTime
   createdAt                           DateTime         @default(now())
@@ -185,7 +185,7 @@ model User {
   passwordHash                              String?
   firstName                                 String
   lastName                                  String
-  role                                      UserRole                 @default(USER)
+  role                                      UserRole                 @default(MEMBER)
   isActive                                  Boolean                  @default(true)
   lastLogin                                 DateTime?
   createdAt                                 DateTime                 @default(now())
@@ -195,8 +195,10 @@ model User {
   emailVerifiedAt                           DateTime?
   pendingEmail                              String?
   googleId                                  String?                  @unique
+  ssoSubjectId                              String?                  @unique
   stripeCustomerId                          String?                  @unique
   stripeSubscriptionId                      String?                  @unique
+  locale                                    String                   @default("en")
   discordJoined                             Boolean                  @default(false)
   discordJoinedAt                           DateTime?
   alerts                                    Alert[]
@@ -282,25 +284,58 @@ model WorkspaceMember {
 }
 
 model License {
-  id               String     @id @default(uuid())
-  licenseKey       String     @unique
-  tier             UserPlan
-  expiresAt        DateTime?
-  customerEmail    String
-  workspaceId      String?
-  lastValidatedAt  DateTime?
-  isActive         Boolean    @default(true)
-  stripeCustomerId String?
-  stripePaymentId  String?
-  instanceId       String?
-  createdAt        DateTime   @default(now())
-  updatedAt        DateTime   @updatedAt
-  workspace        Workspace? @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
+  id                   String                  @id @default(uuid())
+  licenseKey           String                  @unique
+  tier                 UserPlan
+  expiresAt            DateTime
+  customerEmail        String
+  workspaceId          String?
+  lastValidatedAt      DateTime?
+  isActive             Boolean                 @default(true)
+  stripeCustomerId     String?
+  stripePaymentId      String?
+  stripeSubscriptionId String? // Link to annual subscription for auto-renewal
+  currentVersion       Int                     @default(1) // Track license file version for renewals
+  createdAt            DateTime                @default(now())
+  updatedAt            DateTime                @updatedAt
+  workspace            Workspace?              @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
+  renewalEmails        LicenseRenewalEmail[]
+  fileVersions         LicenseFileVersion[]
 
   @@index([isActive], name: "license_active_idx")
   @@index([customerEmail], name: "license_customer_email_idx")
   @@index([licenseKey], name: "license_key_idx")
   @@index([workspaceId], name: "license_workspace_idx")
+  @@index([stripeSubscriptionId], name: "license_subscription_idx")
+}
+
+model LicenseRenewalEmail {
+  id           String   @id @default(uuid())
+  licenseId    String
+  reminderType String // "30_DAY", "15_DAY", "7_DAY", "EXPIRED"
+  sentAt       DateTime @default(now())
+  license      License  @relation(fields: [licenseId], references: [id], onDelete: Cascade)
+
+  @@unique([licenseId, reminderType])
+  @@index([licenseId])
+  @@index([sentAt])
+}
+
+model LicenseFileVersion {
+  id               String   @id @default(uuid())
+  licenseId        String
+  version          Int // 1, 2, 3, etc.
+  fileContent      String   @db.Text // Signed license JSON
+  expiresAt        DateTime
+  stripeInvoiceId  String? // Stripe invoice ID that triggered this renewal (for idempotency)
+  createdAt        DateTime @default(now())
+  deletesAt        DateTime // Deletion date - set when a newer version is created
+  license          License  @relation(fields: [licenseId], references: [id], onDelete: Cascade)
+
+  @@unique([licenseId, version])
+  @@index([licenseId])
+  @@index([deletesAt])
+  @@index([stripeInvoiceId])
 }
 
 model Payment {
@@ -462,6 +497,37 @@ model Webhook {
   @@index([workspaceId])
 }
 
+/// Internal process state used by cron jobs to track cursors
+/// (e.g. last notified release version).
+model SystemState {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SsoAuthCode {
+  id        String   @id @default(uuid())
+  code      String   @unique
+  jwt       String   @db.Text
+  userData  Json
+  isNewUser Boolean
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([expiresAt])
+}
+
+model SsoState {
+  id        String   @id @default(uuid())
+  state     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([expiresAt])
+}
+
 enum AlertSeverity {
   LOW
   MEDIUM
@@ -560,6 +626,17 @@ enum UserPlan {
 
 enum UserRole {
   ADMIN
-  USER
+  MEMBER
   READONLY
+}
+
+// ─── Self-hosted Configuration ───────────────────────────────────────
+// Generic key-value store for self-hosted instance settings
+/// User-facing configuration persisted across restarts.
+/// Primary use: storing the activated license JWT (key = "license").
+model SystemSetting {
+  key       String   @id
+  value     String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

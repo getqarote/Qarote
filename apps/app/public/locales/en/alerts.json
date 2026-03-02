@@ -1,0 +1,11 @@
+{
+  "pageTitle": "Alerts",
+  "pageSubtitle": "Monitor system alerts and notifications",
+  "noServerTitle": "Alerts",
+  "noServerDescription": "Monitor system alerts and notifications",
+  "alertRules": "Alert Rules",
+  "notificationSettings": "Notification Settings",
+  "activeAlerts": "Active Alerts",
+  "resolvedAlerts": "Resolved Alerts",
+  "failedToLoad": "Failed to load alerts data. Please try again."
+}

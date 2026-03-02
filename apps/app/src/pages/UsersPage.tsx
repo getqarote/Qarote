@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { useNavigate, useParams } from "react-router";
 
 import {
   AlertCircle,
@@ -40,9 +41,13 @@ import { DeleteUserModal } from "@/components/users/DeleteUserModal";
 import { useAuth } from "@/contexts/AuthContextDefinition";
 import { useServerContext } from "@/contexts/ServerContext";
 
-import { useDeleteUser, useServers, useUsers, useVHosts } from "@/hooks/useApi";
+import { useDeleteUser, useUsers } from "@/hooks/queries/useRabbitMQUsers";
+import { useVHosts } from "@/hooks/queries/useRabbitMQVHosts";
+import { useServers } from "@/hooks/queries/useServer";
+import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 export default function UsersPage() {
+  const { t } = useTranslation("users");
   const { serverId } = useParams<{ serverId: string }>();
   const { selectedServerId, hasServers } = useServerContext();
   const { user } = useAuth();
@@ -73,6 +78,7 @@ export default function UsersPage() {
   const { data: vhostsData } = useVHosts(currentServerId, serverExists);
 
   const deleteUserMutation = useDeleteUser();
+  const { workspace } = useWorkspace();
 
   // Redirect non-admin users
   if (user?.role !== "ADMIN") {
@@ -87,10 +93,7 @@ export default function UsersPage() {
               </div>
               <Alert>
                 <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                  Access denied. User management is only available to
-                  administrators.
-                </AlertDescription>
+                <AlertDescription>{t("accessDenied")}</AlertDescription>
               </Alert>
             </div>
           </main>
@@ -110,8 +113,8 @@ export default function UsersPage() {
               <SidebarTrigger />
             </div>
             <NoServerConfigured
-              title="Users"
-              description="Add a RabbitMQ server connection to manage users and their access permissions."
+              title={t("noServerTitle")}
+              description={t("noServerDescription")}
             />
           </main>
         </div>
@@ -129,10 +132,8 @@ export default function UsersPage() {
               <div className="flex items-center gap-4">
                 <SidebarTrigger />
                 <div>
-                  <h1 className="title-page">Users</h1>
-                  <p className="text-gray-500">
-                    Manage RabbitMQ users and their access permissions
-                  </p>
+                  <h1 className="title-page">{t("pageTitle")}</h1>
+                  <p className="text-gray-500">{t("pageSubtitle")}</p>
                 </div>
               </div>
               <Card className="border-0 shadow-md bg-card">
@@ -140,11 +141,9 @@ export default function UsersPage() {
                   <div className="text-center">
                     <Server className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                     <h2 className="text-2xl font-semibold text-gray-900 mb-2">
-                      No Server Selected
+                      {t("noServerSelected")}
                     </h2>
-                    <p className="text-gray-600">
-                      Please select a RabbitMQ server to manage users.
-                    </p>
+                    <p className="text-gray-600">{t("selectServerPrompt")}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -219,10 +218,8 @@ export default function UsersPage() {
                 <div className="flex items-center gap-4">
                   <SidebarTrigger />
                   <div>
-                    <h1 className="title-page">Users</h1>
-                    <p className="text-gray-500">
-                      Manage RabbitMQ users and their access permissions
-                    </p>
+                    <h1 className="title-page">{t("pageTitle")}</h1>
+                    <p className="text-gray-500">{t("pageSubtitle")}</p>
                   </div>
                   <Badge variant="secondary" className="ml-2">
                     {users.length}
@@ -236,7 +233,7 @@ export default function UsersPage() {
               {/* Filter */}
               <div className="flex items-center gap-4">
                 <Input
-                  placeholder="Filter regex"
+                  placeholder={t("common:filter")}
                   value={filterRegex}
                   onChange={(e) => setFilterRegex(e.target.value)}
                   className="max-w-xs"
@@ -249,7 +246,7 @@ export default function UsersPage() {
               {/* Users Table */}
               <Card className="border-0 shadow-md bg-card">
                 <CardHeader>
-                  <CardTitle className="text-lg">Users</CardTitle>
+                  <CardTitle className="text-lg">{t("title")}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="border rounded-lg">
@@ -258,14 +255,16 @@ export default function UsersPage() {
                         <TableRow>
                           <TableHead className="w-[200px]">
                             <div className="flex items-center gap-1">
-                              Name
+                              {t("nameCo")}
                               <ChevronUp className="h-3 w-3" />
                             </div>
                           </TableHead>
-                          <TableHead>Tags</TableHead>
-                          <TableHead>Can access virtual hosts</TableHead>
-                          <TableHead>Has password</TableHead>
-                          <TableHead className="w-[100px]">Actions</TableHead>
+                          <TableHead>{t("tags")}</TableHead>
+                          <TableHead>{t("canAccessVhosts")}</TableHead>
+                          <TableHead>{t("hasPassword")}</TableHead>
+                          <TableHead className="w-[100px]">
+                            {t("common:actions")}
+                          </TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -337,7 +336,7 @@ export default function UsersPage() {
               {/* Add User Form */}
               <Card className="border-0 shadow-md bg-card">
                 <CardHeader>
-                  <CardTitle className="text-lg">Add user</CardTitle>
+                  <CardTitle className="text-lg">{t("addUser")}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 gap-6 max-w-lg">
@@ -346,13 +345,13 @@ export default function UsersPage() {
                         htmlFor="user-name"
                         className="block text-sm font-medium mb-2"
                       >
-                        Username
+                        {t("username")}
                       </label>
                       <Input
                         id="user-name"
                         value={newUserName}
                         onChange={(e) => setNewUserName(e.target.value)}
-                        placeholder="briceth"
+                        placeholder={t("usernamePlaceholder")}
                         className="w-full"
                       />
                     </div>
@@ -362,9 +361,9 @@ export default function UsersPage() {
                         htmlFor="user-password"
                         className="block text-sm font-medium mb-2"
                       >
-                        Password{" "}
+                        {t("password")}{" "}
                         <span className="text-muted-foreground">
-                          (optional)
+                          {t("passwordOptional")}
                         </span>
                       </label>
                       <Input
@@ -372,7 +371,7 @@ export default function UsersPage() {
                         type="password"
                         value={newUserPassword}
                         onChange={(e) => setNewUserPassword(e.target.value)}
-                        placeholder="Leave empty for certificate-based auth"
+                        placeholder={t("passwordPlaceholder")}
                         className="w-full"
                       />
                     </div>
@@ -382,13 +381,13 @@ export default function UsersPage() {
                         htmlFor="user-tags"
                         className="block text-sm font-medium mb-2"
                       >
-                        Tags
+                        {t("tagLabel")}
                       </label>
                       <Input
                         id="user-tags"
                         value={newUserTags}
                         onChange={(e) => setNewUserTags(e.target.value)}
-                        placeholder="administrator"
+                        placeholder={t("tagPlaceholder")}
                         className="w-full"
                       />
                       <div className="mt-2 text-sm text-muted-foreground">
@@ -403,7 +402,7 @@ export default function UsersPage() {
                             }
                           }}
                         >
-                          Administrator
+                          {t("administrator")}
                         </span>{" "}
                         |{" "}
                         <span
@@ -417,7 +416,7 @@ export default function UsersPage() {
                             }
                           }}
                         >
-                          Policymaker
+                          {t("policymaker")}
                         </span>{" "}
                         |{" "}
                         <span
@@ -431,7 +430,7 @@ export default function UsersPage() {
                             }
                           }}
                         >
-                          Monitoring
+                          {t("monitoring")}
                         </span>{" "}
                         |{" "}
                         <span
@@ -445,7 +444,7 @@ export default function UsersPage() {
                             }
                           }}
                         >
-                          Management
+                          {t("management")}
                         </span>{" "}
                         |{" "}
                         <span
@@ -459,7 +458,7 @@ export default function UsersPage() {
                             }
                           }}
                         >
-                          Impersonator
+                          {t("impersonator")}
                         </span>{" "}
                         |{" "}
                         <span
@@ -468,7 +467,7 @@ export default function UsersPage() {
                             setNewUserTags("");
                           }}
                         >
-                          None
+                          {t("none")}
                         </span>
                       </div>
                     </div>
@@ -476,7 +475,7 @@ export default function UsersPage() {
                     {/* Virtual Host Access Section */}
                     <div>
                       <label className="block text-sm font-medium mb-2">
-                        Virtual Host Access
+                        {t("virtualHostAccess")}
                       </label>
                       <select
                         className="w-full p-2 border rounded-md bg-background"
@@ -490,8 +489,7 @@ export default function UsersPage() {
                         ))}
                       </select>
                       <div className="mt-1 text-xs text-muted-foreground">
-                        User will be granted full permissions (.*) on the
-                        selected virtual host
+                        {t("userPermissions")}
                       </div>
                     </div>
 
@@ -523,17 +521,22 @@ export default function UsersPage() {
                   user={deleteUser}
                   onConfirm={async () => {
                     try {
+                      if (!workspace?.id) {
+                        toast.error(t("requiredWorkspace"));
+                        return;
+                      }
                       await deleteUserMutation.mutateAsync({
                         serverId: currentServerId!,
+                        workspaceId: workspace.id,
                         username: deleteUser.name,
                       });
-                      toast.success("User deleted successfully");
+                      toast.success(t("deleteSuccess"));
                       setDeleteUser(null);
                     } catch (error) {
                       toast.error(
                         error instanceof Error
                           ? error.message
-                          : "Failed to delete user"
+                          : t("deleteError")
                       );
                     }
                   }}

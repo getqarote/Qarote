@@ -2,13 +2,15 @@ name: Deploy Backend to Staging
 
 env:
   APP_NAME: qarote-staging
+  # Dummy URL for prisma generate (postinstall) — no actual DB connection is made
+  DATABASE_URL: postgresql://localhost:5432/dummy
 
 on:
   push:
     branches: [main]
     paths:
       - "apps/api/**"
-      - "apps/api/app.json"
+      - "packages/i18n/**"
       - ".github/workflows/deploy-api-staging.yml"
   workflow_dispatch:
 
@@ -18,15 +20,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 🔍 Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: 📦 Setup pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 9
+        uses: pnpm/action-setup@v4
 
       - name: 📦 Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: "24"
           cache: "pnpm"
@@ -39,8 +39,10 @@ jobs:
         run: pnpm run syncpack:check
 
       - name: 🔍 Type Check
-        working-directory: apps/api
-        run: pnpm run type-check
+        run: pnpm turbo run type-check --filter=qarote-api
+
+      - name: 🔍 Knip (unused code check)
+        run: pnpm run knip
 
       - name: 🧹 Lint
         working-directory: apps/api
@@ -62,7 +64,7 @@ jobs:
 
     steps:
       - name: 🔍 Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0 # Full history for proper git operations
 
@@ -75,7 +77,7 @@ jobs:
           echo "✓ Dokku SSH key is present"
 
       - name: 🔑 Setup SSH for database configuration
-        uses: webfactory/ssh-agent@v0.9.0
+        uses: webfactory/ssh-agent@v0.9.1
         with:
           ssh-private-key: ${{ secrets.DOKKU_SSH_PRIVATE_KEY }}
 
@@ -88,6 +90,7 @@ jobs:
       - name: 📝 Configure Environment Variables
         run: |
           ssh dokku@${{ vars.DOKKU_HOST }} config:set ${{ env.APP_NAME }} \
+            DEPLOYMENT_MODE=${{ vars.DEPLOYMENT_MODE }} \
             DOMAIN_BACKEND=${{ vars.DOMAIN_BACKEND }} \
             DOMAIN_FRONTEND=${{ vars.DOMAIN_FRONTEND }} \
             PORT=${{ vars.PORT }} \
@@ -99,6 +102,7 @@ jobs:
             ENCRYPTION_KEY=${{ secrets.ENCRYPTION_KEY }} \
             CORS_ORIGIN=${{ vars.CORS_ORIGIN }} \
             FRONTEND_URL=${{ vars.FRONTEND_URL }} \
+            PORTAL_FRONTEND_URL=${{ vars.PORTAL_FRONTEND_URL }} \
             RESEND_API_KEY=${{ secrets.RESEND_API_KEY }} \
             FROM_EMAIL=${{ vars.FROM_EMAIL }} \
             STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY }} \
@@ -114,7 +118,7 @@ jobs:
             NOTION_DATABASE_ID=${{ vars.NOTION_DATABASE_ID }} \
             NOTION_SYNC_ENABLED=${{ vars.NOTION_SYNC_ENABLED }} \
             ENABLE_NOTION=${{ vars.ENABLE_NOTION }} \
-            NODE_ID=app1
+            API_URL=${{ vars.API_URL }}
 
       # Deploy the application
       - name: 🐳 Deploy to Dokku

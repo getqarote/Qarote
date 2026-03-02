@@ -109,7 +109,7 @@ async function processWithConcurrency<T>(
  * RabbitMQ Alerts Cron Service
  * Continuously monitors all RabbitMQ servers for health alerts
  */
-export class RabbitMQAlertsCronService {
+class RabbitMQAlertsCronService {
   private isRunning = false;
   private isChecking = false;
   private intervalId: NodeJS.Timeout | null = null;

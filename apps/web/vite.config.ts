@@ -1,12 +1,13 @@
+import path from "node:path";
+
 import react from "@vitejs/plugin-react";
-import path from "path";
 import { defineConfig } from "vite";
 
 // https://vitejs.dev/config/
 export default defineConfig({
   server: {
     host: "::",
-    port: 8080,
+    port: 8082,
     allowedHosts: [".ngrok-free.app", ".ngrok.io"],
   },
   plugins: [
@@ -32,26 +33,27 @@ export default defineConfig({
         manualChunks: {
           // CRITICAL: React must be in its own chunk to prevent bundling issues
           // This ensures React is properly resolved and prevents production errors
-          "vendor-react": ["react", "react-dom", "react-router-dom"],
-          // UI components chunk
+          "vendor-react": ["react", "react-dom", "react-router"],
+          // UI components chunk - only include installed packages
           "vendor-ui": [
-            "@radix-ui/react-dialog",
-            "@radix-ui/react-dropdown-menu",
-            "@radix-ui/react-select",
+            "@radix-ui/react-accordion",
             "@radix-ui/react-slot",
-            "@radix-ui/react-tabs",
             "@radix-ui/react-toast",
             "@radix-ui/react-tooltip",
           ],
           // Data fetching and state management
           "vendor-data": ["@tanstack/react-query"],
+          // i18n
+          "vendor-i18n": [
+            "i18next",
+            "react-i18next",
+            "i18next-http-backend",
+            "i18next-browser-languagedetector",
+          ],
           // Icons
           "vendor-icons": ["lucide-react"],
-          // Form and validation
-          "vendor-forms": ["react-hook-form", "@hookform/resolvers"],
           // Date and time utilities
           "vendor-utils": [
-            "date-fns",
             "clsx",
             "class-variance-authority",
             "tailwind-merge",

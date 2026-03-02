@@ -1,0 +1,16 @@
+{
+  "pageTitle": "Files d'attente",
+  "noServerTitle": "Files d'attente",
+  "noServerDescription": "Ajoutez une connexion a un serveur RabbitMQ pour afficher et gerer les files d'attente de vos clusters.",
+  "selectServerPrompt": "Veuillez selectionner un serveur RabbitMQ pour afficher les files d'attente",
+  "filterRegex": "Filtrer par regex",
+  "queueNotFound": "File d'attente introuvable",
+  "queueNotFoundDesc": "Veuillez selectionner un serveur et une file d'attente pour afficher les details.",
+  "notFoundMessage": "La file d'attente \"{{queueName}}\" est introuvable.",
+  "deleteTitle": "Supprimer la file d'attente",
+  "deleteDescription": "Etes-vous sur de vouloir supprimer la file d'attente \"{{queueName}}\" ? Cette action est irreversible et supprimera definitivement la file d'attente ainsi que tous ses messages.",
+  "deleteQueue": "Supprimer la file d'attente",
+  "deleting": "Suppression...",
+  "deleteSuccess": "La file d'attente \"{{queueName}}\" a ete supprimee avec succes",
+  "deleteError": "Echec de la suppression de la file d'attente"
+}

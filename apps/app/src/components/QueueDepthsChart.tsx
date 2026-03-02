@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback } from "react";
 
 import { BarChart3 } from "lucide-react";
 import {
@@ -18,42 +18,67 @@ interface QueueDepthData {
   messages: number;
 }
 
-interface QueueDepthsChartProps {
-  queues: Array<{
-    name: string;
-    messages: number;
-    vhost: string;
-  }>;
-  isLoading: boolean;
-  isFetching?: boolean;
+interface QueueData {
+  name: string;
+  messages: number;
+  vhost: string;
 }
 
-export const QueueDepthsChart = ({
-  queues = [],
-  isLoading,
-  isFetching = false,
-}: QueueDepthsChartProps) => {
-  const [showUpdating, setShowUpdating] = useState(false);
+interface QueueDepthsChartProps {
+  queues: Array<QueueData>;
+  isLoading: boolean;
+}
 
-  // Handle delayed updating indicator
-  useEffect(() => {
-    if (isFetching) {
-      setShowUpdating(true);
-    } else {
-      // Keep showing "updating..." for 500ms after fetch completes
-      const timer = setTimeout(() => {
-        setShowUpdating(false);
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-  }, [isFetching]);
+const EMPTY_QUEUES: QueueData[] = [];
+
+const CustomTooltip = ({
+  active,
+  payload,
+  label,
+  queues,
+}: {
+  active?: boolean;
+  payload?: ReadonlyArray<{ value: number }>;
+  label?: string | number;
+  queues: Array<QueueData>;
+  [key: string]: unknown;
+}) => {
+  if (active && payload && payload.length) {
+    const labelStr = String(label);
+    const originalQueue = queues.find((q) => q.name === labelStr);
+    return (
+      <div className="bg-white p-3 border rounded-lg shadow-lg">
+        <p className="font-medium text-gray-900">
+          {originalQueue?.name || label}
+        </p>
+        <p className="text-orange-600">
+          Messages: {payload[0].value.toLocaleString()}
+        </p>
+        {originalQueue?.vhost && originalQueue.vhost !== "/" && (
+          <p className="text-gray-500 text-sm">VHost: {originalQueue.vhost}</p>
+        )}
+      </div>
+    );
+  }
+  return null;
+};
+
+export const QueueDepthsChart = ({
+  queues = EMPTY_QUEUES,
+  isLoading,
+}: QueueDepthsChartProps) => {
+  const tooltipContent = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (props: any) => <CustomTooltip {...props} queues={queues} />,
+    [queues]
+  );
+
   // Prepare data for the chart - show all queues, prioritize those with messages
-  const chartData: QueueDepthData[] = queues
+  const chartData: QueueDepthData[] = [...queues]
     .sort((a, b) => b.messages - a.messages) // Sort by message count descending (queues with messages first)
     .slice(0, 10) // Take top 10 queues (including empty ones)
     .map((queue) => ({
-      name:
-        queue.name.length > 15 ? `${queue.name.slice(0, 15)}...` : queue.name,
+      name: queue.name,
       messages: queue.messages,
     }));
 
@@ -65,42 +90,8 @@ export const QueueDepthsChart = ({
   const yAxisMax = maxMessages === 0 ? 10 : Math.ceil(maxMessages * 1.1);
   const yAxisMin = minMessages < 0 ? Math.floor(minMessages * 1.1) : 0;
 
-  // Custom tooltip to show full queue name and message count
-  const CustomTooltip = ({
-    active,
-    payload,
-    label,
-  }: {
-    active?: boolean;
-    payload?: Array<{ value: number }>;
-    label?: string;
-  }) => {
-    if (active && payload && payload.length) {
-      const originalQueue = queues.find(
-        (q) =>
-          (q.name.length > 15 ? `${q.name.slice(0, 15)}...` : q.name) === label
-      );
-      return (
-        <div className="bg-white p-3 border rounded-lg shadow-lg">
-          <p className="font-medium text-gray-900">
-            {originalQueue?.name || label}
-          </p>
-          <p className="text-orange-600">
-            Messages: {payload[0].value.toLocaleString()}
-          </p>
-          {originalQueue?.vhost && originalQueue.vhost !== "/" && (
-            <p className="text-gray-500 text-sm">
-              VHost: {originalQueue.vhost}
-            </p>
-          )}
-        </div>
-      );
-    }
-    return null;
-  };
-
   return (
-    <Card className="border-0 shadow-md bg-card backdrop-blur-sm">
+    <Card className="border-0 shadow-md bg-card backdrop-blur-xs">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
@@ -115,7 +106,7 @@ export const QueueDepthsChart = ({
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
             <span className="text-xs text-muted-foreground">
-              Updates every 5 seconds{showUpdating && " (updating...)"}
+              Updates every 5 seconds
             </span>
           </div>
         </div>
@@ -143,6 +134,9 @@ export const QueueDepthsChart = ({
                 <XAxis
                   dataKey="name"
                   tick={{ fontSize: 12, fill: "#6b7280" }}
+                  tickFormatter={(name) =>
+                    name.length > 15 ? `${name.slice(0, 15)}...` : name
+                  }
                   angle={-45}
                   textAnchor="end"
                   height={80}
@@ -154,7 +148,7 @@ export const QueueDepthsChart = ({
                   domain={[yAxisMin, yAxisMax]}
                   allowDataOverflow={false}
                 />
-                <Tooltip content={<CustomTooltip />} />
+                <Tooltip content={tooltipContent} />
                 <Bar
                   dataKey="messages"
                   fill="url(#barGradient)"

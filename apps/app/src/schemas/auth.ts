@@ -1,31 +1,30 @@
 import { z } from "zod";
 
+import i18n from "@/i18n";
+
 // Password validation schema
 const passwordSchema = z
   .string()
-  .min(8, "Password must be at least 8 characters long")
-  .regex(/[a-z]/, "Password must contain at least one lowercase letter")
-  .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
-  .regex(/[0-9]/, "Password must contain at least one number")
-  .regex(
-    /[^a-zA-Z0-9]/,
-    "Password must contain at least one special character"
-  );
+  .min(8, () => i18n.t("validation:passwordMinLength"))
+  .regex(/[a-z]/, () => i18n.t("validation:passwordLowercase"))
+  .regex(/[A-Z]/, () => i18n.t("validation:passwordUppercase"))
+  .regex(/[0-9]/, () => i18n.t("validation:passwordNumber"))
+  .regex(/[^a-zA-Z0-9]/, () => i18n.t("validation:passwordSpecial"));
 
 // Sign up form schema
 export const signUpSchema = z
   .object({
-    firstName: z.string().min(1, "First name is required"),
-    lastName: z.string().min(1, "Last name is required"),
-    email: z.string().email("Please enter a valid email address"),
+    firstName: z.string().min(1, () => i18n.t("validation:firstNameRequired")),
+    lastName: z.string().min(1, () => i18n.t("validation:lastNameRequired")),
+    email: z.string().email(() => i18n.t("validation:invalidEmail")),
     password: passwordSchema,
     confirmPassword: z.string(),
     acceptTerms: z.boolean().refine((val) => val === true, {
-      message: "You must accept the Terms of Service and Privacy Policy",
+      message: i18n.t("validation:acceptTermsRequired"),
     }),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords do not match",
+    message: i18n.t("validation:passwordsDoNotMatch"),
     path: ["confirmPassword"],
   });
 
@@ -33,8 +32,8 @@ export type SignUpFormData = z.infer<typeof signUpSchema>;
 
 // Sign in form schema
 export const signInSchema = z.object({
-  email: z.string().email("Please enter a valid email address"),
-  password: z.string().min(1, "Password is required"),
+  email: z.string().email(() => i18n.t("validation:invalidEmail")),
+  password: z.string().min(1, () => i18n.t("validation:passwordRequired")),
 });
 
 export type SignInFormData = z.infer<typeof signInSchema>;
@@ -42,13 +41,13 @@ export type SignInFormData = z.infer<typeof signInSchema>;
 // Accept invitation form schema
 export const acceptInvitationSchema = z
   .object({
-    firstName: z.string().min(1, "First name is required"),
-    lastName: z.string().min(1, "Last name is required"),
+    firstName: z.string().min(1, () => i18n.t("validation:firstNameRequired")),
+    lastName: z.string().min(1, () => i18n.t("validation:lastNameRequired")),
     password: passwordSchema,
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords do not match",
+    message: i18n.t("validation:passwordsDoNotMatch"),
     path: ["confirmPassword"],
   });
 

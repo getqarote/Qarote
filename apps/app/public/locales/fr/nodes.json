@@ -1,0 +1,7 @@
+{
+  "pageTitle": "Noeuds",
+  "pageSubtitle": "Vue detaillee des noeuds du cluster et de leurs metriques",
+  "noServerTitle": "Noeuds",
+  "noServerDescription": "Ajoutez une connexion a un serveur RabbitMQ pour afficher les noeuds du cluster et leurs metriques.",
+  "selectServerPrompt": "Veuillez selectionner un serveur RabbitMQ pour afficher ses noeuds"
+}

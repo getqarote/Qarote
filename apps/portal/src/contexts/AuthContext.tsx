@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useState } from "react";
 
-import { authClient, type User } from "@/lib/api";
 import { logger } from "@/lib/logger";
+import { trpc } from "@/lib/trpc/client";
+import { type User } from "@/lib/types";
 
 interface AuthContextType {
   user: User | null;
@@ -10,12 +11,11 @@ interface AuthContextType {
   isLoading: boolean;
   login: (token: string, user: User) => void;
   logout: () => void;
+  updateUser: (user: User) => void;
   refetchUser: () => Promise<void>;
 }
 
-export const AuthContext = React.createContext<AuthContextType | undefined>(
-  undefined
-);
+const AuthContext = React.createContext<AuthContextType | undefined>(undefined);
 
 interface AuthProviderProps {
   children: React.ReactNode;
@@ -58,6 +58,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     localStorage.removeItem("auth_user");
   }, []);
 
+  const updateUser = useCallback((newUser: User) => {
+    setUser(newUser);
+    localStorage.setItem("auth_user", JSON.stringify(newUser));
+  }, []);
+
   useEffect(() => {
     const handleUnauthorized = () => {
       logout();
@@ -69,18 +74,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
   }, [logout]);
 
+  const utils = trpc.useUtils();
+
   const refetchUser = useCallback(async () => {
     if (!token) return;
 
     try {
-      const response = await authClient.getProfile();
+      const response = await utils.user.getProfile.fetch();
       const updatedUser = response.profile;
       setUser(updatedUser);
       localStorage.setItem("auth_user", JSON.stringify(updatedUser));
     } catch (error) {
       logger.error("Failed to refetch user data:", error);
     }
-  }, [token]);
+  }, [token, utils]);
 
   const value: AuthContextType = {
     user,
@@ -89,6 +96,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     isLoading,
     login,
     logout,
+    updateUser,
     refetchUser,
   };
 

@@ -1,6 +1,6 @@
-import { Prisma, UserRole } from "@prisma/client";
-
 import { prisma } from "@/core/prisma";
+
+import { Prisma, UserRole } from "@/generated/prisma/client";
 
 /**
  * Get user's role in a workspace (from WorkspaceMember or ADMIN if owner)
@@ -43,7 +43,7 @@ export async function ensureWorkspaceMember(
   role: UserRole,
   tx?: Omit<
     Prisma.TransactionClient,
-    "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends"
+    "$connect" | "$disconnect" | "$on" | "$transaction" | "$extends"
   >
 ): Promise<void> {
   const client = tx || prisma;

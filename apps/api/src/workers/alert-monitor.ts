@@ -1,16 +1,7 @@
 import { logger } from "@/core/logger";
 import { prisma } from "@/core/prisma";
 
-import { initSentry } from "@/services/sentry";
-
-import { isCloudMode } from "@/config/deployment";
-
 import { rabbitMQAlertsCronService } from "@/cron/rabbitmq-alerts.cron";
-
-// Initialize Sentry only if enabled
-if (isCloudMode() || process.env.ENABLE_SENTRY === "true") {
-  initSentry();
-}
 
 /**
  * Alert Monitor Worker Process
@@ -24,7 +15,7 @@ async function startWorker() {
     await prisma.$connect();
     logger.info("Connected to database");
 
-    // Start the cron service
+    // Start the RabbitMQ alerts cron service
     rabbitMQAlertsCronService.start();
     logger.info("RabbitMQ alerts cron service started");
 

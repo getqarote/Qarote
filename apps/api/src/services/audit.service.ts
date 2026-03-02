@@ -1,6 +1,6 @@
 import { logger } from "@/core/logger";
 
-export interface AuditEvent {
+interface AuditEvent {
   action: string;
   userId?: string;
   email?: string;
@@ -10,7 +10,7 @@ export interface AuditEvent {
   details?: Record<string, unknown>;
 }
 
-export class AuditService {
+class AuditService {
   /**
    * Log password-related security events
    */

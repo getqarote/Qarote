@@ -3,27 +3,24 @@
  * Handles license key generation, validation, and management
  */
 
-import { UserPlan } from "@prisma/client";
-import crypto from "crypto";
+import crypto from "node:crypto";
 
 import { logger } from "@/core/logger";
 import { prisma } from "@/core/prisma";
 
-export interface GenerateLicenseOptions {
-  tier: UserPlan;
-  customerEmail: string;
-  workspaceId?: string;
-  expiresAt?: Date;
-  stripeCustomerId?: string;
-  stripePaymentId?: string;
-}
+import { licenseConfig } from "@/config";
 
-export interface ValidateLicenseOptions {
-  licenseKey: string;
-  instanceId?: string;
-}
+import type {
+  GenerateLicenseOptions,
+  LicenseValidationResponse,
+  RenewLicenseResult,
+  ValidateLicenseOptions,
+} from "./license.interfaces";
+import { signLicenseJwt } from "./license-crypto.service";
 
-export class LicenseService {
+import { UserPlan } from "@/generated/prisma/client";
+
+class LicenseService {
   /**
    * Generate a new license key
    */
@@ -54,6 +51,8 @@ export class LicenseService {
           expiresAt: options.expiresAt,
           stripeCustomerId: options.stripeCustomerId,
           stripePaymentId: options.stripePaymentId,
+          stripeSubscriptionId: options.stripeSubscriptionId,
+          currentVersion: 1, // Initial version
           isActive: true,
         },
       });
@@ -77,18 +76,9 @@ export class LicenseService {
   /**
    * Validate a license key
    */
-  async validateLicense(options: ValidateLicenseOptions): Promise<{
-    valid: boolean;
-    license?: {
-      id: string;
-      tier: UserPlan;
-      expiresAt: Date | null;
-      isActive: boolean;
-      customerEmail: string;
-      workspaceId: string | null;
-    };
-    message?: string;
-  }> {
+  async validateLicense(
+    options: ValidateLicenseOptions
+  ): Promise<LicenseValidationResponse> {
     try {
       // Check if license exists in database
       const license = await prisma.license.findUnique({
@@ -111,7 +101,7 @@ export class LicenseService {
       }
 
       // Check expiration
-      if (license.expiresAt && license.expiresAt < new Date()) {
+      if (license.expiresAt < new Date()) {
         return {
           valid: false,
           message: "License has expired",
@@ -123,7 +113,6 @@ export class LicenseService {
         where: { id: license.id },
         data: {
           lastValidatedAt: new Date(),
-          instanceId: options.instanceId || license.instanceId,
         },
       });
 
@@ -181,6 +170,205 @@ export class LicenseService {
       where: { id: licenseId },
       data: { isActive: false },
     });
+  }
+
+  /**
+   * Renew a license - update expiration and increment version
+   * Used during annual subscription renewals
+   */
+  async renewLicense(
+    licenseId: string,
+    newExpiresAt: Date
+  ): Promise<RenewLicenseResult> {
+    try {
+      // Get current license
+      const currentLicense = await prisma.license.findUnique({
+        where: { id: licenseId },
+      });
+
+      if (!currentLicense) {
+        throw new Error(`License ${licenseId} not found`);
+      }
+
+      const newVersion = currentLicense.currentVersion + 1;
+
+      // Update license with new expiration and version
+      const updatedLicense = await prisma.license.update({
+        where: { id: licenseId },
+        data: {
+          expiresAt: newExpiresAt,
+          currentVersion: newVersion,
+          updatedAt: new Date(),
+        },
+      });
+
+      logger.info(
+        {
+          licenseId,
+          newVersion,
+          newExpiresAt: newExpiresAt.toISOString(),
+          previousExpiresAt: currentLicense.expiresAt.toISOString(),
+        },
+        "License renewed successfully"
+      );
+
+      return {
+        license: updatedLicense,
+        newVersion,
+      };
+    } catch (error) {
+      logger.error({ error, licenseId }, "Failed to renew license");
+      throw error;
+    }
+  }
+
+  /**
+   * Save a license file version for historical access
+   * Sets deletesAt to 30 days in the future for grace period
+   */
+  async saveLicenseFileVersion(
+    licenseId: string,
+    version: number,
+    fileContent: string,
+    expiresAt: Date,
+    stripeInvoiceId?: string
+  ): Promise<void> {
+    try {
+      // Calculate deletion date (30 days from now)
+      const deletesAt = new Date();
+      deletesAt.setDate(deletesAt.getDate() + 30);
+
+      await prisma.licenseFileVersion.create({
+        data: {
+          licenseId,
+          version,
+          fileContent,
+          expiresAt,
+          deletesAt,
+          stripeInvoiceId,
+        },
+      });
+
+      logger.info(
+        {
+          licenseId,
+          version,
+          stripeInvoiceId,
+          deletesAt: deletesAt.toISOString(),
+        },
+        "License file version saved with 30-day grace period"
+      );
+    } catch (error) {
+      logger.error(
+        { error, licenseId, version },
+        "Failed to save license file version"
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Clean up expired license file versions
+   * Deletes versions where deletesAt has passed
+   * Should be called by a scheduled worker (license-monitor)
+   */
+  async cleanupExpiredLicenseVersions(): Promise<void> {
+    try {
+      const now = new Date();
+
+      // Find expired versions
+      const expiredVersions = await prisma.licenseFileVersion.findMany({
+        where: {
+          deletesAt: { lt: now },
+        },
+        select: {
+          id: true,
+          licenseId: true,
+          version: true,
+        },
+      });
+
+      if (expiredVersions.length === 0) {
+        logger.debug("No expired license file versions to clean up");
+        return;
+      }
+
+      // Delete expired versions
+      const result = await prisma.licenseFileVersion.deleteMany({
+        where: {
+          deletesAt: { lt: now },
+        },
+      });
+
+      logger.info(
+        {
+          deletedCount: result.count,
+          expiredVersions: expiredVersions.map((v) => ({
+            licenseId: v.licenseId,
+            version: v.version,
+          })),
+        },
+        "Cleaned up expired license file versions"
+      );
+    } catch (error) {
+      logger.error(
+        { error },
+        "Failed to cleanup expired license file versions"
+      );
+      // Don't throw - this is cleanup, not critical
+    }
+  }
+
+  /**
+   * Get license file versions for a license
+   */
+  async getLicenseFileVersions(licenseId: string) {
+    return prisma.licenseFileVersion.findMany({
+      where: { licenseId },
+      orderBy: { version: "desc" },
+      take: 2, // Return only last 2 versions
+    });
+  }
+
+  /**
+   * Generate a signed license JWT (cloud-side only — requires private key)
+   * This creates a compact JWT string that self-hosted instances paste in the UI
+   */
+  async generateLicenseJwt(options: {
+    licenseId: string;
+    tier: UserPlan;
+    features: string[];
+    expiresAt: Date;
+  }): Promise<string> {
+    const privateKey = licenseConfig.privateKey;
+    if (!privateKey) {
+      throw new Error(
+        "License JWT generation requires private key (cloud only). " +
+          "Please set LICENSE_PRIVATE_KEY environment variable."
+      );
+    }
+
+    try {
+      const jwt = await signLicenseJwt(
+        {
+          sub: options.licenseId,
+          tier: options.tier,
+          features: options.features,
+          exp: Math.floor(options.expiresAt.getTime() / 1000),
+        },
+        privateKey
+      );
+
+      logger.info(
+        { licenseId: options.licenseId, tier: options.tier },
+        "License JWT generated successfully"
+      );
+
+      return jwt;
+    } catch (error) {
+      logger.error({ error }, "Failed to generate license JWT");
+      throw error;
+    }
   }
 }
 

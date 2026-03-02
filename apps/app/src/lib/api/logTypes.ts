@@ -4,7 +4,7 @@
  * NOTE: This is for future backend implementation - currently using mock data
  */
 
-export type LogAction =
+type LogAction =
   | "SEND_MESSAGE"
   | "CREATE_QUEUE"
   | "DELETE_QUEUE"
@@ -37,9 +37,9 @@ export type LogAction =
   | "EXPORT_DATA"
   | "DELETE_DATA";
 
-export type LogSeverity = "info" | "warning" | "error" | "critical";
+type LogSeverity = "info" | "warning" | "error" | "critical";
 
-export interface ActivityLog {
+interface ActivityLog {
   id: string;
   timestamp: string;
   userId: string;
@@ -59,7 +59,7 @@ export interface ActivityLog {
   metadata?: Record<string, unknown>;
 }
 
-export interface LogQuery {
+interface LogQuery {
   userId?: string;
   action?: LogAction | LogAction[];
   severity?: LogSeverity | LogSeverity[];
@@ -73,7 +73,7 @@ export interface LogQuery {
   sortOrder?: "asc" | "desc";
 }
 
-export interface LogsResponse {
+type _LogsResponse = {
   logs: ActivityLog[];
   pagination: {
     total: number;
@@ -87,9 +87,9 @@ export interface LogsResponse {
     criticalActions: number;
     timeRange: string;
   };
-}
+};
 
-export interface LogStats {
+type _LogStats = {
   totalEvents: number;
   eventsByAction: Record<LogAction, number>;
   eventsBySeverity: Record<LogSeverity, number>;
@@ -105,9 +105,9 @@ export interface LogStats {
   }>;
   recentActivity: ActivityLog[];
   timeRange: string;
-}
+};
 
-export interface CreateLogRequest {
+type _CreateLogRequest = {
   action: LogAction;
   resource: string;
   resourceId?: string;
@@ -115,9 +115,9 @@ export interface CreateLogRequest {
   severity?: LogSeverity;
   serverId?: string;
   metadata?: Record<string, unknown>;
-}
+};
 
-export interface LogExportRequest {
+type _LogExportRequest = {
   format: "json" | "csv" | "xlsx";
   query?: LogQuery;
-}
+};

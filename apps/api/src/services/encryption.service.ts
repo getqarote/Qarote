@@ -1,4 +1,4 @@
-import crypto from "crypto";
+import crypto from "node:crypto";
 
 import { logger } from "@/core/logger";
 
@@ -36,7 +36,7 @@ export class EncryptionService {
       return decrypted;
     } catch (error) {
       logger.error({ error }, "Decryption failed");
-      throw new Error("Failed to decrypt sensitive data");
+      throw new Error("Failed to decrypt sensitive data", { cause: error });
     }
   }
 

@@ -1,0 +1,7 @@
+{
+  "pageTitle": "Nodos",
+  "pageSubtitle": "Vista detallada de los nodos del cl\u00faster y sus m\u00e9tricas",
+  "noServerTitle": "Nodos",
+  "noServerDescription": "Agrega una conexi\u00f3n de servidor RabbitMQ para ver los nodos del cl\u00faster y sus m\u00e9tricas.",
+  "selectServerPrompt": "Por favor selecciona un servidor RabbitMQ para ver sus nodos"
+}

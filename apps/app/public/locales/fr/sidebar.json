@@ -1,0 +1,23 @@
+{
+  "dashboard": "Tableau de bord",
+  "queues": "Files d'attente",
+  "connections": "Connexions",
+  "nodes": "Noeuds",
+  "exchanges": "Echanges",
+  "virtualHosts": "Hotes virtuels",
+  "users": "Utilisateurs",
+  "alerts": "Alertes",
+  "profile": "Profil",
+  "license": "Licence",
+  "helpSupport": "Aide et support",
+  "server": "Serveur",
+  "virtualHost": "Hote virtuel",
+  "management": "Gestion",
+  "selectServer": "Selectionner un serveur...",
+  "selectVhost": "Selectionner un vhost...",
+  "noServersConfigured": "Aucun serveur configure",
+  "noVhostsAvailable": "Aucun vhost disponible",
+  "loadingVhosts": "Chargement des vhosts...",
+  "addServer": "Ajouter un serveur",
+  "theme": "Theme"
+}

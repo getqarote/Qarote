@@ -1,0 +1,11 @@
+{
+  "pageTitle": "Alertes",
+  "pageSubtitle": "Surveiller les alertes et notifications systeme",
+  "noServerTitle": "Alertes",
+  "noServerDescription": "Surveiller les alertes et notifications systeme",
+  "alertRules": "Regles d'alerte",
+  "notificationSettings": "Parametres de notification",
+  "activeAlerts": "Alertes actives",
+  "resolvedAlerts": "Alertes resolues",
+  "failedToLoad": "Echec du chargement des donnees d'alertes. Veuillez reessayer."
+}

@@ -1,3 +1,8 @@
+import { captureRabbitMQError } from "../../services/sentry";
+import { logger } from "../logger";
+import { RabbitMQApiClient } from "./ApiClient";
+import { RabbitMQMetricsCalculator } from "./MetricsCalculator";
+import { RabbitMQQueueClient } from "./QueueClient";
 import type {
   BindingArguments,
   BindQueueResult,
@@ -9,13 +14,7 @@ import type {
   QueueCreateOptions,
   RabbitMQCredentials,
   RabbitMQMessage,
-} from "@/types/rabbitmq";
-
-import { captureRabbitMQError } from "../../services/sentry";
-import { logger } from "../logger";
-import { RabbitMQApiClient } from "./ApiClient";
-import { RabbitMQMetricsCalculator } from "./MetricsCalculator";
-import { RabbitMQQueueClient } from "./QueueClient";
+} from "./rabbitmq.interfaces";
 
 /**
  * Main RabbitMQ client that combines all functionality

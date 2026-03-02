@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
-
-import { logger } from "@/lib/logger";
+import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router";
 
 import { AppSidebar } from "@/components/AppSidebar";
 import { NoServerConfigured } from "@/components/NoServerConfigured";
@@ -13,35 +12,27 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { useServerContext } from "@/contexts/ServerContext";
 import { useVHostContext } from "@/contexts/VHostContextDefinition";
 
-import { useQueues } from "@/hooks/useApi";
-import { useUser } from "@/hooks/useUser";
+import { useQueues } from "@/hooks/queries/useRabbitMQ";
+import { useUser } from "@/hooks/ui/useUser";
+
+// No-op: data is kept fresh via the subscription automatically
+const handleRefetch = () => {};
 
 const Queues = () => {
+  const { t } = useTranslation("queues");
   const navigate = useNavigate();
   const { isLoading: workspaceLoading } = useUser();
   const [filterRegex, setFilterRegex] = useState("");
   const { selectedServerId, hasServers } = useServerContext();
   const { selectedVHost } = useVHostContext();
-  const {
-    data: queuesData,
-    isLoading,
-    refetch,
-  } = useQueues(selectedServerId, selectedVHost);
+  const { data: queuesData, isLoading } = useQueues(
+    selectedServerId,
+    selectedVHost,
+    hasServers
+  );
 
   const queues = useMemo(() => queuesData?.queues || [], [queuesData?.queues]);
   const queueCount = queues.length;
-
-  // Wrapper for refetch with logging to debug refresh issues
-  const handleRefetch = async () => {
-    logger.info("Queues page: Refetching queue data...");
-    try {
-      await refetch();
-
-      logger.info("Queues page: Refetch completed successfully");
-    } catch (error) {
-      logger.error("Queues page: Refetch failed:", error);
-    }
-  };
 
   const filteredQueues = useMemo(() => {
     if (!filterRegex) return queues;
@@ -68,8 +59,8 @@ const Queues = () => {
               <SidebarTrigger />
             </div>
             <NoServerConfigured
-              title="Queues"
-              description="Add a RabbitMQ server connection to view and manage queues across your clusters."
+              title={t("noServerTitle")}
+              description={t("noServerDescription")}
             />
           </main>
         </div>
@@ -88,10 +79,8 @@ const Queues = () => {
                 <div className="flex items-center gap-4">
                   <SidebarTrigger />
                   <div>
-                    <h1 className="title-page">Queues</h1>
-                    <p className="text-gray-500">
-                      Please select a RabbitMQ server to view queues
-                    </p>
+                    <h1 className="title-page">{t("pageTitle")}</h1>
+                    <p className="text-gray-500">{t("selectServerPrompt")}</p>
                   </div>
                 </div>
               </div>
@@ -126,7 +115,7 @@ const Queues = () => {
             {/* Filter */}
             <div className="flex items-center gap-4">
               <Input
-                placeholder="Filter regex"
+                placeholder={t("filterRegex")}
                 value={filterRegex}
                 onChange={(e) => setFilterRegex(e.target.value)}
                 className="max-w-xs"

@@ -135,20 +135,20 @@ export interface RabbitMQNode {
   // metrics_gc_queue_length: MetricsGcQueueLength;
 }
 
-export interface AuthMechanism {
+interface AuthMechanism {
   name: string;
   description: string;
   enabled: boolean;
 }
 
 // Permission status for unauthorized operations
-export interface PermissionStatus {
+interface PermissionStatus {
   hasPermission: boolean;
   requiredPermission: string;
   message: string;
 }
 
-export interface RabbitMQAlert {
+interface RabbitMQAlert {
   id: string;
   serverId: string;
   serverName: string;
@@ -171,7 +171,7 @@ export interface RabbitMQAlert {
   };
 }
 
-export interface AlertThresholds {
+interface AlertThresholds {
   memory: {
     warning: number;
     critical: number;
@@ -194,7 +194,7 @@ export interface AlertThresholds {
   };
 }
 
-export interface AlertsResponse {
+type _AlertsResponse = {
   success: boolean;
   alerts: RabbitMQAlert[];
   summary: {
@@ -205,9 +205,9 @@ export interface AlertsResponse {
   };
   thresholds: AlertThresholds;
   timestamp: string;
-}
+};
 
-export interface AlertsSummaryResponse {
+type _AlertsSummaryResponse = {
   success: boolean;
   clusterHealth: "healthy" | "warning" | "critical";
   summary: {
@@ -217,20 +217,20 @@ export interface AlertsSummaryResponse {
   };
   issues: string[];
   timestamp: string;
-}
+};
 
-export interface NodesResponse {
+type _NodesResponse = {
   nodes: RabbitMQNode[] | null;
   permissionStatus?: PermissionStatus;
-}
+};
 
-export interface SampleRetentionPolicies {
+type _SampleRetentionPolicies = {
   global: number[];
   basic: number[];
   detailed: number[];
-}
+};
 
-export interface ChurnRates {
+type _ChurnRates = {
   channel_closed: number;
   channel_closed_details: RateDetail;
   channel_created: number;
@@ -245,26 +245,26 @@ export interface ChurnRates {
   queue_declared_details: RateDetail;
   queue_deleted: number;
   queue_deleted_details: RateDetail;
-}
+};
 
-export interface QueueTotals {
+type _QueueTotals = {
   messages: number;
   messages_details: RateDetail;
   messages_ready: number;
   messages_ready_details: RateDetail;
   messages_unacknowledged: number;
   messages_unacknowledged_details: RateDetail;
-}
+};
 
-export interface ObjectTotals {
+type _ObjectTotals = {
   channels: number;
   connections: number;
   consumers: number;
   exchanges: number;
   queues: number;
-}
+};
 
-export interface MessageStats {
+type _MessageStats = {
   disk_reads: number;
   disk_reads_details: RateDetail;
   disk_writes: number;
@@ -272,9 +272,9 @@ export interface MessageStats {
   publish_details?: RateDetail;
   deliver_details?: RateDetail;
   ack_details?: RateDetail;
-}
+};
 
-export interface SocketOpts {
+interface SocketOpts {
   backlog?: number;
   nodelay?: boolean;
   linger?: [boolean, number];
@@ -287,15 +287,15 @@ export interface SocketOpts {
   protocol?: string;
 }
 
-export interface Listener {
+type _Listener = {
   node: string;
   protocol: string;
   ip_address: string;
   port: number;
   socket_opts: SocketOpts;
-}
+};
 
-export interface ContextInfo {
+type _ContextInfo = {
   ssl_opts: unknown[];
   node: string;
   description: string;
@@ -304,9 +304,9 @@ export interface ContextInfo {
   ip?: string;
   port: string;
   protocol?: string;
-}
+};
 
-export interface Overview {
+interface Overview {
   cluster_name: string;
   rabbitmq_version: string;
   erlang_version: string;
@@ -316,7 +316,7 @@ export interface Overview {
   release_series_support_status?: string;
 }
 
-export interface Metrics {
+interface Metrics {
   overview: Overview;
   nodes: RabbitMQNode[];
   connections: Connection[];
@@ -329,12 +329,12 @@ export interface Metrics {
   calculatedAt: string;
 }
 
-export interface MetricsResponse {
+type _MetricsResponse = {
   metrics: Metrics | null;
   permissionStatus?: PermissionStatus;
-}
+};
 
-export interface Connection {
+interface Connection {
   name: string;
   node: string;
   state: string;
@@ -350,7 +350,7 @@ export interface Connection {
   channelDetails: Channel[];
 }
 
-export interface Channel {
+interface Channel {
   name: string;
   node: string;
   state: string;
@@ -364,7 +364,7 @@ export interface Channel {
   };
 }
 
-export interface TimeSeriesDataPoint {
+interface TimeSeriesDataPoint {
   time: string;
   messages: number;
   publish?: number;
@@ -381,7 +381,7 @@ export interface TimeSeriesDataPoint {
   disk_writes?: number;
 }
 
-export interface TimeSeriesResponse {
+type _TimeSeriesResponse = {
   timeseries: TimeSeriesDataPoint[] | null;
   timeRange: string;
   dataPoints: number;
@@ -404,9 +404,9 @@ export interface TimeSeriesResponse {
     allowedTimeRanges: string[];
   };
   permissionStatus?: PermissionStatus;
-}
+};
 
-export interface LiveRatesResponse {
+type _LiveRatesResponse = {
   serverId: string;
   dataSource: "live_rates" | "permission_denied";
   timestamp: string;
@@ -455,14 +455,14 @@ export interface LiveRatesResponse {
     dataPoints: number;
   };
   permissionStatus?: PermissionStatus;
-}
+};
 
-export interface NodeMemoryDetailsResponse {
+type _NodeMemoryDetailsResponse = {
   node: NodeMemoryDetails;
   planAccess: NodeMemoryPlanAccess;
-}
+};
 
-export interface NodeMemoryDetails {
+interface NodeMemoryDetails {
   name: string;
   running: boolean;
   uptime: number;
@@ -473,7 +473,7 @@ export interface NodeMemoryDetails {
   optimization?: NodeMemoryOptimization;
 }
 
-export interface NodeMemoryImmediate {
+interface NodeMemoryImmediate {
   totalMemory: number;
   usedMemory: number;
   freeMemory: number;
@@ -482,7 +482,7 @@ export interface NodeMemoryImmediate {
   memoryCalculationStrategy: string;
 }
 
-export interface NodeMemoryAdvanced {
+interface NodeMemoryAdvanced {
   fileDescriptors: {
     used: number;
     total: number;
@@ -505,7 +505,7 @@ export interface NodeMemoryAdvanced {
   };
 }
 
-export interface NodeMemoryExpert {
+interface NodeMemoryExpert {
   ioMetrics: {
     readCount: number;
     readBytes: number;
@@ -535,7 +535,7 @@ export interface NodeMemoryExpert {
   };
 }
 
-export interface NodeMemoryTrends {
+interface NodeMemoryTrends {
   memoryUsageRate: number;
   diskFreeRate: number;
   fdUsageRate: number;
@@ -543,7 +543,7 @@ export interface NodeMemoryTrends {
   processUsageRate: number;
 }
 
-export interface NodeMemoryOptimization {
+interface NodeMemoryOptimization {
   overallHealth: "Good" | "Warning" | "Critical";
   warnings: string[];
   suggestions: string[];
@@ -555,7 +555,7 @@ export interface NodeMemoryOptimization {
   };
 }
 
-export interface NodeMemoryPlanAccess {
+interface NodeMemoryPlanAccess {
   hasBasic: boolean;
   hasAdvanced: boolean;
   hasExpert: boolean;
@@ -564,13 +564,13 @@ export interface NodeMemoryPlanAccess {
 }
 
 // Alert Types
-export enum AlertSeverity {
+enum AlertSeverity {
   CRITICAL = "critical",
   WARNING = "warning",
   INFO = "info",
 }
 
-export enum AlertCategory {
+enum AlertCategory {
   MEMORY = "memory",
   DISK = "disk",
   CONNECTION = "connection",
@@ -579,7 +579,7 @@ export enum AlertCategory {
   PERFORMANCE = "performance",
 }
 
-export interface RabbitMQAlert {
+interface RabbitMQAlert {
   id: string;
   serverId: string;
   serverName: string;
@@ -602,7 +602,7 @@ export interface RabbitMQAlert {
   };
 }
 
-export interface AlertThresholds {
+interface AlertThresholds {
   memory: {
     warning: number;
     critical: number;
@@ -625,7 +625,7 @@ export interface AlertThresholds {
   };
 }
 
-export interface AlertsResponse {
+type _AlertsResponse2 = {
   success: boolean;
   alerts: RabbitMQAlert[];
   summary: {
@@ -636,9 +636,9 @@ export interface AlertsResponse {
   };
   thresholds: AlertThresholds;
   timestamp: string;
-}
+};
 
-export interface AlertsSummaryResponse {
+type _AlertsSummaryResponse2 = {
   success: boolean;
   clusterHealth: "healthy" | "warning" | "critical";
   summary: {
@@ -648,17 +648,17 @@ export interface AlertsSummaryResponse {
   };
   issues: string[];
   timestamp: string;
-}
+};
 
-export interface ThresholdsResponse {
+type _ThresholdsResponse = {
   success: boolean;
   thresholds: AlertThresholds;
   canModify: boolean;
   defaults: AlertThresholds;
-}
+};
 
-export interface UpdateThresholdsResponse {
+type _UpdateThresholdsResponse = {
   success: boolean;
   message: string;
   thresholds: AlertThresholds;
-}
+};

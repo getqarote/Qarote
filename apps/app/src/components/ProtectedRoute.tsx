@@ -1,5 +1,5 @@
 import React from "react";
-import { Navigate, useLocation } from "react-router-dom";
+import { Navigate, useLocation } from "react-router";
 
 import { Loader2 } from "lucide-react";
 
@@ -33,10 +33,5 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   }
 
   // Render the protected content with email verification banner
-  return (
-    <>
-      {/* <EmailVerificationBanner className="mx-4 mt-4" /> */}
-      {children}
-    </>
-  );
+  return <>{children}</>;
 };
