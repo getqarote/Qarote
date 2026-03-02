@@ -1,4 +1,5 @@
 import { test, expect } from "../../fixtures/test-base.js";
+import { mockTrpcQuery } from "../../helpers/trpc-mock.js";
 import { SignInPage } from "../../page-objects/auth/sign-in.page.js";
 import { SignUpPage } from "../../page-objects/auth/sign-up.page.js";
 import { uniqueEmail } from "../../helpers/factories/user.factory.js";
@@ -124,22 +125,13 @@ test.describe("User Registration @p0", () => {
     page,
   }) => {
     // Intercept public.getConfig to simulate registration disabled
-    await page.route(`${apiUrl}/trpc/public.getConfig*`, (route) =>
-      route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify({
-          result: {
-            data: {
-              registrationEnabled: false,
-              emailEnabled: false,
-              oauthEnabled: false,
-              ssoEnabled: false,
-            },
-          },
-        }),
-      })
-    );
+    // Uses batch-aware helper because tRPC httpBatchLink may batch this with other queries
+    await mockTrpcQuery(page, "public.getConfig", {
+      registrationEnabled: false,
+      emailEnabled: false,
+      oauthEnabled: false,
+      ssoEnabled: false,
+    });
 
     await page.goto("/auth/sign-up");
     await page.waitForLoadState("domcontentloaded");

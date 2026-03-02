@@ -1,7 +1,6 @@
 import { test, expect } from "../../fixtures/test-base.js";
+import { mockTrpcQuery } from "../../helpers/trpc-mock.js";
 import { SignInPage } from "../../page-objects/auth/sign-in.page.js";
-
-const apiUrl = process.env.API_URL || "http://localhost:3001";
 
 test.describe("User Login @p0", () => {
   test("should login with valid credentials and redirect to dashboard", async ({
@@ -63,22 +62,13 @@ test.describe("User Login @p0", () => {
     page,
   }) => {
     // Intercept public.getConfig to simulate registration disabled
-    await page.route(`${apiUrl}/trpc/public.getConfig*`, (route) =>
-      route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify({
-          result: {
-            data: {
-              registrationEnabled: false,
-              emailEnabled: false,
-              oauthEnabled: false,
-              ssoEnabled: false,
-            },
-          },
-        }),
-      })
-    );
+    // Uses batch-aware helper because tRPC httpBatchLink may batch this with other queries
+    await mockTrpcQuery(page, "public.getConfig", {
+      registrationEnabled: false,
+      emailEnabled: false,
+      oauthEnabled: false,
+      ssoEnabled: false,
+    });
 
     const signInPage = new SignInPage(page);
     await signInPage.goto();
