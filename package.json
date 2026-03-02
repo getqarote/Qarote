@@ -87,7 +87,7 @@
     "husky": "^9.1.7",
     "knip": "^5.85.0",
     "lint-staged": "^16.2.7",
-    "syncpack": "^13.0.4",
+    "syncpack": "^14.0.0",
     "turbo": "^2.8.11",
     "typescript": "^5.9.3"
   },
