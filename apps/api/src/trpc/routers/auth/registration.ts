@@ -8,7 +8,7 @@ import { trackSignUpError } from "@/services/sentry";
 
 import { RegisterUserSchema } from "@/schemas/auth";
 
-import { emailConfig } from "@/config";
+import { emailConfig, registrationConfig } from "@/config";
 
 import { UserMapper } from "@/mappers/auth";
 
@@ -29,6 +29,14 @@ export const registrationRouter = router({
     .mutation(async ({ input, ctx }) => {
       const { email, password, firstName, lastName, acceptTerms, sourceApp } =
         input;
+
+      // Check if public registration is enabled
+      if (!registrationConfig.enabled) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: te(ctx.locale, "auth.registrationDisabled"),
+        });
+      }
 
       // Validate that terms were accepted
       if (!acceptTerms) {

@@ -10,6 +10,7 @@
     "userNotFound": "Utilisateur introuvable",
     "mustAcceptTerms": "Vous devez accepter les conditions d'utilisation pour vous inscrire",
     "emailAlreadyInUse": "Cette adresse e-mail est déjà utilisée",
+    "registrationDisabled": "L'inscription publique est actuellement désactivée. Veuillez contacter votre administrateur pour obtenir une invitation.",
     "failedToRegister": "Échec de l'inscription de l'utilisateur",
     "googleOAuthNotEnabled": "L'authentification Google OAuth n'est pas activée pour ce déploiement",
     "googleOAuthRequiredForCloud": "L'authentification Google OAuth est requise pour les déploiements cloud",

@@ -124,6 +124,15 @@ export const emailConfig = {
   },
 } as const;
 
+export const registrationConfig = {
+  enabled: "ENABLE_REGISTRATION" in config ? config.ENABLE_REGISTRATION : true,
+} as const;
+
+export const adminBootstrapConfig = {
+  email: "ADMIN_EMAIL" in config ? config.ADMIN_EMAIL : undefined,
+  password: "ADMIN_PASSWORD" in config ? config.ADMIN_PASSWORD : undefined,
+} as const;
+
 export const stripeConfig = {
   secretKey: config.STRIPE_SECRET_KEY,
   webhookSecret: config.STRIPE_WEBHOOK_SECRET,

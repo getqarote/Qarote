@@ -11,6 +11,9 @@ export const selfhostedSchema = baseSchema.extend({
   // Deployment Mode
   DEPLOYMENT_MODE: z.literal("selfhosted"),
 
+  // Registration control
+  ENABLE_REGISTRATION: z.coerce.boolean().default(true),
+
   // Email Configuration - All optional with sensible defaults
   ENABLE_EMAIL: z.coerce.boolean().default(false),
   EMAIL_PROVIDER: z.literal("smtp").default("smtp"),
@@ -91,6 +94,10 @@ export const selfhostedSchema = baseSchema.extend({
   SSO_TENANT: z.string().optional().default("default"),
   SSO_PRODUCT: z.string().optional().default("qarote"),
   SSO_BUTTON_LABEL: z.string().optional().default("Sign in with SSO"),
+
+  // Admin bootstrap (used once on first boot, then removed from .env)
+  ADMIN_EMAIL: z.email().optional(),
+  ADMIN_PASSWORD: z.string().min(8).optional(),
 
   // Notion Configuration - Optional
   NOTION_API_KEY: z.string().optional(),

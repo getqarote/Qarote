@@ -7,5 +7,9 @@
     "team": "团队",
     "sendFeedback": "发送反馈"
   },
-  "failedToLoad": "加载个人资料信息失败。"
+  "failedToLoad": "加载个人资料信息失败。",
+  "toast": {
+    "copyInviteLink": "邮件已禁用。请将此链接分享给被邀请的用户。",
+    "copyLink": "复制链接"
+  }
 }

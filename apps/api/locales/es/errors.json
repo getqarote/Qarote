@@ -10,6 +10,7 @@
     "userNotFound": "Usuario no encontrado",
     "mustAcceptTerms": "Debe aceptar los términos de servicio para registrarse",
     "emailAlreadyInUse": "El correo electrónico ya está en uso",
+    "registrationDisabled": "El registro público está actualmente deshabilitado. Contacte con su administrador para obtener una invitación.",
     "failedToRegister": "Error al registrar el usuario",
     "googleOAuthNotEnabled": "La autenticación Google OAuth no está habilitada para este despliegue",
     "googleOAuthRequiredForCloud": "La autenticación Google OAuth es obligatoria para los despliegues en la nube",

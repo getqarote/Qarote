@@ -7,5 +7,9 @@
     "team": "Team",
     "sendFeedback": "Send Feedback"
   },
-  "failedToLoad": "Failed to load profile information."
+  "failedToLoad": "Failed to load profile information.",
+  "toast": {
+    "copyInviteLink": "Email is disabled. Share this link with the invited user.",
+    "copyLink": "Copy Link"
+  }
 }

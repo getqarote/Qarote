@@ -13,6 +13,7 @@ import {
 import { inviteUserSchema } from "@/schemas/invitation";
 import { InvitationIdParamSchema } from "@/schemas/workspace";
 
+import { emailConfig } from "@/config";
 import { FEATURES } from "@/config/features";
 
 import {
@@ -206,7 +207,11 @@ export const invitationRouter = router({
           },
         });
 
+        // Build invite URL for sharing (useful when email is disabled)
+        const inviteUrl = `${emailConfig.frontendUrl}/invite/${token}`;
+
         // Send invitation email
+        let emailSent = false;
         try {
           const plan = await getUserPlan(user.id);
           await EmailService.sendInvitationEmail({
@@ -218,6 +223,7 @@ export const invitationRouter = router({
             plan,
             locale: ctx.locale,
           });
+          emailSent = true;
           ctx.logger.info(
             { invitationId: invitation.id, email },
             "Invitation email sent successfully"
@@ -238,6 +244,8 @@ export const invitationRouter = router({
             createdAt: invitation.createdAt.toISOString(),
             invitedBy: formatInvitedBy(invitation.invitedBy),
           },
+          inviteUrl,
+          emailSent,
         };
       } catch (error) {
         if (error instanceof TRPCError) {
