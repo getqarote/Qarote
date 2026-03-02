@@ -216,6 +216,11 @@ export async function runSetup(): Promise<void> {
         console.log(c.red("    Must be at least 8 characters."));
         continue;
       }
+      const confirm2 = await askSecret("Confirm admin password");
+      if (input !== confirm2) {
+        console.log(c.red("    Passwords do not match. Try again."));
+        continue;
+      }
       adminPassword = input;
     }
   }
