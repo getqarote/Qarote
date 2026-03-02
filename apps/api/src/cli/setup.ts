@@ -3,6 +3,7 @@ import { randomBytes } from "node:crypto";
 import { existsSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { createInterface } from "node:readline";
+import { Writable } from "node:stream";
 
 // Colors (disabled if not a terminal)
 const isTTY = process.stdout.isTTY;
@@ -34,7 +35,26 @@ function createPrompt() {
       });
     });
 
-  return { rl, ask, confirm };
+  /** Prompt for sensitive input without echoing to the terminal. */
+  const askSecret = (question: string): Promise<string> =>
+    new Promise((resolve) => {
+      rl.pause();
+      const mutedOutput = new Writable({ write: (_c, _e, cb) => cb() });
+      const secretRl = createInterface({
+        input: process.stdin,
+        output: mutedOutput,
+        terminal: true,
+      });
+      process.stdout.write(`  ${question}: `);
+      secretRl.question("", (answer) => {
+        secretRl.close();
+        process.stdout.write("\n");
+        rl.resume();
+        resolve(answer.trim());
+      });
+    });
+
+  return { rl, ask, confirm, askSecret };
 }
 
 async function testDatabaseConnection(
@@ -78,7 +98,7 @@ export async function runSetup(): Promise<void> {
     process.exit(1);
   }
 
-  const { rl, ask, confirm } = createPrompt();
+  const { rl, ask, confirm, askSecret } = createPrompt();
 
   console.log("");
   console.log(c.bold("  Qarote Setup"));
@@ -191,7 +211,7 @@ export async function runSetup(): Promise<void> {
     }
 
     while (!adminPassword) {
-      const input = await ask("Admin password");
+      const input = await askSecret("Admin password");
       if (!input || input.length < 8) {
         console.log(c.red("    Must be at least 8 characters."));
         continue;

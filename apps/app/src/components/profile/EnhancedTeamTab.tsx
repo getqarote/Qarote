@@ -397,11 +397,15 @@ export const EnhancedTeamTab = ({
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => {
-                              const inviteUrl = `${window.location.origin}/invite/${invitation.token}`;
-                              navigator.clipboard.writeText(inviteUrl);
-                              setCopiedToken(invitation.id);
-                              setTimeout(() => setCopiedToken(null), 2000);
+                            onClick={async () => {
+                              try {
+                                const inviteUrl = `${window.location.origin}/invite/${invitation.token}`;
+                                await navigator.clipboard.writeText(inviteUrl);
+                                setCopiedToken(invitation.id);
+                                setTimeout(() => setCopiedToken(null), 2000);
+                              } catch {
+                                // Clipboard write failed (e.g. permissions denied)
+                              }
                             }}
                             className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
                             title="Copy invite link"

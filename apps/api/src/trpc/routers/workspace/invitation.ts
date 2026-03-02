@@ -5,10 +5,7 @@ import { formatInvitedBy, getUserDisplayName } from "@/core/utils";
 
 import { EmailService } from "@/services/email/email.service";
 import { EncryptionService } from "@/services/encryption.service";
-import {
-  getUserPlan,
-  validateUserInvitation,
-} from "@/services/plan/plan.service";
+import { validateUserInvitation } from "@/services/plan/plan.service";
 
 import { inviteUserSchema } from "@/schemas/invitation";
 import { InvitationIdParamSchema } from "@/schemas/workspace";
@@ -214,14 +211,13 @@ export const invitationRouter = router({
         let emailSent = false;
         if (emailConfig.enabled) {
           try {
-            const plan = await getUserPlan(user.id);
             await EmailService.sendInvitationEmail({
               to: email,
               invitationToken: token,
               workspaceName: workspace.name,
               inviterName: getUserDisplayName(user),
               inviterEmail: user.email,
-              plan,
+              plan: ownerPlan,
               locale: ctx.locale,
             });
             emailSent = true;
