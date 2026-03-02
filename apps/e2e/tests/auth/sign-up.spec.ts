@@ -165,11 +165,11 @@ test.describe("User Registration @p0", () => {
       process.env.DEPLOYMENT_MODE === "cloud",
       "Selfhosted mode only"
     );
+    test.skip(
+      process.env.ENABLE_REGISTRATION !== "false",
+      "Requires ENABLE_REGISTRATION=false to validate the API guard"
+    );
 
-    // In the default E2E config, registration IS enabled.
-    // This test verifies the API shape; the actual guard is tested via
-    // the route intercept test above for UI and integration tests
-    // with ENABLE_REGISTRATION=false for full end-to-end.
     const response = await fetch(`${apiUrl}/trpc/auth.registration.register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -182,12 +182,9 @@ test.describe("User Registration @p0", () => {
       }),
     });
 
-    // With registration enabled (default), this should succeed (200) or
-    // fail for other reasons (duplicate email, etc.) — NOT 403 FORBIDDEN
     const body = await response.json();
-    if (body.error) {
-      // If there's an error, it should NOT be the registration disabled error
-      expect(body.error.message).not.toMatch(/registration.*disabled/i);
-    }
+    // Registration should be rejected with FORBIDDEN
+    expect(body.error).toBeDefined();
+    expect(body.error.data?.code).toBe("FORBIDDEN");
   });
 });

@@ -22,14 +22,13 @@ import { UserRole } from "@/generated/prisma/client";
 export async function bootstrapAdmin(): Promise<void> {
   const { email, password } = adminBootstrapConfig;
 
-  if (!email || !password) {
+  if (!email && !password) {
     return;
   }
 
-  // Check if any user exists (idempotency guard)
-  const userCount = await prisma.user.count({ take: 1 });
-  if (userCount > 0) {
-    logger.debug("Users already exist — skipping admin bootstrap");
+  // Clean up partial credentials (e.g. only email or only password set)
+  if (!email || !password) {
+    logger.warn("Incomplete admin bootstrap credentials — removing from .env");
     removeAdminEnvVars();
     return;
   }
@@ -39,6 +38,13 @@ export async function bootstrapAdmin(): Promise<void> {
   const hashedPassword = await hashPassword(password);
 
   await prisma.$transaction(async (tx) => {
+    // Idempotency guard inside transaction to prevent races
+    const existingUser = await tx.user.findFirst({ select: { id: true } });
+    if (existingUser) {
+      logger.debug("Users already exist — skipping admin bootstrap");
+      return;
+    }
+
     const workspace = await tx.workspace.create({
       data: {
         name: "Default Workspace",

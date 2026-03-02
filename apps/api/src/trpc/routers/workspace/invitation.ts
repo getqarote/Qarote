@@ -210,30 +210,32 @@ export const invitationRouter = router({
         // Build invite URL for sharing (useful when email is disabled)
         const inviteUrl = `${emailConfig.frontendUrl}/invite/${token}`;
 
-        // Send invitation email
+        // Send invitation email (only attempt if email is enabled)
         let emailSent = false;
-        try {
-          const plan = await getUserPlan(user.id);
-          await EmailService.sendInvitationEmail({
-            to: email,
-            invitationToken: token,
-            workspaceName: workspace.name,
-            inviterName: getUserDisplayName(user),
-            inviterEmail: user.email,
-            plan,
-            locale: ctx.locale,
-          });
-          emailSent = true;
-          ctx.logger.info(
-            { invitationId: invitation.id, email },
-            "Invitation email sent successfully"
-          );
-        } catch (emailError) {
-          ctx.logger.error(
-            { emailError, invitationId: invitation.id },
-            "Failed to send invitation email"
-          );
-          // Don't fail the request if email sending fails
+        if (emailConfig.enabled) {
+          try {
+            const plan = await getUserPlan(user.id);
+            await EmailService.sendInvitationEmail({
+              to: email,
+              invitationToken: token,
+              workspaceName: workspace.name,
+              inviterName: getUserDisplayName(user),
+              inviterEmail: user.email,
+              plan,
+              locale: ctx.locale,
+            });
+            emailSent = true;
+            ctx.logger.info(
+              { invitationId: invitation.id, email },
+              "Invitation email sent successfully"
+            );
+          } catch (emailError) {
+            ctx.logger.error(
+              { error: emailError, invitationId: invitation.id, email },
+              "Failed to send invitation email"
+            );
+            // Don't fail the request if email sending fails
+          }
         }
 
         return {

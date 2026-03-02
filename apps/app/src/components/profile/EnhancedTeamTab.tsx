@@ -405,6 +405,7 @@ export const EnhancedTeamTab = ({
                             }}
                             className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
                             title="Copy invite link"
+                            aria-label="Copy invite link"
                           >
                             {copiedToken === invitation.id ? (
                               <Check className="h-4 w-4" />
@@ -423,6 +424,8 @@ export const EnhancedTeamTab = ({
                             }
                             disabled={isRevoking}
                             className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            title="Revoke invitation"
+                            aria-label="Revoke invitation"
                           >
                             <X className="h-4 w-4" />
                           </Button>

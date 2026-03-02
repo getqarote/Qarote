@@ -27,7 +27,6 @@ const { values: cliArgs } = parseArgs({
     "smtp-pass": { type: "string" },
     // Admin bootstrap
     "admin-email": { type: "string" },
-    "admin-password": { type: "string" },
     // Registration
     "enable-registration": { type: "string" },
     // Email OAuth2
@@ -52,7 +51,6 @@ const flagToEnv: Record<string, string> = {
   "smtp-user": "SMTP_USER",
   "smtp-pass": "SMTP_PASS",
   "admin-email": "ADMIN_EMAIL",
-  "admin-password": "ADMIN_PASSWORD",
   "enable-registration": "ENABLE_REGISTRATION",
   "smtp-service": "SMTP_SERVICE",
   "smtp-oauth-client-id": "SMTP_OAUTH_CLIENT_ID",

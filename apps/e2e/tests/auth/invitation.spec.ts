@@ -86,8 +86,9 @@ test.describe("Invitation Flow @p1", () => {
     expect(result.inviteUrl).toContain("/invite/");
     expect(typeof result.emailSent).toBe("boolean");
 
-    // In selfhosted E2E (ENABLE_EMAIL=false), email should NOT have been sent
-    expect(result.emailSent).toBe(false);
+    // Assert based on E2E email config
+    const emailEnabled = process.env.ENABLE_EMAIL === "true";
+    expect(result.emailSent).toBe(emailEnabled);
 
     // Clean up
     if (result.invitation?.id) {
@@ -121,6 +122,7 @@ test.describe("Invitation Flow @p1", () => {
     const subscription = await prisma.subscription.findUnique({
       where: { userId: admin!.id },
     });
+    expect(subscription, "Expected no subscription for self-hosted scenario").toBeNull();
 
     const inviteToken = `e2e-nosub-${Date.now()}`;
     const invitation = await prisma.invitation.create({

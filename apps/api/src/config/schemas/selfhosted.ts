@@ -12,7 +12,7 @@ export const selfhostedSchema = baseSchema.extend({
   DEPLOYMENT_MODE: z.literal("selfhosted"),
 
   // Registration control
-  ENABLE_REGISTRATION: z.coerce.boolean().default(true),
+  ENABLE_REGISTRATION: z.stringbool().optional().default(true),
 
   // Email Configuration - All optional with sensible defaults
   ENABLE_EMAIL: z.coerce.boolean().default(false),

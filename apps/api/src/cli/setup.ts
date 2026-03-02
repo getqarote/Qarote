@@ -203,10 +203,20 @@ export async function runSetup(): Promise<void> {
   // ─── Registration ───────────────────────────────────────────────
   section("Registration");
 
-  const enableRegistration = await confirm(
+  let enableRegistration = await confirm(
     "Allow public user registration?",
     true
   );
+
+  if (!createAdmin && !enableRegistration) {
+    console.log(
+      c.red(
+        "    You must enable registration or create an admin account for first boot."
+      )
+    );
+    enableRegistration = true;
+    console.log(c.yellow("    Registration has been enabled automatically."));
+  }
 
   // ─── Generate secrets ──────────────────────────────────────────────
   section("Security");
@@ -250,8 +260,10 @@ export async function runSetup(): Promise<void> {
   // Admin bootstrap
   if (adminEmail && adminPassword) {
     lines.push("", "# Admin (auto-removed after first boot)");
-    lines.push(`ADMIN_EMAIL=${adminEmail}`);
-    lines.push(`ADMIN_PASSWORD=${adminPassword}`);
+    const escapeEnvValue = (v: string) =>
+      `"${v.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
+    lines.push(`ADMIN_EMAIL=${escapeEnvValue(adminEmail)}`);
+    lines.push(`ADMIN_PASSWORD=${escapeEnvValue(adminPassword)}`);
   }
 
   lines.push(""); // trailing newline

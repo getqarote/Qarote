@@ -67,7 +67,7 @@ const SignIn: React.FC = () => {
           <h2 className="mt-6 text-3xl font-extrabold text-white">
             {t("signInToAccount")}
           </h2>
-          {publicConfig?.registrationEnabled !== false && (
+          {publicConfig?.registrationEnabled === true && (
             <p className="mt-2 text-sm text-orange-100">
               {t("or")}{" "}
               <Link
