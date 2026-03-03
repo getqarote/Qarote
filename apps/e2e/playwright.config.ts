@@ -78,6 +78,7 @@ export default defineConfig({
         "auth/invitation.spec.ts",
         "auth/google-oauth.spec.ts",
         "auth/sso.spec.ts",
+        "auth/sso-settings.spec.ts",
         "workspace/**",
         "rabbitmq/**",
         "alerts/**",

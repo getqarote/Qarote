@@ -3,10 +3,15 @@
  * or link-local range (RFC 1918 / RFC 4193 / RFC 3927 / RFC 5735).
  */
 export function isPrivateIP(ip: string): boolean {
-  // IPv6 loopback
-  if (ip === "::1") return true;
+  const normalized = ip.trim().toLowerCase();
+
+  // IPv6 loopback – compressed (::1) or fully expanded (0:0:0:0:0:0:0:1)
+  if (normalized === "::1" || /^0+(:0+){6}:0*1$/.test(normalized)) return true;
+
   // IPv4-mapped IPv6
-  const v4 = ip.startsWith("::ffff:") ? ip.slice(7) : ip;
+  const v4 = normalized.startsWith("::ffff:")
+    ? normalized.slice(7)
+    : normalized;
   const parts = v4.split(".").map(Number);
   if (parts.length === 4) {
     const [a, b] = parts;
@@ -20,13 +25,12 @@ export function isPrivateIP(ip: string): boolean {
     );
   }
   // IPv6 ULA (fc00::/7) and link-local (fe80::/10)
-  const lower = ip.toLowerCase();
   return (
-    lower.startsWith("fc") ||
-    lower.startsWith("fd") ||
-    lower.startsWith("fe8") ||
-    lower.startsWith("fe9") ||
-    lower.startsWith("fea") ||
-    lower.startsWith("feb")
+    normalized.startsWith("fc") ||
+    normalized.startsWith("fd") ||
+    normalized.startsWith("fe8") ||
+    normalized.startsWith("fe9") ||
+    normalized.startsWith("fea") ||
+    normalized.startsWith("feb")
   );
 }
