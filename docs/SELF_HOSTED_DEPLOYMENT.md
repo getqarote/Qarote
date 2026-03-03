@@ -74,17 +74,10 @@ Your database URL will be: `postgresql://qarote:your-secure-password@localhost:5
 ```bash
 VERSION=v1.2.0-beta.1
 
-# 2. Download and extract for your platform
-# Linux x64
-curl -L https://github.com/getqarote/Qarote/releases/download/$VERSION/qarote-linux-x64.tar.gz | tar xz --strip-components=1
-# Linux ARM64
-curl -L https://github.com/getqarote/Qarote/releases/download/$VERSION/qarote-linux-arm64.tar.gz | tar xz --strip-components=1
-# macOS Apple Silicon (M1/M2/M3)
-curl -L https://github.com/getqarote/Qarote/releases/download/$VERSION/qarote-darwin-arm64.tar.gz | tar xz --strip-components=1
-# macOS Intel
-curl -L https://github.com/getqarote/Qarote/releases/download/$VERSION/qarote-darwin-x64.tar.gz | tar xz --strip-components=1
-# Windows: use Linux x64 inside WSL2
-# Multipass on Apple Silicon: VMs are ARM64, use linux-arm64 (not linux-x64)
+# 2. Download and extract for your platform (auto-detects OS and architecture)
+# Windows users: run this inside WSL2
+PLATFORM="$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/x64/' | sed 's/aarch64/arm64/')"
+curl -L "https://github.com/getqarote/Qarote/releases/download/$VERSION/qarote-${PLATFORM}.tar.gz" | tar xz --strip-components=1
 
 # 3. Interactive setup (generates .env, tests database connection)
 ./qarote setup
@@ -445,15 +438,9 @@ cp qarote qarote.backup
 # Stop the running instance
 kill $(pgrep -f './qarote') 2>/dev/null || true
 
-# Download and extract in-place (pick your platform)
-# Linux x64
-curl -L https://github.com/getqarote/Qarote/releases/download/$VERSION/qarote-linux-x64.tar.gz | tar xz --strip-components=1
-# Linux ARM64
-curl -L https://github.com/getqarote/Qarote/releases/download/$VERSION/qarote-linux-arm64.tar.gz | tar xz --strip-components=1
-# macOS Apple Silicon
-curl -L https://github.com/getqarote/Qarote/releases/download/$VERSION/qarote-darwin-arm64.tar.gz | tar xz --strip-components=1
-# macOS Intel
-curl -L https://github.com/getqarote/Qarote/releases/download/$VERSION/qarote-darwin-x64.tar.gz | tar xz --strip-components=1
+# Download and extract in-place (auto-detects OS and architecture)
+PLATFORM="$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/x64/' | sed 's/aarch64/arm64/')"
+curl -L "https://github.com/getqarote/Qarote/releases/download/$VERSION/qarote-${PLATFORM}.tar.gz" | tar xz --strip-components=1
 
 # Verify the new version
 ./qarote --version
@@ -495,7 +482,7 @@ Then re-download the correct binary in-place:
 # Example: switch from linux-x64 to linux-arm64
 VERSION=v1.2.0-beta.1  # or your installed version
 curl -L https://github.com/getqarote/Qarote/releases/download/$VERSION/qarote-linux-arm64.tar.gz | tar xz --strip-components=1
-./qarote setup
+./qarote  # your existing .env is preserved
 ```
 
 > **Tip:** Multipass on Apple Silicon creates ARM64 VMs — use `linux-arm64`, not `linux-x64`. macOS users on Apple Silicon should pick `darwin-arm64`.
