@@ -1,6 +1,5 @@
 import { TRPCError } from "@trpc/server";
 
-import { requirePremiumFeature } from "@/core/feature-flags";
 import {
   ensureWorkspaceMember,
   getUserWorkspaceRole,
@@ -17,8 +16,6 @@ import {
   UpdateWorkspaceSchema,
   WorkspaceIdParamSchema,
 } from "@/schemas/workspace";
-
-import { FEATURES } from "@/config/features";
 
 import { WorkspaceMapper } from "@/mappers/workspace";
 
@@ -278,10 +275,9 @@ export const managementRouter = router({
     }),
 
   /**
-   * Update workspace (PROTECTED - owner only, feature gated)
+   * Update workspace (PROTECTED - owner only)
    */
   update: rateLimitedProcedure
-    .use(requirePremiumFeature(FEATURES.WORKSPACE_MANAGEMENT))
     .input(WorkspaceIdParamSchema.merge(UpdateWorkspaceSchema))
     .mutation(async ({ input, ctx }) => {
       const user = ctx.user;
@@ -364,10 +360,9 @@ export const managementRouter = router({
     }),
 
   /**
-   * Delete workspace (PROTECTED - owner only, feature gated)
+   * Delete workspace (PROTECTED - owner only)
    */
   delete: rateLimitedProcedure
-    .use(requirePremiumFeature(FEATURES.WORKSPACE_MANAGEMENT))
     .input(WorkspaceIdParamSchema)
     .mutation(async ({ input, ctx }) => {
       const user = ctx.user;
@@ -424,10 +419,9 @@ export const managementRouter = router({
     }),
 
   /**
-   * Switch active workspace (WORKSPACE, feature gated)
+   * Switch active workspace (WORKSPACE)
    */
   switch: workspaceProcedure
-    .use(requirePremiumFeature(FEATURES.WORKSPACE_MANAGEMENT))
     .input(WorkspaceIdParamSchema)
     .mutation(async ({ input, ctx }) => {
       const user = ctx.user;

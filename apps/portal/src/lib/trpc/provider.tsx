@@ -5,6 +5,7 @@ import { httpBatchLink } from "@trpc/react-query";
 import { queryClient } from "@/lib/queryClient";
 
 import { trpc } from "./client";
+import { unauthorizedLink } from "./unauthorizedLink";
 
 /**
  * Get the API URL from environment variables
@@ -32,6 +33,7 @@ export function TRPCProvider({ children }: { children: React.ReactNode }) {
   const [trpcClient] = useState(() =>
     trpc.createClient({
       links: [
+        unauthorizedLink,
         httpBatchLink({
           url: getApiUrl(),
           headers: () => {

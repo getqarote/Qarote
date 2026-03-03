@@ -1,48 +1,101 @@
 {
-  "pageTitle": "Elige tu plan",
-  "pageSubtitle": "Escala tu monitoreo de RabbitMQ con planes dise\u00f1ados para equipos de todos los tama\u00f1os.",
-  "heading": "Precios simples y transparentes",
-  "subheading": "Escala tu monitoreo de RabbitMQ con planes dise\u00f1ados para equipos de todos los tama\u00f1os.",
-  "currentPlan": "Plan actual",
-  "startFree": "Comenzar gratis",
-  "coreFeatures": "Funciones principales",
-  "support": "Soporte",
-  "monthly": "Mensual",
-  "yearly": "Anual",
-  "save20": "Ahorra 20%",
-  "backToProfile": "Volver al perfil",
-  "liveMonitoring": "Monitoreo en vivo",
-  "liveMonitoringDesc": "Monitorea tus servidores RabbitMQ con precisi\u00f3n de segundos",
-  "smartAnalytics": "An\u00e1lisis inteligente",
-  "smartAnalyticsDesc": "Informaci\u00f3n y consejos de optimizaci\u00f3n de memoria",
-  "enterpriseSecurity": "Seguridad empresarial",
-  "enterpriseSecurityDesc": "Cumplimiento SOC 2 con cifrado de nivel empresarial",
-  "support247": "Soporte 24/7",
-  "support247Desc": "Soporte experto cuando m\u00e1s lo necesitas",
-  "free": "Gratuito",
-  "freeDesc": "Perfecto para comenzar",
-  "developer": "Developer",
-  "developerDesc": "Para desarrolladores individuales y proyectos peque\u00f1os",
-  "enterprise": "Enterprise",
-  "enterpriseDesc": "Para equipos grandes y empresas",
-  "rabbitMQServers": "Servidores RabbitMQ",
-  "rabbitMQVersionSupport": "Soporte de versi\u00f3n de RabbitMQ",
-  "workspaces": "Espacios de trabajo",
-  "teamMembers": "Miembros del equipo",
-  "queueManagement": "Administraci\u00f3n de colas",
-  "createManageQueues": "Crear y administrar colas",
-  "exchangeManagement": "Administraci\u00f3n de intercambios",
-  "createManageExchanges": "Crear y administrar intercambios",
-  "virtualHostManagement": "Administraci\u00f3n de hosts virtuales",
-  "createManageVhosts": "Crear y administrar hosts virtuales",
-  "userManagement": "Administraci\u00f3n de usuarios de RabbitMQ",
-  "createManageUsers": "Crear y administrar usuarios de RabbitMQ",
-  "alertsNotification": "Notificaci\u00f3n de alertas",
-  "realtimeAlerts": "Alertas y notificaciones en tiempo real",
-  "communitySupport": "Soporte comunitario",
-  "communityForums": "Foros de la comunidad",
-  "prioritySupport": "Soporte prioritario",
-  "priorityMailSupport": "Soporte prioritario por correo",
-  "emailAlerts": "Alertas por correo electr\u00f3nico",
-  "criticalWarningNotifications": "Notificaciones cr\u00edticas y de advertencia"
+  "plans": {
+    "chooseYourPlan": "Elige tu plan",
+    "subtitle": "Escala tu monitoreo de RabbitMQ con planes diseñados para equipos de todos los tamaños.",
+    "pricingTitle": "Precios simples y transparentes",
+    "currentPlan": "Plan actual",
+    "startFree": "Comenzar gratis",
+    "save20": "Ahorra 20%",
+    "backToProfile": "Volver al perfil",
+    "pricing": {
+      "free": "Gratuito"
+    },
+    "highlights": {
+      "liveMonitoring": "Monitoreo en vivo",
+      "liveMonitoringDesc": "Monitorea tus servidores RabbitMQ con precisión de segundos",
+      "smartAnalytics": "Análisis inteligente",
+      "smartAnalyticsDesc": "Información y consejos de optimización de memoria",
+      "enterpriseSecurity": "Seguridad empresarial",
+      "enterpriseSecurityDesc": "Cumplimiento SOC 2 con cifrado de nivel empresarial",
+      "support247": "Soporte 24/7",
+      "support247Desc": "Soporte experto cuando más lo necesitas"
+    },
+    "billingToggle": {
+      "monthly": "Mensual",
+      "yearly": "Anual"
+    },
+    "features": {
+      "coreFeatures": "Funciones principales",
+      "rabbitMQServers": "Servidores RabbitMQ",
+      "rabbitMQVersionSupport": "Soporte de versión de RabbitMQ",
+      "workspaces": "Espacios de trabajo",
+      "teamMembers": "Miembros del equipo",
+      "queueManagement": "Administración de colas",
+      "queueManagementDesc": "Crear y administrar colas",
+      "exchangeManagement": "Administración de intercambios",
+      "exchangeManagementDesc": "Crear y administrar intercambios",
+      "virtualHostManagement": "Administración de hosts virtuales",
+      "virtualHostManagementDesc": "Crear y administrar hosts virtuales",
+      "rabbitMQUserManagement": "Administración de usuarios de RabbitMQ",
+      "rabbitMQUserManagementDesc": "Crear y administrar usuarios de RabbitMQ",
+      "alertsNotification": "Notificación de alertas",
+      "alertsNotificationDesc": "Alertas y notificaciones en tiempo real",
+      "support": "Soporte",
+      "communitySupport": "Soporte comunitario",
+      "communitySupportDesc": "Foros de la comunidad",
+      "prioritySupport": "Soporte prioritario",
+      "prioritySupportDesc": "Soporte prioritario por correo",
+      "emailAlerts": "Alertas por correo electrónico",
+      "emailAlertsDesc": "Notificaciones críticas y de advertencia"
+    },
+    "free": {
+      "name": "Gratuito",
+      "description": "Perfecto para comenzar",
+      "features": {
+        "servers": "Hasta 1",
+        "rabbitMQVersionSupport": "Solo versiones LTS",
+        "workspaces": "1 Espacio de trabajo",
+        "teamMembers": "1 Miembro"
+      }
+    },
+    "developer": {
+      "name": "Developer",
+      "description": "Para desarrolladores individuales y proyectos pequeños",
+      "features": {
+        "servers": "Hasta 3",
+        "rabbitMQVersionSupport": "Todas las versiones 3.x y 4.x",
+        "workspaces": "3 Espacios de trabajo",
+        "teamMembers": "5 Miembros"
+      }
+    },
+    "enterprise": {
+      "name": "Enterprise",
+      "description": "Para equipos grandes y empresas",
+      "features": {
+        "servers": "Ilimitado",
+        "rabbitMQVersionSupport": "Todas las versiones 3.x y 4.x",
+        "workspaces": "Ilimitado",
+        "teamMembers": "Ilimitado"
+      }
+    }
+  },
+  "paymentSuccess": {
+    "title": "¡Pago exitoso!",
+    "description": "Tu pago ha sido procesado exitosamente.",
+    "planActivated": "Plan {{plan}} activado",
+    "welcomeMessage": "¡Bienvenido a tu nuevo plan! Disfruta de todas las funciones.",
+    "exploreDashboard": "Explorar el panel",
+    "manageSubscription": "Administrar suscripción",
+    "needHelp": "¿Necesitas ayuda? Contacta a nuestro equipo de soporte."
+  },
+  "paymentCancelled": {
+    "title": "Pago cancelado",
+    "description": "Tu pago fue cancelado. No se realizaron cargos.",
+    "tryAgain": "Intentar de nuevo",
+    "processing": "Procesando...",
+    "backToDashboard": "Volver al panel"
+  },
+  "error": {
+    "workspaceIdRequired": "Se requiere el ID del espacio de trabajo"
+  }
 }

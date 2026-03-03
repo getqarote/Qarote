@@ -14,6 +14,7 @@ import {
 
 import { User } from "@/lib/api/authTypes";
 import { InvitationWithInviter } from "@/lib/api/authTypes";
+import { getUpgradePath } from "@/lib/featureFlags";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -225,7 +226,7 @@ export const EnhancedTeamTab = ({
               </Button>
             ) : (
               <Button
-                onClick={() => navigate("/plans")}
+                onClick={() => navigate(getUpgradePath())}
                 size="sm"
                 className="bg-gray-200 text-gray-400 cursor-pointer opacity-60 flex items-center gap-2 hover:bg-gray-300"
                 title="Upgrade to invite more users"

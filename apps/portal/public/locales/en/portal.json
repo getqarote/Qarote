@@ -4,7 +4,7 @@
     "licenses": "Licenses",
     "documentation": "Documentation",
     "account": "Account",
-    "settings": "Settings",
+
     "logout": "Logout"
   },
   "footer": {
@@ -55,15 +55,6 @@
         }
       }
     }
-  },
-  "accountSettings": {
-    "title": "Account Settings",
-    "description": "Manage your account information",
-    "profileInfo": "Profile Information",
-    "profileDescription": "Your account details",
-    "email": "Email",
-    "name": "Name",
-    "role": "Role"
   },
   "documentation": {
     "searchPlaceholder": "Search documentation...",

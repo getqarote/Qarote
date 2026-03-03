@@ -1,7 +1,17 @@
 import React from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 
-import { Crown, Loader2, Server, TrendingUp, Users, Zap } from "lucide-react";
+import {
+  Crown,
+  Key,
+  Loader2,
+  Server,
+  TrendingUp,
+  Users,
+  Zap,
+} from "lucide-react";
+
+import { isSelfHostedMode } from "@/lib/featureFlags";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -82,6 +92,8 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
     },
   };
 
+  const navigate = useNavigate();
+  const selfHosted = isSelfHostedMode();
   const currentPlanInfo = planBenefits[currentPlan];
   const nextPlan = getNextPlan(currentPlan);
   const nextPlanInfo = nextPlan ? planBenefits[nextPlan] : null;
@@ -182,7 +194,46 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
       </Card>
 
       {/* Upgrade Suggestion */}
-      {nextPlan && nextPlanInfo && (
+      {selfHosted ? (
+        <Card className="border border-purple-200 bg-linear-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20">
+          <CardContent className="p-6">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="p-2 rounded-lg bg-purple-50 dark:bg-purple-900/20">
+                    <Key className="w-5 h-5 text-purple-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-foreground">
+                      Unlock premium features
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      Activate a license to unlock alerting, Slack & webhook
+                      integrations, and more
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="ml-4 flex gap-2">
+                <Button
+                  onClick={() => navigate("/license")}
+                  className="btn-primary"
+                >
+                  Activate License
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() =>
+                    window.open("https://qarote.io/pricing", "_blank")
+                  }
+                >
+                  Purchase
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      ) : nextPlan && nextPlanInfo ? (
         <Card className="border border-purple-200 bg-linear-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20">
           <CardContent className="p-6">
             <div className="flex items-start justify-between">
@@ -240,51 +291,86 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
             </div>
           </CardContent>
         </Card>
-      )}
+      ) : null}
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                <Server className="w-5 h-5 text-blue-600" />
+      <div
+        className={`grid grid-cols-1 ${selfHosted ? "" : "md:grid-cols-2"} gap-4`}
+      >
+        {selfHosted ? (
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                  <Key className="w-5 h-5 text-purple-600" />
+                </div>
+                <div className="flex-1">
+                  <h4 className="font-medium text-foreground">License</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Activate or manage your license
+                  </p>
+                </div>
+                <Link to="/license">
+                  <Button variant="ghost" size="sm" className="text-purple-600">
+                    Manage
+                  </Button>
+                </Link>
               </div>
-              <div className="flex-1">
-                <h4 className="font-medium text-foreground">Billing & Usage</h4>
-                <p className="text-sm text-muted-foreground">
-                  Manage your subscription
-                </p>
-              </div>
-              <Link to="/billing">
-                <Button variant="ghost" size="sm" className="text-blue-600">
-                  Manage
-                </Button>
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        ) : (
+          <>
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                    <Server className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-medium text-foreground">
+                      Billing & Usage
+                    </h4>
+                    <p className="text-sm text-muted-foreground">
+                      Manage your subscription
+                    </p>
+                  </div>
+                  <Link to="/billing">
+                    <Button variant="ghost" size="sm" className="text-blue-600">
+                      Manage
+                    </Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-50 rounded-lg">
-                <TrendingUp className="w-5 h-5 text-green-600" />
-              </div>
-              <div className="flex-1">
-                <h4 className="font-medium text-foreground">Compare Plans</h4>
-                <p className="text-sm text-muted-foreground">
-                  See all available options
-                </p>
-              </div>
-              <Link to="/plans">
-                <Button variant="ghost" size="sm" className="text-green-600">
-                  Compare
-                </Button>
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-green-50 rounded-lg">
+                    <TrendingUp className="w-5 h-5 text-green-600" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-medium text-foreground">
+                      Compare Plans
+                    </h4>
+                    <p className="text-sm text-muted-foreground">
+                      See all available options
+                    </p>
+                  </div>
+                  <Link to="/plans">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-green-600"
+                    >
+                      Compare
+                    </Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
+          </>
+        )}
       </div>
     </div>
   );

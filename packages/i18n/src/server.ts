@@ -8,6 +8,7 @@ export function createServerI18nInstance(
   const instance = i18n.createInstance();
 
   instance.init({
+    showSupportNotice: false,
     supportedLngs: [...SUPPORTED_LOCALES],
     fallbackLng: FALLBACK_LOCALE,
     defaultNS: "errors",

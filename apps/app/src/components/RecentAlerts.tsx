@@ -2,6 +2,8 @@ import { Link, useNavigate } from "react-router";
 
 import { AlertTriangle, ArrowRight } from "lucide-react";
 
+import { getUpgradePath } from "@/lib/featureFlags";
+
 import {
   formatRelativeTime,
   getCategoryIcon,
@@ -137,7 +139,10 @@ export const RecentAlerts = () => {
               Upgrade to Developer or Enterprise plan to view detailed alert
               information and configure alert thresholds.
             </p>
-            <Button onClick={() => navigate("/plans")} className="btn-primary">
+            <Button
+              onClick={() => navigate(getUpgradePath())}
+              className="btn-primary"
+            >
               Upgrade now
             </Button>
           </div>

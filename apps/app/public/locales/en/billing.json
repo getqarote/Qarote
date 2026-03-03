@@ -1,48 +1,101 @@
 {
-  "pageTitle": "Choose Your Plan",
-  "pageSubtitle": "Scale your RabbitMQ monitoring with plans designed for teams of all sizes.",
-  "heading": "Simple, transparent pricing",
-  "subheading": "Scale your RabbitMQ monitoring with plans designed for teams of all sizes.",
-  "currentPlan": "Current Plan",
-  "startFree": "Start free",
-  "coreFeatures": "Core Features",
-  "support": "Support",
-  "monthly": "Monthly",
-  "yearly": "Yearly",
-  "save20": "Save 20%",
-  "backToProfile": "Back to Profile",
-  "liveMonitoring": "Live Monitoring",
-  "liveMonitoringDesc": "Monitor your RabbitMQ servers with second precision",
-  "smartAnalytics": "Smart Analytics",
-  "smartAnalyticsDesc": "Insights and memory optimization tips",
-  "enterpriseSecurity": "Enterprise Security",
-  "enterpriseSecurityDesc": "SOC 2 compliant with enterprise-grade encryption",
-  "support247": "24/7 Support",
-  "support247Desc": "Expert support when you need it most",
-  "free": "Free",
-  "freeDesc": "Perfect for getting started",
-  "developer": "Developer",
-  "developerDesc": "For solo developers and small projects",
-  "enterprise": "Enterprise",
-  "enterpriseDesc": "For large teams and enterprises",
-  "rabbitMQServers": "RabbitMQ Servers",
-  "rabbitMQVersionSupport": "RabbitMQ Version Support",
-  "workspaces": "Workspaces",
-  "teamMembers": "Team Members",
-  "queueManagement": "Queue Management",
-  "createManageQueues": "Create and manage queues",
-  "exchangeManagement": "Exchange Management",
-  "createManageExchanges": "Create and manage exchanges",
-  "virtualHostManagement": "Virtual Host Management",
-  "createManageVhosts": "Create and manage virtual hosts",
-  "userManagement": "RabbitMQ User Management",
-  "createManageUsers": "Create and manage RabbitMQ users",
-  "alertsNotification": "Alerts Notification",
-  "realtimeAlerts": "Real-time alerts and notifications",
-  "communitySupport": "Community Support",
-  "communityForums": "Community forums",
-  "prioritySupport": "Priority Support",
-  "priorityMailSupport": "Priority mail support",
-  "emailAlerts": "Email Alerts",
-  "criticalWarningNotifications": "Critical and warning notifications"
+  "plans": {
+    "chooseYourPlan": "Choose Your Plan",
+    "subtitle": "Scale your RabbitMQ monitoring with plans designed for teams of all sizes.",
+    "pricingTitle": "Simple, transparent pricing",
+    "currentPlan": "Current Plan",
+    "startFree": "Start free",
+    "save20": "Save 20%",
+    "backToProfile": "Back to Profile",
+    "pricing": {
+      "free": "Free"
+    },
+    "highlights": {
+      "liveMonitoring": "Live Monitoring",
+      "liveMonitoringDesc": "Monitor your RabbitMQ servers with second precision",
+      "smartAnalytics": "Smart Analytics",
+      "smartAnalyticsDesc": "Insights and memory optimization tips",
+      "enterpriseSecurity": "Enterprise Security",
+      "enterpriseSecurityDesc": "SOC 2 compliant with enterprise-grade encryption",
+      "support247": "24/7 Support",
+      "support247Desc": "Expert support when you need it most"
+    },
+    "billingToggle": {
+      "monthly": "Monthly",
+      "yearly": "Yearly"
+    },
+    "features": {
+      "coreFeatures": "Core Features",
+      "rabbitMQServers": "RabbitMQ Servers",
+      "rabbitMQVersionSupport": "RabbitMQ Version Support",
+      "workspaces": "Workspaces",
+      "teamMembers": "Team Members",
+      "queueManagement": "Queue Management",
+      "queueManagementDesc": "Create and manage queues",
+      "exchangeManagement": "Exchange Management",
+      "exchangeManagementDesc": "Create and manage exchanges",
+      "virtualHostManagement": "Virtual Host Management",
+      "virtualHostManagementDesc": "Create and manage virtual hosts",
+      "rabbitMQUserManagement": "RabbitMQ User Management",
+      "rabbitMQUserManagementDesc": "Create and manage RabbitMQ users",
+      "alertsNotification": "Alerts Notification",
+      "alertsNotificationDesc": "Real-time alerts and notifications",
+      "support": "Support",
+      "communitySupport": "Community Support",
+      "communitySupportDesc": "Community forums",
+      "prioritySupport": "Priority Support",
+      "prioritySupportDesc": "Priority mail support",
+      "emailAlerts": "Email Alerts",
+      "emailAlertsDesc": "Critical and warning notifications"
+    },
+    "free": {
+      "name": "Free",
+      "description": "Perfect for getting started",
+      "features": {
+        "servers": "Up to 1",
+        "rabbitMQVersionSupport": "Only LTS versions",
+        "workspaces": "1 Workspace",
+        "teamMembers": "1 Team Member"
+      }
+    },
+    "developer": {
+      "name": "Developer",
+      "description": "For solo developers and small projects",
+      "features": {
+        "servers": "Up to 3",
+        "rabbitMQVersionSupport": "All versions 3.x and 4.x",
+        "workspaces": "3 Workspaces",
+        "teamMembers": "5 Team Members"
+      }
+    },
+    "enterprise": {
+      "name": "Enterprise",
+      "description": "For large teams and enterprises",
+      "features": {
+        "servers": "Unlimited",
+        "rabbitMQVersionSupport": "All versions 3.x and 4.x",
+        "workspaces": "Unlimited",
+        "teamMembers": "Unlimited"
+      }
+    }
+  },
+  "paymentSuccess": {
+    "title": "Payment Successful!",
+    "description": "Your payment has been processed successfully.",
+    "planActivated": "{{plan}} plan activated",
+    "welcomeMessage": "Welcome to your new plan! Enjoy all the features.",
+    "exploreDashboard": "Explore Dashboard",
+    "manageSubscription": "Manage Subscription",
+    "needHelp": "Need help? Contact our support team."
+  },
+  "paymentCancelled": {
+    "title": "Payment Cancelled",
+    "description": "Your payment was cancelled. No charges were made.",
+    "tryAgain": "Try Again",
+    "processing": "Processing...",
+    "backToDashboard": "Back to Dashboard"
+  },
+  "error": {
+    "workspaceIdRequired": "Workspace ID is required"
+  }
 }

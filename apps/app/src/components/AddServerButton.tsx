@@ -2,6 +2,8 @@ import { useNavigate } from "react-router";
 
 import { Lock } from "lucide-react";
 
+import { getUpgradePath } from "@/lib/featureFlags";
+
 import { AddServerForm } from "@/components/AddServerFormComponent";
 import { Button } from "@/components/ui/button";
 
@@ -65,7 +67,7 @@ export const AddServerButton = () => {
 
   const handleAddServerClick = () => {
     if (!canAddServer) {
-      navigate("/plans");
+      navigate(getUpgradePath());
     }
   };
 

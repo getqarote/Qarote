@@ -1,7 +1,9 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router";
 
-import { Check, Loader2, X, Zap } from "lucide-react";
+import { Check, Key, Loader2, X, Zap } from "lucide-react";
 
+import { isSelfHostedMode } from "@/lib/featureFlags";
 import { logger } from "@/lib/logger";
 import { trpc } from "@/lib/trpc/client";
 
@@ -66,7 +68,56 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
     }
   };
 
+  const navigate = useNavigate();
+
   if (!isOpen) return null;
+
+  // Self-hosted: show license activation prompt instead of Stripe plans
+  if (isSelfHostedMode()) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white dark:bg-gray-900 rounded-lg max-w-md w-full">
+          <div className="flex items-center justify-between p-6 border-b">
+            <div className="flex items-center gap-3">
+              <Key className="w-5 h-5 text-purple-600" />
+              <h2 className="text-xl font-bold">License Required</h2>
+            </div>
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+          <div className="p-6 space-y-4">
+            <p className="text-muted-foreground">
+              To use <strong>{feature}</strong>, activate a license key on the
+              License page.
+            </p>
+            <div className="flex gap-2">
+              <button
+                className="flex-1 py-2 px-4 rounded-lg font-medium bg-linear-to-r from-orange-400 to-red-500 hover:from-orange-500 hover:to-red-600 text-white"
+                onClick={() => {
+                  onClose();
+                  navigate("/license");
+                }}
+              >
+                Activate License
+              </button>
+              <button
+                className="py-2 px-4 rounded-lg font-medium border border-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
+                onClick={() =>
+                  window.open("https://qarote.io/pricing", "_blank")
+                }
+              >
+                Purchase
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (!allPlansData) {
     return (

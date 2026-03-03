@@ -10,7 +10,6 @@ import { Toaster } from "@/components/ui/sonner";
 
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 
-import AccountSettings from "@/pages/AccountSettings";
 import Documentation from "@/pages/Documentation";
 import LicenseManagement from "@/pages/LicenseManagement";
 import LicensePurchase from "@/pages/LicensePurchase";
@@ -74,7 +73,6 @@ const App = () => {
                   path="downloads"
                   element={<Navigate to="/documentation" replace />}
                 />
-                <Route path="settings" element={<AccountSettings />} />
               </Route>
             </Routes>
           </BrowserRouter>
