@@ -39,6 +39,7 @@ const UserDetails = lazy(() => import("./pages/UserDetailsPage"));
 const Alerts = lazy(() => import("./pages/Alerts"));
 const Profile = lazy(() => import("./pages/Profile"));
 const License = lazy(() => import("./pages/License"));
+const SSOSettings = lazy(() => import("./pages/SSOSettings"));
 const Plans = lazy(() => import("./pages/Plans"));
 const Billing = lazy(() => import("./pages/Billing"));
 const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
@@ -270,6 +271,16 @@ const AppCore = () => (
                               <ProtectedRoute>
                                 <Layout>
                                   <License />
+                                </Layout>
+                              </ProtectedRoute>
+                            }
+                          />
+                          <Route
+                            path="/settings/sso"
+                            element={
+                              <ProtectedRoute>
+                                <Layout>
+                                  <SSOSettings />
                                 </Layout>
                               </ProtectedRoute>
                             }

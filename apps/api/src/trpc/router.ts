@@ -7,6 +7,7 @@ import { licenseRouter } from "./routers/portal/license";
 import { publicRouter } from "./routers/public/index";
 import { rabbitmqRouter } from "./routers/rabbitmq";
 import { selfhostedLicenseRouter } from "./routers/selfhosted-license";
+import { selfhostedSsoRouter } from "./routers/selfhosted-sso";
 import { userRouter } from "./routers/user";
 import { workspaceRouter } from "./routers/workspace/index";
 import { router } from "./trpc";
@@ -26,6 +27,7 @@ export const appRouter = router({
   rabbitmq: rabbitmqRouter,
   discord: discordRouter,
   selfhostedLicense: selfhostedLicenseRouter,
+  selfhostedSso: selfhostedSsoRouter,
   public: publicRouter,
 });
 

@@ -19,5 +19,6 @@
   "noVhostsAvailable": "No hay vhosts disponibles",
   "loadingVhosts": "Cargando vhosts...",
   "addServer": "Agregar servidor",
-  "theme": "Tema"
+  "theme": "Tema",
+  "ssoSettings": "Configuracion SSO"
 }

@@ -243,6 +243,73 @@ export async function runSetup(): Promise<void> {
     console.log(c.yellow("    Registration has been enabled automatically."));
   }
 
+  // ─── SSO ────────────────────────────────────────────────────────────
+  section("SSO (Single Sign-On)");
+
+  const enableSso = await confirm("Enable SSO authentication?");
+
+  let ssoType = "oidc";
+  let ssoOidcDiscoveryUrl = "";
+  let ssoOidcClientId = "";
+  let ssoOidcClientSecret = "";
+  let ssoSamlMetadataUrl = "";
+  let apiUrl = "";
+  let frontendUrl = "";
+  let ssoTenant = "default";
+  let ssoProduct = "qarote";
+  let ssoButtonLabel = "Sign in with SSO";
+
+  if (enableSso) {
+    ssoType = await ask("SSO type (oidc/saml)", "oidc");
+    while (ssoType !== "oidc" && ssoType !== "saml") {
+      console.log(c.red("    Must be 'oidc' or 'saml'"));
+      ssoType = await ask("SSO type (oidc/saml)", "oidc");
+    }
+
+    if (ssoType === "oidc") {
+      while (!ssoOidcDiscoveryUrl) {
+        ssoOidcDiscoveryUrl = await ask("OIDC discovery URL");
+        if (!ssoOidcDiscoveryUrl) {
+          console.log(
+            c.red("    Required.") +
+              c.dim(
+                " Example: http://localhost:8180/realms/qarote/.well-known/openid-configuration"
+              )
+          );
+        }
+      }
+      while (!ssoOidcClientId) {
+        ssoOidcClientId = await ask("OIDC client ID");
+        if (!ssoOidcClientId) {
+          console.log(c.red("    Required.") + c.dim(" Example: qarote"));
+        }
+      }
+      while (!ssoOidcClientSecret) {
+        ssoOidcClientSecret = await askSecret("OIDC client secret");
+        if (!ssoOidcClientSecret) {
+          console.log(c.red("    Required."));
+        }
+      }
+    } else {
+      while (!ssoSamlMetadataUrl) {
+        ssoSamlMetadataUrl = await ask("SAML metadata URL");
+        if (!ssoSamlMetadataUrl) {
+          console.log(
+            c.red("    Required.") +
+              c.dim(" Example: https://your-idp.com/metadata.xml")
+          );
+        }
+      }
+    }
+
+    // URLs for SSO callbacks — default based on port
+    apiUrl = await ask("Backend API URL", `http://localhost:${port}`);
+    frontendUrl = await ask("Frontend URL", "http://localhost:8080");
+    ssoTenant = await ask("SSO tenant", "default");
+    ssoProduct = await ask("SSO product", "qarote");
+    ssoButtonLabel = await ask("SSO button label", "Sign in with SSO");
+  }
+
   // ─── Generate secrets ──────────────────────────────────────────────
   section("Security");
 
@@ -282,6 +349,25 @@ export async function runSetup(): Promise<void> {
   lines.push("", "# Registration");
   lines.push(`ENABLE_REGISTRATION=${enableRegistration}`);
 
+  // SSO
+  if (enableSso) {
+    lines.push("", "# SSO");
+    lines.push(`SSO_ENABLED=true`);
+    lines.push(`SSO_TYPE=${ssoType}`);
+    if (ssoType === "oidc") {
+      lines.push(`SSO_OIDC_DISCOVERY_URL=${ssoOidcDiscoveryUrl}`);
+      lines.push(`SSO_OIDC_CLIENT_ID=${ssoOidcClientId}`);
+      lines.push(`SSO_OIDC_CLIENT_SECRET=${ssoOidcClientSecret}`);
+    } else {
+      lines.push(`SSO_SAML_METADATA_URL=${ssoSamlMetadataUrl}`);
+    }
+    lines.push(`API_URL=${apiUrl}`);
+    lines.push(`FRONTEND_URL=${frontendUrl}`);
+    lines.push(`SSO_TENANT=${ssoTenant}`);
+    lines.push(`SSO_PRODUCT=${ssoProduct}`);
+    lines.push(`SSO_BUTTON_LABEL=${ssoButtonLabel}`);
+  }
+
   // Admin bootstrap
   if (adminEmail && adminPassword) {
     lines.push("", "# Admin (auto-removed after first boot)");
@@ -314,6 +400,11 @@ export async function runSetup(): Promise<void> {
   console.log(
     c.dim(
       `    Registration: ${enableRegistration ? "open" : "invitation-only"}`
+    )
+  );
+  console.log(
+    c.dim(
+      `    SSO:          ${enableSso ? `enabled (${ssoType})` : "disabled"}`
     )
   );
   console.log("");
