@@ -108,7 +108,11 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
                 type="button"
                 className="py-2 px-4 rounded-lg font-medium border border-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
                 onClick={() =>
-                  window.open("https://qarote.io/pricing", "_blank")
+                  window.open(
+                    "https://qarote.io/pricing",
+                    "_blank",
+                    "noopener,noreferrer"
+                  )
                 }
               >
                 Purchase
