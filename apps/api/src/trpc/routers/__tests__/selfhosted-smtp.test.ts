@@ -208,6 +208,7 @@ describe("selfhostedSmtpRouter", () => {
     it("redacts OAuth2 secrets when present", async () => {
       const configWithOAuth = {
         ...validDbConfig,
+        oauthClientId: "real-oauth-client-id",
         oauthClientSecret: "real-oauth-secret",
         oauthRefreshToken: "real-refresh-token",
       };
