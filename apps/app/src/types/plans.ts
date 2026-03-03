@@ -10,3 +10,16 @@ export enum UserPlan {
   DEVELOPER = "DEVELOPER",
   ENTERPRISE = "ENTERPRISE",
 }
+
+export function getPlanDisplayName(plan: UserPlan): string {
+  switch (plan) {
+    case UserPlan.FREE:
+      return "Free";
+    case UserPlan.DEVELOPER:
+      return "Developer";
+    case UserPlan.ENTERPRISE:
+      return "Enterprise";
+    default:
+      return "Unknown";
+  }
+}

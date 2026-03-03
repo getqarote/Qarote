@@ -20,7 +20,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { usePlanUpgrade } from "@/hooks/ui/usePlanUpgrade";
 import { useUser } from "@/hooks/ui/useUser";
 
-import { UserPlan } from "@/types/plans";
+import { getPlanDisplayName, UserPlan } from "@/types/plans";
 
 interface PlansSummaryTabProps {
   currentPlan: UserPlan;
@@ -34,20 +34,6 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
   const { handleUpgrade, isUpgrading } = usePlanUpgrade();
   const { planData } = useUser();
   const currentFeatures = planData?.planFeatures;
-
-  // Helper function to get plan display name
-  const getPlanDisplayName = (plan: UserPlan): string => {
-    switch (plan) {
-      case UserPlan.FREE:
-        return "Free";
-      case UserPlan.DEVELOPER:
-        return "Developer";
-      case UserPlan.ENTERPRISE:
-        return "Enterprise";
-      default:
-        return "Unknown";
-    }
-  };
 
   // Helper function to get next plan
   const getNextPlan = (plan: UserPlan): UserPlan | null => {
