@@ -78,7 +78,11 @@ export function UpgradePrompt({
               <Button
                 variant="outline"
                 onClick={() => {
-                  window.open("https://qarote.io/contact", "_blank", "noopener,noreferrer");
+                  window.open(
+                    "https://qarote.io/contact",
+                    "_blank",
+                    "noopener,noreferrer"
+                  );
                 }}
               >
                 Contact Sales
@@ -95,7 +99,11 @@ export function UpgradePrompt({
               <Button
                 variant="outline"
                 onClick={() => {
-                  window.open("https://qarote.io/pricing", "_blank", "noopener,noreferrer");
+                  window.open(
+                    "https://qarote.io/pricing",
+                    "_blank",
+                    "noopener,noreferrer"
+                  );
                 }}
               >
                 Purchase License
