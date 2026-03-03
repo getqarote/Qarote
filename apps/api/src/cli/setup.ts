@@ -304,7 +304,7 @@ export async function runSetup(): Promise<void> {
 
     // URLs for SSO callbacks — default based on port
     apiUrl = await ask("Backend API URL", `http://localhost:${port}`);
-    frontendUrl = await ask("Frontend URL", "http://localhost:8080");
+    frontendUrl = await ask("Frontend URL", `http://localhost:${port}`);
     ssoTenant = await ask("SSO tenant", "default");
     ssoProduct = await ask("SSO product", "qarote");
     ssoButtonLabel = await ask("SSO button label", "Sign in with SSO");
@@ -349,30 +349,36 @@ export async function runSetup(): Promise<void> {
   lines.push("", "# Registration");
   lines.push(`ENABLE_REGISTRATION=${enableRegistration}`);
 
+  // Helper: quote/escape a value for safe dotenv parsing
+  const escapeEnvValue = (v: string) =>
+    `"${v.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
+
   // SSO
   if (enableSso) {
     lines.push("", "# SSO");
     lines.push(`SSO_ENABLED=true`);
     lines.push(`SSO_TYPE=${ssoType}`);
     if (ssoType === "oidc") {
-      lines.push(`SSO_OIDC_DISCOVERY_URL=${ssoOidcDiscoveryUrl}`);
-      lines.push(`SSO_OIDC_CLIENT_ID=${ssoOidcClientId}`);
-      lines.push(`SSO_OIDC_CLIENT_SECRET=${ssoOidcClientSecret}`);
+      lines.push(
+        `SSO_OIDC_DISCOVERY_URL=${escapeEnvValue(ssoOidcDiscoveryUrl)}`
+      );
+      lines.push(`SSO_OIDC_CLIENT_ID=${escapeEnvValue(ssoOidcClientId)}`);
+      lines.push(
+        `SSO_OIDC_CLIENT_SECRET=${escapeEnvValue(ssoOidcClientSecret)}`
+      );
     } else {
-      lines.push(`SSO_SAML_METADATA_URL=${ssoSamlMetadataUrl}`);
+      lines.push(`SSO_SAML_METADATA_URL=${escapeEnvValue(ssoSamlMetadataUrl)}`);
     }
-    lines.push(`API_URL=${apiUrl}`);
-    lines.push(`FRONTEND_URL=${frontendUrl}`);
-    lines.push(`SSO_TENANT=${ssoTenant}`);
-    lines.push(`SSO_PRODUCT=${ssoProduct}`);
-    lines.push(`SSO_BUTTON_LABEL=${ssoButtonLabel}`);
+    lines.push(`API_URL=${escapeEnvValue(apiUrl)}`);
+    lines.push(`FRONTEND_URL=${escapeEnvValue(frontendUrl)}`);
+    lines.push(`SSO_TENANT=${escapeEnvValue(ssoTenant)}`);
+    lines.push(`SSO_PRODUCT=${escapeEnvValue(ssoProduct)}`);
+    lines.push(`SSO_BUTTON_LABEL=${escapeEnvValue(ssoButtonLabel)}`);
   }
 
   // Admin bootstrap
   if (adminEmail && adminPassword) {
     lines.push("", "# Admin (auto-removed after first boot)");
-    const escapeEnvValue = (v: string) =>
-      `"${v.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
     lines.push(`ADMIN_EMAIL=${escapeEnvValue(adminEmail)}`);
     lines.push(`ADMIN_PASSWORD=${escapeEnvValue(adminPassword)}`);
   }

@@ -35,5 +35,6 @@
   "saving": "Saving...",
   "saveSuccess": "SSO settings saved successfully",
   "saveError": "Failed to save SSO settings",
-  "copied": "Copied to clipboard"
+  "copied": "Copied to clipboard",
+  "copyToClipboard": "Copy to clipboard"
 }
