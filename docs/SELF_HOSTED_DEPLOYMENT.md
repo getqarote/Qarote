@@ -135,6 +135,7 @@ To enable email, add SMTP flags:
 | `-p`, `--port <port>` | Server port (default: 3000) |
 | `-h`, `--host <host>` | Server host (default: localhost) |
 | `--enable-email <bool>` | Enable email features (default: false) |
+| `--from-email <email>` | Sender email address (default: noreply@localhost) |
 | `--smtp-host <host>` | SMTP server hostname |
 | `--smtp-port <port>` | SMTP server port (default: 587) |
 | `--smtp-user <user>` | SMTP username |
@@ -204,6 +205,7 @@ docker exec qarote_backend pnpm run db:migrate
    ```bash
    dokku config:set qarote \
      ENABLE_EMAIL=true \
+     FROM_EMAIL=noreply@yourdomain.com \
      SMTP_HOST=smtp.gmail.com \
      SMTP_PORT=587 \
      SMTP_USER=your-email@gmail.com \
@@ -281,6 +283,16 @@ openssl rand -hex 32  # POSTGRES_PASSWORD
 ## SMTP Configuration
 
 Email features are **disabled by default** for self-hosted deployments. To enable email (for password resets, invitations, notifications), configure SMTP settings.
+
+### Configuration Methods
+
+SMTP can be configured in three ways (in order of priority):
+
+1. **Admin UI** — Settings → Email Settings (requires admin role, self-hosted only)
+2. **Setup Wizard** — `./qarote setup` prompts for SMTP settings during initial setup
+3. **Environment Variables** — set directly or via `dokku config:set`
+
+The Admin UI settings (stored in the database) take priority over environment variables. This lets you reconfigure SMTP at runtime without restarting the application.
 
 ### Authentication Methods
 

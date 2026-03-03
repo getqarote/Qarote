@@ -19,6 +19,7 @@ const i18n = createI18nInstance({
     "workspace",
     "help",
     "sso",
+    "smtp",
   ],
   defaultNamespace: "common",
   loadPath: "/locales/{{lng}}/{{ns}}.json",

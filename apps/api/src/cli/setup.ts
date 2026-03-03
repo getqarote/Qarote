@@ -175,12 +175,41 @@ export async function runSetup(): Promise<void> {
   let smtpPort = "";
   let smtpUser = "";
   let smtpPass = "";
+  let fromEmail = "";
+  let smtpService = "";
+  let smtpOauthClientId = "";
+  let smtpOauthClientSecret = "";
+  let smtpOauthRefreshToken = "";
 
   if (enableEmail) {
     smtpHost = await ask("SMTP host");
     smtpPort = await ask("SMTP port", "587");
+    fromEmail = await ask("From email address", "noreply@localhost");
     smtpUser = await ask("SMTP user");
     smtpPass = await ask("SMTP password");
+
+    const useOAuth2 = await confirm("Configure OAuth2 authentication?");
+    if (useOAuth2) {
+      smtpService = await ask("SMTP service (e.g. gmail, outlook)", "");
+      while (!smtpOauthClientId) {
+        smtpOauthClientId = await ask("OAuth2 Client ID");
+        if (!smtpOauthClientId) {
+          console.log(c.red("    Required."));
+        }
+      }
+      while (!smtpOauthClientSecret) {
+        smtpOauthClientSecret = await askSecret("OAuth2 Client Secret");
+        if (!smtpOauthClientSecret) {
+          console.log(c.red("    Required."));
+        }
+      }
+      while (!smtpOauthRefreshToken) {
+        smtpOauthRefreshToken = await askSecret("OAuth2 Refresh Token");
+        if (!smtpOauthRefreshToken) {
+          console.log(c.red("    Required."));
+        }
+      }
+    }
   }
 
   // ─── Admin Account ───────────────────────────────────────────────
@@ -335,23 +364,34 @@ export async function runSetup(): Promise<void> {
     `ENCRYPTION_KEY=${encryptionKey}`,
   ];
 
+  // Helper: quote/escape a value for safe dotenv parsing
+  const escapeEnvValue = (v: string) =>
+    `"${v.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
+
   // Email
   lines.push("", "# Email");
   lines.push(`ENABLE_EMAIL=${enableEmail}`);
   if (enableEmail) {
+    lines.push(`FROM_EMAIL=${escapeEnvValue(fromEmail)}`);
     lines.push(`SMTP_HOST=${smtpHost}`);
     lines.push(`SMTP_PORT=${smtpPort}`);
     lines.push(`SMTP_USER=${smtpUser}`);
-    lines.push(`SMTP_PASS=${smtpPass}`);
+    lines.push(`SMTP_PASS=${escapeEnvValue(smtpPass)}`);
+    if (smtpOauthClientId) {
+      if (smtpService) lines.push(`SMTP_SERVICE=${smtpService}`);
+      lines.push(`SMTP_OAUTH_CLIENT_ID=${escapeEnvValue(smtpOauthClientId)}`);
+      lines.push(
+        `SMTP_OAUTH_CLIENT_SECRET=${escapeEnvValue(smtpOauthClientSecret)}`
+      );
+      lines.push(
+        `SMTP_OAUTH_REFRESH_TOKEN=${escapeEnvValue(smtpOauthRefreshToken)}`
+      );
+    }
   }
 
   // Registration
   lines.push("", "# Registration");
   lines.push(`ENABLE_REGISTRATION=${enableRegistration}`);
-
-  // Helper: quote/escape a value for safe dotenv parsing
-  const escapeEnvValue = (v: string) =>
-    `"${v.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
 
   // SSO
   if (enableSso) {
@@ -396,7 +436,9 @@ export async function runSetup(): Promise<void> {
   console.log(c.dim(`    Database:     ${dbUrl.replace(/:[^@]*@/, ":***@")}`));
   console.log(c.dim(`    Port:         ${port}`));
   console.log(
-    c.dim(`    Email:        ${enableEmail ? "enabled" : "disabled"}`)
+    c.dim(
+      `    Email:        ${enableEmail ? `enabled (${fromEmail})` : "disabled"}`
+    )
   );
   console.log(
     c.dim(

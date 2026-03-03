@@ -20,5 +20,6 @@
   "loadingVhosts": "Loading vhosts...",
   "addServer": "Add Server",
   "theme": "Theme",
-  "ssoSettings": "SSO Settings"
+  "ssoSettings": "SSO Settings",
+  "smtpSettings": "Email Settings"
 }

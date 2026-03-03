@@ -11,6 +11,7 @@ import {
   HelpCircle,
   KeyRound,
   LogOut,
+  Mail,
   MessageSquare,
   Plus,
   Server,
@@ -81,6 +82,12 @@ const menuItems = [
           titleKey: "sidebar:ssoSettings" as const,
           url: "/settings/sso",
           icon: Shield,
+          adminOnly: true,
+        },
+        {
+          titleKey: "sidebar:smtpSettings" as const,
+          url: "/settings/smtp",
+          icon: Mail,
           adminOnly: true,
         },
       ]
