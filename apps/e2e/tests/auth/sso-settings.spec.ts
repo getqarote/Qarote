@@ -88,12 +88,11 @@ test.describe("SSO Settings Page @p1 @selfhosted", () => {
       await expect(apiUrlInput).toBeVisible();
       const apiUrlValue = await apiUrlInput.inputValue();
 
-      if (apiUrlValue) {
-        // Callback URL should be displayed
-        await expect(
-          adminPage.getByText(`${apiUrlValue}/sso/callback`)
-        ).toBeVisible();
-      }
+      expect(apiUrlValue).toBeTruthy();
+      // Callback URL should be displayed
+      await expect(
+        adminPage.getByText(`${apiUrlValue}/sso/callback`)
+      ).toBeVisible();
     });
   });
 });

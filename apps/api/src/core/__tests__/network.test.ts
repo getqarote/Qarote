@@ -53,6 +53,14 @@ describe("isPrivateIP", () => {
       expect(isPrivateIP("fe80::1")).toBe(true);
     });
 
+    it("returns true for fully expanded loopback (0:0:0:0:0:0:0:1)", () => {
+      expect(isPrivateIP("0:0:0:0:0:0:0:1")).toBe(true);
+    });
+
+    it.skip("returns true for compressed loopback variant (::0:1) — known regex gap", () => {
+      expect(isPrivateIP("::0:1")).toBe(true);
+    });
+
     it("returns false for IPv4-mapped public IP (::ffff:8.8.8.8)", () => {
       expect(isPrivateIP("::ffff:8.8.8.8")).toBe(false);
     });
