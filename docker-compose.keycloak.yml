@@ -19,5 +19,10 @@ services:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
     ports:
-      - "8180:8180"
+      - "127.0.0.1:8180:8180"
+    volumes:
+      - keycloak_data:/opt/keycloak/data
     restart: unless-stopped
+
+volumes:
+  keycloak_data:

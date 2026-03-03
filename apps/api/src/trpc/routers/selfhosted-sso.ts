@@ -4,8 +4,12 @@
  * Settings are stored in SystemSetting (key: "sso_config") and take priority over env vars
  */
 
+import dns from "node:dns";
+
 import { TRPCError } from "@trpc/server";
 import { z } from "zod/v4";
+
+import { isPrivateIP } from "@/core/network";
 
 import { ssoService } from "@/services/auth/sso.service";
 
@@ -52,14 +56,26 @@ export const selfhostedSsoRouter = router({
     });
 
     if (setting) {
-      const config = JSON.parse(setting.value) as z.infer<
-        typeof ssoSettingsSchema
-      >;
-      return {
-        source: "database" as const,
-        ...config,
-        oidcClientSecret: config.oidcClientSecret ? REDACTED : undefined,
-      };
+      try {
+        const parsed = ssoSettingsSchema.safeParse(JSON.parse(setting.value));
+        if (parsed.success) {
+          return {
+            source: "database" as const,
+            ...parsed.data,
+            oidcClientSecret: parsed.data.oidcClientSecret
+              ? REDACTED
+              : undefined,
+          };
+        }
+        ctx.logger.warn(
+          { error: parsed.error },
+          "Malformed SSO config in database, falling back to env vars"
+        );
+      } catch {
+        ctx.logger.warn(
+          "Invalid JSON in SSO config database row, falling back to env vars"
+        );
+      }
     }
 
     // Fall back to env-var config via the service
@@ -95,10 +111,26 @@ export const selfhostedSsoRouter = router({
           where: { key: "sso_config" },
         });
         if (existing) {
-          const existingConfig = JSON.parse(existing.value) as z.infer<
-            typeof ssoSettingsSchema
-          >;
-          oidcClientSecret = existingConfig.oidcClientSecret;
+          try {
+            const parsed = ssoSettingsSchema.safeParse(
+              JSON.parse(existing.value)
+            );
+            if (
+              parsed.success &&
+              parsed.data.oidcClientSecret &&
+              parsed.data.oidcClientSecret !== REDACTED
+            ) {
+              oidcClientSecret = parsed.data.oidcClientSecret;
+            } else {
+              oidcClientSecret = ssoService.effectiveConfig.oidc.clientSecret;
+            }
+          } catch {
+            // Malformed JSON — fall back to env config
+            oidcClientSecret = ssoService.effectiveConfig.oidc.clientSecret;
+          }
+        } else {
+          // No DB row yet — restore the real secret from env config
+          oidcClientSecret = ssoService.effectiveConfig.oidc.clientSecret;
         }
       }
 
@@ -126,10 +158,51 @@ export const selfhostedSsoRouter = router({
    * Returns the issuer on success, or an error message on failure
    */
   testConnection: selfHostedProcedure
-    .input(z.object({ discoveryUrl: z.string().url() }))
+    .input(z.object({ discoveryUrl: z.string().check(z.url()) }))
     .mutation(async ({ input }) => {
+      // --- SSRF protection ---
+      const url = new URL(input.discoveryUrl);
+
+      if (url.protocol !== "https:") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Discovery URL must use HTTPS",
+        });
+      }
+
+      const hostname = url.hostname;
+      if (
+        hostname === "localhost" ||
+        hostname.endsWith(".local") ||
+        hostname.endsWith(".internal")
+      ) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Discovery URL must not point to a local or internal host",
+        });
+      }
+
+      // Resolve the hostname and reject private/reserved IPs
+      const { address } = await dns.promises.lookup(hostname);
+      if (isPrivateIP(address)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Discovery URL must not resolve to a private or internal IP",
+        });
+      }
+
       try {
-        const response = await fetch(input.discoveryUrl);
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 10_000);
+        let response: Response;
+        try {
+          response = await fetch(input.discoveryUrl, {
+            signal: controller.signal,
+            redirect: "error",
+          });
+        } finally {
+          clearTimeout(timeout);
+        }
         if (!response.ok) {
           return {
             success: false,

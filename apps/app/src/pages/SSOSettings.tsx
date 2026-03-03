@@ -13,7 +13,6 @@ import {
 import { toast } from "sonner";
 
 import { isSelfHostedMode } from "@/lib/featureFlags";
-import { trpc } from "@/lib/trpc/client";
 
 import { AppSidebar } from "@/components/AppSidebar";
 import { Badge } from "@/components/ui/badge";
@@ -40,6 +39,12 @@ import { Switch } from "@/components/ui/switch";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
 
+import {
+  useSelfhostedSsoSettings,
+  useSsoTestConnection,
+  useSsoUpdate,
+} from "@/hooks/queries/useSelfhostedSso";
+
 interface SSOSettingsData {
   source: "database" | "environment";
   enabled: boolean;
@@ -64,7 +69,7 @@ function SSOForm({
 }) {
   const { t } = useTranslation("sso");
 
-  const updateMutation = trpc.selfhostedSso.updateSettings.useMutation({
+  const updateMutation = useSsoUpdate({
     onSuccess: () => {
       toast.success(t("saveSuccess"));
       onRefetch();
@@ -74,7 +79,7 @@ function SSOForm({
     },
   });
 
-  const testMutation = trpc.selfhostedSso.testConnection.useMutation({
+  const testMutation = useSsoTestConnection({
     onSuccess: (data) => {
       if (data.success) {
         toast.success(t("testSuccess", { issuer: data.issuer }));
@@ -173,6 +178,7 @@ function SSOForm({
               id="sso-enabled"
               checked={enabled}
               onCheckedChange={setEnabled}
+              className="data-[state=checked]:bg-gradient-button"
             />
             <Label htmlFor="sso-enabled">
               {enabled ? t("enabled") : t("disabled")}
@@ -227,6 +233,7 @@ function SSOForm({
                         onClick={handleTestConnection}
                         disabled={testMutation.isPending || !oidcDiscoveryUrl}
                         title={t("testConnection")}
+                        aria-label={t("testConnection")}
                       >
                         {testMutation.isPending ? (
                           <Loader2 className="h-4 w-4 animate-spin" />
@@ -315,6 +322,7 @@ function SSOForm({
                         size="icon"
                         className="h-6 w-6"
                         onClick={() => copyToClipboard(callbackUrl)}
+                        aria-label={t("copyToClipboard")}
                       >
                         <Copy className="h-3 w-3" />
                       </Button>
@@ -329,6 +337,7 @@ function SSOForm({
                           size="icon"
                           className="h-6 w-6"
                           onClick={() => copyToClipboard(acsUrl)}
+                          aria-label={t("copyToClipboard")}
                         >
                           <Copy className="h-3 w-3" />
                         </Button>
@@ -437,8 +446,8 @@ function SSOSettingsPage() {
     data: settings,
     isLoading,
     refetch,
-  } = trpc.selfhostedSso.getSettings.useQuery(undefined, {
-    enabled: isSelfHostedMode(),
+  } = useSelfhostedSsoSettings({
+    enabled: isSelfHostedMode() && user?.role === "ADMIN",
   });
 
   // Only accessible in self-hosted mode by admin users

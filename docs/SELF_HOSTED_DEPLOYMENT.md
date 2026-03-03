@@ -465,7 +465,7 @@ The Admin UI settings (stored in the database) take priority over environment va
 | `SSO_OIDC_CLIENT_SECRET` | OIDC client secret | — |
 | `SSO_SAML_METADATA_URL` | SAML IdP metadata URL | — |
 | `API_URL` | Backend URL (for SSO callback) | `http://localhost:3000` |
-| `FRONTEND_URL` | Frontend URL (for post-login redirect) | `http://localhost:8080` |
+| `FRONTEND_URL` | Frontend URL (for post-login redirect). In binary/single-port mode the frontend is served from the backend, so use `http://localhost:3000`. | `http://localhost:8080` |
 | `SSO_TENANT` | Tenant identifier | `default` |
 | `SSO_PRODUCT` | Product identifier | `qarote` |
 | `SSO_BUTTON_LABEL` | Login button text | `Sign in with SSO` |
