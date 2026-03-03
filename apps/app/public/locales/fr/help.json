@@ -1,15 +1,15 @@
 {
   "title": "Aide et support",
-  "subtitle": "Trouvez des reponses aux questions frequentes, envoyez vos commentaires ou obtenez de l'aide avec le tableau de bord RabbitMQ.",
+  "subtitle": "Trouvez des réponses aux questions fréquentes, envoyez vos commentaires ou obtenez de l'aide avec le tableau de bord RabbitMQ.",
   "quickLinksTitle": "Liens rapides",
   "quickLinks": {
     "dashboard": {
       "title": "Tableau de bord et serveurs",
-      "description": "Consultez la vue d'ensemble et gerez vos connexions aux serveurs RabbitMQ"
+      "description": "Consultez la vue d'ensemble et gérez vos connexions aux serveurs RabbitMQ"
     },
     "queueManagement": {
       "title": "Gestion des files d'attente",
-      "description": "Affichez et gerez vos files d'attente RabbitMQ"
+      "description": "Affichez et gérez vos files d'attente RabbitMQ"
     },
     "rabbitMQDocs": {
       "title": "Documentation RabbitMQ",
@@ -18,37 +18,37 @@
   },
   "contact": {
     "title": "Contacter le support",
-    "description": "Besoin d'aide personnalisee ? Contactez notre equipe de support.",
-    "generalSupport": "Support general",
-    "responseTime": "Nous repondons generalement sous 24 heures les jours ouvrables. Vous ne pouvez pas ouvrir votre client de messagerie ? Utilisez le bouton de copie pour obtenir notre adresse e-mail."
+    "description": "Besoin d'aide personnalisée ? Contactez notre équipe de support.",
+    "generalSupport": "Support général",
+    "responseTime": "Nous répondons généralement sous 24 heures les jours ouvrables. Vous ne pouvez pas ouvrir votre client de messagerie ? Utilisez le bouton de copie pour obtenir notre adresse e-mail."
   },
   "toast": {
-    "emailCopied": "E-mail copie !",
-    "emailCopiedDescription": "support@qarote.io a ete copie dans votre presse-papiers.",
-    "copyFailed": "Echec de la copie",
+    "emailCopied": "E-mail copié !",
+    "emailCopiedDescription": "support@qarote.io a été copié dans votre presse-papiers.",
+    "copyFailed": "Échec de la copie",
     "copyFailedDescription": "Veuillez copier manuellement : support@qarote.io"
   },
-  "faqTitle": "Questions frequemment posees",
+  "faqTitle": "Questions fréquemment posées",
   "faqs": {
     "connectServer": {
-      "question": "Comment me connecter a mon serveur RabbitMQ ?",
-      "answer": "Allez sur le tableau de bord et cherchez le selecteur de serveur ou l'option 'Ajouter un serveur'. Entrez les details de votre connexion RabbitMQ, y compris l'hote, le port, le nom d'utilisateur et le mot de passe. Vous pouvez tester la connexion avant de l'enregistrer."
+      "question": "Comment me connecter à mon serveur RabbitMQ ?",
+      "answer": "Allez sur le tableau de bord et cherchez le sélecteur de serveur ou l'option 'Ajouter un serveur'. Entrez les détails de votre connexion RabbitMQ, y compris l'hôte, le port, le nom d'utilisateur et le mot de passe. Vous pouvez tester la connexion avant de l'enregistrer."
     },
     "cantSeeQueues": {
       "question": "Pourquoi ne puis-je pas voir mes files d'attente ?",
-      "answer": "Assurez-vous que votre serveur RabbitMQ est en cours d'execution et accessible. Verifiez que votre utilisateur dispose des permissions necessaires pour afficher les files d'attente. Vous pouvez tester la connexion depuis le tableau de bord ou en selectionnant un autre serveur dans le menu deroulant."
+      "answer": "Assurez-vous que votre serveur RabbitMQ est en cours d'exécution et accessible. Vérifiez que votre utilisateur dispose des permissions nécessaires pour afficher les files d'attente. Vous pouvez tester la connexion depuis le tableau de bord ou en sélectionnant un autre serveur dans le menu déroulant."
     },
     "dataStorage": {
-      "question": "Quelles donnees le tableau de bord stocke-t-il ?",
-      "answer": "Le tableau de bord fonctionne en mode temps reel sans stockage persistant."
+      "question": "Quelles données le tableau de bord stocke-t-il ?",
+      "answer": "Le tableau de bord fonctionne en mode temps réel sans stockage persistant."
     },
     "setupAlerts": {
       "question": "Comment configurer les alertes ?",
-      "answer": "Allez sur la page Alertes et creez des regles d'alerte basees sur les metriques des files d'attente comme le nombre de messages, le nombre de consommateurs ou l'utilisation de la memoire. Vous pouvez definir vos preferences de seuils."
+      "answer": "Allez sur la page Alertes et créez des règles d'alerte basées sur les métriques des files d'attente comme le nombre de messages, le nombre de consommateurs ou l'utilisation de la mémoire. Vous pouvez définir vos préférences de seuils."
     },
     "managePermissions": {
-      "question": "Comment gerer les permissions des utilisateurs ?",
-      "answer": "Les administrateurs de l'espace de travail peuvent gerer les roles et les permissions des utilisateurs depuis la page Utilisateurs. Les differents roles offrent differents niveaux d'acces aux fonctionnalites et aux donnees."
+      "question": "Comment gérer les permissions des utilisateurs ?",
+      "answer": "Les administrateurs de l'espace de travail peuvent gérer les rôles et les permissions des utilisateurs depuis la page Utilisateurs. Les différents rôles offrent différents niveaux d'accès aux fonctionnalités et aux données."
     }
   }
 }

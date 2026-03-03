@@ -166,8 +166,8 @@ export class CoreEmailService {
     // Load effective config (DB → env fallback) for SMTP-based sending
     const effectiveCfg = await this.loadEffectiveConfig();
 
-    // Check if email is enabled (use effective config for self-hosted)
-    if (!effectiveCfg.enabled && !emailConfig.enabled) {
+    // Check if email is enabled — effectiveCfg is authoritative (DB-first, env fallback)
+    if (!effectiveCfg.enabled) {
       logger.warn(
         {
           to,
