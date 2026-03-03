@@ -1,17 +1,27 @@
 {
-  "pageTitle": "Qarote",
-  "heading": "创建您的工作区",
-  "subheading": "欢迎使用 Qarote！让我们先创建您的第一个工作区。工作区帮助您组织 RabbitMQ 服务器并与团队协作。",
-  "formTitle": "新建工作区",
-  "workspaceName": "工作区名称 *",
-  "workspacePlaceholder": "我的工作区",
-  "tags": "标签（可选）",
-  "tagsPlaceholder": "添加标签以组织您的工作区",
-  "tagsHint": "使用 \"production\"、\"development\" 或 \"testing\" 等标签来组织您的工作区",
-  "createButton": "创建工作区",
-  "creatingButton": "正在创建工作区...",
-  "successTitle": "工作区创建成功！",
-  "successMessage": "正在跳转到您的仪表盘...",
-  "loadingMessage": "加载中...",
-  "failedToCreate": "创建工作区失败，请重试。"
+  "create": {
+    "title": "创建您的工作区",
+    "description": "欢迎使用 Qarote！让我们先创建您的第一个工作区。工作区帮助您组织 RabbitMQ 服务器并与团队协作。",
+    "cardTitle": "新建工作区",
+    "workspaceName": "工作区名称 *",
+    "workspaceNamePlaceholder": "我的工作区",
+    "tagsLabel": "标签（可选）",
+    "tagsPlaceholder": "添加标签以组织您的工作区",
+    "tagsHint": "使用 \"production\"、\"development\" 或 \"testing\" 等标签来组织您的工作区",
+    "submit": "创建工作区",
+    "creating": "正在创建工作区..."
+  },
+  "success": {
+    "title": "工作区创建成功！",
+    "redirecting": "正在跳转到您的仪表盘..."
+  },
+  "error": {
+    "createFailed": "创建工作区失败，请重试。",
+    "unknown": "发生未知错误"
+  },
+  "toast": {
+    "workspaceCreated": "工作区创建成功！",
+    "workspaceCreateFailed": "创建工作区失败：{{error}}"
+  },
+  "loading": "加载中..."
 }
