@@ -13,7 +13,7 @@ import type { SSOExchangeCodeResult } from "./sso.interfaces";
 import type { Prisma } from "@/generated/prisma/client";
 
 /** Shape of the effective SSO config (DB or env-var derived) */
-export interface SSOEffectiveConfig {
+interface SSOEffectiveConfig {
   enabled: boolean;
   type: "oidc" | "saml";
   oidc: {
