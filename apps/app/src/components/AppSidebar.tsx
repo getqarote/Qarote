@@ -15,6 +15,7 @@ import {
   Plus,
   Server,
   Settings,
+  Shield,
   User,
 } from "lucide-react";
 
@@ -74,6 +75,12 @@ const menuItems = [
           titleKey: "sidebar:license" as const,
           url: "/license",
           icon: KeyRound,
+          adminOnly: true,
+        },
+        {
+          titleKey: "sidebar:ssoSettings" as const,
+          url: "/settings/sso",
+          icon: Shield,
           adminOnly: true,
         },
       ]

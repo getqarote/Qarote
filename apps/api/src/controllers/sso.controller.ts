@@ -8,8 +8,6 @@ import { ssoService } from "@/services/auth/sso.service";
 import { notionService } from "@/services/integrations/notion.service";
 import { setSentryUser } from "@/services/sentry";
 
-import { config, emailConfig, ssoConfig } from "@/config";
-
 import { UserMapper } from "@/mappers/auth";
 
 const app = new Hono();
@@ -48,12 +46,13 @@ const userSelect = {
  * Generates a cryptographically random state token for CSRF protection
  */
 app.get("/authorize", async (c) => {
-  if (!ssoConfig.enabled) {
+  const cfg = ssoService.effectiveConfig;
+  if (!cfg.enabled) {
     return c.json({ error: "SSO is not enabled" }, 503);
   }
 
   try {
-    const apiUrl = config.API_URL;
+    const apiUrl = cfg.apiUrl;
     const redirectUrl = `${apiUrl}/sso/callback`;
 
     // Generate cryptographically random state token for CSRF protection
@@ -61,8 +60,8 @@ app.get("/authorize", async (c) => {
 
     const result = await ssoService.oauthController.authorize({
       client_id: "dummy",
-      tenant: ssoConfig.tenant,
-      product: ssoConfig.product,
+      tenant: cfg.tenant,
+      product: cfg.product,
       state,
       redirect_uri: redirectUrl,
       response_type: "code",
@@ -87,7 +86,7 @@ app.get("/authorize", async (c) => {
  * Receives SAMLResponse from the Identity Provider
  */
 app.post("/acs", async (c) => {
-  if (!ssoConfig.enabled) {
+  if (!ssoService.effectiveConfig.enabled) {
     return c.json({ error: "SSO is not enabled" }, 503);
   }
 
@@ -118,14 +117,15 @@ app.post("/acs", async (c) => {
  * Exchanges the code for user info, finds/creates user, issues JWT
  */
 app.get("/callback", async (c) => {
-  if (!ssoConfig.enabled) {
+  const cfg = ssoService.effectiveConfig;
+  if (!cfg.enabled) {
     return c.json({ error: "SSO is not enabled" }, 503);
   }
 
   const code = c.req.query("code");
   const state = c.req.query("state");
-  const frontendUrl = emailConfig.frontendUrl;
-  const apiUrl = config.API_URL;
+  const frontendUrl = cfg.frontendUrl;
+  const apiUrl = cfg.apiUrl;
 
   if (!code) {
     return c.redirect(`${frontendUrl}/auth/sso/callback?error=missing_code`);
@@ -151,7 +151,7 @@ app.get("/callback", async (c) => {
     const tokenRes = await ssoService.oauthController.token({
       code,
       grant_type: "authorization_code",
-      client_id: `tenant=${ssoConfig.tenant}&product=${ssoConfig.product}`,
+      client_id: `tenant=${cfg.tenant}&product=${cfg.product}`,
       client_secret: "dummy",
       redirect_uri: `${apiUrl}/sso/callback`,
     });

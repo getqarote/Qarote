@@ -34,6 +34,18 @@ const { values: cliArgs } = parseArgs({
     "smtp-oauth-client-id": { type: "string" },
     "smtp-oauth-client-secret": { type: "string" },
     "smtp-oauth-refresh-token": { type: "string" },
+    // SSO
+    "sso-enabled": { type: "string" },
+    "sso-type": { type: "string" },
+    "sso-oidc-discovery-url": { type: "string" },
+    "sso-oidc-client-id": { type: "string" },
+    "sso-oidc-client-secret": { type: "string" },
+    "sso-saml-metadata-url": { type: "string" },
+    "sso-tenant": { type: "string" },
+    "sso-product": { type: "string" },
+    "sso-button-label": { type: "string" },
+    "api-url": { type: "string" },
+    "frontend-url": { type: "string" },
   },
   strict: false,
 });
@@ -56,6 +68,17 @@ const flagToEnv: Record<string, string> = {
   "smtp-oauth-client-id": "SMTP_OAUTH_CLIENT_ID",
   "smtp-oauth-client-secret": "SMTP_OAUTH_CLIENT_SECRET",
   "smtp-oauth-refresh-token": "SMTP_OAUTH_REFRESH_TOKEN",
+  "sso-enabled": "SSO_ENABLED",
+  "sso-type": "SSO_TYPE",
+  "sso-oidc-discovery-url": "SSO_OIDC_DISCOVERY_URL",
+  "sso-oidc-client-id": "SSO_OIDC_CLIENT_ID",
+  "sso-oidc-client-secret": "SSO_OIDC_CLIENT_SECRET",
+  "sso-saml-metadata-url": "SSO_SAML_METADATA_URL",
+  "sso-tenant": "SSO_TENANT",
+  "sso-product": "SSO_PRODUCT",
+  "sso-button-label": "SSO_BUTTON_LABEL",
+  "api-url": "API_URL",
+  "frontend-url": "FRONTEND_URL",
 };
 for (const [flag, env] of Object.entries(flagToEnv)) {
   if (typeof cliArgs[flag] === "string") process.env[env] = cliArgs[flag];

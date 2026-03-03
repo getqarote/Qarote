@@ -1,0 +1,23 @@
+# Keycloak Development Instance for SSO Testing
+#
+# Usage:
+#   docker compose -f docker-compose.keycloak.yml up -d
+#
+# Admin console: http://localhost:8180
+# Credentials:   admin / admin
+#
+# After starting, follow the setup guide in docs/SELF_HOSTED_DEPLOYMENT.md
+# to create a realm, client, and test user.
+
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    container_name: qarote_keycloak
+    command: start-dev
+    environment:
+      KC_HTTP_PORT: 8180
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    ports:
+      - "8180:8180"
+    restart: unless-stopped

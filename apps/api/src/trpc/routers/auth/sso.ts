@@ -4,8 +4,6 @@ import { ssoService } from "@/services/auth/sso.service";
 
 import { SSOExchangeCodeSchema } from "@/schemas/auth";
 
-import { ssoConfig } from "@/config";
-
 import { rateLimitedPublicProcedure, router } from "@/trpc/trpc";
 
 import { te } from "@/i18n";
@@ -20,10 +18,11 @@ export const ssoRouter = router({
    * Returns whether SSO is enabled and the button label
    */
   getConfig: rateLimitedPublicProcedure.query(async () => {
+    const cfg = ssoService.effectiveConfig;
     return {
-      enabled: ssoConfig.enabled,
-      buttonLabel: ssoConfig.buttonLabel,
-      type: ssoConfig.type,
+      enabled: cfg.enabled,
+      buttonLabel: cfg.buttonLabel,
+      type: cfg.type,
     };
   }),
 
@@ -34,7 +33,7 @@ export const ssoRouter = router({
   exchangeCode: rateLimitedPublicProcedure
     .input(SSOExchangeCodeSchema)
     .mutation(async ({ input, ctx }) => {
-      if (!ssoConfig.enabled) {
+      if (!ssoService.effectiveConfig.enabled) {
         throw new TRPCError({
           code: "SERVICE_UNAVAILABLE",
           message: te(ctx.locale, "auth.ssoNotEnabled"),

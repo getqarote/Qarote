@@ -11,6 +11,8 @@ This guide covers deploying Qarote as a self-hosted application. All self-hosted
 - [Quick Start: Dokku](#quick-start-dokku)
 - [Configuration](#configuration)
 - [SMTP Configuration](#smtp-configuration)
+- [SSO Configuration](#sso-configuration)
+- [Testing SSO with Keycloak](#testing-sso-with-keycloak)
 - [License Activation](#license-activation)
 - [Updating](#updating)
 - [Troubleshooting](#troubleshooting)
@@ -141,6 +143,17 @@ To enable email, add SMTP flags:
 | `--smtp-oauth-client-id <id>` | OAuth2 client ID |
 | `--smtp-oauth-client-secret <secret>` | OAuth2 client secret |
 | `--smtp-oauth-refresh-token <token>` | OAuth2 refresh token |
+| `--sso-enabled <bool>` | Enable SSO authentication (default: false) |
+| `--sso-type <type>` | SSO type: `oidc` or `saml` (default: oidc) |
+| `--sso-oidc-discovery-url <url>` | OIDC discovery URL |
+| `--sso-oidc-client-id <id>` | OIDC client ID |
+| `--sso-oidc-client-secret <secret>` | OIDC client secret |
+| `--sso-saml-metadata-url <url>` | SAML metadata URL |
+| `--sso-tenant <tenant>` | SSO tenant identifier (default: default) |
+| `--sso-product <product>` | SSO product identifier (default: qarote) |
+| `--sso-button-label <label>` | SSO login button text (default: Sign in with SSO) |
+| `--api-url <url>` | Backend API URL for SSO callbacks |
+| `--frontend-url <url>` | Frontend URL for SSO redirects |
 
 ## Quick Start: Docker Compose
 
@@ -198,6 +211,21 @@ docker exec qarote_backend pnpm run db:migrate
    ```
 
    See [SMTP Configuration](#smtp-configuration) for provider-specific examples and OAuth2 setup.
+
+   To enable SSO, set SSO variables:
+
+   ```bash
+   dokku config:set qarote \
+     SSO_ENABLED=true \
+     SSO_TYPE=oidc \
+     SSO_OIDC_DISCOVERY_URL=https://your-idp.com/realms/qarote/.well-known/openid-configuration \
+     SSO_OIDC_CLIENT_ID=qarote \
+     SSO_OIDC_CLIENT_SECRET=your-client-secret \
+     API_URL=https://api.your-domain.com \
+     FRONTEND_URL=https://your-domain.com
+   ```
+
+   See [SSO Configuration](#sso-configuration) for detailed setup instructions.
 
    > `DATABASE_URL` is automatically set by Dokku when you link the PostgreSQL service. `NODE_ENV`, `PORT`, and `HOST` are also set automatically by Dokku. `DEPLOYMENT_MODE`, `LOG_LEVEL`, and other defaults are handled by the application.
 
@@ -411,6 +439,138 @@ docker exec qarote_backend pnpm run test:smtp -- --send admin@yourcompany.com
 # Dokku
 dokku run qarote pnpm run test:smtp -- --send admin@yourcompany.com
 ```
+
+## SSO Configuration
+
+Qarote supports Single Sign-On (SSO) via OIDC and SAML 2.0, powered by BoxyHQ SAML-Jackson. SSO lets your team authenticate through your existing identity provider (Keycloak, Okta, Azure AD, Auth0, Google Workspace, etc.).
+
+### Configuration Methods
+
+SSO can be configured in three ways (in order of priority):
+
+1. **Admin UI** — Settings → SSO Settings (requires admin role, self-hosted only)
+2. **Setup Wizard** — `./qarote setup` prompts for SSO settings during initial setup
+3. **Environment Variables** — set directly or via `dokku config:set`
+
+The Admin UI settings (stored in the database) take priority over environment variables. This lets you reconfigure SSO at runtime without restarting the application.
+
+### Environment Variable Reference
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `SSO_ENABLED` | Enable SSO authentication | `false` |
+| `SSO_TYPE` | Protocol: `oidc` or `saml` | `oidc` |
+| `SSO_OIDC_DISCOVERY_URL` | OIDC discovery endpoint URL | — |
+| `SSO_OIDC_CLIENT_ID` | OIDC client ID | — |
+| `SSO_OIDC_CLIENT_SECRET` | OIDC client secret | — |
+| `SSO_SAML_METADATA_URL` | SAML IdP metadata URL | — |
+| `API_URL` | Backend URL (for SSO callback) | `http://localhost:3000` |
+| `FRONTEND_URL` | Frontend URL (for post-login redirect) | `http://localhost:8080` |
+| `SSO_TENANT` | Tenant identifier | `default` |
+| `SSO_PRODUCT` | Product identifier | `qarote` |
+| `SSO_BUTTON_LABEL` | Login button text | `Sign in with SSO` |
+
+### OIDC Setup (Recommended)
+
+OIDC is the recommended protocol. Configure your identity provider to create a client, then set:
+
+```env
+SSO_ENABLED=true
+SSO_TYPE=oidc
+SSO_OIDC_DISCOVERY_URL=https://your-idp.com/realms/qarote/.well-known/openid-configuration
+SSO_OIDC_CLIENT_ID=qarote
+SSO_OIDC_CLIENT_SECRET=your-client-secret
+API_URL=http://localhost:3000
+FRONTEND_URL=http://localhost:8080
+```
+
+The OIDC discovery URL must end with `/.well-known/openid-configuration`. Your IdP must support the `openid`, `email`, and `profile` scopes.
+
+**Callback URL:** Register `{API_URL}/sso/callback` as an authorized redirect URI in your IdP (e.g., `http://localhost:3000/sso/callback`).
+
+### SAML Setup
+
+For SAML-based identity providers:
+
+```env
+SSO_ENABLED=true
+SSO_TYPE=saml
+SSO_SAML_METADATA_URL=https://your-idp.com/metadata.xml
+API_URL=http://localhost:3000
+FRONTEND_URL=http://localhost:8080
+```
+
+**ACS URL:** Register `{API_URL}/sso/acs` as the Assertion Consumer Service URL in your IdP.
+
+## Testing SSO with Keycloak
+
+[Keycloak](https://www.keycloak.org/) is a free, open-source identity provider. A Docker Compose file is included for quick local testing.
+
+### 1. Start Keycloak
+
+```bash
+docker compose -f docker-compose.keycloak.yml up -d
+```
+
+Keycloak admin console will be available at **http://localhost:8180** with credentials `admin` / `admin`.
+
+### 2. Create a Realm
+
+1. Open http://localhost:8180 and log in with `admin` / `admin`
+2. Click the dropdown in the top-left (shows "master") → **Create realm**
+3. Set **Realm name** to `qarote` → click **Create**
+
+### 3. Create a Client
+
+1. In the `qarote` realm, go to **Clients** → **Create client**
+2. Set:
+   - **Client type:** OpenID Connect
+   - **Client ID:** `qarote`
+3. Click **Next**, then enable:
+   - **Client authentication:** ON
+4. Click **Next**, set:
+   - **Valid redirect URIs:** `http://localhost:3000/sso/callback`
+   - **Web origins:** `http://localhost:3000`
+5. Click **Save**
+6. Go to the **Credentials** tab and copy the **Client secret**
+
+### 4. Create a Test User
+
+1. Go to **Users** → **Add user**
+2. Set:
+   - **Username:** `testuser`
+   - **Email:** `testuser@example.com`
+   - **Email verified:** ON
+   - **First name:** `Test`
+   - **Last name:** `User`
+3. Click **Create**
+4. Go to the **Credentials** tab → **Set password**
+5. Set a password and turn off **Temporary**
+
+### 5. Configure Qarote
+
+Set the following environment variables (in `.env`, docker-compose, or via the Admin UI):
+
+```env
+SSO_ENABLED=true
+SSO_TYPE=oidc
+SSO_OIDC_DISCOVERY_URL=http://localhost:8180/realms/qarote/.well-known/openid-configuration
+SSO_OIDC_CLIENT_ID=qarote
+SSO_OIDC_CLIENT_SECRET=<paste-client-secret-from-step-3>
+API_URL=http://localhost:3000
+FRONTEND_URL=http://localhost:8080
+SSO_BUTTON_LABEL=Sign in with Keycloak
+```
+
+### 6. Test the Flow
+
+1. Restart Qarote (if using env vars) or save settings (if using Admin UI)
+2. Go to the Qarote login page — you should see a **"Sign in with Keycloak"** button
+3. Click it → you'll be redirected to Keycloak's login page
+4. Log in with `testuser` / your password
+5. You'll be redirected back to Qarote, authenticated
+
+> **Note:** The first time a user logs in via SSO, a Qarote account is automatically created using their email from the IdP. If an account with that email already exists, the SSO login is linked to the existing account.
 
 ## License Activation
 

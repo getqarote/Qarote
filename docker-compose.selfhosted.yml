@@ -55,6 +55,18 @@ services:
       # SMTP_OAUTH_CLIENT_ID: ${SMTP_OAUTH_CLIENT_ID}
       # SMTP_OAUTH_CLIENT_SECRET: ${SMTP_OAUTH_CLIENT_SECRET}
       # SMTP_OAUTH_REFRESH_TOKEN: ${SMTP_OAUTH_REFRESH_TOKEN}
+      # Optional: SSO configuration (see docs/SELF_HOSTED_DEPLOYMENT.md)
+      # SSO_ENABLED: ${SSO_ENABLED:-false}
+      # SSO_TYPE: ${SSO_TYPE:-oidc}
+      # SSO_OIDC_DISCOVERY_URL: ${SSO_OIDC_DISCOVERY_URL}
+      # SSO_OIDC_CLIENT_ID: ${SSO_OIDC_CLIENT_ID}
+      # SSO_OIDC_CLIENT_SECRET: ${SSO_OIDC_CLIENT_SECRET}
+      # SSO_SAML_METADATA_URL: ${SSO_SAML_METADATA_URL}
+      # API_URL: ${API_URL:-http://localhost:3000}
+      # FRONTEND_URL: ${FRONTEND_URL:-http://localhost:8080}
+      # SSO_TENANT: ${SSO_TENANT:-default}
+      # SSO_PRODUCT: ${SSO_PRODUCT:-qarote}
+      # SSO_BUTTON_LABEL: ${SSO_BUTTON_LABEL:-Sign in with SSO}
     ports:
       - "${BACKEND_PORT}:3000"
     depends_on:

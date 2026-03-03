@@ -23,7 +23,7 @@ import {
   requestIdMiddleware,
 } from "@/middlewares/request";
 
-import { config, serverConfig, ssoConfig } from "@/config";
+import { config, serverConfig } from "@/config";
 import { isCloudMode } from "@/config/deployment";
 
 import { createContext } from "@/trpc/context";
@@ -155,10 +155,8 @@ async function startServer() {
     // Bootstrap admin account on first boot (if configured via setup CLI)
     await bootstrapAdmin();
 
-    // Initialize SSO service if enabled
-    if (ssoConfig.enabled) {
-      await ssoService.initialize();
-    }
+    // Initialize SSO service (loads config from DB or env vars)
+    await ssoService.initialize();
 
     serve(
       {

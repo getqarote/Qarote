@@ -12,27 +12,122 @@ import type { SSOExchangeCodeResult } from "./sso.interfaces";
 
 import type { Prisma } from "@/generated/prisma/client";
 
+/** Shape of the effective SSO config (DB or env-var derived) */
+export interface SSOEffectiveConfig {
+  enabled: boolean;
+  type: "oidc" | "saml";
+  oidc: {
+    discoveryUrl?: string;
+    clientId?: string;
+    clientSecret?: string;
+  };
+  saml: {
+    metadataUrl?: string;
+    metadataRaw?: string;
+  };
+  apiUrl: string;
+  frontendUrl: string;
+  tenant: string;
+  product: string;
+  buttonLabel: string;
+}
+
 /**
  * SSO Service using Ory Polis (BoxyHQ Jackson)
  * Handles SAML and OIDC SSO authentication
+ *
+ * Config resolution: DB (SystemSetting key "sso_config") takes priority over env vars.
+ * This allows runtime reconfiguration from the admin UI without restart.
  */
 class SSOService {
   private jacksonInstance: Awaited<ReturnType<typeof controllers>> | null =
     null;
+  private _effectiveConfig: SSOEffectiveConfig | null = null;
+
+  /** Current effective config (DB-first, env fallback) */
+  get effectiveConfig(): SSOEffectiveConfig {
+    if (!this._effectiveConfig) {
+      return {
+        enabled: ssoConfig.enabled,
+        type: ssoConfig.type,
+        oidc: { ...ssoConfig.oidc },
+        saml: { ...ssoConfig.saml },
+        apiUrl: config.API_URL,
+        frontendUrl: config.FRONTEND_URL,
+        tenant: ssoConfig.tenant,
+        product: ssoConfig.product,
+        buttonLabel: ssoConfig.buttonLabel,
+      };
+    }
+    return this._effectiveConfig;
+  }
+
+  /**
+   * Load effective config: check DB first, fall back to env vars
+   */
+  private async loadEffectiveConfig(): Promise<SSOEffectiveConfig> {
+    try {
+      const setting = await prisma.systemSetting.findUnique({
+        where: { key: "sso_config" },
+      });
+
+      if (setting) {
+        const dbConfig = JSON.parse(setting.value) as Record<string, unknown>;
+        logger.info("Loaded SSO config from database");
+        return {
+          enabled: (dbConfig.enabled as boolean) ?? false,
+          type: (dbConfig.type as "oidc" | "saml") ?? "oidc",
+          oidc: {
+            discoveryUrl: dbConfig.oidcDiscoveryUrl as string | undefined,
+            clientId: dbConfig.oidcClientId as string | undefined,
+            clientSecret: dbConfig.oidcClientSecret as string | undefined,
+          },
+          saml: {
+            metadataUrl: dbConfig.samlMetadataUrl as string | undefined,
+          },
+          apiUrl: (dbConfig.apiUrl as string) || config.API_URL,
+          frontendUrl: (dbConfig.frontendUrl as string) || config.FRONTEND_URL,
+          tenant: (dbConfig.tenant as string) || "default",
+          product: (dbConfig.product as string) || "qarote",
+          buttonLabel: (dbConfig.buttonLabel as string) || "Sign in with SSO",
+        };
+      }
+    } catch (error) {
+      logger.warn(
+        { error },
+        "Failed to load SSO config from database, using env vars"
+      );
+    }
+
+    return {
+      enabled: ssoConfig.enabled,
+      type: ssoConfig.type,
+      oidc: { ...ssoConfig.oidc },
+      saml: { ...ssoConfig.saml },
+      apiUrl: config.API_URL,
+      frontendUrl: config.FRONTEND_URL,
+      tenant: ssoConfig.tenant,
+      product: ssoConfig.product,
+      buttonLabel: ssoConfig.buttonLabel,
+    };
+  }
 
   /**
    * Initialize Jackson with the app's PostgreSQL database
-   * and create/update the SSO connection from env vars
+   * and create/update the SSO connection
    */
   async initialize(): Promise<void> {
-    if (!ssoConfig.enabled) {
+    this._effectiveConfig = await this.loadEffectiveConfig();
+
+    if (!this._effectiveConfig.enabled) {
       logger.info("SSO is disabled, skipping initialization");
       return;
     }
 
+    const cfg = this._effectiveConfig;
     const jacksonOptions: JacksonOption = {
-      externalUrl: config.API_URL,
-      samlAudience: `https://saml.${ssoConfig.product}.app`,
+      externalUrl: cfg.apiUrl,
+      samlAudience: `https://saml.${cfg.product}.app`,
       samlPath: "/sso/acs",
       db: {
         engine: "sql",
@@ -46,29 +141,39 @@ class SSOService {
 
     logger.info("Jackson SSO initialized successfully");
 
-    // Auto-create SSO connection from env vars
+    // Auto-create SSO connection
     await this.ensureConnection();
   }
 
   /**
-   * Create or update the SSO connection from environment variables
+   * Reinitialize SSO service (called after admin UI config changes)
+   * Resets Jackson instance and reloads config from DB
+   */
+  async reinitialize(): Promise<void> {
+    this.jacksonInstance = null;
+    this._effectiveConfig = null;
+    await this.initialize();
+  }
+
+  /**
+   * Create or update the SSO connection from effective config
    */
   private async ensureConnection(): Promise<void> {
-    if (!this.jacksonInstance) return;
+    if (!this.jacksonInstance || !this._effectiveConfig) return;
 
     const { connectionAPIController } = this.jacksonInstance;
-    const apiUrl = config.API_URL;
-    const redirectUrl = `${apiUrl}/sso/callback`;
+    const cfg = this._effectiveConfig;
+    const redirectUrl = `${cfg.apiUrl}/sso/callback`;
 
     try {
-      if (ssoConfig.type === "oidc") {
+      if (cfg.type === "oidc") {
         if (
-          !ssoConfig.oidc.discoveryUrl ||
-          !ssoConfig.oidc.clientId ||
-          !ssoConfig.oidc.clientSecret
+          !cfg.oidc.discoveryUrl ||
+          !cfg.oidc.clientId ||
+          !cfg.oidc.clientSecret
         ) {
           logger.warn(
-            "SSO OIDC enabled but missing required env vars (SSO_OIDC_DISCOVERY_URL, SSO_OIDC_CLIENT_ID, SSO_OIDC_CLIENT_SECRET)"
+            "SSO OIDC enabled but missing required settings (discoveryUrl, clientId, clientSecret)"
           );
           return;
         }
@@ -76,21 +181,21 @@ class SSOService {
         await connectionAPIController.createOIDCConnection({
           defaultRedirectUrl: redirectUrl,
           redirectUrl,
-          tenant: ssoConfig.tenant,
-          product: ssoConfig.product,
-          oidcDiscoveryUrl: ssoConfig.oidc.discoveryUrl,
-          oidcClientId: ssoConfig.oidc.clientId,
-          oidcClientSecret: ssoConfig.oidc.clientSecret,
+          tenant: cfg.tenant,
+          product: cfg.product,
+          oidcDiscoveryUrl: cfg.oidc.discoveryUrl,
+          oidcClientId: cfg.oidc.clientId,
+          oidcClientSecret: cfg.oidc.clientSecret,
         });
 
         logger.info(
-          { tenant: ssoConfig.tenant, product: ssoConfig.product },
+          { tenant: cfg.tenant, product: cfg.product },
           "SSO OIDC connection created/updated"
         );
-      } else if (ssoConfig.type === "saml") {
-        if (!ssoConfig.saml.metadataUrl && !ssoConfig.saml.metadataRaw) {
+      } else if (cfg.type === "saml") {
+        if (!cfg.saml.metadataUrl && !cfg.saml.metadataRaw) {
           logger.warn(
-            "SSO SAML enabled but missing required env vars (SSO_SAML_METADATA_URL or SSO_SAML_METADATA_RAW)"
+            "SSO SAML enabled but missing required settings (metadataUrl)"
           );
           return;
         }
@@ -98,14 +203,14 @@ class SSOService {
         await connectionAPIController.createSAMLConnection({
           defaultRedirectUrl: redirectUrl,
           redirectUrl,
-          tenant: ssoConfig.tenant,
-          product: ssoConfig.product,
-          rawMetadata: ssoConfig.saml.metadataRaw || "",
-          metadataUrl: ssoConfig.saml.metadataUrl || "",
+          tenant: cfg.tenant,
+          product: cfg.product,
+          rawMetadata: cfg.saml.metadataRaw || "",
+          metadataUrl: cfg.saml.metadataUrl || "",
         });
 
         logger.info(
-          { tenant: ssoConfig.tenant, product: ssoConfig.product },
+          { tenant: cfg.tenant, product: cfg.product },
           "SSO SAML connection created/updated"
         );
       }
