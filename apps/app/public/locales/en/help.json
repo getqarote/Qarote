@@ -44,7 +44,7 @@
     },
     "setupAlerts": {
       "question": "How do I set up alerts?",
-      "answer": "Go to the Alerts page and create alert rules based on queue metrics like message count, consumer count, or memory usage. You can set thresholds preferences."
+      "answer": "Go to the Alerts page and create alert rules based on queue metrics like message count, consumer count, or memory usage. You can set threshold preferences."
     },
     "managePermissions": {
       "question": "How do I manage user permissions?",

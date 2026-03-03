@@ -291,7 +291,11 @@ function SMTPForm({
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex gap-2">
+                <Label htmlFor="test-recipient-email" className="sr-only">
+                  {t("recipientEmail")}
+                </Label>
                 <Input
+                  id="test-recipient-email"
                   placeholder={t("recipientEmailPlaceholder")}
                   value={testEmail}
                   onChange={(e) => setTestEmail(e.target.value)}

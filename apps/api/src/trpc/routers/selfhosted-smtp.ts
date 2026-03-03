@@ -31,18 +31,30 @@ const selfHostedProcedure = rateLimitedAdminProcedure.use(async (opts) => {
   return opts.next();
 });
 
-const smtpSettingsSchema = z.object({
-  enabled: z.boolean(),
-  host: z.string().optional(),
-  port: z.number().optional(),
-  user: z.string().optional(),
-  pass: z.string().optional(),
-  fromEmail: z.string().optional(),
-  service: z.string().optional(),
-  oauthClientId: z.string().optional(),
-  oauthClientSecret: z.string().optional(),
-  oauthRefreshToken: z.string().optional(),
-});
+const smtpSettingsSchema = z
+  .object({
+    enabled: z.boolean(),
+    host: z.string().optional(),
+    port: z.number().optional(),
+    user: z.string().optional(),
+    pass: z.string().optional(),
+    fromEmail: z.string().optional(),
+    service: z.string().optional(),
+    oauthClientId: z.string().optional(),
+    oauthClientSecret: z.string().optional(),
+    oauthRefreshToken: z.string().optional(),
+  })
+  .refine((data) => !data.enabled || (data.host && data.host.length > 0), {
+    message: "SMTP host is required when email is enabled",
+    path: ["host"],
+  })
+  .refine(
+    (data) => !data.enabled || (data.fromEmail && data.fromEmail.length > 0),
+    {
+      message: "From email is required when email is enabled",
+      path: ["fromEmail"],
+    }
+  );
 
 export const selfhostedSmtpRouter = router({
   /**
@@ -195,6 +207,9 @@ export const selfhostedSmtpRouter = router({
         port: cfg.port || 587,
         secure: (cfg.port || 587) === 465,
         service: cfg.service,
+        connectionTimeout: 10_000,
+        greetingTimeout: 10_000,
+        socketTimeout: 15_000,
         auth: hasOAuth2
           ? {
               type: "OAuth2",
@@ -230,6 +245,18 @@ export const selfhostedSmtpRouter = router({
 
         return { success: true };
       } catch (error) {
+        ctx.logger.error(
+          {
+            error,
+            smtpConfig: {
+              host: cfg.host,
+              port: cfg.port,
+              secure: (cfg.port || 587) === 465,
+              user: cfg.user,
+            },
+          },
+          "SMTP test failed"
+        );
         return {
           success: false,
           error:

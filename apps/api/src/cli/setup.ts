@@ -190,6 +190,13 @@ export async function runSetup(): Promise<void> {
 
     const useOAuth2 = await confirm("Configure OAuth2 authentication?");
     if (useOAuth2) {
+      // OAuth2 requires a user (email address of the account to send from)
+      while (!smtpUser) {
+        smtpUser = await ask("SMTP user (required for OAuth2)");
+        if (!smtpUser) {
+          console.log(c.red("    Required for OAuth2 authentication."));
+        }
+      }
       smtpService = await ask("SMTP service (e.g. gmail, outlook)", "");
       while (!smtpOauthClientId) {
         smtpOauthClientId = await ask("OAuth2 Client ID");
