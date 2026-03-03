@@ -6,7 +6,6 @@ import { queryClient } from "@/lib/queryClient";
 import { SentryErrorBoundary, withSentryProfiling } from "@/lib/sentry";
 import { TRPCProvider } from "@/lib/trpc/provider";
 
-import { FeatureGate } from "@/components/FeatureGate";
 import { Layout } from "@/components/Layout";
 import { PageLoader } from "@/components/PageLoader";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
@@ -250,9 +249,7 @@ const AppCore = () => (
                             element={
                               <ProtectedRoute>
                                 <Layout>
-                                  <FeatureGate feature="alerting">
-                                    <Alerts />
-                                  </FeatureGate>
+                                  <Alerts />
                                 </Layout>
                               </ProtectedRoute>
                             }
@@ -268,7 +265,7 @@ const AppCore = () => (
                             }
                           />
                           <Route
-                            path="/settings/license"
+                            path="/license"
                             element={
                               <ProtectedRoute>
                                 <Layout>

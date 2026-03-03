@@ -4,7 +4,7 @@
     "licenses": "许可证",
     "documentation": "文档",
     "account": "账户",
-    "settings": "设置",
+
     "logout": "退出登录"
   },
   "footer": {
@@ -55,15 +55,6 @@
         }
       }
     }
-  },
-  "accountSettings": {
-    "title": "账户设置",
-    "description": "管理您的账户信息",
-    "profileInfo": "个人资料",
-    "profileDescription": "您的账户详情",
-    "email": "电子邮件",
-    "name": "姓名",
-    "role": "角色"
   },
   "documentation": {
     "searchPlaceholder": "搜索文档...",

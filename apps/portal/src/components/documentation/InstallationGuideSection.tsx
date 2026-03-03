@@ -439,15 +439,38 @@ sudo -u postgres psql -c "CREATE DATABASE qarote OWNER qarote;"`}
                   {t("installGuide.quickStart.binary.step1Title")}
                 </h5>
 
-                <CodeBlock
-                  code={`# Download the latest release for your platform
-# Available: linux-x64, linux-arm64, darwin-x64, darwin-arm64
-# Windows users: use linux-x64 inside WSL2
-curl -L https://github.com/getqarote/Qarote/releases/latest/download/qarote-linux-x64.tar.gz | tar xz
-cd qarote`}
-                  language="bash"
-                />
-
+                <Tabs defaultValue="linux-x64" className="w-full">
+                  <TabsList className="grid w-full grid-cols-4">
+                    <TabsTrigger value="linux-x64">Linux x64</TabsTrigger>
+                    <TabsTrigger value="linux-arm64">Linux ARM64</TabsTrigger>
+                    <TabsTrigger value="darwin-arm64">macOS ARM</TabsTrigger>
+                    <TabsTrigger value="darwin-x64">macOS Intel</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="linux-x64">
+                    <CodeBlock
+                      code={`curl -L https://github.com/getqarote/Qarote/releases/download/v1.2.0-beta.1/qarote-linux-x64.tar.gz | tar xz --strip-components=1`}
+                      language="bash"
+                    />
+                  </TabsContent>
+                  <TabsContent value="linux-arm64">
+                    <CodeBlock
+                      code={`curl -L https://github.com/getqarote/Qarote/releases/download/v1.2.0-beta.1/qarote-linux-arm64.tar.gz | tar xz --strip-components=1`}
+                      language="bash"
+                    />
+                  </TabsContent>
+                  <TabsContent value="darwin-arm64">
+                    <CodeBlock
+                      code={`curl -L https://github.com/getqarote/Qarote/releases/download/v1.2.0-beta.1/qarote-darwin-arm64.tar.gz | tar xz --strip-components=1`}
+                      language="bash"
+                    />
+                  </TabsContent>
+                  <TabsContent value="darwin-x64">
+                    <CodeBlock
+                      code={`curl -L https://github.com/getqarote/Qarote/releases/download/v1.2.0-beta.1/qarote-darwin-x64.tar.gz | tar xz --strip-components=1`}
+                      language="bash"
+                    />
+                  </TabsContent>
+                </Tabs>
                 <h5 className="text-sm font-medium">
                   {t("installGuide.quickStart.binary.step2Title")}
                 </h5>
@@ -462,6 +485,27 @@ cd qarote`}
                     __html: t("installGuide.quickStart.binary.step2Note"),
                   }}
                 />
+                <div className="bg-muted rounded-lg p-4 mt-2 space-y-2">
+                  <p className="text-sm font-medium">
+                    The setup wizard will ask you to:
+                  </p>
+                  <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
+                    <li>
+                      <strong>Create an admin account</strong> (recommended) — a
+                      pre-created user so you can log in immediately without
+                      signing up
+                    </li>
+                    <li>
+                      <strong>Configure public registration</strong> — whether
+                      anyone can sign up via the web form
+                    </li>
+                  </ul>
+                  <p className="text-xs text-muted-foreground">
+                    Tip: For a secure setup, say Yes to admin account and No to
+                    public registration. You can invite team members later via
+                    invite links.
+                  </p>
+                </div>
 
                 <h5 className="text-sm font-medium">
                   {t("installGuide.quickStart.binary.step3Title")}
@@ -973,20 +1017,51 @@ dokku run qarote pnpm run test:smtp -- --send admin@yourcompany.com`}
             {t("installGuide.updating.title")}
           </Heading>
           {activeDeployment === "binary" && (
-            <CodeBlock
-              code={`# Stop the running instance
-kill $(pgrep -f './qarote') 2>/dev/null || true
-
-# Download and extract in-place (overwrites binary, public/, migrations/)
-# Replace linux-x64 with: linux-arm64, darwin-x64, or darwin-arm64
-curl -L https://github.com/getqarote/Qarote/releases/latest/download/qarote-linux-x64.tar.gz \\
-  | tar xz --strip-components=1
-
-# Restart — new migrations are applied automatically on startup
+            <div className="space-y-3">
+              <CodeBlock
+                code={`# Stop the running instance
+kill $(pgrep -f './qarote') 2>/dev/null || true`}
+                language="bash"
+              />
+              <Tabs defaultValue="linux-x64" className="w-full">
+                <TabsList className="grid w-full grid-cols-4">
+                  <TabsTrigger value="linux-x64">Linux x64</TabsTrigger>
+                  <TabsTrigger value="linux-arm64">Linux ARM64</TabsTrigger>
+                  <TabsTrigger value="darwin-arm64">macOS ARM</TabsTrigger>
+                  <TabsTrigger value="darwin-x64">macOS Intel</TabsTrigger>
+                </TabsList>
+                <TabsContent value="linux-x64">
+                  <CodeBlock
+                    code={`curl -L https://github.com/getqarote/Qarote/releases/download/v1.2.0-beta.1/qarote-linux-x64.tar.gz | tar xz --strip-components=1`}
+                    language="bash"
+                  />
+                </TabsContent>
+                <TabsContent value="linux-arm64">
+                  <CodeBlock
+                    code={`curl -L https://github.com/getqarote/Qarote/releases/download/v1.2.0-beta.1/qarote-linux-arm64.tar.gz | tar xz --strip-components=1`}
+                    language="bash"
+                  />
+                </TabsContent>
+                <TabsContent value="darwin-arm64">
+                  <CodeBlock
+                    code={`curl -L https://github.com/getqarote/Qarote/releases/download/v1.2.0-beta.1/qarote-darwin-arm64.tar.gz | tar xz --strip-components=1`}
+                    language="bash"
+                  />
+                </TabsContent>
+                <TabsContent value="darwin-x64">
+                  <CodeBlock
+                    code={`curl -L https://github.com/getqarote/Qarote/releases/download/v1.2.0-beta.1/qarote-darwin-x64.tar.gz | tar xz --strip-components=1`}
+                    language="bash"
+                  />
+                </TabsContent>
+              </Tabs>
+              <CodeBlock
+                code={`# Restart — new migrations are applied automatically on startup
 # (your .env file is preserved — no reconfiguration needed)
 ./qarote`}
-              language="bash"
-            />
+                language="bash"
+              />
+            </div>
           )}
 
           {activeDeployment === "docker-compose" && (
@@ -1026,6 +1101,31 @@ dokku run qarote pnpm run db:migrate`}
             defaultValue={["wont-start", "database", "license"]}
             className="w-full"
           >
+            {activeDeployment === "binary" && (
+              <AccordionItem value="exec-format-error">
+                <AccordionTrigger className="text-sm font-medium">
+                  &quot;Exec format error&quot;
+                </AccordionTrigger>
+                <AccordionContent className="space-y-3">
+                  <p className="text-sm text-muted-foreground">
+                    This means you downloaded the wrong architecture. Check your
+                    platform with <code>uname -m</code> (<code>x86_64</code> =
+                    x64, <code>aarch64</code> = ARM64), then re-download the
+                    correct binary in-place:
+                  </p>
+                  <CodeBlock
+                    code={`# Example: switch from linux-x64 to linux-arm64
+curl -L https://github.com/getqarote/Qarote/releases/download/v1.2.0-beta.1/qarote-linux-arm64.tar.gz | tar xz --strip-components=1
+./qarote setup`}
+                    language="bash"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Multipass on Apple Silicon creates ARM64 VMs — use Linux
+                    ARM64, not Linux x64.
+                  </p>
+                </AccordionContent>
+              </AccordionItem>
+            )}
             <AccordionItem value="wont-start">
               <AccordionTrigger className="text-sm font-medium">
                 {t("installGuide.troubleshooting.wontStartTitle")}

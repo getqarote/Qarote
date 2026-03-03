@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { Link, Outlet, useLocation, useNavigate } from "react-router";
+import { Link, Outlet, useLocation } from "react-router";
 
 import {
   BookOpen,
@@ -7,7 +7,6 @@ import {
   Github,
   LayoutDashboard,
   LogOut,
-  Settings,
   User,
 } from "lucide-react";
 
@@ -27,7 +26,6 @@ import { useAuth } from "@/contexts/AuthContext";
 const Layout = () => {
   const { user, logout } = useAuth();
   const location = useLocation();
-  const navigate = useNavigate();
   const { t } = useTranslation("portal");
 
   const navigation = [
@@ -99,11 +97,6 @@ const Layout = () => {
                       </p>
                     </div>
                   </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => navigate("/settings")}>
-                    <Settings className="mr-2 h-4 w-4" />
-                    <span>{t("layout.settings")}</span>
-                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={logout}>
                     <LogOut className="mr-2 h-4 w-4" />

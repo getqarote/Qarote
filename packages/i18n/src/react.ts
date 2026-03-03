@@ -27,6 +27,7 @@ export function createI18nInstance(options: CreateI18nOptions): I18nInstance {
     .use(LanguageDetector)
     .use(initReactI18next)
     .init({
+      showSupportNotice: false,
       supportedLngs: [...SUPPORTED_LOCALES],
       fallbackLng: FALLBACK_LOCALE,
       defaultNS: options.defaultNamespace,

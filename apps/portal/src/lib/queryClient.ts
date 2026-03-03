@@ -7,12 +7,12 @@ export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: (failureCount, error: unknown) => {
-        // Don't retry on 429 (rate limit) errors
+        // Don't retry on 401 (unauthorized) or 429 (rate limit) errors
         if (
           error &&
           typeof error === "object" &&
           "status" in error &&
-          error.status === 429
+          (error.status === 401 || error.status === 429)
         ) {
           return false;
         }
@@ -25,12 +25,12 @@ export const queryClient = new QueryClient({
     },
     mutations: {
       retry: (failureCount, error: unknown) => {
-        // Don't retry mutations on 429 errors
+        // Don't retry mutations on 401 or 429 errors
         if (
           error &&
           typeof error === "object" &&
           "status" in error &&
-          error.status === 429
+          (error.status === 401 || error.status === 429)
         ) {
           return false;
         }

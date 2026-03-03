@@ -3,6 +3,7 @@ import { useNavigate } from "react-router";
 import { AlertTriangle, CheckCircle } from "lucide-react";
 
 import { RabbitMQAlert } from "@/lib/api/alertTypes";
+import { getUpgradePath } from "@/lib/featureFlags";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -79,7 +80,10 @@ export const ActiveAlertsList = ({
             information and configure alert thresholds.
           </p>
         )}
-        <Button onClick={() => navigate("/plans")} className="btn-primary">
+        <Button
+          onClick={() => navigate(getUpgradePath())}
+          className="btn-primary"
+        >
           Upgrade now
         </Button>
       </div>

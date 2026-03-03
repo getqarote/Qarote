@@ -88,7 +88,7 @@ export function UpgradePrompt({
             <>
               <Button
                 className="flex-1 bg-gradient-button hover:bg-gradient-button-hover text-white"
-                onClick={() => navigate("/settings/license")}
+                onClick={() => navigate("/license")}
               >
                 Activate License
               </Button>

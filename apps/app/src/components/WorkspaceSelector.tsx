@@ -5,6 +5,7 @@ import { useNavigate } from "react-router";
 import { Building2, ChevronDown, Crown, Lock, Plus, User } from "lucide-react";
 import { toast } from "sonner";
 
+import { getUpgradePath } from "@/lib/featureFlags";
 import { logger } from "@/lib/logger";
 
 import { Button } from "@/components/ui/button";
@@ -64,7 +65,12 @@ export function WorkspaceSelector() {
       );
       toast.error("Failed to switch workspace. Please try again.");
     }
-  }, [switchWorkspaceMutation.isSuccess, switchWorkspaceMutation.isError]);
+  }, [
+    switchWorkspaceMutation.isSuccess,
+    switchWorkspaceMutation.isError,
+    switchWorkspaceMutation.error,
+    queryClient,
+  ]);
 
   const workspaces = workspacesData?.workspaces || [];
   type WorkspaceInfo = (typeof workspaces)[number];
@@ -87,8 +93,8 @@ export function WorkspaceSelector() {
     if (canCreateWorkspace) {
       setShowCreateModal(true);
     } else {
-      // Navigate to upgrade page or show upgrade modal
-      navigate("/plans");
+      // Navigate to upgrade/license page
+      navigate(getUpgradePath());
     }
   };
 

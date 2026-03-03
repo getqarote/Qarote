@@ -71,10 +71,16 @@ Your database URL will be: `postgresql://qarote:your-secure-password@localhost:5
 
 ```bash
 # 2. Download and extract for your platform
-# Available: linux-x64, linux-arm64, darwin-x64, darwin-arm64
-# Windows users: use linux-x64 inside WSL2
-curl -L https://github.com/getqarote/Qarote/releases/latest/download/qarote-linux-x64.tar.gz | tar xz
-cd qarote
+# Linux x64
+curl -L https://github.com/getqarote/Qarote/releases/download/v1.2.0-beta.1/qarote-linux-x64.tar.gz | tar xz --strip-components=1
+# Linux ARM64
+curl -L https://github.com/getqarote/Qarote/releases/download/v1.2.0-beta.1/qarote-linux-arm64.tar.gz | tar xz --strip-components=1
+# macOS Apple Silicon (M1/M2/M3)
+curl -L https://github.com/getqarote/Qarote/releases/download/v1.2.0-beta.1/qarote-darwin-arm64.tar.gz | tar xz --strip-components=1
+# macOS Intel
+curl -L https://github.com/getqarote/Qarote/releases/download/v1.2.0-beta.1/qarote-darwin-x64.tar.gz | tar xz --strip-components=1
+# Windows: use Linux x64 inside WSL2
+# Multipass on Apple Silicon: VMs are ARM64, use linux-arm64 (not linux-x64)
 
 # 3. Interactive setup (generates .env, tests database connection)
 ./qarote setup
@@ -85,8 +91,12 @@ cd qarote
 
 The `setup` command will:
 1. Ask for your PostgreSQL URL and verify the connection
-2. Generate secure secrets (`JWT_SECRET`, `ENCRYPTION_KEY`)
-3. Write a `.env` file in the current directory
+2. **Create an admin account** (recommended) — a pre-created user written directly to the database on first boot, so you can log in immediately without signing up
+3. **Configure public registration** — whether the `/auth/sign-up` page is open to anyone. If you created an admin account, you can safely disable this and invite team members later via invite links
+4. Generate secure secrets (`JWT_SECRET`, `ENCRYPTION_KEY`)
+5. Write a `.env` file in the current directory
+
+> **Tip:** For a secure self-hosted setup, say **Yes** to admin account and **No** to public registration. This way only you have access, and you can invite others from within the app.
 
 The binary serves both the API and frontend on a single port (default: 3000). Database migrations run automatically on startup. The `migrations/` directory must remain alongside the binary.
 
@@ -424,18 +434,21 @@ Features unlock immediately — no restart required. To deactivate, use the same
 # Stop the running instance
 kill $(pgrep -f './qarote') 2>/dev/null || true
 
-# Download and extract in-place
-# Replace linux-x64 with your platform: linux-arm64, darwin-x64, darwin-arm64
-curl -L https://github.com/getqarote/Qarote/releases/latest/download/qarote-linux-x64.tar.gz \
-  | tar xz --strip-components=1
+# Download and extract in-place (pick your platform)
+# Linux x64
+curl -L https://github.com/getqarote/Qarote/releases/download/v1.2.0-beta.1/qarote-linux-x64.tar.gz | tar xz --strip-components=1
+# Linux ARM64
+curl -L https://github.com/getqarote/Qarote/releases/download/v1.2.0-beta.1/qarote-linux-arm64.tar.gz | tar xz --strip-components=1
+# macOS Apple Silicon
+curl -L https://github.com/getqarote/Qarote/releases/download/v1.2.0-beta.1/qarote-darwin-arm64.tar.gz | tar xz --strip-components=1
+# macOS Intel
+curl -L https://github.com/getqarote/Qarote/releases/download/v1.2.0-beta.1/qarote-darwin-x64.tar.gz | tar xz --strip-components=1
 
 # Restart — new migrations are applied automatically on startup
 ./qarote
 ```
 
 Your `.env` file is preserved. New database migrations are applied automatically on startup.
-
-> **Note:** Download the correct artifact for your platform. Using the wrong one will produce an incompatible binary.
 
 ### Docker Compose
 
@@ -452,6 +465,18 @@ git push dokku main
 ```
 
 ## Troubleshooting
+
+### "Exec format error" (Binary)
+
+This means you downloaded the wrong architecture. Check your platform with `uname -m` (`x86_64` = x64, `aarch64` = ARM64), then re-download the correct binary in-place:
+
+```bash
+# Example: switch from linux-x64 to linux-arm64
+curl -L https://github.com/getqarote/Qarote/releases/download/v1.2.0-beta.1/qarote-linux-arm64.tar.gz | tar xz --strip-components=1
+./qarote setup
+```
+
+> **Tip:** Multipass on Apple Silicon creates ARM64 VMs — use `linux-arm64`, not `linux-x64`.
 
 ### Database Connection Issues
 

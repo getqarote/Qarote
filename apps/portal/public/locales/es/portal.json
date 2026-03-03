@@ -4,7 +4,7 @@
     "licenses": "Licencias",
     "documentation": "Documentación",
     "account": "Cuenta",
-    "settings": "Configuración",
+
     "logout": "Cerrar sesión"
   },
   "footer": {
@@ -55,15 +55,6 @@
         }
       }
     }
-  },
-  "accountSettings": {
-    "title": "Configuración de la cuenta",
-    "description": "Administre la información de su cuenta",
-    "profileInfo": "Información del perfil",
-    "profileDescription": "Los detalles de su cuenta",
-    "email": "Correo electrónico",
-    "name": "Nombre",
-    "role": "Rol"
   },
   "documentation": {
     "searchPlaceholder": "Buscar en la documentación...",

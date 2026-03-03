@@ -4,7 +4,7 @@
     "licenses": "Licences",
     "documentation": "Documentation",
     "account": "Compte",
-    "settings": "Paramètres",
+
     "logout": "Déconnexion"
   },
   "footer": {
@@ -55,15 +55,6 @@
         }
       }
     }
-  },
-  "accountSettings": {
-    "title": "Paramètres du compte",
-    "description": "Gérez les informations de votre compte",
-    "profileInfo": "Informations du profil",
-    "profileDescription": "Les détails de votre compte",
-    "email": "E-mail",
-    "name": "Nom",
-    "role": "Rôle"
   },
   "documentation": {
     "searchPlaceholder": "Rechercher dans la documentation...",

@@ -72,7 +72,7 @@ const menuItems = [
     ? [
         {
           titleKey: "sidebar:license" as const,
-          url: "/settings/license",
+          url: "/license",
           icon: KeyRound,
           adminOnly: true,
         },

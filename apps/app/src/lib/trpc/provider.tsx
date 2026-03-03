@@ -5,6 +5,7 @@ import { httpBatchLink, httpSubscriptionLink, splitLink } from "@trpc/client";
 import { queryClient } from "@/lib/queryClient";
 
 import { trpc } from "./client";
+import { unauthorizedLink } from "./unauthorizedLink";
 
 /**
  * Get the API URL from runtime config (binary) or environment variables (Docker/Dokku)
@@ -45,6 +46,7 @@ export function TRPCProvider({ children }: { children: React.ReactNode }) {
   const [trpcClient] = useState(() =>
     trpc.createClient({
       links: [
+        unauthorizedLink,
         splitLink({
           condition: (op) => op.type === "subscription",
           // TODO: connectionParams serializes the JWT in the URL query string, which
