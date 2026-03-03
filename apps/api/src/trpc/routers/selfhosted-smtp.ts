@@ -34,12 +34,12 @@ const selfHostedProcedure = rateLimitedAdminProcedure.use(async (opts) => {
 const smtpSettingsSchema = z
   .object({
     enabled: z.boolean(),
-    host: z.string().optional(),
-    port: z.number().optional(),
-    user: z.string().optional(),
+    host: z.string().trim().optional(),
+    port: z.number().int().min(1).max(65535).optional(),
+    user: z.string().trim().optional(),
     pass: z.string().optional(),
-    fromEmail: z.string().optional(),
-    service: z.string().optional(),
+    fromEmail: z.string().trim().optional(),
+    service: z.string().trim().optional(),
     oauthClientId: z.string().optional(),
     oauthClientSecret: z.string().optional(),
     oauthRefreshToken: z.string().optional(),
