@@ -11,8 +11,13 @@ export const useSsoUpdate = (options?: {
   onSuccess?: () => void;
   onError?: (error: { message: string }) => void;
 }) => {
+  const utils = trpc.useUtils();
+
   return trpc.selfhostedSso.updateSettings.useMutation({
-    onSuccess: options?.onSuccess,
+    onSuccess: () => {
+      options?.onSuccess?.();
+      utils.selfhostedSso.getSettings.invalidate();
+    },
     onError: options?.onError,
   });
 };

@@ -35,5 +35,6 @@
   "saving": "Guardando...",
   "saveSuccess": "Configuración SSO guardada exitosamente",
   "saveError": "Error al guardar la configuración SSO",
-  "copied": "Copiado al portapapeles"
+  "copied": "Copiado al portapapeles",
+  "copyToClipboard": "Copiar al portapapeles"
 }
