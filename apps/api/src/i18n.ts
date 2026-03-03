@@ -1,13 +1,13 @@
 import { createServerI18nInstance } from "@qarote/i18n/server";
 
-import enEmails from "../locales/en/emails.json";
-import enErrors from "../locales/en/errors.json";
-import esEmails from "../locales/es/emails.json";
-import esErrors from "../locales/es/errors.json";
-import frEmails from "../locales/fr/emails.json";
-import frErrors from "../locales/fr/errors.json";
-import zhEmails from "../locales/zh/emails.json";
-import zhErrors from "../locales/zh/errors.json";
+import enEmails from "../locales/en/emails.json" with { type: "json" };
+import enErrors from "../locales/en/errors.json" with { type: "json" };
+import esEmails from "../locales/es/emails.json" with { type: "json" };
+import esErrors from "../locales/es/errors.json" with { type: "json" };
+import frEmails from "../locales/fr/emails.json" with { type: "json" };
+import frErrors from "../locales/fr/errors.json" with { type: "json" };
+import zhEmails from "../locales/zh/emails.json" with { type: "json" };
+import zhErrors from "../locales/zh/errors.json" with { type: "json" };
 
 /**
  * Server-side i18n instance for the API
