@@ -1,29 +1,54 @@
 {
-  "pageTitle": "Help & Support",
-  "pageSubtitle": "Find answers to common questions, submit feedback, or get help with the RabbitMQ Dashboard.",
-  "dashboardAndServers": "Dashboard & Servers",
-  "dashboardAndServersDesc": "View overview and manage your RabbitMQ server connections",
-  "queueManagement": "Queue Management",
-  "queueManagementDesc": "View and manage your RabbitMQ queues",
-  "rabbitmqDocs": "RabbitMQ Documentation",
-  "rabbitmqDocsDesc": "Official RabbitMQ documentation and guides",
-  "contactSupport": "Contact Support",
-  "contactSupportSubtitle": "Need personalized help? Reach out to our support team.",
-  "generalSupport": "General Support",
-  "emailCopied": "Email copied!",
-  "emailCopiedDesc": "support@qarote.io has been copied to your clipboard.",
-  "copyFailed": "Copy failed",
-  "copyFailedDesc": "Please manually copy: support@qarote.io",
-  "responseTime": "We typically respond within 24 hours during business days. Can't open your email client? Use the copy button to get our email address.",
+  "title": "Help & Support",
+  "subtitle": "Find answers to common questions, submit feedback, or get help with the RabbitMQ Dashboard.",
+  "quickLinksTitle": "Quick Links",
+  "quickLinks": {
+    "dashboard": {
+      "title": "Dashboard & Servers",
+      "description": "View overview and manage your RabbitMQ server connections"
+    },
+    "queueManagement": {
+      "title": "Queue Management",
+      "description": "View and manage your RabbitMQ queues"
+    },
+    "rabbitMQDocs": {
+      "title": "RabbitMQ Documentation",
+      "description": "Official RabbitMQ documentation and guides"
+    }
+  },
+  "contact": {
+    "title": "Contact Support",
+    "description": "Need personalized help? Reach out to our support team.",
+    "generalSupport": "General Support",
+    "responseTime": "We typically respond within 24 hours during business days. Can't open your email client? Use the copy button to get our email address."
+  },
+  "toast": {
+    "emailCopied": "Email copied!",
+    "emailCopiedDescription": "support@qarote.io has been copied to your clipboard.",
+    "copyFailed": "Copy failed",
+    "copyFailedDescription": "Please manually copy: support@qarote.io"
+  },
   "faqTitle": "Frequently Asked Questions",
-  "faqConnectQuestion": "How do I connect to my RabbitMQ server?",
-  "faqConnectAnswer": "Go to the Dashboard and look for the server selector or 'Add Server' option. Enter your RabbitMQ connection details including host, port, username, and password. You can test the connection before saving.",
-  "faqQueuesQuestion": "Why can't I see my queues?",
-  "faqQueuesAnswer": "Make sure your RabbitMQ server is running and accessible. Check that your user has the necessary permissions to view queues. You can test the connection from the Dashboard or by selecting a different server from the server dropdown.",
-  "faqDataQuestion": "What data does the dashboard store?",
-  "faqDataAnswer": "The dashboard operates in live mode with no persistent storage.",
-  "faqAlertsQuestion": "How do I set up alerts?",
-  "faqAlertsAnswer": "Go to the Alerts page and create alert rules based on queue metrics like message count, consumer count, or memory usage. You can set thresholds preferences.",
-  "faqPermissionsQuestion": "How do I manage user permissions?",
-  "faqPermissionsAnswer": "Workspace administrators can manage user roles and permissions from the Users page. Different roles have different levels of access to features and data."
+  "faqs": {
+    "connectServer": {
+      "question": "How do I connect to my RabbitMQ server?",
+      "answer": "Go to the Dashboard and look for the server selector or 'Add Server' option. Enter your RabbitMQ connection details including host, port, username, and password. You can test the connection before saving."
+    },
+    "cantSeeQueues": {
+      "question": "Why can't I see my queues?",
+      "answer": "Make sure your RabbitMQ server is running and accessible. Check that your user has the necessary permissions to view queues. You can test the connection from the Dashboard or by selecting a different server from the server dropdown."
+    },
+    "dataStorage": {
+      "question": "What data does the dashboard store?",
+      "answer": "The dashboard operates in live mode with no persistent storage."
+    },
+    "setupAlerts": {
+      "question": "How do I set up alerts?",
+      "answer": "Go to the Alerts page and create alert rules based on queue metrics like message count, consumer count, or memory usage. You can set thresholds preferences."
+    },
+    "managePermissions": {
+      "question": "How do I manage user permissions?",
+      "answer": "Workspace administrators can manage user roles and permissions from the Users page. Different roles have different levels of access to features and data."
+    }
+  }
 }

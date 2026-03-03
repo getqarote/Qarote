@@ -1,29 +1,54 @@
 {
-  "pageTitle": "帮助与支持",
-  "pageSubtitle": "查找常见问题的答案、提交反馈或获取 RabbitMQ 仪表盘的帮助。",
-  "dashboardAndServers": "仪表盘与服务器",
-  "dashboardAndServersDesc": "查看概览并管理您的 RabbitMQ 服务器连接",
-  "queueManagement": "队列管理",
-  "queueManagementDesc": "查看和管理您的 RabbitMQ 队列",
-  "rabbitmqDocs": "RabbitMQ 文档",
-  "rabbitmqDocsDesc": "RabbitMQ 官方文档和指南",
-  "contactSupport": "联系支持",
-  "contactSupportSubtitle": "需要个性化帮助？请联系我们的支持团队。",
-  "generalSupport": "常规支持",
-  "emailCopied": "邮箱已复制！",
-  "emailCopiedDesc": "support@qarote.io 已复制到剪贴板。",
-  "copyFailed": "复制失败",
-  "copyFailedDesc": "请手动复制：support@qarote.io",
-  "responseTime": "我们通常在工作日 24 小时内回复。无法打开邮件客户端？使用复制按钮获取我们的邮箱地址。",
+  "title": "帮助与支持",
+  "subtitle": "查找常见问题的答案、提交反馈或获取 RabbitMQ 仪表盘的帮助。",
+  "quickLinksTitle": "快速链接",
+  "quickLinks": {
+    "dashboard": {
+      "title": "仪表盘与服务器",
+      "description": "查看概览并管理您的 RabbitMQ 服务器连接"
+    },
+    "queueManagement": {
+      "title": "队列管理",
+      "description": "查看和管理您的 RabbitMQ 队列"
+    },
+    "rabbitMQDocs": {
+      "title": "RabbitMQ 文档",
+      "description": "RabbitMQ 官方文档和指南"
+    }
+  },
+  "contact": {
+    "title": "联系支持",
+    "description": "需要个性化帮助？请联系我们的支持团队。",
+    "generalSupport": "常规支持",
+    "responseTime": "我们通常在工作日 24 小时内回复。无法打开邮件客户端？使用复制按钮获取我们的邮箱地址。"
+  },
+  "toast": {
+    "emailCopied": "邮箱已复制！",
+    "emailCopiedDescription": "support@qarote.io 已复制到剪贴板。",
+    "copyFailed": "复制失败",
+    "copyFailedDescription": "请手动复制：support@qarote.io"
+  },
   "faqTitle": "常见问题",
-  "faqConnectQuestion": "如何连接到我的 RabbitMQ 服务器？",
-  "faqConnectAnswer": "前往仪表盘，找到服务器选择器或「添加服务器」选项。输入您的 RabbitMQ 连接详情，包括主机、端口、用户名和密码。您可以在保存前测试连接。",
-  "faqQueuesQuestion": "为什么看不到我的队列？",
-  "faqQueuesAnswer": "请确保您的 RabbitMQ 服务器正在运行且可以访问。检查您的用户是否具有查看队列所需的权限。您可以从仪表盘测试连接，或从服务器下拉菜单中选择其他服务器。",
-  "faqDataQuestion": "仪表盘存储哪些数据？",
-  "faqDataAnswer": "仪表盘以实时模式运行，不进行持久化存储。",
-  "faqAlertsQuestion": "如何设置告警？",
-  "faqAlertsAnswer": "前往告警页面，根据队列指标（如消息数量、消费者数量或内存使用率）创建告警规则。您可以设置阈值偏好。",
-  "faqPermissionsQuestion": "如何管理用户权限？",
-  "faqPermissionsAnswer": "工作区管理员可以从用户页面管理用户角色和权限。不同角色对功能和数据具有不同级别的访问权限。"
+  "faqs": {
+    "connectServer": {
+      "question": "如何连接到我的 RabbitMQ 服务器？",
+      "answer": "前往仪表盘，找到服务器选择器或「添加服务器」选项。输入您的 RabbitMQ 连接详情，包括主机、端口、用户名和密码。您可以在保存前测试连接。"
+    },
+    "cantSeeQueues": {
+      "question": "为什么看不到我的队列？",
+      "answer": "请确保您的 RabbitMQ 服务器正在运行且可以访问。检查您的用户是否具有查看队列所需的权限。您可以从仪表盘测试连接，或从服务器下拉菜单中选择其他服务器。"
+    },
+    "dataStorage": {
+      "question": "仪表盘存储哪些数据？",
+      "answer": "仪表盘以实时模式运行，不进行持久化存储。"
+    },
+    "setupAlerts": {
+      "question": "如何设置告警？",
+      "answer": "前往告警页面，根据队列指标（如消息数量、消费者数量或内存使用率）创建告警规则。您可以设置阈值偏好。"
+    },
+    "managePermissions": {
+      "question": "如何管理用户权限？",
+      "answer": "工作区管理员可以从用户页面管理用户角色和权限。不同角色对功能和数据具有不同级别的访问权限。"
+    }
+  }
 }
