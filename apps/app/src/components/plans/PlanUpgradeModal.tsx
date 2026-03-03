@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
 import { Check, Key, Loader2, X, Zap } from "lucide-react";
@@ -24,6 +25,7 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
   onClose,
   feature,
 }) => {
+  const { t } = useTranslation("billing");
   const { planData, userPlan } = useUser();
   const { workspace } = useWorkspace();
   const navigate = useNavigate();
@@ -41,7 +43,7 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
       },
       onError: (error) => {
         logger.error("Failed to create checkout session:", error);
-        setError("Failed to start upgrade process. Please try again.");
+        setError(t("upgradeModal.upgradeFailed"));
         setIsUpgrading(null);
       },
     });
@@ -54,7 +56,7 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
       logger.info(`Starting upgrade to ${targetPlan}`);
 
       if (!workspace?.id) {
-        throw new Error("Workspace ID is required");
+        throw new Error(t("error.workspaceIdRequired"));
       }
 
       // Create Stripe checkout session
@@ -64,7 +66,7 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
       });
     } catch (error) {
       logger.error("Failed to create checkout session:", error);
-      setError("Failed to start upgrade process. Please try again.");
+      setError(t("upgradeModal.upgradeFailed"));
       setIsUpgrading(null);
     }
   };
@@ -79,7 +81,9 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
           <div className="flex items-center justify-between p-6 border-b">
             <div className="flex items-center gap-3">
               <Key className="w-5 h-5 text-purple-600" />
-              <h2 className="text-xl font-bold">License Required</h2>
+              <h2 className="text-xl font-bold">
+                {t("upgradeModal.licenseRequired")}
+              </h2>
             </div>
             <button
               onClick={onClose}
@@ -90,8 +94,7 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
           </div>
           <div className="p-6 space-y-4">
             <p className="text-muted-foreground">
-              To use <strong>{feature}</strong>, activate a license key on the
-              License page.
+              {t("upgradeModal.licenseDescription", { feature })}
             </p>
             <div className="flex gap-2">
               <button
@@ -102,7 +105,7 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
                   navigate("/license");
                 }}
               >
-                Activate License
+                {t("upgradeModal.activateLicense")}
               </button>
               <button
                 type="button"
@@ -115,7 +118,7 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
                   )
                 }
               >
-                Purchase
+                {t("upgradeModal.purchase")}
               </button>
             </div>
           </div>
@@ -130,7 +133,7 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
         <div className="bg-white rounded-lg p-6">
           <div className="flex items-center">
             <Loader2 className="w-6 h-6 animate-spin mr-3" />
-            <span>Loading plans...</span>
+            <span>{t("upgradeModal.loadingPlans")}</span>
           </div>
         </div>
       </div>
@@ -145,12 +148,13 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
         <div className="flex items-center justify-between p-6 border-b">
           <div>
             <h2 className="text-2xl font-bold text-gray-900">
-              Upgrade Your Plan
+              {t("upgradeModal.upgradeYourPlan")}
             </h2>
             <p className="text-gray-600 mt-1">
-              To use {feature}, you need to upgrade from the{" "}
-              {planData.planFeatures.displayName || userPlan} plan. This upgrade
-              will apply to all your workspaces.
+              {t("upgradeModal.upgradeDescription", {
+                feature,
+                plan: planData.planFeatures.displayName || userPlan,
+              })}
             </p>
           </div>
           <button
@@ -185,7 +189,7 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
                   {isPopular && (
                     <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
                       <span className="bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-                        Most Popular
+                        {t("upgradeModal.mostPopular")}
                       </span>
                     </div>
                   )}
@@ -194,14 +198,16 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
                     <h3 className="text-xl font-bold text-gray-900">
                       {planData.displayName ||
                         (planData.plan === UserPlan.DEVELOPER
-                          ? "Developer"
-                          : "Enterprise")}
+                          ? t("plans.developer.name")
+                          : t("plans.enterprise.name"))}
                     </h3>
                     <div className="mt-2">
                       <span className="text-3xl font-bold text-gray-900">
                         {price}
                       </span>
-                      <span className="text-gray-600">/month</span>
+                      <span className="text-gray-600">
+                        {t("upgradeModal.perMonth")}
+                      </span>
                     </div>
                   </div>
 
@@ -209,34 +215,27 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
                     <li className="flex items-center">
                       <Check className="w-4 h-4 text-green-500 mr-2" />
                       <span className="text-sm text-gray-700">
-                        {planData.plan === UserPlan.DEVELOPER
-                          ? "Unlimited"
-                          : "Unlimited"}{" "}
-                        queues
+                        {t("upgradeModal.unlimitedQueues")}
+                      </span>
+                    </li>
+                    <li className="flex items-center">
+                      <Check className="w-4 h-4 text-green-500 mr-2" />
+                      <span className="text-sm text-gray-700">
+                        {t("upgradeModal.unlimitedServers")}
                       </span>
                     </li>
                     <li className="flex items-center">
                       <Check className="w-4 h-4 text-green-500 mr-2" />
                       <span className="text-sm text-gray-700">
                         {planData.plan === UserPlan.DEVELOPER
-                          ? "Unlimited"
-                          : "Unlimited"}{" "}
-                        servers
+                          ? t("upgradeModal.teamMembers", { count: 5 })
+                          : t("upgradeModal.unlimitedTeamMembers")}
                       </span>
                     </li>
                     <li className="flex items-center">
                       <Check className="w-4 h-4 text-green-500 mr-2" />
                       <span className="text-sm text-gray-700">
-                        {planData.plan === UserPlan.DEVELOPER
-                          ? "5"
-                          : "Unlimited"}{" "}
-                        team members
-                      </span>
-                    </li>
-                    <li className="flex items-center">
-                      <Check className="w-4 h-4 text-green-500 mr-2" />
-                      <span className="text-sm text-gray-700">
-                        Message sending & queue management
+                        {t("upgradeModal.messageSending")}
                       </span>
                     </li>
                     {planData.plan === UserPlan.ENTERPRISE && (
@@ -244,19 +243,19 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
                         <li className="flex items-center">
                           <Check className="w-4 h-4 text-green-500 mr-2" />
                           <span className="text-sm text-gray-700">
-                            Advanced metrics & analytics
+                            {t("upgradeModal.advancedMetrics")}
                           </span>
                         </li>
                         <li className="flex items-center">
                           <Check className="w-4 h-4 text-green-500 mr-2" />
                           <span className="text-sm text-gray-700">
-                            Priority support
+                            {t("upgradeModal.prioritySupport")}
                           </span>
                         </li>
                         <li className="flex items-center">
                           <Check className="w-4 h-4 text-green-500 mr-2" />
                           <span className="text-sm text-gray-700">
-                            Advanced alerts & notifications
+                            {t("upgradeModal.advancedAlerts")}
                           </span>
                         </li>
                       </>
@@ -275,16 +274,18 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
                     {isUpgrading === planData.plan ? (
                       <>
                         <Loader2 className="w-4 h-4 inline-block mr-2 animate-spin" />
-                        Processing...
+                        {t("upgradeModal.processing")}
                       </>
                     ) : (
                       <>
                         <Zap className="w-4 h-4 inline-block mr-2" />
-                        Upgrade to{" "}
-                        {planData.displayName ||
-                          (planData.plan === UserPlan.DEVELOPER
-                            ? "Developer"
-                            : "Enterprise")}
+                        {t("upgradeModal.upgradeTo", {
+                          plan:
+                            planData.displayName ||
+                            (planData.plan === UserPlan.DEVELOPER
+                              ? t("plans.developer.name")
+                              : t("plans.enterprise.name")),
+                        })}
                       </>
                     )}
                   </button>

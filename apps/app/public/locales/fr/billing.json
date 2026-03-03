@@ -95,6 +95,28 @@
     "processing": "Traitement en cours...",
     "backToDashboard": "Retour au tableau de bord"
   },
+  "upgradeModal": {
+    "licenseRequired": "Licence requise",
+    "licenseDescription": "Pour utiliser {{feature}}, activez une clé de licence sur la page Licence.",
+    "activateLicense": "Activer la licence",
+    "purchase": "Acheter",
+    "loadingPlans": "Chargement des forfaits...",
+    "upgradeYourPlan": "Mettre à niveau votre forfait",
+    "upgradeDescription": "Pour utiliser {{feature}}, vous devez mettre à niveau depuis le forfait {{plan}}. Cette mise à niveau s'appliquera à tous vos espaces de travail.",
+    "upgradeFailed": "Échec du processus de mise à niveau. Veuillez réessayer.",
+    "mostPopular": "Le plus populaire",
+    "perMonth": "/mois",
+    "unlimitedQueues": "Files d'attente illimitées",
+    "unlimitedServers": "Serveurs illimités",
+    "teamMembers": "{{count}} membres d'équipe",
+    "unlimitedTeamMembers": "Membres d'équipe illimités",
+    "messageSending": "Envoi de messages et gestion des files d'attente",
+    "advancedMetrics": "Métriques et analyses avancées",
+    "prioritySupport": "Support prioritaire",
+    "advancedAlerts": "Alertes et notifications avancées",
+    "processing": "Traitement en cours...",
+    "upgradeTo": "Mettre à niveau vers {{plan}}"
+  },
   "error": {
     "workspaceIdRequired": "L'identifiant de l'espace de travail est requis"
   }

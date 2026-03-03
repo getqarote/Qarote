@@ -492,20 +492,20 @@ sudo -u postgres psql -c "CREATE DATABASE qarote OWNER qarote;"`}
                     {t("installGuide.quickStart.binary.setupWizardTitle")}
                   </p>
                   <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
-                    <li
-                      dangerouslySetInnerHTML={{
-                        __html: t(
-                          "installGuide.quickStart.binary.setupWizardCreateAdmin"
-                        ),
-                      }}
-                    />
-                    <li
-                      dangerouslySetInnerHTML={{
-                        __html: t(
-                          "installGuide.quickStart.binary.setupWizardConfigureRegistration"
-                        ),
-                      }}
-                    />
+                    <li>
+                      <Trans
+                        i18nKey="installGuide.quickStart.binary.setupWizardCreateAdmin"
+                        ns="docs"
+                        components={{ strong: <strong /> }}
+                      />
+                    </li>
+                    <li>
+                      <Trans
+                        i18nKey="installGuide.quickStart.binary.setupWizardConfigureRegistration"
+                        ns="docs"
+                        components={{ strong: <strong /> }}
+                      />
+                    </li>
                   </ul>
                   <p className="text-xs text-muted-foreground">
                     {t("installGuide.quickStart.binary.setupWizardTip")}
@@ -1112,14 +1112,13 @@ dokku run qarote pnpm run db:migrate`}
                   {t("installGuide.troubleshooting.execFormatTitle")}
                 </AccordionTrigger>
                 <AccordionContent className="space-y-3">
-                  <p
-                    className="text-sm text-muted-foreground"
-                    dangerouslySetInnerHTML={{
-                      __html: t(
-                        "installGuide.troubleshooting.execFormatDescription"
-                      ),
-                    }}
-                  />
+                  <p className="text-sm text-muted-foreground">
+                    <Trans
+                      i18nKey="installGuide.troubleshooting.execFormatDescription"
+                      ns="docs"
+                      components={{ code: <code /> }}
+                    />
+                  </p>
                   <CodeBlock
                     code={`# Example: switch from linux-x64 to linux-arm64
 curl -L https://github.com/getqarote/Qarote/releases/download/${RELEASE_VERSION}/qarote-linux-arm64.tar.gz | tar xz --strip-components=1

@@ -95,6 +95,28 @@
     "processing": "Procesando...",
     "backToDashboard": "Volver al panel"
   },
+  "upgradeModal": {
+    "licenseRequired": "Licencia requerida",
+    "licenseDescription": "Para usar {{feature}}, activa una clave de licencia en la página de Licencia.",
+    "activateLicense": "Activar licencia",
+    "purchase": "Comprar",
+    "loadingPlans": "Cargando planes...",
+    "upgradeYourPlan": "Mejora tu plan",
+    "upgradeDescription": "Para usar {{feature}}, necesitas mejorar desde el plan {{plan}}. Esta mejora se aplicará a todos tus espacios de trabajo.",
+    "upgradeFailed": "Error al iniciar el proceso de mejora. Inténtalo de nuevo.",
+    "mostPopular": "Más popular",
+    "perMonth": "/mes",
+    "unlimitedQueues": "Colas ilimitadas",
+    "unlimitedServers": "Servidores ilimitados",
+    "teamMembers": "{{count}} miembros del equipo",
+    "unlimitedTeamMembers": "Miembros del equipo ilimitados",
+    "messageSending": "Envío de mensajes y gestión de colas",
+    "advancedMetrics": "Métricas y análisis avanzados",
+    "prioritySupport": "Soporte prioritario",
+    "advancedAlerts": "Alertas y notificaciones avanzadas",
+    "processing": "Procesando...",
+    "upgradeTo": "Mejorar a {{plan}}"
+  },
   "error": {
     "workspaceIdRequired": "Se requiere el ID del espacio de trabajo"
   }
