@@ -69,7 +69,11 @@
         "step4Title": "5. Access Application",
         "step4Description": "Open <code>http://localhost:3000</code> in your browser. The binary serves both the API and frontend from a single port.",
         "step4ManualSetup": "<strong>Manual setup:</strong> You can also skip the wizard and configure directly:",
-        "cliFlagsTitle": "<strong>Available CLI flags:</strong>"
+        "cliFlagsTitle": "<strong>Available CLI flags:</strong>",
+        "setupWizardTitle": "The setup wizard will ask you to:",
+        "setupWizardCreateAdmin": "<strong>Create an admin account</strong> (recommended) — a pre-created user so you can log in immediately without signing up",
+        "setupWizardConfigureRegistration": "<strong>Configure public registration</strong> — whether anyone can sign up via the web form",
+        "setupWizardTip": "Tip: For a secure setup, say Yes to admin account and No to public registration. You can invite team members later via invite links."
       }
     },
     "smtp": {
@@ -153,6 +157,9 @@
     "troubleshooting": {
       "title": "Troubleshooting",
       "wontStartTitle": "Won't Start",
+      "execFormatTitle": "\"Exec format error\"",
+      "execFormatDescription": "This means you downloaded the wrong architecture. Check your platform with <code>uname -m</code> (<code>x86_64</code> = x64, <code>aarch64</code> = ARM64), then re-download the correct binary in-place:",
+      "execFormatTip": "Multipass on Apple Silicon creates ARM64 VMs — use Linux ARM64, not Linux x64.",
       "binary": {
         "wontStartItem1": "Check the terminal output for error messages",
         "wontStartItem2": "Verify your <code>.env</code> file exists or pass all required CLI flags",

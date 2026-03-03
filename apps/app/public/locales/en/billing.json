@@ -38,7 +38,7 @@
       "virtualHostManagementDesc": "Create and manage virtual hosts",
       "rabbitMQUserManagement": "RabbitMQ User Management",
       "rabbitMQUserManagementDesc": "Create and manage RabbitMQ users",
-      "alertsNotification": "Alerts Notification",
+      "alertsNotification": "Alert Notifications",
       "alertsNotificationDesc": "Real-time alerts and notifications",
       "support": "Support",
       "communitySupport": "Community Support",

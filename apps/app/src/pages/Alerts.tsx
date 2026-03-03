@@ -161,8 +161,7 @@ const Alerts = () => {
     );
   }
 
-  // FeatureGate is handled at the route level in App.tsx
-  // No need to wrap here to avoid double-wrapping issues
+  // FeatureGate is applied at the component level to guard the alerting feature content
   if (!currentServerId) {
     return <PageLoader />;
   }

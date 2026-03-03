@@ -1,21 +1,21 @@
 {
   "plans": {
     "chooseYourPlan": "Choisissez votre forfait",
-    "subtitle": "Faites evoluer votre surveillance RabbitMQ avec des forfaits concus pour des equipes de toutes tailles.",
+    "subtitle": "Faites évoluer votre surveillance RabbitMQ avec des forfaits conçus pour des équipes de toutes tailles.",
     "pricingTitle": "Tarification simple et transparente",
     "currentPlan": "Forfait actuel",
     "startFree": "Commencer gratuitement",
-    "save20": "Economisez 20%",
+    "save20": "Économisez 20%",
     "backToProfile": "Retour au profil",
     "pricing": {
       "free": "Gratuit"
     },
     "highlights": {
       "liveMonitoring": "Surveillance en direct",
-      "liveMonitoringDesc": "Surveillez vos serveurs RabbitMQ avec une precision a la seconde",
+      "liveMonitoringDesc": "Surveillez vos serveurs RabbitMQ avec une précision à la seconde",
       "smartAnalytics": "Analyses intelligentes",
-      "smartAnalyticsDesc": "Informations et conseils d'optimisation de la memoire",
-      "enterpriseSecurity": "Securite entreprise",
+      "smartAnalyticsDesc": "Informations et conseils d'optimisation de la mémoire",
+      "enterpriseSecurity": "Sécurité entreprise",
       "enterpriseSecurityDesc": "Conforme SOC 2 avec chiffrement de niveau entreprise",
       "support247": "Support 24/7",
       "support247Desc": "Support expert quand vous en avez le plus besoin"
@@ -25,21 +25,21 @@
       "yearly": "Annuel"
     },
     "features": {
-      "coreFeatures": "Fonctionnalites principales",
+      "coreFeatures": "Fonctionnalités principales",
       "rabbitMQServers": "Serveurs RabbitMQ",
       "rabbitMQVersionSupport": "Support des versions RabbitMQ",
       "workspaces": "Espaces de travail",
-      "teamMembers": "Membres de l'equipe",
+      "teamMembers": "Membres de l'équipe",
       "queueManagement": "Gestion des files d'attente",
-      "queueManagementDesc": "Creer et gerer les files d'attente",
-      "exchangeManagement": "Gestion des echanges",
-      "exchangeManagementDesc": "Creer et gerer les echanges",
-      "virtualHostManagement": "Gestion des hotes virtuels",
-      "virtualHostManagementDesc": "Creer et gerer les hotes virtuels",
+      "queueManagementDesc": "Créer et gérer les files d'attente",
+      "exchangeManagement": "Gestion des échanges",
+      "exchangeManagementDesc": "Créer et gérer les échanges",
+      "virtualHostManagement": "Gestion des hôtes virtuels",
+      "virtualHostManagementDesc": "Créer et gérer les hôtes virtuels",
       "rabbitMQUserManagement": "Gestion des utilisateurs RabbitMQ",
-      "rabbitMQUserManagementDesc": "Creer et gerer les utilisateurs RabbitMQ",
+      "rabbitMQUserManagementDesc": "Créer et gérer les utilisateurs RabbitMQ",
       "alertsNotification": "Notifications d'alertes",
-      "alertsNotificationDesc": "Alertes et notifications en temps reel",
+      "alertsNotificationDesc": "Alertes et notifications en temps réel",
       "support": "Support",
       "communitySupport": "Support communautaire",
       "communitySupportDesc": "Forums communautaires",
@@ -52,17 +52,17 @@
       "name": "Gratuit",
       "description": "Parfait pour commencer",
       "features": {
-        "servers": "Jusqu'a 1",
+        "servers": "Jusqu'à 1",
         "rabbitMQVersionSupport": "Versions LTS uniquement",
         "workspaces": "1 Espace de travail",
         "teamMembers": "1 Membre"
       }
     },
     "developer": {
-      "name": "Developpeur",
-      "description": "Pour les developpeurs independants et les petits projets",
+      "name": "Développeur",
+      "description": "Pour les développeurs indépendants et les petits projets",
       "features": {
-        "servers": "Jusqu'a 3",
+        "servers": "Jusqu'à 3",
         "rabbitMQVersionSupport": "Toutes les versions 3.x et 4.x",
         "workspaces": "3 Espaces de travail",
         "teamMembers": "5 Membres"
@@ -70,28 +70,28 @@
     },
     "enterprise": {
       "name": "Entreprise",
-      "description": "Pour les grandes equipes et les entreprises",
+      "description": "Pour les grandes équipes et les entreprises",
       "features": {
-        "servers": "Illimite",
+        "servers": "Illimité",
         "rabbitMQVersionSupport": "Toutes les versions 3.x et 4.x",
-        "workspaces": "Illimite",
-        "teamMembers": "Illimite"
+        "workspaces": "Illimité",
+        "teamMembers": "Illimité"
       }
     }
   },
   "paymentSuccess": {
-    "title": "Paiement reussi !",
-    "description": "Votre paiement a ete traite avec succes.",
-    "planActivated": "Forfait {{plan}} active",
-    "welcomeMessage": "Bienvenue dans votre nouveau forfait ! Profitez de toutes les fonctionnalites.",
+    "title": "Paiement réussi !",
+    "description": "Votre paiement a été traité avec succès.",
+    "planActivated": "Forfait {{plan}} activé",
+    "welcomeMessage": "Bienvenue dans votre nouveau forfait ! Profitez de toutes les fonctionnalités.",
     "exploreDashboard": "Explorer le tableau de bord",
-    "manageSubscription": "Gerer l'abonnement",
-    "needHelp": "Besoin d'aide ? Contactez notre equipe de support."
+    "manageSubscription": "Gérer l'abonnement",
+    "needHelp": "Besoin d'aide ? Contactez notre équipe de support."
   },
   "paymentCancelled": {
-    "title": "Paiement annule",
-    "description": "Votre paiement a ete annule. Aucun frais n'a ete preleve.",
-    "tryAgain": "Reessayer",
+    "title": "Paiement annulé",
+    "description": "Votre paiement a été annulé. Aucun frais n'a été prélevé.",
+    "tryAgain": "Réessayer",
     "processing": "Traitement en cours...",
     "backToDashboard": "Retour au tableau de bord"
   },

@@ -70,7 +70,11 @@
         "step4Title": "5. 访问应用程序",
         "step4Description": "在浏览器中打开 <code>http://localhost:3000</code>。该二进制文件通过单个端口同时提供 API 和前端服务。",
         "step4ManualSetup": "<strong>手动配置：</strong>你也可以跳过向导，直接进行配置：",
-        "cliFlagsTitle": "<strong>可用 CLI 选项：</strong>"
+        "cliFlagsTitle": "<strong>可用 CLI 选项：</strong>",
+        "setupWizardTitle": "配置向导将要求你：",
+        "setupWizardCreateAdmin": "<strong>创建管理员账户</strong>（推荐）— 一个预创建的用户，让你无需注册即可立即登录",
+        "setupWizardConfigureRegistration": "<strong>配置公开注册</strong> — 是否允许任何人通过网页表单注册",
+        "setupWizardTip": "提示：为了安全设置，对管理员账户选择\u201c是\u201d，对公开注册选择\u201c否\u201d。你可以稍后通过邀请链接邀请团队成员。"
       }
     },
     "smtp": {
@@ -154,6 +158,9 @@
     "troubleshooting": {
       "title": "故障排除",
       "wontStartTitle": "无法启动",
+      "execFormatTitle": "\"Exec format error\"",
+      "execFormatDescription": "这表示你下载了错误的架构。使用 <code>uname -m</code> 检查你的平台（<code>x86_64</code> = x64，<code>aarch64</code> = ARM64），然后重新下载正确的二进制文件：",
+      "execFormatTip": "Apple Silicon 上的 Multipass 创建的是 ARM64 虚拟机——请使用 Linux ARM64，而不是 Linux x64。",
       "binary": {
         "wontStartItem1": "检查终端输出中的错误信息",
         "wontStartItem2": "确认 <code>.env</code> 文件存在或传递所有必需的 CLI 参数",

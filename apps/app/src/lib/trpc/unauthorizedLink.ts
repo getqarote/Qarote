@@ -10,7 +10,10 @@ export const unauthorizedLink: TRPCLink<AppRouter> = () => {
           observer.next(value);
         },
         error(err) {
-          if (err?.data?.code === "UNAUTHORIZED") {
+          if (
+            err?.data?.code === "UNAUTHORIZED" &&
+            typeof window !== "undefined"
+          ) {
             window.dispatchEvent(new Event("auth:unauthorized"));
           }
           observer.error(err);
