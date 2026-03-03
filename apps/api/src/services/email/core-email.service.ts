@@ -4,6 +4,7 @@ import type { ReactElement } from "react";
 import { Resend } from "resend";
 
 import { logger } from "@/core/logger";
+import { prisma } from "@/core/prisma";
 import { retryWithBackoff } from "@/core/retry";
 
 import { Sentry, setSentryContext } from "@/services/sentry";
@@ -15,6 +16,20 @@ export interface EmailResult {
   success: boolean;
   messageId?: string;
   error?: string | null;
+}
+
+/** Shape of SMTP settings stored in SystemSetting (key: "smtp_config") */
+export interface SmtpEffectiveConfig {
+  enabled: boolean;
+  fromEmail: string;
+  host?: string;
+  port: number;
+  user?: string;
+  pass?: string;
+  service?: string;
+  oauthClientId?: string;
+  oauthClientSecret?: string;
+  oauthRefreshToken?: string;
 }
 
 interface BaseEmailParams {
@@ -39,6 +54,69 @@ interface BaseEmailParams {
 export class CoreEmailService {
   private static resend: Resend | null = null;
   private static smtpTransporter: nodemailer.Transporter | null = null;
+  /** Cached effective config from DB; null means "not loaded yet" */
+  private static effectiveSmtpConfig: SmtpEffectiveConfig | null = null;
+
+  /**
+   * Reset SMTP transporter so the next send recreates it from current config.
+   * Called after admin UI saves new SMTP settings.
+   */
+  static reinitialize() {
+    this.smtpTransporter = null;
+    this.effectiveSmtpConfig = null;
+    logger.info("SMTP transporter reset — will reload config on next send");
+  }
+
+  /**
+   * Load SMTP config from SystemSetting (key: "smtp_config"), falling back to
+   * the env-var-based `emailConfig`. Result is cached until `reinitialize()`.
+   */
+  static async loadEffectiveConfig(): Promise<SmtpEffectiveConfig> {
+    if (this.effectiveSmtpConfig) return this.effectiveSmtpConfig;
+
+    try {
+      const setting = await prisma.systemSetting.findUnique({
+        where: { key: "smtp_config" },
+      });
+      if (setting) {
+        const parsed = JSON.parse(
+          setting.value
+        ) as Partial<SmtpEffectiveConfig>;
+        if (parsed && typeof parsed.enabled === "boolean") {
+          this.effectiveSmtpConfig = {
+            enabled: parsed.enabled,
+            fromEmail: parsed.fromEmail || emailConfig.fromEmail,
+            host: parsed.host,
+            port: parsed.port ?? 587,
+            user: parsed.user,
+            pass: parsed.pass,
+            service: parsed.service,
+            oauthClientId: parsed.oauthClientId,
+            oauthClientSecret: parsed.oauthClientSecret,
+            oauthRefreshToken: parsed.oauthRefreshToken,
+          };
+          return this.effectiveSmtpConfig;
+        }
+      }
+    } catch {
+      // DB not ready or malformed — fall through to env config
+    }
+
+    // Fall back to env-var config
+    this.effectiveSmtpConfig = {
+      enabled: emailConfig.enabled,
+      fromEmail: emailConfig.fromEmail,
+      host: emailConfig.smtp.host,
+      port: emailConfig.smtp.port || 587,
+      user: emailConfig.smtp.user,
+      pass: emailConfig.smtp.pass,
+      service: emailConfig.smtp.service,
+      oauthClientId: emailConfig.smtp.oauth?.clientId,
+      oauthClientSecret: emailConfig.smtp.oauth?.clientSecret,
+      oauthRefreshToken: emailConfig.smtp.oauth?.refreshToken,
+    };
+    return this.effectiveSmtpConfig;
+  }
 
   private static initializeResend() {
     if (!this.resend && emailConfig.resendApiKey) {
@@ -47,35 +125,35 @@ export class CoreEmailService {
     return this.resend;
   }
 
-  private static initializeSMTP() {
-    if (!this.smtpTransporter && emailConfig.smtp.host) {
-      // Check if OAuth2 is configured
-      const hasOAuth2 =
-        emailConfig.smtp.oauth?.clientId &&
-        emailConfig.smtp.oauth?.clientSecret &&
-        emailConfig.smtp.oauth?.refreshToken;
+  private static async initializeSMTP(cfg?: SmtpEffectiveConfig) {
+    if (this.smtpTransporter) return this.smtpTransporter;
 
-      this.smtpTransporter = nodemailer.createTransport({
-        host: emailConfig.smtp.host,
-        port: emailConfig.smtp.port || 587,
-        secure: (emailConfig.smtp.port || 587) === 465,
-        service: emailConfig.smtp.service, // Optional: 'gmail', 'outlook', etc.
-        auth: hasOAuth2
+    const smtp = cfg ?? (await this.loadEffectiveConfig());
+    if (!smtp.host) return null;
+
+    const hasOAuth2 =
+      smtp.oauthClientId && smtp.oauthClientSecret && smtp.oauthRefreshToken;
+
+    this.smtpTransporter = nodemailer.createTransport({
+      host: smtp.host,
+      port: smtp.port || 587,
+      secure: (smtp.port || 587) === 465,
+      service: smtp.service,
+      auth: hasOAuth2
+        ? {
+            type: "OAuth2",
+            user: smtp.user,
+            clientId: smtp.oauthClientId,
+            clientSecret: smtp.oauthClientSecret,
+            refreshToken: smtp.oauthRefreshToken,
+          }
+        : smtp.user
           ? {
-              type: "OAuth2",
-              user: emailConfig.smtp.user,
-              clientId: emailConfig.smtp.oauth.clientId,
-              clientSecret: emailConfig.smtp.oauth.clientSecret,
-              refreshToken: emailConfig.smtp.oauth.refreshToken,
+              user: smtp.user,
+              pass: smtp.pass,
             }
-          : emailConfig.smtp.user
-            ? {
-                user: emailConfig.smtp.user,
-                pass: emailConfig.smtp.pass,
-              }
-            : undefined,
-      });
-    }
+          : undefined,
+    });
     return this.smtpTransporter;
   }
 
@@ -85,8 +163,11 @@ export class CoreEmailService {
   static async sendEmail(params: BaseEmailParams): Promise<EmailResult> {
     const { to, subject, template, emailType, context = {} } = params;
 
-    // Check if email is enabled
-    if (!emailConfig.enabled) {
+    // Load effective config (DB → env fallback) for SMTP-based sending
+    const effectiveCfg = await this.loadEffectiveConfig();
+
+    // Check if email is enabled (use effective config for self-hosted)
+    if (!effectiveCfg.enabled && !emailConfig.enabled) {
       logger.warn(
         {
           to,
@@ -130,6 +211,7 @@ export class CoreEmailService {
           html: emailHtml,
           emailType,
           context,
+          effectiveCfg,
         });
       } else {
         throw new Error(`Unknown email provider: ${emailConfig.provider}`);
@@ -257,20 +339,21 @@ export class CoreEmailService {
     html: string;
     emailType: string;
     context: Record<string, unknown>;
+    effectiveCfg: SmtpEffectiveConfig;
   }): Promise<EmailResult> {
-    const { to, subject, html, emailType, context } = params;
+    const { to, subject, html, emailType, context, effectiveCfg } = params;
 
-    if (!emailConfig.smtp.host) {
+    if (!effectiveCfg.host) {
       throw new Error("SMTP host not configured");
     }
 
-    const transporter = this.initializeSMTP();
+    const transporter = await this.initializeSMTP(effectiveCfg);
     if (!transporter) {
       throw new Error("SMTP transporter not initialized");
     }
 
     const info = await transporter.sendMail({
-      from: emailConfig.fromEmail,
+      from: effectiveCfg.fromEmail,
       to,
       subject,
       html,

@@ -21,6 +21,7 @@ const { values: cliArgs } = parseArgs({
     "encryption-key": { type: "string" },
     // Email
     "enable-email": { type: "string" },
+    "from-email": { type: "string" },
     "smtp-host": { type: "string" },
     "smtp-port": { type: "string" },
     "smtp-user": { type: "string" },
@@ -58,6 +59,7 @@ const flagToEnv: Record<string, string> = {
   "jwt-secret": "JWT_SECRET",
   "encryption-key": "ENCRYPTION_KEY",
   "enable-email": "ENABLE_EMAIL",
+  "from-email": "FROM_EMAIL",
   "smtp-host": "SMTP_HOST",
   "smtp-port": "SMTP_PORT",
   "smtp-user": "SMTP_USER",
