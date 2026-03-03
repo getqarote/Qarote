@@ -233,7 +233,7 @@ export class CoreEmailService {
         throw new Error(`Unknown email provider: ${emailConfig.provider}`);
       }
     } catch (error) {
-      logger.error(error, `Error sending ${emailType} email`);
+      logger.error({ error, emailType }, `Error sending ${emailType} email`);
 
       // Capture email error in Sentry (if enabled)
       if (Sentry) {
@@ -315,7 +315,10 @@ export class CoreEmailService {
     );
 
     if (error) {
-      logger.error(error, `Failed to send ${emailType} email via Resend`);
+      logger.error(
+        { error, emailType },
+        `Failed to send ${emailType} email via Resend`
+      );
       return {
         success: false,
         error:
