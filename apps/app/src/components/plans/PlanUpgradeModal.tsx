@@ -77,17 +77,19 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
   if (isSelfHostedMode()) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div className="bg-white dark:bg-gray-900 rounded-lg max-w-md w-full">
+        <div className="bg-background rounded-lg max-w-md w-full">
           <div className="flex items-center justify-between p-6 border-b">
             <div className="flex items-center gap-3">
-              <Key className="w-5 h-5 text-purple-600" />
+              <Key className="w-5 h-5 text-primary" />
               <h2 className="text-xl font-bold">
                 {t("upgradeModal.licenseRequired")}
               </h2>
             </div>
             <button
+              type="button"
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600"
+              className="text-muted-foreground hover:text-foreground"
+              aria-label="Close"
             >
               <X className="w-6 h-6" />
             </button>
@@ -109,7 +111,7 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
               </button>
               <button
                 type="button"
-                className="py-2 px-4 rounded-lg font-medium border border-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
+                className="py-2 px-4 rounded-lg font-medium border border-border hover:bg-muted"
                 onClick={() =>
                   window.open(
                     "https://qarote.io/pricing",

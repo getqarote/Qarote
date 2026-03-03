@@ -28,7 +28,7 @@
   "tenant": "Tenant",
   "product": "Producto",
   "testConnection": "Probar conexión",
-  "testSuccess": "Conexión exitosa! Emisor: {{issuer}}",
+  "testSuccess": "¡Conexión exitosa! Emisor: {{issuer}}",
   "testError": "Fallo en la prueba de conexión",
   "discoveryUrlRequired": "Ingrese primero una URL de descubrimiento OIDC",
   "save": "Guardar",

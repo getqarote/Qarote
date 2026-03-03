@@ -170,7 +170,7 @@ const Alerts = () => {
     <SidebarProvider>
       <div className="page-layout">
         <AppSidebar />
-        <FeatureGate feature="alerting">
+        <FeatureGate feature="alerting" fallback={<PageLoader />}>
           <main className="main-content-scrollable">
             <div className="content-container-large">
               {/* Header */}

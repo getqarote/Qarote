@@ -12,7 +12,7 @@
     },
     "highlights": {
       "liveMonitoring": "Live Monitoring",
-      "liveMonitoringDesc": "Monitor your RabbitMQ servers with second precision",
+      "liveMonitoringDesc": "Monitor your RabbitMQ servers with per-second precision",
       "smartAnalytics": "Smart Analytics",
       "smartAnalyticsDesc": "Insights and memory optimization tips",
       "enterpriseSecurity": "Enterprise Security",

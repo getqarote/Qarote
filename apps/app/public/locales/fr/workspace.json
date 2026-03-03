@@ -1,27 +1,27 @@
 {
   "create": {
-    "title": "Creez votre espace de travail",
-    "description": "Bienvenue sur Qarote ! Commencons par creer votre premier espace de travail. Les espaces de travail vous aident a organiser vos serveurs RabbitMQ et a collaborer avec votre equipe.",
+    "title": "Créez votre espace de travail",
+    "description": "Bienvenue sur Qarote ! Commençons par créer votre premier espace de travail. Les espaces de travail vous aident à organiser vos serveurs RabbitMQ et à collaborer avec votre équipe.",
     "cardTitle": "Nouvel espace de travail",
     "workspaceName": "Nom de l'espace de travail *",
     "workspaceNamePlaceholder": "Mon espace de travail",
-    "tagsLabel": "Etiquettes (Facultatif)",
-    "tagsPlaceholder": "Ajoutez des etiquettes pour organiser votre espace de travail",
-    "tagsHint": "Utilisez des etiquettes comme \"production\", \"developpement\" ou \"test\" pour organiser votre espace de travail",
-    "submit": "Creer l'espace de travail",
-    "creating": "Creation de l'espace de travail..."
+    "tagsLabel": "Étiquettes (Facultatif)",
+    "tagsPlaceholder": "Ajoutez des étiquettes pour organiser votre espace de travail",
+    "tagsHint": "Utilisez des étiquettes comme \"production\", \"développement\" ou \"test\" pour organiser votre espace de travail",
+    "submit": "Créer l'espace de travail",
+    "creating": "Création de l'espace de travail..."
   },
   "success": {
-    "title": "Espace de travail cree avec succes !",
+    "title": "Espace de travail créé avec succès !",
     "redirecting": "Redirection vers votre tableau de bord..."
   },
   "error": {
-    "createFailed": "Echec de la creation de l'espace de travail. Veuillez reessayer.",
+    "createFailed": "Échec de la création de l'espace de travail. Veuillez réessayer.",
     "unknown": "Une erreur inconnue s'est produite"
   },
   "toast": {
-    "workspaceCreated": "Espace de travail cree avec succes !",
-    "workspaceCreateFailed": "Echec de la creation de l'espace de travail : {{error}}"
+    "workspaceCreated": "Espace de travail créé avec succès !",
+    "workspaceCreateFailed": "Échec de la création de l'espace de travail : {{error}}"
   },
   "loading": "Chargement..."
 }

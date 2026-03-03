@@ -530,7 +530,7 @@ Keycloak admin console will be available at **http://localhost:8180** with crede
    - **Client authentication:** ON
 4. Click **Next**, set:
    - **Valid redirect URIs:** `http://localhost:3000/sso/callback`
-   - **Web origins:** `http://localhost:3000`
+   - **Web origins:** `http://localhost:8080`
 5. Click **Save**
 6. Go to the **Credentials** tab and copy the **Client secret**
 
@@ -561,6 +561,8 @@ API_URL=http://localhost:3000
 FRONTEND_URL=http://localhost:8080
 SSO_BUTTON_LABEL=Sign in with Keycloak
 ```
+
+> **Note:** Using `http://localhost:8180` for the discovery URL works for the manual login flow, but the **Test Connection** button in the Admin UI requires a reachable HTTPS URL and will reject local/internal hostnames. To use the connection test, point to your Keycloak instance via a public HTTPS URL.
 
 ### 6. Test the Flow
 
