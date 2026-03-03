@@ -103,9 +103,22 @@ export class CoreEmailService {
         { err },
         "Falling back to env SMTP config due to DB load failure"
       );
+      // Return env fallback WITHOUT caching so the next call retries the DB
+      return {
+        enabled: emailConfig.enabled,
+        fromEmail: emailConfig.fromEmail,
+        host: emailConfig.smtp.host,
+        port: emailConfig.smtp.port || 587,
+        user: emailConfig.smtp.user,
+        pass: emailConfig.smtp.pass,
+        service: emailConfig.smtp.service,
+        oauthClientId: emailConfig.smtp.oauth?.clientId,
+        oauthClientSecret: emailConfig.smtp.oauth?.clientSecret,
+        oauthRefreshToken: emailConfig.smtp.oauth?.refreshToken,
+      };
     }
 
-    // Fall back to env-var config
+    // No DB config found — cache the env fallback (DB is healthy, just no row)
     this.effectiveSmtpConfig = {
       enabled: emailConfig.enabled,
       fromEmail: emailConfig.fromEmail,
