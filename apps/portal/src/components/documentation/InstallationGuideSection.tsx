@@ -26,6 +26,8 @@ interface InstallationGuideSectionProps {
   onDeploymentChange: (value: string) => void;
 }
 
+const RELEASE_VERSION = "${RELEASE_VERSION}";
+
 export function InstallationGuideSection({
   activeDeployment,
   onDeploymentChange,
@@ -448,25 +450,25 @@ sudo -u postgres psql -c "CREATE DATABASE qarote OWNER qarote;"`}
                   </TabsList>
                   <TabsContent value="linux-x64">
                     <CodeBlock
-                      code={`curl -L https://github.com/getqarote/Qarote/releases/download/v1.2.0-beta.1/qarote-linux-x64.tar.gz | tar xz --strip-components=1`}
+                      code={`curl -L https://github.com/getqarote/Qarote/releases/download/${RELEASE_VERSION}/qarote-linux-x64.tar.gz | tar xz --strip-components=1`}
                       language="bash"
                     />
                   </TabsContent>
                   <TabsContent value="linux-arm64">
                     <CodeBlock
-                      code={`curl -L https://github.com/getqarote/Qarote/releases/download/v1.2.0-beta.1/qarote-linux-arm64.tar.gz | tar xz --strip-components=1`}
+                      code={`curl -L https://github.com/getqarote/Qarote/releases/download/${RELEASE_VERSION}/qarote-linux-arm64.tar.gz | tar xz --strip-components=1`}
                       language="bash"
                     />
                   </TabsContent>
                   <TabsContent value="darwin-arm64">
                     <CodeBlock
-                      code={`curl -L https://github.com/getqarote/Qarote/releases/download/v1.2.0-beta.1/qarote-darwin-arm64.tar.gz | tar xz --strip-components=1`}
+                      code={`curl -L https://github.com/getqarote/Qarote/releases/download/${RELEASE_VERSION}/qarote-darwin-arm64.tar.gz | tar xz --strip-components=1`}
                       language="bash"
                     />
                   </TabsContent>
                   <TabsContent value="darwin-x64">
                     <CodeBlock
-                      code={`curl -L https://github.com/getqarote/Qarote/releases/download/v1.2.0-beta.1/qarote-darwin-x64.tar.gz | tar xz --strip-components=1`}
+                      code={`curl -L https://github.com/getqarote/Qarote/releases/download/${RELEASE_VERSION}/qarote-darwin-x64.tar.gz | tar xz --strip-components=1`}
                       language="bash"
                     />
                   </TabsContent>
@@ -487,23 +489,26 @@ sudo -u postgres psql -c "CREATE DATABASE qarote OWNER qarote;"`}
                 />
                 <div className="bg-muted rounded-lg p-4 mt-2 space-y-2">
                   <p className="text-sm font-medium">
-                    The setup wizard will ask you to:
+                    {t("installGuide.quickStart.binary.setupWizardTitle")}
                   </p>
                   <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
-                    <li>
-                      <strong>Create an admin account</strong> (recommended) — a
-                      pre-created user so you can log in immediately without
-                      signing up
-                    </li>
-                    <li>
-                      <strong>Configure public registration</strong> — whether
-                      anyone can sign up via the web form
-                    </li>
+                    <li
+                      dangerouslySetInnerHTML={{
+                        __html: t(
+                          "installGuide.quickStart.binary.setupWizardCreateAdmin"
+                        ),
+                      }}
+                    />
+                    <li
+                      dangerouslySetInnerHTML={{
+                        __html: t(
+                          "installGuide.quickStart.binary.setupWizardConfigureRegistration"
+                        ),
+                      }}
+                    />
                   </ul>
                   <p className="text-xs text-muted-foreground">
-                    Tip: For a secure setup, say Yes to admin account and No to
-                    public registration. You can invite team members later via
-                    invite links.
+                    {t("installGuide.quickStart.binary.setupWizardTip")}
                   </p>
                 </div>
 
@@ -1032,25 +1037,25 @@ kill $(pgrep -f './qarote') 2>/dev/null || true`}
                 </TabsList>
                 <TabsContent value="linux-x64">
                   <CodeBlock
-                    code={`curl -L https://github.com/getqarote/Qarote/releases/download/v1.2.0-beta.1/qarote-linux-x64.tar.gz | tar xz --strip-components=1`}
+                    code={`curl -L https://github.com/getqarote/Qarote/releases/download/${RELEASE_VERSION}/qarote-linux-x64.tar.gz | tar xz --strip-components=1`}
                     language="bash"
                   />
                 </TabsContent>
                 <TabsContent value="linux-arm64">
                   <CodeBlock
-                    code={`curl -L https://github.com/getqarote/Qarote/releases/download/v1.2.0-beta.1/qarote-linux-arm64.tar.gz | tar xz --strip-components=1`}
+                    code={`curl -L https://github.com/getqarote/Qarote/releases/download/${RELEASE_VERSION}/qarote-linux-arm64.tar.gz | tar xz --strip-components=1`}
                     language="bash"
                   />
                 </TabsContent>
                 <TabsContent value="darwin-arm64">
                   <CodeBlock
-                    code={`curl -L https://github.com/getqarote/Qarote/releases/download/v1.2.0-beta.1/qarote-darwin-arm64.tar.gz | tar xz --strip-components=1`}
+                    code={`curl -L https://github.com/getqarote/Qarote/releases/download/${RELEASE_VERSION}/qarote-darwin-arm64.tar.gz | tar xz --strip-components=1`}
                     language="bash"
                   />
                 </TabsContent>
                 <TabsContent value="darwin-x64">
                   <CodeBlock
-                    code={`curl -L https://github.com/getqarote/Qarote/releases/download/v1.2.0-beta.1/qarote-darwin-x64.tar.gz | tar xz --strip-components=1`}
+                    code={`curl -L https://github.com/getqarote/Qarote/releases/download/${RELEASE_VERSION}/qarote-darwin-x64.tar.gz | tar xz --strip-components=1`}
                     language="bash"
                   />
                 </TabsContent>
@@ -1104,24 +1109,25 @@ dokku run qarote pnpm run db:migrate`}
             {activeDeployment === "binary" && (
               <AccordionItem value="exec-format-error">
                 <AccordionTrigger className="text-sm font-medium">
-                  &quot;Exec format error&quot;
+                  {t("installGuide.troubleshooting.execFormatTitle")}
                 </AccordionTrigger>
                 <AccordionContent className="space-y-3">
-                  <p className="text-sm text-muted-foreground">
-                    This means you downloaded the wrong architecture. Check your
-                    platform with <code>uname -m</code> (<code>x86_64</code> =
-                    x64, <code>aarch64</code> = ARM64), then re-download the
-                    correct binary in-place:
-                  </p>
+                  <p
+                    className="text-sm text-muted-foreground"
+                    dangerouslySetInnerHTML={{
+                      __html: t(
+                        "installGuide.troubleshooting.execFormatDescription"
+                      ),
+                    }}
+                  />
                   <CodeBlock
                     code={`# Example: switch from linux-x64 to linux-arm64
-curl -L https://github.com/getqarote/Qarote/releases/download/v1.2.0-beta.1/qarote-linux-arm64.tar.gz | tar xz --strip-components=1
+curl -L https://github.com/getqarote/Qarote/releases/download/${RELEASE_VERSION}/qarote-linux-arm64.tar.gz | tar xz --strip-components=1
 ./qarote setup`}
                     language="bash"
                   />
                   <p className="text-xs text-muted-foreground">
-                    Multipass on Apple Silicon creates ARM64 VMs — use Linux
-                    ARM64, not Linux x64.
+                    {t("installGuide.troubleshooting.execFormatTip")}
                   </p>
                 </AccordionContent>
               </AccordionItem>

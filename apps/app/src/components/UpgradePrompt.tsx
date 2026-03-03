@@ -61,7 +61,7 @@ export function UpgradePrompt({
               <p className="text-sm text-muted-foreground">
                 {cloud
                   ? "This feature requires an upgraded plan. View available plans to unlock it."
-                  : "This feature requires an active license. Activate a license in Settings to unlock it."}
+                  : "This feature requires an active license. Activate a license on the License page to unlock it."}
               </p>
             </div>
           </div>
@@ -78,7 +78,7 @@ export function UpgradePrompt({
               <Button
                 variant="outline"
                 onClick={() => {
-                  window.open("https://qarote.io/contact", "_blank");
+                  window.open("https://qarote.io/contact", "_blank", "noopener,noreferrer");
                 }}
               >
                 Contact Sales
@@ -95,7 +95,7 @@ export function UpgradePrompt({
               <Button
                 variant="outline"
                 onClick={() => {
-                  window.open("https://qarote.io/pricing", "_blank");
+                  window.open("https://qarote.io/pricing", "_blank", "noopener,noreferrer");
                 }}
               >
                 Purchase License

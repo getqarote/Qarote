@@ -69,16 +69,20 @@ sudo -u postgres psql -c "CREATE DATABASE qarote OWNER qarote;"
 
 Your database URL will be: `postgresql://qarote:your-secure-password@localhost:5432/qarote`
 
+<!-- Update VERSION below to match the latest release from https://github.com/getqarote/Qarote/releases -->
+
 ```bash
+VERSION=v1.2.0-beta.1
+
 # 2. Download and extract for your platform
 # Linux x64
-curl -L https://github.com/getqarote/Qarote/releases/download/v1.2.0-beta.1/qarote-linux-x64.tar.gz | tar xz --strip-components=1
+curl -L https://github.com/getqarote/Qarote/releases/download/$VERSION/qarote-linux-x64.tar.gz | tar xz --strip-components=1
 # Linux ARM64
-curl -L https://github.com/getqarote/Qarote/releases/download/v1.2.0-beta.1/qarote-linux-arm64.tar.gz | tar xz --strip-components=1
+curl -L https://github.com/getqarote/Qarote/releases/download/$VERSION/qarote-linux-arm64.tar.gz | tar xz --strip-components=1
 # macOS Apple Silicon (M1/M2/M3)
-curl -L https://github.com/getqarote/Qarote/releases/download/v1.2.0-beta.1/qarote-darwin-arm64.tar.gz | tar xz --strip-components=1
+curl -L https://github.com/getqarote/Qarote/releases/download/$VERSION/qarote-darwin-arm64.tar.gz | tar xz --strip-components=1
 # macOS Intel
-curl -L https://github.com/getqarote/Qarote/releases/download/v1.2.0-beta.1/qarote-darwin-x64.tar.gz | tar xz --strip-components=1
+curl -L https://github.com/getqarote/Qarote/releases/download/$VERSION/qarote-darwin-x64.tar.gz | tar xz --strip-components=1
 # Windows: use Linux x64 inside WSL2
 # Multipass on Apple Silicon: VMs are ARM64, use linux-arm64 (not linux-x64)
 
@@ -431,24 +435,36 @@ Features unlock immediately — no restart required. To deactivate, use the same
 ### Binary
 
 ```bash
+# Check the latest release at https://github.com/getqarote/Qarote/releases
+VERSION=v1.2.0-beta.1
+
+# Record current version and create a backup
+./qarote --version
+cp qarote qarote.backup
+
 # Stop the running instance
 kill $(pgrep -f './qarote') 2>/dev/null || true
 
 # Download and extract in-place (pick your platform)
 # Linux x64
-curl -L https://github.com/getqarote/Qarote/releases/download/v1.2.0-beta.1/qarote-linux-x64.tar.gz | tar xz --strip-components=1
+curl -L https://github.com/getqarote/Qarote/releases/download/$VERSION/qarote-linux-x64.tar.gz | tar xz --strip-components=1
 # Linux ARM64
-curl -L https://github.com/getqarote/Qarote/releases/download/v1.2.0-beta.1/qarote-linux-arm64.tar.gz | tar xz --strip-components=1
+curl -L https://github.com/getqarote/Qarote/releases/download/$VERSION/qarote-linux-arm64.tar.gz | tar xz --strip-components=1
 # macOS Apple Silicon
-curl -L https://github.com/getqarote/Qarote/releases/download/v1.2.0-beta.1/qarote-darwin-arm64.tar.gz | tar xz --strip-components=1
+curl -L https://github.com/getqarote/Qarote/releases/download/$VERSION/qarote-darwin-arm64.tar.gz | tar xz --strip-components=1
 # macOS Intel
-curl -L https://github.com/getqarote/Qarote/releases/download/v1.2.0-beta.1/qarote-darwin-x64.tar.gz | tar xz --strip-components=1
+curl -L https://github.com/getqarote/Qarote/releases/download/$VERSION/qarote-darwin-x64.tar.gz | tar xz --strip-components=1
+
+# Verify the new version
+./qarote --version
 
 # Restart — new migrations are applied automatically on startup
 ./qarote
 ```
 
 Your `.env` file is preserved. New database migrations are applied automatically on startup.
+
+> **Rollback:** If the new version has issues, restore the backup: `mv qarote.backup qarote && ./qarote`
 
 ### Docker Compose
 
@@ -468,15 +484,21 @@ git push dokku main
 
 ### "Exec format error" (Binary)
 
-This means you downloaded the wrong architecture. Check your platform with `uname -m` (`x86_64` = x64, `aarch64` = ARM64), then re-download the correct binary in-place:
+This means you downloaded the wrong architecture. Check your platform with `uname -m`:
+
+- `x86_64` → use the `-x64` variant
+- `aarch64` (Linux) or `arm64` (macOS) → use the `-arm64` variant
+
+Then re-download the correct binary in-place:
 
 ```bash
 # Example: switch from linux-x64 to linux-arm64
-curl -L https://github.com/getqarote/Qarote/releases/download/v1.2.0-beta.1/qarote-linux-arm64.tar.gz | tar xz --strip-components=1
+VERSION=v1.2.0-beta.1  # or your installed version
+curl -L https://github.com/getqarote/Qarote/releases/download/$VERSION/qarote-linux-arm64.tar.gz | tar xz --strip-components=1
 ./qarote setup
 ```
 
-> **Tip:** Multipass on Apple Silicon creates ARM64 VMs — use `linux-arm64`, not `linux-x64`.
+> **Tip:** Multipass on Apple Silicon creates ARM64 VMs — use `linux-arm64`, not `linux-x64`. macOS users on Apple Silicon should pick `darwin-arm64`.
 
 ### Database Connection Issues
 

@@ -26,6 +26,7 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
 }) => {
   const { planData, userPlan } = useUser();
   const { workspace } = useWorkspace();
+  const navigate = useNavigate();
   const [isUpgrading, setIsUpgrading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -68,8 +69,6 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
     }
   };
 
-  const navigate = useNavigate();
-
   if (!isOpen) return null;
 
   // Self-hosted: show license activation prompt instead of Stripe plans
@@ -96,7 +95,8 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
             </p>
             <div className="flex gap-2">
               <button
-                className="flex-1 py-2 px-4 rounded-lg font-medium bg-linear-to-r from-orange-400 to-red-500 hover:from-orange-500 hover:to-red-600 text-white"
+                type="button"
+                className="flex-1 btn-primary rounded-lg"
                 onClick={() => {
                   onClose();
                   navigate("/license");
@@ -105,6 +105,7 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
                 Activate License
               </button>
               <button
+                type="button"
                 className="py-2 px-4 rounded-lg font-medium border border-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
                 onClick={() =>
                   window.open("https://qarote.io/pricing", "_blank")

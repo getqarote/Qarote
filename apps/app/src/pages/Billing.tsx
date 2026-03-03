@@ -100,7 +100,7 @@ const Billing: React.FC = () => {
   const createBillingPortalMutation =
     trpc.payment.billing.createBillingPortalSession.useMutation({
       onSuccess: (data: { url: string }) => {
-        window.open(data.url, "_blank");
+        window.open(data.url, "_blank", "noopener,noreferrer");
       },
       onError: (error: Error) => {
         logger.error("Failed to open billing portal:", error);

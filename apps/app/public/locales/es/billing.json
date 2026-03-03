@@ -59,7 +59,7 @@
       }
     },
     "developer": {
-      "name": "Developer",
+      "name": "Desarrollador",
       "description": "Para desarrolladores individuales y proyectos pequeños",
       "features": {
         "servers": "Hasta 3",
@@ -69,7 +69,7 @@
       }
     },
     "enterprise": {
-      "name": "Enterprise",
+      "name": "Empresarial",
       "description": "Para equipos grandes y empresas",
       "features": {
         "servers": "Ilimitado",

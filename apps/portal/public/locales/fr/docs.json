@@ -70,7 +70,11 @@
         "step4Title": "5. Accéder à l'application",
         "step4Description": "Ouvrez <code>http://localhost:3000</code> dans votre navigateur. Le binaire sert à la fois l'API et le frontend depuis un seul port.",
         "step4ManualSetup": "<strong>Configuration manuelle :</strong> Vous pouvez également ignorer l'assistant et configurer directement :",
-        "cliFlagsTitle": "<strong>Options CLI disponibles :</strong>"
+        "cliFlagsTitle": "<strong>Options CLI disponibles :</strong>",
+        "setupWizardTitle": "L'assistant de configuration vous demandera de :",
+        "setupWizardCreateAdmin": "<strong>Créer un compte administrateur</strong> (recommandé) — un utilisateur pré-créé pour que vous puissiez vous connecter immédiatement sans inscription",
+        "setupWizardConfigureRegistration": "<strong>Configurer l'inscription publique</strong> — si n'importe qui peut s'inscrire via le formulaire web",
+        "setupWizardTip": "Conseil : pour une installation sécurisée, répondez Oui au compte administrateur et Non à l'inscription publique. Vous pourrez inviter des membres d'équipe plus tard via des liens d'invitation."
       }
     },
     "smtp": {
@@ -154,6 +158,9 @@
     "troubleshooting": {
       "title": "Dépannage",
       "wontStartTitle": "Ne démarre pas",
+      "execFormatTitle": "\"Exec format error\"",
+      "execFormatDescription": "Cela signifie que vous avez téléchargé la mauvaise architecture. Vérifiez votre plateforme avec <code>uname -m</code> (<code>x86_64</code> = x64, <code>aarch64</code> = ARM64), puis retéléchargez le bon binaire :",
+      "execFormatTip": "Multipass sur Apple Silicon crée des VMs ARM64 — utilisez Linux ARM64, pas Linux x64.",
       "binary": {
         "wontStartItem1": "Vérifiez la sortie du terminal pour les messages d'erreur",
         "wontStartItem2": "Vérifiez que votre fichier <code>.env</code> existe ou passez tous les flags CLI requis",

@@ -32,11 +32,11 @@ export const DiscordLink: React.FC<DiscordLinkProps> = ({
       await markJoinedMutation.mutateAsync();
 
       // Open Discord invite in new tab
-      window.open(DISCORD_INVITE_URL, "_blank");
+      window.open(DISCORD_INVITE_URL, "_blank", "noopener,noreferrer");
     } catch (error) {
       logger.error("Error marking user as joined Discord:", error);
       // Still open Discord even if API call fails
-      window.open(DISCORD_INVITE_URL, "_blank");
+      window.open(DISCORD_INVITE_URL, "_blank", "noopener,noreferrer");
     }
   };
 
