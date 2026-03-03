@@ -58,6 +58,7 @@
     "@tawk.to/tawk-messenger-react": "^2.0.2",
     "@trpc/client": "^11.8.1",
     "@trpc/react-query": "^11.8.1",
+    "@trpc/server": "^11.8.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
