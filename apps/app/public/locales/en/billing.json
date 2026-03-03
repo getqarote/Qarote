@@ -95,6 +95,28 @@
     "processing": "Processing...",
     "backToDashboard": "Back to Dashboard"
   },
+  "upgradeModal": {
+    "licenseRequired": "License Required",
+    "licenseDescription": "To use {{feature}}, activate a license key on the License page.",
+    "activateLicense": "Activate License",
+    "purchase": "Purchase",
+    "loadingPlans": "Loading plans...",
+    "upgradeYourPlan": "Upgrade Your Plan",
+    "upgradeDescription": "To use {{feature}}, you need to upgrade from the {{plan}} plan. This upgrade will apply to all your workspaces.",
+    "upgradeFailed": "Failed to start upgrade process. Please try again.",
+    "mostPopular": "Most Popular",
+    "perMonth": "/month",
+    "unlimitedQueues": "Unlimited queues",
+    "unlimitedServers": "Unlimited servers",
+    "teamMembers": "{{count}} team members",
+    "unlimitedTeamMembers": "Unlimited team members",
+    "messageSending": "Message sending & queue management",
+    "advancedMetrics": "Advanced metrics & analytics",
+    "prioritySupport": "Priority support",
+    "advancedAlerts": "Advanced alerts & notifications",
+    "processing": "Processing...",
+    "upgradeTo": "Upgrade to {{plan}}"
+  },
   "error": {
     "workspaceIdRequired": "Workspace ID is required"
   }

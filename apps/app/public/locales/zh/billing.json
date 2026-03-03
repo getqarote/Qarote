@@ -95,6 +95,28 @@
     "processing": "处理中...",
     "backToDashboard": "返回仪表盘"
   },
+  "upgradeModal": {
+    "licenseRequired": "需要许可证",
+    "licenseDescription": "要使用{{feature}}，请在许可证页面激活许可证密钥。",
+    "activateLicense": "激活许可证",
+    "purchase": "购买",
+    "loadingPlans": "正在加载方案...",
+    "upgradeYourPlan": "升级您的方案",
+    "upgradeDescription": "要使用{{feature}}，您需要从{{plan}}方案升级。此升级将应用于您的所有工作区。",
+    "upgradeFailed": "升级过程启动失败，请重试。",
+    "mostPopular": "最受欢迎",
+    "perMonth": "/月",
+    "unlimitedQueues": "无限队列",
+    "unlimitedServers": "无限服务器",
+    "teamMembers": "{{count}} 个团队成员",
+    "unlimitedTeamMembers": "无限团队成员",
+    "messageSending": "消息发送和队列管理",
+    "advancedMetrics": "高级指标和分析",
+    "prioritySupport": "优先支持",
+    "advancedAlerts": "高级告警和通知",
+    "processing": "处理中...",
+    "upgradeTo": "升级到{{plan}}"
+  },
   "error": {
     "workspaceIdRequired": "需要工作区 ID"
   }
