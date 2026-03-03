@@ -28,6 +28,39 @@ interface InstallationGuideSectionProps {
 
 const RELEASE_VERSION = "${RELEASE_VERSION}";
 
+const ARCHITECTURES = [
+  { value: "linux-x64", label: "Linux x64" },
+  { value: "linux-arm64", label: "Linux ARM64" },
+  { value: "darwin-arm64", label: "macOS ARM" },
+  { value: "darwin-x64", label: "macOS Intel" },
+] as const;
+
+function ArchDownloadTabs({
+  defaultValue = "linux-x64",
+}: {
+  defaultValue?: string;
+}) {
+  return (
+    <Tabs defaultValue={defaultValue} className="w-full">
+      <TabsList className="grid w-full grid-cols-4">
+        {ARCHITECTURES.map((arch) => (
+          <TabsTrigger key={arch.value} value={arch.value}>
+            {arch.label}
+          </TabsTrigger>
+        ))}
+      </TabsList>
+      {ARCHITECTURES.map((arch) => (
+        <TabsContent key={arch.value} value={arch.value}>
+          <CodeBlock
+            code={`curl -L https://github.com/getqarote/Qarote/releases/download/${RELEASE_VERSION}/qarote-${arch.value}.tar.gz | tar xz --strip-components=1`}
+            language="bash"
+          />
+        </TabsContent>
+      ))}
+    </Tabs>
+  );
+}
+
 export function InstallationGuideSection({
   activeDeployment,
   onDeploymentChange,
@@ -441,38 +474,7 @@ sudo -u postgres psql -c "CREATE DATABASE qarote OWNER qarote;"`}
                   {t("installGuide.quickStart.binary.step1Title")}
                 </h5>
 
-                <Tabs defaultValue="linux-x64" className="w-full">
-                  <TabsList className="grid w-full grid-cols-4">
-                    <TabsTrigger value="linux-x64">Linux x64</TabsTrigger>
-                    <TabsTrigger value="linux-arm64">Linux ARM64</TabsTrigger>
-                    <TabsTrigger value="darwin-arm64">macOS ARM</TabsTrigger>
-                    <TabsTrigger value="darwin-x64">macOS Intel</TabsTrigger>
-                  </TabsList>
-                  <TabsContent value="linux-x64">
-                    <CodeBlock
-                      code={`curl -L https://github.com/getqarote/Qarote/releases/download/${RELEASE_VERSION}/qarote-linux-x64.tar.gz | tar xz --strip-components=1`}
-                      language="bash"
-                    />
-                  </TabsContent>
-                  <TabsContent value="linux-arm64">
-                    <CodeBlock
-                      code={`curl -L https://github.com/getqarote/Qarote/releases/download/${RELEASE_VERSION}/qarote-linux-arm64.tar.gz | tar xz --strip-components=1`}
-                      language="bash"
-                    />
-                  </TabsContent>
-                  <TabsContent value="darwin-arm64">
-                    <CodeBlock
-                      code={`curl -L https://github.com/getqarote/Qarote/releases/download/${RELEASE_VERSION}/qarote-darwin-arm64.tar.gz | tar xz --strip-components=1`}
-                      language="bash"
-                    />
-                  </TabsContent>
-                  <TabsContent value="darwin-x64">
-                    <CodeBlock
-                      code={`curl -L https://github.com/getqarote/Qarote/releases/download/${RELEASE_VERSION}/qarote-darwin-x64.tar.gz | tar xz --strip-components=1`}
-                      language="bash"
-                    />
-                  </TabsContent>
-                </Tabs>
+                <ArchDownloadTabs />
                 <h5 className="text-sm font-medium">
                   {t("installGuide.quickStart.binary.step2Title")}
                 </h5>
@@ -1028,38 +1030,7 @@ dokku run qarote pnpm run test:smtp -- --send admin@yourcompany.com`}
 kill $(pgrep -f './qarote') 2>/dev/null || true`}
                 language="bash"
               />
-              <Tabs defaultValue="linux-x64" className="w-full">
-                <TabsList className="grid w-full grid-cols-4">
-                  <TabsTrigger value="linux-x64">Linux x64</TabsTrigger>
-                  <TabsTrigger value="linux-arm64">Linux ARM64</TabsTrigger>
-                  <TabsTrigger value="darwin-arm64">macOS ARM</TabsTrigger>
-                  <TabsTrigger value="darwin-x64">macOS Intel</TabsTrigger>
-                </TabsList>
-                <TabsContent value="linux-x64">
-                  <CodeBlock
-                    code={`curl -L https://github.com/getqarote/Qarote/releases/download/${RELEASE_VERSION}/qarote-linux-x64.tar.gz | tar xz --strip-components=1`}
-                    language="bash"
-                  />
-                </TabsContent>
-                <TabsContent value="linux-arm64">
-                  <CodeBlock
-                    code={`curl -L https://github.com/getqarote/Qarote/releases/download/${RELEASE_VERSION}/qarote-linux-arm64.tar.gz | tar xz --strip-components=1`}
-                    language="bash"
-                  />
-                </TabsContent>
-                <TabsContent value="darwin-arm64">
-                  <CodeBlock
-                    code={`curl -L https://github.com/getqarote/Qarote/releases/download/${RELEASE_VERSION}/qarote-darwin-arm64.tar.gz | tar xz --strip-components=1`}
-                    language="bash"
-                  />
-                </TabsContent>
-                <TabsContent value="darwin-x64">
-                  <CodeBlock
-                    code={`curl -L https://github.com/getqarote/Qarote/releases/download/${RELEASE_VERSION}/qarote-darwin-x64.tar.gz | tar xz --strip-components=1`}
-                    language="bash"
-                  />
-                </TabsContent>
-              </Tabs>
+              <ArchDownloadTabs />
               <CodeBlock
                 code={`# Restart — new migrations are applied automatically on startup
 # (your .env file is preserved — no reconfiguration needed)
@@ -1137,27 +1108,27 @@ curl -L https://github.com/getqarote/Qarote/releases/download/${RELEASE_VERSION}
               </AccordionTrigger>
               <AccordionContent>
                 <ul className="list-disc list-inside space-y-2 text-sm text-muted-foreground">
-                  <li
-                    dangerouslySetInnerHTML={{
-                      __html: t(
-                        `installGuide.troubleshooting.${troubleshootingMethod}.wontStartItem1`
-                      ),
-                    }}
-                  />
-                  <li
-                    dangerouslySetInnerHTML={{
-                      __html: t(
-                        `installGuide.troubleshooting.${troubleshootingMethod}.wontStartItem2`
-                      ),
-                    }}
-                  />
-                  <li
-                    dangerouslySetInnerHTML={{
-                      __html: t(
-                        `installGuide.troubleshooting.${troubleshootingMethod}.wontStartItem3`
-                      ),
-                    }}
-                  />
+                  <li>
+                    <Trans
+                      i18nKey={`installGuide.troubleshooting.${troubleshootingMethod}.wontStartItem1`}
+                      ns="docs"
+                      components={{ code: <code /> }}
+                    />
+                  </li>
+                  <li>
+                    <Trans
+                      i18nKey={`installGuide.troubleshooting.${troubleshootingMethod}.wontStartItem2`}
+                      ns="docs"
+                      components={{ code: <code /> }}
+                    />
+                  </li>
+                  <li>
+                    <Trans
+                      i18nKey={`installGuide.troubleshooting.${troubleshootingMethod}.wontStartItem3`}
+                      ns="docs"
+                      components={{ code: <code /> }}
+                    />
+                  </li>
                 </ul>
               </AccordionContent>
             </AccordionItem>
@@ -1168,27 +1139,27 @@ curl -L https://github.com/getqarote/Qarote/releases/download/${RELEASE_VERSION}
               </AccordionTrigger>
               <AccordionContent>
                 <ul className="list-disc list-inside space-y-2 text-sm text-muted-foreground">
-                  <li
-                    dangerouslySetInnerHTML={{
-                      __html: t(
-                        `installGuide.troubleshooting.${troubleshootingMethod}.databaseItem1`
-                      ),
-                    }}
-                  />
-                  <li
-                    dangerouslySetInnerHTML={{
-                      __html: t(
-                        `installGuide.troubleshooting.${troubleshootingMethod}.databaseItem2`
-                      ),
-                    }}
-                  />
-                  <li
-                    dangerouslySetInnerHTML={{
-                      __html: t(
-                        `installGuide.troubleshooting.${troubleshootingMethod}.databaseItem3`
-                      ),
-                    }}
-                  />
+                  <li>
+                    <Trans
+                      i18nKey={`installGuide.troubleshooting.${troubleshootingMethod}.databaseItem1`}
+                      ns="docs"
+                      components={{ code: <code /> }}
+                    />
+                  </li>
+                  <li>
+                    <Trans
+                      i18nKey={`installGuide.troubleshooting.${troubleshootingMethod}.databaseItem2`}
+                      ns="docs"
+                      components={{ code: <code /> }}
+                    />
+                  </li>
+                  <li>
+                    <Trans
+                      i18nKey={`installGuide.troubleshooting.${troubleshootingMethod}.databaseItem3`}
+                      ns="docs"
+                      components={{ code: <code /> }}
+                    />
+                  </li>
                 </ul>
               </AccordionContent>
             </AccordionItem>
