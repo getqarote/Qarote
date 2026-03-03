@@ -5,7 +5,7 @@
   "quickLinks": {
     "dashboard": {
       "title": "Dashboard & Servers",
-      "description": "View overview and manage your RabbitMQ server connections"
+      "description": "View an overview and manage your RabbitMQ server connections"
     },
     "queueManagement": {
       "title": "Queue Management",

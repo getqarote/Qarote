@@ -98,8 +98,11 @@ export class CoreEmailService {
           return this.effectiveSmtpConfig;
         }
       }
-    } catch {
-      // DB not ready or malformed — fall through to env config
+    } catch (err) {
+      logger.warn(
+        { err },
+        "Falling back to env SMTP config due to DB load failure"
+      );
     }
 
     // Fall back to env-var config

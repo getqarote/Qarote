@@ -54,6 +54,32 @@ const smtpSettingsSchema = z
       message: "From email is required when email is enabled",
       path: ["fromEmail"],
     }
+  )
+  .refine(
+    (data) => {
+      const oauthFields = [
+        data.oauthClientId,
+        data.oauthClientSecret,
+        data.oauthRefreshToken,
+      ].filter(Boolean);
+      return oauthFields.length === 0 || oauthFields.length === 3;
+    },
+    {
+      message:
+        "OAuth2 requires all three fields: client ID, client secret, and refresh token",
+      path: ["oauthClientId"],
+    }
+  )
+  .refine(
+    (data) => {
+      const hasOAuth =
+        data.oauthClientId || data.oauthClientSecret || data.oauthRefreshToken;
+      return !hasOAuth || (data.user && data.user.length > 0);
+    },
+    {
+      message: "SMTP user is required when using OAuth2 authentication",
+      path: ["user"],
+    }
   );
 
 export const selfhostedSmtpRouter = router({
@@ -87,8 +113,9 @@ export const selfhostedSmtpRouter = router({
           { error: parsed.error },
           "Malformed SMTP config in database, falling back to env vars"
         );
-      } catch {
+      } catch (err) {
         ctx.logger.warn(
+          { err },
           "Invalid JSON in SMTP config database row, falling back to env vars"
         );
       }

@@ -182,7 +182,12 @@ export async function runSetup(): Promise<void> {
   let smtpOauthRefreshToken = "";
 
   if (enableEmail) {
-    smtpHost = await ask("SMTP host");
+    while (!smtpHost) {
+      smtpHost = await ask("SMTP host");
+      if (!smtpHost) {
+        console.log(c.red("    Required.") + c.dim(" Example: smtp.gmail.com"));
+      }
+    }
     smtpPort = await ask("SMTP port", "587");
     fromEmail = await ask("From email address", "noreply@localhost");
     smtpUser = await ask("SMTP user");
