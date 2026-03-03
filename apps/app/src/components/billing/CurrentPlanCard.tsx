@@ -7,7 +7,7 @@ import { formatCurrency, formatDate } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-import { UserPlan } from "@/types/plans";
+import { getPlanDisplayName, UserPlan } from "@/types/plans";
 
 interface CurrentPlanCardProps {
   subscription?: {
@@ -40,19 +40,6 @@ export const CurrentPlanCard: React.FC<CurrentPlanCardProps> = ({
   stripeSubscription,
   paymentMethod,
 }) => {
-  const getPlanDisplayName = (plan: UserPlan): string => {
-    switch (plan) {
-      case UserPlan.FREE:
-        return "Free";
-      case UserPlan.DEVELOPER:
-        return "Developer";
-      case UserPlan.ENTERPRISE:
-        return "Enterprise";
-      default:
-        return UserPlan.FREE;
-    }
-  };
-
   return (
     <Card className="border-l-4 border-l-primary">
       <CardHeader>
