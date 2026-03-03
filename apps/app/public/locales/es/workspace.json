@@ -1,17 +1,27 @@
 {
-  "pageTitle": "Qarote",
-  "heading": "Crea tu espacio de trabajo",
-  "subheading": "\u00a1Bienvenido a Qarote! Comencemos creando tu primer espacio de trabajo. Los espacios de trabajo te ayudan a organizar tus servidores RabbitMQ y colaborar con tu equipo.",
-  "formTitle": "Nuevo espacio de trabajo",
-  "workspaceName": "Nombre del espacio de trabajo *",
-  "workspacePlaceholder": "Mi espacio de trabajo",
-  "tags": "Etiquetas (opcional)",
-  "tagsPlaceholder": "Agrega etiquetas para organizar tu espacio de trabajo",
-  "tagsHint": "Usa etiquetas como \"producci\u00f3n\", \"desarrollo\" o \"pruebas\" para organizar tu espacio de trabajo",
-  "createButton": "Crear espacio de trabajo",
-  "creatingButton": "Creando espacio de trabajo...",
-  "successTitle": "\u00a1Espacio de trabajo creado exitosamente!",
-  "successMessage": "Redirigiendo a tu panel...",
-  "loadingMessage": "Cargando...",
-  "failedToCreate": "No se pudo crear el espacio de trabajo. Por favor int\u00e9ntalo de nuevo."
+  "create": {
+    "title": "Crea tu espacio de trabajo",
+    "description": "\u00a1Bienvenido a Qarote! Comencemos creando tu primer espacio de trabajo. Los espacios de trabajo te ayudan a organizar tus servidores RabbitMQ y colaborar con tu equipo.",
+    "cardTitle": "Nuevo espacio de trabajo",
+    "workspaceName": "Nombre del espacio de trabajo *",
+    "workspaceNamePlaceholder": "Mi espacio de trabajo",
+    "tagsLabel": "Etiquetas (opcional)",
+    "tagsPlaceholder": "Agrega etiquetas para organizar tu espacio de trabajo",
+    "tagsHint": "Usa etiquetas como \"producci\u00f3n\", \"desarrollo\" o \"pruebas\" para organizar tu espacio de trabajo",
+    "submit": "Crear espacio de trabajo",
+    "creating": "Creando espacio de trabajo..."
+  },
+  "success": {
+    "title": "\u00a1Espacio de trabajo creado exitosamente!",
+    "redirecting": "Redirigiendo a tu panel..."
+  },
+  "error": {
+    "createFailed": "No se pudo crear el espacio de trabajo. Por favor int\u00e9ntalo de nuevo.",
+    "unknown": "Ocurri\u00f3 un error desconocido"
+  },
+  "toast": {
+    "workspaceCreated": "\u00a1Espacio de trabajo creado exitosamente!",
+    "workspaceCreateFailed": "No se pudo crear el espacio de trabajo: {{error}}"
+  },
+  "loading": "Cargando..."
 }
