@@ -40,6 +40,8 @@ export const CurrentPlanCard: React.FC<CurrentPlanCardProps> = ({
   stripeSubscription,
   paymentMethod,
 }) => {
+  const plan = subscription?.plan ?? UserPlan.FREE;
+
   return (
     <Card className="border-l-4 border-l-primary">
       <CardHeader>
@@ -50,19 +52,15 @@ export const CurrentPlanCard: React.FC<CurrentPlanCardProps> = ({
             </div>
             <div>
               <CardTitle className="flex items-center gap-2">
-                {getPlanDisplayName(subscription?.plan)} Plan
+                {getPlanDisplayName(plan)} Plan
                 <Badge
-                  variant={
-                    subscription?.plan === UserPlan.FREE
-                      ? "secondary"
-                      : "default"
-                  }
+                  variant={plan === UserPlan.FREE ? "secondary" : "default"}
                 >
                   {subscription?.status || "Active"}
                 </Badge>
               </CardTitle>
               <p className="text-sm text-muted-foreground mt-1">
-                {subscription?.plan === UserPlan.FREE
+                {plan === UserPlan.FREE
                   ? "No subscription required"
                   : `${stripeSubscription?.items?.data[0]?.price?.recurring?.interval || ""} billing`}
               </p>
