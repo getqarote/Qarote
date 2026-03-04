@@ -96,6 +96,11 @@ test.describe("License Page @p1", () => {
 
     // Expect "Active" badge
     await expect(adminPage.getByText("Active")).toBeVisible();
+
+    // Verify tier and features are displayed
+    await expect(adminPage.getByText("DEVELOPER")).toBeVisible();
+    await expect(adminPage.getByText("workspace management")).toBeVisible();
+    await expect(adminPage.getByText("alerting")).toBeVisible();
   });
 
   test("should deactivate an active license", async ({ adminPage, api }) => {

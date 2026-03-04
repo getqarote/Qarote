@@ -20,5 +20,6 @@
   "loadingVhosts": "Chargement des vhosts...",
   "addServer": "Ajouter un serveur",
   "theme": "Thème",
-  "ssoSettings": "Paramètres SSO"
+  "ssoSettings": "Paramètres SSO",
+  "smtpSettings": "Paramètres e-mail"
 }

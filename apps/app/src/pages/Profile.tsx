@@ -333,9 +333,7 @@ const Profile = () => {
           <main className="main-content-scrollable">
             <div className="container mx-auto p-6">
               <Alert>
-                <AlertDescription>
-                  {t("error.failedToLoadProfile")}
-                </AlertDescription>
+                <AlertDescription>{t("failedToLoad")}</AlertDescription>
               </Alert>
             </div>
           </main>
