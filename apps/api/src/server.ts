@@ -16,6 +16,7 @@ import { prisma } from "@/core/prisma";
 import { getDirname } from "@/core/utils";
 
 import { ssoService } from "@/services/auth/sso.service";
+import { DeploymentService } from "@/services/deployment/deployment.service";
 
 import { corsMiddleware } from "@/middlewares/cors";
 import {
@@ -154,6 +155,9 @@ async function startServer() {
 
     // Bootstrap admin account on first boot (if configured via setup CLI)
     await bootstrapAdmin();
+
+    // Initialize deployment method detection for update notifications
+    await DeploymentService.initialize();
 
     // Initialize SSO service (loads config from DB or env vars)
     await ssoService.initialize();

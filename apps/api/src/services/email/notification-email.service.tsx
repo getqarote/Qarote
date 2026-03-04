@@ -1,6 +1,7 @@
 import React from "react";
 
 import { RabbitMQAlert } from "@/services/alerts/alert.interfaces";
+import { DeploymentService } from "@/services/deployment/deployment.service";
 
 import { CoreEmailService, EmailResult } from "./core-email.service";
 import AlertNotificationEmail from "./templates/alert-notification-email";
@@ -408,10 +409,14 @@ export class NotificationEmailService {
 
     const releaseUrl = `https://github.com/getqarote/Qarote/releases/tag/${latestTagName}`;
 
+    // Get deployment-specific update instructions
+    const deploymentInfo = await DeploymentService.getUpdateInstructions();
+
     const template = UpdateAvailableEmail({
       currentVersion,
       latestVersion,
       releaseUrl,
+      updateInstructions: deploymentInfo.instructions,
     });
 
     return CoreEmailService.sendEmail({
@@ -419,7 +424,11 @@ export class NotificationEmailService {
       subject: tEmail(locale, "subjects.updateAvailable", { latestVersion }),
       template,
       emailType: "update_available",
-      context: { currentVersion, latestVersion },
+      context: {
+        currentVersion,
+        latestVersion,
+        deploymentMethod: deploymentInfo.method,
+      },
     });
   }
 }
