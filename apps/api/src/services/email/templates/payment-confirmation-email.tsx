@@ -114,10 +114,7 @@ const PaymentConfirmationEmail: React.FC<PaymentConfirmationEmailProps> = ({
             </Text>
 
             <Section style={buttonStyles.buttonSection}>
-              <Button
-                style={buttonStyles.primaryButton}
-                href={`${frontendUrl}/dashboard`}
-              >
+              <Button style={buttonStyles.primaryButton} href={frontendUrl}>
                 Go to Dashboard
               </Button>
             </Section>
