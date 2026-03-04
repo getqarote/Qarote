@@ -19,13 +19,23 @@ function getAdminToken(): string {
 }
 
 test.describe("License Plan Resolution @p1", () => {
-  // Ensure no license is active before each test
-  test.beforeEach(async ({ db }) => {
+  // Deactivate via API to invalidate the in-memory license cache (60s TTL),
+  // then clear DB as a safety net.
+  test.beforeEach(async ({ api, db }) => {
+    const token = getAdminToken();
+    await api
+      .withAuth(token)
+      .mutation("selfhostedLicense.deactivate", {})
+      .catch(() => {});
     await db.clearSystemSetting("license_jwt");
   });
 
-  // Clean up after each test
-  test.afterEach(async ({ db }) => {
+  test.afterEach(async ({ api, db }) => {
+    const token = getAdminToken();
+    await api
+      .withAuth(token)
+      .mutation("selfhostedLicense.deactivate", {})
+      .catch(() => {});
     await db.clearSystemSetting("license_jwt");
   });
 
