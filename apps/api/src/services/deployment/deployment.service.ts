@@ -72,13 +72,20 @@ export class DeploymentService {
       // Fallback to detection
       const detectedMethod = DeploymentDetector.detect();
 
-      // Store for future use
-      await this.storeDeploymentMethod(detectedMethod);
+      // Best-effort persistence — don't discard a successful detection
+      try {
+        await this.storeDeploymentMethod(detectedMethod);
+      } catch (storeError) {
+        logger.error(
+          { error: storeError },
+          "Failed to store deployment method"
+        );
+      }
 
       return detectedMethod;
     } catch (error) {
       logger.error({ error }, "Failed to get deployment method");
-      // Safe fallback
+      // Safe fallback only when detection itself fails
       return "docker_compose";
     }
   }
