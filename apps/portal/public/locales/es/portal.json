@@ -17,6 +17,7 @@
     "purchaseNew": "Comprar nueva licencia",
     "noLicenses": "Aún no tiene ninguna licencia.",
     "copiedToClipboard": "Clave de licencia copiada al portapapeles",
+    "copyLicenseKey": "Copiar clave de licencia",
     "licenseKey": "Clave de licencia",
     "license": "Licencia",
     "expires": "Expira: {{date}}",

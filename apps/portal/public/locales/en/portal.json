@@ -17,6 +17,7 @@
     "purchaseNew": "Purchase New License",
     "noLicenses": "You don't have any licenses yet.",
     "copiedToClipboard": "License key copied to clipboard",
+    "copyLicenseKey": "Copy license key",
     "licenseKey": "License Key",
     "license": "License",
     "expires": "Expires: {{date}}",
