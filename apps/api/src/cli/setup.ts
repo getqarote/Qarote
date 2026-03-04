@@ -3,7 +3,6 @@ import { randomBytes } from "node:crypto";
 import { existsSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { createInterface } from "node:readline";
-import { Writable } from "node:stream";
 
 // Colors (disabled if not a terminal)
 const isTTY = process.stdout.isTTY;
@@ -39,19 +38,34 @@ function createPrompt() {
   const askSecret = (question: string): Promise<string> =>
     new Promise((resolve) => {
       rl.pause();
-      const mutedOutput = new Writable({ write: (_c, _e, cb) => cb() });
-      const secretRl = createInterface({
-        input: process.stdin,
-        output: mutedOutput,
-        terminal: true,
-      });
       process.stdout.write(`  ${question}: `);
-      secretRl.question("", (answer) => {
-        secretRl.close();
-        process.stdout.write("\n");
-        rl.resume();
-        resolve(answer.trim());
-      });
+      const input = process.stdin;
+      const wasRaw = input.isRaw;
+      input.setRawMode(true);
+      input.resume();
+      let value = "";
+      const onData = (buf: Buffer) => {
+        const ch = buf.toString("utf8");
+        if (ch === "\r" || ch === "\n") {
+          input.removeListener("data", onData);
+          input.setRawMode(wasRaw);
+          process.stdout.write("\n");
+          rl.resume();
+          resolve(value.trim());
+          return;
+        }
+        if (ch === "\u0003") {
+          process.stdout.write("\n");
+          process.exit(130);
+        }
+        if (ch === "\u007f" || ch === "\b") {
+          value = value.slice(0, -1);
+          return;
+        }
+        if (ch.charCodeAt(0) < 32) return;
+        value += ch;
+      };
+      input.on("data", onData);
     });
 
   return { rl, ask, confirm, askSecret };
