@@ -58,6 +58,7 @@
     "update:selfhosted": "bash scripts/update.sh",
     "knip": "knip",
     "knip:fix": "knip --fix",
+    "validate:i18n": "node scripts/validate-i18n-keys.mjs",
     "test:e2e": "pnpm --filter=qarote-e2e test",
     "test:e2e:selfhosted": "pnpm --filter=qarote-e2e test:selfhosted",
     "test:e2e:cloud": "pnpm --filter=qarote-e2e test:cloud",

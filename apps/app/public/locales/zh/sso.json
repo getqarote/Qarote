@@ -35,5 +35,6 @@
   "saving": "保存中...",
   "saveSuccess": "SSO 设置保存成功",
   "saveError": "保存 SSO 设置失败",
-  "copied": "已复制到剪贴板"
+  "copied": "已复制到剪贴板",
+  "copyToClipboard": "复制到剪贴板"
 }
