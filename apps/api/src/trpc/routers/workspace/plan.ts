@@ -1,6 +1,10 @@
 import { TRPCError } from "@trpc/server";
 
+import { getLicensePayload } from "@/core/feature-flags";
+
 import { getPlanFeatures, PLAN_FEATURES } from "@/services/plan/plan.service";
+
+import { isSelfHostedMode } from "@/config/deployment";
 
 import { rateLimitedProcedure, router } from "@/trpc/trpc";
 
@@ -87,6 +91,14 @@ export const planRouter = router({
 
         if (ownerSubscription) {
           workspacePlan = ownerSubscription.plan;
+        }
+      }
+
+      // Self-hosted fallback: if no Stripe subscription exists, use the license JWT tier
+      if (workspacePlan === UserPlan.FREE && isSelfHostedMode()) {
+        const licensePayload = await getLicensePayload();
+        if (licensePayload) {
+          workspacePlan = licensePayload.tier;
         }
       }
 
