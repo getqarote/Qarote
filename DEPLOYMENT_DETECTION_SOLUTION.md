@@ -54,7 +54,11 @@ interface UpdateAvailableEmailProps {
   currentVersion: string;
   latestVersion: string;
   releaseUrl: string;
-  deploymentMethod: DeploymentMethod; // NEW
+  updateInstructions?: {
+    title: string;
+    command: string;
+    description: string;
+  };
 }
 
 // Render different instructions based on method
@@ -93,23 +97,15 @@ curl -L "https://github.com/getqarote/Qarote/releases/latest/download/qarote-${P
 
 ```typescript
 // apps/api/src/cron/release-notifier.cron.ts
-private async getDeploymentMethod(): Promise<DeploymentMethod> {
-  const state = await prisma.systemState.findUnique({
-    where: { key: 'deployment_method' }
-  });
-  
-  return (state?.value as DeploymentMethod) || 'docker_compose';
-}
-
 // In checkForUpdates method:
-const deploymentMethod = await this.getDeploymentMethod();
+const deploymentInfo = await DeploymentService.getUpdateInstructions();
 
 const result = await EmailService.sendUpdateAvailableEmail({
   to: email,
   currentVersion,
   latestVersion,
   latestTagName,
-  deploymentMethod // Pass to email template
+  updateInstructions: deploymentInfo.instructions,
 });
 ```
 
@@ -144,5 +140,5 @@ curl -L https://github.com/getqarote/Qarote/releases/latest/download/qarote-linu
 
 For existing instances:
 - Detect deployment method on next startup
-- Default to `docker_compose` if detection fails (current behavior)
+- Default to `binary` if detection fails (current behavior)
 - Gradually improve detection accuracy with user feedback
