@@ -1201,7 +1201,7 @@ curl -L https://github.com/getqarote/Qarote/releases/latest/download/qarote-linu
           <ul className="list-disc list-inside space-y-2 text-sm text-muted-foreground">
             <li>{t("installGuide.security.item1")}</li>
             <li>{t("installGuide.security.item2")}</li>
-            <li>{t("installGuide.security.item5")}</li>
+            <li>{t("installGuide.security.item3")}</li>
           </ul>
         </div>
 
