@@ -9,6 +9,18 @@
   },
   "failedToLoad": "Échec du chargement des informations du profil.",
   "toast": {
+    "profileUpdated": "Profil mis à jour avec succès.",
+    "profileUpdateFailed": "Échec de la mise à jour du profil.",
+    "passwordChanged": "Mot de passe changé avec succès.",
+    "verificationEmailSent": "E-mail de vérification envoyé.",
+    "emailChangeCancelled": "Changement d'e-mail annulé.",
+    "noWorkspaceFound": "Aucun espace de travail trouvé.",
+    "workspaceUpdated": "Espace de travail mis à jour avec succès.",
+    "workspaceUpdateFailed": "Échec de la mise à jour de l'espace de travail.",
+    "cannotInviteMoreUsers": "Votre forfait {{plan}} autorise {{maxUsers}} utilisateurs. Vous avez actuellement {{currentUsers}} utilisateurs et {{pendingInvitations}} invitations en attente.",
+    "invitationSent": "Invitation envoyée à {{email}}.",
+    "invitationRevoked": "Invitation à {{email}} révoquée.",
+    "userRemoved": "{{name}} a été retiré de l'espace de travail.",
     "copyInviteLink": "L'e-mail est désactivé. Partagez ce lien avec l'utilisateur invité.",
     "copyLink": "Copier le lien"
   }

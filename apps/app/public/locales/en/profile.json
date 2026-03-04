@@ -9,6 +9,18 @@
   },
   "failedToLoad": "Failed to load profile information.",
   "toast": {
+    "profileUpdated": "Profile updated successfully.",
+    "profileUpdateFailed": "Failed to update profile.",
+    "passwordChanged": "Password changed successfully.",
+    "verificationEmailSent": "Verification email sent.",
+    "emailChangeCancelled": "Email change cancelled.",
+    "noWorkspaceFound": "No workspace found.",
+    "workspaceUpdated": "Workspace updated successfully.",
+    "workspaceUpdateFailed": "Failed to update workspace.",
+    "cannotInviteMoreUsers": "Your {{plan}} plan allows {{maxUsers}} users. You currently have {{currentUsers}} users and {{pendingInvitations}} pending invitations.",
+    "invitationSent": "Invitation sent to {{email}}.",
+    "invitationRevoked": "Invitation to {{email}} revoked.",
+    "userRemoved": "{{name}} has been removed from the workspace.",
     "copyInviteLink": "Email is disabled. Share this link with the invited user.",
     "copyLink": "Copy Link"
   }

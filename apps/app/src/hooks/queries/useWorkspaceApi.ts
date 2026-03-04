@@ -16,9 +16,11 @@ export const useUpdateWorkspace = () => {
 
   const mutation = trpc.workspace.management.update.useMutation({
     onSuccess: () => {
-      // Invalidate profile and workspace users
+      // Invalidate profile, workspace users, and workspace list (for selector)
       utils.auth.session.getSession.invalidate();
       utils.user.getWorkspaceUsers.invalidate();
+      utils.workspace.management.getUserWorkspaces.invalidate();
+      utils.workspace.core.getCurrent.invalidate();
     },
   });
 

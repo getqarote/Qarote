@@ -9,6 +9,18 @@
   },
   "failedToLoad": "加载个人资料信息失败。",
   "toast": {
+    "profileUpdated": "个人资料更新成功。",
+    "profileUpdateFailed": "个人资料更新失败。",
+    "passwordChanged": "密码修改成功。",
+    "verificationEmailSent": "验证邮件已发送。",
+    "emailChangeCancelled": "邮箱更改已取消。",
+    "noWorkspaceFound": "未找到工作区。",
+    "workspaceUpdated": "工作区更新成功。",
+    "workspaceUpdateFailed": "工作区更新失败。",
+    "cannotInviteMoreUsers": "您的 {{plan}} 方案允许 {{maxUsers}} 个用户。当前有 {{currentUsers}} 个用户和 {{pendingInvitations}} 个待处理邀请。",
+    "invitationSent": "邀请已发送至 {{email}}。",
+    "invitationRevoked": "已撤销对 {{email}} 的邀请。",
+    "userRemoved": "{{name}} 已从工作区中移除。",
     "copyInviteLink": "邮件已禁用。请将此链接分享给被邀请的用户。",
     "copyLink": "复制链接"
   }

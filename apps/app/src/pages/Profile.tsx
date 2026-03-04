@@ -353,7 +353,7 @@ const Profile = () => {
             <div className="flex items-center gap-3">
               <SidebarTrigger />
               <User className="h-8 w-8" />
-              <h1 className="title-page">{t("title")}</h1>
+              <h1 className="title-page">{t("pageTitle")}</h1>
             </div>
 
             <Tabs

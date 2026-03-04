@@ -211,7 +211,7 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
                   variant="outline"
                   onClick={() =>
                     window.open(
-                      "https://qarote.io/pricing",
+                      `${import.meta.env.VITE_PORTAL_URL || "https://portal.qarote.io"}/purchase`,
                       "_blank",
                       "noopener,noreferrer"
                     )
