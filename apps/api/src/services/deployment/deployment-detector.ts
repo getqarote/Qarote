@@ -9,8 +9,7 @@ import { logger } from "@/core/logger";
 export type DeploymentMethod =
   | "dokku" // Dokku PaaS deployment
   | "docker_compose" // Docker Compose deployment
-  | "binary" // Standalone binary deployment
-  | "manual"; // Manual/source deployment
+  | "binary"; // Standalone binary deployment (includes manual/source)
 
 /**
  * Deployment method detector
@@ -41,9 +40,9 @@ export class DeploymentDetector {
       return "binary";
     }
 
-    // 4. Manual/Source: Default fallback
-    logger.info("Detected deployment method: manual (fallback)");
-    return "manual";
+    // 4. Binary: Default fallback (includes manual/source deployments)
+    logger.info("Detected deployment method: binary (fallback)");
+    return "binary";
   }
 
   /**
@@ -138,8 +137,6 @@ export class DeploymentDetector {
         return "Docker Compose";
       case "binary":
         return "Binary";
-      case "manual":
-        return "Manual/Source";
     }
   }
 
@@ -174,24 +171,14 @@ export class DeploymentDetector {
           command: `# Stop the current instance
 kill $(pgrep -f './qarote') 2>/dev/null || true
 
-# Download and extract the latest version
-curl -L https://github.com/getqarote/Qarote/releases/latest/download/qarote-linux-x64.tar.gz | tar xz --strip-components=1
+# Download and extract the latest version (auto-detects OS and architecture)
+PLATFORM="$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/x64/' | sed 's/aarch64/arm64/')"
+curl -L "https://github.com/getqarote/Qarote/releases/latest/download/qarote-\${PLATFORM}.tar.gz" | tar xz --strip-components=1
 
 # Restart (migrations run automatically)
 ./qarote`,
           description:
-            "Download the latest binary, extract it to replace your current installation, and restart the service.",
-        };
-
-      case "manual":
-        return {
-          title: "Manual Update Process",
-          command: `git pull origin main
-npm install
-npm run build
-# Restart your process manager (pm2, systemd, etc.)`,
-          description:
-            "Pull the latest code, install dependencies, build the application, and restart using your process manager.",
+            "Download the latest binary release, extract it to replace your current installation, and restart the service. For manual/source deployments, use git pull and rebuild instead.",
         };
     }
   }

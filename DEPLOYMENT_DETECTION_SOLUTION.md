@@ -1,7 +1,7 @@
 # Solution : Adaptive Update Instructions
 
 ## Problem
-Current update notification emails always show Docker Compose instructions (`./scripts/update.sh`), but Qarote supports 4 different deployment methods with completely different update procedures.
+Current update notification emails always show Docker Compose instructions (`./scripts/update.sh`), but Qarote supports 3 different deployment methods with completely different update procedures.
 
 ## Solution Design
 
@@ -11,7 +11,7 @@ Add deployment method detection during startup and store in database:
 
 ```typescript
 // apps/api/src/services/deployment/deployment-detector.ts
-export type DeploymentMethod = 'docker_compose' | 'dokku' | 'binary' | 'manual';
+export type DeploymentMethod = 'docker_compose' | 'dokku' | 'binary';
 
 export class DeploymentDetector {
   static detect(): DeploymentMethod {
@@ -31,8 +31,8 @@ export class DeploymentDetector {
       return 'binary';  
     }
     
-    // Manual/Source: Default fallback
-    return 'manual';
+    // Binary: Default fallback (includes manual/source)
+    return 'binary';
   }
 }
 ```
@@ -77,20 +77,12 @@ const getUpdateInstructions = (method: DeploymentMethod) => {
         command: `# Stop the current instance
 kill $(pgrep -f './qarote') 2>/dev/null || true
 
-# Download and extract the latest version  
-curl -L https://github.com/getqarote/Qarote/releases/latest/download/qarote-linux-x64.tar.gz | tar xz --strip-components=1
+# Download and extract the latest version (auto-detects platform)
+PLATFORM="$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/x64/' | sed 's/aarch64/arm64/')"
+curl -L "https://github.com/getqarote/Qarote/releases/latest/download/qarote-${PLATFORM}.tar.gz" | tar xz --strip-components=1
 
 # Restart (migrations run automatically)
 ./qarote`
-      };
-    
-    case 'manual':
-      return { 
-        title: 'How to Update (Manual)',
-        command: `git pull origin main
-npm install
-npm run build
-pm2 restart qarote  # or your process manager`
       };
   }
 };
@@ -131,12 +123,6 @@ git push dokku main
 # scripts/update-binary.sh
 curl -L https://github.com/getqarote/Qarote/releases/latest/download/qarote-linux-x64.tar.gz | tar xz --strip-components=1
 ./qarote
-
-# scripts/update-manual.sh
-git pull origin main
-npm install  
-npm run build
-# User handles service restart
 ```
 
 ## Implementation Priority
