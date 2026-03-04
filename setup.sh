@@ -57,21 +57,40 @@ if [ ! -f "$ENV_EXAMPLE" ]; then
 fi
 
 # --- Check existing .env ---
-if [ -f "$ENV_FILE" ] && [ "$FORCE" = false ]; then
-  warn "A .env file already exists at $ENV_FILE"
-  read -rp "Overwrite? (y/N) " answer
-  if [[ ! "$answer" =~ ^[Yy]$ ]]; then
-    echo "Aborted."
-    exit 0
+EXISTING_ENV=false
+if [ -f "$ENV_FILE" ]; then
+  EXISTING_ENV=true
+  if [ "$FORCE" = false ]; then
+    warn "A .env file already exists at $ENV_FILE"
+    read -rp "Overwrite? (y/N) " answer
+    if [[ ! "$answer" =~ ^[Yy]$ ]]; then
+      echo "Aborted."
+      exit 0
+    fi
   fi
 fi
 
-# --- Generate secrets ---
+# --- Generate secrets (preserve existing to avoid breaking encrypted data) ---
 info "Generating secure secrets..."
 
-JWT_SECRET=$(openssl rand -hex 64)
-ENCRYPTION_KEY=$(openssl rand -hex 64)
-POSTGRES_PASSWORD=$(openssl rand -hex 32)
+# Extract existing secrets from .env if present — changing these would break
+# existing encrypted data (ENCRYPTION_KEY), active sessions (JWT_SECRET),
+# or database access (POSTGRES_PASSWORD).
+extract_existing() {
+  grep -E "^$1=" "$ENV_FILE" 2>/dev/null | head -1 | cut -d'=' -f2-
+}
+
+if [ "$EXISTING_ENV" = true ]; then
+  JWT_SECRET=$(extract_existing JWT_SECRET)
+  ENCRYPTION_KEY=$(extract_existing ENCRYPTION_KEY)
+  POSTGRES_PASSWORD=$(extract_existing POSTGRES_PASSWORD)
+  info "Preserved existing secrets from previous .env"
+fi
+
+# Generate new secrets only for values that are empty or missing
+JWT_SECRET=${JWT_SECRET:-$(openssl rand -hex 64)}
+ENCRYPTION_KEY=${ENCRYPTION_KEY:-$(openssl rand -hex 64)}
+POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-$(openssl rand -hex 32)}
 
 # --- Copy template ---
 cp "$ENV_EXAMPLE" "$ENV_FILE"

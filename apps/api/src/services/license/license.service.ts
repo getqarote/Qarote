@@ -159,6 +159,13 @@ class LicenseService {
       orderBy: {
         createdAt: "desc",
       },
+      include: {
+        fileVersions: {
+          orderBy: { version: "desc" },
+          take: 1,
+          select: { fileContent: true },
+        },
+      },
     });
   }
 

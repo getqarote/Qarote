@@ -123,8 +123,7 @@
     "failedToFetchLicenses": "Failed to fetch licenses",
     "yearlyPriceNotConfigured": "Yearly price not configured for {{tier}} tier",
     "portalUrlNotConfigured": "Portal URL not configured",
-    "notFound": "License not found",
-    "failedToDownload": "Failed to download license"
+    "notFound": "License not found"
   },
   "rabbitmq": {
     "serverNotFoundOrAccessDenied": "Server not found or access denied",

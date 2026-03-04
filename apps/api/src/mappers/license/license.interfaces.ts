@@ -17,6 +17,7 @@ export type PrismaLicenseWithDates = {
   stripePaymentId: string | null;
   createdAt: Date;
   updatedAt: Date;
+  fileVersions?: { fileContent: string }[];
 };
 
 export type LicenseApiResponse = {
@@ -32,4 +33,5 @@ export type LicenseApiResponse = {
   stripePaymentId: string | null;
   createdAt: string;
   updatedAt: string;
+  jwtContent: string | null;
 };

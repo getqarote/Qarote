@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
 import { format } from "date-fns";
-import { CheckCircle, Copy, Download, XCircle } from "lucide-react";
+import { CheckCircle, Copy, XCircle } from "lucide-react";
 import { toast } from "sonner";
 
 import { trpc } from "@/lib/trpc/client";
@@ -23,43 +23,12 @@ const LicenseManagement = () => {
   const { t } = useTranslation("portal");
 
   const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   const copyToClipboard = (text: string, licenseId: string) => {
     navigator.clipboard.writeText(text);
     setCopiedId(licenseId);
     toast.success(t("licenseManagement.copiedToClipboard"));
     setTimeout(() => setCopiedId(null), 2000);
-  };
-
-  const utils = trpc.useUtils();
-
-  const handleDownload = async (licenseId: string) => {
-    // Prevent duplicate downloads
-    if (downloadingId) return;
-
-    setDownloadingId(licenseId);
-    try {
-      const result = await utils.license.downloadLicense.fetch({
-        licenseId,
-      });
-
-      // Create blob from content string
-      const blob = new Blob([result.content], { type: result.mimeType });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = result.filename;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-      toast.success(t("licenseManagement.downloaded"));
-    } catch (error) {
-      toast.error(t("licenseManagement.downloadFailed"));
-    } finally {
-      setDownloadingId(null);
-    }
   };
 
   if (isLoading) {
@@ -122,14 +91,17 @@ const LicenseManagement = () => {
                       {t("licenseManagement.licenseKey")}
                     </label>
                     <div className="flex items-center gap-2 mt-1">
-                      <code className="flex-1 px-3 py-2 bg-muted rounded-md text-sm font-mono break-all">
-                        {license.licenseKey}
+                      <code className="flex-1 px-3 py-2 bg-muted rounded-md text-sm font-mono break-all max-h-24 overflow-y-auto">
+                        {license.jwtContent ?? license.licenseKey}
                       </code>
                       <Button
                         variant="outline"
                         size="icon"
                         onClick={() =>
-                          copyToClipboard(license.licenseKey, license.id)
+                          copyToClipboard(
+                            license.jwtContent ?? license.licenseKey,
+                            license.id
+                          )
                         }
                       >
                         {copiedId === license.id ? (
@@ -139,18 +111,6 @@ const LicenseManagement = () => {
                         )}
                       </Button>
                     </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      onClick={() => handleDownload(license.id)}
-                      disabled={downloadingId === license.id}
-                    >
-                      <Download className="h-4 w-4 mr-2" />
-                      {downloadingId === license.id
-                        ? t("licenseManagement.downloading")
-                        : t("licenseManagement.download")}
-                    </Button>
                   </div>
                 </div>
               </CardContent>

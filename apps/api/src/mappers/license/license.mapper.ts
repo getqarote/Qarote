@@ -30,6 +30,7 @@ export class LicenseMapper {
       stripePaymentId: license.stripePaymentId,
       createdAt: license.createdAt.toISOString(),
       updatedAt: license.updatedAt.toISOString(),
+      jwtContent: license.fileVersions?.[0]?.fileContent ?? null,
     };
   }
 

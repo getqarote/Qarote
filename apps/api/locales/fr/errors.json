@@ -124,8 +124,7 @@
     "failedToFetchLicenses": "Échec de la récupération des licences",
     "yearlyPriceNotConfigured": "Le prix annuel n'est pas configuré pour le niveau {{tier}}",
     "portalUrlNotConfigured": "L'URL du portail n'est pas configurée",
-    "notFound": "Licence introuvable",
-    "failedToDownload": "Échec du téléchargement de la licence"
+    "notFound": "Licence introuvable"
   },
   "rabbitmq": {
     "serverNotFoundOrAccessDenied": "Serveur introuvable ou accès refusé",
