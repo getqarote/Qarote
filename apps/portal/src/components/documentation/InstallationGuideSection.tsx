@@ -473,12 +473,22 @@ sudo -u postgres psql -c "CREATE DATABASE qarote OWNER qarote;"`}
                 </h5>
 
                 <ArchDownloadTabs />
-                <p
-                  className="text-xs text-muted-foreground"
-                  dangerouslySetInnerHTML={{
-                    __html: t("installGuide.quickStart.binary.step1Note"),
-                  }}
-                />
+                <p className="text-xs text-muted-foreground">
+                  <Trans
+                    i18nKey="installGuide.quickStart.binary.step1Note"
+                    ns="docs"
+                    components={{
+                      releasesLink: (
+                        <a
+                          href="https://github.com/getqarote/Qarote/releases"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary hover:underline"
+                        />
+                      ),
+                    }}
+                  />
+                </p>
                 <h5 className="text-sm font-medium">
                   {t("installGuide.quickStart.binary.step2Title")}
                 </h5>
