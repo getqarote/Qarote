@@ -68,13 +68,15 @@ app.use("*", secureHeaders());
 app.use("*", requestIdMiddleware);
 app.use("*", performanceMonitoring);
 app.use("*", corsMiddleware);
-app.use("*", standardRateLimiter);
 
 // Mount webhook app BEFORE other routes to ensure it's processed first
 app.route("/webhooks", webhookApp);
 
 // Mount SSO routes (SAML ACS needs form-encoded body access)
 app.route("/sso", ssoApp);
+
+// Rate limit API routes only (not static assets/locales/SPA files)
+app.use("/trpc/*", standardRateLimiter);
 
 // Mount tRPC router
 app.use(
