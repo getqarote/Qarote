@@ -51,8 +51,8 @@ export default function LicenseDeliveryEmail({
     <Html>
       <Head />
       <Preview>
-        Your Qarote {tierDisplay} license is ready! Download your license file
-        to activate your self-hosted instance.
+        Your Qarote {tierDisplay} license is ready! Copy your license key to
+        activate your self-hosted instance.
       </Preview>
       <Body style={baseStyles.main}>
         <Container style={baseStyles.container}>
@@ -88,37 +88,36 @@ export default function LicenseDeliveryEmail({
             </Section>
 
             <Text style={contentStyles.paragraph}>
-              Download your license file using the button below, then place it
-              in your self-hosted Qarote installation directory.
+              Copy your license key above, then paste it in your self-hosted
+              Qarote admin panel to activate your license.
             </Text>
 
             {/* Call to Action */}
             <Section style={buttonStyles.buttonSection}>
               <Button style={buttonStyles.primaryButton} href={downloadUrl}>
-                Download License File
+                Manage Your Licenses
               </Button>
             </Section>
 
             {/* Installation Instructions */}
             <Section style={sectionStyles.featuresSection}>
-              <Text style={contentStyles.heading}>Installation Steps</Text>
+              <Text style={contentStyles.heading}>Activation Steps</Text>
               <Text style={textStyles.featureText}>
-                1. Download your license file (qarote-license.json)
+                1. Copy the license key above
               </Text>
               <Text style={textStyles.featureText}>
-                2. Place it in your Qarote installation directory
+                2. Open your Qarote self-hosted admin panel
               </Text>
               <Text style={textStyles.featureText}>
-                3. Restart your Qarote instance
+                3. Go to the License page and paste your key
               </Text>
               <Text style={textStyles.featureText}>
-                4. Your license will be automatically validated
+                4. Your license will be activated immediately
               </Text>
             </Section>
 
             <Text style={contentStyles.paragraph}>
-              You can also manage your licenses and download your license file
-              anytime from your{" "}
+              You can also manage your licenses anytime from your{" "}
               <Link href={`${portalUrl}/licenses`} style={textStyles.link}>
                 license portal
               </Link>

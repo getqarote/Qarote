@@ -114,7 +114,7 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
                 className="py-2 px-4 rounded-lg font-medium border border-border hover:bg-muted"
                 onClick={() =>
                   window.open(
-                    `${import.meta.env.VITE_PORTAL_URL || "https://portal.qarote.io"}/purchase`,
+                    `${import.meta.env.VITE_PORTAL_URL}/purchase`,
                     "_blank",
                     "noopener,noreferrer"
                   )

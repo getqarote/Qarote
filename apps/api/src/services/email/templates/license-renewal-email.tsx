@@ -96,19 +96,19 @@ export default function LicenseRenewalEmail({
 
             <Section style={sectionStyles.warningSection}>
               <Text style={contentStyles.heading}>
-                ⚠️ Action Required: Update Your License File
+                ⚠️ Action Required: Update Your License Key
               </Text>
               <Text style={textStyles.warningText}>
                 To continue using your self-hosted Qarote instance without
-                interruption, you must download and install the updated license
-                file.
+                interruption, copy your new license key and paste it in your
+                admin panel.
               </Text>
             </Section>
 
             {/* Call to Action */}
             <Section style={buttonStyles.buttonSection}>
               <Button style={buttonStyles.primaryButton} href={downloadUrl}>
-                Download Updated License
+                View Updated License
               </Button>
             </Section>
 
@@ -116,16 +116,16 @@ export default function LicenseRenewalEmail({
             <Section style={sectionStyles.featuresSection}>
               <Text style={contentStyles.heading}>Update Steps</Text>
               <Text style={textStyles.featureText}>
-                1. Download your updated license file
+                1. Copy your new license key from the portal
               </Text>
               <Text style={textStyles.featureText}>
-                2. Replace the existing qarote-license.json file
+                2. Open your Qarote self-hosted admin panel
               </Text>
               <Text style={textStyles.featureText}>
-                3. Restart your Qarote instance
+                3. Go to the License page and paste your new key
               </Text>
               <Text style={textStyles.featureText}>
-                4. Verify the new expiration date in settings
+                4. Your license will be updated immediately
               </Text>
             </Section>
 

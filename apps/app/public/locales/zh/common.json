@@ -67,5 +67,10 @@
   "theme": "主题",
   "language": "语言",
   "manageServers": "管理服务器",
-  "rabbitMQDashboard": "仪表盘"
+  "rabbitMQDashboard": "仪表盘",
+  "notFound": {
+    "code": "404",
+    "message": "页面未找到",
+    "returnHome": "返回首页"
+  }
 }

@@ -193,7 +193,7 @@ function LicensePage() {
                 <CardDescription>
                   Paste your license key below. You can get one from the{" "}
                   <a
-                    href={`${import.meta.env.VITE_PORTAL_URL || "https://portal.qarote.io"}`}
+                    href={`${import.meta.env.VITE_PORTAL_URL}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-primary hover:underline inline-flex items-center gap-1"

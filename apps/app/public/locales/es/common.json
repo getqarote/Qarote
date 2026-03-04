@@ -67,5 +67,10 @@
   "theme": "Tema",
   "language": "Idioma",
   "manageServers": "Administrar servidores",
-  "rabbitMQDashboard": "Panel"
+  "rabbitMQDashboard": "Panel",
+  "notFound": {
+    "code": "404",
+    "message": "Página no encontrada",
+    "returnHome": "Volver al inicio"
+  }
 }

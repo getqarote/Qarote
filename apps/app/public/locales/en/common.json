@@ -67,5 +67,10 @@
   "theme": "Theme",
   "language": "Language",
   "manageServers": "Manage servers",
-  "rabbitMQDashboard": "Dashboard"
+  "rabbitMQDashboard": "Dashboard",
+  "notFound": {
+    "code": "404",
+    "message": "Page not found",
+    "returnHome": "Return to home"
+  }
 }
