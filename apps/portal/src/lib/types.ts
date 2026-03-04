@@ -26,4 +26,5 @@ export interface License {
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
+  jwtContent: string | null;
 }

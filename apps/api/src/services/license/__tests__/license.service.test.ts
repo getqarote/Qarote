@@ -10,6 +10,7 @@ vi.mock("@/core/prisma", () => ({
   prisma: {
     license: {
       create: vi.fn(),
+      findMany: vi.fn(),
       findUnique: vi.fn(),
       update: vi.fn(),
     },
@@ -242,6 +243,60 @@ describe("LicenseService", () => {
 
       expect(result.valid).toBe(false);
       expect(result.message).toContain("validation failed");
+    });
+  });
+
+  describe("getLicensesForUser", () => {
+    it("includes the latest fileVersion content", async () => {
+      vi.mocked(prisma.license.findMany).mockResolvedValue([
+        {
+          id: "lic-1",
+          licenseKey: "RABBIT-DEV-AABB-1234",
+          fileVersions: [{ fileContent: "eyJhbGciOi..." }],
+        },
+      ] as never);
+
+      await licenseService.getLicensesForUser("user@example.com");
+
+      expect(prisma.license.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          include: {
+            fileVersions: {
+              orderBy: { version: "desc" },
+              take: 1,
+              select: { fileContent: true },
+            },
+          },
+        })
+      );
+    });
+
+    it("filters by customerEmail and isActive", async () => {
+      vi.mocked(prisma.license.findMany).mockResolvedValue([] as never);
+
+      await licenseService.getLicensesForUser("user@example.com");
+
+      expect(prisma.license.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { customerEmail: "user@example.com", isActive: true },
+        })
+      );
+    });
+
+    it("includes workspaceId in where clause when provided", async () => {
+      vi.mocked(prisma.license.findMany).mockResolvedValue([] as never);
+
+      await licenseService.getLicensesForUser("user@example.com", "ws-1");
+
+      expect(prisma.license.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: {
+            customerEmail: "user@example.com",
+            isActive: true,
+            workspaceId: "ws-1",
+          },
+        })
+      );
     });
   });
 

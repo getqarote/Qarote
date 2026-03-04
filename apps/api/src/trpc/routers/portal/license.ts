@@ -3,14 +3,9 @@ import { TRPCError } from "@trpc/server";
 import { getUserDisplayName } from "@/core/utils";
 
 import { licenseService } from "@/services/license/license.service";
-import { getLicenseFeaturesForTier } from "@/services/license/license-features.service";
 import { stripe, StripeService } from "@/services/stripe/stripe.service";
 
-import {
-  downloadLicenseSchema,
-  purchaseLicenseSchema,
-  validateLicenseSchema,
-} from "@/schemas/portal";
+import { purchaseLicenseSchema, validateLicenseSchema } from "@/schemas/portal";
 
 import { emailConfig, stripeConfig } from "@/config";
 
@@ -185,80 +180,6 @@ export const licenseRouter = router({
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: te(ctx.locale, "billing.failedToCreateCheckoutSession"),
-        });
-      }
-    }),
-
-  /**
-   * Get license key (JWT string)
-   * Protected endpoint - portal only
-   * Returns the JWT that users paste into their self-hosted instance
-   */
-  downloadLicense: rateLimitedProcedure
-    .input(downloadLicenseSchema)
-    .query(async ({ input, ctx }) => {
-      const user = ctx.user;
-      const { licenseId } = input;
-
-      try {
-        const licenses = await licenseService.getLicensesForUser(
-          user.email,
-          user.workspaceId || undefined
-        );
-
-        const license = licenses.find((l) => l.id === licenseId);
-
-        if (!license) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: te(ctx.locale, "license.notFound"),
-          });
-        }
-
-        // Check stored versions first (JWT is stored in fileContent)
-        const fileVersions =
-          await licenseService.getLicenseFileVersions(licenseId);
-        const latestVersion = fileVersions[0];
-
-        if (latestVersion) {
-          ctx.logger.info(
-            { licenseId, version: latestVersion.version },
-            "Returning stored license JWT"
-          );
-
-          return {
-            content: latestVersion.fileContent,
-            mimeType: "text/plain",
-          };
-        }
-
-        // Fallback: Generate JWT on-demand if no stored version
-        ctx.logger.warn(
-          { licenseId },
-          "No stored license JWT found, generating on-demand"
-        );
-
-        const features = getLicenseFeaturesForTier(license.tier);
-
-        const jwt = await licenseService.generateLicenseJwt({
-          licenseId: license.id,
-          tier: license.tier,
-          features,
-          expiresAt: license.expiresAt,
-        });
-
-        return {
-          content: jwt,
-          mimeType: "text/plain",
-        };
-      } catch (error) {
-        ctx.logger.error({ error }, "Error fetching license key");
-        if (error instanceof TRPCError) {
-          throw error;
-        }
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: te(ctx.locale, "license.failedToDownload"),
         });
       }
     }),

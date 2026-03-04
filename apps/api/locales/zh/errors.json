@@ -124,8 +124,7 @@
     "failedToFetchLicenses": "获取许可证列表失败",
     "yearlyPriceNotConfigured": "{{tier}} 级别的年度价格未配置",
     "portalUrlNotConfigured": "门户 URL 未配置",
-    "notFound": "未找到许可证",
-    "failedToDownload": "下载许可证失败"
+    "notFound": "未找到许可证"
   },
   "rabbitmq": {
     "serverNotFoundOrAccessDenied": "未找到服务器或访问被拒绝",
