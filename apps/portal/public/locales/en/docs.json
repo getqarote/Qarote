@@ -63,6 +63,7 @@
         "dbSetupDescription": "Create a dedicated PostgreSQL user and database for Qarote:",
         "dbSetupNote": "Your database URL will be: <code>postgresql://qarote:your-secure-password@localhost:5432/qarote</code>",
         "step1Title": "2. Download and Extract",
+        "step1Note": "This downloads the latest release automatically. You can also <a href=\"https://github.com/getqarote/Qarote/releases\" target=\"_blank\" rel=\"noopener noreferrer\">browse all releases</a> on GitHub.",
         "step2Title": "3. Interactive Setup",
         "step2Note": "The setup wizard will ask for your PostgreSQL URL, verify the connection, and generate a <code>.env</code> file with secure secrets.",
         "step3Title": "4. Start Qarote",

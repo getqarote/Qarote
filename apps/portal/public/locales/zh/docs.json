@@ -64,6 +64,7 @@
         "dbSetupDescription": "为 Qarote 创建专用的 PostgreSQL 用户和数据库：",
         "dbSetupNote": "你的数据库 URL 将是：<code>postgresql://qarote:你的安全密码@localhost:5432/qarote</code>",
         "step1Title": "2. 下载并解压",
+        "step1Note": "此命令会自动下载最新版本。你也可以在 GitHub 上<a href=\"https://github.com/getqarote/Qarote/releases\" target=\"_blank\" rel=\"noopener noreferrer\">浏览所有版本</a>。",
         "step2Title": "3. 交互式配置",
         "step2Note": "配置向导将询问你的 PostgreSQL URL，验证连接，并生成包含安全密钥的 <code>.env</code> 文件。",
         "step3Title": "4. 启动 Qarote",

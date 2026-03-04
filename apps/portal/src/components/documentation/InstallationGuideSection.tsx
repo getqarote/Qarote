@@ -26,8 +26,6 @@ interface InstallationGuideSectionProps {
   onDeploymentChange: (value: string) => void;
 }
 
-const RELEASE_VERSION = "${RELEASE_VERSION}";
-
 const ARCHITECTURES = [
   { value: "linux-x64", label: "Linux x64" },
   { value: "linux-arm64", label: "Linux ARM64" },
@@ -52,7 +50,7 @@ function ArchDownloadTabs({
       {ARCHITECTURES.map((arch) => (
         <TabsContent key={arch.value} value={arch.value}>
           <CodeBlock
-            code={`curl -L https://github.com/getqarote/Qarote/releases/download/${RELEASE_VERSION}/qarote-${arch.value}.tar.gz | tar xz --strip-components=1`}
+            code={`curl -L https://github.com/getqarote/Qarote/releases/latest/download/qarote-${arch.value}.tar.gz | tar xz --strip-components=1`}
             language="bash"
           />
         </TabsContent>
@@ -475,6 +473,12 @@ sudo -u postgres psql -c "CREATE DATABASE qarote OWNER qarote;"`}
                 </h5>
 
                 <ArchDownloadTabs />
+                <p
+                  className="text-xs text-muted-foreground"
+                  dangerouslySetInnerHTML={{
+                    __html: t("installGuide.quickStart.binary.step1Note"),
+                  }}
+                />
                 <h5 className="text-sm font-medium">
                   {t("installGuide.quickStart.binary.step2Title")}
                 </h5>
@@ -1092,7 +1096,7 @@ dokku run qarote pnpm run db:migrate`}
                   </p>
                   <CodeBlock
                     code={`# Example: switch from linux-x64 to linux-arm64
-curl -L https://github.com/getqarote/Qarote/releases/download/${RELEASE_VERSION}/qarote-linux-arm64.tar.gz | tar xz --strip-components=1
+curl -L https://github.com/getqarote/Qarote/releases/latest/download/qarote-linux-arm64.tar.gz | tar xz --strip-components=1
 ./qarote setup`}
                     language="bash"
                   />

@@ -71,15 +71,13 @@ sudo -u postgres psql -c "CREATE DATABASE qarote OWNER qarote;"
 
 Your database URL will be: `postgresql://qarote:your-secure-password@localhost:5432/qarote`
 
-<!-- Update VERSION below to match the latest release from https://github.com/getqarote/Qarote/releases -->
+<!-- Downloads the latest release automatically. Browse all releases: https://github.com/getqarote/Qarote/releases -->
 
 ```bash
-VERSION=v1.2.0-beta.1
-
 # 2. Download and extract for your platform (auto-detects OS and architecture)
 # Windows users: run this inside WSL2
 PLATFORM="$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/x64/' | sed 's/aarch64/arm64/')"
-curl -L "https://github.com/getqarote/Qarote/releases/download/$VERSION/qarote-${PLATFORM}.tar.gz" | tar xz --strip-components=1
+curl -L "https://github.com/getqarote/Qarote/releases/latest/download/qarote-${PLATFORM}.tar.gz" | tar xz --strip-components=1
 
 # 3. Interactive setup (generates .env, tests database connection)
 ./qarote setup
@@ -602,9 +600,6 @@ Features unlock immediately — no restart required. To deactivate, use the same
 ### Binary
 
 ```bash
-# Check the latest release at https://github.com/getqarote/Qarote/releases
-VERSION=v1.2.0-beta.1
-
 # Record current version and create a backup
 ./qarote --version
 cp qarote qarote.backup
@@ -612,9 +607,10 @@ cp qarote qarote.backup
 # Stop the running instance
 kill $(pgrep -f './qarote') 2>/dev/null || true
 
-# Download and extract in-place (auto-detects OS and architecture)
+# Download latest release (auto-detects OS and architecture)
+# Browse all releases: https://github.com/getqarote/Qarote/releases
 PLATFORM="$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/x64/' | sed 's/aarch64/arm64/')"
-curl -L "https://github.com/getqarote/Qarote/releases/download/$VERSION/qarote-${PLATFORM}.tar.gz" | tar xz --strip-components=1
+curl -L "https://github.com/getqarote/Qarote/releases/latest/download/qarote-${PLATFORM}.tar.gz" | tar xz --strip-components=1
 
 # Verify the new version
 ./qarote --version
@@ -654,8 +650,7 @@ Then re-download the correct binary in-place:
 
 ```bash
 # Example: switch from linux-x64 to linux-arm64
-VERSION=v1.2.0-beta.1  # or your installed version
-curl -L https://github.com/getqarote/Qarote/releases/download/$VERSION/qarote-linux-arm64.tar.gz | tar xz --strip-components=1
+curl -L https://github.com/getqarote/Qarote/releases/latest/download/qarote-linux-arm64.tar.gz | tar xz --strip-components=1
 ./qarote  # your existing .env is preserved
 ```
 
