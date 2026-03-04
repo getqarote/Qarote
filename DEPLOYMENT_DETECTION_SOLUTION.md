@@ -1,6 +1,7 @@
 # Solution : Adaptive Update Instructions
 
 ## Problem
+
 Current update notification emails always show Docker Compose instructions (`./scripts/update.sh`), but Qarote supports 3 different deployment methods with completely different update procedures.
 
 ## Solution Design

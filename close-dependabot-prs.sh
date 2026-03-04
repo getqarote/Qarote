@@ -2,7 +2,7 @@
 
 # Script to close all individual Dependabot PRs since they were consolidated in PR #219
 
-set -e
+set -euo pipefail
 
 echo "🔄 Closing individual Dependabot PRs (consolidated in #219)..."
 
@@ -27,7 +27,7 @@ FAILED_COUNT=0
 for PR_NUMBER in $DEPENDABOT_PRS; do
     echo "📝 Closing PR #${PR_NUMBER}..."
     
-    if gh pr close $PR_NUMBER --comment "$CLOSE_MESSAGE"; then
+    if gh pr close "$PR_NUMBER" --comment "$CLOSE_MESSAGE"; then
         echo "✅ Closed PR #${PR_NUMBER}"
         CLOSED_COUNT=$((CLOSED_COUNT + 1))
     else

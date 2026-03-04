@@ -63,17 +63,15 @@ export class DeploymentDetector {
    * Check if running in Docker Compose environment
    */
   private static isDockerCompose(): boolean {
-    return !!(
-      // Docker container indicators
-      (
-        fs.existsSync("/.dockerenv") ||
-        process.env.IS_DOCKER ||
-        // Docker Compose specific
-        process.env.COMPOSE_PROJECT_NAME ||
-        // Check if docker-compose files exist in parent directories
-        this.hasDockerComposeFiles()
-      )
-    );
+    // Compose-specific env var is a direct indicator
+    if (process.env.COMPOSE_PROJECT_NAME) {
+      return true;
+    }
+
+    // Generic Docker indicators need compose files to confirm it's Compose
+    const inDocker = !!(fs.existsSync("/.dockerenv") || process.env.IS_DOCKER);
+
+    return inDocker && this.hasDockerComposeFiles();
   }
 
   /**
@@ -84,11 +82,17 @@ export class DeploymentDetector {
     const execPath = process.execPath;
     const cwd = process.cwd();
 
+    // Path-segment-aware check: match "qarote" as an exact directory segment
+    const hasQaroteSegment = (p: string): boolean => {
+      const segments = path.normalize(p).split(path.sep);
+      return segments.includes("qarote");
+    };
+
     return !!(
       // Binary typically extracted to a qarote directory
       (
-        execPath.includes("/qarote/") ||
-        cwd.includes("/qarote/") ||
+        hasQaroteSegment(execPath) ||
+        hasQaroteSegment(cwd) ||
         // Binary comes with a specific config file
         fs.existsSync(path.join(cwd, "qarote.config.json")) ||
         // Binary deployment has different directory structure

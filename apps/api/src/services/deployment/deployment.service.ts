@@ -6,6 +6,16 @@ import {
   type DeploymentMethod,
 } from "./deployment-detector";
 
+const VALID_DEPLOYMENT_METHODS: readonly string[] = [
+  "dokku",
+  "docker_compose",
+  "binary",
+] as const;
+
+function isDeploymentMethod(value: unknown): value is DeploymentMethod {
+  return typeof value === "string" && VALID_DEPLOYMENT_METHODS.includes(value);
+}
+
 /**
  * Service for managing deployment method detection and persistence
  */
@@ -82,7 +92,9 @@ export class DeploymentService {
         where: { key: this.DEPLOYMENT_METHOD_KEY },
       });
 
-      return (state?.value as DeploymentMethod) || null;
+      const raw = state?.value;
+      if (!raw) return null;
+      return isDeploymentMethod(raw) ? raw : null;
     } catch (error) {
       logger.error({ error }, "Failed to get stored deployment method");
       return null;

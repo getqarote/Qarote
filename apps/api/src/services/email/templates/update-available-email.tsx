@@ -14,6 +14,7 @@ import type { JSX } from "react";
 import {
   baseStyles,
   buttonStyles,
+  codeStyles,
   contentStyles,
   sectionStyles,
   textStyles,
@@ -76,18 +77,7 @@ export default function UpdateAvailableEmail({
               <Text style={contentStyles.paragraph}>
                 {instructions.description}
               </Text>
-              <Text
-                style={{
-                  fontFamily: "monospace",
-                  fontSize: "14px",
-                  backgroundColor: "#1f2937",
-                  color: "#f9fafb",
-                  padding: "12px 16px",
-                  borderRadius: "6px",
-                  margin: "0",
-                  whiteSpace: "pre-line",
-                }}
-              >
+              <Text style={codeStyles.commandBlock}>
                 {instructions.command}
               </Text>
             </Section>
