@@ -93,9 +93,8 @@ test.describe("License Plan Resolution @p1", () => {
 
     // Click the Plans tab
     const plansTab = adminPage.getByRole("tab", { name: /plans/i });
-    if (await plansTab.isVisible()) {
-      await plansTab.click();
-    }
+    await expect(plansTab).toBeVisible();
+    await plansTab.click();
 
     // Should NOT show "Unlock premium features" prompt
     await expect(
