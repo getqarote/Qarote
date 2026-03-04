@@ -38,7 +38,7 @@ export function invalidateLicenseCache(): void {
 /**
  * Get the current license payload from DB, with caching
  */
-async function getLicensePayload(): Promise<LicenseJwtPayload | null> {
+export async function getLicensePayload(): Promise<LicenseJwtPayload | null> {
   const now = Date.now();
 
   // Return cached value if still fresh and not expired
