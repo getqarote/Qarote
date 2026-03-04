@@ -262,12 +262,7 @@ describe("LicenseService", () => {
         expect.objectContaining({
           include: {
             fileVersions: {
-              where: {
-                OR: [
-                  { deletesAt: null },
-                  { deletesAt: { gt: expect.any(Date) } },
-                ],
-              },
+              where: { deletesAt: { gt: expect.any(Date) } },
               orderBy: { version: "desc" },
               take: 1,
               select: { fileContent: true },

@@ -161,9 +161,7 @@ class LicenseService {
       },
       include: {
         fileVersions: {
-          where: {
-            OR: [{ deletesAt: null }, { deletesAt: { gt: new Date() } }],
-          },
+          where: { deletesAt: { gt: new Date() } },
           orderBy: { version: "desc" },
           take: 1,
           select: { fileContent: true },
