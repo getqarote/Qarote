@@ -34,14 +34,6 @@ vi.mock("@/lib/trpc/client", () => ({
   },
 }));
 
-vi.mock("@/contexts/AuthContextDefinition", () => ({
-  useAuth: () => ({ isAuthenticated: true }),
-}));
-
-vi.mock("../../ui/useWorkspace", () => ({
-  useWorkspace: () => ({ workspace: { id: "test-ws" } }),
-}));
-
 describe("useUpdateWorkspace", () => {
   beforeEach(() => {
     vi.clearAllMocks();

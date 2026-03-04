@@ -77,20 +77,22 @@ info "Generating secure secrets..."
 # existing encrypted data (ENCRYPTION_KEY), active sessions (JWT_SECRET),
 # or database access (POSTGRES_PASSWORD).
 extract_existing() {
-  grep -E "^$1=" "$ENV_FILE" 2>/dev/null | head -1 | cut -d'=' -f2-
+  (grep -E "^$1=" "$ENV_FILE" 2>/dev/null || true) | head -1 | cut -d'=' -f2-
 }
 
 if [ "$EXISTING_ENV" = true ]; then
-  JWT_SECRET=$(extract_existing JWT_SECRET)
-  ENCRYPTION_KEY=$(extract_existing ENCRYPTION_KEY)
-  POSTGRES_PASSWORD=$(extract_existing POSTGRES_PASSWORD)
+  PRESERVED_JWT=$(extract_existing JWT_SECRET)
+  PRESERVED_ENC=$(extract_existing ENCRYPTION_KEY)
+  PRESERVED_PG=$(extract_existing POSTGRES_PASSWORD)
+  JWT_SECRET=${PRESERVED_JWT:-$(openssl rand -hex 64)}
+  ENCRYPTION_KEY=${PRESERVED_ENC:-$(openssl rand -hex 64)}
+  POSTGRES_PASSWORD=${PRESERVED_PG:-$(openssl rand -hex 32)}
   info "Preserved existing secrets from previous .env"
+else
+  JWT_SECRET=$(openssl rand -hex 64)
+  ENCRYPTION_KEY=$(openssl rand -hex 64)
+  POSTGRES_PASSWORD=$(openssl rand -hex 32)
 fi
-
-# Generate new secrets only for values that are empty or missing
-JWT_SECRET=${JWT_SECRET:-$(openssl rand -hex 64)}
-ENCRYPTION_KEY=${ENCRYPTION_KEY:-$(openssl rand -hex 64)}
-POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-$(openssl rand -hex 32)}
 
 # --- Copy template ---
 cp "$ENV_EXAMPLE" "$ENV_FILE"

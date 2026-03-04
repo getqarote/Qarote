@@ -97,6 +97,11 @@ const LicenseManagement = () => {
                       <Button
                         variant="outline"
                         size="icon"
+                        aria-label={
+                          copiedId === license.id
+                            ? t("licenseManagement.copiedToClipboard")
+                            : t("licenseManagement.copyLicenseKey")
+                        }
                         onClick={() =>
                           copyToClipboard(
                             license.jwtContent ?? license.licenseKey,

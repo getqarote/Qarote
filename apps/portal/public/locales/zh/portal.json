@@ -17,6 +17,7 @@
     "purchaseNew": "购买新许可证",
     "noLicenses": "您还没有任何许可证。",
     "copiedToClipboard": "许可证密钥已复制到剪贴板",
+    "copyLicenseKey": "复制许可证密钥",
     "licenseKey": "许可证密钥",
     "license": "许可证",
     "expires": "到期日期：{{date}}",
