@@ -73,7 +73,7 @@
     "@hono/trpc-server": "^0.4.2",
     "@notionhq/client": "^5.9.0",
     "@prisma/adapter-pg": "^7.4.0",
-    "@prisma/client": "^7.4.0",
+    "@prisma/client": "^7.4.2",
     "@react-email/components": "^1.0.7",
     "@react-email/render": "^2.0.4",
     "@sentry/node": "^10.40.0",
