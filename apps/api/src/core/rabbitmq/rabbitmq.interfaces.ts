@@ -333,6 +333,12 @@ export interface MessageStats {
   reject_details?: RateDetail;
   return_unroutable?: number;
   return_unroutable_details?: RateDetail;
+  deliver_no_ack?: number;
+  deliver_no_ack_details?: RateDetail;
+  drop_unroutable?: number;
+  drop_unroutable_details?: RateDetail;
+  get_empty?: number;
+  get_empty_details?: RateDetail;
 
   // Disk operations
   disk_reads: number;
@@ -492,6 +498,8 @@ export interface QueueMessageStats {
   return_unroutable_details?: RateDetail;
   drop_unroutable?: number;
   drop_unroutable_details?: RateDetail;
+  get_empty?: number;
+  get_empty_details?: RateDetail;
 }
 
 export interface RabbitMQQueue {
@@ -811,6 +819,9 @@ export interface MessageRates {
   redeliver?: number;
   reject?: number;
   return_unroutable?: number;
+  deliver_no_ack?: number;
+  drop_unroutable?: number;
+  get_empty?: number;
   disk_reads?: number;
   disk_writes?: number;
   [key: string]: number | undefined;

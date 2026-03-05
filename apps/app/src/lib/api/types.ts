@@ -73,10 +73,13 @@ export interface Queue {
   idle_since?: string;
   head_message_timestamp?: string | null;
 
-  // Message stats (only rate fields used by web)
+  // Message stats (rate fields used by web)
   message_stats?: {
     publish_details?: { rate: number };
     deliver_details?: { rate: number };
+    ack_details?: { rate: number };
+    deliver_get_details?: { rate: number };
+    redeliver_details?: { rate: number };
   };
 
   // Version-specific
