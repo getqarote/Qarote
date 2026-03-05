@@ -235,7 +235,18 @@ function SMTPForm({
           <Card>
             <CardHeader>
               <CardTitle>{t("oauth2")}</CardTitle>
-              <CardDescription>{t("oauth2Description")}</CardDescription>
+              <CardDescription>
+                {t("oauth2DescriptionPrefix")}{" "}
+                <a
+                  href="https://nodemailer.com/smtp/oauth2/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary underline hover:text-primary/80"
+                >
+                  {t("oauth2DescriptionLink")}
+                </a>
+                {t("oauth2DescriptionSuffix")}
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
