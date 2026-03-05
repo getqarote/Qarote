@@ -4,6 +4,8 @@ import { useTranslation } from "react-i18next";
 import { AlertTriangle, Check, Copy, Info } from "lucide-react";
 import { toast } from "sonner";
 
+import { logger } from "@/lib/logger";
+
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -50,7 +52,7 @@ export const InviteUserDialog = ({
   canInvite = true,
   maxUsers,
   currentCount,
-  emailEnabled = true,
+  emailEnabled = false,
   inviteResult,
   onResultDismiss,
 }: InviteUserDialogProps) => {
@@ -65,6 +67,7 @@ export const InviteUserDialog = ({
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {
+      logger.error("Failed to copy invite link:", error);
       toast.error(t("invite.copyFailed"));
     }
   };
