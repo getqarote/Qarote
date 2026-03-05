@@ -9,7 +9,7 @@ import { logger } from "@/core/logger";
 export type DeploymentMethod =
   | "dokku" // Dokku PaaS deployment
   | "docker_compose" // Docker Compose deployment
-  | "binary"; // Standalone binary deployment (includes manual/source)
+  | "binary"; // Binary deployment (standalone or manual)
 
 /**
  * Deployment method detector
@@ -40,7 +40,7 @@ export class DeploymentDetector {
       return "binary";
     }
 
-    // 4. Binary: Default fallback (includes manual/source deployments)
+    // 4. Binary: Default fallback
     logger.info("Detected deployment method: binary (fallback)");
     return "binary";
   }
@@ -180,7 +180,7 @@ curl -L "https://github.com/getqarote/Qarote/releases/latest/download/qarote-\${
 # Restart (migrations run automatically)
 ./qarote`,
           description:
-            "Download the latest binary release, extract it to replace your current installation, and restart the service. For manual/source deployments, use git pull and rebuild instead.",
+            "Download the latest binary release, extract it to replace your current installation, and restart the service.",
         };
     }
   }

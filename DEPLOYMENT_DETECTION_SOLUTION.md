@@ -31,7 +31,7 @@ export class DeploymentDetector {
       return 'binary';
     }
 
-    // Binary: Default fallback (includes manual/source)
+    // Binary: Default fallback
     return 'binary';
   }
 }
