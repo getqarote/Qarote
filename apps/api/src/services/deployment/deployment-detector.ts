@@ -153,10 +153,11 @@ export class DeploymentDetector {
     switch (method) {
       case "dokku":
         return {
-          title: "Update via Git Push",
-          command: "git push dokku main",
+          title: "Update via Dokku",
+          command: `git pull origin main
+git push dokku main`,
           description:
-            "Push the latest code to your Dokku instance. Dokku will automatically build and deploy the update.",
+            "Pull the latest Qarote release, then push to your Dokku remote. Dokku will automatically build and deploy the update.",
         };
 
       case "docker_compose":
