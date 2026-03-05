@@ -53,16 +53,14 @@ export function MessageStatistics({ queue }: MessageStatisticsProps) {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-sm text-muted-foreground">
-                  Publish Rate
-                </span>
+                <span className="text-sm text-muted-foreground">Incoming</span>
                 <Tooltip>
                   <TooltipTrigger>
                     <HelpCircle className="w-4 h-4 text-muted-foreground cursor-help" />
                   </TooltipTrigger>
                   <TooltipContent>
                     <div className="text-xs">
-                      Average rate of messages published to the queue.
+                      Rate of messages published to the queue.
                     </div>
                   </TooltipContent>
                 </Tooltip>
@@ -76,7 +74,7 @@ export function MessageStatistics({ queue }: MessageStatisticsProps) {
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <span className="text-sm text-muted-foreground">
-                  Deliver Rate
+                  Deliver / Get
                 </span>
                 <Tooltip>
                   <TooltipTrigger>
@@ -84,14 +82,55 @@ export function MessageStatistics({ queue }: MessageStatisticsProps) {
                   </TooltipTrigger>
                   <TooltipContent>
                     <div className="text-xs">
-                      Average rate of messages delivered to consumers.
+                      Combined rate of deliver + get operations.
                     </div>
                   </TooltipContent>
                 </Tooltip>
               </div>
               <p className="text-lg font-semibold">
-                {queue.message_stats?.deliver_details?.rate?.toFixed(2) ||
+                {queue.message_stats?.deliver_get_details?.rate?.toFixed(2) ||
                   "0.00"}{" "}
+                msg/s
+              </p>
+            </div>
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-sm text-muted-foreground">
+                  Redelivered
+                </span>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <HelpCircle className="w-4 h-4 text-muted-foreground cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <div className="text-xs">
+                      Rate of messages redelivered after nack/reject.
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+              <p className="text-lg font-semibold">
+                {queue.message_stats?.redeliver_details?.rate?.toFixed(2) ||
+                  "0.00"}{" "}
+                msg/s
+              </p>
+            </div>
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-sm text-muted-foreground">Ack</span>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <HelpCircle className="w-4 h-4 text-muted-foreground cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <div className="text-xs">
+                      Rate of messages acknowledged by consumers.
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+              <p className="text-lg font-semibold">
+                {queue.message_stats?.ack_details?.rate?.toFixed(2) || "0.00"}{" "}
                 msg/s
               </p>
             </div>

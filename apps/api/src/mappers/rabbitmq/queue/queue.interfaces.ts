@@ -53,10 +53,13 @@ export interface QueueResponse {
   idle_since?: string;
   head_message_timestamp?: string | null;
 
-  // Message stats (only rate fields used by web)
+  // Message stats (rate fields used by web)
   message_stats?: {
     publish_details?: RateDetailResponse;
     deliver_details?: RateDetailResponse;
+    ack_details?: RateDetailResponse;
+    deliver_get_details?: RateDetailResponse;
+    redeliver_details?: RateDetailResponse;
   };
 
   // Version-specific

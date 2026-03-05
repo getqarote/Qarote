@@ -318,6 +318,95 @@ describe("RabbitMQMetricsCalculator", () => {
         RabbitMQMetricsCalculator.extractMessageRatesFromStats(messageStats);
       expect(result).toEqual([]);
     });
+
+    it("should extract deliver_no_ack metric", () => {
+      const messageStats = {
+        publish_details: {
+          samples: [
+            { sample: 100, timestamp: 1000 },
+            { sample: 200, timestamp: 2000 },
+          ],
+        },
+        deliver_no_ack_details: {
+          samples: [
+            { sample: 10, timestamp: 1000 },
+            { sample: 30, timestamp: 2000 },
+          ],
+        },
+      } as MessageStats;
+
+      const result =
+        RabbitMQMetricsCalculator.extractMessageRatesFromStats(messageStats);
+
+      expect(result).toHaveLength(2);
+      expect(result[1]).toHaveProperty("deliver_no_ack");
+      expect(result[1].deliver_no_ack).toBe(20);
+    });
+
+    it("should extract get_empty metric", () => {
+      const messageStats = {
+        publish_details: {
+          samples: [
+            { sample: 100, timestamp: 1000 },
+            { sample: 200, timestamp: 2000 },
+          ],
+        },
+        get_empty_details: {
+          samples: [
+            { sample: 0, timestamp: 1000 },
+            { sample: 5, timestamp: 2000 },
+          ],
+        },
+      } as MessageStats;
+
+      const result =
+        RabbitMQMetricsCalculator.extractMessageRatesFromStats(messageStats);
+
+      expect(result).toHaveLength(2);
+      expect(result[1]).toHaveProperty("get_empty");
+      expect(result[1].get_empty).toBe(5);
+    });
+
+    it("should extract drop_unroutable metric", () => {
+      const messageStats = {
+        publish_details: {
+          samples: [
+            { sample: 100, timestamp: 1000 },
+            { sample: 200, timestamp: 2000 },
+          ],
+        },
+        drop_unroutable_details: {
+          samples: [
+            { sample: 0, timestamp: 1000 },
+            { sample: 3, timestamp: 2000 },
+          ],
+        },
+      } as MessageStats;
+
+      const result =
+        RabbitMQMetricsCalculator.extractMessageRatesFromStats(messageStats);
+
+      expect(result).toHaveLength(2);
+      expect(result[1]).toHaveProperty("drop_unroutable");
+      expect(result[1].drop_unroutable).toBe(3);
+    });
+
+    it("should handle missing new metric details gracefully", () => {
+      const messageStats = {
+        publish_details: {
+          samples: [{ sample: 100, timestamp: 1000 }],
+        },
+      } as MessageStats;
+
+      const result =
+        RabbitMQMetricsCalculator.extractMessageRatesFromStats(messageStats);
+
+      expect(result).toHaveLength(1);
+      // Missing metrics should not cause errors
+      expect(result[0].deliver_no_ack).toBeUndefined();
+      expect(result[0].get_empty).toBeUndefined();
+      expect(result[0].drop_unroutable).toBeUndefined();
+    });
   });
 
   describe("extractMessageRates", () => {

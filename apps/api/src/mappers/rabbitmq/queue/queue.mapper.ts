@@ -61,6 +61,21 @@ export class QueueMapper {
                   rate: queue.message_stats.deliver_details.rate ?? 0,
                 }
               : undefined,
+            ack_details: queue.message_stats.ack_details
+              ? {
+                  rate: queue.message_stats.ack_details.rate ?? 0,
+                }
+              : undefined,
+            deliver_get_details: queue.message_stats.deliver_get_details
+              ? {
+                  rate: queue.message_stats.deliver_get_details.rate ?? 0,
+                }
+              : undefined,
+            redeliver_details: queue.message_stats.redeliver_details
+              ? {
+                  rate: queue.message_stats.redeliver_details.rate ?? 0,
+                }
+              : undefined,
           }
         : undefined,
 
