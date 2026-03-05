@@ -25,7 +25,7 @@ interface UpdateAvailableEmailProps {
   currentVersion: string;
   latestVersion: string;
   releaseUrl: string;
-  updateInstructions?: {
+  updateInstructions: {
     title: string;
     command: string;
     description: string;
@@ -38,14 +38,6 @@ export default function UpdateAvailableEmail({
   releaseUrl,
   updateInstructions,
 }: UpdateAvailableEmailProps): JSX.Element {
-  // Default instructions for backward compatibility (Docker Compose)
-  const defaultInstructions = {
-    title: "How to Update",
-    command: "./scripts/update.sh",
-    description: "Run the following command from your Qarote directory:",
-  };
-
-  const instructions = updateInstructions || defaultInstructions;
   return (
     <Html>
       <Head />
@@ -73,12 +65,14 @@ export default function UpdateAvailableEmail({
             </Section>
 
             <Section style={sectionStyles.highlightSection}>
-              <Text style={contentStyles.heading}>{instructions.title}</Text>
+              <Text style={contentStyles.heading}>
+                {updateInstructions.title}
+              </Text>
               <Text style={contentStyles.paragraph}>
-                {instructions.description}
+                {updateInstructions.description}
               </Text>
               <Text style={codeStyles.commandBlock}>
-                {instructions.command}
+                {updateInstructions.command}
               </Text>
             </Section>
 
