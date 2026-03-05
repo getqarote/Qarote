@@ -19,9 +19,34 @@
     "workspaceUpdateFailed": "Failed to update workspace.",
     "cannotInviteMoreUsers": "Your {{plan}} plan allows {{maxUsers}} users. You currently have {{currentUsers}} users and {{pendingInvitations}} pending invitations.",
     "invitationSent": "Invitation sent to {{email}}.",
+    "invitationCreated": "Invitation created for {{email}}.",
     "invitationRevoked": "Invitation to {{email}} revoked.",
     "userRemoved": "{{name}} has been removed from the workspace.",
     "copyInviteLink": "Email is disabled. Share this link with the invited user.",
-    "copyLink": "Copy Link"
+    "copyLink": "Copy Link",
+    "linkCopied": "Invite link copied to clipboard."
+  },
+  "invite": {
+    "title": "Invite Team Member",
+    "description": "Send an invitation to add a new member to your workspace.",
+    "descriptionNoEmail": "Create an invitation link to share with a new team member.",
+    "emailDisabledBanner": "Email is not configured. An invitation link will be generated for you to share manually.",
+    "sendInvitation": "Send Invitation",
+    "sending": "Sending...",
+    "createInvitation": "Create Invitation",
+    "creating": "Creating...",
+    "usersUsed": "{{current}}/{{max}} users used",
+    "userLimitReached": "You've reached your user limit ({{max}} users). Upgrade your plan to invite more users.",
+    "emailAddress": "Email Address",
+    "role": "Role",
+    "member": "Member",
+    "admin": "Admin",
+    "selectRole": "Select a role",
+    "cancel": "Cancel",
+    "resultTitle": "Invitation Created",
+    "resultDescription": "Share this link with {{email}} to join your workspace. The link expires in 7 days.",
+    "copyLink": "Copy Invite Link",
+    "linkCopied": "Copied!",
+    "done": "Done"
   }
 }

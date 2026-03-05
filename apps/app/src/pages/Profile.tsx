@@ -31,6 +31,7 @@ import {
   useUpdateProfile,
   useVerificationStatus,
 } from "@/hooks/queries/useProfile";
+import { usePublicConfig } from "@/hooks/queries/usePublicConfig";
 import {
   useInvitations,
   useRemoveUserFromWorkspace,
@@ -72,9 +73,16 @@ const Profile = () => {
   const requestEmailChangeMutation = useRequestEmailChange();
   const cancelEmailChangeMutation = useCancelEmailChange();
 
+  const { data: publicConfig } = usePublicConfig();
+  const emailEnabled = publicConfig?.emailEnabled ?? true;
+
   const [editingProfile, setEditingProfile] = useState(false);
   const [editingWorkspace, setEditingWorkspace] = useState(false);
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
+  const [inviteResult, setInviteResult] = useState<{
+    inviteUrl: string;
+    email: string;
+  } | null>(null);
 
   // Get initial tab from URL parameter or default to 'personal'
   const initialTab = searchParams.get("tab");
@@ -254,29 +262,38 @@ const Profile = () => {
         role: inviteForm.role,
       });
 
-      setInviteDialogOpen(false);
-      setInviteForm({ email: "", role: "MEMBER" });
-
       if (result.emailSent) {
+        // Email was sent — close dialog and show toast
+        setInviteDialogOpen(false);
+        setInviteForm({ email: "", role: "MEMBER" });
         toast.success(t("toast.invitationSent", { email: inviteForm.email }));
       } else {
-        // Email not sent (SMTP disabled) — show invite URL for manual sharing
+        // No email — show invite link in the dialog result view
         const inviteUrl =
           result.inviteUrl ||
           `${window.location.origin}/invite/${result.invitation.token}`;
-        toast.success(t("toast.invitationSent", { email: inviteForm.email }), {
-          description: t("toast.copyInviteLink"),
-          action: {
-            label: t("toast.copyLink"),
-            onClick: () => navigator.clipboard.writeText(inviteUrl),
-          },
-          duration: 10000,
-        });
+        setInviteResult({ inviteUrl, email: inviteForm.email });
+        toast.success(
+          t("toast.invitationCreated", { email: inviteForm.email })
+        );
       }
     } catch (error) {
       logger.error("Invitation error:", error);
       const errorMessage = extractErrorMessage(error);
       toast.error(errorMessage);
+    }
+  };
+
+  const handleInviteResultDismiss = () => {
+    setInviteResult(null);
+    setInviteForm({ email: "", role: "MEMBER" });
+  };
+
+  const handleInviteDialogOpenChange = (open: boolean) => {
+    setInviteDialogOpen(open);
+    if (!open) {
+      setInviteResult(null);
+      setInviteForm({ email: "", role: "MEMBER" });
     }
   };
 
@@ -396,6 +413,7 @@ const Profile = () => {
                   isChangingPassword={changePasswordMutation.isPending}
                   isRequestingEmailChange={requestEmailChangeMutation.isPending}
                   isCancellingEmailChange={cancelEmailChangeMutation.isPending}
+                  emailEnabled={emailEnabled}
                 />
               </TabsContent>
 
@@ -424,7 +442,7 @@ const Profile = () => {
                   usersLoading={usersLoading}
                   invitationsLoading={invitationsLoading}
                   inviteDialogOpen={inviteDialogOpen}
-                  setInviteDialogOpen={setInviteDialogOpen}
+                  setInviteDialogOpen={handleInviteDialogOpenChange}
                   inviteForm={inviteForm}
                   setInviteForm={setInviteForm}
                   onInviteUser={handleInviteUser}
@@ -435,6 +453,9 @@ const Profile = () => {
                   isRemoving={removeUserMutation.isPending}
                   userPlan={userPlan}
                   canInviteMoreUsers={canInviteMoreUsers()}
+                  emailEnabled={emailEnabled}
+                  inviteResult={inviteResult}
+                  onInviteResultDismiss={handleInviteResultDismiss}
                 />
               </TabsContent>
 

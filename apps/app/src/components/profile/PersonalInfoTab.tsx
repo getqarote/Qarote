@@ -53,6 +53,7 @@ interface PersonalInfoTabProps {
   isChangingPassword?: boolean;
   isRequestingEmailChange?: boolean;
   isCancellingEmailChange?: boolean;
+  emailEnabled?: boolean;
 }
 
 export const PersonalInfoTab = ({
@@ -70,6 +71,7 @@ export const PersonalInfoTab = ({
   isChangingPassword = false,
   isRequestingEmailChange = false,
   isCancellingEmailChange = false,
+  emailEnabled = true,
 }: PersonalInfoTabProps) => {
   return (
     <div className="space-y-6">
@@ -240,6 +242,7 @@ export const PersonalInfoTab = ({
                     onCancelEmailChange={onCancelEmailChange}
                     isLoading={isRequestingEmailChange}
                     isCancelling={isCancellingEmailChange}
+                    emailEnabled={emailEnabled}
                   />
                 </div>
               </div>

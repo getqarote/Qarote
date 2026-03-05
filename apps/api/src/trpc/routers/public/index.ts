@@ -1,11 +1,8 @@
 import { areFeaturesEnabled } from "@/core/feature-flags";
 
-import {
-  emailConfig,
-  googleConfig,
-  registrationConfig,
-  ssoConfig,
-} from "@/config";
+import { CoreEmailService } from "@/services/email/core-email.service";
+
+import { googleConfig, registrationConfig, ssoConfig } from "@/config";
 import { getAllPremiumFeatures } from "@/config/features";
 
 import { publicProcedure, router } from "@/trpc/trpc";
@@ -24,9 +21,13 @@ export const publicRouter = router({
    * Returns configuration flags needed by the frontend before authentication
    */
   getConfig: publicProcedure.query(async () => {
+    // Use effective config (DB smtp_config > env ENABLE_EMAIL) so that
+    // SMTP settings configured via the admin page are reflected here.
+    const effectiveEmail = await CoreEmailService.loadEffectiveConfig();
+
     return {
       registrationEnabled: registrationConfig.enabled,
-      emailEnabled: emailConfig.enabled,
+      emailEnabled: effectiveEmail.enabled,
       oauthEnabled: googleConfig.enabled,
       ssoEnabled: ssoConfig.enabled,
     };

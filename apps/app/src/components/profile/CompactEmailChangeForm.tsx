@@ -1,6 +1,14 @@
 import React, { useState } from "react";
 
-import { AlertCircle, CheckCircle, Eye, EyeOff, Mail, X } from "lucide-react";
+import {
+  AlertCircle,
+  CheckCircle,
+  Eye,
+  EyeOff,
+  Info,
+  Mail,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { logger } from "@/lib/logger";
@@ -22,6 +30,7 @@ interface CompactEmailChangeFormProps {
   onCancelEmailChange: () => Promise<void>;
   isLoading?: boolean;
   isCancelling?: boolean;
+  emailEnabled?: boolean;
 }
 
 export const CompactEmailChangeForm: React.FC<CompactEmailChangeFormProps> = ({
@@ -32,6 +41,7 @@ export const CompactEmailChangeForm: React.FC<CompactEmailChangeFormProps> = ({
   onCancelEmailChange,
   isLoading = false,
   isCancelling = false,
+  emailEnabled = true,
 }) => {
   const [formData, setFormData] = useState({
     newEmail: "",
@@ -113,14 +123,25 @@ export const CompactEmailChangeForm: React.FC<CompactEmailChangeFormProps> = ({
         </Badge>
       </div>
 
-      {/* Security Notice */}
-      <Alert className="border-blue-200 bg-blue-50">
-        <CheckCircle className="h-4 w-4 text-blue-600" />
-        <AlertDescription className="text-xs text-blue-700">
-          <strong>Security:</strong> We'll send a verification link to your new
-          email. Your current email remains active until verified.
-        </AlertDescription>
-      </Alert>
+      {/* Security Notice / Email Disabled Notice */}
+      {emailEnabled ? (
+        <Alert className="border-blue-200 bg-blue-50">
+          <CheckCircle className="h-4 w-4 text-blue-600" />
+          <AlertDescription className="text-xs text-blue-700">
+            <strong>Security:</strong> We'll send a verification link to your
+            new email. Your current email remains active until verified.
+          </AlertDescription>
+        </Alert>
+      ) : (
+        <Alert className="border-amber-200 bg-amber-50">
+          <Info className="h-4 w-4 text-amber-600" />
+          <AlertDescription className="text-xs text-amber-700">
+            Email delivery is not configured. Email changes require a
+            verification email to be sent. Please configure SMTP in your
+            instance settings first.
+          </AlertDescription>
+        </Alert>
+      )}
 
       {/* Pending Email Change Status */}
       {hasPendingEmailChange && pendingEmail && (
@@ -150,8 +171,8 @@ export const CompactEmailChangeForm: React.FC<CompactEmailChangeFormProps> = ({
         </Alert>
       )}
 
-      {/* Email Change Form - Only show if no pending change */}
-      {!hasPendingEmailChange && (
+      {/* Email Change Form - Only show if no pending change and email is enabled */}
+      {!hasPendingEmailChange && emailEnabled && (
         <div className="flex-1 flex flex-col">
           <form
             onSubmit={handleSubmit}
