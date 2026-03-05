@@ -145,15 +145,13 @@ export const EnhancedTeamTab = ({
 
   return (
     <div className="space-y-6">
-      {/* Team Overview Card */}
+      {/* Team */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Users className="h-6 w-6" />
-              <span>Team Overview</span>
-            </div>
-            <div className="flex items-center gap-2">
+              <Users className="h-5 w-5" />
+              <span>Team</span>
               <Badge variant="outline">
                 {totalUsers} {totalUsers === 1 ? "user" : "users"}
               </Badge>
@@ -174,46 +172,6 @@ export const EnhancedTeamTab = ({
                   {totalUsers + pendingInvitations}/{maxUsers} limit
                 </Badge>
               )}
-            </div>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-              <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                {totalUsers}
-              </p>
-              <p className="text-sm text-blue-600 dark:text-blue-400">
-                Active Users
-              </p>
-            </div>
-            <div className="text-center p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
-              <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">
-                {pendingInvitations}
-              </p>
-              <p className="text-sm text-amber-600 dark:text-amber-400">
-                Pending Invitations
-              </p>
-            </div>
-            <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
-              <p className="text-2xl font-bold text-green-600 dark:text-green-400">
-                {maxUsers ? maxUsers - totalUsers - pendingInvitations : "∞"}
-              </p>
-              <p className="text-sm text-green-600 dark:text-green-400">
-                Available Slots
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Active Users */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
-              <span>Active Members</span>
             </div>
             {canInviteMoreUsers ? (
               <Button

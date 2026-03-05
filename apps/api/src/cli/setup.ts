@@ -4,6 +4,8 @@ import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { createInterface } from "node:readline";
 
+import dotenv from "dotenv";
+
 // Colors (disabled if not a terminal)
 const isTTY = process.stdout.isTTY;
 const c = {
@@ -95,29 +97,6 @@ async function testDatabaseConnection(
   }
 }
 
-/** Parse a .env file into a key-value map. Handles quoted values. */
-function parseEnvFile(filePath: string): Record<string, string> {
-  const env: Record<string, string> = {};
-  const content = readFileSync(filePath, "utf-8");
-  for (const line of content.split("\n")) {
-    const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith("#")) continue;
-    const eqIndex = trimmed.indexOf("=");
-    if (eqIndex === -1) continue;
-    const key = trimmed.slice(0, eqIndex);
-    let value = trimmed.slice(eqIndex + 1);
-    // Strip surrounding quotes
-    if (
-      (value.startsWith('"') && value.endsWith('"')) ||
-      (value.startsWith("'") && value.endsWith("'"))
-    ) {
-      value = value.slice(1, -1).replace(/\\"/g, '"').replace(/\\\\/g, "\\");
-    }
-    env[key] = value;
-  }
-  return env;
-}
-
 function section(title: string) {
   console.log("");
   console.log(c.bold(`  ${title}`));
@@ -147,7 +126,7 @@ export async function runSetup(): Promise<void> {
   // Load existing .env values as defaults (if present)
   const envPath = join(process.cwd(), ".env");
   const prev: Record<string, string> = existsSync(envPath)
-    ? parseEnvFile(envPath)
+    ? dotenv.parse(readFileSync(envPath, "utf-8"))
     : {};
 
   if (Object.keys(prev).length > 0) {
