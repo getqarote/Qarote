@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server";
 
 import { formatInvitedBy, getUserDisplayName } from "@/core/utils";
 
+import { CoreEmailService } from "@/services/email/core-email.service";
 import { EmailService } from "@/services/email/email.service";
 import { EncryptionService } from "@/services/encryption.service";
 import { validateUserInvitation } from "@/services/plan/plan.service";
@@ -205,8 +206,11 @@ export const invitationRouter = router({
         const inviteUrl = `${emailConfig.frontendUrl}/invite/${token}`;
 
         // Send invitation email (only attempt if email is enabled)
+        // Use effective config (DB smtp_config > env) so SMTP configured
+        // via the admin settings page is respected.
         let emailSent = false;
-        if (emailConfig.enabled) {
+        const effectiveEmail = await CoreEmailService.loadEffectiveConfig();
+        if (effectiveEmail.enabled) {
           try {
             await EmailService.sendInvitationEmail({
               to: email,

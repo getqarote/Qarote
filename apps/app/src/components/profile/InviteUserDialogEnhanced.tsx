@@ -1,4 +1,7 @@
-import { AlertTriangle } from "lucide-react";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+
+import { AlertTriangle, Check, Copy, Info } from "lucide-react";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -31,6 +34,9 @@ interface InviteUserDialogProps {
   canInvite?: boolean;
   maxUsers?: number;
   currentCount?: number;
+  emailEnabled?: boolean;
+  inviteResult?: { inviteUrl: string; email: string } | null;
+  onResultDismiss?: () => void;
 }
 
 export const InviteUserDialog = ({
@@ -43,37 +49,109 @@ export const InviteUserDialog = ({
   canInvite = true,
   maxUsers,
   currentCount,
+  emailEnabled = true,
+  inviteResult,
+  onResultDismiss,
 }: InviteUserDialogProps) => {
+  const { t } = useTranslation("profile");
+  const [copied, setCopied] = useState(false);
   const isAtLimit = maxUsers && currentCount && currentCount >= maxUsers;
 
+  const handleCopyLink = async () => {
+    if (inviteResult?.inviteUrl) {
+      await navigator.clipboard.writeText(inviteResult.inviteUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const handleDone = () => {
+    onResultDismiss?.();
+    onOpenChange(false);
+  };
+
+  // Result view: shown after invitation creation when email was not sent
+  if (inviteResult) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("invite.resultTitle")}</DialogTitle>
+            <DialogDescription>
+              {t("invite.resultDescription", { email: inviteResult.email })}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="flex gap-2">
+              <Input
+                readOnly
+                value={inviteResult.inviteUrl}
+                className="font-mono text-sm"
+              />
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={handleCopyLink}
+                className="shrink-0"
+              >
+                {copied ? (
+                  <Check className="h-4 w-4" />
+                ) : (
+                  <Copy className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
+            <div className="flex justify-end">
+              <Button onClick={handleDone}>{t("invite.done")}</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  // Form view
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Invite Team Member</DialogTitle>
+          <DialogTitle>{t("invite.title")}</DialogTitle>
           <DialogDescription>
-            Send an invitation to add a new member to your workspace.
+            {emailEnabled
+              ? t("invite.description")
+              : t("invite.descriptionNoEmail")}
             {maxUsers && (
               <span className="block mt-1 text-sm">
-                {currentCount || 0}/{maxUsers} users used
+                {t("invite.usersUsed", {
+                  current: currentCount || 0,
+                  max: maxUsers,
+                })}
               </span>
             )}
           </DialogDescription>
         </DialogHeader>
 
+        {!emailEnabled && (
+          <Alert>
+            <Info className="h-4 w-4" />
+            <AlertDescription>
+              {t("invite.emailDisabledBanner")}
+            </AlertDescription>
+          </Alert>
+        )}
+
         {isAtLimit && (
           <Alert variant="destructive">
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
-              You've reached your user limit ({maxUsers} users). Upgrade your
-              plan to invite more users.
+              {t("invite.userLimitReached", { max: maxUsers })}
             </AlertDescription>
           </Alert>
         )}
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">Email Address</Label>
+            <Label htmlFor="email">{t("invite.emailAddress")}</Label>
             <Input
               id="email"
               type="email"
@@ -87,7 +165,7 @@ export const InviteUserDialog = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="role">Role</Label>
+            <Label htmlFor="role">{t("invite.role")}</Label>
             <Select
               value={inviteForm.role}
               onValueChange={(value) =>
@@ -99,11 +177,11 @@ export const InviteUserDialog = ({
               disabled={isInviting || !canInvite}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select a role" />
+                <SelectValue placeholder={t("invite.selectRole")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="MEMBER">Member</SelectItem>
-                <SelectItem value="ADMIN">Admin</SelectItem>
+                <SelectItem value="MEMBER">{t("invite.member")}</SelectItem>
+                <SelectItem value="ADMIN">{t("invite.admin")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -114,7 +192,7 @@ export const InviteUserDialog = ({
               onClick={() => onOpenChange(false)}
               disabled={isInviting}
             >
-              Cancel
+              {t("invite.cancel")}
             </Button>
             <Button
               onClick={onInviteUser}
@@ -126,7 +204,13 @@ export const InviteUserDialog = ({
               }
               className="btn-primary"
             >
-              {isInviting ? "Sending..." : "Send Invitation"}
+              {isInviting
+                ? emailEnabled
+                  ? t("invite.sending")
+                  : t("invite.creating")
+                : emailEnabled
+                  ? t("invite.sendInvitation")
+                  : t("invite.createInvitation")}
             </Button>
           </div>
         </div>

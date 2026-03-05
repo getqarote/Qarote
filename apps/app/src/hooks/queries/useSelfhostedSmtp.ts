@@ -17,6 +17,8 @@ export const useSmtpUpdate = (options?: {
     onSuccess: () => {
       options?.onSuccess?.();
       utils.selfhostedSmtp.getSettings.invalidate();
+      // Refresh public config so emailEnabled reflects new SMTP state
+      utils.public.getConfig.invalidate();
     },
     onError: options?.onError,
   });

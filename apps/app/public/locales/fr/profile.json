@@ -19,9 +19,34 @@
     "workspaceUpdateFailed": "Échec de la mise à jour de l'espace de travail.",
     "cannotInviteMoreUsers": "Votre forfait {{plan}} autorise {{maxUsers}} utilisateurs. Vous avez actuellement {{currentUsers}} utilisateurs et {{pendingInvitations}} invitations en attente.",
     "invitationSent": "Invitation envoyée à {{email}}.",
+    "invitationCreated": "Invitation créée pour {{email}}.",
     "invitationRevoked": "Invitation à {{email}} révoquée.",
     "userRemoved": "{{name}} a été retiré de l'espace de travail.",
     "copyInviteLink": "L'e-mail est désactivé. Partagez ce lien avec l'utilisateur invité.",
-    "copyLink": "Copier le lien"
+    "copyLink": "Copier le lien",
+    "linkCopied": "Lien d'invitation copié dans le presse-papiers."
+  },
+  "invite": {
+    "title": "Inviter un membre",
+    "description": "Envoyez une invitation pour ajouter un nouveau membre à votre espace de travail.",
+    "descriptionNoEmail": "Créez un lien d'invitation à partager avec un nouveau membre.",
+    "emailDisabledBanner": "L'envoi d'e-mails n'est pas configuré. Un lien d'invitation sera généré pour un partage manuel.",
+    "sendInvitation": "Envoyer l'invitation",
+    "sending": "Envoi en cours...",
+    "createInvitation": "Créer l'invitation",
+    "creating": "Création en cours...",
+    "usersUsed": "{{current}}/{{max}} utilisateurs utilisés",
+    "userLimitReached": "Vous avez atteint la limite d'utilisateurs ({{max}} utilisateurs). Passez à un forfait supérieur pour inviter plus d'utilisateurs.",
+    "emailAddress": "Adresse e-mail",
+    "role": "Rôle",
+    "member": "Membre",
+    "admin": "Admin",
+    "selectRole": "Sélectionner un rôle",
+    "cancel": "Annuler",
+    "resultTitle": "Invitation créée",
+    "resultDescription": "Partagez ce lien avec {{email}} pour rejoindre votre espace de travail. Le lien expire dans 7 jours.",
+    "copyLink": "Copier le lien d'invitation",
+    "linkCopied": "Copié !",
+    "done": "Terminé"
   }
 }
