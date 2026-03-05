@@ -9,7 +9,8 @@ export type PremiumFeature =
   | "slack_integration"
   | "webhook_integration"
   | "data_export"
-  | "advanced_alert_rules";
+  | "advanced_alert_rules"
+  | "topology_visualization";
 
 /**
  * Feature definitions
@@ -21,6 +22,7 @@ export const FEATURES = {
   WEBHOOK_INTEGRATION: "webhook_integration" as const,
   DATA_EXPORT: "data_export" as const,
   ADVANCED_ALERT_RULES: "advanced_alert_rules" as const,
+  TOPOLOGY_VISUALIZATION: "topology_visualization" as const,
 } as const;
 
 /**
@@ -33,6 +35,7 @@ export const FEATURE_DESCRIPTIONS: Record<PremiumFeature, string> = {
   webhook_integration: "Webhook Integration",
   data_export: "Data Export",
   advanced_alert_rules: "Advanced Alert Rules",
+  topology_visualization: "Topology Visualization",
 };
 
 /**

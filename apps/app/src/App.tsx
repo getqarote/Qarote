@@ -31,6 +31,7 @@ const Queues = lazy(() => import("./pages/Queues"));
 const QueueDetail = lazy(() => import("./pages/QueueDetail"));
 const Connections = lazy(() => import("./pages/Connections"));
 const Exchanges = lazy(() => import("./pages/Exchanges"));
+const Topology = lazy(() => import("./pages/Topology"));
 const Nodes = lazy(() => import("./pages/Nodes"));
 const VHosts = lazy(() => import("./pages/VHostsPage"));
 const VHostDetails = lazy(() => import("./pages/VHostDetailsPage"));
@@ -239,6 +240,16 @@ const AppCore = () => (
                               <ProtectedRoute>
                                 <Layout>
                                   <Exchanges />
+                                </Layout>
+                              </ProtectedRoute>
+                            }
+                          />
+                          <Route
+                            path="/topology"
+                            element={
+                              <ProtectedRoute>
+                                <Layout>
+                                  <Topology />
                                 </Layout>
                               </ProtectedRoute>
                             }
