@@ -11,6 +11,7 @@ import {
   HelpCircle,
   LogOut,
   MessageSquare,
+  Network,
   Plus,
   Server,
   Settings,
@@ -56,6 +57,7 @@ const menuItems = [
   { titleKey: "sidebar:connections", url: "/connections", icon: Clock },
   { titleKey: "sidebar:nodes", url: "/nodes", icon: Server },
   { titleKey: "sidebar:exchanges", url: "/exchanges", icon: Activity },
+  { titleKey: "sidebar:topology", url: "/topology", icon: Network },
   {
     titleKey: "sidebar:virtualHosts",
     url: "/vhosts",

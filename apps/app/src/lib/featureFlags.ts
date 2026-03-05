@@ -9,7 +9,8 @@ export type PremiumFeature =
   | "slack_integration"
   | "webhook_integration"
   | "data_export"
-  | "advanced_alert_rules";
+  | "advanced_alert_rules"
+  | "topology_visualization";
 
 /**
  * Get deployment mode from environment.
@@ -68,6 +69,7 @@ const FEATURE_DESCRIPTIONS: Record<PremiumFeature, string> = {
   webhook_integration: "Webhook Integration",
   data_export: "Data Export",
   advanced_alert_rules: "Advanced Alert Rules",
+  topology_visualization: "Topology Visualization",
 };
 
 /**

@@ -152,6 +152,7 @@
     "failedToFetchConnections": "获取连接列表失败",
     "failedToFetchChannels": "获取通道列表失败",
     "failedToFetchExchanges": "获取交换机列表失败",
+    "failedToFetchTopology": "获取拓扑数据失败",
     "invalidExchangeType": "交换机类型无效。必须是以下之一：{{validTypes}}",
     "failedToCreateExchange": "创建交换机失败",
     "exchangeInUseCannotDelete": "无法删除交换机「{{exchangeName}}」，因为它有绑定关系或正在使用中。请尝试强制删除以强行移除。",

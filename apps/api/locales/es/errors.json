@@ -152,6 +152,7 @@
     "failedToFetchConnections": "Error al obtener las conexiones",
     "failedToFetchChannels": "Error al obtener los canales",
     "failedToFetchExchanges": "Error al obtener los intercambiadores",
+    "failedToFetchTopology": "Error al obtener los datos de topología",
     "invalidExchangeType": "Tipo de intercambiador no válido. Debe ser uno de los siguientes: {{validTypes}}",
     "failedToCreateExchange": "Error al crear el intercambiador",
     "exchangeInUseCannotDelete": "No se puede eliminar el intercambiador \"{{exchangeName}}\" porque tiene enlaces o está en uso. Intente la eliminación forzada para eliminarlo de todos modos.",

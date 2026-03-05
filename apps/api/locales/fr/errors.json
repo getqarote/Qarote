@@ -152,6 +152,7 @@
     "failedToFetchConnections": "Échec de la récupération des connexions",
     "failedToFetchChannels": "Échec de la récupération des canaux",
     "failedToFetchExchanges": "Échec de la récupération des échangeurs",
+    "failedToFetchTopology": "Échec de la récupération des données de topologie",
     "invalidExchangeType": "Type d'échangeur invalide. Doit être l'un des suivants : {{validTypes}}",
     "failedToCreateExchange": "Échec de la création de l'échangeur",
     "exchangeInUseCannotDelete": "Impossible de supprimer l'échangeur « {{exchangeName}} » car il possède des liaisons ou est en cours d'utilisation. Essayez la suppression forcée pour le retirer malgré tout.",
