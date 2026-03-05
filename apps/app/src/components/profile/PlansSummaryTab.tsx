@@ -202,7 +202,7 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
               </div>
               <div className="ml-4 flex gap-2">
                 <Button
-                  onClick={() => navigate("/license")}
+                  onClick={() => navigate("/settings/license")}
                   className="btn-primary"
                 >
                   Activate License
@@ -300,7 +300,7 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
                     Activate or manage your license
                   </p>
                 </div>
-                <Link to="/license">
+                <Link to="/settings/license">
                   <Button variant="ghost" size="sm" className="text-purple-600">
                     Manage
                   </Button>

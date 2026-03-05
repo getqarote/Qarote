@@ -1,0 +1,197 @@
+import { useTranslation } from "react-i18next";
+import { Link, useLocation } from "react-router";
+
+import {
+  Building,
+  Crown,
+  KeyRound,
+  Mail,
+  MessageSquare,
+  Shield,
+  User,
+  Users,
+} from "lucide-react";
+
+import { isCloudMode } from "@/lib/featureFlags";
+
+import { useAuth } from "@/contexts/AuthContextDefinition";
+
+import { useIsMobile } from "@/hooks/ui/useMobile";
+
+interface NavItem {
+  key: string;
+  path: string;
+  icon: React.ComponentType<{ className?: string }>;
+  labelKey: string;
+  adminOnly?: boolean;
+  selfHostedOnly?: boolean;
+}
+
+interface NavGroup {
+  labelKey: string | null;
+  adminOnly?: boolean;
+  items: NavItem[];
+}
+
+const navGroups: NavGroup[] = [
+  {
+    labelKey: "settings:groups.personal",
+    items: [
+      {
+        key: "profile",
+        path: "/settings/profile",
+        icon: User,
+        labelKey: "settings:nav.profile",
+      },
+      {
+        key: "workspace",
+        path: "/settings/workspace",
+        icon: Building,
+        labelKey: "settings:nav.workspace",
+      },
+      {
+        key: "plans",
+        path: "/settings/plans",
+        icon: Crown,
+        labelKey: "settings:nav.plans",
+      },
+    ],
+  },
+  {
+    labelKey: "settings:groups.administration",
+    adminOnly: true,
+    items: [
+      {
+        key: "team",
+        path: "/settings/team",
+        icon: Users,
+        labelKey: "settings:nav.team",
+        adminOnly: true,
+      },
+      {
+        key: "license",
+        path: "/settings/license",
+        icon: KeyRound,
+        labelKey: "settings:nav.license",
+        adminOnly: true,
+        selfHostedOnly: true,
+      },
+      {
+        key: "sso",
+        path: "/settings/sso",
+        icon: Shield,
+        labelKey: "settings:nav.sso",
+        adminOnly: true,
+        selfHostedOnly: true,
+      },
+      {
+        key: "smtp",
+        path: "/settings/smtp",
+        icon: Mail,
+        labelKey: "settings:nav.smtp",
+        adminOnly: true,
+        selfHostedOnly: true,
+      },
+    ],
+  },
+  {
+    labelKey: null,
+    items: [
+      {
+        key: "feedback",
+        path: "/settings/feedback",
+        icon: MessageSquare,
+        labelKey: "settings:nav.feedback",
+      },
+    ],
+  },
+];
+
+export const SettingsSidebar = () => {
+  const { t } = useTranslation();
+  const location = useLocation();
+  const { user } = useAuth();
+  const isMobile = useIsMobile();
+  const isAdmin = user?.role === "ADMIN";
+  const cloudMode = isCloudMode();
+
+  const filterItem = (item: NavItem) => {
+    if (item.adminOnly && !isAdmin) return false;
+    if (item.selfHostedOnly && cloudMode) return false;
+    return true;
+  };
+
+  const visibleGroups = navGroups
+    .map((group) => ({
+      ...group,
+      items: group.items.filter(filterItem),
+    }))
+    .filter((group) => {
+      if (group.adminOnly && !isAdmin) return false;
+      return group.items.length > 0;
+    });
+
+  if (isMobile) {
+    const allItems = visibleGroups.flatMap((g) => g.items);
+    return (
+      <nav className="flex gap-1 overflow-x-auto pb-2 -mx-1 px-1">
+        {allItems.map((item) => {
+          const isActive = location.pathname === item.path;
+          return (
+            <Link
+              key={item.key}
+              to={item.path}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+                isActive
+                  ? "bg-linear-to-r from-orange-600 to-red-600 text-white"
+                  : "text-muted-foreground hover:bg-muted"
+              }`}
+            >
+              <item.icon className="h-3.5 w-3.5" />
+              {t(item.labelKey)}
+            </Link>
+          );
+        })}
+      </nav>
+    );
+  }
+
+  return (
+    <nav className="w-56 shrink-0">
+      <div className="space-y-6">
+        {visibleGroups.map((group, groupIdx) => (
+          <div key={group.labelKey ?? `group-${groupIdx}`}>
+            {group.labelKey && (
+              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-3">
+                {t(group.labelKey)}
+              </h3>
+            )}
+            {!group.labelKey && groupIdx > 0 && (
+              <div className="border-t border-border mb-2" />
+            )}
+            <ul className="space-y-0.5">
+              {group.items.map((item) => {
+                const isActive = location.pathname === item.path;
+                return (
+                  <li key={item.key}>
+                    <Link
+                      to={item.path}
+                      className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        isActive
+                          ? "bg-linear-to-r from-orange-600 to-red-600 text-white"
+                          : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                      }`}
+                    >
+                      <item.icon className="h-4 w-4" />
+                      {t(item.labelKey)}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </nav>
+  );
+};

@@ -53,10 +53,10 @@ export function isSelfHostedMode(): boolean {
 
 /**
  * Get the path for upgrade/license CTAs based on deployment mode.
- * Cloud → /plans, Self-hosted → /license
+ * Cloud → /plans, Self-hosted → /settings/license
  */
-export function getUpgradePath(): "/plans" | "/license" {
-  return isCloudMode() ? "/plans" : "/license";
+export function getUpgradePath(): "/plans" | "/settings/license" {
+  return isCloudMode() ? "/plans" : "/settings/license";
 }
 
 /**

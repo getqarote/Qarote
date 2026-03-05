@@ -104,7 +104,7 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
                 className="flex-1 btn-primary rounded-lg"
                 onClick={() => {
                   onClose();
-                  navigate("/license");
+                  navigate("/settings/license");
                 }}
               >
                 {t("upgradeModal.activateLicense")}

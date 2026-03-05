@@ -14,7 +14,6 @@ import { toast } from "sonner";
 
 import { isSelfHostedMode } from "@/lib/featureFlags";
 
-import { AppSidebar } from "@/components/AppSidebar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -34,7 +33,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
@@ -92,7 +91,6 @@ function SSOForm({
     },
   });
 
-  // Form state initialized from server data
   const [enabled, setEnabled] = useState(initialData.enabled);
   const [type, setType] = useState<"oidc" | "saml">(initialData.type);
   const [oidcDiscoveryUrl, setOidcDiscoveryUrl] = useState(
@@ -148,13 +146,11 @@ function SSOForm({
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      {/* Header */}
+    <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <SidebarTrigger />
-        <Shield className="h-8 w-8" />
+        <Shield className="h-6 w-6" />
         <div>
-          <h1 className="title-page">{t("title")}</h1>
+          <h2 className="text-xl font-semibold">{t("title")}</h2>
           <p className="text-sm text-muted-foreground">{t("description")}</p>
         </div>
       </div>
@@ -305,7 +301,6 @@ function SSOForm({
                 />
               </div>
 
-              {/* Callback URLs to register in IdP */}
               {callbackUrl && (
                 <div className="rounded-lg border p-4 space-y-3 bg-muted/50">
                   <div className="flex items-center gap-2 text-sm font-medium">
@@ -438,8 +433,7 @@ function SSOForm({
   );
 }
 
-function SSOSettingsPage() {
-  const { t } = useTranslation("sso");
+const SSOSection = () => {
   const { user } = useAuth();
 
   const {
@@ -450,40 +444,27 @@ function SSOSettingsPage() {
     enabled: isSelfHostedMode() && user?.role === "ADMIN",
   });
 
-  // Only accessible in self-hosted mode by admin users
   if (!isSelfHostedMode() || (user && user.role !== "ADMIN")) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/settings/profile" replace />;
   }
 
   if (isLoading || !settings) {
     return (
-      <SidebarProvider>
-        <div className="page-layout">
-          <AppSidebar />
-          <main className="main-content-scrollable">
-            <div className="container mx-auto p-6">
-              <p className="text-muted-foreground">{t("loading")}</p>
-            </div>
-          </main>
-        </div>
-      </SidebarProvider>
+      <div className="space-y-4">
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-32 w-full" />
+        <Skeleton className="h-32 w-full" />
+      </div>
     );
   }
 
   return (
-    <SidebarProvider>
-      <div className="page-layout">
-        <AppSidebar />
-        <main className="main-content-scrollable">
-          <SSOForm
-            key={JSON.stringify(settings)}
-            initialData={settings}
-            onRefetch={refetch}
-          />
-        </main>
-      </div>
-    </SidebarProvider>
+    <SSOForm
+      key={JSON.stringify(settings)}
+      initialData={settings}
+      onRefetch={refetch}
+    />
   );
-}
+};
 
-export default SSOSettingsPage;
+export default SSOSection;
