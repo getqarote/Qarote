@@ -37,10 +37,14 @@ function createPrompt() {
     });
 
   /** Prompt for sensitive input without echoing to the terminal. */
-  const askSecret = (question: string): Promise<string> =>
+  const askSecret = (
+    question: string,
+    defaultValue?: string
+  ): Promise<string> =>
     new Promise((resolve) => {
       rl.pause();
-      process.stdout.write(`  ${question}: `);
+      const suffix = defaultValue ? ` ${c.dim(`[${defaultValue}]`)}` : "";
+      process.stdout.write(`  ${question}${suffix}: `);
       const input = process.stdin;
       const wasRaw = input.isRaw;
       input.setRawMode(true);
@@ -53,7 +57,7 @@ function createPrompt() {
           input.setRawMode(wasRaw);
           process.stdout.write("\n");
           rl.resume();
-          resolve(value.trim());
+          resolve(value.trim() || defaultValue || "");
           return;
         }
         if (ch === "\u0003") {
@@ -135,7 +139,13 @@ export async function runSetup(): Promise<void> {
     );
   }
 
-  const envBool = (key: string) => prev[key]?.toLowerCase() === "true";
+  const envBool = (key: string): boolean | undefined => {
+    const v = prev[key]?.toLowerCase();
+    if (v === undefined) return undefined;
+    if (["true", "1", "yes", "y"].includes(v)) return true;
+    if (["false", "0", "no", "n"].includes(v)) return false;
+    return undefined;
+  };
 
   // ─── Database ──────────────────────────────────────────────────────
   section("Database");
@@ -188,7 +198,7 @@ export async function runSetup(): Promise<void> {
 
   const enableEmail = await confirm(
     "Enable email (SMTP)?",
-    envBool("ENABLE_EMAIL")
+    envBool("ENABLE_EMAIL") ?? false
   );
 
   let smtpHost = "";
@@ -243,13 +253,10 @@ export async function runSetup(): Promise<void> {
         }
       }
       while (!smtpOauthClientSecret) {
-        smtpOauthClientSecret = prev.SMTP_OAUTH_CLIENT_SECRET
-          ? await ask(
-              "OAuth2 Client Secret",
-              prev.SMTP_OAUTH_CLIENT_SECRET ? "••••••••" : undefined
-            )
-          : await askSecret("OAuth2 Client Secret");
-        // If user accepted the masked default, keep the existing value
+        smtpOauthClientSecret = await askSecret(
+          "OAuth2 Client Secret",
+          prev.SMTP_OAUTH_CLIENT_SECRET ? "••••••••" : undefined
+        );
         if (smtpOauthClientSecret === "••••••••") {
           smtpOauthClientSecret = prev.SMTP_OAUTH_CLIENT_SECRET;
         }
@@ -258,12 +265,10 @@ export async function runSetup(): Promise<void> {
         }
       }
       while (!smtpOauthRefreshToken) {
-        smtpOauthRefreshToken = prev.SMTP_OAUTH_REFRESH_TOKEN
-          ? await ask(
-              "OAuth2 Refresh Token",
-              prev.SMTP_OAUTH_REFRESH_TOKEN ? "••••••••" : undefined
-            )
-          : await askSecret("OAuth2 Refresh Token");
+        smtpOauthRefreshToken = await askSecret(
+          "OAuth2 Refresh Token",
+          prev.SMTP_OAUTH_REFRESH_TOKEN ? "••••••••" : undefined
+        );
         if (smtpOauthRefreshToken === "••••••••") {
           smtpOauthRefreshToken = prev.SMTP_OAUTH_REFRESH_TOKEN;
         }
@@ -366,10 +371,7 @@ export async function runSetup(): Promise<void> {
   // ─── Registration ───────────────────────────────────────────────
   section("Registration");
 
-  const regDefault =
-    prev.ENABLE_REGISTRATION !== undefined
-      ? envBool("ENABLE_REGISTRATION")
-      : true;
+  const regDefault = envBool("ENABLE_REGISTRATION") ?? true;
   let enableRegistration = await confirm(
     "Allow public user registration?",
     regDefault
@@ -390,7 +392,7 @@ export async function runSetup(): Promise<void> {
 
   const enableSso = await confirm(
     "Enable SSO authentication?",
-    envBool("SSO_ENABLED")
+    envBool("SSO_ENABLED") ?? false
   );
 
   let ssoType = "oidc";
@@ -433,12 +435,10 @@ export async function runSetup(): Promise<void> {
         }
       }
       while (!ssoOidcClientSecret) {
-        ssoOidcClientSecret = prev.SSO_OIDC_CLIENT_SECRET
-          ? await ask(
-              "OIDC client secret",
-              prev.SSO_OIDC_CLIENT_SECRET ? "••••••••" : undefined
-            )
-          : await askSecret("OIDC client secret");
+        ssoOidcClientSecret = await askSecret(
+          "OIDC client secret",
+          prev.SSO_OIDC_CLIENT_SECRET ? "••••••••" : undefined
+        );
         if (ssoOidcClientSecret === "••••••••") {
           ssoOidcClientSecret = prev.SSO_OIDC_CLIENT_SECRET;
         }
