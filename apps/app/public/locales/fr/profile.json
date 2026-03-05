@@ -47,6 +47,10 @@
     "resultDescription": "Partagez ce lien avec {{email}} pour rejoindre votre espace de travail. Le lien expire dans 7 jours.",
     "copyLink": "Copier le lien d'invitation",
     "linkCopied": "Copié !",
-    "done": "Terminé"
+    "done": "Terminé",
+    "copyFailed": "Échec de la copie du lien"
+  },
+  "emailChange": {
+    "smtpDisabledMessage": "L'envoi d'e-mails n'est pas configuré. Le changement d'adresse e-mail nécessite l'envoi d'un e-mail de vérification. Veuillez d'abord configurer SMTP dans les paramètres de votre instance."
   }
 }

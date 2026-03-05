@@ -23,5 +23,11 @@
     "userRemoved": "{{name}} 已从工作区中移除。",
     "copyInviteLink": "邮件已禁用。请将此链接分享给被邀请的用户。",
     "copyLink": "复制链接"
+  },
+  "invite": {
+    "copyFailed": "复制链接失败"
+  },
+  "emailChange": {
+    "smtpDisabledMessage": "邮件发送未配置。更改邮箱需要发送验证邮件。请先在实例设置中配置 SMTP。"
   }
 }

@@ -209,8 +209,17 @@ export const invitationRouter = router({
         // Use effective config (DB smtp_config > env) so SMTP configured
         // via the admin settings page is respected.
         let emailSent = false;
-        const effectiveEmail = await CoreEmailService.loadEffectiveConfig();
-        if (effectiveEmail.enabled) {
+        let emailIsEnabled = false;
+        try {
+          const effectiveEmail = await CoreEmailService.loadEffectiveConfig();
+          emailIsEnabled = effectiveEmail.enabled;
+        } catch (configError) {
+          ctx.logger.error(
+            { error: configError, invitationId: invitation.id },
+            "Failed to load effective email config, skipping email"
+          );
+        }
+        if (emailIsEnabled) {
           try {
             await EmailService.sendInvitationEmail({
               to: email,

@@ -47,6 +47,10 @@
     "resultDescription": "Share this link with {{email}} to join your workspace. The link expires in 7 days.",
     "copyLink": "Copy Invite Link",
     "linkCopied": "Copied!",
-    "done": "Done"
+    "done": "Done",
+    "copyFailed": "Failed to copy link to clipboard"
+  },
+  "emailChange": {
+    "smtpDisabledMessage": "Email delivery is not configured. Email changes require a verification email to be sent. Please configure SMTP in your instance settings first."
   }
 }
