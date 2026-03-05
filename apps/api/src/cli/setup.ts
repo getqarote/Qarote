@@ -224,7 +224,13 @@ export async function runSetup(): Promise<void> {
       prev.FROM_EMAIL || "noreply@localhost"
     );
     smtpUser = await ask("SMTP user", prev.SMTP_USER);
-    smtpPass = await ask("SMTP password", prev.SMTP_PASS);
+    smtpPass = await askSecret(
+      "SMTP password",
+      prev.SMTP_PASS ? "••••••••" : undefined
+    );
+    if (smtpPass === "••••••••") {
+      smtpPass = prev.SMTP_PASS;
+    }
 
     const hadOAuth2 = !!prev.SMTP_OAUTH_CLIENT_ID;
     const useOAuth2 = await confirm(
@@ -282,6 +288,44 @@ export async function runSetup(): Promise<void> {
   // ─── Admin Account ───────────────────────────────────────────────
   section("Admin Account");
 
+  const promptAdminCredentials = async (): Promise<{
+    email: string;
+    password: string;
+  }> => {
+    let email = "";
+    while (!email) {
+      const input = await ask("Admin email");
+      if (!input) {
+        console.log(
+          c.red("    Required.") + c.dim(" Example: admin@example.com")
+        );
+        continue;
+      }
+      if (!input.includes("@") || !input.includes(".")) {
+        console.log(c.red("    Please enter a valid email address."));
+        continue;
+      }
+      email = input;
+    }
+
+    let password = "";
+    while (!password) {
+      const input = await askSecret("Admin password");
+      if (!input || input.length < 8) {
+        console.log(c.red("    Must be at least 8 characters."));
+        continue;
+      }
+      const confirm2 = await askSecret("Confirm admin password");
+      if (input !== confirm2) {
+        console.log(c.red("    Passwords do not match. Try again."));
+        continue;
+      }
+      password = input;
+    }
+
+    return { email, password };
+  };
+
   const hadAdmin = !!prev.ADMIN_EMAIL;
   let adminEmail = "";
   let adminPassword = "";
@@ -300,34 +344,9 @@ export async function runSetup(): Promise<void> {
         true
       );
       if (createAdmin) {
-        while (!adminEmail) {
-          const input = await ask("Admin email");
-          if (!input) {
-            console.log(
-              c.red("    Required.") + c.dim(" Example: admin@example.com")
-            );
-            continue;
-          }
-          if (!input.includes("@") || !input.includes(".")) {
-            console.log(c.red("    Please enter a valid email address."));
-            continue;
-          }
-          adminEmail = input;
-        }
-
-        while (!adminPassword) {
-          const input = await askSecret("Admin password");
-          if (!input || input.length < 8) {
-            console.log(c.red("    Must be at least 8 characters."));
-            continue;
-          }
-          const confirm2 = await askSecret("Confirm admin password");
-          if (input !== confirm2) {
-            console.log(c.red("    Passwords do not match. Try again."));
-            continue;
-          }
-          adminPassword = input;
-        }
+        const creds = await promptAdminCredentials();
+        adminEmail = creds.email;
+        adminPassword = creds.password;
       }
     }
   } else {
@@ -335,36 +354,10 @@ export async function runSetup(): Promise<void> {
       "Create an admin account during first boot?",
       true
     );
-
     if (createAdmin) {
-      while (!adminEmail) {
-        const input = await ask("Admin email");
-        if (!input) {
-          console.log(
-            c.red("    Required.") + c.dim(" Example: admin@example.com")
-          );
-          continue;
-        }
-        if (!input.includes("@") || !input.includes(".")) {
-          console.log(c.red("    Please enter a valid email address."));
-          continue;
-        }
-        adminEmail = input;
-      }
-
-      while (!adminPassword) {
-        const input = await askSecret("Admin password");
-        if (!input || input.length < 8) {
-          console.log(c.red("    Must be at least 8 characters."));
-          continue;
-        }
-        const confirm2 = await askSecret("Confirm admin password");
-        if (input !== confirm2) {
-          console.log(c.red("    Passwords do not match. Try again."));
-          continue;
-        }
-        adminPassword = input;
-      }
+      const creds = await promptAdminCredentials();
+      adminEmail = creds.email;
+      adminPassword = creds.password;
     }
   }
 
