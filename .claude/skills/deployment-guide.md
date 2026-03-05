@@ -1,110 +1,175 @@
 # Deployment Guide
 
-**Project:** Qarote  
-**Generated:** 2026-01-30
+**Project:** Qarote
+**Generated:** 2026-03-05
 
 ## Overview
 
-Qarote supports multiple deployment strategies depending on the edition and deployment mode. This guide covers all deployment scenarios.
+Qarote supports two **deployment modes** (`cloud` and `selfhosted`) and three **deployment methods** for the self-hosted mode (`dokku`, `docker_compose`, `binary`). The cloud mode is used for the managed SaaS at qarote.io. The self-hosted mode covers all customer-operated installations.
+
+> **Terminology note:** `community` and `enterprise` are deprecated aliases for `selfhosted`. They still work but emit a console warning and will be removed in a future version. There is no separate "manual" deployment method -- `binary` is the standalone/manual method.
 
 ## Deployment Architecture
 
-### Production Environment
+### Cloud (SaaS) Environment
 
 ```
-┌─────────────────┐
-│  qarote.io      │  Landing Page (Cloudflare Pages)
-│  apps/web       │
-└─────────────────┘
++-----------------+
+|  qarote.io      |  Landing Page (Cloudflare Pages)
+|  apps/web       |
++-----------------+
 
-┌─────────────────┐
-│  app.qarote.io  │  Dashboard (Cloudflare Pages)
-│  apps/app       │
-└─────────────────┘
++-----------------+
+|  app.qarote.io  |  Dashboard (Cloudflare Pages)
+|  apps/app       |
++-----------------+
 
-┌─────────────────┐
-│  portal.qar...  │  Customer Portal (Cloudflare Pages)
-│  apps/portal    │
-└─────────────────┘
++-----------------+
+|  portal.qar...  |  Customer Portal (Cloudflare Pages)
+|  apps/portal    |
++-----------------+
 
-┌─────────────────┐
-│  api.qarote.io  │  Backend API (Heroku/Dokku)
-│  apps/api       │
-└─────────────────┘
-                ↓
-         ┌──────────────┐
-         │  PostgreSQL  │  Database (Hosted)
-         └──────────────┘
++-----------------+
+|  api.qarote.io  |  Backend API (Heroku/Dokku)
+|  apps/api       |
++-----------------+
+        |
+  +------------+
+  | PostgreSQL |  Database (Hosted)
+  +------------+
+```
+
+### Self-Hosted Environment (Docker Compose)
+
+```
+docker-compose.selfhosted.yml
++-------------------+
+|  qarote_frontend  |  Nginx serving SPA (port 8080)
+|  apps/app         |  -> apps/app/Dockerfile (multi-stage: build + nginx)
++-------------------+
+        |
++-------------------+
+|  qarote_backend   |  Node.js API (port 3000)
+|  apps/api         |  -> apps/api/Dockerfile
++-------------------+
+        |
++-------------------+
+|  qarote_postgres  |  PostgreSQL 15 Alpine (port 5432)
++-------------------+
+```
+
+### Self-Hosted Environment (Binary)
+
+```
+Single process:
++----------------------------+
+|  ./qarote                  |  Bun-compiled binary
+|  Serves API + embedded    |  API on port 3000
+|  frontend from public/    |  Frontend served from /public
+|  Auto-runs migrations     |  migrations/ dir shipped in tarball
++----------------------------+
+        |
++-------------------+
+|  PostgreSQL       |  User-provided database
++-------------------+
 ```
 
 ---
 
-## 1. Backend API Deployment
+## 1. Deployment Modes
 
-### Option A: Heroku Deployment
+### Cloud Mode (`DEPLOYMENT_MODE=cloud`)
 
-**Prerequisites:**
-- Heroku CLI installed
-- PostgreSQL add-on provisioned
+The managed SaaS deployment. Requires all third-party services:
 
-**Configuration Files:**
-- `Procfile` - Defines web and worker processes
-- `app.json` - Heroku app configuration
-- `app.worker.json` - Worker configuration
+- **Stripe** for billing (secret key, webhook secret, price IDs)
+- **Resend** for transactional email
+- **Sentry** for error tracking
+- **Google OAuth** for social login
+- **License private key** for generating customer licenses
 
-**Deployment Steps:**
+### Self-Hosted Mode (`DEPLOYMENT_MODE=selfhosted`)
+
+All customer-operated installations. Premium features are gated by license activation through the UI, not by environment variables.
+
+- Email is optional (disabled by default, SMTP only)
+- Stripe, Sentry, Google OAuth are not available
+- SSO (OIDC/SAML) is available and configurable
+- Registration can be disabled via `ENABLE_REGISTRATION=false`
+- Admin bootstrap via `ADMIN_EMAIL` / `ADMIN_PASSWORD` env vars (first boot)
+
+---
+
+## 2. Deployment Methods (Self-Hosted)
+
+The deployment method is auto-detected at startup by `DeploymentDetector` (`apps/api/src/services/deployment/deployment-detector.ts`) and persisted in the `SystemState` table via `DeploymentService`. The detected method is used to show context-appropriate update instructions in the UI.
+
+### Method A: Docker Compose (`docker_compose`)
+
+**Detection:** `COMPOSE_PROJECT_NAME` env var, or `/.dockerenv` + compose files present.
+
+**Files:**
+- `docker-compose.selfhosted.yml` -- production compose file
+- `apps/api/Dockerfile` -- Node 24 Alpine, builds API with Prisma
+- `apps/app/Dockerfile` -- Multi-stage: Node 24 build + Nginx serve
+- `docker/nginx/nginx.conf` -- Nginx config for SPA routing
+- `setup.sh` -- Generates `.env` with secure random secrets
+- `scripts/update.sh` -- Pull, rebuild, restart workflow
+- `.env.selfhosted.example` -- Template with all configurable variables
+
+**Quick Start:**
 
 ```bash
-# 1. Create Heroku app
-heroku create qarote-api
+# 1. Generate .env with secure secrets
+./setup.sh
 
-# 2. Add PostgreSQL
-heroku addons:create heroku-postgresql:essential-0
+# 2. Start services
+docker compose -f docker-compose.selfhosted.yml up -d
 
-# 3. Set environment variables
-heroku config:set NODE_ENV=production
-heroku config:set DEPLOYMENT_MODE=cloud
-heroku config:set JWT_SECRET="your-secret-key"
-heroku config:set ENCRYPTION_KEY="your-encryption-key"
-heroku config:set STRIPE_SECRET_KEY="your-stripe-key"
-heroku config:set RESEND_API_KEY="your-resend-key"
+# 3. Open http://localhost:8080
 
-# 4. Push code
-git push heroku main
-
-# 5. Run migrations
-heroku run pnpm run db:migrate
-
-# 6. Scale services
-heroku ps:scale web=1 worker=1
+# 4. Activate license: Settings -> License -> paste license key
 ```
 
-**Environment Variables:**
+**Services in compose file:**
+- `postgres` -- PostgreSQL 15 Alpine with health check
+- `backend` -- API on port 3000 (configurable via `BACKEND_PORT`)
+- `frontend` -- Nginx on port 80, mapped to `FRONTEND_PORT` (default 8080)
 
-Required:
-- `DATABASE_URL` (auto-set by PostgreSQL add-on)
-- `NODE_ENV=production`
-- `JWT_SECRET` (32+ characters)
-- `ENCRYPTION_KEY` (32+ characters)
-- `DEPLOYMENT_MODE` (community/enterprise/cloud)
+**Update procedure:**
 
-Optional:
-- `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`
-- `RESEND_API_KEY`
-- `SENTRY_DSN`
-- `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`
-
-**Processes:**
-- **web:** Main API server
-- **worker:** Alert monitoring (optional, can run as cron in web process)
+```bash
+./scripts/update.sh
+# Steps: git pull -> docker compose build -> docker compose up -d
+# Migrations run automatically on container start
+```
 
 ---
 
-### Option B: Dokku Deployment
+### Method B: Dokku (`dokku`)
 
-**Prerequisites:**
-- Dokku installed on server
-- PostgreSQL plugin installed
+**Detection:** `DOKKU_APP_NAME`, `DOKKU_ROOT`, `DOKKU_HOST`, `BUILDPACK_URL`, or `SOURCE_VERSION` env vars.
+
+**Files:**
+- `Procfile` -- Defines process types
+- `app.json` -- Dokku/Heroku app config with health checks and predeploy script
+
+**Processes (from Procfile):**
+- `web` -- Main API server (`pnpm --filter=qarote-api run start`)
+- `worker` -- Alert monitoring (`pnpm --filter=qarote-api run start:alert`)
+- `license_worker` -- License sync (`pnpm --filter=qarote-api run start:license`)
+- `release_notifier` -- Release notifications (`pnpm --filter=qarote-api run start:release-notifier`)
+
+**Predeploy script (from app.json):**
+
+```bash
+pnpm --filter=qarote-api run db:generate && pnpm --filter=qarote-api run db:migrate
+```
+
+**Health checks (from app.json):**
+- Liveness: `GET /livez`
+- Readiness: `GET /readyz`
+- Startup: `GET /health`
 
 **Deployment:**
 
@@ -112,13 +177,13 @@ Optional:
 # 1. Create app
 dokku apps:create qarote-api
 
-# 2. Create database
+# 2. Create and link database
 dokku postgres:create qarote-db
 dokku postgres:link qarote-db qarote-api
 
 # 3. Set environment variables
 dokku config:set qarote-api NODE_ENV=production
-dokku config:set qarote-api DEPLOYMENT_MODE=cloud
+dokku config:set qarote-api DEPLOYMENT_MODE=selfhosted
 dokku config:set qarote-api JWT_SECRET="..."
 dokku config:set qarote-api ENCRYPTION_KEY="..."
 
@@ -126,290 +191,193 @@ dokku config:set qarote-api ENCRYPTION_KEY="..."
 git remote add dokku dokku@your-server:qarote-api
 git push dokku main
 
-# 5. Run migrations
-dokku run qarote-api pnpm run db:migrate
+# 5. Migrations run automatically via predeploy hook
 ```
 
----
-
-### Option C: Self-Hosted (Docker)
-
-**For Community/Enterprise Edition:**
-
-**Dockerfile:**
-Located in `docker/` directory (if exists) or create:
-
-```dockerfile
-FROM node:24-alpine
-WORKDIR /app
-
-# Install pnpm
-RUN corepack enable && corepack prepare pnpm@9.0.0 --activate
-
-# Copy workspace files
-COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
-COPY apps/api/package.json ./apps/api/
-
-# Install dependencies
-RUN pnpm install --frozen-lockfile --prod
-
-# Copy source
-COPY apps/api ./apps/api
-
-# Build
-RUN cd apps/api && pnpm run build
-
-# Expose port
-EXPOSE 3000
-
-# Start
-CMD ["node", "apps/api/dist/index.js"]
-```
-
-**Deployment:**
+**Update procedure:**
 
 ```bash
-# 1. Build image
-docker build -t qarote-api -f docker/Dockerfile .
-
-# 2. Run with docker-compose or docker run
-docker run -d \
-  -p 3000:3000 \
-  -e DATABASE_URL="postgresql://..." \
-  -e JWT_SECRET="..." \
-  -e ENCRYPTION_KEY="..." \
-  -e DEPLOYMENT_MODE="enterprise" \
-  --name qarote-api \
-  qarote-api
+git pull origin main
+git push dokku main
+# Dokku automatically builds and deploys the update
 ```
 
 ---
 
-## 2. Frontend Deployments
+### Method C: Binary (`binary`)
+
+**Detection:** `qarote` path segment in `process.execPath` or `cwd`, or fallback default.
+
+**Build tooling:**
+- `scripts/build-binary.sh` -- Compiles API + embedded frontend into standalone Bun binary
+- `.github/workflows/release-binary.yml` -- CI workflow, builds for 4 platforms on tag push
+
+**Supported platforms (built in CI):**
+- `linux-x64`
+- `linux-arm64`
+- `darwin-x64`
+- `darwin-arm64`
+
+**Build process:**
+1. Build frontend with `VITE_API_URL=""` and `VITE_DEPLOYMENT_MODE=selfhosted`
+2. Build backend (ESM + Prisma)
+3. Copy frontend dist into `apps/api/dist/public/`
+4. Compile to standalone binary with `bun build --compile`
+5. Package binary + `public/` + `migrations/` into `.tar.gz`
+
+**Binary features:**
+- Serves API and embedded frontend from same port (default 3000)
+- Runtime config via `/config.js` endpoint (no build-time `VITE_API_URL` needed)
+- Auto-runs pending database migrations on startup from `migrations/` directory
+- Interactive setup: `./qarote setup`
+- CLI flags override `.env`: `--database-url`, `--port`
+
+**Installation:**
+
+```bash
+# Download and extract
+tar xzf qarote-<platform>.tar.gz
+cd qarote
+
+# Interactive setup (generates .env)
+./qarote setup
+
+# Start (migrations run automatically)
+./qarote
+```
+
+**Update procedure:**
+
+```bash
+# Stop the current instance
+kill $(pgrep -f './qarote') 2>/dev/null || true
+
+# Download and extract latest (auto-detects OS and architecture)
+PLATFORM="$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/x64/' | sed 's/aarch64/arm64/')"
+curl -L "https://github.com/getqarote/Qarote/releases/latest/download/qarote-${PLATFORM}.tar.gz" | tar xz --strip-components=1
+
+# Restart (migrations run automatically)
+./qarote
+```
+
+---
+
+## 3. Frontend Deployments (Cloud Mode)
 
 ### Cloudflare Pages (All Frontend Apps)
 
-**Prerequisites:**
-- Cloudflare account
-- Repository connected to Cloudflare Pages
-
----
+Each frontend app is deployed to Cloudflare Pages with its own custom domain.
 
 ### App Dashboard (`apps/app`)
 
-**Build Configuration:**
-- **Framework preset:** None (use custom)
-- **Build command:** `pnpm run build:app` or `cd apps/app && pnpm install --no-optional && pnpm run build`
-- **Build output directory:** `apps/app/dist`
-- **Root directory:** `apps/app` (optional)
+- **Build command:** `cd apps/app && pnpm install --no-optional && pnpm run build`
+- **Build output:** `apps/app/dist`
 - **Node version:** 24
-
-**Environment Variables:**
-- `NODE_VERSION=24`
-- `VITE_API_URL=https://api.qarote.io`
-- `VITE_DEPLOYMENT_MODE=cloud` (or community/enterprise)
-- `VITE_GOOGLE_CLIENT_ID=...` (optional)
-
-**Custom Domain:** `app.qarote.io`
-
----
+- **Env vars:** `VITE_API_URL`, `VITE_DEPLOYMENT_MODE=cloud`, `VITE_GOOGLE_CLIENT_ID`
+- **Custom domain:** `app.qarote.io`
 
 ### Landing Page (`apps/web`)
 
-**Build Configuration:**
 - **Build command:** `cd apps/web && pnpm install --no-optional && pnpm run build:cloudflare`
-- **Build output directory:** `apps/web/dist`
-- **Root directory:** `apps/web`
+- **Build output:** `apps/web/dist`
 - **Node version:** 24
-
-**Environment Variables:**
-- `NODE_VERSION=24`
-
-**Custom Domains:** `qarote.io`, `www.qarote.io`
-
-**SEO Files:** Ensure `public/sitemap.xml` and `public/robots.txt` are present
-
----
+- **Env vars:** `VITE_APP_BASE_URL`, `VITE_PORTAL_URL`
+- **Custom domains:** `qarote.io`, `www.qarote.io`
 
 ### Customer Portal (`apps/portal`)
 
-**Build Configuration:**
 - **Build command:** `cd apps/portal && pnpm install --no-optional && pnpm run build:cloudflare`
-- **Build output directory:** `apps/portal/dist`
-- **Root directory:** `apps/portal`
+- **Build output:** `apps/portal/dist`
 - **Node version:** 24
-
-**Environment Variables:**
-- `NODE_VERSION=24`
-- `VITE_API_URL=https://api.qarote.io`
-
-**Custom Domain:** `portal.qarote.io`
-
----
-
-## 3. Database Deployment
-
-### PostgreSQL Hosting Options
-
-1. **Heroku Postgres** - Managed PostgreSQL (if using Heroku for API)
-2. **Railway** - Managed PostgreSQL with generous free tier
-3. **Supabase** - PostgreSQL with additional features
-4. **DigitalOcean** - Managed databases
-5. **Self-Hosted** - Your own PostgreSQL server
-
-**Requirements:**
-- PostgreSQL 15 or higher
-- Sufficient storage for metrics data
-
-**Connection:**
-- Set `DATABASE_URL` environment variable in API
-- Run migrations: `pnpm run db:migrate` (production)
+- **Env vars:** `VITE_API_URL`, `VITE_GOOGLE_CLIENT_ID`
+- **Custom domain:** `portal.qarote.io`
 
 ---
 
 ## 4. CI/CD Pipeline
 
-### GitHub Actions
+### GitHub Actions Workflows (`.github/workflows/`)
 
-**Workflows** (`.github/workflows/`):
+**Quality:**
+- `pr-quality-checks.yml` -- Runs on PRs: linting, type checking, testing
+- `validate-commits.yml` -- Conventional commit validation
+- `codeql.yml` -- Code security analysis
 
-**Quality Checks:**
-- Runs on all PRs
-- Linting, type checking, testing
-- Commit message validation (conventional commits)
+**API Deployment:**
+- `deploy-api-staging.yml` -- Auto-deploy API to staging on push to `main`
+- `deploy-api-production.yml` -- Manual workflow dispatch for production API
 
-**Staging Deployments:**
-- Auto-deploy on push to `main`
-- Separate workflows for each app
-- Deploy to staging environments
-
-**Production Deployments:**
-- Manual workflow dispatch
-- Requires confirmation input
-- Deploy to production domains
-
-**Workflow Files:**
-- `deploy-api-staging.yml` / `deploy-api-production.yml`
+**Frontend Deployment:**
 - `deploy-frontend-staging.yml` / `deploy-frontend-production.yml`
 - `deploy-landing-staging.yml` / `deploy-landing-production.yml`
 - `deploy-portal-staging.yml` / `deploy-portal-production.yml`
+
+**Worker Deployment:**
 - `deploy-worker-staging.yml` / `deploy-worker-production.yml`
-- `validate-commits.yml`
+
+**Binary Release:**
+- `release-binary.yml` -- Triggered on `v*` tags, builds 4 platform binaries, creates GitHub Release with checksums
+
+**E2E Testing:**
+- `e2e-tests.yml` -- End-to-end test suite
 
 ---
 
-## 5. Environment-Specific Configuration
+## 5. Local Development Environment
 
-### Community Edition
+### `docker-compose.yml` (Development)
 
-**API:**
-```bash
-DEPLOYMENT_MODE=community
-# No Stripe, no billing
-# No license validation
-# Basic features only
-```
+Provides local infrastructure for development:
 
-**Frontend:**
-```bash
-VITE_DEPLOYMENT_MODE=community
-# Hides enterprise features
-# No billing UI
-```
+- **PostgreSQL** with custom Dockerfile (`docker/postgresql/Dockerfile`)
+- **RabbitMQ cluster** (3 nodes + HAProxy load balancer) for testing monitoring features
+- **Standalone RabbitMQ instances** for version-specific testing (3.12, 3.13, 4.0, 4.1, 4.2)
 
-### Enterprise Edition (Self-Hosted)
+### `docker-compose.keycloak.yml`
 
-**API:**
-```bash
-DEPLOYMENT_MODE=enterprise
-LICENSE_FILE_PATH=/path/to/license.json
-# License validation required
-# All features available if licensed
-```
+Provides a Keycloak instance for SSO/OIDC development and testing.
 
-**Frontend:**
-```bash
-VITE_DEPLOYMENT_MODE=enterprise
-# Shows enterprise features
-# No billing UI (license-based)
-```
+### `apps/e2e/docker/docker-compose.e2e.yml`
 
-### Cloud Edition (SaaS)
-
-**API:**
-```bash
-DEPLOYMENT_MODE=cloud
-STRIPE_SECRET_KEY=...
-RESEND_API_KEY=...
-# Full billing integration
-# Multi-tenant with workspace isolation
-```
-
-**Frontend:**
-```bash
-VITE_DEPLOYMENT_MODE=cloud
-VITE_GOOGLE_CLIENT_ID=...
-# Shows all features
-# Billing UI enabled
-```
+E2E test environment composition.
 
 ---
 
-## 6. Health Checks
-
-### API Health Endpoints
+## 6. Health Check Endpoints
 
 ```bash
-# Liveness check
+# Liveness check (is the process alive?)
+GET /livez
+
+# Readiness check (is the app ready to serve traffic?)
+GET /readyz
+
+# General health
 GET /health
-→ Returns: { status: "ok" }
-
-# Readiness check  
-GET /health/ready
-→ Returns: { status: "ok", database: "connected" }
 ```
 
-**Use in Load Balancers:**
-- Kubernetes: livenessProbe / readinessProbe
-- Heroku: Automatic health checks
-- Docker: HEALTHCHECK directive
+Configured in `app.json` for Dokku/Heroku with attempt counts and timeouts.
 
 ---
 
-## 7. Monitoring & Logging
+## 7. Embedded Frontend (Self-Hosted)
 
-### Application Logs
+In self-hosted mode, if a `public/` directory exists alongside the binary or dist, the API serves the frontend directly. This enables single-process deployments.
 
-**API:**
-- Structured JSON logs via Pino
-- Log level controlled by `LOG_LEVEL` env var
-- Logs written to stdout (captured by platform)
+**Resolution order for `public/`:**
+1. Next to the script: `dist/public/`
+2. Next to the binary: `<binary-dir>/public/`
+3. Current working directory: `./public/`
 
-**Frontend:**
-- Console-based logging via loglevel
-- Errors tracked via Sentry (optional)
+**Runtime config (`/config.js`):**
+- Served dynamically by the API in self-hosted mode
+- Provides `apiUrl` (defaults to `""` for same-origin) and `deploymentMode`
+- Static fallback in `apps/app/public/config.js` for development
 
-### Error Tracking
-
-**Sentry (Optional):**
-
-**API:**
-```bash
-SENTRY_DSN=https://...@sentry.io/...
-SENTRY_ENVIRONMENT=production
-```
-
-**Frontend:**
-```bash
-VITE_ENABLE_SENTRY=true
-VITE_SENTRY_DSN=https://...@sentry.io/...
-```
-
-### Performance Monitoring
-
-- Sentry Performance (API)
-- Sentry Profiling (API)
-- Web Vitals (Frontend)
+**Frontend config resolution:**
+- `VITE_API_URL` (build-time) takes precedence via `import.meta.env`
+- `window.__QAROTE_CONFIG__.apiUrl` (runtime) is the fallback
+- Empty string `""` means same-origin (binary mode default)
 
 ---
 
@@ -417,16 +385,14 @@ VITE_SENTRY_DSN=https://...@sentry.io/...
 
 **Before Production:**
 
-- [ ] Change all default passwords and secrets
+- [ ] Generate secrets with `./setup.sh` (or `openssl rand -hex 64`)
 - [ ] Use strong `JWT_SECRET` (32+ characters, random)
 - [ ] Use strong `ENCRYPTION_KEY` (32+ characters, random)
-- [ ] Enable HTTPS only (no HTTP in production)
-- [ ] Set restrictive CORS origins
-- [ ] Enable rate limiting
+- [ ] Enable HTTPS (reverse proxy or load balancer)
+- [ ] Set restrictive `CORS_ORIGIN` (not `*`)
 - [ ] Set up database backups
-- [ ] Configure Sentry or error tracking
-- [ ] Review and set appropriate log levels
-- [ ] Validate environment variables
+- [ ] Review and set appropriate `LOG_LEVEL`
+- [ ] Configure Sentry or error tracking (optional)
 - [ ] Set up SSL certificates for custom domains
 - [ ] Enable WAF if available (Cloudflare)
 
@@ -436,20 +402,18 @@ VITE_SENTRY_DSN=https://...@sentry.io/...
 
 ### Database Backups
 
+```bash
+# Manual backup
+pg_dump $DATABASE_URL > backup.sql
+
+# Restore
+psql $DATABASE_URL < backup.sql
+```
+
 **Heroku Postgres:**
 ```bash
 heroku pg:backups:capture
 heroku pg:backups:download
-```
-
-**Manual Backup:**
-```bash
-pg_dump $DATABASE_URL > backup.sql
-```
-
-**Restore:**
-```bash
-psql $DATABASE_URL < backup.sql
 ```
 
 **Recommendation:**
@@ -465,26 +429,21 @@ psql $DATABASE_URL < backup.sql
 
 **API:**
 - Deploy multiple instances behind load balancer
-- Use session-less JWT auth (no sticky sessions needed)
-- Database connection pooling (Prisma handles this)
+- Stateless JWT auth (no sticky sessions needed)
+- Database connection pooling handled by Prisma
 
 **Alert Worker:**
-- Can run as separate process/service
+- Separate process (see Procfile)
 - Only one instance needed (uses database for coordination)
 
 **Frontend:**
-- CDN automatically scales (Cloudflare Pages)
-- No backend needed (static files)
+- CDN scales automatically (Cloudflare Pages in cloud mode)
+- Static files in self-hosted (Nginx or binary-embedded)
 
 ### Vertical Scaling
 
-**API:**
-- Increase dyno/container size for more CPU/RAM
-- Monitor memory usage via Sentry
-
-**Database:**
-- Upgrade to larger plan
-- Add read replicas for read-heavy workloads
+**API:** Increase dyno/container size for more CPU/RAM
+**Database:** Upgrade plan or add read replicas for read-heavy workloads
 
 ---
 
@@ -492,134 +451,43 @@ psql $DATABASE_URL < backup.sql
 
 ### API Rollback
 
-**Heroku:**
-```bash
-heroku releases:rollback v<version-number>
-```
+**Heroku:** `heroku releases:rollback v<version>`
+**Dokku:** Redeploy previous commit
+**Docker Compose:** `git checkout <previous-tag> && ./scripts/update.sh`
+**Binary:** Download and extract previous release tarball
 
-**Dokku:**
-```bash
-dokku ps:rebuild qarote-api <commit-sha>
-```
+### Frontend Rollback (Cloudflare Pages)
 
-**Database Rollback:**
-- Restore from backup (if schema changed)
-- No automatic Prisma migration rollback
+Navigate to deployment history and promote previous deployment.
 
-### Frontend Rollback
+### Database Rollback
 
-**Cloudflare Pages:**
-- Navigate to deployment history
-- Promote previous deployment
-- OR: Revert git commit and push
+Restore from backup if schema changed. No automatic Prisma migration rollback.
 
 ---
 
-## 12. Troubleshooting Production
+## 12. Monitoring & Logging
 
-### API Not Responding
+### Application Logs
 
-1. Check health endpoint: `curl https://api.qarote.io/health`
-2. Check logs: `heroku logs --tail` or equivalent
-3. Verify database connection
-4. Check environment variables
+**API:** Structured JSON logs via Pino, level controlled by `LOG_LEVEL`
+**Frontend:** Console-based logging, errors tracked via Sentry (optional)
 
-### Frontend Errors
-
-1. Check browser console for errors
-2. Verify API_URL is correct
-3. Check Sentry for error reports
-4. Verify build artifacts deployed correctly
-
-### Database Connection Issues
-
-1. Check DATABASE_URL is correct
-2. Verify database is running
-3. Check connection limits
-4. Review Prisma logs
-
----
-
-## Deployment Checklist
-
-### Pre-Deployment
-
-- [ ] All tests passing
-- [ ] Type check passes
-- [ ] Linting passes
-- [ ] No console.log statements (or switch to logger)
-- [ ] Environment variables documented
-- [ ] Database migrations reviewed
-- [ ] API version compatibility checked
-
-### Post-Deployment
-
-- [ ] Health checks passing
-- [ ] Database migrations applied
-- [ ] Smoke test critical flows
-- [ ] Monitor error rates (Sentry)
-- [ ] Check application logs
-- [ ] Verify integrations working (Stripe, email, etc.)
-- [ ] Test authentication flows
-- [ ] Verify websocket/polling connections (if applicable)
-
----
-
-## Support & Maintenance
-
-### Regular Maintenance
-
-- **Weekly:** Review error logs and Sentry reports
-- **Monthly:** Check dependency updates
-- **Quarterly:** Review and rotate secrets
-- **Annually:** Review and renew SSL certificates (if self-managed)
-
-### Monitoring Metrics
+### Error Tracking (Sentry)
 
 **API:**
-- Response times (p50, p95, p99)
-- Error rate
-- Database query performance
-- External service latency (Stripe, Resend, RabbitMQ)
+- `SENTRY_DSN`, `SENTRY_ENABLED`
+- Performance traces: 10% in production, 100% in dev
+- Profiling: 5% in production, 100% in dev
 
 **Frontend:**
-- Core Web Vitals (LCP, FID, CLS)
-- JavaScript errors
-- Page load times
-- Bounce rate
-
----
-
-## Cost Optimization
-
-### Cloud Edition
-
-**Heroku:**
-- Use appropriate dyno sizes
-- Enable dyno sleeping for staging
-- Use connection pooling for database
-
-**Cloudflare Pages:**
-- Free for most use cases
-- Bandwidth included
-
-**External Services:**
-- Stripe: Pay per transaction
-- Resend: Free tier available, pay for volume
-- Sentry: Free tier available
-
-### Self-Hosted Edition
-
-**Infrastructure:**
-- Single server for small deployments
-- Separate database server for larger deployments
-- No external service costs (except optional Sentry)
+- `VITE_SENTRY_DSN`, `VITE_ENABLE_SENTRY`
+- Sentry initialized only when `VITE_ENABLE_SENTRY=true` or `VITE_DEPLOYMENT_MODE=cloud`
 
 ---
 
 ## See Also
 
-- [SELF_HOSTED_DEPLOYMENT.md](./SELF_HOSTED_DEPLOYMENT.md) - Self-hosted deployment guide
-- [COMMUNITY_EDITION.md](./COMMUNITY_EDITION.md) - Community Edition setup
-- [ENTERPRISE_EDITION.md](./ENTERPRISE_EDITION.md) - Enterprise Edition setup
-- Individual app READMEs for app-specific deployment details
+- [ENV_VAR_MANAGEMENT.md](./ENV_VAR_MANAGEMENT.md) -- Environment variable architecture
+- [DEVELOPMENT_RULES.md](./DEVELOPMENT_RULES.md) -- Development workflow
+- [architecture-api.md](./architecture-api.md) -- API architecture

@@ -1,12 +1,12 @@
 # Component Inventory - App Dashboard
 
-**Part:** apps/app/  
-**Generated:** 2026-01-30  
+**Part:** apps/app/
+**Generated:** 2026-03-05
 **Framework:** React 18 with TypeScript
 
 ## Overview
 
-The dashboard contains **50+ components** organized into UI components, feature components, and page components. All components are functional components using React hooks.
+The dashboard contains **151 component files** organized into UI primitives (shadcn/ui), feature components, and page components. All components are functional components using React hooks.
 
 ## Pages (Route Components)
 
@@ -39,9 +39,13 @@ Located in `src/pages/`:
 - `Profile.tsx` - User profile and settings
 - `Plans.tsx` - Subscription plans
 - `Billing.tsx` - Billing and payment history
+- `License.tsx` - License management (self-hosted)
 - `HelpSupport.tsx` - Help and support
 - `PaymentSuccess.tsx` - Payment success callback
 - `PaymentCancelled.tsx` - Payment cancellation page
+- `SMTPSettings.tsx` - SMTP configuration (self-hosted)
+- `SSOSettings.tsx` - SSO configuration
+- `SSOCallback.tsx` - SSO authentication callback
 
 ---
 
@@ -50,6 +54,7 @@ Located in `src/pages/`:
 ### Core Layout
 - `Layout.tsx` - Main application layout with sidebar and header
 - `ProtectedRoute.tsx` - Route wrapper requiring authentication
+- `PublicRoute.tsx` - Route wrapper for unauthenticated pages
 
 ---
 
@@ -57,63 +62,155 @@ Located in `src/pages/`:
 
 Located in `src/components/`:
 
-### Dashboard Components
-- `DashboardOverviewCard.tsx` - Server health summary cards
-- `LiveRatesChart.tsx` - Real-time message rate visualization
-- `StatsCard.tsx` - Metric display cards
-- `ServerSelector.tsx` - Server dropdown selector
+### Dashboard Components (top-level)
+- `PrimaryMetricsCards.tsx` - Primary server health summary cards
+- `SecondaryMetricsCards.tsx` - Secondary metric display cards
+- `MessagesRatesChart.tsx` - Real-time message rate visualization
+- `QueuedMessagesChart.tsx` - Queued messages chart
+- `QueueDepthsChart.tsx` - Queue depths chart
+- `ResourceUsage.tsx` - Resource usage display
+- `RecentAlerts.tsx` - Recent alerts summary on dashboard
+- `ConnectedNodes.tsx` - Connected nodes display
+- `TimeRangeSelector.tsx` - Time range filter selector
+
+### Server Management (top-level)
+- `AddServerButton.tsx` - Button to add a new server
+- `ServerManagement.tsx` - Server management controls
+- `ConnectionStatus.tsx` - Server connection status indicator
+- `NoServerConfigured.tsx` - Empty state when no servers exist
+
+### Add Server Form (`AddServerFormComponent/`)
+- `AddServerForm.tsx` - Main add server form
+- `ConnectionStatusDisplay.tsx` - Connection status indicator within form
+- `Credentials.tsx` - Server credential inputs
+- `RabbitMqVersionInfo.tsx` - RabbitMQ version display
+- `ServerDetails.tsx` - Server detail fields
+- `ServerUrlInput.tsx` - Server URL input with validation
+- `TestConnectionButton.tsx` - Test connection action
+- `TunnelHelper.tsx` - Tunnel configuration helper
+- `index.ts` - Barrel export
+- `types.ts` - Shared types
 
 ### Queue Management
-- `QueueList.tsx` - Table of queues
-- `QueueActions.tsx` - Queue action buttons
-- `MessageBrowser.tsx` - Browse queue messages
-- `PublishMessage.tsx` - Form to publish messages
-- `MessageDetails.tsx` - Message content viewer
+- `AddQueueButton.tsx` - Button to add a queue
+- `AddQueueForm.tsx` - Queue creation form
+- `PauseQueueDialog.tsx` - Pause queue confirmation dialog
+- `PurgeQueueDialog.tsx` - Purge queue confirmation dialog
 
-### Alert Components (Enterprise)
-- `AlertList.tsx` - Table of active alerts
-- `AlertRuleForm.tsx` - Create/edit alert rules
-- `AlertCard.tsx` - Individual alert display
+### Queue List (`Queues/`)
+- `QueueHeader.tsx` - Queue list page header
+- `QueueTable.tsx` - Queue data table
 
-### Workspace Components (Enterprise)
-- `WorkspaceMembers.tsx` - Member management table
-- `InviteMember.tsx` - Send invitation form
-- `WorkspaceSettings.tsx` - Workspace configuration
+### Queue Detail (`QueueDetail/`)
+- `QueueHeader.tsx` - Queue detail page header
+- `QueueStats.tsx` - Queue statistics display
+- `QueueTiming.tsx` - Queue timing metrics
+- `QueueConfiguration.tsx` - Queue configuration details
+- `QueueBindings.tsx` - Queue bindings table
+- `ConsumerDetails.tsx` - Consumer details table
+- `MessageStatistics.tsx` - Message statistics display
+- `LoadingSkeleton.tsx` - Loading skeleton for queue detail
+- `NotFound.tsx` - Queue not found state
 
-### Profile Components
-- `UserProfileForm.tsx` - Edit user details
-- `WorkspaceInfoTab.tsx` - Workspace information
-- `WorkspaceFormFields.tsx` - Workspace form inputs
+### Exchange Management (top-level)
+- `AddExchangeButton.tsx` - Button to add an exchange
+- `ExchangeManagement.tsx` - Exchange list and management
 
-### Billing Components
-- `PlanCard.tsx` - Subscription plan display
-- `PaymentHistory.tsx` - Payment transaction table
-- `UpgradeButton.tsx` - Plan upgrade CTA
-- `PlanFeaturesList.tsx` - Feature comparison
+### Message Management (top-level)
+- `AddSendMessageButton.tsx` - Button to open send message dialog
+- `SendMessageDialog.tsx` - Message publishing dialog
 
-### RabbitMQ Infrastructure
-- `VHostList.tsx` - Virtual host table
-- `ConnectionList.tsx` - Active connection table
-- `NodeList.tsx` - Cluster node table
-- `ExchangeList.tsx` - Exchange table
-- `UserList.tsx` - RabbitMQ user table
+### Alert Components (`alerts/`)
+- `ActiveAlertsList.tsx` - Table of active alerts
+- `ResolvedAlertsList.tsx` - Table of resolved alerts
+- `AlertItem.tsx` - Individual alert display
+- `AlertsSummary.tsx` - Alert summary statistics
+- `AlertRulesModal.tsx` - Create/edit alert rules modal
+- `AlertNotificationSettingsModal.tsx` - Alert notification settings modal
+- `alertUtils.tsx` - Alert utility functions
+
+### Billing Components (`billing/`)
+- `BillingHeader.tsx` - Billing page header
+- `BillingLayout.tsx` - Billing page layout wrapper
+- `CurrentPlanCard.tsx` - Current plan information card
+- `SubscriptionManagement.tsx` - Subscription management controls
+- `CancelSubscriptionModal.tsx` - Cancel subscription confirmation modal
+- `RecentPayments.tsx` - Payment transaction table
+- `index.ts` - Barrel export
+
+### Plans Components (`plans/`)
+- `PlanUpgradeModal.tsx` - Plan upgrade/selection modal
+
+### Profile Components (`profile/`)
+- `PersonalInfoTab.tsx` - Personal information tab
+- `CompactEmailChangeForm.tsx` - Email change form
+- `CompactPasswordChangeForm.tsx` - Password change form
+- `EnhancedTeamTab.tsx` - Team management tab
+- `InviteUserDialogEnhanced.tsx` - Invite user dialog
+- `WorkspaceInfoTab.tsx` - Workspace information tab
+- `WorkspaceFormFields.tsx` - Workspace form input fields
+- `PlansSummaryTab.tsx` - Plans summary tab
+- `NoWorkspaceCard.tsx` - No workspace empty state
+- `ProfileLoading.tsx` - Profile page loading skeleton
+- `profileUtils.ts` - Profile utility functions
+- `index.ts` - Barrel export
+
+### Node Components (`nodes/`)
+- `EnhancedNodesOverview.tsx` - Cluster nodes overview cards
+- `EnhancedNodesTable.tsx` - Detailed nodes data table
+
+### Virtual Host Components (`vhosts/`)
+- `CreateVHostModal.tsx` - Create virtual host modal
+- `DeleteVHostModal.tsx` - Delete virtual host confirmation modal
+- `EditVHostModal.tsx` - Edit virtual host modal
+
+### User Components (`users/`)
+- `AddUserButton.tsx` - Add RabbitMQ user button with form
+- `DeleteUserModal.tsx` - Delete user confirmation modal
+
+### Auth Components (`auth/`)
+- `GoogleLoginButton.tsx` - Google OAuth login button
+- `GoogleInvitationButton.tsx` - Google OAuth invitation acceptance button
+- `SSOLoginButton.tsx` - SSO login button
+
+### Shared / Utility Components (top-level)
+- `AppHeader.tsx` - Application header bar
+- `AppSidebar.tsx` - Application sidebar navigation
+- `WorkspaceSelector.tsx` - Workspace dropdown selector
+- `FeatureGate.tsx` - Premium feature gate wrapper
+- `UpgradePrompt.tsx` - Upgrade prompt for gated features
+- `LanguageSwitcher.tsx` - Language/locale switcher
+- `ThemeToggle.tsx` - Dark/light theme toggle
+- `AddVirtualHostButton.tsx` - Add virtual host button
+- `CreateWorkspaceForm.tsx` - Create workspace form
+- `DiscordLink.tsx` - Discord community link
+- `EnhancedErrorDisplay.tsx` - Enhanced error display component
+- `RabbitMQPermissionError.tsx` - RabbitMQ permission error display
+- `FeedbackForm.tsx` - User feedback submission form
+- `PageLoader.tsx` - Full-page loading spinner
+- `ScrollToTop.tsx` - Scroll to top on navigation
+- `TawkTo.tsx` - Tawk.to live chat integration
 
 ---
 
 ## shadcn/ui Components
 
-Located in `src/components/ui/` - **40+ reusable UI components**:
+Located in `src/components/ui/` - **53 files** including custom additions:
 
 ### Form Components
 - `button.tsx` - Button variants
 - `input.tsx` - Text input
+- `inputOtp.tsx` - OTP input
 - `select.tsx` - Dropdown select
 - `checkbox.tsx` - Checkbox input
 - `switch.tsx` - Toggle switch
-- `radio-group.tsx` - Radio button group
+- `radioGroup.tsx` - Radio button group
 - `textarea.tsx` - Multi-line text input
 - `label.tsx` - Form label
 - `form.tsx` - React Hook Form integration
+- `password-input.tsx` - Password input with visibility toggle (custom)
+- `password-requirements.tsx` - Password strength indicator (custom)
+- `tags-input.tsx` - Tags input with add/remove (custom)
 
 ### Display Components
 - `card.tsx` - Content cards
@@ -123,40 +220,49 @@ Located in `src/components/ui/` - **40+ reusable UI components**:
 - `skeleton.tsx` - Loading skeletons
 - `progress.tsx` - Progress bar
 - `table.tsx` - Data tables
+- `aspectRatio.tsx` - Aspect ratio container
+- `PageHeader.tsx` - Page header with title and description (custom)
+- `PlanBadge.tsx` - Plan tier badge (custom)
 
 ### Overlay Components
 - `dialog.tsx` - Modal dialogs
-- `alert-dialog.tsx` - Confirmation dialogs
+- `alertDialog.tsx` - Confirmation dialogs
 - `popover.tsx` - Popover menus
-- `dropdown-menu.tsx` - Dropdown menus
-- `context-menu.tsx` - Right-click menus
+- `dropdownMenu.tsx` - Dropdown menus
+- `contextMenu.tsx` - Right-click menus
 - `sheet.tsx` - Side sheets
 - `drawer.tsx` - Bottom drawer
-- `hover-card.tsx` - Hover previews
+- `hoverCard.tsx` - Hover previews
 - `tooltip.tsx` - Tooltips
 
 ### Navigation Components
 - `tabs.tsx` - Tab navigation
-- `navigation-menu.tsx` - Navigation menus
+- `navigationMenu.tsx` - Navigation menus
+- `menubar.tsx` - Menu bar
 - `command.tsx` - Command palette
 - `pagination.tsx` - Page navigation
 - `breadcrumb.tsx` - Breadcrumb navigation
+- `sidebar.tsx` - Sidebar navigation component
 
 ### Feedback Components
-- `toast.tsx` / `toaster.tsx` / `sonner.tsx` - Toast notifications
+- `toast.tsx` - Toast notification primitives
+- `toaster.tsx` - Toast container
+- `sonner.tsx` - Sonner toast notifications
 - `alert.tsx` - Alert messages
 
 ### Data Visualization
 - `chart.tsx` - Chart components (Recharts integration)
+- `calendar.tsx` - Calendar component
 
 ### Utility Components
-- `scroll-area.tsx` - Scrollable containers
+- `scrollArea.tsx` - Scrollable containers
 - `resizable.tsx` - Resizable panels
 - `collapsible.tsx` - Collapsible sections
 - `accordion.tsx` - Accordion menus
 - `carousel.tsx` - Image carousels
 - `slider.tsx` - Range sliders
-- `toggle.tsx` / `toggle-group.tsx` - Toggle buttons
+- `toggle.tsx` - Toggle buttons
+- `toggleGroup.tsx` - Toggle button groups
 
 ---
 

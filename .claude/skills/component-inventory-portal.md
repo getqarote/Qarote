@@ -1,12 +1,12 @@
 # Component Inventory - Customer Portal
 
-**Part:** apps/portal/  
-**Generated:** 2026-01-30  
+**Part:** apps/portal/
+**Generated:** 2026-03-05
 **Framework:** React 18 with TypeScript
 
 ## Overview
 
-The customer portal is a **license management application** with 6 pages and focused UI components for authentication, license management, and account settings.
+The customer portal is a **license management application** with 8 pages and focused UI components for authentication, license management, documentation, and legal pages.
 
 ## Pages
 
@@ -15,12 +15,14 @@ Located in `src/pages/`:
 ### Public Pages
 - `Login.tsx` - Customer sign in
 - `SignUp.tsx` - Customer registration
+- `VerifyEmail.tsx` - Email verification handler
+- `PrivacyPolicy.tsx` - Privacy policy
+- `TermsOfService.tsx` - Terms of service
 
 ### Protected Pages
 - `LicenseManagement.tsx` - View and download licenses
 - `LicensePurchase.tsx` - Purchase new licenses
-- `Downloads.tsx` - Download Enterprise Edition software
-- `AccountSettings.tsx` - Account and billing settings
+- `Documentation.tsx` - Installation guides, Docker Compose setup, and environment configuration with search, table of contents, and deployment method selector
 
 ## Custom Components
 
@@ -32,7 +34,15 @@ Located in `src/components/auth/`:
   - `mode="signup"` - Sign up with Google
 
 ### Layout Components
-- `Layout.tsx` - Main layout with navigation and auth state
+- `Layout.tsx` - Main layout with navigation, user dropdown menu, and auth state
+- `LanguageSwitcher.tsx` - Language/locale switcher
+
+### Documentation Components
+Located in `src/components/documentation/`:
+
+- `InstallationGuideSection.tsx` - Installation guide with deployment method tabs (binary, Docker Compose, Dokku)
+- `DockerComposeSection.tsx` - Docker Compose configuration section
+- `EnvironmentConfigSection.tsx` - Environment variable configuration section
 
 ### Form Components (custom)
 Located in `src/components/ui/`:
@@ -41,21 +51,30 @@ Located in `src/components/ui/`:
 
 ## shadcn/ui Components
 
-Located in `src/components/ui/` - **Minimal set for portal needs**:
+Located in `src/components/ui/` - **19 files** including custom additions:
 
 - `button.tsx` - Button variants
 - `input.tsx` - Text input
 - `label.tsx` - Form labels
+- `select.tsx` - Dropdown select
 - `checkbox.tsx` - Checkbox with gradient checked state
 - `card.tsx` - Content cards
 - `form.tsx` - React Hook Form integration
 - `alert.tsx` - Alert messages
-- `toaster.tsx` - Toast notifications (Sonner)
+- `accordion.tsx` - Accordion sections
+- `tabs.tsx` - Tab navigation
+- `dropdown-menu.tsx` - Dropdown menus
+- `heading.tsx` - Heading typography component
+- `sonner.tsx` - Sonner toast configuration
+- `toaster.tsx` - Toast container
+- `code-block.tsx` - Code block with syntax display (custom)
+- `back-to-top.tsx` - Back to top scroll button (custom)
+- `table-of-contents.tsx` - Table of contents navigation (custom)
 
 ## State Management
 
 ### React Context
-- `AuthContext` - Authentication state (login, user, token)
+- `AuthContext` (`src/contexts/AuthContext.tsx`) - Authentication state (login, logout, user, token, refetchUser)
 
 ### TanStack Query
 - Custom hooks in `src/hooks/ui/useAuth.ts`:
@@ -69,10 +88,13 @@ All forms use React Hook Form with Zod validation:
 
 **Schemas** (`src/schemas/auth.ts`):
 - `signUpSchema` - Registration form validation
+  - First name and last name required
+  - Email validation
   - Password requirements (8+ chars, uppercase, lowercase, number, special char)
   - Password confirmation matching
   - Terms acceptance required
 - `signInSchema` - Login form validation
+  - Email and password required
 
 **Form Components:**
 - Sign up form with password strength indicator
@@ -93,17 +115,26 @@ Custom gradients in `tailwind.config.ts`:
 
 ## Authentication Flow
 
-1. **Sign Up** → `SignUp.tsx` → `useRegister()` → Email verification required
-2. **Sign In** → `Login.tsx` → `useLogin()` → Store token in `AuthContext`
-3. **Google OAuth** → `GoogleLoginButton` → OAuth flow → Auto-login
-4. **Protected Routes** → Check `AuthContext.isAuthenticated` → Redirect to `/auth/sign-in`
+1. **Sign Up** -> `SignUp.tsx` -> `useRegister()` -> Email verification required
+2. **Verify Email** -> `VerifyEmail.tsx` -> Token-based verification
+3. **Sign In** -> `Login.tsx` -> `useLogin()` -> Store token in `AuthContext`
+4. **Google OAuth** -> `GoogleLoginButton` -> OAuth flow -> Auto-login
+5. **Protected Routes** -> `ProtectedRoute` (inline in `App.tsx`) -> Check `AuthContext.isAuthenticated` -> Redirect to `/auth/sign-in`
 
 ## API Integration
 
-- **tRPC Client** - Type-safe API calls
-- **React Query** - Server state management
+- **tRPC Client** (`src/lib/trpc/`) - Type-safe API calls with unauthorized link handling
+- **React Query** (`src/lib/queryClient.ts`) - Server state management
 - **Endpoints Used:**
   - `trpc.auth.session.login`
   - `trpc.auth.registration.register`
   - `trpc.license.*` (license management)
   - `trpc.payment.*` (payment processing)
+
+## Supporting Files
+
+- `src/constants/documentation.constants.ts` - Table of contents items and documentation constants
+- `src/lib/logger.ts` - Logging utility
+- `src/lib/types.ts` - Shared TypeScript types
+- `src/lib/utils.ts` - Utility functions
+- `src/i18n.ts` - i18next internationalization setup

@@ -1,20 +1,28 @@
 # API Contracts - Backend API
 
-**Part:** apps/api/  
-**Generated:** 2026-01-30  
+**Part:** apps/api/
+**Generated:** 2026-03-05
 **API Layer:** tRPC 11.0 (Type-safe RPC)
 
 ## Overview
 
-The Qarote API exposes all endpoints via **tRPC** at `/trpc/*`, providing end-to-end type safety between frontend and backend. All routers are combined in the root `appRouter`.
+The Qarote API exposes all endpoints via **tRPC** at `/trpc/*`, providing end-to-end type safety between frontend and backend. All routers are combined in the root `appRouter`. Real-time data is delivered via **SSE subscriptions** using `httpSubscriptionLink`.
 
 ## API Architecture
 
-- **Protocol:** tRPC over HTTP (POST requests to `/trpc/*`)
-- **Authentication:** JWT tokens (Bearer authentication)
-- **Procedures:** 
-  - `publicProcedure` - Unauthenticated endpoints
-  - `protectedProcedure` - Requires authentication
+- **Protocol:** tRPC over HTTP (POST requests to `/trpc/*`, SSE for subscriptions)
+- **Authentication:** JWT tokens (Bearer header for HTTP, `connectionParams` query parameter for SSE)
+- **Procedures:**
+  - `publicProcedure` - Unauthenticated endpoints (no rate limit)
+  - `rateLimitedPublicProcedure` - Unauthenticated with rate limiting
+  - `rateLimitedProcedure` - Authenticated with standard rate limiting
+  - `strictRateLimitedProcedure` - Authenticated with strict rate limiting (5/min)
+  - `billingRateLimitedProcedure` - Authenticated with billing rate limiting (30/min)
+  - `workspaceProcedure` - Authenticated with workspace-scoped access control
+  - `planValidationProcedure` - Catches `PlanValidationError` and `PlanLimitExceededError`
+  - `adminPlanValidationProcedure` - Admin-only with plan validation
+  - `rateLimitedAdminProcedure` - Admin-only with standard rate limiting
+  - `authorize([roles])` - Role-based access (e.g., `authorize([UserRole.ADMIN])`)
   - Enterprise features use `requirePremiumFeature` middleware
 
 ## Router Structure
@@ -24,29 +32,38 @@ The Qarote API exposes all endpoints via **tRPC** at `/trpc/*`, providing end-to
 **Namespace:** `trpc.auth.*`
 
 #### Session Management (`auth.session`)
-- `login` - Email/password authentication
-- `getSession` - Get current user session
-- `logout` - Invalidate session
+- `login` (mutation, rateLimitedPublic) - Email/password authentication, returns JWT
+- `getSession` (query, rateLimited) - Get current user session with subscription info
 
 #### Registration (`auth.registration`)
-- `register` - Create new user account
-- `checkEmail` - Check if email exists
+- `register` (mutation, rateLimitedPublic) - Create new user account (auto-verifies when email disabled)
 
 #### Password Management (`auth.password`)
-- `requestReset` - Request password reset email
-- `resetPassword` - Reset password with token
-- `changePassword` - Change password (authenticated)
+- `requestPasswordReset` (mutation, rateLimitedPublic) - Request password reset email
+- `resetPassword` (mutation, rateLimitedPublic) - Reset password with token
+- `changePassword` (mutation, strictRateLimited) - Change password (authenticated)
 
 #### Email Verification (`auth.verification`)
-- `verifyEmail` - Verify email with token
-- `resendVerification` - Resend verification email
+- `verifyEmail` (mutation, rateLimitedPublic) - Verify email with token
+- `resendVerification` (mutation, rateLimitedPublic) - Resend verification email (supports both authenticated and unauthenticated)
+- `getVerificationStatus` (query, rateLimited) - Get email verification status
+
+#### Email Change (`auth.email`)
+- `requestEmailChange` (mutation, strictRateLimited) - Request email change with password verification
+- `cancelEmailChange` (mutation, strictRateLimited) - Cancel pending email change
 
 #### Google OAuth (`auth.google`)
-- `authenticate` - Authenticate with Google OAuth token
+- `googleLogin` (mutation, rateLimitedPublic) - Authenticate with Google OAuth token
+
+#### SSO (`auth.sso`)
+- `getConfig` (query, rateLimitedPublic) - Get SSO configuration (enabled, button label, type)
+- `exchangeCode` (mutation, rateLimitedPublic) - Exchange SSO auth code for JWT
 
 #### Invitations (`auth.invitation`)
-- `send` - Send workspace invitation
-- `accept` - Accept invitation with token
+- `getInvitationDetails` (query, rateLimitedPublic) - Get invitation details by token
+- `acceptInvitation` (mutation, rateLimitedPublic) - Accept invitation (existing or new user with password)
+- `acceptInvitationWithRegistration` (mutation, rateLimitedPublic) - Accept invitation with new account registration
+- `acceptInvitationWithGoogle` (mutation, rateLimitedPublic) - Accept invitation with Google OAuth
 
 ---
 
@@ -54,9 +71,15 @@ The Qarote API exposes all endpoints via **tRPC** at `/trpc/*`, providing end-to
 
 **Namespace:** `trpc.user.*`
 
-- `getProfile` - Get current user profile
-- `updateProfile` - Update user information
-- `deleteAccount` - Delete user account
+- `getWorkspaceUsers` (query, workspace) - Get users in the same workspace
+- `getProfile` (query, rateLimited) - Get current user profile with workspace info
+- `updateProfile` (mutation, rateLimited) - Update user profile (handles email change with verification)
+- `getInvitations` (query, admin) - Get pending invitations for a workspace
+- `getUser` (query, workspace) - Get a specific user by ID
+- `updateUser` (mutation, admin) - Update a user (admin only)
+- `updateWorkspace` (mutation, admin) - Update workspace information (admin only)
+- `removeFromWorkspace` (mutation, admin) - Remove user from workspace (admin only)
+- `updateLocale` (mutation, rateLimited) - Update user locale preference
 
 ---
 
@@ -65,27 +88,29 @@ The Qarote API exposes all endpoints via **tRPC** at `/trpc/*`, providing end-to
 **Namespace:** `trpc.workspace.*`
 
 #### Core Operations (`workspace.core`)
-- `get` - Get current workspace
-- `create` - Create new workspace
-- `update` - Update workspace details
-- `delete` - Delete workspace
+- `getCurrent` (query, rateLimited) - Get current user's workspace
+- `getById` (query, workspace) - Get specific workspace by ID
+- `getAll` (query, admin) - Get all workspaces (admin only)
 
-#### Member Management (`workspace.management`)
-- `listMembers` - List workspace members
-- `updateMemberRole` - Change member role
-- `removeMember` - Remove member from workspace
+#### Management (`workspace.management`)
+- `getUserWorkspaces` (query, rateLimited) - Get all workspaces the user belongs to
+- `getCreationInfo` (query, rateLimited) - Get workspace creation info (plan limits, counts)
+- `create` (mutation, planValidation) - Create a new workspace
+- `update` (mutation, rateLimited) - Update workspace (owner only)
+- `delete` (mutation, rateLimited) - Delete workspace (owner only)
+- `switch` (mutation, workspace) - Switch active workspace
 
 #### Plan Management (`workspace.plan`)
-- `getCurrent` - Get current plan details
-- `getFeatures` - Get available features for plan
+- `getAllPlans` (query, rateLimited) - Get all available plans with features
+- `getCurrentPlan` (query, rateLimited) - Get current plan, usage, and warnings (falls back to license JWT for self-hosted)
 
 #### Invitation Management (`workspace.invitation`)
-- `send` - Send workspace invitation
-- `list` - List pending invitations
-- `cancel` - Cancel invitation
+- `getInvitations` (query, rateLimited) - Get pending invitations for workspace
+- `sendInvitation` (mutation, planValidation) - Send workspace invitation (validates plan limits)
+- `revokeInvitation` (mutation, rateLimited) - Revoke a pending invitation
 
 #### Data Management (`workspace.data`)
-- `export` - Export workspace data (Enterprise)
+- `export` (query, rateLimitedAdmin + DATA_EXPORT feature) - Export all workspace data (Enterprise)
 
 ---
 
@@ -94,85 +119,104 @@ The Qarote API exposes all endpoints via **tRPC** at `/trpc/*`, providing end-to
 **Namespace:** `trpc.rabbitmq.*`
 
 #### Server Management (`rabbitmq.server`)
-- `list` - List all RabbitMQ servers
-- `get` - Get server details
-- `create` - Add new server
-- `update` - Update server configuration
-- `delete` - Remove server
-- `testConnection` - Test server connectivity
+- `getServers` (query, workspace) - List all RabbitMQ servers for workspace
+- `getServer` (query, workspace) - Get server details by ID
+- `createServer` (mutation, adminPlanValidation) - Add new server (validates plan limits, tests connection, detects version)
+- `updateServer` (mutation, admin) - Update server configuration (re-tests connection)
+- `deleteServer` (mutation, admin) - Remove server
+- `testConnection` (mutation, admin) - Test server connectivity
 
 #### Overview (`rabbitmq.overview`)
-- `get` - Get server overview/stats
+- `getOverview` (query, workspace) - Get server overview/stats with over-limit warnings
 
 #### Queues (`rabbitmq.queues`)
-- `list` - List all queues
-- `get` - Get queue details
-- `create` - Create new queue
-- `delete` - Delete queue
-- `purge` - Purge queue messages
+- `getQueues` (query, workspace) - List all queues (persists to DB, includes over-limit warnings)
+- `getQueue` (query, workspace) - Get queue details
+- `getQueueConsumers` (query, workspace) - Get consumers for a specific queue
+- `getQueueBindings` (query, workspace) - Get bindings for a specific queue
+- `createQueue` (mutation, admin) - Create new queue (validates plan limits)
+- `purgeQueue` (mutation, admin) - Purge queue messages
+- `deleteQueue` (mutation, admin) - Delete queue (from RabbitMQ and local DB)
+- `pauseQueue` (mutation, admin) - Pause queue via AMQP protocol
+- `resumeQueue` (mutation, admin) - Resume queue via AMQP protocol
+- `getPauseStatus` (query, admin) - Get pause status of a queue
+- `watchQueues` (subscription, workspace, 4s interval) - **SSE** live queue data stream
 
 #### Messages (`rabbitmq.messages`)
-- `publish` - Publish message to queue
-- `consume` - Consume messages from queue
-- `get` - Get message by ID
+- `publishMessage` (mutation, admin) - Publish message to exchange/queue
 
 #### Virtual Hosts (`rabbitmq.vhost`)
-- `list` - List virtual hosts
-- `get` - Get vhost details
-- `create` - Create vhost
-- `delete` - Delete vhost
+- `getVHosts` (query, admin) - List virtual hosts with permissions, limits, and message stats
+- `getVHost` (query, admin) - Get vhost details with stats (queues, exchanges, connections)
+- `createVHost` (mutation, admin) - Create virtual host
+- `updateVHost` (mutation, admin) - Update virtual host
+- `deleteVHost` (mutation, admin) - Delete virtual host (prevents deletion of default "/")
+- `setPermissions` (mutation, admin) - Set user permissions for a vhost
+- `deletePermissions` (mutation, admin) - Delete user permissions for a vhost
+- `setLimit` (mutation, admin) - Set virtual host limit (max-queues, max-connections)
+- `deleteLimit` (mutation, admin) - Delete virtual host limit
 
 #### Users (`rabbitmq.users`)
-- `list` - List RabbitMQ users
-- `get` - Get user details
-- `create` - Create RabbitMQ user
-- `update` - Update user
-- `delete` - Delete user
+- `getUsers` (query, admin) - List RabbitMQ users
+- `getUser` (query, admin) - Get user details with permissions
+- `createUser` (mutation, admin) - Create RabbitMQ user
+- `updateUser` (mutation, admin) - Update user (tags, password)
+- `deleteUser` (mutation, admin) - Delete user
+- `setPermissions` (mutation, admin) - Set user permissions on a vhost
+- `deletePermissions` (mutation, admin) - Delete user permissions on a vhost
 
 #### Infrastructure (`rabbitmq.infrastructure`)
-- `getConnections` - List active connections
-- `getChannels` - List active channels
-- `getNodes` - List cluster nodes
-- `getExchanges` - List exchanges
-- `getBindings` - List bindings
+- `getNodes` (query, workspace) - List cluster nodes
+- `getConnections` (query, workspace) - List active connections and channels
+- `getChannels` (query, workspace) - List active channels
+- `getExchanges` (query, workspace) - List exchanges with bindings and type counts
+- `createExchange` (mutation, admin) - Create exchange
+- `deleteExchange` (mutation, admin) - Delete exchange
 
 #### Metrics (`rabbitmq.metrics`)
-- `getLiveRates` - Get real-time message rates
-- `getQueueMetrics` - Get queue metrics over time
+- `getMetrics` (query, workspace) - Get system-level metrics (CPU, memory, disk)
+- `getRates` (query, workspace) - Get message rates with configurable time range
+- `getQueueRates` (query, workspace) - Get queue-specific message rates
+- `watchMetrics` (subscription, workspace, 10s interval) - **SSE** live system metrics stream
+- `watchRates` (subscription, workspace, 4s interval) - **SSE** live message rates stream
 
 #### Memory (`rabbitmq.memory`)
-- `getMemoryUsage` - Get memory usage details
+- `getNodeMemory` (query, workspace) - Get detailed memory metrics for a node (basic, advanced, expert, trends, optimization)
 
 #### Alerts (`rabbitmq.alerts`)
-- `list` - List alerts for server
-- `acknowledge` - Acknowledge alert
-- `resolve` - Resolve alert
+- `getAlerts` (query, workspace) - Get current alerts (free users get summary only)
+- `getResolvedAlerts` (query, workspace) - Get resolved alerts with pagination
+- `getHealthCheck` (query, workspace) - Get server health check
+- `getThresholds` (query, workspace) - Get alert thresholds for workspace
+- `updateThresholds` (mutation, workspace) - Update alert thresholds
+- `getNotificationSettings` (query, workspace) - Get email/browser notification settings
+- `updateNotificationSettings` (mutation, workspace) - Update notification settings (owner only)
+- `watchAlerts` (subscription, workspace, 10s interval) - **SSE** live alerts stream
 
 ---
 
 ### 5. Alerts Router (`alerts`)
 
-**Namespace:** `trpc.alerts.*` (Enterprise)
+**Namespace:** `trpc.alerts.*` (Feature-gated)
 
 #### Rules (`alerts.rules`)
-- `list` - List alert rules
-- `get` - Get alert rule details
-- `create` - Create alert rule
-- `update` - Update alert rule
-- `delete` - Delete alert rule
-- `toggle` - Enable/disable alert rule
+- `getRules` (query, workspace + ALERTING) - List alert rules
+- `getRule` (query, workspace + ALERTING) - Get alert rule details
+- `createRule` (mutation, workspace + ADVANCED_ALERT_RULES) - Create alert rule
+- `updateRule` (mutation, workspace + ADVANCED_ALERT_RULES) - Update alert rule
+- `deleteRule` (mutation, workspace + ADVANCED_ALERT_RULES) - Delete alert rule
 
 #### Slack Integration (`alerts.slack`)
-- `getConfig` - Get Slack configuration
-- `updateConfig` - Update Slack settings
-- `testNotification` - Send test Slack message
+- `getConfigs` (query, workspace + SLACK_INTEGRATION) - List Slack configurations
+- `createConfig` (mutation, workspace + SLACK_INTEGRATION) - Create Slack configuration
+- `updateConfig` (mutation, workspace + SLACK_INTEGRATION) - Update Slack configuration
+- `deleteConfig` (mutation, workspace + SLACK_INTEGRATION) - Delete Slack configuration
 
 #### Webhook Integration (`alerts.webhook`)
-- `list` - List webhooks
-- `create` - Create webhook
-- `update` - Update webhook
-- `delete` - Delete webhook
-- `test` - Test webhook delivery
+- `getWebhooks` (query, workspace + WEBHOOK_INTEGRATION) - List webhooks
+- `createWebhook` (mutation, workspace + WEBHOOK_INTEGRATION) - Create webhook
+- `updateWebhook` (mutation, workspace + WEBHOOK_INTEGRATION) - Update webhook
+- `deleteWebhook` (mutation, workspace + WEBHOOK_INTEGRATION) - Delete webhook
 
 ---
 
@@ -181,19 +225,16 @@ The Qarote API exposes all endpoints via **tRPC** at `/trpc/*`, providing end-to
 **Namespace:** `trpc.payment.*`
 
 #### Checkout (`payment.checkout`)
-- `createSession` - Create Stripe checkout session
-- `getSessionStatus` - Check checkout session status
+- `createCheckoutSession` (mutation, strictRateLimited) - Create Stripe checkout session with 30-day trial
 
 #### Billing (`payment.billing`)
-- `getPortalUrl` - Get Stripe customer portal URL
-- `getInvoices` - List invoices
-- `getUpcomingInvoice` - Get next invoice
+- `getBillingOverview` (query, billingRateLimited) - Get comprehensive billing overview (subscription, Stripe data, payments, usage)
+- `createBillingPortalSession` (mutation, rateLimited) - Create Stripe billing portal session
+- `createPortalSession` (mutation, rateLimited) - Alias for createBillingPortalSession
 
 #### Subscription (`payment.subscription`)
-- `getCurrent` - Get current subscription
-- `cancel` - Cancel subscription
-- `resume` - Resume cancelled subscription
-- `update` - Update subscription
+- `cancelSubscription` (mutation, strictRateLimited) - Cancel subscription (immediate or at period end)
+- `renewSubscription` (mutation, strictRateLimited) - Renew subscription via new checkout session
 
 ---
 
@@ -201,7 +242,12 @@ The Qarote API exposes all endpoints via **tRPC** at `/trpc/*`, providing end-to
 
 **Namespace:** `trpc.feedback.*`
 
-- `submit` - Submit user feedback
+- `submit` (mutation, rateLimited) - Submit user feedback
+- `getAll` (query, admin) - Get all feedback with pagination and filters
+- `getById` (query, admin) - Get feedback by ID
+- `update` (mutation, admin) - Update feedback status/response
+- `delete` (mutation, admin) - Delete feedback
+- `getStats` (query, admin) - Get feedback statistics (counts by status)
 
 ---
 
@@ -209,9 +255,8 @@ The Qarote API exposes all endpoints via **tRPC** at `/trpc/*`, providing end-to
 
 **Namespace:** `trpc.discord.*`
 
-- `getConfig` - Get Discord webhook configuration
-- `updateConfig` - Update Discord webhook
-- `testNotification` - Send test Discord message
+- `markJoined` (mutation, rateLimited) - Mark user as having joined Discord community
+- `getStatus` (query, rateLimited) - Get user's Discord join status
 
 ---
 
@@ -219,43 +264,91 @@ The Qarote API exposes all endpoints via **tRPC** at `/trpc/*`, providing end-to
 
 **Namespace:** `trpc.license.*`
 
-- `list` - List purchased licenses
-- `get` - Get license details
-- `download` - Download license file
-- `purchase` - Purchase new license
+- `validate` (mutation, rateLimitedPublic) - Validate a license key (called by self-hosted instances)
+- `getLicenses` (query, rateLimited) - List purchased licenses for the authenticated user
+- `purchaseLicense` (mutation, rateLimited) - Purchase a new license (creates Stripe checkout for annual subscription)
 
 ---
 
-### 10. Public Router (`public`)
+### 10. Self-Hosted License Router (`selfhostedLicense`)
+
+**Namespace:** `trpc.selfhostedLicense.*` (Self-hosted only, admin only)
+
+- `activate` (mutation) - Activate a license by pasting a JWT (verifies offline, stores in DB)
+- `status` (query) - Get current license status (decoded JWT info or null)
+- `deactivate` (mutation) - Deactivate the current license (reverts to free tier)
+
+---
+
+### 11. Self-Hosted SMTP Router (`selfhostedSmtp`)
+
+**Namespace:** `trpc.selfhostedSmtp.*` (Self-hosted only, admin only)
+
+- `getSettings` (query) - Get current SMTP settings (DB or env fallback, secrets redacted)
+- `updateSettings` (mutation) - Update SMTP settings (preserves existing secrets if redacted placeholder sent)
+- `testConnection` (mutation) - Test SMTP connection and send test email
+
+---
+
+### 12. Self-Hosted SSO Router (`selfhostedSso`)
+
+**Namespace:** `trpc.selfhostedSso.*` (Self-hosted only, admin only)
+
+- `getSettings` (query) - Get current SSO settings (DB or env fallback, client secret redacted)
+- `updateSettings` (mutation) - Update SSO settings (preserves existing secrets, reinitializes service)
+- `testConnection` (mutation) - Test OIDC connection by fetching discovery URL (with SSRF protection)
+
+---
+
+### 13. Public Router (`public`)
 
 **Namespace:** `trpc.public.*`
 
+- `getConfig` (query, public) - Get public app configuration (registration, email, OAuth, SSO flags)
+- `getFeatureFlags` (query, public) - Get which premium features are enabled for the deployment
+
 #### Invitation (`public.invitation`)
-- `getDetails` - Get invitation details by token (public)
+- `getDetails` (query, rateLimitedPublic) - Get invitation details by token
+- `accept` (mutation, rateLimitedPublic) - Accept invitation with registration
+- `acceptWithGoogle` (mutation, rateLimitedPublic) - Accept invitation with Google OAuth
 
 ---
 
 ## Authentication Flow
 
-1. **Registration:** `auth.registration.register` → Email verification required
+1. **Registration:** `auth.registration.register` - Email verification sent (or auto-verified when email disabled)
 2. **Email Verification:** `auth.verification.verifyEmail` with token
-3. **Login:** `auth.session.login` → Returns JWT token
-4. **Protected Requests:** Include JWT in Authorization header
-5. **Session Check:** `auth.getSession` to refresh user data
+3. **Login:** `auth.session.login` - Returns JWT token
+4. **Protected Requests:** Include JWT in `Authorization: Bearer <token>` header
+5. **SSE Subscriptions:** Include JWT via `connectionParams` query parameter
+6. **Session Check:** `auth.session.getSession` to refresh user data
 
 ## Authorization Levels
 
-- **Public** - No authentication required
-- **Protected** - Requires valid JWT token
-- **Enterprise** - Requires Enterprise plan + valid license (self-hosted)
-- **Feature-Gated** - Specific plan features (workspace_management, alerting, etc.)
+- **Public** - No authentication required (`publicProcedure`)
+- **Rate-Limited Public** - No auth, with rate limiting (`rateLimitedPublicProcedure`)
+- **Protected** - Requires valid JWT token (`rateLimitedProcedure`)
+- **Workspace** - Requires JWT + workspace membership validation (`workspaceProcedure`)
+- **Admin** - Requires JWT + ADMIN role (`authorize([UserRole.ADMIN])`)
+- **Self-Hosted Admin** - Admin + self-hosted deployment mode check
+- **Feature-Gated** - Workspace + specific premium feature (e.g., ALERTING, SLACK_INTEGRATION)
 
 ## Rate Limiting
 
-Applied to sensitive endpoints:
-- Authentication: 5 requests/minute per IP
-- Payment: 10 requests/minute per user
-- Registration: 3 requests/hour per IP
+In-memory rate limiter with sliding window:
+- **Standard:** 100 requests/minute per user (`rateLimitedProcedure`)
+- **Strict:** 5 requests/minute per user (`strictRateLimitedProcedure`)
+- **Billing:** 30 requests/minute per user (`billingRateLimitedProcedure`)
+
+## SSE Subscriptions
+
+Real-time data streams via Server-Sent Events:
+- `rabbitmq.queues.watchQueues` - Queue data every 4 seconds
+- `rabbitmq.metrics.watchMetrics` - System metrics every 10 seconds
+- `rabbitmq.metrics.watchRates` - Message rates every 4 seconds
+- `rabbitmq.alerts.watchAlerts` - Alert data every 10 seconds
+
+All subscriptions use `abortableSleep` for clean cancellation and yield stale data on fetch errors.
 
 ## Error Handling
 
@@ -264,22 +357,28 @@ All tRPC procedures return typed errors using `TRPCError`:
 - `FORBIDDEN` - Insufficient permissions
 - `NOT_FOUND` - Resource not found
 - `BAD_REQUEST` - Invalid input
+- `CONFLICT` - Resource conflict (e.g., email already in use)
+- `SERVICE_UNAVAILABLE` - Feature not enabled (e.g., OAuth, SSO disabled)
+- `UNPROCESSABLE_CONTENT` - Valid input but cannot process (e.g., message not routed)
 - `INTERNAL_SERVER_ERROR` - Server error
 
 ## Integration Points
 
 ### External Services
-- **Stripe** - Payment processing (`payment.*` routers)
-- **Resend** - Email delivery (internal service)
-- **Sentry** - Error tracking (optional)
+- **Stripe** - Payment processing (`payment.*`, `license.purchaseLicense`)
+- **SMTP/Nodemailer** - Email delivery (configurable via `selfhostedSmtp.*` in self-hosted mode)
+- **Sentry** - Error tracking and user context (optional)
 - **Slack** - Alert notifications (`alerts.slack.*`)
-- **Discord** - Alert notifications (`discord.*`)
-- **Google OAuth** - Authentication (`auth.google.*`)
-- **Notion** - User synchronization (internal service)
+- **Google OAuth** - Authentication (`auth.google.*`, invitation acceptance)
+- **Notion** - User synchronization on registration/verification (non-blocking)
 
 ### RabbitMQ Connectivity
-- **Management HTTP API** - Server monitoring and configuration
-- **AMQP Protocol** - Message publishing and consumption
+- **Management HTTP API** - Server monitoring, queue/exchange/vhost/user management
+- **AMQP Protocol** - Queue pause/resume operations via `RabbitMQAmqpClient`
+
+### SSO Integration
+- **OIDC** - OpenID Connect discovery and code exchange (`auth.sso.*`)
+- **SAML** - SAML metadata URL support (via `selfhostedSso.*` configuration)
 
 ## Type Safety
 
