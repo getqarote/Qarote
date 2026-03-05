@@ -66,11 +66,9 @@ export function QueueTiming({ queue }: QueueTimingProps) {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-sm text-muted-foreground">
-                Consumer Utilization
-              </p>
+              <p className="text-sm text-muted-foreground">Consumer Capacity</p>
               <p className="text-lg font-semibold">
-                {queue.consumer_utilisation?.toFixed(1) || "0.0"}%
+                {((queue.consumer_capacity ?? 0) * 100).toFixed(1)}%
               </p>
             </div>
             <div>

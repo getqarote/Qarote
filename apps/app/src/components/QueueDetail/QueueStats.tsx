@@ -2,7 +2,7 @@ import { Activity, HardDrive, MessageSquare, Users } from "lucide-react";
 
 import { Queue } from "@/lib/api";
 
-import { Badge } from "@/components/ui/badge";
+import { QueueStatusBadge } from "@/components/Queues/queue-status-badge";
 import { Card, CardContent } from "@/components/ui/card";
 
 interface QueueStatsProps {
@@ -10,16 +10,6 @@ interface QueueStatsProps {
 }
 
 export function QueueStats({ queue }: QueueStatsProps) {
-  const getStatusBadge = (queue: Queue) => {
-    if (queue.consumers > 0) {
-      return <Badge className="bg-green-100 text-green-700">Running</Badge>;
-    }
-    if (queue.messages > 0) {
-      return <Badge className="bg-yellow-100 text-yellow-700">Waiting</Badge>;
-    }
-    return <Badge variant="outline">Idle</Badge>;
-  };
-
   const formatBytes = (bytes: number) => {
     if (bytes === 0) return "0 B";
     const k = 1024;
@@ -35,7 +25,7 @@ export function QueueStats({ queue }: QueueStatsProps) {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground">Status</p>
-              {getStatusBadge(queue)}
+              <QueueStatusBadge state={queue.state} />
             </div>
             <Activity className="w-8 h-8 text-blue-600" />
           </div>

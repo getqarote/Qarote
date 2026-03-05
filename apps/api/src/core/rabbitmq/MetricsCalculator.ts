@@ -99,6 +99,9 @@ export class RabbitMQMetricsCalculator {
       redeliver: messageStats.redeliver_details?.samples || [],
       reject: messageStats.reject_details?.samples || [],
       return_unroutable: messageStats.return_unroutable_details?.samples || [],
+      deliver_no_ack: messageStats.deliver_no_ack_details?.samples || [],
+      get_empty: messageStats.get_empty_details?.samples || [],
+      drop_unroutable: messageStats.drop_unroutable_details?.samples || [],
     };
 
     const metrics =
