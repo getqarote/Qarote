@@ -21,5 +21,6 @@
   "addServer": "Agregar servidor",
   "theme": "Tema",
   "ssoSettings": "Configuración SSO",
-  "smtpSettings": "Configuración de correo"
+  "smtpSettings": "Configuración de correo",
+  "settings": "Configuración"
 }
