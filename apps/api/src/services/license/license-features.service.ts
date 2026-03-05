@@ -19,7 +19,12 @@ export function getLicenseFeaturesForTier(tier: UserPlan): PremiumFeature[] {
 
   // Developer tier gets workspace management and alerting (but not all integrations)
   if (tier === UserPlan.DEVELOPER) {
-    return ["workspace_management", "alerting", "data_export"];
+    return [
+      "workspace_management",
+      "alerting",
+      "data_export",
+      "topology_visualization",
+    ];
   }
 
   // Free tier gets no premium features
