@@ -14,6 +14,7 @@ import type { JSX } from "react";
 import {
   baseStyles,
   buttonStyles,
+  codeStyles,
   contentStyles,
   sectionStyles,
   textStyles,
@@ -24,12 +25,18 @@ interface UpdateAvailableEmailProps {
   currentVersion: string;
   latestVersion: string;
   releaseUrl: string;
+  updateInstructions: {
+    title: string;
+    command: string;
+    description: string;
+  };
 }
 
 export default function UpdateAvailableEmail({
   currentVersion,
   latestVersion,
   releaseUrl,
+  updateInstructions,
 }: UpdateAvailableEmailProps): JSX.Element {
   return (
     <Html>
@@ -58,22 +65,14 @@ export default function UpdateAvailableEmail({
             </Section>
 
             <Section style={sectionStyles.highlightSection}>
-              <Text style={contentStyles.heading}>How to Update</Text>
-              <Text style={contentStyles.paragraph}>
-                Run the following command from your Qarote directory:
+              <Text style={contentStyles.heading}>
+                {updateInstructions.title}
               </Text>
-              <Text
-                style={{
-                  fontFamily: "monospace",
-                  fontSize: "14px",
-                  backgroundColor: "#1f2937",
-                  color: "#f9fafb",
-                  padding: "12px 16px",
-                  borderRadius: "6px",
-                  margin: "0",
-                }}
-              >
-                ./scripts/update.sh
+              <Text style={contentStyles.paragraph}>
+                {updateInstructions.description}
+              </Text>
+              <Text style={codeStyles.commandBlock}>
+                {updateInstructions.command}
               </Text>
             </Section>
 

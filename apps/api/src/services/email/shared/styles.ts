@@ -271,6 +271,20 @@ export const footerStyles = {
   },
 } as const;
 
+// Code block styles
+export const codeStyles = {
+  commandBlock: {
+    fontFamily: "monospace",
+    fontSize: "14px",
+    backgroundColor: "#1f2937",
+    color: "#f9fafb",
+    padding: "12px 16px",
+    borderRadius: "6px",
+    margin: "0",
+    whiteSpace: "pre-line" as const,
+  },
+} as const;
+
 // Utility styles
 export const utilityStyles = {
   hr: {
