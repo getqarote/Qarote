@@ -21,5 +21,6 @@
   "addServer": "添加服务器",
   "theme": "主题",
   "ssoSettings": "SSO 设置",
-  "smtpSettings": "邮件设置"
+  "smtpSettings": "邮件设置",
+  "settings": "设置"
 }

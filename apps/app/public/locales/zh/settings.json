@@ -1,0 +1,17 @@
+{
+  "pageTitle": "设置",
+  "groups": {
+    "personal": "个人",
+    "administration": "管理"
+  },
+  "nav": {
+    "profile": "个人资料",
+    "workspace": "工作区",
+    "plans": "计划",
+    "team": "团队",
+    "license": "许可证",
+    "sso": "SSO",
+    "smtp": "邮件",
+    "feedback": "反馈"
+  }
+}
