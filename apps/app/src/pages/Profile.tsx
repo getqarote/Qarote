@@ -74,7 +74,7 @@ const Profile = () => {
   const cancelEmailChangeMutation = useCancelEmailChange();
 
   const { data: publicConfig } = usePublicConfig();
-  const emailEnabled = publicConfig?.emailEnabled ?? true;
+  const emailEnabled = publicConfig?.emailEnabled ?? false;
 
   const [editingProfile, setEditingProfile] = useState(false);
   const [editingWorkspace, setEditingWorkspace] = useState(false);

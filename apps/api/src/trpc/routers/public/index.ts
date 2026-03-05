@@ -1,4 +1,5 @@
 import { areFeaturesEnabled } from "@/core/feature-flags";
+import { logger } from "@/core/logger";
 
 import { CoreEmailService } from "@/services/email/core-email.service";
 
@@ -23,11 +24,17 @@ export const publicRouter = router({
   getConfig: publicProcedure.query(async () => {
     // Use effective config (DB smtp_config > env ENABLE_EMAIL) so that
     // SMTP settings configured via the admin page are reflected here.
-    const effectiveEmail = await CoreEmailService.loadEffectiveConfig();
+    let emailEnabled = false;
+    try {
+      const effectiveEmail = await CoreEmailService.loadEffectiveConfig();
+      emailEnabled = effectiveEmail.enabled;
+    } catch (error) {
+      logger.error({ error }, "Failed to load effective email config");
+    }
 
     return {
       registrationEnabled: registrationConfig.enabled,
-      emailEnabled: effectiveEmail.enabled,
+      emailEnabled,
       oauthEnabled: googleConfig.enabled,
       ssoEnabled: ssoConfig.enabled,
     };

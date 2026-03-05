@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { AlertTriangle, Check, Copy, Info } from "lucide-react";
+import { toast } from "sonner";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -58,10 +59,13 @@ export const InviteUserDialog = ({
   const isAtLimit = maxUsers && currentCount && currentCount >= maxUsers;
 
   const handleCopyLink = async () => {
-    if (inviteResult?.inviteUrl) {
+    if (!inviteResult?.inviteUrl) return;
+    try {
       await navigator.clipboard.writeText(inviteResult.inviteUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      toast.error(t("invite.copyFailed"));
     }
   };
 
@@ -93,6 +97,9 @@ export const InviteUserDialog = ({
                 size="icon"
                 onClick={handleCopyLink}
                 className="shrink-0"
+                aria-label={
+                  copied ? t("invite.linkCopied") : t("invite.copyLink")
+                }
               >
                 {copied ? (
                   <Check className="h-4 w-4" />

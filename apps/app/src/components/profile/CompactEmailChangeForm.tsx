@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import {
   AlertCircle,
@@ -43,6 +44,7 @@ export const CompactEmailChangeForm: React.FC<CompactEmailChangeFormProps> = ({
   isCancelling = false,
   emailEnabled = true,
 }) => {
+  const { t } = useTranslation("profile");
   const [formData, setFormData] = useState({
     newEmail: "",
     password: "",
@@ -136,9 +138,7 @@ export const CompactEmailChangeForm: React.FC<CompactEmailChangeFormProps> = ({
         <Alert className="border-amber-200 bg-amber-50">
           <Info className="h-4 w-4 text-amber-600" />
           <AlertDescription className="text-xs text-amber-700">
-            Email delivery is not configured. Email changes require a
-            verification email to be sent. Please configure SMTP in your
-            instance settings first.
+            {t("emailChange.smtpDisabledMessage")}
           </AlertDescription>
         </Alert>
       )}

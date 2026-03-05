@@ -23,5 +23,11 @@
     "userRemoved": "{{name}} ha sido eliminado del espacio de trabajo.",
     "copyInviteLink": "El correo electrónico está deshabilitado. Comparta este enlace con el usuario invitado.",
     "copyLink": "Copiar enlace"
+  },
+  "invite": {
+    "copyFailed": "Error al copiar el enlace"
+  },
+  "emailChange": {
+    "smtpDisabledMessage": "El envío de correos no está configurado. Los cambios de correo electrónico requieren el envío de un correo de verificación. Configure SMTP en los ajustes de su instancia primero."
   }
 }
