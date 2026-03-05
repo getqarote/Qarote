@@ -93,8 +93,6 @@ export class DeploymentDetector {
       (
         hasQaroteSegment(execPath) ||
         hasQaroteSegment(cwd) ||
-        // Binary comes with a specific config file
-        fs.existsSync(path.join(cwd, "qarote.config.json")) ||
         // Binary deployment has different directory structure
         (fs.existsSync(path.join(cwd, "qarote")) &&
           !fs.existsSync(path.join(cwd, "package.json")))

@@ -27,11 +27,10 @@ export class DeploymentDetector {
     }
     
     // Binary: Check if running from extracted binary directory
-    if (process.execPath.includes('/qarote/bin/') || 
-        fs.existsSync('./qarote.config.json')) {
-      return 'binary';  
+    if (process.execPath.includes('/qarote/bin/')) {
+      return 'binary';
     }
-    
+
     // Binary: Default fallback (includes manual/source)
     return 'binary';
   }
