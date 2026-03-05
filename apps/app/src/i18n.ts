@@ -18,6 +18,7 @@ const i18n = createI18nInstance({
     "profile",
     "workspace",
     "help",
+    "settings",
     "sso",
     "smtp",
   ],

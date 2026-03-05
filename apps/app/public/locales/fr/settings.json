@@ -1,0 +1,17 @@
+{
+  "pageTitle": "Paramètres",
+  "groups": {
+    "personal": "Personnel",
+    "administration": "Administration"
+  },
+  "nav": {
+    "profile": "Profil",
+    "workspace": "Espace de travail",
+    "plans": "Forfaits",
+    "team": "Équipe",
+    "license": "Licence",
+    "sso": "SSO",
+    "smtp": "E-mail",
+    "feedback": "Commentaires"
+  }
+}

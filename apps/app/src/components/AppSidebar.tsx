@@ -9,18 +9,13 @@ import {
   Database,
   FolderTree,
   HelpCircle,
-  KeyRound,
   LogOut,
-  Mail,
   MessageSquare,
   Plus,
   Server,
   Settings,
-  Shield,
   User,
 } from "lucide-react";
-
-import { isCloudMode } from "@/lib/featureFlags";
 
 import { AddServerForm } from "@/components/AddServerFormComponent";
 import { DiscordLink } from "@/components/DiscordLink";
@@ -69,29 +64,7 @@ const menuItems = [
   },
   { titleKey: "sidebar:users", url: "/users", icon: User, adminOnly: true },
   { titleKey: "sidebar:alerts", url: "/alerts", icon: AlertTriangle },
-  { titleKey: "sidebar:profile", url: "/profile", icon: User },
-  ...(!isCloudMode()
-    ? [
-        {
-          titleKey: "sidebar:license" as const,
-          url: "/license",
-          icon: KeyRound,
-          adminOnly: true,
-        },
-        {
-          titleKey: "sidebar:ssoSettings" as const,
-          url: "/settings/sso",
-          icon: Shield,
-          adminOnly: true,
-        },
-        {
-          titleKey: "sidebar:smtpSettings" as const,
-          url: "/settings/smtp",
-          icon: Mail,
-          adminOnly: true,
-        },
-      ]
-    : []),
+  { titleKey: "sidebar:settings", url: "/settings", icon: Settings },
   { titleKey: "sidebar:helpSupport", url: "/help", icon: HelpCircle },
 ];
 
@@ -313,7 +286,10 @@ export function AppSidebar() {
                   return true;
                 })
                 .map((item) => {
-                  const isActive = location.pathname === item.url;
+                  const isActive =
+                    item.url === "/settings"
+                      ? location.pathname.startsWith("/settings")
+                      : location.pathname === item.url;
 
                   return (
                     <SidebarMenuItem key={item.titleKey}>

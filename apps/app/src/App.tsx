@@ -1,6 +1,6 @@
 import { lazy, Suspense } from "react";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router";
 
 import { queryClient } from "@/lib/queryClient";
 import { SentryErrorBoundary, withSentryProfiling } from "@/lib/sentry";
@@ -37,10 +37,47 @@ const VHostDetails = lazy(() => import("./pages/VHostDetailsPage"));
 const Users = lazy(() => import("./pages/UsersPage"));
 const UserDetails = lazy(() => import("./pages/UserDetailsPage"));
 const Alerts = lazy(() => import("./pages/Alerts"));
-const Profile = lazy(() => import("./pages/Profile"));
-const License = lazy(() => import("./pages/License"));
-const SSOSettings = lazy(() => import("./pages/SSOSettings"));
-const SMTPSettings = lazy(() => import("./pages/SMTPSettings"));
+const Settings = lazy(() => import("./pages/Settings"));
+const ProfileSection = lazy(() =>
+  import("./pages/settings/ProfileSection").then((m) => ({
+    default: m.default,
+  }))
+);
+const WorkspaceSection = lazy(() =>
+  import("./pages/settings/WorkspaceSection").then((m) => ({
+    default: m.default,
+  }))
+);
+const PlansSection = lazy(() =>
+  import("./pages/settings/PlansSection").then((m) => ({
+    default: m.default,
+  }))
+);
+const TeamSection = lazy(() =>
+  import("./pages/settings/TeamSection").then((m) => ({
+    default: m.default,
+  }))
+);
+const LicenseSection = lazy(() =>
+  import("./pages/settings/LicenseSection").then((m) => ({
+    default: m.default,
+  }))
+);
+const SSOSection = lazy(() =>
+  import("./pages/settings/SSOSection").then((m) => ({
+    default: m.default,
+  }))
+);
+const SMTPSection = lazy(() =>
+  import("./pages/settings/SMTPSection").then((m) => ({
+    default: m.default,
+  }))
+);
+const FeedbackSection = lazy(() =>
+  import("./pages/settings/FeedbackSection").then((m) => ({
+    default: m.default,
+  }))
+);
 const Plans = lazy(() => import("./pages/Plans"));
 const Billing = lazy(() => import("./pages/Billing"));
 const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
@@ -257,45 +294,40 @@ const AppCore = () => (
                             }
                           />
                           <Route
-                            path="/profile"
+                            path="/settings"
                             element={
                               <ProtectedRoute>
-                                <Layout>
-                                  <Profile />
-                                </Layout>
+                                <Settings />
                               </ProtectedRoute>
                             }
-                          />
-                          <Route
-                            path="/license"
-                            element={
-                              <ProtectedRoute>
-                                <Layout>
-                                  <License />
-                                </Layout>
-                              </ProtectedRoute>
-                            }
-                          />
-                          <Route
-                            path="/settings/sso"
-                            element={
-                              <ProtectedRoute>
-                                <Layout>
-                                  <SSOSettings />
-                                </Layout>
-                              </ProtectedRoute>
-                            }
-                          />
-                          <Route
-                            path="/settings/smtp"
-                            element={
-                              <ProtectedRoute>
-                                <Layout>
-                                  <SMTPSettings />
-                                </Layout>
-                              </ProtectedRoute>
-                            }
-                          />
+                          >
+                            <Route
+                              index
+                              element={
+                                <Navigate to="/settings/profile" replace />
+                              }
+                            />
+                            <Route
+                              path="profile"
+                              element={<ProfileSection />}
+                            />
+                            <Route
+                              path="workspace"
+                              element={<WorkspaceSection />}
+                            />
+                            <Route path="plans" element={<PlansSection />} />
+                            <Route path="team" element={<TeamSection />} />
+                            <Route
+                              path="license"
+                              element={<LicenseSection />}
+                            />
+                            <Route path="sso" element={<SSOSection />} />
+                            <Route path="smtp" element={<SMTPSection />} />
+                            <Route
+                              path="feedback"
+                              element={<FeedbackSection />}
+                            />
+                          </Route>
                           <Route
                             path="/plans"
                             element={

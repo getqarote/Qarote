@@ -1,15 +1,11 @@
 import { test, expect } from "../../fixtures/test-base.js";
 
 test.describe("Workspace Member Management @p1", () => {
-  test("should navigate to profile/team tab as admin", async ({
+  test("should navigate to team section as admin", async ({
     adminPage,
   }) => {
-    await adminPage.goto("/profile");
+    await adminPage.goto("/settings/team");
     await adminPage.waitForLoadState("domcontentloaded");
-
-    const teamTab = adminPage.getByRole("tab", { name: /team/i });
-    await expect(teamTab).toBeVisible({ timeout: 10_000 });
-    await teamTab.click();
 
     // Should show team overview content
     await expect(
@@ -17,12 +13,9 @@ test.describe("Workspace Member Management @p1", () => {
     ).toBeVisible({ timeout: 10_000 });
   });
 
-  test("should show current members in team tab", async ({ adminPage }) => {
-    await adminPage.goto("/profile");
+  test("should show current members in team section", async ({ adminPage }) => {
+    await adminPage.goto("/settings/team");
     await adminPage.waitForLoadState("domcontentloaded");
-
-    const teamTab = adminPage.getByRole("tab", { name: /team/i });
-    await teamTab.click();
 
     // Should show the seeded admin and readonly users
     await expect(
@@ -33,24 +26,25 @@ test.describe("Workspace Member Management @p1", () => {
     ).toBeVisible();
   });
 
-  test("should show all profile tabs", async ({ adminPage }) => {
-    await adminPage.goto("/profile");
+  test("should show settings sidebar navigation", async ({ adminPage }) => {
+    await adminPage.goto("/settings/profile");
     await adminPage.waitForLoadState("domcontentloaded");
 
+    // Should show the settings secondary navigation links
     await expect(
-      adminPage.getByRole("tab", { name: /personal info/i })
+      adminPage.getByRole("link", { name: /profile/i })
     ).toBeVisible({ timeout: 10_000 });
     await expect(
-      adminPage.getByRole("tab", { name: /workspace/i })
+      adminPage.getByRole("link", { name: /workspace/i })
     ).toBeVisible();
     await expect(
-      adminPage.getByRole("tab", { name: /plans/i })
+      adminPage.getByRole("link", { name: /plans/i })
     ).toBeVisible();
     await expect(
-      adminPage.getByRole("tab", { name: /team/i })
+      adminPage.getByRole("link", { name: /team/i })
     ).toBeVisible();
     await expect(
-      adminPage.getByRole("tab", { name: /send feedback/i })
+      adminPage.getByRole("link", { name: /feedback/i })
     ).toBeVisible();
   });
 });

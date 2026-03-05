@@ -7,7 +7,6 @@ import { toast } from "sonner";
 
 import { isSelfHostedMode } from "@/lib/featureFlags";
 
-import { AppSidebar } from "@/components/AppSidebar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,7 +19,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
@@ -77,7 +76,6 @@ function SMTPForm({
     },
   });
 
-  // Form state
   const [enabled, setEnabled] = useState(initialData.enabled);
   const [host, setHost] = useState(initialData.host || "");
   const [port, setPort] = useState(initialData.port ?? 587);
@@ -120,13 +118,11 @@ function SMTPForm({
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      {/* Header */}
+    <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <SidebarTrigger />
-        <Mail className="h-8 w-8" />
+        <Mail className="h-6 w-6" />
         <div>
-          <h1 className="title-page">{t("title")}</h1>
+          <h2 className="text-xl font-semibold">{t("title")}</h2>
           <p className="text-sm text-muted-foreground">{t("description")}</p>
         </div>
       </div>
@@ -368,8 +364,7 @@ function SMTPForm({
   );
 }
 
-function SMTPSettingsPage() {
-  const { t } = useTranslation("smtp");
+const SMTPSection = () => {
   const { user } = useAuth();
 
   const {
@@ -380,40 +375,27 @@ function SMTPSettingsPage() {
     enabled: isSelfHostedMode() && user?.role === "ADMIN",
   });
 
-  // Only accessible in self-hosted mode by admin users
   if (!isSelfHostedMode() || (user && user.role !== "ADMIN")) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/settings/profile" replace />;
   }
 
   if (isLoading || !settings) {
     return (
-      <SidebarProvider>
-        <div className="page-layout">
-          <AppSidebar />
-          <main className="main-content-scrollable">
-            <div className="container mx-auto p-6">
-              <p className="text-muted-foreground">{t("loading")}</p>
-            </div>
-          </main>
-        </div>
-      </SidebarProvider>
+      <div className="space-y-4">
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-32 w-full" />
+        <Skeleton className="h-32 w-full" />
+      </div>
     );
   }
 
   return (
-    <SidebarProvider>
-      <div className="page-layout">
-        <AppSidebar />
-        <main className="main-content-scrollable">
-          <SMTPForm
-            key={JSON.stringify(settings)}
-            initialData={settings}
-            onRefetch={refetch}
-          />
-        </main>
-      </div>
-    </SidebarProvider>
+    <SMTPForm
+      key={JSON.stringify(settings)}
+      initialData={settings}
+      onRefetch={refetch}
+    />
   );
-}
+};
 
-export default SMTPSettingsPage;
+export default SMTPSection;

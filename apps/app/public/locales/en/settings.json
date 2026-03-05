@@ -1,0 +1,17 @@
+{
+  "pageTitle": "Settings",
+  "groups": {
+    "personal": "Personal",
+    "administration": "Administration"
+  },
+  "nav": {
+    "profile": "Profile",
+    "workspace": "Workspace",
+    "plans": "Plans",
+    "team": "Team",
+    "license": "License",
+    "sso": "SSO",
+    "smtp": "Email",
+    "feedback": "Feedback"
+  }
+}
