@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 import { randomBytes } from "node:crypto";
-import { existsSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { createInterface } from "node:readline";
 
@@ -95,6 +95,29 @@ async function testDatabaseConnection(
   }
 }
 
+/** Parse a .env file into a key-value map. Handles quoted values. */
+function parseEnvFile(filePath: string): Record<string, string> {
+  const env: Record<string, string> = {};
+  const content = readFileSync(filePath, "utf-8");
+  for (const line of content.split("\n")) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) continue;
+    const eqIndex = trimmed.indexOf("=");
+    if (eqIndex === -1) continue;
+    const key = trimmed.slice(0, eqIndex);
+    let value = trimmed.slice(eqIndex + 1);
+    // Strip surrounding quotes
+    if (
+      (value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'"))
+    ) {
+      value = value.slice(1, -1).replace(/\\"/g, '"').replace(/\\\\/g, "\\");
+    }
+    env[key] = value;
+  }
+  return env;
+}
+
 function section(title: string) {
   console.log("");
   console.log(c.bold(`  ${title}`));
@@ -121,25 +144,26 @@ export async function runSetup(): Promise<void> {
     c.dim("  Press Enter to accept defaults, or type a value to override.")
   );
 
-  // Check for existing .env
+  // Load existing .env values as defaults (if present)
   const envPath = join(process.cwd(), ".env");
-  if (existsSync(envPath)) {
-    const overwrite = await confirm(
-      c.yellow(".env already exists. Overwrite?")
+  const prev: Record<string, string> = existsSync(envPath)
+    ? parseEnvFile(envPath)
+    : {};
+
+  if (Object.keys(prev).length > 0) {
+    console.log(
+      c.dim("  Existing .env found — current values shown as defaults.")
     );
-    if (!overwrite) {
-      console.log("\n  Aborted.\n");
-      rl.close();
-      process.exit(0);
-    }
   }
+
+  const envBool = (key: string) => prev[key]?.toLowerCase() === "true";
 
   // ─── Database ──────────────────────────────────────────────────────
   section("Database");
 
   let dbUrl = "";
   while (!dbUrl) {
-    const input = await ask("PostgreSQL URL");
+    const input = await ask("PostgreSQL URL", prev.DATABASE_URL);
     if (!input) {
       console.log(
         c.red("    Required.") +
@@ -170,7 +194,7 @@ export async function runSetup(): Promise<void> {
 
   let port = "";
   while (!port) {
-    const input = await ask("Port", "3000");
+    const input = await ask("Port", prev.PORT || "3000");
     const n = Number(input);
     if (Number.isInteger(n) && n > 0 && n <= 65535) {
       port = input;
@@ -178,12 +202,15 @@ export async function runSetup(): Promise<void> {
       console.log(c.red("    Must be an integer between 1 and 65535"));
     }
   }
-  const host = await ask("Host", "0.0.0.0");
+  const host = await ask("Host", prev.HOST || "0.0.0.0");
 
   // ─── Email ─────────────────────────────────────────────────────────
   section("Email");
 
-  const enableEmail = await confirm("Enable email (SMTP)?");
+  const enableEmail = await confirm(
+    "Enable email (SMTP)?",
+    envBool("ENABLE_EMAIL")
+  );
 
   let smtpHost = "";
   let smtpPort = "";
@@ -197,40 +224,70 @@ export async function runSetup(): Promise<void> {
 
   if (enableEmail) {
     while (!smtpHost) {
-      smtpHost = await ask("SMTP host");
+      smtpHost = await ask("SMTP host", prev.SMTP_HOST);
       if (!smtpHost) {
         console.log(c.red("    Required.") + c.dim(" Example: smtp.gmail.com"));
       }
     }
-    smtpPort = await ask("SMTP port", "587");
-    fromEmail = await ask("From email address", "noreply@localhost");
-    smtpUser = await ask("SMTP user");
-    smtpPass = await ask("SMTP password");
+    smtpPort = await ask("SMTP port", prev.SMTP_PORT || "587");
+    fromEmail = await ask(
+      "From email address",
+      prev.FROM_EMAIL || "noreply@localhost"
+    );
+    smtpUser = await ask("SMTP user", prev.SMTP_USER);
+    smtpPass = await ask("SMTP password", prev.SMTP_PASS);
 
-    const useOAuth2 = await confirm("Configure OAuth2 authentication?");
+    const hadOAuth2 = !!prev.SMTP_OAUTH_CLIENT_ID;
+    const useOAuth2 = await confirm(
+      "Configure OAuth2 authentication?",
+      hadOAuth2
+    );
     if (useOAuth2) {
       // OAuth2 requires a user (email address of the account to send from)
       while (!smtpUser) {
-        smtpUser = await ask("SMTP user (required for OAuth2)");
+        smtpUser = await ask("SMTP user (required for OAuth2)", prev.SMTP_USER);
         if (!smtpUser) {
           console.log(c.red("    Required for OAuth2 authentication."));
         }
       }
-      smtpService = await ask("SMTP service (e.g. gmail, outlook)", "");
+      smtpService = await ask(
+        "SMTP service (e.g. gmail, outlook)",
+        prev.SMTP_SERVICE || ""
+      );
       while (!smtpOauthClientId) {
-        smtpOauthClientId = await ask("OAuth2 Client ID");
+        smtpOauthClientId = await ask(
+          "OAuth2 Client ID",
+          prev.SMTP_OAUTH_CLIENT_ID
+        );
         if (!smtpOauthClientId) {
           console.log(c.red("    Required."));
         }
       }
       while (!smtpOauthClientSecret) {
-        smtpOauthClientSecret = await askSecret("OAuth2 Client Secret");
+        smtpOauthClientSecret = prev.SMTP_OAUTH_CLIENT_SECRET
+          ? await ask(
+              "OAuth2 Client Secret",
+              prev.SMTP_OAUTH_CLIENT_SECRET ? "••••••••" : undefined
+            )
+          : await askSecret("OAuth2 Client Secret");
+        // If user accepted the masked default, keep the existing value
+        if (smtpOauthClientSecret === "••••••••") {
+          smtpOauthClientSecret = prev.SMTP_OAUTH_CLIENT_SECRET;
+        }
         if (!smtpOauthClientSecret) {
           console.log(c.red("    Required."));
         }
       }
       while (!smtpOauthRefreshToken) {
-        smtpOauthRefreshToken = await askSecret("OAuth2 Refresh Token");
+        smtpOauthRefreshToken = prev.SMTP_OAUTH_REFRESH_TOKEN
+          ? await ask(
+              "OAuth2 Refresh Token",
+              prev.SMTP_OAUTH_REFRESH_TOKEN ? "••••••••" : undefined
+            )
+          : await askSecret("OAuth2 Refresh Token");
+        if (smtpOauthRefreshToken === "••••••••") {
+          smtpOauthRefreshToken = prev.SMTP_OAUTH_REFRESH_TOKEN;
+        }
         if (!smtpOauthRefreshToken) {
           console.log(c.red("    Required."));
         }
@@ -241,54 +298,105 @@ export async function runSetup(): Promise<void> {
   // ─── Admin Account ───────────────────────────────────────────────
   section("Admin Account");
 
-  const createAdmin = await confirm(
-    "Create an admin account during first boot?",
-    true
-  );
-
+  const hadAdmin = !!prev.ADMIN_EMAIL;
   let adminEmail = "";
   let adminPassword = "";
 
-  if (createAdmin) {
-    while (!adminEmail) {
-      const input = await ask("Admin email");
-      if (!input) {
-        console.log(
-          c.red("    Required.") + c.dim(" Example: admin@example.com")
-        );
-        continue;
-      }
-      if (!input.includes("@") || !input.includes(".")) {
-        console.log(c.red("    Please enter a valid email address."));
-        continue;
-      }
-      adminEmail = input;
-    }
+  if (hadAdmin) {
+    const keepAdmin = await confirm(
+      `Keep existing admin account (${prev.ADMIN_EMAIL})?`,
+      true
+    );
+    if (keepAdmin) {
+      adminEmail = prev.ADMIN_EMAIL;
+      adminPassword = prev.ADMIN_PASSWORD;
+    } else {
+      const createAdmin = await confirm(
+        "Create a different admin account?",
+        true
+      );
+      if (createAdmin) {
+        while (!adminEmail) {
+          const input = await ask("Admin email");
+          if (!input) {
+            console.log(
+              c.red("    Required.") + c.dim(" Example: admin@example.com")
+            );
+            continue;
+          }
+          if (!input.includes("@") || !input.includes(".")) {
+            console.log(c.red("    Please enter a valid email address."));
+            continue;
+          }
+          adminEmail = input;
+        }
 
-    while (!adminPassword) {
-      const input = await askSecret("Admin password");
-      if (!input || input.length < 8) {
-        console.log(c.red("    Must be at least 8 characters."));
-        continue;
+        while (!adminPassword) {
+          const input = await askSecret("Admin password");
+          if (!input || input.length < 8) {
+            console.log(c.red("    Must be at least 8 characters."));
+            continue;
+          }
+          const confirm2 = await askSecret("Confirm admin password");
+          if (input !== confirm2) {
+            console.log(c.red("    Passwords do not match. Try again."));
+            continue;
+          }
+          adminPassword = input;
+        }
       }
-      const confirm2 = await askSecret("Confirm admin password");
-      if (input !== confirm2) {
-        console.log(c.red("    Passwords do not match. Try again."));
-        continue;
+    }
+  } else {
+    const createAdmin = await confirm(
+      "Create an admin account during first boot?",
+      true
+    );
+
+    if (createAdmin) {
+      while (!adminEmail) {
+        const input = await ask("Admin email");
+        if (!input) {
+          console.log(
+            c.red("    Required.") + c.dim(" Example: admin@example.com")
+          );
+          continue;
+        }
+        if (!input.includes("@") || !input.includes(".")) {
+          console.log(c.red("    Please enter a valid email address."));
+          continue;
+        }
+        adminEmail = input;
       }
-      adminPassword = input;
+
+      while (!adminPassword) {
+        const input = await askSecret("Admin password");
+        if (!input || input.length < 8) {
+          console.log(c.red("    Must be at least 8 characters."));
+          continue;
+        }
+        const confirm2 = await askSecret("Confirm admin password");
+        if (input !== confirm2) {
+          console.log(c.red("    Passwords do not match. Try again."));
+          continue;
+        }
+        adminPassword = input;
+      }
     }
   }
 
   // ─── Registration ───────────────────────────────────────────────
   section("Registration");
 
+  const regDefault =
+    prev.ENABLE_REGISTRATION !== undefined
+      ? envBool("ENABLE_REGISTRATION")
+      : true;
   let enableRegistration = await confirm(
     "Allow public user registration?",
-    true
+    regDefault
   );
 
-  if (!createAdmin && !enableRegistration) {
+  if (!adminEmail && !enableRegistration) {
     console.log(
       c.red(
         "    You must enable registration or create an admin account for first boot."
@@ -301,7 +409,10 @@ export async function runSetup(): Promise<void> {
   // ─── SSO ────────────────────────────────────────────────────────────
   section("SSO (Single Sign-On)");
 
-  const enableSso = await confirm("Enable SSO authentication?");
+  const enableSso = await confirm(
+    "Enable SSO authentication?",
+    envBool("SSO_ENABLED")
+  );
 
   let ssoType = "oidc";
   let ssoOidcDiscoveryUrl = "";
@@ -315,15 +426,18 @@ export async function runSetup(): Promise<void> {
   let ssoButtonLabel = "Sign in with SSO";
 
   if (enableSso) {
-    ssoType = await ask("SSO type (oidc/saml)", "oidc");
+    ssoType = await ask("SSO type (oidc/saml)", prev.SSO_TYPE || "oidc");
     while (ssoType !== "oidc" && ssoType !== "saml") {
       console.log(c.red("    Must be 'oidc' or 'saml'"));
-      ssoType = await ask("SSO type (oidc/saml)", "oidc");
+      ssoType = await ask("SSO type (oidc/saml)", prev.SSO_TYPE || "oidc");
     }
 
     if (ssoType === "oidc") {
       while (!ssoOidcDiscoveryUrl) {
-        ssoOidcDiscoveryUrl = await ask("OIDC discovery URL");
+        ssoOidcDiscoveryUrl = await ask(
+          "OIDC discovery URL",
+          prev.SSO_OIDC_DISCOVERY_URL
+        );
         if (!ssoOidcDiscoveryUrl) {
           console.log(
             c.red("    Required.") +
@@ -334,20 +448,31 @@ export async function runSetup(): Promise<void> {
         }
       }
       while (!ssoOidcClientId) {
-        ssoOidcClientId = await ask("OIDC client ID");
+        ssoOidcClientId = await ask("OIDC client ID", prev.SSO_OIDC_CLIENT_ID);
         if (!ssoOidcClientId) {
           console.log(c.red("    Required.") + c.dim(" Example: qarote"));
         }
       }
       while (!ssoOidcClientSecret) {
-        ssoOidcClientSecret = await askSecret("OIDC client secret");
+        ssoOidcClientSecret = prev.SSO_OIDC_CLIENT_SECRET
+          ? await ask(
+              "OIDC client secret",
+              prev.SSO_OIDC_CLIENT_SECRET ? "••••••••" : undefined
+            )
+          : await askSecret("OIDC client secret");
+        if (ssoOidcClientSecret === "••••••••") {
+          ssoOidcClientSecret = prev.SSO_OIDC_CLIENT_SECRET;
+        }
         if (!ssoOidcClientSecret) {
           console.log(c.red("    Required."));
         }
       }
     } else {
       while (!ssoSamlMetadataUrl) {
-        ssoSamlMetadataUrl = await ask("SAML metadata URL");
+        ssoSamlMetadataUrl = await ask(
+          "SAML metadata URL",
+          prev.SSO_SAML_METADATA_URL
+        );
         if (!ssoSamlMetadataUrl) {
           console.log(
             c.red("    Required.") +
@@ -358,20 +483,33 @@ export async function runSetup(): Promise<void> {
     }
 
     // URLs for SSO callbacks — default based on port
-    apiUrl = await ask("Backend API URL", `http://localhost:${port}`);
-    frontendUrl = await ask("Frontend URL", `http://localhost:${port}`);
-    ssoTenant = await ask("SSO tenant", "default");
-    ssoProduct = await ask("SSO product", "qarote");
-    ssoButtonLabel = await ask("SSO button label", "Sign in with SSO");
+    apiUrl = await ask(
+      "Backend API URL",
+      prev.API_URL || `http://localhost:${port}`
+    );
+    frontendUrl = await ask(
+      "Frontend URL",
+      prev.FRONTEND_URL || `http://localhost:${port}`
+    );
+    ssoTenant = await ask("SSO tenant", prev.SSO_TENANT || "default");
+    ssoProduct = await ask("SSO product", prev.SSO_PRODUCT || "qarote");
+    ssoButtonLabel = await ask(
+      "SSO button label",
+      prev.SSO_BUTTON_LABEL || "Sign in with SSO"
+    );
   }
 
-  // ─── Generate secrets ──────────────────────────────────────────────
+  // ─── Security secrets ─────────────────────────────────────────────
   section("Security");
 
-  process.stdout.write("  Generating secure secrets... ");
-  const jwtSecret = randomBytes(64).toString("hex");
-  const encryptionKey = randomBytes(64).toString("hex");
-  console.log(c.green("done"));
+  const jwtSecret = prev.JWT_SECRET || randomBytes(64).toString("hex");
+  const encryptionKey = prev.ENCRYPTION_KEY || randomBytes(64).toString("hex");
+
+  if (prev.JWT_SECRET && prev.ENCRYPTION_KEY) {
+    console.log(c.green("  Preserved existing secrets."));
+  } else {
+    console.log(c.green("  Generated new secrets."));
+  }
 
   // ─── Write .env ────────────────────────────────────────────────────
   const lines: string[] = [
