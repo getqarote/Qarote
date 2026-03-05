@@ -180,7 +180,7 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
       </Card>
 
       {/* Upgrade Suggestion */}
-      {selfHosted ? (
+      {selfHosted && currentPlan === UserPlan.FREE ? (
         <Card className="border border-purple-200 bg-linear-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20">
           <CardContent className="p-6">
             <div className="flex items-start justify-between">
@@ -223,7 +223,7 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
             </div>
           </CardContent>
         </Card>
-      ) : nextPlan && nextPlanInfo ? (
+      ) : !selfHosted && nextPlan && nextPlanInfo ? (
         <Card className="border border-purple-200 bg-linear-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20">
           <CardContent className="p-6">
             <div className="flex items-start justify-between">
