@@ -132,7 +132,9 @@
     "perInterval": "par {{interval}}",
     "currentPeriod": "Période en cours",
     "nextBilling": "Prochaine facturation",
-    "paymentMethod": "Moyen de paiement"
+    "paymentMethod": "Moyen de paiement",
+    "planName": "Forfait {{plan}}",
+    "activeSubscription": "Votre abonnement actif"
   },
   "status": {
     "active": "Actif"
