@@ -68,6 +68,27 @@ export class StripeCustomerService {
   }
 
   /**
+   * Retrieve a Stripe customer
+   */
+  static async getCustomer(customerId: string) {
+    try {
+      const customer = await retryWithBackoff(
+        () => stripe.customers.retrieve(customerId),
+        {
+          maxRetries: 3,
+          retryDelayMs: 1_000,
+          timeoutMs: 10_000,
+        },
+        "stripe"
+      );
+      return customer;
+    } catch (error) {
+      CoreStripeService.logStripeError(error, "get_customer", { customerId });
+      throw error;
+    }
+  }
+
+  /**
    * Create a billing portal session
    */
   static async createPortalSession(customerId: string, returnUrl: string) {

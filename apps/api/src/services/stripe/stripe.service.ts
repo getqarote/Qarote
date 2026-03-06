@@ -34,6 +34,7 @@ export class StripeService {
     CoreStripeService.generatePaymentDescription;
 
   // Customer operations
+  static getCustomer = StripeCustomerService.getCustomer;
   static createCustomer = StripeCustomerService.createCustomer;
   static createPortalSession = StripeCustomerService.createPortalSession;
   static createCheckoutSession = StripeCustomerService.createCheckoutSession;

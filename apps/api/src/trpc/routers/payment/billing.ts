@@ -80,29 +80,38 @@ export const billingRouter = router({
             );
           }
 
-          // Get payment method from subscription's default_payment_method
-          if (stripeSubscription?.default_payment_method) {
-            ctx.logger.info(
-              {
-                paymentMethodId: stripeSubscription.default_payment_method,
-              },
-              "Attempting to fetch payment method"
-            );
+          // Get payment method: check subscription first, then fall back to customer default
+          // During trials, Stripe often sets the payment method on the customer, not the subscription
+          let paymentMethodId = stripeSubscription?.default_payment_method as
+            | string
+            | null;
 
+          if (!paymentMethodId && userWithSubscription.stripeCustomerId) {
             try {
-              const fullPaymentMethod = await StripeService.getPaymentMethod(
-                stripeSubscription.default_payment_method as string
+              const customer = await StripeService.getCustomer(
+                userWithSubscription.stripeCustomerId
               );
-
-              ctx.logger.info(
-                {
-                  id: fullPaymentMethod.id,
-                  type: fullPaymentMethod.type,
-                },
-                "Payment method fetched successfully"
+              if (
+                customer &&
+                !customer.deleted &&
+                customer.invoice_settings?.default_payment_method
+              ) {
+                paymentMethodId = customer.invoice_settings
+                  .default_payment_method as string;
+              }
+            } catch (customerError) {
+              ctx.logger.warn(
+                { customerError },
+                "Failed to fetch customer for payment method fallback"
               );
+            }
+          }
 
-              // Return only essential payment method data
+          if (paymentMethodId) {
+            try {
+              const fullPaymentMethod =
+                await StripeService.getPaymentMethod(paymentMethodId);
+
               paymentMethod = {
                 id: fullPaymentMethod.id,
                 type: fullPaymentMethod.type,
@@ -123,23 +132,10 @@ export const billingRouter = router({
               };
             } catch (paymentMethodError) {
               ctx.logger.error(
-                {
-                  error: paymentMethodError,
-                  paymentMethodId: stripeSubscription.default_payment_method,
-                },
+                { error: paymentMethodError, paymentMethodId },
                 "Failed to fetch payment method"
               );
-              // Continue without payment method data
             }
-          } else {
-            ctx.logger.warn(
-              {
-                subscriptionId: stripeSubscription?.id,
-                hasDefaultPaymentMethod:
-                  !!stripeSubscription?.default_payment_method,
-              },
-              "No default_payment_method found in subscription"
-            );
           }
         } catch (stripeError) {
           ctx.logger.warn({ stripeError }, "Failed to fetch Stripe data");

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { Clock, CreditCard, RefreshCw, X } from "lucide-react";
+import { Clock, RefreshCw, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,16 +35,12 @@ interface SubscriptionManagementProps {
   periodEnd?: string;
   isLoading?: boolean;
   cancelAtPeriodEnd?: boolean;
-  subscriptionCanceled?: boolean; // True if user had a subscription but canceled it
-  lastPlan?: UserPlan; // The plan they had before canceling
-  isTrialing?: boolean;
-  trialEnd?: string | null;
-  hasPaymentMethod?: boolean;
+  subscriptionCanceled?: boolean;
+  lastPlan?: UserPlan;
 }
 
 export const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({
   currentPlan,
-  onOpenBillingPortal,
   onRenewSubscription,
   onCancelSubscription,
   periodEnd,
@@ -52,11 +48,8 @@ export const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({
   cancelAtPeriodEnd,
   subscriptionCanceled = false,
   lastPlan,
-  isTrialing = false,
-  trialEnd,
-  hasPaymentMethod = false,
 }) => {
-  const { t, i18n } = useTranslation("billing");
+  const { t } = useTranslation("billing");
   const [showCancelModal, setShowCancelModal] = useState(false);
 
   const handleCancelClick = () => {
@@ -78,10 +71,9 @@ export const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({
         <CardHeader>
           <div className="flex justify-between items-start">
             <div>
-              <CardTitle>Subscription Management</CardTitle>
+              <CardTitle>{t("subscriptionManagement.title")}</CardTitle>
               <p className="text-sm text-muted-foreground">
-                Manage your plan, billing cycle, and subscription settings for
-                all your workspaces
+                {t("subscriptionManagement.description")}
               </p>
             </div>
             {/* Subscription Actions */}
@@ -89,7 +81,6 @@ export const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({
             subscriptionCanceled &&
             lastPlan &&
             onRenewSubscription ? (
-              // Show renew button for canceled subscriptions
               <Button
                 onClick={onRenewSubscription}
                 className="bg-primary hover:bg-primary/90 text-primary-foreground"
@@ -99,11 +90,9 @@ export const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({
                 Renew {lastPlan} Plan
               </Button>
             ) : currentPlan !== UserPlan.FREE ? (
-              // Show cancel/pending cancellation for active paid plans
               <>
                 {cancelAtPeriodEnd ? (
                   <div className="flex items-center gap-3">
-                    {/* Show renewal option alongside cancellation notice */}
                     {onRenewSubscription && (
                       <Button
                         onClick={onRenewSubscription}
@@ -146,57 +135,8 @@ export const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({
             ) : null}
           </div>
         </CardHeader>
-        <CardContent>
-          {/* Subscription Status Information */}
-          {isTrialing ? (
-            <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
-              <div className="flex items-start gap-3">
-                <div className="shrink-0">
-                  <Clock className="w-5 h-5 text-primary mt-0.5" />
-                </div>
-                <div className="flex-1">
-                  <h4 className="font-medium text-primary mb-1">
-                    {t("trial.trialActive")}
-                  </h4>
-                  <p className="text-sm text-primary/80 mb-3">
-                    {hasPaymentMethod
-                      ? t("trial.trialActiveWithPayment", {
-                          date: trialEnd
-                            ? new Date(trialEnd).toLocaleDateString(
-                                i18n.language,
-                                {
-                                  year: "numeric",
-                                  month: "long",
-                                  day: "numeric",
-                                }
-                              )
-                            : "",
-                        })
-                      : t("trial.addPaymentToKeep", {
-                          date: trialEnd
-                            ? new Date(trialEnd).toLocaleDateString(
-                                i18n.language,
-                                {
-                                  year: "numeric",
-                                  month: "long",
-                                  day: "numeric",
-                                }
-                              )
-                            : "",
-                        })}
-                  </p>
-                  {!hasPaymentMethod && (
-                    <Button onClick={onOpenBillingPortal} size="sm">
-                      <CreditCard className="w-4 h-4 mr-2" />
-                      {t("trial.addPaymentMethod")}
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </div>
-          ) : currentPlan === UserPlan.FREE &&
-            subscriptionCanceled &&
-            lastPlan ? (
+        {currentPlan === UserPlan.FREE && subscriptionCanceled && lastPlan && (
+          <CardContent>
             <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
               <div className="flex items-start gap-3">
                 <div className="shrink-0">
@@ -214,8 +154,8 @@ export const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({
                 </div>
               </div>
             </div>
-          ) : null}
-        </CardContent>
+          </CardContent>
+        )}
       </Card>
 
       <CancelSubscriptionModal
