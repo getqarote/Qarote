@@ -130,7 +130,7 @@ export const CurrentPlanCard: React.FC<CurrentPlanCardProps> = ({
                     )}
               </div>
             </div>
-            <div>
+            <div data-testid="current-plan-payment-section">
               <div className="text-sm text-muted-foreground">
                 Payment Method
               </div>

@@ -135,7 +135,7 @@ test.describe("Trial Billing UI @p1", () => {
     // The add payment button in CurrentPlanCard should NOT be visible
     // (but the one in SubscriptionManagement banner may still be visible)
     const planCardPaymentSection = adminPage
-      .locator("[class*='grid']")
+      .getByTestId("current-plan-payment-section")
       .getByRole("button", { name: /add payment method/i });
     await expect(planCardPaymentSection).not.toBeVisible();
   });
