@@ -140,6 +140,7 @@ export const metricsRouter = router({
         );
         const queueTotals =
           RabbitMQMetricsCalculator.extractQueueTotals(overview);
+        const ratesMode = RabbitMQMetricsCalculator.detectRatesMode(overview);
 
         return {
           serverId,
@@ -148,6 +149,7 @@ export const metricsRouter = router({
           timestamp: currentTimestamp.toISOString(),
           messagesRates,
           queueTotals,
+          ratesMode,
         };
       } catch (error) {
         ctx.logger.error(
@@ -164,6 +166,7 @@ export const metricsRouter = router({
             dataSource: "permission_denied",
             timestamp: new Date().toISOString(),
             messagesRates: [],
+            ratesMode: "none" as const,
             permissionStatus: {
               hasPermission: false,
               requiredPermission: "monitor",
@@ -242,6 +245,7 @@ export const metricsRouter = router({
           { disk: false }
         );
         const queueTotals = RabbitMQMetricsCalculator.extractQueueTotals(queue);
+        const ratesMode = RabbitMQMetricsCalculator.detectRatesMode(queue);
 
         return {
           serverId,
@@ -251,6 +255,7 @@ export const metricsRouter = router({
           timestamp: currentTimestamp.toISOString(),
           rates: messagesRates,
           queueTotals,
+          ratesMode,
         };
       } catch (error) {
         ctx.logger.error(
@@ -268,6 +273,7 @@ export const metricsRouter = router({
             dataSource: "permission_denied",
             timestamp: new Date().toISOString(),
             rates: [],
+            ratesMode: "none" as const,
             permissionStatus: {
               hasPermission: false,
               requiredPermission: "monitor",
@@ -413,6 +419,9 @@ export const metricsRouter = router({
             queueTotals: ReturnType<
               typeof RabbitMQMetricsCalculator.extractQueueTotals
             >;
+            ratesMode: ReturnType<
+              typeof RabbitMQMetricsCalculator.detectRatesMode
+            >;
           }
         | undefined;
 
@@ -427,8 +436,9 @@ export const metricsRouter = router({
           );
           const queueTotals =
             RabbitMQMetricsCalculator.extractQueueTotals(overview);
+          const ratesMode = RabbitMQMetricsCalculator.detectRatesMode(overview);
 
-          lastRatesPayload = { messagesRates, queueTotals };
+          lastRatesPayload = { messagesRates, queueTotals, ratesMode };
 
           yield {
             serverId,
@@ -437,6 +447,7 @@ export const metricsRouter = router({
             timestamp: new Date().toISOString(),
             messagesRates,
             queueTotals,
+            ratesMode,
           };
         } catch (err) {
           if (err instanceof Error && err.message.includes("401")) {
@@ -446,6 +457,7 @@ export const metricsRouter = router({
               dataSource: "permission_denied",
               timestamp: new Date().toISOString(),
               messagesRates: [],
+              ratesMode: "none" as const,
               permissionStatus: {
                 hasPermission: false,
                 requiredPermission: "monitor",

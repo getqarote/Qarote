@@ -167,6 +167,7 @@ const Index = () => {
             {/* Messages Rates Chart - Full Width */}
             <MessagesRatesChart
               messagesRates={liveRatesData?.messagesRates}
+              ratesMode={liveRatesData?.ratesMode}
               isLoading={liveRatesLoading}
               error={liveRatesError}
               timeRange={liveRatesTimeRange}
