@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "apps/app/**"
+      - "packages/i18n/**"
       - ".github/workflows/deploy-frontend-staging.yml"
   workflow_dispatch:
 
