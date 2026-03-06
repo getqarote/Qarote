@@ -118,7 +118,7 @@
   "trialEnding": {
     "title": "您的试用即将结束",
     "body": "您的 <strong>{{workspaceName}}</strong> 的 <strong>{{plan}}</strong> 试用即将结束。{{usageText}}",
-    "upgradeCta": "立即升级",
+    "upgradeCta": "添加支付方式",
     "keepAccess": "立即升级以保留对所有功能的访问权限。"
   },
   "upgradeConfirmation": {

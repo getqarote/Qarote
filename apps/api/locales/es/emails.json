@@ -118,7 +118,7 @@
   "trialEnding": {
     "title": "Tu período de prueba termina pronto",
     "body": "Tu período de prueba de <strong>{{plan}}</strong> para <strong>{{workspaceName}}</strong> terminará pronto. {{usageText}}",
-    "upgradeCta": "Actualizar ahora",
+    "upgradeCta": "Agregar método de pago",
     "keepAccess": "Actualiza ahora para mantener el acceso a todas las funcionalidades."
   },
   "upgradeConfirmation": {

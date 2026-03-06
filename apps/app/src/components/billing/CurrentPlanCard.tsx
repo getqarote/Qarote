@@ -1,10 +1,12 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 import { CreditCard } from "lucide-react";
 
 import { formatCurrency, formatDate } from "@/lib/utils";
 
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { getPlanDisplayName, UserPlan } from "@/types/plans";
@@ -13,6 +15,7 @@ interface CurrentPlanCardProps {
   subscription?: {
     status: string;
     plan: UserPlan;
+    trialEnd?: string | null;
   };
   stripeSubscription?: {
     items: {
@@ -33,14 +36,21 @@ interface CurrentPlanCardProps {
       last4: string;
     };
   };
+  onAddPaymentMethod?: () => void;
 }
 
 export const CurrentPlanCard: React.FC<CurrentPlanCardProps> = ({
   subscription,
   stripeSubscription,
   paymentMethod,
+  onAddPaymentMethod,
 }) => {
+  const { t } = useTranslation("billing");
   const plan = subscription?.plan ?? UserPlan.FREE;
+  const isTrialing = subscription?.status === "TRIALING";
+  const trialEndDate = subscription?.trialEnd
+    ? new Date(subscription.trialEnd)
+    : null;
 
   return (
     <Card className="border-l-4 border-l-primary">
@@ -54,9 +64,17 @@ export const CurrentPlanCard: React.FC<CurrentPlanCardProps> = ({
               <CardTitle className="flex items-center gap-2">
                 {getPlanDisplayName(plan)} Plan
                 <Badge
-                  variant={plan === UserPlan.FREE ? "secondary" : "default"}
+                  variant={
+                    isTrialing
+                      ? "outline"
+                      : plan === UserPlan.FREE
+                        ? "secondary"
+                        : "default"
+                  }
                 >
-                  {subscription?.status || "Active"}
+                  {isTrialing
+                    ? t("trial.badge")
+                    : subscription?.status || "Active"}
                 </Badge>
               </CardTitle>
               <p className="text-sm text-muted-foreground mt-1">
@@ -99,11 +117,17 @@ export const CurrentPlanCard: React.FC<CurrentPlanCardProps> = ({
               </div>
             </div>
             <div>
-              <div className="text-sm text-muted-foreground">Next Billing</div>
+              <div className="text-sm text-muted-foreground">
+                {isTrialing && trialEndDate
+                  ? t("trial.endsOn")
+                  : "Next Billing"}
+              </div>
               <div className="font-medium">
-                {formatDate(
-                  new Date(stripeSubscription.current_period_end * 1000)
-                )}
+                {isTrialing && trialEndDate
+                  ? formatDate(trialEndDate)
+                  : formatDate(
+                      new Date(stripeSubscription.current_period_end * 1000)
+                    )}
               </div>
             </div>
             <div>
@@ -116,8 +140,17 @@ export const CurrentPlanCard: React.FC<CurrentPlanCardProps> = ({
                     <CreditCard className="w-4 h-4" />
                     •••• {paymentMethod.card?.last4}
                   </>
+                ) : isTrialing && onAddPaymentMethod ? (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={onAddPaymentMethod}
+                  >
+                    <CreditCard className="w-4 h-4 mr-2" />
+                    {t("trial.addPaymentMethod")}
+                  </Button>
                 ) : (
-                  "No payment method"
+                  t("trial.noPaymentMethod")
                 )}
               </div>
             </div>

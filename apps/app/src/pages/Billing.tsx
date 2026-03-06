@@ -169,6 +169,7 @@ const Billing: React.FC = () => {
             subscription={billingData.subscription}
             stripeSubscription={billingData.stripeSubscription}
             paymentMethod={billingData.paymentMethod}
+            onAddPaymentMethod={handleOpenBillingPortal}
           />
 
           <SubscriptionManagement
@@ -194,6 +195,8 @@ const Billing: React.FC = () => {
             }
             subscriptionCanceled={subscriptionCanceled}
             lastPlan={lastPlan}
+            isTrialing={billingData.subscription?.status === "TRIALING"}
+            trialEnd={billingData.subscription?.trialEnd}
           />
 
           <RecentPayments recentPayments={billingData.recentPayments} />

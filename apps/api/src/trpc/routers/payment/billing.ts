@@ -187,6 +187,12 @@ export const billingRouter = router({
                 .previousCancelDate
                 ? userWithSubscription.subscription.previousCancelDate.toISOString()
                 : null,
+              trialStart: userWithSubscription.subscription.trialStart
+                ? userWithSubscription.subscription.trialStart.toISOString()
+                : null,
+              trialEnd: userWithSubscription.subscription.trialEnd
+                ? userWithSubscription.subscription.trialEnd.toISOString()
+                : null,
               createdAt:
                 userWithSubscription.subscription.createdAt.toISOString(),
               updatedAt:

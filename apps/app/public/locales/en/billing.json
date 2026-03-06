@@ -117,6 +117,14 @@
     "processing": "Processing...",
     "upgradeTo": "Upgrade to {{plan}}"
   },
+  "trial": {
+    "badge": "Trial",
+    "endsOn": "Trial ends",
+    "noPaymentMethod": "No payment method",
+    "addPaymentMethod": "Add payment method",
+    "trialActive": "Your trial is active",
+    "addPaymentToKeep": "Add a payment method before {{date}} to keep your plan when the trial ends."
+  },
   "error": {
     "workspaceIdRequired": "Workspace ID is required"
   }

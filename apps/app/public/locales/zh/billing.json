@@ -117,6 +117,14 @@
     "processing": "处理中...",
     "upgradeTo": "升级到{{plan}}"
   },
+  "trial": {
+    "badge": "试用",
+    "endsOn": "试用结束",
+    "noPaymentMethod": "无支付方式",
+    "addPaymentMethod": "添加支付方式",
+    "trialActive": "您的试用期正在进行中",
+    "addPaymentToKeep": "请在 {{date}} 之前添加支付方式，以便在试用结束后保留您的方案。"
+  },
   "error": {
     "workspaceIdRequired": "需要工作区 ID"
   }

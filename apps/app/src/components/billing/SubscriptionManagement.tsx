@@ -1,6 +1,7 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 
-import { Clock, RefreshCw, X } from "lucide-react";
+import { Clock, CreditCard, RefreshCw, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -36,10 +37,13 @@ interface SubscriptionManagementProps {
   cancelAtPeriodEnd?: boolean;
   subscriptionCanceled?: boolean; // True if user had a subscription but canceled it
   lastPlan?: UserPlan; // The plan they had before canceling
+  isTrialing?: boolean;
+  trialEnd?: string | null;
 }
 
 export const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({
   currentPlan,
+  onOpenBillingPortal,
   onRenewSubscription,
   onCancelSubscription,
   periodEnd,
@@ -47,7 +51,10 @@ export const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({
   cancelAtPeriodEnd,
   subscriptionCanceled = false,
   lastPlan,
+  isTrialing = false,
+  trialEnd,
 }) => {
+  const { t } = useTranslation("billing");
   const [showCancelModal, setShowCancelModal] = useState(false);
 
   const handleCancelClick = () => {
@@ -139,7 +146,37 @@ export const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({
         </CardHeader>
         <CardContent>
           {/* Subscription Status Information */}
-          {currentPlan === UserPlan.FREE && subscriptionCanceled && lastPlan ? (
+          {isTrialing ? (
+            <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
+              <div className="flex items-start gap-3">
+                <div className="shrink-0">
+                  <Clock className="w-5 h-5 text-primary mt-0.5" />
+                </div>
+                <div className="flex-1">
+                  <h4 className="font-medium text-primary mb-1">
+                    {t("trial.trialActive")}
+                  </h4>
+                  <p className="text-sm text-primary/80 mb-3">
+                    {t("trial.addPaymentToKeep", {
+                      date: trialEnd
+                        ? new Date(trialEnd).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          })
+                        : "",
+                    })}
+                  </p>
+                  <Button onClick={onOpenBillingPortal} size="sm">
+                    <CreditCard className="w-4 h-4 mr-2" />
+                    {t("trial.addPaymentMethod")}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          ) : currentPlan === UserPlan.FREE &&
+            subscriptionCanceled &&
+            lastPlan ? (
             <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
               <div className="flex items-start gap-3">
                 <div className="shrink-0">

@@ -117,6 +117,14 @@
     "processing": "Procesando...",
     "upgradeTo": "Mejorar a {{plan}}"
   },
+  "trial": {
+    "badge": "Prueba",
+    "endsOn": "La prueba termina",
+    "noPaymentMethod": "Sin método de pago",
+    "addPaymentMethod": "Agregar método de pago",
+    "trialActive": "Tu prueba está activa",
+    "addPaymentToKeep": "Agrega un método de pago antes del {{date}} para mantener tu plan cuando termine la prueba."
+  },
   "error": {
     "workspaceIdRequired": "Se requiere el ID del espacio de trabajo"
   }
