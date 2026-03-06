@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "apps/web/**"
+      - "packages/i18n/**"
       - ".github/workflows/deploy-landing-staging.yml"
   workflow_dispatch:
 
