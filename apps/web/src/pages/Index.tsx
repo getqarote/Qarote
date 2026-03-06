@@ -11,7 +11,6 @@ import {
   Github,
   Mail,
   MessageSquare,
-  Play,
   Rocket,
   Server,
   Settings,
@@ -43,7 +42,6 @@ const Index = () => {
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
 
   // Type-safe workaround for React type conflicts between lucide-react and @types/react
-  const PlayIcon = Play as unknown as React.ComponentType<LucideProps>;
   const XIcon = X as unknown as React.ComponentType<LucideProps>;
   const CheckIcon = Check as unknown as React.ComponentType<LucideProps>;
   const MailIcon = Mail as unknown as React.ComponentType<LucideProps>;
@@ -209,7 +207,14 @@ const Index = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div
+      className="min-h-screen"
+      style={{
+        fontFamily:
+          'Arial, ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"',
+        backgroundColor: "#ffffff",
+      }}
+    >
       <StickyNav onVideoClick={() => setIsVideoPlaying(true)} />
       <SEO
         title="Qarote - Best RabbitMQ Monitoring & Management Interface"
@@ -264,18 +269,22 @@ const Index = () => {
       {/* Header */}
       <header
         id="home"
-        className="relative overflow-visible bg-background text-foreground pb-16"
+        className="relative overflow-visible text-foreground pb-16"
+        style={{ backgroundColor: "#ffffff" }}
       >
         {/* Decorative elements - subtle colored accents */}
         <div className="absolute inset-0 opacity-5 overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-32 bg-linear-to-b from-orange-400/20 to-transparent"></div>
-          <div className="absolute -top-20 -right-20 sm:-top-40 sm:-right-40 w-40 h-40 sm:w-80 sm:h-80 bg-orange-300 rounded-full filter blur-3xl opacity-20"></div>
-          <div className="absolute top-1/2 -left-20 sm:-left-40 w-32 h-32 sm:w-60 sm:h-60 bg-red-300 rounded-full filter blur-3xl opacity-20"></div>
+          <div className="absolute -top-20 -right-20 sm:-top-40 sm:-right-40 w-40 h-40 sm:w-80 sm:h-80 bg-orange-300  filter blur-3xl opacity-20"></div>
+          <div className="absolute top-1/2 -left-20 sm:-left-40 w-32 h-32 sm:w-60 sm:h-60 bg-red-300  filter blur-3xl opacity-20"></div>
         </div>
 
-        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-3.5 md:pt-32">
+        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 md:pt-28 pb-3.5">
           <div className="w-full text-center">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6 leading-tight max-w-4xl mx-auto px-2">
+            <h1
+              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-foreground mb-6 leading-tight max-w-4xl mx-auto px-2"
+              style={{ fontWeight: 400 }}
+            >
               {t("hero.title")}
             </h1>
 
@@ -310,7 +319,7 @@ const Index = () => {
         <div id="video" className="relative pb-12">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div
-              className="relative w-full aspect-video rounded-2xl overflow-hidden group cursor-pointer shadow-soft"
+              className="relative w-full aspect-video  overflow-hidden group cursor-pointer"
               onClick={() => setIsVideoPlaying(true)}
             >
               {!isVideoPlaying ? (
@@ -327,13 +336,18 @@ const Index = () => {
                   <div className="absolute inset-0 flex items-center justify-center bg-black/15 group-hover:bg-black/20 transition-colors">
                     <button
                       type="button"
-                      aria-label="Play demo video"
-                      className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-white/90 hover:bg-white flex items-center justify-center transition-all hover:scale-110 pointer-events-none shadow-soft"
+                      className="w-20 h-20 md:w-24 md:h-24 bg-white hover:bg-white flex items-center justify-center transition-all hover:scale-110 pointer-events-none shadow-soft rounded-full"
                     >
-                      <PlayIcon
-                        className="w-10 h-10 md:w-12 md:h-12 text-orange-600 ml-1"
-                        fill="currentColor"
-                        aria-hidden="true"
+                      <img
+                        src="/images/play.svg"
+                        alt="Play"
+                        className="w-10 h-10 md:w-12 md:h-12"
+                        style={{
+                          imageRendering: "crisp-edges",
+                          objectFit: "contain",
+                          display: "block",
+                          marginLeft: "0.5rem",
+                        }}
                       />
                     </button>
                   </div>
@@ -353,50 +367,79 @@ const Index = () => {
       </header>
 
       {/* Comparison Section */}
-      <section className="pt-12 pb-20 bg-background">
+      <section
+        className="pb-20"
+        style={{ backgroundColor: "#ffffff", paddingTop: "2.4rem" }}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4">
+            <h2
+              className="text-3xl sm:text-4xl lg:text-5xl text-foreground mb-4 max-w-4xl mx-auto"
+              style={{ fontWeight: 400 }}
+            >
               {t("comparison.title")}
-              <br />
-              <span className="text-foreground">
-                {t("comparison.titleLine2")}
-              </span>
+              <span className="hidden md:inline">
+                <br />
+              </span>{" "}
+              {t("comparison.titleLine2")}
             </h2>
           </div>
 
           {/* Main Comparison Container */}
-          <div className="bg-transparent rounded-xl border border-border overflow-hidden shadow-soft">
+          <div className="bg-transparent  border border-border overflow-hidden">
             <div className="grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-border">
               {/* Left Column - Traditional */}
               <div className="pt-8 lg:pt-12 px-8 lg:px-12 pb-0 flex flex-col relative overflow-visible">
-                <h3 className="text-2xl font-bold text-foreground mb-8">
+                <h3
+                  className="text-2xl text-foreground mb-8"
+                  style={{ fontWeight: 400 }}
+                >
                   {t("comparison.traditional.title")}
                 </h3>
                 <div className="space-y-5 mb-16">
-                  <div className="flex gap-4 items-start">
-                    <XIcon className="w-6 h-6 text-red-500 shrink-0 mt-0.5" />
+                  <div className="flex gap-4 items-center">
+                    <img
+                      src="/images/cross.svg"
+                      alt="Cross"
+                      className="h-3 flex-shrink-0"
+                      style={{ imageRendering: "crisp-edges", width: "auto" }}
+                    />
                     <p className="text-foreground">
                       {t("comparison.traditional.point1")}
                     </p>
                   </div>
 
-                  <div className="flex gap-4 items-start">
-                    <XIcon className="w-6 h-6 text-red-500 shrink-0 mt-0.5" />
+                  <div className="flex gap-4 items-center">
+                    <img
+                      src="/images/cross.svg"
+                      alt="Cross"
+                      className="h-3 shrink-0"
+                      style={{ imageRendering: "crisp-edges", width: "auto" }}
+                    />
                     <p className="text-foreground">
                       {t("comparison.traditional.point2")}
                     </p>
                   </div>
 
-                  <div className="flex gap-4 items-start">
-                    <XIcon className="w-6 h-6 text-red-500 shrink-0 mt-0.5" />
+                  <div className="flex gap-4 items-center">
+                    <img
+                      src="/images/cross.svg"
+                      alt="Cross"
+                      className="h-3 shrink-0"
+                      style={{ imageRendering: "crisp-edges", width: "auto" }}
+                    />
                     <p className="text-foreground">
                       {t("comparison.traditional.point3")}
                     </p>
                   </div>
 
-                  <div className="flex gap-4 items-start">
-                    <XIcon className="w-6 h-6 text-red-500 shrink-0 mt-0.5" />
+                  <div className="flex gap-4 items-center">
+                    <img
+                      src="/images/cross.svg"
+                      alt="Cross"
+                      className="h-3 shrink-0"
+                      style={{ imageRendering: "crisp-edges", width: "auto" }}
+                    />
                     <p className="text-foreground">
                       {t("comparison.traditional.point4")}
                     </p>
@@ -404,47 +447,75 @@ const Index = () => {
                 </div>
 
                 {/* Visual Representation - Simple/Outdated */}
-                <div className="bg-card rounded-t-xl border-t border-l border-r border-border p-4 mt-auto flex flex-col h-[200px] shadow-soft">
+                <div className="bg-card  border-t border-l border-r border-border p-4 mt-auto flex flex-col h-[200px] shadow-soft">
                   <div className="flex gap-2 mb-3">
-                    <div className="w-3 h-3 bg-red-400 rounded-full"></div>
-                    <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
-                    <div className="w-3 h-3 bg-green-400 rounded-full"></div>
+                    <div className="w-3 h-3 bg-red-400 "></div>
+                    <div className="w-3 h-3 bg-yellow-400 "></div>
+                    <div className="w-3 h-3 bg-green-400 "></div>
                   </div>
                   <div className="bg-background rounded flex-1 flex items-center justify-center">
-                    <div className="text-red-500 text-4xl">&#9888;&#65039;</div>
+                    <img
+                      src="/images/error.svg"
+                      alt="Error"
+                      className="w-12 h-12"
+                      style={{ imageRendering: "crisp-edges" }}
+                    />
                   </div>
                 </div>
               </div>
 
               {/* Right Column - Qarote */}
               <div className="pt-8 lg:pt-12 px-8 lg:px-12 pb-0 flex flex-col relative overflow-visible">
-                <h3 className="text-2xl font-bold text-foreground mb-8">
+                <h3
+                  className="text-2xl text-foreground mb-8"
+                  style={{ fontWeight: 400 }}
+                >
                   {t("comparison.qarote.title")}
                 </h3>
                 <div className="space-y-5 mb-16">
-                  <div className="flex gap-4 items-start">
-                    <CheckIcon className="w-6 h-6 text-green-500 shrink-0 mt-0.5" />
+                  <div className="flex gap-4 items-center">
+                    <img
+                      src="/images/check.svg"
+                      alt="Check"
+                      className="h-3 shrink-0"
+                      style={{ imageRendering: "crisp-edges", width: "auto" }}
+                    />
                     <p className="text-foreground">
                       {t("comparison.qarote.point1")}
                     </p>
                   </div>
 
-                  <div className="flex gap-4 items-start">
-                    <CheckIcon className="w-6 h-6 text-green-500 shrink-0 mt-0.5" />
+                  <div className="flex gap-4 items-center">
+                    <img
+                      src="/images/check.svg"
+                      alt="Check"
+                      className="h-3 shrink-0"
+                      style={{ imageRendering: "crisp-edges", width: "auto" }}
+                    />
                     <p className="text-foreground">
                       {t("comparison.qarote.point2")}
                     </p>
                   </div>
 
-                  <div className="flex gap-4 items-start">
-                    <CheckIcon className="w-6 h-6 text-green-500 shrink-0 mt-0.5" />
+                  <div className="flex gap-4 items-center">
+                    <img
+                      src="/images/check.svg"
+                      alt="Check"
+                      className="h-3 shrink-0"
+                      style={{ imageRendering: "crisp-edges", width: "auto" }}
+                    />
                     <p className="text-foreground">
                       {t("comparison.qarote.point3")}
                     </p>
                   </div>
 
-                  <div className="flex gap-4 items-start">
-                    <CheckIcon className="w-6 h-6 text-green-500 shrink-0 mt-0.5" />
+                  <div className="flex gap-4 items-center">
+                    <img
+                      src="/images/check.svg"
+                      alt="Check"
+                      className="h-3 shrink-0"
+                      style={{ imageRendering: "crisp-edges", width: "auto" }}
+                    />
                     <p className="text-foreground">
                       {t("comparison.qarote.point4")}
                     </p>
@@ -452,11 +523,11 @@ const Index = () => {
                 </div>
 
                 {/* Visual Representation - Modern Dashboard */}
-                <div className="bg-card rounded-t-xl border-t border-l border-r border-border p-4 mt-auto flex flex-col overflow-hidden h-[200px] shadow-soft">
+                <div className="bg-card  border-t border-l border-r border-border p-4 mt-auto flex flex-col overflow-hidden h-[200px] shadow-soft">
                   <div className="flex gap-2 mb-3">
-                    <div className="w-3 h-3 bg-red-400 rounded-full"></div>
-                    <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
-                    <div className="w-3 h-3 bg-green-400 rounded-full"></div>
+                    <div className="w-3 h-3 bg-red-400 "></div>
+                    <div className="w-3 h-3 bg-yellow-400 "></div>
+                    <div className="w-3 h-3 bg-green-400 "></div>
                   </div>
                   <div className="bg-background rounded p-3 space-y-2 flex-1 flex flex-col justify-between overflow-hidden min-h-0">
                     <div className="flex items-center gap-2">
@@ -481,8 +552,18 @@ const Index = () => {
                         <div className="text-sm font-bold">127</div>
                       </div>
                     </div>
-                    <div className="bg-green-100 border border-green-200 rounded p-1.5 text-xs text-green-700">
-                      &#10003; {t("comparison.allSystemsOperational")}
+                    <div className="bg-green-100 border border-green-200 p-1.5 text-xs text-green-700 flex items-center gap-1.5">
+                      <img
+                        src="/images/check.svg"
+                        alt="Check"
+                        className="shrink-0"
+                        style={{
+                          width: "auto",
+                          height: "0.525rem",
+                          imageRendering: "crisp-edges",
+                        }}
+                      />
+                      {t("comparison.allSystemsOperational")}
                     </div>
                   </div>
                 </div>
@@ -493,10 +574,17 @@ const Index = () => {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="pt-12 pb-20 bg-background">
+      <section
+        id="features"
+        className="pt-12 pb-20"
+        style={{ backgroundColor: "#ffffff" }}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4">
+            <h2
+              className="text-3xl sm:text-4xl lg:text-5xl text-foreground mb-4 max-w-4xl mx-auto"
+              style={{ fontWeight: 400 }}
+            >
               {t("features.title")}
               <br />
               {t("features.titleLine2")}
@@ -524,9 +612,18 @@ const Index = () => {
                 const appBaseUrl = import.meta.env.VITE_APP_BASE_URL;
                 window.location.href = `${appBaseUrl}/auth/sign-up`;
               }}
-              className="bg-linear-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600 px-4 py-3 sm:px-8 sm:py-4 rounded-lg font-semibold transition-colors duration-200 text-base sm:text-lg"
+              className="bg-[#FF691B] text-white hover:bg-[#E55A0F] px-4 py-3 sm:px-8 sm:py-4 transition-colors duration-200 inline-flex items-center justify-center gap-3 text-base sm:text-lg rounded-full"
             >
-              {t("cta.startMonitoringForFree")}
+              <span>{t("cta.startMonitoringForFree")}</span>
+              <img
+                src="/images/arrow-right.svg"
+                alt="Arrow right"
+                className="h-[0.8em] w-auto"
+                style={{
+                  imageRendering: "crisp-edges",
+                  verticalAlign: "middle",
+                }}
+              />
             </button>
           </div>
         </div>
@@ -539,7 +636,10 @@ const Index = () => {
             <div className="inline-flex items-center justify-center p-2 bg-linear-to-r from-orange-500/10 to-red-500/10 rounded-full mb-6">
               <Building2Icon className="w-8 h-8 text-orange-600" />
             </div>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-6">
+            <h2
+              className="text-3xl sm:text-4xl lg:text-5xl text-foreground mb-6"
+              style={{ fontWeight: 400 }}
+            >
               {t("enterprise.title")}
             </h2>
             <p className="text-lg text-muted-foreground mb-8">
@@ -576,21 +676,33 @@ const Index = () => {
                 const portalUrl = import.meta.env.VITE_PORTAL_URL;
                 window.location.href = portalUrl;
               }}
-              className="bg-linear-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600 px-4 py-3 sm:px-8 sm:py-4 rounded-lg font-semibold transition-colors duration-200 text-base sm:text-lg"
+              className="bg-[#FF691B] text-white hover:bg-[#E55A0F] px-4 py-3 sm:px-8 sm:py-4 transition-colors duration-200 inline-flex items-center justify-center gap-3 text-base sm:text-lg rounded-full"
             >
-              {t("cta.selfHostedSolution")}
+              <span>{t("cta.selfHostedSolution")}</span>
+              <img
+                src="/images/arrow-right.svg"
+                alt="Arrow right"
+                className="h-[0.8em] w-auto"
+                style={{
+                  imageRendering: "crisp-edges",
+                  verticalAlign: "middle",
+                }}
+              />
             </button>
           </div>
         </div>
       </section>
 
       {/* Connect Section */}
-      <section className="pt-12 pb-20 bg-background">
+      <section className="pt-12 pb-20" style={{ backgroundColor: "#ffffff" }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 items-start">
             {/* Left side - Title and description */}
             <div className="lg:sticky lg:top-20">
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-6">
+              <h2
+                className="text-3xl sm:text-4xl lg:text-5xl text-foreground mb-6 max-w-4xl"
+                style={{ fontWeight: 400 }}
+              >
                 {t("connection.title")}
               </h2>
               <p className="text-lg text-muted-foreground">
@@ -601,15 +713,23 @@ const Index = () => {
             {/* Right side - Steps */}
             <div className="space-y-8">
               {/* Step 1: Sign up */}
-              <div className="bg-transparent border border-border rounded-xl pt-6 px-6 pb-0 flex gap-6 flex-col relative overflow-visible shadow-soft">
+              <div className="bg-transparent border border-border  pt-6 px-6 pb-0 flex gap-6 flex-col relative overflow-visible">
                 <div className="flex gap-6">
                   <div className="shrink-0">
-                    <div className="w-12 h-12 rounded-full bg-linear-to-r from-orange-500 to-red-500 flex items-center justify-center">
-                      <span className="text-white font-bold text-xl">1</span>
+                    <div
+                      className="w-12 h-12 flex items-center justify-center"
+                      style={{ backgroundColor: "#ffedd5" }}
+                    >
+                      <span className="text-xl" style={{ color: "#FF691B" }}>
+                        1
+                      </span>
                     </div>
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-xl font-bold text-foreground mb-2">
+                    <h3
+                      className="text-2xl text-foreground mb-2"
+                      style={{ fontWeight: 400 }}
+                    >
                       {t("connection.step1.title")}
                     </h3>
                     <p className="text-muted-foreground mb-4">
@@ -618,18 +738,8 @@ const Index = () => {
                   </div>
                 </div>
                 <div className="mt-auto">
-                  <div className="bg-card border-t border-l border-r border-border rounded-t-xl p-6 max-w-sm mx-auto">
-                    <div className="flex items-center justify-center gap-2 mb-6">
-                      <img
-                        src="/images/new_icon.svg"
-                        alt="Qarote"
-                        className="w-8 h-8"
-                      />
-                      <span className="font-bold text-xl text-foreground">
-                        Qarote
-                      </span>
-                    </div>
-                    <h4 className="text-lg font-bold text-foreground text-center mb-2">
+                  <div className="bg-card border-t border-l border-r border-border  p-6 max-w-sm mx-auto">
+                    <h4 className="text-lg text-foreground text-center mb-2">
                       {t("connection.step1.createAccount")}
                     </h4>
                     <p className="text-sm text-muted-foreground text-center mb-6">
@@ -641,7 +751,7 @@ const Index = () => {
                           window.location.href =
                             "https://app.qarote.io/auth/sign-up";
                         }}
-                        className="w-full bg-background border border-border rounded-lg p-3 flex items-center justify-center gap-3 hover:bg-muted/50 transition-colors"
+                        className="w-full bg-background border border-border  p-3 flex items-center justify-center gap-3 hover:bg-muted/50 transition-colors"
                       >
                         <MailIcon className="w-5 h-5 text-orange-600" />
                         <span className="text-sm font-medium text-foreground">
@@ -663,7 +773,7 @@ const Index = () => {
                           window.location.href =
                             "https://app.qarote.io/auth/sign-up";
                         }}
-                        className="w-full bg-background border border-border rounded-lg p-3 flex items-center justify-center gap-3 hover:bg-muted/50 transition-colors"
+                        className="w-full bg-background border border-border  p-3 flex items-center justify-center gap-3 hover:bg-muted/50 transition-colors"
                       >
                         <div className="w-5 h-5 flex items-center justify-center">
                           <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -695,15 +805,23 @@ const Index = () => {
               </div>
 
               {/* Step 2: Add your servers */}
-              <div className="bg-transparent border border-border rounded-xl pt-6 px-6 pb-0 flex gap-6 flex-col relative overflow-visible shadow-soft">
+              <div className="bg-transparent border border-border  pt-6 px-6 pb-0 flex gap-6 flex-col relative overflow-visible">
                 <div className="flex gap-6">
                   <div className="shrink-0">
-                    <div className="w-12 h-12 rounded-full bg-linear-to-r from-orange-500 to-red-500 flex items-center justify-center">
-                      <span className="text-white font-bold text-xl">2</span>
+                    <div
+                      className="w-12 h-12 flex items-center justify-center"
+                      style={{ backgroundColor: "#ffedd5" }}
+                    >
+                      <span className="text-xl" style={{ color: "#FF691B" }}>
+                        2
+                      </span>
                     </div>
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-xl font-bold text-foreground mb-2">
+                    <h3
+                      className="text-2xl text-foreground mb-2"
+                      style={{ fontWeight: 400 }}
+                    >
                       {t("connection.step2.title")}
                     </h3>
                     <p className="text-muted-foreground mb-4">
@@ -712,9 +830,9 @@ const Index = () => {
                   </div>
                 </div>
                 <div className="mt-auto">
-                  <div className="bg-card border-t border-l border-r border-border rounded-t-xl p-6 max-w-sm mx-auto">
+                  <div className="bg-card border-t border-l border-r border-border  p-6 max-w-sm mx-auto">
                     <div className="space-y-3">
-                      <div className="bg-background border border-border rounded-lg p-4 flex items-center gap-4">
+                      <div className="bg-background border border-border  p-4 flex items-center gap-4">
                         <div className="shrink-0">
                           <ServerIcon className="w-6 h-6 text-orange-600" />
                         </div>
@@ -727,7 +845,7 @@ const Index = () => {
                           </div>
                         </div>
                       </div>
-                      <div className="bg-background border border-border rounded-lg p-4 flex items-center gap-4">
+                      <div className="bg-background border border-border  p-4 flex items-center gap-4">
                         <div className="shrink-0">
                           <ServerIcon className="w-6 h-6 text-orange-600" />
                         </div>
@@ -740,7 +858,7 @@ const Index = () => {
                           </div>
                         </div>
                       </div>
-                      <div className="bg-background border border-border rounded-lg p-4 flex items-center gap-4">
+                      <div className="bg-background border border-border  p-4 flex items-center gap-4">
                         <div className="shrink-0">
                           <ServerIcon className="w-6 h-6 text-orange-600" />
                         </div>
@@ -759,15 +877,23 @@ const Index = () => {
               </div>
 
               {/* Step 3: Monitor and collaborate */}
-              <div className="bg-transparent border border-border rounded-xl pt-6 px-6 pb-0 flex gap-6 flex-col relative overflow-visible shadow-soft">
+              <div className="bg-transparent border border-border  pt-6 px-6 pb-0 flex gap-6 flex-col relative overflow-visible">
                 <div className="flex gap-6">
                   <div className="shrink-0">
-                    <div className="w-12 h-12 rounded-full bg-linear-to-r from-orange-500 to-red-500 flex items-center justify-center">
-                      <span className="text-white font-bold text-xl">3</span>
+                    <div
+                      className="w-12 h-12 flex items-center justify-center"
+                      style={{ backgroundColor: "#ffedd5" }}
+                    >
+                      <span className="text-xl" style={{ color: "#FF691B" }}>
+                        3
+                      </span>
                     </div>
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-xl font-bold text-foreground mb-2">
+                    <h3
+                      className="text-2xl text-foreground mb-2"
+                      style={{ fontWeight: 400 }}
+                    >
                       {t("connection.step3.title")}
                     </h3>
                     <p className="text-muted-foreground mb-4">
@@ -776,11 +902,11 @@ const Index = () => {
                   </div>
                 </div>
                 <div className="mt-auto">
-                  <div className="bg-card border-t border-l border-r border-border rounded-t-xl p-6 max-w-sm mx-auto">
+                  <div className="bg-card border-t border-l border-r border-border  p-6 max-w-sm mx-auto">
                     <div className="space-y-4">
                       {/* Metrics Cards */}
                       <div className="grid grid-cols-2 gap-3">
-                        <div className="bg-background border border-border rounded-lg p-3">
+                        <div className="bg-background border border-border  p-3">
                           <div className="flex items-center gap-2 mb-2">
                             <ActivityIcon className="w-4 h-4 text-orange-600" />
                             <span className="text-xs text-muted-foreground">
@@ -791,7 +917,7 @@ const Index = () => {
                             4.2k
                           </div>
                         </div>
-                        <div className="bg-background border border-border rounded-lg p-3">
+                        <div className="bg-background border border-border  p-3">
                           <div className="flex items-center gap-2 mb-2">
                             <BarChart3Icon className="w-4 h-4 text-orange-600" />
                             <span className="text-xs text-muted-foreground">
@@ -805,7 +931,7 @@ const Index = () => {
                       </div>
 
                       {/* Chart Card */}
-                      <div className="bg-background border border-border rounded-lg p-4">
+                      <div className="bg-background border border-border  p-4">
                         <div className="flex items-center justify-between mb-3">
                           <span className="text-sm font-semibold text-foreground">
                             {t("connection.step3.queueDepths")}
@@ -844,10 +970,10 @@ const Index = () => {
                       </div>
 
                       {/* Queue Status Card */}
-                      <div className="bg-background border border-border rounded-lg p-3">
+                      <div className="bg-background border border-border  p-3">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                            <div className="w-2 h-2 bg-green-500 "></div>
                             <span className="text-sm font-semibold text-foreground">
                               {t("connection.step3.allSystemsOperational")}
                             </span>
@@ -865,10 +991,17 @@ const Index = () => {
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="pt-12 pb-20 bg-background">
+      <section
+        id="pricing"
+        className="pt-12 pb-20"
+        style={{ backgroundColor: "#ffffff" }}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4">
+            <h2
+              className="text-3xl sm:text-4xl lg:text-5xl text-foreground mb-4"
+              style={{ fontWeight: 400 }}
+            >
               {tPricing("title")}
             </h2>
           </div>
@@ -1248,7 +1381,7 @@ const Index = () => {
                         </div>
                         <Button
                           size={undefined}
-                          className="w-full bg-linear-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600 px-4 py-3 sm:px-8 sm:py-4 rounded-lg font-semibold transition-colors duration-200 text-base sm:text-lg h-auto"
+                          className="w-full bg-[#FF691B] text-white hover:bg-[#E55A0F] px-4 py-3 sm:px-8 sm:py-4 transition-colors duration-200 text-base sm:text-lg h-auto rounded-full"
                           onClick={() => {
                             const appBaseUrl = import.meta.env
                               .VITE_APP_BASE_URL;
@@ -1376,10 +1509,17 @@ const Index = () => {
       </section>
 
       {/* FAQ Section */}
-      <section id="faq" className="pt-12 pb-20 bg-background">
+      <section
+        id="faq"
+        className="pt-12 pb-20"
+        style={{ backgroundColor: "#ffffff" }}
+      >
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4">
+            <h2
+              className="text-3xl sm:text-4xl lg:text-5xl text-foreground mb-4"
+              style={{ fontWeight: 400 }}
+            >
               {t("faqSection.title")}
             </h2>
             <p className="text-xl text-muted-foreground">
@@ -1405,7 +1545,10 @@ const Index = () => {
           </div>
 
           <div className="text-center mt-16">
-            <h3 className="text-2xl font-bold text-foreground mb-4">
+            <h3
+              className="text-2xl text-foreground mb-4"
+              style={{ fontWeight: 400 }}
+            >
               {t("faqSection.stillHaveQuestions")}
             </h3>
             <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
@@ -1418,7 +1561,7 @@ const Index = () => {
                   window.Tawk_API.maximize();
                 }
               }}
-              className="inline-flex items-center justify-center bg-linear-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600 px-4 py-3 sm:px-8 sm:py-4 rounded-lg font-semibold transition-colors duration-200 text-base sm:text-lg"
+              className="inline-flex items-center justify-center bg-[#FF691B] text-white hover:bg-[#E55A0F] px-4 py-3 sm:px-8 sm:py-4 transition-colors duration-200 text-base sm:text-lg rounded-full gap-3"
             >
               {t("cta.contactUs")}
             </button>
@@ -1427,17 +1570,20 @@ const Index = () => {
       </section>
 
       {/* Final CTA */}
-      <section className="pt-12 pb-20 bg-background">
+      <section className="pt-12 pb-20" style={{ backgroundColor: "#ffffff" }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div
-            className="text-white rounded-xl py-20 px-12 lg:px-16 relative overflow-hidden bg-gradient-auth bg-size-[200%_200%] animate-gradient-shift"
+            className="text-white  py-20 px-12 lg:px-16 relative overflow-hidden bg-gradient-auth bg-size-[200%_200%] animate-gradient-shift"
             style={{
               animationDuration: "8s",
             }}
           >
             <div className="grid md:grid-cols-2 gap-12 lg:gap-16 items-center">
               <div>
-                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">
+                <h2
+                  className="text-3xl sm:text-4xl lg:text-5xl mb-4"
+                  style={{ fontWeight: 400 }}
+                >
                   {t("finalCta.title")}
                 </h2>
               </div>
