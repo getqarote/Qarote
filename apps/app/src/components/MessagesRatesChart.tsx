@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { HelpCircle, RefreshCw } from "lucide-react";
+import { HelpCircle, Info, RefreshCw } from "lucide-react";
 import {
   CartesianGrid,
   Line,
@@ -42,6 +42,7 @@ interface MessagesRatesChartProps {
     disk_reads?: number;
     disk_writes?: number;
   }>;
+  ratesMode?: "detailed" | "basic" | "none";
   isLoading: boolean;
   error?: Error | null;
   timeRange?: TimeRange;
@@ -50,6 +51,7 @@ interface MessagesRatesChartProps {
 
 export const MessagesRatesChart = ({
   messagesRates,
+  ratesMode,
   isLoading,
   error,
   timeRange = "1d",
@@ -225,6 +227,19 @@ export const MessagesRatesChart = ({
         </div>
       </CardHeader>
       <CardContent>
+        {ratesMode === "basic" && (
+          <div className="mb-4 flex items-start gap-2 rounded-md border border-blue-200 bg-blue-50 p-3 text-sm text-blue-800 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-200">
+            <Info className="mt-0.5 h-4 w-4 shrink-0" />
+            <p>
+              Only instantaneous rates are available. To enable historical
+              time-series charts, set{" "}
+              <code className="rounded bg-blue-100 px-1 py-0.5 text-xs dark:bg-blue-900">
+                management.rates_mode = detailed
+              </code>{" "}
+              in your RabbitMQ configuration and restart the node.
+            </p>
+          </div>
+        )}
         {isLoading ? (
           <div className="h-96 w-full flex items-center justify-center">
             <div className="flex flex-col items-center gap-2">

@@ -120,6 +120,41 @@ export class RabbitMQMetricsCalculator {
     return messagesRates;
   }
 
+  // Build a single-point fallback from instantaneous rates (basic rates_mode)
+  static extractInstantaneousRates(
+    messageStats: MessageStats | QueueMessageStats,
+    includeDiskMetrics: boolean = true
+  ): MessageRates[] {
+    const now = Date.now();
+    const point: MessageRates = {
+      timestamp: now,
+      publish: messageStats.publish_details?.rate ?? 0,
+      deliver: messageStats.deliver_details?.rate ?? 0,
+      ack: messageStats.ack_details?.rate ?? 0,
+      deliver_get: messageStats.deliver_get_details?.rate ?? 0,
+      confirm: messageStats.confirm_details?.rate ?? 0,
+      get: messageStats.get_details?.rate ?? 0,
+      get_no_ack: messageStats.get_no_ack_details?.rate ?? 0,
+      redeliver: messageStats.redeliver_details?.rate ?? 0,
+      reject: messageStats.reject_details?.rate ?? 0,
+      return_unroutable: messageStats.return_unroutable_details?.rate ?? 0,
+      deliver_no_ack: messageStats.deliver_no_ack_details?.rate ?? 0,
+      get_empty: messageStats.get_empty_details?.rate ?? 0,
+      drop_unroutable: messageStats.drop_unroutable_details?.rate ?? 0,
+    };
+
+    if (
+      includeDiskMetrics &&
+      "disk_reads_details" in messageStats &&
+      "disk_writes_details" in messageStats
+    ) {
+      point.disk_reads = messageStats.disk_reads_details?.rate ?? 0;
+      point.disk_writes = messageStats.disk_writes_details?.rate ?? 0;
+    }
+
+    return [point];
+  }
+
   // Generic function for extracting message rates from message stats
   static extractMessageRates(
     data: RabbitMQOverview | RabbitMQQueue,
@@ -129,11 +164,28 @@ export class RabbitMQMetricsCalculator {
     const messageStats =
       "message_stats" in data ? data.message_stats : data.message_stats || {};
 
-    if (!messageStats?.publish_details?.samples) {
+    if (!messageStats?.publish_details) {
       return [];
     }
 
-    return this.extractMessageRatesFromStats(messageStats, disk);
+    // Detailed mode: samples arrays are available for time-series charts
+    if (messageStats.publish_details.samples) {
+      return this.extractMessageRatesFromStats(messageStats, disk);
+    }
+
+    // Basic mode: only instantaneous rate is available, synthesize a single data point
+    return this.extractInstantaneousRates(messageStats, disk);
+  }
+
+  // Detect whether message stats contain sample arrays (detailed mode) or only rates (basic mode)
+  static detectRatesMode(
+    data: RabbitMQOverview | RabbitMQQueue
+  ): "detailed" | "basic" | "none" {
+    const messageStats =
+      "message_stats" in data ? data.message_stats : data.message_stats || {};
+    if (!messageStats?.publish_details) return "none";
+    if (messageStats.publish_details.samples) return "detailed";
+    return "basic";
   }
 
   // Generic function for extracting queue totals

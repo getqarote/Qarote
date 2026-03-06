@@ -665,6 +665,25 @@ curl -L https://github.com/getqarote/Qarote/releases/latest/download/qarote-linu
 - Wait for PostgreSQL to fully initialize (check health status)
 - Ensure database migrations have been run
 
+### Message Rate Charts Are Blank
+
+If the "Messages rates" chart shows an empty graph while "Queued messages" works fine, your RabbitMQ server's `rates_mode` is set to `basic` (the default). In this mode, the management API only returns instantaneous rates without historical sample data, so there's nothing to plot.
+
+**Fix:** Set `rates_mode` to `detailed` in your RabbitMQ configuration:
+
+```ini
+# rabbitmq.conf
+management.rates_mode = detailed
+```
+
+Or apply at runtime without restarting:
+
+```bash
+rabbitmqctl eval 'application:set_env(rabbitmq_management, rates_mode, detailed).'
+```
+
+> **Note:** `detailed` mode increases memory usage on the RabbitMQ server slightly, as it retains sample history for each metric. This is the same mode the official RabbitMQ Management UI uses internally to render its charts. Qarote's bundled `docker-compose.yml` already sets this for you.
+
 ### Services Not Starting
 
 ```bash

@@ -169,7 +169,8 @@ const QueueDetail = () => {
 
                   {/* Live Rates Chart */}
                   <MessagesRatesChart
-                    messagesRates={queueLiveRatesData?.messagesRates}
+                    messagesRates={queueLiveRatesData?.rates}
+                    ratesMode={queueLiveRatesData?.ratesMode}
                     isLoading={liveRatesLoading}
                     error={null}
                     timeRange={timeRange}
