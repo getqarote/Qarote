@@ -126,6 +126,17 @@
     "addPaymentToKeep": "Ajoutez un moyen de paiement avant le {{date}} pour conserver votre forfait à la fin de l'essai.",
     "trialActiveWithPayment": "Votre essai est actif jusqu'au {{date}}. Votre abonnement commencera automatiquement à la fin de l'essai."
   },
+  "currentPlan": {
+    "noSubscription": "Aucun abonnement requis",
+    "billingInterval": "Facturation {{interval}}",
+    "perInterval": "par {{interval}}",
+    "currentPeriod": "Période en cours",
+    "nextBilling": "Prochaine facturation",
+    "paymentMethod": "Moyen de paiement"
+  },
+  "status": {
+    "active": "Actif"
+  },
   "error": {
     "workspaceIdRequired": "L'identifiant de l'espace de travail est requis"
   }

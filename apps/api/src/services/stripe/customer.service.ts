@@ -351,22 +351,32 @@ export class StripeCustomerService {
 
     logger.info({ userId, plan, trialDays }, "Provisioning trial for new user");
 
-    // Create Stripe customer
-    const customer = await StripeCustomerService.createCustomer({
-      email,
-      name,
-      userId,
+    // Reuse existing Stripe customer if one was already created (race condition guard)
+    const user = await prisma.user.findUniqueOrThrow({
+      where: { id: userId },
+      select: { stripeCustomerId: true },
     });
 
-    await prisma.user.update({
-      where: { id: userId },
-      data: { stripeCustomerId: customer.id },
-    });
+    let customerId = user.stripeCustomerId;
+    if (!customerId) {
+      const customer = await StripeCustomerService.createCustomer({
+        email,
+        name,
+        userId,
+      });
+      customerId = customer.id;
+
+      // Conditional write: only set if still null (avoids overwriting concurrent request)
+      await prisma.user.updateMany({
+        where: { id: userId, stripeCustomerId: null },
+        data: { stripeCustomerId: customerId },
+      });
+    }
 
     // Create trial subscription via Stripe API
     const idempotencyKey = `auto_trial_${userId}`;
     const subscription = await StripeCustomerService.createTrialSubscription({
-      customerId: customer.id,
+      customerId,
       plan,
       billingInterval,
       trialDays,
@@ -380,7 +390,7 @@ export class StripeCustomerService {
       data: { stripeSubscriptionId: subscription.id },
     });
 
-    // Create subscription record in DB
+    // Upsert subscription record (idempotent against duplicate events/retries)
     const firstItem = subscription.items?.data?.[0];
     const currentPeriodStart = firstItem?.current_period_start
       ? new Date(firstItem.current_period_start * 1000)
@@ -389,28 +399,41 @@ export class StripeCustomerService {
       ? new Date(firstItem.current_period_end * 1000)
       : new Date(Date.now() + trialDays * 24 * 60 * 60 * 1000);
 
-    const dbSubscription = await prisma.subscription.create({
-      data: {
-        userId,
-        stripeSubscriptionId: subscription.id,
-        stripePriceId: firstItem?.price?.id || "",
-        stripeCustomerId: customer.id,
-        plan,
-        status: SubscriptionStatus.TRIALING,
-        billingInterval:
-          CoreStripeService.mapStripeBillingIntervalToBillingInterval(
-            billingInterval
-          ),
-        pricePerMonth: firstItem?.price?.unit_amount || 0,
-        currentPeriodStart,
-        currentPeriodEnd,
-        trialStart: subscription.trial_start
-          ? new Date(subscription.trial_start * 1000)
-          : new Date(),
-        trialEnd: subscription.trial_end
-          ? new Date(subscription.trial_end * 1000)
-          : new Date(Date.now() + trialDays * 24 * 60 * 60 * 1000),
-        cancelAtPeriodEnd: false,
+    const subscriptionData = {
+      userId,
+      stripeSubscriptionId: subscription.id,
+      stripePriceId: firstItem?.price?.id || "",
+      stripeCustomerId: customerId,
+      plan,
+      status: SubscriptionStatus.TRIALING,
+      billingInterval:
+        CoreStripeService.mapStripeBillingIntervalToBillingInterval(
+          billingInterval
+        ),
+      pricePerMonth: firstItem?.price?.unit_amount || 0,
+      currentPeriodStart,
+      currentPeriodEnd,
+      trialStart: subscription.trial_start
+        ? new Date(subscription.trial_start * 1000)
+        : new Date(),
+      trialEnd: subscription.trial_end
+        ? new Date(subscription.trial_end * 1000)
+        : new Date(Date.now() + trialDays * 24 * 60 * 60 * 1000),
+      cancelAtPeriodEnd: false,
+    };
+
+    const dbSubscription = await prisma.subscription.upsert({
+      where: { userId },
+      create: subscriptionData,
+      update: {
+        stripeSubscriptionId: subscriptionData.stripeSubscriptionId,
+        stripePriceId: subscriptionData.stripePriceId,
+        stripeCustomerId: subscriptionData.stripeCustomerId,
+        status: subscriptionData.status,
+        trialStart: subscriptionData.trialStart,
+        trialEnd: subscriptionData.trialEnd,
+        currentPeriodStart: subscriptionData.currentPeriodStart,
+        currentPeriodEnd: subscriptionData.currentPeriodEnd,
       },
     });
 

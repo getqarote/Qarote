@@ -126,6 +126,17 @@
     "addPaymentToKeep": "Add a payment method before {{date}} to keep your plan when the trial ends.",
     "trialActiveWithPayment": "Your trial is active until {{date}}. Your subscription will start automatically when the trial ends."
   },
+  "currentPlan": {
+    "noSubscription": "No subscription required",
+    "billingInterval": "{{interval}} billing",
+    "perInterval": "per {{interval}}",
+    "currentPeriod": "Current Period",
+    "nextBilling": "Next Billing",
+    "paymentMethod": "Payment Method"
+  },
+  "status": {
+    "active": "Active"
+  },
   "error": {
     "workspaceIdRequired": "Workspace ID is required"
   }

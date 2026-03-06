@@ -126,6 +126,17 @@
     "addPaymentToKeep": "Agrega un método de pago antes del {{date}} para mantener tu plan cuando termine la prueba.",
     "trialActiveWithPayment": "Tu prueba está activa hasta el {{date}}. Tu suscripción comenzará automáticamente cuando termine la prueba."
   },
+  "currentPlan": {
+    "noSubscription": "No se requiere suscripción",
+    "billingInterval": "Facturación {{interval}}",
+    "perInterval": "por {{interval}}",
+    "currentPeriod": "Período actual",
+    "nextBilling": "Próxima facturación",
+    "paymentMethod": "Método de pago"
+  },
+  "status": {
+    "active": "Activo"
+  },
   "error": {
     "workspaceIdRequired": "Se requiere el ID del espacio de trabajo"
   }

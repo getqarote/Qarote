@@ -72,15 +72,17 @@ export const CurrentPlanCard: React.FC<CurrentPlanCardProps> = ({
                         : "default"
                   }
                 >
-                  {isTrialing
-                    ? t("trial.badge")
-                    : subscription?.status || "Active"}
+                  {isTrialing ? t("trial.badge") : t("status.active", "Active")}
                 </Badge>
               </CardTitle>
               <p className="text-sm text-muted-foreground mt-1">
                 {plan === UserPlan.FREE
-                  ? "No subscription required"
-                  : `${stripeSubscription?.items?.data[0]?.price?.recurring?.interval || ""} billing`}
+                  ? t("currentPlan.noSubscription")
+                  : t("currentPlan.billingInterval", {
+                      interval:
+                        stripeSubscription?.items?.data[0]?.price?.recurring
+                          ?.interval || "",
+                    })}
               </p>
             </div>
           </div>
@@ -92,8 +94,11 @@ export const CurrentPlanCard: React.FC<CurrentPlanCardProps> = ({
                 )}
               </div>
               <div className="text-sm text-muted-foreground">
-                per{" "}
-                {stripeSubscription.items?.data[0]?.price?.recurring?.interval}
+                {t("currentPlan.perInterval", {
+                  interval:
+                    stripeSubscription.items?.data[0]?.price?.recurring
+                      ?.interval,
+                })}
               </div>
             </div>
           )}
@@ -104,7 +109,7 @@ export const CurrentPlanCard: React.FC<CurrentPlanCardProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <div className="text-sm text-muted-foreground">
-                Current Period
+                {t("currentPlan.currentPeriod")}
               </div>
               <div className="font-medium">
                 {formatDate(
@@ -120,7 +125,7 @@ export const CurrentPlanCard: React.FC<CurrentPlanCardProps> = ({
               <div className="text-sm text-muted-foreground">
                 {isTrialing && trialEndDate
                   ? t("trial.endsOn")
-                  : "Next Billing"}
+                  : t("currentPlan.nextBilling")}
               </div>
               <div className="font-medium">
                 {isTrialing && trialEndDate
@@ -132,7 +137,7 @@ export const CurrentPlanCard: React.FC<CurrentPlanCardProps> = ({
             </div>
             <div data-testid="current-plan-payment-section">
               <div className="text-sm text-muted-foreground">
-                Payment Method
+                {t("currentPlan.paymentMethod")}
               </div>
               <div className="font-medium flex items-center gap-2">
                 {paymentMethod ? (
