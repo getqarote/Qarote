@@ -2,7 +2,8 @@
   "dependencyTypes": ["prod", "dev"],
   "source": [
     "package.json",
-    "apps/*/package.json"
+    "apps/*/package.json",
+    "packages/*/package.json"
   ],
   "semverGroups": [
     {
