@@ -57,6 +57,9 @@ infrastructure/
 # infrastructure/ansible/server_ip.txt
 # infrastructure/ansible/*.retry
 
+# Claude worktrees
+.claude/worktrees/
+
 # License files
 qarote-license-*.json
 license.json
