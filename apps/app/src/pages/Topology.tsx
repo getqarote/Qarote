@@ -1,0 +1,195 @@
+import "@xyflow/react/dist/style.css";
+
+import { useCallback, useMemo } from "react";
+import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router";
+
+import {
+  Background,
+  type ColorMode,
+  Controls,
+  MiniMap,
+  type NodeMouseHandler,
+  ReactFlow,
+} from "@xyflow/react";
+import { Network, RefreshCw, Server } from "lucide-react";
+
+import { buildTopologyGraph } from "@/lib/topology/layout";
+
+import { AppSidebar } from "@/components/AppSidebar";
+import { FeatureGate } from "@/components/FeatureGate";
+import { NoServerConfigured } from "@/components/NoServerConfigured";
+import { PageLoader } from "@/components/PageLoader";
+import { ExchangeNode } from "@/components/topology/ExchangeNode";
+import { QueueNode } from "@/components/topology/QueueNode";
+import { Card, CardContent } from "@/components/ui/card";
+import { PlanBadge } from "@/components/ui/PlanBadge";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+
+import { useServerContext } from "@/contexts/ServerContext";
+import { useTheme } from "@/contexts/ThemeContext";
+import { useVHostContext } from "@/contexts/VHostContextDefinition";
+
+import { useTopology } from "@/hooks/queries/useRabbitMQ";
+
+const nodeTypes = {
+  exchangeNode: ExchangeNode,
+  queueNode: QueueNode,
+};
+
+const Topology = () => {
+  const { t } = useTranslation("topology");
+  const navigate = useNavigate();
+  const { selectedServerId, hasServers } = useServerContext();
+  const { selectedVHost } = useVHostContext();
+  const { resolvedTheme } = useTheme();
+
+  const {
+    data: topologyData,
+    isLoading,
+    error,
+  } = useTopology(selectedServerId, selectedVHost);
+
+  const { nodes, edges } = useMemo(() => {
+    if (!topologyData) return { nodes: [], edges: [] };
+    return buildTopologyGraph(
+      topologyData.exchanges,
+      topologyData.queues,
+      topologyData.bindings,
+      topologyData.consumers
+    );
+  }, [topologyData]);
+
+  const onNodeClick: NodeMouseHandler = useCallback(
+    (_event, node) => {
+      if (node.type === "queueNode") {
+        const queueName = (node.data as { label: string }).label;
+        navigate(`/queues/${encodeURIComponent(queueName)}`);
+      }
+    },
+    [navigate]
+  );
+
+  const colorMode: ColorMode = resolvedTheme === "dark" ? "dark" : "light";
+
+  if (!hasServers) {
+    return (
+      <SidebarProvider>
+        <div className="page-layout">
+          <AppSidebar />
+          <main className="main-content-scrollable">
+            <div className="flex items-center gap-4">
+              <SidebarTrigger />
+            </div>
+            <NoServerConfigured
+              title={t("noServerTitle")}
+              description={t("noServerDescription")}
+            />
+          </main>
+        </div>
+      </SidebarProvider>
+    );
+  }
+
+  if (!selectedServerId) {
+    return (
+      <SidebarProvider>
+        <div className="page-layout">
+          <AppSidebar />
+          <main className="main-content-scrollable">
+            <div className="content-container-large">
+              <div className="flex items-center gap-4">
+                <SidebarTrigger />
+                <div>
+                  <h1 className="title-page">{t("pageTitle")}</h1>
+                  <p className="text-gray-500">{t("pageSubtitle")}</p>
+                </div>
+              </div>
+              <Card className="border-0 shadow-md bg-card">
+                <CardContent className="p-12">
+                  <div className="text-center">
+                    <Server className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                    <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+                      {t("noServerSelected")}
+                    </h2>
+                    <p className="text-gray-600">{t("selectServerPrompt")}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </main>
+        </div>
+      </SidebarProvider>
+    );
+  }
+
+  return (
+    <SidebarProvider>
+      <div className="page-layout">
+        <AppSidebar />
+        <FeatureGate feature="topology_visualization" fallback={<PageLoader />}>
+          <main className="main-content-scrollable">
+            <div className="content-container-large">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <SidebarTrigger />
+                  <div>
+                    <h1 className="title-page">{t("pageTitle")}</h1>
+                    <p className="text-gray-500">{t("pageSubtitle")}</p>
+                  </div>
+                </div>
+                <PlanBadge />
+              </div>
+
+              <Card className="border-0 shadow-md bg-card">
+                <CardContent className="p-0">
+                  {error ? (
+                    <div className="text-center py-8">
+                      <div className="text-red-600 mb-2">
+                        {t("failedToLoad")}
+                      </div>
+                    </div>
+                  ) : isLoading ? (
+                    <div className="text-center py-16">
+                      <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4" />
+                      <p>{t("loadingTopology")}</p>
+                    </div>
+                  ) : nodes.length === 0 ? (
+                    <div className="text-center py-16">
+                      <Network className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold mb-2">
+                        {t("noTopologyData")}
+                      </h3>
+                      <p className="text-gray-600">{t("noTopologyDataDesc")}</p>
+                    </div>
+                  ) : (
+                    <div className="h-[70vh] w-full">
+                      <ReactFlow
+                        nodes={nodes}
+                        edges={edges}
+                        nodeTypes={nodeTypes}
+                        onNodeClick={onNodeClick}
+                        colorMode={colorMode}
+                        fitView
+                        fitViewOptions={{ padding: 0.2 }}
+                        minZoom={0.1}
+                        maxZoom={2}
+                        proOptions={{ hideAttribution: false }}
+                      >
+                        <Background />
+                        <Controls />
+                        <MiniMap nodeStrokeWidth={3} zoomable pannable />
+                      </ReactFlow>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </main>
+        </FeatureGate>
+      </div>
+    </SidebarProvider>
+  );
+};
+
+export default Topology;

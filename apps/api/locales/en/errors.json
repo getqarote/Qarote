@@ -150,6 +150,7 @@
     "failedToFetchConnections": "Failed to fetch connections",
     "failedToFetchChannels": "Failed to fetch channels",
     "failedToFetchExchanges": "Failed to fetch exchanges",
+    "failedToFetchTopology": "Failed to fetch topology data",
     "invalidExchangeType": "Invalid exchange type. Must be one of: {{validTypes}}",
     "failedToCreateExchange": "Failed to create exchange",
     "exchangeInUseCannotDelete": "Cannot delete exchange \"{{exchangeName}}\" because it has bindings or is being used. Try force delete to remove it anyway.",

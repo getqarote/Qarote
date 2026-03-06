@@ -21,6 +21,7 @@ const i18n = createI18nInstance({
     "settings",
     "sso",
     "smtp",
+    "topology",
   ],
   defaultNamespace: "common",
   loadPath: "/locales/{{lng}}/{{ns}}.json",

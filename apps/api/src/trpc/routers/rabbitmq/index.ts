@@ -8,6 +8,7 @@ import { metricsRouter } from "./metrics";
 import { overviewRouter } from "./overview";
 import { queuesRouter } from "./queues";
 import { serverRouter } from "./server";
+import { topologyRouter } from "./topology";
 import { usersRouter } from "./users";
 import { vhostRouter } from "./vhost";
 
@@ -26,4 +27,5 @@ export const rabbitmqRouter = router({
   vhost: vhostRouter,
   alerts: alertsRouter,
   users: usersRouter,
+  topology: topologyRouter,
 });
