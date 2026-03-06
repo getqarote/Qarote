@@ -2,7 +2,7 @@ import { test, expect } from "../../fixtures/test-base.js";
 import { mockTrpcQuery } from "../../helpers/trpc-mock.js";
 
 const now = Math.floor(Date.now() / 1000);
-const thirtyDaysFromNow = now + 30 * 24 * 60 * 60;
+const fourteenDaysFromNow = now + 14 * 24 * 60 * 60;
 
 function makeBillingOverview(
   overrides: {
@@ -15,14 +15,14 @@ function makeBillingOverview(
   const trialEnd =
     overrides.trialEnd !== undefined
       ? overrides.trialEnd
-      : new Date(thirtyDaysFromNow * 1000).toISOString();
+      : new Date(fourteenDaysFromNow * 1000).toISOString();
 
   return {
     workspace: { id: "ws-1", name: "Test Workspace" },
     subscription: {
       id: "sub-db-1",
       status,
-      plan: "DEVELOPER",
+      plan: "ENTERPRISE",
       stripeCustomerId: "cus_test123",
       stripeSubscriptionId: "sub_test123",
       canceledAt: null,
@@ -38,7 +38,7 @@ function makeBillingOverview(
       id: "sub_test123",
       status: status === "TRIALING" ? "trialing" : "active",
       current_period_start: now,
-      current_period_end: thirtyDaysFromNow,
+      current_period_end: fourteenDaysFromNow,
       cancel_at_period_end: false,
       canceled_at: null,
       default_payment_method: null,
@@ -100,7 +100,9 @@ test.describe("Trial Billing UI @p1", () => {
     const addPaymentButtons = adminPage.getByRole("button", {
       name: /add payment method/i,
     });
-    await expect(addPaymentButtons.first()).toBeVisible();
+    await expect(addPaymentButtons).toHaveCount(2);
+    await expect(addPaymentButtons.nth(0)).toBeVisible();
+    await expect(addPaymentButtons.nth(1)).toBeVisible();
 
     // Verify trial end date section is shown
     await expect(adminPage.getByText(/trial ends/i)).toBeVisible();
@@ -132,12 +134,11 @@ test.describe("Trial Billing UI @p1", () => {
     // Card last4 should be shown
     await expect(adminPage.getByText("4242")).toBeVisible();
 
-    // The add payment button in CurrentPlanCard should NOT be visible
-    // (but the one in SubscriptionManagement banner may still be visible)
-    const planCardPaymentSection = adminPage
-      .getByTestId("current-plan-payment-section")
-      .getByRole("button", { name: /add payment method/i });
-    await expect(planCardPaymentSection).not.toBeVisible();
+    // No "Add payment method" buttons should be visible when card is on file
+    const addPaymentButtons = adminPage.getByRole("button", {
+      name: /add payment method/i,
+    });
+    await expect(addPaymentButtons).toHaveCount(0);
   });
 });
 

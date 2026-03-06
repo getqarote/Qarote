@@ -18,7 +18,7 @@ interface CurrentPlanCardProps {
     trialEnd?: string | null;
   };
   stripeSubscription?: {
-    items: {
+    items?: {
       data: Array<{
         price?: {
           unit_amount?: number;
@@ -27,7 +27,7 @@ interface CurrentPlanCardProps {
           };
         };
       }>;
-    };
+    } | null;
     current_period_start: number;
     current_period_end: number;
   };
@@ -88,12 +88,12 @@ export const CurrentPlanCard: React.FC<CurrentPlanCardProps> = ({
             <div className="text-right">
               <div className="text-2xl font-bold">
                 {formatCurrency(
-                  stripeSubscription.items.data[0]?.price?.unit_amount || 0
+                  stripeSubscription.items?.data[0]?.price?.unit_amount || 0
                 )}
               </div>
               <div className="text-sm text-muted-foreground">
                 per{" "}
-                {stripeSubscription.items.data[0]?.price?.recurring?.interval}
+                {stripeSubscription.items?.data[0]?.price?.recurring?.interval}
               </div>
             </div>
           )}

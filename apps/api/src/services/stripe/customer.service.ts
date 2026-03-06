@@ -112,12 +112,14 @@ export class StripeCustomerService {
     billingInterval,
     trialDays,
     userId,
+    idempotencyKey,
   }: {
     customerId: string;
     plan: UserPlan;
-    billingInterval: string;
+    billingInterval: "monthly" | "yearly";
     trialDays: number;
     userId: string;
+    idempotencyKey?: string;
   }) {
     try {
       if (plan === UserPlan.FREE) {
@@ -130,8 +132,7 @@ export class StripeCustomerService {
         );
       }
 
-      const priceId =
-        STRIPE_PRICE_IDS[plan][billingInterval as "monthly" | "yearly"];
+      const priceId = STRIPE_PRICE_IDS[plan][billingInterval];
 
       logger.info(
         { customerId, plan, billingInterval, trialDays, userId },
@@ -140,23 +141,26 @@ export class StripeCustomerService {
 
       const subscription = await retryWithBackoff(
         () =>
-          stripe.subscriptions.create({
-            customer: customerId,
-            items: [{ price: priceId }],
-            trial_period_days: trialDays,
-            trial_settings: {
-              end_behavior: {
-                missing_payment_method: "cancel",
+          stripe.subscriptions.create(
+            {
+              customer: customerId,
+              items: [{ price: priceId }],
+              trial_period_days: trialDays,
+              trial_settings: {
+                end_behavior: {
+                  missing_payment_method: "cancel",
+                },
+              },
+              payment_behavior: "default_incomplete",
+              metadata: {
+                userId,
+                plan,
+                billingInterval,
+                trialDays: trialDays.toString(),
               },
             },
-            payment_behavior: "default_incomplete",
-            metadata: {
-              userId,
-              plan,
-              billingInterval,
-              trialDays: trialDays.toString(),
-            },
-          }),
+            idempotencyKey ? { idempotencyKey } : undefined
+          ),
         {
           maxRetries: 3,
           retryDelayMs: 1_000,

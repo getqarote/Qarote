@@ -119,7 +119,8 @@
     "noActiveSubscription": "No se encontró una suscripción activa",
     "failedToCancelSubscription": "Error al cancelar la suscripción",
     "planRequired": "El plan es obligatorio",
-    "failedToRenewSubscription": "Error al renovar la suscripción"
+    "failedToRenewSubscription": "Error al renovar la suscripción",
+    "allWorkspaces": "todos tus espacios de trabajo"
   },
   "license": {
     "validationFailed": "Error en la validación de la licencia",

@@ -123,7 +123,8 @@
     "noPaymentMethod": "No payment method",
     "addPaymentMethod": "Add payment method",
     "trialActive": "Your trial is active",
-    "addPaymentToKeep": "Add a payment method before {{date}} to keep your plan when the trial ends."
+    "addPaymentToKeep": "Add a payment method before {{date}} to keep your plan when the trial ends.",
+    "trialActiveWithPayment": "Your trial is active until {{date}}. Your subscription will start automatically when the trial ends."
   },
   "error": {
     "workspaceIdRequired": "Workspace ID is required"

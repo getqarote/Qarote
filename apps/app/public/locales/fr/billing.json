@@ -123,7 +123,8 @@
     "noPaymentMethod": "Aucun moyen de paiement",
     "addPaymentMethod": "Ajouter un moyen de paiement",
     "trialActive": "Votre essai est actif",
-    "addPaymentToKeep": "Ajoutez un moyen de paiement avant le {{date}} pour conserver votre forfait à la fin de l'essai."
+    "addPaymentToKeep": "Ajoutez un moyen de paiement avant le {{date}} pour conserver votre forfait à la fin de l'essai.",
+    "trialActiveWithPayment": "Votre essai est actif jusqu'au {{date}}. Votre abonnement commencera automatiquement à la fin de l'essai."
   },
   "error": {
     "workspaceIdRequired": "L'identifiant de l'espace de travail est requis"

@@ -96,25 +96,8 @@ export const checkoutRouter = router({
   startTrial: strictRateLimitedProcedure.mutation(async ({ ctx }) => {
     const { user, prisma } = ctx;
     const plan = UserPlan.ENTERPRISE;
-    const billingInterval = "monthly";
+    const billingInterval = "monthly" as const;
     const trialDays = 14;
-
-    // Check if user already has an active subscription
-    const existingSubscription = await prisma.subscription.findFirst({
-      where: {
-        userId: user.id,
-        status: {
-          in: [SubscriptionStatus.ACTIVE, SubscriptionStatus.TRIALING],
-        },
-      },
-    });
-
-    if (existingSubscription) {
-      throw new TRPCError({
-        code: "BAD_REQUEST",
-        message: te(ctx.locale, "billing.alreadyHasSubscription"),
-      });
-    }
 
     try {
       ctx.logger.info(
@@ -138,81 +121,114 @@ export const checkoutRouter = router({
         });
       }
 
-      // Create subscription directly via Stripe API (no checkout page)
-      const subscription = await StripeService.createTrialSubscription({
-        customerId,
-        plan,
-        billingInterval,
-        trialDays,
-        userId: user.id,
-      });
+      // Use a transaction to prevent race conditions:
+      // Re-check subscription inside the transaction before creating
+      const dbSubscription = await prisma.$transaction(async (tx) => {
+        const existingSubscription = await tx.subscription.findFirst({
+          where: {
+            userId: user.id,
+            status: {
+              in: [SubscriptionStatus.ACTIVE, SubscriptionStatus.TRIALING],
+            },
+          },
+        });
 
-      // Update user with subscription ID
-      await prisma.user.update({
-        where: { id: user.id },
-        data: {
-          stripeSubscriptionId: subscription.id,
-        },
-      });
+        if (existingSubscription) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: te(ctx.locale, "billing.alreadyHasSubscription"),
+          });
+        }
 
-      // Get period dates from subscription items
-      const firstItem = subscription.items?.data?.[0];
-      const currentPeriodStart = firstItem?.current_period_start
-        ? new Date(firstItem.current_period_start * 1000)
-        : new Date();
-      const currentPeriodEnd = firstItem?.current_period_end
-        ? new Date(firstItem.current_period_end * 1000)
-        : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-
-      // Create subscription record in DB
-      await prisma.subscription.create({
-        data: {
-          userId: user.id,
-          stripeSubscriptionId: subscription.id,
-          stripePriceId: firstItem?.price?.id || "",
-          stripeCustomerId: customerId,
+        // Create subscription via Stripe API with idempotency key
+        const idempotencyKey = `start_trial_${user.id}`;
+        const subscription = await StripeService.createTrialSubscription({
+          customerId: customerId!,
           plan,
-          status: SubscriptionStatus.TRIALING,
-          billingInterval:
-            CoreStripeService.mapStripeBillingIntervalToBillingInterval(
-              billingInterval
-            ),
-          pricePerMonth: firstItem?.price?.unit_amount || 0,
-          currentPeriodStart,
-          currentPeriodEnd,
-          trialStart: subscription.trial_start
-            ? new Date(subscription.trial_start * 1000)
-            : new Date(),
-          trialEnd: subscription.trial_end
-            ? new Date(subscription.trial_end * 1000)
-            : new Date(Date.now() + trialDays * 24 * 60 * 60 * 1000),
-          cancelAtPeriodEnd: false,
-        },
+          billingInterval,
+          trialDays,
+          userId: user.id,
+          idempotencyKey,
+        });
+
+        // Update user with subscription ID
+        await tx.user.update({
+          where: { id: user.id },
+          data: { stripeSubscriptionId: subscription.id },
+        });
+
+        // Get period dates from subscription items
+        const firstItem = subscription.items?.data?.[0];
+        const currentPeriodStart = firstItem?.current_period_start
+          ? new Date(firstItem.current_period_start * 1000)
+          : new Date();
+        const currentPeriodEnd = firstItem?.current_period_end
+          ? new Date(firstItem.current_period_end * 1000)
+          : new Date(Date.now() + trialDays * 24 * 60 * 60 * 1000);
+
+        // Create subscription record in DB
+        return tx.subscription.create({
+          data: {
+            userId: user.id,
+            stripeSubscriptionId: subscription.id,
+            stripePriceId: firstItem?.price?.id || "",
+            stripeCustomerId: customerId!,
+            plan,
+            status: SubscriptionStatus.TRIALING,
+            billingInterval:
+              CoreStripeService.mapStripeBillingIntervalToBillingInterval(
+                billingInterval
+              ),
+            pricePerMonth: firstItem?.price?.unit_amount || 0,
+            currentPeriodStart,
+            currentPeriodEnd,
+            trialStart: subscription.trial_start
+              ? new Date(subscription.trial_start * 1000)
+              : new Date(),
+            trialEnd: subscription.trial_end
+              ? new Date(subscription.trial_end * 1000)
+              : new Date(Date.now() + trialDays * 24 * 60 * 60 * 1000),
+            cancelAtPeriodEnd: false,
+          },
+        });
       });
 
-      // Send welcome email
-      await EmailService.sendUpgradeConfirmationEmail({
+      // Send welcome email (outside transaction — non-critical)
+      const emailResult = await EmailService.sendUpgradeConfirmationEmail({
         to: user.email,
         userName: getUserDisplayName(user),
-        workspaceName: "your workspaces",
+        workspaceName: te(ctx.locale, "billing.allWorkspaces"),
         plan,
         billingInterval: CoreStripeService.mapBillingIntervalToString(
           BillingInterval.MONTH
         ),
       });
 
+      if (!emailResult.success) {
+        ctx.logger.warn(
+          {
+            email: user.email,
+            error: emailResult.error,
+            method: "EmailService.sendUpgradeConfirmationEmail",
+          },
+          "Failed to send trial welcome email"
+        );
+      }
+
       ctx.logger.info(
         {
           userId: user.id,
-          subscriptionId: subscription.id,
+          subscriptionId: dbSubscription.stripeSubscriptionId,
           plan,
-          trialEnd: subscription.trial_end,
+          trialEnd: dbSubscription.trialEnd,
         },
         "Free trial started successfully"
       );
 
       return { success: true };
     } catch (error) {
+      // Re-throw TRPCErrors (e.g. alreadyHasSubscription) as-is
+      if (error instanceof TRPCError) throw error;
       ctx.logger.error({ error }, "Error starting free trial");
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
