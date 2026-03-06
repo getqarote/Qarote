@@ -11,7 +11,11 @@ import {
   STRIPE_PRICE_IDS,
 } from "./core.service";
 
-import { UserPlan } from "@/generated/prisma/client";
+import {
+  PrismaClient,
+  SubscriptionStatus,
+  UserPlan,
+} from "@/generated/prisma/client";
 
 export class StripeCustomerService {
   /**
@@ -317,5 +321,109 @@ export class StripeCustomerService {
       });
       throw error;
     }
+  }
+
+  /**
+   * Provision a full trial for a newly registered user.
+   * Creates Stripe customer + trial subscription + DB records.
+   * Returns null if Stripe is not configured (self-hosted mode).
+   * Does NOT send emails — caller decides.
+   */
+  static async provisionTrialForNewUser({
+    userId,
+    email,
+    name,
+    prisma,
+  }: {
+    userId: string;
+    email: string;
+    name: string;
+    prisma: PrismaClient;
+  }) {
+    // Skip if Stripe is not configured (self-hosted deployments)
+    if (!STRIPE_PRICE_IDS) {
+      return null;
+    }
+
+    const plan = UserPlan.ENTERPRISE;
+    const billingInterval = "monthly" as const;
+    const trialDays = 14;
+
+    logger.info({ userId, plan, trialDays }, "Provisioning trial for new user");
+
+    // Create Stripe customer
+    const customer = await StripeCustomerService.createCustomer({
+      email,
+      name,
+      userId,
+    });
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { stripeCustomerId: customer.id },
+    });
+
+    // Create trial subscription via Stripe API
+    const idempotencyKey = `auto_trial_${userId}`;
+    const subscription = await StripeCustomerService.createTrialSubscription({
+      customerId: customer.id,
+      plan,
+      billingInterval,
+      trialDays,
+      userId,
+      idempotencyKey,
+    });
+
+    // Update user with subscription ID
+    await prisma.user.update({
+      where: { id: userId },
+      data: { stripeSubscriptionId: subscription.id },
+    });
+
+    // Create subscription record in DB
+    const firstItem = subscription.items?.data?.[0];
+    const currentPeriodStart = firstItem?.current_period_start
+      ? new Date(firstItem.current_period_start * 1000)
+      : new Date();
+    const currentPeriodEnd = firstItem?.current_period_end
+      ? new Date(firstItem.current_period_end * 1000)
+      : new Date(Date.now() + trialDays * 24 * 60 * 60 * 1000);
+
+    const dbSubscription = await prisma.subscription.create({
+      data: {
+        userId,
+        stripeSubscriptionId: subscription.id,
+        stripePriceId: firstItem?.price?.id || "",
+        stripeCustomerId: customer.id,
+        plan,
+        status: SubscriptionStatus.TRIALING,
+        billingInterval:
+          CoreStripeService.mapStripeBillingIntervalToBillingInterval(
+            billingInterval
+          ),
+        pricePerMonth: firstItem?.price?.unit_amount || 0,
+        currentPeriodStart,
+        currentPeriodEnd,
+        trialStart: subscription.trial_start
+          ? new Date(subscription.trial_start * 1000)
+          : new Date(),
+        trialEnd: subscription.trial_end
+          ? new Date(subscription.trial_end * 1000)
+          : new Date(Date.now() + trialDays * 24 * 60 * 60 * 1000),
+        cancelAtPeriodEnd: false,
+      },
+    });
+
+    logger.info(
+      {
+        userId,
+        subscriptionId: dbSubscription.stripeSubscriptionId,
+        plan,
+        trialEnd: dbSubscription.trialEnd,
+      },
+      "Trial provisioned for new user"
+    );
+
+    return dbSubscription;
   }
 }
