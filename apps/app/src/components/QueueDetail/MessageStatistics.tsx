@@ -55,7 +55,7 @@ export function MessageStatistics({ queue }: MessageStatisticsProps) {
               <div className="flex items-center gap-2 mb-1">
                 <span className="text-sm text-muted-foreground">Incoming</span>
                 <Tooltip>
-                  <TooltipTrigger>
+                  <TooltipTrigger aria-label="Incoming rate info">
                     <HelpCircle className="w-4 h-4 text-muted-foreground cursor-help" />
                   </TooltipTrigger>
                   <TooltipContent>
@@ -77,7 +77,7 @@ export function MessageStatistics({ queue }: MessageStatisticsProps) {
                   Deliver / Get
                 </span>
                 <Tooltip>
-                  <TooltipTrigger>
+                  <TooltipTrigger aria-label="Deliver / Get rate info">
                     <HelpCircle className="w-4 h-4 text-muted-foreground cursor-help" />
                   </TooltipTrigger>
                   <TooltipContent>
@@ -99,7 +99,7 @@ export function MessageStatistics({ queue }: MessageStatisticsProps) {
                   Redelivered
                 </span>
                 <Tooltip>
-                  <TooltipTrigger>
+                  <TooltipTrigger aria-label="Redelivered rate info">
                     <HelpCircle className="w-4 h-4 text-muted-foreground cursor-help" />
                   </TooltipTrigger>
                   <TooltipContent>
@@ -119,7 +119,7 @@ export function MessageStatistics({ queue }: MessageStatisticsProps) {
               <div className="flex items-center gap-2 mb-1">
                 <span className="text-sm text-muted-foreground">Ack</span>
                 <Tooltip>
-                  <TooltipTrigger>
+                  <TooltipTrigger aria-label="Ack rate info">
                     <HelpCircle className="w-4 h-4 text-muted-foreground cursor-help" />
                   </TooltipTrigger>
                   <TooltipContent>
