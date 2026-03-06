@@ -51,5 +51,10 @@ test.describe("Topology Feature Gating @p1", () => {
     await expect(
       adminPage.getByText(/activate a license to unlock/i)
     ).not.toBeVisible({ timeout: 15_000 });
+
+    // Verify topology page content is actually rendered
+    await expect(
+      adminPage.getByRole("heading", { name: /topology/i })
+    ).toBeVisible({ timeout: 15_000 });
   });
 });

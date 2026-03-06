@@ -146,7 +146,7 @@ const Topology = () => {
                   {error ? (
                     <div className="text-center py-8">
                       <div className="text-red-600 mb-2">
-                        {t("failedToLoad")}: {error.message}
+                        {t("failedToLoad")}
                       </div>
                     </div>
                   ) : isLoading ? (
@@ -163,7 +163,7 @@ const Topology = () => {
                       <p className="text-gray-600">{t("noTopologyDataDesc")}</p>
                     </div>
                   ) : (
-                    <div style={{ height: "70vh", width: "100%" }}>
+                    <div className="h-[70vh] w-full">
                       <ReactFlow
                         nodes={nodes}
                         edges={edges}
