@@ -78,7 +78,7 @@ export function buildTopologyGraph(
   // Build consumer count per queue
   const consumerCountByQueue = new Map<string, number>();
   for (const consumer of consumers) {
-    const key = `${consumer.queue.name}@${consumer.queue.vhost}`;
+    const key = `${encodeURIComponent(consumer.queue.name)}@${encodeURIComponent(consumer.queue.vhost)}`;
     consumerCountByQueue.set(key, (consumerCountByQueue.get(key) || 0) + 1);
   }
 
@@ -91,7 +91,7 @@ export function buildTopologyGraph(
   );
 
   for (const exchange of visibleExchanges) {
-    const id = `exchange:${exchange.name}@${exchange.vhost}`;
+    const id = `exchange:${encodeURIComponent(exchange.name)}@${encodeURIComponent(exchange.vhost)}`;
     g.setNode(id, { width: NODE_WIDTH, height: NODE_HEIGHT });
 
     nodes.push({
@@ -111,8 +111,8 @@ export function buildTopologyGraph(
   }
 
   for (const queue of queues) {
-    const id = `queue:${queue.name}@${queue.vhost}`;
-    const consumerKey = `${queue.name}@${queue.vhost}`;
+    const id = `queue:${encodeURIComponent(queue.name)}@${encodeURIComponent(queue.vhost)}`;
+    const consumerKey = `${encodeURIComponent(queue.name)}@${encodeURIComponent(queue.vhost)}`;
     g.setNode(id, { width: NODE_WIDTH, height: NODE_HEIGHT });
 
     nodes.push({
@@ -140,10 +140,10 @@ export function buildTopologyGraph(
   for (const binding of bindings) {
     if (!binding.source) continue;
 
-    const sourceId = `exchange:${binding.source}@${binding.vhost}`;
+    const sourceId = `exchange:${encodeURIComponent(binding.source)}@${encodeURIComponent(binding.vhost)}`;
     const destPrefix =
       binding.destination_type === "queue" ? "queue" : "exchange";
-    const targetId = `${destPrefix}:${binding.destination}@${binding.vhost}`;
+    const targetId = `${destPrefix}:${encodeURIComponent(binding.destination)}@${encodeURIComponent(binding.vhost)}`;
 
     if (!nodeIds.has(sourceId) || !nodeIds.has(targetId)) continue;
 

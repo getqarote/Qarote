@@ -44,8 +44,20 @@ export const topologyRouter = router({
         const [exchanges, queues, bindings, consumers] = await Promise.all([
           client.getExchanges(vhost),
           client.getQueues(vhost),
-          client.getBindings(vhost).catch(() => []),
-          client.getConsumers().catch(() => []),
+          client.getBindings(vhost).catch((err) => {
+            ctx.logger.warn(
+              { error: err, serverId, vhost },
+              "Failed to fetch bindings for topology, continuing without"
+            );
+            return [];
+          }),
+          client.getConsumers().catch((err) => {
+            ctx.logger.warn(
+              { error: err, serverId },
+              "Failed to fetch consumers for topology, continuing without"
+            );
+            return [];
+          }),
         ]);
 
         const filteredConsumers = vhost
@@ -69,7 +81,10 @@ export const topologyRouter = router({
           consumers: ConsumerMapper.toApiResponseArray(filteredConsumers),
         };
       } catch (error) {
-        ctx.logger.error({ error, serverId }, "Error fetching topology data");
+        ctx.logger.error(
+          { error, serverId, workspaceId, vhost: vhostParam },
+          "Error fetching topology data"
+        );
 
         if (error instanceof TRPCError) throw error;
 
