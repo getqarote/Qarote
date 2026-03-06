@@ -132,7 +132,9 @@
     "perInterval": "per {{interval}}",
     "currentPeriod": "Current Period",
     "nextBilling": "Next Billing",
-    "paymentMethod": "Payment Method"
+    "paymentMethod": "Payment Method",
+    "planName": "{{plan}} Plan",
+    "activeSubscription": "Your active subscription"
   },
   "status": {
     "active": "Active"

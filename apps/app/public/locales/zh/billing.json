@@ -132,7 +132,9 @@
     "perInterval": "每{{interval}}",
     "currentPeriod": "当前期间",
     "nextBilling": "下次计费",
-    "paymentMethod": "支付方式"
+    "paymentMethod": "支付方式",
+    "planName": "{{plan}}方案",
+    "activeSubscription": "您的活跃订阅"
   },
   "status": {
     "active": "活跃"

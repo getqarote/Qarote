@@ -62,7 +62,7 @@ export const CurrentPlanCard: React.FC<CurrentPlanCardProps> = ({
             </div>
             <div>
               <CardTitle className="flex items-center gap-2">
-                {getPlanDisplayName(plan)} Plan
+                {t("currentPlan.planName", { plan: getPlanDisplayName(plan) })}
                 <Badge
                   variant={
                     isTrialing

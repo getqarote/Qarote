@@ -105,18 +105,19 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
               </div>
               <div>
                 <CardTitle className="flex items-center gap-2">
-                  {getPlanDisplayName(currentPlan)} Plan
-                  <Badge
-                    variant={isTrialing ? "outline" : "outline"}
-                    className="text-xs"
-                  >
-                    {isTrialing ? t("trial.badge") : "Current"}
+                  {t("currentPlan.planName", {
+                    plan: getPlanDisplayName(currentPlan),
+                  })}
+                  <Badge variant="outline" className="text-xs">
+                    {isTrialing
+                      ? t("trial.badge")
+                      : t("status.active", "Active")}
                   </Badge>
                 </CardTitle>
                 <p className="text-sm text-muted-foreground mt-1">
                   {isTrialing && trialEndDate
                     ? `${t("trial.endsOn")}: ${formatDate(trialEndDate)}`
-                    : "Your active subscription"}
+                    : t("currentPlan.activeSubscription")}
                 </p>
               </div>
             </div>
