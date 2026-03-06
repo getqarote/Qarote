@@ -10,6 +10,8 @@ export interface CurrentPlanResponse {
     id: string;
     email: string;
     plan: UserPlan;
+    subscriptionStatus: string | null;
+    trialEnd: string | null;
   };
   workspace: {
     id: string;
