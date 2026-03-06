@@ -37,6 +37,8 @@ export class StripeService {
   static createCustomer = StripeCustomerService.createCustomer;
   static createPortalSession = StripeCustomerService.createPortalSession;
   static createCheckoutSession = StripeCustomerService.createCheckoutSession;
+  static createTrialSubscription =
+    StripeCustomerService.createTrialSubscription;
 
   // Subscription operations
   static getSubscription = StripeSubscriptionService.getSubscription;

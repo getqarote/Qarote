@@ -102,6 +102,99 @@ export class StripeCustomerService {
   }
 
   /**
+   * Create a trial subscription directly without Stripe Checkout.
+   * No payment method is required — the subscription starts in "trialing" status.
+   * If no card is added before trial ends, Stripe auto-cancels the subscription.
+   */
+  static async createTrialSubscription({
+    customerId,
+    plan,
+    billingInterval,
+    trialDays,
+    userId,
+  }: {
+    customerId: string;
+    plan: UserPlan;
+    billingInterval: string;
+    trialDays: number;
+    userId: string;
+  }) {
+    try {
+      if (plan === UserPlan.FREE) {
+        throw new Error("Cannot create trial subscription for FREE plan");
+      }
+
+      if (!STRIPE_PRICE_IDS) {
+        throw new Error(
+          "Stripe is not configured. STRIPE_PRICE_IDS are required."
+        );
+      }
+
+      const priceId =
+        STRIPE_PRICE_IDS[plan][billingInterval as "monthly" | "yearly"];
+
+      logger.info(
+        { customerId, plan, billingInterval, trialDays, userId },
+        "Creating Stripe trial subscription directly"
+      );
+
+      const subscription = await retryWithBackoff(
+        () =>
+          stripe.subscriptions.create({
+            customer: customerId,
+            items: [{ price: priceId }],
+            trial_period_days: trialDays,
+            trial_settings: {
+              end_behavior: {
+                missing_payment_method: "cancel",
+              },
+            },
+            payment_behavior: "default_incomplete",
+            metadata: {
+              userId,
+              plan,
+              billingInterval,
+              trialDays: trialDays.toString(),
+            },
+          }),
+        {
+          maxRetries: 3,
+          retryDelayMs: 1_000,
+          timeoutMs: 10_000,
+        },
+        "stripe"
+      );
+
+      CoreStripeService.setSentryContext("stripe_trial_subscription", {
+        subscriptionId: subscription.id,
+        customerId,
+        userId,
+        plan,
+      });
+
+      logger.info(
+        {
+          subscriptionId: subscription.id,
+          customerId,
+          userId,
+          plan,
+          trialEnd: subscription.trial_end,
+        },
+        "Stripe trial subscription created successfully"
+      );
+
+      return subscription;
+    } catch (error) {
+      CoreStripeService.logStripeError(error, "create_trial_subscription", {
+        customerId,
+        userId,
+        plan,
+      });
+      throw error;
+    }
+  }
+
+  /**
    * Create a checkout session
    */
   static async createCheckoutSession({
@@ -161,9 +254,20 @@ export class StripeCustomerService {
             ...(trialDays && { trialDays: trialDays.toString() }),
           },
           // Add trial period for early access users
-          ...(trialDays && { trial_period_days: trialDays }),
+          ...(trialDays && {
+            trial_period_days: trialDays,
+            trial_settings: {
+              end_behavior: {
+                missing_payment_method: "cancel",
+              },
+            },
+          }),
         },
         allow_promotion_codes: true,
+        // Allow users to start trial without entering a card
+        ...(trialDays && {
+          payment_method_collection: "if_required" as const,
+        }),
       };
 
       // Add customer email if provided

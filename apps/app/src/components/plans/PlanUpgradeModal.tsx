@@ -35,18 +35,16 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
   // Fetch all plans data
   const { data: allPlansData } = useAllPlans();
 
-  const createCheckoutMutation =
-    trpc.payment.checkout.createCheckoutSession.useMutation({
-      onSuccess: (data) => {
-        // Redirect to Stripe checkout
-        window.location.href = data.url;
-      },
-      onError: (error) => {
-        logger.error("Failed to create checkout session:", error);
-        setError(t("upgradeModal.upgradeFailed"));
-        setIsUpgrading(null);
-      },
-    });
+  const startTrialMutation = trpc.payment.checkout.startTrial.useMutation({
+    onSuccess: () => {
+      navigate("/billing");
+    },
+    onError: (error) => {
+      logger.error("Failed to start trial:", error);
+      setError(t("upgradeModal.upgradeFailed"));
+      setIsUpgrading(null);
+    },
+  });
 
   const handleUpgrade = async (targetPlan: UserPlan) => {
     try {
@@ -59,11 +57,8 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
         throw new Error(t("error.workspaceIdRequired"));
       }
 
-      // Create Stripe checkout session
-      createCheckoutMutation.mutate({
-        plan: targetPlan,
-        billingInterval: "monthly", // Default to monthly, could be made configurable
-      });
+      // Start free trial directly (no Stripe Checkout page)
+      startTrialMutation.mutate();
     } catch (error) {
       logger.error("Failed to create checkout session:", error);
       setError(t("upgradeModal.upgradeFailed"));
