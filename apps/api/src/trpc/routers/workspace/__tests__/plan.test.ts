@@ -159,7 +159,7 @@ describe("planRouter.getCurrentPlan", () => {
 
       expect(result.user.plan).toBe(UserPlan.DEVELOPER);
       expect(result.planFeatures.displayName).toBe("Developer");
-      expect(result.planFeatures.maxServers).toBe(2);
+      expect(result.planFeatures.maxServers).toBe(3);
       expect(result.planFeatures.canInviteUsers).toBe(true);
     });
 
@@ -216,9 +216,9 @@ describe("planRouter.getCurrentPlan", () => {
       const result = await caller.getCurrentPlan();
 
       expect(result.usage.servers.current).toBe(1);
-      expect(result.usage.servers.limit).toBe(2);
+      expect(result.usage.servers.limit).toBe(3);
       expect(result.usage.servers.canAdd).toBe(true);
-      expect(result.usage.users.limit).toBe(2);
+      expect(result.usage.users.limit).toBe(3);
     });
 
     it("does not use license fallback in cloud mode", async () => {
