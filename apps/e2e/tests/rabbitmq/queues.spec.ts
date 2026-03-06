@@ -1,4 +1,5 @@
 import { test, expect } from "../../fixtures/test-base.js";
+import { mockQueue } from "../../helpers/factories/queue.factory.js";
 import { mockTrpcQuery } from "../../helpers/trpc-mock.js";
 
 test.describe("Queue Viewing @p0", () => {
@@ -25,24 +26,6 @@ test.describe("Queue Viewing @p0", () => {
 });
 
 test.describe("Queue Status Badges @p1", () => {
-  const mockQueue = (overrides: Record<string, unknown>) => ({
-    name: "test-queue",
-    vhost: "/",
-    node: "rabbit@node1",
-    type: "classic",
-    state: "running",
-    durable: true,
-    auto_delete: false,
-    exclusive: false,
-    arguments: {},
-    messages: 0,
-    messages_ready: 0,
-    messages_unacknowledged: 0,
-    consumers: 0,
-    memory: 1024,
-    ...overrides,
-  });
-
   test("should display Running badge from state field", async ({
     adminPage,
   }) => {
@@ -73,6 +56,34 @@ test.describe("Queue Status Badges @p1", () => {
     });
   });
 
+  test("should display Down badge for down queue", async ({ adminPage }) => {
+    await mockTrpcQuery(adminPage, "rabbitmq.queues.getQueues", [
+      mockQueue({ state: "down" }),
+    ]);
+
+    await adminPage.goto("/queues");
+    await adminPage.waitForLoadState("domcontentloaded");
+
+    await expect(adminPage.getByText("Down")).toBeVisible({
+      timeout: 15_000,
+    });
+  });
+
+  test("should display Minority badge for minority queue", async ({
+    adminPage,
+  }) => {
+    await mockTrpcQuery(adminPage, "rabbitmq.queues.getQueues", [
+      mockQueue({ state: "minority" }),
+    ]);
+
+    await adminPage.goto("/queues");
+    await adminPage.waitForLoadState("domcontentloaded");
+
+    await expect(adminPage.getByText("Minority")).toBeVisible({
+      timeout: 15_000,
+    });
+  });
+
   test("should not show fabricated Paused or Waiting states", async ({
     adminPage,
   }) => {
@@ -92,33 +103,22 @@ test.describe("Queue Status Badges @p1", () => {
 });
 
 test.describe("Queue Table Rate Columns @p1", () => {
-  const mockQueue = (overrides: Record<string, unknown>) => ({
-    name: "test-queue",
-    vhost: "/",
-    node: "rabbit@node1",
-    type: "classic",
-    state: "running",
-    durable: true,
-    auto_delete: false,
-    exclusive: false,
-    arguments: {},
-    messages: 10,
-    messages_ready: 8,
-    messages_unacknowledged: 2,
-    consumers: 1,
-    memory: 1024,
-    message_stats: {
-      publish_details: { rate: 5.2 },
-      deliver_details: { rate: 4.0 },
-      deliver_get_details: { rate: 4.5 },
-      ack_details: { rate: 3.8 },
-      redeliver_details: { rate: 0.1 },
-    },
-    ...overrides,
-  });
-
   test("should display rate column headers", async ({ adminPage }) => {
-    await mockTrpcQuery(adminPage, "rabbitmq.queues.getQueues", [mockQueue({})]);
+    await mockTrpcQuery(adminPage, "rabbitmq.queues.getQueues", [
+      mockQueue({
+        messages: 10,
+        messages_ready: 8,
+        messages_unacknowledged: 2,
+        consumers: 1,
+        message_stats: {
+          publish_details: { rate: 5.2 },
+          deliver_details: { rate: 4.0 },
+          deliver_get_details: { rate: 4.5 },
+          ack_details: { rate: 3.8 },
+          redeliver_details: { rate: 0.1 },
+        },
+      }),
+    ]);
 
     await adminPage.goto("/queues");
     await adminPage.waitForLoadState("domcontentloaded");

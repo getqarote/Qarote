@@ -79,6 +79,9 @@ describe("QueueMapper", () => {
     const crashed = { ...baseQueue, state: "crashed" };
     expect(QueueMapper.toApiResponse(crashed).state).toBe("crashed");
 
+    const down = { ...baseQueue, state: "down" };
+    expect(QueueMapper.toApiResponse(down).state).toBe("down");
+
     const minority = { ...baseQueue, state: "minority" };
     expect(QueueMapper.toApiResponse(minority).state).toBe("minority");
 
