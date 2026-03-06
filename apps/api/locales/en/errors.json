@@ -113,6 +113,8 @@
     "failedToCreatePortalSession": "Failed to create portal session",
     "cannotCheckoutFreePlan": "Cannot create checkout for FREE plan",
     "failedToCreateCheckoutSession": "Failed to create checkout session",
+    "alreadyHasSubscription": "You already have an active subscription",
+    "failedToStartTrial": "Failed to start free trial",
     "noActiveSubscription": "No active subscription found",
     "failedToCancelSubscription": "Failed to cancel subscription",
     "planRequired": "Plan is required",
