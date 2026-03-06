@@ -93,10 +93,10 @@ export const PLAN_FEATURES: Record<UserPlan, PlanFeatures> = {
     canInviteUsers: true,
 
     // Limits
-    maxServers: 2,
-    maxWorkspaces: 2,
-    maxUsers: 2,
-    maxInvitations: 1,
+    maxServers: 3,
+    maxWorkspaces: 3,
+    maxUsers: 3,
+    maxInvitations: 2,
 
     // Support features
     hasCommunitySupport: true,
@@ -133,9 +133,9 @@ export const PLAN_FEATURES: Record<UserPlan, PlanFeatures> = {
     description: "Ideal for individual developers and small projects",
     color: "text-white bg-blue-600",
     featureDescriptions: [
-      "2 RabbitMQ servers",
-      "2 workspaces",
-      "2 users",
+      "3 RabbitMQ servers",
+      "3 workspaces",
+      "3 users",
       "Can add exchanges, virtual hosts, and RabbitMQ users",
       "Can add queues",
       "Community support",
