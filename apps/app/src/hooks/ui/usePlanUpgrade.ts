@@ -43,10 +43,7 @@ export const usePlanUpgrade = () => {
       },
     });
 
-  const handleUpgrade = async (
-    targetPlan: UserPlan,
-    _billingInterval: "monthly" | "yearly" = "monthly"
-  ) => {
+  const handleUpgrade = async (targetPlan: UserPlan) => {
     if (!workspace || !user) {
       navigate("/auth/signin");
       return;

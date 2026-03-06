@@ -264,7 +264,7 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
 
               <div className="ml-4">
                 <Button
-                  onClick={() => handleUpgrade(nextPlan, "monthly")}
+                  onClick={() => handleUpgrade(nextPlan)}
                   className="btn-primary"
                   disabled={isUpgrading}
                 >
