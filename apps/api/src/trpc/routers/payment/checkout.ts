@@ -41,7 +41,7 @@ export const checkoutRouter = router({
             plan,
             billingInterval,
           },
-          "Creating checkout session with 30-day trial"
+          "Creating checkout session with 14-day trial"
         );
 
         // Create Stripe customer if not exists
@@ -61,7 +61,7 @@ export const checkoutRouter = router({
           });
         }
 
-        // Create checkout session with 30-day trial
+        // Create checkout session with 14-day trial
         const session = await StripeService.createCheckoutSession({
           userId: user.id,
           plan,
@@ -69,8 +69,8 @@ export const checkoutRouter = router({
           successUrl: `${emailConfig.frontendUrl}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
           cancelUrl: `${emailConfig.frontendUrl}/payment/cancelled`,
           customerEmail: user.email,
-          // Automatically give 30-day trial to all users during early access period
-          trialDays: 30,
+          // Automatically give 14-day trial to all users during early access period
+          trialDays: 14,
         });
 
         return { url: session.url };

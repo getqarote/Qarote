@@ -117,6 +117,14 @@
     "processing": "Traitement en cours...",
     "upgradeTo": "Mettre à niveau vers {{plan}}"
   },
+  "trial": {
+    "badge": "Essai",
+    "endsOn": "Fin de l'essai",
+    "noPaymentMethod": "Aucun moyen de paiement",
+    "addPaymentMethod": "Ajouter un moyen de paiement",
+    "trialActive": "Votre essai est actif",
+    "addPaymentToKeep": "Ajoutez un moyen de paiement avant le {{date}} pour conserver votre forfait à la fin de l'essai."
+  },
   "error": {
     "workspaceIdRequired": "L'identifiant de l'espace de travail est requis"
   }

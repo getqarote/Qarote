@@ -118,7 +118,7 @@
   "trialEnding": {
     "title": "Votre essai se termine bientôt",
     "body": "Votre essai <strong>{{plan}}</strong> pour <strong>{{workspaceName}}</strong> se termine bientôt. {{usageText}}",
-    "upgradeCta": "Passer à la version supérieure",
+    "upgradeCta": "Ajouter un moyen de paiement",
     "keepAccess": "Passez à la version supérieure dès maintenant pour conserver l'accès à toutes les fonctionnalités."
   },
   "upgradeConfirmation": {
