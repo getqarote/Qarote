@@ -1,5 +1,4 @@
 import * as React from "react";
-import { useTranslation } from "react-i18next";
 
 import { trackSignUpClick } from "@/lib/gtm";
 
@@ -16,7 +15,6 @@ const AuthButtons = ({
   hideHowItWorks = false,
   align = "center",
 }: AuthButtonsProps) => {
-  const { t } = useTranslation("landing");
   const authBaseUrl = import.meta.env.VITE_APP_BASE_URL;
 
   const handleSignUp = () => {
@@ -66,7 +64,7 @@ const AuthButtons = ({
     >
       <button
         onClick={handleSignUp}
-        className={`${primaryButtonStyles} px-4 py-3 sm:px-8 sm:py-4 transition-colors duration-200 flex items-center justify-center gap-3 text-base sm:text-lg w-full sm:w-auto rounded-full`}
+        className={`${primaryButtonStyles} px-4 py-3 sm:px-7 sm:py-3 transition-colors duration-200 flex items-center justify-center gap-3 text-base sm:text-lg w-full sm:w-auto rounded-full`}
       >
         <span className="whitespace-nowrap">{t("cta.getStartedForFree")}</span>
         <img

@@ -1,20 +1,16 @@
-import { useTranslation } from "react-i18next";
-
-import { Github } from "lucide-react";
-
 import { trackSignUpClick } from "@/lib/gtm";
+
+import { GithubStarBadge } from "@/components/GithubStarBadge";
 
 interface StickyNavProps {
   onVideoClick?: () => void;
 }
 
 const StickyNav = ({ onVideoClick }: StickyNavProps) => {
-  const { t } = useTranslation("nav");
-
   const sections = [
-    { id: "video", label: t("howItWorks") },
-    { id: "features", label: t("features") },
-    { id: "pricing", label: t("pricing") },
+    { id: "video", label: "How it works" },
+    { id: "features", label: "Features" },
+    { id: "pricing", label: "Pricing" },
   ];
 
   const scrollToSection = (id: string) => {
@@ -50,7 +46,7 @@ const StickyNav = ({ onVideoClick }: StickyNavProps) => {
             </span>
           </div>
 
-          <div className="hidden md:flex items-center gap-1 absolute left-1/2 -translate-x-1/2">
+          <div className="hidden lg:flex items-center gap-1 absolute left-1/2 -translate-x-1/2">
             {sections.map((section) => (
               <button
                 key={section.id}
@@ -63,20 +59,12 @@ const StickyNav = ({ onVideoClick }: StickyNavProps) => {
           </div>
 
           <div className="flex items-center gap-1 sm:gap-2">
-            <a
-              href="https://github.com/getqarote/Qarote"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="View on GitHub"
-              className="text-foreground hover:text-orange-500 transition-colors p-2"
-            >
-              <Github className="w-5 h-5" />
-            </a>
+            <GithubStarBadge />
             <a
               href={`${import.meta.env.VITE_APP_BASE_URL}/auth/sign-in`}
               className="text-foreground hover:text-orange-500 px-2 sm:px-4 py-2 text-base font-medium transition-colors"
             >
-              {t("login")}
+              Log in
             </a>
             <button
               onClick={() => {
