@@ -69,7 +69,7 @@
   },
   "dependencies": {
     "@boxyhq/saml-jackson": "^1.52.2",
-    "@hono/node-server": "^1.19.9",
+    "@hono/node-server": "^1.19.10",
     "@hono/trpc-server": "^0.4.2",
     "@notionhq/client": "^5.9.0",
     "@prisma/adapter-pg": "^7.4.2",
