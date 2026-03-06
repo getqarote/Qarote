@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "apps/portal/**"
+      - "packages/i18n/**"
       - ".github/workflows/deploy-portal-staging.yml"
   workflow_dispatch:
 
