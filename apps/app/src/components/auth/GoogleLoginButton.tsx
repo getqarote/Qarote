@@ -11,6 +11,8 @@ import { trpc } from "@/lib/trpc/client";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
 
+const TRIAL_PROVISION_DELAY_MS = 3000;
+
 interface GoogleLoginButtonProps {
   onSuccess?: () => void;
   onError?: (error: string) => void;
@@ -26,6 +28,7 @@ export const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
 }) => {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const utils = trpc.useUtils();
 
   // OAuth is only enabled for cloud deployments
   const enableOAuth = isCloudMode();
@@ -43,6 +46,13 @@ export const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
           method: "google",
           user_id: data.user.id,
         });
+      }
+
+      // For new users, refetch plan data after trial provisioning completes
+      if (data.isNewUser) {
+        setTimeout(() => {
+          utils.workspace.plan.getCurrentPlan.invalidate();
+        }, TRIAL_PROVISION_DELAY_MS);
       }
 
       onSuccess?.();
