@@ -38,6 +38,7 @@ import { useServerContext } from "@/contexts/ServerContext";
 
 import { useDeleteServer, useServers } from "@/hooks/queries/useServer";
 import { useUser } from "@/hooks/ui/useUser";
+import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 interface ServerManagementProps {
   trigger?: React.ReactNode;
@@ -115,13 +116,17 @@ function ServerCard({ server, onServerUpdated }: ServerCardProps) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const { selectedServerId, setSelectedServerId } = useServerContext();
   const { refetchPlan } = useUser();
+  const { workspace } = useWorkspace();
   const deleteServerMutation = useDeleteServer();
   const navigate = useNavigate();
   const params = useParams<{ serverId?: string }>();
 
   const handleDeleteServer = async () => {
     try {
-      await deleteServerMutation.mutateAsync(server.id);
+      await deleteServerMutation.mutateAsync({
+        id: server.id,
+        workspaceId: workspace?.id ?? "",
+      });
 
       // Refetch plan data to update server count/limits
       await refetchPlan();
