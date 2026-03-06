@@ -126,6 +126,17 @@
     "addPaymentToKeep": "请在 {{date}} 之前添加支付方式，以便在试用结束后保留您的方案。",
     "trialActiveWithPayment": "您的试用期有效至 {{date}}。试用结束后，您的订阅将自动开始。"
   },
+  "currentPlan": {
+    "noSubscription": "无需订阅",
+    "billingInterval": "{{interval}}计费",
+    "perInterval": "每{{interval}}",
+    "currentPeriod": "当前期间",
+    "nextBilling": "下次计费",
+    "paymentMethod": "支付方式"
+  },
+  "status": {
+    "active": "活跃"
+  },
   "error": {
     "workspaceIdRequired": "需要工作区 ID"
   }
