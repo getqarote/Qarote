@@ -1,7 +1,9 @@
 import { Badge } from "@/components/ui/badge";
 
 export function QueueStatusBadge({ state }: { state: string }) {
-  switch (state) {
+  const normalized = (state ?? "").toString().trim().toLowerCase();
+
+  switch (normalized) {
     case "running":
       return <Badge className="bg-green-100 text-green-700">Running</Badge>;
     case "down":

@@ -1,4 +1,5 @@
 import { test, expect } from "../../fixtures/test-base.js";
+import { mockQueue } from "../../helpers/factories/queue.factory.js";
 import { mockTrpcQuery } from "../../helpers/trpc-mock.js";
 
 test.describe("Queue Detail Page @p2", () => {
@@ -22,26 +23,20 @@ test.describe("Queue Detail Page @p2", () => {
 });
 
 test.describe("Queue Detail Metrics @p2", () => {
-  const mockQueueDetail = (overrides: Record<string, unknown>) => ({
-    name: "test-queue",
-    vhost: "/",
-    node: "rabbit@node1",
-    type: "classic",
-    state: "running",
-    durable: true,
-    auto_delete: false,
-    exclusive: false,
-    arguments: {},
-    messages: 50,
-    messages_ready: 30,
-    messages_unacknowledged: 20,
-    consumers: 2,
-    consumer_capacity: 0.85,
-    memory: 2097152,
-    reductions: 54321,
-    message_bytes: 4096,
-    ...overrides,
-  });
+  const mockQueueDetail = (
+    overrides?: Parameters<typeof mockQueue>[0]
+  ) =>
+    mockQueue({
+      messages: 50,
+      messages_ready: 30,
+      messages_unacknowledged: 20,
+      consumers: 2,
+      consumer_capacity: 0.85,
+      memory: 2097152,
+      reductions: 54321,
+      message_bytes: 4096,
+      ...overrides,
+    });
 
   test("should display consumer capacity as percentage", async ({
     adminPage,
@@ -72,7 +67,8 @@ test.describe("Queue Detail Metrics @p2", () => {
     await adminPage.goto("/queues/test-queue");
     await adminPage.waitForLoadState("domcontentloaded");
 
-    await expect(adminPage.getByText("Crashed")).toBeVisible({
+    const statusCard = adminPage.locator("text=Status").locator("..");
+    await expect(statusCard.getByText("Crashed")).toBeVisible({
       timeout: 15_000,
     });
   });
