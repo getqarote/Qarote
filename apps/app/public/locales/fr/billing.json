@@ -124,7 +124,10 @@
     "addPaymentMethod": "Ajouter un moyen de paiement",
     "trialActive": "Votre essai est actif",
     "addPaymentToKeep": "Ajoutez un moyen de paiement avant le {{date}} pour conserver votre forfait à la fin de l'essai.",
-    "trialActiveWithPayment": "Votre essai est actif jusqu'au {{date}}. Votre abonnement commencera automatiquement à la fin de l'essai."
+    "trialActiveWithPayment": "Votre essai est actif jusqu'au {{date}}. Votre abonnement commencera automatiquement à la fin de l'essai.",
+    "cancelTrial": "Annuler l'essai",
+    "trialCanceled": "Essai annulé",
+    "trialEndsOnDate": "Votre essai se terminera le {{date}}. Vous serez rétrogradé au forfait Gratuit."
   },
   "currentPlan": {
     "noSubscription": "Aucun abonnement requis",
@@ -134,10 +137,15 @@
     "nextBilling": "Prochaine facturation",
     "paymentMethod": "Moyen de paiement",
     "planName": "Forfait {{plan}}",
-    "activeSubscription": "Votre abonnement actif"
+    "activeSubscription": "Votre abonnement actif",
+    "changePaymentMethod": "Modifier le moyen de paiement"
   },
   "status": {
     "active": "Actif"
+  },
+  "subscriptionManagement": {
+    "title": "Gestion de l'abonnement",
+    "description": "Gérez votre forfait, cycle de facturation et paramètres d'abonnement pour tous vos espaces de travail"
   },
   "error": {
     "workspaceIdRequired": "L'identifiant de l'espace de travail est requis"

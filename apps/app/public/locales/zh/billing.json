@@ -124,7 +124,10 @@
     "addPaymentMethod": "添加支付方式",
     "trialActive": "您的试用期正在进行中",
     "addPaymentToKeep": "请在 {{date}} 之前添加支付方式，以便在试用结束后保留您的方案。",
-    "trialActiveWithPayment": "您的试用期有效至 {{date}}。试用结束后，您的订阅将自动开始。"
+    "trialActiveWithPayment": "您的试用期有效至 {{date}}。试用结束后，您的订阅将自动开始。",
+    "cancelTrial": "取消试用",
+    "trialCanceled": "试用已取消",
+    "trialEndsOnDate": "您的试用将于 {{date}} 结束。届时将降级为免费方案。"
   },
   "currentPlan": {
     "noSubscription": "无需订阅",
@@ -134,10 +137,15 @@
     "nextBilling": "下次计费",
     "paymentMethod": "支付方式",
     "planName": "{{plan}}方案",
-    "activeSubscription": "您的活跃订阅"
+    "activeSubscription": "您的活跃订阅",
+    "changePaymentMethod": "更改支付方式"
   },
   "status": {
     "active": "活跃"
+  },
+  "subscriptionManagement": {
+    "title": "订阅管理",
+    "description": "管理您所有工作区的方案、计费周期和订阅设置"
   },
   "error": {
     "workspaceIdRequired": "需要工作区 ID"
