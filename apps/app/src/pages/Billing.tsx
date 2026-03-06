@@ -197,6 +197,7 @@ const Billing: React.FC = () => {
             lastPlan={lastPlan}
             isTrialing={billingData.subscription?.status === "TRIALING"}
             trialEnd={billingData.subscription?.trialEnd}
+            hasPaymentMethod={!!billingData.paymentMethod}
           />
 
           <RecentPayments recentPayments={billingData.recentPayments} />

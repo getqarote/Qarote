@@ -39,6 +39,7 @@ interface SubscriptionManagementProps {
   lastPlan?: UserPlan; // The plan they had before canceling
   isTrialing?: boolean;
   trialEnd?: string | null;
+  hasPaymentMethod?: boolean;
 }
 
 export const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({
@@ -53,6 +54,7 @@ export const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({
   lastPlan,
   isTrialing = false,
   trialEnd,
+  hasPaymentMethod = false,
 }) => {
   const { t, i18n } = useTranslation("billing");
   const [showCancelModal, setShowCancelModal] = useState(false);
@@ -157,20 +159,38 @@ export const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({
                     {t("trial.trialActive")}
                   </h4>
                   <p className="text-sm text-primary/80 mb-3">
-                    {t("trial.addPaymentToKeep", {
-                      date: trialEnd
-                        ? new Date(trialEnd).toLocaleDateString(i18n.language, {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                          })
-                        : "",
-                    })}
+                    {hasPaymentMethod
+                      ? t("trial.trialActiveWithPayment", {
+                          date: trialEnd
+                            ? new Date(trialEnd).toLocaleDateString(
+                                i18n.language,
+                                {
+                                  year: "numeric",
+                                  month: "long",
+                                  day: "numeric",
+                                }
+                              )
+                            : "",
+                        })
+                      : t("trial.addPaymentToKeep", {
+                          date: trialEnd
+                            ? new Date(trialEnd).toLocaleDateString(
+                                i18n.language,
+                                {
+                                  year: "numeric",
+                                  month: "long",
+                                  day: "numeric",
+                                }
+                              )
+                            : "",
+                        })}
                   </p>
-                  <Button onClick={onOpenBillingPortal} size="sm">
-                    <CreditCard className="w-4 h-4 mr-2" />
-                    {t("trial.addPaymentMethod")}
-                  </Button>
+                  {!hasPaymentMethod && (
+                    <Button onClick={onOpenBillingPortal} size="sm">
+                      <CreditCard className="w-4 h-4 mr-2" />
+                      {t("trial.addPaymentMethod")}
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>

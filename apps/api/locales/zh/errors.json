@@ -119,7 +119,8 @@
     "noActiveSubscription": "未找到活动的订阅",
     "failedToCancelSubscription": "取消订阅失败",
     "planRequired": "套餐为必填项",
-    "failedToRenewSubscription": "续订失败"
+    "failedToRenewSubscription": "续订失败",
+    "allWorkspaces": "您的所有工作区"
   },
   "license": {
     "validationFailed": "许可证验证失败",

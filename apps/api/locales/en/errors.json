@@ -118,7 +118,8 @@
     "noActiveSubscription": "No active subscription found",
     "failedToCancelSubscription": "Failed to cancel subscription",
     "planRequired": "Plan is required",
-    "failedToRenewSubscription": "Failed to renew subscription"
+    "failedToRenewSubscription": "Failed to renew subscription",
+    "allWorkspaces": "your workspaces"
   },
   "license": {
     "validationFailed": "License validation failed",

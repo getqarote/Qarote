@@ -119,7 +119,8 @@
     "noActiveSubscription": "Aucun abonnement actif trouvé",
     "failedToCancelSubscription": "Échec de l'annulation de l'abonnement",
     "planRequired": "Le plan est requis",
-    "failedToRenewSubscription": "Échec du renouvellement de l'abonnement"
+    "failedToRenewSubscription": "Échec du renouvellement de l'abonnement",
+    "allWorkspaces": "tous vos espaces de travail"
   },
   "license": {
     "validationFailed": "Échec de la validation de la licence",
