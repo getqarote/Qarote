@@ -49,17 +49,15 @@ interface PlanCardProps {
   };
   price: string;
   period: "month" | "year";
-  billingPeriod: "monthly" | "yearly";
   originalPrice?: string;
   isCurrentPlan?: boolean;
-  onUpgrade: (plan: UserPlan, billingInterval: "monthly" | "yearly") => void;
+  onUpgrade: (plan: UserPlan) => void;
 }
 
 const PlanCard: React.FC<PlanCardProps> = ({
   plan,
   price,
   period,
-  billingPeriod,
   originalPrice,
   isCurrentPlan,
   onUpgrade,
@@ -345,16 +343,8 @@ const PlanCard: React.FC<PlanCardProps> = ({
         </div>
 
         <Button
-          onClick={() => onUpgrade(plan.id as UserPlan, billingPeriod)}
-          className={`w-full ${isCurrentPlan ? "bg-gray-100 text-gray-600 cursor-not-allowed" : "text-white"}`}
-          style={
-            !isCurrentPlan
-              ? {
-                  backgroundImage:
-                    "linear-gradient(to right, rgb(234 88 12), rgb(220 38 38))",
-                }
-              : undefined
-          }
+          onClick={() => onUpgrade(plan.id as UserPlan)}
+          className={`w-full ${isCurrentPlan ? "bg-gray-100 text-gray-600 cursor-not-allowed" : "bg-gradient-button hover:bg-gradient-button-hover text-white"}`}
           disabled={isCurrentPlan}
         >
           {isCurrentPlan ? t("plans.currentPlan") : t("plans.startFree")}
@@ -365,7 +355,7 @@ const PlanCard: React.FC<PlanCardProps> = ({
 };
 
 interface PlansPageProps {
-  onUpgrade?: (plan: UserPlan, billingInterval: "monthly" | "yearly") => void;
+  onUpgrade?: (plan: UserPlan) => void;
 }
 
 export const PlansPage: React.FC<PlansPageProps> = ({ onUpgrade }) => {
@@ -602,7 +592,6 @@ export const PlansPage: React.FC<PlansPageProps> = ({ onUpgrade }) => {
                         price={currentPricing.price}
                         originalPrice={currentPricing.originalPrice}
                         period={billingPeriod === "monthly" ? "month" : "year"}
-                        billingPeriod={billingPeriod}
                         isCurrentPlan={isCurrentPlan}
                         onUpgrade={onUpgrade || (() => {})}
                       />

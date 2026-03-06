@@ -114,10 +114,13 @@
     "failedToCreatePortalSession": "Échec de la création de la session du portail",
     "cannotCheckoutFreePlan": "Impossible de créer un paiement pour le plan GRATUIT",
     "failedToCreateCheckoutSession": "Échec de la création de la session de paiement",
+    "alreadyHasSubscription": "Vous avez déjà un abonnement actif",
+    "failedToStartTrial": "Échec du démarrage de l'essai gratuit",
     "noActiveSubscription": "Aucun abonnement actif trouvé",
     "failedToCancelSubscription": "Échec de l'annulation de l'abonnement",
     "planRequired": "Le plan est requis",
-    "failedToRenewSubscription": "Échec du renouvellement de l'abonnement"
+    "failedToRenewSubscription": "Échec du renouvellement de l'abonnement",
+    "allWorkspaces": "tous vos espaces de travail"
   },
   "license": {
     "validationFailed": "Échec de la validation de la licence",

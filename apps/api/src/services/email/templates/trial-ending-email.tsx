@@ -79,8 +79,8 @@ export default function TrialEndingEmail({
 
             <Text style={contentStyles.paragraph}>
               To continue enjoying all the premium features and keep your
-              RabbitMQ monitoring uninterrupted, please upgrade your
-              subscription before your trial expires.
+              RabbitMQ monitoring uninterrupted, please add a payment method
+              before your trial expires.
             </Text>
 
             {/* Warning Section */}
@@ -125,9 +125,9 @@ export default function TrialEndingEmail({
             <Section style={buttonStyles.buttonSection}>
               <Button
                 style={buttonStyles.primaryButton}
-                href={`${frontendUrl}/profile?tab=plans`}
+                href={`${frontendUrl}/billing`}
               >
-                Upgrade Now
+                Add Payment Method
               </Button>
             </Section>
 

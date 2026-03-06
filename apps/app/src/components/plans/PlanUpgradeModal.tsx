@@ -10,7 +10,6 @@ import { trpc } from "@/lib/trpc/client";
 
 import { useAllPlans } from "@/hooks/queries/usePlans";
 import { useUser } from "@/hooks/ui/useUser";
-import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 import { UserPlan } from "@/types/plans";
 
@@ -27,7 +26,6 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
 }) => {
   const { t } = useTranslation("billing");
   const { planData, userPlan } = useUser();
-  const { workspace } = useWorkspace();
   const navigate = useNavigate();
   const [isUpgrading, setIsUpgrading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -35,37 +33,28 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
   // Fetch all plans data
   const { data: allPlansData } = useAllPlans();
 
-  const createCheckoutMutation =
-    trpc.payment.checkout.createCheckoutSession.useMutation({
-      onSuccess: (data) => {
-        // Redirect to Stripe checkout
-        window.location.href = data.url;
-      },
-      onError: (error) => {
-        logger.error("Failed to create checkout session:", error);
-        setError(t("upgradeModal.upgradeFailed"));
-        setIsUpgrading(null);
-      },
-    });
+  const startTrialMutation = trpc.payment.checkout.startTrial.useMutation({
+    onSuccess: () => {
+      navigate("/billing");
+    },
+    onError: (error) => {
+      logger.error("Failed to start trial:", error);
+      setError(t("upgradeModal.upgradeFailed"));
+      setIsUpgrading(null);
+    },
+  });
 
-  const handleUpgrade = async (targetPlan: UserPlan) => {
+  const handleUpgrade = async () => {
     try {
       setError(null);
-      setIsUpgrading(targetPlan);
+      setIsUpgrading("ENTERPRISE");
 
-      logger.info(`Starting upgrade to ${targetPlan}`);
+      logger.info("Starting free trial");
 
-      if (!workspace?.id) {
-        throw new Error(t("error.workspaceIdRequired"));
-      }
-
-      // Create Stripe checkout session
-      createCheckoutMutation.mutate({
-        plan: targetPlan,
-        billingInterval: "monthly", // Default to monthly, could be made configurable
-      });
+      // Start free trial directly (no Stripe Checkout page)
+      startTrialMutation.mutate();
     } catch (error) {
-      logger.error("Failed to create checkout session:", error);
+      logger.error("Failed to start trial:", error);
       setError(t("upgradeModal.upgradeFailed"));
       setIsUpgrading(null);
     }
@@ -270,7 +259,7 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
                         ? "bg-blue-600 hover:bg-blue-700 text-white disabled:bg-blue-400"
                         : "bg-gray-100 hover:bg-gray-200 text-gray-900 disabled:bg-gray-50 disabled:text-gray-400"
                     }`}
-                    onClick={() => handleUpgrade(planData.plan)}
+                    onClick={() => handleUpgrade()}
                     disabled={isUpgrading !== null}
                   >
                     {isUpgrading === planData.plan ? (

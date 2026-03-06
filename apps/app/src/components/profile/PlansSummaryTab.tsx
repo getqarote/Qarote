@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router";
 
 import {
@@ -12,6 +13,7 @@ import {
 } from "lucide-react";
 
 import { isSelfHostedMode } from "@/lib/featureFlags";
+import { formatDate } from "@/lib/utils";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -31,9 +33,14 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
   currentPlan,
   className = "",
 }) => {
+  const { t } = useTranslation("billing");
   const { handleUpgrade, isUpgrading } = usePlanUpgrade();
   const { planData } = useUser();
   const currentFeatures = planData?.planFeatures;
+  const isTrialing = planData?.user?.subscriptionStatus === "TRIALING";
+  const trialEndDate = planData?.user?.trialEnd
+    ? new Date(planData.user.trialEnd)
+    : null;
 
   // Helper function to get next plan
   const getNextPlan = (plan: UserPlan): UserPlan | null => {
@@ -98,13 +105,19 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
               </div>
               <div>
                 <CardTitle className="flex items-center gap-2">
-                  {getPlanDisplayName(currentPlan)} Plan
+                  {t("currentPlan.planName", {
+                    plan: getPlanDisplayName(currentPlan),
+                  })}
                   <Badge variant="outline" className="text-xs">
-                    Current
+                    {isTrialing
+                      ? t("trial.badge")
+                      : t("status.active", "Active")}
                   </Badge>
                 </CardTitle>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Your active subscription
+                  {isTrialing && trialEndDate
+                    ? `${t("trial.endsOn")}: ${formatDate(trialEndDate)}`
+                    : t("currentPlan.activeSubscription")}
                 </p>
               </div>
             </div>
@@ -264,7 +277,7 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
 
               <div className="ml-4">
                 <Button
-                  onClick={() => handleUpgrade(nextPlan, "monthly")}
+                  onClick={() => handleUpgrade(nextPlan)}
                   className="btn-primary"
                   disabled={isUpgrading}
                 >

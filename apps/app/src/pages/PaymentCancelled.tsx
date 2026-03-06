@@ -31,7 +31,7 @@ const PaymentCancelled: React.FC = () => {
 
   const handleTryAgain = () => {
     if (nextPlan) {
-      handleUpgrade(nextPlan, "monthly");
+      handleUpgrade(nextPlan);
     } else {
       // Fallback to plans page if no next plan available
       navigate("/plans");

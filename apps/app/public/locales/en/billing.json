@@ -117,6 +117,36 @@
     "processing": "Processing...",
     "upgradeTo": "Upgrade to {{plan}}"
   },
+  "trial": {
+    "badge": "Trial",
+    "endsOn": "Trial ends",
+    "noPaymentMethod": "No payment method",
+    "addPaymentMethod": "Add payment method",
+    "trialActive": "Your trial is active",
+    "addPaymentToKeep": "Add a payment method before {{date}} to keep your plan when the trial ends.",
+    "trialActiveWithPayment": "Your trial is active until {{date}}. Your subscription will start automatically when the trial ends.",
+    "cancelTrial": "Cancel Trial",
+    "trialCanceled": "Trial canceled",
+    "trialEndsOnDate": "Your trial will end on {{date}}. You will be downgraded to the Free plan."
+  },
+  "currentPlan": {
+    "noSubscription": "No subscription required",
+    "billingInterval": "{{interval}} billing",
+    "perInterval": "per {{interval}}",
+    "currentPeriod": "Current Period",
+    "nextBilling": "Next Billing",
+    "paymentMethod": "Payment Method",
+    "planName": "{{plan}} Plan",
+    "activeSubscription": "Your active subscription",
+    "changePaymentMethod": "Change payment method"
+  },
+  "status": {
+    "active": "Active"
+  },
+  "subscriptionManagement": {
+    "title": "Subscription Management",
+    "description": "Manage your plan, billing cycle, and subscription settings for all your workspaces"
+  },
   "error": {
     "workspaceIdRequired": "Workspace ID is required"
   }

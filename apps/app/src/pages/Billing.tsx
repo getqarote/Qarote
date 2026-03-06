@@ -44,7 +44,7 @@ const Billing: React.FC = () => {
   } = trpc.payment.billing.getBillingOverview.useQuery(undefined, {
     enabled: !!user.id,
     staleTime: 2 * 60 * 1000, // 2 minutes - billing data doesn't change frequently
-    refetchOnWindowFocus: false, // Don't refetch when window gains focus
+    refetchOnWindowFocus: true, // Refetch when returning from Stripe billing portal
     retry: (failureCount: number, error: unknown) => {
       // Don't retry on 429 (rate limit) errors
       if (
@@ -159,6 +159,13 @@ const Billing: React.FC = () => {
   // For now, we'll use a default since we don't have historical plan data
   const lastPlan = subscriptionCanceled ? UserPlan.DEVELOPER : undefined;
 
+  const isTrialing = billingData?.subscription?.status === "TRIALING";
+  const cancelAtPeriodEnd =
+    (billingData?.stripeSubscription as ExtendedStripeSubscription)
+      ?.cancel_at_period_end ||
+    (billingData?.subscription as ExtendedSubscription)?.cancelAtPeriodEnd ||
+    false;
+
   return (
     <BillingLayout isLoading={isLoading} error={!!error || !billingData}>
       {billingData && (
@@ -169,32 +176,36 @@ const Billing: React.FC = () => {
             subscription={billingData.subscription}
             stripeSubscription={billingData.stripeSubscription}
             paymentMethod={billingData.paymentMethod}
-          />
-
-          <SubscriptionManagement
-            currentPlan={billingData.subscription?.plan || UserPlan.FREE}
-            onOpenBillingPortal={handleOpenBillingPortal}
-            onUpgrade={handleUpgrade}
-            onRenewSubscription={handleRenewSubscription}
-            onCancelSubscription={handleCancelSubscription}
-            periodEnd={
-              billingData.stripeSubscription?.current_period_end
-                ? new Date(
-                    billingData.stripeSubscription.current_period_end * 1000
-                  ).toISOString()
+            onManagePaymentMethod={handleOpenBillingPortal}
+            onCancelSubscription={
+              isTrialing && !cancelAtPeriodEnd
+                ? handleCancelSubscription
                 : undefined
             }
             isLoading={isLoading}
-            cancelAtPeriodEnd={
-              (billingData.stripeSubscription as ExtendedStripeSubscription)
-                ?.cancel_at_period_end ||
-              (billingData.subscription as ExtendedSubscription)
-                ?.cancelAtPeriodEnd ||
-              false
-            }
-            subscriptionCanceled={subscriptionCanceled}
-            lastPlan={lastPlan}
+            cancelAtPeriodEnd={cancelAtPeriodEnd}
           />
+
+          {!isTrialing && (
+            <SubscriptionManagement
+              currentPlan={billingData.subscription?.plan || UserPlan.FREE}
+              onOpenBillingPortal={handleOpenBillingPortal}
+              onUpgrade={handleUpgrade}
+              onRenewSubscription={handleRenewSubscription}
+              onCancelSubscription={handleCancelSubscription}
+              periodEnd={
+                billingData.stripeSubscription?.current_period_end
+                  ? new Date(
+                      billingData.stripeSubscription.current_period_end * 1000
+                    ).toISOString()
+                  : undefined
+              }
+              isLoading={isLoading}
+              cancelAtPeriodEnd={cancelAtPeriodEnd}
+              subscriptionCanceled={subscriptionCanceled}
+              lastPlan={lastPlan}
+            />
+          )}
 
           <RecentPayments recentPayments={billingData.recentPayments} />
         </>

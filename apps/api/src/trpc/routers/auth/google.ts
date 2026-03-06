@@ -5,6 +5,7 @@ import { generateToken } from "@/core/auth";
 
 import { notionService } from "@/services/integrations/notion.service";
 import { setSentryUser, trackSignUpError } from "@/services/sentry";
+import { StripeCustomerService } from "@/services/stripe/customer.service";
 
 import { GoogleAuthSchema } from "@/schemas/auth";
 
@@ -212,6 +213,21 @@ export const googleRouter = router({
                 },
               },
             });
+
+            // Auto-start Enterprise trial for cloud users (fire-and-forget)
+            if (isCloudMode()) {
+              StripeCustomerService.provisionTrialForNewUser({
+                userId: user.id,
+                email,
+                name: `${given_name || ""} ${family_name || ""}`.trim(),
+                prisma: ctx.prisma,
+              }).catch((error) => {
+                ctx.logger.warn(
+                  { error, userId: user?.id },
+                  "Failed to auto-start trial at Google OAuth registration"
+                );
+              });
+            }
 
             // Update user in Notion (non-blocking)
             // Fire and forget - don't await to avoid blocking the response

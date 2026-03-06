@@ -117,6 +117,36 @@
     "processing": "Procesando...",
     "upgradeTo": "Mejorar a {{plan}}"
   },
+  "trial": {
+    "badge": "Prueba",
+    "endsOn": "La prueba termina",
+    "noPaymentMethod": "Sin método de pago",
+    "addPaymentMethod": "Agregar método de pago",
+    "trialActive": "Tu prueba está activa",
+    "addPaymentToKeep": "Agrega un método de pago antes del {{date}} para mantener tu plan cuando termine la prueba.",
+    "trialActiveWithPayment": "Tu prueba está activa hasta el {{date}}. Tu suscripción comenzará automáticamente cuando termine la prueba.",
+    "cancelTrial": "Cancelar prueba",
+    "trialCanceled": "Prueba cancelada",
+    "trialEndsOnDate": "Tu prueba terminará el {{date}}. Serás degradado al plan Gratuito."
+  },
+  "currentPlan": {
+    "noSubscription": "No se requiere suscripción",
+    "billingInterval": "Facturación {{interval}}",
+    "perInterval": "por {{interval}}",
+    "currentPeriod": "Período actual",
+    "nextBilling": "Próxima facturación",
+    "paymentMethod": "Método de pago",
+    "planName": "Plan {{plan}}",
+    "activeSubscription": "Tu suscripción activa",
+    "changePaymentMethod": "Cambiar método de pago"
+  },
+  "status": {
+    "active": "Activo"
+  },
+  "subscriptionManagement": {
+    "title": "Gestión de suscripción",
+    "description": "Gestiona tu plan, ciclo de facturación y configuración de suscripción para todos tus espacios de trabajo"
+  },
   "error": {
     "workspaceIdRequired": "Se requiere el ID del espacio de trabajo"
   }

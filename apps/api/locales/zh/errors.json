@@ -114,10 +114,13 @@
     "failedToCreatePortalSession": "创建门户会话失败",
     "cannotCheckoutFreePlan": "无法为免费套餐创建结账",
     "failedToCreateCheckoutSession": "创建结账会话失败",
+    "alreadyHasSubscription": "您已有活跃的订阅",
+    "failedToStartTrial": "启动免费试用失败",
     "noActiveSubscription": "未找到活动的订阅",
     "failedToCancelSubscription": "取消订阅失败",
     "planRequired": "套餐为必填项",
-    "failedToRenewSubscription": "续订失败"
+    "failedToRenewSubscription": "续订失败",
+    "allWorkspaces": "您的所有工作区"
   },
   "license": {
     "validationFailed": "许可证验证失败",

@@ -5,10 +5,12 @@ import { hashPassword } from "@/core/auth";
 import { EmailVerificationService } from "@/services/email/email-verification.service";
 import { notionService } from "@/services/integrations/notion.service";
 import { trackSignUpError } from "@/services/sentry";
+import { StripeCustomerService } from "@/services/stripe/customer.service";
 
 import { RegisterUserSchema } from "@/schemas/auth";
 
 import { emailConfig, registrationConfig } from "@/config";
+import { isCloudMode } from "@/config/deployment";
 
 import { UserMapper } from "@/mappers/auth";
 
@@ -93,6 +95,21 @@ export const registrationRouter = router({
             updatedAt: true,
           },
         });
+
+        // Auto-start Enterprise trial for cloud users (fire-and-forget)
+        if (isCloudMode()) {
+          StripeCustomerService.provisionTrialForNewUser({
+            userId: user.id,
+            email,
+            name: `${firstName} ${lastName}`.trim(),
+            prisma: ctx.prisma,
+          }).catch((error) => {
+            ctx.logger.warn(
+              { error, userId: user.id },
+              "Failed to auto-start trial at registration"
+            );
+          });
+        }
 
         // Generate verification token and send email (skip if email is disabled)
         if (!autoVerify) {

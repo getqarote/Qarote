@@ -54,6 +54,7 @@ export const planRouter = router({
             select: {
               plan: true,
               status: true,
+              trialEnd: true,
             },
           },
           workspace: {
@@ -163,6 +164,9 @@ export const planRouter = router({
           email: userWithSubscription.email,
           plan: workspacePlan, // Always return workspace plan
           subscriptionStatus: userWithSubscription.subscription?.status || null,
+          trialEnd: userWithSubscription.subscription?.trialEnd
+            ? userWithSubscription.subscription.trialEnd.toISOString()
+            : null,
         },
         workspace: currentWorkspace
           ? {

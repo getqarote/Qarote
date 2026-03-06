@@ -118,7 +118,7 @@
   "trialEnding": {
     "title": "Your trial is ending soon",
     "body": "Your <strong>{{plan}}</strong> trial for <strong>{{workspaceName}}</strong> will end soon. {{usageText}}",
-    "upgradeCta": "Upgrade Now",
+    "upgradeCta": "Add Payment Method",
     "keepAccess": "Upgrade now to keep access to all features."
   },
   "upgradeConfirmation": {
