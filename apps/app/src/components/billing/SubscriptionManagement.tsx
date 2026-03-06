@@ -54,7 +54,7 @@ export const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({
   isTrialing = false,
   trialEnd,
 }) => {
-  const { t } = useTranslation("billing");
+  const { t, i18n } = useTranslation("billing");
   const [showCancelModal, setShowCancelModal] = useState(false);
 
   const handleCancelClick = () => {
@@ -159,7 +159,7 @@ export const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({
                   <p className="text-sm text-primary/80 mb-3">
                     {t("trial.addPaymentToKeep", {
                       date: trialEnd
-                        ? new Date(trialEnd).toLocaleDateString("en-US", {
+                        ? new Date(trialEnd).toLocaleDateString(i18n.language, {
                             year: "numeric",
                             month: "long",
                             day: "numeric",
