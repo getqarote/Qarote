@@ -13,6 +13,7 @@ import {
 
 import { RabbitMQPermissionError } from "@/components/RabbitMQPermissionError";
 import { TimeRange, TimeRangeSelector } from "@/components/TimeRangeSelector";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Tooltip as UITooltip,
@@ -228,17 +229,17 @@ export const MessagesRatesChart = ({
       </CardHeader>
       <CardContent>
         {ratesMode === "basic" && (
-          <div className="mb-4 flex items-start gap-2 rounded-md border border-blue-200 bg-blue-50 p-3 text-sm text-blue-800 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-200">
-            <Info className="mt-0.5 h-4 w-4 shrink-0" />
-            <p>
+          <Alert className="mb-4">
+            <Info className="h-4 w-4" />
+            <AlertDescription>
               Only instantaneous rates are available. To enable historical
               time-series charts, set{" "}
-              <code className="rounded bg-blue-100 px-1 py-0.5 text-xs dark:bg-blue-900">
+              <code className="rounded bg-muted px-1 py-0.5 text-xs">
                 management.rates_mode = detailed
               </code>{" "}
               in your RabbitMQ configuration and restart the node.
-            </p>
-          </div>
+            </AlertDescription>
+          </Alert>
         )}
         {isLoading ? (
           <div className="h-96 w-full flex items-center justify-center">
@@ -294,7 +295,7 @@ export const MessagesRatesChart = ({
                       dataKey="publish"
                       stroke="#F97316"
                       strokeWidth={2}
-                      dot={false}
+                      dot={ratesMode === "basic"}
                       name="Publish"
                     />
                   )}
@@ -304,7 +305,7 @@ export const MessagesRatesChart = ({
                       dataKey="deliver"
                       stroke="#3B82F6"
                       strokeWidth={2}
-                      dot={false}
+                      dot={ratesMode === "basic"}
                       name="Deliver"
                     />
                   )}
@@ -314,7 +315,7 @@ export const MessagesRatesChart = ({
                       dataKey="ack"
                       stroke="#10B981"
                       strokeWidth={2}
-                      dot={false}
+                      dot={ratesMode === "basic"}
                       name="Ack"
                     />
                   )}
@@ -324,7 +325,7 @@ export const MessagesRatesChart = ({
                       dataKey="deliver_get"
                       stroke="#EC4899"
                       strokeWidth={2}
-                      dot={false}
+                      dot={ratesMode === "basic"}
                       name="Deliver / Get"
                     />
                   )}
@@ -334,7 +335,7 @@ export const MessagesRatesChart = ({
                       dataKey="deliver_no_ack"
                       stroke="#F472B6"
                       strokeWidth={2}
-                      dot={false}
+                      dot={ratesMode === "basic"}
                       name="Deliver (auto ack)"
                     />
                   )}
@@ -344,7 +345,7 @@ export const MessagesRatesChart = ({
                       dataKey="confirm"
                       stroke="#F59E0B"
                       strokeWidth={2}
-                      dot={false}
+                      dot={ratesMode === "basic"}
                       name="Confirm"
                     />
                   )}
@@ -354,7 +355,7 @@ export const MessagesRatesChart = ({
                       dataKey="get"
                       stroke="#06B6D4"
                       strokeWidth={2}
-                      dot={false}
+                      dot={ratesMode === "basic"}
                       name="Get"
                     />
                   )}
@@ -364,7 +365,7 @@ export const MessagesRatesChart = ({
                       dataKey="get_no_ack"
                       stroke="#C4B5FD"
                       strokeWidth={2}
-                      dot={false}
+                      dot={ratesMode === "basic"}
                       name="Get No Ack"
                     />
                   )}
@@ -374,7 +375,7 @@ export const MessagesRatesChart = ({
                       dataKey="redeliver"
                       stroke="#8B5CF6"
                       strokeWidth={2}
-                      dot={false}
+                      dot={ratesMode === "basic"}
                       name="Redeliver"
                     />
                   )}
@@ -384,7 +385,7 @@ export const MessagesRatesChart = ({
                       dataKey="reject"
                       stroke="#6366F1"
                       strokeWidth={2}
-                      dot={false}
+                      dot={ratesMode === "basic"}
                       name="Reject"
                     />
                   )}
@@ -394,7 +395,7 @@ export const MessagesRatesChart = ({
                       dataKey="get_empty"
                       stroke="#92400E"
                       strokeWidth={2}
-                      dot={false}
+                      dot={ratesMode === "basic"}
                       name="Get (empty)"
                     />
                   )}
@@ -404,7 +405,7 @@ export const MessagesRatesChart = ({
                       dataKey="return_unroutable"
                       stroke="#1E40AF"
                       strokeWidth={2}
-                      dot={false}
+                      dot={ratesMode === "basic"}
                       name="Return Unroutable"
                     />
                   )}
@@ -414,7 +415,7 @@ export const MessagesRatesChart = ({
                       dataKey="drop_unroutable"
                       stroke="#FDE047"
                       strokeWidth={2}
-                      dot={false}
+                      dot={ratesMode === "basic"}
                       name="Drop Unroutable"
                     />
                   )}
@@ -424,7 +425,7 @@ export const MessagesRatesChart = ({
                       dataKey="disk_writes"
                       stroke="#DC2626"
                       strokeWidth={2}
-                      dot={false}
+                      dot={ratesMode === "basic"}
                       name="Disk Writes"
                     />
                   )}
@@ -434,7 +435,7 @@ export const MessagesRatesChart = ({
                       dataKey="disk_reads"
                       stroke="#059669"
                       strokeWidth={2}
-                      dot={false}
+                      dot={ratesMode === "basic"}
                       name="Disk Reads"
                     />
                   )}

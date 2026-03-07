@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useState } from "react";
 
 import { Activity, Clock } from "lucide-react";
 
@@ -25,7 +25,12 @@ function formatDuration(timestamp: string | null, now: number) {
 }
 
 export function QueueTiming({ queue }: QueueTimingProps) {
-  const now = useMemo(() => Date.now(), []);
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 60_000);
+    return () => clearInterval(id);
+  }, []);
 
   const formatBytes = (bytes: number) => {
     if (bytes === 0) return "0 B";
