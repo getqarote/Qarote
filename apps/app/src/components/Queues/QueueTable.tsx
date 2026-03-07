@@ -3,6 +3,7 @@ import { Lock, MessageSquare, Users } from "lucide-react";
 import { Queue } from "@/lib/api";
 
 import { PurgeQueueDialog } from "@/components/PurgeQueueDialog";
+import { QueueStatusBadge } from "@/components/Queues/queue-status-badge";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -30,34 +31,15 @@ export function QueueTable({
   onNavigateToQueue,
   onRefetch,
 }: QueueTableProps) {
-  const getStatusBadge = (queue: Queue) => {
-    if (queue.consumers > 0) {
-      return <Badge className="bg-green-100 text-green-700">Running</Badge>;
-    }
-    if (queue.messages > 0) {
-      return <Badge className="bg-yellow-100 text-yellow-700">Waiting</Badge>;
-    }
-    // Check if queue appears to be paused (no consumers but has configuration)
-    if (queue.consumers === 0 && queue.durable) {
-      return <Badge className="bg-gray-100 text-gray-700">Paused</Badge>;
-    }
-    return <Badge variant="outline">Idle</Badge>;
-  };
-
   const getQueueMetrics = (queue: Queue) => {
     return {
       messages: queue.messages || 0,
       consumers: queue.consumers || 0,
       messagesReady: queue.messages_ready || 0,
       messagesUnacked: queue.messages_unacknowledged || 0,
-      messageRate: queue.message_stats?.publish_details?.rate || 0,
-      consumerUtilisation:
-        (queue.consumers || 0) > 0
-          ? Math.min(
-              100,
-              (queue.message_stats?.deliver_details?.rate || 0) * 10
-            )
-          : 0,
+      incomingRate: queue.message_stats?.publish_details?.rate || 0,
+      deliverGetRate: queue.message_stats?.deliver_get_details?.rate || 0,
+      ackRate: queue.message_stats?.ack_details?.rate || 0,
       memory: (queue.memory || 0) / (1024 * 1024), // Convert to MB
       vhost: queue.vhost || "/",
       durability: queue.durable ? "durable" : "transient",
@@ -91,7 +73,9 @@ export function QueueTable({
                 <TableHead>Ready</TableHead>
                 <TableHead>Unacked</TableHead>
                 <TableHead>Consumers</TableHead>
-                <TableHead>Rate (msg/s)</TableHead>
+                <TableHead>Incoming</TableHead>
+                <TableHead>Deliver / Get</TableHead>
+                <TableHead>Ack</TableHead>
                 <TableHead>Memory (MB)</TableHead>
                 <TableHead>VHost</TableHead>
                 <TableHead>Actions</TableHead>
@@ -127,7 +111,9 @@ export function QueueTable({
                         )}
                       </div>
                     </TableCell>
-                    <TableCell>{getStatusBadge(queue)}</TableCell>
+                    <TableCell>
+                      <QueueStatusBadge state={queue.state} />
+                    </TableCell>
                     <TableCell className="font-mono">
                       {metrics.messages}
                     </TableCell>
@@ -144,7 +130,13 @@ export function QueueTable({
                       </div>
                     </TableCell>
                     <TableCell className="font-mono">
-                      {metrics.messageRate.toFixed(1)}
+                      {metrics.incomingRate.toFixed(1)}
+                    </TableCell>
+                    <TableCell className="font-mono">
+                      {metrics.deliverGetRate.toFixed(1)}
+                    </TableCell>
+                    <TableCell className="font-mono">
+                      {metrics.ackRate.toFixed(1)}
                     </TableCell>
                     <TableCell className="font-mono">
                       {metrics.memory.toFixed(1)}

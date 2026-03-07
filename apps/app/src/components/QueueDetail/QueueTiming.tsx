@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+
 import { Activity, Clock } from "lucide-react";
 
 import { Queue } from "@/lib/api";
@@ -8,20 +10,27 @@ interface QueueTimingProps {
   queue: Queue;
 }
 
-export function QueueTiming({ queue }: QueueTimingProps) {
-  const formatDuration = (timestamp: string | null) => {
-    if (!timestamp) return "Never";
-    const diff = Date.now() - new Date(timestamp).getTime();
-    const seconds = Math.floor(diff / 1000);
-    const minutes = Math.floor(seconds / 60);
-    const hours = Math.floor(minutes / 60);
-    const days = Math.floor(hours / 24);
+function formatDuration(timestamp: string | null, now: number) {
+  if (!timestamp) return "Never";
+  const diff = now - new Date(timestamp).getTime();
+  const seconds = Math.floor(diff / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
 
-    if (days > 0) return `${days}d ${hours % 24}h ago`;
-    if (hours > 0) return `${hours}h ${minutes % 60}m ago`;
-    if (minutes > 0) return `${minutes}m ${seconds % 60}s ago`;
-    return `${seconds}s ago`;
-  };
+  if (days > 0) return `${days}d ${hours % 24}h ago`;
+  if (hours > 0) return `${hours}h ${minutes % 60}m ago`;
+  if (minutes > 0) return `${minutes}m ${seconds % 60}s ago`;
+  return `${seconds}s ago`;
+}
+
+export function QueueTiming({ queue }: QueueTimingProps) {
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 60_000);
+    return () => clearInterval(id);
+  }, []);
 
   const formatBytes = (bytes: number) => {
     if (bytes === 0) return "0 B";
@@ -44,13 +53,13 @@ export function QueueTiming({ queue }: QueueTimingProps) {
           <div>
             <p className="text-sm text-muted-foreground">Idle Since</p>
             <p className="text-lg font-semibold">
-              {formatDuration(queue.idle_since)}
+              {formatDuration(queue.idle_since, now)}
             </p>
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Last Message</p>
             <p className="text-lg font-semibold">
-              {formatDuration(queue.head_message_timestamp)}
+              {formatDuration(queue.head_message_timestamp, now)}
             </p>
           </div>
         </CardContent>
@@ -66,11 +75,9 @@ export function QueueTiming({ queue }: QueueTimingProps) {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-sm text-muted-foreground">
-                Consumer Utilization
-              </p>
+              <p className="text-sm text-muted-foreground">Consumer Capacity</p>
               <p className="text-lg font-semibold">
-                {queue.consumer_utilisation?.toFixed(1) || "0.0"}%
+                {((queue.consumer_capacity ?? 0) * 100).toFixed(1)}%
               </p>
             </div>
             <div>

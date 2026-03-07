@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { HelpCircle, RefreshCw } from "lucide-react";
+import { HelpCircle, Info, RefreshCw } from "lucide-react";
 import {
   CartesianGrid,
   Line,
@@ -13,6 +13,7 @@ import {
 
 import { RabbitMQPermissionError } from "@/components/RabbitMQPermissionError";
 import { TimeRange, TimeRangeSelector } from "@/components/TimeRangeSelector";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Tooltip as UITooltip,
@@ -30,15 +31,19 @@ interface MessagesRatesChartProps {
     deliver?: number;
     ack?: number;
     deliver_get?: number;
+    deliver_no_ack?: number;
     confirm?: number;
     get?: number;
     get_no_ack?: number;
+    get_empty?: number;
     redeliver?: number;
     reject?: number;
     return_unroutable?: number;
+    drop_unroutable?: number;
     disk_reads?: number;
     disk_writes?: number;
   }>;
+  ratesMode?: "detailed" | "basic" | "none";
   isLoading: boolean;
   error?: Error | null;
   timeRange?: TimeRange;
@@ -47,6 +52,7 @@ interface MessagesRatesChartProps {
 
 export const MessagesRatesChart = ({
   messagesRates,
+  ratesMode,
   isLoading,
   error,
   timeRange = "1d",
@@ -58,13 +64,15 @@ export const MessagesRatesChart = ({
     deliver: true,
     ack: true,
     deliver_get: true,
+    deliver_no_ack: true,
     confirm: true,
     get: true,
     get_no_ack: true,
+    get_empty: true,
     redeliver: true,
     reject: true,
     return_unroutable: true,
-    unroutable_drop: true,
+    drop_unroutable: true,
     disk_reads: true,
     disk_writes: true,
   });
@@ -107,12 +115,15 @@ export const MessagesRatesChart = ({
     deliver: point.deliver || 0,
     ack: point.ack || 0,
     deliver_get: point.deliver_get || 0,
+    deliver_no_ack: point.deliver_no_ack || 0,
     confirm: point.confirm || 0,
     get: point.get || 0,
     get_no_ack: point.get_no_ack || 0,
+    get_empty: point.get_empty || 0,
     redeliver: point.redeliver || 0,
     reject: point.reject || 0,
     return_unroutable: point.return_unroutable || 0,
+    drop_unroutable: point.drop_unroutable || 0,
     disk_reads: point.disk_reads || 0,
     disk_writes: point.disk_writes || 0,
   }));
@@ -147,8 +158,12 @@ export const MessagesRatesChart = ({
                         acknowledgments are received
                       </p>
                       <p>
-                        <strong>Deliver Get:</strong> Rate at which messages are
-                        delivered via basic.get
+                        <strong>Deliver / Get:</strong> Combined rate of deliver
+                        + get operations
+                      </p>
+                      <p>
+                        <strong>Deliver (auto ack):</strong> Rate at which
+                        messages are delivered without requiring acknowledgment
                       </p>
                       <p>
                         <strong>Confirm:</strong> Rate at which publisher
@@ -163,16 +178,24 @@ export const MessagesRatesChart = ({
                         retrieved without acknowledgment
                       </p>
                       <p>
+                        <strong>Get (empty):</strong> Rate at which basic.get
+                        calls return empty
+                      </p>
+                      <p>
                         <strong>Redeliver:</strong> Rate at which messages are
                         redelivered
                       </p>
                       <p>
                         <strong>Reject:</strong> Rate at which messages are
-                        rejected
+                        rejected by consumers
                       </p>
                       <p>
                         <strong>Return Unroutable:</strong> Rate at which
                         unroutable messages are returned
+                      </p>
+                      <p>
+                        <strong>Drop Unroutable:</strong> Rate at which
+                        unroutable messages are silently dropped
                       </p>
                       <p>
                         <strong>Disk Reads:</strong> Rate at which messages are
@@ -205,6 +228,19 @@ export const MessagesRatesChart = ({
         </div>
       </CardHeader>
       <CardContent>
+        {ratesMode === "basic" && (
+          <Alert className="mb-4">
+            <Info className="h-4 w-4" />
+            <AlertDescription>
+              Only instantaneous rates are available. To enable historical
+              time-series charts, set{" "}
+              <code className="rounded bg-muted px-1 py-0.5 text-xs">
+                management.rates_mode = detailed
+              </code>{" "}
+              in your RabbitMQ configuration and restart the node.
+            </AlertDescription>
+          </Alert>
+        )}
         {isLoading ? (
           <div className="h-96 w-full flex items-center justify-center">
             <div className="flex flex-col items-center gap-2">
@@ -259,7 +295,7 @@ export const MessagesRatesChart = ({
                       dataKey="publish"
                       stroke="#F97316"
                       strokeWidth={2}
-                      dot={false}
+                      dot={ratesMode === "basic"}
                       name="Publish"
                     />
                   )}
@@ -269,7 +305,7 @@ export const MessagesRatesChart = ({
                       dataKey="deliver"
                       stroke="#3B82F6"
                       strokeWidth={2}
-                      dot={false}
+                      dot={ratesMode === "basic"}
                       name="Deliver"
                     />
                   )}
@@ -279,7 +315,7 @@ export const MessagesRatesChart = ({
                       dataKey="ack"
                       stroke="#10B981"
                       strokeWidth={2}
-                      dot={false}
+                      dot={ratesMode === "basic"}
                       name="Ack"
                     />
                   )}
@@ -289,8 +325,18 @@ export const MessagesRatesChart = ({
                       dataKey="deliver_get"
                       stroke="#EC4899"
                       strokeWidth={2}
-                      dot={false}
-                      name="Deliver Get"
+                      dot={ratesMode === "basic"}
+                      name="Deliver / Get"
+                    />
+                  )}
+                  {visibleLines.deliver_no_ack && (
+                    <Line
+                      type="monotone"
+                      dataKey="deliver_no_ack"
+                      stroke="#F472B6"
+                      strokeWidth={2}
+                      dot={ratesMode === "basic"}
+                      name="Deliver (auto ack)"
                     />
                   )}
                   {visibleLines.confirm && (
@@ -299,7 +345,7 @@ export const MessagesRatesChart = ({
                       dataKey="confirm"
                       stroke="#F59E0B"
                       strokeWidth={2}
-                      dot={false}
+                      dot={ratesMode === "basic"}
                       name="Confirm"
                     />
                   )}
@@ -309,7 +355,7 @@ export const MessagesRatesChart = ({
                       dataKey="get"
                       stroke="#06B6D4"
                       strokeWidth={2}
-                      dot={false}
+                      dot={ratesMode === "basic"}
                       name="Get"
                     />
                   )}
@@ -319,7 +365,7 @@ export const MessagesRatesChart = ({
                       dataKey="get_no_ack"
                       stroke="#C4B5FD"
                       strokeWidth={2}
-                      dot={false}
+                      dot={ratesMode === "basic"}
                       name="Get No Ack"
                     />
                   )}
@@ -329,7 +375,7 @@ export const MessagesRatesChart = ({
                       dataKey="redeliver"
                       stroke="#8B5CF6"
                       strokeWidth={2}
-                      dot={false}
+                      dot={ratesMode === "basic"}
                       name="Redeliver"
                     />
                   )}
@@ -339,8 +385,18 @@ export const MessagesRatesChart = ({
                       dataKey="reject"
                       stroke="#6366F1"
                       strokeWidth={2}
-                      dot={false}
+                      dot={ratesMode === "basic"}
                       name="Reject"
+                    />
+                  )}
+                  {visibleLines.get_empty && (
+                    <Line
+                      type="monotone"
+                      dataKey="get_empty"
+                      stroke="#92400E"
+                      strokeWidth={2}
+                      dot={ratesMode === "basic"}
+                      name="Get (empty)"
                     />
                   )}
                   {visibleLines.return_unroutable && (
@@ -349,18 +405,18 @@ export const MessagesRatesChart = ({
                       dataKey="return_unroutable"
                       stroke="#1E40AF"
                       strokeWidth={2}
-                      dot={false}
+                      dot={ratesMode === "basic"}
                       name="Return Unroutable"
                     />
                   )}
-                  {visibleLines.unroutable_drop && (
+                  {visibleLines.drop_unroutable && (
                     <Line
                       type="monotone"
-                      dataKey="unroutable_drop"
+                      dataKey="drop_unroutable"
                       stroke="#FDE047"
                       strokeWidth={2}
-                      dot={false}
-                      name="Unroutable Drop"
+                      dot={ratesMode === "basic"}
+                      name="Drop Unroutable"
                     />
                   )}
                   {visibleLines.disk_writes && (
@@ -369,7 +425,7 @@ export const MessagesRatesChart = ({
                       dataKey="disk_writes"
                       stroke="#DC2626"
                       strokeWidth={2}
-                      dot={false}
+                      dot={ratesMode === "basic"}
                       name="Disk Writes"
                     />
                   )}
@@ -379,7 +435,7 @@ export const MessagesRatesChart = ({
                       dataKey="disk_reads"
                       stroke="#059669"
                       strokeWidth={2}
-                      dot={false}
+                      dot={ratesMode === "basic"}
                       name="Disk Reads"
                     />
                   )}
@@ -402,8 +458,13 @@ export const MessagesRatesChart = ({
                 // Column 2
                 {
                   key: "deliver_get",
-                  name: "Deliver (auto ack)",
+                  name: "Deliver / Get",
                   color: "#EC4899", // Pink
+                },
+                {
+                  key: "deliver_no_ack",
+                  name: "Deliver (auto ack)",
+                  color: "#F472B6", // Pink-400
                 },
                 { key: "ack", name: "Consumer ack", color: "#10B981" }, // Emerald
                 { key: "redeliver", name: "Redelivered", color: "#8B5CF6" }, // Violet
@@ -411,7 +472,8 @@ export const MessagesRatesChart = ({
                 // Column 3
                 { key: "get", name: "Get (manual ack)", color: "#06B6D4" }, // Cyan
                 { key: "get_no_ack", name: "Get (auto ack)", color: "#C4B5FD" }, // Light purple
-                { key: "reject", name: "Get (empty)", color: "#92400E" }, // Brown
+                { key: "get_empty", name: "Get (empty)", color: "#92400E" }, // Brown
+                { key: "reject", name: "Reject", color: "#6366F1" }, // Indigo
 
                 // Column 4
                 {
@@ -420,7 +482,7 @@ export const MessagesRatesChart = ({
                   color: "#1E40AF", // Indigo
                 },
                 {
-                  key: "unroutable_drop",
+                  key: "drop_unroutable",
                   name: "Unroutable (drop)",
                   color: "#FDE047", // Yellow
                 },
