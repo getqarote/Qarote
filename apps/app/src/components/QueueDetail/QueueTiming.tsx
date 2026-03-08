@@ -20,8 +20,8 @@ function formatDuration(timestamp: string | null, now: number) {
 
   if (days > 0) return `${days}d ${hours % 24}h ago`;
   if (hours > 0) return `${hours}h ${minutes % 60}m ago`;
-  if (minutes > 0) return `${minutes}m ${seconds % 60}s ago`;
-  return `${seconds}s ago`;
+  if (minutes > 0) return `${minutes}m ago`;
+  return "<1m ago";
 }
 
 export function QueueTiming({ queue }: QueueTimingProps) {
@@ -77,7 +77,9 @@ export function QueueTiming({ queue }: QueueTimingProps) {
             <div>
               <p className="text-sm text-muted-foreground">Consumer Capacity</p>
               <p className="text-lg font-semibold">
-                {((queue.consumer_capacity ?? 0) * 100).toFixed(1)}%
+                {queue.consumer_capacity != null
+                  ? `${(queue.consumer_capacity * 100).toFixed(1)}%`
+                  : "N/A"}
               </p>
             </div>
             <div>
