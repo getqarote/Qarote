@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import {
   Activity,
@@ -25,6 +26,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
 const Index = () => {
+  const { t } = useTranslation("landing");
+  const { t: tPricing } = useTranslation("pricing");
+  const { t: tFaq } = useTranslation("faq");
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">(
     "yearly"
   );
@@ -57,44 +61,38 @@ const Index = () => {
   const features = [
     {
       icon: Activity,
-      title: "Live queue monitoring",
-      description:
-        "Monitor queue depths, message rates, and consumer counts with live updates. Track message accumulation and processing performance.",
+      title: t("features.liveQueueMonitoring.title"),
+      description: t("features.liveQueueMonitoring.description"),
       gradient: "from-yellow-500 to-orange-500",
     },
     {
       icon: Shield,
-      title: "Smart alerting system",
-      description:
-        "Intelligent alerts for queue backlogs, memory usage, and performance issues. Customizable thresholds with severity-based notifications.",
+      title: t("features.smartAlertingSystem.title"),
+      description: t("features.smartAlertingSystem.description"),
       gradient: "from-green-500 to-emerald-500",
     },
     {
       icon: MessageSquare,
-      title: "Queue management",
-      description:
-        "Pause, resume, and delete queues with one click. Create exchanges, bind queues, and manage routing keys through an intuitive interface.",
+      title: t("features.queueManagement.title"),
+      description: t("features.queueManagement.description"),
       gradient: "from-blue-500 to-cyan-500",
     },
     {
       icon: BarChart3,
-      title: "Performance analytics",
-      description:
-        "Detailed metrics on memory usage, disk space, file descriptors, and message throughput. Visualize trends with beautiful charts and graphs.",
+      title: t("features.performanceAnalytics.title"),
+      description: t("features.performanceAnalytics.description"),
       gradient: "from-purple-500 to-pink-500",
     },
     {
       icon: Settings,
-      title: "Multi-server support",
-      description:
-        "Connect to multiple RabbitMQ clusters and switch between them seamlessly. Support for different environments and configurations.",
+      title: t("features.multiServerSupport.title"),
+      description: t("features.multiServerSupport.description"),
       gradient: "from-red-500 to-rose-500",
     },
     {
       icon: Rocket,
-      title: "Message publishing",
-      description:
-        "Test and debug your applications by publishing messages directly to queues and exchanges. Perfect for development and troubleshooting.",
+      title: t("features.messagePublishing.title"),
+      description: t("features.messagePublishing.description"),
       gradient: "from-indigo-500 to-blue-500",
     },
   ];
@@ -138,16 +136,16 @@ const Index = () => {
   const plans = [
     {
       id: "FREE",
-      name: "Community",
-      description: "Perfect for getting started",
+      name: tPricing("plans.starter.name"),
+      description: tPricing("plans.starter.description"),
       color: "text-gray-600",
       bgColor: "bg-gray-50",
       borderColor: "border-orange-200",
       features: {
-        servers: "Up to 1",
-        rabbitMQVersionSupport: "Only LTS versions",
-        workspaces: "Up to 1",
-        teamMembers: "Up to 1",
+        servers: tPricing("limits.upTo1"),
+        rabbitMQVersionSupport: tPricing("featureNames.onlyLTS"),
+        workspaces: tPricing("limits.upTo1"),
+        teamMembers: tPricing("limits.upTo1"),
         queueManagement: true,
         exchangeManagement: true,
         virtualHostManagement: true,
@@ -162,17 +160,17 @@ const Index = () => {
     },
     {
       id: "DEVELOPER",
-      name: "Developer",
-      description: "For solo developers and small projects",
+      name: tPricing("plans.pro.name"),
+      description: tPricing("plans.pro.description"),
       color: "text-gray-600",
       bgColor: "bg-gray-50",
       borderColor: "border-gray-200",
       isPopular: true,
       features: {
-        servers: "Up to 3",
-        rabbitMQVersionSupport: "All versions 3.x and 4.x",
-        workspaces: "Up to 3",
-        teamMembers: "Up to 3",
+        servers: tPricing("limits.upTo3"),
+        rabbitMQVersionSupport: tPricing("featureNames.allVersions"),
+        workspaces: tPricing("limits.upTo3"),
+        teamMembers: tPricing("limits.upTo3"),
         queueManagement: true,
         exchangeManagement: true,
         virtualHostManagement: true,
@@ -187,16 +185,16 @@ const Index = () => {
     },
     {
       id: "ENTERPRISE",
-      name: "Enterprise",
-      description: "For large teams and enterprises",
+      name: tPricing("plans.business.name"),
+      description: tPricing("plans.business.description"),
       color: "text-gray-600",
       bgColor: "bg-gray-50",
       borderColor: "border-gray-200",
       features: {
-        servers: "Unlimited",
-        rabbitMQVersionSupport: "All versions 3.x and 4.x",
-        workspaces: "Unlimited",
-        teamMembers: "Unlimited",
+        servers: tPricing("limits.unlimited"),
+        rabbitMQVersionSupport: tPricing("featureNames.allVersions"),
+        workspaces: tPricing("limits.unlimited"),
+        teamMembers: tPricing("limits.unlimited"),
         queueManagement: true,
         exchangeManagement: true,
         virtualHostManagement: true,
@@ -240,41 +238,32 @@ const Index = () => {
         ]}
         faq={[
           {
-            question: "What is Qarote?",
-            answer:
-              "Qarote is a modern, user-friendly dashboard that helps you monitor and manage your RabbitMQ servers effortlessly. Instead of using the outdated RabbitMQ admin panel or command line, Qarote gives you a clean, visual interface to see your queues, messages, and system health in real time.",
+            question: tFaq("q1.question"),
+            answer: tFaq("q1.answer"),
           },
           {
-            question: "Who is Qarote for?",
-            answer:
-              "Qarote is designed for developers, DevOps engineers, and teams who use RabbitMQ and want better visibility, easier monitoring, and faster troubleshooting. Whether you're running one broker or dozens, Qarote helps you save time and prevent message bottlenecks.",
+            question: tFaq("q2.question"),
+            answer: tFaq("q2.answer"),
           },
           {
-            question: "Is Qarote secure?",
-            answer:
-              "Absolutely. All connections to your RabbitMQ servers are encrypted (TLS), and no sensitive data is stored on our servers. You stay in full control of your credentials, and Qarote only reads the metrics and management data needed for your dashboard.",
+            question: tFaq("q3.question"),
+            answer: tFaq("q3.answer"),
           },
           {
-            question: "What can I do with Qarote?",
-            answer:
-              "With Qarote, you can: View all your queues, exchanges, and bindings at a glance; Monitor message rates, errors, and consumer activity in real time; Create alerts for blocked or overloaded queues; Manage users, vhosts, and permissions visually; Connect multiple RabbitMQ instances in one place.",
+            question: tFaq("q4.question"),
+            answer: tFaq("q4.answer"),
           },
           {
-            question:
-              "How is Qarote different from the RabbitMQ Management UI?",
-            answer:
-              "The built-in RabbitMQ Management Plugin works, but it's slow, cluttered, and hard to scale across multiple brokers. Qarote provides: A modern, intuitive interface; Centralized monitoring across environments; Powerful search and filters; Smart alerts and reporting; A clean experience designed for teams.",
+            question: tFaq("q5.question"),
+            answer: tFaq("q5.answer"),
           },
           {
-            question:
-              "Is Qarote a better monitoring tool than Prometheus and Grafana?",
-            answer:
-              "Qarote offers purpose-built monitoring specifically for RabbitMQ with zero configuration. While Prometheus and Grafana are powerful, they require significant setup and maintenance. Qarote provides comparable insights with much less overhead.",
+            question: tFaq("q6.question"),
+            answer: tFaq("q6.answer"),
           },
           {
-            question: "Can I try Qarote for free?",
-            answer:
-              "Yes! We offer a free tier that includes 1 server, 1 workspace, and 1 team member. You can start monitoring your RabbitMQ queues right away without a credit card. When you're ready to scale, you can upgrade to a paid plan.",
+            question: tFaq("q7.question"),
+            answer: tFaq("q7.answer"),
           },
         ]}
         structuredData={{
@@ -318,19 +307,17 @@ const Index = () => {
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 md:pt-28 pb-3.5">
           <div className="w-full text-center">
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-foreground mb-6 leading-tight max-w-4xl mx-auto px-2 font-normal">
-              The easiest way to monitor your{" "}
-              <span style={{ color: "#FF691B" }}>RabbitMQ</span> servers
+              {t("hero.title")}
             </h1>
 
             <p className="text-base sm:text-lg md:text-xl text-muted-foreground mb-12 leading-relaxed max-w-3xl mx-auto px-2">
-              Qarote provides a clean and intuitive interface to monitor,
-              analyze, and manage your RabbitMQ servers effortlessly.
+              {t("hero.subtitle")}
             </p>
 
             <div className="mb-12">
               <AuthButtons />
               <p className="text-xs sm:text-sm text-muted-foreground mt-3 px-4">
-                14-day free trial · No credit card required
+                {t("hero.noCreditCard")}
               </p>
             </div>
           </div>
@@ -391,11 +378,11 @@ const Index = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl text-foreground mb-4 max-w-4xl mx-auto leading-[1.2] font-normal">
-              Managing RabbitMQ servers
+              {t("comparison.title")}
               <span className="hidden md:inline">
                 <br />
               </span>{" "}
-              doesn't have to be painful
+              {t("comparison.titleLine2")}
             </h2>
           </div>
 
@@ -405,7 +392,7 @@ const Index = () => {
               {/* Left Column - Traditional */}
               <div className="pt-8 lg:pt-12 px-8 lg:px-12 pb-0 flex flex-col relative overflow-visible">
                 <h3 className="text-2xl text-foreground mb-8 font-normal">
-                  Traditional management interfaces
+                  {t("comparison.traditional.title")}
                 </h3>
                 <div className="space-y-5 mb-16">
                   <div className="flex gap-4 items-center">
@@ -416,7 +403,7 @@ const Index = () => {
                       style={{ imageRendering: "crisp-edges", width: "auto" }}
                     />
                     <p className="text-foreground">
-                      An outdated UI that slows you down
+                      {t("comparison.traditional.point1")}
                     </p>
                   </div>
 
@@ -428,7 +415,7 @@ const Index = () => {
                       style={{ imageRendering: "crisp-edges", width: "auto" }}
                     />
                     <p className="text-foreground">
-                      No unified view across servers or environments
+                      {t("comparison.traditional.point2")}
                     </p>
                   </div>
 
@@ -440,7 +427,7 @@ const Index = () => {
                       style={{ imageRendering: "crisp-edges", width: "auto" }}
                     />
                     <p className="text-foreground">
-                      No reliable, actionable alerts
+                      {t("comparison.traditional.point3")}
                     </p>
                   </div>
 
@@ -452,7 +439,7 @@ const Index = () => {
                       style={{ imageRendering: "crisp-edges", width: "auto" }}
                     />
                     <p className="text-foreground">
-                      DIY dashboards and scripts everywhere
+                      {t("comparison.traditional.point4")}
                     </p>
                   </div>
                 </div>
@@ -478,7 +465,7 @@ const Index = () => {
               {/* Right Column - Qarote */}
               <div className="pt-8 lg:pt-12 px-8 lg:px-12 pb-0 flex flex-col relative overflow-visible">
                 <h3 className="text-2xl text-foreground mb-8 font-normal">
-                  Qarote
+                  {t("comparison.qarote.title")}
                 </h3>
                 <div className="space-y-5 mb-16">
                   <div className="flex gap-4 items-center">
@@ -489,7 +476,7 @@ const Index = () => {
                       style={{ imageRendering: "crisp-edges", width: "auto" }}
                     />
                     <p className="text-foreground">
-                      A clean, modern UI built for speed and clarity
+                      {t("comparison.qarote.point1")}
                     </p>
                   </div>
 
@@ -501,7 +488,7 @@ const Index = () => {
                       style={{ imageRendering: "crisp-edges", width: "auto" }}
                     />
                     <p className="text-foreground">
-                      A unified dashboard for all your servers and environments
+                      {t("comparison.qarote.point2")}
                     </p>
                   </div>
 
@@ -513,7 +500,7 @@ const Index = () => {
                       style={{ imageRendering: "crisp-edges", width: "auto" }}
                     />
                     <p className="text-foreground">
-                      Smart, actionable alerts that catch issues early
+                      {t("comparison.qarote.point3")}
                     </p>
                   </div>
 
@@ -525,7 +512,7 @@ const Index = () => {
                       style={{ imageRendering: "crisp-edges", width: "auto" }}
                     />
                     <p className="text-foreground">
-                      Zero-setup monitoring, no scripts, no maintenance
+                      {t("comparison.qarote.point4")}
                     </p>
                   </div>
                 </div>
@@ -549,13 +536,13 @@ const Index = () => {
                     <div className="grid grid-cols-2 gap-2">
                       <div className="bg-muted/30 p-1.5">
                         <div className="text-xs text-muted-foreground">
-                          Messages/sec
+                          {t("comparison.messagesPerSec")}
                         </div>
                         <div className="text-sm">4.2k</div>
                       </div>
                       <div className="bg-muted/30 p-1.5">
                         <div className="text-xs text-muted-foreground">
-                          Active Queues
+                          {t("comparison.activeQueues")}
                         </div>
                         <div className="text-sm">127</div>
                       </div>
@@ -571,7 +558,7 @@ const Index = () => {
                           imageRendering: "crisp-edges",
                         }}
                       />
-                      All systems operational
+                      {t("comparison.allSystemsOperational")}
                     </div>
                   </div>
                 </div>
@@ -590,9 +577,9 @@ const Index = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl text-foreground mb-4 max-w-4xl mx-auto leading-[1.2] font-normal">
-              All you really care about.
+              {t("features.title")}
               <br />
-              Monitored in one place.
+              {t("features.titleLine2")}
             </h2>
           </div>
 
@@ -619,7 +606,7 @@ const Index = () => {
               }}
               className="bg-gradient-button hover:bg-gradient-button-hover text-white px-4 py-3 sm:px-7 sm:py-3 transition-colors duration-200 inline-flex items-center justify-center gap-3 text-base sm:text-lg rounded-full"
             >
-              <span>Start monitoring for free</span>
+              <span>{t("cta.startMonitoringForFree")}</span>
               <img
                 src="/images/arrow-right.svg"
                 alt="Arrow right"
@@ -641,11 +628,10 @@ const Index = () => {
             {/* Left side - Title and description */}
             <div className="lg:sticky lg:top-20">
               <h2 className="text-3xl sm:text-4xl lg:text-5xl text-foreground mb-6 max-w-4xl leading-[1.2] font-normal">
-                Connect easily with your RabbitMQ servers
+                {t("connection.title")}
               </h2>
               <p className="text-lg text-muted-foreground">
-                Don't change the way your RabbitMQ servers work, Qarote is
-                specially made for this message broker.
+                {t("connection.subtitle")}
               </p>
             </div>
 
@@ -666,21 +652,20 @@ const Index = () => {
                   </div>
                   <div className="flex-1">
                     <h3 className="text-2xl text-foreground mb-2 font-normal">
-                      Sign up
+                      {t("connection.step1.title")}
                     </h3>
                     <p className="text-muted-foreground mb-4">
-                      Create your account in seconds. No credit card required.
-                      Start monitoring your RabbitMQ infrastructure immediately.
+                      {t("connection.step1.description")}
                     </p>
                   </div>
                 </div>
                 <div className="mt-auto">
                   <div className="bg-card border-t border-l border-r border-border  p-6 max-w-sm mx-auto">
                     <h4 className="text-lg text-foreground text-center mb-2">
-                      Create your Qarote account
+                      {t("connection.step1.createAccount")}
                     </h4>
                     <p className="text-sm text-muted-foreground text-center mb-6">
-                      Transform the way you monitor RabbitMQ.
+                      {t("connection.step1.transformMonitoring")}
                     </p>
                     <div className="space-y-3">
                       <button
@@ -700,7 +685,7 @@ const Index = () => {
                           }}
                         />
                         <span className="text-sm font-medium text-foreground">
-                          Continue with Email
+                          {t("connection.step1.continueWithEmail")}
                         </span>
                       </button>
                       <div className="relative">
@@ -709,7 +694,7 @@ const Index = () => {
                         </div>
                         <div className="relative flex justify-center text-xs uppercase">
                           <span className="bg-card px-2 text-muted-foreground">
-                            or
+                            {t("connection.step1.or")}
                           </span>
                         </div>
                       </div>
@@ -730,7 +715,7 @@ const Index = () => {
                           }}
                         />
                         <span className="text-sm font-medium text-foreground">
-                          Continue with Google
+                          {t("connection.step1.continueWithGoogle")}
                         </span>
                       </button>
                     </div>
@@ -753,11 +738,10 @@ const Index = () => {
                   </div>
                   <div className="flex-1">
                     <h3 className="text-2xl text-foreground mb-2 font-normal">
-                      Add your servers
+                      {t("connection.step2.title")}
                     </h3>
                     <p className="text-muted-foreground mb-4">
-                      Connect your RabbitMQ servers with a simple connection.
-                      Support for multiple environments and clusters.
+                      {t("connection.step2.description")}
                     </p>
                   </div>
                 </div>
@@ -775,10 +759,10 @@ const Index = () => {
                         </div>
                         <div className="flex-1">
                           <div className="text-foreground mb-0.5">
-                            Production Server
+                            {t("connection.step2.productionServer")}
                           </div>
                           <div className="text-sm text-muted-foreground">
-                            3 nodes
+                            {t("connection.step2.nodes")}
                           </div>
                         </div>
                       </div>
@@ -793,10 +777,10 @@ const Index = () => {
                         </div>
                         <div className="flex-1">
                           <div className="text-foreground mb-0.5">
-                            Staging Server
+                            {t("connection.step2.stagingServer")}
                           </div>
                           <div className="text-sm text-muted-foreground">
-                            3 nodes
+                            {t("connection.step2.nodes")}
                           </div>
                         </div>
                       </div>
@@ -811,10 +795,10 @@ const Index = () => {
                         </div>
                         <div className="flex-1">
                           <div className="text-foreground mb-0.5">
-                            Development Server
+                            {t("connection.step2.developmentServer")}
                           </div>
                           <div className="text-sm text-muted-foreground">
-                            3 nodes
+                            {t("connection.step2.nodes")}
                           </div>
                         </div>
                       </div>
@@ -838,11 +822,10 @@ const Index = () => {
                   </div>
                   <div className="flex-1">
                     <h3 className="text-2xl text-foreground mb-2 font-normal">
-                      Monitor and collaborate
+                      {t("connection.step3.title")}
                     </h3>
                     <p className="text-muted-foreground mb-4">
-                      Get real-time insights into your queues, exchanges, and
-                      message flow. Monitor with your team and set up alerts.
+                      {t("connection.step3.description")}
                     </p>
                   </div>
                 </div>
@@ -854,7 +837,7 @@ const Index = () => {
                         <div className="bg-background border border-border  p-3">
                           <div className="flex items-center gap-2 mb-2">
                             <span className="text-xs text-muted-foreground">
-                              Messages/sec
+                              {t("connection.step3.messagesPerSec")}
                             </span>
                           </div>
                           <div className="text-lg text-foreground">4.2k</div>
@@ -862,7 +845,7 @@ const Index = () => {
                         <div className="bg-background border border-border  p-3">
                           <div className="flex items-center gap-2 mb-2">
                             <span className="text-xs text-muted-foreground">
-                              Queues
+                              {t("connection.step3.queues")}
                             </span>
                           </div>
                           <div className="text-lg text-foreground">127</div>
@@ -873,7 +856,7 @@ const Index = () => {
                       <div className="bg-background border border-border  p-4">
                         <div className="flex items-center justify-between mb-3">
                           <span className="text-sm text-foreground">
-                            Queue Depths
+                            {t("connection.step3.queueDepths")}
                           </span>
                         </div>
                         <div className="h-20 bg-muted/30 flex items-end justify-between gap-1 p-2">
@@ -922,7 +905,7 @@ const Index = () => {
                               }}
                             />
                             <span className="text-sm text-foreground">
-                              All systems operational
+                              {t("connection.step3.allSystemsOperational")}
                             </span>
                           </div>
                         </div>
@@ -945,9 +928,7 @@ const Index = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl text-foreground mb-4 max-w-4xl mx-auto leading-[1.2] font-normal">
-              Simple pricing.
-              <br />
-              Powerful monitoring.
+              {tPricing("title")}
             </h2>
           </div>
 
@@ -1028,7 +1009,7 @@ const Index = () => {
               <span
                 className={`text-sm font-medium ${billingPeriod === "yearly" ? "text-foreground" : "text-muted-foreground"}`}
               >
-                Yearly
+                {tPricing("billedYearly")}
               </span>
             </div>
           </div>
@@ -1100,11 +1081,11 @@ const Index = () => {
                                 {currentPricing.price !== "$0" && (
                                   <div className="flex flex-col leading-tight">
                                     <span className="text-sm text-muted-foreground">
-                                      / month
+                                      {tPricing("perMonth")}
                                     </span>
                                     {billingPeriod === "yearly" && (
                                       <span className="text-sm text-muted-foreground">
-                                        billed yearly
+                                        {tPricing("billedYearly")}
                                       </span>
                                     )}
                                   </div>
@@ -1117,7 +1098,7 @@ const Index = () => {
                                     <span className="font-medium text-foreground">
                                       {monthlyPricing.price}
                                     </span>{" "}
-                                    billed monthly
+                                    {tPricing("billedMonthly")}
                                   </span>
                                 )}
                               {billingPeriod === "monthly" &&
@@ -1127,7 +1108,7 @@ const Index = () => {
                                     <span className="font-medium text-foreground">
                                       {yearlyPricing.price}
                                     </span>{" "}
-                                    billed yearly
+                                    {tPricing("billedYearly")}
                                   </span>
                                 )}
                             </>
@@ -1146,7 +1127,7 @@ const Index = () => {
                       <div className="space-y-6 flex-1">
                         <div>
                           <h4 className="font-semibold text-foreground mb-3 text-xs sm:text-sm uppercase tracking-wide whitespace-nowrap">
-                            Features
+                            {tPricing("coreFeatures")}
                           </h4>
                           <ul className="space-y-2">
                             <li className="flex items-start gap-3">
@@ -1648,10 +1629,10 @@ const Index = () => {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl text-foreground mb-4 max-w-4xl mx-auto leading-[1.2] font-normal">
-              Frequently Asked Questions
+              {t("faqSection.title")}
             </h2>
             <p className="text-xl text-muted-foreground">
-              Everything you need to know about Qarote
+              {t("faqSection.subtitle")}
             </p>
           </div>
 
@@ -1662,14 +1643,10 @@ const Index = () => {
                 className="border border-border  px-6 bg-transparent mb-4 last:mb-0"
               >
                 <AccordionTrigger className="text-left text-foreground hover:no-underline">
-                  What is Qarote?
+                  {tFaq("q1.question")}
                 </AccordionTrigger>
                 <AccordionContent className="text-muted-foreground">
-                  Qarote is a modern, user-friendly dashboard that helps you
-                  monitor and manage your RabbitMQ servers effortlessly. Instead
-                  of using the outdated RabbitMQ admin panel or command line,
-                  Qarote gives you a clean, visual interface to see your queues,
-                  messages, and system health in real time.
+                  {tFaq("q1.answer")}
                 </AccordionContent>
               </AccordionItem>
 
@@ -1678,14 +1655,10 @@ const Index = () => {
                 className="border border-border  px-6 bg-transparent mb-4 last:mb-0"
               >
                 <AccordionTrigger className="text-left text-foreground hover:no-underline">
-                  Who is Qarote for?
+                  {tFaq("q2.question")}
                 </AccordionTrigger>
                 <AccordionContent className="text-muted-foreground">
-                  Qarote is designed for developers, DevOps engineers, and teams
-                  who use RabbitMQ and want better visibility, easier
-                  monitoring, and faster troubleshooting. Whether you're running
-                  one broker or dozens, Qarote helps you save time and prevent
-                  message bottlenecks.
+                  {tFaq("q2.answer")}
                 </AccordionContent>
               </AccordionItem>
 
@@ -1694,14 +1667,10 @@ const Index = () => {
                 className="border border-border  px-6 bg-transparent mb-4 last:mb-0"
               >
                 <AccordionTrigger className="text-left text-foreground hover:no-underline">
-                  Is Qarote secure?
+                  {tFaq("q3.question")}
                 </AccordionTrigger>
                 <AccordionContent className="text-muted-foreground">
-                  Absolutely. All connections to your RabbitMQ servers are
-                  encrypted (TLS), and no sensitive data is stored on our
-                  servers. You stay in full control of your credentials, and
-                  Qarote only reads the metrics and management data needed for
-                  your dashboard.
+                  {tFaq("q3.answer")}
                 </AccordionContent>
               </AccordionItem>
 
@@ -1710,22 +1679,10 @@ const Index = () => {
                 className="border border-border  px-6 bg-transparent mb-4 last:mb-0"
               >
                 <AccordionTrigger className="text-left text-foreground hover:no-underline">
-                  What can I do with Qarote?
+                  {tFaq("q4.question")}
                 </AccordionTrigger>
                 <AccordionContent className="text-muted-foreground">
-                  With Qarote, you can:
-                  <ul className="list-disc list-inside mt-2 space-y-1">
-                    <li>
-                      View all your queues, exchanges, and bindings at a glance
-                    </li>
-                    <li>
-                      Monitor message rates, errors, and consumer activity in
-                      real time
-                    </li>
-                    <li>Create alerts for blocked or overloaded queues</li>
-                    <li>Manage users, vhosts, and permissions visually</li>
-                    <li>Connect multiple RabbitMQ instances in one place</li>
-                  </ul>
+                  {tFaq("q4.answer")}
                 </AccordionContent>
               </AccordionItem>
 
@@ -1734,19 +1691,10 @@ const Index = () => {
                 className="border border-border  px-6 bg-transparent mb-4 last:mb-0"
               >
                 <AccordionTrigger className="text-left text-foreground hover:no-underline">
-                  How is Qarote different from the RabbitMQ Management UI?
+                  {tFaq("q5.question")}
                 </AccordionTrigger>
                 <AccordionContent className="text-muted-foreground">
-                  The built-in RabbitMQ Management Plugin works, but it's slow,
-                  cluttered, and hard to scale across multiple brokers. Qarote
-                  provides:
-                  <ul className="list-disc list-inside mt-2 space-y-1">
-                    <li>A modern, intuitive interface</li>
-                    <li>Centralized monitoring across environments</li>
-                    <li>Powerful search and filters</li>
-                    <li>Smart alerts and reporting</li>
-                    <li>A clean experience designed for teams</li>
-                  </ul>
+                  {tFaq("q5.answer")}
                 </AccordionContent>
               </AccordionItem>
 
@@ -1755,14 +1703,10 @@ const Index = () => {
                 className="border border-border  px-6 bg-transparent mb-4 last:mb-0"
               >
                 <AccordionTrigger className="text-left text-foreground hover:no-underline">
-                  Is Qarote a better monitoring tool than Prometheus and
-                  Grafana?
+                  {tFaq("q6.question")}
                 </AccordionTrigger>
                 <AccordionContent className="text-muted-foreground">
-                  Qarote offers purpose-built monitoring specifically for
-                  RabbitMQ with zero configuration. While Prometheus and Grafana
-                  are powerful, they require significant setup and maintenance.
-                  Qarote provides comparable insights with much less overhead.
+                  {tFaq("q6.answer")}
                 </AccordionContent>
               </AccordionItem>
 
@@ -1771,13 +1715,10 @@ const Index = () => {
                 className="border border-border  px-6 bg-transparent mb-4 last:mb-0"
               >
                 <AccordionTrigger className="text-left text-foreground hover:no-underline">
-                  Can I try Qarote for free?
+                  {tFaq("q7.question")}
                 </AccordionTrigger>
                 <AccordionContent className="text-muted-foreground">
-                  Yes! We offer a free tier that includes 1 server, 1 workspace,
-                  and 1 team member. You can start monitoring your RabbitMQ
-                  queues right away without a credit card. When you're ready to
-                  scale, you can upgrade to a paid plan.
+                  {tFaq("q7.answer")}
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
@@ -1785,11 +1726,10 @@ const Index = () => {
 
           <div className="text-center mt-16">
             <h3 className="text-2xl text-foreground mb-4 font-normal">
-              Still have questions?
+              {t("faqSection.stillHaveQuestions")}
             </h3>
             <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-              Can't find the answer you're looking for? Please chat to our
-              friendly team.
+              {t("faqSection.stillHaveQuestionsDesc")}
             </p>
             <button
               onClick={() => {
@@ -1804,7 +1744,7 @@ const Index = () => {
                 textUnderlineOffset: "0.625rem",
               }}
             >
-              Contact us
+              {t("cta.contactUs")}
             </button>
           </div>
         </div>
@@ -1820,12 +1760,12 @@ const Index = () => {
             <div className="grid md:grid-cols-2 gap-12 lg:gap-16 items-center">
               <div>
                 <h2 className="text-3xl sm:text-4xl lg:text-5xl mb-4 text-center md:text-left leading-[1.2] font-normal text-[#1a1a1a]">
-                  Ready to upgrade your RabbitMQ experience?
+                  {t("finalCta.title")}
                 </h2>
               </div>
               <div className="text-center md:text-left">
                 <p className="text-xl mb-8" style={{ color: "#4a4a4a" }}>
-                  Start monitoring your RabbitMQ servers for free today.
+                  {t("finalCta.subtitle")}
                 </p>
                 <div className="flex flex-col items-center md:items-start">
                   <AuthButtons align="left" />
@@ -1863,13 +1803,13 @@ const Index = () => {
                 href="/privacy-policy"
                 className="text-muted-foreground hover:text-foreground transition-colors text-sm"
               >
-                Privacy Policy
+                {t("footer.privacyPolicy")}
               </a>
               <a
                 href="/terms-of-service"
                 className="text-muted-foreground hover:text-foreground transition-colors text-sm"
               >
-                Terms of Service
+                {t("footer.termsOfService")}
               </a>
               <a
                 href="mailto:support@qarote.io"
