@@ -53,6 +53,7 @@ interface PlanCardProps {
   isCurrentPlan?: boolean;
   onUpgrade: (plan: UserPlan, billingInterval: "monthly" | "yearly") => void;
   billingInterval: "monthly" | "yearly";
+  isUpgrading?: boolean;
 }
 
 const PlanCard: React.FC<PlanCardProps> = ({
@@ -63,6 +64,7 @@ const PlanCard: React.FC<PlanCardProps> = ({
   isCurrentPlan,
   onUpgrade,
   billingInterval,
+  isUpgrading,
 }) => {
   const { t } = useTranslation("billing");
 
@@ -346,8 +348,8 @@ const PlanCard: React.FC<PlanCardProps> = ({
 
         <Button
           onClick={() => onUpgrade(plan.id as UserPlan, billingInterval)}
-          className={`w-full ${isCurrentPlan ? "bg-gray-100 text-gray-600 cursor-not-allowed" : "bg-gradient-button hover:bg-gradient-button-hover text-white"}`}
-          disabled={isCurrentPlan}
+          className={`w-full ${isCurrentPlan || isUpgrading ? "bg-gray-100 text-gray-600 cursor-not-allowed" : "bg-gradient-button hover:bg-gradient-button-hover text-white"}`}
+          disabled={isCurrentPlan || isUpgrading}
         >
           {isCurrentPlan ? t("plans.currentPlan") : t("plans.startFree")}
         </Button>
@@ -358,9 +360,13 @@ const PlanCard: React.FC<PlanCardProps> = ({
 
 interface PlansPageProps {
   onUpgrade?: (plan: UserPlan, billingInterval: "monthly" | "yearly") => void;
+  isUpgrading?: boolean;
 }
 
-export const PlansPage: React.FC<PlansPageProps> = ({ onUpgrade }) => {
+export const PlansPage: React.FC<PlansPageProps> = ({
+  onUpgrade,
+  isUpgrading,
+}) => {
   const { t } = useTranslation("billing");
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">(
     "monthly"
@@ -597,6 +603,7 @@ export const PlansPage: React.FC<PlansPageProps> = ({ onUpgrade }) => {
                         isCurrentPlan={isCurrentPlan}
                         onUpgrade={onUpgrade || (() => {})}
                         billingInterval={billingPeriod}
+                        isUpgrading={isUpgrading}
                       />
                     );
                   })}
@@ -612,9 +619,9 @@ export const PlansPage: React.FC<PlansPageProps> = ({ onUpgrade }) => {
 
 // Default export for lazy loading
 const Plans: React.FC = () => {
-  const { handleUpgrade } = usePlanUpgrade();
+  const { handleUpgrade, isUpgrading } = usePlanUpgrade();
 
-  return <PlansPage onUpgrade={handleUpgrade} />;
+  return <PlansPage onUpgrade={handleUpgrade} isUpgrading={isUpgrading} />;
 };
 
 export default Plans;
