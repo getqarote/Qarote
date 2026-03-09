@@ -142,12 +142,13 @@ export function captureMessageProcessingError(
 }
 
 /**
- * Track sign up errors as metrics
+ * Track sign up errors as metrics and capture as Sentry exception
  * Only tracks in production environment
  */
 export function trackSignUpError(
   errorType: SignUpErrorType,
-  attributes: MetricAttributes
+  attributes: MetricAttributes,
+  error?: unknown
 ) {
   trackMetricCount("signup.error", 1, {
     tags: {
@@ -155,21 +156,50 @@ export function trackSignUpError(
       ...attributes,
     },
   });
+
+  const Sentry = getSentry();
+  if (!Sentry) return;
+
+  const exception =
+    error instanceof Error ? error : new Error(`Signup failed: ${errorType}`);
+
+  Sentry.withScope((scope) => {
+    scope.setTag("component", "signup");
+    scope.setTag("error_type", errorType);
+    scope.setLevel("error");
+    scope.setContext("signup", attributes);
+    Sentry.captureException(exception);
+  });
 }
 
 /**
- * Track payment errors as metrics
+ * Track payment errors as metrics and capture as Sentry exception
  * Only tracks in production environment
  */
 export function trackPaymentError(
   errorType: PaymentErrorType,
-  attributes: MetricAttributes
+  attributes: MetricAttributes,
+  error?: unknown
 ) {
   trackMetricCount("payment.error", 1, {
     tags: {
       error_type: errorType,
       ...attributes,
     },
+  });
+
+  const Sentry = getSentry();
+  if (!Sentry) return;
+
+  const exception =
+    error instanceof Error ? error : new Error(`Payment failed: ${errorType}`);
+
+  Sentry.withScope((scope) => {
+    scope.setTag("component", "payment");
+    scope.setTag("error_type", errorType);
+    scope.setLevel("error");
+    scope.setContext("payment", attributes);
+    Sentry.captureException(exception);
   });
 }
 

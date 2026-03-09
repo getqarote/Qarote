@@ -247,13 +247,17 @@ export const googleRouter = router({
                 );
               });
           } catch (createError) {
-            trackSignUpError("google_oauth", {
-              email,
-              error:
-                createError instanceof Error
-                  ? createError.message
-                  : String(createError),
-            });
+            trackSignUpError(
+              "google_oauth",
+              {
+                email,
+                error:
+                  createError instanceof Error
+                    ? createError.message
+                    : String(createError),
+              },
+              createError
+            );
             throw new TRPCError({
               code: "INTERNAL_SERVER_ERROR",
               message: te(ctx.locale, "auth.failedToCreateUserAccount"),
