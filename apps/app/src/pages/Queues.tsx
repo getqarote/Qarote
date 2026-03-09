@@ -23,6 +23,8 @@ const Queues = () => {
   const navigate = useNavigate();
   const { isLoading: workspaceLoading } = useUser();
   const [filterRegex, setFilterRegex] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
   const { selectedServerId, hasServers } = useServerContext();
   const { selectedVHost } = useVHostContext();
   const { data: queuesData, isLoading } = useQueues(
@@ -48,6 +50,11 @@ const Queues = () => {
       }
     });
   }, [queues, filterRegex]);
+
+  const paginatedQueues = useMemo(
+    () => filteredQueues.slice((page - 1) * pageSize, page * pageSize),
+    [filteredQueues, page, pageSize]
+  );
 
   if (!hasServers) {
     return (
@@ -117,7 +124,10 @@ const Queues = () => {
               <Input
                 placeholder={t("filterRegex")}
                 value={filterRegex}
-                onChange={(e) => setFilterRegex(e.target.value)}
+                onChange={(e) => {
+                  setFilterRegex(e.target.value);
+                  setPage(1);
+                }}
                 className="max-w-xs"
               />
               <div className="flex items-center gap-1 text-sm text-muted-foreground">
@@ -127,13 +137,21 @@ const Queues = () => {
 
             {/* Queues Table */}
             <QueueTable
-              queues={filteredQueues}
+              queues={paginatedQueues}
               isLoading={isLoading}
               searchTerm={filterRegex}
               onNavigateToQueue={(queueName) =>
                 navigate(`/queues/${queueName}`)
               }
               onRefetch={handleRefetch}
+              total={filteredQueues.length}
+              page={page}
+              pageSize={pageSize}
+              onPageChange={setPage}
+              onPageSizeChange={(size) => {
+                setPageSize(size);
+                setPage(1);
+              }}
             />
           </div>
         </main>
