@@ -24,7 +24,7 @@
     <script>
       (function () {
         var cfg = window.__QAROTE_CONFIG__;
-        if (cfg && cfg.deploymentMode && cfg.deploymentMode !== "cloud") return;
+        if (!cfg || cfg.deploymentMode !== "cloud") return;
 
         (function (w, d, s, l, i) {
           w[l] = w[l] || [];

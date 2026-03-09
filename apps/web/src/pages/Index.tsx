@@ -1590,7 +1590,7 @@ const Index = () => {
                         size={undefined}
                         className={`w-full mt-6 px-4 py-3 sm:px-7 sm:py-3 transition-colors duration-200 text-base sm:text-lg h-auto rounded-full ${plan.id === "FREE" ? "bg-transparent border border-border text-foreground hover:bg-muted" : "bg-gradient-button hover:bg-gradient-button-hover text-white"}`}
                         onClick={() => {
-                          if (hostingMode === "selfhost" && selfHost) {
+                          if (hostingMode === "selfhost" && selfHost?.url) {
                             window.open(selfHost.url, "_blank");
                           } else if (plan.id === "ENTERPRISE_PLUS") {
                             if (window.Tawk_API && window.Tawk_API.maximize) {
@@ -1828,7 +1828,7 @@ const Index = () => {
                   Start monitoring your RabbitMQ servers for free today.
                 </p>
                 <div className="flex flex-col items-center md:items-start">
-                  <AuthButtons variant="light" align="left" />
+                  <AuthButtons align="left" />
                 </div>
               </div>
             </div>

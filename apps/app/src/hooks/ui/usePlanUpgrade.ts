@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 
+import { toast } from "sonner";
+
 import { logger } from "@/lib/logger";
 import { trpc } from "@/lib/trpc/client";
 
@@ -30,7 +32,7 @@ export const usePlanUpgrade = () => {
       },
       onError: (error) => {
         logger.error("Error creating checkout session:", error);
-        alert(
+        toast.error(
           "There was an error creating the checkout session. Please try again."
         );
         setIsUpgrading(false);
@@ -45,7 +47,7 @@ export const usePlanUpgrade = () => {
       },
       onError: (error) => {
         logger.error("Error opening customer portal:", error);
-        alert(
+        toast.error(
           "There was an error opening the customer portal. Please try again."
         );
         setIsUpgrading(false);
@@ -79,7 +81,7 @@ export const usePlanUpgrade = () => {
       });
     } catch (error) {
       logger.error("Error upgrading plan:", error);
-      alert("There was an error upgrading your plan. Please try again.");
+      toast.error("There was an error upgrading your plan. Please try again.");
       setIsUpgrading(false);
     }
   };
