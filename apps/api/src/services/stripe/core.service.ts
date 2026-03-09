@@ -403,19 +403,15 @@ export class CoreStripeService {
     });
 
     // Track payment error metric
-    trackPaymentError(
-      "stripe_operation",
-      {
-        operation,
-        error_message: Error.isError(error) ? error.message : "Unknown error",
-        ...Object.fromEntries(
-          Object.entries(context).map(([k, v]) => [
-            k,
-            typeof v === "string" ? v : String(v),
-          ])
-        ),
-      },
-      error
-    );
+    trackPaymentError("stripe_operation", {
+      operation,
+      error_message: Error.isError(error) ? error.message : "Unknown error",
+      ...Object.fromEntries(
+        Object.entries(context).map(([k, v]) => [
+          k,
+          typeof v === "string" ? v : String(v),
+        ])
+      ),
+    });
   }
 }
