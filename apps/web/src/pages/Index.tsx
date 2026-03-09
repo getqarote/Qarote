@@ -1799,6 +1799,10 @@ const Index = () => {
               </div>
             </div>
 
+            <div className="hidden md:flex items-center">
+              <LanguageSwitcher />
+            </div>
+
             <div className="flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-6">
               <a
                 href="/privacy-policy"
@@ -1818,7 +1822,6 @@ const Index = () => {
               >
                 Contact
               </a>
-              <LanguageSwitcher />
               <div className="flex items-center gap-2">
                 <a
                   href="https://github.com/getqarote/Qarote"
@@ -1872,6 +1875,9 @@ const Index = () => {
                     <path d="M4.98 3.5C4.98 4.88 3.88 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1 4.98 2.12 4.98 3.5zM.22 8.25H4.78V23H.22V8.25zM8.56 8.25h4.36v2.01h.06c.61-1.16 2.1-2.38 4.32-2.38 4.62 0 5.47 3.04 5.47 6.99V23h-4.56v-7.02c0-1.67-.03-3.82-2.33-3.82-2.33 0-2.69 1.82-2.69 3.7V23H8.56V8.25z" />
                   </svg>
                 </a>
+              </div>
+              <div className="md:hidden">
+                <LanguageSwitcher />
               </div>
             </div>
           </div>
