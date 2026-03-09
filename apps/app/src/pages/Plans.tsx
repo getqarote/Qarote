@@ -359,7 +359,7 @@ const PlanCard: React.FC<PlanCardProps> = ({
 };
 
 interface PlansPageProps {
-  onUpgrade?: (plan: UserPlan, billingInterval: "monthly" | "yearly") => void;
+  onUpgrade: (plan: UserPlan, billingInterval: "monthly" | "yearly") => void;
   isUpgrading?: boolean;
 }
 
@@ -601,7 +601,7 @@ export const PlansPage: React.FC<PlansPageProps> = ({
                         originalPrice={currentPricing.originalPrice}
                         period={billingPeriod === "monthly" ? "month" : "year"}
                         isCurrentPlan={isCurrentPlan}
-                        onUpgrade={onUpgrade || (() => {})}
+                        onUpgrade={onUpgrade}
                         billingInterval={billingPeriod}
                         isUpgrading={isUpgrading}
                       />
