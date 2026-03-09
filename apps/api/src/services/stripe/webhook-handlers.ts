@@ -186,10 +186,14 @@ export async function handleCheckoutSessionCompleted(session: Session) {
     logger.info(`User ${userId} upgraded to ${plan}`);
   } catch (error) {
     logger.error({ error }, "Error handling checkout session completed");
-    trackPaymentError("webhook", {
-      handler: "handleCheckoutSessionCompleted",
-      error_message: error instanceof Error ? error.message : "Unknown error",
-    });
+    trackPaymentError(
+      "webhook",
+      {
+        handler: "handleCheckoutSessionCompleted",
+        error_message: error instanceof Error ? error.message : "Unknown error",
+      },
+      error
+    );
   }
 }
 
@@ -304,10 +308,14 @@ async function handleLicensePurchase(
     });
   } catch (error) {
     logger.error({ error }, "Error handling license purchase");
-    trackPaymentError("webhook", {
-      handler: "handleLicensePurchase",
-      error_message: error instanceof Error ? error.message : "Unknown error",
-    });
+    trackPaymentError(
+      "webhook",
+      {
+        handler: "handleLicensePurchase",
+        error_message: error instanceof Error ? error.message : "Unknown error",
+      },
+      error
+    );
   }
 }
 
@@ -394,10 +402,14 @@ export async function handleSubscriptionChange(subscription: Subscription) {
     );
   } catch (error) {
     logger.error({ error }, "Error handling subscription change");
-    trackPaymentError("webhook", {
-      handler: "handleSubscriptionChange",
-      error_message: error instanceof Error ? error.message : "Unknown error",
-    });
+    trackPaymentError(
+      "webhook",
+      {
+        handler: "handleSubscriptionChange",
+        error_message: error instanceof Error ? error.message : "Unknown error",
+      },
+      error
+    );
   }
 }
 
@@ -490,10 +502,14 @@ export async function handleCustomerSubscriptionDeleted(
     }
   } catch (error) {
     logger.error({ error }, "Error handling subscription deletion");
-    trackPaymentError("webhook", {
-      handler: "handleCustomerSubscriptionDeleted",
-      error_message: error instanceof Error ? error.message : "Unknown error",
-    });
+    trackPaymentError(
+      "webhook",
+      {
+        handler: "handleCustomerSubscriptionDeleted",
+        error_message: error instanceof Error ? error.message : "Unknown error",
+      },
+      error
+    );
   }
 }
 
@@ -667,10 +683,14 @@ export async function handleInvoicePaymentSucceeded(invoice: Invoice) {
     );
   } catch (error) {
     logger.error({ error }, "Error handling invoice payment succeeded");
-    trackPaymentError("webhook", {
-      handler: "handleInvoicePaymentSucceeded",
-      error_message: error instanceof Error ? error.message : "Unknown error",
-    });
+    trackPaymentError(
+      "webhook",
+      {
+        handler: "handleInvoicePaymentSucceeded",
+        error_message: error instanceof Error ? error.message : "Unknown error",
+      },
+      error
+    );
   }
 }
 
@@ -825,10 +845,14 @@ export async function handleInvoicePaymentFailed(invoice: Invoice) {
     );
   } catch (error) {
     logger.error({ error }, "Error handling invoice payment failed");
-    trackPaymentError("webhook", {
-      handler: "handleInvoicePaymentFailed",
-      error_message: error instanceof Error ? error.message : "Unknown error",
-    });
+    trackPaymentError(
+      "webhook",
+      {
+        handler: "handleInvoicePaymentFailed",
+        error_message: error instanceof Error ? error.message : "Unknown error",
+      },
+      error
+    );
   }
 }
 
@@ -877,10 +901,14 @@ export async function handleTrialWillEnd(subscription: Subscription) {
     logger.info({ subscriptionId, userId: user.id }, "Trial ending email sent");
   } catch (error) {
     logger.error({ error }, "Error handling trial will end");
-    trackPaymentError("webhook", {
-      handler: "handleTrialWillEnd",
-      error_message: error instanceof Error ? error.message : "Unknown error",
-    });
+    trackPaymentError(
+      "webhook",
+      {
+        handler: "handleTrialWillEnd",
+        error_message: error instanceof Error ? error.message : "Unknown error",
+      },
+      error
+    );
   }
 }
 
@@ -935,10 +963,14 @@ export async function handlePaymentActionRequired(invoice: Invoice) {
     );
   } catch (error) {
     logger.error({ error }, "Error handling payment action required");
-    trackPaymentError("webhook", {
-      handler: "handlePaymentActionRequired",
-      error_message: error instanceof Error ? error.message : "Unknown error",
-    });
+    trackPaymentError(
+      "webhook",
+      {
+        handler: "handlePaymentActionRequired",
+        error_message: error instanceof Error ? error.message : "Unknown error",
+      },
+      error
+    );
   }
 }
 
@@ -973,10 +1005,14 @@ export async function handleUpcomingInvoice(invoice: Invoice) {
     );
   } catch (error) {
     logger.error({ error }, "Error handling upcoming invoice");
-    trackPaymentError("webhook", {
-      handler: "handleUpcomingInvoice",
-      error_message: error instanceof Error ? error.message : "Unknown error",
-    });
+    trackPaymentError(
+      "webhook",
+      {
+        handler: "handleUpcomingInvoice",
+        error_message: error instanceof Error ? error.message : "Unknown error",
+      },
+      error
+    );
   }
 }
 
@@ -986,10 +1022,14 @@ export async function handlePaymentIntentFailed(paymentIntent: PaymentIntent) {
     // Add any custom logic for failed payment intents
   } catch (error) {
     logger.error({ error }, "Error handling payment intent failed");
-    trackPaymentError("webhook", {
-      handler: "handlePaymentIntentFailed",
-      error_message: error instanceof Error ? error.message : "Unknown error",
-    });
+    trackPaymentError(
+      "webhook",
+      {
+        handler: "handlePaymentIntentFailed",
+        error_message: error instanceof Error ? error.message : "Unknown error",
+      },
+      error
+    );
   }
 }
 
@@ -1004,10 +1044,14 @@ export async function handlePaymentIntentSucceeded(
     // Add any custom logic for succeeded payment intents
   } catch (error) {
     logger.error({ error }, "Error handling payment intent succeeded");
-    trackPaymentError("webhook", {
-      handler: "handlePaymentIntentSucceeded",
-      error_message: error instanceof Error ? error.message : "Unknown error",
-    });
+    trackPaymentError(
+      "webhook",
+      {
+        handler: "handlePaymentIntentSucceeded",
+        error_message: error instanceof Error ? error.message : "Unknown error",
+      },
+      error
+    );
   }
 }
 
