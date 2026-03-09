@@ -114,9 +114,11 @@ const SignUp: React.FC = () => {
           </p>
         </div>
 
-        <Card className="bg-white/95 backdrop-blur-xs border-white/20 shadow-2xl">
+        <Card className="bg-card/95 backdrop-blur-xs border-border/20 shadow-2xl">
           <CardHeader>
-            <CardTitle className="text-gray-900">{t("getStarted")}</CardTitle>
+            <CardTitle className="text-card-foreground">
+              {t("getStarted")}
+            </CardTitle>
             <CardDescription>{t("createAccountDescription")}</CardDescription>
           </CardHeader>
           <CardContent>
@@ -349,7 +351,7 @@ const SignUp: React.FC = () => {
                     <span className="w-full border-t" />
                   </div>
                   <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-white px-2 text-muted-foreground">
+                    <span className="bg-card px-2 text-muted-foreground">
                       {t("orContinueWith")}
                     </span>
                   </div>
