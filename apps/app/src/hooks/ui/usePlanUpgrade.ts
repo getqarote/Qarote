@@ -10,6 +10,8 @@ import { UserPlan } from "@/types/plans";
 
 import { useWorkspace } from "./useWorkspace";
 
+type BillingInterval = "monthly" | "yearly";
+
 export const usePlanUpgrade = () => {
   const [isUpgrading, setIsUpgrading] = useState(false);
   const navigate = useNavigate();
@@ -21,6 +23,9 @@ export const usePlanUpgrade = () => {
       onSuccess: (data) => {
         if (data.url) {
           window.location.href = data.url;
+        } else {
+          logger.error("Checkout session returned no URL");
+          setIsUpgrading(false);
         }
       },
       onError: (error) => {
@@ -47,7 +52,10 @@ export const usePlanUpgrade = () => {
       },
     });
 
-  const handleUpgrade = async (targetPlan: UserPlan) => {
+  const handleUpgrade = async (
+    targetPlan: UserPlan,
+    billingInterval: BillingInterval = "monthly"
+  ) => {
     if (!workspace || !user) {
       navigate("/auth/signin");
       return;
@@ -67,7 +75,7 @@ export const usePlanUpgrade = () => {
 
       checkoutMutation.mutate({
         plan: targetPlan,
-        billingInterval: "monthly",
+        billingInterval,
       });
     } catch (error) {
       logger.error("Error upgrading plan:", error);

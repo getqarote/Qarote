@@ -51,7 +51,8 @@ interface PlanCardProps {
   period: "month" | "year";
   originalPrice?: string;
   isCurrentPlan?: boolean;
-  onUpgrade: (plan: UserPlan) => void;
+  onUpgrade: (plan: UserPlan, billingInterval: "monthly" | "yearly") => void;
+  billingInterval: "monthly" | "yearly";
 }
 
 const PlanCard: React.FC<PlanCardProps> = ({
@@ -61,6 +62,7 @@ const PlanCard: React.FC<PlanCardProps> = ({
   originalPrice,
   isCurrentPlan,
   onUpgrade,
+  billingInterval,
 }) => {
   const { t } = useTranslation("billing");
 
@@ -343,7 +345,7 @@ const PlanCard: React.FC<PlanCardProps> = ({
         </div>
 
         <Button
-          onClick={() => onUpgrade(plan.id as UserPlan)}
+          onClick={() => onUpgrade(plan.id as UserPlan, billingInterval)}
           className={`w-full ${isCurrentPlan ? "bg-gray-100 text-gray-600 cursor-not-allowed" : "bg-gradient-button hover:bg-gradient-button-hover text-white"}`}
           disabled={isCurrentPlan}
         >
@@ -355,7 +357,7 @@ const PlanCard: React.FC<PlanCardProps> = ({
 };
 
 interface PlansPageProps {
-  onUpgrade?: (plan: UserPlan) => void;
+  onUpgrade?: (plan: UserPlan, billingInterval: "monthly" | "yearly") => void;
 }
 
 export const PlansPage: React.FC<PlansPageProps> = ({ onUpgrade }) => {
@@ -594,6 +596,7 @@ export const PlansPage: React.FC<PlansPageProps> = ({ onUpgrade }) => {
                         period={billingPeriod === "monthly" ? "month" : "year"}
                         isCurrentPlan={isCurrentPlan}
                         onUpgrade={onUpgrade || (() => {})}
+                        billingInterval={billingPeriod}
                       />
                     );
                   })}

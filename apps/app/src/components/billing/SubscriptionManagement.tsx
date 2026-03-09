@@ -25,7 +25,7 @@ interface CancelSubscriptionResponse {
 interface SubscriptionManagementProps {
   currentPlan: UserPlan;
   onOpenBillingPortal: () => void;
-  onUpgrade: (plan: UserPlan) => void;
+  onUpgrade: (plan: UserPlan, billingInterval?: "monthly" | "yearly") => void;
   onRenewSubscription?: () => void;
   onCancelSubscription: (data: {
     cancelImmediately: boolean;
