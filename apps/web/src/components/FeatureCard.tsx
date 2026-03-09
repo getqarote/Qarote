@@ -1,7 +1,55 @@
 import * as React from "react";
 
 import type { LucideProps } from "lucide-react";
-import { LucideIcon, Activity, Shield, MessageSquare, BarChart3, Settings, Rocket } from "lucide-react";
+import {
+  Activity,
+  BarChart3,
+  LucideIcon,
+  MessageSquare,
+  Rocket,
+  Settings,
+  Shield,
+} from "lucide-react";
+
+const iconImageMap: Record<string, { src: string; alt: string }> = {
+  Activity: { src: "/images/real-time.svg", alt: "Real-time" },
+  Shield: { src: "/images/flag.svg", alt: "Flag" },
+  MessageSquare: { src: "/images/message.svg", alt: "Message" },
+  BarChart3: { src: "/images/chart.svg", alt: "Chart" },
+  Settings: { src: "/images/server.svg", alt: "Server" },
+  Rocket: { src: "/images/send.svg", alt: "Send" },
+};
+
+const iconComponents = {
+  Activity,
+  Shield,
+  MessageSquare,
+  BarChart3,
+  Settings,
+  Rocket,
+};
+
+function getIconKey(Icon: LucideIcon, title: string): string | undefined {
+  for (const [key, component] of Object.entries(iconComponents)) {
+    if (
+      Icon === component ||
+      (Icon as unknown as Record<string, string>)?.displayName === key ||
+      (Icon as unknown as Record<string, string>)?.name === key
+    ) {
+      return key;
+    }
+  }
+  // Fallback: match by title
+  const titleMap: Record<string, string> = {
+    "live queue monitoring": "Activity",
+    "smart alerting system": "Shield",
+    "queue management": "MessageSquare",
+    "performance analytics": "BarChart3",
+    "multi-server support": "Settings",
+    "message publishing": "Rocket",
+  };
+  return titleMap[title.toLowerCase()];
+}
 
 interface FeatureCardProps {
   icon: LucideIcon;
@@ -10,98 +58,25 @@ interface FeatureCardProps {
 }
 
 const FeatureCard = ({ icon: Icon, title, description }: FeatureCardProps) => {
-  // Type-safe workaround for React type conflicts between lucide-react and @types/react
   const IconComponent = Icon as unknown as React.ComponentType<LucideProps>;
-  
-  // Check if this is the Activity icon and use the real-time SVG instead
-  // Compare by checking the displayName, function name, or title
-  const isActivityIcon = Icon === Activity || 
-    (Icon as any)?.displayName === 'Activity' || 
-    (Icon as any)?.name === 'Activity' ||
-    title === "Live Queue Monitoring";
-
-  // Check if this is the Shield icon and use the flag SVG instead
-  const isShieldIcon = Icon === Shield || 
-    (Icon as any)?.displayName === 'Shield' || 
-    (Icon as any)?.name === 'Shield' ||
-    title === "Smart Alerting System";
-
-  // Check if this is the MessageSquare icon and use the message SVG instead
-  const isMessageSquareIcon = Icon === MessageSquare || 
-    (Icon as any)?.displayName === 'MessageSquare' || 
-    (Icon as any)?.name === 'MessageSquare' ||
-    title === "Queue Management";
-
-  // Check if this is the BarChart3 icon and use the chart SVG instead
-  const isBarChart3Icon = Icon === BarChart3 || 
-    (Icon as any)?.displayName === 'BarChart3' || 
-    (Icon as any)?.name === 'BarChart3' ||
-    title === "Performance Analytics";
-
-  // Check if this is the Settings icon and use the server SVG instead
-  const isSettingsIcon = Icon === Settings || 
-    (Icon as any)?.displayName === 'Settings' || 
-    (Icon as any)?.name === 'Settings' ||
-    title === "Multi-Server Support";
-
-  // Check if this is the Rocket icon and use the send SVG instead
-  const isRocketIcon = Icon === Rocket || 
-    (Icon as any)?.displayName === 'Rocket' || 
-    (Icon as any)?.name === 'Rocket' ||
-    title === "Message Publishing";
+  const iconKey = getIconKey(Icon, title);
+  const imageSrc = iconKey ? iconImageMap[iconKey] : null;
 
   return (
     <div className="group relative p-6 bg-transparent border border-border transition-all duration-300 hover:-translate-y-1">
       <div className="inline-flex p-3 bg-orange-100 mb-4">
-        {isActivityIcon ? (
+        {imageSrc ? (
           <img
-            src="/images/real-time.svg"
-            alt="Real-time"
-            className="h-6 w-6"
-            style={{ imageRendering: "crisp-edges" }}
-          />
-        ) : isShieldIcon ? (
-          <img
-            src="/images/flag.svg"
-            alt="Flag"
-            className="h-6 w-6"
-            style={{ imageRendering: "crisp-edges" }}
-          />
-        ) : isMessageSquareIcon ? (
-          <img
-            src="/images/message.svg"
-            alt="Message"
-            className="h-6 w-6"
-            style={{ imageRendering: "crisp-edges" }}
-          />
-        ) : isBarChart3Icon ? (
-          <img
-            src="/images/chart.svg"
-            alt="Chart"
-            className="h-6 w-6"
-            style={{ imageRendering: "crisp-edges" }}
-          />
-        ) : isSettingsIcon ? (
-          <img
-            src="/images/server.svg"
-            alt="Server"
-            className="h-6 w-6"
-            style={{ imageRendering: "crisp-edges" }}
-          />
-        ) : isRocketIcon ? (
-          <img
-            src="/images/send.svg"
-            alt="Send"
-            className="h-6 w-6"
-            style={{ imageRendering: "crisp-edges" }}
+            src={imageSrc.src}
+            alt=""
+            aria-hidden="true"
+            className="h-6 w-6 image-crisp"
           />
         ) : (
-          <IconComponent className="h-6 w-6" style={{ color: "#FF691B" }} />
+          <IconComponent className="h-6 w-6 text-primary" />
         )}
       </div>
-      <h3 className="text-2xl text-foreground mb-2" style={{ fontWeight: 400 }}>
-        {title}
-      </h3>
+      <h3 className="text-2xl text-foreground mb-2 font-normal">{title}</h3>
       <p className="text-muted-foreground leading-relaxed">{description}</p>
     </div>
   );

@@ -212,14 +212,7 @@ const Index = () => {
   ];
 
   return (
-    <div
-      className="min-h-screen"
-      style={{
-        fontFamily:
-          'Arial, ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"',
-        backgroundColor: "#ffffff",
-      }}
-    >
+    <div className="min-h-screen font-sans bg-white">
       <StickyNav onVideoClick={() => setIsVideoPlaying(true)} />
       <SEO
         title="Qarote - Best RabbitMQ Monitoring & Management Interface"
@@ -324,10 +317,7 @@ const Index = () => {
 
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 md:pt-28 pb-3.5">
           <div className="w-full text-center">
-            <h1
-              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-foreground mb-6 leading-tight max-w-4xl mx-auto px-2"
-              style={{ fontWeight: 400 }}
-            >
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-foreground mb-6 leading-tight max-w-4xl mx-auto px-2 font-normal">
               The easiest way to monitor your{" "}
               <span style={{ color: "#FF691B" }}>RabbitMQ</span> servers
             </h1>
@@ -338,21 +328,7 @@ const Index = () => {
             </p>
 
             <div className="mb-12">
-              <AuthButtons
-                onHowItWorksClick={() => {
-                  const videoElement = document.getElementById("video");
-                  if (videoElement) {
-                    videoElement.scrollIntoView({
-                      behavior: "smooth",
-                      block: "center",
-                    });
-                    // Launch video after a short delay to allow scroll to complete
-                    setTimeout(() => {
-                      setIsVideoPlaying(true);
-                    }, 500);
-                  }
-                }}
-              />
+              <AuthButtons />
               <p className="text-xs sm:text-sm text-muted-foreground mt-3 px-4">
                 14-day free trial · No credit card required
               </p>
@@ -414,10 +390,7 @@ const Index = () => {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2
-              className="text-3xl sm:text-4xl lg:text-5xl text-foreground mb-4 max-w-4xl mx-auto leading-[1.2]"
-              style={{ fontWeight: 400 }}
-            >
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl text-foreground mb-4 max-w-4xl mx-auto leading-[1.2] font-normal">
               Managing RabbitMQ servers
               <span className="hidden md:inline">
                 <br />
@@ -431,10 +404,7 @@ const Index = () => {
             <div className="grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-border">
               {/* Left Column - Traditional */}
               <div className="pt-8 lg:pt-12 px-8 lg:px-12 pb-0 flex flex-col relative overflow-visible">
-                <h3
-                  className="text-2xl text-foreground mb-8"
-                  style={{ fontWeight: 400 }}
-                >
+                <h3 className="text-2xl text-foreground mb-8 font-normal">
                   Traditional management interfaces
                 </h3>
                 <div className="space-y-5 mb-16">
@@ -507,10 +477,7 @@ const Index = () => {
 
               {/* Right Column - Qarote */}
               <div className="pt-8 lg:pt-12 px-8 lg:px-12 pb-0 flex flex-col relative overflow-visible">
-                <h3
-                  className="text-2xl text-foreground mb-8"
-                  style={{ fontWeight: 400 }}
-                >
+                <h3 className="text-2xl text-foreground mb-8 font-normal">
                   Qarote
                 </h3>
                 <div className="space-y-5 mb-16">
@@ -622,10 +589,7 @@ const Index = () => {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2
-              className="text-3xl sm:text-4xl lg:text-5xl text-foreground mb-4 max-w-4xl mx-auto leading-[1.2]"
-              style={{ fontWeight: 400 }}
-            >
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl text-foreground mb-4 max-w-4xl mx-auto leading-[1.2] font-normal">
               All you really care about.
               <br />
               Monitored in one place.
@@ -653,7 +617,7 @@ const Index = () => {
                 const appBaseUrl = import.meta.env.VITE_APP_BASE_URL;
                 window.location.href = `${appBaseUrl}/auth/sign-up`;
               }}
-              className="bg-[#FF691B] text-white hover:bg-[#E55A0F] px-4 py-3 sm:px-7 sm:py-3 transition-colors duration-200 inline-flex items-center justify-center gap-3 text-base sm:text-lg rounded-full"
+              className="bg-gradient-button hover:bg-gradient-button-hover text-white px-4 py-3 sm:px-7 sm:py-3 transition-colors duration-200 inline-flex items-center justify-center gap-3 text-base sm:text-lg rounded-full"
             >
               <span>Start monitoring for free</span>
               <img
@@ -676,10 +640,7 @@ const Index = () => {
           <div className="grid lg:grid-cols-2 gap-12 items-start">
             {/* Left side - Title and description */}
             <div className="lg:sticky lg:top-20">
-              <h2
-                className="text-3xl sm:text-4xl lg:text-5xl text-foreground mb-6 max-w-4xl leading-[1.2]"
-                style={{ fontWeight: 400 }}
-              >
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl text-foreground mb-6 max-w-4xl leading-[1.2] font-normal">
                 Connect easily with your RabbitMQ servers
               </h2>
               <p className="text-lg text-muted-foreground">
@@ -704,10 +665,7 @@ const Index = () => {
                     </div>
                   </div>
                   <div className="flex-1">
-                    <h3
-                      className="text-2xl text-foreground mb-2"
-                      style={{ fontWeight: 400 }}
-                    >
+                    <h3 className="text-2xl text-foreground mb-2 font-normal">
                       Sign up
                     </h3>
                     <p className="text-muted-foreground mb-4">
@@ -794,10 +752,7 @@ const Index = () => {
                     </div>
                   </div>
                   <div className="flex-1">
-                    <h3
-                      className="text-2xl text-foreground mb-2"
-                      style={{ fontWeight: 400 }}
-                    >
+                    <h3 className="text-2xl text-foreground mb-2 font-normal">
                       Add your servers
                     </h3>
                     <p className="text-muted-foreground mb-4">
@@ -882,10 +837,7 @@ const Index = () => {
                     </div>
                   </div>
                   <div className="flex-1">
-                    <h3
-                      className="text-2xl text-foreground mb-2"
-                      style={{ fontWeight: 400 }}
-                    >
+                    <h3 className="text-2xl text-foreground mb-2 font-normal">
                       Monitor and collaborate
                     </h3>
                     <p className="text-muted-foreground mb-4">
@@ -992,10 +944,7 @@ const Index = () => {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2
-              className="text-3xl sm:text-4xl lg:text-5xl text-foreground mb-4 max-w-4xl mx-auto leading-[1.2]"
-              style={{ fontWeight: 400 }}
-            >
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl text-foreground mb-4 max-w-4xl mx-auto leading-[1.2] font-normal">
               Simple pricing.
               <br />
               Powerful monitoring.
@@ -1125,10 +1074,7 @@ const Index = () => {
                       )}
                       <div className="text-left">
                         <div className="flex items-center gap-2 mb-4">
-                          <h3
-                            className={`text-2xl ${plan.color}`}
-                            style={{ fontWeight: 400 }}
-                          >
+                          <h3 className={`text-2xl font-normal ${plan.color}`}>
                             {plan.name}
                           </h3>
                         </div>
@@ -1642,7 +1588,7 @@ const Index = () => {
                       </div>
                       <Button
                         size={undefined}
-                        className={`w-full mt-6 px-4 py-3 sm:px-7 sm:py-3 transition-colors duration-200 text-base sm:text-lg h-auto rounded-full ${plan.id === "FREE" ? "bg-transparent border border-border text-foreground hover:bg-muted" : "bg-[#FF691B] text-white hover:bg-[#E55A0F]"}`}
+                        className={`w-full mt-6 px-4 py-3 sm:px-7 sm:py-3 transition-colors duration-200 text-base sm:text-lg h-auto rounded-full ${plan.id === "FREE" ? "bg-transparent border border-border text-foreground hover:bg-muted" : "bg-gradient-button hover:bg-gradient-button-hover text-white"}`}
                         onClick={() => {
                           if (hostingMode === "selfhost" && selfHost) {
                             window.open(selfHost.url, "_blank");
@@ -1701,10 +1647,7 @@ const Index = () => {
       >
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2
-              className="text-3xl sm:text-4xl lg:text-5xl text-foreground mb-4 max-w-4xl mx-auto leading-[1.2]"
-              style={{ fontWeight: 400 }}
-            >
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl text-foreground mb-4 max-w-4xl mx-auto leading-[1.2] font-normal">
               Frequently Asked Questions
             </h2>
             <p className="text-xl text-muted-foreground">
@@ -1841,10 +1784,7 @@ const Index = () => {
           </div>
 
           <div className="text-center mt-16">
-            <h3
-              className="text-2xl text-foreground mb-4"
-              style={{ fontWeight: 400 }}
-            >
+            <h3 className="text-2xl text-foreground mb-4 font-normal">
               Still have questions?
             </h3>
             <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
@@ -1879,10 +1819,7 @@ const Index = () => {
           >
             <div className="grid md:grid-cols-2 gap-12 lg:gap-16 items-center">
               <div>
-                <h2
-                  className="text-3xl sm:text-4xl lg:text-5xl mb-4 text-center md:text-left leading-[1.2]"
-                  style={{ fontWeight: 400, color: "#1a1a1a" }}
-                >
+                <h2 className="text-3xl sm:text-4xl lg:text-5xl mb-4 text-center md:text-left leading-[1.2] font-normal text-[#1a1a1a]">
                   Ready to upgrade your RabbitMQ experience?
                 </h2>
               </div>
@@ -1891,12 +1828,7 @@ const Index = () => {
                   Start monitoring your RabbitMQ servers for free today.
                 </p>
                 <div className="flex flex-col items-center md:items-start">
-                  <AuthButtons
-                    variant="light"
-                    onHowItWorksClick={() => setIsVideoPlaying(true)}
-                    hideHowItWorks={true}
-                    align="left"
-                  />
+                  <AuthButtons variant="light" align="left" />
                 </div>
               </div>
             </div>
@@ -1919,10 +1851,7 @@ const Index = () => {
                   className="w-6 h-6 sm:w-8 sm:h-8"
                 />
                 <div>
-                  <h3
-                    className="text-foreground"
-                    style={{ fontWeight: 400, fontSize: "1.2rem" }}
-                  >
+                  <h3 className="text-foreground font-normal text-[1.2rem]">
                     Qarote
                   </h3>
                 </div>
