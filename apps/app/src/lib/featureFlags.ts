@@ -24,8 +24,7 @@ function getDeploymentMode(): "cloud" | "selfhosted" {
   }
 
   if (typeof window !== "undefined") {
-    const runtimeConfig = (window as unknown as Record<string, unknown>)
-      .__QAROTE_CONFIG__ as { deploymentMode?: string } | undefined;
+    const runtimeConfig = window.__QAROTE_CONFIG__;
     if (
       runtimeConfig?.deploymentMode &&
       runtimeConfig.deploymentMode !== "cloud"
