@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 
 import { Github } from "lucide-react";
 
@@ -7,26 +7,18 @@ type GithubRepoInfo = {
 };
 
 export function GithubStarBadge() {
-  const [stars, setStars] = useState<number | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    fetch("https://api.github.com/repos/getqarote/Qarote")
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data: GithubRepoInfo | null) => {
-        if (!cancelled && data && typeof data.stargazers_count === "number") {
-          setStars(data.stargazers_count);
-        }
-      })
-      .catch(() => {
-        // swallow errors silently; we just won't show the count
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const { data: stars } = useQuery({
+    queryKey: ["github-stars"],
+    queryFn: async () => {
+      const res = await fetch("https://api.github.com/repos/getqarote/Qarote");
+      if (!res.ok) return null;
+      const data: GithubRepoInfo = await res.json();
+      return typeof data.stargazers_count === "number"
+        ? data.stargazers_count
+        : null;
+    },
+    staleTime: 5 * 60 * 1000,
+  });
 
   return (
     <a
@@ -37,7 +29,7 @@ export function GithubStarBadge() {
       className="inline-flex items-center gap-1 rounded-full border border-border px-3 py-1 text-xs font-medium text-foreground hover:bg-muted transition-colors"
     >
       <Github className="h-4 w-4" aria-hidden="true" />
-      {stars !== null && <span>{stars.toLocaleString()}</span>}
+      {stars != null && <span>{stars.toLocaleString()}</span>}
     </a>
   );
 }

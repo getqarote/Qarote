@@ -32,16 +32,17 @@ const StickyNav = ({ onVideoClick }: StickyNavProps) => {
   };
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-border" style={{ backgroundColor: '#ffffff' }}>
+    <nav className="sticky top-0 z-50 border-b border-border bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center gap-1">
             <img
               src="/images/new_icon.svg"
-              alt="Qarote"
+              alt=""
+              aria-hidden="true"
               className="w-6 h-6 sm:w-8 sm:h-8"
             />
-            <span className="text-foreground" style={{ fontWeight: 400, fontSize: '1.2rem' }}>
+            <span className="text-foreground font-normal text-[1.2rem]">
               Qarote
             </span>
           </div>
@@ -49,9 +50,10 @@ const StickyNav = ({ onVideoClick }: StickyNavProps) => {
           <div className="hidden lg:flex items-center gap-1 absolute left-1/2 -translate-x-1/2">
             {sections.map((section) => (
               <button
+                type="button"
                 key={section.id}
                 onClick={() => scrollToSection(section.id)}
-                className="px-4 py-2 text-base font-medium text-foreground hover:text-orange-500 transition-colors"
+                className="px-4 py-2 text-base font-medium text-foreground hover:text-primary transition-colors"
               >
                 {section.label}
               </button>
@@ -62,11 +64,12 @@ const StickyNav = ({ onVideoClick }: StickyNavProps) => {
             <GithubStarBadge />
             <a
               href={`${import.meta.env.VITE_APP_BASE_URL}/auth/sign-in`}
-              className="text-foreground hover:text-orange-500 px-2 sm:px-4 py-2 text-base font-medium transition-colors"
+              className="text-foreground hover:text-primary px-2 sm:px-4 py-2 text-base font-medium transition-colors"
             >
               Log in
             </a>
             <button
+              type="button"
               onClick={() => {
                 const authBaseUrl = import.meta.env.VITE_APP_BASE_URL;
                 trackSignUpClick({
@@ -75,14 +78,14 @@ const StickyNav = ({ onVideoClick }: StickyNavProps) => {
                 });
                 window.location.href = `${authBaseUrl}/auth/sign-up`;
               }}
-              className="bg-[#FF691B] text-white hover:bg-[#E55A0F] px-2 sm:px-4 py-2 text-base transition-colors whitespace-nowrap rounded-full inline-flex items-center justify-center gap-2"
+              className="bg-gradient-button hover:bg-gradient-button-hover text-white px-2 sm:px-4 py-2 text-base transition-colors whitespace-nowrap rounded-full inline-flex items-center justify-center gap-2"
             >
-              <span>{t("tryForFree")}</span>
+              <span>Try for free</span>
               <img
                 src="/images/arrow-right.svg"
-                alt="Arrow right"
-                className="h-[0.8em] w-auto"
-                style={{ imageRendering: "crisp-edges", verticalAlign: "middle" }}
+                alt=""
+                aria-hidden="true"
+                className="h-[0.8em] w-auto align-middle image-crisp"
               />
             </button>
           </div>

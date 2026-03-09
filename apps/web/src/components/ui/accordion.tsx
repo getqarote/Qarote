@@ -58,9 +58,9 @@ const AccordionTrigger = React.forwardRef<
       <div className="relative h-8 w-8 shrink-0 flex items-center justify-center">
         <img
           src="/images/arrow-down.svg"
-          alt="Toggle"
-          className="h-[1em] w-[1em] transition-transform duration-200 group-data-[state=open]:rotate-180"
-          style={{ imageRendering: "crisp-edges" }}
+          alt=""
+          aria-hidden="true"
+          className="h-[1em] w-[1em] transition-transform duration-200 group-data-[state=open]:rotate-180 image-crisp"
         />
       </div>
     </AccordionPrimitive.Trigger>
