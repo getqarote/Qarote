@@ -13,7 +13,6 @@ import {
   SubscriptionManagement,
 } from "@/components/billing";
 
-import { usePlanUpgrade } from "@/hooks/ui/usePlanUpgrade";
 import { useUser } from "@/hooks/ui/useUser";
 import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
@@ -34,7 +33,6 @@ const Billing: React.FC = () => {
   const { t } = useTranslation("billing");
   const { user } = useUser();
   const { workspace } = useWorkspace();
-  const { handleUpgrade } = usePlanUpgrade();
   const queryClient = useQueryClient();
 
   const {
@@ -189,8 +187,6 @@ const Billing: React.FC = () => {
           {!isTrialing && (
             <SubscriptionManagement
               currentPlan={billingData.subscription?.plan || UserPlan.FREE}
-              onOpenBillingPortal={handleOpenBillingPortal}
-              onUpgrade={handleUpgrade}
               onRenewSubscription={handleRenewSubscription}
               onCancelSubscription={handleCancelSubscription}
               periodEnd={
