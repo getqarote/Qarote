@@ -157,11 +157,12 @@ export function trackSignUpError(
     },
   });
 
+  if (error === undefined) return;
+
   const Sentry = getSentry();
   if (!Sentry) return;
 
-  const exception =
-    error instanceof Error ? error : new Error(`Signup failed: ${errorType}`);
+  const exception = error instanceof Error ? error : new Error(String(error));
 
   Sentry.withScope((scope) => {
     scope.setTag("component", "signup");
@@ -188,11 +189,12 @@ export function trackPaymentError(
     },
   });
 
+  if (error === undefined) return;
+
   const Sentry = getSentry();
   if (!Sentry) return;
 
-  const exception =
-    error instanceof Error ? error : new Error(`Payment failed: ${errorType}`);
+  const exception = error instanceof Error ? error : new Error(String(error));
 
   Sentry.withScope((scope) => {
     scope.setTag("component", "payment");
