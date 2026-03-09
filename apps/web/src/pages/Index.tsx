@@ -14,6 +14,7 @@ import { trackSignUpClick } from "@/lib/gtm";
 
 import AuthButtons from "@/components/AuthButtons";
 import FeatureCard from "@/components/FeatureCard";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import SEO from "@/components/SEO";
 import StickyNav from "@/components/StickyNav";
 import {
@@ -1817,6 +1818,7 @@ const Index = () => {
               >
                 Contact
               </a>
+              <LanguageSwitcher />
               <div className="flex items-center gap-2">
                 <a
                   href="https://github.com/getqarote/Qarote"
