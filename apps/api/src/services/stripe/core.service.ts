@@ -224,6 +224,10 @@ export class CoreStripeService {
         return SubscriptionStatus.INCOMPLETE;
       case "INCOMPLETE_EXPIRED":
         return SubscriptionStatus.INCOMPLETE_EXPIRED;
+      case "TRIALING":
+        return SubscriptionStatus.TRIALING;
+      case "UNPAID":
+        return SubscriptionStatus.UNPAID;
       default:
         return SubscriptionStatus.INCOMPLETE;
     }
