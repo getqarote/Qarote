@@ -11,7 +11,8 @@ export function GithubStarBadge() {
     queryKey: ["github-stars"],
     queryFn: async () => {
       const res = await fetch("https://api.github.com/repos/getqarote/Qarote");
-      if (!res.ok) return null;
+      if (!res.ok)
+        throw new Error(`GitHub API ${res.status} ${res.statusText}`);
       const data: GithubRepoInfo = await res.json();
       return typeof data.stargazers_count === "number"
         ? data.stargazers_count

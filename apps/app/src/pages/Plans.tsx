@@ -560,7 +560,7 @@ export const PlansPage: React.FC<PlansPageProps> = ({
                     )
                   }
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    billingPeriod === "yearly" ? "bg-blue-600" : "bg-muted"
+                    billingPeriod === "yearly" ? "bg-primary" : "bg-muted"
                   }`}
                 >
                   <span
