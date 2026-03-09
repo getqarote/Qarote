@@ -33,28 +33,31 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
   // Fetch all plans data
   const { data: allPlansData } = useAllPlans();
 
-  const startTrialMutation = trpc.payment.checkout.startTrial.useMutation({
-    onSuccess: () => {
-      navigate("/billing");
-    },
-    onError: (error) => {
-      logger.error("Failed to start trial:", error);
-      setError(t("upgradeModal.upgradeFailed"));
-      setIsUpgrading(null);
-    },
-  });
+  const checkoutMutation =
+    trpc.payment.checkout.createCheckoutSession.useMutation({
+      onSuccess: (data) => {
+        if (data.url) {
+          window.location.href = data.url;
+        }
+      },
+      onError: (error) => {
+        logger.error("Failed to create checkout session:", error);
+        setError(t("upgradeModal.upgradeFailed"));
+        setIsUpgrading(null);
+      },
+    });
 
-  const handleUpgrade = async () => {
+  const handleUpgrade = async (plan: UserPlan) => {
     try {
       setError(null);
-      setIsUpgrading("ENTERPRISE");
+      setIsUpgrading(plan);
 
-      logger.info("Starting free trial");
-
-      // Start free trial directly (no Stripe Checkout page)
-      startTrialMutation.mutate();
+      checkoutMutation.mutate({
+        plan,
+        billingInterval: "monthly",
+      });
     } catch (error) {
-      logger.error("Failed to start trial:", error);
+      logger.error("Failed to create checkout session:", error);
       setError(t("upgradeModal.upgradeFailed"));
       setIsUpgrading(null);
     }
@@ -259,7 +262,7 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
                         ? "bg-blue-600 hover:bg-blue-700 text-white disabled:bg-blue-400"
                         : "bg-gray-100 hover:bg-gray-200 text-gray-900 disabled:bg-gray-50 disabled:text-gray-400"
                     }`}
-                    onClick={() => handleUpgrade()}
+                    onClick={() => handleUpgrade(planData.plan as UserPlan)}
                     disabled={isUpgrading !== null}
                   >
                     {isUpgrading === planData.plan ? (

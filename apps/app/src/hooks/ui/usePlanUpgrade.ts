@@ -16,17 +16,21 @@ export const usePlanUpgrade = () => {
   const { workspace } = useWorkspace();
   const { user } = useAuth();
 
-  const startTrialMutation = trpc.payment.checkout.startTrial.useMutation({
-    onSuccess: () => {
-      setIsUpgrading(false);
-      navigate("/billing");
-    },
-    onError: (error) => {
-      logger.error("Error starting trial:", error);
-      alert("There was an error starting your trial. Please try again.");
-      setIsUpgrading(false);
-    },
-  });
+  const checkoutMutation =
+    trpc.payment.checkout.createCheckoutSession.useMutation({
+      onSuccess: (data) => {
+        if (data.url) {
+          window.location.href = data.url;
+        }
+      },
+      onError: (error) => {
+        logger.error("Error creating checkout session:", error);
+        alert(
+          "There was an error creating the checkout session. Please try again."
+        );
+        setIsUpgrading(false);
+      },
+    });
 
   const createPortalMutation =
     trpc.payment.billing.createPortalSession.useMutation({
@@ -61,8 +65,10 @@ export const usePlanUpgrade = () => {
         return;
       }
 
-      // Start free trial directly (no Stripe Checkout page)
-      startTrialMutation.mutate();
+      checkoutMutation.mutate({
+        plan: targetPlan,
+        billingInterval: "monthly",
+      });
     } catch (error) {
       logger.error("Error upgrading plan:", error);
       alert("There was an error upgrading your plan. Please try again.");

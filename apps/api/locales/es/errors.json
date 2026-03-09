@@ -114,8 +114,6 @@
     "failedToCreatePortalSession": "Error al crear la sesión del portal",
     "cannotCheckoutFreePlan": "No se puede crear un pago para el plan GRATUITO",
     "failedToCreateCheckoutSession": "Error al crear la sesión de pago",
-    "alreadyHasSubscription": "Ya tienes una suscripción activa",
-    "failedToStartTrial": "Error al iniciar la prueba gratuita",
     "noActiveSubscription": "No se encontró una suscripción activa",
     "failedToCancelSubscription": "Error al cancelar la suscripción",
     "planRequired": "El plan es obligatorio",
