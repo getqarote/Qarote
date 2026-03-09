@@ -1,14 +1,13 @@
-import React, { useState } from "react";
+import React from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
 import { Check, Key, Loader2, X, Zap } from "lucide-react";
 
 import { isSelfHostedMode } from "@/lib/featureFlags";
-import { logger } from "@/lib/logger";
-import { trpc } from "@/lib/trpc/client";
 
 import { useAllPlans } from "@/hooks/queries/usePlans";
+import { usePlanUpgrade } from "@/hooks/ui/usePlanUpgrade";
 import { useUser } from "@/hooks/ui/useUser";
 
 import { UserPlan } from "@/types/plans";
@@ -27,41 +26,10 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
   const { t } = useTranslation("billing");
   const { planData, userPlan } = useUser();
   const navigate = useNavigate();
-  const [isUpgrading, setIsUpgrading] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const { handleUpgrade, isUpgrading } = usePlanUpgrade();
 
   // Fetch all plans data
   const { data: allPlansData } = useAllPlans();
-
-  const checkoutMutation =
-    trpc.payment.checkout.createCheckoutSession.useMutation({
-      onSuccess: (data) => {
-        if (data.url) {
-          window.location.href = data.url;
-        }
-      },
-      onError: (error) => {
-        logger.error("Failed to create checkout session:", error);
-        setError(t("upgradeModal.upgradeFailed"));
-        setIsUpgrading(null);
-      },
-    });
-
-  const handleUpgrade = async (plan: UserPlan) => {
-    try {
-      setError(null);
-      setIsUpgrading(plan);
-
-      checkoutMutation.mutate({
-        plan,
-        billingInterval: "monthly",
-      });
-    } catch (error) {
-      logger.error("Failed to create checkout session:", error);
-      setError(t("upgradeModal.upgradeFailed"));
-      setIsUpgrading(null);
-    }
-  };
 
   if (!isOpen) return null;
 
@@ -160,12 +128,6 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
         </div>
 
         <div className="p-6">
-          {error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-red-800 text-sm">{error}</p>
-            </div>
-          )}
-
           <div className="grid md:grid-cols-2 gap-6">
             {plans.map((planData) => {
               const isPopular = planData.plan === UserPlan.DEVELOPER;
@@ -263,9 +225,9 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
                         : "bg-gray-100 hover:bg-gray-200 text-gray-900 disabled:bg-gray-50 disabled:text-gray-400"
                     }`}
                     onClick={() => handleUpgrade(planData.plan as UserPlan)}
-                    disabled={isUpgrading !== null}
+                    disabled={isUpgrading}
                   >
-                    {isUpgrading === planData.plan ? (
+                    {isUpgrading ? (
                       <>
                         <Loader2 className="w-4 h-4 inline-block mr-2 animate-spin" />
                         {t("upgradeModal.processing")}
