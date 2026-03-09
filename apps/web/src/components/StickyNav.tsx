@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { trackSignUpClick } from "@/lib/gtm";
 
 import { GithubStarBadge } from "@/components/GithubStarBadge";
@@ -7,10 +9,12 @@ interface StickyNavProps {
 }
 
 const StickyNav = ({ onVideoClick }: StickyNavProps) => {
+  const { t } = useTranslation("nav");
+
   const sections = [
-    { id: "video", label: "How it works" },
-    { id: "features", label: "Features" },
-    { id: "pricing", label: "Pricing" },
+    { id: "video", label: t("howItWorks") },
+    { id: "features", label: t("features") },
+    { id: "pricing", label: t("pricing") },
   ];
 
   const scrollToSection = (id: string) => {
@@ -66,7 +70,7 @@ const StickyNav = ({ onVideoClick }: StickyNavProps) => {
               href={`${import.meta.env.VITE_APP_BASE_URL}/auth/sign-in`}
               className="text-foreground hover:text-primary px-2 sm:px-4 py-2 text-base font-medium transition-colors"
             >
-              Log in
+              {t("login")}
             </a>
             <button
               type="button"
@@ -80,7 +84,7 @@ const StickyNav = ({ onVideoClick }: StickyNavProps) => {
               }}
               className="bg-gradient-button hover:bg-gradient-button-hover text-white px-2 sm:px-4 py-2 text-base transition-colors whitespace-nowrap rounded-full inline-flex items-center justify-center gap-2"
             >
-              <span>Try for free</span>
+              <span>{t("tryForFree")}</span>
               <img
                 src="/images/arrow-right.svg"
                 alt=""
