@@ -23,8 +23,8 @@
     <!-- Google Tag Manager (cloud mode only) -->
     <script>
       (function () {
-        // Self-hosted mode sets __QAROTE_CONFIG__ via /config.js — skip GTM
-        if (window.__QAROTE_CONFIG__) return;
+        var cfg = window.__QAROTE_CONFIG__;
+        if (cfg && cfg.deploymentMode && cfg.deploymentMode !== "cloud") return;
 
         (function (w, d, s, l, i) {
           w[l] = w[l] || [];
@@ -36,24 +36,22 @@
           j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + dl;
           f.parentNode.insertBefore(j, f);
         })(window, document, "script", "dataLayer", "GTM-52CRNTFK");
-
-        // Inject noscript fallback
-        var ns = document.createElement("noscript");
-        var iframe = document.createElement("iframe");
-        iframe.src =
-          "https://www.googletagmanager.com/ns.html?id=GTM-52CRNTFK";
-        iframe.height = "0";
-        iframe.width = "0";
-        iframe.style.display = "none";
-        iframe.style.visibility = "hidden";
-        ns.appendChild(iframe);
-        document.body.insertBefore(ns, document.body.firstChild);
       })();
     </script>
     <!-- End Google Tag Manager -->
   </head>
 
   <body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript
+      ><iframe
+        src="https://www.googletagmanager.com/ns.html?id=GTM-52CRNTFK"
+        height="0"
+        width="0"
+        style="display: none; visibility: hidden"
+      ></iframe
+    ></noscript>
+    <!-- End Google Tag Manager (noscript) -->
 
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
