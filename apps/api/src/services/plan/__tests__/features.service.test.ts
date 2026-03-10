@@ -59,20 +59,20 @@ describe("getPlanFeatures", () => {
   });
 
   describe("DEVELOPER plan", () => {
-    it("returns maxServers of 2", () => {
-      expect(getPlanFeatures(UserPlan.DEVELOPER).maxServers).toBe(2);
+    it("returns maxServers of 3", () => {
+      expect(getPlanFeatures(UserPlan.DEVELOPER).maxServers).toBe(3);
     });
 
-    it("returns maxWorkspaces of 2", () => {
-      expect(getPlanFeatures(UserPlan.DEVELOPER).maxWorkspaces).toBe(2);
+    it("returns maxWorkspaces of 3", () => {
+      expect(getPlanFeatures(UserPlan.DEVELOPER).maxWorkspaces).toBe(3);
     });
 
-    it("returns maxUsers of 2", () => {
-      expect(getPlanFeatures(UserPlan.DEVELOPER).maxUsers).toBe(2);
+    it("returns maxUsers of 3", () => {
+      expect(getPlanFeatures(UserPlan.DEVELOPER).maxUsers).toBe(3);
     });
 
-    it("returns maxInvitations of 1", () => {
-      expect(getPlanFeatures(UserPlan.DEVELOPER).maxInvitations).toBe(1);
+    it("returns maxInvitations of 2", () => {
+      expect(getPlanFeatures(UserPlan.DEVELOPER).maxInvitations).toBe(2);
     });
 
     it("returns canInviteUsers as true", () => {
