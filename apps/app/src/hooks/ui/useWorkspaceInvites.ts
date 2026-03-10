@@ -21,6 +21,7 @@ export function useWorkspaceInvites() {
   const [inviteLinks, setInviteLinks] = useState<InviteLink[]>([]);
   const pendingInvites = useRef<string[]>([]);
   const pendingCount = useRef(0);
+  const batchIdRef = useRef(0);
 
   const canInviteUsers = planData?.planFeatures?.canInviteUsers ?? false;
   const maxUsers = planData?.planFeatures?.maxUsers;
@@ -29,15 +30,11 @@ export function useWorkspaceInvites() {
   const handleInviteEmailsChange = useCallback(
     (emails: string[]) => {
       const validEmails = emails.filter((email) => EMAIL_REGEX.test(email));
-      if (emails.length !== validEmails.length) {
-        toast.error(
-          t("invites.invalidEmail", {
-            defaultValue: "Please enter a valid email address",
-          })
-        );
-        return;
-      }
+      const hasInvalid = emails.length !== validEmails.length;
       setInviteEmails(validEmails);
+      if (hasInvalid) {
+        toast.error(t("invites.invalidEmail"));
+      }
     },
     [t]
   );
@@ -49,20 +46,13 @@ export function useWorkspaceInvites() {
   const sendPendingInvites = useCallback(() => {
     const emails = pendingInvites.current;
     if (emails.length === 0) {
-      toast.success(
-        t("invites.workspaceCreated", {
-          defaultValue: "Workspace created successfully!",
-        })
-      );
+      toast.success(t("invites.workspaceCreated"));
       return;
     }
 
-    toast.success(
-      t("invites.workspaceCreatedSendingInvites", {
-        defaultValue: "Workspace created! Sending invitations...",
-      })
-    );
+    toast.success(t("invites.workspaceCreatedSendingInvites"));
 
+    const currentBatchId = ++batchIdRef.current;
     const collectedLinks: InviteLink[] = [];
     pendingCount.current = emails.length;
 
@@ -71,22 +61,13 @@ export function useWorkspaceInvites() {
         { email, role: "MEMBER" },
         {
           onSuccess: (data) => {
+            if (currentBatchId !== batchIdRef.current) return;
+
             if (data.emailSent) {
-              toast.success(
-                t("invites.invitationSent", {
-                  email,
-                  defaultValue: `Invitation sent to ${email}`,
-                })
-              );
+              toast.success(t("invites.invitationSent", { email }));
             } else {
-              // No SMTP — collect the link
               collectedLinks.push({ email, inviteUrl: data.inviteUrl });
-              toast.success(
-                t("invites.invitationCreated", {
-                  email,
-                  defaultValue: `Invitation created for ${email}`,
-                })
-              );
+              toast.success(t("invites.invitationCreated", { email }));
             }
             pendingCount.current--;
             if (pendingCount.current === 0 && collectedLinks.length > 0) {
@@ -94,11 +75,12 @@ export function useWorkspaceInvites() {
             }
           },
           onError: (error) => {
+            if (currentBatchId !== batchIdRef.current) return;
+
             toast.error(
               t("invites.invitationFailed", {
                 email,
                 error: error.message,
-                defaultValue: `Failed to invite ${email}: ${error.message}`,
               })
             );
             pendingCount.current--;
@@ -113,10 +95,6 @@ export function useWorkspaceInvites() {
     pendingInvites.current = [];
   }, [sendInvitationMutation, t]);
 
-  const clearInviteLinks = useCallback(() => {
-    setInviteLinks([]);
-  }, []);
-
   const reset = useCallback(() => {
     setInviteEmails([]);
     setInviteLinks([]);
@@ -128,7 +106,6 @@ export function useWorkspaceInvites() {
     inviteEmails,
     setInviteEmails: handleInviteEmailsChange,
     inviteLinks,
-    clearInviteLinks,
     canInviteUsers,
     maxInvites,
     storePendingInvites,

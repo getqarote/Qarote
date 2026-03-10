@@ -37,7 +37,8 @@
   "inviteLinks": {
     "title": "Share Invitation Links",
     "description": "Email is not configured. Share these links manually with your team members.",
-    "done": "Done"
+    "done": "Done",
+    "copyFailed": "Failed to copy link"
   },
   "invites": {
     "invalidEmail": "Please enter a valid email address",

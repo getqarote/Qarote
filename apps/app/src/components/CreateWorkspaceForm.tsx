@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
@@ -52,7 +51,6 @@ export function CreateWorkspaceForm({
     inviteEmails,
     setInviteEmails,
     inviteLinks,
-    clearInviteLinks,
     canInviteUsers,
     maxInvites,
     storePendingInvites,
@@ -71,29 +69,29 @@ export function CreateWorkspaceForm({
 
   const createWorkspaceMutation = useCreateWorkspace();
 
-  // After workspace is created, send pending invitations
-  useEffect(() => {
-    if (createWorkspaceMutation.isSuccess) {
-      sendPendingInvites();
-      queryClient.invalidateQueries({ queryKey: ["workspaces"] });
-      refreshWorkspace();
-      onClose();
-      form.reset();
-    }
-    if (createWorkspaceMutation.isError) {
-      toast.error(
-        `Failed to create workspace: ${createWorkspaceMutation.error?.message || "Unknown error"}`
-      );
-    }
-  }, [createWorkspaceMutation.isSuccess, createWorkspaceMutation.isError]);
-
   const onSubmit = (data: WorkspaceFormData) => {
     storePendingInvites();
-    createWorkspaceMutation.mutate({
-      name: data.name.trim(),
-      contactEmail: data.contactEmail?.trim() || undefined,
-      tags: data.tags?.filter((tag) => tag.trim().length > 0) || undefined,
-    });
+    createWorkspaceMutation.mutate(
+      {
+        name: data.name.trim(),
+        contactEmail: data.contactEmail?.trim() || undefined,
+        tags: data.tags?.filter((tag) => tag.trim().length > 0) || undefined,
+      },
+      {
+        onSuccess: () => {
+          sendPendingInvites();
+          queryClient.invalidateQueries({ queryKey: ["workspaces"] });
+          refreshWorkspace();
+          onClose();
+          form.reset();
+        },
+        onError: (error) => {
+          toast.error(
+            `Failed to create workspace: ${error?.message || "Unknown error"}`
+          );
+        },
+      }
+    );
   };
 
   return (
@@ -276,13 +274,7 @@ export function CreateWorkspaceForm({
         </DialogContent>
       </Dialog>
 
-      <InviteLinksDialog
-        inviteLinks={inviteLinks}
-        onClose={() => {
-          clearInviteLinks();
-          resetInvites();
-        }}
-      />
+      <InviteLinksDialog inviteLinks={inviteLinks} onClose={resetInvites} />
     </>
   );
 }
