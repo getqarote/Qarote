@@ -125,7 +125,7 @@ export const PLAN_FEATURES: Record<UserPlan, PlanFeatures> = {
     // Display features
     hasAdvancedAnalytics: true,
     hasAlerts: true,
-    hasTopologyVisualization: "coming_soon",
+    hasTopologyVisualization: true,
     hasRoleBasedAccess: "coming_soon",
     hasSsoSamlOidc: false,
     hasSoc2Compliance: true,
@@ -196,7 +196,7 @@ export const PLAN_FEATURES: Record<UserPlan, PlanFeatures> = {
     // Display features
     hasAdvancedAnalytics: true,
     hasAlerts: true,
-    hasTopologyVisualization: "coming_soon",
+    hasTopologyVisualization: true,
     hasRoleBasedAccess: "coming_soon",
     hasSsoSamlOidc: true,
     hasSoc2Compliance: true,
