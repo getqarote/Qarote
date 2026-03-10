@@ -1,26 +1,62 @@
 {
   "create": {
     "title": "Crea tu espacio de trabajo",
-    "description": "\u00a1Bienvenido a Qarote! Comencemos creando tu primer espacio de trabajo. Los espacios de trabajo te ayudan a organizar tus servidores RabbitMQ y colaborar con tu equipo.",
+    "description": "¡Bienvenido a Qarote! Comencemos creando tu primer espacio de trabajo. Los espacios de trabajo te ayudan a organizar tus servidores RabbitMQ y colaborar con tu equipo.",
     "cardTitle": "Nuevo espacio de trabajo",
     "workspaceName": "Nombre del espacio de trabajo *",
     "workspaceNamePlaceholder": "Mi espacio de trabajo",
     "tagsLabel": "Etiquetas (opcional)",
     "tagsPlaceholder": "Agrega etiquetas para organizar tu espacio de trabajo",
-    "tagsHint": "Usa etiquetas como \"producci\u00f3n\", \"desarrollo\" o \"pruebas\" para organizar tu espacio de trabajo",
+    "tagsHint": "Usa etiquetas como \"producción\", \"desarrollo\" o \"pruebas\" para organizar tu espacio de trabajo",
     "submit": "Crear espacio de trabajo",
-    "creating": "Creando espacio de trabajo..."
+    "creating": "Creando espacio de trabajo...",
+    "inviteMembers": "Invitar miembros",
+    "optional": "Opcional",
+    "invitePlaceholder": "Escribe un correo y presiona Enter para agregar",
+    "inviteHintWithLimit": "Puedes invitar hasta {{count}} miembros con tu plan actual",
+    "upgradeToInvite": "Actualiza al plan Developer o Enterprise para invitar miembros del equipo.",
+    "invalidEmail": "Por favor ingresa una dirección de correo válida"
+  },
+  "createForm": {
+    "title": "Crear nuevo espacio de trabajo",
+    "description": "Crea un nuevo espacio de trabajo para organizar tus servidores RabbitMQ y colaborar con tu equipo.",
+    "workspaceName": "Nombre del espacio de trabajo",
+    "workspaceNamePlaceholder": "Mi espacio de trabajo",
+    "tags": "Etiquetas",
+    "optional": "Opcional",
+    "tagsPlaceholder": "Agrega etiquetas para organizar tu espacio de trabajo",
+    "tagsHint": "Usa etiquetas como \"producción\", \"desarrollo\" o \"pruebas\"",
+    "inviteMembers": "Invitar miembros",
+    "invitePlaceholder": "Escribe un correo y presiona Enter para agregar",
+    "inviteHintWithLimit": "Puedes invitar hasta {{count}} miembros con tu plan actual",
+    "upgradeToInvite": "Actualiza al plan Developer o Enterprise para invitar miembros del equipo.",
+    "cancel": "Cancelar",
+    "creating": "Creando...",
+    "submit": "Crear espacio de trabajo"
+  },
+  "inviteLinks": {
+    "title": "Compartir enlaces de invitación",
+    "description": "El correo electrónico no está configurado. Comparte estos enlaces manualmente con los miembros de tu equipo.",
+    "done": "Listo"
+  },
+  "invites": {
+    "invalidEmail": "Por favor ingresa una dirección de correo válida",
+    "workspaceCreated": "¡Espacio de trabajo creado exitosamente!",
+    "workspaceCreatedSendingInvites": "¡Espacio de trabajo creado! Enviando invitaciones...",
+    "invitationSent": "Invitación enviada a {{email}}",
+    "invitationCreated": "Invitación creada para {{email}}",
+    "invitationFailed": "Error al invitar a {{email}}: {{error}}"
   },
   "success": {
-    "title": "\u00a1Espacio de trabajo creado exitosamente!",
+    "title": "¡Espacio de trabajo creado exitosamente!",
     "redirecting": "Redirigiendo a tu panel..."
   },
   "error": {
-    "createFailed": "No se pudo crear el espacio de trabajo. Por favor int\u00e9ntalo de nuevo.",
-    "unknown": "Ocurri\u00f3 un error desconocido"
+    "createFailed": "No se pudo crear el espacio de trabajo. Por favor inténtalo de nuevo.",
+    "unknown": "Ocurrió un error desconocido"
   },
   "toast": {
-    "workspaceCreated": "\u00a1Espacio de trabajo creado exitosamente!",
+    "workspaceCreated": "¡Espacio de trabajo creado exitosamente!",
     "workspaceCreateFailed": "No se pudo crear el espacio de trabajo: {{error}}"
   },
   "loading": "Cargando..."
