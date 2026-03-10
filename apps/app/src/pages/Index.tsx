@@ -131,7 +131,7 @@ const Index = () => {
                   <ConnectionStatus />
                 </div>
               </div>
-              <div className="flex gap-3">
+              <div className="flex items-center gap-3">
                 <PlanBadge />
                 <AddServerButton />
               </div>

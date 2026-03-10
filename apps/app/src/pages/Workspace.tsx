@@ -5,11 +5,12 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CheckCircle, Loader2, Plus } from "lucide-react";
+import { CheckCircle, Info, Loader2, Plus, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 
 import { User } from "@/lib/api";
 
+import { InviteLinksDialog } from "@/components/InviteLinksDialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -30,6 +31,7 @@ import {
   useCreateWorkspace,
   useUserWorkspaces,
 } from "@/hooks/queries/useWorkspaceApi";
+import { useWorkspaceInvites } from "@/hooks/ui/useWorkspaceInvites";
 
 import { WorkspaceFormData, workspaceSchema } from "@/schemas";
 
@@ -39,6 +41,17 @@ const Workspace = () => {
   const { user, updateUser } = useAuth();
   const queryClient = useQueryClient();
   const successHandled = useRef(false);
+
+  const {
+    inviteEmails,
+    setInviteEmails,
+    inviteLinks,
+    clearInviteLinks,
+    canInviteUsers,
+    maxInvites,
+    storePendingInvites,
+    sendPendingInvites,
+  } = useWorkspaceInvites();
 
   // Check if user already has workspaces
   const { isLoading: workspacesLoading } = useUserWorkspaces();
@@ -63,8 +76,9 @@ const Workspace = () => {
       !successHandled.current
     ) {
       successHandled.current = true;
-      toast.success(t("toast.workspaceCreated"));
       queryClient.invalidateQueries({ queryKey: ["workspaces"] });
+
+      sendPendingInvites();
 
       // Update user state directly with the new workspaceId
       const newWorkspaceId = createWorkspaceMutation.data.workspace.id;
@@ -96,6 +110,7 @@ const Workspace = () => {
   }, [createWorkspaceMutation.isError, createWorkspaceMutation.error, t]);
 
   const onSubmit = (data: WorkspaceFormData) => {
+    storePendingInvites();
     createWorkspaceMutation.mutate({
       name: data.name.trim(),
       tags:
@@ -244,6 +259,57 @@ const Workspace = () => {
                         )}
                       />
 
+                      {/* Invite Members Section - plan gated */}
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <UserPlus className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm font-medium">
+                            {t("create.inviteMembers", {
+                              defaultValue: "Invite Members",
+                            })}{" "}
+                            (
+                            {t("create.optional", {
+                              defaultValue: "Optional",
+                            })}
+                            )
+                          </span>
+                        </div>
+
+                        {canInviteUsers ? (
+                          <>
+                            <TagsInput
+                              value={inviteEmails}
+                              onChange={setInviteEmails}
+                              placeholder={t("create.invitePlaceholder", {
+                                defaultValue:
+                                  "Type an email and press Enter to add",
+                              })}
+                              maxTags={maxInvites}
+                              maxTagLength={100}
+                              disabled={createWorkspaceMutation.isPending}
+                            />
+                            {maxInvites && (
+                              <p className="text-xs text-muted-foreground">
+                                {t("create.inviteHintWithLimit", {
+                                  count: maxInvites,
+                                  defaultValue: `You can invite up to ${maxInvites} members on your current plan`,
+                                })}
+                              </p>
+                            )}
+                          </>
+                        ) : (
+                          <Alert>
+                            <Info className="h-4 w-4" />
+                            <AlertDescription>
+                              {t("create.upgradeToInvite", {
+                                defaultValue:
+                                  "Upgrade to the Developer or Enterprise plan to invite team members.",
+                              })}
+                            </AlertDescription>
+                          </Alert>
+                        )}
+                      </div>
+
                       <Button
                         type="submit"
                         className="w-full h-11 bg-gradient-button hover:bg-gradient-button-hover text-white font-medium"
@@ -272,6 +338,8 @@ const Workspace = () => {
           </div>
         )}
       </main>
+
+      <InviteLinksDialog inviteLinks={inviteLinks} onClose={clearInviteLinks} />
     </div>
   );
 };

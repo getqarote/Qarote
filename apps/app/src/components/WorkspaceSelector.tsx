@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router";
 
-import { Building2, ChevronDown, Crown, Lock, Plus, User } from "lucide-react";
+import { Building2, Carrot, ChevronDown, Lock, Plus, User } from "lucide-react";
 import { toast } from "sonner";
 
 import { getUpgradePath } from "@/lib/featureFlags";
@@ -135,7 +135,7 @@ export function WorkspaceSelector() {
 
   const getRoleIcon = (workspace: WorkspaceInfo) => {
     if (workspace.isOwner) {
-      return <Crown className="w-3 h-3 text-yellow-600" />;
+      return <Carrot className="w-3 h-3 text-orange-500" />;
     }
     return <User className="w-3 h-3 text-muted-foreground" />;
   };
