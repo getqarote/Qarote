@@ -62,6 +62,12 @@ const StickyNav = ({ onVideoClick }: StickyNavProps) => {
                 {section.label}
               </button>
             ))}
+            <a
+              href="/changelog"
+              className="px-4 py-2 text-base font-medium text-foreground hover:text-primary transition-colors"
+            >
+              {t("whatsNew", "What's New")}
+            </a>
           </div>
 
           <div className="flex items-center gap-1 sm:gap-2">
