@@ -80,6 +80,12 @@ export default function UpdateAvailableEmail({
               <Button style={buttonStyles.primaryButton} href={releaseUrl}>
                 View Release on GitHub
               </Button>
+              <Button
+                style={buttonStyles.secondaryButton}
+                href="https://qarote.io/changelog"
+              >
+                View Changelog
+              </Button>
             </Section>
 
             <Hr style={utilityStyles.hr} />

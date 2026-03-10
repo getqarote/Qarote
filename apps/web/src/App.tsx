@@ -9,6 +9,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
+import Changelog from "./pages/Changelog";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
@@ -41,12 +42,14 @@ const App = () => {
               <Route path="/" element={<Index />} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/terms-of-service" element={<TermsOfService />} />
+              <Route path="/changelog" element={<Changelog />} />
 
               {/* Localized routes: /:locale/ prefix (e.g., /fr/, /es/, /zh/) */}
               <Route path="/:locale" element={<LocaleWrapper />}>
                 <Route index element={<Index />} />
                 <Route path="privacy-policy" element={<PrivacyPolicy />} />
                 <Route path="terms-of-service" element={<TermsOfService />} />
+                <Route path="changelog" element={<Changelog />} />
               </Route>
 
               <Route path="*" element={<NotFound />} />
