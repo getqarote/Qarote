@@ -1,6 +1,6 @@
 import "@xyflow/react/dist/style.css";
 
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
@@ -11,6 +11,8 @@ import {
   MiniMap,
   type NodeMouseHandler,
   ReactFlow,
+  useEdgesState,
+  useNodesState,
 } from "@xyflow/react";
 import { Network, RefreshCw, Server } from "lucide-react";
 
@@ -53,7 +55,7 @@ const Topology = () => {
     error,
   } = useTopology(selectedServerId, selectedVHost, isTopologyEnabled);
 
-  const { nodes, edges } = useMemo(() => {
+  const initialGraph = useMemo(() => {
     if (!topologyData) return { nodes: [], edges: [] };
     return buildTopologyGraph(
       topologyData.exchanges,
@@ -62,6 +64,14 @@ const Topology = () => {
       topologyData.consumers
     );
   }, [topologyData]);
+
+  const [nodes, setNodes, onNodesChange] = useNodesState(initialGraph.nodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(initialGraph.edges);
+
+  useEffect(() => {
+    setNodes(initialGraph.nodes);
+    setEdges(initialGraph.edges);
+  }, [initialGraph, setNodes, setEdges]);
 
   const onNodeClick: NodeMouseHandler = useCallback(
     (_event, node) => {
@@ -174,6 +184,8 @@ const Topology = () => {
                       <ReactFlow
                         nodes={nodes}
                         edges={edges}
+                        onNodesChange={onNodesChange}
+                        onEdgesChange={onEdgesChange}
                         nodeTypes={nodeTypes}
                         onNodeClick={onNodeClick}
                         colorMode={colorMode}
@@ -182,10 +194,10 @@ const Topology = () => {
                         fitViewOptions={{ padding: 0.2 }}
                         minZoom={0.1}
                         maxZoom={2}
-                        proOptions={{ hideAttribution: false }}
+                        proOptions={{ hideAttribution: true }}
                       >
                         <Background />
-                        <Controls />
+                        <Controls showInteractive={false} />
                         <MiniMap
                           zoomable
                           pannable
