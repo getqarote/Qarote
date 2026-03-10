@@ -4,7 +4,9 @@
     "subtitle": "Faites évoluer votre surveillance RabbitMQ avec des forfaits conçus pour des équipes de toutes tailles.",
     "pricingTitle": "Tarification simple et transparente",
     "currentPlan": "Forfait actuel",
+    "mostPopular": "Le plus populaire",
     "startFree": "Commencer gratuitement",
+    "getStarted": "Commencer",
     "save20": "Économisez 20%",
     "backToPlans": "Retour aux forfaits",
     "pricing": {
@@ -26,7 +28,9 @@
     },
     "billingToggle": {
       "monthly": "Mensuel",
-      "yearly": "Annuel"
+      "yearly": "Annuel",
+      "billedYearly": "Facturation annuelle",
+      "billedMonthly": "Facturation mensuelle"
     },
     "period": {
       "month": "mois",

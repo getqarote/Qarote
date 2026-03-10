@@ -10,9 +10,9 @@ import {
 } from "lucide-react";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PlanBadge } from "@/components/ui/PlanBadge";
 import { Separator } from "@/components/ui/separator";
 
 import { ExtendedWorkspace } from "@/contexts/WorkspaceContextDefinition";
@@ -20,7 +20,7 @@ import { ExtendedWorkspace } from "@/contexts/WorkspaceContextDefinition";
 import { useUser } from "@/hooks/ui/useUser";
 
 import { NoWorkspaceCard } from "./NoWorkspaceCard";
-import { formatDate, getPlanColor, WorkspaceFormState } from "./profileUtils";
+import { formatDate, WorkspaceFormState } from "./profileUtils";
 import { WorkspaceFormFields } from "./WorkspaceFormFields";
 
 interface WorkspaceInfoTabProps {
@@ -44,7 +44,7 @@ export const WorkspaceInfoTab = ({
   onUpdateWorkspace,
   isUpdating,
 }: WorkspaceInfoTabProps) => {
-  const { user, userPlan, planData } = useUser();
+  const { user, planData } = useUser();
 
   if (!workspace) {
     return <NoWorkspaceCard />;
@@ -58,7 +58,7 @@ export const WorkspaceInfoTab = ({
             <Building2 className="h-6 w-6" />
             <span>Workspace Information</span>
           </div>
-          <Badge className={getPlanColor(userPlan)}>{userPlan}</Badge>
+          <PlanBadge />
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">

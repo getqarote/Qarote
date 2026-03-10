@@ -111,13 +111,13 @@ const Index = () => {
       price: "$348",
       period: "/ year",
       cta: "Choose Developer",
-      url: import.meta.env.VITE_SELFHOST_PORTAL_URL,
+      url: import.meta.env.VITE_PORTAL_URL,
     },
     ENTERPRISE: {
       price: "$1,188",
       period: "/ year",
       cta: "Choose Enterprise",
-      url: import.meta.env.VITE_SELFHOST_PORTAL_URL,
+      url: import.meta.env.VITE_PORTAL_URL,
     },
   };
 

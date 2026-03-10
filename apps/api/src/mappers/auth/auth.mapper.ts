@@ -33,6 +33,11 @@ export class UserMapper {
       response.pendingEmail = user.pendingEmail ?? null;
     }
 
+    // Include googleId if present
+    if ("googleId" in user) {
+      response.googleId = (user.googleId as string) ?? null;
+    }
+
     // Include subscription if present (can be null)
     if ("subscription" in user) {
       response.subscription =

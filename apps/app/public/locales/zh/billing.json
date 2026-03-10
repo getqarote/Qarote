@@ -4,7 +4,9 @@
     "subtitle": "通过专为各种规模团队设计的方案扩展您的 RabbitMQ 监控能力。",
     "pricingTitle": "简单透明的定价",
     "currentPlan": "当前方案",
+    "mostPopular": "最受欢迎",
     "startFree": "免费开始",
+    "getStarted": "开始使用",
     "save20": "节省 20%",
     "backToPlans": "返回套餐",
     "pricing": {
@@ -26,7 +28,9 @@
     },
     "billingToggle": {
       "monthly": "按月",
-      "yearly": "按年"
+      "yearly": "按年",
+      "billedYearly": "按年计费",
+      "billedMonthly": "按月计费"
     },
     "period": {
       "month": "月",

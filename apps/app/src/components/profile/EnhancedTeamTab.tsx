@@ -82,7 +82,7 @@ export const EnhancedTeamTab = ({
   isInviting,
   isRevoking,
   isRemoving,
-  userPlan,
+  userPlan: _userPlan,
   canInviteMoreUsers,
   emailEnabled,
 }: EnhancedTeamTabProps) => {
@@ -408,24 +408,6 @@ export const EnhancedTeamTab = ({
           </CardContent>
         </Card>
       )}
-
-      {/* Plan Limits Info */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="text-sm text-muted-foreground">
-            <p>
-              <strong>{userPlan} Plan:</strong>{" "}
-              {maxUsers ? `Up to ${maxUsers} users allowed` : "Unlimited users"}
-            </p>
-            {!canInviteMoreUsers && maxUsers && (
-              <p className="text-amber-600 mt-1">
-                You've reached your user limit. Upgrade your plan to invite more
-                users.
-              </p>
-            )}
-          </div>
-        </CardContent>
-      </Card>
 
       <InviteUserDialog
         open={inviteDialogOpen}

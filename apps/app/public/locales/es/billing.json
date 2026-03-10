@@ -4,7 +4,9 @@
     "subtitle": "Escala tu monitoreo de RabbitMQ con planes diseñados para equipos de todos los tamaños.",
     "pricingTitle": "Precios simples y transparentes",
     "currentPlan": "Plan actual",
+    "mostPopular": "Más popular",
     "startFree": "Comenzar gratis",
+    "getStarted": "Comenzar",
     "save20": "Ahorra 20%",
     "backToPlans": "Volver a los planes",
     "pricing": {
@@ -26,7 +28,9 @@
     },
     "billingToggle": {
       "monthly": "Mensual",
-      "yearly": "Anual"
+      "yearly": "Anual",
+      "billedYearly": "Facturación anual",
+      "billedMonthly": "Facturación mensual"
     },
     "period": {
       "month": "mes",
