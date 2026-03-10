@@ -156,9 +156,9 @@ describe("getPlanFeatures", () => {
       expect(getPlanFeatures(UserPlan.DEVELOPER).hasAlerts).toBe(true);
     });
 
-    it("returns hasTopologyVisualization as coming_soon", () => {
+    it("returns hasTopologyVisualization as true", () => {
       expect(getPlanFeatures(UserPlan.DEVELOPER).hasTopologyVisualization).toBe(
-        "coming_soon"
+        true
       );
     });
 
@@ -254,10 +254,10 @@ describe("getPlanFeatures", () => {
       expect(getPlanFeatures(UserPlan.ENTERPRISE).hasAlerts).toBe(true);
     });
 
-    it("returns hasTopologyVisualization as coming_soon", () => {
+    it("returns hasTopologyVisualization as true", () => {
       expect(
         getPlanFeatures(UserPlan.ENTERPRISE).hasTopologyVisualization
-      ).toBe("coming_soon");
+      ).toBe(true);
     });
 
     it("returns hasRoleBasedAccess as coming_soon", () => {
