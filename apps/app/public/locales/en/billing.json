@@ -65,7 +65,7 @@
         "servers": "Up to 3",
         "rabbitMQVersionSupport": "All versions 3.x and 4.x",
         "workspaces": "3 Workspaces",
-        "teamMembers": "5 Team Members"
+        "teamMembers": "3 Team Members"
       }
     },
     "enterprise": {
