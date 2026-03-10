@@ -105,17 +105,19 @@ const Topology = () => {
                 <SidebarTrigger />
                 <div>
                   <h1 className="title-page">{t("pageTitle")}</h1>
-                  <p className="text-gray-500">{t("pageSubtitle")}</p>
+                  <p className="text-muted-foreground">{t("pageSubtitle")}</p>
                 </div>
               </div>
               <Card className="border-0 shadow-md bg-card">
                 <CardContent className="p-12">
                   <div className="text-center">
-                    <Server className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                    <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+                    <Server className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                    <h2 className="text-2xl font-semibold text-foreground mb-2">
                       {t("noServerSelected")}
                     </h2>
-                    <p className="text-gray-600">{t("selectServerPrompt")}</p>
+                    <p className="text-muted-foreground">
+                      {t("selectServerPrompt")}
+                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -138,7 +140,7 @@ const Topology = () => {
                   <SidebarTrigger />
                   <div>
                     <h1 className="title-page">{t("pageTitle")}</h1>
-                    <p className="text-gray-500">{t("pageSubtitle")}</p>
+                    <p className="text-muted-foreground">{t("pageSubtitle")}</p>
                   </div>
                 </div>
                 <PlanBadge />
@@ -148,7 +150,7 @@ const Topology = () => {
                 <CardContent className="p-0">
                   {error ? (
                     <div className="text-center py-8">
-                      <div className="text-red-600 mb-2">
+                      <div className="text-destructive mb-2">
                         {t("failedToLoad")}
                       </div>
                     </div>
@@ -159,11 +161,13 @@ const Topology = () => {
                     </div>
                   ) : nodes.length === 0 ? (
                     <div className="text-center py-16">
-                      <Network className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                      <Network className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
                       <h3 className="text-lg font-semibold mb-2">
                         {t("noTopologyData")}
                       </h3>
-                      <p className="text-gray-600">{t("noTopologyDataDesc")}</p>
+                      <p className="text-muted-foreground">
+                        {t("noTopologyDataDesc")}
+                      </p>
                     </div>
                   ) : (
                     <div className="h-[70vh] w-full">

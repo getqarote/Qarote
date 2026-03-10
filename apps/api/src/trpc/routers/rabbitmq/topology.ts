@@ -46,14 +46,14 @@ export const topologyRouter = router({
           client.getQueues(vhost),
           client.getBindings(vhost).catch((err) => {
             ctx.logger.warn(
-              { error: err, serverId, vhost },
+              { error: err, serverId, workspaceId, vhost },
               "Failed to fetch bindings for topology, continuing without"
             );
             return [];
           }),
           client.getConsumers().catch((err) => {
             ctx.logger.warn(
-              { error: err, serverId },
+              { error: err, serverId, workspaceId, vhost },
               "Failed to fetch consumers for topology, continuing without"
             );
             return [];
@@ -69,7 +69,7 @@ export const topologyRouter = router({
         // Group bindings by exchange source for ExchangeMapper
         const bindingsMap = new Map<string, typeof mappedBindings>();
         for (const binding of mappedBindings) {
-          const key = `${binding.source}@${binding.vhost}`;
+          const key = `${encodeURIComponent(binding.source)}@${encodeURIComponent(binding.vhost)}`;
           if (!bindingsMap.has(key)) bindingsMap.set(key, []);
           bindingsMap.get(key)!.push(binding);
         }
