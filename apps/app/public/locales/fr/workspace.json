@@ -37,7 +37,8 @@
   "inviteLinks": {
     "title": "Partager les liens d'invitation",
     "description": "L'e-mail n'est pas configuré. Partagez ces liens manuellement avec les membres de votre équipe.",
-    "done": "Terminé"
+    "done": "Terminé",
+    "copyFailed": "Échec de la copie du lien"
   },
   "invites": {
     "invalidEmail": "Veuillez saisir une adresse e-mail valide",

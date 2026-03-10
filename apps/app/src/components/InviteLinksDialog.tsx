@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { Check, Copy, Link } from "lucide-react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -29,12 +30,14 @@ export function InviteLinksDialog({
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
 
   const handleCopy = async (url: string, index: number) => {
-    await navigator.clipboard.writeText(url);
-    setCopiedIndex(index);
-    setTimeout(() => setCopiedIndex(null), 2000);
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopiedIndex(index);
+      setTimeout(() => setCopiedIndex(null), 2000);
+    } catch {
+      toast.error(t("inviteLinks.copyFailed"));
+    }
   };
-
-  if (inviteLinks.length === 0) return null;
 
   return (
     <Dialog open={inviteLinks.length > 0} onOpenChange={onClose}>
@@ -42,16 +45,9 @@ export function InviteLinksDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Link className="h-5 w-5" />
-            {t("inviteLinks.title", {
-              defaultValue: "Share Invitation Links",
-            })}
+            {t("inviteLinks.title")}
           </DialogTitle>
-          <DialogDescription>
-            {t("inviteLinks.description", {
-              defaultValue:
-                "Email is not configured. Share these links manually with your team members.",
-            })}
-          </DialogDescription>
+          <DialogDescription>{t("inviteLinks.description")}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-3">
@@ -84,9 +80,7 @@ export function InviteLinksDialog({
         </div>
 
         <DialogFooter>
-          <Button onClick={onClose}>
-            {t("inviteLinks.done", { defaultValue: "Done" })}
-          </Button>
+          <Button onClick={onClose}>{t("inviteLinks.done")}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

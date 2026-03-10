@@ -46,11 +46,11 @@ const Workspace = () => {
     inviteEmails,
     setInviteEmails,
     inviteLinks,
-    clearInviteLinks,
     canInviteUsers,
     maxInvites,
     storePendingInvites,
     sendPendingInvites,
+    reset: resetInvites,
   } = useWorkspaceInvites();
 
   // Check if user already has workspaces
@@ -339,7 +339,7 @@ const Workspace = () => {
         )}
       </main>
 
-      <InviteLinksDialog inviteLinks={inviteLinks} onClose={clearInviteLinks} />
+      <InviteLinksDialog inviteLinks={inviteLinks} onClose={resetInvites} />
     </div>
   );
 };

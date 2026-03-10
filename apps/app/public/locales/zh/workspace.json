@@ -37,7 +37,8 @@
   "inviteLinks": {
     "title": "分享邀请链接",
     "description": "邮件服务未配置。请手动将这些链接分享给您的团队成员。",
-    "done": "完成"
+    "done": "完成",
+    "copyFailed": "复制链接失败"
   },
   "invites": {
     "invalidEmail": "请输入有效的邮箱地址",

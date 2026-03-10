@@ -400,22 +400,248 @@ const AppCore = () => (
   </TRPCProvider>
 );
 
+// Safe i18n helper for error boundary - falls back to English if i18n isn't ready
+const t = (key: string, fallback: string) => {
+  const result = i18n.t(key);
+  const bareKey = key.includes(":") ? key.split(":")[1] : key;
+  return result === key || result === bareKey ? fallback : result;
+};
+
 // Wrap the app with Sentry error boundary and profiling
 const App = withSentryProfiling(
   SentryErrorBoundary(AppCore, {
     fallback: ({ resetError }) => (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center space-y-4 p-8">
-          <h1 className="text-2xl font-bold text-destructive">
-            {i18n.t("common:error")}
-          </h1>
-          <p className="text-muted-foreground">{i18n.t("common:tryAgain")}</p>
+        <style>{`
+          @keyframes rabbit-bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-12px); }
+          }
+          @keyframes ear-twitch-left {
+            0%, 90%, 100% { transform: rotate(0deg); }
+            93% { transform: rotate(-12deg); }
+            96% { transform: rotate(4deg); }
+          }
+          @keyframes ear-twitch-right {
+            0%, 88%, 100% { transform: rotate(0deg); }
+            91% { transform: rotate(10deg); }
+            94% { transform: rotate(-3deg); }
+          }
+          @keyframes blink {
+            0%, 94%, 100% { transform: scaleY(1); }
+            96% { transform: scaleY(0.1); }
+          }
+          @keyframes nose-wiggle {
+            0%, 100% { transform: scale(1); }
+            25% { transform: scale(1.15, 0.9); }
+            50% { transform: scale(0.9, 1.15); }
+            75% { transform: scale(1.1, 0.95); }
+          }
+        `}</style>
+        <div className="text-center space-y-6 p-8">
+          <svg
+            width="120"
+            height="140"
+            viewBox="0 0 120 140"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className="mx-auto"
+            style={{ animation: "rabbit-bounce 2s ease-in-out infinite" }}
+          >
+            {/* Left ear */}
+            <g
+              style={{
+                transformOrigin: "42px 45px",
+                animation: "ear-twitch-left 4s ease-in-out infinite",
+              }}
+            >
+              <rect
+                x="30"
+                y="8"
+                width="24"
+                height="50"
+                rx="12"
+                fill="currentColor"
+                className="text-muted-foreground/20"
+              />
+              <rect
+                x="35"
+                y="16"
+                width="14"
+                height="34"
+                rx="7"
+                className="text-primary/30"
+                fill="currentColor"
+              />
+            </g>
+            {/* Right ear */}
+            <g
+              style={{
+                transformOrigin: "78px 45px",
+                animation: "ear-twitch-right 4s ease-in-out infinite 0.5s",
+              }}
+            >
+              <rect
+                x="66"
+                y="8"
+                width="24"
+                height="50"
+                rx="12"
+                fill="currentColor"
+                className="text-muted-foreground/20"
+              />
+              <rect
+                x="71"
+                y="16"
+                width="14"
+                height="34"
+                rx="7"
+                className="text-primary/30"
+                fill="currentColor"
+              />
+            </g>
+            {/* Body */}
+            <ellipse
+              cx="60"
+              cy="110"
+              rx="28"
+              ry="24"
+              fill="currentColor"
+              className="text-muted-foreground/15"
+            />
+            {/* Head */}
+            <circle
+              cx="60"
+              cy="72"
+              r="30"
+              fill="currentColor"
+              className="text-muted-foreground/20"
+            />
+            {/* Left eye - X mark (confused) */}
+            <g
+              style={{
+                transformOrigin: "48px 66px",
+                animation: "blink 5s ease-in-out infinite",
+              }}
+            >
+              <line
+                x1="43"
+                y1="61"
+                x2="53"
+                y2="71"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                className="text-muted-foreground"
+              />
+              <line
+                x1="53"
+                y1="61"
+                x2="43"
+                y2="71"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                className="text-muted-foreground"
+              />
+            </g>
+            {/* Right eye - X mark (confused) */}
+            <g
+              style={{
+                transformOrigin: "72px 66px",
+                animation: "blink 5s ease-in-out infinite 0.15s",
+              }}
+            >
+              <line
+                x1="67"
+                y1="61"
+                x2="77"
+                y2="71"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                className="text-muted-foreground"
+              />
+              <line
+                x1="77"
+                y1="61"
+                x2="67"
+                y2="71"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                className="text-muted-foreground"
+              />
+            </g>
+            {/* Nose */}
+            <ellipse
+              cx="60"
+              cy="79"
+              rx="4"
+              ry="3"
+              fill="currentColor"
+              className="text-primary"
+              style={{
+                transformOrigin: "60px 79px",
+                animation: "nose-wiggle 1.5s ease-in-out infinite",
+              }}
+            />
+            {/* Mouth - wobbly */}
+            <path
+              d="M54 84 Q57 88 60 84 Q63 88 66 84"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              fill="none"
+              className="text-muted-foreground/60"
+            />
+            {/* Feet */}
+            <ellipse
+              cx="46"
+              cy="130"
+              rx="12"
+              ry="6"
+              fill="currentColor"
+              className="text-muted-foreground/20"
+            />
+            <ellipse
+              cx="74"
+              cy="130"
+              rx="12"
+              ry="6"
+              fill="currentColor"
+              className="text-muted-foreground/20"
+            />
+          </svg>
+          <div className="space-y-2">
+            <h1 className="text-2xl font-bold text-destructive">
+              {t("common:error", "Error")}
+            </h1>
+            <p className="text-muted-foreground">
+              {t(
+                "common:errorDescription",
+                "Something went wrong. Please try again."
+              )}
+            </p>
+          </div>
           <button
             onClick={resetError}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+            className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-all duration-200 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 h-10 px-6 py-2 bg-gradient-button hover:bg-gradient-button-hover text-white"
           >
-            {i18n.t("common:tryAgain")}
+            {t("common:tryAgain", "Try again")}
           </button>
+          <p className="text-sm text-muted-foreground/70">
+            {t(
+              "common:errorContactSupport",
+              "If the problem persists, contact us at"
+            )}{" "}
+            <a
+              href="mailto:support@qarote.io"
+              className="text-primary underline underline-offset-4 hover:text-primary/80"
+            >
+              support@qarote.io
+            </a>
+          </p>
         </div>
       </div>
     ),
