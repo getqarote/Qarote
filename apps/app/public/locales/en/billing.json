@@ -30,7 +30,8 @@
       "monthly": "Monthly",
       "yearly": "Yearly",
       "billedYearly": "Billed yearly",
-      "billedMonthly": "Billed monthly"
+      "billedMonthly": "Billed monthly",
+      "label": "Toggle billing period"
     },
     "period": {
       "month": "month",

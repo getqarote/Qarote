@@ -40,8 +40,6 @@ import {
 import { useUser } from "@/hooks/ui/useUser";
 import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
-import { UserPlan } from "@/types/plans";
-
 import { InviteUserDialog } from "./InviteUserDialogEnhanced";
 import { formatDate, getRoleColor, InviteFormState } from "./profileUtils";
 
@@ -61,7 +59,6 @@ interface EnhancedTeamTabProps {
   isInviting: boolean;
   isRevoking: boolean;
   isRemoving: boolean;
-  userPlan: UserPlan;
   canInviteMoreUsers: boolean;
   emailEnabled?: boolean;
 }
@@ -82,7 +79,6 @@ export const EnhancedTeamTab = ({
   isInviting,
   isRevoking,
   isRemoving,
-  userPlan: _userPlan,
   canInviteMoreUsers,
   emailEnabled,
 }: EnhancedTeamTabProps) => {

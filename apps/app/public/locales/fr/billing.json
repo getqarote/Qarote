@@ -30,7 +30,8 @@
       "monthly": "Mensuel",
       "yearly": "Annuel",
       "billedYearly": "Facturation annuelle",
-      "billedMonthly": "Facturation mensuelle"
+      "billedMonthly": "Facturation mensuelle",
+      "label": "Basculer la période de facturation"
     },
     "period": {
       "month": "mois",

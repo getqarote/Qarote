@@ -47,28 +47,14 @@ const FeatureItem: React.FC<{
   soonLabel?: string;
 }> = ({ label, detail, soonLabel }) => (
   <li className="flex items-start gap-3">
-    <div
-      style={{
-        marginTop: "0.4rem",
-        width: "0.875rem",
-        flexShrink: 0,
-        display: "flex",
-        alignItems: "flex-start",
-      }}
-    >
-      <Check
-        className="text-green-500"
-        style={{ width: "0.7rem", height: "0.7rem" }}
-      />
+    <div className="mt-1.5 w-3.5 shrink-0 flex items-start">
+      <Check className="text-green-500 w-[0.7rem] h-[0.7rem]" />
     </div>
     <div className="flex-1">
       <span className="text-sm text-foreground flex items-center gap-2">
         {label}
         {soonLabel && (
-          <span
-            className="font-medium px-1 border border-border text-muted-foreground"
-            style={{ fontSize: "0.65rem" }}
-          >
+          <span className="font-medium px-1 border border-border text-muted-foreground text-[0.65rem]">
             {soonLabel}
           </span>
         )}
@@ -270,9 +256,7 @@ const PlanCard: React.FC<{
           className={`w-full mt-6 px-4 py-3 sm:px-7 sm:py-3 transition-colors duration-200 text-base sm:text-lg h-auto rounded-full ${
             isCurrentPlan
               ? "bg-transparent border border-border text-muted-foreground cursor-not-allowed"
-              : plan.monthlyPrice === 0
-                ? "bg-transparent border border-border text-foreground hover:bg-muted"
-                : "bg-gradient-button hover:bg-gradient-button-hover text-white"
+              : "bg-gradient-button hover:bg-gradient-button-hover text-white"
           }`}
           disabled={isCurrentPlan || isUpgrading}
         >
@@ -390,26 +374,24 @@ export const PlansPage: React.FC<PlansPageProps> = ({
                   {t("plans.billingToggle.monthly")}
                 </span>
                 <button
+                  role="switch"
+                  aria-checked={billingPeriod === "yearly"}
+                  aria-label={t("plans.billingToggle.label")}
                   onClick={() =>
                     setBillingPeriod(
                       billingPeriod === "monthly" ? "yearly" : "monthly"
                     )
                   }
-                  className={`relative inline-flex items-center transition-colors ${
+                  className={`relative inline-flex items-center w-[27px] h-[15px] rounded-full transition-colors ${
                     billingPeriod === "yearly" ? "bg-[#FF691B]" : "bg-muted"
                   }`}
-                  style={{ width: "27px", height: "15px" }}
                 >
                   <span
-                    className="inline-block bg-white transition-transform"
-                    style={{
-                      width: "9px",
-                      height: "9px",
-                      transform:
-                        billingPeriod === "yearly"
-                          ? "translateX(15px)"
-                          : "translateX(3px)",
-                    }}
+                    className={`inline-block w-[9px] h-[9px] rounded-full bg-white transition-transform ${
+                      billingPeriod === "yearly"
+                        ? "translate-x-[15px]"
+                        : "translate-x-[3px]"
+                    }`}
                   />
                 </button>
                 <span

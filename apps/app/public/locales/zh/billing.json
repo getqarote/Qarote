@@ -30,7 +30,8 @@
       "monthly": "按月",
       "yearly": "按年",
       "billedYearly": "按年计费",
-      "billedMonthly": "按月计费"
+      "billedMonthly": "按月计费",
+      "label": "切换计费周期"
     },
     "period": {
       "month": "月",

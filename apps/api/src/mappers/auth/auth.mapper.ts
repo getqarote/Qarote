@@ -33,9 +33,9 @@ export class UserMapper {
       response.pendingEmail = user.pendingEmail ?? null;
     }
 
-    // Include googleId if present
+    // Derive authProvider from googleId
     if ("googleId" in user) {
-      response.googleId = (user.googleId as string) ?? null;
+      response.authProvider = user.googleId ? "google" : "password";
     }
 
     // Include subscription if present (can be null)

@@ -30,7 +30,8 @@
       "monthly": "Mensual",
       "yearly": "Anual",
       "billedYearly": "Facturación anual",
-      "billedMonthly": "Facturación mensual"
+      "billedMonthly": "Facturación mensual",
+      "label": "Alternar período de facturación"
     },
     "period": {
       "month": "mes",

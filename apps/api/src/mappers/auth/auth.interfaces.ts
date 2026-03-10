@@ -43,7 +43,7 @@ export type UserApiResponse = {
   createdAt: string;
   updatedAt: string;
   pendingEmail?: string | null;
-  googleId?: string | null;
+  authProvider?: "google" | "password";
   subscription?: SubscriptionData;
   workspace?: WorkspaceData;
 };
