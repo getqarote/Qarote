@@ -1,0 +1,12 @@
+{
+  "pageTitle": "拓扑",
+  "pageSubtitle": "交换机、队列和绑定的可视化地图",
+  "noServerTitle": "未配置服务器",
+  "noServerDescription": "添加 RabbitMQ 服务器以查看其拓扑。",
+  "noServerSelected": "未选择服务器",
+  "selectServerPrompt": "从侧边栏选择一个服务器以查看其拓扑。",
+  "loadingTopology": "正在加载拓扑...",
+  "failedToLoad": "加载拓扑失败",
+  "noTopologyData": "无拓扑数据",
+  "noTopologyDataDesc": "未找到所选服务器和虚拟主机的交换机或队列。"
+}

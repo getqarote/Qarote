@@ -4,6 +4,7 @@
   "connections": "Connexions",
   "nodes": "Noeuds",
   "exchanges": "Echanges",
+  "topology": "Topologie",
   "virtualHosts": "Hotes virtuels",
   "users": "Utilisateurs",
   "alerts": "Alertes",
