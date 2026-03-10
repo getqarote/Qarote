@@ -65,7 +65,7 @@
         "servers": "最多 3 个",
         "rabbitMQVersionSupport": "所有 3.x 和 4.x 版本",
         "workspaces": "3 个工作区",
-        "teamMembers": "5 个成员"
+        "teamMembers": "3 个成员"
       }
     },
     "enterprise": {
