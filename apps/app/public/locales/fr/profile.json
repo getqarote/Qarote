@@ -24,12 +24,13 @@
     "userRemoved": "{{name}} a été retiré de l'espace de travail.",
     "copyInviteLink": "L'e-mail est désactivé. Partagez ce lien avec l'utilisateur invité.",
     "copyLink": "Copier le lien",
-    "linkCopied": "Lien d'invitation copié dans le presse-papiers."
+    "linkCopied": "Lien d'invitation copié dans le presse-papiers.",
+    "invitationFailed": "Échec de l'invitation pour {{email}} : {{error}}"
   },
   "invite": {
-    "title": "Inviter un membre",
-    "description": "Envoyez une invitation pour ajouter un nouveau membre à votre espace de travail.",
-    "descriptionNoEmail": "Créez un lien d'invitation à partager avec un nouveau membre.",
+    "title": "Inviter des membres",
+    "description": "Envoyez des invitations pour ajouter de nouveaux membres à votre espace de travail.",
+    "descriptionNoEmail": "Créez des liens d'invitation à partager avec de nouveaux membres.",
     "emailDisabledBanner": "L'envoi d'e-mails n'est pas configuré. Un lien d'invitation sera généré pour un partage manuel.",
     "sendInvitation": "Envoyer l'invitation",
     "sending": "Envoi en cours...",
@@ -37,7 +38,9 @@
     "creating": "Création en cours...",
     "usersUsed": "{{current}}/{{max}} utilisateurs utilisés",
     "userLimitReached": "Vous avez atteint la limite d'utilisateurs ({{max}} utilisateurs). Passez à un forfait supérieur pour inviter plus d'utilisateurs.",
-    "emailAddress": "Adresse e-mail",
+    "emailAddress": "Adresses e-mail",
+    "emailPlaceholder": "Saisissez un e-mail et appuyez sur Entrée",
+    "invalidEmail": "Veuillez saisir une adresse e-mail valide",
     "role": "Rôle",
     "member": "Membre",
     "admin": "Admin",

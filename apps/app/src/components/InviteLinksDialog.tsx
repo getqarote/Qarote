@@ -61,12 +61,14 @@ export function InviteLinksDialog({
                   readOnly
                   value={link.inviteUrl}
                   className="font-mono text-xs"
+                  aria-label={`Invite URL for ${link.email}`}
                 />
                 <Button
                   variant="outline"
                   size="icon"
                   className="shrink-0"
                   onClick={() => handleCopy(link.inviteUrl, index)}
+                  aria-label={`Copy invite link for ${link.email}`}
                 >
                   {copiedIndex === index ? (
                     <Check className="h-4 w-4" />

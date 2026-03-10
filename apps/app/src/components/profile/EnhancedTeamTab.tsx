@@ -64,8 +64,6 @@ interface EnhancedTeamTabProps {
   userPlan: UserPlan;
   canInviteMoreUsers: boolean;
   emailEnabled?: boolean;
-  inviteResult?: { inviteUrl: string; email: string } | null;
-  onInviteResultDismiss?: () => void;
 }
 
 export const EnhancedTeamTab = ({
@@ -87,8 +85,6 @@ export const EnhancedTeamTab = ({
   userPlan,
   canInviteMoreUsers,
   emailEnabled,
-  inviteResult,
-  onInviteResultDismiss,
 }: EnhancedTeamTabProps) => {
   const navigate = useNavigate();
   const { planData, user } = useUser();
@@ -442,8 +438,6 @@ export const EnhancedTeamTab = ({
         maxUsers={maxUsers}
         currentCount={totalUsers + pendingInvitations}
         emailEnabled={emailEnabled}
-        inviteResult={inviteResult}
-        onResultDismiss={onInviteResultDismiss}
       />
 
       {/* Confirmation Dialog for User Removal */}

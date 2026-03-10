@@ -1,16 +1,17 @@
-import { useEffect, useRef } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CheckCircle, Info, Loader2, Plus, UserPlus } from "lucide-react";
+import { CheckCircle, Loader2, Plus } from "lucide-react";
 import { toast } from "sonner";
 
 import { User } from "@/lib/api";
 
 import { InviteLinksDialog } from "@/components/InviteLinksDialog";
+import { InviteMembersSection } from "@/components/InviteMembersSection";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -40,7 +41,7 @@ const Workspace = () => {
   const navigate = useNavigate();
   const { user, updateUser } = useAuth();
   const queryClient = useQueryClient();
-  const successHandled = useRef(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const {
     inviteEmails,
@@ -67,57 +68,48 @@ const Workspace = () => {
   // Create workspace mutation
   const createWorkspaceMutation = useCreateWorkspace();
 
-  // Handle success - use ref to prevent multiple executions
-  // Dependencies intentionally limited to prevent infinite loops from user/updateUser
-  useEffect(() => {
-    if (
-      createWorkspaceMutation.isSuccess &&
-      createWorkspaceMutation.data &&
-      !successHandled.current
-    ) {
-      successHandled.current = true;
-      queryClient.invalidateQueries({ queryKey: ["workspaces"] });
-
-      sendPendingInvites();
-
-      // Update user state directly with the new workspaceId
-      const newWorkspaceId = createWorkspaceMutation.data.workspace.id;
-      if (user) {
-        const updatedUser: User = {
-          ...user,
-          workspaceId: newWorkspaceId,
-        };
-        updateUser(updatedUser);
-      }
-
-      // Redirect to dashboard after showing success message
-      setTimeout(() => {
-        navigate("/", { replace: true });
-      }, 1000);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [createWorkspaceMutation.isSuccess, createWorkspaceMutation.data]);
-
-  // Handle error separately
-  useEffect(() => {
-    if (createWorkspaceMutation.isError) {
-      toast.error(
-        t("toast.workspaceCreateFailed", {
-          error: createWorkspaceMutation.error?.message || t("error.unknown"),
-        })
-      );
-    }
-  }, [createWorkspaceMutation.isError, createWorkspaceMutation.error, t]);
-
-  const onSubmit = (data: WorkspaceFormData) => {
+  const onSubmit = async (data: WorkspaceFormData) => {
     storePendingInvites();
-    createWorkspaceMutation.mutate({
-      name: data.name.trim(),
-      tags:
-        data.tags && data.tags.length > 0
-          ? data.tags.filter((tag) => tag.trim().length > 0)
-          : undefined,
-    });
+    createWorkspaceMutation.mutate(
+      {
+        name: data.name.trim(),
+        tags:
+          data.tags && data.tags.length > 0
+            ? data.tags.filter((tag) => tag.trim().length > 0)
+            : undefined,
+      },
+      {
+        onSuccess: async (responseData) => {
+          queryClient.invalidateQueries({ queryKey: ["workspaces"] });
+
+          // Update user state directly with the new workspaceId
+          const newWorkspaceId = responseData.workspace.id;
+          if (user) {
+            const updatedUser: User = {
+              ...user,
+              workspaceId: newWorkspaceId,
+            };
+            updateUser(updatedUser);
+          }
+
+          const links = await sendPendingInvites();
+
+          if (links.length > 0) {
+            // Show success state; user will dismiss InviteLinksDialog then navigate
+            setShowSuccess(true);
+          } else {
+            navigate("/", { replace: true });
+          }
+        },
+        onError: (error) => {
+          toast.error(
+            t("toast.workspaceCreateFailed", {
+              error: error?.message || t("error.unknown"),
+            })
+          );
+        },
+      }
+    );
   };
 
   if (workspacesLoading) {
@@ -155,7 +147,7 @@ const Workspace = () => {
 
       {/* Main Content */}
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {createWorkspaceMutation.isSuccess ? (
+        {showSuccess ? (
           // Success State
           <div className="text-center">
             <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 dark:bg-green-900/30 mb-6">
@@ -259,56 +251,14 @@ const Workspace = () => {
                         )}
                       />
 
-                      {/* Invite Members Section - plan gated */}
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                          <UserPlus className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm font-medium">
-                            {t("create.inviteMembers", {
-                              defaultValue: "Invite Members",
-                            })}{" "}
-                            (
-                            {t("create.optional", {
-                              defaultValue: "Optional",
-                            })}
-                            )
-                          </span>
-                        </div>
-
-                        {canInviteUsers ? (
-                          <>
-                            <TagsInput
-                              value={inviteEmails}
-                              onChange={setInviteEmails}
-                              placeholder={t("create.invitePlaceholder", {
-                                defaultValue:
-                                  "Type an email and press Enter to add",
-                              })}
-                              maxTags={maxInvites}
-                              maxTagLength={100}
-                              disabled={createWorkspaceMutation.isPending}
-                            />
-                            {maxInvites && (
-                              <p className="text-xs text-muted-foreground">
-                                {t("create.inviteHintWithLimit", {
-                                  count: maxInvites,
-                                  defaultValue: `You can invite up to ${maxInvites} members on your current plan`,
-                                })}
-                              </p>
-                            )}
-                          </>
-                        ) : (
-                          <Alert>
-                            <Info className="h-4 w-4" />
-                            <AlertDescription>
-                              {t("create.upgradeToInvite", {
-                                defaultValue:
-                                  "Upgrade to the Developer or Enterprise plan to invite team members.",
-                              })}
-                            </AlertDescription>
-                          </Alert>
-                        )}
-                      </div>
+                      <InviteMembersSection
+                        inviteEmails={inviteEmails}
+                        setInviteEmails={setInviteEmails}
+                        canInviteUsers={canInviteUsers}
+                        maxInvites={maxInvites}
+                        disabled={createWorkspaceMutation.isPending}
+                        i18nPrefix="create"
+                      />
 
                       <Button
                         type="submit"
@@ -339,7 +289,13 @@ const Workspace = () => {
         )}
       </main>
 
-      <InviteLinksDialog inviteLinks={inviteLinks} onClose={resetInvites} />
+      <InviteLinksDialog
+        inviteLinks={inviteLinks}
+        onClose={() => {
+          resetInvites();
+          navigate("/", { replace: true });
+        }}
+      />
     </div>
   );
 };

@@ -412,32 +412,6 @@ const App = withSentryProfiling(
   SentryErrorBoundary(AppCore, {
     fallback: ({ resetError }) => (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <style>{`
-          @keyframes rabbit-bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-12px); }
-          }
-          @keyframes ear-twitch-left {
-            0%, 90%, 100% { transform: rotate(0deg); }
-            93% { transform: rotate(-12deg); }
-            96% { transform: rotate(4deg); }
-          }
-          @keyframes ear-twitch-right {
-            0%, 88%, 100% { transform: rotate(0deg); }
-            91% { transform: rotate(10deg); }
-            94% { transform: rotate(-3deg); }
-          }
-          @keyframes blink {
-            0%, 94%, 100% { transform: scaleY(1); }
-            96% { transform: scaleY(0.1); }
-          }
-          @keyframes nose-wiggle {
-            0%, 100% { transform: scale(1); }
-            25% { transform: scale(1.15, 0.9); }
-            50% { transform: scale(0.9, 1.15); }
-            75% { transform: scale(1.1, 0.95); }
-          }
-        `}</style>
         <div className="text-center space-y-6 p-8">
           <svg
             width="120"
@@ -445,15 +419,14 @@ const App = withSentryProfiling(
             viewBox="0 0 120 140"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
-            className="mx-auto"
-            style={{ animation: "rabbit-bounce 2s ease-in-out infinite" }}
+            className="mx-auto motion-safe:animate-rabbit-bounce"
+            aria-hidden="true"
+            focusable="false"
           >
             {/* Left ear */}
             <g
-              style={{
-                transformOrigin: "42px 45px",
-                animation: "ear-twitch-left 4s ease-in-out infinite",
-              }}
+              className="motion-safe:animate-ear-twitch-left"
+              style={{ transformOrigin: "42px 45px" }}
             >
               <rect
                 x="30"
@@ -476,10 +449,8 @@ const App = withSentryProfiling(
             </g>
             {/* Right ear */}
             <g
-              style={{
-                transformOrigin: "78px 45px",
-                animation: "ear-twitch-right 4s ease-in-out infinite 0.5s",
-              }}
+              className="motion-safe:animate-ear-twitch-right"
+              style={{ transformOrigin: "78px 45px" }}
             >
               <rect
                 x="66"
@@ -519,10 +490,8 @@ const App = withSentryProfiling(
             />
             {/* Left eye - X mark (confused) */}
             <g
-              style={{
-                transformOrigin: "48px 66px",
-                animation: "blink 5s ease-in-out infinite",
-              }}
+              className="motion-safe:animate-blink"
+              style={{ transformOrigin: "48px 66px" }}
             >
               <line
                 x1="43"
@@ -547,10 +516,8 @@ const App = withSentryProfiling(
             </g>
             {/* Right eye - X mark (confused) */}
             <g
-              style={{
-                transformOrigin: "72px 66px",
-                animation: "blink 5s ease-in-out infinite 0.15s",
-              }}
+              className="motion-safe:animate-blink-delayed"
+              style={{ transformOrigin: "72px 66px" }}
             >
               <line
                 x1="67"
@@ -580,11 +547,8 @@ const App = withSentryProfiling(
               rx="4"
               ry="3"
               fill="currentColor"
-              className="text-primary"
-              style={{
-                transformOrigin: "60px 79px",
-                animation: "nose-wiggle 1.5s ease-in-out infinite",
-              }}
+              className="text-primary motion-safe:animate-nose-wiggle"
+              style={{ transformOrigin: "60px 79px" }}
             />
             {/* Mouth - wobbly */}
             <path
@@ -625,6 +589,7 @@ const App = withSentryProfiling(
             </p>
           </div>
           <button
+            type="button"
             onClick={resetError}
             className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-all duration-200 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 h-10 px-6 py-2 bg-gradient-button hover:bg-gradient-button-hover text-white"
           >

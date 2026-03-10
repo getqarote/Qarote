@@ -5,10 +5,12 @@ import { toast } from "sonner";
 
 import { logger } from "@/lib/logger";
 
+import { InviteLinksDialog } from "@/components/InviteLinksDialog";
 import { EnhancedTeamTab, InviteFormState } from "@/components/profile";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 import { useProfile } from "@/hooks/queries/useProfile";
+import { usePublicConfig } from "@/hooks/queries/usePublicConfig";
 import {
   useInvitations,
   useRemoveUserFromWorkspace,
@@ -18,6 +20,7 @@ import {
 } from "@/hooks/queries/useWorkspaceApi";
 import { useUser } from "@/hooks/ui/useUser";
 import { useWorkspace } from "@/hooks/ui/useWorkspace";
+import type { InviteLink } from "@/hooks/ui/useWorkspaceInvites";
 
 import { extractErrorMessage } from "./utils";
 
@@ -26,6 +29,7 @@ const TeamSection = () => {
   const { planData, userPlan } = useUser();
   const { workspace } = useWorkspace();
   const { data: profileData } = useProfile();
+  const { data: publicConfig } = usePublicConfig();
   const { data: workspaceUsersData, isLoading: usersLoading } =
     useWorkspaceUsers();
   const { data: invitationsData, isLoading: invitationsLoading } =
@@ -36,9 +40,10 @@ const TeamSection = () => {
 
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   const [inviteForm, setInviteForm] = useState<InviteFormState>({
-    email: "",
+    emails: [],
     role: "MEMBER",
   });
+  const [inviteLinks, setInviteLinks] = useState<InviteLink[]>([]);
 
   const profile = profileData?.user;
   const isAdmin = profile?.role === "ADMIN";
@@ -83,35 +88,48 @@ const TeamSection = () => {
       return;
     }
 
-    try {
-      const result = await sendInvitationMutation.mutateAsync({
-        email: inviteForm.email,
-        role: inviteForm.role,
-      });
+    const emails = inviteForm.emails;
+    if (emails.length === 0) return;
 
-      setInviteDialogOpen(false);
-      setInviteForm({ email: "", role: "MEMBER" });
+    setInviteDialogOpen(false);
+    setInviteForm({ emails: [], role: "MEMBER" });
 
-      if (result.emailSent) {
-        toast.success(t("toast.invitationSent", { email: inviteForm.email }));
-      } else {
-        const inviteUrl =
-          result.inviteUrl ||
-          `${window.location.origin}/invite/${result.invitation.token}`;
-        toast.success(t("toast.invitationSent", { email: inviteForm.email }), {
-          description: t("toast.copyInviteLink"),
-          action: {
-            label: t("toast.copyLink"),
-            onClick: () => navigator.clipboard.writeText(inviteUrl),
+    const collectedLinks: InviteLink[] = [];
+    let pendingCount = emails.length;
+
+    emails.forEach((email) => {
+      sendInvitationMutation.mutate(
+        { email, role: inviteForm.role },
+        {
+          onSuccess: (result) => {
+            if (result.emailSent) {
+              toast.success(t("toast.invitationSent", { email }));
+            } else {
+              const inviteUrl =
+                result.inviteUrl ||
+                `${window.location.origin}/invite/${result.invitation.token}`;
+              collectedLinks.push({ email, inviteUrl });
+              toast.success(t("toast.invitationCreated", { email }));
+            }
+            pendingCount--;
+            if (pendingCount === 0 && collectedLinks.length > 0) {
+              setInviteLinks(collectedLinks);
+            }
           },
-          duration: 10000,
-        });
-      }
-    } catch (error) {
-      logger.error("Invitation error:", error);
-      const errorMessage = extractErrorMessage(error);
-      toast.error(errorMessage);
-    }
+          onError: (error) => {
+            logger.error("Invitation error:", error);
+            const errorMessage = extractErrorMessage(error);
+            toast.error(
+              t("toast.invitationFailed", { email, error: errorMessage })
+            );
+            pendingCount--;
+            if (pendingCount === 0 && collectedLinks.length > 0) {
+              setInviteLinks(collectedLinks);
+            }
+          },
+        }
+      );
+    });
   };
 
   const handleRevokeInvitation = async (
@@ -166,6 +184,12 @@ const TeamSection = () => {
         isRemoving={removeUserMutation.isPending}
         userPlan={userPlan}
         canInviteMoreUsers={canInviteMoreUsers()}
+        emailEnabled={publicConfig?.emailEnabled ?? true}
+      />
+
+      <InviteLinksDialog
+        inviteLinks={inviteLinks}
+        onClose={() => setInviteLinks([])}
       />
     </div>
   );
