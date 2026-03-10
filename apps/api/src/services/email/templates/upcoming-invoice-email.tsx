@@ -202,7 +202,7 @@ export default function UpcomingInvoiceEmail({
             <Section style={buttonStyles.buttonSection}>
               <Button
                 style={buttonStyles.secondaryButton}
-                href={`${frontendUrl}/profile?tab=plans`}
+                href={`${frontendUrl}/settings/plans`}
               >
                 Manage Billing
               </Button>
