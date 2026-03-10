@@ -56,6 +56,14 @@ describe("getPlanFeatures", () => {
     it("returns displayName of 'Free'", () => {
       expect(getPlanFeatures(UserPlan.FREE).displayName).toBe("Free");
     });
+
+    it("returns ltsOnly as true", () => {
+      expect(getPlanFeatures(UserPlan.FREE).ltsOnly).toBe(true);
+    });
+
+    it("returns monthlyPrice of 0", () => {
+      expect(getPlanFeatures(UserPlan.FREE).monthlyPrice).toBe(0);
+    });
   });
 
   describe("DEVELOPER plan", () => {
@@ -94,6 +102,22 @@ describe("getPlanFeatures", () => {
 
     it("returns displayName of 'Developer'", () => {
       expect(getPlanFeatures(UserPlan.DEVELOPER).displayName).toBe("Developer");
+    });
+
+    it("returns monthlyPrice of 3400 ($34)", () => {
+      expect(getPlanFeatures(UserPlan.DEVELOPER).monthlyPrice).toBe(3400);
+    });
+
+    it("returns yearlyPrice of 34800 ($348/yr = $29/mo)", () => {
+      expect(getPlanFeatures(UserPlan.DEVELOPER).yearlyPrice).toBe(34800);
+    });
+
+    it("returns ltsOnly as false", () => {
+      expect(getPlanFeatures(UserPlan.DEVELOPER).ltsOnly).toBe(false);
+    });
+
+    it("returns isPopular as true", () => {
+      expect(getPlanFeatures(UserPlan.DEVELOPER).isPopular).toBe(true);
     });
 
     it("has featureDescriptions matching numeric limits", () => {
@@ -150,6 +174,18 @@ describe("getPlanFeatures", () => {
       expect(getPlanFeatures(UserPlan.ENTERPRISE).displayName).toBe(
         "Enterprise"
       );
+    });
+
+    it("returns monthlyPrice of 12400 ($124)", () => {
+      expect(getPlanFeatures(UserPlan.ENTERPRISE).monthlyPrice).toBe(12400);
+    });
+
+    it("returns yearlyPrice of 118800 ($1188/yr = $99/mo)", () => {
+      expect(getPlanFeatures(UserPlan.ENTERPRISE).yearlyPrice).toBe(118800);
+    });
+
+    it("returns hasSsoSamlOidc as true", () => {
+      expect(getPlanFeatures(UserPlan.ENTERPRISE).hasSsoSamlOidc).toBe(true);
     });
   });
 

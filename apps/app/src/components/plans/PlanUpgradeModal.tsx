@@ -130,20 +130,23 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
 
         <div className="p-6">
           <div className="grid md:grid-cols-2 gap-6">
-            {plans.map((planData) => {
-              const isPopular = planData.plan === UserPlan.DEVELOPER;
-              // Use fixed pricing for the new plan structure
-              const price =
-                planData.plan === UserPlan.DEVELOPER ? "$10" : "$50";
+            {plans.map((plan) => {
+              const price = `$${Math.round(plan.monthlyPrice / 100)}`;
+              const teamMembersText = plan.maxUsers === null
+                ? t("upgradeModal.unlimitedTeamMembers")
+                : t("upgradeModal.teamMembers", { count: plan.maxUsers });
+              const serversText = plan.maxServers === null
+                ? t("upgradeModal.unlimitedServers")
+                : t("upgradeModal.teamMembers", { count: plan.maxServers });
 
               return (
                 <div
-                  key={planData.plan}
+                  key={plan.plan}
                   className={`border rounded-lg p-6 relative ${
-                    isPopular ? "border-blue-500 bg-blue-50" : "border-gray-200"
+                    plan.isPopular ? "border-blue-500 bg-blue-50" : "border-gray-200"
                   }`}
                 >
-                  {isPopular && (
+                  {plan.isPopular && (
                     <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
                       <span className="bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-medium">
                         {t("upgradeModal.mostPopular")}
@@ -153,10 +156,7 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
 
                   <div className="text-center mb-6">
                     <h3 className="text-xl font-bold text-gray-900">
-                      {planData.displayName ||
-                        (planData.plan === UserPlan.DEVELOPER
-                          ? t("plans.developer.name")
-                          : t("plans.enterprise.name"))}
+                      {plan.displayName}
                     </h3>
                     <div className="mt-2">
                       <span className="text-3xl font-bold text-gray-900">
@@ -178,15 +178,13 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
                     <li className="flex items-center">
                       <Check className="w-4 h-4 text-green-500 mr-2" />
                       <span className="text-sm text-gray-700">
-                        {t("upgradeModal.unlimitedServers")}
+                        {serversText}
                       </span>
                     </li>
                     <li className="flex items-center">
                       <Check className="w-4 h-4 text-green-500 mr-2" />
                       <span className="text-sm text-gray-700">
-                        {planData.plan === UserPlan.DEVELOPER
-                          ? t("upgradeModal.teamMembers", { count: 5 })
-                          : t("upgradeModal.unlimitedTeamMembers")}
+                        {teamMembersText}
                       </span>
                     </li>
                     <li className="flex items-center">
@@ -195,37 +193,39 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
                         {t("upgradeModal.messageSending")}
                       </span>
                     </li>
-                    {planData.plan === UserPlan.ENTERPRISE && (
-                      <>
-                        <li className="flex items-center">
-                          <Check className="w-4 h-4 text-green-500 mr-2" />
-                          <span className="text-sm text-gray-700">
-                            {t("upgradeModal.advancedMetrics")}
-                          </span>
-                        </li>
-                        <li className="flex items-center">
-                          <Check className="w-4 h-4 text-green-500 mr-2" />
-                          <span className="text-sm text-gray-700">
-                            {t("upgradeModal.prioritySupport")}
-                          </span>
-                        </li>
-                        <li className="flex items-center">
-                          <Check className="w-4 h-4 text-green-500 mr-2" />
-                          <span className="text-sm text-gray-700">
-                            {t("upgradeModal.advancedAlerts")}
-                          </span>
-                        </li>
-                      </>
+                    {plan.hasPrioritySupport && (
+                      <li className="flex items-center">
+                        <Check className="w-4 h-4 text-green-500 mr-2" />
+                        <span className="text-sm text-gray-700">
+                          {t("upgradeModal.prioritySupport")}
+                        </span>
+                      </li>
+                    )}
+                    {plan.hasAdvancedAnalytics && (
+                      <li className="flex items-center">
+                        <Check className="w-4 h-4 text-green-500 mr-2" />
+                        <span className="text-sm text-gray-700">
+                          {t("upgradeModal.advancedMetrics")}
+                        </span>
+                      </li>
+                    )}
+                    {plan.hasAlerts && (
+                      <li className="flex items-center">
+                        <Check className="w-4 h-4 text-green-500 mr-2" />
+                        <span className="text-sm text-gray-700">
+                          {t("upgradeModal.advancedAlerts")}
+                        </span>
+                      </li>
                     )}
                   </ul>
 
                   <button
                     className={`w-full py-2 px-4 rounded-lg font-medium transition-colors flex items-center justify-center ${
-                      isPopular
+                      plan.isPopular
                         ? "bg-blue-600 hover:bg-blue-700 text-white disabled:bg-blue-400"
                         : "bg-gray-100 hover:bg-gray-200 text-gray-900 disabled:bg-gray-50 disabled:text-gray-400"
                     }`}
-                    onClick={() => handleUpgrade(planData.plan as UserPlan)}
+                    onClick={() => handleUpgrade(plan.plan as UserPlan)}
                     disabled={isUpgrading}
                   >
                     {isUpgrading ? (
@@ -237,11 +237,7 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
                       <>
                         <Zap className="w-4 h-4 inline-block mr-2" />
                         {t("upgradeModal.upgradeTo", {
-                          plan:
-                            planData.displayName ||
-                            (planData.plan === UserPlan.DEVELOPER
-                              ? t("plans.developer.name")
-                              : t("plans.enterprise.name")),
+                          plan: plan.displayName,
                         })}
                       </>
                     )}

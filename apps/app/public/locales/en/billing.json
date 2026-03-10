@@ -10,6 +10,10 @@
     "pricing": {
       "free": "Free"
     },
+    "limits": {
+      "unlimited": "Unlimited",
+      "upTo": "Up to {{count}}"
+    },
     "highlights": {
       "liveMonitoring": "Live Monitoring",
       "liveMonitoringDesc": "Monitor your RabbitMQ servers with per-second precision",
@@ -27,56 +31,22 @@
     "features": {
       "coreFeatures": "Core Features",
       "rabbitMQServers": "RabbitMQ Servers",
-      "rabbitMQVersionSupport": "RabbitMQ Version Support",
+      "rabbitMQVersionSupport": "All RabbitMQ versions",
       "workspaces": "Workspaces",
       "teamMembers": "Team Members",
-      "queueManagement": "Queue Management",
-      "queueManagementDesc": "Create and manage queues",
-      "exchangeManagement": "Exchange Management",
-      "exchangeManagementDesc": "Create and manage exchanges",
-      "virtualHostManagement": "Virtual Host Management",
-      "virtualHostManagementDesc": "Create and manage virtual hosts",
-      "rabbitMQUserManagement": "RabbitMQ User Management",
-      "rabbitMQUserManagementDesc": "Create and manage RabbitMQ users",
-      "alertsNotification": "Alert Notifications",
-      "alertsNotificationDesc": "Real-time alerts and notifications",
+      "advancedAnalytics": "Advanced analytics",
+      "queueManagement": "Queue, Exchange, VHost & User management",
+      "alertsWebhooks": "Alerts & webhooks",
+      "topologyVisualization": "Topology visualization",
+      "roleBasedAccess": "Role-based access",
+      "securityCompatibility": "Security & Compatibility",
+      "ssoSamlOidc": "SSO, SAML & OIDC",
+      "soc2Compliance": "SOC 2 compliance",
       "support": "Support",
-      "communitySupport": "Community Support",
-      "communitySupportDesc": "Community forums",
-      "prioritySupport": "Priority Support",
-      "prioritySupportDesc": "Priority mail support",
-      "emailAlerts": "Email Alerts",
-      "emailAlertsDesc": "Critical and warning notifications"
-    },
-    "free": {
-      "name": "Free",
-      "description": "Perfect for getting started",
-      "features": {
-        "servers": "Up to 1",
-        "rabbitMQVersionSupport": "Only LTS versions",
-        "workspaces": "1 Workspace",
-        "teamMembers": "1 Team Member"
-      }
-    },
-    "developer": {
-      "name": "Developer",
-      "description": "For solo developers and small projects",
-      "features": {
-        "servers": "Up to 3",
-        "rabbitMQVersionSupport": "All versions 3.x and 4.x",
-        "workspaces": "3 Workspaces",
-        "teamMembers": "3 Team Members"
-      }
-    },
-    "enterprise": {
-      "name": "Enterprise",
-      "description": "For large teams and enterprises",
-      "features": {
-        "servers": "Unlimited",
-        "rabbitMQVersionSupport": "All versions 3.x and 4.x",
-        "workspaces": "Unlimited",
-        "teamMembers": "Unlimited"
-      }
+      "communitySupport": "Community support",
+      "prioritySupport": "Priority support",
+      "ltsVersions": "LTS versions 3.x and 4.x",
+      "allVersions": "All versions 3.x and 4.x"
     }
   },
   "paymentSuccess": {

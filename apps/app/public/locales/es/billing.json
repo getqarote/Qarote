@@ -10,6 +10,10 @@
     "pricing": {
       "free": "Gratuito"
     },
+    "limits": {
+      "unlimited": "Ilimitado",
+      "upTo": "Hasta {{count}}"
+    },
     "highlights": {
       "liveMonitoring": "Monitoreo en vivo",
       "liveMonitoringDesc": "Monitorea tus servidores RabbitMQ con precisión de segundos",
@@ -27,56 +31,22 @@
     "features": {
       "coreFeatures": "Funciones principales",
       "rabbitMQServers": "Servidores RabbitMQ",
-      "rabbitMQVersionSupport": "Soporte de versión de RabbitMQ",
+      "rabbitMQVersionSupport": "Todas las versiones RabbitMQ",
       "workspaces": "Espacios de trabajo",
       "teamMembers": "Miembros del equipo",
-      "queueManagement": "Administración de colas",
-      "queueManagementDesc": "Crear y administrar colas",
-      "exchangeManagement": "Administración de intercambios",
-      "exchangeManagementDesc": "Crear y administrar intercambios",
-      "virtualHostManagement": "Administración de hosts virtuales",
-      "virtualHostManagementDesc": "Crear y administrar hosts virtuales",
-      "rabbitMQUserManagement": "Administración de usuarios de RabbitMQ",
-      "rabbitMQUserManagementDesc": "Crear y administrar usuarios de RabbitMQ",
-      "alertsNotification": "Notificación de alertas",
-      "alertsNotificationDesc": "Alertas y notificaciones en tiempo real",
+      "advancedAnalytics": "Análisis avanzados",
+      "queueManagement": "Gestión de Queue, Exchange, VHost y usuarios",
+      "alertsWebhooks": "Alertas y webhooks",
+      "topologyVisualization": "Visualización de topología",
+      "roleBasedAccess": "Acceso basado en roles",
+      "securityCompatibility": "Seguridad y compatibilidad",
+      "ssoSamlOidc": "SSO, SAML y OIDC",
+      "soc2Compliance": "Cumplimiento SOC 2",
       "support": "Soporte",
       "communitySupport": "Soporte comunitario",
-      "communitySupportDesc": "Foros de la comunidad",
       "prioritySupport": "Soporte prioritario",
-      "prioritySupportDesc": "Soporte prioritario por correo",
-      "emailAlerts": "Alertas por correo electrónico",
-      "emailAlertsDesc": "Notificaciones críticas y de advertencia"
-    },
-    "free": {
-      "name": "Gratuito",
-      "description": "Perfecto para comenzar",
-      "features": {
-        "servers": "Hasta 1",
-        "rabbitMQVersionSupport": "Solo versiones LTS",
-        "workspaces": "1 Espacio de trabajo",
-        "teamMembers": "1 Miembro"
-      }
-    },
-    "developer": {
-      "name": "Desarrollador",
-      "description": "Para desarrolladores individuales y proyectos pequeños",
-      "features": {
-        "servers": "Hasta 3",
-        "rabbitMQVersionSupport": "Todas las versiones 3.x y 4.x",
-        "workspaces": "3 Espacios de trabajo",
-        "teamMembers": "3 Miembros"
-      }
-    },
-    "enterprise": {
-      "name": "Empresarial",
-      "description": "Para equipos grandes y empresas",
-      "features": {
-        "servers": "Ilimitado",
-        "rabbitMQVersionSupport": "Todas las versiones 3.x y 4.x",
-        "workspaces": "Ilimitado",
-        "teamMembers": "Ilimitado"
-      }
+      "ltsVersions": "Versiones LTS 3.x y 4.x",
+      "allVersions": "Todas las versiones 3.x y 4.x"
     }
   },
   "paymentSuccess": {
