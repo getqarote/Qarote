@@ -74,7 +74,9 @@ describe("getPlanFeatures", () => {
     });
 
     it("returns hasTopologyVisualization as false", () => {
-      expect(getPlanFeatures(UserPlan.FREE).hasTopologyVisualization).toBe(false);
+      expect(getPlanFeatures(UserPlan.FREE).hasTopologyVisualization).toBe(
+        false
+      );
     });
 
     it("returns hasRoleBasedAccess as false", () => {
@@ -145,7 +147,9 @@ describe("getPlanFeatures", () => {
     });
 
     it("returns hasAdvancedAnalytics as true", () => {
-      expect(getPlanFeatures(UserPlan.DEVELOPER).hasAdvancedAnalytics).toBe(true);
+      expect(getPlanFeatures(UserPlan.DEVELOPER).hasAdvancedAnalytics).toBe(
+        true
+      );
     });
 
     it("returns hasAlerts as true", () => {
@@ -153,11 +157,15 @@ describe("getPlanFeatures", () => {
     });
 
     it("returns hasTopologyVisualization as coming_soon", () => {
-      expect(getPlanFeatures(UserPlan.DEVELOPER).hasTopologyVisualization).toBe("coming_soon");
+      expect(getPlanFeatures(UserPlan.DEVELOPER).hasTopologyVisualization).toBe(
+        "coming_soon"
+      );
     });
 
     it("returns hasRoleBasedAccess as coming_soon", () => {
-      expect(getPlanFeatures(UserPlan.DEVELOPER).hasRoleBasedAccess).toBe("coming_soon");
+      expect(getPlanFeatures(UserPlan.DEVELOPER).hasRoleBasedAccess).toBe(
+        "coming_soon"
+      );
     });
 
     it("returns hasSoc2Compliance as true", () => {
@@ -237,7 +245,9 @@ describe("getPlanFeatures", () => {
     });
 
     it("returns hasAdvancedAnalytics as true", () => {
-      expect(getPlanFeatures(UserPlan.ENTERPRISE).hasAdvancedAnalytics).toBe(true);
+      expect(getPlanFeatures(UserPlan.ENTERPRISE).hasAdvancedAnalytics).toBe(
+        true
+      );
     });
 
     it("returns hasAlerts as true", () => {
@@ -245,11 +255,15 @@ describe("getPlanFeatures", () => {
     });
 
     it("returns hasTopologyVisualization as coming_soon", () => {
-      expect(getPlanFeatures(UserPlan.ENTERPRISE).hasTopologyVisualization).toBe("coming_soon");
+      expect(
+        getPlanFeatures(UserPlan.ENTERPRISE).hasTopologyVisualization
+      ).toBe("coming_soon");
     });
 
     it("returns hasRoleBasedAccess as coming_soon", () => {
-      expect(getPlanFeatures(UserPlan.ENTERPRISE).hasRoleBasedAccess).toBe("coming_soon");
+      expect(getPlanFeatures(UserPlan.ENTERPRISE).hasRoleBasedAccess).toBe(
+        "coming_soon"
+      );
     });
 
     it("returns hasSoc2Compliance as true", () => {
