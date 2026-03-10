@@ -9,7 +9,7 @@ export const BillingHeader = () => {
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-4">
         <button
-          onClick={() => navigate("/profile?tab=plans")}
+          onClick={() => navigate("/settings/plans")}
           className="p-2 hover:bg-muted rounded-lg transition-colors"
           title="Back to Profile"
         >
