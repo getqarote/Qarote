@@ -229,12 +229,12 @@ describe("validateServerCreation", () => {
     );
   });
 
-  it("does not throw when count is 1 for DEVELOPER (below limit of 2)", () => {
-    expect(() => validateServerCreation(UserPlan.DEVELOPER, 1)).not.toThrow();
+  it("does not throw when count is 2 for DEVELOPER (below limit of 3)", () => {
+    expect(() => validateServerCreation(UserPlan.DEVELOPER, 2)).not.toThrow();
   });
 
-  it("throws PlanLimitExceededError when count equals maxServers for DEVELOPER (count 2)", () => {
-    expect(() => validateServerCreation(UserPlan.DEVELOPER, 2)).toThrow(
+  it("throws PlanLimitExceededError when count equals maxServers for DEVELOPER (count 3)", () => {
+    expect(() => validateServerCreation(UserPlan.DEVELOPER, 3)).toThrow(
       PlanLimitExceededError
     );
   });
@@ -257,8 +257,8 @@ describe("validateWorkspaceCreation", () => {
     );
   });
 
-  it("throws PlanLimitExceededError when count equals maxWorkspaces for DEVELOPER (count 2)", () => {
-    expect(() => validateWorkspaceCreation(UserPlan.DEVELOPER, 2)).toThrow(
+  it("throws PlanLimitExceededError when count equals maxWorkspaces for DEVELOPER (count 3)", () => {
+    expect(() => validateWorkspaceCreation(UserPlan.DEVELOPER, 3)).toThrow(
       PlanLimitExceededError
     );
   });
@@ -283,15 +283,15 @@ describe("validateUserInvitation", () => {
     ).not.toThrow();
   });
 
-  it("throws PlanLimitExceededError for DEVELOPER when totalUsers equals maxUsers (2)", () => {
-    // totalUsers = currentUserCount + pendingInvitations = 2 + 0 = 2 >= maxUsers (2)
-    expect(() => validateUserInvitation(UserPlan.DEVELOPER, 2, 0)).toThrow(
+  it("throws PlanLimitExceededError for DEVELOPER when totalUsers equals maxUsers (3)", () => {
+    // totalUsers = currentUserCount + pendingInvitations = 3 + 0 = 3 >= maxUsers (3)
+    expect(() => validateUserInvitation(UserPlan.DEVELOPER, 3, 0)).toThrow(
       PlanLimitExceededError
     );
   });
 
-  it("throws PlanLimitExceededError for DEVELOPER when pending invitations equals maxInvitations (1)", () => {
-    expect(() => validateUserInvitation(UserPlan.DEVELOPER, 0, 1)).toThrow(
+  it("throws PlanLimitExceededError for DEVELOPER when pending invitations equals maxInvitations (2)", () => {
+    expect(() => validateUserInvitation(UserPlan.DEVELOPER, 0, 2)).toThrow(
       PlanLimitExceededError
     );
   });
