@@ -4,6 +4,7 @@
   "connections": "连接",
   "nodes": "节点",
   "exchanges": "交换机",
+  "topology": "拓扑",
   "virtualHosts": "虚拟主机",
   "users": "用户",
   "alerts": "告警",

@@ -1,0 +1,12 @@
+{
+  "pageTitle": "Topologie",
+  "pageSubtitle": "Carte visuelle des echanges, files d'attente et liaisons",
+  "noServerTitle": "Aucun serveur configure",
+  "noServerDescription": "Ajoutez un serveur RabbitMQ pour voir sa topologie.",
+  "noServerSelected": "Aucun serveur selectionne",
+  "selectServerPrompt": "Selectionnez un serveur dans la barre laterale pour voir sa topologie.",
+  "loadingTopology": "Chargement de la topologie...",
+  "failedToLoad": "Echec du chargement de la topologie",
+  "noTopologyData": "Aucune donnee de topologie",
+  "noTopologyDataDesc": "Aucun echange ou file d'attente trouve pour le serveur et l'hote virtuel selectionnes."
+}
