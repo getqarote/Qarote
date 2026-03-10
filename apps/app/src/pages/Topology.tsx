@@ -197,7 +197,7 @@ const Topology = () => {
                         proOptions={{ hideAttribution: true }}
                       >
                         <Background />
-                        <Controls showInteractive={false} />
+                        <Controls />
                         <MiniMap
                           zoomable
                           pannable
