@@ -6,6 +6,7 @@ import {
   ArrowLeft,
   Check,
   Headphones,
+  Loader2,
   Shield,
   TrendingUp,
   X,
@@ -19,44 +20,98 @@ import { Card, CardContent } from "@/components/ui/card";
 import { PlanBadge } from "@/components/ui/PlanBadge";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 
+import { useAllPlans } from "@/hooks/queries/usePlans";
 import { usePlanUpgrade } from "@/hooks/ui/usePlanUpgrade";
 import { useUser } from "@/hooks/ui/useUser";
 
 import { UserPlan } from "@/types/plans";
 
-interface PlanCardProps {
-  plan: {
-    id: string;
-    name: string;
-    description: string;
-    color: string;
-    bgColor: string;
-    borderColor: string;
-    features: {
-      servers: string;
-      rabbitMQVersionSupport: string;
-      workspaces: string;
-      teamMembers: string;
-      queueManagement: boolean;
-      exchangeManagement: boolean;
-      virtualHostManagement: boolean;
-      rabbitMQUserManagement: boolean;
-      alertsNotification: boolean;
-      communitySupport: boolean;
-      prioritySupport: boolean;
-      emailAlerts: boolean;
-    };
-  };
+// --- Helpers ---
+
+/** Format a limit number (null = unlimited) into a display string */
+function formatLimit(
+  value: number | null | undefined,
+  t: (key: string, opts?: Record<string, unknown>) => string,
+): string {
+  if (value === null || value === undefined) return t("plans.limits.unlimited");
+  return t("plans.limits.upTo", { count: value });
+}
+
+/** Format cents into a dollar display string like "$34" */
+function formatPrice(cents: number): string {
+  if (cents === 0) return "$0";
+  return `$${Math.round(cents / 100)}`;
+}
+
+/** Compute monthly price from yearly total */
+function yearlyToMonthly(yearlyCents: number): number {
+  return Math.round(yearlyCents / 12);
+}
+
+// --- Sub-components ---
+
+const FeatureItem: React.FC<{
+  label: string;
+  detail?: string;
+  enabled?: boolean;
+  soon?: boolean;
+}> = ({ label, detail, enabled = true, soon = false }) => (
+  <li className="flex items-start gap-3">
+    <div className="mt-1">
+      {enabled ? (
+        <Check className="w-4 h-4 text-green-500" />
+      ) : (
+        <X className="w-4 h-4 text-muted-foreground" />
+      )}
+    </div>
+    <div className="flex-1">
+      <span className={`text-sm ${enabled ? "text-foreground" : "text-muted-foreground"} flex items-center gap-2`}>
+        {label}
+        {soon && (
+          <Badge variant="outline" className="text-[0.65rem] px-1 py-0">
+            Soon
+          </Badge>
+        )}
+      </span>
+      {detail && (
+        <div className="text-xs text-muted-foreground">{detail}</div>
+      )}
+    </div>
+  </li>
+);
+
+interface ApiPlan {
+  plan: string;
+  displayName: string;
+  description: string;
+  maxServers: number | null;
+  maxWorkspaces: number | null;
+  maxUsers: number | null;
+  monthlyPrice: number;
+  yearlyPrice: number;
+  hasCommunitySupport: boolean;
+  hasPrioritySupport: boolean;
+  hasAdvancedAnalytics: boolean;
+  hasAlerts: boolean;
+  hasTopologyVisualization: boolean | "coming_soon";
+  hasRoleBasedAccess: boolean | "coming_soon";
+  hasSsoSamlOidc: boolean;
+  hasSoc2Compliance: boolean;
+  isPopular: boolean;
+  ltsOnly: boolean;
+}
+
+const PlanCard: React.FC<{
+  plan: ApiPlan;
   price: string;
   period: "month" | "year";
   originalPrice?: string;
-  isCurrentPlan?: boolean;
+  isCurrentPlan: boolean;
   onUpgrade: (plan: UserPlan, billingInterval: "monthly" | "yearly") => void;
   billingInterval: "monthly" | "yearly";
   isUpgrading?: boolean;
-}
-
-const PlanCard: React.FC<PlanCardProps> = ({
+  t: (key: string, opts?: Record<string, unknown>) => string;
+}> = ({
   plan,
   price,
   period,
@@ -65,17 +120,19 @@ const PlanCard: React.FC<PlanCardProps> = ({
   onUpgrade,
   billingInterval,
   isUpgrading,
+  t,
 }) => {
-  const { t } = useTranslation("billing");
-
-  // Determine ring color: show blue ring for current plan
   const ringClass = isCurrentPlan
     ? "ring-2 ring-blue-500 shadow-lg scale-105"
     : "";
 
+  const versionDetail = plan.ltsOnly
+    ? t("plans.features.ltsVersions")
+    : t("plans.features.allVersions");
+
   return (
     <Card
-      className={`relative ${plan.borderColor} ${ringClass} transition-all duration-200 hover:shadow-lg`}
+      className={`relative border-gray-200 ${ringClass} transition-all duration-200 hover:shadow-lg`}
     >
       {isCurrentPlan && (
         <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
@@ -87,8 +144,8 @@ const PlanCard: React.FC<PlanCardProps> = ({
 
       <CardContent className="p-6">
         <div className="text-center mb-6">
-          <h3 className={`text-2xl font-bold ${plan.color} mb-2`}>
-            {plan.name}
+          <h3 className="text-2xl font-bold text-gray-600 mb-2">
+            {plan.displayName}
           </h3>
           <p className="text-muted-foreground text-sm mb-4">
             {plan.description}
@@ -99,7 +156,7 @@ const PlanCard: React.FC<PlanCardProps> = ({
               <span className="text-4xl font-bold text-foreground">
                 {price}
               </span>
-              {price !== t("plans.pricing.free") && (
+              {plan.monthlyPrice > 0 && (
                 <span className="text-muted-foreground">/{period}</span>
               )}
             </div>
@@ -117,237 +174,97 @@ const PlanCard: React.FC<PlanCardProps> = ({
         </div>
 
         <div className="space-y-6 mb-6">
+          {/* Core Features */}
           <div>
             <h4 className="font-semibold text-foreground mb-3 text-sm uppercase tracking-wide">
               {t("plans.features.coreFeatures")}
             </h4>
             <ul className="space-y-2">
-              <li className="flex items-start gap-3">
-                <div className="mt-1">
-                  <Check className="w-4 h-4 text-green-500" />
-                </div>
-                <div className="flex-1">
-                  <span className="text-sm text-foreground">
-                    {t("plans.features.rabbitMQServers")}
-                  </span>
-                  <div className="text-xs text-muted-foreground">
-                    {plan.features.servers}
-                  </div>
-                </div>
-              </li>
-              <li className="flex items-start gap-3">
-                <div className="mt-1">
-                  <Check className="w-4 h-4 text-green-500" />
-                </div>
-                <div className="flex-1">
-                  <span className="text-sm text-foreground">
-                    {t("plans.features.rabbitMQVersionSupport")}
-                  </span>
-                  <div className="text-xs text-muted-foreground">
-                    {plan.features.rabbitMQVersionSupport}
-                  </div>
-                </div>
-              </li>
-              <li className="flex items-start gap-3">
-                <div className="mt-1">
-                  <Check className="w-4 h-4 text-green-500" />
-                </div>
-                <div className="flex-1">
-                  <span className="text-sm text-foreground">
-                    {t("plans.features.workspaces")}
-                  </span>
-                  <div className="text-xs text-muted-foreground">
-                    {plan.features.workspaces}
-                  </div>
-                </div>
-              </li>
-              <li className="flex items-start gap-3">
-                <div className="mt-1">
-                  <Check className="w-4 h-4 text-green-500" />
-                </div>
-                <div className="flex-1">
-                  <span className="text-sm text-foreground">
-                    {t("plans.features.teamMembers")}
-                  </span>
-                  <div className="text-xs text-muted-foreground">
-                    {plan.features.teamMembers}
-                  </div>
-                </div>
-              </li>
-              <li className="flex items-start gap-3">
-                <div className="mt-1">
-                  {plan.features.queueManagement ? (
-                    <Check className="w-4 h-4 text-green-500" />
-                  ) : (
-                    <X className="w-4 h-4 text-muted-foreground" />
-                  )}
-                </div>
-                <div className="flex-1">
-                  <span
-                    className={`text-sm ${plan.features.queueManagement ? "text-foreground" : "text-muted-foreground"}`}
-                  >
-                    {t("plans.features.queueManagement")}
-                  </span>
-                  <div
-                    className={`text-xs ${plan.features.queueManagement ? "text-muted-foreground" : "text-muted-foreground"}`}
-                  >
-                    {t("plans.features.queueManagementDesc")}
-                  </div>
-                </div>
-              </li>
-              <li className="flex items-start gap-3">
-                <div className="mt-1">
-                  {plan.features.exchangeManagement ? (
-                    <Check className="w-4 h-4 text-green-500" />
-                  ) : (
-                    <X className="w-4 h-4 text-muted-foreground" />
-                  )}
-                </div>
-                <div className="flex-1">
-                  <span
-                    className={`text-sm ${plan.features.exchangeManagement ? "text-foreground" : "text-muted-foreground"}`}
-                  >
-                    {t("plans.features.exchangeManagement")}
-                  </span>
-                  <div
-                    className={`text-xs ${plan.features.exchangeManagement ? "text-muted-foreground" : "text-muted-foreground"}`}
-                  >
-                    {t("plans.features.exchangeManagementDesc")}
-                  </div>
-                </div>
-              </li>
-              <li className="flex items-start gap-3">
-                <div className="mt-1">
-                  {plan.features.virtualHostManagement ? (
-                    <Check className="w-4 h-4 text-green-500" />
-                  ) : (
-                    <X className="w-4 h-4 text-muted-foreground" />
-                  )}
-                </div>
-                <div className="flex-1">
-                  <span
-                    className={`text-sm ${plan.features.virtualHostManagement ? "text-foreground" : "text-muted-foreground"}`}
-                  >
-                    {t("plans.features.virtualHostManagement")}
-                  </span>
-                  <div
-                    className={`text-xs ${plan.features.virtualHostManagement ? "text-muted-foreground" : "text-muted-foreground"}`}
-                  >
-                    {t("plans.features.virtualHostManagementDesc")}
-                  </div>
-                </div>
-              </li>
-              <li className="flex items-start gap-3">
-                <div className="mt-1">
-                  {plan.features.rabbitMQUserManagement ? (
-                    <Check className="w-4 h-4 text-green-500" />
-                  ) : (
-                    <X className="w-4 h-4 text-muted-foreground" />
-                  )}
-                </div>
-                <div className="flex-1">
-                  <span
-                    className={`text-sm ${plan.features.rabbitMQUserManagement ? "text-foreground" : "text-muted-foreground"}`}
-                  >
-                    {t("plans.features.rabbitMQUserManagement")}
-                  </span>
-                  <div
-                    className={`text-xs ${plan.features.rabbitMQUserManagement ? "text-muted-foreground" : "text-muted-foreground"}`}
-                  >
-                    {t("plans.features.rabbitMQUserManagementDesc")}
-                  </div>
-                </div>
-              </li>
-              <li className="flex items-start gap-3">
-                <div className="mt-1">
-                  {plan.features.alertsNotification ? (
-                    <Check className="w-4 h-4 text-green-500" />
-                  ) : (
-                    <X className="w-4 h-4 text-muted-foreground" />
-                  )}
-                </div>
-                <div className="flex-1">
-                  <span
-                    className={`text-sm ${plan.features.alertsNotification ? "text-foreground" : "text-muted-foreground"}`}
-                  >
-                    {t("plans.features.alertsNotification")}
-                  </span>
-                  <div
-                    className={`text-xs ${plan.features.alertsNotification ? "text-muted-foreground" : "text-muted-foreground"}`}
-                  >
-                    {t("plans.features.alertsNotificationDesc")}
-                  </div>
-                </div>
-              </li>
+              <FeatureItem
+                label={t("plans.features.rabbitMQServers")}
+                detail={formatLimit(plan.maxServers, t)}
+                enabled
+              />
+              <FeatureItem
+                label={t("plans.features.workspaces")}
+                detail={formatLimit(plan.maxWorkspaces, t)}
+                enabled
+              />
+              <FeatureItem
+                label={t("plans.features.teamMembers")}
+                detail={formatLimit(plan.maxUsers, t)}
+                enabled
+              />
+              <FeatureItem
+                label={t("plans.features.advancedAnalytics")}
+                enabled={plan.hasAdvancedAnalytics}
+              />
+              <FeatureItem
+                label={t("plans.features.queueManagement")}
+                enabled
+              />
+              <FeatureItem
+                label={t("plans.features.alertsWebhooks")}
+                enabled={plan.hasAlerts}
+              />
+              {plan.hasTopologyVisualization && (
+                <FeatureItem
+                  label={t("plans.features.topologyVisualization")}
+                  enabled
+                  soon={plan.hasTopologyVisualization === "coming_soon"}
+                />
+              )}
+              {plan.hasRoleBasedAccess && (
+                <FeatureItem
+                  label={t("plans.features.roleBasedAccess")}
+                  enabled
+                  soon={plan.hasRoleBasedAccess === "coming_soon"}
+                />
+              )}
             </ul>
           </div>
 
+          {/* Security & Compatibility */}
+          <div>
+            <h4 className="font-semibold text-foreground mb-3 text-sm uppercase tracking-wide">
+              {t("plans.features.securityCompatibility")}
+            </h4>
+            <ul className="space-y-2">
+              {plan.hasSsoSamlOidc && (
+                <FeatureItem label={t("plans.features.ssoSamlOidc")} enabled />
+              )}
+              <FeatureItem
+                label={t("plans.features.soc2Compliance")}
+                enabled={plan.hasSoc2Compliance}
+              />
+              <FeatureItem
+                label={t("plans.features.rabbitMQVersionSupport")}
+                detail={versionDetail}
+                enabled
+              />
+            </ul>
+          </div>
+
+          {/* Support */}
           <div>
             <h4 className="font-semibold text-foreground mb-3 text-sm uppercase tracking-wide">
               {t("plans.features.support")}
             </h4>
             <ul className="space-y-2">
-              <li className="flex items-start gap-3">
-                <div className="mt-1">
-                  <Check className="w-4 h-4 text-green-500" />
-                </div>
-                <div className="flex-1">
-                  <span className="text-sm text-foreground">
-                    {t("plans.features.communitySupport")}
-                  </span>
-                  <div className="text-xs text-muted-foreground">
-                    {t("plans.features.communitySupportDesc")}
-                  </div>
-                </div>
-              </li>
-              <li className="flex items-start gap-3">
-                <div className="mt-1">
-                  {plan.features.prioritySupport ? (
-                    <Check className="w-4 h-4 text-green-500" />
-                  ) : (
-                    <X className="w-4 h-4 text-muted-foreground" />
-                  )}
-                </div>
-                <div className="flex-1">
-                  <span
-                    className={`text-sm ${plan.features.prioritySupport ? "text-foreground" : "text-muted-foreground"}`}
-                  >
-                    {t("plans.features.prioritySupport")}
-                  </span>
-                  <div
-                    className={`text-xs ${plan.features.prioritySupport ? "text-muted-foreground" : "text-muted-foreground"}`}
-                  >
-                    {t("plans.features.prioritySupportDesc")}
-                  </div>
-                </div>
-              </li>
-              <li className="flex items-start gap-3">
-                <div className="mt-1">
-                  {plan.features.emailAlerts ? (
-                    <Check className="w-4 h-4 text-green-500" />
-                  ) : (
-                    <X className="w-4 h-4 text-muted-foreground" />
-                  )}
-                </div>
-                <div className="flex-1">
-                  <span
-                    className={`text-sm ${plan.features.emailAlerts ? "text-foreground" : "text-muted-foreground"}`}
-                  >
-                    {t("plans.features.emailAlerts")}
-                  </span>
-                  <div
-                    className={`text-xs ${plan.features.emailAlerts ? "text-muted-foreground" : "text-muted-foreground"}`}
-                  >
-                    {t("plans.features.emailAlertsDesc")}
-                  </div>
-                </div>
-              </li>
+              <FeatureItem
+                label={t("plans.features.communitySupport")}
+                enabled={plan.hasCommunitySupport}
+              />
+              <FeatureItem
+                label={t("plans.features.prioritySupport")}
+                enabled={plan.hasPrioritySupport}
+              />
             </ul>
           </div>
         </div>
 
         <Button
-          onClick={() => onUpgrade(plan.id as UserPlan, billingInterval)}
+          onClick={() => onUpgrade(plan.plan as UserPlan, billingInterval)}
           className={`w-full ${isCurrentPlan || isUpgrading ? "bg-gray-100 text-gray-600 cursor-not-allowed" : "bg-gradient-button hover:bg-gradient-button-hover text-white"}`}
           disabled={isCurrentPlan || isUpgrading}
         >
@@ -357,6 +274,8 @@ const PlanCard: React.FC<PlanCardProps> = ({
     </Card>
   );
 };
+
+// --- Main page ---
 
 interface PlansPageProps {
   onUpgrade: (plan: UserPlan, billingInterval: "monthly" | "yearly") => void;
@@ -373,92 +292,24 @@ export const PlansPage: React.FC<PlansPageProps> = ({
   );
   const navigate = useNavigate();
   const { userPlan } = useUser();
+  const { data: allPlansData, isLoading } = useAllPlans();
 
-  const planPricing = {
-    monthly: {
-      FREE: { price: t("plans.pricing.free"), originalPrice: undefined },
-      DEVELOPER: { price: "$10", originalPrice: undefined },
-      ENTERPRISE: { price: "$50", originalPrice: undefined },
-    },
-    yearly: {
-      FREE: { price: t("plans.pricing.free"), originalPrice: undefined },
-      DEVELOPER: { price: "$100", originalPrice: "$120" },
-      ENTERPRISE: { price: "$500", originalPrice: "$600" },
-    },
-  };
+  const plans: ApiPlan[] = allPlansData?.plans ?? [];
 
-  const plans = [
-    {
-      id: "FREE",
-      name: t("plans.free.name"),
-      description: t("plans.free.description"),
-      color: "text-gray-600",
-      bgColor: "bg-gray-50",
-      borderColor: "border-gray-200",
-      features: {
-        servers: t("plans.free.features.servers"),
-        rabbitMQVersionSupport: t("plans.free.features.rabbitMQVersionSupport"),
-        workspaces: t("plans.free.features.workspaces"),
-        teamMembers: t("plans.free.features.teamMembers"),
-        queueManagement: true,
-        exchangeManagement: true,
-        virtualHostManagement: true,
-        rabbitMQUserManagement: true,
-        alertsNotification: false,
-        communitySupport: true,
-        prioritySupport: false,
-        emailAlerts: false,
-      },
-    },
-    {
-      id: "DEVELOPER",
-      name: t("plans.developer.name"),
-      description: t("plans.developer.description"),
-      color: "text-blue-600",
-      bgColor: "bg-blue-50",
-      borderColor: "border-blue-200",
-      features: {
-        servers: t("plans.developer.features.servers"),
-        rabbitMQVersionSupport: t(
-          "plans.developer.features.rabbitMQVersionSupport"
-        ),
-        workspaces: t("plans.developer.features.workspaces"),
-        teamMembers: t("plans.developer.features.teamMembers"),
-        queueManagement: true,
-        exchangeManagement: true,
-        virtualHostManagement: true,
-        rabbitMQUserManagement: true,
-        alertsNotification: true,
-        communitySupport: true,
-        prioritySupport: false,
-        emailAlerts: true,
-      },
-    },
-    {
-      id: "ENTERPRISE",
-      name: t("plans.enterprise.name"),
-      description: t("plans.enterprise.description"),
-      color: "text-gray-600",
-      bgColor: "bg-gray-50",
-      borderColor: "border-gray-200",
-      features: {
-        servers: t("plans.enterprise.features.servers"),
-        rabbitMQVersionSupport: t(
-          "plans.enterprise.features.rabbitMQVersionSupport"
-        ),
-        workspaces: t("plans.enterprise.features.workspaces"),
-        teamMembers: t("plans.enterprise.features.teamMembers"),
-        queueManagement: true,
-        exchangeManagement: true,
-        virtualHostManagement: true,
-        rabbitMQUserManagement: true,
-        alertsNotification: true,
-        communitySupport: true,
-        prioritySupport: true,
-        emailAlerts: true,
-      },
-    },
-  ];
+  /** Get price string and optional original price for a plan */
+  function getPricing(plan: ApiPlan): { price: string; originalPrice?: string } {
+    if (plan.monthlyPrice === 0) {
+      return { price: t("plans.pricing.free") };
+    }
+    if (billingPeriod === "yearly") {
+      const monthlyEquivalent = yearlyToMonthly(plan.yearlyPrice);
+      return {
+        price: formatPrice(monthlyEquivalent),
+        originalPrice: formatPrice(plan.monthlyPrice),
+      };
+    }
+    return { price: formatPrice(plan.monthlyPrice) };
+  }
 
   return (
     <SidebarProvider>
@@ -487,7 +338,7 @@ export const PlansPage: React.FC<PlansPageProps> = ({
               <PlanBadge />
             </div>
 
-            {/* Pricing Section - matching landing page */}
+            {/* Pricing Section */}
             <div className="py-8">
               <div className="text-center mb-12">
                 <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
@@ -587,29 +438,37 @@ export const PlansPage: React.FC<PlansPageProps> = ({
 
               {/* Plans Grid */}
               <div className="flex justify-center">
-                <div className="grid lg:grid-cols-3 gap-8 max-w-5xl">
-                  {plans.map((plan) => {
-                    const currentPricing =
-                      planPricing[billingPeriod][
-                        plan.id as keyof typeof planPricing.monthly
-                      ];
-                    const isCurrentPlan = plan.id === userPlan?.toUpperCase();
+                {isLoading ? (
+                  <div className="flex items-center gap-2 text-muted-foreground py-16">
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    {t("upgradeModal.loadingPlans")}
+                  </div>
+                ) : (
+                  <div className="grid lg:grid-cols-3 gap-8 max-w-5xl">
+                    {plans.map((plan) => {
+                      const { price, originalPrice } = getPricing(plan);
+                      const isCurrentPlan =
+                        plan.plan === userPlan?.toUpperCase();
 
-                    return (
-                      <PlanCard
-                        key={plan.id}
-                        plan={plan}
-                        price={currentPricing.price}
-                        originalPrice={currentPricing.originalPrice}
-                        period={billingPeriod === "monthly" ? "month" : "year"}
-                        isCurrentPlan={isCurrentPlan}
-                        onUpgrade={onUpgrade}
-                        billingInterval={billingPeriod}
-                        isUpgrading={isUpgrading}
-                      />
-                    );
-                  })}
-                </div>
+                      return (
+                        <PlanCard
+                          key={plan.plan}
+                          plan={plan}
+                          price={price}
+                          originalPrice={originalPrice}
+                          period={
+                            billingPeriod === "monthly" ? "month" : "year"
+                          }
+                          isCurrentPlan={isCurrentPlan}
+                          onUpgrade={onUpgrade}
+                          billingInterval={billingPeriod}
+                          isUpgrading={isUpgrading}
+                          t={t}
+                        />
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             </div>
           </div>

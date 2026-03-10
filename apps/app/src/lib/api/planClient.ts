@@ -35,8 +35,17 @@ export interface CurrentPlanResponse {
     hasCommunitySupport: boolean;
     hasPrioritySupport: boolean;
     hasEmailAlerts: boolean;
+    // Display features
+    hasAdvancedAnalytics: boolean;
+    hasAlerts: boolean;
+    hasTopologyVisualization: boolean | "coming_soon";
+    hasRoleBasedAccess: boolean | "coming_soon";
+    hasSsoSamlOidc: boolean;
+    hasSoc2Compliance: boolean;
+    isPopular: boolean;
     // RabbitMQ Version Support
     supportedRabbitMqVersions: string[];
+    ltsOnly: boolean;
     // Pricing (in cents)
     monthlyPrice: number;
     yearlyPrice: number;

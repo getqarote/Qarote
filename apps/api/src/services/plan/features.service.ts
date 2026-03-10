@@ -21,10 +21,20 @@ export interface PlanFeatures {
   hasPrioritySupport: boolean;
   hasEmailAlerts: boolean;
 
+  // Display features (for pricing page rendering)
+  hasAdvancedAnalytics: boolean;
+  hasAlerts: boolean;
+  hasTopologyVisualization: boolean | "coming_soon";
+  hasRoleBasedAccess: boolean | "coming_soon";
+  hasSsoSamlOidc: boolean;
+  hasSoc2Compliance: boolean;
+  isPopular: boolean;
+
   // RabbitMQ version support
   supportedRabbitMqVersions: string[];
+  ltsOnly: boolean;
 
-  // Pricing
+  // Pricing (in cents)
   monthlyPrice: number;
   yearlyPrice: number;
   userCostPerMonth?: number;
@@ -58,8 +68,18 @@ export const PLAN_FEATURES: Record<UserPlan, PlanFeatures> = {
     hasPrioritySupport: false,
     hasEmailAlerts: false,
 
+    // Display features
+    hasAdvancedAnalytics: false,
+    hasAlerts: false,
+    hasTopologyVisualization: false,
+    hasRoleBasedAccess: false,
+    hasSsoSamlOidc: false,
+    hasSoc2Compliance: true,
+    isPopular: false,
+
     // RabbitMQ support
     supportedRabbitMqVersions: ["3.12", "3.13", "4.0", "4.1"],
+    ltsOnly: true,
 
     // Pricing
     monthlyPrice: 0,
@@ -67,7 +87,7 @@ export const PLAN_FEATURES: Record<UserPlan, PlanFeatures> = {
 
     // Display
     displayName: "Free",
-    description: "Perfect for getting started with RabbitMQ monitoring",
+    description: "Perfect for getting started",
     color: "text-white bg-gray-600",
     featureDescriptions: [
       "1 RabbitMQ server",
@@ -77,7 +97,6 @@ export const PLAN_FEATURES: Record<UserPlan, PlanFeatures> = {
       "Exchange management",
       "Virtual host management",
       "RabbitMQ user management",
-      "Mail support",
       "Community support",
     ],
   },
@@ -100,8 +119,17 @@ export const PLAN_FEATURES: Record<UserPlan, PlanFeatures> = {
 
     // Support features
     hasCommunitySupport: true,
-    hasPrioritySupport: false,
+    hasPrioritySupport: true,
     hasEmailAlerts: true,
+
+    // Display features
+    hasAdvancedAnalytics: true,
+    hasAlerts: true,
+    hasTopologyVisualization: "coming_soon",
+    hasRoleBasedAccess: "coming_soon",
+    hasSsoSamlOidc: false,
+    hasSoc2Compliance: true,
+    isPopular: true,
 
     // RabbitMQ support
     supportedRabbitMqVersions: [
@@ -123,22 +151,23 @@ export const PLAN_FEATURES: Record<UserPlan, PlanFeatures> = {
       "4.1",
       "4.2",
     ],
+    ltsOnly: false,
 
     // Pricing
-    monthlyPrice: 1000, // $10.00
-    yearlyPrice: 10000, // $100.00 (roughly $8.33/month)
+    monthlyPrice: 3400, // $34.00
+    yearlyPrice: 34800, // $348.00/year ($29/month)
 
     // Display
     displayName: "Developer",
-    description: "Ideal for individual developers and small projects",
+    description: "For solo developers and small projects",
     color: "text-white bg-blue-600",
     featureDescriptions: [
       "3 RabbitMQ servers",
       "3 workspaces",
       "3 users",
-      "Can add exchanges, virtual hosts, and RabbitMQ users",
-      "Can add queues",
-      "Community support",
+      "Queue, Exchange, VHost & User management",
+      "Alerts & webhooks",
+      "Priority support",
       "Email alerts for critical and warning notifications",
     ],
   },
@@ -164,6 +193,15 @@ export const PLAN_FEATURES: Record<UserPlan, PlanFeatures> = {
     hasPrioritySupport: true,
     hasEmailAlerts: true,
 
+    // Display features
+    hasAdvancedAnalytics: true,
+    hasAlerts: true,
+    hasTopologyVisualization: "coming_soon",
+    hasRoleBasedAccess: "coming_soon",
+    hasSsoSamlOidc: true,
+    hasSoc2Compliance: true,
+    isPopular: false,
+
     // RabbitMQ support
     supportedRabbitMqVersions: [
       "3.13",
@@ -184,23 +222,25 @@ export const PLAN_FEATURES: Record<UserPlan, PlanFeatures> = {
       "4.1",
       "4.2",
     ],
+    ltsOnly: false,
 
     // Pricing
-    monthlyPrice: 5000, // $50.00
-    yearlyPrice: 50000, // $500.00 (roughly $41.67/month)
+    monthlyPrice: 12400, // $124.00
+    yearlyPrice: 118800, // $1,188.00/year ($99/month)
     userCostPerMonth: 500, // $5.00 per additional user
 
     // Display
     displayName: "Enterprise",
-    description: "Enterprise-grade features for mission-critical systems",
+    description: "For large teams and enterprises",
     color: "text-white bg-purple-600",
     featureDescriptions: [
       "Unlimited RabbitMQ servers",
       "Unlimited workspaces",
       "Unlimited users",
-      "Can add exchanges, virtual hosts, and RabbitMQ users",
-      "Can add queues",
-      "Priority mail support",
+      "Queue, Exchange, VHost & User management",
+      "Alerts & webhooks",
+      "Priority support",
+      "SSO, SAML & OIDC",
       "Email alerts for critical and warning notifications",
     ],
   },

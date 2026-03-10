@@ -19,6 +19,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
+import { useAllPlans } from "@/hooks/queries/usePlans";
 import { usePlanUpgrade } from "@/hooks/ui/usePlanUpgrade";
 import { useUser } from "@/hooks/ui/useUser";
 
@@ -36,6 +37,7 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
   const { t } = useTranslation("billing");
   const { handleUpgrade, isUpgrading } = usePlanUpgrade();
   const { planData } = useUser();
+  const { data: allPlansData } = useAllPlans();
   const currentFeatures = planData?.planFeatures;
   const isTrialing = planData?.user?.subscriptionStatus === "TRIALING";
   const trialEndDate = planData?.user?.trialEnd
@@ -54,42 +56,39 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
     }
   };
 
-  const planBenefits = {
+  // UI styling per plan (icons/colors are purely presentational)
+  const planStyle: Record<string, { icon: React.ReactNode; color: string; bgColor: string }> = {
     [UserPlan.FREE]: {
       icon: <Users className="w-5 h-5" />,
       color: "text-muted-foreground",
       bgColor: "bg-muted",
-      benefits: ["1 RabbitMQ server", "Basic monitoring", "Community support"],
     },
     [UserPlan.DEVELOPER]: {
       icon: <Zap className="w-5 h-5" />,
       color: "text-blue-600",
       bgColor: "bg-blue-50 dark:bg-blue-900/20",
-      benefits: [
-        "Add exchanges",
-        "Add virtual hosts",
-        "Add RabbitMQ users",
-        "Priority support",
-      ],
     },
     [UserPlan.ENTERPRISE]: {
       icon: <Crown className="w-5 h-5" />,
       color: "text-purple-600",
       bgColor: "bg-purple-50 dark:bg-purple-900/20",
-      benefits: [
-        "All Developer features",
-        "Email support",
-        "Phone support",
-        "Screen sharing",
-      ],
     },
+  };
+
+  // Get featureDescriptions from the API for a given plan
+  const getBenefits = (plan: UserPlan): string[] => {
+    if (!allPlansData?.plans) return [];
+    const found = allPlansData.plans.find((p) => p.plan === plan);
+    return found?.featureDescriptions ?? [];
   };
 
   const navigate = useNavigate();
   const selfHosted = isSelfHostedMode();
-  const currentPlanInfo = planBenefits[currentPlan];
+  const currentPlanStyle = planStyle[currentPlan] ?? planStyle[UserPlan.FREE];
+  const currentBenefits = getBenefits(currentPlan);
   const nextPlan = getNextPlan(currentPlan);
-  const nextPlanInfo = nextPlan ? planBenefits[nextPlan] : null;
+  const nextPlanStyle = nextPlan ? planStyle[nextPlan] : null;
+  const nextPlanBenefits = nextPlan ? getBenefits(nextPlan) : [];
 
   return (
     <div className={`space-y-6 ${className}`}>
@@ -98,9 +97,9 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className={`p-2 rounded-lg ${currentPlanInfo.bgColor}`}>
-                <div className={currentPlanInfo.color}>
-                  {currentPlanInfo.icon}
+              <div className={`p-2 rounded-lg ${currentPlanStyle.bgColor}`}>
+                <div className={currentPlanStyle.color}>
+                  {currentPlanStyle.icon}
                 </div>
               </div>
               <div>
@@ -130,7 +129,7 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
                 What's included:
               </h4>
               <ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                {currentPlanInfo.benefits.map((benefit, index) => (
+                {currentBenefits.map((benefit, index) => (
                   <li
                     key={index}
                     className="flex items-center gap-2 text-sm text-muted-foreground"
@@ -236,15 +235,15 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
             </div>
           </CardContent>
         </Card>
-      ) : !selfHosted && nextPlan && nextPlanInfo ? (
+      ) : !selfHosted && nextPlan && nextPlanStyle ? (
         <Card className="border border-purple-200 bg-linear-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20">
           <CardContent className="p-6">
             <div className="flex items-start justify-between">
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-3">
-                  <div className={`p-2 rounded-lg ${nextPlanInfo.bgColor}`}>
-                    <div className={nextPlanInfo.color}>
-                      {nextPlanInfo.icon}
+                  <div className={`p-2 rounded-lg ${nextPlanStyle.bgColor}`}>
+                    <div className={nextPlanStyle.color}>
+                      {nextPlanStyle.icon}
                     </div>
                   </div>
                   <div>
@@ -262,7 +261,7 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
                     You'll get:
                   </h4>
                   <ul className="grid grid-cols-1 md:grid-cols-2 gap-1">
-                    {nextPlanInfo.benefits.map((benefit, index) => (
+                    {nextPlanBenefits.map((benefit, index) => (
                       <li
                         key={index}
                         className="flex items-center gap-2 text-sm text-muted-foreground"
