@@ -12,62 +12,57 @@ The single source of truth for the current version is the `VERSION` file at the 
 
 ## Creating a New Release
 
-### 1. Bump the version
+Releases are automated with [release-it](https://github.com/release-it/release-it). A single command handles version bumping, changelog generation, committing, tagging, and pushing.
 
-Edit the `VERSION` file at the repo root:
-
-```bash
-echo "1.1.0" > VERSION
-```
-
-### 2. Update the changelog
-
-Move the `[Unreleased]` section in `CHANGELOG.md` under the new version heading with today's date:
-
-```markdown
-## [1.1.0] - 2026-02-10
-```
-
-### 3. Commit the version bump
+### Quick Release
 
 ```bash
-git add VERSION CHANGELOG.md
-git commit -m "release: v1.1.0"
+# Auto-detect version bump from conventional commits (feat: → minor, fix: → patch)
+pnpm release
+
+# Or specify the bump explicitly
+pnpm release minor
+pnpm release major
+pnpm release patch
+
+# Preview what would happen without making changes
+pnpm release:dry
 ```
 
-### 4. Tag the commit
+This will:
+
+1. Bump the `VERSION` file
+2. Generate changelog entries from conventional commits into `CHANGELOG.md`
+3. Commit with message `release: v{VERSION}`
+4. Tag with `v{VERSION}`
+5. Push commit and tag to origin (triggers binary build + GitHub Release via CI)
+
+### Pre-release (Beta)
 
 ```bash
-git tag v1.1.0
+pnpm release --preRelease=beta
 ```
 
-### 5. Push the commit and tag
+This creates tags like `v1.2.0-beta.1`.
 
-```bash
-git push origin main
-git push origin v1.1.0
-```
+### Release Checklist
 
-### 6. Create a GitHub Release
-
-```bash
-gh release create v1.1.0 --title "v1.1.0" --notes "Release notes here"
-```
-
-Or create the release through the GitHub web UI at https://github.com/getqarote/Qarote/releases/new.
-
-## Release Checklist
-
-Before creating a release:
+Before running `pnpm release`:
 
 - [ ] All tests pass (`pnpm test`)
 - [ ] Code builds successfully (`pnpm build`)
-- [ ] `VERSION` file is updated
-- [ ] `CHANGELOG.md` is updated (move `[Unreleased]` to new version heading)
 - [ ] Database migrations are included (if schema changed)
 - [ ] Documentation is updated for new features
-- [ ] Commit is tagged with `v{VERSION}` format
-- [ ] GitHub release is published
+
+### Manual Release (alternative)
+
+If you need to release manually without release-it:
+
+1. Edit `VERSION` file: `echo "1.1.0" > VERSION`
+2. Update `CHANGELOG.md` (move `[Unreleased]` to new version heading with date)
+3. `git add VERSION CHANGELOG.md && git commit -m "release: v1.1.0"`
+4. `git tag v1.1.0`
+5. `git push origin main && git push origin v1.1.0`
 
 ## How Release Notifications Work
 
