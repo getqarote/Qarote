@@ -1,7 +1,7 @@
 import { memo } from "react";
 
 import { Handle, type NodeProps, Position } from "@xyflow/react";
-import { MessageSquare, Users } from "lucide-react";
+import { AlertTriangle, MessageSquare, Users } from "lucide-react";
 
 import type { QueueNodeData } from "@/lib/topology/layout";
 
@@ -26,9 +26,15 @@ function QueueNodeComponent({ data }: NodeProps) {
       </div>
       <div className="flex items-center gap-3 text-xs text-muted-foreground">
         <span title="Total messages">{nodeData.messages} msgs</span>
-        <span className="flex items-center gap-1" title="Consumers">
+        <span
+          className={`flex items-center gap-1 ${nodeData.consumerCount === 0 ? "text-amber-600 dark:text-amber-400" : ""}`}
+          title="Consumers"
+        >
           <Users className="w-3 h-3" />
           {nodeData.consumerCount}
+          {nodeData.consumerCount === 0 && (
+            <AlertTriangle className="w-3 h-3" />
+          )}
         </span>
       </div>
       {nodeData.messagesUnacknowledged > 0 && (
