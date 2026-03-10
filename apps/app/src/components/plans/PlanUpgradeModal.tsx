@@ -2,7 +2,7 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
-import { Check, Key, Loader2, X, Zap } from "lucide-react";
+import { AlertCircle, Check, Key, Loader2, X, Zap } from "lucide-react";
 
 import { isSelfHostedMode } from "@/lib/featureFlags";
 
@@ -11,6 +11,12 @@ import { usePlanUpgrade } from "@/hooks/ui/usePlanUpgrade";
 import { useUser } from "@/hooks/ui/useUser";
 
 import { UserPlan } from "@/types/plans";
+
+const PLAN_TIER_RANK: Record<string, number> = {
+  [UserPlan.FREE]: 0,
+  [UserPlan.DEVELOPER]: 1,
+  [UserPlan.ENTERPRISE]: 2,
+};
 
 interface PlanUpgradeModalProps {
   isOpen: boolean;
@@ -29,7 +35,7 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
   const { handleUpgrade, isUpgrading } = usePlanUpgrade();
 
   // Fetch all plans data
-  const { data: allPlansData } = useAllPlans();
+  const { data: allPlansData, isLoading, error, refetch } = useAllPlans();
 
   if (!isOpen) return null;
 
@@ -89,10 +95,10 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
     );
   }
 
-  if (!allPlansData) {
+  if (isLoading) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-lg p-6">
+        <div className="bg-background rounded-lg p-6">
           <div className="flex items-center">
             <Loader2 className="w-6 h-6 animate-spin mr-3" />
             <span>{t("upgradeModal.loadingPlans")}</span>
@@ -102,17 +108,57 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
     );
   }
 
-  const plans = allPlansData.plans.filter((p) => p.plan !== UserPlan.FREE);
+  if (error || !allPlansData) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="bg-background rounded-lg max-w-md w-full p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="w-5 h-5 text-destructive" />
+              <h3 className="font-semibold text-foreground">
+                {t("upgradeModal.upgradeFailed")}
+              </h3>
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              className="text-muted-foreground hover:text-foreground"
+              aria-label="Close"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+          {error && (
+            <p className="text-sm text-muted-foreground mb-4">
+              {error.message}
+            </p>
+          )}
+          <button
+            type="button"
+            className="w-full py-2 px-4 rounded-lg font-medium bg-gradient-button hover:bg-gradient-button-hover text-white"
+            onClick={() => refetch()}
+          >
+            {t("paymentCancelled.tryAgain")}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const currentPlanRank = PLAN_TIER_RANK[userPlan ?? UserPlan.FREE] ?? 0;
+  const plans = allPlansData.plans.filter(
+    (p) => (PLAN_TIER_RANK[p.plan] ?? 0) > currentPlanRank
+  );
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-background rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2 className="text-2xl font-bold text-foreground">
               {t("upgradeModal.upgradeYourPlan")}
             </h2>
-            <p className="text-gray-600 mt-1">
+            <p className="text-muted-foreground mt-1">
               {t("upgradeModal.upgradeDescription", {
                 feature,
                 plan: planData.planFeatures.displayName || userPlan,
@@ -122,7 +168,7 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
+            className="text-muted-foreground hover:text-foreground"
           >
             <X className="w-6 h-6" />
           </button>
@@ -137,7 +183,7 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
                 : t("upgradeModal.teamMembers", { count: plan.maxUsers });
               const serversText = plan.maxServers === null
                 ? t("upgradeModal.unlimitedServers")
-                : t("upgradeModal.teamMembers", { count: plan.maxServers });
+                : t("upgradeModal.servers", { count: plan.maxServers });
 
               return (
                 <div
@@ -155,14 +201,14 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
                   )}
 
                   <div className="text-center mb-6">
-                    <h3 className="text-xl font-bold text-gray-900">
+                    <h3 className="text-xl font-bold text-foreground">
                       {plan.displayName}
                     </h3>
                     <div className="mt-2">
-                      <span className="text-3xl font-bold text-gray-900">
+                      <span className="text-3xl font-bold text-foreground">
                         {price}
                       </span>
-                      <span className="text-gray-600">
+                      <span className="text-muted-foreground">
                         {t("upgradeModal.perMonth")}
                       </span>
                     </div>
@@ -171,32 +217,32 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
                   <ul className="space-y-3 mb-6">
                     <li className="flex items-center">
                       <Check className="w-4 h-4 text-green-500 mr-2" />
-                      <span className="text-sm text-gray-700">
+                      <span className="text-sm text-muted-foreground">
                         {t("upgradeModal.unlimitedQueues")}
                       </span>
                     </li>
                     <li className="flex items-center">
                       <Check className="w-4 h-4 text-green-500 mr-2" />
-                      <span className="text-sm text-gray-700">
+                      <span className="text-sm text-muted-foreground">
                         {serversText}
                       </span>
                     </li>
                     <li className="flex items-center">
                       <Check className="w-4 h-4 text-green-500 mr-2" />
-                      <span className="text-sm text-gray-700">
+                      <span className="text-sm text-muted-foreground">
                         {teamMembersText}
                       </span>
                     </li>
                     <li className="flex items-center">
                       <Check className="w-4 h-4 text-green-500 mr-2" />
-                      <span className="text-sm text-gray-700">
+                      <span className="text-sm text-muted-foreground">
                         {t("upgradeModal.messageSending")}
                       </span>
                     </li>
                     {plan.hasPrioritySupport && (
                       <li className="flex items-center">
                         <Check className="w-4 h-4 text-green-500 mr-2" />
-                        <span className="text-sm text-gray-700">
+                        <span className="text-sm text-muted-foreground">
                           {t("upgradeModal.prioritySupport")}
                         </span>
                       </li>
@@ -204,7 +250,7 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
                     {plan.hasAdvancedAnalytics && (
                       <li className="flex items-center">
                         <Check className="w-4 h-4 text-green-500 mr-2" />
-                        <span className="text-sm text-gray-700">
+                        <span className="text-sm text-muted-foreground">
                           {t("upgradeModal.advancedMetrics")}
                         </span>
                       </li>
@@ -212,7 +258,7 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
                     {plan.hasAlerts && (
                       <li className="flex items-center">
                         <Check className="w-4 h-4 text-green-500 mr-2" />
-                        <span className="text-sm text-gray-700">
+                        <span className="text-sm text-muted-foreground">
                           {t("upgradeModal.advancedAlerts")}
                         </span>
                       </li>
@@ -220,9 +266,10 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
                   </ul>
 
                   <button
+                    type="button"
                     className={`w-full py-2 px-4 rounded-lg font-medium transition-colors flex items-center justify-center ${
                       plan.isPopular
-                        ? "bg-blue-600 hover:bg-blue-700 text-white disabled:bg-blue-400"
+                        ? "bg-gradient-button hover:bg-gradient-button-hover text-white disabled:opacity-50"
                         : "bg-gray-100 hover:bg-gray-200 text-gray-900 disabled:bg-gray-50 disabled:text-gray-400"
                     }`}
                     onClick={() => handleUpgrade(plan.plan as UserPlan)}

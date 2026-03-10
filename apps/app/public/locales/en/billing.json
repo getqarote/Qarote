@@ -28,10 +28,15 @@
       "monthly": "Monthly",
       "yearly": "Yearly"
     },
+    "period": {
+      "month": "month",
+      "year": "year"
+    },
     "features": {
       "coreFeatures": "Core Features",
       "rabbitMQServers": "RabbitMQ Servers",
-      "rabbitMQVersionSupport": "All RabbitMQ versions",
+      "rabbitMQVersionSupport": "RabbitMQ version support",
+      "soon": "Soon",
       "workspaces": "Workspaces",
       "teamMembers": "Team Members",
       "advancedAnalytics": "Advanced analytics",
@@ -78,6 +83,7 @@
     "perMonth": "/month",
     "unlimitedQueues": "Unlimited queues",
     "unlimitedServers": "Unlimited servers",
+    "servers": "{{count}} servers",
     "teamMembers": "{{count}} team members",
     "unlimitedTeamMembers": "Unlimited team members",
     "messageSending": "Message sending & queue management",

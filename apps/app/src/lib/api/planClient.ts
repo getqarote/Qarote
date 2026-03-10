@@ -26,11 +26,11 @@ export interface CurrentPlanResponse {
     canAddVirtualHost: boolean;
     canAddRabbitMQUser: boolean;
     canInviteUsers: boolean;
-    // Limits
-    maxServers?: number;
-    maxWorkspaces?: number;
-    maxUsers?: number;
-    maxInvitations?: number;
+    // Limits (null = unlimited)
+    maxServers: number | null;
+    maxWorkspaces: number | null;
+    maxUsers: number | null;
+    maxInvitations: number | null;
     // Support features
     hasCommunitySupport: boolean;
     hasPrioritySupport: boolean;
@@ -60,24 +60,24 @@ export interface CurrentPlanResponse {
   usage: {
     users: {
       current: number;
-      limit?: number;
+      limit: number | null;
       percentage: number;
-      canAdd?: boolean;
-      canSend?: boolean;
+      canAdd: boolean;
+      canSend: boolean;
     };
     servers: {
       current: number;
-      limit?: number;
+      limit: number | null;
       percentage: number;
-      canAdd?: boolean;
-      canSend?: boolean;
+      canAdd: boolean;
+      canSend: boolean;
     };
     workspaces: {
       current: number;
-      limit?: number;
+      limit: number | null;
       percentage: number;
-      canAdd?: boolean;
-      canSend?: boolean;
+      canAdd: boolean;
+      canSend: boolean;
     };
   };
   warnings: {

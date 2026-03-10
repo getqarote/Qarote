@@ -28,10 +28,15 @@
       "monthly": "按月",
       "yearly": "按年"
     },
+    "period": {
+      "month": "月",
+      "year": "年"
+    },
     "features": {
       "coreFeatures": "核心功能",
       "rabbitMQServers": "RabbitMQ 服务器",
-      "rabbitMQVersionSupport": "所有 RabbitMQ 版本",
+      "rabbitMQVersionSupport": "RabbitMQ 版本支持",
+      "soon": "即将推出",
       "workspaces": "工作区",
       "teamMembers": "团队成员",
       "advancedAnalytics": "高级分析",
@@ -78,6 +83,7 @@
     "perMonth": "/月",
     "unlimitedQueues": "无限队列",
     "unlimitedServers": "无限服务器",
+    "servers": "{{count}} 个服务器",
     "teamMembers": "{{count}} 个团队成员",
     "unlimitedTeamMembers": "无限团队成员",
     "messageSending": "消息发送和队列管理",
