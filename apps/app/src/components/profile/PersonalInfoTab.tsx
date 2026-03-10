@@ -198,7 +198,7 @@ export const PersonalInfoTab = ({
       </Card>
 
       {/* Security Settings Section - Only show for non-Google OAuth users */}
-      {!profile.googleId ? (
+      {profile.authProvider !== "google" ? (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">

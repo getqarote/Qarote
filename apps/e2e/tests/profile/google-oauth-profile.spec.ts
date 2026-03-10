@@ -27,7 +27,7 @@ test.describe("Google OAuth Profile Security @p1", () => {
         lastLogin: new Date().toISOString(),
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        googleId: "google-oauth-123456",
+        authProvider: "google",
         subscription: null,
         workspace: { id: "mock-workspace-id" },
       },

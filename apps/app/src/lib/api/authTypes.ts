@@ -19,7 +19,7 @@ export interface User {
   lastLogin?: string;
   createdAt: string;
   updatedAt: string;
-  googleId?: string | null;
+  authProvider?: "google" | "password";
 }
 
 interface Workspace {

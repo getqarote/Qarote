@@ -182,7 +182,6 @@ const TeamSection = () => {
         isInviting={sendInvitationMutation.isPending}
         isRevoking={revokeInvitationMutation.isPending}
         isRemoving={removeUserMutation.isPending}
-        userPlan={userPlan}
         canInviteMoreUsers={canInviteMoreUsers()}
         emailEnabled={publicConfig?.emailEnabled ?? true}
       />
