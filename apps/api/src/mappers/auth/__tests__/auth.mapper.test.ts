@@ -77,10 +77,17 @@ describe("UserMapper", () => {
     });
   });
 
-  it("maps an array of users", () => {
-    const results = UserMapper.toApiResponseArray([baseUser, baseUser]);
+  it("maps an array of users independently", () => {
+    const secondUser = {
+      ...baseUser,
+      id: "user-2",
+      email: "other@example.com",
+    };
+    const results = UserMapper.toApiResponseArray([baseUser, secondUser]);
 
     expect(results).toHaveLength(2);
     expect(results[0].id).toBe("user-1");
+    expect(results[1].id).toBe("user-2");
+    expect(results[1].email).toBe("other@example.com");
   });
 });
