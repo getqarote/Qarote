@@ -50,8 +50,14 @@ describe("getLicenseFeaturesForTier", () => {
       );
     });
 
-    it("returns exactly 3 features", () => {
-      expect(getLicenseFeaturesForTier(UserPlan.DEVELOPER)).toHaveLength(3);
+    it("includes topology_visualization", () => {
+      expect(getLicenseFeaturesForTier(UserPlan.DEVELOPER)).toContain(
+        "topology_visualization"
+      );
+    });
+
+    it("returns exactly 4 features", () => {
+      expect(getLicenseFeaturesForTier(UserPlan.DEVELOPER)).toHaveLength(4);
     });
   });
 

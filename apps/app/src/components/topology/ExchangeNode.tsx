@@ -28,7 +28,7 @@ function ExchangeNodeComponent({ data }: NodeProps) {
 
   return (
     <div
-      className={`rounded-lg border-2 p-3 shadow-sm min-w-[200px] cursor-pointer ${colorClass}`}
+      className={`rounded-lg border-2 p-3 shadow-sm min-w-[200px] ${colorClass}`}
     >
       <Handle type="target" position={Position.Left} className="!bg-gray-400" />
       <div className="flex items-center gap-2 mb-1">
