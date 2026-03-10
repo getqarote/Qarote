@@ -95,6 +95,15 @@ describe("getPlanFeatures", () => {
     it("returns displayName of 'Developer'", () => {
       expect(getPlanFeatures(UserPlan.DEVELOPER).displayName).toBe("Developer");
     });
+
+    it("has featureDescriptions matching numeric limits", () => {
+      const descriptions = getPlanFeatures(
+        UserPlan.DEVELOPER
+      ).featureDescriptions;
+      expect(descriptions).toContain("3 RabbitMQ servers");
+      expect(descriptions).toContain("3 workspaces");
+      expect(descriptions).toContain("3 users");
+    });
   });
 
   describe("ENTERPRISE plan", () => {

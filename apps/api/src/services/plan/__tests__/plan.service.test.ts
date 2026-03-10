@@ -257,6 +257,12 @@ describe("validateWorkspaceCreation", () => {
     );
   });
 
+  it("does not throw when count is 2 for DEVELOPER (below limit of 3)", () => {
+    expect(() =>
+      validateWorkspaceCreation(UserPlan.DEVELOPER, 2)
+    ).not.toThrow();
+  });
+
   it("throws PlanLimitExceededError when count equals maxWorkspaces for DEVELOPER (count 3)", () => {
     expect(() => validateWorkspaceCreation(UserPlan.DEVELOPER, 3)).toThrow(
       PlanLimitExceededError
@@ -280,6 +286,18 @@ describe("validateUserInvitation", () => {
   it("does not throw for DEVELOPER with 1 user and 0 invitations (below limits)", () => {
     expect(() =>
       validateUserInvitation(UserPlan.DEVELOPER, 1, 0)
+    ).not.toThrow();
+  });
+
+  it("does not throw for DEVELOPER with 2 users and 0 invitations (last allowed seat)", () => {
+    expect(() =>
+      validateUserInvitation(UserPlan.DEVELOPER, 2, 0)
+    ).not.toThrow();
+  });
+
+  it("does not throw for DEVELOPER with 0 users and 1 invitation (below maxInvitations)", () => {
+    expect(() =>
+      validateUserInvitation(UserPlan.DEVELOPER, 0, 1)
     ).not.toThrow();
   });
 
