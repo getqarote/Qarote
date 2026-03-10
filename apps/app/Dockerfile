@@ -24,8 +24,9 @@ COPY apps/app ./apps/app
 # Accept build arguments (Vite embeds env vars at build time, not runtime)
 ARG DEPLOYMENT_MODE=selfhosted
 ARG VITE_API_URL
+ARG VITE_PORTAL_URL
 WORKDIR /app/apps/app
-RUN VITE_DEPLOYMENT_MODE=${DEPLOYMENT_MODE} VITE_API_URL=${VITE_API_URL} pnpm run build
+RUN VITE_DEPLOYMENT_MODE=${DEPLOYMENT_MODE} VITE_API_URL=${VITE_API_URL} VITE_PORTAL_URL=${VITE_PORTAL_URL} pnpm run build
 
 # Production stage
 FROM nginx:alpine

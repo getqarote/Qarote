@@ -251,7 +251,6 @@ const PlanCard: React.FC<{
         </div>
 
         <Button
-          size={undefined}
           onClick={() => onUpgrade(plan.plan as UserPlan, billingInterval)}
           className={`w-full mt-6 px-4 py-3 sm:px-7 sm:py-3 transition-colors duration-200 text-base sm:text-lg h-auto rounded-full ${
             isCurrentPlan
@@ -341,7 +340,7 @@ export const PlansPage: React.FC<PlansPageProps> = ({
                 <button
                   type="button"
                   onClick={() => navigate("/settings/plans")}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  className="p-2 hover:bg-muted rounded-lg transition-colors"
                   title={t("plans.backToPlans")}
                   aria-label={t("plans.backToPlans")}
                 >
@@ -349,7 +348,7 @@ export const PlansPage: React.FC<PlansPageProps> = ({
                 </button>
                 <div>
                   <h1 className="title-page">{t("plans.chooseYourPlan")}</h1>
-                  <p className="text-gray-500">{t("plans.subtitle")}</p>
+                  <p className="text-muted-foreground">{t("plans.subtitle")}</p>
                 </div>
               </div>
               <PlanBadge />
