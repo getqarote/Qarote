@@ -471,6 +471,7 @@ export const PlansPage: React.FC<PlansPageProps> = ({
               <div className="flex items-center gap-4">
                 <SidebarTrigger />
                 <button
+                  type="button"
                   onClick={() => navigate("/settings/plans")}
                   className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                   title={t("plans.backToPlans")}
