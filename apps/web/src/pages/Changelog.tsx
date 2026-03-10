@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { useNavigate } from "react-router";
 
 import { ArrowLeft } from "lucide-react";
 
@@ -66,6 +67,7 @@ function parseChangelog(raw: string): ChangelogEntry[] {
 }
 
 const Changelog = () => {
+  const navigate = useNavigate();
   const entries = useMemo(() => parseChangelog(changelogRaw), []);
 
   return (
@@ -81,7 +83,13 @@ const Changelog = () => {
         <div className="mb-12">
           <Button
             variant="ghost"
-            onClick={() => window.history.back()}
+            onClick={() => {
+              if (window.history.length > 1) {
+                navigate(-1);
+              } else {
+                navigate("/");
+              }
+            }}
             className="mb-6"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
