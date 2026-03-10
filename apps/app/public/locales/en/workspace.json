@@ -9,7 +9,43 @@
     "tagsPlaceholder": "Add tags to organize your workspace",
     "tagsHint": "Use tags like \"production\", \"development\", or \"testing\" to organize your workspace",
     "submit": "Create Workspace",
-    "creating": "Creating Workspace..."
+    "creating": "Creating Workspace...",
+    "inviteMembers": "Invite Members",
+    "optional": "Optional",
+    "invitePlaceholder": "Type an email and press Enter to add",
+    "inviteHintWithLimit": "You can invite up to {{count}} members on your current plan",
+    "upgradeToInvite": "Upgrade to the Developer or Enterprise plan to invite team members.",
+    "invalidEmail": "Please enter a valid email address"
+  },
+  "createForm": {
+    "title": "Create New Workspace",
+    "description": "Create a new workspace to organize your RabbitMQ servers and collaborate with your team.",
+    "workspaceName": "Workspace Name",
+    "workspaceNamePlaceholder": "My Workspace",
+    "tags": "Tags",
+    "optional": "Optional",
+    "tagsPlaceholder": "Add tags to organize your workspace",
+    "tagsHint": "Use tags like \"production\", \"development\", or \"testing\"",
+    "inviteMembers": "Invite Members",
+    "invitePlaceholder": "Type an email and press Enter to add",
+    "inviteHintWithLimit": "You can invite up to {{count}} members on your current plan",
+    "upgradeToInvite": "Upgrade to the Developer or Enterprise plan to invite team members.",
+    "cancel": "Cancel",
+    "creating": "Creating...",
+    "submit": "Create Workspace"
+  },
+  "inviteLinks": {
+    "title": "Share Invitation Links",
+    "description": "Email is not configured. Share these links manually with your team members.",
+    "done": "Done"
+  },
+  "invites": {
+    "invalidEmail": "Please enter a valid email address",
+    "workspaceCreated": "Workspace created successfully!",
+    "workspaceCreatedSendingInvites": "Workspace created! Sending invitations...",
+    "invitationSent": "Invitation sent to {{email}}",
+    "invitationCreated": "Invitation created for {{email}}",
+    "invitationFailed": "Failed to invite {{email}}: {{error}}"
   },
   "success": {
     "title": "Workspace Created Successfully!",
