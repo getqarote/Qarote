@@ -81,6 +81,7 @@ services:
       dockerfile: ./apps/app/Dockerfile
       args:
         VITE_API_URL: ${VITE_API_URL}
+        VITE_PORTAL_URL: ${VITE_PORTAL_URL}
     container_name: qarote_frontend
     restart: unless-stopped
     ports:

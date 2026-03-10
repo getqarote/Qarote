@@ -374,6 +374,7 @@ export const PlansPage: React.FC<PlansPageProps> = ({
                   {t("plans.billingToggle.monthly")}
                 </span>
                 <button
+                  type="button"
                   role="switch"
                   aria-checked={billingPeriod === "yearly"}
                   aria-label={t("plans.billingToggle.label")}
