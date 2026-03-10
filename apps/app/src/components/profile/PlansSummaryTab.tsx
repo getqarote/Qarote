@@ -57,7 +57,10 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
   };
 
   // UI styling per plan (icons/colors are purely presentational)
-  const planStyle: Record<string, { icon: React.ReactNode; color: string; bgColor: string }> = {
+  const planStyle: Record<
+    string,
+    { icon: React.ReactNode; color: string; bgColor: string }
+  > = {
     [UserPlan.FREE]: {
       icon: <Users className="w-5 h-5" />,
       color: "text-muted-foreground",

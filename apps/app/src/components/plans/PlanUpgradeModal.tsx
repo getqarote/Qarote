@@ -178,18 +178,22 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
           <div className="grid md:grid-cols-2 gap-6">
             {plans.map((plan) => {
               const price = `$${Math.round(plan.monthlyPrice / 100)}`;
-              const teamMembersText = plan.maxUsers === null
-                ? t("upgradeModal.unlimitedTeamMembers")
-                : t("upgradeModal.teamMembers", { count: plan.maxUsers });
-              const serversText = plan.maxServers === null
-                ? t("upgradeModal.unlimitedServers")
-                : t("upgradeModal.servers", { count: plan.maxServers });
+              const teamMembersText =
+                plan.maxUsers === null
+                  ? t("upgradeModal.unlimitedTeamMembers")
+                  : t("upgradeModal.teamMembers", { count: plan.maxUsers });
+              const serversText =
+                plan.maxServers === null
+                  ? t("upgradeModal.unlimitedServers")
+                  : t("upgradeModal.servers", { count: plan.maxServers });
 
               return (
                 <div
                   key={plan.plan}
                   className={`border rounded-lg p-6 relative ${
-                    plan.isPopular ? "border-blue-500 bg-blue-50" : "border-gray-200"
+                    plan.isPopular
+                      ? "border-blue-500 bg-blue-50"
+                      : "border-gray-200"
                   }`}
                 >
                   {plan.isPopular && (

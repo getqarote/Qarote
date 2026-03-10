@@ -99,28 +99,64 @@
   --animate-nose-wiggle: nose-wiggle 1.5s ease-in-out infinite;
 
   @keyframes rabbit-bounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-12px); }
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-12px);
+    }
   }
   @keyframes ear-twitch-left {
-    0%, 90%, 100% { transform: rotate(0deg); }
-    93% { transform: rotate(-12deg); }
-    96% { transform: rotate(4deg); }
+    0%,
+    90%,
+    100% {
+      transform: rotate(0deg);
+    }
+    93% {
+      transform: rotate(-12deg);
+    }
+    96% {
+      transform: rotate(4deg);
+    }
   }
   @keyframes ear-twitch-right {
-    0%, 88%, 100% { transform: rotate(0deg); }
-    91% { transform: rotate(10deg); }
-    94% { transform: rotate(-3deg); }
+    0%,
+    88%,
+    100% {
+      transform: rotate(0deg);
+    }
+    91% {
+      transform: rotate(10deg);
+    }
+    94% {
+      transform: rotate(-3deg);
+    }
   }
   @keyframes blink {
-    0%, 94%, 100% { transform: scaleY(1); }
-    96% { transform: scaleY(0.1); }
+    0%,
+    94%,
+    100% {
+      transform: scaleY(1);
+    }
+    96% {
+      transform: scaleY(0.1);
+    }
   }
   @keyframes nose-wiggle {
-    0%, 100% { transform: scale(1); }
-    25% { transform: scale(1.15, 0.9); }
-    50% { transform: scale(0.9, 1.15); }
-    75% { transform: scale(1.1, 0.95); }
+    0%,
+    100% {
+      transform: scale(1);
+    }
+    25% {
+      transform: scale(1.15, 0.9);
+    }
+    50% {
+      transform: scale(0.9, 1.15);
+    }
+    75% {
+      transform: scale(1.1, 0.95);
+    }
   }
 
   @keyframes accordion-down {
