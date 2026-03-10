@@ -3,10 +3,10 @@ import { Link, useLocation } from "react-router";
 
 import {
   Building,
-  Crown,
   KeyRound,
   Mail,
   MessageSquare,
+  Rabbit,
   Shield,
   User,
   Users,
@@ -25,6 +25,7 @@ interface NavItem {
   labelKey: string;
   adminOnly?: boolean;
   selfHostedOnly?: boolean;
+  cloudOnly?: boolean;
 }
 
 interface NavGroup {
@@ -52,7 +53,7 @@ const navGroups: NavGroup[] = [
       {
         key: "plans",
         path: "/settings/plans",
-        icon: Crown,
+        icon: Rabbit,
         labelKey: "settings:nav.plans",
       },
     ],
@@ -102,6 +103,7 @@ const navGroups: NavGroup[] = [
         path: "/settings/feedback",
         icon: MessageSquare,
         labelKey: "settings:nav.feedback",
+        cloudOnly: true,
       },
     ],
   },
@@ -118,6 +120,7 @@ export const SettingsSidebar = () => {
   const filterItem = (item: NavItem) => {
     if (item.adminOnly && !isAdmin) return false;
     if (item.selfHostedOnly && cloudMode) return false;
+    if (item.cloudOnly && !cloudMode) return false;
     return true;
   };
 

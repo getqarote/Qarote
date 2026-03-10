@@ -1,6 +1,6 @@
 import {
   Calendar,
-  Crown,
+  Carrot,
   Edit,
   Lock,
   Mail,
@@ -98,7 +98,7 @@ export const PersonalInfoTab = ({
                 {profile.role}
               </Badge>
               {profile.role === "ADMIN" && (
-                <Crown className="h-4 w-4 text-yellow-500" />
+                <Carrot className="h-4 w-4 text-orange-500" />
               )}
             </div>
           </CardTitle>

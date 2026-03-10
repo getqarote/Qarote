@@ -161,6 +161,7 @@ export const sessionRouter = router({
           lastLogin: true,
           createdAt: true,
           updatedAt: true,
+          googleId: true,
           pendingEmail: true,
           subscription: {
             select: {

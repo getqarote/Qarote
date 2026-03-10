@@ -62,7 +62,7 @@ export const WorkspaceFormFields = ({
             />
           ) : (
             <p className="text-sm p-2 border rounded-md bg-muted">
-              {workspace.contactEmail || "Not set"}
+              {workspace.contactEmail || userEmail || "Not set"}
             </p>
           )}
         </div>
