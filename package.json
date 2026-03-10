@@ -62,7 +62,9 @@
     "test:e2e": "pnpm --filter=qarote-e2e test",
     "test:e2e:selfhosted": "pnpm --filter=qarote-e2e test:selfhosted",
     "test:e2e:cloud": "pnpm --filter=qarote-e2e test:cloud",
-    "test:e2e:selfhosted-licensed": "pnpm --filter=qarote-e2e test:selfhosted-licensed"
+    "test:e2e:selfhosted-licensed": "pnpm --filter=qarote-e2e test:selfhosted-licensed",
+    "release": "release-it",
+    "release:dry": "release-it --dry-run"
   },
   "lint-staged": {
     "apps/api/**/*.{ts,tsx}": [
@@ -85,9 +87,12 @@
   "devDependencies": {
     "@commitlint/cli": "^20.4.1",
     "@commitlint/config-conventional": "^20.4.1",
+    "@release-it/bumper": "^7.0.5",
+    "@release-it/conventional-changelog": "^10.0.5",
     "husky": "^9.1.7",
     "knip": "^5.85.0",
     "lint-staged": "^16.3.2",
+    "release-it": "^19.2.4",
     "syncpack": "^13.0.4",
     "turbo": "^2.8.13",
     "typescript": "^5.9.3"

@@ -1,0 +1,36 @@
+{
+  "git": {
+    "commitMessage": "release: v${version}",
+    "tagName": "v${version}",
+    "requireBranch": "main",
+    "requireCleanWorkingDir": true
+  },
+  "npm": false,
+  "github": {
+    "release": false
+  },
+  "plugins": {
+    "@release-it/bumper": {
+      "out": "VERSION"
+    },
+    "@release-it/conventional-changelog": {
+      "preset": {
+        "name": "conventionalcommits",
+        "types": [
+          { "type": "feat", "section": "Added" },
+          { "type": "fix", "section": "Fixed" },
+          { "type": "perf", "section": "Changed" },
+          { "type": "refactor", "section": "Changed" },
+          { "type": "docs", "section": "Changed" },
+          { "type": "style", "hidden": true },
+          { "type": "chore", "hidden": true },
+          { "type": "ci", "hidden": true },
+          { "type": "build", "hidden": true },
+          { "type": "test", "hidden": true }
+        ]
+      },
+      "infile": "CHANGELOG.md",
+      "header": "# Changelog\n\nAll notable changes to this project will be documented in this file.\n\nThe format is based on [Keep a Changelog](https://keepachangelog.com/),\nand this project adheres to [Semantic Versioning](https://semver.org/).\n"
+    }
+  }
+}
