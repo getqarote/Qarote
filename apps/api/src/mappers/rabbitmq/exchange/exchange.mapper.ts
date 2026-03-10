@@ -45,7 +45,9 @@ export class ExchangeMapper {
   ): ExchangeResponse[] {
     return exchanges.map((exchange) => {
       const exchangeBindings =
-        bindingsMap?.get(`${exchange.name}@${exchange.vhost}`) ?? [];
+        bindingsMap?.get(
+          `${encodeURIComponent(exchange.name)}@${encodeURIComponent(exchange.vhost)}`
+        ) ?? [];
       return this.toApiResponse(exchange, exchangeBindings);
     });
   }

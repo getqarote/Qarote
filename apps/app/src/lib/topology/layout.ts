@@ -147,7 +147,7 @@ export function buildTopologyGraph(
 
     if (!nodeIds.has(sourceId) || !nodeIds.has(targetId)) continue;
 
-    const edgeId = `${sourceId}->${targetId}:${binding.routing_key}`;
+    const edgeId = `${sourceId}->${targetId}:${binding.destination_type}:${binding.routing_key}`;
     if (edgeSet.has(edgeId)) continue;
     edgeSet.add(edgeId);
 
