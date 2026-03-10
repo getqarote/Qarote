@@ -118,12 +118,12 @@ const PlanCard: React.FC<{
     <Card className="relative flex h-full flex-col bg-transparent">
       <CardContent className="p-6 flex flex-col h-full">
         {isCurrentPlan && (
-          <span className="absolute top-4 right-4 text-xs font-medium px-2 py-0.5 border border-[#FF691B] text-[#FF691B]">
+          <span className="absolute top-4 right-4 text-xs font-medium px-2 py-0.5 border border-primary text-primary">
             {t("plans.currentPlan")}
           </span>
         )}
         {!isCurrentPlan && plan.isPopular && (
-          <span className="absolute top-4 right-4 text-xs font-medium px-2 py-0.5 border border-[#FF691B] text-[#FF691B]">
+          <span className="absolute top-4 right-4 text-xs font-medium px-2 py-0.5 border border-primary text-primary">
             {t("plans.mostPopular")}
           </span>
         )}
@@ -383,7 +383,7 @@ export const PlansPage: React.FC<PlansPageProps> = ({
                     )
                   }
                   className={`relative inline-flex items-center w-[27px] h-[15px] rounded-full transition-colors ${
-                    billingPeriod === "yearly" ? "bg-[#FF691B]" : "bg-muted"
+                    billingPeriod === "yearly" ? "bg-primary" : "bg-muted"
                   }`}
                 >
                   <span
