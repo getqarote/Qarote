@@ -326,8 +326,8 @@ class ReleaseNotifierCronService {
           ? tag.name.slice(1)
           : tag.name;
 
-        // Only include valid semver versions
-        if (semver.valid(normalized)) {
+        // Only include valid semver versions that are not prereleases (e.g. skip beta, alpha, rc)
+        if (semver.valid(normalized) && !semver.prerelease(normalized)) {
           versions.push({ version: normalized, tagName: tag.name });
         }
       }
