@@ -24,7 +24,8 @@
     "userRemoved": "{{name}} 已从工作区中移除。",
     "copyInviteLink": "邮件已禁用。请将此链接分享给被邀请的用户。",
     "copyLink": "复制链接",
-    "linkCopied": "邀请链接已复制到剪贴板。"
+    "linkCopied": "邀请链接已复制到剪贴板。",
+    "invitationFailed": "邀请 {{email}} 失败：{{error}}"
   },
   "invite": {
     "title": "邀请团队成员",
@@ -38,6 +39,8 @@
     "usersUsed": "已使用 {{current}}/{{max}} 个用户",
     "userLimitReached": "您已达到用户限制（{{max}} 个用户）。请升级您的方案以邀请更多用户。",
     "emailAddress": "邮箱地址",
+    "emailPlaceholder": "输入邮箱地址并按回车添加",
+    "invalidEmail": "请输入有效的邮箱地址",
     "role": "角色",
     "member": "成员",
     "admin": "管理员",

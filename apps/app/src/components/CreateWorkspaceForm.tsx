@@ -3,10 +3,11 @@ import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Building2, Info, Loader2, Plus, UserPlus } from "lucide-react";
+import { Building2, Loader2, Plus } from "lucide-react";
 import { toast } from "sonner";
 
 import { InviteLinksDialog } from "@/components/InviteLinksDialog";
+import { InviteMembersSection } from "@/components/InviteMembersSection";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -82,12 +83,15 @@ export function CreateWorkspaceForm({
           sendPendingInvites();
           queryClient.invalidateQueries({ queryKey: ["workspaces"] });
           refreshWorkspace();
+          setInviteEmails([]);
           onClose();
           form.reset();
         },
         onError: (error) => {
           toast.error(
-            `Failed to create workspace: ${error?.message || "Unknown error"}`
+            t("toast.workspaceCreateFailed", {
+              error: error?.message || t("error.unknown"),
+            })
           );
         },
       }
@@ -119,7 +123,7 @@ export function CreateWorkspaceForm({
                 <Alert variant="destructive">
                   <AlertDescription>
                     {createWorkspaceMutation.error?.message ||
-                      "Failed to create workspace. Please try again."}
+                      t("error.createFailed")}
                   </AlertDescription>
                 </Alert>
               )}
@@ -129,7 +133,7 @@ export function CreateWorkspaceForm({
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm font-medium text-gray-700">
+                    <FormLabel className="text-sm font-medium text-foreground">
                       {t("createForm.workspaceName", {
                         defaultValue: "Workspace Name",
                       })}{" "}
@@ -155,7 +159,7 @@ export function CreateWorkspaceForm({
                 name="tags"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm font-medium text-gray-700">
+                    <FormLabel className="text-sm font-medium text-foreground">
                       {t("createForm.tags", { defaultValue: "Tags" })} (
                       {t("createForm.optional", {
                         defaultValue: "Optional",
@@ -175,7 +179,7 @@ export function CreateWorkspaceForm({
                       />
                     </FormControl>
                     <FormMessage />
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-muted-foreground">
                       {t("createForm.tagsHint", {
                         defaultValue:
                           'Use tags like "production", "development", or "testing"',
@@ -185,55 +189,14 @@ export function CreateWorkspaceForm({
                 )}
               />
 
-              {/* Invite Members Section - plan gated */}
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <UserPlus className="h-4 w-4 text-gray-500" />
-                  <span className="text-sm font-medium text-gray-700">
-                    {t("createForm.inviteMembers", {
-                      defaultValue: "Invite Members",
-                    })}{" "}
-                    (
-                    {t("createForm.optional", {
-                      defaultValue: "Optional",
-                    })}
-                    )
-                  </span>
-                </div>
-
-                {canInviteUsers ? (
-                  <>
-                    <TagsInput
-                      value={inviteEmails}
-                      onChange={setInviteEmails}
-                      placeholder={t("createForm.invitePlaceholder", {
-                        defaultValue: "Type an email and press Enter to add",
-                      })}
-                      maxTags={maxInvites}
-                      maxTagLength={100}
-                      disabled={createWorkspaceMutation.isPending}
-                    />
-                    {maxInvites && (
-                      <p className="text-xs text-gray-500">
-                        {t("createForm.inviteHintWithLimit", {
-                          count: maxInvites,
-                          defaultValue: `You can invite up to ${maxInvites} members on your current plan`,
-                        })}
-                      </p>
-                    )}
-                  </>
-                ) : (
-                  <Alert>
-                    <Info className="h-4 w-4" />
-                    <AlertDescription>
-                      {t("createForm.upgradeToInvite", {
-                        defaultValue:
-                          "Upgrade to the Developer or Enterprise plan to invite team members.",
-                      })}
-                    </AlertDescription>
-                  </Alert>
-                )}
-              </div>
+              <InviteMembersSection
+                inviteEmails={inviteEmails}
+                setInviteEmails={setInviteEmails}
+                canInviteUsers={canInviteUsers}
+                maxInvites={maxInvites}
+                disabled={createWorkspaceMutation.isPending}
+                i18nPrefix="createForm"
+              />
             </form>
           </Form>
 

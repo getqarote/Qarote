@@ -13,7 +13,7 @@ export interface WorkspaceFormState {
 }
 
 export interface InviteFormState {
-  email: string;
+  emails: string[];
   role: "ADMIN" | "MEMBER";
 }
 

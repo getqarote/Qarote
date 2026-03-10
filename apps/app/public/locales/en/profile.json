@@ -24,12 +24,13 @@
     "userRemoved": "{{name}} has been removed from the workspace.",
     "copyInviteLink": "Email is disabled. Share this link with the invited user.",
     "copyLink": "Copy Link",
-    "linkCopied": "Invite link copied to clipboard."
+    "linkCopied": "Invite link copied to clipboard.",
+    "invitationFailed": "Failed to invite {{email}}: {{error}}"
   },
   "invite": {
-    "title": "Invite Team Member",
-    "description": "Send an invitation to add a new member to your workspace.",
-    "descriptionNoEmail": "Create an invitation link to share with a new team member.",
+    "title": "Invite Team Members",
+    "description": "Send invitations to add new members to your workspace.",
+    "descriptionNoEmail": "Create invitation links to share with new team members.",
     "emailDisabledBanner": "Email is not configured. An invitation link will be generated for you to share manually.",
     "sendInvitation": "Send Invitation",
     "sending": "Sending...",
@@ -37,7 +38,9 @@
     "creating": "Creating...",
     "usersUsed": "{{current}}/{{max}} users used",
     "userLimitReached": "You've reached your user limit ({{max}} users). Upgrade your plan to invite more users.",
-    "emailAddress": "Email Address",
+    "emailAddress": "Email Addresses",
+    "emailPlaceholder": "Type an email and press Enter to add",
+    "invalidEmail": "Please enter a valid email address",
     "role": "Role",
     "member": "Member",
     "admin": "Admin",

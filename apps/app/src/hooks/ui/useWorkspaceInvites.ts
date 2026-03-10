@@ -43,11 +43,11 @@ export function useWorkspaceInvites() {
     pendingInvites.current = [...inviteEmails];
   }, [inviteEmails]);
 
-  const sendPendingInvites = useCallback(() => {
+  const sendPendingInvites = useCallback((): Promise<InviteLink[]> => {
     const emails = pendingInvites.current;
     if (emails.length === 0) {
       toast.success(t("invites.workspaceCreated"));
-      return;
+      return Promise.resolve([]);
     }
 
     toast.success(t("invites.workspaceCreatedSendingInvites"));
@@ -56,46 +56,54 @@ export function useWorkspaceInvites() {
     const collectedLinks: InviteLink[] = [];
     pendingCount.current = emails.length;
 
-    emails.forEach((email) => {
-      sendInvitationMutation.mutate(
-        { email, role: "MEMBER" },
-        {
-          onSuccess: (data) => {
-            if (currentBatchId !== batchIdRef.current) return;
-
-            if (data.emailSent) {
-              toast.success(t("invites.invitationSent", { email }));
-            } else {
-              collectedLinks.push({ email, inviteUrl: data.inviteUrl });
-              toast.success(t("invites.invitationCreated", { email }));
-            }
-            pendingCount.current--;
-            if (pendingCount.current === 0 && collectedLinks.length > 0) {
-              setInviteLinks(collectedLinks);
-            }
-          },
-          onError: (error) => {
-            if (currentBatchId !== batchIdRef.current) return;
-
-            toast.error(
-              t("invites.invitationFailed", {
-                email,
-                error: error.message,
-              })
-            );
-            pendingCount.current--;
-            if (pendingCount.current === 0 && collectedLinks.length > 0) {
-              setInviteLinks(collectedLinks);
-            }
-          },
+    return new Promise((resolve) => {
+      const checkDone = () => {
+        if (pendingCount.current === 0) {
+          if (collectedLinks.length > 0) {
+            setInviteLinks(collectedLinks);
+          }
+          resolve(collectedLinks);
         }
-      );
-    });
+      };
 
-    pendingInvites.current = [];
+      emails.forEach((email) => {
+        sendInvitationMutation.mutate(
+          { email, role: "MEMBER" },
+          {
+            onSuccess: (data) => {
+              if (currentBatchId !== batchIdRef.current) return;
+
+              if (data.emailSent) {
+                toast.success(t("invites.invitationSent", { email }));
+              } else {
+                collectedLinks.push({ email, inviteUrl: data.inviteUrl });
+                toast.success(t("invites.invitationCreated", { email }));
+              }
+              pendingCount.current--;
+              checkDone();
+            },
+            onError: (error) => {
+              if (currentBatchId !== batchIdRef.current) return;
+
+              toast.error(
+                t("invites.invitationFailed", {
+                  email,
+                  error: error.message,
+                })
+              );
+              pendingCount.current--;
+              checkDone();
+            },
+          }
+        );
+      });
+
+      pendingInvites.current = [];
+    });
   }, [sendInvitationMutation, t]);
 
   const reset = useCallback(() => {
+    batchIdRef.current++;
     setInviteEmails([]);
     setInviteLinks([]);
     pendingInvites.current = [];

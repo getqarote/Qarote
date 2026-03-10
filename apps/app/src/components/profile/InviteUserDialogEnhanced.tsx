@@ -1,10 +1,7 @@
-import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { AlertTriangle, Check, Copy, Info } from "lucide-react";
+import { AlertTriangle, Info } from "lucide-react";
 import { toast } from "sonner";
-
-import { logger } from "@/lib/logger";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -15,7 +12,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -24,8 +20,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { TagsInput } from "@/components/ui/tags-input";
 
 import { InviteFormState } from "./profileUtils";
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 interface InviteUserDialogProps {
   open: boolean;
@@ -38,8 +37,6 @@ interface InviteUserDialogProps {
   maxUsers?: number;
   currentCount?: number;
   emailEnabled?: boolean;
-  inviteResult?: { inviteUrl: string; email: string } | null;
-  onResultDismiss?: () => void;
 }
 
 export const InviteUserDialog = ({
@@ -52,75 +49,22 @@ export const InviteUserDialog = ({
   canInvite = true,
   maxUsers,
   currentCount,
-  emailEnabled = false,
-  inviteResult,
-  onResultDismiss,
+  emailEnabled = true,
 }: InviteUserDialogProps) => {
   const { t } = useTranslation("profile");
-  const [copied, setCopied] = useState(false);
   const isAtLimit = maxUsers && currentCount && currentCount >= maxUsers;
 
-  const handleCopyLink = async () => {
-    if (!inviteResult?.inviteUrl) return;
-    try {
-      await navigator.clipboard.writeText(inviteResult.inviteUrl);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (error) {
-      logger.error("Failed to copy invite link:", error);
-      toast.error(t("invite.copyFailed"));
+  const remainingSlots = maxUsers ? maxUsers - (currentCount || 0) : undefined;
+
+  const handleEmailsChange = (emails: string[]) => {
+    const validEmails = emails.filter((email) => EMAIL_REGEX.test(email));
+    const hasInvalid = emails.length !== validEmails.length;
+    setInviteForm({ ...inviteForm, emails: validEmails });
+    if (hasInvalid) {
+      toast.error(t("invite.invalidEmail"));
     }
   };
 
-  const handleDone = () => {
-    onResultDismiss?.();
-    onOpenChange(false);
-  };
-
-  // Result view: shown after invitation creation when email was not sent
-  if (inviteResult) {
-    return (
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t("invite.resultTitle")}</DialogTitle>
-            <DialogDescription>
-              {t("invite.resultDescription", { email: inviteResult.email })}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="flex gap-2">
-              <Input
-                readOnly
-                value={inviteResult.inviteUrl}
-                className="font-mono text-sm"
-              />
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={handleCopyLink}
-                className="shrink-0"
-                aria-label={
-                  copied ? t("invite.linkCopied") : t("invite.copyLink")
-                }
-              >
-                {copied ? (
-                  <Check className="h-4 w-4" />
-                ) : (
-                  <Copy className="h-4 w-4" />
-                )}
-              </Button>
-            </div>
-            <div className="flex justify-end">
-              <Button onClick={handleDone}>{t("invite.done")}</Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-    );
-  }
-
-  // Form view
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
@@ -161,15 +105,13 @@ export const InviteUserDialog = ({
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">{t("invite.emailAddress")}</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="colleague@company.com"
-              value={inviteForm.email}
-              onChange={(e) =>
-                setInviteForm({ ...inviteForm, email: e.target.value })
-              }
+            <Label>{t("invite.emailAddress")}</Label>
+            <TagsInput
+              value={inviteForm.emails}
+              onChange={handleEmailsChange}
+              placeholder={t("invite.emailPlaceholder")}
+              maxTags={remainingSlots}
+              maxTagLength={100}
               disabled={isInviting || !canInvite}
             />
           </div>
@@ -208,7 +150,7 @@ export const InviteUserDialog = ({
               onClick={onInviteUser}
               disabled={
                 isInviting ||
-                !inviteForm.email ||
+                inviteForm.emails.length === 0 ||
                 !inviteForm.role ||
                 !canInvite
               }

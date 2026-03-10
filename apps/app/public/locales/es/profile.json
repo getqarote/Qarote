@@ -24,12 +24,13 @@
     "userRemoved": "{{name}} ha sido eliminado del espacio de trabajo.",
     "copyInviteLink": "El correo electrónico está deshabilitado. Comparta este enlace con el usuario invitado.",
     "copyLink": "Copiar enlace",
-    "linkCopied": "Enlace de invitación copiado al portapapeles."
+    "linkCopied": "Enlace de invitación copiado al portapapeles.",
+    "invitationFailed": "Error al invitar a {{email}}: {{error}}"
   },
   "invite": {
-    "title": "Invitar miembro del equipo",
-    "description": "Enviar una invitación para agregar un nuevo miembro a su espacio de trabajo.",
-    "descriptionNoEmail": "Crear un enlace de invitación para compartir con un nuevo miembro del equipo.",
+    "title": "Invitar miembros del equipo",
+    "description": "Enviar invitaciones para agregar nuevos miembros a su espacio de trabajo.",
+    "descriptionNoEmail": "Crear enlaces de invitación para compartir con nuevos miembros del equipo.",
     "emailDisabledBanner": "El correo electrónico no está configurado. Se generará un enlace de invitación para compartir manualmente.",
     "sendInvitation": "Enviar invitación",
     "sending": "Enviando...",
@@ -37,7 +38,9 @@
     "creating": "Creando...",
     "usersUsed": "{{current}}/{{max}} usuarios utilizados",
     "userLimitReached": "Ha alcanzado su límite de usuarios ({{max}} usuarios). Actualice su plan para invitar a más usuarios.",
-    "emailAddress": "Dirección de correo",
+    "emailAddress": "Direcciones de correo",
+    "emailPlaceholder": "Escribe un correo y presiona Enter para agregar",
+    "invalidEmail": "Por favor ingresa una dirección de correo válida",
     "role": "Rol",
     "member": "Miembro",
     "admin": "Administrador",
