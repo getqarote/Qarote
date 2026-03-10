@@ -11,7 +11,8 @@ export const BillingHeader = () => {
         <button
           onClick={() => navigate("/settings/plans")}
           className="p-2 hover:bg-muted rounded-lg transition-colors"
-          title="Back to Profile"
+          title="Back to Plans"
+          aria-label="Back to Plans"
         >
           <ArrowLeft className="w-4 h-4" />
         </button>

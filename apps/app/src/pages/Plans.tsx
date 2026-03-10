@@ -473,7 +473,8 @@ export const PlansPage: React.FC<PlansPageProps> = ({
                 <button
                   onClick={() => navigate("/settings/plans")}
                   className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                  title={t("plans.backToProfile")}
+                  title={t("plans.backToPlans")}
+                  aria-label={t("plans.backToPlans")}
                 >
                   <ArrowLeft className="w-4 h-4" />
                 </button>
