@@ -28,10 +28,15 @@
       "monthly": "Mensual",
       "yearly": "Anual"
     },
+    "period": {
+      "month": "mes",
+      "year": "año"
+    },
     "features": {
       "coreFeatures": "Funciones principales",
       "rabbitMQServers": "Servidores RabbitMQ",
-      "rabbitMQVersionSupport": "Todas las versiones RabbitMQ",
+      "rabbitMQVersionSupport": "Compatibilidad con versiones de RabbitMQ",
+      "soon": "Próximamente",
       "workspaces": "Espacios de trabajo",
       "teamMembers": "Miembros del equipo",
       "advancedAnalytics": "Análisis avanzados",
@@ -78,6 +83,7 @@
     "perMonth": "/mes",
     "unlimitedQueues": "Colas ilimitadas",
     "unlimitedServers": "Servidores ilimitados",
+    "servers": "{{count}} servidores",
     "teamMembers": "{{count}} miembros del equipo",
     "unlimitedTeamMembers": "Miembros del equipo ilimitados",
     "messageSending": "Envío de mensajes y gestión de colas",

@@ -64,6 +64,30 @@ describe("getPlanFeatures", () => {
     it("returns monthlyPrice of 0", () => {
       expect(getPlanFeatures(UserPlan.FREE).monthlyPrice).toBe(0);
     });
+
+    it("returns hasAdvancedAnalytics as false", () => {
+      expect(getPlanFeatures(UserPlan.FREE).hasAdvancedAnalytics).toBe(false);
+    });
+
+    it("returns hasAlerts as false", () => {
+      expect(getPlanFeatures(UserPlan.FREE).hasAlerts).toBe(false);
+    });
+
+    it("returns hasTopologyVisualization as false", () => {
+      expect(getPlanFeatures(UserPlan.FREE).hasTopologyVisualization).toBe(false);
+    });
+
+    it("returns hasRoleBasedAccess as false", () => {
+      expect(getPlanFeatures(UserPlan.FREE).hasRoleBasedAccess).toBe(false);
+    });
+
+    it("returns hasSoc2Compliance as true", () => {
+      expect(getPlanFeatures(UserPlan.FREE).hasSoc2Compliance).toBe(true);
+    });
+
+    it("returns isPopular as false", () => {
+      expect(getPlanFeatures(UserPlan.FREE).isPopular).toBe(false);
+    });
   });
 
   describe("DEVELOPER plan", () => {
@@ -118,6 +142,30 @@ describe("getPlanFeatures", () => {
 
     it("returns isPopular as true", () => {
       expect(getPlanFeatures(UserPlan.DEVELOPER).isPopular).toBe(true);
+    });
+
+    it("returns hasAdvancedAnalytics as true", () => {
+      expect(getPlanFeatures(UserPlan.DEVELOPER).hasAdvancedAnalytics).toBe(true);
+    });
+
+    it("returns hasAlerts as true", () => {
+      expect(getPlanFeatures(UserPlan.DEVELOPER).hasAlerts).toBe(true);
+    });
+
+    it("returns hasTopologyVisualization as coming_soon", () => {
+      expect(getPlanFeatures(UserPlan.DEVELOPER).hasTopologyVisualization).toBe("coming_soon");
+    });
+
+    it("returns hasRoleBasedAccess as coming_soon", () => {
+      expect(getPlanFeatures(UserPlan.DEVELOPER).hasRoleBasedAccess).toBe("coming_soon");
+    });
+
+    it("returns hasSoc2Compliance as true", () => {
+      expect(getPlanFeatures(UserPlan.DEVELOPER).hasSoc2Compliance).toBe(true);
+    });
+
+    it("returns hasSsoSamlOidc as false", () => {
+      expect(getPlanFeatures(UserPlan.DEVELOPER).hasSsoSamlOidc).toBe(false);
     });
 
     it("has featureDescriptions matching numeric limits", () => {
@@ -186,6 +234,30 @@ describe("getPlanFeatures", () => {
 
     it("returns hasSsoSamlOidc as true", () => {
       expect(getPlanFeatures(UserPlan.ENTERPRISE).hasSsoSamlOidc).toBe(true);
+    });
+
+    it("returns hasAdvancedAnalytics as true", () => {
+      expect(getPlanFeatures(UserPlan.ENTERPRISE).hasAdvancedAnalytics).toBe(true);
+    });
+
+    it("returns hasAlerts as true", () => {
+      expect(getPlanFeatures(UserPlan.ENTERPRISE).hasAlerts).toBe(true);
+    });
+
+    it("returns hasTopologyVisualization as coming_soon", () => {
+      expect(getPlanFeatures(UserPlan.ENTERPRISE).hasTopologyVisualization).toBe("coming_soon");
+    });
+
+    it("returns hasRoleBasedAccess as coming_soon", () => {
+      expect(getPlanFeatures(UserPlan.ENTERPRISE).hasRoleBasedAccess).toBe("coming_soon");
+    });
+
+    it("returns hasSoc2Compliance as true", () => {
+      expect(getPlanFeatures(UserPlan.ENTERPRISE).hasSoc2Compliance).toBe(true);
+    });
+
+    it("returns isPopular as false", () => {
+      expect(getPlanFeatures(UserPlan.ENTERPRISE).isPopular).toBe(false);
     });
   });
 

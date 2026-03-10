@@ -75,11 +75,17 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
     },
   };
 
-  // Get featureDescriptions from the API for a given plan
+  // Get featureDescriptions from the API, falling back to current plan data
   const getBenefits = (plan: UserPlan): string[] => {
-    if (!allPlansData?.plans) return [];
-    const found = allPlansData.plans.find((p) => p.plan === plan);
-    return found?.featureDescriptions ?? [];
+    if (allPlansData?.plans) {
+      const found = allPlansData.plans.find((p) => p.plan === plan);
+      if (found?.featureDescriptions) return found.featureDescriptions;
+    }
+    // Fallback to current plan's features when allPlans is loading/errored
+    if (plan === currentPlan && planData?.planFeatures?.featureDescriptions) {
+      return planData.planFeatures.featureDescriptions;
+    }
+    return [];
   };
 
   const navigate = useNavigate();

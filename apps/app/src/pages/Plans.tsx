@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
 import {
+  AlertCircle,
   ArrowLeft,
   Check,
   Headphones,
@@ -54,8 +55,8 @@ const FeatureItem: React.FC<{
   label: string;
   detail?: string;
   enabled?: boolean;
-  soon?: boolean;
-}> = ({ label, detail, enabled = true, soon = false }) => (
+  soonLabel?: string;
+}> = ({ label, detail, enabled = true, soonLabel }) => (
   <li className="flex items-start gap-3">
     <div className="mt-1">
       {enabled ? (
@@ -67,9 +68,9 @@ const FeatureItem: React.FC<{
     <div className="flex-1">
       <span className={`text-sm ${enabled ? "text-foreground" : "text-muted-foreground"} flex items-center gap-2`}>
         {label}
-        {soon && (
+        {soonLabel && (
           <Badge variant="outline" className="text-[0.65rem] px-1 py-0">
-            Soon
+            {soonLabel}
           </Badge>
         )}
       </span>
@@ -104,7 +105,7 @@ interface ApiPlan {
 const PlanCard: React.FC<{
   plan: ApiPlan;
   price: string;
-  period: "month" | "year";
+  periodLabel: string;
   originalPrice?: string;
   isCurrentPlan: boolean;
   onUpgrade: (plan: UserPlan, billingInterval: "monthly" | "yearly") => void;
@@ -114,7 +115,7 @@ const PlanCard: React.FC<{
 }> = ({
   plan,
   price,
-  period,
+  periodLabel,
   originalPrice,
   isCurrentPlan,
   onUpgrade,
@@ -125,6 +126,8 @@ const PlanCard: React.FC<{
   const ringClass = isCurrentPlan
     ? "ring-2 ring-blue-500 shadow-lg scale-105"
     : "";
+
+  const soonLabel = t("plans.features.soon");
 
   const versionDetail = plan.ltsOnly
     ? t("plans.features.ltsVersions")
@@ -157,7 +160,7 @@ const PlanCard: React.FC<{
                 {price}
               </span>
               {plan.monthlyPrice > 0 && (
-                <span className="text-muted-foreground">/{period}</span>
+                <span className="text-muted-foreground">/{periodLabel}</span>
               )}
             </div>
             {originalPrice && (
@@ -211,14 +214,14 @@ const PlanCard: React.FC<{
                 <FeatureItem
                   label={t("plans.features.topologyVisualization")}
                   enabled
-                  soon={plan.hasTopologyVisualization === "coming_soon"}
+                  soonLabel={plan.hasTopologyVisualization === "coming_soon" ? soonLabel : undefined}
                 />
               )}
               {plan.hasRoleBasedAccess && (
                 <FeatureItem
                   label={t("plans.features.roleBasedAccess")}
                   enabled
-                  soon={plan.hasRoleBasedAccess === "coming_soon"}
+                  soonLabel={plan.hasRoleBasedAccess === "coming_soon" ? soonLabel : undefined}
                 />
               )}
             </ul>
@@ -292,23 +295,28 @@ export const PlansPage: React.FC<PlansPageProps> = ({
   );
   const navigate = useNavigate();
   const { userPlan } = useUser();
-  const { data: allPlansData, isLoading } = useAllPlans();
+  const { data: allPlansData, isLoading, isError, error, refetch } = useAllPlans();
 
   const plans: ApiPlan[] = allPlansData?.plans ?? [];
 
-  /** Get price string and optional original price for a plan */
-  function getPricing(plan: ApiPlan): { price: string; originalPrice?: string } {
+  /** Get price string, localized period label, and optional original price for a plan */
+  function getPricing(plan: ApiPlan): { price: string; periodLabel: string; originalPrice?: string } {
+    const periodLabel = billingPeriod === "monthly"
+      ? t("plans.period.month")
+      : t("plans.period.month"); // yearly still shows per-month equivalent
+
     if (plan.monthlyPrice === 0) {
-      return { price: t("plans.pricing.free") };
+      return { price: t("plans.pricing.free"), periodLabel };
     }
     if (billingPeriod === "yearly") {
       const monthlyEquivalent = yearlyToMonthly(plan.yearlyPrice);
       return {
         price: formatPrice(monthlyEquivalent),
+        periodLabel,
         originalPrice: formatPrice(plan.monthlyPrice),
       };
     }
-    return { price: formatPrice(plan.monthlyPrice) };
+    return { price: formatPrice(plan.monthlyPrice), periodLabel };
   }
 
   return (
@@ -443,10 +451,27 @@ export const PlansPage: React.FC<PlansPageProps> = ({
                     <Loader2 className="w-5 h-5 animate-spin" />
                     {t("upgradeModal.loadingPlans")}
                   </div>
+                ) : isError || !allPlansData ? (
+                  <div
+                    className="flex flex-col items-center gap-4 py-16"
+                    role="alert"
+                    aria-live="polite"
+                  >
+                    <AlertCircle className="w-8 h-8 text-destructive" />
+                    <p className="text-muted-foreground">
+                      {error?.message ?? t("upgradeModal.upgradeFailed")}
+                    </p>
+                    <Button
+                      variant="outline"
+                      onClick={() => refetch()}
+                    >
+                      {t("paymentCancelled.tryAgain")}
+                    </Button>
+                  </div>
                 ) : (
                   <div className="grid lg:grid-cols-3 gap-8 max-w-5xl">
                     {plans.map((plan) => {
-                      const { price, originalPrice } = getPricing(plan);
+                      const { price, periodLabel, originalPrice } = getPricing(plan);
                       const isCurrentPlan =
                         plan.plan === userPlan?.toUpperCase();
 
@@ -456,9 +481,7 @@ export const PlansPage: React.FC<PlansPageProps> = ({
                           plan={plan}
                           price={price}
                           originalPrice={originalPrice}
-                          period={
-                            billingPeriod === "monthly" ? "month" : "year"
-                          }
+                          periodLabel={periodLabel}
                           isCurrentPlan={isCurrentPlan}
                           onUpgrade={onUpgrade}
                           billingInterval={billingPeriod}
