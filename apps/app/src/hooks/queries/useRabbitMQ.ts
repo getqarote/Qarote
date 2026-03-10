@@ -427,7 +427,11 @@ export const useQueuePauseStatus = (serverId: string, queueName: string) => {
   return query;
 };
 
-export const useTopology = (serverId: string | null, vhost?: string | null) => {
+export const useTopology = (
+  serverId: string | null,
+  vhost?: string | null,
+  featureEnabled = true
+) => {
   const { workspace } = useWorkspace();
 
   const query = trpc.rabbitmq.topology.getTopology.useQuery(
@@ -437,7 +441,7 @@ export const useTopology = (serverId: string | null, vhost?: string | null) => {
       vhost: vhost ? encodeURIComponent(vhost) : undefined,
     },
     {
-      enabled: !!serverId && !!workspace?.id,
+      enabled: !!serverId && !!workspace?.id && featureEnabled,
       staleTime: 10000,
       refetchInterval: 30000,
     }

@@ -31,6 +31,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { useVHostContext } from "@/contexts/VHostContextDefinition";
 
 import { useTopology } from "@/hooks/queries/useRabbitMQ";
+import { useFeatureFlags } from "@/hooks/useFeatureFlags";
 
 const nodeTypes = {
   exchangeNode: ExchangeNode,
@@ -43,12 +44,14 @@ const Topology = () => {
   const { selectedServerId, hasServers } = useServerContext();
   const { selectedVHost } = useVHostContext();
   const { resolvedTheme } = useTheme();
+  const { hasFeature } = useFeatureFlags();
+  const isTopologyEnabled = hasFeature("topology_visualization");
 
   const {
     data: topologyData,
     isLoading,
     error,
-  } = useTopology(selectedServerId, selectedVHost);
+  } = useTopology(selectedServerId, selectedVHost, isTopologyEnabled);
 
   const { nodes, edges } = useMemo(() => {
     if (!topologyData) return { nodes: [], edges: [] };
@@ -170,6 +173,7 @@ const Topology = () => {
                         nodeTypes={nodeTypes}
                         onNodeClick={onNodeClick}
                         colorMode={colorMode}
+                        nodesConnectable={false}
                         fitView
                         fitViewOptions={{ padding: 0.2 }}
                         minZoom={0.1}
@@ -178,7 +182,17 @@ const Topology = () => {
                       >
                         <Background />
                         <Controls />
-                        <MiniMap nodeStrokeWidth={3} zoomable pannable />
+                        <MiniMap
+                          zoomable
+                          pannable
+                          nodeColor={(node) =>
+                            node.type === "exchangeNode" ? "#3b82f6" : "#10b981"
+                          }
+                          nodeStrokeColor={(node) =>
+                            node.type === "exchangeNode" ? "#2563eb" : "#059669"
+                          }
+                          nodeStrokeWidth={2}
+                        />
                       </ReactFlow>
                     </div>
                   )}

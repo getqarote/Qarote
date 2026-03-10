@@ -161,8 +161,58 @@ export function buildTopologyGraph(
       type: "smoothstep",
       animated: true,
       style: { stroke: "#94a3b8" },
-      labelStyle: { fontSize: 10, fill: "#64748b" },
+      labelStyle: { fontSize: 11, fill: "#475569", fontWeight: 500 },
+      labelBgStyle: { fill: "#f8fafc", fillOpacity: 0.9 },
+      labelBgPadding: [4, 2] as [number, number],
+      labelBgBorderRadius: 4,
     });
+  }
+
+  // Add synthetic "(default)" exchange for orphan queues
+  // In RabbitMQ, queues are implicitly bound to the default exchange with routing_key = queue name
+  const queuesWithIncoming = new Set<string>();
+  for (const edge of edges) queuesWithIncoming.add(edge.target);
+
+  const orphanQueues = nodes.filter(
+    (n) => n.type === "queueNode" && !queuesWithIncoming.has(n.id)
+  );
+
+  if (orphanQueues.length > 0) {
+    const vhost = (orphanQueues[0].data as QueueNodeData).vhost;
+    const defaultExchangeId = `exchange:__default__@${encodeURIComponent(vhost)}`;
+    g.setNode(defaultExchangeId, { width: NODE_WIDTH, height: NODE_HEIGHT });
+
+    nodes.push({
+      id: defaultExchangeId,
+      type: "exchangeNode",
+      position: { x: 0, y: 0 },
+      data: {
+        label: "(default)",
+        exchangeType: "direct",
+        internal: false,
+        bindingCount: orphanQueues.length,
+        vhost,
+      } satisfies ExchangeNodeData,
+    });
+
+    for (const queue of orphanQueues) {
+      const queueData = queue.data as QueueNodeData;
+      const edgeId = `${defaultExchangeId}->${queue.id}:${queueData.label}`;
+      g.setEdge(defaultExchangeId, queue.id);
+      edges.push({
+        id: edgeId,
+        source: defaultExchangeId,
+        target: queue.id,
+        label: queueData.label,
+        type: "smoothstep",
+        animated: true,
+        style: { stroke: "#94a3b8", strokeDasharray: "5,5" },
+        labelStyle: { fontSize: 11, fill: "#475569", fontWeight: 500 },
+        labelBgStyle: { fill: "#f8fafc", fillOpacity: 0.9 },
+        labelBgPadding: [4, 2] as [number, number],
+        labelBgBorderRadius: 4,
+      });
+    }
   }
 
   dagre.layout(g);
