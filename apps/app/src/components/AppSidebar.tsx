@@ -150,8 +150,14 @@ export function AppSidebar() {
                       <div className="flex items-center gap-2 w-full min-w-0">
                         <Server className="h-3 w-3 shrink-0" />
                         <div className="flex flex-col min-w-0 flex-1">
+                          <span className="truncate font-medium">
+                            {
+                              servers.find((s) => s.id === selectedServerId)
+                                ?.name
+                            }
+                          </span>
                           <span
-                            className="truncate font-medium"
+                            className="text-xs text-sidebar-foreground/70 truncate"
                             title={
                               servers.find((s) => s.id === selectedServerId)
                                 ?.host
@@ -161,12 +167,6 @@ export function AppSidebar() {
                               servers.find((s) => s.id === selectedServerId)
                                 ?.host || ""
                             )}
-                          </span>
-                          <span className="text-xs text-sidebar-foreground/70 truncate">
-                            {
-                              servers.find((s) => s.id === selectedServerId)
-                                ?.name
-                            }
                           </span>
                         </div>
                       </div>
@@ -179,11 +179,12 @@ export function AppSidebar() {
                     <div className="flex items-center gap-2 w-full min-w-0">
                       <Server className="h-3 w-3 shrink-0" />
                       <div className="flex flex-col min-w-0 flex-1">
-                        <span className="font-medium" title={server.host}>
+                        <span className="font-medium">{server.name}</span>
+                        <span
+                          className="text-xs text-muted-foreground truncate"
+                          title={server.host}
+                        >
                           {shortenHost(server.host)}
-                        </span>
-                        <span className="text-xs text-muted-foreground truncate">
-                          {server.name}
                         </span>
                       </div>
                     </div>
