@@ -23,7 +23,7 @@ const INSTANCE_PROVIDER_ID = "default";
  * User.ssoSubjectId. better-auth's SSO plugin tracks identity linkage via the
  * Account table (providerId: "sso", accountId: <subject>).
  */
-export async function migrateSsoSubjectIds(): Promise<void> {
+async function migrateSsoSubjectIds(): Promise<void> {
   const users = await prisma.user.findMany({
     where: { ssoSubjectId: { not: null } },
     select: { id: true, ssoSubjectId: true },
@@ -74,7 +74,7 @@ export async function migrateSsoSubjectIds(): Promise<void> {
  *
  * Also migrates the old Jackson SystemSetting "sso_config" if present.
  */
-export async function seedSsoProviders(): Promise<void> {
+async function seedSsoProviders(): Promise<void> {
   if (!isSelfHostedMode()) return;
 
   // Check if instance-wide SSO is already configured
