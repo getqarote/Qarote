@@ -46,5 +46,6 @@
   "selfHostedLabel": "自托管",
   "copyError": "复制到剪贴板失败",
   "domain": "电子邮件域名",
-  "domainDescription": "使用该电子邮件域名的用户将被路由到您的 SSO 提供商。"
+  "domainDescription": 0,
+  "urlsAfterSave": "回调 URL 将在保存提供商配置后显示。"
 }

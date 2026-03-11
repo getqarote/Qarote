@@ -46,5 +46,6 @@
   "selfHostedLabel": "Self-hosted",
   "copyError": "Failed to copy to clipboard",
   "domain": "Email Domain",
-  "domainDescription": "Users with this email domain will be routed to your SSO provider."
+  "domainDescription": 0,
+  "urlsAfterSave": "Callback URLs will be available after saving your provider configuration."
 }

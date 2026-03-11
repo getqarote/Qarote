@@ -14,6 +14,16 @@ import { toast } from "sonner";
 
 import { isCloudMode } from "@/lib/featureFlags";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alertDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -48,6 +58,15 @@ import {
 
 const REDACTED = "••••••••";
 
+async function copyToClipboard(text: string, t: (key: string, opts?: object) => string) {
+  try {
+    await navigator.clipboard.writeText(text);
+    toast.success(t("copied"));
+  } catch {
+    toast.error(t("copyError", { defaultValue: "Failed to copy to clipboard" }));
+  }
+}
+
 function getApiUrl(): string {
   const config = (window as unknown as Record<string, unknown>)
     .__QAROTE_CONFIG__ as { apiUrl?: string } | undefined;
@@ -76,6 +95,7 @@ function SSOForm({
   const { t } = useTranslation("sso");
   const apiUrl = getApiUrl();
 
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [enabled, setEnabled] = useState(initialData.enabled);
   const [type, setType] = useState<"oidc" | "saml">(initialData.type);
   const [oidcDiscoveryUrl, setOidcDiscoveryUrl] = useState(
@@ -139,18 +159,7 @@ function SSOForm({
     });
   };
 
-  const handleDelete = () => {
-    if (
-      !confirm(
-        t("deleteConfirm", {
-          defaultValue:
-            "Delete SSO provider? This will disable SSO for all users.",
-        })
-      )
-    )
-      return;
-    deleteMutation.mutate();
-  };
+  const handleDelete = () => setIsDeleteOpen(true);
 
   const handleTestConnection = () => {
     if (!oidcDiscoveryUrl) {
@@ -166,17 +175,6 @@ function SSOForm({
   const samlAcsUrl = apiUrl
     ? `${apiUrl}/api/auth/sso/saml2/callback/${initialData.providerId}`
     : "";
-
-  const copyToClipboard = async (text: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      toast.success(t("copied"));
-    } catch {
-      toast.error(
-        t("copyError", { defaultValue: "Failed to copy to clipboard" })
-      );
-    }
-  };
 
   return (
     <div className="space-y-6">
@@ -337,7 +335,7 @@ function SSOForm({
                           variant="ghost"
                           size="icon"
                           className="h-6 w-6"
-                          onClick={() => copyToClipboard(oidcCallbackUrl)}
+                          onClick={() => copyToClipboard(oidcCallbackUrl, t)}
                           aria-label={t("copyToClipboard")}
                         >
                           <Copy className="h-3 w-3" />
@@ -354,7 +352,7 @@ function SSOForm({
                           variant="ghost"
                           size="icon"
                           className="h-6 w-6"
-                          onClick={() => copyToClipboard(samlAcsUrl)}
+                          onClick={() => copyToClipboard(samlAcsUrl, t)}
                           aria-label={t("copyToClipboard")}
                         >
                           <Copy className="h-3 w-3" />
@@ -462,6 +460,36 @@ function SSOForm({
           </Button>
         </CardFooter>
       </Card>
+
+      <AlertDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {t("delete", { defaultValue: "Delete provider" })}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("deleteConfirm", {
+                defaultValue:
+                  "Delete SSO provider? This will disable SSO for all users.",
+              })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setIsDeleteOpen(false)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-white hover:bg-destructive/90"
+              onClick={() => {
+                setIsDeleteOpen(false);
+                deleteMutation.mutate();
+              }}
+            >
+              {t("delete", { defaultValue: "Delete provider" })}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
@@ -517,20 +545,6 @@ function SetupForm({ onRefetch }: { onRefetch: () => void }) {
       return;
     }
     testMutation.mutate({ discoveryUrl: oidcDiscoveryUrl });
-  };
-
-  const oidcCallbackUrl = apiUrl ? `${apiUrl}/api/auth/sso/callback/...` : "";
-  const samlAcsUrl = apiUrl ? `${apiUrl}/api/auth/sso/saml2/callback/...` : "";
-
-  const copyToClipboard = async (text: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      toast.success(t("copied"));
-    } catch {
-      toast.error(
-        t("copyError", { defaultValue: "Failed to copy to clipboard" })
-      );
-    }
   };
 
   return (
@@ -663,48 +677,12 @@ function SetupForm({ onRefetch }: { onRefetch: () => void }) {
             <CardDescription>{t("urlsDescription")}</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="rounded-lg border p-4 space-y-3 bg-muted/50">
-              <div className="flex items-center gap-2 text-sm font-medium">
-                <AlertCircle className="h-4 w-4" />
-                {t("registerInIdP")}
-              </div>
-              <div className="space-y-2">
-                {type === "oidc" && (
-                  <div className="flex items-center gap-2">
-                    <code className="text-xs bg-background px-2 py-1 rounded flex-1">
-                      {oidcCallbackUrl}
-                    </code>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6"
-                      onClick={() => copyToClipboard(oidcCallbackUrl)}
-                      aria-label={t("copyToClipboard")}
-                    >
-                      <Copy className="h-3 w-3" />
-                    </Button>
-                  </div>
-                )}
-                {type === "saml" && (
-                  <div className="flex items-center gap-2">
-                    <code className="text-xs bg-background px-2 py-1 rounded flex-1">
-                      {samlAcsUrl}
-                    </code>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6"
-                      onClick={() => copyToClipboard(samlAcsUrl)}
-                      aria-label={t("copyToClipboard")}
-                    >
-                      <Copy className="h-3 w-3" />
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </div>
+            <p className="text-sm text-muted-foreground">
+              {t("urlsAfterSave", {
+                defaultValue:
+                  "Callback URLs will be available after saving your provider configuration.",
+              })}
+            </p>
           </CardContent>
         </Card>
       )}

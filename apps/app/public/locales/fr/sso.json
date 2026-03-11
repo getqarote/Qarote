@@ -46,5 +46,6 @@
   "selfHostedLabel": "Auto-hébergé",
   "copyError": "Échec de la copie dans le presse-papiers",
   "domain": "Domaine e-mail",
-  "domainDescription": "Les utilisateurs avec ce domaine e-mail seront redirigés vers votre fournisseur SSO."
+  "domainDescription": 0,
+  "urlsAfterSave": "Les URLs de callback seront disponibles après l'enregistrement de votre configuration."
 }

@@ -42,7 +42,7 @@ async function enforceSsoEntitlement(providerId: string): Promise<void> {
     const payload = await getLicensePayload();
     const hasSSO =
       payload &&
-      (payload.features.includes("sso") || payload.tier === "ENTERPRISE");
+      (payload.features.includes("sso") || payload.tier === UserPlan.ENTERPRISE);
 
     if (!hasSSO) {
       throw new Error("SSO requires Enterprise license");
@@ -159,7 +159,7 @@ export const auth = betterAuth({
             const isCritical = "emailVerified" in updates;
             if (isCritical) {
               logger.error(
-                { err, userId: user.id, updates },
+                { error: err, userId: user.id, updates },
                 "Failed to update critical user fields from SSO claims"
               );
               throw err;
