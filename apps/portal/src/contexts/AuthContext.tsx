@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useReducer } from "react";
 
 import { authClient } from "@/lib/auth-client";
 import { logger } from "@/lib/logger";
@@ -21,9 +21,28 @@ interface AuthProviderProps {
   children: React.ReactNode;
 }
 
+type AuthState = { user: User | null; isLoading: boolean };
+type AuthAction =
+  | { type: "SET_USER"; user: User }
+  | { type: "CLEAR_USER" }
+  | { type: "LOADED" };
+
+function authReducer(state: AuthState, action: AuthAction): AuthState {
+  switch (action.type) {
+    case "SET_USER":
+      return { user: action.user, isLoading: false };
+    case "CLEAR_USER":
+      return { user: null, isLoading: false };
+    case "LOADED":
+      return { ...state, isLoading: false };
+  }
+}
+
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [{ user, isLoading }, dispatch] = useReducer(authReducer, {
+    user: null,
+    isLoading: true,
+  });
 
   const utils = trpc.useUtils();
 
@@ -34,21 +53,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         if (session.data?.user) {
           try {
             const response = await utils.user.getProfile.fetch();
-            setUser(response.profile);
+            dispatch({ type: "SET_USER", user: response.profile });
           } catch {
             logger.warn("Failed to fetch profile, using basic session data");
             const baUser = session.data.user;
-            setUser({
-              id: baUser.id,
-              email: baUser.email,
-              name: baUser.name || "",
-            } as User);
+            dispatch({
+              type: "SET_USER",
+              user: {
+                id: baUser.id,
+                email: baUser.email,
+                name: baUser.name || "",
+              } as User,
+            });
           }
+        } else {
+          dispatch({ type: "LOADED" });
         }
       } catch (error) {
         logger.error("Failed to check session:", error);
-      } finally {
-        setIsLoading(false);
+        dispatch({ type: "LOADED" });
       }
     };
 
@@ -56,7 +79,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, [utils]);
 
   const login = useCallback((newUser: User) => {
-    setUser(newUser);
+    dispatch({ type: "SET_USER", user: newUser });
   }, []);
 
   const logout = useCallback(async () => {
@@ -65,16 +88,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } catch (error) {
       logger.error("Failed to sign out:", error);
     }
-    setUser(null);
+    dispatch({ type: "CLEAR_USER" });
   }, []);
 
   const updateUser = useCallback((newUser: User) => {
-    setUser(newUser);
+    dispatch({ type: "SET_USER", user: newUser });
   }, []);
 
   useEffect(() => {
     const handleUnauthorized = () => {
-      setUser(null);
+      dispatch({ type: "CLEAR_USER" });
     };
 
     window.addEventListener("auth:unauthorized", handleUnauthorized);
@@ -86,7 +109,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const refetchUser = useCallback(async () => {
     try {
       const response = await utils.user.getProfile.fetch();
-      setUser(response.profile);
+      dispatch({ type: "SET_USER", user: response.profile });
     } catch (error) {
       logger.error("Failed to refetch user data:", error);
     }

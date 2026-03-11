@@ -48,12 +48,41 @@ function parseConfig(): Config {
   };
 
   try {
+    let config: Config;
     switch (deploymentMode) {
       case "cloud":
-        return cloudSchema.parse(envWithDefaults);
+        config = cloudSchema.parse(envWithDefaults);
+        break;
       case "selfhosted":
-        return selfhostedSchema.parse(envWithDefaults);
+        config = selfhostedSchema.parse(envWithDefaults);
+        break;
     }
+
+    // Cross-field validation: the effective auth secret must be >= 32 chars
+    const effectiveSecret = config.BETTER_AUTH_SECRET ?? config.JWT_SECRET;
+    if (effectiveSecret.length < 32) {
+      throw new Error(
+        "The effective auth secret (BETTER_AUTH_SECRET ?? JWT_SECRET) must be at least 32 characters. " +
+          "Set BETTER_AUTH_SECRET or use a longer JWT_SECRET."
+      );
+    }
+
+    // Cross-field validation: OAuth credentials required when ENABLE_OAUTH is true
+    if (config.ENABLE_OAUTH) {
+      const missing: string[] = [];
+      if (!config.GOOGLE_CLIENT_ID) missing.push("GOOGLE_CLIENT_ID");
+      if (!("GOOGLE_CLIENT_SECRET" in config) || !config.GOOGLE_CLIENT_SECRET) {
+        missing.push("GOOGLE_CLIENT_SECRET");
+      }
+      if (missing.length > 0) {
+        throw new Error(
+          `ENABLE_OAUTH is true but required OAuth credentials are missing: ${missing.join(", ")}. ` +
+            "Set these environment variables or disable OAuth with ENABLE_OAUTH=false."
+        );
+      }
+    }
+
+    return config;
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error(error);

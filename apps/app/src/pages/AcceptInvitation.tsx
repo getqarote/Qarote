@@ -269,6 +269,7 @@ const InvitationForm = ({
         <p className="text-sm text-gray-500">
           {t("alreadyHaveAccount")}{" "}
           <button
+            type="button"
             onClick={onNavigateSignIn}
             className="text-blue-600 hover:underline"
           >
@@ -355,8 +356,10 @@ const AcceptInvitation = () => {
             }
 
             const response = await utils.auth.session.getSession.fetch();
-            const user = response.user;
-            user.workspaceId = user.workspace?.id;
+            const user = {
+              ...response.user,
+              workspaceId: response.user.workspace?.id,
+            };
             login(user);
 
             toast({
@@ -370,10 +373,9 @@ const AcceptInvitation = () => {
           } catch (err) {
             logger.error("Failed to sign in after accepting invitation:", err);
             toast({
-              title: t("welcomeToQarote"),
-              description: t("successfullyJoinedWorkspace", {
-                workspace: invitation?.workspace.name,
-              }),
+              title: t("invitationAccepted"),
+              description: t("signInToAccess"),
+              variant: "default",
             });
             navigate("/auth/sign-in", { replace: true });
           }

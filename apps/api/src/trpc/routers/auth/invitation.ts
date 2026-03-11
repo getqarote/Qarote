@@ -173,6 +173,9 @@ export const invitationRouter = router({
           },
         });
 
+        // Check if existing user has a credential Account (for legacy migration)
+        let hasCredentialAccount = false;
+
         // For existing users, verify password
         if (user) {
           if (!password) {
@@ -187,6 +190,7 @@ export const invitationRouter = router({
             where: { userId: user.id, providerId: "credential" },
             select: { password: true },
           });
+          hasCredentialAccount = !!account;
           const hash = account?.password || user.passwordHash;
 
           if (!hash) {
@@ -213,6 +217,9 @@ export const invitationRouter = router({
           }
         }
 
+        // Track whether existing user needs an Account row created
+        const needsAccountMigration = user && !hasCredentialAccount;
+
         const result = await ctx.prisma.$transaction(async (tx) => {
           if (user) {
             user = await tx.user.update({
@@ -221,6 +228,18 @@ export const invitationRouter = router({
                 workspaceId: invitation.workspaceId,
               },
             });
+
+            // Migrate legacy user: create Account row so better-auth sign-in works
+            if (needsAccountMigration && user.passwordHash) {
+              await tx.account.create({
+                data: {
+                  userId: user.id,
+                  accountId: user.id,
+                  providerId: "credential",
+                  password: user.passwordHash,
+                },
+              });
+            }
           } else {
             const hashedPassword = await hashPassword(password!);
 

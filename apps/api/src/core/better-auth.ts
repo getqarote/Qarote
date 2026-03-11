@@ -100,7 +100,7 @@ export const auth = betterAuth({
     sendOnSignUp: isCloudMode(),
     sendVerificationEmail: async ({ user, url }) => {
       logger.info(
-        { userId: user.id, email: user.email },
+        { userId: user.id },
         "Sending verification email via better-auth"
       );
 

@@ -53,8 +53,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           // Fetch enriched user data via tRPC (includes subscription, workspace, etc.)
           try {
             const response = await utils.auth.session.getSession.fetch();
-            const enrichedUser = response.user;
-            enrichedUser.workspaceId = enrichedUser.workspace?.id;
+            const enrichedUser = {
+              ...response.user,
+              workspaceId: response.user.workspace?.id,
+            };
             dispatch({ type: "SET_USER", user: enrichedUser });
             syncSentryUser(enrichedUser);
           } catch {
@@ -67,6 +69,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               name: baUser.name || "",
             } as User;
             dispatch({ type: "SET_USER", user: basicUser });
+            syncSentryUser(basicUser);
           }
         } else {
           dispatch({ type: "LOADED" });
@@ -115,8 +118,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const refetchUser = useCallback(async () => {
     try {
       const response = await utils.auth.session.getSession.fetch();
-      const updatedUser = response.user;
-      updatedUser.workspaceId = updatedUser.workspace?.id;
+      const updatedUser = {
+        ...response.user,
+        workspaceId: response.user.workspace?.id,
+      };
       dispatch({ type: "SET_USER", user: updatedUser });
       syncSentryUser(updatedUser);
     } catch (error) {

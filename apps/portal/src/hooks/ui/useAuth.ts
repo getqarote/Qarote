@@ -48,13 +48,30 @@ export const useLogin = () => {
           setIsSuccess(true);
           options?.onSuccess?.();
         } catch (err) {
-          logger.error("Failed to fetch profile after login:", err);
-          const error =
-            err instanceof Error ? err : new Error("Failed to fetch profile");
-          setError(error);
-          setIsError(true);
-          setIsPending(false);
-          options?.onError?.(error);
+          // Sign-in succeeded (cookie is set) but profile fetch failed —
+          // fall back to basic session data so the user isn't stuck on login
+          logger.warn(
+            "Failed to fetch profile after login, using basic data:",
+            err
+          );
+          if (result.data?.user) {
+            const baUser = result.data.user;
+            login({
+              id: baUser.id,
+              email: baUser.email,
+              name: baUser.name || "",
+            } as Parameters<typeof login>[0]);
+            setIsPending(false);
+            setIsSuccess(true);
+            options?.onSuccess?.();
+          } else {
+            const error =
+              err instanceof Error ? err : new Error("Failed to fetch profile");
+            setError(error);
+            setIsError(true);
+            setIsPending(false);
+            options?.onError?.(error);
+          }
         }
       })
       .catch((err) => {
