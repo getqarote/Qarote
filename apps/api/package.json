@@ -83,7 +83,7 @@
     "@types/react": "^19.2.0",
     "amqplib": "^0.10.8",
     "bcryptjs": "^3.0.2",
-    "better-auth": "^1.5.4",
+    "better-auth": "^1.5.5",
     "date-fns": "^4.1.0",
     "dotenv": "^17.3.1",
     "hono": "^4.12.7",
