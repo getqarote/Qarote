@@ -44,5 +44,7 @@
   "setupDescription": "Configure your SSO provider to enable single sign-on.",
   "cloudLabel": "Cloud (per-workspace)",
   "selfHostedLabel": "Self-hosted",
-  "copyError": "Failed to copy to clipboard"
+  "copyError": "Failed to copy to clipboard",
+  "domain": "Email Domain",
+  "domainDescription": "Users with this email domain will be routed to your SSO provider."
 }

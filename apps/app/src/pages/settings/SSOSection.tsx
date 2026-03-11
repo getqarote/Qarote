@@ -60,6 +60,7 @@ interface ProviderConfig {
   enabled: boolean;
   buttonLabel: string;
   providerId: string;
+  domain: string;
   type: "oidc" | "saml";
   oidcConfig: Record<string, unknown> | null;
   samlConfig: Record<string, unknown> | null;
@@ -90,6 +91,7 @@ function SSOForm({
     (initialData.samlConfig?.metadataUrl as string) || ""
   );
   const [buttonLabel, setButtonLabel] = useState(initialData.buttonLabel);
+  const [domain, setDomain] = useState(initialData.domain);
 
   const updateMutation = useUpdateSsoProvider({
     onSuccess: () => {
@@ -133,6 +135,7 @@ function SSOForm({
       oidcClientSecret: oidcClientSecret || undefined,
       samlMetadataUrl: samlMetadataUrl || undefined,
       buttonLabel,
+      domain: domain || undefined,
     });
   };
 
@@ -382,6 +385,25 @@ function SSOForm({
                   onChange={(e) => setButtonLabel(e.target.value)}
                 />
               </div>
+              {isCloudMode() && (
+                <div className="space-y-2">
+                  <Label htmlFor="domain">
+                    {t("domain", { defaultValue: "Email Domain" })}
+                  </Label>
+                  <Input
+                    id="domain"
+                    placeholder="acme.com"
+                    value={domain}
+                    onChange={(e) => setDomain(e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    {t("domainDescription", {
+                      defaultValue:
+                        "Users with this email domain will be routed to your SSO provider.",
+                    })}
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -456,6 +478,7 @@ function SetupForm({ onRefetch }: { onRefetch: () => void }) {
   const [oidcClientSecret, setOidcClientSecret] = useState("");
   const [samlMetadataUrl, setSamlMetadataUrl] = useState("");
   const [buttonLabel, setButtonLabel] = useState("Sign in with SSO");
+  const [domain, setDomain] = useState("");
 
   const testMutation = useTestSsoConnection({
     onSuccess: (data) => {
@@ -484,6 +507,7 @@ function SetupForm({ onRefetch }: { onRefetch: () => void }) {
       oidcClientSecret: oidcClientSecret || undefined,
       samlMetadataUrl: samlMetadataUrl || undefined,
       buttonLabel,
+      domain: domain || undefined,
     });
   };
 
@@ -700,6 +724,25 @@ function SetupForm({ onRefetch }: { onRefetch: () => void }) {
               onChange={(e) => setButtonLabel(e.target.value)}
             />
           </div>
+          {isCloudMode() && (
+            <div className="space-y-2">
+              <Label htmlFor="setup-domain">
+                {t("domain", { defaultValue: "Email Domain" })}
+              </Label>
+              <Input
+                id="setup-domain"
+                placeholder="acme.com"
+                value={domain}
+                onChange={(e) => setDomain(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">
+                {t("domainDescription", {
+                  defaultValue:
+                    "Users with this email domain will be routed to your SSO provider.",
+                })}
+              </p>
+            </div>
+          )}
         </CardContent>
       </Card>
 

@@ -44,5 +44,7 @@
   "setupDescription": "Configure su proveedor SSO para habilitar el inicio de sesión único.",
   "cloudLabel": "Cloud (por espacio de trabajo)",
   "selfHostedLabel": "Auto-alojado",
-  "copyError": "Error al copiar al portapapeles"
+  "copyError": "Error al copiar al portapapeles",
+  "domain": "Dominio de correo",
+  "domainDescription": "Los usuarios con este dominio de correo serán dirigidos a su proveedor SSO."
 }

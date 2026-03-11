@@ -44,5 +44,7 @@
   "setupDescription": "Configurez votre fournisseur SSO pour activer l'authentification unique.",
   "cloudLabel": "Cloud (par espace de travail)",
   "selfHostedLabel": "Auto-hébergé",
-  "copyError": "Échec de la copie dans le presse-papiers"
+  "copyError": "Échec de la copie dans le presse-papiers",
+  "domain": "Domaine e-mail",
+  "domainDescription": "Les utilisateurs avec ce domaine e-mail seront redirigés vers votre fournisseur SSO."
 }
