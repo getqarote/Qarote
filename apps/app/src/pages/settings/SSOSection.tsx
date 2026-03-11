@@ -58,12 +58,17 @@ import {
 
 const REDACTED = "••••••••";
 
-async function copyToClipboard(text: string, t: (key: string, opts?: object) => string) {
+async function copyToClipboard(
+  text: string,
+  t: (key: string, opts?: object) => string
+) {
   try {
     await navigator.clipboard.writeText(text);
     toast.success(t("copied"));
   } catch {
-    toast.error(t("copyError", { defaultValue: "Failed to copy to clipboard" }));
+    toast.error(
+      t("copyError", { defaultValue: "Failed to copy to clipboard" })
+    );
   }
 }
 
