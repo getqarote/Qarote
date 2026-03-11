@@ -104,7 +104,8 @@
   },
   "footer": {
     "privacyPolicy": "隐私政策",
-    "termsOfService": "服务条款"
+    "termsOfService": "服务条款",
+    "contact": "联系我们"
   },
   "faqSection": {
     "title": "常见问题",
