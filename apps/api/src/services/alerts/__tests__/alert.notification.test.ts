@@ -945,6 +945,171 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
   });
 
   // -------------------------------------------------------------------------
+  // Vhost-scoped auto-resolution
+  // -------------------------------------------------------------------------
+
+  describe("vhost-scoped auto-resolution", () => {
+    function makeQueueSeenAlert(
+      vhost: string,
+      overrides: Record<string, unknown> = {}
+    ) {
+      // Fingerprint format: ${serverId}-${category}-queue-${vhost}-${sourceName}
+      return {
+        fingerprint: `${SERVER_ID}-memory-queue-${vhost}-myqueue`,
+        severity: "warning",
+        category: "memory",
+        sourceType: "queue",
+        sourceName: "myqueue",
+        firstSeenAt: new Date(Date.now() - 30 * 60 * 1000),
+        ...overrides,
+      };
+    }
+
+    it("resolves queue alerts that match the specified vhost", async () => {
+      setupDefaults({
+        seenAlerts: [],
+        unresolvedSeenAlerts: [makeQueueSeenAlert("default")],
+      });
+
+      await alertNotificationService.trackAndNotifyNewAlerts(
+        [],
+        WORKSPACE_ID,
+        SERVER_ID,
+        SERVER_NAME,
+        "default"
+      );
+
+      expect(mockPrisma.seenAlert.updateMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ resolvedAt: expect.any(Date) }),
+        })
+      );
+    });
+
+    it("does NOT resolve queue alerts that belong to a different vhost", async () => {
+      setupDefaults({
+        seenAlerts: [],
+        unresolvedSeenAlerts: [makeQueueSeenAlert("other")],
+      });
+
+      // Checking vhost "default" — alert for "other" vhost must be skipped
+      await alertNotificationService.trackAndNotifyNewAlerts(
+        [],
+        WORKSPACE_ID,
+        SERVER_ID,
+        SERVER_NAME,
+        "default"
+      );
+
+      const resolveUpdate = mockPrisma.seenAlert.updateMany.mock.calls.find(
+        (call: unknown[]) => {
+          const data = (call[0] as { data: { resolvedAt?: unknown } }).data;
+          return data?.resolvedAt instanceof Date;
+        }
+      );
+      expect(resolveUpdate).toBeUndefined();
+    });
+
+    it("always resolves node alerts regardless of the vhost filter", async () => {
+      const nodeAlert = {
+        fingerprint: `${SERVER_ID}-memory-node-rabbit@node1`,
+        severity: "warning",
+        category: "memory",
+        sourceType: "node",
+        sourceName: "rabbit@node1",
+        firstSeenAt: new Date(Date.now() - 30 * 60 * 1000),
+      };
+      setupDefaults({
+        seenAlerts: [],
+        unresolvedSeenAlerts: [nodeAlert],
+      });
+
+      await alertNotificationService.trackAndNotifyNewAlerts(
+        [],
+        WORKSPACE_ID,
+        SERVER_ID,
+        SERVER_NAME,
+        "default" // vhost filter specified, but node alerts are always evaluated
+      );
+
+      expect(mockPrisma.seenAlert.updateMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ resolvedAt: expect.any(Date) }),
+        })
+      );
+    });
+
+    it("is position-safe: vhost 'foo' does not match a fingerprint whose actual vhost is 'foo-bar' (when category is 'queue')", async () => {
+      // category="queue" means indexOf("-queue-") hits the category segment first,
+      // exposing "queue-foo-bar-myqueue" which does NOT start with "foo-".
+      // This is the scenario where the old DB `contains` approach had a false positive.
+      const fooBarAlert = {
+        fingerprint: `${SERVER_ID}-queue-queue-foo-bar-myqueue`,
+        severity: "warning",
+        category: "queue",
+        sourceType: "queue",
+        sourceName: "myqueue",
+        firstSeenAt: new Date(Date.now() - 30 * 60 * 1000),
+      };
+      setupDefaults({
+        seenAlerts: [],
+        unresolvedSeenAlerts: [fooBarAlert],
+      });
+
+      await alertNotificationService.trackAndNotifyNewAlerts(
+        [],
+        WORKSPACE_ID,
+        SERVER_ID,
+        SERVER_NAME,
+        "foo" // checking vhost "foo" — should NOT resolve vhost "foo-bar"
+      );
+
+      const resolveUpdate = mockPrisma.seenAlert.updateMany.mock.calls.find(
+        (call: unknown[]) => {
+          const data = (call[0] as { data: { resolvedAt?: unknown } }).data;
+          return data?.resolvedAt instanceof Date;
+        }
+      );
+      expect(resolveUpdate).toBeUndefined();
+    });
+
+    it("resolves both matching-vhost queue alerts and node alerts when vhost is specified", async () => {
+      setupDefaults({
+        seenAlerts: [],
+        unresolvedSeenAlerts: [
+          makeQueueSeenAlert("default"), // matches → resolve
+          makeQueueSeenAlert("other"), // different vhost → skip
+          {
+            fingerprint: `${SERVER_ID}-memory-node-rabbit@node1`,
+            severity: "warning",
+            category: "memory",
+            sourceType: "node",
+            sourceName: "rabbit@node1",
+            firstSeenAt: new Date(Date.now() - 30 * 60 * 1000),
+          }, // node → always resolve
+        ],
+      });
+
+      await alertNotificationService.trackAndNotifyNewAlerts(
+        [],
+        WORKSPACE_ID,
+        SERVER_ID,
+        SERVER_NAME,
+        "default"
+      );
+
+      const resolveUpdates = mockPrisma.seenAlert.updateMany.mock.calls.filter(
+        (call: unknown[]) => {
+          const data = (call[0] as { data: { resolvedAt?: unknown } }).data;
+          return data?.resolvedAt instanceof Date;
+        }
+      );
+      // "default" queue alert + node alert = 2 resolved, "other" queue alert skipped
+      expect(resolveUpdates).toHaveLength(2);
+    });
+  });
+
+  // -------------------------------------------------------------------------
   // Default severity filter (fix 3)
   // -------------------------------------------------------------------------
 
