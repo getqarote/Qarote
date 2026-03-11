@@ -9,6 +9,7 @@ import { logger as honoLogger } from "hono/logger";
 import { prettyJSON } from "hono/pretty-json";
 import { secureHeaders } from "hono/secure-headers";
 
+import { auth } from "@/core/better-auth";
 import { bootstrapAdmin } from "@/core/bootstrap-admin";
 import { logger } from "@/core/logger";
 import { runMigrations } from "@/core/migrate";
@@ -75,6 +76,11 @@ app.route("/webhooks", webhookApp);
 
 // Mount SSO routes (SAML ACS needs form-encoded body access)
 app.route("/sso", ssoApp);
+
+// Mount better-auth handler (handles /api/auth/* routes for sign-in, sign-up, OAuth callbacks, etc.)
+app.on(["POST", "GET"], "/api/auth/**", (c) => {
+  return auth.handler(c.req.raw);
+});
 
 // Rate limit API routes only (not static assets/locales/SPA files)
 app.use("/trpc/*", standardRateLimiter);

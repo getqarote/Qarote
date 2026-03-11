@@ -209,11 +209,63 @@ model User {
   invitationsSent                           Invitation[]             @relation("Invitation_invitedByIdToUser")
   invitationsReceived                       Invitation[]             @relation("Invitation_invitedUserIdToUser")
   passwordResets                             PasswordReset[]
+  sessions                                  Session[]
+  accounts                                  Account[]
   workspace                                 Workspace?               @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   workspaceMembers                           WorkspaceMember[]       @relation("WorkspaceMembers")
   payments                                   Payment[]
   subscription                               Subscription?
 }
+
+// ─── Better Auth Models ─────────────────────────────────────────────
+
+model Session {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+}
+
+model Account {
+  id                    String    @id @default(cuid())
+  userId                String
+  accountId             String
+  providerId            String
+  accessToken           String?   @db.Text
+  refreshToken          String?   @db.Text
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  idToken               String?   @db.Text
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, accountId])
+  @@index([userId])
+}
+
+model Verification {
+  id         String   @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([identifier, value])
+}
+
+// ────────────────────────────────────────────────────────────────────
 
 model Workspace {
   id                            String                    @id @default(uuid())

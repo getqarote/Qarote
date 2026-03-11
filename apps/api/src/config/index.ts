@@ -86,6 +86,7 @@ export const serverConfig = {
 
 export const authConfig = {
   jwtSecret: config.JWT_SECRET,
+  betterAuthSecret: config.BETTER_AUTH_SECRET || config.JWT_SECRET,
   encryptionKey: config.ENCRYPTION_KEY,
 } as const;
 
@@ -164,6 +165,8 @@ export const sentryConfig = {
 
 export const googleConfig = {
   clientId: config.GOOGLE_CLIENT_ID,
+  clientSecret:
+    "GOOGLE_CLIENT_SECRET" in config ? config.GOOGLE_CLIENT_SECRET : undefined,
   enabled: config.ENABLE_OAUTH,
 } as const;
 

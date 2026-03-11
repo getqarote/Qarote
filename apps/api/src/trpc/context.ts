@@ -3,6 +3,7 @@ import type { HonoRequest } from "hono";
 
 import type { SafeUser } from "@/core/auth";
 import { extractUserFromToken } from "@/core/auth";
+import { auth } from "@/core/better-auth";
 import { logger } from "@/core/logger";
 import { prisma } from "@/core/prisma";
 
@@ -55,34 +56,79 @@ export async function createContext(opts: {
 }): Promise<Context> {
   const { req } = opts;
 
-  // Extract auth token from Authorization header or SSE connectionParams
-  const authHeader = req.header("Authorization");
-  let token: string | null = null;
+  let user: SafeUser | null = null;
 
-  if (authHeader && authHeader.startsWith("Bearer ")) {
-    token = authHeader.slice(7).trim();
-  }
+  // 1. Try better-auth cookie-based session first (new auth system)
+  try {
+    const session = await auth.api.getSession({
+      headers: req.raw.headers,
+    });
+    if (session?.user) {
+      // Map better-auth session user to SafeUser
+      const baUser = session.user as Record<string, unknown>;
+      user = {
+        id: baUser.id as string,
+        email: baUser.email as string,
+        firstName: (baUser.firstName as string) || "",
+        lastName: (baUser.lastName as string) || "",
+        role: baUser.role as SafeUser["role"],
+        workspaceId: (baUser.workspaceId as string) || null,
+        isActive: baUser.isActive !== false,
+        emailVerified: (baUser.emailVerified as boolean) ?? false,
+        pendingEmail: (baUser.pendingEmail as string) || null,
+        lastLogin: baUser.lastLogin ? new Date(baUser.lastLogin as string) : null,
+        createdAt: new Date(baUser.createdAt as string),
+        updatedAt: new Date(baUser.updatedAt as string),
+        locale: (baUser.locale as string) || undefined,
+        stripeCustomerId: (baUser.stripeCustomerId as string) || null,
+        stripeSubscriptionId: (baUser.stripeSubscriptionId as string) || null,
+        // Fetch subscription separately since better-auth doesn't include relations
+        subscription: null,
+      };
 
-  // For httpSubscriptionLink (SSE), auth is passed via connectionParams query param.
-  // Always check connectionParams as a fallback when no Bearer token was found.
-  if (!token) {
-    const url = new URL(req.url);
-    const connectionParamsStr = url.searchParams.get("connectionParams");
-    if (connectionParamsStr) {
-      try {
-        const params = JSON.parse(decodeURIComponent(connectionParamsStr));
-        if (typeof params.token === "string") {
-          token = params.token;
+      // Load subscription relation if user has one
+      if (user.id) {
+        const subscription = await prisma.subscription.findUnique({
+          where: { userId: user.id },
+          select: { plan: true, status: true },
+        });
+        if (subscription) {
+          user.subscription = subscription;
         }
-      } catch {
-        // ignore malformed connectionParams
       }
     }
+  } catch {
+    // Cookie session not found or invalid — fall through to Bearer token
   }
 
-  let user: SafeUser | null = null;
-  if (token) {
-    user = await extractUserFromToken(token);
+  // 2. Fallback to legacy Bearer token (transition period)
+  if (!user) {
+    const authHeader = req.header("Authorization");
+    let token: string | null = null;
+
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      token = authHeader.slice(7).trim();
+    }
+
+    // For httpSubscriptionLink (SSE), auth is passed via connectionParams query param.
+    if (!token) {
+      const url = new URL(req.url);
+      const connectionParamsStr = url.searchParams.get("connectionParams");
+      if (connectionParamsStr) {
+        try {
+          const params = JSON.parse(decodeURIComponent(connectionParamsStr));
+          if (typeof params.token === "string") {
+            token = params.token;
+          }
+        } catch {
+          // ignore malformed connectionParams
+        }
+      }
+    }
+
+    if (token) {
+      user = await extractUserFromToken(token);
+    }
   }
 
   // Extract workspace ID
