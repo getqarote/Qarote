@@ -36,5 +36,10 @@
   "saveSuccess": "Configuración SSO guardada exitosamente",
   "saveError": "Error al guardar la configuración SSO",
   "copied": "Copiado al portapapeles",
-  "copyToClipboard": "Copiar al portapapeles"
+  "copyToClipboard": "Copiar al portapapeles",
+  "delete": "Eliminar proveedor",
+  "deleteConfirm": "¿Eliminar proveedor SSO? Esto desactivará el SSO para todos los usuarios.",
+  "deleteSuccess": "Proveedor SSO eliminado",
+  "deleteError": "Error al eliminar el proveedor",
+  "setupDescription": "Configure su proveedor SSO para habilitar el inicio de sesión único."
 }

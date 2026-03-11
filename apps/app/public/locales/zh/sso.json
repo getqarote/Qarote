@@ -36,5 +36,10 @@
   "saveSuccess": "SSO 设置保存成功",
   "saveError": "保存 SSO 设置失败",
   "copied": "已复制到剪贴板",
-  "copyToClipboard": "复制到剪贴板"
+  "copyToClipboard": "复制到剪贴板",
+  "delete": "删除提供商",
+  "deleteConfirm": "删除 SSO 提供商？这将为所有用户禁用 SSO。",
+  "deleteSuccess": "SSO 提供商已删除",
+  "deleteError": "删除提供商失败",
+  "setupDescription": "配置您的 SSO 提供商以启用单点登录。"
 }

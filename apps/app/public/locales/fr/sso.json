@@ -36,5 +36,10 @@
   "saveSuccess": "Paramètres SSO enregistrés avec succès",
   "saveError": "Échec de l'enregistrement des paramètres SSO",
   "copied": "Copié dans le presse-papiers",
-  "copyToClipboard": "Copier dans le presse-papiers"
+  "copyToClipboard": "Copier dans le presse-papiers",
+  "delete": "Supprimer le fournisseur",
+  "deleteConfirm": "Supprimer le fournisseur SSO ? Cela désactivera le SSO pour tous les utilisateurs.",
+  "deleteSuccess": "Fournisseur SSO supprimé",
+  "deleteError": "Échec de la suppression du fournisseur",
+  "setupDescription": "Configurez votre fournisseur SSO pour activer l'authentification unique."
 }
