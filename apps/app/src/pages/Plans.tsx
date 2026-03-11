@@ -77,7 +77,7 @@ interface ApiPlan {
   hasPrioritySupport: boolean;
   hasAdvancedAnalytics: boolean;
   hasAlerts: boolean;
-  hasTopologyVisualization: boolean | "coming_soon";
+  hasTopologyVisualization: boolean;
   hasRoleBasedAccess: boolean | "coming_soon";
   hasSsoSamlOidc: boolean;
   hasSoc2Compliance: boolean;
@@ -195,11 +195,6 @@ const PlanCard: React.FC<{
               {plan.hasTopologyVisualization && (
                 <FeatureItem
                   label={t("plans.features.topologyVisualization")}
-                  soonLabel={
-                    plan.hasTopologyVisualization === "coming_soon"
-                      ? soonLabel
-                      : undefined
-                  }
                 />
               )}
               {plan.hasRoleBasedAccess && (

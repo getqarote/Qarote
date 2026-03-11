@@ -6,6 +6,7 @@ import { PurgeQueueDialog } from "@/components/PurgeQueueDialog";
 import { QueueStatusBadge } from "@/components/Queues/queue-status-badge";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PaginationControls } from "@/components/ui/PaginationControls";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -22,6 +23,11 @@ interface QueueTableProps {
   searchTerm: string;
   onNavigateToQueue: (queueName: string) => void;
   onRefetch: () => void;
+  total: number;
+  page: number;
+  pageSize: number;
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (size: number) => void;
 }
 
 export function QueueTable({
@@ -30,6 +36,11 @@ export function QueueTable({
   searchTerm,
   onNavigateToQueue,
   onRefetch,
+  total,
+  page,
+  pageSize,
+  onPageChange,
+  onPageSizeChange,
 }: QueueTableProps) {
   const getQueueMetrics = (queue: Queue) => {
     return {
@@ -64,101 +75,112 @@ export function QueueTable({
             ))}
           </div>
         ) : queues.length > 0 ? (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Queue Name</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Messages</TableHead>
-                <TableHead>Ready</TableHead>
-                <TableHead>Unacked</TableHead>
-                <TableHead>Consumers</TableHead>
-                <TableHead>Incoming</TableHead>
-                <TableHead>Deliver / Get</TableHead>
-                <TableHead>Ack</TableHead>
-                <TableHead>Memory (MB)</TableHead>
-                <TableHead>VHost</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {queues.map((queue) => {
-                const metrics = getQueueMetrics(queue);
-                return (
-                  <TableRow
-                    key={`${queue.name}-${queue.vhost}`}
-                    className="hover:bg-accent/50"
-                  >
-                    <TableCell className="font-medium">
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() =>
-                            onNavigateToQueue(encodeURIComponent(queue.name))
-                          }
-                          className="text-left font-medium text-orange-600 hover:text-orange-700 hover:underline transition-colors cursor-pointer"
-                        >
-                          {queue.name}
-                        </button>
-                        {queue.internal && (
-                          <Badge
-                            variant="secondary"
-                            className="text-xs flex items-center gap-1"
-                            title="Internal queue (not accessible via AMQP)"
+          <>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Queue Name</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Messages</TableHead>
+                  <TableHead>Ready</TableHead>
+                  <TableHead>Unacked</TableHead>
+                  <TableHead>Consumers</TableHead>
+                  <TableHead>Incoming</TableHead>
+                  <TableHead>Deliver / Get</TableHead>
+                  <TableHead>Ack</TableHead>
+                  <TableHead>Memory (MB)</TableHead>
+                  <TableHead>VHost</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {queues.map((queue) => {
+                  const metrics = getQueueMetrics(queue);
+                  return (
+                    <TableRow
+                      key={`${queue.name}-${queue.vhost}`}
+                      className="hover:bg-accent/50"
+                    >
+                      <TableCell className="font-medium">
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              onNavigateToQueue(encodeURIComponent(queue.name))
+                            }
+                            className="text-left font-medium text-orange-600 hover:text-orange-700 hover:underline transition-colors cursor-pointer"
                           >
-                            <Lock className="w-3 h-3" />
-                            Internal
-                          </Badge>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <QueueStatusBadge state={queue.state} />
-                    </TableCell>
-                    <TableCell className="font-mono">
-                      {metrics.messages}
-                    </TableCell>
-                    <TableCell className="font-mono text-blue-600">
-                      {metrics.messagesReady}
-                    </TableCell>
-                    <TableCell className="font-mono text-orange-600">
-                      {metrics.messagesUnacked}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1">
-                        <Users className="w-3 h-3 text-gray-400" />
-                        {metrics.consumers}
-                      </div>
-                    </TableCell>
-                    <TableCell className="font-mono">
-                      {metrics.incomingRate.toFixed(1)}
-                    </TableCell>
-                    <TableCell className="font-mono">
-                      {metrics.deliverGetRate.toFixed(1)}
-                    </TableCell>
-                    <TableCell className="font-mono">
-                      {metrics.ackRate.toFixed(1)}
-                    </TableCell>
-                    <TableCell className="font-mono">
-                      {metrics.memory.toFixed(1)}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className="font-mono text-xs">
-                        {metrics.vhost}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <PurgeQueueDialog
-                        queueName={queue.name}
-                        messageCount={queue.messages}
-                        vhost={metrics.vhost}
-                        onSuccess={() => onRefetch()}
-                      />
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
+                            {queue.name}
+                          </button>
+                          {queue.internal && (
+                            <Badge
+                              variant="secondary"
+                              className="text-xs flex items-center gap-1"
+                              title="Internal queue (not accessible via AMQP)"
+                            >
+                              <Lock className="w-3 h-3" />
+                              Internal
+                            </Badge>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <QueueStatusBadge state={queue.state} />
+                      </TableCell>
+                      <TableCell className="font-mono">
+                        {metrics.messages}
+                      </TableCell>
+                      <TableCell className="font-mono text-blue-600">
+                        {metrics.messagesReady}
+                      </TableCell>
+                      <TableCell className="font-mono text-orange-600">
+                        {metrics.messagesUnacked}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1">
+                          <Users className="w-3 h-3 text-gray-400" />
+                          {metrics.consumers}
+                        </div>
+                      </TableCell>
+                      <TableCell className="font-mono">
+                        {metrics.incomingRate.toFixed(1)}
+                      </TableCell>
+                      <TableCell className="font-mono">
+                        {metrics.deliverGetRate.toFixed(1)}
+                      </TableCell>
+                      <TableCell className="font-mono">
+                        {metrics.ackRate.toFixed(1)}
+                      </TableCell>
+                      <TableCell className="font-mono">
+                        {metrics.memory.toFixed(1)}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className="font-mono text-xs">
+                          {metrics.vhost}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <PurgeQueueDialog
+                          queueName={queue.name}
+                          messageCount={queue.messages}
+                          vhost={metrics.vhost}
+                          onSuccess={() => onRefetch()}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+            <PaginationControls
+              total={total}
+              page={page}
+              pageSize={pageSize}
+              onPageChange={onPageChange}
+              onPageSizeChange={onPageSizeChange}
+              itemLabel="queues"
+            />
+          </>
         ) : (
           <div className="text-center py-8">
             <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />

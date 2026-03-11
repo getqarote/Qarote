@@ -6,22 +6,7 @@ import { RabbitMQAlert } from "@/lib/api/alertTypes";
 import { getUpgradePath } from "@/lib/featureFlags";
 
 import { Button } from "@/components/ui/button";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { PaginationControls } from "@/components/ui/PaginationControls";
 
 import { UserPlan } from "@/types/plans";
 
@@ -54,10 +39,6 @@ export const ActiveAlertsList = ({
   onPageSizeChange,
 }: ActiveAlertsListProps) => {
   const navigate = useNavigate();
-
-  const totalPages = Math.ceil(total / pageSize);
-  const startItem = total === 0 ? 0 : (page - 1) * pageSize + 1;
-  const endItem = Math.min(page * pageSize, total);
 
   // Show upgrade notification for free users
   if (userPlan === UserPlan.FREE) {
@@ -108,100 +89,14 @@ export const ActiveAlertsList = ({
         <AlertItem key={alert.id} alert={alert} />
       ))}
 
-      {/* Pagination Controls - Always show when there are alerts */}
-      {total > 0 && (
-        <div className="mt-6 space-y-4">
-          {/* Total count and page size selector */}
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">
-              Showing {startItem}-{endItem} of {total} alerts
-            </p>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">
-                Items per page:
-              </span>
-              <Select
-                value={pageSize.toString()}
-                onValueChange={(value) => onPageSizeChange(Number(value))}
-              >
-                <SelectTrigger className="w-20">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="10">10</SelectItem>
-                  <SelectItem value="25">25</SelectItem>
-                  <SelectItem value="50">50</SelectItem>
-                  <SelectItem value="100">100</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          {/* Pagination buttons - Only show when there are multiple pages */}
-          {totalPages > 1 && (
-            <div className="flex justify-center">
-              <Pagination>
-                <PaginationContent>
-                  <PaginationItem>
-                    <PaginationPrevious
-                      onClick={() => onPageChange(Math.max(1, page - 1))}
-                      className={
-                        page <= 1
-                          ? "pointer-events-none opacity-50"
-                          : "cursor-pointer"
-                      }
-                    />
-                  </PaginationItem>
-
-                  {[...Array(Math.min(5, totalPages))].map((_, i) => {
-                    let pageNum: number;
-                    if (totalPages <= 5) {
-                      pageNum = i + 1;
-                    } else if (page <= 3) {
-                      pageNum = i + 1;
-                    } else if (page >= totalPages - 2) {
-                      pageNum = totalPages - 4 + i;
-                    } else {
-                      pageNum = page - 2 + i;
-                    }
-
-                    return (
-                      <PaginationItem key={pageNum}>
-                        <PaginationLink
-                          onClick={() => onPageChange(pageNum)}
-                          isActive={page === pageNum}
-                          className="cursor-pointer"
-                        >
-                          {pageNum}
-                        </PaginationLink>
-                      </PaginationItem>
-                    );
-                  })}
-
-                  {totalPages > 5 && page < totalPages - 2 && (
-                    <PaginationItem>
-                      <PaginationEllipsis />
-                    </PaginationItem>
-                  )}
-
-                  <PaginationItem>
-                    <PaginationNext
-                      onClick={() =>
-                        onPageChange(Math.min(totalPages, page + 1))
-                      }
-                      className={
-                        page >= totalPages
-                          ? "pointer-events-none opacity-50"
-                          : "cursor-pointer"
-                      }
-                    />
-                  </PaginationItem>
-                </PaginationContent>
-              </Pagination>
-            </div>
-          )}
-        </div>
-      )}
+      <PaginationControls
+        total={total}
+        page={page}
+        pageSize={pageSize}
+        onPageChange={onPageChange}
+        onPageSizeChange={onPageSizeChange}
+        itemLabel="alerts"
+      />
     </div>
   );
 };
