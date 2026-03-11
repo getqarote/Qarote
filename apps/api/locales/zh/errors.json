@@ -59,7 +59,8 @@
     "googleEmailMismatchInvitation": "Google 账户的邮箱地址与邀请邮箱地址不匹配",
     "failedToAcceptInvitationGoogle": "通过 Google 接受邀请失败",
     "insufficientPermissionsAdmin": "权限不足 — 需要管理员角色",
-    "insufficientPermissions": "权限不足"
+    "insufficientPermissions": "权限不足",
+    "workspaceAdminRequired": "需要工作区管理员角色才能执行此操作"
   },
   "workspace": {
     "idRequired": "工作区 ID 为必填项",

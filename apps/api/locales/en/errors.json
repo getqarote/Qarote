@@ -59,7 +59,8 @@
     "googleEmailMismatchInvitation": "Google account email does not match invitation email",
     "failedToAcceptInvitationGoogle": "Failed to accept invitation with Google",
     "insufficientPermissionsAdmin": "Insufficient permissions - Admin role required",
-    "insufficientPermissions": "Insufficient permissions"
+    "insufficientPermissions": "Insufficient permissions",
+    "workspaceAdminRequired": "Workspace admin role required to perform this action"
   },
   "workspace": {
     "idRequired": "Workspace ID is required",

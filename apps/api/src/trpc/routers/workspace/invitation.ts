@@ -1,6 +1,7 @@
 import { TRPCError } from "@trpc/server";
 
 import { formatInvitedBy, getUserDisplayName } from "@/core/utils";
+import { getUserWorkspaceRole } from "@/core/workspace-access";
 
 import { CoreEmailService } from "@/services/email/core-email.service";
 import { EmailService } from "@/services/email/email.service";
@@ -18,7 +19,11 @@ import {
   router,
 } from "@/trpc/trpc";
 
-import { InvitationStatus, UserPlan } from "@/generated/prisma/client";
+import {
+  InvitationStatus,
+  UserPlan,
+  UserRole,
+} from "@/generated/prisma/client";
 import { te } from "@/i18n";
 
 /**
@@ -27,7 +32,7 @@ import { te } from "@/i18n";
  */
 export const invitationRouter = router({
   /**
-   * Get all pending invitations for workspace (PROTECTED)
+   * Get all pending invitations for workspace (WORKSPACE ADMIN ONLY)
    */
   getInvitations: rateLimitedProcedure.query(async ({ ctx }) => {
     const user = ctx.user;
@@ -40,6 +45,15 @@ export const invitationRouter = router({
             ctx.locale,
             "workspace.userNotAuthenticatedOrNotInWorkspace"
           ),
+        });
+      }
+
+      // Verify the caller is a workspace admin
+      const callerRole = await getUserWorkspaceRole(user.id, user.workspaceId);
+      if (callerRole !== UserRole.ADMIN) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: te(ctx.locale, "auth.workspaceAdminRequired"),
         });
       }
 
@@ -92,7 +106,7 @@ export const invitationRouter = router({
   }),
 
   /**
-   * Send invitation (PROTECTED with plan validation)
+   * Send invitation (WORKSPACE ADMIN with plan validation)
    */
   sendInvitation: planValidationProcedure
     .input(inviteUserSchema)
@@ -108,6 +122,18 @@ export const invitationRouter = router({
               ctx.locale,
               "workspace.userNotAuthenticatedOrNotInWorkspace"
             ),
+          });
+        }
+
+        // Verify the caller is a workspace admin
+        const callerRole = await getUserWorkspaceRole(
+          user.id,
+          user.workspaceId
+        );
+        if (callerRole !== UserRole.ADMIN) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: te(ctx.locale, "auth.workspaceAdminRequired"),
           });
         }
 
@@ -268,7 +294,7 @@ export const invitationRouter = router({
     }),
 
   /**
-   * Revoke invitation (PROTECTED)
+   * Revoke invitation (WORKSPACE ADMIN ONLY)
    */
   revokeInvitation: rateLimitedProcedure
     .input(InvitationIdParamSchema)
@@ -284,6 +310,18 @@ export const invitationRouter = router({
               ctx.locale,
               "workspace.userNotAuthenticatedOrNotInWorkspace"
             ),
+          });
+        }
+
+        // Verify the caller is a workspace admin
+        const callerRole = await getUserWorkspaceRole(
+          user.id,
+          user.workspaceId
+        );
+        if (callerRole !== UserRole.ADMIN) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: te(ctx.locale, "auth.workspaceAdminRequired"),
           });
         }
 

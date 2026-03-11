@@ -21,9 +21,9 @@ import { UpdateWorkspaceSchema } from "@/schemas/workspace";
 import { UserMapper } from "@/mappers/auth";
 
 import {
-  authorize,
   rateLimitedProcedure,
   router,
+  workspaceAdminProcedure,
   workspaceProcedure,
 } from "@/trpc/trpc";
 
@@ -311,9 +311,9 @@ export const userRouter = router({
     }),
 
   /**
-   * Get pending invitations for a workspace (ADMIN ONLY)
+   * Get pending invitations for a workspace (WORKSPACE ADMIN ONLY)
    */
-  getInvitations: authorize([UserRole.ADMIN])
+  getInvitations: workspaceAdminProcedure
     .input(GetInvitationsSchema)
     .query(async ({ input, ctx }) => {
       const { workspaceId } = input;
@@ -421,9 +421,9 @@ export const userRouter = router({
     }),
 
   /**
-   * Update a user (ADMIN ONLY)
+   * Update a user (WORKSPACE ADMIN ONLY)
    */
-  updateUser: authorize([UserRole.ADMIN])
+  updateUser: workspaceAdminProcedure
     .input(UpdateUserWithIdSchema)
     .mutation(async ({ input, ctx }) => {
       const { id, workspaceId, ...data } = input;
@@ -488,9 +488,9 @@ export const userRouter = router({
     }),
 
   /**
-   * Update workspace information (ADMIN ONLY)
+   * Update workspace information (WORKSPACE ADMIN ONLY)
    */
-  updateWorkspace: authorize([UserRole.ADMIN])
+  updateWorkspace: workspaceAdminProcedure
     .input(UpdateWorkspaceSchema)
     .mutation(async ({ input, ctx }) => {
       const data = input;
@@ -543,9 +543,9 @@ export const userRouter = router({
     }),
 
   /**
-   * Remove user from workspace (ADMIN ONLY)
+   * Remove user from workspace (WORKSPACE ADMIN ONLY)
    */
-  removeFromWorkspace: authorize([UserRole.ADMIN])
+  removeFromWorkspace: workspaceAdminProcedure
     .input(RemoveUserFromWorkspaceSchema)
     .mutation(async ({ input, ctx }) => {
       const { userId: userIdToRemove, workspaceId } = input;
