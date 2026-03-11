@@ -36,5 +36,10 @@
   "saveSuccess": "SSO settings saved successfully",
   "saveError": "Failed to save SSO settings",
   "copied": "Copied to clipboard",
-  "copyToClipboard": "Copy to clipboard"
+  "copyToClipboard": "Copy to clipboard",
+  "delete": "Delete provider",
+  "deleteConfirm": "Delete SSO provider? This will disable SSO for all users.",
+  "deleteSuccess": "SSO provider deleted",
+  "deleteError": "Failed to delete provider",
+  "setupDescription": "Configure your SSO provider to enable single sign-on."
 }
