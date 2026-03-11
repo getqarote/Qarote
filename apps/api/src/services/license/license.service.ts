@@ -5,6 +5,8 @@
 
 import crypto from "node:crypto";
 
+import { addDays } from "date-fns";
+
 import { logger } from "@/core/logger";
 import { prisma } from "@/core/prisma";
 
@@ -243,8 +245,7 @@ class LicenseService {
   ): Promise<void> {
     try {
       // Calculate deletion date (30 days from now)
-      const deletesAt = new Date();
-      deletesAt.setDate(deletesAt.getDate() + 30);
+      const deletesAt = addDays(new Date(), 30);
 
       await prisma.licenseFileVersion.create({
         data: {

@@ -1,3 +1,5 @@
+import { addDays, endOfDay, startOfDay, subDays } from "date-fns";
+
 import { logger } from "@/core/logger";
 import { prisma } from "@/core/prisma";
 
@@ -90,22 +92,18 @@ class LicenseExpirationRemindersCronService {
       const reminderIntervals = [30, 15, 7];
 
       for (const days of reminderIntervals) {
-        const targetDate = new Date(now);
-        targetDate.setDate(targetDate.getDate() + days);
+        const targetDate = addDays(now, days);
 
         // Find licenses expiring in this range (current day to +1 day buffer)
-        const startOfDay = new Date(targetDate);
-        startOfDay.setHours(0, 0, 0, 0);
-
-        const endOfDay = new Date(targetDate);
-        endOfDay.setHours(23, 59, 59, 999);
+        const dayStart = startOfDay(targetDate);
+        const dayEnd = endOfDay(targetDate);
 
         const licenses = await prisma.license.findMany({
           where: {
             isActive: true,
             expiresAt: {
-              gte: startOfDay,
-              lte: endOfDay,
+              gte: dayStart,
+              lte: dayEnd,
             },
           },
         });
@@ -188,8 +186,7 @@ class LicenseExpirationRemindersCronService {
       }
 
       // 2. Check for licenses that expired in the last 24 hours (EXPIRED NOTIFICATION)
-      const yesterday = new Date(now);
-      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterday = subDays(now, 1);
 
       const expiredLicenses = await prisma.license.findMany({
         where: {
