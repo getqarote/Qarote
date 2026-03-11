@@ -41,5 +41,8 @@
   "deleteConfirm": "¿Eliminar proveedor SSO? Esto desactivará el SSO para todos los usuarios.",
   "deleteSuccess": "Proveedor SSO eliminado",
   "deleteError": "Error al eliminar el proveedor",
-  "setupDescription": "Configure su proveedor SSO para habilitar el inicio de sesión único."
+  "setupDescription": "Configure su proveedor SSO para habilitar el inicio de sesión único.",
+  "cloudLabel": "Cloud (por espacio de trabajo)",
+  "selfHostedLabel": "Auto-alojado",
+  "copyError": "Error al copiar al portapapeles"
 }

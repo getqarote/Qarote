@@ -156,6 +156,14 @@ export const auth = betterAuth({
         await prisma.user
           .update({ where: { id: user.id }, data: updates })
           .catch((err) => {
+            const isCritical = "emailVerified" in updates;
+            if (isCritical) {
+              logger.error(
+                { err, userId: user.id, updates },
+                "Failed to update critical user fields from SSO claims"
+              );
+              throw err;
+            }
             logger.warn(
               { err, userId: user.id },
               "Failed to update user profile from SSO claims"

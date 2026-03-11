@@ -42,22 +42,21 @@ async function migrateSsoSubjectIds(): Promise<void> {
 
     if (existing) continue;
 
-    await prisma.account
-      .create({
+    try {
+      await prisma.account.create({
         data: {
           userId: user.id,
           accountId: user.ssoSubjectId,
           providerId: "sso",
         },
-      })
-      .catch((err) => {
-        logger.warn(
-          { err, userId: user.id },
-          "Failed to migrate ssoSubjectId to Account row"
-        );
       });
-
-    migrated++;
+      migrated++;
+    } catch (err) {
+      logger.warn(
+        { err, userId: user.id },
+        "Failed to migrate ssoSubjectId to Account row"
+      );
+    }
   }
 
   if (migrated > 0) {
@@ -199,7 +198,7 @@ export async function bootstrapSso(): Promise<void> {
   try {
     await migrateSsoSubjectIds();
     await seedSsoProviders();
-  } catch (err) {
-    logger.error({ err }, "SSO bootstrap failed — SSO may not be available");
+  } catch (error) {
+    logger.error({ error }, "SSO bootstrap failed — SSO may not be available");
   }
 }

@@ -318,6 +318,19 @@ export const ssoRouter = router({
         clientSecret = parsed.clientSecret as string | undefined;
       }
 
+      if (input.type === "oidc" && !input.oidcDiscoveryUrl) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "OIDC requires a discovery URL",
+        });
+      }
+      if (input.type === "saml" && !input.samlMetadataUrl) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "SAML requires a metadata URL",
+        });
+      }
+
       let oidcConfigJson: string | null = null;
       let samlConfigJson: string | null = null;
       let issuer = existing.issuer;
@@ -415,7 +428,7 @@ export const ssoRouter = router({
         });
       }
 
-      const { address } = await dns.promises.lookup(hostname);
+      const { address, family } = await dns.promises.lookup(hostname);
       if (isPrivateIP(address)) {
         throw new TRPCError({
           code: "BAD_REQUEST",
@@ -423,14 +436,21 @@ export const ssoRouter = router({
         });
       }
 
+      // Use the pre-resolved IP to avoid TOCTOU re-resolution by fetch.
+      // IPv6 addresses must be wrapped in brackets in URLs.
+      const resolvedHost = family === 6 ? `[${address}]` : address;
+      const fetchUrl = new URL(input.discoveryUrl);
+      fetchUrl.hostname = resolvedHost;
+
       try {
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 10_000);
         let response: Response;
         try {
-          response = await fetch(input.discoveryUrl, {
+          response = await fetch(fetchUrl.toString(), {
             signal: controller.signal,
             redirect: "error",
+            headers: { Host: hostname },
           });
         } finally {
           clearTimeout(timeout);

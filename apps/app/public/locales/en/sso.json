@@ -41,5 +41,8 @@
   "deleteConfirm": "Delete SSO provider? This will disable SSO for all users.",
   "deleteSuccess": "SSO provider deleted",
   "deleteError": "Failed to delete provider",
-  "setupDescription": "Configure your SSO provider to enable single sign-on."
+  "setupDescription": "Configure your SSO provider to enable single sign-on.",
+  "cloudLabel": "Cloud (per-workspace)",
+  "selfHostedLabel": "Self-hosted",
+  "copyError": "Failed to copy to clipboard"
 }
