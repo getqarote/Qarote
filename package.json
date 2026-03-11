@@ -90,7 +90,7 @@
     "@release-it/bumper": "^7.0.5",
     "@release-it/conventional-changelog": "^10.0.5",
     "husky": "^9.1.7",
-    "knip": "^5.85.0",
+    "knip": "^5.86.0",
     "lint-staged": "^16.3.2",
     "release-it": "^19.2.4",
     "syncpack": "^13.0.4",
