@@ -1603,14 +1603,14 @@ const Index = () => {
                         {hostingMode === "selfhost" && selfHost
                           ? selfHost.cta
                           : plan.id === "ENTERPRISE_PLUS"
-                            ? "Let’s talk"
+                            ? tPricing("letsTalk")
                             : plan.id === "FREE"
-                              ? "Get started"
+                              ? tPricing("getStarted")
                               : plan.id === "ENTERPRISE"
-                                ? "Try now for free"
+                                ? tPricing("tryNowForFree")
                                 : plan.id === "DEVELOPER"
-                                  ? "Get started"
-                                  : "Start free"}
+                                  ? tPricing("getStarted")
+                                  : tPricing("startFree")}
                       </Button>
                     </CardContent>
                   </Card>
@@ -1820,7 +1820,7 @@ const Index = () => {
                 href="mailto:support@qarote.io"
                 className="text-muted-foreground hover:text-foreground transition-colors text-sm"
               >
-                Contact
+                {t("footer.contact")}
               </a>
               <div className="flex items-center gap-2">
                 <a

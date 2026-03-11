@@ -38,7 +38,7 @@ const StickyNav = ({ onVideoClick }: StickyNavProps) => {
   return (
     <nav className="sticky top-0 z-50 border-b border-border bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="grid grid-cols-[auto_1fr_auto] items-center h-16">
           <div className="flex items-center gap-1">
             <img
               src="/images/new_icon.svg"
@@ -51,7 +51,7 @@ const StickyNav = ({ onVideoClick }: StickyNavProps) => {
             </span>
           </div>
 
-          <div className="hidden lg:flex items-center gap-1 absolute left-1/2 -translate-x-1/2">
+          <div className="hidden lg:flex items-center justify-center gap-1">
             {sections.map((section) => (
               <button
                 type="button"
@@ -70,7 +70,7 @@ const StickyNav = ({ onVideoClick }: StickyNavProps) => {
             </a>
           </div>
 
-          <div className="flex items-center gap-1 sm:gap-2">
+          <div className="flex items-center justify-end gap-1 sm:gap-2">
             <GithubStarBadge />
             <a
               href={`${import.meta.env.VITE_APP_BASE_URL}/auth/sign-in`}

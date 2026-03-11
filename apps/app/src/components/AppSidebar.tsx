@@ -309,7 +309,7 @@ export function AppSidebar() {
                           className="flex items-center gap-3 px-3 py-2 rounded-lg"
                         >
                           <item.icon className="w-4 h-4" />
-                          <span className="font-medium">
+                          <span className="font-medium truncate">
                             {t(item.titleKey)}
                           </span>
                         </Link>

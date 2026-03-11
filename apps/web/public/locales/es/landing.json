@@ -104,7 +104,8 @@
   },
   "footer": {
     "privacyPolicy": "Política de privacidad",
-    "termsOfService": "Términos de servicio"
+    "termsOfService": "Términos de servicio",
+    "contact": "Contacto"
   },
   "faqSection": {
     "title": "Preguntas frecuentes",
