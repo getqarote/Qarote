@@ -1,5 +1,5 @@
 import { type ReactNode, useEffect, useReducer, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, type UseFormReturn } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 
@@ -131,6 +131,155 @@ const InvitationInfo = ({
   );
 };
 
+const InvitationForm = ({
+  form,
+  email,
+  isPending,
+  onSubmit,
+  onNavigateSignIn,
+}: {
+  form: UseFormReturn<AcceptInvitationFormData>;
+  email: string;
+  isPending: boolean;
+  onSubmit: (data: AcceptInvitationFormData) => void;
+  onNavigateSignIn: () => void;
+}) => {
+  const { t } = useTranslation("auth");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  return (
+    <>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="firstName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t("firstName")}</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder={t("firstNamePlaceholder")}
+                      disabled={isPending}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="lastName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t("lastName")}</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder={t("lastNamePlaceholder")}
+                      disabled={isPending}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <FormLabel>{t("email")}</FormLabel>
+            <Input
+              type="email"
+              value={email}
+              disabled
+              className="bg-gray-50"
+              autoComplete="username"
+            />
+          </div>
+
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t("password")}</FormLabel>
+                <FormControl>
+                  <PasswordInput
+                    placeholder={t("enterYourPassword")}
+                    disabled={isPending}
+                    showPassword={showPassword}
+                    onToggleVisibility={() => setShowPassword(!showPassword)}
+                    autoComplete="new-password"
+                    {...field}
+                  />
+                </FormControl>
+                <PasswordRequirements
+                  password={field.value || ""}
+                  className="mt-2"
+                />
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="confirmPassword"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t("confirmPassword")}</FormLabel>
+                <FormControl>
+                  <PasswordInput
+                    placeholder={t("confirmYourPassword")}
+                    disabled={isPending}
+                    showPassword={showConfirmPassword}
+                    onToggleVisibility={() =>
+                      setShowConfirmPassword(!showConfirmPassword)
+                    }
+                    autoComplete="new-password"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <Button
+            type="submit"
+            className="w-full bg-gradient-button hover:bg-gradient-button-hover"
+            disabled={isPending || !form.formState.isValid}
+          >
+            {isPending ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                {t("creatingAccount")}
+              </>
+            ) : (
+              t("acceptInvitationAndCreate")
+            )}
+          </Button>
+        </form>
+      </Form>
+
+      <div className="text-center">
+        <p className="text-sm text-gray-500">
+          {t("alreadyHaveAccount")}{" "}
+          <button
+            onClick={onNavigateSignIn}
+            className="text-blue-600 hover:underline"
+          >
+            {t("signInInstead")}
+          </button>
+        </p>
+      </div>
+    </>
+  );
+};
+
 const AcceptInvitation = () => {
   const { t } = useTranslation("auth");
   const { token } = useParams<{ token: string }>();
@@ -144,8 +293,6 @@ const AcceptInvitation = () => {
     invitationReducer,
     initialState
   );
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const form = useForm<AcceptInvitationFormData>({
     resolver: zodResolver(acceptInvitationSchema),
@@ -300,134 +447,13 @@ const AcceptInvitation = () => {
           </Alert>
         )}
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="firstName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("firstName")}</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder={t("firstNamePlaceholder")}
-                        disabled={acceptInvitationMutation.isPending}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="lastName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("lastName")}</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder={t("lastNamePlaceholder")}
-                        disabled={acceptInvitationMutation.isPending}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <FormLabel>{t("email")}</FormLabel>
-              <Input
-                type="email"
-                value={invitation?.email || ""}
-                disabled
-                className="bg-gray-50"
-                autoComplete="username"
-              />
-            </div>
-
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("password")}</FormLabel>
-                  <FormControl>
-                    <PasswordInput
-                      placeholder={t("enterYourPassword")}
-                      disabled={acceptInvitationMutation.isPending}
-                      showPassword={showPassword}
-                      onToggleVisibility={() => setShowPassword(!showPassword)}
-                      autoComplete="new-password"
-                      {...field}
-                    />
-                  </FormControl>
-                  <PasswordRequirements
-                    password={field.value || ""}
-                    className="mt-2"
-                  />
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="confirmPassword"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("confirmPassword")}</FormLabel>
-                  <FormControl>
-                    <PasswordInput
-                      placeholder={t("confirmYourPassword")}
-                      disabled={acceptInvitationMutation.isPending}
-                      showPassword={showConfirmPassword}
-                      onToggleVisibility={() =>
-                        setShowConfirmPassword(!showConfirmPassword)
-                      }
-                      autoComplete="new-password"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <Button
-              type="submit"
-              className="w-full bg-gradient-button hover:bg-gradient-button-hover"
-              disabled={
-                acceptInvitationMutation.isPending || !form.formState.isValid
-              }
-            >
-              {acceptInvitationMutation.isPending ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  {t("creatingAccount")}
-                </>
-              ) : (
-                t("acceptInvitationAndCreate")
-              )}
-            </Button>
-          </form>
-        </Form>
-
-        <div className="text-center">
-          <p className="text-sm text-gray-500">
-            {t("alreadyHaveAccount")}{" "}
-            <button
-              onClick={() => navigate("/auth/sign-in")}
-              className="text-blue-600 hover:underline"
-            >
-              {t("signInInstead")}
-            </button>
-          </p>
-        </div>
+        <InvitationForm
+          form={form}
+          email={invitation?.email || ""}
+          isPending={acceptInvitationMutation.isPending}
+          onSubmit={onSubmit}
+          onNavigateSignIn={() => navigate("/auth/sign-in")}
+        />
       </CardContent>
     </PageWrapper>
   );
