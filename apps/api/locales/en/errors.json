@@ -59,7 +59,9 @@
     "googleEmailMismatchInvitation": "Google account email does not match invitation email",
     "failedToAcceptInvitationGoogle": "Failed to accept invitation with Google",
     "insufficientPermissionsAdmin": "Insufficient permissions - Admin role required",
-    "insufficientPermissions": "Insufficient permissions"
+    "insufficientPermissions": "Insufficient permissions",
+    "workspaceAdminRequired": "Workspace admin role required to perform this action",
+    "cannotAssignHigherRole": "Cannot assign a role higher than your own"
   },
   "workspace": {
     "idRequired": "Workspace ID is required",
@@ -95,6 +97,7 @@
     "failedToFetchUser": "Failed to fetch user",
     "doesNotBelongToWorkspace": "User does not belong to this workspace",
     "failedToUpdateUser": "Failed to update user",
+    "cannotUpdateIsActive": "isActive cannot be updated via this endpoint",
     "isNotMemberOfWorkspace": "User is not a member of this workspace",
     "cannotRemoveSelf": "Cannot remove yourself from the workspace",
     "onlyOwnerCanRemoveAdmin": "Only workspace owners can remove admin users",

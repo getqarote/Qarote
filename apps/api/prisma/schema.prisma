@@ -95,7 +95,7 @@ model Invitation {
   token                               String           @unique
   invitedById                         String
   invitedUserId                       String?
-  role                                UserRole         @default(MEMBER)
+  role                                WorkspaceRole    @default(MEMBER)
   status                              InvitationStatus @default(PENDING)
   expiresAt                           DateTime
   createdAt                           DateTime         @default(now())
@@ -324,10 +324,10 @@ model WorkspaceMember {
   id          String    @id @default(uuid())
   userId      String
   workspaceId String
-  role        UserRole
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  user        User      @relation("WorkspaceMembers", fields: [userId], references: [id], onDelete: Cascade)
+  role        WorkspaceRole
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  user        User          @relation("WorkspaceMembers", fields: [userId], references: [id], onDelete: Cascade)
   workspace   Workspace @relation("WorkspaceMembers", fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@unique([userId, workspaceId])
@@ -677,6 +677,13 @@ enum UserPlan {
 }
 
 enum UserRole {
+  ADMIN
+  MEMBER
+  READONLY
+}
+
+enum WorkspaceRole {
+  OWNER
   ADMIN
   MEMBER
   READONLY

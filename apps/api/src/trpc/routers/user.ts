@@ -2,6 +2,7 @@ import { SUPPORTED_LOCALES } from "@qarote/i18n";
 import { TRPCError } from "@trpc/server";
 
 import { getUserWorkspaceRole } from "@/core/workspace-access";
+import { canAssignRole } from "@/core/workspace-roles";
 
 import { EmailVerificationService } from "@/services/email/email-verification.service";
 
@@ -21,13 +22,13 @@ import { UpdateWorkspaceSchema } from "@/schemas/workspace";
 import { UserMapper } from "@/mappers/auth";
 
 import {
-  authorize,
   rateLimitedProcedure,
   router,
+  workspaceAdminProcedure,
   workspaceProcedure,
 } from "@/trpc/trpc";
 
-import { UserRole } from "@/generated/prisma/client";
+import { UserRole, WorkspaceRole } from "@/generated/prisma/client";
 import { te } from "@/i18n";
 
 /**
@@ -311,9 +312,9 @@ export const userRouter = router({
     }),
 
   /**
-   * Get pending invitations for a workspace (ADMIN ONLY)
+   * Get pending invitations for a workspace (WORKSPACE ADMIN ONLY)
    */
-  getInvitations: authorize([UserRole.ADMIN])
+  getInvitations: workspaceAdminProcedure
     .input(GetInvitationsSchema)
     .query(async ({ input, ctx }) => {
       const { workspaceId } = input;
@@ -421,12 +422,19 @@ export const userRouter = router({
     }),
 
   /**
-   * Update a user (ADMIN ONLY)
+   * Update a user (WORKSPACE ADMIN ONLY)
    */
-  updateUser: authorize([UserRole.ADMIN])
+  updateUser: workspaceAdminProcedure
     .input(UpdateUserWithIdSchema)
     .mutation(async ({ input, ctx }) => {
-      const { id, workspaceId, ...data } = input;
+      const { id, workspaceId, role: newRole, isActive, ...safeData } = input;
+
+      if (isActive !== undefined) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: te(ctx.locale, "user.cannotUpdateIsActive"),
+        });
+      }
 
       try {
         // Check if user exists
@@ -453,27 +461,59 @@ export const userRouter = router({
           });
         }
 
-        const user = await ctx.prisma.user.update({
-          where: { id },
-          data,
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-            role: true,
-            workspaceId: true,
-            isActive: true,
-            emailVerified: true,
-            lastLogin: true,
-            createdAt: true,
-            updatedAt: true,
-          },
-        });
+        // Privilege escalation guard: cannot assign a role above your own
+        if (newRole && !canAssignRole(ctx.workspaceRole, newRole)) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: te(ctx.locale, "auth.cannotAssignHigherRole"),
+          });
+        }
 
-        // Serialize date fields to ISO strings
+        // Atomically update user profile and (optionally) workspace role
+        const { user, workspaceMember } = await ctx.prisma.$transaction(
+          async (tx) => {
+            const updatedUser = await tx.user.update({
+              where: { id },
+              data: safeData,
+              select: {
+                id: true,
+                email: true,
+                firstName: true,
+                lastName: true,
+                role: true,
+                workspaceId: true,
+                isActive: true,
+                emailVerified: true,
+                lastLogin: true,
+                createdAt: true,
+                updatedAt: true,
+              },
+            });
+
+            let member = await tx.workspaceMember.findUnique({
+              where: { userId_workspaceId: { userId: id, workspaceId } },
+              select: { role: true },
+            });
+
+            if (newRole && member) {
+              member = await tx.workspaceMember.update({
+                where: { userId_workspaceId: { userId: id, workspaceId } },
+                data: { role: newRole },
+                select: { role: true },
+              });
+            }
+
+            return { user: updatedUser, workspaceMember: member };
+          }
+        );
+
+        // Return API response with workspace-scoped role instead of global role
+        const apiResponse = UserMapper.toApiResponse(user);
         return {
-          user: UserMapper.toApiResponse(user),
+          user: {
+            ...apiResponse,
+            role: workspaceMember?.role ?? apiResponse.role,
+          },
         };
       } catch (error) {
         if (error instanceof TRPCError) {
@@ -488,15 +528,14 @@ export const userRouter = router({
     }),
 
   /**
-   * Update workspace information (ADMIN ONLY)
+   * Update workspace information (WORKSPACE ADMIN ONLY)
    */
-  updateWorkspace: authorize([UserRole.ADMIN])
+  updateWorkspace: workspaceAdminProcedure
     .input(UpdateWorkspaceSchema)
     .mutation(async ({ input, ctx }) => {
       const data = input;
-      const user = ctx.user;
 
-      if (!user.workspaceId) {
+      if (!ctx.workspaceId) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: te(ctx.locale, "workspace.noWorkspaceAssigned"),
@@ -505,7 +544,7 @@ export const userRouter = router({
 
       try {
         const updatedWorkspace = await ctx.prisma.workspace.update({
-          where: { id: user.workspaceId },
+          where: { id: ctx.workspaceId },
           data,
           select: {
             id: true,
@@ -533,7 +572,7 @@ export const userRouter = router({
       } catch (error) {
         ctx.logger.error(
           { error },
-          `Error updating workspace ${user.workspaceId}`
+          `Error updating workspace ${ctx.workspaceId}`
         );
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
@@ -543,9 +582,9 @@ export const userRouter = router({
     }),
 
   /**
-   * Remove user from workspace (ADMIN ONLY)
+   * Remove user from workspace (WORKSPACE ADMIN ONLY)
    */
-  removeFromWorkspace: authorize([UserRole.ADMIN])
+  removeFromWorkspace: workspaceAdminProcedure
     .input(RemoveUserFromWorkspaceSchema)
     .mutation(async ({ input, ctx }) => {
       const { userId: userIdToRemove, workspaceId } = input;
@@ -594,7 +633,10 @@ export const userRouter = router({
         }
 
         // Prevent removing other admins (only workspace owner can remove admins)
-        if (workspaceRole === UserRole.ADMIN) {
+        if (
+          workspaceRole === WorkspaceRole.ADMIN ||
+          workspaceRole === WorkspaceRole.OWNER
+        ) {
           // Check if current user is the workspace owner
           const workspace = await ctx.prisma.workspace.findFirst({
             where: {
@@ -621,14 +663,26 @@ export const userRouter = router({
             },
           });
 
-          // Update user's workspaceId and reset role
-          await tx.user.update({
+          // Only update active workspaceId if it matches the removed membership
+          const removedUser = await tx.user.findUnique({
             where: { id: userIdToRemove },
-            data: {
-              workspaceId: null,
-              role: UserRole.MEMBER, // Reset role to USER when removed from workspace
-            },
+            select: { workspaceId: true },
           });
+
+          if (removedUser?.workspaceId === workspaceId) {
+            // Try to reassign to another remaining workspace
+            const nextMembership = await tx.workspaceMember.findFirst({
+              where: { userId: userIdToRemove },
+              select: { workspaceId: true },
+            });
+
+            await tx.user.update({
+              where: { id: userIdToRemove },
+              data: {
+                workspaceId: nextMembership?.workspaceId ?? null,
+              },
+            });
+          }
         });
 
         ctx.logger.info(

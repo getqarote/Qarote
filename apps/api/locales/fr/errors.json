@@ -59,7 +59,9 @@
     "googleEmailMismatchInvitation": "L'adresse e-mail du compte Google ne correspond pas à celle de l'invitation",
     "failedToAcceptInvitationGoogle": "Échec de l'acceptation de l'invitation avec Google",
     "insufficientPermissionsAdmin": "Permissions insuffisantes — Rôle administrateur requis",
-    "insufficientPermissions": "Permissions insuffisantes"
+    "insufficientPermissions": "Permissions insuffisantes",
+    "workspaceAdminRequired": "Le rôle administrateur de l'espace de travail est requis pour effectuer cette action",
+    "cannotAssignHigherRole": "Impossible d'attribuer un rôle supérieur au vôtre"
   },
   "workspace": {
     "idRequired": "L'identifiant de l'espace de travail est requis",
@@ -95,6 +97,7 @@
     "failedToFetchUser": "Échec de la récupération de l'utilisateur",
     "doesNotBelongToWorkspace": "L'utilisateur n'appartient pas à cet espace de travail",
     "failedToUpdateUser": "Échec de la mise à jour de l'utilisateur",
+    "cannotUpdateIsActive": "isActive ne peut pas être mis à jour via cet endpoint",
     "isNotMemberOfWorkspace": "L'utilisateur n'est pas membre de cet espace de travail",
     "cannotRemoveSelf": "Impossible de vous retirer de l'espace de travail",
     "onlyOwnerCanRemoveAdmin": "Seuls les propriétaires de l'espace de travail peuvent retirer les administrateurs",

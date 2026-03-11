@@ -1,12 +1,12 @@
 import { z } from "zod/v4";
 
-import { UserRole } from "@/generated/prisma/client";
+import { INVITABLE_ROLES } from "@/core/workspace-roles";
 
 // Schema for updating a user
 const UpdateUserSchema = z.object({
   firstName: z.string().min(1, "First name is required").optional(),
   lastName: z.string().min(1, "Last name is required").optional(),
-  role: z.enum(UserRole).optional(),
+  role: z.enum(INVITABLE_ROLES).optional(),
   isActive: z.boolean().optional(),
   workspaceId: z.uuid("Invalid workspace ID").optional(),
 });

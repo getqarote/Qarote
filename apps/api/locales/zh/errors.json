@@ -59,7 +59,9 @@
     "googleEmailMismatchInvitation": "Google 账户的邮箱地址与邀请邮箱地址不匹配",
     "failedToAcceptInvitationGoogle": "通过 Google 接受邀请失败",
     "insufficientPermissionsAdmin": "权限不足 — 需要管理员角色",
-    "insufficientPermissions": "权限不足"
+    "insufficientPermissions": "权限不足",
+    "workspaceAdminRequired": "需要工作区管理员角色才能执行此操作",
+    "cannotAssignHigherRole": "无法分配高于自身的角色"
   },
   "workspace": {
     "idRequired": "工作区 ID 为必填项",
@@ -95,6 +97,7 @@
     "failedToFetchUser": "获取用户信息失败",
     "doesNotBelongToWorkspace": "用户不属于此工作区",
     "failedToUpdateUser": "更新用户信息失败",
+    "cannotUpdateIsActive": "无法通过此端点更新 isActive",
     "isNotMemberOfWorkspace": "用户不是此工作区的成员",
     "cannotRemoveSelf": "无法将自己从工作区中移除",
     "onlyOwnerCanRemoveAdmin": "只有工作区所有者才能移除管理员用户",

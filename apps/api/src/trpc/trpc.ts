@@ -1,6 +1,9 @@
 import { TRPCError } from "@trpc/server";
 import { initTRPC } from "@trpc/server";
 
+import { getUserWorkspaceRole } from "@/core/workspace-access";
+import { hasMinimumWorkspaceRole } from "@/core/workspace-roles";
+
 import {
   PlanErrorCode,
   PlanLimitExceededError,
@@ -16,7 +19,7 @@ import {
   strictRateLimiter,
 } from "./middlewares/rateLimiter";
 
-import { UserRole } from "@/generated/prisma/client";
+import { UserRole, WorkspaceRole } from "@/generated/prisma/client";
 import { te } from "@/i18n";
 
 /**
@@ -196,6 +199,35 @@ export const workspaceProcedure = rateLimitedProcedure.use(async (opts) => {
       ...ctx,
       workspaceId,
     },
+  });
+});
+
+/**
+ * Workspace-scoped admin procedure - requires ADMIN role in the specific workspace.
+ * Unlike `authorize([UserRole.ADMIN])` which checks the global User.role,
+ * this checks WorkspaceMember.role for the target workspace,
+ * preventing cross-workspace privilege escalation.
+ */
+export const workspaceAdminProcedure = workspaceProcedure.use(async (opts) => {
+  const { ctx } = opts;
+
+  const workspaceRole = await getUserWorkspaceRole(
+    ctx.user.id,
+    ctx.workspaceId
+  );
+
+  if (
+    !workspaceRole ||
+    !hasMinimumWorkspaceRole(workspaceRole, WorkspaceRole.ADMIN)
+  ) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: te(ctx.locale, "auth.workspaceAdminRequired"),
+    });
+  }
+
+  return opts.next({
+    ctx: { ...ctx, workspaceRole },
   });
 });
 

@@ -1,14 +1,15 @@
 import { prisma } from "@/core/prisma";
 
-import { Prisma, UserRole } from "@/generated/prisma/client";
+import { Prisma, WorkspaceRole } from "@/generated/prisma/client";
 
 /**
- * Get user's role in a workspace (from WorkspaceMember or ADMIN if owner)
+ * Get user's role in a workspace.
+ * Returns OWNER if the user owns the workspace, otherwise the WorkspaceMember role.
  */
 export async function getUserWorkspaceRole(
   userId: string,
   workspaceId: string
-): Promise<UserRole | null> {
+): Promise<WorkspaceRole | null> {
   // Check if user is the workspace owner
   const workspace = await prisma.workspace.findUnique({
     where: { id: workspaceId },
@@ -16,7 +17,7 @@ export async function getUserWorkspaceRole(
   });
 
   if (workspace?.ownerId === userId) {
-    return UserRole.ADMIN;
+    return WorkspaceRole.OWNER;
   }
 
   // Get role from WorkspaceMember
@@ -40,7 +41,7 @@ export async function getUserWorkspaceRole(
 export async function ensureWorkspaceMember(
   userId: string,
   workspaceId: string,
-  role: UserRole,
+  role: WorkspaceRole,
   tx?: Omit<
     Prisma.TransactionClient,
     "$connect" | "$disconnect" | "$on" | "$transaction" | "$extends"
