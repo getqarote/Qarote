@@ -84,20 +84,9 @@ export async function createContext(opts: {
         locale: (baUser.locale as string) || undefined,
         stripeCustomerId: (baUser.stripeCustomerId as string) || null,
         stripeSubscriptionId: (baUser.stripeSubscriptionId as string) || null,
-        // Fetch subscription separately since better-auth doesn't include relations
+        // Subscription is loaded lazily by procedures that need it, not on every request
         subscription: null,
       };
-
-      // Load subscription relation if user has one
-      if (user.id) {
-        const subscription = await prisma.subscription.findUnique({
-          where: { userId: user.id },
-          select: { plan: true, status: true },
-        });
-        if (subscription) {
-          user.subscription = subscription;
-        }
-      }
     }
   } catch {
     // Cookie session not found or invalid — fall through to Bearer token

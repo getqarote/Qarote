@@ -37,6 +37,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             setUser(response.profile);
           } catch {
             logger.warn("Failed to fetch profile, using basic session data");
+            const baUser = session.data.user;
+            setUser({
+              id: baUser.id,
+              email: baUser.email,
+              name: baUser.name || "",
+            } as User);
           }
         }
       } catch (error) {

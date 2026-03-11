@@ -280,12 +280,6 @@ export const invitationRouter = router({
           throw error;
         }
         ctx.logger.error({ error }, "Accept invitation error");
-        if (error instanceof Error) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: error.message,
-          });
-        }
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: te(ctx.locale, "auth.failedToAcceptInvitation"),

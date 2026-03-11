@@ -12,6 +12,7 @@ export const useLogin = () => {
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const [isError, setIsError] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
   const mutate = (
     data: { email: string; password: string },
@@ -23,6 +24,7 @@ export const useLogin = () => {
     setIsPending(true);
     setError(null);
     setIsError(false);
+    setIsSuccess(false);
 
     authClient.signIn
       .email({
@@ -43,6 +45,7 @@ export const useLogin = () => {
           const response = await utils.user.getProfile.fetch();
           login(response.profile);
           setIsPending(false);
+          setIsSuccess(true);
           options?.onSuccess?.();
         } catch (err) {
           logger.error("Failed to fetch profile after login:", err);
@@ -68,7 +71,7 @@ export const useLogin = () => {
     isPending,
     isError,
     error,
-    isSuccess: false,
+    isSuccess,
   };
 };
 

@@ -57,10 +57,7 @@ export const auth = betterAuth({
       // better-auth defaults to scrypt; existing users have bcrypt ($2b$) hashes.
       // On successful bcrypt verify, the password is NOT rehashed here —
       // better-auth will rehash with its default hasher on next password change.
-      hash: async (password: string) => {
-        const salt = await bcrypt.genSalt(10);
-        return bcrypt.hash(password, salt);
-      },
+      // No custom hash — better-auth uses scrypt by default for new passwords.
       verify: async (data: { password: string; hash: string }) => {
         // Detect bcrypt hashes (legacy)
         if (
@@ -108,7 +105,10 @@ export const auth = betterAuth({
       );
 
       if (!emailConfig.enabled) {
-        logger.info({ url }, "Email disabled, verification URL (dev only)");
+        logger.info(
+          { userId: user.id },
+          "Email disabled, skipping verification email"
+        );
         return;
       }
 

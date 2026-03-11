@@ -7,7 +7,6 @@ import { logger } from "@/lib/logger";
 import { Button } from "@/components/ui/button";
 
 interface GoogleLoginButtonProps {
-  onSuccess?: () => void;
   onError?: (error: string) => void;
   className?: string;
   mode?: "signin" | "signup";

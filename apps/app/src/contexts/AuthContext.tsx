@@ -38,6 +38,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           } catch {
             // tRPC call failed but we have a valid session — use basic user data
             logger.warn("Failed to fetch enriched session, using basic data");
+            const baUser = session.data.user;
+            setUser({
+              id: baUser.id,
+              email: baUser.email,
+              name: baUser.name || "",
+            } as User);
           }
         }
       } catch (error) {
@@ -67,12 +73,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       logger.error("Failed to sign out:", error);
     }
     setUser(null);
+    setSentryUser(null);
   }, []);
 
   useEffect(() => {
     // Listen for 401 unauthorized events from tRPC link
     const handleUnauthorized = () => {
       setUser(null);
+      setSentryUser(null);
     };
 
     window.addEventListener("auth:unauthorized", handleUnauthorized);
