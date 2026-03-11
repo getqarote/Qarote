@@ -78,6 +78,15 @@ vi.mock("@/core/network", () => ({
     ip === "127.0.0.1",
 }));
 
+const mockDnsLookup = vi.fn();
+vi.mock("node:dns", () => ({
+  default: {
+    promises: {
+      lookup: (...a: unknown[]) => mockDnsLookup(...a),
+    },
+  },
+}));
+
 // Import after mocks
 const { ssoRouter } = await import("../sso");
 
@@ -459,15 +468,7 @@ describe("ssoRouter", () => {
 
     it("rejects private IP addresses after DNS resolution", async () => {
       mockIsFeatureEnabled.mockResolvedValue(true);
-
-      // Mock DNS lookup to return a private IP
-      vi.mock("node:dns", () => ({
-        default: {
-          promises: {
-            lookup: vi.fn().mockResolvedValue({ address: "192.168.1.100" }),
-          },
-        },
-      }));
+      mockDnsLookup.mockResolvedValue({ address: "192.168.1.100", family: 4 });
 
       const caller = ssoRouter.createCaller(makeCtx() as never);
       // This will throw because 192.168.1.100 is private

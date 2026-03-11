@@ -41,5 +41,8 @@
   "deleteConfirm": "删除 SSO 提供商？这将为所有用户禁用 SSO。",
   "deleteSuccess": "SSO 提供商已删除",
   "deleteError": "删除提供商失败",
-  "setupDescription": "配置您的 SSO 提供商以启用单点登录。"
+  "setupDescription": "配置您的 SSO 提供商以启用单点登录。",
+  "cloudLabel": "云端（按工作区）",
+  "selfHostedLabel": "自托管",
+  "copyError": "复制到剪贴板失败"
 }

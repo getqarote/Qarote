@@ -41,5 +41,8 @@
   "deleteConfirm": "Supprimer le fournisseur SSO ? Cela désactivera le SSO pour tous les utilisateurs.",
   "deleteSuccess": "Fournisseur SSO supprimé",
   "deleteError": "Échec de la suppression du fournisseur",
-  "setupDescription": "Configurez votre fournisseur SSO pour activer l'authentification unique."
+  "setupDescription": "Configurez votre fournisseur SSO pour activer l'authentification unique.",
+  "cloudLabel": "Cloud (par espace de travail)",
+  "selfHostedLabel": "Auto-hébergé",
+  "copyError": "Échec de la copie dans le presse-papiers"
 }

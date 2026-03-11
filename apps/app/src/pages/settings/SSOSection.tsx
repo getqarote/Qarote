@@ -162,9 +162,15 @@ function SSOForm({
     ? `${apiUrl}/api/auth/sso/saml2/callback/${initialData.providerId}`
     : "";
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    toast.success(t("copied"));
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success(t("copied"));
+    } catch {
+      toast.error(
+        t("copyError", { defaultValue: "Failed to copy to clipboard" })
+      );
+    }
   };
 
   return (
@@ -183,9 +189,13 @@ function SSOForm({
           <div className="flex items-center justify-between">
             <CardTitle>{t("status")}</CardTitle>
             {isCloudMode() ? (
-              <Badge variant="default">Cloud (per-workspace)</Badge>
+              <Badge variant="default">
+                {t("cloudLabel", { defaultValue: "Cloud (per-workspace)" })}
+              </Badge>
             ) : (
-              <Badge variant="secondary">Self-hosted</Badge>
+              <Badge variant="secondary">
+                {t("selfHostedLabel", { defaultValue: "Self-hosted" })}
+              </Badge>
             )}
           </div>
           <CardDescription>{t("statusDescription")}</CardDescription>
@@ -489,9 +499,15 @@ function SetupForm({ onRefetch }: { onRefetch: () => void }) {
   const oidcCallbackUrl = apiUrl ? `${apiUrl}/api/auth/sso/callback/...` : "";
   const samlAcsUrl = apiUrl ? `${apiUrl}/api/auth/sso/saml2/callback/...` : "";
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    toast.success(t("copied"));
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success(t("copied"));
+    } catch {
+      toast.error(
+        t("copyError", { defaultValue: "Failed to copy to clipboard" })
+      );
+    }
   };
 
   return (
