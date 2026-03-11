@@ -79,8 +79,9 @@ export const selfhostedSchema = baseSchema.extend({
   SENTRY_DSN: z.string().optional(),
   SENTRY_ENABLED: z.coerce.boolean().default(false),
 
-  // Google OAuth - Not available for self-hosted (email/password only)
+  // Google OAuth - Optional for self-hosted
   GOOGLE_CLIENT_ID: z.string().optional(),
+  GOOGLE_CLIENT_SECRET: z.string().optional(),
   ENABLE_OAUTH: z.coerce.boolean().default(false),
 
   // SSO Configuration (Ory Polis / Jackson)
