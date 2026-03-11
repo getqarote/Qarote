@@ -26,7 +26,7 @@ import {
   workspaceProcedure,
 } from "@/trpc/trpc";
 
-import { UserPlan, UserRole } from "@/generated/prisma/client";
+import { UserPlan, UserRole, WorkspaceRole } from "@/generated/prisma/client";
 import { te } from "@/i18n";
 
 /**
@@ -73,9 +73,9 @@ export const managementRouter = router({
         allUserWorkspaces.map(async (workspace) => {
           const isOwner = workspace.ownerId === user.id;
           const userRole = isOwner
-            ? UserRole.ADMIN
+            ? WorkspaceRole.OWNER
             : (await getUserWorkspaceRole(user.id, workspace.id)) ||
-              UserRole.MEMBER;
+              WorkspaceRole.MEMBER;
 
           const mappedWorkspace = WorkspaceMapper.toApiResponse(workspace);
           return {
@@ -228,7 +228,7 @@ export const managementRouter = router({
           await ensureWorkspaceMember(
             user.id,
             workspace.id,
-            UserRole.ADMIN,
+            WorkspaceRole.ADMIN,
             tx
           );
 
@@ -259,7 +259,7 @@ export const managementRouter = router({
           workspace: {
             ...WorkspaceMapper.toApiResponse(newWorkspace),
             isOwner: true,
-            userRole: UserRole.ADMIN,
+            userRole: WorkspaceRole.OWNER,
           },
         };
       } catch (error) {
@@ -344,7 +344,7 @@ export const managementRouter = router({
           workspace: {
             ...WorkspaceMapper.toApiResponse(updatedWorkspace),
             isOwner: true,
-            userRole: UserRole.ADMIN,
+            userRole: WorkspaceRole.OWNER,
           },
         };
       } catch (error) {

@@ -2,6 +2,7 @@ import { SUPPORTED_LOCALES } from "@qarote/i18n";
 import { TRPCError } from "@trpc/server";
 
 import { getUserWorkspaceRole } from "@/core/workspace-access";
+import { canAssignRole } from "@/core/workspace-roles";
 
 import { EmailVerificationService } from "@/services/email/email-verification.service";
 
@@ -27,7 +28,7 @@ import {
   workspaceProcedure,
 } from "@/trpc/trpc";
 
-import { UserRole } from "@/generated/prisma/client";
+import { UserRole, WorkspaceRole } from "@/generated/prisma/client";
 import { te } from "@/i18n";
 
 /**
@@ -460,6 +461,14 @@ export const userRouter = router({
           });
         }
 
+        // Privilege escalation guard: cannot assign a role above your own
+        if (newRole && !canAssignRole(ctx.workspaceRole, newRole)) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: te(ctx.locale, "auth.cannotAssignHigherRole"),
+          });
+        }
+
         // Atomically update user profile and (optionally) workspace role
         const { user, workspaceMember } = await ctx.prisma.$transaction(
           async (tx) => {
@@ -624,7 +633,10 @@ export const userRouter = router({
         }
 
         // Prevent removing other admins (only workspace owner can remove admins)
-        if (workspaceRole === UserRole.ADMIN) {
+        if (
+          workspaceRole === WorkspaceRole.ADMIN ||
+          workspaceRole === WorkspaceRole.OWNER
+        ) {
           // Check if current user is the workspace owner
           const workspace = await ctx.prisma.workspace.findFirst({
             where: {

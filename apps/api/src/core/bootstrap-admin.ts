@@ -8,7 +8,7 @@ import { ensureWorkspaceMember } from "@/core/workspace-access";
 
 import { adminBootstrapConfig } from "@/config";
 
-import { UserRole } from "@/generated/prisma/client";
+import { UserRole, WorkspaceRole } from "@/generated/prisma/client";
 
 /**
  * Bootstrap the first admin user on first boot.
@@ -71,7 +71,7 @@ export async function bootstrapAdmin(): Promise<void> {
       data: { ownerId: user.id },
     });
 
-    await ensureWorkspaceMember(user.id, workspace.id, UserRole.ADMIN, tx);
+    await ensureWorkspaceMember(user.id, workspace.id, WorkspaceRole.ADMIN, tx);
 
     logger.info(
       { userId: user.id, workspaceId: workspace.id, email },

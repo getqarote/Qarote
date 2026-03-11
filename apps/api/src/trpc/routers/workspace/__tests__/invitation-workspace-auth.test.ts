@@ -305,6 +305,51 @@ describe("invitationRouter workspace-scoped authorization", () => {
     });
   });
 
+  describe("privilege escalation guard", () => {
+    it("admin can invite another admin (at own level)", async () => {
+      mockGetUserWorkspaceRole.mockResolvedValue("ADMIN");
+      mockWorkspaceFindUnique.mockResolvedValue({
+        id: WORKSPACE_ID,
+        name: "Test WS",
+        ownerId: "admin-1",
+      });
+      mockWorkspaceMemberCount.mockResolvedValue(1);
+      mockSubscriptionFindUnique.mockResolvedValue({ plan: "DEVELOPER" });
+      mockUserFindUnique.mockResolvedValue(null);
+      mockInvitationCreate.mockResolvedValue({
+        id: "inv-2",
+        email: "peer@test.com",
+        role: "ADMIN",
+        token: "mock-token-123",
+        expiresAt: new Date("2025-02-01"),
+        createdAt: new Date("2025-01-01"),
+        invitedBy: {
+          id: "admin-1",
+          email: "admin@test.com",
+          firstName: "Admin",
+          lastName: "User",
+        },
+      });
+
+      const caller = invitationRouter.createCaller(makeAdminCtx() as never);
+      const result = await caller.sendInvitation({
+        email: "peer@test.com",
+        role: "ADMIN",
+      });
+
+      expect(result.message).toBe("Invitation sent successfully");
+    });
+
+    it("rejects OWNER role in invitation (not in INVITABLE_ROLES)", async () => {
+      mockGetUserWorkspaceRole.mockResolvedValue("OWNER");
+
+      const caller = invitationRouter.createCaller(makeAdminCtx() as never);
+      await expect(
+        caller.sendInvitation({ email: "new@test.com", role: "OWNER" as never })
+      ).rejects.toThrow();
+    });
+  });
+
   describe("cross-workspace isolation", () => {
     it("rejects user who is globally ADMIN but not admin in target workspace", async () => {
       // Global ADMIN, but workspace role is MEMBER

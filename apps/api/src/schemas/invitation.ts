@@ -1,10 +1,12 @@
 import { z } from "zod/v4";
 
-import { UserRole } from "@/generated/prisma/client";
+import { INVITABLE_ROLES } from "@/core/workspace-roles";
+
+import { WorkspaceRole } from "@/generated/prisma/client";
 
 export const inviteUserSchema = z.object({
   email: z.email("Invalid email address"),
-  role: z.enum(UserRole).default(UserRole.MEMBER),
+  role: z.enum(INVITABLE_ROLES).default(WorkspaceRole.MEMBER),
   message: z
     .string()
     .optional()

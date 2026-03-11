@@ -60,7 +60,8 @@
     "failedToAcceptInvitationGoogle": "通过 Google 接受邀请失败",
     "insufficientPermissionsAdmin": "权限不足 — 需要管理员角色",
     "insufficientPermissions": "权限不足",
-    "workspaceAdminRequired": "需要工作区管理员角色才能执行此操作"
+    "workspaceAdminRequired": "需要工作区管理员角色才能执行此操作",
+    "cannotAssignHigherRole": "无法分配高于自身的角色"
   },
   "workspace": {
     "idRequired": "工作区 ID 为必填项",

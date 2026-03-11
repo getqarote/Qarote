@@ -412,6 +412,65 @@ describe("userRouter workspace-scoped authorization", () => {
     });
   });
 
+  describe("updateUser privilege escalation", () => {
+    it("admin can change user role to MEMBER", async () => {
+      mockGetUserWorkspaceRole.mockResolvedValue("ADMIN");
+      mockUserFindUnique.mockResolvedValue({
+        id: "target-user",
+        email: "target@test.com",
+      });
+      mockHasWorkspaceAccess.mockResolvedValue(true);
+
+      const updatedUser = {
+        id: "target-user",
+        email: "target@test.com",
+        firstName: "Target",
+        lastName: "User",
+        role: "MEMBER",
+        workspaceId: WORKSPACE_ID,
+        isActive: true,
+        emailVerified: true,
+        lastLogin: null,
+        createdAt: new Date("2025-01-01"),
+        updatedAt: new Date("2025-01-01"),
+      };
+
+      mockTransaction.mockImplementation(
+        async (fn: (tx: unknown) => Promise<unknown>) => {
+          return fn({
+            user: { update: vi.fn().mockResolvedValue(updatedUser) },
+            workspaceMember: {
+              findUnique: vi.fn().mockResolvedValue({ role: "MEMBER" }),
+              update: vi.fn().mockResolvedValue({ role: "MEMBER" }),
+            },
+          });
+        }
+      );
+
+      const caller = userRouter.createCaller(makeAdminCtx() as never);
+      const result = await caller.updateUser({
+        id: "target-user",
+        workspaceId: WORKSPACE_ID,
+        role: "MEMBER",
+      });
+
+      expect(result.user).toBeDefined();
+    });
+
+    it("rejects OWNER role in updateUser (not in INVITABLE_ROLES)", async () => {
+      mockGetUserWorkspaceRole.mockResolvedValue("ADMIN");
+
+      const caller = userRouter.createCaller(makeAdminCtx() as never);
+      await expect(
+        caller.updateUser({
+          id: "target-user",
+          workspaceId: WORKSPACE_ID,
+          role: "OWNER" as never,
+        })
+      ).rejects.toThrow();
+    });
+  });
+
   describe("getWorkspaceUsers (unchanged - uses workspaceProcedure)", () => {
     it("allows any workspace member to list users", async () => {
       mockWorkspaceMemberFindMany.mockResolvedValue([]);

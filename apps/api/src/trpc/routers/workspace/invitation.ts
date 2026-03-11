@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server";
 
 import { formatInvitedBy, getUserDisplayName } from "@/core/utils";
 import { getUserWorkspaceRole } from "@/core/workspace-access";
+import { canAssignRole, hasMinimumWorkspaceRole } from "@/core/workspace-roles";
 
 import { CoreEmailService } from "@/services/email/core-email.service";
 import { EmailService } from "@/services/email/email.service";
@@ -22,7 +23,7 @@ import {
 import {
   InvitationStatus,
   UserPlan,
-  UserRole,
+  WorkspaceRole,
 } from "@/generated/prisma/client";
 import { te } from "@/i18n";
 
@@ -50,7 +51,10 @@ export const invitationRouter = router({
 
       // Verify the caller is a workspace admin
       const callerRole = await getUserWorkspaceRole(user.id, user.workspaceId);
-      if (callerRole !== UserRole.ADMIN) {
+      if (
+        !callerRole ||
+        !hasMinimumWorkspaceRole(callerRole, WorkspaceRole.ADMIN)
+      ) {
         throw new TRPCError({
           code: "FORBIDDEN",
           message: te(ctx.locale, "auth.workspaceAdminRequired"),
@@ -130,10 +134,21 @@ export const invitationRouter = router({
           user.id,
           user.workspaceId
         );
-        if (callerRole !== UserRole.ADMIN) {
+        if (
+          !callerRole ||
+          !hasMinimumWorkspaceRole(callerRole, WorkspaceRole.ADMIN)
+        ) {
           throw new TRPCError({
             code: "FORBIDDEN",
             message: te(ctx.locale, "auth.workspaceAdminRequired"),
+          });
+        }
+
+        // Privilege escalation guard: cannot invite above own role
+        if (!canAssignRole(callerRole, role)) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: te(ctx.locale, "auth.cannotAssignHigherRole"),
           });
         }
 
@@ -318,7 +333,10 @@ export const invitationRouter = router({
           user.id,
           user.workspaceId
         );
-        if (callerRole !== UserRole.ADMIN) {
+        if (
+          !callerRole ||
+          !hasMinimumWorkspaceRole(callerRole, WorkspaceRole.ADMIN)
+        ) {
           throw new TRPCError({
             code: "FORBIDDEN",
             message: te(ctx.locale, "auth.workspaceAdminRequired"),

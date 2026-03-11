@@ -243,4 +243,15 @@ test.describe("Workspace RBAC enforcement @p0", () => {
       expect(res.status).toBe(403);
     });
   });
+
+  test.describe("privilege escalation guard", () => {
+    test("member cannot send invitation as ADMIN", async () => {
+      const res = await rawMutation(
+        memberToken,
+        "workspace.invitation.sendInvitation",
+        { email: uniqueEmail("rbac-escalate"), role: "ADMIN" }
+      );
+      expect(res.status).toBe(403);
+    });
+  });
 });

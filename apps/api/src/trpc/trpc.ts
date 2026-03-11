@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { initTRPC } from "@trpc/server";
 
 import { getUserWorkspaceRole } from "@/core/workspace-access";
+import { hasMinimumWorkspaceRole } from "@/core/workspace-roles";
 
 import {
   PlanErrorCode,
@@ -18,7 +19,7 @@ import {
   strictRateLimiter,
 } from "./middlewares/rateLimiter";
 
-import { UserRole } from "@/generated/prisma/client";
+import { UserRole, WorkspaceRole } from "@/generated/prisma/client";
 import { te } from "@/i18n";
 
 /**
@@ -215,14 +216,19 @@ export const workspaceAdminProcedure = workspaceProcedure.use(async (opts) => {
     ctx.workspaceId
   );
 
-  if (workspaceRole !== UserRole.ADMIN) {
+  if (
+    !workspaceRole ||
+    !hasMinimumWorkspaceRole(workspaceRole, WorkspaceRole.ADMIN)
+  ) {
     throw new TRPCError({
       code: "FORBIDDEN",
       message: te(ctx.locale, "auth.workspaceAdminRequired"),
     });
   }
 
-  return opts.next();
+  return opts.next({
+    ctx: { ...ctx, workspaceRole },
+  });
 });
 
 /**
