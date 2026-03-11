@@ -28,7 +28,7 @@ vi.mock("@/core/prisma", () => ({
     workspace: { findUnique: vi.fn() },
     seenAlert: {
       findMany: vi.fn(),
-      create: vi.fn(),
+      upsert: vi.fn(),
       updateMany: vi.fn(),
     },
     resolvedAlert: { create: vi.fn() },
@@ -122,7 +122,7 @@ const mockPrisma = prisma as unknown as {
   workspace: { findUnique: MockInstance };
   seenAlert: {
     findMany: MockInstance;
-    create: MockInstance;
+    upsert: MockInstance;
     updateMany: MockInstance;
   };
   resolvedAlert: { create: MockInstance };
@@ -165,7 +165,7 @@ function setupDefaults({
     .mockResolvedValueOnce(seenAlerts)
     .mockResolvedValueOnce(unresolvedSeenAlerts);
 
-  mockPrisma.seenAlert.create.mockResolvedValue({});
+  mockPrisma.seenAlert.upsert.mockResolvedValue({});
   mockPrisma.seenAlert.updateMany.mockResolvedValue({ count: 1 });
   mockPrisma.resolvedAlert.create.mockResolvedValue({});
   mockPrisma.webhook.findFirst.mockResolvedValue(null);
@@ -203,7 +203,7 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
       );
 
       expect(mockPrisma.seenAlert.findMany).not.toHaveBeenCalled();
-      expect(mockPrisma.seenAlert.create).not.toHaveBeenCalled();
+      expect(mockPrisma.seenAlert.upsert).not.toHaveBeenCalled();
     });
   });
 
@@ -222,8 +222,8 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
         SERVER_NAME
       );
 
-      expect(mockPrisma.seenAlert.create).toHaveBeenCalledOnce();
-      const created = mockPrisma.seenAlert.create.mock.calls[0][0].data;
+      expect(mockPrisma.seenAlert.upsert).toHaveBeenCalledOnce();
+      const created = mockPrisma.seenAlert.upsert.mock.calls[0][0].create;
       expect(created.serverId).toBe(SERVER_ID);
       expect(created.workspaceId).toBe(WORKSPACE_ID);
       expect(created.category).toBe(AlertCategory.MEMORY);
@@ -249,10 +249,9 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
         SERVER_NAME
       );
 
-      expect(mockPrisma.seenAlert.create).not.toHaveBeenCalled();
-      expect(mockPrisma.seenAlert.updateMany).toHaveBeenCalledWith(
+      expect(mockPrisma.seenAlert.upsert).toHaveBeenCalledWith(
         expect.objectContaining({
-          data: expect.objectContaining({ resolvedAt: null }),
+          update: expect.objectContaining({ resolvedAt: null }),
         })
       );
     });
@@ -267,7 +266,7 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
         SERVER_NAME
       );
 
-      expect(mockPrisma.seenAlert.create).toHaveBeenCalledOnce();
+      expect(mockPrisma.seenAlert.upsert).toHaveBeenCalledOnce();
     });
 
     it("tracks info alerts in the database even though they are excluded from notifications by default", async () => {
@@ -281,7 +280,7 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
         SERVER_NAME
       );
 
-      expect(mockPrisma.seenAlert.create).toHaveBeenCalledOnce();
+      expect(mockPrisma.seenAlert.upsert).toHaveBeenCalledOnce();
     });
   });
 
@@ -460,10 +459,10 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
         SERVER_NAME
       );
 
-      // resolvedAt is cleared in DB
-      expect(mockPrisma.seenAlert.updateMany).toHaveBeenCalledWith(
+      // resolvedAt is cleared in DB via upsert
+      expect(mockPrisma.seenAlert.upsert).toHaveBeenCalledWith(
         expect.objectContaining({
-          data: expect.objectContaining({ resolvedAt: null }),
+          update: expect.objectContaining({ resolvedAt: null }),
         })
       );
       // Email should be sent
@@ -556,6 +555,52 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
       );
 
       expect(mockSendEmail).toHaveBeenCalledOnce();
+    });
+
+    it("sends webhook even when email notifications are disabled", async () => {
+      setupDefaults({
+        seenAlerts: [],
+        webhookEnabled: true,
+        workspace: makeWorkspace({ emailNotificationsEnabled: false }),
+      });
+      mockPrisma.webhook.findFirst.mockResolvedValue({
+        id: "wh-1",
+        url: "https://example.com/hook",
+        secret: null,
+        version: "v1",
+      });
+
+      await alertNotificationService.trackAndNotifyNewAlerts(
+        [makeAlert()],
+        WORKSPACE_ID,
+        SERVER_ID,
+        SERVER_NAME
+      );
+
+      expect(mockSendEmail).not.toHaveBeenCalled();
+      expect(mockSendWebhook).toHaveBeenCalledOnce();
+    });
+
+    it("sends Slack even when email notifications are disabled", async () => {
+      setupDefaults({
+        seenAlerts: [],
+        slackEnabled: true,
+        workspace: makeWorkspace({ emailNotificationsEnabled: false }),
+      });
+      mockPrisma.slackConfig.findFirst.mockResolvedValue({
+        id: "slack-1",
+        webhookUrl: "https://hooks.slack.com/test",
+      });
+
+      await alertNotificationService.trackAndNotifyNewAlerts(
+        [makeAlert()],
+        WORKSPACE_ID,
+        SERVER_ID,
+        SERVER_NAME
+      );
+
+      expect(mockSendEmail).not.toHaveBeenCalled();
+      expect(mockSendSlack).toHaveBeenCalledOnce();
     });
   });
 

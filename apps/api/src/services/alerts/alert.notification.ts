@@ -235,36 +235,29 @@ class AlertNotificationService {
 
         // Always track alerts in database, regardless of severity preferences
         // NOTE: This loop issues one DB write per alert (N+1 pattern).
-        // A batch upsert would be more efficient but is intentionally avoided here
-        // to preserve correct per-alert create-vs-update semantics and avoid
-        // race conditions when alerts transition state mid-batch.
-        if (isNew) {
-          // Brand new alert - create SeenAlert record
-          await prisma.seenAlert.create({
-            data: {
-              fingerprint,
-              serverId,
-              workspaceId,
-              severity: alert.severity,
-              category: alert.category,
-              sourceType: alert.source.type,
-              sourceName: alert.source.name,
-              firstSeenAt: now,
-              lastSeenAt: now,
-              resolvedAt: null, // Not resolved
-            },
-          });
-        } else {
-          // Existing alert - update last seen time and clear resolution if alert is active again
-          await prisma.seenAlert.updateMany({
-            where: { fingerprint },
-            data: {
-              lastSeenAt: now,
-              resolvedAt: null, // Clear resolution since alert is active again
-              severity: alert.severity, // Update severity in case it changed
-            },
-          });
-        }
+        // Using upsert for idempotency: concurrent cron runs can race on
+        // fingerprint creation, so we atomically create-or-update rather than
+        // branching on the isNew snapshot.
+        await prisma.seenAlert.upsert({
+          where: { fingerprint },
+          create: {
+            fingerprint,
+            serverId,
+            workspaceId,
+            severity: alert.severity,
+            category: alert.category,
+            sourceType: alert.source.type,
+            sourceName: alert.source.name,
+            firstSeenAt: now,
+            lastSeenAt: now,
+            resolvedAt: null,
+          },
+          update: {
+            lastSeenAt: now,
+            resolvedAt: null, // Clear resolution since alert is active again
+            severity: alert.severity, // Update severity in case it changed
+          },
+        });
 
         // Check if alert should trigger notification
         // Only send notifications for alerts that match severity preferences
@@ -303,50 +296,12 @@ class AlertNotificationService {
         }
       }
 
-      // Auto-resolve alerts that are no longer active
-      // Find all seen alerts for this server that are not in current alerts
-      // IMPORTANT: If vhost is specified, only check alerts for that vhost (or node/cluster alerts)
-      // This prevents incorrectly resolving alerts from other vhosts when viewing a specific vhost
-      const unresolvedSeenAlertsWhere: {
-        workspaceId: string;
-        serverId: string;
-        resolvedAt: null;
-        OR?: Array<{
-          sourceType: string;
-          fingerprint?: { contains: string };
-        }>;
-      } = {
-        workspaceId,
-        serverId,
-        resolvedAt: null, // Only unresolved ones
-      };
-
-      // If vhost is specified, only auto-resolve alerts for that vhost (or node/cluster alerts)
-      // This prevents resolving alerts from other vhosts when viewing a specific vhost
-      if (vhost) {
-        // Fingerprint format for queue alerts: `${serverId}-${category}-queue-${vhost}-${sourceName}`
-        // We use `contains` because Prisma does not support regex. This is safe because the
-        // `sourceType: "queue"` condition in the OR clause constrains the match, and the
-        // `-queue-${vhost}-` segment is position-stable in the format.
-        const vhostPattern = `-queue-${vhost}-`;
-        unresolvedSeenAlertsWhere.OR = [
-          // Include queue alerts that match the vhost
-          {
-            sourceType: "queue",
-            fingerprint: { contains: vhostPattern },
-          },
-          // Include all node and cluster alerts (not vhost-specific)
-          {
-            sourceType: "node",
-          },
-          {
-            sourceType: "cluster",
-          },
-        ];
-      }
-
+      // Auto-resolve alerts that are no longer active.
+      // Fetch all unresolved SeenAlerts for this server; vhost scoping is applied
+      // in-memory below to avoid false positives from a substring `contains` match
+      // (e.g. vhost "foo" incorrectly matching fingerprints for vhost "foo-bar").
       const unresolvedSeenAlerts = await prisma.seenAlert.findMany({
-        where: unresolvedSeenAlertsWhere,
+        where: { workspaceId, serverId, resolvedAt: null },
         select: {
           fingerprint: true,
           severity: true,
@@ -357,7 +312,21 @@ class AlertNotificationService {
         },
       });
 
-      for (const seenAlert of unresolvedSeenAlerts) {
+      // If vhost is specified, exclude queue alerts that belong to a different vhost.
+      // Position-safe: after the "-queue-" segment the next part must start with
+      // `${vhost}-`, preventing false positives from overlapping vhost name prefixes.
+      const alertsToResolve = vhost
+        ? unresolvedSeenAlerts.filter((a) => {
+            if (a.sourceType !== "queue") return true;
+            const idx = a.fingerprint.indexOf("-queue-");
+            if (idx === -1) return false;
+            return a.fingerprint
+              .slice(idx + "-queue-".length)
+              .startsWith(`${vhost}-`);
+          })
+        : unresolvedSeenAlerts;
+
+      for (const seenAlert of alertsToResolve) {
         if (!activeFingerprints.has(seenAlert.fingerprint)) {
           // Alert is no longer active, mark as resolved
           await prisma.seenAlert.updateMany({
@@ -426,8 +395,8 @@ class AlertNotificationService {
         return;
       }
 
-      // Only send if email notifications are enabled and contact email is set
-      const shouldSendNotifications =
+      // Email-specific gate — webhook and Slack have their own independent feature flags
+      const shouldSendEmail =
         workspace.emailNotificationsEnabled && !!workspace.contactEmail;
 
       // Check if notifications are enabled for this server
@@ -439,18 +408,14 @@ class AlertNotificationService {
         notificationServerIds.length === 0 ||
         notificationServerIds.includes(serverId);
 
-      if (
-        newAlerts.length > 0 &&
-        shouldSendNotifications &&
-        serverNotificationsEnabled
-      ) {
+      if (newAlerts.length > 0 && serverNotificationsEnabled) {
         const alertsToNotify = newAlerts;
 
         // Send email notification (if enabled)
-        if (workspace.emailNotificationsEnabled && workspace.contactEmail) {
+        if (shouldSendEmail) {
           try {
             await NotificationEmailService.sendAlertNotificationEmail({
-              to: workspace.contactEmail,
+              to: workspace.contactEmail!,
               workspaceName: workspace.name,
               workspaceId,
               alerts: alertsToNotify,
@@ -477,7 +442,10 @@ class AlertNotificationService {
               `Sent alert notification email for ${alertsToNotify.length} new/recurring alerts to ${workspace.contactEmail}`
             );
           } catch (error) {
-            logger.error({ error }, "Failed to send alert notification email");
+            logger.error(
+              { error, workspaceId, serverId },
+              "Failed to send alert notification email"
+            );
           }
         }
 
@@ -544,7 +512,10 @@ class AlertNotificationService {
               }
             }
           } catch (error) {
-            logger.error({ error }, "Failed to send webhook notifications");
+            logger.error(
+              { error, workspaceId, serverId },
+              "Failed to send webhook notifications"
+            );
           }
         }
 
@@ -602,20 +573,16 @@ class AlertNotificationService {
               }
             }
           } catch (error) {
-            logger.error({ error }, "Failed to send Slack notifications");
+            logger.error(
+              { error, workspaceId, serverId },
+              "Failed to send Slack notifications"
+            );
           }
         }
       } else if (newAlerts.length > 0) {
-        // Log why notifications weren't sent (for debugging)
-        if (!shouldSendNotifications) {
-          logger.debug(
-            `Skipping notifications for ${newAlerts.length} alerts: email notifications disabled or no contact email`
-          );
-        } else if (!serverNotificationsEnabled) {
-          logger.debug(
-            `Skipping notifications for ${newAlerts.length} alerts: server ${serverId} not in notification server list`
-          );
-        }
+        logger.debug(
+          `Skipping notifications for ${newAlerts.length} alerts: server ${serverId} not in notification server list`
+        );
       }
     } catch (error) {
       logger.error({ error }, "Error tracking and notifying new alerts");
