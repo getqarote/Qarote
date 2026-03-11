@@ -230,33 +230,46 @@ class AlertService {
       ];
     }
 
-    const [resolvedAlerts, total] = await Promise.all([
-      prisma.resolvedAlert.findMany({
-        where,
-        orderBy: { resolvedAt: "desc" },
-        take: options?.limit,
-        skip: options?.offset,
-        select: {
-          id: true,
-          serverId: true,
-          serverName: true,
-          severity: true,
-          category: true,
-          title: true,
-          description: true,
-          details: true,
-          sourceType: true,
-          sourceName: true,
-          firstSeenAt: true,
-          resolvedAt: true,
-          duration: true,
-        },
-      }),
-      prisma.resolvedAlert.count({ where }),
-    ]);
+    // Exclude fingerprints that are currently active (SeenAlert with resolvedAt: null).
+    // This prevents the same alert from appearing in both the active alerts list and
+    // the resolved alerts history when an alert recurs after being resolved.
+    const activeSeenAlerts = await prisma.seenAlert.findMany({
+      where: { serverId, workspaceId, resolvedAt: null },
+      select: { fingerprint: true },
+    });
+    const activeFingerprintSet = new Set(
+      activeSeenAlerts.map((a) => a.fingerprint)
+    );
+
+    const resolvedAlerts = await prisma.resolvedAlert.findMany({
+      where,
+      orderBy: { resolvedAt: "desc" },
+      take: options?.limit,
+      skip: options?.offset,
+      select: {
+        id: true,
+        serverId: true,
+        serverName: true,
+        severity: true,
+        category: true,
+        title: true,
+        description: true,
+        details: true,
+        sourceType: true,
+        sourceName: true,
+        fingerprint: true,
+        firstSeenAt: true,
+        resolvedAt: true,
+        duration: true,
+      },
+    });
+
+    const nonActiveResolved = resolvedAlerts.filter(
+      (alert) => !activeFingerprintSet.has(alert.fingerprint)
+    );
 
     return {
-      alerts: resolvedAlerts.map((alert) => ({
+      alerts: nonActiveResolved.map((alert) => ({
         id: alert.id,
         serverId: alert.serverId,
         serverName: alert.serverName,
@@ -273,7 +286,7 @@ class AlertService {
         resolvedAt: alert.resolvedAt.toISOString(),
         duration: alert.duration,
       })),
-      total,
+      total: nonActiveResolved.length,
     };
   }
 }
