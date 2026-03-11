@@ -395,8 +395,6 @@ export async function runSetup(): Promise<void> {
   let ssoSamlMetadataUrl = "";
   let apiUrl = "";
   let frontendUrl = "";
-  let ssoTenant = "default";
-  let ssoProduct = "qarote";
   let ssoButtonLabel = "Sign in with SSO";
 
   if (enableSso) {
@@ -463,8 +461,6 @@ export async function runSetup(): Promise<void> {
       "Frontend URL",
       prev.FRONTEND_URL || `http://localhost:${port}`
     );
-    ssoTenant = await ask("SSO tenant", prev.SSO_TENANT || "default");
-    ssoProduct = await ask("SSO product", prev.SSO_PRODUCT || "qarote");
     ssoButtonLabel = await ask(
       "SSO button label",
       prev.SSO_BUTTON_LABEL || "Sign in with SSO"
@@ -547,8 +543,6 @@ export async function runSetup(): Promise<void> {
     }
     lines.push(`API_URL=${escapeEnvValue(apiUrl)}`);
     lines.push(`FRONTEND_URL=${escapeEnvValue(frontendUrl)}`);
-    lines.push(`SSO_TENANT=${escapeEnvValue(ssoTenant)}`);
-    lines.push(`SSO_PRODUCT=${escapeEnvValue(ssoProduct)}`);
     lines.push(`SSO_BUTTON_LABEL=${escapeEnvValue(ssoButtonLabel)}`);
   }
 

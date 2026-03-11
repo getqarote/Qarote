@@ -84,7 +84,7 @@ export const selfhostedSchema = baseSchema.extend({
   GOOGLE_CLIENT_SECRET: z.string().optional(),
   ENABLE_OAUTH: z.coerce.boolean().default(false),
 
-  // SSO Configuration (Ory Polis / Jackson)
+  // SSO Configuration (better-auth sso() plugin)
   SSO_ENABLED: z.coerce.boolean().default(false),
   SSO_TYPE: z.enum(["oidc", "saml"]).optional().default("oidc"),
   SSO_OIDC_DISCOVERY_URL: z.url().optional(),
@@ -92,8 +92,6 @@ export const selfhostedSchema = baseSchema.extend({
   SSO_OIDC_CLIENT_SECRET: z.string().optional(),
   SSO_SAML_METADATA_URL: z.url().optional(),
   SSO_SAML_METADATA_RAW: z.string().optional(),
-  SSO_TENANT: z.string().optional().default("default"),
-  SSO_PRODUCT: z.string().optional().default("qarote"),
   SSO_BUTTON_LABEL: z.string().optional().default("Sign in with SSO"),
 
   // Admin bootstrap (used once on first boot, then removed from .env)

@@ -214,9 +214,6 @@ export const ssoConfig = {
         ? config.SSO_SAML_METADATA_RAW
         : undefined,
   },
-  tenant: "SSO_TENANT" in config ? (config.SSO_TENANT ?? "default") : "default",
-  product:
-    "SSO_PRODUCT" in config ? (config.SSO_PRODUCT ?? "qarote") : "qarote",
   buttonLabel:
     "SSO_BUTTON_LABEL" in config
       ? (config.SSO_BUTTON_LABEL ?? "Sign in with SSO")
