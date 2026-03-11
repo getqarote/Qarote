@@ -3,7 +3,7 @@ import { logger } from "@/core/logger";
 
 import { CoreEmailService } from "@/services/email/core-email.service";
 
-import { googleConfig, registrationConfig, ssoConfig } from "@/config";
+import { googleConfig, registrationConfig } from "@/config";
 import { getAllPremiumFeatures } from "@/config/features";
 
 import { publicProcedure, router } from "@/trpc/trpc";
@@ -36,7 +36,6 @@ export const publicRouter = router({
       registrationEnabled: registrationConfig.enabled,
       emailEnabled,
       oauthEnabled: googleConfig.enabled,
-      ssoEnabled: ssoConfig.enabled,
     };
   }),
 

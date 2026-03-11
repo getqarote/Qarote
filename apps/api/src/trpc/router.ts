@@ -8,7 +8,7 @@ import { publicRouter } from "./routers/public/index";
 import { rabbitmqRouter } from "./routers/rabbitmq";
 import { selfhostedLicenseRouter } from "./routers/selfhosted-license";
 import { selfhostedSmtpRouter } from "./routers/selfhosted-smtp";
-import { selfhostedSsoRouter } from "./routers/selfhosted-sso";
+import { ssoRouter } from "./routers/sso";
 import { userRouter } from "./routers/user";
 import { workspaceRouter } from "./routers/workspace/index";
 import { router } from "./trpc";
@@ -29,7 +29,7 @@ export const appRouter = router({
   discord: discordRouter,
   selfhostedLicense: selfhostedLicenseRouter,
   selfhostedSmtp: selfhostedSmtpRouter,
-  selfhostedSso: selfhostedSsoRouter,
+  sso: ssoRouter,
   public: publicRouter,
 });
 

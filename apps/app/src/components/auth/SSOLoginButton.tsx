@@ -1,11 +1,14 @@
-import React from "react";
+import React, { useState } from "react";
 
 import { LockKeyholeIcon } from "lucide-react";
 
+import { authClient } from "@/lib/auth-client";
+import { isCloudMode } from "@/lib/featureFlags";
 import { logger } from "@/lib/logger";
 import { trpc } from "@/lib/trpc/client";
 
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 interface SSOLoginButtonProps {
   onError?: (error: string) => void;
@@ -18,47 +21,115 @@ export const SSOLoginButton: React.FC<SSOLoginButtonProps> = ({
   className,
   mode = "signin",
 }) => {
-  // Query SSO config from the backend
-  const ssoConfigQuery = trpc.auth.sso.getConfig.useQuery(undefined, {
+  const [email, setEmail] = useState("");
+  const [showEmailInput, setShowEmailInput] = useState(false);
+  const [isPending, setIsPending] = useState(false);
+
+  const ssoConfigQuery = trpc.sso.getConfig.useQuery(undefined, {
     staleTime: Infinity,
     retry: false,
   });
 
-  const handleClick = () => {
+  const config = ssoConfigQuery.data;
+
+  const handleSelfHostedClick = async () => {
+    if (!config?.providerId) return;
     try {
-      // VITE_API_URL (build-time) wins over runtime config (binary mode fallback).
-      const apiUrl =
-        import.meta.env.VITE_API_URL ??
-        (
-          (window as unknown as Record<string, unknown>).__QAROTE_CONFIG__ as
-            | { apiUrl?: string }
-            | undefined
-        )?.apiUrl ??
-        "";
-      // Full page redirect to the SSO authorize endpoint
-      window.location.href = `${apiUrl}/sso/authorize`;
+      setIsPending(true);
+      await authClient.signIn.sso({
+        providerId: config.providerId,
+        callbackURL: "/auth/sso/callback",
+      });
     } catch (error) {
       logger.error("SSO redirect failed:", error);
       onError?.("SSO login failed");
+    } finally {
+      setIsPending(false);
     }
   };
 
-  // Don't render if SSO is not enabled or config is still loading
-  if (!ssoConfigQuery.data?.enabled) {
-    return null;
-  }
+  const handleCloudSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim()) return;
+    try {
+      setIsPending(true);
+      await authClient.signIn.sso({
+        email,
+        callbackURL: "/auth/sso/callback",
+      });
+    } catch (error) {
+      logger.error("SSO redirect failed:", error);
+      onError?.(
+        "SSO login failed. Make sure your email domain has SSO configured."
+      );
+    } finally {
+      setIsPending(false);
+    }
+  };
 
-  const buttonLabel = ssoConfigQuery.data?.buttonLabel ?? "Sign in with SSO";
+  if (!config?.enabled) return null;
+
+  const buttonLabel = config.buttonLabel ?? "Sign in with SSO";
   const displayLabel =
     mode === "signup" ? buttonLabel.replace("Sign in", "Sign up") : buttonLabel;
 
+  // Cloud: email-based domain discovery flow
+  if (isCloudMode()) {
+    if (showEmailInput) {
+      return (
+        <div className={`flex flex-col gap-2 ${className || ""}`}>
+          <form onSubmit={handleCloudSubmit} className="flex gap-2">
+            <Input
+              type="email"
+              placeholder="your@company.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              autoFocus
+              className="flex-1"
+            />
+            <Button
+              type="submit"
+              disabled={isPending || !email.trim()}
+              className="bg-gradient-button hover:bg-gradient-button-hover text-white"
+            >
+              Continue
+            </Button>
+          </form>
+          <button
+            type="button"
+            className="text-xs text-muted-foreground hover:underline text-left"
+            onClick={() => setShowEmailInput(false)}
+          >
+            Cancel
+          </button>
+        </div>
+      );
+    }
+
+    return (
+      <div className={`flex justify-center items-center ${className || ""}`}>
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full"
+          onClick={() => setShowEmailInput(true)}
+        >
+          <LockKeyholeIcon className="mr-2 h-4 w-4" />
+          {displayLabel}
+        </Button>
+      </div>
+    );
+  }
+
+  // Self-hosted: direct button (no email lookup needed)
   return (
     <div className={`flex justify-center items-center ${className || ""}`}>
       <Button
         type="button"
         variant="outline"
         className="w-full"
-        onClick={handleClick}
+        onClick={handleSelfHostedClick}
+        disabled={isPending}
       >
         <LockKeyholeIcon className="mr-2 h-4 w-4" />
         {displayLabel}

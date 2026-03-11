@@ -1,3 +1,4 @@
+import { ssoClient } from "@better-auth/sso/client";
 import { createAuthClient } from "better-auth/react";
 
 function getBaseUrl() {
@@ -10,4 +11,5 @@ function getBaseUrl() {
 
 export const authClient = createAuthClient({
   baseURL: getBaseUrl(),
+  plugins: [ssoClient()],
 });

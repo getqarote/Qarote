@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Navigate } from "react-router";
 
 import {
   AlertCircle,
@@ -8,11 +7,13 @@ import {
   Copy,
   Loader2,
   Shield,
+  Trash2,
   Wifi,
 } from "lucide-react";
 import { toast } from "sonner";
 
-import { isSelfHostedMode } from "@/lib/featureFlags";
+import { isCloudMode } from "@/lib/featureFlags";
+import { trpc } from "@/lib/trpc/client";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -38,47 +39,79 @@ import { Switch } from "@/components/ui/switch";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
 
-import {
-  useSelfhostedSsoSettings,
-  useSsoTestConnection,
-  useSsoUpdate,
-} from "@/hooks/queries/useSelfhostedSso";
+const REDACTED = "••••••••";
 
-interface SSOSettingsData {
-  source: "database" | "environment";
+function getApiUrl(): string {
+  const config = (window as unknown as Record<string, unknown>)
+    .__QAROTE_CONFIG__ as { apiUrl?: string } | undefined;
+  return import.meta.env.VITE_API_URL ?? config?.apiUrl ?? "";
+}
+
+// ─── SSOForm (update existing provider) ──────────────────────────────────────
+
+interface ProviderConfig {
   enabled: boolean;
+  buttonLabel: string;
+  providerId: string;
   type: "oidc" | "saml";
-  oidcDiscoveryUrl?: string | null;
-  oidcClientId?: string | null;
-  oidcClientSecret?: string | null;
-  samlMetadataUrl?: string | null;
-  apiUrl?: string | null;
-  frontendUrl?: string | null;
-  tenant?: string | null;
-  product?: string | null;
-  buttonLabel?: string | null;
+  oidcConfig: Record<string, unknown> | null;
+  samlConfig: Record<string, unknown> | null;
 }
 
 function SSOForm({
   initialData,
   onRefetch,
 }: {
-  initialData: SSOSettingsData;
+  initialData: ProviderConfig;
   onRefetch: () => void;
 }) {
   const { t } = useTranslation("sso");
+  const utils = trpc.useUtils();
+  const apiUrl = getApiUrl();
 
-  const updateMutation = useSsoUpdate({
+  const [enabled, setEnabled] = useState(initialData.enabled);
+  const [type, setType] = useState<"oidc" | "saml">(initialData.type);
+  const [oidcDiscoveryUrl, setOidcDiscoveryUrl] = useState(
+    (initialData.oidcConfig?.discoveryEndpoint as string) || ""
+  );
+  const [oidcClientId, setOidcClientId] = useState(
+    (initialData.oidcConfig?.clientId as string) || ""
+  );
+  const [oidcClientSecret, setOidcClientSecret] = useState(
+    initialData.oidcConfig?.clientSecret ? REDACTED : ""
+  );
+  const [samlMetadataUrl, setSamlMetadataUrl] = useState(
+    (initialData.samlConfig?.metadataUrl as string) || ""
+  );
+  const [buttonLabel, setButtonLabel] = useState(initialData.buttonLabel);
+
+  const updateMutation = trpc.sso.updateProvider.useMutation({
     onSuccess: () => {
       toast.success(t("saveSuccess"));
+      utils.sso.getProviderConfig.invalidate();
+      utils.sso.getConfig.invalidate();
       onRefetch();
     },
-    onError: (error) => {
-      toast.error(error.message || t("saveError"));
-    },
+    onError: (error) => toast.error(error.message || t("saveError")),
   });
 
-  const testMutation = useSsoTestConnection({
+  const deleteMutation = trpc.sso.deleteProvider.useMutation({
+    onSuccess: () => {
+      toast.success(
+        t("deleteSuccess", { defaultValue: "SSO provider deleted" })
+      );
+      utils.sso.getProviderConfig.invalidate();
+      utils.sso.getConfig.invalidate();
+      onRefetch();
+    },
+    onError: (error) =>
+      toast.error(
+        error.message ||
+          t("deleteError", { defaultValue: "Failed to delete provider" })
+      ),
+  });
+
+  const testMutation = trpc.sso.testConnection.useMutation({
     onSuccess: (data) => {
       if (data.success) {
         toast.success(t("testSuccess", { issuer: data.issuer }));
@@ -86,32 +119,8 @@ function SSOForm({
         toast.error(data.error || t("testError"));
       }
     },
-    onError: (error) => {
-      toast.error(error.message || t("testError"));
-    },
+    onError: (error) => toast.error(error.message || t("testError")),
   });
-
-  const [enabled, setEnabled] = useState(initialData.enabled);
-  const [type, setType] = useState<"oidc" | "saml">(initialData.type);
-  const [oidcDiscoveryUrl, setOidcDiscoveryUrl] = useState(
-    initialData.oidcDiscoveryUrl || ""
-  );
-  const [oidcClientId, setOidcClientId] = useState(
-    initialData.oidcClientId || ""
-  );
-  const [oidcClientSecret, setOidcClientSecret] = useState(
-    initialData.oidcClientSecret || ""
-  );
-  const [samlMetadataUrl, setSamlMetadataUrl] = useState(
-    initialData.samlMetadataUrl || ""
-  );
-  const [apiUrl, setApiUrl] = useState(initialData.apiUrl || "");
-  const [frontendUrl, setFrontendUrl] = useState(initialData.frontendUrl || "");
-  const [tenant, setTenant] = useState(initialData.tenant || "default");
-  const [product, setProduct] = useState(initialData.product || "qarote");
-  const [buttonLabel, setButtonLabel] = useState(
-    initialData.buttonLabel || "Sign in with SSO"
-  );
 
   const handleSave = () => {
     updateMutation.mutate({
@@ -121,12 +130,21 @@ function SSOForm({
       oidcClientId: oidcClientId || undefined,
       oidcClientSecret: oidcClientSecret || undefined,
       samlMetadataUrl: samlMetadataUrl || undefined,
-      apiUrl: apiUrl || undefined,
-      frontendUrl: frontendUrl || undefined,
-      tenant: tenant || undefined,
-      product: product || undefined,
-      buttonLabel: buttonLabel || undefined,
+      buttonLabel,
     });
+  };
+
+  const handleDelete = () => {
+    if (
+      !confirm(
+        t("deleteConfirm", {
+          defaultValue:
+            "Delete SSO provider? This will disable SSO for all users.",
+        })
+      )
+    )
+      return;
+    deleteMutation.mutate();
   };
 
   const handleTestConnection = () => {
@@ -137,8 +155,12 @@ function SSOForm({
     testMutation.mutate({ discoveryUrl: oidcDiscoveryUrl });
   };
 
-  const callbackUrl = apiUrl ? `${apiUrl}/sso/callback` : "";
-  const acsUrl = apiUrl ? `${apiUrl}/sso/acs` : "";
+  const oidcCallbackUrl = apiUrl
+    ? `${apiUrl}/api/auth/sso/callback/${initialData.providerId}`
+    : "";
+  const samlAcsUrl = apiUrl
+    ? `${apiUrl}/api/auth/sso/saml2/callback/${initialData.providerId}`
+    : "";
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -160,10 +182,10 @@ function SSOForm({
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>{t("status")}</CardTitle>
-            {initialData.source === "database" ? (
-              <Badge variant="default">{t("sourceDatabase")}</Badge>
+            {isCloudMode() ? (
+              <Badge variant="default">Cloud (per-workspace)</Badge>
             ) : (
-              <Badge variant="secondary">{t("sourceEnv")}</Badge>
+              <Badge variant="secondary">Self-hosted</Badge>
             )}
           </div>
           <CardDescription>{t("statusDescription")}</CardDescription>
@@ -185,7 +207,7 @@ function SSOForm({
 
       {enabled && (
         <>
-          {/* Protocol Selection */}
+          {/* Protocol */}
           <Card>
             <CardHeader>
               <CardTitle>{t("protocol")}</CardTitle>
@@ -224,6 +246,7 @@ function SSOForm({
                         onChange={(e) => setOidcDiscoveryUrl(e.target.value)}
                       />
                       <Button
+                        type="button"
                         variant="outline"
                         size="icon"
                         onClick={handleTestConnection}
@@ -275,63 +298,48 @@ function SSOForm({
             </CardContent>
           </Card>
 
-          {/* URLs */}
-          <Card>
-            <CardHeader>
-              <CardTitle>{t("urls")}</CardTitle>
-              <CardDescription>{t("urlsDescription")}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="api-url">{t("apiUrl")}</Label>
-                <Input
-                  id="api-url"
-                  placeholder="http://localhost:3000"
-                  value={apiUrl}
-                  onChange={(e) => setApiUrl(e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="frontend-url">{t("frontendUrl")}</Label>
-                <Input
-                  id="frontend-url"
-                  placeholder="http://localhost:8080"
-                  value={frontendUrl}
-                  onChange={(e) => setFrontendUrl(e.target.value)}
-                />
-              </div>
-
-              {callbackUrl && (
+          {/* Callback URLs */}
+          {(oidcCallbackUrl || samlAcsUrl) && (
+            <Card>
+              <CardHeader>
+                <CardTitle>{t("urls")}</CardTitle>
+                <CardDescription>{t("urlsDescription")}</CardDescription>
+              </CardHeader>
+              <CardContent>
                 <div className="rounded-lg border p-4 space-y-3 bg-muted/50">
                   <div className="flex items-center gap-2 text-sm font-medium">
                     <AlertCircle className="h-4 w-4" />
                     {t("registerInIdP")}
                   </div>
                   <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <code className="text-xs bg-background px-2 py-1 rounded flex-1">
-                        {callbackUrl}
-                      </code>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6"
-                        onClick={() => copyToClipboard(callbackUrl)}
-                        aria-label={t("copyToClipboard")}
-                      >
-                        <Copy className="h-3 w-3" />
-                      </Button>
-                    </div>
-                    {type === "saml" && (
+                    {type === "oidc" && oidcCallbackUrl && (
                       <div className="flex items-center gap-2">
                         <code className="text-xs bg-background px-2 py-1 rounded flex-1">
-                          {acsUrl}
+                          {oidcCallbackUrl}
                         </code>
                         <Button
+                          type="button"
                           variant="ghost"
                           size="icon"
                           className="h-6 w-6"
-                          onClick={() => copyToClipboard(acsUrl)}
+                          onClick={() => copyToClipboard(oidcCallbackUrl)}
+                          aria-label={t("copyToClipboard")}
+                        >
+                          <Copy className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    )}
+                    {type === "saml" && samlAcsUrl && (
+                      <div className="flex items-center gap-2">
+                        <code className="text-xs bg-background px-2 py-1 rounded flex-1">
+                          {samlAcsUrl}
+                        </code>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6"
+                          onClick={() => copyToClipboard(samlAcsUrl)}
                           aria-label={t("copyToClipboard")}
                         >
                           <Copy className="h-3 w-3" />
@@ -340,9 +348,9 @@ function SSOForm({
                     )}
                   </div>
                 </div>
-              )}
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Display Settings */}
           <Card>
@@ -352,7 +360,7 @@ function SSOForm({
                 {t("displaySettingsDescription")}
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent>
               <div className="space-y-2">
                 <Label htmlFor="button-label">{t("buttonLabel")}</Label>
                 <Input
@@ -361,26 +369,6 @@ function SSOForm({
                   value={buttonLabel}
                   onChange={(e) => setButtonLabel(e.target.value)}
                 />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="tenant">{t("tenant")}</Label>
-                  <Input
-                    id="tenant"
-                    placeholder="default"
-                    value={tenant}
-                    onChange={(e) => setTenant(e.target.value)}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="product">{t("product")}</Label>
-                  <Input
-                    id="product"
-                    placeholder="qarote"
-                    value={product}
-                    onChange={(e) => setProduct(e.target.value)}
-                  />
-                </div>
               </div>
             </CardContent>
           </Card>
@@ -410,15 +398,305 @@ function SSOForm({
         </>
       )}
 
-      {/* Save */}
+      {/* Actions */}
       <Card>
         <CardFooter className="pt-6 flex justify-between">
           <Button
+            type="button"
             className="bg-gradient-button hover:bg-gradient-button-hover text-white"
             onClick={handleSave}
             disabled={updateMutation.isPending}
           >
             {updateMutation.isPending ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                {t("saving")}
+              </>
+            ) : (
+              t("save")
+            )}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            className="text-destructive border-destructive hover:bg-destructive hover:text-white"
+            onClick={handleDelete}
+            disabled={deleteMutation.isPending}
+          >
+            <Trash2 className="h-4 w-4 mr-2" />
+            {t("delete", { defaultValue: "Delete provider" })}
+          </Button>
+        </CardFooter>
+      </Card>
+    </div>
+  );
+}
+
+// ─── SetupForm (first-time provider registration) ────────────────────────────
+
+function SetupForm({ onRefetch }: { onRefetch: () => void }) {
+  const { t } = useTranslation("sso");
+  const utils = trpc.useUtils();
+  const apiUrl = getApiUrl();
+
+  const [type, setType] = useState<"oidc" | "saml">("oidc");
+  const [oidcDiscoveryUrl, setOidcDiscoveryUrl] = useState("");
+  const [oidcClientId, setOidcClientId] = useState("");
+  const [oidcClientSecret, setOidcClientSecret] = useState("");
+  const [samlMetadataUrl, setSamlMetadataUrl] = useState("");
+  const [buttonLabel, setButtonLabel] = useState("Sign in with SSO");
+
+  const testMutation = trpc.sso.testConnection.useMutation({
+    onSuccess: (data) => {
+      if (data.success) {
+        toast.success(t("testSuccess", { issuer: data.issuer }));
+      } else {
+        toast.error(data.error || t("testError"));
+      }
+    },
+    onError: (error) => toast.error(error.message || t("testError")),
+  });
+
+  const registerMutation = trpc.sso.registerProvider.useMutation({
+    onSuccess: () => {
+      toast.success(t("saveSuccess"));
+      utils.sso.getProviderConfig.invalidate();
+      utils.sso.getConfig.invalidate();
+      onRefetch();
+    },
+    onError: (error) => toast.error(error.message || t("saveError")),
+  });
+
+  const handleRegister = () => {
+    registerMutation.mutate({
+      type,
+      oidcDiscoveryUrl: oidcDiscoveryUrl || undefined,
+      oidcClientId: oidcClientId || undefined,
+      oidcClientSecret: oidcClientSecret || undefined,
+      samlMetadataUrl: samlMetadataUrl || undefined,
+      buttonLabel,
+    });
+  };
+
+  const handleTestConnection = () => {
+    if (!oidcDiscoveryUrl) {
+      toast.error(t("discoveryUrlRequired"));
+      return;
+    }
+    testMutation.mutate({ discoveryUrl: oidcDiscoveryUrl });
+  };
+
+  const oidcCallbackUrl = apiUrl ? `${apiUrl}/api/auth/sso/callback/...` : "";
+  const samlAcsUrl = apiUrl ? `${apiUrl}/api/auth/sso/saml2/callback/...` : "";
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast.success(t("copied"));
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center gap-3">
+        <Shield className="h-6 w-6" />
+        <div>
+          <h2 className="text-xl font-semibold">{t("title")}</h2>
+          <p className="text-sm text-muted-foreground">
+            {t("setupDescription", {
+              defaultValue:
+                "Configure your SSO provider to enable single sign-on.",
+            })}
+          </p>
+        </div>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("protocol")}</CardTitle>
+          <CardDescription>{t("protocolDescription")}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label>{t("ssoType")}</Label>
+            <Select
+              value={type}
+              onValueChange={(v) => setType(v as "oidc" | "saml")}
+            >
+              <SelectTrigger className="w-48">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="oidc">OIDC {t("recommended")}</SelectItem>
+                <SelectItem value="saml">SAML 2.0</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {type === "oidc" ? (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="setup-discovery-url">
+                  {t("oidcDiscoveryUrl")}
+                </Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="setup-discovery-url"
+                    placeholder="https://your-idp.com/realms/qarote/.well-known/openid-configuration"
+                    value={oidcDiscoveryUrl}
+                    onChange={(e) => setOidcDiscoveryUrl(e.target.value)}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={handleTestConnection}
+                    disabled={testMutation.isPending || !oidcDiscoveryUrl}
+                    title={t("testConnection")}
+                    aria-label={t("testConnection")}
+                  >
+                    {testMutation.isPending ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Wifi className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="setup-client-id">{t("oidcClientId")}</Label>
+                <Input
+                  id="setup-client-id"
+                  placeholder="qarote"
+                  value={oidcClientId}
+                  onChange={(e) => setOidcClientId(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="setup-client-secret">
+                  {t("oidcClientSecret")}
+                </Label>
+                <Input
+                  id="setup-client-secret"
+                  type="password"
+                  placeholder={t("clientSecretPlaceholder")}
+                  value={oidcClientSecret}
+                  onChange={(e) => setOidcClientSecret(e.target.value)}
+                />
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <Label htmlFor="setup-saml-metadata">
+                {t("samlMetadataUrl")}
+              </Label>
+              <Input
+                id="setup-saml-metadata"
+                placeholder="https://your-idp.com/metadata.xml"
+                value={samlMetadataUrl}
+                onChange={(e) => setSamlMetadataUrl(e.target.value)}
+              />
+            </div>
+          )}
+
+          {testMutation.data && (
+            <div className="mt-2">
+              {testMutation.data.success ? (
+                <div className="flex items-center gap-2 text-green-600 text-sm">
+                  <CheckCircle className="h-4 w-4" />
+                  <span>
+                    {t("testSuccess", { issuer: testMutation.data.issuer })}
+                  </span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 text-red-600 text-sm">
+                  <AlertCircle className="h-4 w-4" />
+                  <span>{testMutation.data.error}</span>
+                </div>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {apiUrl && (
+        <Card>
+          <CardHeader>
+            <CardTitle>{t("urls")}</CardTitle>
+            <CardDescription>{t("urlsDescription")}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="rounded-lg border p-4 space-y-3 bg-muted/50">
+              <div className="flex items-center gap-2 text-sm font-medium">
+                <AlertCircle className="h-4 w-4" />
+                {t("registerInIdP")}
+              </div>
+              <div className="space-y-2">
+                {type === "oidc" && (
+                  <div className="flex items-center gap-2">
+                    <code className="text-xs bg-background px-2 py-1 rounded flex-1">
+                      {oidcCallbackUrl}
+                    </code>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6"
+                      onClick={() => copyToClipboard(oidcCallbackUrl)}
+                      aria-label={t("copyToClipboard")}
+                    >
+                      <Copy className="h-3 w-3" />
+                    </Button>
+                  </div>
+                )}
+                {type === "saml" && (
+                  <div className="flex items-center gap-2">
+                    <code className="text-xs bg-background px-2 py-1 rounded flex-1">
+                      {samlAcsUrl}
+                    </code>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6"
+                      onClick={() => copyToClipboard(samlAcsUrl)}
+                      aria-label={t("copyToClipboard")}
+                    >
+                      <Copy className="h-3 w-3" />
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("displaySettings")}</CardTitle>
+          <CardDescription>{t("displaySettingsDescription")}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            <Label htmlFor="setup-button-label">{t("buttonLabel")}</Label>
+            <Input
+              id="setup-button-label"
+              placeholder="Sign in with SSO"
+              value={buttonLabel}
+              onChange={(e) => setButtonLabel(e.target.value)}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardFooter className="pt-6">
+          <Button
+            type="button"
+            className="bg-gradient-button hover:bg-gradient-button-hover text-white"
+            onClick={handleRegister}
+            disabled={registerMutation.isPending}
+          >
+            {registerMutation.isPending ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 {t("saving")}
@@ -433,22 +711,24 @@ function SSOForm({
   );
 }
 
+// ─── SSOSection (main export) ─────────────────────────────────────────────────
+
 const SSOSection = () => {
   const { user } = useAuth();
 
   const {
-    data: settings,
+    data: providerConfig,
     isLoading,
     refetch,
-  } = useSelfhostedSsoSettings({
-    enabled: isSelfHostedMode() && user?.role === "ADMIN",
+  } = trpc.sso.getProviderConfig.useQuery(undefined, {
+    enabled: user?.role === "ADMIN",
   });
 
-  if (!isSelfHostedMode() || (user && user.role !== "ADMIN")) {
-    return <Navigate to="/settings/profile" replace />;
+  if (user?.role !== "ADMIN") {
+    return null;
   }
 
-  if (isLoading || !settings) {
+  if (isLoading) {
     return (
       <div className="space-y-4">
         <Skeleton className="h-8 w-48" />
@@ -458,10 +738,14 @@ const SSOSection = () => {
     );
   }
 
+  if (!providerConfig) {
+    return <SetupForm onRefetch={refetch} />;
+  }
+
   return (
     <SSOForm
-      key={JSON.stringify(settings)}
-      initialData={settings}
+      key={providerConfig.providerId}
+      initialData={providerConfig}
       onRefetch={refetch}
     />
   );

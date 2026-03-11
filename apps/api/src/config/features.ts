@@ -10,7 +10,8 @@ export type PremiumFeature =
   | "webhook_integration"
   | "data_export"
   | "advanced_alert_rules"
-  | "topology_visualization";
+  | "topology_visualization"
+  | "sso";
 
 /**
  * Feature definitions
@@ -23,6 +24,7 @@ export const FEATURES = {
   DATA_EXPORT: "data_export" as const,
   ADVANCED_ALERT_RULES: "advanced_alert_rules" as const,
   TOPOLOGY_VISUALIZATION: "topology_visualization" as const,
+  SSO: "sso" as const,
 } as const;
 
 /**
@@ -36,6 +38,7 @@ export const FEATURE_DESCRIPTIONS: Record<PremiumFeature, string> = {
   data_export: "Data Export",
   advanced_alert_rules: "Advanced Alert Rules",
   topology_visualization: "Topology Visualization",
+  sso: "SSO / SAML / OIDC",
 };
 
 /**

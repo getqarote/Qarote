@@ -130,7 +130,7 @@ test.describe("User Registration @p0", () => {
       registrationEnabled: false,
       emailEnabled: false,
       oauthEnabled: false,
-      ssoEnabled: false,
+
     });
 
     await page.goto("/auth/sign-up");
