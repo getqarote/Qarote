@@ -1812,12 +1812,19 @@ const Index = () => {
               >
                 {t("footer.termsOfService")}
               </a>
-              <a
-                href="mailto:support@qarote.io"
+              <button
+                type="button"
+                onClick={() => {
+                  if (window.Tawk_API) {
+                    window.Tawk_API.maximize();
+                  } else {
+                    window.location.href = "mailto:support@qarote.io";
+                  }
+                }}
                 className="text-muted-foreground hover:text-foreground transition-colors text-sm"
               >
                 {t("footer.contact")}
-              </a>
+              </button>
               <div className="flex items-center gap-2">
                 <a
                   href="https://github.com/getqarote/Qarote"
