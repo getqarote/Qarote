@@ -2,10 +2,11 @@ import bcrypt from "bcryptjs";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 
-import { authConfig, config, googleConfig } from "@/config";
-import { isCloudMode } from "@/config/deployment";
 import { logger } from "@/core/logger";
 import { prisma } from "@/core/prisma";
+
+import { authConfig, config, googleConfig } from "@/config";
+import { isCloudMode } from "@/config/deployment";
 
 export const auth = betterAuth({
   secret: authConfig.betterAuthSecret,
@@ -106,7 +107,4 @@ export const auth = betterAuth({
       logger.info({ url }, "Verification URL");
     },
   },
-
 });
-
-export type Auth = typeof auth;
