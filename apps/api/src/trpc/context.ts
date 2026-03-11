@@ -76,7 +76,9 @@ export async function createContext(opts: {
         isActive: baUser.isActive !== false,
         emailVerified: (baUser.emailVerified as boolean) ?? false,
         pendingEmail: (baUser.pendingEmail as string) || null,
-        lastLogin: baUser.lastLogin ? new Date(baUser.lastLogin as string) : null,
+        lastLogin: baUser.lastLogin
+          ? new Date(baUser.lastLogin as string)
+          : null,
         createdAt: new Date(baUser.createdAt as string),
         updatedAt: new Date(baUser.updatedAt as string),
         locale: (baUser.locale as string) || undefined,
