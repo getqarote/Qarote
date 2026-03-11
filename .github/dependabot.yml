@@ -9,8 +9,11 @@ updates:
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "daily"
     open-pull-requests-limit: 10
+    groups:
+      dependencies:
+        patterns: ["*"]
     labels:
       - "dependencies"
       - "npm"
@@ -19,8 +22,11 @@ updates:
   - package-ecosystem: "npm"
     directory: "/apps/api"
     schedule:
-      interval: "weekly"
+      interval: "daily"
     open-pull-requests-limit: 10
+    groups:
+      dependencies:
+        patterns: ["*"]
     labels:
       - "dependencies"
       - "npm"
@@ -30,8 +36,11 @@ updates:
   - package-ecosystem: "npm"
     directory: "/apps/app"
     schedule:
-      interval: "weekly"
+      interval: "daily"
     open-pull-requests-limit: 10
+    groups:
+      dependencies:
+        patterns: ["*"]
     labels:
       - "dependencies"
       - "npm"
@@ -41,8 +50,11 @@ updates:
   - package-ecosystem: "npm"
     directory: "/apps/web"
     schedule:
-      interval: "weekly"
+      interval: "daily"
     open-pull-requests-limit: 10
+    groups:
+      dependencies:
+        patterns: ["*"]
     labels:
       - "dependencies"
       - "npm"
@@ -52,8 +64,11 @@ updates:
   - package-ecosystem: "npm"
     directory: "/apps/portal"
     schedule:
-      interval: "weekly"
+      interval: "daily"
     open-pull-requests-limit: 10
+    groups:
+      dependencies:
+        patterns: ["*"]
     labels:
       - "dependencies"
       - "npm"
@@ -63,7 +78,7 @@ updates:
   - package-ecosystem: "docker"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "daily"
     open-pull-requests-limit: 5
     labels:
       - "dependencies"
@@ -73,9 +88,8 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "daily"
     open-pull-requests-limit: 5
     labels:
       - "dependencies"
       - "github-actions"
-
