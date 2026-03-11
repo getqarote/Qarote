@@ -84,7 +84,6 @@ export const SSOLoginButton: React.FC<SSOLoginButtonProps> = ({
               placeholder="your@company.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              autoFocus
               className="flex-1"
             />
             <Button
