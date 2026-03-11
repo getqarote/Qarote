@@ -1,5 +1,5 @@
 import bcrypt from "bcryptjs";
-import { sign, verify } from "hono/jwt";
+import { verify } from "hono/jwt";
 
 import { authConfig } from "@/config";
 
@@ -56,24 +56,6 @@ export const comparePassword = async (
   hashedPassword: string
 ): Promise<boolean> => {
   return bcrypt.compare(password, hashedPassword);
-};
-
-// Token generation
-export const generateToken = async (user: {
-  id: string;
-  email: string;
-  role: UserRole;
-  workspaceId: string | null;
-}): Promise<string> => {
-  const payload: JWTPayload = {
-    sub: user.id,
-    email: user.email,
-    role: user.role,
-    workspaceId: user.workspaceId,
-    exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7, // Default 7 days expiry
-  };
-
-  return sign(payload, authConfig.jwtSecret);
 };
 
 // Token verification

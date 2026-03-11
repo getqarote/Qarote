@@ -8,7 +8,6 @@ import type {
   PaymentErrorType,
   RabbitMQErrorContext,
   SentryContextData,
-  SentryUser,
   SignUpErrorType,
 } from "./interfaces";
 
@@ -93,17 +92,6 @@ export function trackMetricDistribution(
       "Failed to track distribution metric"
     );
   }
-}
-
-export function setSentryUser(user: SentryUser) {
-  const Sentry = getSentry();
-  if (!Sentry) return;
-
-  Sentry.setUser({
-    id: user.id,
-    workspace_id: user.workspaceId || undefined,
-    email: user.email,
-  });
 }
 
 export function setSentryContext(context: string, data: SentryContextData) {
