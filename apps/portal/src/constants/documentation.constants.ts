@@ -44,6 +44,16 @@ export const dockerComposeContent = `services:
       # SMTP_OAUTH_CLIENT_ID: \${SMTP_OAUTH_CLIENT_ID}
       # SMTP_OAUTH_CLIENT_SECRET: \${SMTP_OAUTH_CLIENT_SECRET}
       # SMTP_OAUTH_REFRESH_TOKEN: \${SMTP_OAUTH_REFRESH_TOKEN}
+      # Optional: SSO configuration (requires Enterprise license)
+      # SSO_ENABLED: \${SSO_ENABLED:-false}
+      # SSO_TYPE: \${SSO_TYPE:-oidc}
+      # SSO_OIDC_DISCOVERY_URL: \${SSO_OIDC_DISCOVERY_URL}
+      # SSO_OIDC_CLIENT_ID: \${SSO_OIDC_CLIENT_ID}
+      # SSO_OIDC_CLIENT_SECRET: \${SSO_OIDC_CLIENT_SECRET}
+      # SSO_SAML_METADATA_URL: \${SSO_SAML_METADATA_URL}
+      # API_URL: \${API_URL:-http://localhost:3000}
+      # FRONTEND_URL: \${FRONTEND_URL:-http://localhost:8080}
+      # SSO_BUTTON_LABEL: \${SSO_BUTTON_LABEL:-Sign in with SSO}
     ports:
       - "\${BACKEND_PORT}:3000"
     depends_on:
@@ -164,7 +174,29 @@ ENABLE_EMAIL=false
 # SMTP_OAUTH_REFRESH_TOKEN=your-refresh-token
 #
 # For other providers (Office 365, Outlook.com, etc.), see:
-# https://nodemailer.com/smtp/oauth2/`;
+# https://nodemailer.com/smtp/oauth2/
+
+# =============================================================================
+# OPTIONAL - SSO Configuration (requires Enterprise license)
+# =============================================================================
+# Enable SSO to let users authenticate via your identity provider (OIDC or SAML 2.0).
+# SSO_ENABLED=false
+# SSO_TYPE=oidc
+#
+# --- OIDC (recommended) ---
+# SSO_OIDC_DISCOVERY_URL=https://your-idp.com/realms/qarote/.well-known/openid-configuration
+# SSO_OIDC_CLIENT_ID=qarote
+# SSO_OIDC_CLIENT_SECRET=your-client-secret
+#
+# --- SAML (alternative) ---
+# SSO_SAML_METADATA_URL=https://your-idp.com/metadata.xml
+#
+# --- Required for SSO callbacks ---
+# API_URL=https://api.your-domain.com
+# FRONTEND_URL=https://your-domain.com
+#
+# --- Optional display ---
+# SSO_BUTTON_LABEL=Sign in with SSO`;
 
 export interface TOCItem {
   id: string;
