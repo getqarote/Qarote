@@ -1,16 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
-
-import type { User } from "@/lib/api";
-import { logger } from "@/lib/logger";
-import { trpc } from "@/lib/trpc/client";
 
 import { PageLoader } from "@/components/PageLoader";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
-import { useAuth } from "@/contexts/AuthContextDefinition";
 
 const ERROR_MESSAGES: Record<string, string> = {
   missing_code: "Authorization code was not provided.",
@@ -32,47 +26,17 @@ const ERROR_MESSAGES: Record<string, string> = {
 const SSOCallback: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { login } = useAuth();
-  const [error, setError] = useState<string | null>(() => {
+  const [error] = useState<string | null>(() => {
     const errorParam = searchParams.get("error");
     if (errorParam) {
       return (
         ERROR_MESSAGES[errorParam] || `Authentication error: ${errorParam}`
       );
     }
-    if (!searchParams.get("code")) {
-      return "Missing authorization code. Please try signing in again.";
-    }
+    // SSO callback is handled by better-auth now — if we land here with no
+    // error, the session cookie is already set. Redirect to workspace.
     return null;
   });
-  const processedRef = useRef(false);
-
-  const exchangeCodeMutation = trpc.auth.sso.exchangeCode.useMutation({
-    onSuccess: (data) => {
-      login(data.token, data.user as User);
-      navigate("/workspace", { replace: true });
-    },
-    onError: (err) => {
-      logger.error("SSO code exchange failed:", err);
-      setError(err.message || "SSO authentication failed");
-    },
-  });
-
-  useEffect(() => {
-    // Prevent double execution in React strict mode
-    if (processedRef.current) return;
-    processedRef.current = true;
-
-    const code = searchParams.get("code");
-
-    // Only exchange if we have a valid code and no initial error
-    if (!code || error) {
-      return;
-    }
-
-    // Exchange the temp auth code for a JWT
-    exchangeCodeMutation.mutate({ code });
-  }, [exchangeCodeMutation, searchParams, error]);
 
   if (error) {
     return (
@@ -99,6 +63,8 @@ const SSOCallback: React.FC = () => {
     );
   }
 
+  // No error — session was established by better-auth callback, redirect
+  navigate("/workspace", { replace: true });
   return <PageLoader />;
 };
 

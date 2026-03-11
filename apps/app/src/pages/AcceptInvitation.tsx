@@ -6,9 +6,10 @@ import { useNavigate, useParams } from "react-router";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Building, Loader2, Mail, Users } from "lucide-react";
 
+import { authClient } from "@/lib/auth-client";
+import { logger } from "@/lib/logger";
 import { trpc } from "@/lib/trpc/client";
 
-import { GoogleInvitationButton } from "@/components/auth/GoogleInvitationButton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -30,7 +31,8 @@ import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { PasswordRequirements } from "@/components/ui/password-requirements";
 
-import { useAcceptInvitation } from "@/hooks/ui/useAuth";
+import { useAuth } from "@/contexts/AuthContextDefinition";
+
 import { useToast } from "@/hooks/ui/useToast";
 
 import {
@@ -60,7 +62,8 @@ const AcceptInvitation = () => {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const acceptInvitationMutation = useAcceptInvitation();
+  const { login } = useAuth();
+  const acceptInvitationMutation = trpc.public.invitation.accept.useMutation();
   const utils = trpc.useUtils();
 
   const [invitation, setInvitation] = useState<InvitationDetails | null>(null);
@@ -123,15 +126,43 @@ const AcceptInvitation = () => {
         lastName: data.lastName,
       },
       {
-        onSuccess: () => {
-          toast({
-            title: t("welcomeToQarote"),
-            description: t("successfullyJoinedWorkspace", {
-              workspace: invitation?.workspace.name,
-            }),
-          });
-          // Redirect to dashboard
-          navigate("/", { replace: true });
+        onSuccess: async (result) => {
+          // Sign in to establish a cookie session after accepting
+          try {
+            const signInResult = await authClient.signIn.email({
+              email: invitation?.email || result.user.email,
+              password: data.password,
+            });
+
+            if (signInResult.error) {
+              throw new Error(signInResult.error.message);
+            }
+
+            // Fetch enriched user data
+            const response = await utils.auth.session.getSession.fetch();
+            const user = response.user;
+            user.workspaceId = user.workspace?.id;
+            login(user);
+
+            toast({
+              title: t("welcomeToQarote"),
+              description: t("successfullyJoinedWorkspace", {
+                workspace: invitation?.workspace.name,
+              }),
+            });
+
+            navigate("/", { replace: true });
+          } catch (err) {
+            logger.error("Failed to sign in after accepting invitation:", err);
+            // Account was created — redirect to sign-in
+            toast({
+              title: t("welcomeToQarote"),
+              description: t("successfullyJoinedWorkspace", {
+                workspace: invitation?.workspace.name,
+              }),
+            });
+            navigate("/auth/sign-in", { replace: true });
+          }
         },
         onError: (err: unknown) => {
           const errorMessage =
@@ -221,36 +252,6 @@ const AcceptInvitation = () => {
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
-
-          {/* Google Authentication Option */}
-          <div className="space-y-4">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">
-                  {t("orContinueWith")}
-                </span>
-              </div>
-            </div>
-
-            <GoogleInvitationButton
-              invitationToken={token || ""}
-              onError={(error) => setError(error)}
-            />
-          </div>
-
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">
-                {t("orCreateAccountManually")}
-              </span>
-            </div>
-          </div>
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">

@@ -6,10 +6,10 @@ import { generateTestLicenseJwt, ALL_PREMIUM_FEATURES } from "../../helpers/lice
 
 const AUTH_TOKENS_FILE = path.resolve(import.meta.dirname, "../../.auth-tokens.json");
 
-function getAdminToken(): string {
+function getAdminCookie(): string {
   const raw = fs.readFileSync(AUTH_TOKENS_FILE, "utf-8");
   const tokens = JSON.parse(raw);
-  return tokens["admin@e2e-test.local"].token;
+  return tokens["admin@e2e-test.local"].cookie;
 }
 
 test.describe("License Page @p1", () => {
@@ -109,9 +109,9 @@ test.describe("License Page @p1", () => {
       tier: "DEVELOPER",
       features: ALL_PREMIUM_FEATURES,
     });
-    const token = getAdminToken();
+    const cookie = getAdminCookie();
     await api
-      .withAuth(token)
+      .withAuth(cookie)
       .mutation("selfhostedLicense.activate", { licenseKey: jwt });
 
     // Navigate to license page

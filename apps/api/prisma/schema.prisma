@@ -181,6 +181,7 @@ model RabbitMQServer {
 
 model User {
   id                                        String                   @id @default(uuid())
+  name                                      String                   @default("")
   email                                     String                   @unique
   passwordHash                              String?
   firstName                                 String

@@ -1,16 +1,16 @@
 import React, { useCallback, useEffect, useState } from "react";
 
+import { authClient } from "@/lib/auth-client";
 import { logger } from "@/lib/logger";
 import { trpc } from "@/lib/trpc/client";
 import { type User } from "@/lib/types";
 
 interface AuthContextType {
   user: User | null;
-  token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (token: string, user: User) => void;
-  logout: () => void;
+  login: (user: User) => void;
+  logout: () => Promise<void>;
   updateUser: (user: User) => void;
   refetchUser: () => Promise<void>;
 }
@@ -23,76 +23,72 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const storedToken = localStorage.getItem("auth_token");
-    const storedUser = localStorage.getItem("auth_user");
+  const utils = trpc.useUtils();
 
-    if (storedToken && storedUser) {
+  useEffect(() => {
+    const checkSession = async () => {
       try {
-        const parsedUser = JSON.parse(storedUser);
-        setToken(storedToken);
-        setUser(parsedUser);
+        const session = await authClient.getSession();
+        if (session.data?.user) {
+          try {
+            const response = await utils.user.getProfile.fetch();
+            setUser(response.profile);
+          } catch {
+            logger.warn("Failed to fetch profile, using basic session data");
+          }
+        }
       } catch (error) {
-        logger.error("Failed to parse stored user data:", error);
-        localStorage.removeItem("auth_token");
-        localStorage.removeItem("auth_user");
+        logger.error("Failed to check session:", error);
+      } finally {
+        setIsLoading(false);
       }
-    }
-    setIsLoading(false);
+    };
+
+    checkSession();
+  }, [utils]);
+
+  const login = useCallback((newUser: User) => {
+    setUser(newUser);
   }, []);
 
-  const login = (newToken: string, newUser: User) => {
-    setToken(newToken);
-    setUser(newUser);
-    localStorage.setItem("auth_token", newToken);
-    localStorage.setItem("auth_user", JSON.stringify(newUser));
-  };
-
-  const logout = useCallback(() => {
-    setToken(null);
+  const logout = useCallback(async () => {
+    try {
+      await authClient.signOut();
+    } catch (error) {
+      logger.error("Failed to sign out:", error);
+    }
     setUser(null);
-    localStorage.removeItem("auth_token");
-    localStorage.removeItem("auth_user");
   }, []);
 
   const updateUser = useCallback((newUser: User) => {
     setUser(newUser);
-    localStorage.setItem("auth_user", JSON.stringify(newUser));
   }, []);
 
   useEffect(() => {
     const handleUnauthorized = () => {
-      logout();
+      setUser(null);
     };
 
     window.addEventListener("auth:unauthorized", handleUnauthorized);
     return () => {
       window.removeEventListener("auth:unauthorized", handleUnauthorized);
     };
-  }, [logout]);
-
-  const utils = trpc.useUtils();
+  }, []);
 
   const refetchUser = useCallback(async () => {
-    if (!token) return;
-
     try {
       const response = await utils.user.getProfile.fetch();
-      const updatedUser = response.profile;
-      setUser(updatedUser);
-      localStorage.setItem("auth_user", JSON.stringify(updatedUser));
+      setUser(response.profile);
     } catch (error) {
       logger.error("Failed to refetch user data:", error);
     }
-  }, [token, utils]);
+  }, [utils]);
 
   const value: AuthContextType = {
     user,
-    token,
-    isAuthenticated: !!token && !!user,
+    isAuthenticated: !!user,
     isLoading,
     login,
     logout,

@@ -4,11 +4,10 @@ import { User } from "@/lib/api";
 
 interface AuthContextType {
   user: User | null;
-  token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (token: string, user: User) => void;
-  logout: () => void;
+  login: (user: User) => void;
+  logout: () => Promise<void>;
   updateUser: (user: User) => void;
   refetchUser: () => Promise<void>;
 }

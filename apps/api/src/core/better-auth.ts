@@ -5,7 +5,11 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { logger } from "@/core/logger";
 import { prisma } from "@/core/prisma";
 
-import { authConfig, config, googleConfig } from "@/config";
+import { EmailVerificationService } from "@/services/email/email-verification.service";
+import { notionService } from "@/services/integrations/notion.service";
+import { StripeCustomerService } from "@/services/stripe/customer.service";
+
+import { authConfig, config, emailConfig, googleConfig } from "@/config";
 import { isCloudMode } from "@/config/deployment";
 
 export const auth = betterAuth({
@@ -27,7 +31,6 @@ export const auth = betterAuth({
       isActive: { type: "boolean", required: false },
       workspaceId: { type: "string", required: false },
       locale: { type: "string", required: false },
-      emailVerified: { type: "boolean", required: false },
       pendingEmail: { type: "string", required: false },
       lastLogin: { type: "date", required: false },
       stripeCustomerId: { type: "string", required: false },
@@ -48,6 +51,7 @@ export const auth = betterAuth({
 
   emailAndPassword: {
     enabled: true,
+    requireEmailVerification: isCloudMode(),
     password: {
       // Custom verify to handle legacy bcrypt hashes from before the migration.
       // better-auth defaults to scrypt; existing users have bcrypt ($2b$) hashes.
@@ -102,9 +106,127 @@ export const auth = betterAuth({
         { userId: user.id, email: user.email },
         "Sending verification email via better-auth"
       );
-      // TODO: Wire to existing EmailVerificationService
-      // For now, log the verification URL
-      logger.info({ url }, "Verification URL");
+
+      if (!emailConfig.enabled) {
+        logger.info({ url }, "Email disabled, verification URL (dev only)");
+        return;
+      }
+
+      try {
+        const baUser = user as Record<string, unknown>;
+        await EmailVerificationService.sendVerificationEmail(
+          user.email,
+          url,
+          "SIGNUP",
+          (baUser.firstName as string) || undefined,
+          undefined,
+          "en"
+        );
+      } catch (error) {
+        logger.error(
+          { error, userId: user.id },
+          "Failed to send verification email"
+        );
+      }
+    },
+  },
+
+  databaseHooks: {
+    session: {
+      create: {
+        before: async (session) => {
+          // Check if user is active before allowing session creation
+          const user = await prisma.user.findUnique({
+            where: { id: session.userId },
+            select: { isActive: true },
+          });
+
+          if (user && !user.isActive) {
+            throw new Error("Account is inactive");
+          }
+        },
+        after: async (session) => {
+          // Update lastLogin timestamp when a new session is created
+          await prisma.user
+            .update({
+              where: { id: session.userId },
+              data: { lastLogin: new Date() },
+            })
+            .catch((error) => {
+              logger.warn(
+                { error, userId: session.userId },
+                "Failed to update lastLogin"
+              );
+            });
+        },
+      },
+    },
+    user: {
+      create: {
+        after: async (user) => {
+          const baUser = user as Record<string, unknown>;
+
+          // Auto-start Enterprise trial for cloud users (fire-and-forget)
+          if (isCloudMode()) {
+            StripeCustomerService.provisionTrialForNewUser({
+              userId: user.id,
+              email: user.email,
+              name: user.name || "",
+              prisma,
+            }).catch((error) => {
+              logger.warn(
+                { error, userId: user.id },
+                "Failed to auto-start trial at registration"
+              );
+            });
+          }
+
+          // Auto-verify email when email service is disabled (self-hosted/binary)
+          if (!emailConfig.enabled) {
+            await prisma.user
+              .update({
+                where: { id: user.id },
+                data: {
+                  emailVerified: true,
+                  emailVerifiedAt: new Date(),
+                },
+              })
+              .catch((error) => {
+                logger.warn(
+                  { error, userId: user.id },
+                  "Failed to auto-verify email"
+                );
+              });
+          }
+
+          // Sync user to Notion (fire-and-forget)
+          prisma.user
+            .findUnique({ where: { id: user.id } })
+            .then((fullUser) => {
+              if (fullUser) {
+                return notionService.syncUser(fullUser);
+              }
+            })
+            .catch((notionError) => {
+              logger.warn(
+                { notionError, userId: user.id },
+                "Failed to sync user to Notion"
+              );
+            });
+
+          // Set name from firstName + lastName if not already set
+          if (!user.name && (baUser.firstName || baUser.lastName)) {
+            await prisma.user
+              .update({
+                where: { id: user.id },
+                data: {
+                  name: `${(baUser.firstName as string) || ""} ${(baUser.lastName as string) || ""}`.trim(),
+                },
+              })
+              .catch(() => {});
+          }
+        },
+      },
     },
   },
 });

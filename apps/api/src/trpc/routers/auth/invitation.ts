@@ -1,18 +1,14 @@
 import { TRPCError } from "@trpc/server";
-import { OAuth2Client } from "google-auth-library";
 
-import { comparePassword, generateToken, hashPassword } from "@/core/auth";
+import { comparePassword, hashPassword } from "@/core/auth";
 import { formatInvitedBy } from "@/core/utils";
 import { ensureWorkspaceMember } from "@/core/workspace-access";
 
 import {
   AcceptInvitationSchema,
-  AcceptInvitationWithGoogleSchema,
   AcceptInvitationWithRegistrationTokenSchema,
   InvitationTokenSchema,
 } from "@/schemas/auth";
-
-import { googleConfig } from "@/config";
 
 import { UserMapper } from "@/mappers/auth";
 import { WorkspaceMapper } from "@/mappers/workspace";
@@ -23,13 +19,13 @@ import { InvitationStatus, UserRole } from "@/generated/prisma/client";
 import { te } from "@/i18n";
 
 /**
- * Initialize Google OAuth client
- */
-const googleOAuthClient = new OAuth2Client();
-
-/**
  * Invitation router
- * Handles workspace invitation operations
+ * Handles workspace invitation operations.
+ * Google-based invitation acceptance has been removed — Google OAuth is now
+ * handled by better-auth's redirect flow. Users sign up/in with Google first,
+ * then accept invitations separately.
+ * After accepting, the frontend signs in via authClient.signIn.email()
+ * to establish a cookie-based session.
  */
 export const invitationRouter = router({
   /**
@@ -76,7 +72,6 @@ export const invitationRouter = router({
           });
         }
 
-        // Get workspace owner's subscription to determine plan
         const ownerSubscription = await ctx.prisma.subscription.findUnique({
           where: { userId: invitation.workspace.ownerId! },
           select: { plan: true },
@@ -120,6 +115,7 @@ export const invitationRouter = router({
 
   /**
    * Accept invitation (PUBLIC)
+   * After success, the frontend signs in via authClient.signIn.email()
    */
   acceptInvitation: rateLimitedPublicProcedure
     .input(AcceptInvitationSchema)
@@ -127,7 +123,6 @@ export const invitationRouter = router({
       const { token, password, firstName, lastName } = input;
 
       try {
-        // Find invitation by token
         const invitation = await ctx.prisma.invitation.findUnique({
           where: { token },
           include: { workspace: true },
@@ -149,7 +144,6 @@ export const invitationRouter = router({
 
         const now = new Date();
         if (invitation.expiresAt < now) {
-          // Update invitation status to expired
           await ctx.prisma.invitation.update({
             where: { id: invitation.id },
             data: { status: InvitationStatus.EXPIRED },
@@ -160,7 +154,6 @@ export const invitationRouter = router({
           });
         }
 
-        // Check if user already exists
         let user = await ctx.prisma.user.findUnique({
           where: { email: invitation.email },
           select: {
@@ -180,7 +173,7 @@ export const invitationRouter = router({
           },
         });
 
-        // Security: If user exists, require password verification before changing workspace
+        // For existing users, verify password
         if (user) {
           if (!password) {
             throw new TRPCError({
@@ -189,18 +182,21 @@ export const invitationRouter = router({
             });
           }
 
-          // Verify password matches existing user's password
-          if (!user.passwordHash) {
+          // Check Account table first (better-auth), fall back to User.passwordHash
+          const account = await ctx.prisma.account.findFirst({
+            where: { userId: user.id, providerId: "credential" },
+            select: { password: true },
+          });
+          const hash = account?.password || user.passwordHash;
+
+          if (!hash) {
             throw new TRPCError({
               code: "BAD_REQUEST",
               message: te(ctx.locale, "auth.accountNoPasswordUseReset"),
             });
           }
 
-          const isPasswordValid = await comparePassword(
-            password,
-            user.passwordHash
-          );
+          const isPasswordValid = await comparePassword(password, hash);
 
           if (!isPasswordValid) {
             throw new TRPCError({
@@ -209,7 +205,6 @@ export const invitationRouter = router({
             });
           }
         } else {
-          // Validate required fields for new user creation BEFORE transaction
           if (!password || !firstName || !lastName) {
             throw new TRPCError({
               code: "BAD_REQUEST",
@@ -218,10 +213,8 @@ export const invitationRouter = router({
           }
         }
 
-        // Transaction to handle user creation/update and invitation acceptance
         const result = await ctx.prisma.$transaction(async (tx) => {
           if (user) {
-            // Update existing user's workspace (password already verified above)
             user = await tx.user.update({
               where: { id: user.id },
               data: {
@@ -229,7 +222,6 @@ export const invitationRouter = router({
               },
             });
           } else {
-            // Create new user (validation already done above)
             const hashedPassword = await hashPassword(password!);
 
             user = await tx.user.create({
@@ -238,6 +230,7 @@ export const invitationRouter = router({
                 passwordHash: hashedPassword,
                 firstName: firstName!,
                 lastName: lastName!,
+                name: `${firstName} ${lastName}`.trim(),
                 workspaceId: invitation.workspaceId,
                 role: UserRole.MEMBER,
                 isActive: true,
@@ -246,9 +239,18 @@ export const invitationRouter = router({
                 lastLogin: new Date(),
               },
             });
+
+            // Create better-auth Account record for credential-based auth
+            await tx.account.create({
+              data: {
+                userId: user.id,
+                accountId: user.id,
+                providerId: "credential",
+                password: hashedPassword,
+              },
+            });
           }
 
-          // Add user to WorkspaceMember table
           await ensureWorkspaceMember(
             user.id,
             invitation.workspaceId,
@@ -256,7 +258,6 @@ export const invitationRouter = router({
             tx
           );
 
-          // Update invitation status
           await tx.invitation.update({
             where: { id: invitation.id },
             data: {
@@ -268,17 +269,8 @@ export const invitationRouter = router({
           return user;
         });
 
-        // Generate JWT token
-        const authToken = await generateToken({
-          id: result.id,
-          email: result.email,
-          role: result.role,
-          workspaceId: result.workspaceId,
-        });
-
         return {
           user: UserMapper.toApiResponse(result),
-          token: authToken,
           workspace: invitation.workspace
             ? WorkspaceMapper.toApiResponse(invitation.workspace)
             : null,
@@ -303,6 +295,7 @@ export const invitationRouter = router({
 
   /**
    * Accept invitation with registration (PUBLIC)
+   * After success, the frontend signs in via authClient.signIn.email()
    */
   acceptInvitationWithRegistration: rateLimitedPublicProcedure
     .input(AcceptInvitationWithRegistrationTokenSchema)
@@ -363,6 +356,7 @@ export const invitationRouter = router({
               passwordHash: hashedPassword,
               firstName,
               lastName,
+              name: `${firstName} ${lastName}`.trim(),
               role: UserRole.MEMBER,
               workspaceId: invitation.workspaceId,
               isActive: true,
@@ -384,7 +378,16 @@ export const invitationRouter = router({
             },
           });
 
-          // Add user to WorkspaceMember table
+          // Create better-auth Account record for credential-based auth
+          await tx.account.create({
+            data: {
+              userId: user.id,
+              accountId: user.id,
+              providerId: "credential",
+              password: hashedPassword,
+            },
+          });
+
           await ensureWorkspaceMember(
             user.id,
             invitation.workspaceId,
@@ -392,7 +395,6 @@ export const invitationRouter = router({
             tx
           );
 
-          // Update invitation status
           await tx.invitation.update({
             where: { id: invitation.id },
             data: {
@@ -402,13 +404,6 @@ export const invitationRouter = router({
           });
 
           return user;
-        });
-
-        const jwtToken = await generateToken({
-          id: newUser.id,
-          email: newUser.email,
-          role: newUser.role,
-          workspaceId: newUser.workspaceId,
         });
 
         return {
@@ -418,7 +413,6 @@ export const invitationRouter = router({
             id: invitation.workspace.id,
             name: invitation.workspace.name,
           },
-          token: jwtToken,
         };
       } catch (error) {
         if (error instanceof TRPCError) {
@@ -428,182 +422,6 @@ export const invitationRouter = router({
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: te(ctx.locale, "auth.failedToAcceptInvitation"),
-        });
-      }
-    }),
-
-  /**
-   * Accept invitation with Google OAuth (PUBLIC)
-   */
-  acceptInvitationWithGoogle: rateLimitedPublicProcedure
-    .input(AcceptInvitationWithGoogleSchema)
-    .mutation(async ({ input, ctx }) => {
-      const { token, credential } = input;
-
-      try {
-        // Verify the Google OAuth token
-        if (!googleConfig.clientId) {
-          throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message: te(ctx.locale, "auth.googleOAuthClientIdNotConfigured"),
-          });
-        }
-
-        const ticket = await googleOAuthClient.verifyIdToken({
-          idToken: credential,
-          audience: googleConfig.clientId,
-        });
-
-        const payload = ticket.getPayload();
-        if (!payload) {
-          throw new TRPCError({
-            code: "UNAUTHORIZED",
-            message: te(ctx.locale, "auth.invalidGoogleToken"),
-          });
-        }
-
-        const { sub: googleId, email, given_name, family_name } = payload;
-
-        if (!email) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: te(ctx.locale, "auth.emailNotProvidedByGoogle"),
-          });
-        }
-
-        // Find the invitation
-        const invitation = await ctx.prisma.invitation.findFirst({
-          where: {
-            token,
-            status: InvitationStatus.PENDING,
-            expiresAt: {
-              gt: new Date(),
-            },
-          },
-          include: {
-            workspace: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
-            invitedBy: {
-              select: {
-                id: true,
-                email: true,
-                firstName: true,
-                lastName: true,
-              },
-            },
-          },
-        });
-
-        if (!invitation) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: te(ctx.locale, "auth.invalidOrExpiredInvitation"),
-          });
-        }
-
-        // Verify that the Google email matches the invitation email
-        if (email.toLowerCase() !== invitation.email.toLowerCase()) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: te(ctx.locale, "auth.googleEmailMismatchInvitation"),
-          });
-        }
-
-        // Check if user already exists
-        let user = await ctx.prisma.user.findUnique({
-          where: { email: invitation.email },
-        });
-
-        const isNewUser = !user;
-
-        // Transaction to handle user creation/update and invitation acceptance
-        const result = await ctx.prisma.$transaction(async (tx) => {
-          if (user) {
-            // Update existing user's workspace and link Google OAuth
-            user = await tx.user.update({
-              where: { id: user.id },
-              data: {
-                workspaceId: invitation.workspaceId,
-                googleId,
-                emailVerified: true,
-                emailVerifiedAt: new Date(),
-                lastLogin: new Date(),
-              },
-            });
-          } else {
-            // Create new user with Google OAuth
-            user = await tx.user.create({
-              data: {
-                email: invitation.email,
-                firstName: given_name || "",
-                lastName: family_name || "",
-                googleId,
-                workspaceId: invitation.workspaceId,
-                role: UserRole.MEMBER,
-                emailVerified: true,
-                emailVerifiedAt: new Date(),
-                isActive: true,
-                lastLogin: new Date(),
-              },
-            });
-          }
-
-          // Add user to WorkspaceMember table
-          await ensureWorkspaceMember(
-            user.id,
-            invitation.workspaceId,
-            invitation.role,
-            tx
-          );
-
-          // Update invitation status
-          await tx.invitation.update({
-            where: { id: invitation.id },
-            data: {
-              status: InvitationStatus.ACCEPTED,
-              invitedUserId: user.id,
-            },
-          });
-
-          return user;
-        });
-
-        // Generate JWT token
-        const authToken = await generateToken({
-          id: result.id,
-          email: result.email,
-          role: result.role,
-          workspaceId: result.workspaceId,
-        });
-
-        return {
-          message: te(ctx.locale, "messages.invitationAcceptedGoogle"),
-          user: UserMapper.toApiResponse(result),
-          workspace: {
-            id: invitation.workspace.id,
-            name: invitation.workspace.name,
-          },
-          token: authToken,
-          isNewUser,
-        };
-      } catch (error) {
-        if (error instanceof TRPCError) {
-          throw error;
-        }
-        ctx.logger.error({ error }, "Error accepting invitation with Google");
-        if (error instanceof Error) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: error.message,
-          });
-        }
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: te(ctx.locale, "auth.failedToAcceptInvitationGoogle"),
         });
       }
     }),

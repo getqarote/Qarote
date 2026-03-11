@@ -10,12 +10,12 @@ type AuthFixtures = {
 };
 
 /**
- * Read pre-acquired auth tokens from the file written by global-setup.
+ * Read pre-acquired auth cookies from the file written by global-setup.
  * This avoids hitting the login API rate limiter across workers.
  */
-function getAuthToken(email: string): { token: string; user: Record<string, unknown> } {
+function getAuthData(email: string): { cookie: string; user: Record<string, unknown> } {
   const raw = fs.readFileSync(AUTH_TOKENS_FILE, "utf-8");
-  let tokens: Record<string, { token: string; user: Record<string, unknown> }>;
+  let tokens: Record<string, { cookie: string; user: Record<string, unknown> }>;
   try {
     tokens = JSON.parse(raw);
   } catch (cause) {
@@ -23,32 +23,53 @@ function getAuthToken(email: string): { token: string; user: Record<string, unkn
   }
   const entry = tokens[email];
   if (!entry) {
-    throw new Error(`No cached auth token for ${email}. Did global-setup run?`);
+    throw new Error(`No cached auth data for ${email}. Did global-setup run?`);
   }
   return entry;
 }
 
 /**
- * Create a new browser page with auth token pre-injected into localStorage.
- * The app reads `auth_token` and `auth_user` from localStorage on mount.
+ * Parse cookie string into individual cookie objects for Playwright.
+ */
+function parseCookies(cookieString: string, baseUrl: string): Array<{
+  name: string;
+  value: string;
+  domain: string;
+  path: string;
+}> {
+  const url = new URL(baseUrl);
+  return cookieString
+    .split("; ")
+    .filter(Boolean)
+    .map((c) => {
+      const [name, ...valueParts] = c.split("=");
+      return {
+        name: name.trim(),
+        value: valueParts.join("="),
+        domain: url.hostname,
+        path: "/",
+      };
+    });
+}
+
+/**
+ * Create a new browser page with auth cookies pre-injected.
+ * The app uses cookie-based sessions via better-auth.
  */
 async function createAuthenticatedPage(
   context: BrowserContext,
   email: string
 ): Promise<Page> {
-  const { token, user } = getAuthToken(email);
+  const { cookie } = getAuthData(email);
+  const baseUrl = process.env.VITE_APP_URL || process.env.APP_URL || "http://localhost:5173";
+
+  // Inject session cookies into the browser context
+  const cookies = parseCookies(cookie, baseUrl);
+  if (cookies.length > 0) {
+    await context.addCookies(cookies);
+  }
 
   const page = await context.newPage();
-
-  // Inject auth state before any navigation
-  await page.addInitScript(
-    ({ token, user }) => {
-      localStorage.setItem("auth_token", token);
-      localStorage.setItem("auth_user", JSON.stringify(user));
-    },
-    { token, user }
-  );
-
   return page;
 }
 

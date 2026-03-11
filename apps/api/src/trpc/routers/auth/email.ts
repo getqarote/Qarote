@@ -24,12 +24,16 @@ export const emailRouter = router({
     .mutation(async ({ input, ctx }) => {
       const { newEmail, password } = input;
       const user = ctx.user;
-      // Note: IP and user agent tracking would need to be added to context if needed
       const clientIP = "unknown";
       const userAgent = "unknown";
 
       try {
-        // Get user with password hash
+        // Check Account table first (better-auth), fall back to User.passwordHash
+        const account = await ctx.prisma.account.findFirst({
+          where: { userId: user.id, providerId: "credential" },
+          select: { password: true },
+        });
+
         const userWithPassword = await ctx.prisma.user.findUnique({
           where: { id: user.id },
           select: {
@@ -48,19 +52,16 @@ export const emailRouter = router({
           });
         }
 
-        // Check if user has a password (not OAuth-only user)
-        if (!userWithPassword.passwordHash) {
+        const passwordHash = account?.password || userWithPassword.passwordHash;
+
+        if (!passwordHash) {
           throw new TRPCError({
             code: "BAD_REQUEST",
             message: te(ctx.locale, "auth.googleSignInNoEmailChange"),
           });
         }
 
-        // Verify password
-        const isPasswordValid = await comparePassword(
-          password,
-          userWithPassword.passwordHash
-        );
+        const isPasswordValid = await comparePassword(password, passwordHash);
 
         if (!isPasswordValid) {
           throw new TRPCError({
@@ -117,7 +118,6 @@ export const emailRouter = router({
           });
         }
 
-        // Log email change request for audit
         await auditService.logPasswordEvent({
           action: "email_change_requested",
           userId: user.id,

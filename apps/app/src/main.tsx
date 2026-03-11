@@ -2,12 +2,10 @@ import "@/styles/index.css";
 
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { GoogleOAuthProvider } from "@react-oauth/google";
 
 import "@/i18n";
 
 import { initializeGA } from "@/lib/ga";
-import { logger } from "@/lib/logger";
 import { initSentry } from "@/lib/sentry";
 
 import App from "./App.tsx";
@@ -27,24 +25,8 @@ if (deploymentMode === "cloud") {
   initializeGA();
 }
 
-// OAuth is only enabled for cloud deployments
-const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-const enableOAuth = deploymentMode === "cloud";
-
-if (!googleClientId && enableOAuth) {
-  logger.warn(
-    "VITE_GOOGLE_CLIENT_ID environment variable is not set. Google OAuth will not work."
-  );
-}
-
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    {enableOAuth && googleClientId ? (
-      <GoogleOAuthProvider clientId={googleClientId}>
-        <App />
-      </GoogleOAuthProvider>
-    ) : (
-      <App />
-    )}
+    <App />
   </StrictMode>
 );
