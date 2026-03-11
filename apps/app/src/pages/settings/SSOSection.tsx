@@ -13,7 +13,6 @@ import {
 import { toast } from "sonner";
 
 import { isCloudMode } from "@/lib/featureFlags";
-import { trpc } from "@/lib/trpc/client";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -38,6 +37,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
+
+import {
+  useDeleteSsoProvider,
+  useRegisterSsoProvider,
+  useSsoProviderConfig,
+  useTestSsoConnection,
+  useUpdateSsoProvider,
+} from "@/hooks/queries/useSsoProvider";
 
 const REDACTED = "••••••••";
 
@@ -66,7 +73,6 @@ function SSOForm({
   onRefetch: () => void;
 }) {
   const { t } = useTranslation("sso");
-  const utils = trpc.useUtils();
   const apiUrl = getApiUrl();
 
   const [enabled, setEnabled] = useState(initialData.enabled);
@@ -85,23 +91,19 @@ function SSOForm({
   );
   const [buttonLabel, setButtonLabel] = useState(initialData.buttonLabel);
 
-  const updateMutation = trpc.sso.updateProvider.useMutation({
+  const updateMutation = useUpdateSsoProvider({
     onSuccess: () => {
       toast.success(t("saveSuccess"));
-      utils.sso.getProviderConfig.invalidate();
-      utils.sso.getConfig.invalidate();
       onRefetch();
     },
     onError: (error) => toast.error(error.message || t("saveError")),
   });
 
-  const deleteMutation = trpc.sso.deleteProvider.useMutation({
+  const deleteMutation = useDeleteSsoProvider({
     onSuccess: () => {
       toast.success(
         t("deleteSuccess", { defaultValue: "SSO provider deleted" })
       );
-      utils.sso.getProviderConfig.invalidate();
-      utils.sso.getConfig.invalidate();
       onRefetch();
     },
     onError: (error) =>
@@ -111,7 +113,7 @@ function SSOForm({
       ),
   });
 
-  const testMutation = trpc.sso.testConnection.useMutation({
+  const testMutation = useTestSsoConnection({
     onSuccess: (data) => {
       if (data.success) {
         toast.success(t("testSuccess", { issuer: data.issuer }));
@@ -446,7 +448,6 @@ function SSOForm({
 
 function SetupForm({ onRefetch }: { onRefetch: () => void }) {
   const { t } = useTranslation("sso");
-  const utils = trpc.useUtils();
   const apiUrl = getApiUrl();
 
   const [type, setType] = useState<"oidc" | "saml">("oidc");
@@ -456,7 +457,7 @@ function SetupForm({ onRefetch }: { onRefetch: () => void }) {
   const [samlMetadataUrl, setSamlMetadataUrl] = useState("");
   const [buttonLabel, setButtonLabel] = useState("Sign in with SSO");
 
-  const testMutation = trpc.sso.testConnection.useMutation({
+  const testMutation = useTestSsoConnection({
     onSuccess: (data) => {
       if (data.success) {
         toast.success(t("testSuccess", { issuer: data.issuer }));
@@ -467,11 +468,9 @@ function SetupForm({ onRefetch }: { onRefetch: () => void }) {
     onError: (error) => toast.error(error.message || t("testError")),
   });
 
-  const registerMutation = trpc.sso.registerProvider.useMutation({
+  const registerMutation = useRegisterSsoProvider({
     onSuccess: () => {
       toast.success(t("saveSuccess"));
-      utils.sso.getProviderConfig.invalidate();
-      utils.sso.getConfig.invalidate();
       onRefetch();
     },
     onError: (error) => toast.error(error.message || t("saveError")),
@@ -736,9 +735,7 @@ const SSOSection = () => {
     data: providerConfig,
     isLoading,
     refetch,
-  } = trpc.sso.getProviderConfig.useQuery(undefined, {
-    enabled: user?.role === "ADMIN",
-  });
+  } = useSsoProviderConfig({ enabled: user?.role === "ADMIN" });
 
   if (user?.role !== "ADMIN") {
     return null;
