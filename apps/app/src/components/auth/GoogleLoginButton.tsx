@@ -28,7 +28,7 @@ export const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
     try {
       await authClient.signIn.social({
         provider: "google",
-        callbackURL: "/workspace",
+        callbackURL: `${window.location.origin}/workspace`,
       });
     } catch (error) {
       logger.error("Google login failed:", error);
