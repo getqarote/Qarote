@@ -157,6 +157,7 @@ export const ssoRouter = router({
       enabled: wsConfig.enabled,
       buttonLabel: wsConfig.buttonLabel,
       providerId: provider.providerId,
+      domain: provider.domain,
       type: provider.oidcConfig ? ("oidc" as const) : ("saml" as const),
       oidcConfig,
       samlConfig,
@@ -177,12 +178,21 @@ export const ssoRouter = router({
         oidcClientSecret: z.string().optional(),
         samlMetadataUrl: z.string().optional(),
         buttonLabel: z.string().optional(),
+        domain: z.string().optional(),
       })
     )
     .mutation(async ({ input, ctx }) => {
       let workspaceId: string | null = null;
       let providerId: string;
-      const domain = "";
+
+      // Cloud: domain is required for email-based signIn.sso({ email }) discovery
+      if (isCloudMode() && !input.domain) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Domain is required for cloud SSO (e.g. acme.com)",
+        });
+      }
+      const domain = input.domain ?? "";
 
       if (isCloudMode()) {
         const workspace = await ctx.prisma.workspace.findFirst({
@@ -233,6 +243,7 @@ export const ssoRouter = router({
           where: { providerId },
           update: {
             issuer,
+            domain,
             oidcConfig: oidcConfigJson,
             samlConfig: samlConfigJson,
           },
@@ -282,6 +293,7 @@ export const ssoRouter = router({
         samlMetadataUrl: z.string().optional(),
         buttonLabel: z.string().optional(),
         enabled: z.boolean().optional(),
+        domain: z.string().optional(),
       })
     )
     .mutation(async ({ input, ctx }) => {
@@ -358,6 +370,7 @@ export const ssoRouter = router({
             issuer,
             oidcConfig: oidcConfigJson,
             samlConfig: samlConfigJson,
+            ...(input.domain !== undefined && { domain: input.domain }),
           },
         });
 
