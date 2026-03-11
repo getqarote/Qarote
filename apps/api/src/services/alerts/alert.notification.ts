@@ -215,9 +215,29 @@ class AlertNotificationService {
       const newAlerts: RabbitMQAlert[] = [];
       const now = new Date();
 
+      // Deduplicate alerts by fingerprint before processing.
+      // If the same fingerprint appears more than once in the batch (e.g. from
+      // duplicate entries in the source data) only the first occurrence is kept,
+      // preventing duplicate SeenAlert writes and double notification sends.
+      const dedupedAlerts: RabbitMQAlert[] = [];
+      const seenInBatch = new Set<string>();
+      for (const alert of alerts) {
+        const fp = generateAlertFingerprint(
+          serverId,
+          alert.category,
+          alert.source.type,
+          alert.source.name,
+          alert.vhost
+        );
+        if (!seenInBatch.has(fp)) {
+          seenInBatch.add(fp);
+          dedupedAlerts.push(alert);
+        }
+      }
+
       // Process each alert - ALWAYS track alerts regardless of notification settings
       // Severity preferences only affect notifications, not tracking
-      for (const alert of alerts) {
+      for (const alert of dedupedAlerts) {
         const fingerprint = generateAlertFingerprint(
           serverId,
           alert.category,
@@ -313,16 +333,18 @@ class AlertNotificationService {
       });
 
       // If vhost is specified, exclude queue alerts that belong to a different vhost.
-      // Position-safe: after the "-queue-" segment the next part must start with
-      // `${vhost}-`, preventing false positives from overlapping vhost name prefixes.
+      // Exact boundary match: strip the known sourceName suffix, then verify the
+      // remainder ends with `-queue-${vhost}` exactly. This avoids false positives
+      // when one vhost name is a prefix of another (e.g. "foo" vs "foo-bar") and
+      // works correctly regardless of category (fixes the indexOf approach which
+      // could hit the category segment before the sourceType segment).
       const alertsToResolve = vhost
         ? unresolvedSeenAlerts.filter((a) => {
             if (a.sourceType !== "queue") return true;
-            const idx = a.fingerprint.indexOf("-queue-");
-            if (idx === -1) return false;
-            return a.fingerprint
-              .slice(idx + "-queue-".length)
-              .startsWith(`${vhost}-`);
+            const suffix = `-${a.sourceName}`;
+            if (!a.fingerprint.endsWith(suffix)) return false;
+            const withoutSource = a.fingerprint.slice(0, -suffix.length);
+            return withoutSource.endsWith(`-queue-${vhost}`);
           })
         : unresolvedSeenAlerts;
 
