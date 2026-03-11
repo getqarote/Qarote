@@ -185,7 +185,7 @@ test.describe("Workspace RBAC enforcement @p0", () => {
   });
 
   test.describe("workspace.invitation.sendInvitation", () => {
-    test("admin can send invitation @selfhosted", async ({}) => {
+    test("admin can send invitation @selfhosted", async () => {
       test.skip(
         process.env.DEPLOYMENT_MODE === "cloud",
         "Selfhosted mode only"

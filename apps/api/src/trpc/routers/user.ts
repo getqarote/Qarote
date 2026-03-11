@@ -426,7 +426,13 @@ export const userRouter = router({
   updateUser: workspaceAdminProcedure
     .input(UpdateUserWithIdSchema)
     .mutation(async ({ input, ctx }) => {
-      const { id, workspaceId, ...data } = input;
+      const {
+        id,
+        workspaceId,
+        role: newRole,
+        isActive: _isActive,
+        ...safeData
+      } = input;
 
       try {
         // Check if user exists
@@ -453,9 +459,10 @@ export const userRouter = router({
           });
         }
 
+        // Update safe profile fields on the User record (never role/isActive)
         const user = await ctx.prisma.user.update({
           where: { id },
-          data,
+          data: safeData,
           select: {
             id: true,
             email: true,
@@ -470,6 +477,19 @@ export const userRouter = router({
             updatedAt: true,
           },
         });
+
+        // Apply role change to the workspace-scoped membership record
+        if (newRole) {
+          await ctx.prisma.workspaceMember.update({
+            where: {
+              userId_workspaceId: {
+                userId: id,
+                workspaceId,
+              },
+            },
+            data: { role: newRole },
+          });
+        }
 
         // Serialize date fields to ISO strings
         return {
@@ -494,9 +514,8 @@ export const userRouter = router({
     .input(UpdateWorkspaceSchema)
     .mutation(async ({ input, ctx }) => {
       const data = input;
-      const user = ctx.user;
 
-      if (!user.workspaceId) {
+      if (!ctx.workspaceId) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: te(ctx.locale, "workspace.noWorkspaceAssigned"),
@@ -505,7 +524,7 @@ export const userRouter = router({
 
       try {
         const updatedWorkspace = await ctx.prisma.workspace.update({
-          where: { id: user.workspaceId },
+          where: { id: ctx.workspaceId },
           data,
           select: {
             id: true,
@@ -533,7 +552,7 @@ export const userRouter = router({
       } catch (error) {
         ctx.logger.error(
           { error },
-          `Error updating workspace ${user.workspaceId}`
+          `Error updating workspace ${ctx.workspaceId}`
         );
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
@@ -621,12 +640,11 @@ export const userRouter = router({
             },
           });
 
-          // Update user's workspaceId and reset role
+          // Clear user's workspace association (leave global role untouched)
           await tx.user.update({
             where: { id: userIdToRemove },
             data: {
               workspaceId: null,
-              role: UserRole.MEMBER, // Reset role to USER when removed from workspace
             },
           });
         });

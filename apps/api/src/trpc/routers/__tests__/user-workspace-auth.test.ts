@@ -15,6 +15,7 @@ vi.mock("@qarote/i18n/server", () => ({
 const mockWorkspaceMemberFindMany = vi.fn();
 const mockWorkspaceMemberFindUnique = vi.fn();
 const mockWorkspaceMemberDeleteMany = vi.fn();
+const mockWorkspaceMemberUpdate = vi.fn();
 const mockWorkspaceFindUnique = vi.fn();
 const mockWorkspaceFindFirst = vi.fn();
 const mockUserFindUnique = vi.fn();
@@ -34,6 +35,7 @@ vi.mock("@/core/prisma", () => ({
         mockWorkspaceMemberFindUnique(...args),
       deleteMany: (...args: unknown[]) =>
         mockWorkspaceMemberDeleteMany(...args),
+      update: (...args: unknown[]) => mockWorkspaceMemberUpdate(...args),
     },
     user: {
       findUnique: (...args: unknown[]) => mockUserFindUnique(...args),
@@ -111,6 +113,7 @@ function makeAdminCtx(workspaceId = WORKSPACE_ID) {
         findMany: mockWorkspaceMemberFindMany,
         findUnique: mockWorkspaceMemberFindUnique,
         deleteMany: mockWorkspaceMemberDeleteMany,
+        update: mockWorkspaceMemberUpdate,
       },
       workspace: {
         findUnique: mockWorkspaceFindUnique,

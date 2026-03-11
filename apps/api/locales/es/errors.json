@@ -60,7 +60,7 @@
     "failedToAcceptInvitationGoogle": "Error al aceptar la invitación con Google",
     "insufficientPermissionsAdmin": "Permisos insuficientes — Se requiere rol de administrador",
     "insufficientPermissions": "Permisos insuficientes",
-    "workspaceAdminRequired": "Se requiere el rol de administrador del espacio de trabajo para realizar esta accion"
+    "workspaceAdminRequired": "Se requiere el rol de administrador del espacio de trabajo para realizar esta acción"
   },
   "workspace": {
     "idRequired": "Se requiere el ID del espacio de trabajo",
