@@ -1,3 +1,6 @@
+import { useState } from "react";
+
+import { authClient } from "@/lib/auth-client";
 import { logger } from "@/lib/logger";
 import { trpc } from "@/lib/trpc/client";
 
@@ -5,15 +8,68 @@ import { useAuth } from "@/contexts/AuthContext";
 
 export const useLogin = () => {
   const { login } = useAuth();
+  const utils = trpc.useUtils();
+  const [isPending, setIsPending] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+  const [isError, setIsError] = useState(false);
 
-  const mutation = trpc.auth.session.login.useMutation({
-    onSuccess: async (data) => {
-      logger.info("Login success", data);
-      login(data.token, data.user);
-    },
-  });
+  const mutate = (
+    data: { email: string; password: string },
+    options?: {
+      onSuccess?: () => void;
+      onError?: (error: Error) => void;
+    }
+  ) => {
+    setIsPending(true);
+    setError(null);
+    setIsError(false);
 
-  return mutation;
+    authClient.signIn
+      .email({
+        email: data.email,
+        password: data.password,
+      })
+      .then(async (result) => {
+        if (result.error) {
+          const err = new Error(result.error.message || "Login failed");
+          setError(err);
+          setIsError(true);
+          setIsPending(false);
+          options?.onError?.(err);
+          return;
+        }
+
+        try {
+          const response = await utils.user.getProfile.fetch();
+          login(response.profile);
+          setIsPending(false);
+          options?.onSuccess?.();
+        } catch (err) {
+          logger.error("Failed to fetch profile after login:", err);
+          const error =
+            err instanceof Error ? err : new Error("Failed to fetch profile");
+          setError(error);
+          setIsError(true);
+          setIsPending(false);
+          options?.onError?.(error);
+        }
+      })
+      .catch((err) => {
+        const error = err instanceof Error ? err : new Error("Login failed");
+        setError(error);
+        setIsError(true);
+        setIsPending(false);
+        options?.onError?.(error);
+      });
+  };
+
+  return {
+    mutate,
+    isPending,
+    isError,
+    error,
+    isSuccess: false,
+  };
 };
 
 export const useRegister = () => {

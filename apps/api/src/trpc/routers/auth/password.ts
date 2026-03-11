@@ -24,7 +24,9 @@ import { te } from "@/i18n";
 
 /**
  * Password router
- * Handles password reset and change operations
+ * Handles password reset and change operations.
+ * Updates both User.passwordHash (legacy) and Account.password (better-auth)
+ * to keep them in sync during the transition period.
  */
 export const passwordRouter = router({
   /**
@@ -34,12 +36,10 @@ export const passwordRouter = router({
     .input(PasswordResetRequestSchema)
     .mutation(async ({ input, ctx }) => {
       const { email } = input;
-      // Note: IP and user agent tracking would need to be added to context if needed
       const clientIP = "unknown";
       const userAgent = "unknown";
 
       try {
-        // Find user by email
         const user = await ctx.prisma.user.findUnique({
           where: { email },
           select: {
@@ -51,31 +51,25 @@ export const passwordRouter = router({
         });
 
         if (!user) {
-          // Log failed attempt for audit
           await auditService.logPasswordResetRequest(
             email,
             clientIP,
             userAgent,
             false
           );
-
-          // Return success even if user doesn't exist for security
           return {
             message: te(ctx.locale, "messages.passwordResetEmailSent"),
           };
         }
 
-        // Generate a reset token and set expiration (24 hours from now)
         const resetToken = EncryptionService.generateEncryptionKey();
         const expiresAt = new Date();
         expiresAt.setHours(expiresAt.getHours() + 24);
 
-        // Clean up any existing password reset requests for this user
         await ctx.prisma.passwordReset.deleteMany({
           where: { userId: user.id },
         });
 
-        // Store the new token in the database
         await ctx.prisma.passwordReset.create({
           data: {
             userId: user.id,
@@ -84,7 +78,6 @@ export const passwordRouter = router({
           },
         });
 
-        // Send password reset email
         try {
           await passwordResetEmailService.sendPasswordResetEmail(
             user.email,
@@ -99,7 +92,6 @@ export const passwordRouter = router({
             "Password reset email sent successfully"
           );
 
-          // Log successful request for audit
           await auditService.logPasswordResetRequest(
             email,
             clientIP,
@@ -111,13 +103,10 @@ export const passwordRouter = router({
             { emailError, userId: user.id, email: user.email },
             "Failed to send password reset email"
           );
-          // Don't fail the request if email sending fails
-          // The token is still valid in the database
         }
 
         return {
           message: te(ctx.locale, "messages.passwordResetEmailSent"),
-          // Only return token in development for testing
           ...(isDevelopment() ? { token: resetToken } : {}),
         };
       } catch (error) {
@@ -136,12 +125,10 @@ export const passwordRouter = router({
     .input(PasswordResetSchema)
     .mutation(async ({ input, ctx }) => {
       const { token, password } = input;
-      // Note: IP and user agent tracking would need to be added to context if needed
       const clientIP = "unknown";
       const userAgent = "unknown";
 
       try {
-        // Find the password reset record
         const passwordReset = await ctx.prisma.passwordReset.findUnique({
           where: { token },
           include: {
@@ -169,9 +156,7 @@ export const passwordRouter = router({
           });
         }
 
-        // Check if token is expired
         if (passwordReset.expiresAt < new Date()) {
-          // Clean up expired token
           await ctx.prisma.passwordReset.delete({
             where: { id: passwordReset.id },
           });
@@ -187,7 +172,6 @@ export const passwordRouter = router({
           });
         }
 
-        // Check if token has already been used
         if (passwordReset.used) {
           await auditService.logPasswordResetFailed(
             token,
@@ -201,14 +185,20 @@ export const passwordRouter = router({
           });
         }
 
-        // Hash the new password
         const hashedPassword = await hashPassword(password);
 
-        // Update user password and mark token as used
+        // Update both User.passwordHash and Account.password (better-auth)
         await ctx.prisma.$transaction([
           ctx.prisma.user.update({
             where: { id: passwordReset.userId },
             data: { passwordHash: hashedPassword },
+          }),
+          ctx.prisma.account.updateMany({
+            where: {
+              userId: passwordReset.userId,
+              providerId: "credential",
+            },
+            data: { password: hashedPassword },
           }),
           ctx.prisma.passwordReset.update({
             where: { id: passwordReset.id },
@@ -221,7 +211,6 @@ export const passwordRouter = router({
           "Password reset successfully completed"
         );
 
-        // Log successful password reset for audit
         await auditService.logPasswordResetCompleted(
           passwordReset.userId,
           passwordReset.user.email,
@@ -250,12 +239,16 @@ export const passwordRouter = router({
     .mutation(async ({ input, ctx }) => {
       const { currentPassword, newPassword } = input;
       const user = ctx.user;
-      // Note: IP and user agent tracking would need to be added to context if needed
       const clientIP = "unknown";
       const userAgent = "unknown";
 
       try {
-        // Get user with password hash
+        // Check Account table first (better-auth), fall back to User.passwordHash
+        const account = await ctx.prisma.account.findFirst({
+          where: { userId: user.id, providerId: "credential" },
+          select: { password: true },
+        });
+
         const userWithPassword = await ctx.prisma.user.findUnique({
           where: { id: user.id },
           select: {
@@ -272,18 +265,18 @@ export const passwordRouter = router({
           });
         }
 
-        // Check if user has a password (not OAuth-only user)
-        if (!userWithPassword.passwordHash) {
+        const passwordHash = account?.password || userWithPassword.passwordHash;
+
+        if (!passwordHash) {
           throw new TRPCError({
             code: "BAD_REQUEST",
             message: te(ctx.locale, "auth.googleSignInNoPasswordChange"),
           });
         }
 
-        // Verify current password
         const isPasswordValid = await comparePassword(
           currentPassword,
-          userWithPassword.passwordHash
+          passwordHash
         );
 
         if (!isPasswordValid) {
@@ -293,16 +286,20 @@ export const passwordRouter = router({
           });
         }
 
-        // Hash new password
         const hashedPassword = await hashPassword(newPassword);
 
-        // Update password
-        await ctx.prisma.user.update({
-          where: { id: user.id },
-          data: { passwordHash: hashedPassword },
-        });
+        // Update both User.passwordHash and Account.password
+        await ctx.prisma.$transaction([
+          ctx.prisma.user.update({
+            where: { id: user.id },
+            data: { passwordHash: hashedPassword },
+          }),
+          ctx.prisma.account.updateMany({
+            where: { userId: user.id, providerId: "credential" },
+            data: { password: hashedPassword },
+          }),
+        ]);
 
-        // Log password change for audit
         await auditService.logPasswordChange(
           user.id,
           userWithPassword.email,

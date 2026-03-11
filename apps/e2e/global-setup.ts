@@ -87,6 +87,9 @@ async function cleanDatabase(prisma: PrismaClient) {
     "StripeWebhookEvent",
     "SsoAuthCode",
     "SsoState",
+    "Session",
+    "Account",
+    "Verification",
     "RabbitMQServer",
     "User",
     "Workspace",
@@ -123,12 +126,23 @@ async function seedBaseData(prisma: PrismaClient) {
     data: {
       email: "admin@e2e-test.local",
       passwordHash,
+      name: "E2E Admin",
       firstName: "E2E",
       lastName: "Admin",
       role: "ADMIN",
       emailVerified: true,
       emailVerifiedAt: new Date(),
       workspaceId: workspace.id,
+    },
+  });
+
+  // Create Account record for better-auth
+  await prisma.account.create({
+    data: {
+      userId: adminUser.id,
+      accountId: adminUser.id,
+      providerId: "credential",
+      password: passwordHash,
     },
   });
 
@@ -152,12 +166,23 @@ async function seedBaseData(prisma: PrismaClient) {
     data: {
       email: "readonly@e2e-test.local",
       passwordHash,
+      name: "Read Only",
       firstName: "Read",
       lastName: "Only",
       role: "READONLY",
       emailVerified: true,
       emailVerifiedAt: new Date(),
       workspaceId: workspace.id,
+    },
+  });
+
+  // Create Account record for better-auth
+  await prisma.account.create({
+    data: {
+      userId: readonlyUser.id,
+      accountId: readonlyUser.id,
+      providerId: "credential",
+      password: passwordHash,
     },
   });
 
@@ -174,12 +199,13 @@ async function loginViaApi(
   email: string,
   password: string,
   maxRetries = 5
-): Promise<{ token: string; user: Record<string, unknown> }> {
+): Promise<{ cookie: string; user: Record<string, unknown> }> {
   for (let attempt = 0; attempt < maxRetries; attempt++) {
-    const response = await fetch(`${API_URL}/trpc/auth.session.login`, {
+    const response = await fetch(`${API_URL}/api/auth/sign-in/email`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
+      redirect: "manual",
     });
 
     if (response.status === 429) {
@@ -195,14 +221,20 @@ async function loginViaApi(
       throw new Error(`Login failed for ${email}: ${response.status} ${body}`);
     }
 
+    // Extract session cookie from Set-Cookie header
+    const setCookieHeaders = response.headers.getSetCookie?.() || [];
+    const cookie = setCookieHeaders
+      .map((c: string) => c.split(";")[0])
+      .join("; ");
+
     const data = await response.json();
-    return data.result.data;
+    return { cookie, user: data.user || data };
   }
   throw new Error(`Login failed for ${email}: rate limited after ${maxRetries} retries`);
 }
 
 async function acquireAuthTokens() {
-  const tokens: Record<string, { token: string; user: Record<string, unknown> }> = {};
+  const tokens: Record<string, { cookie: string; user: Record<string, unknown> }> = {};
 
   tokens["admin@e2e-test.local"] = await loginViaApi(
     "admin@e2e-test.local",

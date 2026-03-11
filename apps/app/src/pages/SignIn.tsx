@@ -54,10 +54,17 @@ const SignIn: React.FC = () => {
 
   const onSubmit = (data: SignInFormData) => {
     logger.info("SignIn form submitted", { email: data.email });
-    loginMutation.mutate({
-      email: data.email,
-      password: data.password,
-    });
+    loginMutation.mutate(
+      {
+        email: data.email,
+        password: data.password,
+      },
+      {
+        onSuccess: () => {
+          navigate("/workspace", { replace: true });
+        },
+      }
+    );
   };
 
   return (

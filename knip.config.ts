@@ -4,7 +4,6 @@ const config: KnipConfig = {
   workspaces: {
     "apps/app": {
       project: ["src/**/*.{ts,tsx}"],
-      ignoreDependencies: ["better-auth"], // Used in auth-client.ts (Phase 3 frontend switchover)
     },
     "apps/web": {
       project: ["src/**/*.{ts,tsx}"],
@@ -29,8 +28,6 @@ const config: KnipConfig = {
     "apps/app/src/components/ui/**",
     "apps/web/src/components/ui/**",
     "apps/portal/src/components/ui/**",
-    // Ignore API scripts (utility scripts run manually)
-    "apps/api/scripts/**",
     // Ignore API core utilities used internally
     "apps/api/src/core/rabbitmq/ResponseValidator.ts",
     // Ignore API type exports used by frontend apps
@@ -42,13 +39,8 @@ const config: KnipConfig = {
     "apps/web/src/hooks/use-mobile.tsx",
     // Ignore email style exports (used in email templates but knip doesn't detect)
     "apps/api/src/services/email/shared/styles.ts",
-    // Ignore better-auth client (will be used in Phase 3 frontend switchover)
-    "apps/app/src/lib/auth-client.ts",
     // Ignore test files
-    "**/*.test.{ts,tsx}",
-    "**/*.spec.{ts,tsx}",
     // Ignore config files
-    "**/*.config.{ts,js}",
     "**/vite-env.d.ts",
     // Ignore type definitions
     "**/*.d.ts",
@@ -59,7 +51,6 @@ const config: KnipConfig = {
     // API dependencies that are used but not directly imported
     "pino-pretty", // Used in logger config
     "@react-email/components", // Used in email templates but knip doesn't detect it
-    "@prisma/client", // Peer dependency of generated Prisma client
     // Tailwind v4 dependencies referenced via CSS @plugin/@import directives
     "tailwindcss",
     "tailwindcss-animate",

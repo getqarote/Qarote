@@ -65,12 +65,12 @@ test.describe("Invitation Flow @p1", () => {
       "Selfhosted mode only — tests invite URL when SMTP disabled"
     );
 
-    // Login as admin to get auth token
-    const { token } = await api.login(
+    // Login as admin to get auth cookie
+    const { cookie } = await api.login(
       "admin@e2e-test.local",
       "TestPassword123!"
     );
-    const authedApi = api.withAuth(token);
+    const authedApi = api.withAuth(cookie);
 
     const inviteEmail = uniqueEmail("invite-api");
 

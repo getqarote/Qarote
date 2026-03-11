@@ -27,20 +27,9 @@ const getApiUrl = () => {
 };
 
 /**
- * Get authentication token from localStorage
- */
-const getAuthToken = (): string | null => {
-  return localStorage.getItem("auth_token");
-};
-
-const getAuthHeaders = () => {
-  const token = getAuthToken();
-  return token ? { Authorization: `Bearer ${token}` } : {};
-};
-
-/**
  * tRPC Provider component
- * Wraps the app with tRPC React Query provider
+ * Wraps the app with tRPC React Query provider.
+ * Auth is handled via cookies (better-auth) — no Bearer token needed.
  */
 export function TRPCProvider({ children }: { children: React.ReactNode }) {
   const [trpcClient] = useState(() =>
@@ -49,19 +38,17 @@ export function TRPCProvider({ children }: { children: React.ReactNode }) {
         unauthorizedLink,
         splitLink({
           condition: (op) => op.type === "subscription",
-          // TODO: connectionParams serializes the JWT in the URL query string, which
-          // may appear in server access logs. Migrate to HttpOnly session cookies or an
-          // EventSource ponyfill that supports custom headers (Authorization) when feasible.
           true: httpSubscriptionLink({
             url: getApiUrl(),
-            connectionParams: () => {
-              const token = getAuthToken();
-              return token ? { token } : {};
-            },
           }),
           false: httpBatchLink({
             url: getApiUrl(),
-            headers: getAuthHeaders,
+            fetch(url, options) {
+              return fetch(url, {
+                ...options,
+                credentials: "include",
+              });
+            },
           }),
         }),
       ],

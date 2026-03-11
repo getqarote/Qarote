@@ -6,18 +6,35 @@
 export class ApiClient {
   constructor(
     private baseUrl: string,
-    private token?: string
+    private cookie?: string
   ) {}
 
-  withAuth(token: string): ApiClient {
-    return new ApiClient(this.baseUrl, token);
+  withAuth(cookie: string): ApiClient {
+    return new ApiClient(this.baseUrl, cookie);
   }
 
   async login(
     email: string,
     password: string
-  ): Promise<{ token: string; user: Record<string, unknown> }> {
-    return this.mutation("auth.session.login", { email, password });
+  ): Promise<{ cookie: string; user: Record<string, unknown> }> {
+    const response = await fetch(`${this.baseUrl}/api/auth/sign-in/email`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+      redirect: "manual",
+    });
+
+    if (!response.ok) {
+      throw new Error(`Login failed: ${response.status}`);
+    }
+
+    const setCookieHeaders = response.headers.getSetCookie?.() || [];
+    const cookie = setCookieHeaders
+      .map((c: string) => c.split(";")[0])
+      .join("; ");
+
+    const data = await response.json();
+    return { cookie, user: data.user || data };
   }
 
   async createServer(data: {
@@ -38,8 +55,8 @@ export class ApiClient {
       "Content-Type": "application/json",
     };
 
-    if (this.token) {
-      headers.Authorization = `Bearer ${this.token}`;
+    if (this.cookie) {
+      headers.Cookie = this.cookie;
     }
 
     const params = input
@@ -64,8 +81,8 @@ export class ApiClient {
       "Content-Type": "application/json",
     };
 
-    if (this.token) {
-      headers.Authorization = `Bearer ${this.token}`;
+    if (this.cookie) {
+      headers.Cookie = this.cookie;
     }
 
     const url = `${this.baseUrl}/trpc/${procedure}`;
