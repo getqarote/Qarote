@@ -80,6 +80,12 @@ export function PaginationControls({
                 />
               </PaginationItem>
 
+              {totalPages > 5 && page > 3 && (
+                <PaginationItem>
+                  <PaginationEllipsis />
+                </PaginationItem>
+              )}
+
               {[...Array(Math.min(5, totalPages))].map((_, i) => {
                 let pageNum: number;
                 if (totalPages <= 5) {
