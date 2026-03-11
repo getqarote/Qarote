@@ -58,15 +58,6 @@ function parseConfig(): Config {
         break;
     }
 
-    // Cross-field validation: the effective auth secret must be >= 32 chars
-    const effectiveSecret = config.BETTER_AUTH_SECRET ?? config.JWT_SECRET;
-    if (effectiveSecret.length < 32) {
-      throw new Error(
-        "The effective auth secret (BETTER_AUTH_SECRET ?? JWT_SECRET) must be at least 32 characters. " +
-          "Set BETTER_AUTH_SECRET or use a longer JWT_SECRET."
-      );
-    }
-
     // Cross-field validation: OAuth credentials required when ENABLE_OAUTH is true
     if (config.ENABLE_OAUTH) {
       const missing: string[] = [];
@@ -115,7 +106,6 @@ export const serverConfig = {
 
 export const authConfig = {
   jwtSecret: config.JWT_SECRET,
-  betterAuthSecret: config.BETTER_AUTH_SECRET || config.JWT_SECRET,
   encryptionKey: config.ENCRYPTION_KEY,
 } as const;
 

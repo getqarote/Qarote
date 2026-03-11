@@ -13,7 +13,7 @@ import { authConfig, config, emailConfig, googleConfig } from "@/config";
 import { isCloudMode } from "@/config/deployment";
 
 export const auth = betterAuth({
-  secret: authConfig.betterAuthSecret,
+  secret: authConfig.jwtSecret,
   baseURL: config.API_URL,
   basePath: "/api/auth",
   trustedOrigins: [config.FRONTEND_URL, config.CORS_ORIGIN].filter(Boolean),
