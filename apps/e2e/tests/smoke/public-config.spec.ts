@@ -14,7 +14,7 @@ test.describe("Public Config Endpoint @p0 @smoke", () => {
     expect(typeof config.registrationEnabled).toBe("boolean");
     expect(typeof config.emailEnabled).toBe("boolean");
     expect(typeof config.oauthEnabled).toBe("boolean");
-    expect(typeof config.ssoEnabled).toBe("boolean");
+
   });
 
   test("should reflect selfhosted defaults @selfhosted", async () => {

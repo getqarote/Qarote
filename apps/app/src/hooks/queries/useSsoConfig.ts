@@ -2,7 +2,7 @@ import { isCloudMode } from "@/lib/featureFlags";
 import { trpc } from "@/lib/trpc/client";
 
 const useSsoConfig = () => {
-  return trpc.auth.sso.getConfig.useQuery(undefined, {
+  return trpc.sso.getConfig.useQuery(undefined, {
     staleTime: Infinity,
     retry: false,
   });

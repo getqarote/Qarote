@@ -82,12 +82,17 @@ export async function getLicensePayload(): Promise<LicenseJwtPayload | null> {
 /**
  * Check if a premium feature is enabled
  * This is the main function that determines feature availability
+ *
+ * Note: "sso" in cloud mode returns false here because SSO availability
+ * is checked per-workspace (plan-gated) inside the SSO tRPC router,
+ * not globally.
  */
 export async function isFeatureEnabled(
   feature: PremiumFeature
 ): Promise<boolean> {
-  // Cloud mode: all features enabled
+  // Cloud mode: all features enabled except SSO (which is per-workspace plan-gated)
   if (isCloudMode()) {
+    if (feature === "sso") return false;
     return true;
   }
 
@@ -97,6 +102,12 @@ export async function isFeatureEnabled(
 
     if (!payload) {
       return false;
+    }
+
+    // SSO: also grant if the license tier is ENTERPRISE (backward compat for
+    // older licenses that may not list "sso" explicitly in features array)
+    if (feature === "sso") {
+      return payload.features.includes("sso") || payload.tier === "ENTERPRISE";
     }
 
     return payload.features.includes(feature);

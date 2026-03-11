@@ -1,16 +1,54 @@
+import { sso } from "@better-auth/sso";
 import bcrypt from "bcryptjs";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 
+import { getLicensePayload } from "@/core/feature-flags";
 import { logger } from "@/core/logger";
 import { prisma } from "@/core/prisma";
 
 import { EmailVerificationService } from "@/services/email/email-verification.service";
 import { notionService } from "@/services/integrations/notion.service";
+import { getUserPlan } from "@/services/plan/plan.service";
 import { StripeCustomerService } from "@/services/stripe/customer.service";
 
 import { authConfig, config, emailConfig, googleConfig } from "@/config";
 import { isCloudMode } from "@/config/deployment";
+
+import { UserPlan } from "@/generated/prisma/client";
+
+/**
+ * Enforce that the SSO provider's workspace has an enterprise entitlement.
+ * Called in provisionUser (after IdP auth) as a second line of defense.
+ * - Cloud: workspace owner must be on ENTERPRISE plan
+ * - Self-hosted: license JWT must have "sso" feature or be ENTERPRISE tier
+ */
+async function enforceSsoEntitlement(providerId: string): Promise<void> {
+  if (isCloudMode()) {
+    const wsConfig = await prisma.workspaceSsoConfig.findUnique({
+      where: { providerId },
+      include: { workspace: true },
+    });
+
+    if (!wsConfig?.workspaceId || !wsConfig.workspace?.ownerId) {
+      throw new Error("SSO not permitted: no workspace owner found");
+    }
+
+    const plan = await getUserPlan(wsConfig.workspace.ownerId);
+    if (plan !== UserPlan.ENTERPRISE) {
+      throw new Error("SSO requires Enterprise plan");
+    }
+  } else {
+    const payload = await getLicensePayload();
+    const hasSSO =
+      payload &&
+      (payload.features.includes("sso") || payload.tier === "ENTERPRISE");
+
+    if (!hasSSO) {
+      throw new Error("SSO requires Enterprise license");
+    }
+  }
+}
 
 export const auth = betterAuth({
   secret: authConfig.jwtSecret,
@@ -95,6 +133,83 @@ export const auth = betterAuth({
         },
       }),
   },
+
+  plugins: [
+    sso({
+      provisionUser: async ({ user, userInfo, provider }) => {
+        // Enforce enterprise entitlement before allowing SSO login
+        await enforceSsoEntitlement(provider.providerId);
+
+        // Update user profile from IdP claims
+        const updates: Record<string, unknown> = {
+          emailVerified: true,
+          emailVerifiedAt: new Date(),
+        };
+
+        if (userInfo.given_name || userInfo.firstName) {
+          updates.firstName = userInfo.given_name || userInfo.firstName;
+        }
+        if (userInfo.family_name || userInfo.lastName) {
+          updates.lastName = userInfo.family_name || userInfo.lastName;
+        }
+
+        await prisma.user
+          .update({ where: { id: user.id }, data: updates })
+          .catch((err) => {
+            logger.warn(
+              { err, userId: user.id },
+              "Failed to update user profile from SSO claims"
+            );
+          });
+
+        // Assign user to workspace based on the SSO provider's WorkspaceSsoConfig
+        const wsConfig = await prisma.workspaceSsoConfig.findUnique({
+          where: { providerId: provider.providerId },
+        });
+
+        if (wsConfig?.workspaceId) {
+          await prisma.workspaceMember
+            .upsert({
+              where: {
+                userId_workspaceId: {
+                  userId: user.id,
+                  workspaceId: wsConfig.workspaceId,
+                },
+              },
+              update: {},
+              create: {
+                userId: user.id,
+                workspaceId: wsConfig.workspaceId,
+                role: "MEMBER",
+              },
+            })
+            .catch((err) => {
+              logger.warn(
+                { err, userId: user.id, workspaceId: wsConfig.workspaceId },
+                "Failed to upsert workspace member for SSO user"
+              );
+            });
+
+          // Set primary workspace if not already set
+          const baUser = user as Record<string, unknown>;
+          if (!baUser.workspaceId) {
+            await prisma.user
+              .update({
+                where: { id: user.id },
+                data: { workspaceId: wsConfig.workspaceId },
+              })
+              .catch((err) => {
+                logger.warn(
+                  { err, userId: user.id },
+                  "Failed to set primary workspace for SSO user"
+                );
+              });
+          }
+        }
+      },
+      disableImplicitSignUp: false,
+    }),
+  ],
 
   emailVerification: {
     sendOnSignUp: isCloudMode(),

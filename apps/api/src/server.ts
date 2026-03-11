@@ -11,12 +11,12 @@ import { secureHeaders } from "hono/secure-headers";
 
 import { auth } from "@/core/better-auth";
 import { bootstrapAdmin } from "@/core/bootstrap-admin";
+import { bootstrapSso } from "@/core/bootstrap-sso";
 import { logger } from "@/core/logger";
 import { runMigrations } from "@/core/migrate";
 import { prisma } from "@/core/prisma";
 import { getDirname } from "@/core/utils";
 
-import { ssoService } from "@/services/auth/sso.service";
 import { DeploymentService } from "@/services/deployment/deployment.service";
 
 import { corsMiddleware } from "@/middlewares/cors";
@@ -35,7 +35,6 @@ import { standardRateLimiter } from "./middlewares/rateLimiter";
 
 import healthcheckController from "@/controllers/healthcheck.controller";
 import webhookController from "@/controllers/payment/webhook.controller";
-import ssoController from "@/controllers/sso.controller";
 
 const app = new Hono();
 
@@ -52,17 +51,6 @@ webhookApp.use("*", standardRateLimiter);
 // NO prettyJSON middleware here - it would modify the body and break signature verification!
 webhookApp.route("/", webhookController);
 
-// Create a separate app for SSO routes
-// SAML ACS endpoint receives form-encoded POST from IdP (like webhook needs raw body)
-const ssoApp = new Hono();
-ssoApp.use(honoLogger());
-ssoApp.use("*", secureHeaders());
-ssoApp.use("*", requestIdMiddleware);
-ssoApp.use("*", performanceMonitoring);
-ssoApp.use("*", corsMiddleware);
-ssoApp.use("*", standardRateLimiter);
-ssoApp.route("/", ssoController);
-
 // Core middlewares for main app
 app.use(honoLogger());
 app.use("*", prettyJSON());
@@ -74,10 +62,9 @@ app.use("*", corsMiddleware);
 // Mount webhook app BEFORE other routes to ensure it's processed first
 app.route("/webhooks", webhookApp);
 
-// Mount SSO routes (SAML ACS needs form-encoded body access)
-app.route("/sso", ssoApp);
-
-// Mount better-auth handler (handles /api/auth/* routes for sign-in, sign-up, OAuth callbacks, etc.)
+// Mount better-auth handler (handles /api/auth/* routes for sign-in, sign-up, OAuth callbacks,
+// and SSO callbacks: OIDC /api/auth/sso/callback/{providerId},
+// SAML ACS /api/auth/sso/saml2/callback/{providerId})
 app.on(["POST", "GET"], "/api/auth/**", (c) => {
   return auth.handler(c.req.raw);
 });
@@ -164,11 +151,11 @@ async function startServer() {
     // Bootstrap admin account on first boot (if configured via setup CLI)
     await bootstrapAdmin();
 
+    // Migrate legacy SSO data and seed instance-wide provider from env vars
+    await bootstrapSso();
+
     // Initialize deployment method detection for update notifications
     await DeploymentService.initialize();
-
-    // Initialize SSO service (loads config from DB or env vars)
-    await ssoService.initialize();
 
     serve(
       {

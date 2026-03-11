@@ -29,6 +29,7 @@
     "test:ui": "vitest --ui"
   },
   "dependencies": {
+    "@better-auth/sso": "^1.5.4",
     "@dagrejs/dagre": "^2.0.4",
     "@hookform/resolvers": "^5.2.2",
     "@qarote/i18n": "workspace:*",

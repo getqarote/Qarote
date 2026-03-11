@@ -68,7 +68,7 @@
     "test:ui": "vitest --ui"
   },
   "dependencies": {
-    "@boxyhq/saml-jackson": "^1.52.2",
+    "@better-auth/sso": "^1.5.4",
     "@hono/node-server": "^1.19.10",
     "@hono/trpc-server": "^0.4.2",
     "@notionhq/client": "^5.9.0",

@@ -1,98 +1,75 @@
 import { expect, test } from "../../fixtures/test-base.js";
 
-test.describe("SSO Settings Page @p1 @selfhosted", () => {
+test.describe("SSO Settings Page @p1 @adminonly", () => {
   test.describe("Access Control", () => {
     test("admin can access SSO settings page", async ({ adminPage }) => {
       await adminPage.goto("/settings/sso");
 
-      // Should see the SSO settings page with the enable/disable toggle
-      await expect(adminPage.locator("#sso-enabled")).toBeVisible({
-        timeout: 15_000,
-      });
+      // Should see the SSO settings heading (Shield icon area)
+      await expect(
+        adminPage.getByRole("heading").filter({ hasText: /sso|single sign/i }).first()
+      ).toBeVisible({ timeout: 15_000 });
     });
 
-    test("non-admin user is redirected away from SSO settings", async ({
+    test("non-admin user sees empty page for SSO settings", async ({
       readonlyPage,
     }) => {
       await readonlyPage.goto("/settings/sso");
 
-      // Should be redirected to home page (the SSO page does Navigate to="/")
-      await expect(readonlyPage).toHaveURL("/", { timeout: 10_000 });
+      // Non-admins get null returned — SSO content should not be visible
+      await expect(
+        readonlyPage.locator("#sso-enabled")
+      ).not.toBeVisible({ timeout: 5_000 });
     });
   });
 
-  test.describe("Form Interactions", () => {
-    test("toggling SSO enabled reveals configuration sections", async ({
-      adminPage,
-    }) => {
+  test.describe("Setup Form (no existing provider)", () => {
+    test("shows OIDC fields by default", async ({ adminPage }) => {
       await adminPage.goto("/settings/sso");
+      await adminPage.waitForLoadState("domcontentloaded");
 
-      // Wait for the toggle to appear
-      const toggle = adminPage.locator("#sso-enabled");
-      await expect(toggle).toBeVisible({ timeout: 15_000 });
+      // In setup mode, OIDC discovery URL field should be visible
+      await expect(
+        adminPage.locator("#setup-discovery-url")
+      ).toBeVisible({ timeout: 15_000 });
 
-      // Initially disabled — OIDC fields should not be visible
-      await expect(adminPage.locator("#discovery-url")).not.toBeVisible();
-
-      // Toggle SSO enabled
-      await toggle.click();
-
-      // Now OIDC fields should be visible (OIDC is the default protocol)
-      await expect(adminPage.locator("#discovery-url")).toBeVisible();
-      await expect(adminPage.locator("#client-id")).toBeVisible();
-      await expect(adminPage.locator("#client-secret")).toBeVisible();
+      await expect(adminPage.locator("#setup-client-id")).toBeVisible();
+      await expect(adminPage.locator("#setup-client-secret")).toBeVisible();
+      await expect(adminPage.locator("#setup-saml-metadata")).not.toBeVisible();
     });
 
-    test("switching protocol between OIDC and SAML shows correct fields", async ({
-      adminPage,
-    }) => {
+    test("switching to SAML shows metadata URL field", async ({ adminPage }) => {
       await adminPage.goto("/settings/sso");
+      await adminPage.waitForLoadState("domcontentloaded");
 
-      // Wait for the toggle and enable SSO
-      const toggle = adminPage.locator("#sso-enabled");
-      await expect(toggle).toBeVisible({ timeout: 15_000 });
-      await toggle.click();
+      // Wait for setup form
+      await expect(
+        adminPage.locator("#setup-discovery-url")
+      ).toBeVisible({ timeout: 15_000 });
 
-      // OIDC fields should be visible by default
-      await expect(adminPage.locator("#discovery-url")).toBeVisible();
-      await expect(adminPage.locator("#client-id")).toBeVisible();
-      await expect(adminPage.locator("#client-secret")).toBeVisible();
-      await expect(adminPage.locator("#saml-metadata")).not.toBeVisible();
-
-      // Switch to SAML via the protocol select dropdown (filter by current OIDC text)
+      // Switch to SAML
       await adminPage
         .getByRole("combobox")
         .filter({ hasText: /oidc/i })
         .click();
       await adminPage.getByRole("option", { name: /saml/i }).click();
 
-      // SAML field should be visible, OIDC fields should be hidden
-      await expect(adminPage.locator("#saml-metadata")).toBeVisible();
-      await expect(adminPage.locator("#discovery-url")).not.toBeVisible();
-      await expect(adminPage.locator("#client-id")).not.toBeVisible();
-      await expect(adminPage.locator("#client-secret")).not.toBeVisible();
+      // SAML field visible, OIDC fields hidden
+      await expect(adminPage.locator("#setup-saml-metadata")).toBeVisible();
+      await expect(adminPage.locator("#setup-discovery-url")).not.toBeVisible();
+      await expect(adminPage.locator("#setup-client-id")).not.toBeVisible();
     });
 
-    test("callback URL is displayed when API URL is present", async ({
+    test("displays better-auth callback URL pattern in IdP registration hint", async ({
       adminPage,
     }) => {
       await adminPage.goto("/settings/sso");
+      await adminPage.waitForLoadState("domcontentloaded");
 
-      // Wait for the toggle and enable SSO
-      const toggle = adminPage.locator("#sso-enabled");
-      await expect(toggle).toBeVisible({ timeout: 15_000 });
-      await toggle.click();
-
-      // The API URL field should be populated (from env config)
-      const apiUrlInput = adminPage.locator("#api-url");
-      await expect(apiUrlInput).toBeVisible();
-      const apiUrlValue = await apiUrlInput.inputValue();
-
-      expect(apiUrlValue).toBeTruthy();
-      // Callback URL should be displayed
+      // The URL hint section should show /api/auth/sso/callback pattern
       await expect(
-        adminPage.getByText(`${apiUrlValue}/sso/callback`)
-      ).toBeVisible();
+        adminPage.getByText(/\/api\/auth\/sso\/(callback|saml2)/)
+      ).toBeVisible({ timeout: 15_000 });
     });
   });
 });

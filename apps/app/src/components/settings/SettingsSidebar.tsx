@@ -83,7 +83,6 @@ const navGroups: NavGroup[] = [
         icon: Shield,
         labelKey: "settings:nav.sso",
         adminOnly: true,
-        selfHostedOnly: true,
       },
       {
         key: "smtp",
