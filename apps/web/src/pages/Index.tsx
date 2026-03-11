@@ -100,23 +100,23 @@ const Index = () => {
 
   const selfHostPricing: Record<
     string,
-    { price: string; period?: string; cta: string; url: string }
+    { price: string; period?: string; ctaKey: string; url: string }
   > = {
     FREE: {
       price: "$0",
-      cta: "Instructions",
+      ctaKey: "instructions",
       url: "https://github.com/getqarote/Qarote",
     },
     DEVELOPER: {
       price: "$348",
       period: "/ year",
-      cta: "Choose Developer",
+      ctaKey: "chooseDeveloper",
       url: import.meta.env.VITE_PORTAL_URL,
     },
     ENTERPRISE: {
       price: "$1,188",
       period: "/ year",
-      cta: "Choose Enterprise",
+      ctaKey: "chooseEnterprise",
       url: import.meta.env.VITE_PORTAL_URL,
     },
   };
@@ -1601,16 +1601,12 @@ const Index = () => {
                         }}
                       >
                         {hostingMode === "selfhost" && selfHost
-                          ? selfHost.cta
-                          : plan.id === "ENTERPRISE_PLUS"
-                            ? tPricing("letsTalk")
-                            : plan.id === "FREE"
-                              ? tPricing("getStarted")
-                              : plan.id === "ENTERPRISE"
-                                ? tPricing("tryNowForFree")
-                                : plan.id === "DEVELOPER"
-                                  ? tPricing("getStarted")
-                                  : tPricing("startFree")}
+                          ? tPricing(selfHost.ctaKey)
+                          : plan.id === "FREE" || plan.id === "DEVELOPER"
+                            ? tPricing("getStarted")
+                            : plan.id === "ENTERPRISE"
+                              ? tPricing("tryNowForFree")
+                              : tPricing("startFree")}
                       </Button>
                     </CardContent>
                   </Card>
