@@ -93,7 +93,7 @@
     "knip": "^5.85.0",
     "lint-staged": "^16.3.2",
     "release-it": "^19.2.4",
-    "syncpack": "^13.0.4",
+    "syncpack": "^14.2.0",
     "turbo": "^2.8.13",
     "typescript": "^5.9.3"
   },
