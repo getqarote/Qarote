@@ -148,8 +148,6 @@ To enable email, add SMTP flags:
 | `--sso-oidc-client-id <id>` | OIDC client ID |
 | `--sso-oidc-client-secret <secret>` | OIDC client secret |
 | `--sso-saml-metadata-url <url>` | SAML metadata URL |
-| `--sso-tenant <tenant>` | SSO tenant identifier (default: default) |
-| `--sso-product <product>` | SSO product identifier (default: qarote) |
 | `--sso-button-label <label>` | SSO login button text (default: Sign in with SSO) |
 | `--api-url <url>` | Backend API URL for SSO callbacks |
 | `--frontend-url <url>` | Frontend URL for SSO redirects |
@@ -215,14 +213,24 @@ docker exec qarote_backend pnpm run db:migrate
    To enable SSO, set SSO variables:
 
    ```bash
+   # OIDC:
    dokku config:set qarote \
      SSO_ENABLED=true \
      SSO_TYPE=oidc \
      SSO_OIDC_DISCOVERY_URL=https://your-idp.com/realms/qarote/.well-known/openid-configuration \
      SSO_OIDC_CLIENT_ID=qarote \
      SSO_OIDC_CLIENT_SECRET=your-client-secret \
+     SSO_BUTTON_LABEL="Sign in with SSO" \
      API_URL=https://api.your-domain.com \
      FRONTEND_URL=https://your-domain.com
+
+   # SAML (alternative):
+   # dokku config:set qarote \
+   #   SSO_ENABLED=true \
+   #   SSO_TYPE=saml \
+   #   SSO_SAML_METADATA_URL=https://your-idp.com/metadata.xml \
+   #   API_URL=https://api.your-domain.com \
+   #   FRONTEND_URL=https://your-domain.com
    ```
 
    See [SSO Configuration](#sso-configuration) for detailed setup instructions.
@@ -476,8 +484,6 @@ The Admin UI settings (stored in the database) take priority over environment va
 | `SSO_SAML_METADATA_URL` | SAML IdP metadata URL | — |
 | `API_URL` | Backend URL (for SSO callback) | `http://localhost:3000` |
 | `FRONTEND_URL` | Frontend URL (for post-login redirect). In binary/single-port mode the frontend is served from the backend, so use `http://localhost:3000`. | `http://localhost:8080` |
-| `SSO_TENANT` | Tenant identifier | `default` |
-| `SSO_PRODUCT` | Product identifier | `qarote` |
 | `SSO_BUTTON_LABEL` | Login button text | `Sign in with SSO` |
 
 ### OIDC Setup (Recommended)

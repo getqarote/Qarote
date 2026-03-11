@@ -64,8 +64,6 @@ services:
       # SSO_SAML_METADATA_URL: ${SSO_SAML_METADATA_URL}
       # API_URL: ${API_URL:-http://localhost:3000}
       # FRONTEND_URL: ${FRONTEND_URL:-http://localhost:8080}
-      # SSO_TENANT: ${SSO_TENANT:-default}
-      # SSO_PRODUCT: ${SSO_PRODUCT:-qarote}
       # SSO_BUTTON_LABEL: ${SSO_BUTTON_LABEL:-Sign in with SSO}
     ports:
       - "${BACKEND_PORT}:3000"
