@@ -96,6 +96,7 @@
     "failedToFetchUser": "Error al obtener el usuario",
     "doesNotBelongToWorkspace": "El usuario no pertenece a este espacio de trabajo",
     "failedToUpdateUser": "Error al actualizar el usuario",
+    "cannotUpdateIsActive": "isActive no se puede actualizar a través de este endpoint",
     "isNotMemberOfWorkspace": "El usuario no es miembro de este espacio de trabajo",
     "cannotRemoveSelf": "No puede eliminarse a sí mismo del espacio de trabajo",
     "onlyOwnerCanRemoveAdmin": "Solo los propietarios del espacio de trabajo pueden eliminar usuarios administradores",

@@ -426,13 +426,14 @@ export const userRouter = router({
   updateUser: workspaceAdminProcedure
     .input(UpdateUserWithIdSchema)
     .mutation(async ({ input, ctx }) => {
-      const {
-        id,
-        workspaceId,
-        role: newRole,
-        isActive: _isActive,
-        ...safeData
-      } = input;
+      const { id, workspaceId, role: newRole, isActive, ...safeData } = input;
+
+      if (isActive !== undefined) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: te(ctx.locale, "user.cannotUpdateIsActive"),
+        });
+      }
 
       try {
         // Check if user exists
@@ -459,41 +460,51 @@ export const userRouter = router({
           });
         }
 
-        // Update safe profile fields on the User record (never role/isActive)
-        const user = await ctx.prisma.user.update({
-          where: { id },
-          data: safeData,
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-            role: true,
-            workspaceId: true,
-            isActive: true,
-            emailVerified: true,
-            lastLogin: true,
-            createdAt: true,
-            updatedAt: true,
-          },
-        });
-
-        // Apply role change to the workspace-scoped membership record
-        if (newRole) {
-          await ctx.prisma.workspaceMember.update({
-            where: {
-              userId_workspaceId: {
-                userId: id,
-                workspaceId,
+        // Atomically update user profile and (optionally) workspace role
+        const { user, workspaceMember } = await ctx.prisma.$transaction(
+          async (tx) => {
+            const updatedUser = await tx.user.update({
+              where: { id },
+              data: safeData,
+              select: {
+                id: true,
+                email: true,
+                firstName: true,
+                lastName: true,
+                role: true,
+                workspaceId: true,
+                isActive: true,
+                emailVerified: true,
+                lastLogin: true,
+                createdAt: true,
+                updatedAt: true,
               },
-            },
-            data: { role: newRole },
-          });
-        }
+            });
 
-        // Serialize date fields to ISO strings
+            let member = await tx.workspaceMember.findUnique({
+              where: { userId_workspaceId: { userId: id, workspaceId } },
+              select: { role: true },
+            });
+
+            if (newRole && member) {
+              member = await tx.workspaceMember.update({
+                where: { userId_workspaceId: { userId: id, workspaceId } },
+                data: { role: newRole },
+                select: { role: true },
+              });
+            }
+
+            return { user: updatedUser, workspaceMember: member };
+          }
+        );
+
+        // Return API response with workspace-scoped role instead of global role
+        const apiResponse = UserMapper.toApiResponse(user);
         return {
-          user: UserMapper.toApiResponse(user),
+          user: {
+            ...apiResponse,
+            role: workspaceMember?.role ?? apiResponse.role,
+          },
         };
       } catch (error) {
         if (error instanceof TRPCError) {
@@ -640,13 +651,26 @@ export const userRouter = router({
             },
           });
 
-          // Clear user's workspace association (leave global role untouched)
-          await tx.user.update({
+          // Only update active workspaceId if it matches the removed membership
+          const removedUser = await tx.user.findUnique({
             where: { id: userIdToRemove },
-            data: {
-              workspaceId: null,
-            },
+            select: { workspaceId: true },
           });
+
+          if (removedUser?.workspaceId === workspaceId) {
+            // Try to reassign to another remaining workspace
+            const nextMembership = await tx.workspaceMember.findFirst({
+              where: { userId: userIdToRemove },
+              select: { workspaceId: true },
+            });
+
+            await tx.user.update({
+              where: { id: userIdToRemove },
+              data: {
+                workspaceId: nextMembership?.workspaceId ?? null,
+              },
+            });
+          }
         });
 
         ctx.logger.info(

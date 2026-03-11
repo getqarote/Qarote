@@ -96,6 +96,7 @@
     "failedToFetchUser": "Failed to fetch user",
     "doesNotBelongToWorkspace": "User does not belong to this workspace",
     "failedToUpdateUser": "Failed to update user",
+    "cannotUpdateIsActive": "isActive cannot be updated via this endpoint",
     "isNotMemberOfWorkspace": "User is not a member of this workspace",
     "cannotRemoveSelf": "Cannot remove yourself from the workspace",
     "onlyOwnerCanRemoveAdmin": "Only workspace owners can remove admin users",

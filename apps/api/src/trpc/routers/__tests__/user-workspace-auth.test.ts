@@ -236,7 +236,8 @@ describe("userRouter workspace-scoped authorization", () => {
         email: "target@test.com",
       });
       mockHasWorkspaceAccess.mockResolvedValue(true);
-      mockUserUpdate.mockResolvedValue({
+
+      const updatedUser = {
         id: "target-user",
         email: "target@test.com",
         firstName: "Updated",
@@ -248,7 +249,19 @@ describe("userRouter workspace-scoped authorization", () => {
         lastLogin: null,
         createdAt: new Date("2025-01-01"),
         updatedAt: new Date("2025-01-01"),
-      });
+      };
+
+      mockTransaction.mockImplementation(
+        async (fn: (tx: unknown) => Promise<unknown>) => {
+          return fn({
+            user: { update: vi.fn().mockResolvedValue(updatedUser) },
+            workspaceMember: {
+              findUnique: vi.fn().mockResolvedValue({ role: "MEMBER" }),
+              update: vi.fn(),
+            },
+          });
+        }
+      );
 
       const caller = userRouter.createCaller(makeAdminCtx() as never);
       const result = await caller.updateUser({
@@ -258,6 +271,7 @@ describe("userRouter workspace-scoped authorization", () => {
       });
 
       expect(result.user).toBeDefined();
+      expect(result.user.role).toBe("MEMBER");
     });
 
     it("rejects workspace member from updating a user", async () => {
@@ -332,8 +346,16 @@ describe("userRouter workspace-scoped authorization", () => {
       mockTransaction.mockImplementation(
         async (fn: (tx: unknown) => Promise<unknown>) => {
           return fn({
-            workspaceMember: { deleteMany: vi.fn() },
-            user: { update: vi.fn() },
+            workspaceMember: {
+              deleteMany: vi.fn(),
+              findFirst: vi.fn().mockResolvedValue(null),
+            },
+            user: {
+              findUnique: vi
+                .fn()
+                .mockResolvedValue({ workspaceId: WORKSPACE_ID }),
+              update: vi.fn(),
+            },
           });
         }
       );
