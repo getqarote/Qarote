@@ -42,7 +42,8 @@ async function enforceSsoEntitlement(providerId: string): Promise<void> {
     const payload = await getLicensePayload();
     const hasSSO =
       payload &&
-      (payload.features.includes("sso") || payload.tier === UserPlan.ENTERPRISE);
+      (payload.features.includes("sso") ||
+        payload.tier === UserPlan.ENTERPRISE);
 
     if (!hasSSO) {
       throw new Error("SSO requires Enterprise license");
