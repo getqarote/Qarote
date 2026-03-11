@@ -76,8 +76,6 @@ const flagToEnv: Record<string, string> = {
   "sso-oidc-client-id": "SSO_OIDC_CLIENT_ID",
   "sso-oidc-client-secret": "SSO_OIDC_CLIENT_SECRET",
   "sso-saml-metadata-url": "SSO_SAML_METADATA_URL",
-  "sso-tenant": "SSO_TENANT",
-  "sso-product": "SSO_PRODUCT",
   "sso-button-label": "SSO_BUTTON_LABEL",
   "api-url": "API_URL",
   "frontend-url": "FRONTEND_URL",
