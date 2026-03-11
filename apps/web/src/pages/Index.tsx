@@ -327,8 +327,9 @@ const Index = () => {
         {/* YouTube Video */}
         <div id="video" className="relative pb-12">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div
-              className="relative w-full aspect-video  overflow-hidden group cursor-pointer"
+            <button
+              type="button"
+              className="relative w-full aspect-video overflow-hidden group cursor-pointer"
               onClick={() => setIsVideoPlaying(true)}
             >
               {!isVideoPlaying ? (
@@ -339,13 +340,13 @@ const Index = () => {
                     className="w-full h-full object-contain bg-card"
                   />
                   <div className="absolute inset-0 flex items-center justify-center bg-black/15 group-hover:bg-black/20 transition-colors">
-                    <button
-                      type="button"
-                      className="w-20 h-20 md:w-24 md:h-24 bg-white hover:bg-white flex items-center justify-center transition-all hover:scale-110 pointer-events-none shadow-soft rounded-full"
+                    <div
+                      aria-hidden="true"
+                      className="w-20 h-20 md:w-24 md:h-24 bg-white flex items-center justify-center transition-all group-hover:scale-110 shadow-soft rounded-full"
                     >
                       <img
                         src="/images/play.svg"
-                        alt="Play"
+                        alt=""
                         className="w-10 h-10 md:w-12 md:h-12"
                         style={{
                           imageRendering: "crisp-edges",
@@ -354,7 +355,7 @@ const Index = () => {
                           marginLeft: "0.5rem",
                         }}
                       />
-                    </button>
+                    </div>
                   </div>
                 </>
               ) : (
@@ -366,7 +367,7 @@ const Index = () => {
                   allowFullScreen
                 />
               )}
-            </div>
+            </button>
           </div>
         </div>
       </header>
@@ -585,9 +586,9 @@ const Index = () => {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {features.map((feature, index) => (
+            {features.map((feature) => (
               <FeatureCard
-                key={index}
+                key={feature.icon.name}
                 icon={feature.icon}
                 title={feature.title}
                 description={feature.description}
