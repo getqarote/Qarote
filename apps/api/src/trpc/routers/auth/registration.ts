@@ -20,7 +20,10 @@ import { te } from "@/i18n";
 
 /**
  * Registration router
- * Handles user registration
+ * Handles user registration with custom business logic (Stripe trials, Notion sync, etc.)
+ * Note: This is kept as a tRPC mutation rather than using better-auth's signUp endpoint
+ * because of the extensive custom logic (registration toggle, terms acceptance, email
+ * verification via our own service, Stripe trial provisioning, Notion sync).
  */
 export const registrationRouter = router({
   /**
@@ -68,32 +71,46 @@ export const registrationRouter = router({
         // auto-verify the user so they can log in immediately.
         const autoVerify = !emailConfig.enabled;
 
-        // Create user without workspace (workspace will be created later on the dedicated page)
-        const user = await ctx.prisma.user.create({
-          data: {
-            email,
-            passwordHash: hashedPassword,
-            firstName,
-            lastName,
-            // workspaceId is undefined - no workspace assigned yet
-            ...(autoVerify && {
+        // Create user and Account record in a transaction
+        const user = await ctx.prisma.$transaction(async (tx) => {
+          const newUser = await tx.user.create({
+            data: {
+              email,
+              passwordHash: hashedPassword,
+              firstName,
+              lastName,
+              name: `${firstName} ${lastName}`.trim(),
+              ...(autoVerify && {
+                emailVerified: true,
+                emailVerifiedAt: new Date(),
+              }),
+            },
+            select: {
+              id: true,
+              email: true,
+              firstName: true,
+              lastName: true,
+              role: true,
+              workspaceId: true,
+              isActive: true,
               emailVerified: true,
-              emailVerifiedAt: new Date(),
-            }),
-          },
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-            role: true,
-            workspaceId: true,
-            isActive: true,
-            emailVerified: true,
-            lastLogin: true,
-            createdAt: true,
-            updatedAt: true,
-          },
+              lastLogin: true,
+              createdAt: true,
+              updatedAt: true,
+            },
+          });
+
+          // Create better-auth Account record for credential-based auth
+          await tx.account.create({
+            data: {
+              userId: newUser.id,
+              accountId: newUser.id,
+              providerId: "credential",
+              password: hashedPassword,
+            },
+          });
+
+          return newUser;
         });
 
         // Auto-start Enterprise trial for cloud users (fire-and-forget)
@@ -144,7 +161,6 @@ export const registrationRouter = router({
         }
 
         // Update user in Notion (non-blocking)
-        // Fire and forget - don't await to avoid blocking the response
         ctx.prisma.user
           .findUnique({
             where: { id: user.id },

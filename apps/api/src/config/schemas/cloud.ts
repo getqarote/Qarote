@@ -59,6 +59,9 @@ export const cloudSchema = baseSchema.extend({
   GOOGLE_CLIENT_ID: z
     .string()
     .min(1, "GOOGLE_CLIENT_ID is required for cloud mode"),
+  GOOGLE_CLIENT_SECRET: z
+    .string()
+    .min(1, "GOOGLE_CLIENT_SECRET is required for cloud mode"),
   ENABLE_OAUTH: z.coerce.boolean().default(true),
 
   // License Configuration - For cloud to generate licenses for customers

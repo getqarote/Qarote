@@ -6,10 +6,10 @@ import { generateTestLicenseJwt } from "../../helpers/license.js";
 
 const AUTH_TOKENS_FILE = path.resolve(import.meta.dirname, "../../.auth-tokens.json");
 
-function getAdminToken(): string {
+function getAdminCookie(): string {
   const raw = fs.readFileSync(AUTH_TOKENS_FILE, "utf-8");
   const tokens = JSON.parse(raw);
-  return tokens["admin@e2e-test.local"].token;
+  return tokens["admin@e2e-test.local"].cookie;
 }
 
 test.describe("Topology Feature Gating @p1", () => {
@@ -40,9 +40,9 @@ test.describe("Topology Feature Gating @p1", () => {
       tier: "DEVELOPER",
       features: ["topology_visualization"],
     });
-    const token = getAdminToken();
+    const cookie = getAdminCookie();
     await api
-      .withAuth(token)
+      .withAuth(cookie)
       .mutation("selfhostedLicense.activate", { licenseKey: jwt });
 
     await adminPage.goto("/topology");

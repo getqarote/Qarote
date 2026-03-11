@@ -12,28 +12,28 @@ const AUTH_TOKENS_FILE = path.resolve(
   "../../.auth-tokens.json"
 );
 
-function getAdminToken(): string {
+function getAdminCookie(): string {
   const raw = fs.readFileSync(AUTH_TOKENS_FILE, "utf-8");
   const tokens = JSON.parse(raw);
-  return tokens["admin@e2e-test.local"].token;
+  return tokens["admin@e2e-test.local"].cookie;
 }
 
 test.describe("License Plan Resolution @p1", () => {
   // Deactivate via API to invalidate the in-memory license cache (60s TTL),
   // then clear DB as a safety net.
   test.beforeEach(async ({ api, db }) => {
-    const token = getAdminToken();
+    const cookie = getAdminCookie();
     await api
-      .withAuth(token)
+      .withAuth(cookie)
       .mutation("selfhostedLicense.deactivate", {})
       .catch(() => {});
     await db.clearSystemSetting("license_jwt");
   });
 
   test.afterEach(async ({ api, db }) => {
-    const token = getAdminToken();
+    const cookie = getAdminCookie();
     await api
-      .withAuth(token)
+      .withAuth(cookie)
       .mutation("selfhostedLicense.deactivate", {})
       .catch(() => {});
     await db.clearSystemSetting("license_jwt");
@@ -58,9 +58,9 @@ test.describe("License Plan Resolution @p1", () => {
       tier: "DEVELOPER",
       features: ALL_PREMIUM_FEATURES,
     });
-    const token = getAdminToken();
+    const cookie = getAdminCookie();
     await api
-      .withAuth(token)
+      .withAuth(cookie)
       .mutation("selfhostedLicense.activate", { licenseKey: jwt });
 
     // Navigate to dashboard
@@ -82,9 +82,9 @@ test.describe("License Plan Resolution @p1", () => {
       tier: "DEVELOPER",
       features: ALL_PREMIUM_FEATURES,
     });
-    const token = getAdminToken();
+    const cookie = getAdminCookie();
     await api
-      .withAuth(token)
+      .withAuth(cookie)
       .mutation("selfhostedLicense.activate", { licenseKey: jwt });
 
     // Navigate to profile plans tab
@@ -110,14 +110,14 @@ test.describe("License Plan Resolution @p1", () => {
       tier: "DEVELOPER",
       features: ALL_PREMIUM_FEATURES,
     });
-    const token = getAdminToken();
+    const cookie = getAdminCookie();
     await api
-      .withAuth(token)
+      .withAuth(cookie)
       .mutation("selfhostedLicense.activate", { licenseKey: jwt });
 
     // Query getCurrentPlan directly to verify API returns DEVELOPER
     const planData = await api
-      .withAuth(token)
+      .withAuth(cookie)
       .query("workspace.plan.getCurrentPlan");
 
     expect(planData.user.plan).toBe("DEVELOPER");
@@ -129,7 +129,7 @@ test.describe("License Plan Resolution @p1", () => {
   test("should revert to Free plan after license deactivation", async ({
     api,
   }) => {
-    const token = getAdminToken();
+    const cookie = getAdminCookie();
 
     // Activate a DEVELOPER license
     const jwt = await generateTestLicenseJwt({
@@ -137,23 +137,23 @@ test.describe("License Plan Resolution @p1", () => {
       features: ALL_PREMIUM_FEATURES,
     });
     await api
-      .withAuth(token)
+      .withAuth(cookie)
       .mutation("selfhostedLicense.activate", { licenseKey: jwt });
 
     // Verify plan is DEVELOPER
     let planData = await api
-      .withAuth(token)
+      .withAuth(cookie)
       .query("workspace.plan.getCurrentPlan");
     expect(planData.user.plan).toBe("DEVELOPER");
 
     // Deactivate
     await api
-      .withAuth(token)
+      .withAuth(cookie)
       .mutation("selfhostedLicense.deactivate", {});
 
     // Verify plan reverts to FREE
     planData = await api
-      .withAuth(token)
+      .withAuth(cookie)
       .query("workspace.plan.getCurrentPlan");
     expect(planData.user.plan).toBe("FREE");
     expect(planData.planFeatures.displayName).toBe("Free");
@@ -166,13 +166,13 @@ test.describe("License Plan Resolution @p1", () => {
       tier: "ENTERPRISE",
       features: ALL_PREMIUM_FEATURES,
     });
-    const token = getAdminToken();
+    const cookie = getAdminCookie();
     await api
-      .withAuth(token)
+      .withAuth(cookie)
       .mutation("selfhostedLicense.activate", { licenseKey: jwt });
 
     const planData = await api
-      .withAuth(token)
+      .withAuth(cookie)
       .query("workspace.plan.getCurrentPlan");
 
     expect(planData.user.plan).toBe("ENTERPRISE");

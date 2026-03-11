@@ -19,15 +19,9 @@ const getApiUrl = () => {
 };
 
 /**
- * Get authentication token from localStorage
- */
-const getAuthToken = (): string | null => {
-  return localStorage.getItem("auth_token");
-};
-
-/**
  * tRPC Provider component
- * Wraps the app with tRPC React Query provider
+ * Wraps the app with tRPC React Query provider.
+ * Auth is handled via cookies (better-auth) — no Bearer token needed.
  */
 export function TRPCProvider({ children }: { children: React.ReactNode }) {
   const [trpcClient] = useState(() =>
@@ -36,13 +30,11 @@ export function TRPCProvider({ children }: { children: React.ReactNode }) {
         unauthorizedLink,
         httpBatchLink({
           url: getApiUrl(),
-          headers: () => {
-            const token = getAuthToken();
-            return token
-              ? {
-                  Authorization: `Bearer ${token}`,
-                }
-              : {};
+          fetch(url, options) {
+            return fetch(url, {
+              ...options,
+              credentials: "include",
+            });
           },
         }),
       ],

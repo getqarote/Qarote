@@ -1,14 +1,15 @@
-import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { type ReactNode, useEffect, useReducer, useState } from "react";
+import { useForm, type UseFormReturn } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Building, Loader2, Mail, Users } from "lucide-react";
 
+import { authClient } from "@/lib/auth-client";
+import { logger } from "@/lib/logger";
 import { trpc } from "@/lib/trpc/client";
 
-import { GoogleInvitationButton } from "@/components/auth/GoogleInvitationButton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -30,7 +31,8 @@ import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { PasswordRequirements } from "@/components/ui/password-requirements";
 
-import { useAcceptInvitation } from "@/hooks/ui/useAuth";
+import { useAuth } from "@/contexts/AuthContextDefinition";
+
 import { useToast } from "@/hooks/ui/useToast";
 
 import {
@@ -55,21 +57,244 @@ interface InvitationDetails {
   };
 }
 
+type InvitationState = {
+  invitation: InvitationDetails | null;
+  loading: boolean;
+  error: string | null;
+};
+
+type InvitationAction =
+  | { type: "FETCH_SUCCESS"; invitation: InvitationDetails }
+  | { type: "FETCH_ERROR"; error: string }
+  | { type: "SET_ERROR"; error: string };
+
+const initialState: InvitationState = {
+  invitation: null,
+  loading: true,
+  error: null,
+};
+
+function invitationReducer(
+  state: InvitationState,
+  action: InvitationAction
+): InvitationState {
+  switch (action.type) {
+    case "FETCH_SUCCESS":
+      return { invitation: action.invitation, loading: false, error: null };
+    case "FETCH_ERROR":
+      return { invitation: null, loading: false, error: action.error };
+    case "SET_ERROR":
+      return { ...state, error: action.error };
+  }
+}
+
+const PLAN_DISPLAY_NAMES: Record<string, string> = {
+  FREE: "Free",
+  DEVELOPER: "Developer",
+  ENTERPRISE: "Enterprise",
+};
+
+const PageWrapper = ({ children }: { children: ReactNode }) => (
+  <div className="min-h-screen flex items-center justify-center bg-gradient-auth py-12 px-4 sm:px-6 lg:px-8">
+    <Card className="w-full max-w-md bg-card/95 backdrop-blur-xs border-border/20 shadow-2xl">
+      {children}
+    </Card>
+  </div>
+);
+
+const InvitationInfo = ({
+  invitation,
+  planDisplayName,
+}: {
+  invitation: InvitationDetails;
+  planDisplayName: string;
+}) => {
+  const { t } = useTranslation("auth");
+  return (
+    <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+      <div className="flex items-center gap-2 text-sm text-gray-600">
+        <Building className="h-4 w-4" />
+        <span>
+          {t("workspace")}: <strong>{invitation.workspace.name}</strong>
+        </span>
+      </div>
+      <div className="flex items-center gap-2 text-sm text-gray-600">
+        <Users className="h-4 w-4" />
+        <span>
+          {t("plan")}: <strong>{planDisplayName}</strong>
+        </span>
+      </div>
+      <div className="text-sm text-gray-600">
+        {t("invitedBy")}: <strong>{invitation.invitedBy.displayName}</strong>
+      </div>
+    </div>
+  );
+};
+
+const InvitationForm = ({
+  form,
+  email,
+  isPending,
+  onSubmit,
+  onNavigateSignIn,
+}: {
+  form: UseFormReturn<AcceptInvitationFormData>;
+  email: string;
+  isPending: boolean;
+  onSubmit: (data: AcceptInvitationFormData) => void;
+  onNavigateSignIn: () => void;
+}) => {
+  const { t } = useTranslation("auth");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  return (
+    <>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="firstName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t("firstName")}</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder={t("firstNamePlaceholder")}
+                      disabled={isPending}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="lastName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t("lastName")}</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder={t("lastNamePlaceholder")}
+                      disabled={isPending}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <FormLabel>{t("email")}</FormLabel>
+            <Input
+              type="email"
+              value={email}
+              disabled
+              className="bg-gray-50"
+              autoComplete="username"
+            />
+          </div>
+
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t("password")}</FormLabel>
+                <FormControl>
+                  <PasswordInput
+                    placeholder={t("enterYourPassword")}
+                    disabled={isPending}
+                    showPassword={showPassword}
+                    onToggleVisibility={() => setShowPassword(!showPassword)}
+                    autoComplete="new-password"
+                    {...field}
+                  />
+                </FormControl>
+                <PasswordRequirements
+                  password={field.value || ""}
+                  className="mt-2"
+                />
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="confirmPassword"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t("confirmPassword")}</FormLabel>
+                <FormControl>
+                  <PasswordInput
+                    placeholder={t("confirmYourPassword")}
+                    disabled={isPending}
+                    showPassword={showConfirmPassword}
+                    onToggleVisibility={() =>
+                      setShowConfirmPassword(!showConfirmPassword)
+                    }
+                    autoComplete="new-password"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <Button
+            type="submit"
+            className="w-full bg-gradient-button hover:bg-gradient-button-hover"
+            disabled={isPending || !form.formState.isValid}
+          >
+            {isPending ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                {t("creatingAccount")}
+              </>
+            ) : (
+              t("acceptInvitationAndCreate")
+            )}
+          </Button>
+        </form>
+      </Form>
+
+      <div className="text-center">
+        <p className="text-sm text-gray-500">
+          {t("alreadyHaveAccount")}{" "}
+          <button
+            type="button"
+            onClick={onNavigateSignIn}
+            className="text-blue-600 hover:underline"
+          >
+            {t("signInInstead")}
+          </button>
+        </p>
+      </div>
+    </>
+  );
+};
+
 const AcceptInvitation = () => {
   const { t } = useTranslation("auth");
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const acceptInvitationMutation = useAcceptInvitation();
+  const { login } = useAuth();
+  const acceptInvitationMutation = trpc.public.invitation.accept.useMutation();
   const utils = trpc.useUtils();
 
-  const [invitation, setInvitation] = useState<InvitationDetails | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [{ invitation, loading, error }, dispatch] = useReducer(
+    invitationReducer,
+    initialState
+  );
 
-  // Initialize form with react-hook-form
   const form = useForm<AcceptInvitationFormData>({
     resolver: zodResolver(acceptInvitationSchema),
     defaultValues: {
@@ -80,30 +305,28 @@ const AcceptInvitation = () => {
     },
   });
 
-  // Fetch invitation details
   useEffect(() => {
     const fetchInvitationDetails = async () => {
       if (!token) {
-        setError(t("invalidInvitationLink"));
-        setLoading(false);
+        dispatch({ type: "FETCH_ERROR", error: t("invalidInvitationLink") });
         return;
       }
-
       try {
         const response = await utils.public.invitation.getDetails.fetch({
           token,
         });
         if (response.success) {
-          setInvitation(response.invitation);
+          dispatch({ type: "FETCH_SUCCESS", invitation: response.invitation });
         } else {
-          setError(t("invalidOrExpiredInvitation"));
+          dispatch({
+            type: "FETCH_ERROR",
+            error: t("invalidOrExpiredInvitation"),
+          });
         }
       } catch (err: unknown) {
         const errorMessage =
           err instanceof Error ? err.message : t("failedLoadInvitation");
-        setError(errorMessage);
-      } finally {
-        setLoading(false);
+        dispatch({ type: "FETCH_ERROR", error: errorMessage });
       }
     };
 
@@ -111,9 +334,7 @@ const AcceptInvitation = () => {
   }, [token, utils]);
 
   const onSubmit = (data: AcceptInvitationFormData) => {
-    if (!token) {
-      return;
-    }
+    if (!token) return;
 
     acceptInvitationMutation.mutate(
       {
@@ -123,20 +344,46 @@ const AcceptInvitation = () => {
         lastName: data.lastName,
       },
       {
-        onSuccess: () => {
-          toast({
-            title: t("welcomeToQarote"),
-            description: t("successfullyJoinedWorkspace", {
-              workspace: invitation?.workspace.name,
-            }),
-          });
-          // Redirect to dashboard
-          navigate("/", { replace: true });
+        onSuccess: async (result) => {
+          try {
+            const signInResult = await authClient.signIn.email({
+              email: invitation?.email || result.user.email,
+              password: data.password,
+            });
+
+            if (signInResult.error) {
+              throw new Error(signInResult.error.message);
+            }
+
+            const response = await utils.auth.session.getSession.fetch();
+            const user = {
+              ...response.user,
+              workspaceId: response.user.workspace?.id,
+            };
+            login(user);
+
+            toast({
+              title: t("welcomeToQarote"),
+              description: t("successfullyJoinedWorkspace", {
+                workspace: invitation?.workspace.name,
+              }),
+            });
+
+            navigate("/", { replace: true });
+          } catch (err) {
+            logger.error("Failed to sign in after accepting invitation:", err);
+            toast({
+              title: t("invitationAccepted"),
+              description: t("signInToAccess"),
+              variant: "default",
+            });
+            navigate("/auth/sign-in", { replace: true });
+          }
         },
         onError: (err: unknown) => {
           const errorMessage =
             err instanceof Error ? err.message : t("failedAcceptInvitation");
-          setError(errorMessage);
+          dispatch({ type: "SET_ERROR", error: errorMessage });
         },
       }
     );
@@ -144,247 +391,73 @@ const AcceptInvitation = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-auth py-12 px-4 sm:px-6 lg:px-8">
-        <Card className="w-full max-w-md bg-card/95 backdrop-blur-xs border-border/20 shadow-2xl">
-          <CardContent className="flex items-center justify-center py-8">
-            <Loader2 className="h-8 w-8 animate-spin" />
-          </CardContent>
-        </Card>
-      </div>
+      <PageWrapper>
+        <CardContent className="flex items-center justify-center py-8">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </CardContent>
+      </PageWrapper>
     );
   }
 
   if (error && !invitation) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-auth py-12 px-4 sm:px-6 lg:px-8">
-        <Card className="w-full max-w-md bg-card/95 backdrop-blur-xs border-border/20 shadow-2xl">
-          <CardHeader className="text-center">
-            <CardTitle className="text-red-600">
-              {t("invalidInvitation")}
-            </CardTitle>
-            <CardDescription>{error}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button
-              onClick={() => navigate("/auth/sign-in")}
-              className="w-full bg-gradient-button hover:bg-gradient-button-hover"
-            >
-              {t("goToSignIn")}
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+      <PageWrapper>
+        <CardHeader className="text-center">
+          <CardTitle className="text-red-600">
+            {t("invalidInvitation")}
+          </CardTitle>
+          <CardDescription>{error}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button
+            onClick={() => navigate("/auth/sign-in")}
+            className="w-full bg-gradient-button hover:bg-gradient-button-hover"
+          >
+            {t("goToSignIn")}
+          </Button>
+        </CardContent>
+      </PageWrapper>
     );
   }
 
   const planDisplayName =
-    {
-      FREE: "Free",
-      DEVELOPER: "Developer",
-      ENTERPRISE: "Enterprise",
-    }[invitation?.workspace.plan as string] || invitation?.workspace.plan;
+    PLAN_DISPLAY_NAMES[invitation?.workspace.plan as string] ||
+    invitation?.workspace.plan ||
+    "";
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-auth py-12 px-4 sm:px-6 lg:px-8">
-      <Card className="w-full max-w-md bg-card/95 backdrop-blur-xs border-border/20 shadow-2xl">
-        <CardHeader className="text-center">
-          <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
-            <Mail className="h-6 w-6 text-blue-600" />
-          </div>
-          <CardTitle>{t("joinQaroteTitle")}</CardTitle>
-          <CardDescription>{t("setUpAccount")}</CardDescription>
-        </CardHeader>
+    <PageWrapper>
+      <CardHeader className="text-center">
+        <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
+          <Mail className="h-6 w-6 text-blue-600" />
+        </div>
+        <CardTitle>{t("joinQaroteTitle")}</CardTitle>
+        <CardDescription>{t("setUpAccount")}</CardDescription>
+      </CardHeader>
 
-        <CardContent className="space-y-6">
-          {/* Invitation Details */}
-          <div className="bg-gray-50 rounded-lg p-4 space-y-3">
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-              <Building className="h-4 w-4" />
-              <span>
-                {t("workspace")}: <strong>{invitation?.workspace.name}</strong>
-              </span>
-            </div>
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-              <Users className="h-4 w-4" />
-              <span>
-                {t("plan")}: <strong>{planDisplayName}</strong>
-              </span>
-            </div>
-            <div className="text-sm text-gray-600">
-              {t("invitedBy")}:{" "}
-              <strong>{invitation?.invitedBy.displayName}</strong>
-            </div>
-          </div>
+      <CardContent className="space-y-6">
+        {invitation && (
+          <InvitationInfo
+            invitation={invitation}
+            planDisplayName={planDisplayName}
+          />
+        )}
 
-          {error && (
-            <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
+        {error && (
+          <Alert variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
 
-          {/* Google Authentication Option */}
-          <div className="space-y-4">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">
-                  {t("orContinueWith")}
-                </span>
-              </div>
-            </div>
-
-            <GoogleInvitationButton
-              invitationToken={token || ""}
-              onError={(error) => setError(error)}
-            />
-          </div>
-
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">
-                {t("orCreateAccountManually")}
-              </span>
-            </div>
-          </div>
-
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="firstName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("firstName")}</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder={t("firstNamePlaceholder")}
-                          disabled={acceptInvitationMutation.isPending}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="lastName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("lastName")}</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder={t("lastNamePlaceholder")}
-                          disabled={acceptInvitationMutation.isPending}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <FormLabel>{t("email")}</FormLabel>
-                <Input
-                  type="email"
-                  value={invitation?.email || ""}
-                  disabled
-                  className="bg-gray-50"
-                  autoComplete="username"
-                />
-              </div>
-
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("password")}</FormLabel>
-                    <FormControl>
-                      <PasswordInput
-                        placeholder={t("enterYourPassword")}
-                        disabled={acceptInvitationMutation.isPending}
-                        showPassword={showPassword}
-                        onToggleVisibility={() =>
-                          setShowPassword(!showPassword)
-                        }
-                        autoComplete="new-password"
-                        {...field}
-                      />
-                    </FormControl>
-                    <PasswordRequirements
-                      password={field.value || ""}
-                      className="mt-2"
-                    />
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="confirmPassword"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("confirmPassword")}</FormLabel>
-                    <FormControl>
-                      <PasswordInput
-                        placeholder={t("confirmYourPassword")}
-                        disabled={acceptInvitationMutation.isPending}
-                        showPassword={showConfirmPassword}
-                        onToggleVisibility={() =>
-                          setShowConfirmPassword(!showConfirmPassword)
-                        }
-                        autoComplete="new-password"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <Button
-                type="submit"
-                className="w-full bg-gradient-button hover:bg-gradient-button-hover"
-                disabled={
-                  acceptInvitationMutation.isPending || !form.formState.isValid
-                }
-              >
-                {acceptInvitationMutation.isPending ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    {t("creatingAccount")}
-                  </>
-                ) : (
-                  t("acceptInvitationAndCreate")
-                )}
-              </Button>
-            </form>
-          </Form>
-
-          <div className="text-center">
-            <p className="text-sm text-gray-500">
-              {t("alreadyHaveAccount")}{" "}
-              <button
-                onClick={() => navigate("/auth/sign-in")}
-                className="text-blue-600 hover:underline"
-              >
-                {t("signInInstead")}
-              </button>
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+        <InvitationForm
+          form={form}
+          email={invitation?.email || ""}
+          isPending={acceptInvitationMutation.isPending}
+          onSubmit={onSubmit}
+          onNavigateSignIn={() => navigate("/auth/sign-in")}
+        />
+      </CardContent>
+    </PageWrapper>
   );
 };
 

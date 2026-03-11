@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router";
@@ -50,19 +50,19 @@ const Login = () => {
   });
 
   const onSubmit = (data: SignInFormData) => {
-    logger.info("Login form submitted", { email: data.email });
-    loginMutation.mutate({
-      email: data.email,
-      password: data.password,
-    });
+    logger.info("Login form submitted");
+    loginMutation.mutate(
+      {
+        email: data.email,
+        password: data.password,
+      },
+      {
+        onSuccess: () => {
+          navigate("/licenses", { replace: true });
+        },
+      }
+    );
   };
-
-  // Handle successful login - navigate to licenses page
-  useEffect(() => {
-    if (loginMutation.isSuccess) {
-      navigate("/licenses");
-    }
-  }, [loginMutation.isSuccess, navigate]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-auth py-12 px-4 sm:px-6 lg:px-8">

@@ -22,17 +22,30 @@ export async function createUser(
   const email = overrides.email || uniqueEmail();
   const password = overrides.password || "TestPassword123!";
 
+  const passwordHash = hashSync(password, 1);
+
   const user = await prisma.user.create({
     data: {
       email,
-      passwordHash: hashSync(password, 1),
+      passwordHash,
       firstName: overrides.firstName || "Test",
       lastName: overrides.lastName || "User",
+      name: `${overrides.firstName || "Test"} ${overrides.lastName || "User"}`,
       role: overrides.role || "MEMBER",
       emailVerified: overrides.emailVerified ?? true,
       emailVerifiedAt:
         overrides.emailVerified !== false ? new Date() : undefined,
       workspaceId: overrides.workspaceId ?? null,
+    },
+  });
+
+  // Create better-auth Account record for credential-based sign-in
+  await prisma.account.create({
+    data: {
+      userId: user.id,
+      accountId: user.id,
+      providerId: "credential",
+      password: passwordHash,
     },
   });
 

@@ -12,12 +12,6 @@ export const RegisterUserSchema = z.object({
   sourceApp: z.enum(["app", "portal"]).optional().default("app"),
 });
 
-// Schema for user login
-export const LoginSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(1, "Password is required"),
-});
-
 // Schema for password reset request
 export const PasswordResetRequestSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -59,16 +53,6 @@ export const AcceptInvitationWithRegistrationSchema = z.object({
   lastName: z.string().min(1, "Last name is required"),
 });
 
-// Schema for Google OAuth request
-export const GoogleAuthSchema = z.object({
-  credential: z.string(),
-});
-
-// Schema for Google OAuth invitation acceptance
-export const GoogleInvitationAcceptSchema = z.object({
-  credential: z.string(),
-});
-
 // Schema for email verification token
 export const VerifyEmailSchema = z.object({
   token: z.string().min(1, "Token is required"),
@@ -94,15 +78,4 @@ export const AcceptInvitationWithRegistrationTokenSchema = z.object({
   password: z.string().min(8, "Password must be at least 8 characters"),
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
-});
-
-// Schema for accepting invitation with Google
-export const AcceptInvitationWithGoogleSchema = z.object({
-  token: z.string().min(1, "Token is required"),
-  credential: z.string().min(1, "Google credential is required"),
-});
-
-// Schema for SSO auth code exchange
-export const SSOExchangeCodeSchema = z.object({
-  code: z.string().min(1, "Authorization code is required"),
 });
