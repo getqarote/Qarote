@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useReducer } from "react";
 
 import { User } from "@/lib/api";
 import { authClient } from "@/lib/auth-client";
@@ -12,9 +12,36 @@ interface AuthProviderProps {
   children: React.ReactNode;
 }
 
+type AuthState = { user: User | null; isLoading: boolean };
+type AuthAction =
+  | { type: "SET_USER"; user: User }
+  | { type: "CLEAR_USER" }
+  | { type: "LOADED" };
+
+function authReducer(state: AuthState, action: AuthAction): AuthState {
+  switch (action.type) {
+    case "SET_USER":
+      return { user: action.user, isLoading: false };
+    case "CLEAR_USER":
+      return { user: null, isLoading: false };
+    case "LOADED":
+      return { ...state, isLoading: false };
+  }
+}
+
+function syncSentryUser(user: User | null) {
+  setSentryUser(
+    user
+      ? { id: user.id, workspaceId: user.workspaceId, email: user.email }
+      : null
+  );
+}
+
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [{ user, isLoading }, dispatch] = useReducer(authReducer, {
+    user: null,
+    isLoading: true,
+  });
   const utils = trpc.useUtils();
 
   // Check for existing session on mount
@@ -28,28 +55,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             const response = await utils.auth.session.getSession.fetch();
             const enrichedUser = response.user;
             enrichedUser.workspaceId = enrichedUser.workspace?.id;
-            setUser(enrichedUser);
-
-            setSentryUser({
-              id: enrichedUser.id,
-              workspaceId: enrichedUser.workspaceId,
-              email: enrichedUser.email,
-            });
+            dispatch({ type: "SET_USER", user: enrichedUser });
+            syncSentryUser(enrichedUser);
           } catch {
             // tRPC call failed but we have a valid session — use basic user data
             logger.warn("Failed to fetch enriched session, using basic data");
             const baUser = session.data.user;
-            setUser({
+            const basicUser = {
               id: baUser.id,
               email: baUser.email,
               name: baUser.name || "",
-            } as User);
+            } as User;
+            dispatch({ type: "SET_USER", user: basicUser });
           }
+        } else {
+          dispatch({ type: "LOADED" });
         }
       } catch (error) {
         logger.error("Failed to check session:", error);
-      } finally {
-        setIsLoading(false);
+        dispatch({ type: "LOADED" });
       }
     };
 
@@ -57,13 +81,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, [utils]);
 
   const login = useCallback((newUser: User) => {
-    setUser(newUser);
-
-    setSentryUser({
-      id: newUser.id,
-      workspaceId: newUser.workspaceId,
-      email: newUser.email,
-    });
+    dispatch({ type: "SET_USER", user: newUser });
+    syncSentryUser(newUser);
   }, []);
 
   const logout = useCallback(async () => {
@@ -72,32 +91,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } catch (error) {
       logger.error("Failed to sign out:", error);
     }
-    setUser(null);
-    setSentryUser(null);
+    dispatch({ type: "CLEAR_USER" });
+    syncSentryUser(null);
   }, []);
 
   useEffect(() => {
-    // Listen for 401 unauthorized events from tRPC link
     const handleUnauthorized = () => {
-      setUser(null);
-      setSentryUser(null);
+      dispatch({ type: "CLEAR_USER" });
+      syncSentryUser(null);
     };
 
     window.addEventListener("auth:unauthorized", handleUnauthorized);
-
     return () => {
       window.removeEventListener("auth:unauthorized", handleUnauthorized);
     };
   }, []);
 
   const updateUser = useCallback((newUser: User) => {
-    setUser(newUser);
-
-    setSentryUser({
-      id: newUser.id,
-      workspaceId: newUser.workspaceId,
-      email: newUser.email,
-    });
+    dispatch({ type: "SET_USER", user: newUser });
+    syncSentryUser(newUser);
   }, []);
 
   const refetchUser = useCallback(async () => {
@@ -105,13 +117,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const response = await utils.auth.session.getSession.fetch();
       const updatedUser = response.user;
       updatedUser.workspaceId = updatedUser.workspace?.id;
-      setUser(updatedUser);
-
-      setSentryUser({
-        id: updatedUser.id,
-        workspaceId: updatedUser.workspaceId,
-        email: updatedUser.email,
-      });
+      dispatch({ type: "SET_USER", user: updatedUser });
+      syncSentryUser(updatedUser);
     } catch (error) {
       logger.error("Failed to refetch user data:", error);
     }
