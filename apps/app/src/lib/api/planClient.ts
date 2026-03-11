@@ -38,7 +38,7 @@ export interface CurrentPlanResponse {
     // Display features
     hasAdvancedAnalytics: boolean;
     hasAlerts: boolean;
-    hasTopologyVisualization: boolean | "coming_soon";
+    hasTopologyVisualization: boolean;
     hasRoleBasedAccess: boolean | "coming_soon";
     hasSsoSamlOidc: boolean;
     hasSoc2Compliance: boolean;

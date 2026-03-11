@@ -24,7 +24,7 @@ export interface PlanFeatures {
   // Display features (for pricing page rendering)
   hasAdvancedAnalytics: boolean;
   hasAlerts: boolean;
-  hasTopologyVisualization: boolean | "coming_soon";
+  hasTopologyVisualization: boolean;
   hasRoleBasedAccess: boolean | "coming_soon";
   hasSsoSamlOidc: boolean;
   hasSoc2Compliance: boolean;
