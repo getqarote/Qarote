@@ -1,4 +1,5 @@
 import { TRPCError } from "@trpc/server";
+import { hashPassword as hashPasswordScrypt } from "better-auth/crypto";
 
 import { comparePassword, hashPassword } from "@/core/auth";
 
@@ -185,7 +186,11 @@ export const passwordRouter = router({
           });
         }
 
-        const hashedPassword = await hashPassword(password);
+        // Hash with bcrypt for legacy User.passwordHash, scrypt for better-auth Account.password
+        const [hashedPassword, scryptHash] = await Promise.all([
+          hashPassword(password),
+          hashPasswordScrypt(password),
+        ]);
 
         // Update both User.passwordHash and Account.password (better-auth)
         // Use upsert for Account to handle users who don't have a credential account yet
@@ -201,12 +206,12 @@ export const passwordRouter = router({
                 accountId: passwordReset.userId,
               },
             },
-            update: { password: hashedPassword },
+            update: { password: scryptHash },
             create: {
               userId: passwordReset.userId,
               accountId: passwordReset.userId,
               providerId: "credential",
-              password: hashedPassword,
+              password: scryptHash,
             },
           }),
           ctx.prisma.passwordReset.update({
@@ -295,7 +300,11 @@ export const passwordRouter = router({
           });
         }
 
-        const hashedPassword = await hashPassword(newPassword);
+        // Hash with bcrypt for legacy User.passwordHash, scrypt for better-auth Account.password
+        const [hashedPassword, scryptHash] = await Promise.all([
+          hashPassword(newPassword),
+          hashPasswordScrypt(newPassword),
+        ]);
 
         // Update both User.passwordHash and Account.password
         // Use upsert for Account to handle users who don't have a credential account yet
@@ -311,12 +320,12 @@ export const passwordRouter = router({
                 accountId: user.id,
               },
             },
-            update: { password: hashedPassword },
+            update: { password: scryptHash },
             create: {
               userId: user.id,
               accountId: user.id,
               providerId: "credential",
-              password: hashedPassword,
+              password: scryptHash,
             },
           }),
         ]);

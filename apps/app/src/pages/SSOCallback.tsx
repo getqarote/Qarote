@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 
 import { PageLoader } from "@/components/PageLoader";
@@ -26,17 +26,12 @@ const ERROR_MESSAGES: Record<string, string> = {
 const SSOCallback: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const [error] = useState<string | null>(() => {
-    const errorParam = searchParams.get("error");
-    if (errorParam) {
-      return (
-        ERROR_MESSAGES[errorParam] || `Authentication error: ${errorParam}`
-      );
-    }
-    // SSO callback is handled by better-auth now — if we land here with no
-    // error, the session cookie is already set. Redirect to workspace.
-    return null;
-  });
+  const errorParam = searchParams.get("error");
+  // SSO callback is handled by better-auth now — if we land here with no
+  // error, the session cookie is already set. Redirect to workspace.
+  const error = errorParam
+    ? ERROR_MESSAGES[errorParam] || `Authentication error: ${errorParam}`
+    : null;
 
   // No error — session was established by better-auth callback, redirect
   useEffect(() => {

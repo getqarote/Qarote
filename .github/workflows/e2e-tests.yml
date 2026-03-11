@@ -246,9 +246,10 @@ jobs:
           FROM_EMAIL: noreply@test.local
           ENABLE_OAUTH: "true"
           GOOGLE_CLIENT_ID: "test-google-client-id.apps.googleusercontent.com"
+          GOOGLE_CLIENT_SECRET: "test-google-client-secret"
           VITE_GOOGLE_CLIENT_ID: "test-google-client-id.apps.googleusercontent.com"
           # Cloud mode requires these for Zod validation.
-          # Dummy values — Stripe/Sentry/Resend are not exercised in E2E tests.
+          # Dummy values — Stripe/Sentry/Resend/Google OAuth are not exercised in E2E tests.
           RESEND_API_KEY: e2e-test-resend-key
           STRIPE_SECRET_KEY: sk_test_e2e_dummy
           STRIPE_WEBHOOK_SECRET: whsec_e2e_dummy

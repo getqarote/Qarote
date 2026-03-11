@@ -60,12 +60,16 @@ export const sessionRouter = router({
         });
       }
 
-      // Derive authProvider from Account records instead of legacy googleId
+      // Derive auth capabilities from Account records instead of legacy googleId
       const hasGoogle = fullUser.accounts.some(
         (a) => a.providerId === "google"
       );
+      const hasCredential = fullUser.accounts.some(
+        (a) => a.providerId === "credential"
+      );
       const mapped = UserMapper.toApiResponse(fullUser);
       mapped.authProvider = hasGoogle ? "google" : "password";
+      mapped.hasPassword = hasCredential;
 
       return {
         user: mapped,

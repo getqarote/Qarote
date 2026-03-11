@@ -44,20 +44,39 @@ export const useLogin = () => {
         // Fetch enriched user data via tRPC
         try {
           const response = await utils.auth.session.getSession.fetch();
-          const user = response.user;
-          user.workspaceId = user.workspace?.id;
+          const user = {
+            ...response.user,
+            workspaceId: response.user.workspace?.id,
+          };
           login(user);
           setIsPending(false);
           setIsSuccess(true);
           options?.onSuccess?.();
         } catch (err) {
-          logger.error("Failed to fetch session after login:", err);
-          const error =
-            err instanceof Error ? err : new Error("Failed to fetch session");
-          setError(error);
-          setIsError(true);
-          setIsPending(false);
-          options?.onError?.(error);
+          // Sign-in succeeded (cookie is set) but enriched fetch failed —
+          // fall back to basic session data so the user isn't stuck on login
+          logger.warn(
+            "Failed to fetch enriched session after login, using basic data:",
+            err
+          );
+          if (result.data?.user) {
+            const baUser = result.data.user;
+            login({
+              id: baUser.id,
+              email: baUser.email,
+              name: baUser.name || "",
+            } as Parameters<typeof login>[0]);
+            setIsPending(false);
+            setIsSuccess(true);
+            options?.onSuccess?.();
+          } else {
+            const error =
+              err instanceof Error ? err : new Error("Failed to fetch session");
+            setError(error);
+            setIsError(true);
+            setIsPending(false);
+            options?.onError?.(error);
+          }
         }
       })
       .catch((err) => {

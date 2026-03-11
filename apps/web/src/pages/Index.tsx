@@ -1730,9 +1730,10 @@ const Index = () => {
             </p>
             <button
               onClick={() => {
-                // Tawk.to API is available via the React component
                 if (window.Tawk_API) {
                   window.Tawk_API.maximize();
+                } else {
+                  window.location.href = "mailto:support@qarote.io";
                 }
               }}
               className="inline-flex items-center justify-center text-foreground hover:text-[#ff691b] px-4 py-3 sm:px-8 sm:py-4  transition-all duration-200 text-base sm:text-lg font-medium underline decoration-1 hover:decoration-[#ff691b]"
