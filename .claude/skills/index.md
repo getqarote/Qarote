@@ -44,6 +44,7 @@
 - **[Architecture - API](./architecture-api.md)** - Technical architecture and design
 - **[API Contracts](./api-contracts-api.md)** - tRPC endpoints and integration points
 - **[Data Models](./data-models-api.md)** - PostgreSQL schema (21 models)
+- **[Alerts Notification Workflow](./alerts-notification-workflow.md)** - Alert monitoring, tracking, deduplication, and multi-channel notifications
 
 **Key Information:**
 - **Framework:** Hono.js with tRPC for type-safe APIs

@@ -193,10 +193,10 @@ class AlertNotificationService {
         return;
       }
 
-      // Get notification severity preferences (default to all if not set)
+      // Get notification severity preferences (default to critical + warning per documented scope)
       const notificationSeverities = workspace.notificationSeverities
         ? (workspace.notificationSeverities as string[])
-        : ["critical", "warning", "info"];
+        : ["critical", "warning"];
 
       // Get all existing seen alerts for this workspace and server
       const seenAlerts = await prisma.seenAlert.findMany({
@@ -234,6 +234,10 @@ class AlertNotificationService {
         const isNew = !existingAlert;
 
         // Always track alerts in database, regardless of severity preferences
+        // NOTE: This loop issues one DB write per alert (N+1 pattern).
+        // A batch upsert would be more efficient but is intentionally avoided here
+        // to preserve correct per-alert create-vs-update semantics and avoid
+        // race conditions when alerts transition state mid-batch.
         if (isNew) {
           // Brand new alert - create SeenAlert record
           await prisma.seenAlert.create({
@@ -320,6 +324,10 @@ class AlertNotificationService {
       // If vhost is specified, only auto-resolve alerts for that vhost (or node/cluster alerts)
       // This prevents resolving alerts from other vhosts when viewing a specific vhost
       if (vhost) {
+        // Fingerprint format for queue alerts: `${serverId}-${category}-queue-${vhost}-${sourceName}`
+        // We use `contains` because Prisma does not support regex. This is safe because the
+        // `sourceType: "queue"` condition in the OR clause constrains the match, and the
+        // `-queue-${vhost}-` segment is position-stable in the format.
         const vhostPattern = `-queue-${vhost}-`;
         unresolvedSeenAlertsWhere.OR = [
           // Include queue alerts that match the vhost
@@ -349,9 +357,6 @@ class AlertNotificationService {
         },
       });
 
-      // Use provided server name (always available from caller)
-      const resolvedServerName = serverName;
-
       for (const seenAlert of unresolvedSeenAlerts) {
         if (!activeFingerprints.has(seenAlert.fingerprint)) {
           // Alert is no longer active, mark as resolved
@@ -380,7 +385,7 @@ class AlertNotificationService {
             await prisma.resolvedAlert.create({
               data: {
                 serverId,
-                serverName: resolvedServerName,
+                serverName,
                 severity: seenAlert.severity,
                 category: seenAlert.category,
                 title,
@@ -439,205 +444,165 @@ class AlertNotificationService {
         shouldSendNotifications &&
         serverNotificationsEnabled
       ) {
-        // Filter to only alerts that should actually get notifications
-        const alertsToNotify = newAlerts.filter((alert) => {
-          const fingerprint = generateAlertFingerprint(
-            serverId,
-            alert.category,
-            alert.source.type,
-            alert.source.name,
-            alert.vhost
-          );
-          const existing = seenAlerts.find(
-            (a) => a.fingerprint === fingerprint
-          );
+        const alertsToNotify = newAlerts;
 
-          // Send notification if:
-          // 1. Never sent email before, OR
-          // 2. Alert was resolved (came back), OR
-          // 3. Past cooldown period
-          if (!existing || !existing.emailSentAt) {
-            return true;
+        // Send email notification (if enabled)
+        if (workspace.emailNotificationsEnabled && workspace.contactEmail) {
+          try {
+            await NotificationEmailService.sendAlertNotificationEmail({
+              to: workspace.contactEmail,
+              workspaceName: workspace.name,
+              workspaceId,
+              alerts: alertsToNotify,
+              serverName,
+              serverId,
+            });
+
+            // Mark alerts as email sent
+            for (const alert of alertsToNotify) {
+              const fingerprint = generateAlertFingerprint(
+                serverId,
+                alert.category,
+                alert.source.type,
+                alert.source.name,
+                alert.vhost
+              );
+              await prisma.seenAlert.updateMany({
+                where: { fingerprint },
+                data: { emailSentAt: now },
+              });
+            }
+
+            logger.info(
+              `Sent alert notification email for ${alertsToNotify.length} new/recurring alerts to ${workspace.contactEmail}`
+            );
+          } catch (error) {
+            logger.error({ error }, "Failed to send alert notification email");
           }
+        }
 
-          const wasResolved = !!existing.resolvedAt;
-          const referenceTime = existing.emailSentAt || existing.firstSeenAt;
-          const timeSinceLastNotification = referenceTime
-            ? now.getTime() - referenceTime.getTime()
-            : 0;
-          const isPastCooldown =
-            timeSinceLastNotification > this.COOLDOWN_PERIOD;
-
-          return wasResolved || isPastCooldown;
-        });
-
-        if (alertsToNotify.length > 0) {
-          const serverName = alertsToNotify[0]?.serverName || "Unknown Server";
-
-          // Send email notification (if enabled)
-          if (workspace.emailNotificationsEnabled && workspace.contactEmail) {
-            try {
-              await NotificationEmailService.sendAlertNotificationEmail({
-                to: workspace.contactEmail,
-                workspaceName: workspace.name,
+        // Send webhook notifications (only if webhook integration is enabled)
+        const webhookEnabled = await isFeatureEnabled(
+          FEATURES.WEBHOOK_INTEGRATION
+        );
+        if (webhookEnabled) {
+          try {
+            const webhook = await prisma.webhook.findFirst({
+              where: {
                 workspaceId,
-                alerts: alertsToNotify,
+                enabled: true,
+              },
+              select: {
+                id: true,
+                url: true,
+                secret: true,
+                version: true,
+              },
+            });
+
+            if (webhook) {
+              const webhookResults = await WebhookService.sendAlertNotification(
+                [webhook],
+                workspaceId,
+                workspace.name,
+                serverId,
+                serverName,
+                alertsToNotify
+              );
+
+              // Log webhook results
+              const successful = webhookResults.filter(
+                (r) => r.result.success
+              ).length;
+              const failed = webhookResults.filter(
+                (r) => !r.result.success
+              ).length;
+
+              if (successful > 0) {
+                logger.info(
+                  {
+                    successful,
+                    failed,
+                    alertsToNotifyLength: alertsToNotify.length,
+                  },
+                  "Sent alert notification to webhook(s)"
+                );
+              }
+
+              if (failed > 0) {
+                logger.warn(
+                  {
+                    failures: webhookResults
+                      .filter((r) => !r.result.success)
+                      .map((r) => ({
+                        webhookId: r.webhookId,
+                        error: r.result.error,
+                      })),
+                  },
+                  "Failed to send alert notification to webhook(s)"
+                );
+              }
+            }
+          } catch (error) {
+            logger.error({ error }, "Failed to send webhook notifications");
+          }
+        }
+
+        // Send Slack notifications (only if Slack integration is enabled)
+        const slackEnabled = await isFeatureEnabled(FEATURES.SLACK_INTEGRATION);
+        if (slackEnabled) {
+          try {
+            const slackConfig = await prisma.slackConfig.findFirst({
+              where: {
+                workspaceId,
+                enabled: true,
+              },
+              select: {
+                id: true,
+                webhookUrl: true,
+              },
+            });
+
+            if (slackConfig) {
+              const slackResults = await SlackService.sendAlertNotifications(
+                [slackConfig],
+                alertsToNotify,
+                workspace.name,
                 serverName,
                 serverId,
-              });
-
-              // Mark alerts as email sent
-              for (const alert of alertsToNotify) {
-                const fingerprint = generateAlertFingerprint(
-                  serverId,
-                  alert.category,
-                  alert.source.type,
-                  alert.source.name,
-                  alert.vhost
-                );
-                await prisma.seenAlert.updateMany({
-                  where: { fingerprint },
-                  data: { emailSentAt: now },
-                });
-              }
-
-              logger.info(
-                `Sent alert notification email for ${alertsToNotify.length} new/recurring alerts to ${workspace.contactEmail}`
+                emailConfig.frontendUrl
               );
-            } catch (error) {
-              logger.error(
-                { error },
-                "Failed to send alert notification email"
-              );
-            }
-          }
 
-          // Send webhook notifications (only if webhook integration is enabled)
-          const webhookEnabled = await isFeatureEnabled(
-            FEATURES.WEBHOOK_INTEGRATION
-          );
-          if (webhookEnabled) {
-            try {
-              const webhook = await prisma.webhook.findFirst({
-                where: {
-                  workspaceId,
-                  enabled: true,
-                },
-                select: {
-                  id: true,
-                  url: true,
-                  secret: true,
-                  version: true,
-                },
-              });
+              // Log Slack results
+              const successful = slackResults.filter(
+                (r) => r.result.success
+              ).length;
+              const failed = slackResults.filter(
+                (r) => !r.result.success
+              ).length;
 
-              if (webhook) {
-                const webhookResults =
-                  await WebhookService.sendAlertNotification(
-                    [webhook],
-                    workspaceId,
-                    workspace.name,
-                    serverId,
-                    serverName,
-                    alertsToNotify
-                  );
-
-                // Log webhook results
-                const successful = webhookResults.filter(
-                  (r) => r.result.success
-                ).length;
-                const failed = webhookResults.filter(
-                  (r) => !r.result.success
-                ).length;
-
-                if (successful > 0) {
-                  logger.info(
-                    {
-                      successful,
-                      failed,
-                      alertsToNotifyLength: alertsToNotify.length,
-                    },
-                    "Sent alert notification to webhook(s)"
-                  );
-                }
-
-                if (failed > 0) {
-                  logger.warn(
-                    {
-                      failures: webhookResults
-                        .filter((r) => !r.result.success)
-                        .map((r) => ({
-                          webhookId: r.webhookId,
-                          error: r.result.error,
-                        })),
-                    },
-                    "Failed to send alert notification to webhook(s)"
-                  );
-                }
-              }
-            } catch (error) {
-              logger.error({ error }, "Failed to send webhook notifications");
-            }
-          }
-
-          // Send Slack notifications (only if Slack integration is enabled)
-          const slackEnabled = await isFeatureEnabled(
-            FEATURES.SLACK_INTEGRATION
-          );
-          if (slackEnabled) {
-            try {
-              const slackConfig = await prisma.slackConfig.findFirst({
-                where: {
-                  workspaceId,
-                  enabled: true,
-                },
-                select: {
-                  id: true,
-                  webhookUrl: true,
-                },
-              });
-
-              if (slackConfig) {
-                const slackResults = await SlackService.sendAlertNotifications(
-                  [slackConfig],
-                  alertsToNotify,
-                  workspace.name,
-                  serverName,
-                  serverId,
-                  emailConfig.frontendUrl
+              if (successful > 0) {
+                logger.info(
+                  `Sent alert notification to ${successful} Slack channel(s) for ${alertsToNotify.length} alerts`
                 );
-
-                // Log Slack results
-                const successful = slackResults.filter(
-                  (r) => r.result.success
-                ).length;
-                const failed = slackResults.filter(
-                  (r) => !r.result.success
-                ).length;
-
-                if (successful > 0) {
-                  logger.info(
-                    `Sent alert notification to ${successful} Slack channel(s) for ${alertsToNotify.length} alerts`
-                  );
-                }
-
-                if (failed > 0) {
-                  logger.warn(
-                    {
-                      failures: slackResults
-                        .filter((r) => !r.result.success)
-                        .map((r) => ({
-                          slackConfigId: r.slackConfigId,
-                          error: r.result.error,
-                        })),
-                    },
-                    `Failed to send alert notification to ${failed} Slack channel(s)`
-                  );
-                }
               }
-            } catch (error) {
-              logger.error({ error }, "Failed to send Slack notifications");
+
+              if (failed > 0) {
+                logger.warn(
+                  {
+                    failures: slackResults
+                      .filter((r) => !r.result.success)
+                      .map((r) => ({
+                        slackConfigId: r.slackConfigId,
+                        error: r.result.error,
+                      })),
+                  },
+                  `Failed to send alert notification to ${failed} Slack channel(s)`
+                );
+              }
             }
+          } catch (error) {
+            logger.error({ error }, "Failed to send Slack notifications");
           }
         }
       } else if (newAlerts.length > 0) {
