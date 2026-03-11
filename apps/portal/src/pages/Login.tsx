@@ -50,7 +50,7 @@ const Login = () => {
   });
 
   const onSubmit = (data: SignInFormData) => {
-    logger.info("Login form submitted", { email: data.email });
+    logger.info("Login form submitted");
     loginMutation.mutate(
       {
         email: data.email,

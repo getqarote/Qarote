@@ -188,17 +188,26 @@ export const passwordRouter = router({
         const hashedPassword = await hashPassword(password);
 
         // Update both User.passwordHash and Account.password (better-auth)
+        // Use upsert for Account to handle users who don't have a credential account yet
         await ctx.prisma.$transaction([
           ctx.prisma.user.update({
             where: { id: passwordReset.userId },
             data: { passwordHash: hashedPassword },
           }),
-          ctx.prisma.account.updateMany({
+          ctx.prisma.account.upsert({
             where: {
-              userId: passwordReset.userId,
-              providerId: "credential",
+              providerId_accountId: {
+                providerId: "credential",
+                accountId: passwordReset.userId,
+              },
             },
-            data: { password: hashedPassword },
+            update: { password: hashedPassword },
+            create: {
+              userId: passwordReset.userId,
+              accountId: passwordReset.userId,
+              providerId: "credential",
+              password: hashedPassword,
+            },
           }),
           ctx.prisma.passwordReset.update({
             where: { id: passwordReset.id },
@@ -289,14 +298,26 @@ export const passwordRouter = router({
         const hashedPassword = await hashPassword(newPassword);
 
         // Update both User.passwordHash and Account.password
+        // Use upsert for Account to handle users who don't have a credential account yet
         await ctx.prisma.$transaction([
           ctx.prisma.user.update({
             where: { id: user.id },
             data: { passwordHash: hashedPassword },
           }),
-          ctx.prisma.account.updateMany({
-            where: { userId: user.id, providerId: "credential" },
-            data: { password: hashedPassword },
+          ctx.prisma.account.upsert({
+            where: {
+              providerId_accountId: {
+                providerId: "credential",
+                accountId: user.id,
+              },
+            },
+            update: { password: hashedPassword },
+            create: {
+              userId: user.id,
+              accountId: user.id,
+              providerId: "credential",
+              password: hashedPassword,
+            },
           }),
         ]);
 

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 
 import { PageLoader } from "@/components/PageLoader";
@@ -38,6 +38,13 @@ const SSOCallback: React.FC = () => {
     return null;
   });
 
+  // No error — session was established by better-auth callback, redirect
+  useEffect(() => {
+    if (!error) {
+      navigate("/workspace", { replace: true });
+    }
+  }, [error, navigate]);
+
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-auth py-12 px-4">
@@ -63,8 +70,6 @@ const SSOCallback: React.FC = () => {
     );
   }
 
-  // No error — session was established by better-auth callback, redirect
-  navigate("/workspace", { replace: true });
   return <PageLoader />;
 };
 

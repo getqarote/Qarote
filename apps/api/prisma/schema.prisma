@@ -221,7 +221,7 @@ model User {
 // ─── Better Auth Models ─────────────────────────────────────────────
 
 model Session {
-  id        String   @id @default(cuid())
+  id        String   @id @default(uuid())
   token     String   @unique
   userId    String
   expiresAt DateTime
@@ -232,11 +232,10 @@ model Session {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
-  @@index([token])
 }
 
 model Account {
-  id                    String    @id @default(cuid())
+  id                    String    @id @default(uuid())
   userId                String
   accountId             String
   providerId            String
@@ -256,7 +255,7 @@ model Account {
 }
 
 model Verification {
-  id         String   @id @default(cuid())
+  id         String   @id @default(uuid())
   identifier String
   value      String
   expiresAt  DateTime
