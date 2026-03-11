@@ -104,6 +104,7 @@ export function QueueTable({
                       <TableCell className="font-medium">
                         <div className="flex items-center gap-2">
                           <button
+                            type="button"
                             onClick={() =>
                               onNavigateToQueue(encodeURIComponent(queue.name))
                             }
