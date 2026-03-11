@@ -1039,10 +1039,10 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
       );
     });
 
-    it("is position-safe: vhost 'foo' does not match a fingerprint whose actual vhost is 'foo-bar' (when category is 'queue')", async () => {
-      // category="queue" means indexOf("-queue-") hits the category segment first,
-      // exposing "queue-foo-bar-myqueue" which does NOT start with "foo-".
-      // This is the scenario where the old DB `contains` approach had a false positive.
+    it("is exact-boundary-safe: vhost 'foo' does not match a fingerprint whose actual vhost is 'foo-bar' (category='queue')", async () => {
+      // Fingerprint: server-1-queue-queue-foo-bar-myqueue
+      // Strip sourceName "myqueue" → server-1-queue-queue-foo-bar
+      // Check endsWith("-queue-foo") → FALSE ✓
       const fooBarAlert = {
         fingerprint: `${SERVER_ID}-queue-queue-foo-bar-myqueue`,
         severity: "warning",
@@ -1061,7 +1061,44 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
         WORKSPACE_ID,
         SERVER_ID,
         SERVER_NAME,
-        "foo" // checking vhost "foo" — should NOT resolve vhost "foo-bar"
+        "foo"
+      );
+
+      const resolveUpdate = mockPrisma.seenAlert.updateMany.mock.calls.find(
+        (call: unknown[]) => {
+          const data = (call[0] as { data: { resolvedAt?: unknown } }).data;
+          return data?.resolvedAt instanceof Date;
+        }
+      );
+      expect(resolveUpdate).toBeUndefined();
+    });
+
+    it("is exact-boundary-safe: vhost 'foo' does not match a fingerprint whose actual vhost is 'foo-bar' (category='memory')", async () => {
+      // This was the false positive in the old indexOf/startsWith approach:
+      // indexOf("-queue-") found the sourceType segment, then startsWith("foo-")
+      // matched "foo-bar-myqueue". The endsWith approach correctly returns FALSE.
+      // Fingerprint: server-1-memory-queue-foo-bar-myqueue
+      // Strip sourceName "myqueue" → server-1-memory-queue-foo-bar
+      // Check endsWith("-queue-foo") → FALSE ✓
+      const fooBarMemoryAlert = {
+        fingerprint: `${SERVER_ID}-memory-queue-foo-bar-myqueue`,
+        severity: "warning",
+        category: "memory",
+        sourceType: "queue",
+        sourceName: "myqueue",
+        firstSeenAt: new Date(Date.now() - 30 * 60 * 1000),
+      };
+      setupDefaults({
+        seenAlerts: [],
+        unresolvedSeenAlerts: [fooBarMemoryAlert],
+      });
+
+      await alertNotificationService.trackAndNotifyNewAlerts(
+        [],
+        WORKSPACE_ID,
+        SERVER_ID,
+        SERVER_NAME,
+        "foo"
       );
 
       const resolveUpdate = mockPrisma.seenAlert.updateMany.mock.calls.find(
@@ -1106,6 +1143,69 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
       );
       // "default" queue alert + node alert = 2 resolved, "other" queue alert skipped
       expect(resolveUpdates).toHaveLength(2);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // Batch deduplication
+  // -------------------------------------------------------------------------
+
+  describe("batch deduplication", () => {
+    it("processes each fingerprint only once when the same alert appears twice in the batch", async () => {
+      setupDefaults({ seenAlerts: [] });
+
+      const alert = makeAlert();
+      // Pass the same alert twice — same fingerprint
+      await alertNotificationService.trackAndNotifyNewAlerts(
+        [alert, alert],
+        WORKSPACE_ID,
+        SERVER_ID,
+        SERVER_NAME
+      );
+
+      // upsert should be called once, not twice
+      expect(mockPrisma.seenAlert.upsert).toHaveBeenCalledOnce();
+    });
+
+    it("sends only one notification when the same alert appears twice in the batch", async () => {
+      setupDefaults({ seenAlerts: [] });
+
+      const alert = makeAlert();
+      await alertNotificationService.trackAndNotifyNewAlerts(
+        [alert, alert],
+        WORKSPACE_ID,
+        SERVER_ID,
+        SERVER_NAME
+      );
+
+      // Email should be sent once with 1 alert, not twice
+      expect(mockSendEmail).toHaveBeenCalledOnce();
+      const emailArgs = mockSendEmail.mock.calls[0][0];
+      expect(emailArgs.alerts).toHaveLength(1);
+    });
+
+    it("keeps distinct alerts when fingerprints are different", async () => {
+      setupDefaults({ seenAlerts: [] });
+
+      const alerts = [
+        makeAlert({
+          category: AlertCategory.MEMORY,
+          source: { type: "node", name: "rabbit@node1" },
+        }),
+        makeAlert({
+          category: AlertCategory.DISK,
+          source: { type: "node", name: "rabbit@node1" },
+        }),
+      ];
+
+      await alertNotificationService.trackAndNotifyNewAlerts(
+        alerts,
+        WORKSPACE_ID,
+        SERVER_ID,
+        SERVER_NAME
+      );
+
+      expect(mockPrisma.seenAlert.upsert).toHaveBeenCalledTimes(2);
     });
   });
 

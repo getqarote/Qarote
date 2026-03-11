@@ -124,7 +124,7 @@ Each channel then applies its own gate independently:
 
 ## Notification Channels
 
-All channels fire for the same set of `alertsToNotify`:
+All channels fire for the same pre-computed `alertsToNotify` set, which means Webhook and Slack inherit the same cooldown gate as email (`SeenAlert.emailSentAt` / `firstSeenAt`). The gate runs once, then all three channels dispatch to that filtered list.
 
 | Channel | Feature Flag | Config |
 |---------|-------------|--------|
@@ -132,7 +132,7 @@ All channels fire for the same set of `alertsToNotify`:
 | Webhook | `WEBHOOK_INTEGRATION` | `Webhook` record with `enabled: true` |
 | Slack | `SLACK_INTEGRATION` | `SlackConfig` record with `enabled: true` |
 
-After email is sent, `SeenAlert.emailSentAt` is updated. Slack and Webhook delivery is not tracked in the DB.
+After email is sent, `SeenAlert.emailSentAt` is updated (drives cooldown for all channels on the next cycle). Webhook and Slack dispatch results are not persisted to the DB — only email tracks a send timestamp.
 
 ---
 
@@ -185,6 +185,8 @@ Stored on the `Workspace` model:
 1. **N+1 queries in tracking loop** — Each alert in the loop triggers an individual `upsert`. Could be batched with a true bulk upsert for very high alert volumes.
 
 2. **Slack/Webhook not tracked** — Unlike email (`emailSentAt`), Slack and webhook sends are not recorded. The cooldown period only applies to email.
+
+3. **No atomic notification claim** — The notification decision uses the pre-loaded `seenAlerts` snapshot, so two overlapping cron runs for the same server could both decide to notify before either sets `emailSentAt`. In practice this is rare (sliding-window concurrency serialises per-server runs), but a fully safe implementation would need a conditional DB claim (set `emailSentAt = now WHERE emailSentAt IS NULL OR emailSentAt < cooldown`) before dispatching, treating a 0-row update as "already claimed".
 
 ---
 
