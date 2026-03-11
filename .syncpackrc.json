@@ -1,4 +1,5 @@
 {
+  "dependencyTypes": ["prod", "dev"],
   "source": [
     "package.json",
     "apps/*/package.json",
