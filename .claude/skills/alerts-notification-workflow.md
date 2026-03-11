@@ -102,19 +102,23 @@ Immutable historical record created when an alert resolves.
 An alert triggers a notification when **all** of the following are true:
 
 1. `ALERTING` feature flag is enabled
-2. `workspace.emailNotificationsEnabled === true` AND `workspace.contactEmail` is set
-3. `serverId` is in `workspace.notificationServerIds` (or the list is empty/null = notify all)
-4. Alert severity is in `workspace.notificationSeverities`
-5. One of:
+2. `serverId` is in `workspace.notificationServerIds` (or the list is empty/null = notify all)
+3. Alert severity is in `workspace.notificationSeverities`
+4. One of:
    - Alert is **brand new** (no SeenAlert record)
    - Alert was **previously resolved** (`resolvedAt` was set, now cleared)
    - **Cooldown period expired**: 7 days since `emailSentAt` (or `firstSeenAt` if never emailed)
 
+Each channel then applies its own gate independently:
+- **Email**: requires `workspace.emailNotificationsEnabled === true` AND `workspace.contactEmail` set
+- **Webhook**: requires `WEBHOOK_INTEGRATION` feature flag + an enabled `Webhook` record
+- **Slack**: requires `SLACK_INTEGRATION` feature flag + an enabled `SlackConfig` record
+
 **Notifications are NOT sent when:**
 - Alert is ongoing and within the 7-day cooldown
-- Feature flag is disabled (community mode) — alerts still tracked
-- Email notifications are disabled or no contact email configured
+- Feature flag (`ALERTING`) is disabled (community mode) — alerts still tracked
 - Server is excluded from `notificationServerIds`
+- Per-channel gate fails (e.g. email disabled only suppresses email, not Slack/Webhook)
 
 ---
 
@@ -178,17 +182,9 @@ Stored on the `Workspace` model:
 
 ## Known Issues (as of 2026-03-11)
 
-1. **`serverName` variable shadowing** — `alert.notification.ts:475` creates a local `serverName` from `alertsToNotify[0]?.serverName || "Unknown Server"`, shadowing the function parameter. Webhook and Slack calls use the local var, risking `"Unknown Server"` if the alert object lacks this field. Should use the function parameter directly.
+1. **N+1 queries in tracking loop** — Each alert in the loop triggers an individual `upsert`. Could be batched with a true bulk upsert for very high alert volumes.
 
-2. **Duplicate notification logic** — `shouldNotify` is computed twice (lines 272–299 for `newAlerts`, then lines 443–472 for `alertsToNotify` filter). Both use the same `seenAlerts` snapshot so results match, but creates maintenance risk.
-
-3. **`notificationSeverities` default includes `"info"`** — The in-code default at line 199 is `["critical", "warning", "info"]` but the module documentation states "Only WARNING and CRITICAL alerts are tracked and can trigger emails." The default should exclude `"info"`.
-
-4. **Fragile vhost auto-resolution pattern** — Uses `fingerprint CONTAINS "-queue-${vhost}-"` which could have false positives if vhost names overlap.
-
-5. **N+1 queries in tracking loop** — Each alert in the loop triggers an individual `create` or `updateMany`. Could be batched.
-
-6. **Slack/Webhook not tracked** — Unlike email (`emailSentAt`), Slack and webhook sends are not recorded. The cooldown period only applies to email.
+2. **Slack/Webhook not tracked** — Unlike email (`emailSentAt`), Slack and webhook sends are not recorded. The cooldown period only applies to email.
 
 ---
 
