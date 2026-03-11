@@ -1,13 +1,4 @@
 /**
- * Sentry user information
- */
-export interface SentryUser {
-  id: string;
-  workspaceId: string | null;
-  email?: string;
-}
-
-/**
  * Sentry context data
  */
 export type SentryContextData = Record<string, unknown>;
