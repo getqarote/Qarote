@@ -1,5 +1,7 @@
 FROM node:24-alpine
 
+ENV TZ=UTC
+
 WORKDIR /app
 
 # Install pnpm

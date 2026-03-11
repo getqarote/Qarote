@@ -1,5 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import { hashPassword as hashPasswordScrypt } from "better-auth/crypto";
+import { addHours } from "date-fns";
 
 import { comparePassword, hashPassword } from "@/core/auth";
 
@@ -64,8 +65,7 @@ export const passwordRouter = router({
         }
 
         const resetToken = EncryptionService.generateEncryptionKey();
-        const expiresAt = new Date();
-        expiresAt.setHours(expiresAt.getHours() + 24);
+        const expiresAt = addHours(new Date(), 24);
 
         await ctx.prisma.passwordReset.deleteMany({
           where: { userId: user.id },

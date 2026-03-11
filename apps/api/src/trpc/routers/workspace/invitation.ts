@@ -1,4 +1,5 @@
 import { TRPCError } from "@trpc/server";
+import { addDays } from "date-fns";
 
 import { formatInvitedBy, getUserDisplayName } from "@/core/utils";
 
@@ -177,8 +178,7 @@ export const invitationRouter = router({
         const token = EncryptionService.generateEncryptionKey();
 
         // Set expiration (7 days from now)
-        const expiresAt = new Date();
-        expiresAt.setDate(expiresAt.getDate() + 7);
+        const expiresAt = addDays(new Date(), 7);
 
         // Create invitation
         const invitation = await ctx.prisma.invitation.create({
