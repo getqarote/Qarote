@@ -36,7 +36,7 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
 }) => {
   const { t } = useTranslation("billing");
   const { handleUpgrade, isUpgrading } = usePlanUpgrade();
-  const { planData } = useUser();
+  const { planData, user } = useUser();
   const { data: allPlansData } = useAllPlans();
   const currentFeatures = planData?.planFeatures;
   const isTrialing = planData?.user?.subscriptionStatus === "TRIALING";
@@ -93,7 +93,6 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
 
   const navigate = useNavigate();
   const selfHosted = isSelfHostedMode();
-  const { user } = useUser();
   const isAdmin = user.role === "ADMIN";
   const currentPlanStyle = planStyle[currentPlan] ?? planStyle[UserPlan.FREE];
   const currentBenefits = getBenefits(currentPlan);
