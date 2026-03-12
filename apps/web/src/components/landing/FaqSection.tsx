@@ -123,6 +123,7 @@ const FaqSection = () => {
             {t("faqSection.stillHaveQuestionsDesc")}
           </p>
           <button
+            type="button"
             onClick={() => {
               if (window.Tawk_API) {
                 window.Tawk_API.maximize();

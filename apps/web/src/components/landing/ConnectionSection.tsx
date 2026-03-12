@@ -51,9 +51,9 @@ const ConnectionSection = () => {
                   </p>
                   <div className="space-y-3">
                     <button
+                      type="button"
                       onClick={() => {
-                        window.location.href =
-                          "https://app.qarote.io/auth/sign-up";
+                        window.location.href = `${import.meta.env.VITE_APP_BASE_URL}/auth/sign-up`;
                       }}
                       className="w-full bg-background border border-border  p-3 flex items-center justify-center gap-3 hover:bg-muted/50 transition-colors"
                     >
@@ -81,9 +81,9 @@ const ConnectionSection = () => {
                       </div>
                     </div>
                     <button
+                      type="button"
                       onClick={() => {
-                        window.location.href =
-                          "https://app.qarote.io/auth/sign-up";
+                        window.location.href = `${import.meta.env.VITE_APP_BASE_URL}/auth/sign-up`;
                       }}
                       className="w-full bg-background border border-border  p-3 flex items-center justify-center gap-3 hover:bg-muted/50 transition-colors"
                     >

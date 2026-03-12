@@ -175,6 +175,7 @@ const PricingSection = () => {
               }}
             />
             <button
+              type="button"
               ref={cloudTabRef}
               onClick={() => setHostingMode("cloud")}
               className="relative z-10 flex flex-1 justify-center items-center gap-2 py-3 px-6 text-sm font-medium whitespace-nowrap"
@@ -190,6 +191,7 @@ const PricingSection = () => {
               Cloud
             </button>
             <button
+              type="button"
               ref={selfhostTabRef}
               onClick={() => setHostingMode("selfhost")}
               className="relative z-10 flex flex-1 justify-center items-center gap-2 py-3 px-6 text-sm font-medium whitespace-nowrap"
@@ -211,6 +213,7 @@ const PricingSection = () => {
             className={`sm:absolute sm:right-0 flex items-center gap-3 ${hostingMode === "selfhost" ? "opacity-30 pointer-events-none" : ""}`}
           >
             <button
+              type="button"
               onClick={() =>
                 setBillingPeriod(
                   billingPeriod === "monthly" ? "yearly" : "monthly"
@@ -786,15 +789,10 @@ const PricingSection = () => {
                       </div>
                     </div>
                     <Button
-                      size={undefined}
                       className={`w-full mt-6 px-4 py-3 sm:px-7 sm:py-3 transition-colors duration-200 text-base sm:text-lg h-auto rounded-full ${plan.id === "FREE" ? "bg-transparent border border-border text-foreground hover:bg-muted" : "bg-gradient-button hover:bg-gradient-button-hover text-white"}`}
                       onClick={() => {
                         if (hostingMode === "selfhost" && selfHost?.url) {
                           window.open(selfHost.url, "_blank");
-                        } else if (plan.id === "ENTERPRISE_PLUS") {
-                          if (window.Tawk_API && window.Tawk_API.maximize) {
-                            window.Tawk_API.maximize();
-                          }
                         } else {
                           const appBaseUrl = import.meta.env.VITE_APP_BASE_URL;
 
