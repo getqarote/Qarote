@@ -12,13 +12,13 @@ class PasswordResetEmailService {
   static async sendPasswordResetEmail(
     to: string,
     resetToken: string,
+    tokenExpiresAt: Date,
     userName?: string,
     locale: string = "en"
   ): Promise<void> {
-    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toLocaleString(
-      "en-US",
-      { timeZone: "UTC" }
-    ); // 24 hours from now
+    const expiresAt = tokenExpiresAt.toLocaleString("en-US", {
+      timeZone: "UTC",
+    });
 
     const { frontendUrl } = CoreEmailService.getConfig();
 

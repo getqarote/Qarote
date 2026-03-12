@@ -218,7 +218,8 @@ export default function AlertNotificationEmail({
                           Detected:{" "}
                           {new Date(alert.timestamp).toLocaleString("en-US", {
                             timeZone: "UTC",
-                          })}
+                          })}{" "}
+                          UTC
                         </Text>
                       </Section>
                     );
