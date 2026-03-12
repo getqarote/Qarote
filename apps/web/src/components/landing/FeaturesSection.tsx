@@ -83,6 +83,7 @@ const FeaturesSection = () => {
 
         <div className="text-center mt-16">
           <button
+            type="button"
             onClick={() => {
               trackSignUpClick({
                 source: "features_cta",

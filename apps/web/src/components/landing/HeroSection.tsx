@@ -45,38 +45,38 @@ const HeroSection = ({ isVideoPlaying, onPlayVideo }: HeroSectionProps) => {
       {/* YouTube Video */}
       <div id="video" className="relative pb-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <button
-            type="button"
-            className="relative w-full aspect-video  overflow-hidden group cursor-pointer"
-            onClick={onPlayVideo}
-          >
-            {!isVideoPlaying ? (
-              <>
-                <img
-                  src={"/images/dashboard.png"}
-                  alt={"Qarote Dashboard Interface"}
-                  className="w-full h-full object-contain bg-card"
-                />
-                <div className="absolute inset-0 flex items-center justify-center bg-black/15 group-hover:bg-black/20 transition-colors">
-                  <div
-                    aria-hidden="true"
-                    className="w-20 h-20 md:w-24 md:h-24 bg-white flex items-center justify-center transition-all group-hover:scale-110 shadow-soft rounded-full"
-                  >
-                    <img
-                      src="/images/play.svg"
-                      alt=""
-                      className="w-10 h-10 md:w-12 md:h-12"
-                      style={{
-                        imageRendering: "crisp-edges",
-                        objectFit: "contain",
-                        display: "block",
-                        marginLeft: "0.5rem",
-                      }}
-                    />
-                  </div>
+          {!isVideoPlaying ? (
+            <button
+              type="button"
+              className="relative w-full aspect-video overflow-hidden group cursor-pointer"
+              onClick={onPlayVideo}
+            >
+              <img
+                src={"/images/dashboard.png"}
+                alt={"Qarote Dashboard Interface"}
+                className="w-full h-full object-contain bg-card"
+              />
+              <div className="absolute inset-0 flex items-center justify-center bg-black/15 group-hover:bg-black/20 transition-colors">
+                <div
+                  aria-hidden="true"
+                  className="w-20 h-20 md:w-24 md:h-24 bg-white flex items-center justify-center transition-all group-hover:scale-110 shadow-soft rounded-full"
+                >
+                  <img
+                    src="/images/play.svg"
+                    alt=""
+                    className="w-10 h-10 md:w-12 md:h-12"
+                    style={{
+                      imageRendering: "crisp-edges",
+                      objectFit: "contain",
+                      display: "block",
+                      marginLeft: "0.5rem",
+                    }}
+                  />
                 </div>
-              </>
-            ) : (
+              </div>
+            </button>
+          ) : (
+            <div className="relative w-full aspect-video overflow-hidden">
               <iframe
                 src="https://www.youtube.com/embed/g9Coi3niYIY?autoplay=1"
                 title="Qarote Video"
@@ -84,8 +84,8 @@ const HeroSection = ({ isVideoPlaying, onPlayVideo }: HeroSectionProps) => {
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
               />
-            )}
-          </button>
+            </div>
+          )}
         </div>
       </div>
     </header>
