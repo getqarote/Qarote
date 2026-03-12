@@ -56,11 +56,7 @@ const FeaturesSection = () => {
   ];
 
   return (
-    <section
-      id="features"
-      className="pt-12 pb-20"
-      style={{ backgroundColor: "#ffffff" }}
-    >
+    <section id="features" className="pt-12 pb-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl text-foreground mb-4 max-w-4xl mx-auto leading-[1.2] font-normal">
@@ -98,11 +94,7 @@ const FeaturesSection = () => {
             <img
               src="/images/arrow-right.svg"
               alt="Arrow right"
-              className="h-[0.8em] w-auto"
-              style={{
-                imageRendering: "crisp-edges",
-                verticalAlign: "middle",
-              }}
+              className="h-[0.8em] w-auto image-crisp align-middle"
             />
           </button>
         </div>
