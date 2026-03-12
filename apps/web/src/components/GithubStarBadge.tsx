@@ -27,7 +27,7 @@ export function GithubStarBadge() {
       target="_blank"
       rel="noopener noreferrer"
       aria-label="View Qarote on GitHub"
-      className="inline-flex items-center gap-1 rounded-full border border-border px-3 py-1 text-xs font-medium text-foreground hover:bg-muted transition-colors"
+      className="hidden sm:inline-flex items-center gap-1 rounded-full border border-border px-3 py-1 text-xs font-medium text-foreground hover:bg-muted transition-colors"
     >
       <Github className="h-4 w-4" aria-hidden="true" />
       {stars != null && <span>{stars.toLocaleString()}</span>}
