@@ -46,6 +46,6 @@
   "selfHostedLabel": "Self-hosted",
   "copyError": "Failed to copy to clipboard",
   "domain": "Email Domain",
-  "domainDescription": 0,
+  "domainDescription": "The email domain users must belong to, e.g. acme.com",
   "urlsAfterSave": "Callback URLs will be available after saving your provider configuration."
 }

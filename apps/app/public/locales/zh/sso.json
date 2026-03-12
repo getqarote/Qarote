@@ -46,6 +46,6 @@
   "selfHostedLabel": "自托管",
   "copyError": "复制到剪贴板失败",
   "domain": "电子邮件域名",
-  "domainDescription": 0,
+  "domainDescription": "用户必须属于的电子邮件域名，例如 acme.com",
   "urlsAfterSave": "回调 URL 将在保存提供商配置后显示。"
 }

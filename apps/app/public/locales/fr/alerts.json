@@ -1,11 +1,11 @@
 {
   "pageTitle": "Alertes",
-  "pageSubtitle": "Surveiller les alertes et notifications systeme",
+  "pageSubtitle": "Surveiller les alertes et notifications système",
   "noServerTitle": "Alertes",
-  "noServerDescription": "Surveiller les alertes et notifications systeme",
-  "alertRules": "Regles d'alerte",
-  "notificationSettings": "Parametres de notification",
+  "noServerDescription": "Surveiller les alertes et notifications système",
+  "alertRules": "Règles d'alerte",
+  "notificationSettings": "Paramètres de notification",
   "activeAlerts": "Alertes actives",
-  "resolvedAlerts": "Alertes resolues",
-  "failedToLoad": "Echec du chargement des donnees d'alertes. Veuillez reessayer."
+  "resolvedAlerts": "Alertes résolues",
+  "failedToLoad": "Échec du chargement des données d'alertes. Veuillez réessayer."
 }

@@ -46,6 +46,6 @@
   "selfHostedLabel": "Auto-alojado",
   "copyError": "Error al copiar al portapapeles",
   "domain": "Dominio de correo",
-  "domainDescription": 0,
+  "domainDescription": "El dominio de correo al que deben pertenecer los usuarios, p. ej. acme.com",
   "urlsAfterSave": "Las URLs de callback estarán disponibles después de guardar su configuración."
 }

@@ -46,6 +46,6 @@
   "selfHostedLabel": "Auto-hébergé",
   "copyError": "Échec de la copie dans le presse-papiers",
   "domain": "Domaine e-mail",
-  "domainDescription": 0,
+  "domainDescription": "Le domaine e-mail auquel les utilisateurs doivent appartenir, ex. acme.com",
   "urlsAfterSave": "Les URLs de callback seront disponibles après l'enregistrement de votre configuration."
 }
