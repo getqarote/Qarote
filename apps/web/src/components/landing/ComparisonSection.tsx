@@ -1,5 +1,16 @@
 import { useTranslation } from "react-i18next";
 
+const ComparisonPoint = ({ icon, text }: { icon: string; text: string }) => (
+  <div className="flex gap-4 items-center">
+    <img
+      src={`/images/${icon}.svg`}
+      alt={icon}
+      className="h-3 shrink-0 w-auto image-crisp"
+    />
+    <p className="text-foreground">{text}</p>
+  </div>
+);
+
 const ComparisonSection = () => {
   const { t } = useTranslation("landing");
 
@@ -25,53 +36,22 @@ const ComparisonSection = () => {
                 {t("comparison.traditional.title")}
               </h3>
               <div className="space-y-5 mb-16">
-                <div className="flex gap-4 items-center">
-                  <img
-                    src="/images/cross.svg"
-                    alt="Cross"
-                    className="h-3 shrink-0"
-                    style={{ imageRendering: "crisp-edges", width: "auto" }}
-                  />
-                  <p className="text-foreground">
-                    {t("comparison.traditional.point1")}
-                  </p>
-                </div>
-
-                <div className="flex gap-4 items-center">
-                  <img
-                    src="/images/cross.svg"
-                    alt="Cross"
-                    className="h-3 shrink-0"
-                    style={{ imageRendering: "crisp-edges", width: "auto" }}
-                  />
-                  <p className="text-foreground">
-                    {t("comparison.traditional.point2")}
-                  </p>
-                </div>
-
-                <div className="flex gap-4 items-center">
-                  <img
-                    src="/images/cross.svg"
-                    alt="Cross"
-                    className="h-3 shrink-0"
-                    style={{ imageRendering: "crisp-edges", width: "auto" }}
-                  />
-                  <p className="text-foreground">
-                    {t("comparison.traditional.point3")}
-                  </p>
-                </div>
-
-                <div className="flex gap-4 items-center">
-                  <img
-                    src="/images/cross.svg"
-                    alt="Cross"
-                    className="h-3 shrink-0"
-                    style={{ imageRendering: "crisp-edges", width: "auto" }}
-                  />
-                  <p className="text-foreground">
-                    {t("comparison.traditional.point4")}
-                  </p>
-                </div>
+                <ComparisonPoint
+                  icon="cross"
+                  text={t("comparison.traditional.point1")}
+                />
+                <ComparisonPoint
+                  icon="cross"
+                  text={t("comparison.traditional.point2")}
+                />
+                <ComparisonPoint
+                  icon="cross"
+                  text={t("comparison.traditional.point3")}
+                />
+                <ComparisonPoint
+                  icon="cross"
+                  text={t("comparison.traditional.point4")}
+                />
               </div>
 
               {/* Visual Representation - Simple/Outdated */}
@@ -98,53 +78,22 @@ const ComparisonSection = () => {
                 {t("comparison.qarote.title")}
               </h3>
               <div className="space-y-5 mb-16">
-                <div className="flex gap-4 items-center">
-                  <img
-                    src="/images/check.svg"
-                    alt="Check"
-                    className="h-3 shrink-0"
-                    style={{ imageRendering: "crisp-edges", width: "auto" }}
-                  />
-                  <p className="text-foreground">
-                    {t("comparison.qarote.point1")}
-                  </p>
-                </div>
-
-                <div className="flex gap-4 items-center">
-                  <img
-                    src="/images/check.svg"
-                    alt="Check"
-                    className="h-3 shrink-0"
-                    style={{ imageRendering: "crisp-edges", width: "auto" }}
-                  />
-                  <p className="text-foreground">
-                    {t("comparison.qarote.point2")}
-                  </p>
-                </div>
-
-                <div className="flex gap-4 items-center">
-                  <img
-                    src="/images/check.svg"
-                    alt="Check"
-                    className="h-3 shrink-0"
-                    style={{ imageRendering: "crisp-edges", width: "auto" }}
-                  />
-                  <p className="text-foreground">
-                    {t("comparison.qarote.point3")}
-                  </p>
-                </div>
-
-                <div className="flex gap-4 items-center">
-                  <img
-                    src="/images/check.svg"
-                    alt="Check"
-                    className="h-3 shrink-0"
-                    style={{ imageRendering: "crisp-edges", width: "auto" }}
-                  />
-                  <p className="text-foreground">
-                    {t("comparison.qarote.point4")}
-                  </p>
-                </div>
+                <ComparisonPoint
+                  icon="check"
+                  text={t("comparison.qarote.point1")}
+                />
+                <ComparisonPoint
+                  icon="check"
+                  text={t("comparison.qarote.point2")}
+                />
+                <ComparisonPoint
+                  icon="check"
+                  text={t("comparison.qarote.point3")}
+                />
+                <ComparisonPoint
+                  icon="check"
+                  text={t("comparison.qarote.point4")}
+                />
               </div>
 
               {/* Visual Representation - Modern Dashboard */}
