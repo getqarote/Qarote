@@ -2,16 +2,16 @@
   "required": "Ce champ est obligatoire",
   "invalidEmail": "Veuillez entrer une adresse e-mail valide",
   "passwordRequired": "Le mot de passe est obligatoire",
-  "passwordMinLength": "Le mot de passe doit contenir au moins 8 caracteres",
+  "passwordMinLength": "Le mot de passe doit contenir au moins 8 caractères",
   "passwordLowercase": "Le mot de passe doit contenir au moins une lettre minuscule",
   "passwordUppercase": "Le mot de passe doit contenir au moins une lettre majuscule",
   "passwordNumber": "Le mot de passe doit contenir au moins un chiffre",
-  "passwordSpecial": "Le mot de passe doit contenir au moins un caractere special",
+  "passwordSpecial": "Le mot de passe doit contenir au moins un caractère spécial",
   "passwordsDoNotMatch": "Les mots de passe ne correspondent pas",
-  "firstNameRequired": "Le prenom est obligatoire",
+  "firstNameRequired": "Le prénom est obligatoire",
   "lastNameRequired": "Le nom de famille est obligatoire",
-  "acceptTermsRequired": "Vous devez accepter les Conditions d'utilisation et la Politique de confidentialite",
+  "acceptTermsRequired": "Vous devez accepter les Conditions d'utilisation et la Politique de confidentialité",
   "invalidUrl": "Veuillez entrer une URL valide",
-  "minLength": "Doit contenir au moins {{min}} caracteres",
-  "maxLength": "Doit contenir au maximum {{max}} caracteres"
+  "minLength": "Doit contenir au moins {{min}} caractères",
+  "maxLength": "Doit contenir au maximum {{max}} caractères"
 }
