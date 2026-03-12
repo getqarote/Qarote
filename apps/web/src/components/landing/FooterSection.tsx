@@ -6,10 +6,7 @@ const FooterSection = () => {
   const { t } = useTranslation("landing");
 
   return (
-    <footer
-      className="text-card-foreground py-12 border-t border-border"
-      style={{ backgroundColor: "#ffffff" }}
-    >
+    <footer className="text-card-foreground py-12 border-t border-border bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Mobile layout */}
         <div className="flex flex-col gap-6 md:hidden">
