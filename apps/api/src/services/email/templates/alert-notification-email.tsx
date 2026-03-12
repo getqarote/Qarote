@@ -215,7 +215,10 @@ export default function AlertNotificationEmail({
                         )}
 
                         <Text style={footerStyles.footerTextSmall}>
-                          Detected: {new Date(alert.timestamp).toLocaleString()}
+                          Detected:{" "}
+                          {new Date(alert.timestamp).toLocaleString("en-US", {
+                            timeZone: "UTC",
+                          })}
                         </Text>
                       </Section>
                     );

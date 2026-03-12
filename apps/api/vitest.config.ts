@@ -8,6 +8,7 @@ export default defineConfig({
     globals: true, // Enable global test functions (describe, it, expect)
     include: ["src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
     setupFiles: ["./vitest.setup.ts"], // Run setup before tests
+    env: { TZ: "UTC" }, // Match production Docker timezone
   },
   resolve: {
     alias: {

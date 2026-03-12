@@ -15,9 +15,10 @@ class PasswordResetEmailService {
     userName?: string,
     locale: string = "en"
   ): Promise<void> {
-    const expiresAt = new Date(
-      Date.now() + 24 * 60 * 60 * 1000
-    ).toLocaleString(); // 24 hours from now
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toLocaleString(
+      "en-US",
+      { timeZone: "UTC" }
+    ); // 24 hours from now
 
     const { frontendUrl } = CoreEmailService.getConfig();
 

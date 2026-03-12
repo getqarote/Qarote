@@ -47,6 +47,7 @@ export default function LicenseExpirationReminderEmail({
     year: "numeric",
     month: "long",
     day: "numeric",
+    timeZone: "UTC",
   });
 
   const urgency = daysUntilExpiration <= 7 ? "urgent" : "info";

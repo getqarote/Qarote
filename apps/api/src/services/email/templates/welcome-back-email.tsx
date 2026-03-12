@@ -60,7 +60,9 @@ export const WelcomeBackEmail = ({
                 <>
                   {" "}
                   after your previous cancellation on{" "}
-                  {new Date(previousCancelDate).toLocaleDateString()}
+                  {new Date(previousCancelDate).toLocaleDateString("en-US", {
+                    timeZone: "UTC",
+                  })}
                 </>
               )}
               . We're excited to continue supporting your RabbitMQ monitoring

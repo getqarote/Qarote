@@ -48,24 +48,24 @@ describe("date window calculations", () => {
   });
 
   describe("startOfDay / endOfDay window", () => {
-    it("startOfDay sets time to midnight (00:00:00.000)", () => {
+    it("startOfDay sets time to local midnight (00:00:00.000)", () => {
       const date = new Date("2026-01-15T14:35:22.123Z");
       const start = startOfDay(date);
 
-      expect(start.getHours()).toBe(0);
-      expect(start.getMinutes()).toBe(0);
-      expect(start.getSeconds()).toBe(0);
-      expect(start.getMilliseconds()).toBe(0);
+      expect(start.getUTCHours()).toBe(0);
+      expect(start.getUTCMinutes()).toBe(0);
+      expect(start.getUTCSeconds()).toBe(0);
+      expect(start.getUTCMilliseconds()).toBe(0);
     });
 
-    it("endOfDay sets time to 23:59:59.999", () => {
+    it("endOfDay sets time to local 23:59:59.999", () => {
       const date = new Date("2026-01-15T14:35:22.123Z");
       const end = endOfDay(date);
 
-      expect(end.getHours()).toBe(23);
-      expect(end.getMinutes()).toBe(59);
-      expect(end.getSeconds()).toBe(59);
-      expect(end.getMilliseconds()).toBe(999);
+      expect(end.getUTCHours()).toBe(23);
+      expect(end.getUTCMinutes()).toBe(59);
+      expect(end.getUTCSeconds()).toBe(59);
+      expect(end.getUTCMilliseconds()).toBe(999);
     });
 
     it("endOfDay is after startOfDay", () => {

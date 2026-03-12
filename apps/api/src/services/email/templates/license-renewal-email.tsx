@@ -47,6 +47,7 @@ export default function LicenseRenewalEmail({
     year: "numeric",
     month: "long",
     day: "numeric",
+    timeZone: "UTC",
   });
 
   return (
@@ -87,6 +88,7 @@ export default function LicenseRenewalEmail({
                   year: "numeric",
                   month: "long",
                   day: "numeric",
+                  timeZone: "UTC",
                 })}
               </Text>
               <Text style={textStyles.successText}>
