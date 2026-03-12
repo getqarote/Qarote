@@ -94,7 +94,7 @@ const StickyNav = ({ onVideoClick }: StickyNavProps) => {
                 });
                 window.location.href = `${authBaseUrl}/auth/sign-up`;
               }}
-              className="bg-gradient-button hover:bg-gradient-button-hover text-white px-2 sm:px-4 py-2 text-base transition-colors whitespace-nowrap rounded-full inline-flex items-center justify-center gap-2"
+              className="bg-gradient-button hover:bg-gradient-button-hover text-white px-2 sm:px-4 py-2 text-sm sm:text-base transition-colors whitespace-nowrap rounded-full inline-flex items-center justify-center gap-2"
             >
               <span>{t("tryForFree")}</span>
               <img
