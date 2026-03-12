@@ -38,7 +38,7 @@ export const SSOLoginButton: React.FC<SSOLoginButtonProps> = ({
       setIsPending(true);
       await authClient.signIn.sso({
         providerId: config.providerId,
-        callbackURL: "/auth/sso/callback",
+        callbackURL: `${window.location.origin}/auth/sso/callback`,
       });
     } catch (error) {
       logger.error("SSO redirect failed:", error);
@@ -55,7 +55,7 @@ export const SSOLoginButton: React.FC<SSOLoginButtonProps> = ({
       setIsPending(true);
       await authClient.signIn.sso({
         email,
-        callbackURL: "/auth/sso/callback",
+        callbackURL: `${window.location.origin}/auth/sso/callback`,
       });
     } catch (error) {
       logger.error("SSO redirect failed:", error);
