@@ -211,6 +211,7 @@ const SignIn: React.FC = () => {
                 />
 
                 {/* SSO Login */}
+                <div className="mt-2" />
                 <SSOLoginButton
                   onError={(error) => {
                     logger.error("SSO login error:", error);

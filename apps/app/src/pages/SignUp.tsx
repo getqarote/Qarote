@@ -366,6 +366,7 @@ const SignUp: React.FC = () => {
                 />
 
                 {/* SSO Sign Up */}
+                <div className="mt-2" />
                 <SSOLoginButton
                   mode="signup"
                   onError={(error) => {
