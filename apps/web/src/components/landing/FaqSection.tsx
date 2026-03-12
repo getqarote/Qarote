@@ -12,11 +12,7 @@ const FaqSection = () => {
   const { t: tFaq } = useTranslation("faq");
 
   return (
-    <section
-      id="faq"
-      className="pt-12 pb-20"
-      style={{ backgroundColor: "#ffffff" }}
-    >
+    <section id="faq" className="pt-12 pb-20 bg-white">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl text-foreground mb-4 max-w-4xl mx-auto leading-[1.2] font-normal">
@@ -131,11 +127,7 @@ const FaqSection = () => {
                 window.location.href = "mailto:support@qarote.io";
               }
             }}
-            className="inline-flex items-center justify-center text-foreground hover:text-[#ff691b] px-4 py-3 sm:px-8 sm:py-4  transition-all duration-200 text-base sm:text-lg font-medium underline decoration-1 hover:decoration-[#ff691b]"
-            style={{
-              textDecorationThickness: "1px",
-              textUnderlineOffset: "0.625rem",
-            }}
+            className="inline-flex items-center justify-center text-foreground hover:text-[#ff691b] px-4 py-3 sm:px-8 sm:py-4  transition-all duration-200 text-base sm:text-lg font-medium underline decoration-1 underline-offset-[0.625rem] hover:decoration-[#ff691b]"
           >
             {t("cta.contactUs")}
           </button>
