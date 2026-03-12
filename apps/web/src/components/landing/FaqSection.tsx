@@ -70,6 +70,13 @@ const FaqSection = () => {
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground">
                 {tFaq("q4.answer")}
+                <ul className="list-disc list-inside mt-2 space-y-1">
+                  {(tFaq("q4.list", { returnObjects: true }) as string[]).map(
+                    (item) => (
+                      <li key={item}>{item}</li>
+                    )
+                  )}
+                </ul>
               </AccordionContent>
             </AccordionItem>
 
@@ -82,6 +89,13 @@ const FaqSection = () => {
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground">
                 {tFaq("q5.answer")}
+                <ul className="list-disc list-inside mt-2 space-y-1">
+                  {(tFaq("q5.list", { returnObjects: true }) as string[]).map(
+                    (item) => (
+                      <li key={item}>{item}</li>
+                    )
+                  )}
+                </ul>
               </AccordionContent>
             </AccordionItem>
 
