@@ -130,12 +130,7 @@ const ComparisonSection = () => {
                     <img
                       src="/images/check.svg"
                       alt="Check"
-                      className="shrink-0"
-                      style={{
-                        width: "auto",
-                        height: "0.525rem",
-                        imageRendering: "crisp-edges",
-                      }}
+                      className="shrink-0 w-auto h-[0.525rem] image-crisp"
                     />
                     {t("comparison.allSystemsOperational")}
                   </div>

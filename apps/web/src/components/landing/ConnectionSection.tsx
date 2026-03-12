@@ -4,7 +4,7 @@ const ConnectionSection = () => {
   const { t } = useTranslation("landing");
 
   return (
-    <section className="pt-12 pb-20" style={{ backgroundColor: "#ffffff" }}>
+    <section className="pt-12 pb-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-12 items-start">
           {/* Left side - Title and description */}
@@ -23,13 +23,8 @@ const ConnectionSection = () => {
             <div className="bg-transparent border border-border  pt-6 px-6 pb-0 flex gap-6 flex-col relative overflow-visible">
               <div className="flex gap-6">
                 <div className="flex-shrink-0">
-                  <div
-                    className="w-12 h-12 flex items-center justify-center"
-                    style={{ backgroundColor: "#ffedd5" }}
-                  >
-                    <span className="text-xl" style={{ color: "#FF691B" }}>
-                      1
-                    </span>
+                  <div className="w-12 h-12 flex items-center justify-center bg-orange-100">
+                    <span className="text-xl text-primary">1</span>
                   </div>
                 </div>
                 <div className="flex-1">
@@ -60,11 +55,7 @@ const ConnectionSection = () => {
                       <img
                         src="/images/email.svg"
                         alt="Email"
-                        style={{
-                          imageRendering: "crisp-edges",
-                          width: "auto",
-                          height: "0.875rem",
-                        }}
+                        className="image-crisp w-auto h-3.5"
                       />
                       <span className="text-sm font-medium text-foreground">
                         {t("connection.step1.continueWithEmail")}
@@ -90,11 +81,7 @@ const ConnectionSection = () => {
                       <img
                         src="/images/google.svg"
                         alt="Google"
-                        style={{
-                          imageRendering: "crisp-edges",
-                          width: "auto",
-                          height: "0.875rem",
-                        }}
+                        className="image-crisp w-auto h-3.5"
                       />
                       <span className="text-sm font-medium text-foreground">
                         {t("connection.step1.continueWithGoogle")}
@@ -109,13 +96,8 @@ const ConnectionSection = () => {
             <div className="bg-transparent border border-border  pt-6 px-6 pb-0 flex gap-6 flex-col relative overflow-visible">
               <div className="flex gap-6">
                 <div className="flex-shrink-0">
-                  <div
-                    className="w-12 h-12 flex items-center justify-center"
-                    style={{ backgroundColor: "#ffedd5" }}
-                  >
-                    <span className="text-xl" style={{ color: "#FF691B" }}>
-                      2
-                    </span>
+                  <div className="w-12 h-12 flex items-center justify-center bg-orange-100">
+                    <span className="text-xl text-primary">2</span>
                   </div>
                 </div>
                 <div className="flex-1">
@@ -135,8 +117,7 @@ const ConnectionSection = () => {
                         <img
                           src="/images/server.svg"
                           alt="Server"
-                          className="w-6 h-6"
-                          style={{ imageRendering: "crisp-edges" }}
+                          className="w-6 h-6 image-crisp"
                         />
                       </div>
                       <div className="flex-1">
@@ -153,8 +134,7 @@ const ConnectionSection = () => {
                         <img
                           src="/images/server.svg"
                           alt="Server"
-                          className="w-6 h-6"
-                          style={{ imageRendering: "crisp-edges" }}
+                          className="w-6 h-6 image-crisp"
                         />
                       </div>
                       <div className="flex-1">
@@ -171,8 +151,7 @@ const ConnectionSection = () => {
                         <img
                           src="/images/server.svg"
                           alt="Server"
-                          className="w-6 h-6"
-                          style={{ imageRendering: "crisp-edges" }}
+                          className="w-6 h-6 image-crisp"
                         />
                       </div>
                       <div className="flex-1">
@@ -193,13 +172,8 @@ const ConnectionSection = () => {
             <div className="bg-transparent border border-border  pt-6 px-6 pb-0 flex gap-6 flex-col relative overflow-visible">
               <div className="flex gap-6">
                 <div className="flex-shrink-0">
-                  <div
-                    className="w-12 h-12 flex items-center justify-center"
-                    style={{ backgroundColor: "#ffedd5" }}
-                  >
-                    <span className="text-xl" style={{ color: "#FF691B" }}>
-                      3
-                    </span>
+                  <div className="w-12 h-12 flex items-center justify-center bg-orange-100">
+                    <span className="text-xl text-primary">3</span>
                   </div>
                 </div>
                 <div className="flex-1">
@@ -280,11 +254,7 @@ const ConnectionSection = () => {
                           <img
                             src="/images/check.svg"
                             alt="Check"
-                            style={{
-                              imageRendering: "crisp-edges",
-                              width: "auto",
-                              height: "0.7rem",
-                            }}
+                            className="image-crisp w-auto h-[0.7rem]"
                           />
                           <span className="text-sm text-foreground">
                             {t("connection.step3.allSystemsOperational")}
