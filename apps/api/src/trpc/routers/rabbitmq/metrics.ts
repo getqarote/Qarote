@@ -14,7 +14,7 @@ import { NodeMapper, OverviewMapper } from "@/mappers/rabbitmq";
 
 import { router, workspaceProcedure } from "@/trpc/trpc";
 
-import { createRabbitMQClient, verifyServerAccess } from "./shared";
+import { createRabbitMQClientFromServer, verifyServerAccess } from "./shared";
 
 import { te } from "@/i18n";
 
@@ -51,7 +51,7 @@ export const metricsRouter = router({
         }
 
         // Create RabbitMQ client to fetch enhanced metrics
-        const client = await createRabbitMQClient(serverId, workspaceId);
+        const client = createRabbitMQClientFromServer(server);
 
         // Get enhanced metrics (system-level metrics including CPU, memory, disk usage)
         const enhancedMetrics = await client.getMetrics();
@@ -125,7 +125,7 @@ export const metricsRouter = router({
         const currentTimestamp = new Date();
 
         // Fetch live data from RabbitMQ with time range
-        const client = await createRabbitMQClient(serverId, workspaceId);
+        const client = createRabbitMQClientFromServer(server);
         const timeConfig = timeRangeConfigs[timeRange];
         const overview = await client.getOverviewWithTimeRange(timeConfig);
 
@@ -221,7 +221,7 @@ export const metricsRouter = router({
         const currentTimestamp = new Date();
 
         // Fetch queue-specific data from RabbitMQ with time range
-        const client = await createRabbitMQClient(serverId, workspaceId);
+        const client = createRabbitMQClientFromServer(server);
         const timeConfig = timeRangeConfigs[timeRange];
 
         // Get vhost from validated input (required for queue operations)
@@ -330,14 +330,14 @@ export const metricsRouter = router({
       let lastEnhancedMetrics:
         | Awaited<
             ReturnType<
-              Awaited<ReturnType<typeof createRabbitMQClient>>["getMetrics"]
+              ReturnType<typeof createRabbitMQClientFromServer>["getMetrics"]
             >
           >
         | undefined;
 
       while (!sig.aborted) {
         try {
-          const client = await createRabbitMQClient(serverId, workspaceId);
+          const client = createRabbitMQClientFromServer(server);
           const enhancedMetrics = await client.getMetrics();
           const mappedNodes = NodeMapper.toApiResponseArray(
             enhancedMetrics.nodes
@@ -427,7 +427,7 @@ export const metricsRouter = router({
 
       while (!sig.aborted) {
         try {
-          const client = await createRabbitMQClient(serverId, workspaceId);
+          const client = createRabbitMQClientFromServer(server);
           const timeConfig = timeRangeConfigs[timeRange];
           const overview = await client.getOverviewWithTimeRange(timeConfig);
           const messagesRates = RabbitMQMetricsCalculator.extractMessageRates(

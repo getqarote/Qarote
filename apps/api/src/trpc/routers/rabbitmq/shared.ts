@@ -48,7 +48,21 @@ export async function verifyServerAccess(
 }
 
 /**
- * Helper function to create RabbitMQ client with error handling
+ * Helper function to create RabbitMQ client from an already-fetched server object.
+ * Use this when you already have a server from verifyServerAccess() to avoid
+ * a redundant DB query.
+ */
+export function createRabbitMQClientFromServer(
+  server: RabbitMQServer
+): RabbitMQClient {
+  return new RabbitMQClient(getDecryptedCredentials(server));
+}
+
+/**
+ * Helper function to create RabbitMQ client with error handling.
+ * NOTE: This calls verifyServerAccess() internally. If you already have the
+ * server object, use createRabbitMQClientFromServer() instead to avoid a
+ * redundant DB query.
  */
 export async function createRabbitMQClient(
   serverId: string,
@@ -58,7 +72,7 @@ export async function createRabbitMQClient(
   if (!server) {
     throw new Error(`Server with ID ${serverId} not found or access denied`);
   }
-  return new RabbitMQClient(getDecryptedCredentials(server));
+  return createRabbitMQClientFromServer(server);
 }
 
 /**

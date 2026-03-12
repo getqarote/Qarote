@@ -28,7 +28,7 @@ import { authorize, router, workspaceProcedure } from "@/trpc/trpc";
 
 import {
   createAmqpClient,
-  createRabbitMQClient,
+  createRabbitMQClientFromServer,
   verifyServerAccess,
 } from "./shared";
 
@@ -167,7 +167,7 @@ export const queuesRouter = router({
           });
         }
 
-        const client = await createRabbitMQClient(serverId, workspaceId);
+        const client = createRabbitMQClientFromServer(server);
         // Get vhost from validated input (optional)
         const vhost = vhostParam ? decodeURIComponent(vhostParam) : undefined;
         const queues = await client.getQueues(vhost);
@@ -211,7 +211,7 @@ export const queuesRouter = router({
       }
 
       try {
-        const client = await createRabbitMQClient(serverId, workspaceId);
+        const client = createRabbitMQClientFromServer(server);
         // Get vhost from validated input (required for individual queue operations)
         const vhost = decodeURIComponent(vhostParam);
         const queue = await client.getQueue(queueName, vhost);
@@ -255,7 +255,7 @@ export const queuesRouter = router({
       }
 
       try {
-        const client = await createRabbitMQClient(serverId, workspaceId);
+        const client = createRabbitMQClientFromServer(server);
         // Get vhost from validated input (required for queue operations)
         const vhost = decodeURIComponent(vhostParam);
         const consumers = await client.getQueueConsumers(queueName, vhost);
@@ -304,7 +304,7 @@ export const queuesRouter = router({
       }
 
       try {
-        const client = await createRabbitMQClient(serverId, workspaceId);
+        const client = createRabbitMQClientFromServer(server);
         // Get vhost from validated input (required for queue operations)
         const vhost = decodeURIComponent(vhostParam);
         const bindings = await client.getQueueBindings(queueName, vhost);
@@ -393,7 +393,7 @@ export const queuesRouter = router({
         const vhost = decodeURIComponent(vhostParam);
 
         // Create the queue via RabbitMQ API
-        const client = await createRabbitMQClient(serverId, workspaceId);
+        const client = createRabbitMQClientFromServer(server);
         const queue = await client.createQueue(name, vhost, {
           durable: durable,
           autoDelete: autoDelete,
@@ -483,7 +483,7 @@ export const queuesRouter = router({
         // Get vhost from validated input (required for queue operations)
         const vhost = decodeURIComponent(vhostParam);
 
-        const client = await createRabbitMQClient(serverId, workspaceId);
+        const client = createRabbitMQClientFromServer(server);
         await client.purgeQueue(queueName, vhost);
 
         return {
@@ -558,7 +558,7 @@ export const queuesRouter = router({
         }
 
         // Delete from RabbitMQ first (this is the source of truth)
-        const client = await createRabbitMQClient(serverId, workspaceId);
+        const client = createRabbitMQClientFromServer(server);
         await client.deleteQueue(queueName, vhost, {
           if_unused: ifUnused,
           if_empty: ifEmpty,
@@ -791,7 +791,7 @@ export const queuesRouter = router({
             break; // Server removed or access revoked — terminate stream
           }
 
-          const client = await createRabbitMQClient(serverId, workspaceId);
+          const client = createRabbitMQClientFromServer(freshServer);
           const queues = await client.getQueues(vhost);
 
           await persistQueueData(queues, serverId);
