@@ -108,8 +108,16 @@ describe("coreRouter.getCurrent", () => {
     mockUserFindUnique.mockResolvedValue({ workspaceId: "new-ws" });
     mockWorkspaceFindUnique.mockResolvedValue(mockWorkspaceData);
 
-    const caller = coreRouter.createCaller(makeCtx() as never);
+    const ctx = makeCtx();
+    const caller = coreRouter.createCaller(ctx as never);
     await caller.getCurrent();
+
+    // Verify the fresh user lookup was invoked with the correct user id
+    expect(mockUserFindUnique).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: ctx.user.id },
+      })
+    );
 
     // Verify workspace was fetched using the fresh DB workspaceId, not the cached one
     expect(mockWorkspaceFindUnique).toHaveBeenCalledWith(
