@@ -16,6 +16,11 @@
   "coreFeatures": "核心功能",
   "support": "支持",
   "enterpriseFeatures": "企业级功能",
+  "mostPopular": "最受欢迎",
+  "freeTrial": "免费试用",
+  "contactSales": "联系销售",
+  "soon": "即将推出",
+  "securityCompatibility": "安全 & 兼容性",
   "plans": {
     "starter": {
       "name": "入门版",
@@ -74,7 +79,24 @@
     "customLicenseTiers": "自定义许可证等级",
     "customLicenseTiersDesc": "灵活的许可证选项",
     "completeDataControl": "完整数据控制",
-    "completeDataControlDesc": "所有数据保留在你的基础设施中"
+    "completeDataControlDesc": "所有数据保留在你的基础设施中",
+    "queueExchangeManagement": "队列、交换器、虚拟主机和用户管理",
+    "alertsWebhooks": "告警 & Webhooks",
+    "topologyVisualization": "拓扑可视化",
+    "roleBasedAccess": "基于角色的访问控制",
+    "ltsVersions": "LTS 版本 RabbitMQ",
+    "allLtsVersions": "所有 LTS 版本 3.x 和 4.x",
+    "allRabbitMQVersions": "所有 RabbitMQ 版本",
+    "ssoSamlOidc": "SSO、SAML 和 OIDC",
+    "server_upTo1": "1 个 RabbitMQ 服务器",
+    "server_upTo3": "最多 3 个 RabbitMQ 服务器",
+    "server_unlimited": "无限 RabbitMQ 服务器",
+    "workspace_upTo1": "1 个工作区",
+    "workspace_upTo3": "最多 3 个工作区",
+    "workspace_unlimited": "无限工作区",
+    "member_upTo1": "1 个团队成员",
+    "member_upTo3": "最多 3 个团队成员",
+    "member_unlimited": "无限团队成员"
   },
   "limits": {
     "upTo1": "最多 1 个",

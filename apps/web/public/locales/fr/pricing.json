@@ -16,6 +16,11 @@
   "coreFeatures": "Fonctionnalités principales",
   "support": "Support",
   "enterpriseFeatures": "Fonctionnalités entreprise",
+  "mostPopular": "Le plus populaire",
+  "freeTrial": "Essai gratuit",
+  "contactSales": "Contacter les ventes",
+  "soon": "Bientôt",
+  "securityCompatibility": "Sécurité & compatibilité",
   "plans": {
     "starter": {
       "name": "Starter",
@@ -74,7 +79,24 @@
     "customLicenseTiers": "Licences personnalisées",
     "customLicenseTiersDesc": "Options de licence flexibles",
     "completeDataControl": "Contrôle total des données",
-    "completeDataControlDesc": "Toutes les données restent dans votre infrastructure"
+    "completeDataControlDesc": "Toutes les données restent dans votre infrastructure",
+    "queueExchangeManagement": "Gestion des files, échanges, VHosts et utilisateurs",
+    "alertsWebhooks": "Alertes & webhooks",
+    "topologyVisualization": "Visualisation de la topologie",
+    "roleBasedAccess": "Accès basé sur les rôles",
+    "ltsVersions": "Versions LTS de RabbitMQ",
+    "allLtsVersions": "Toutes les versions LTS 3.x et 4.x",
+    "allRabbitMQVersions": "Toutes les versions RabbitMQ",
+    "ssoSamlOidc": "SSO, SAML & OIDC",
+    "server_upTo1": "1 serveur RabbitMQ",
+    "server_upTo3": "Jusqu'à 3 serveurs RabbitMQ",
+    "server_unlimited": "Serveurs RabbitMQ illimités",
+    "workspace_upTo1": "1 espace de travail",
+    "workspace_upTo3": "Jusqu'à 3 espaces de travail",
+    "workspace_unlimited": "Espaces de travail illimités",
+    "member_upTo1": "1 membre d'équipe",
+    "member_upTo3": "Jusqu'à 3 membres d'équipe",
+    "member_unlimited": "Membres d'équipe illimités"
   },
   "limits": {
     "upTo1": "Jusqu'à 1",
