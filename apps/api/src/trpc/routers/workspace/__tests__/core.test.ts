@@ -24,7 +24,7 @@ vi.mock("@/core/logger", () => ({
   logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() },
 }));
 
-vi.mock("../../../middlewares/rateLimiter", () => ({
+vi.mock("@/trpc/middlewares/rateLimiter", () => ({
   standardRateLimiter: (opts: { next: () => unknown }) => opts.next(),
   strictRateLimiter: (opts: { next: () => unknown }) => opts.next(),
   billingRateLimiter: (opts: { next: () => unknown }) => opts.next(),
@@ -129,9 +129,10 @@ describe("coreRouter.getCurrent", () => {
     mockUserFindUnique.mockResolvedValue({ workspaceId: null });
 
     const caller = coreRouter.createCaller(makeCtx() as never);
+    const resultPromise = caller.getCurrent();
 
-    await expect(caller.getCurrent()).rejects.toThrow(TRPCError);
-    await expect(caller.getCurrent()).rejects.toMatchObject({
+    await expect(resultPromise).rejects.toThrow(TRPCError);
+    await expect(resultPromise).rejects.toMatchObject({
       code: "NOT_FOUND",
     });
     // workspace.findUnique should never be called
@@ -143,9 +144,10 @@ describe("coreRouter.getCurrent", () => {
     mockWorkspaceFindUnique.mockResolvedValue(null);
 
     const caller = coreRouter.createCaller(makeCtx() as never);
+    const resultPromise = caller.getCurrent();
 
-    await expect(caller.getCurrent()).rejects.toThrow(TRPCError);
-    await expect(caller.getCurrent()).rejects.toMatchObject({
+    await expect(resultPromise).rejects.toThrow(TRPCError);
+    await expect(resultPromise).rejects.toMatchObject({
       code: "NOT_FOUND",
     });
   });
