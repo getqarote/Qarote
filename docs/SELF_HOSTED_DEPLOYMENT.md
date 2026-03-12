@@ -193,6 +193,7 @@ docker exec qarote_backend pnpm run db:migrate
    dokku config:set qarote \
      JWT_SECRET=$(openssl rand -hex 64) \
      ENCRYPTION_KEY=$(openssl rand -hex 64) \
+     TZ=UTC \
      ENABLE_EMAIL=false
    ```
 

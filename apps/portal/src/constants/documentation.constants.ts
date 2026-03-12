@@ -107,6 +107,9 @@ JWT_SECRET=your-jwt-secret-minimum-32-characters-long
 # Generate with: ./setup.sh
 ENCRYPTION_KEY=your-encryption-key-minimum-32-characters-long
 
+# Timezone (must be UTC for correct date handling)
+TZ=UTC
+
 # Backend port mapping (host:container)
 BACKEND_PORT=3000
 
