@@ -68,6 +68,8 @@
   "settings": "设置",
   "theme": "主题",
   "language": "语言",
+  "noServerConfigured": "未配置 RabbitMQ 服务器",
+  "addServer": "添加服务器",
   "manageServers": "管理服务器",
   "rabbitMQDashboard": "仪表盘",
   "notFound": {

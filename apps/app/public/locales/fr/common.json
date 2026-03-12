@@ -68,6 +68,8 @@
   "settings": "Paramètres",
   "theme": "Thème",
   "language": "Langue",
+  "noServerConfigured": "Aucun serveur RabbitMQ configuré",
+  "addServer": "Ajouter un serveur",
   "manageServers": "Gérer les serveurs",
   "rabbitMQDashboard": "Tableau de bord",
   "notFound": {

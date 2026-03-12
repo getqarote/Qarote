@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Server } from "lucide-react";
 
 import { AddServerForm } from "@/components/AddServerFormComponent";
@@ -13,6 +15,8 @@ export function NoServerConfigured({
   title,
   description,
 }: NoServerConfiguredProps) {
+  const { t } = useTranslation("common");
+
   return (
     <div className="content-container-large">
       <div className="flex items-center justify-between">
@@ -26,11 +30,13 @@ export function NoServerConfigured({
           <div className="text-center">
             <Server className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <h2 className="text-xl font-semibold text-foreground mb-2">
-              No RabbitMQ Server Configured
+              {t("noServerConfigured")}
             </h2>
             <p className="text-muted-foreground mb-4">{description}</p>
             <AddServerForm
-              trigger={<Button className="btn-primary">Add Server</Button>}
+              trigger={
+                <Button className="btn-primary">{t("addServer")}</Button>
+              }
             />
           </div>
         </CardContent>
