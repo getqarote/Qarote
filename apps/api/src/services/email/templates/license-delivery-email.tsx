@@ -45,6 +45,7 @@ export default function LicenseDeliveryEmail({
     year: "numeric",
     month: "long",
     day: "numeric",
+    timeZone: "UTC",
   });
 
   return (
