@@ -132,11 +132,7 @@ const AppCore = () => (
                           />
                           <Route
                             path="/auth/sso/callback"
-                            element={
-                              <PublicRoute>
-                                <SSOCallback />
-                              </PublicRoute>
-                            }
+                            element={<SSOCallback />}
                           />
                           <Route
                             path="/verify-email"
