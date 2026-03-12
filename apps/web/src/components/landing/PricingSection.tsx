@@ -219,7 +219,8 @@ const PricingSection = () => {
                   billingPeriod === "monthly" ? "yearly" : "monthly"
                 )
               }
-              className={`relative inline-flex items-center transition-colors ${billingPeriod === "yearly" ? "bg-[#FF691B]" : "bg-muted"}`}
+              data-state={billingPeriod === "yearly" ? "checked" : "unchecked"}
+              className="relative inline-flex items-center transition-colors bg-muted data-[state=checked]:bg-gradient-button"
               style={{ width: "27px", height: "15px" }}
             >
               <span
