@@ -21,37 +21,31 @@ const FeaturesSection = () => {
       icon: Activity,
       title: t("features.liveQueueMonitoring.title"),
       description: t("features.liveQueueMonitoring.description"),
-      gradient: "from-yellow-500 to-orange-500",
     },
     {
       icon: Shield,
       title: t("features.smartAlertingSystem.title"),
       description: t("features.smartAlertingSystem.description"),
-      gradient: "from-green-500 to-emerald-500",
     },
     {
       icon: MessageSquare,
       title: t("features.queueManagement.title"),
       description: t("features.queueManagement.description"),
-      gradient: "from-blue-500 to-cyan-500",
     },
     {
       icon: BarChart3,
       title: t("features.performanceAnalytics.title"),
       description: t("features.performanceAnalytics.description"),
-      gradient: "from-purple-500 to-pink-500",
     },
     {
       icon: Settings,
       title: t("features.multiServerSupport.title"),
       description: t("features.multiServerSupport.description"),
-      gradient: "from-red-500 to-rose-500",
     },
     {
       icon: Rocket,
       title: t("features.messagePublishing.title"),
       description: t("features.messagePublishing.description"),
-      gradient: "from-indigo-500 to-blue-500",
     },
   ];
 
@@ -93,7 +87,8 @@ const FeaturesSection = () => {
             <span>{t("cta.startMonitoringForFree")}</span>
             <img
               src="/images/arrow-right.svg"
-              alt="Arrow right"
+              alt=""
+              aria-hidden="true"
               className="h-[0.8em] w-auto image-crisp align-middle"
             />
           </button>

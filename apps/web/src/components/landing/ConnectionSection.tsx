@@ -216,34 +216,13 @@ const ConnectionSection = () => {
                         </span>
                       </div>
                       <div className="h-20 bg-muted/30 flex items-end justify-between gap-1 p-2">
-                        <div
-                          className="flex-1 bg-[#FF691B] "
-                          style={{ height: "40%" }}
-                        ></div>
-                        <div
-                          className="flex-1 bg-[#FF691B] "
-                          style={{ height: "60%" }}
-                        ></div>
-                        <div
-                          className="flex-1 bg-[#FF691B] "
-                          style={{ height: "45%" }}
-                        ></div>
-                        <div
-                          className="flex-1 bg-[#FF691B] "
-                          style={{ height: "75%" }}
-                        ></div>
-                        <div
-                          className="flex-1 bg-[#FF691B] "
-                          style={{ height: "55%" }}
-                        ></div>
-                        <div
-                          className="flex-1 bg-[#FF691B] "
-                          style={{ height: "80%" }}
-                        ></div>
-                        <div
-                          className="flex-1 bg-[#FF691B] "
-                          style={{ height: "65%" }}
-                        ></div>
+                        <div className="flex-1 bg-primary h-[40%]"></div>
+                        <div className="flex-1 bg-primary h-[60%]"></div>
+                        <div className="flex-1 bg-primary h-[45%]"></div>
+                        <div className="flex-1 bg-primary h-[75%]"></div>
+                        <div className="flex-1 bg-primary h-[55%]"></div>
+                        <div className="flex-1 bg-primary h-[80%]"></div>
+                        <div className="flex-1 bg-primary h-[65%]"></div>
                       </div>
                     </div>
 
@@ -253,7 +232,8 @@ const ConnectionSection = () => {
                         <div className="flex items-center gap-2">
                           <img
                             src="/images/check.svg"
-                            alt="Check"
+                            alt=""
+                            aria-hidden="true"
                             className="image-crisp w-auto h-[0.7rem]"
                           />
                           <span className="text-sm text-foreground">

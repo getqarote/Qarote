@@ -141,7 +141,7 @@ const FaqSection = () => {
                 window.location.href = "mailto:support@qarote.io";
               }
             }}
-            className="inline-flex items-center justify-center text-foreground hover:text-[#ff691b] px-4 py-3 sm:px-8 sm:py-4  transition-all duration-200 text-base sm:text-lg font-medium underline decoration-1 underline-offset-[0.625rem] hover:decoration-[#ff691b]"
+            className="inline-flex items-center justify-center text-foreground hover:text-primary px-4 py-3 sm:px-8 sm:py-4  transition-all duration-200 text-base sm:text-lg font-medium underline decoration-1 underline-offset-[0.625rem] hover:decoration-primary"
           >
             {t("cta.contactUs")}
           </button>

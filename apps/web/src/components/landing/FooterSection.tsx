@@ -100,7 +100,8 @@ const FooterSection = () => {
             <div className="flex items-center gap-1">
               <img
                 src="/images/new_icon.svg"
-                alt="Qarote"
+                alt=""
+                aria-hidden="true"
                 className="w-6 h-6"
               />
               <h3 className="text-foreground font-normal text-[1.2rem]">
@@ -118,7 +119,12 @@ const FooterSection = () => {
         {/* Desktop layout */}
         <div className="hidden md:flex justify-between items-center">
           <div className="flex items-center gap-1">
-            <img src="/images/new_icon.svg" alt="Qarote" className="w-8 h-8" />
+            <img
+              src="/images/new_icon.svg"
+              alt=""
+              aria-hidden="true"
+              className="w-8 h-8"
+            />
             <h3 className="text-foreground font-normal text-[1.2rem]">
               Qarote
             </h3>

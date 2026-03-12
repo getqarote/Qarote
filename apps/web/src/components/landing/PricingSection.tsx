@@ -11,7 +11,8 @@ const FeatureItem = ({ children }: { children: React.ReactNode }) => (
     <div className="mt-[0.4rem] w-3.5 shrink-0 flex items-start">
       <img
         src="/images/check.svg"
-        alt="Check"
+        alt=""
+        aria-hidden="true"
         className="image-crisp w-auto h-[0.7rem]"
       />
     </div>
@@ -162,11 +163,7 @@ const PricingSection = () => {
   ];
 
   return (
-    <section
-      id="pricing"
-      className="pt-12 pb-20"
-      style={{ backgroundColor: "#ffffff" }}
-    >
+    <section id="pricing" className="pt-12 pb-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl text-foreground mb-4 max-w-4xl mx-auto leading-[1.2] font-normal">
@@ -421,10 +418,7 @@ const PricingSection = () => {
                               </span>
                               {plan.features.topologyVisualization ===
                                 "soon" && (
-                                <span
-                                  className="font-medium px-1 border border-border text-muted-foreground"
-                                  style={{ fontSize: "0.65rem" }}
-                                >
+                                <span className="font-medium px-1 border border-border text-muted-foreground text-[0.65rem]">
                                   {tPricing("soon")}
                                 </span>
                               )}
@@ -436,10 +430,7 @@ const PricingSection = () => {
                                 {tPricing("featureNames.roleBasedAccess")}
                               </span>
                               {plan.features.roleBasedAccess === "soon" && (
-                                <span
-                                  className="font-medium px-1 border border-border text-muted-foreground"
-                                  style={{ fontSize: "0.65rem" }}
-                                >
+                                <span className="font-medium px-1 border border-border text-muted-foreground text-[0.65rem]">
                                   {tPricing("soon")}
                                 </span>
                               )}
