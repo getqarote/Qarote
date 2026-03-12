@@ -35,7 +35,7 @@
       "description": "适合大型团队和企业"
     },
     "enterprise": {
-      "name": "企业版",
+      "name": "企业私有版",
       "selfHosted": "私有化部署方案",
       "customPricing": "定制定价",
       "contactSales": "联系销售团队获取报价"
