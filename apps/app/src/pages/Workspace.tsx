@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
@@ -42,6 +42,7 @@ const Workspace = () => {
   const { user, updateUser } = useAuth();
   const queryClient = useQueryClient();
   const [showSuccess, setShowSuccess] = useState(false);
+  const isCreatingRef = useRef(false);
 
   const {
     inviteEmails,
@@ -58,9 +59,13 @@ const Workspace = () => {
   const { data: workspacesData, isLoading: workspacesLoading } =
     useUserWorkspaces();
 
-  // Redirect to dashboard if user already has workspaces
+  // Redirect to dashboard if user already has workspaces (skip during creation)
   useEffect(() => {
-    if (!workspacesLoading && workspacesData?.workspaces?.length) {
+    if (
+      !isCreatingRef.current &&
+      !workspacesLoading &&
+      workspacesData?.workspaces?.length
+    ) {
       navigate("/", { replace: true });
     }
   }, [workspacesLoading, workspacesData, navigate]);
@@ -77,6 +82,7 @@ const Workspace = () => {
   const createWorkspaceMutation = useCreateWorkspace();
 
   const onSubmit = async (data: WorkspaceFormData) => {
+    isCreatingRef.current = true;
     storePendingInvites();
     createWorkspaceMutation.mutate(
       {
@@ -110,6 +116,7 @@ const Workspace = () => {
           }
         },
         onError: (error) => {
+          isCreatingRef.current = false;
           toast.error(
             t("toast.workspaceCreateFailed", {
               error: error?.message || t("error.unknown"),
