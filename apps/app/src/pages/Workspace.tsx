@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
@@ -55,7 +55,15 @@ const Workspace = () => {
   } = useWorkspaceInvites();
 
   // Check if user already has workspaces
-  const { isLoading: workspacesLoading } = useUserWorkspaces();
+  const { data: workspacesData, isLoading: workspacesLoading } =
+    useUserWorkspaces();
+
+  // Redirect to dashboard if user already has workspaces
+  useEffect(() => {
+    if (!workspacesLoading && workspacesData?.workspaces?.length) {
+      navigate("/", { replace: true });
+    }
+  }, [workspacesLoading, workspacesData, navigate]);
 
   const form = useForm<WorkspaceFormData>({
     resolver: zodResolver(workspaceSchema),

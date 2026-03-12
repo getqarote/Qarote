@@ -96,11 +96,17 @@ export function initSentry() {
   });
 }
 
-export function setSentryUser(user: {
-  id: string;
-  workspaceId: string | null;
-  email?: string;
-}) {
+export function setSentryUser(
+  user: {
+    id: string;
+    workspaceId: string | null;
+    email?: string;
+  } | null
+) {
+  if (!user) {
+    Sentry.setUser(null);
+    return;
+  }
   Sentry.setUser({
     id: user.id,
     workspace_id: user.workspaceId || undefined,
