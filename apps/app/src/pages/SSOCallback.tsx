@@ -6,6 +6,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
+import { useAuth } from "@/contexts/AuthContextDefinition";
+
 const ERROR_MESSAGES: Record<string, string> = {
   missing_code: "Authorization code was not provided.",
   invalid_state:
@@ -26,19 +28,25 @@ const ERROR_MESSAGES: Record<string, string> = {
 const SSOCallback: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { isAuthenticated, isLoading, user } = useAuth();
   const errorParam = searchParams.get("error");
-  // SSO callback is handled by better-auth now — if we land here with no
-  // error, the session cookie is already set. Redirect to workspace.
   const error = errorParam
     ? ERROR_MESSAGES[errorParam] || `Authentication error: ${errorParam}`
     : null;
 
-  // No error — session was established by better-auth callback, redirect
+  // Wait for auth to resolve, then navigate based on state
   useEffect(() => {
-    if (!error) {
-      navigate("/workspace", { replace: true });
+    if (error || isLoading) return;
+
+    if (isAuthenticated) {
+      // Authenticated: go to dashboard if user has workspace, otherwise workspace creation
+      const target = user?.workspaceId ? "/" : "/workspace";
+      navigate(target, { replace: true });
+    } else {
+      // Session cookie was expected but auth check found nothing — redirect to sign-in
+      navigate("/auth/sign-in", { replace: true });
     }
-  }, [error, navigate]);
+  }, [error, isLoading, isAuthenticated, user?.workspaceId, navigate]);
 
   if (error) {
     return (
