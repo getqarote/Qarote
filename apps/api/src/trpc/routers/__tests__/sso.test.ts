@@ -127,7 +127,7 @@ function makeCtx(overrides: Record<string, unknown> = {}) {
 }
 
 const oidcConfigJson = JSON.stringify({
-  issuer: "https://idp.example.com/.well-known/openid-configuration",
+  issuer: "https://idp.example.com",
   discoveryEndpoint: "https://idp.example.com/.well-known/openid-configuration",
   clientId: "qarote",
   clientSecret: "super-secret",
@@ -137,7 +137,7 @@ const oidcConfigJson = JSON.stringify({
 const mockProvider = {
   id: "prov-1",
   providerId: "default",
-  issuer: "https://idp.example.com/.well-known/openid-configuration",
+  issuer: "https://idp.example.com",
   domain: "",
   oidcConfig: oidcConfigJson,
   samlConfig: null,
