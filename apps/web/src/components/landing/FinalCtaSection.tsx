@@ -11,7 +11,7 @@ const FinalCtaSection = () => {
         <div className="text-foreground bg-orange-100 py-20 px-12 lg:px-16 relative overflow-hidden">
           <div className="grid md:grid-cols-2 gap-12 lg:gap-16 items-center">
             <div>
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl mb-4 text-center md:text-left leading-[1.2] font-normal text-[#1a1a1a]">
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl mb-4 text-center md:text-left leading-[1.2] font-normal text-foreground">
                 {t("finalCta.title")}
               </h2>
             </div>

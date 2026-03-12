@@ -4,7 +4,8 @@ const ComparisonPoint = ({ icon, text }: { icon: string; text: string }) => (
   <div className="flex gap-4 items-center">
     <img
       src={`/images/${icon}.svg`}
-      alt={icon}
+      alt=""
+      aria-hidden="true"
       className="h-3 shrink-0 w-auto image-crisp"
     />
     <p className="text-foreground">{text}</p>
@@ -64,9 +65,9 @@ const ComparisonSection = () => {
                 <div className="bg-background rounded flex-1 flex items-center justify-center">
                   <img
                     src="/images/error.svg"
-                    alt="Error"
-                    className="w-12 h-12"
-                    style={{ imageRendering: "crisp-edges" }}
+                    alt=""
+                    aria-hidden="true"
+                    className="w-12 h-12 image-crisp"
                   />
                 </div>
               </div>
@@ -107,7 +108,8 @@ const ComparisonSection = () => {
                   <div className="flex items-center gap-1">
                     <img
                       src="/images/new_icon.svg"
-                      alt="Qarote"
+                      alt=""
+                      aria-hidden="true"
                       className="w-6 h-6"
                     />
                     <span className="font-semibold text-sm">Qarote</span>
@@ -129,7 +131,8 @@ const ComparisonSection = () => {
                   <div className="bg-green-100 border border-green-200 p-1.5 text-xs text-green-700 flex items-center gap-1.5">
                     <img
                       src="/images/check.svg"
-                      alt="Check"
+                      alt=""
+                      aria-hidden="true"
                       className="shrink-0 w-auto h-[0.525rem] image-crisp"
                     />
                     {t("comparison.allSystemsOperational")}
