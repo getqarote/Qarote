@@ -273,12 +273,12 @@ const PricingSection = () => {
                 >
                   <CardContent className="p-6 flex flex-col h-full">
                     {hostingMode === "cloud" && plan.id === "DEVELOPER" && (
-                      <span className="absolute top-4 right-4 text-xs font-medium px-2 py-0.5 border border-[#FF691B] text-[#FF691B]">
+                      <span className="absolute top-4 right-4 text-xs font-medium px-2 py-0.5 border border-primary text-primary">
                         {tPricing("mostPopular")}
                       </span>
                     )}
                     {hostingMode === "cloud" && plan.id === "ENTERPRISE" && (
-                      <span className="absolute top-4 right-4 text-xs font-medium px-2 py-0.5 border border-[#FF691B] text-[#FF691B]">
+                      <span className="absolute top-4 right-4 text-xs font-medium px-2 py-0.5 border border-primary text-primary">
                         {tPricing("freeTrial")}
                       </span>
                     )}
