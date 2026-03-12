@@ -55,7 +55,10 @@ export const auth = betterAuth({
   secret: authConfig.jwtSecret,
   baseURL: config.API_URL,
   basePath: "/api/auth",
-  trustedOrigins: [config.FRONTEND_URL, config.CORS_ORIGIN].filter(Boolean),
+  trustedOrigins: [
+    config.FRONTEND_URL,
+    ...config.CORS_ORIGIN.split(",").map((o) => o.trim()),
+  ].filter(Boolean),
 
   database: prismaAdapter(prisma, {
     provider: "postgresql",
