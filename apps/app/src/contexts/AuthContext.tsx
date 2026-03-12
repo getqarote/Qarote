@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useReducer } from "react";
+import React, { useCallback, useEffect, useReducer, useRef } from "react";
 
 import { User } from "@/lib/api";
 import { authClient } from "@/lib/auth-client";
@@ -43,6 +43,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     isLoading: true,
   });
   const utils = trpc.useUtils();
+  // Track whether initial session check is complete to prevent the global
+  // unauthorized handler from clearing auth state during the check (race condition).
+  const initialCheckDone = useRef(false);
 
   // Check for existing session on mount
   useEffect(() => {
@@ -77,6 +80,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       } catch (error) {
         logger.error("Failed to check session:", error);
         dispatch({ type: "LOADED" });
+      } finally {
+        initialCheckDone.current = true;
       }
     };
 
@@ -100,6 +105,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   useEffect(() => {
     const handleUnauthorized = () => {
+      // Skip during initial session check — the checkSession catch block handles
+      // UNAUTHORIZED errors gracefully (falls back to basic user data).
+      // Without this guard, the unauthorizedLink fires CLEAR_USER before the
+      // catch can recover, causing a premature redirect to sign-in.
+      if (!initialCheckDone.current) return;
+
       dispatch({ type: "CLEAR_USER" });
       syncSentryUser(null);
     };
