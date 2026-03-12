@@ -13,8 +13,7 @@ const HeroSection = ({ isVideoPlaying, onPlayVideo }: HeroSectionProps) => {
   return (
     <header
       id="home"
-      className="relative overflow-visible text-foreground pb-16"
-      style={{ backgroundColor: "#ffffff" }}
+      className="relative overflow-visible text-foreground pb-16 bg-white"
     >
       {/* Decorative elements - subtle colored accents */}
       <div className="absolute inset-0 opacity-5 overflow-hidden">
