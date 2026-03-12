@@ -215,9 +215,13 @@ export const ssoRouter = router({
       let issuer = "unknown";
 
       if (input.type === "oidc" && input.oidcDiscoveryUrl) {
-        issuer = input.oidcDiscoveryUrl;
+        // The OIDC issuer is the base URL, not the discovery endpoint
+        issuer = input.oidcDiscoveryUrl.replace(
+          /\/\.well-known\/openid-configuration$/,
+          ""
+        );
         oidcConfigJson = JSON.stringify({
-          issuer: input.oidcDiscoveryUrl,
+          issuer,
           discoveryEndpoint: input.oidcDiscoveryUrl,
           clientId: input.oidcClientId ?? "",
           clientSecret: input.oidcClientSecret ?? "",
@@ -348,9 +352,13 @@ export const ssoRouter = router({
       let issuer = existing.issuer;
 
       if (input.type === "oidc" && input.oidcDiscoveryUrl) {
-        issuer = input.oidcDiscoveryUrl;
+        // The OIDC issuer is the base URL, not the discovery endpoint
+        issuer = input.oidcDiscoveryUrl.replace(
+          /\/\.well-known\/openid-configuration$/,
+          ""
+        );
         oidcConfigJson = JSON.stringify({
-          issuer: input.oidcDiscoveryUrl,
+          issuer,
           discoveryEndpoint: input.oidcDiscoveryUrl,
           clientId: input.oidcClientId ?? "",
           clientSecret: clientSecret ?? "",
