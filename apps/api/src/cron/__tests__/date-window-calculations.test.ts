@@ -48,7 +48,7 @@ describe("date window calculations", () => {
   });
 
   describe("startOfDay / endOfDay window", () => {
-    it("startOfDay sets time to local midnight (00:00:00.000)", () => {
+    it("startOfDay sets time to UTC midnight (00:00:00.000)", () => {
       const date = new Date("2026-01-15T14:35:22.123Z");
       const start = startOfDay(date);
 
@@ -58,7 +58,7 @@ describe("date window calculations", () => {
       expect(start.getUTCMilliseconds()).toBe(0);
     });
 
-    it("endOfDay sets time to local 23:59:59.999", () => {
+    it("endOfDay sets time to UTC 23:59:59.999", () => {
       const date = new Date("2026-01-15T14:35:22.123Z");
       const end = endOfDay(date);
 

@@ -83,6 +83,7 @@ export const passwordRouter = router({
           await passwordResetEmailService.sendPasswordResetEmail(
             user.email,
             resetToken,
+            expiresAt,
             user.firstName
               ? `${user.firstName} ${user.lastName}`.trim()
               : undefined,
