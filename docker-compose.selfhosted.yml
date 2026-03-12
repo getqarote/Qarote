@@ -35,6 +35,7 @@ services:
     container_name: qarote_backend
     restart: unless-stopped
     environment:
+      TZ: UTC
       PORT: 3000
       HOST: 0.0.0.0
       DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD}@postgres:5432/qarote
