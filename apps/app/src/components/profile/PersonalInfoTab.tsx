@@ -197,59 +197,60 @@ export const PersonalInfoTab = ({
         </CardContent>
       </Card>
 
-      {/* Security Settings Section - Show when user has a password-based account */}
-      {(profile.hasPassword ?? profile.authProvider === "password") && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Settings className="h-5 w-5" />
-              Security Settings
-            </CardTitle>
-            <CardDescription>
-              Manage your password and email address for account security
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:divide-x lg:divide-border">
-              {/* Password Change Section */}
-              <div className="space-y-3 lg:pr-6 flex flex-col">
-                <div className="flex items-center gap-2 pb-1">
-                  <Lock className="h-4 w-4 text-muted-foreground" />
-                  <h3 className="font-medium">Change Password</h3>
+      {/* Security Settings Section - Show only for admins with password-based accounts */}
+      {profile.role === "ADMIN" &&
+        (profile.hasPassword ?? profile.authProvider === "password") && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Settings className="h-5 w-5" />
+                Security Settings
+              </CardTitle>
+              <CardDescription>
+                Manage your password and email address for account security
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:divide-x lg:divide-border">
+                {/* Password Change Section */}
+                <div className="space-y-3 lg:pr-6 flex flex-col">
+                  <div className="flex items-center gap-2 pb-1">
+                    <Lock className="h-4 w-4 text-muted-foreground" />
+                    <h3 className="font-medium">Change Password</h3>
+                  </div>
+                  <div className="flex-1">
+                    <CompactPasswordChangeForm
+                      onPasswordChange={onPasswordChange}
+                      isLoading={isChangingPassword}
+                    />
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <CompactPasswordChangeForm
-                    onPasswordChange={onPasswordChange}
-                    isLoading={isChangingPassword}
-                  />
-                </div>
-              </div>
 
-              {/* Email Change Section */}
-              <div className="space-y-3 lg:pl-6 flex flex-col">
-                <div className="flex items-center gap-2 pb-1">
-                  <Mail className="h-4 w-4 text-muted-foreground" />
-                  <h3 className="font-medium">Email Address</h3>
-                </div>
-                <div className="flex-1">
-                  <CompactEmailChangeForm
-                    currentEmail={profile.email}
-                    pendingEmail={verificationStatus?.pendingEmail}
-                    hasPendingEmailChange={
-                      verificationStatus?.hasPendingEmailChange
-                    }
-                    onEmailChangeRequest={onEmailChangeRequest}
-                    onCancelEmailChange={onCancelEmailChange}
-                    isLoading={isRequestingEmailChange}
-                    isCancelling={isCancellingEmailChange}
-                    emailEnabled={emailEnabled}
-                  />
+                {/* Email Change Section */}
+                <div className="space-y-3 lg:pl-6 flex flex-col">
+                  <div className="flex items-center gap-2 pb-1">
+                    <Mail className="h-4 w-4 text-muted-foreground" />
+                    <h3 className="font-medium">Email Address</h3>
+                  </div>
+                  <div className="flex-1">
+                    <CompactEmailChangeForm
+                      currentEmail={profile.email}
+                      pendingEmail={verificationStatus?.pendingEmail}
+                      hasPendingEmailChange={
+                        verificationStatus?.hasPendingEmailChange
+                      }
+                      onEmailChangeRequest={onEmailChangeRequest}
+                      onCancelEmailChange={onCancelEmailChange}
+                      isLoading={isRequestingEmailChange}
+                      isCancelling={isCancellingEmailChange}
+                      emailEnabled={emailEnabled}
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+            </CardContent>
+          </Card>
+        )}
     </div>
   );
 };
