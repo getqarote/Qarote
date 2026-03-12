@@ -125,9 +125,13 @@ async function seedSsoProviders(): Promise<void> {
   let issuer = "unknown";
 
   if (seedType === "oidc" && seedOidcDiscoveryUrl) {
-    issuer = seedOidcDiscoveryUrl;
+    // The OIDC issuer is the base URL, not the discovery endpoint
+    issuer = seedOidcDiscoveryUrl.replace(
+      /\/\.well-known\/openid-configuration$/,
+      ""
+    );
     oidcConfigJson = JSON.stringify({
-      issuer: seedOidcDiscoveryUrl,
+      issuer,
       discoveryEndpoint: seedOidcDiscoveryUrl,
       clientId: seedOidcClientId ?? "",
       clientSecret: seedOidcClientSecret ?? "",

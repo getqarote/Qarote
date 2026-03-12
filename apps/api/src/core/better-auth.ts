@@ -290,6 +290,19 @@ export const auth = betterAuth({
     },
     user: {
       create: {
+        before: async (user) => {
+          // Ensure firstName/lastName are set (required by schema).
+          // SSO providers may only supply "name", not firstName/lastName.
+          const baUser = user as Record<string, unknown>;
+          if (!baUser.firstName) {
+            const nameParts = (user.name || "").trim().split(/\s+/);
+            baUser.firstName = nameParts[0] || "";
+            if (!baUser.lastName) {
+              baUser.lastName = nameParts.slice(1).join(" ") || "";
+            }
+          }
+          return { data: baUser as typeof user };
+        },
         after: async (user) => {
           const baUser = user as Record<string, unknown>;
 
