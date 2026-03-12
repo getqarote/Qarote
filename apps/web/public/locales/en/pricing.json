@@ -16,6 +16,11 @@
   "coreFeatures": "Core Features",
   "support": "Support",
   "enterpriseFeatures": "Enterprise Features",
+  "mostPopular": "Most popular",
+  "freeTrial": "Free trial",
+  "contactSales": "Contact sales",
+  "soon": "Soon",
+  "securityCompatibility": "Security & compatibility",
   "plans": {
     "starter": {
       "name": "Starter",
@@ -74,7 +79,24 @@
     "customLicenseTiers": "Custom License Tiers",
     "customLicenseTiersDesc": "Flexible licensing options",
     "completeDataControl": "Complete Data Control",
-    "completeDataControlDesc": "All data stays in your infrastructure"
+    "completeDataControlDesc": "All data stays in your infrastructure",
+    "queueExchangeManagement": "Queue, Exchange, VHost & User management",
+    "alertsWebhooks": "Alerts & webhooks",
+    "topologyVisualization": "Topology visualization",
+    "roleBasedAccess": "Role-based access",
+    "ltsVersions": "LTS RabbitMQ versions",
+    "allLtsVersions": "All LTS versions 3.x and 4.x",
+    "allRabbitMQVersions": "All RabbitMQ versions",
+    "ssoSamlOidc": "SSO, SAML & OIDC",
+    "server_upTo1": "1 RabbitMQ server",
+    "server_upTo3": "Up to 3 RabbitMQ servers",
+    "server_unlimited": "Unlimited RabbitMQ servers",
+    "workspace_upTo1": "1 workspace",
+    "workspace_upTo3": "Up to 3 workspaces",
+    "workspace_unlimited": "Unlimited workspaces",
+    "member_upTo1": "1 team member",
+    "member_upTo3": "Up to 3 team members",
+    "member_unlimited": "Unlimited team members"
   },
   "limits": {
     "upTo1": "Up to 1",

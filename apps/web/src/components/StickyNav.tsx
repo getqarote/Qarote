@@ -74,7 +74,7 @@ const StickyNav = ({ onVideoClick }: StickyNavProps) => {
             <GithubStarBadge />
             <a
               href={`${import.meta.env.VITE_APP_BASE_URL}/auth/sign-in`}
-              className="text-foreground hover:text-primary px-2 sm:px-4 py-2 text-base font-medium transition-colors"
+              className="hidden sm:block text-foreground hover:text-primary px-2 sm:px-4 py-2 text-base font-medium transition-colors"
             >
               {t("login")}
             </a>
