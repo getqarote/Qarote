@@ -4,10 +4,7 @@ const ComparisonSection = () => {
   const { t } = useTranslation("landing");
 
   return (
-    <section
-      className="pb-20"
-      style={{ backgroundColor: "#ffffff", paddingTop: "2.4rem" }}
-    >
+    <section className="pb-20 bg-white pt-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl text-foreground mb-4 max-w-4xl mx-auto leading-[1.2] font-normal">
