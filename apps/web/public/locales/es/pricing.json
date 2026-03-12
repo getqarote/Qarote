@@ -23,15 +23,15 @@
   "securityCompatibility": "Seguridad & compatibilidad",
   "plans": {
     "starter": {
-      "name": "Starter",
+      "name": "Free",
       "description": "Perfecto para empezar"
     },
     "pro": {
-      "name": "Pro",
+      "name": "Developer",
       "description": "Para desarrolladores individuales y proyectos pequeños"
     },
     "business": {
-      "name": "Business",
+      "name": "Enterprise",
       "description": "Para grandes equipos y empresas"
     },
     "enterprise": {

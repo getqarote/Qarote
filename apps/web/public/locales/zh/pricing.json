@@ -23,15 +23,15 @@
   "securityCompatibility": "安全 & 兼容性",
   "plans": {
     "starter": {
-      "name": "入门版",
+      "name": "免费版",
       "description": "入门的理想选择"
     },
     "pro": {
-      "name": "专业版",
+      "name": "开发者版",
       "description": "适合独立开发者和小型项目"
     },
     "business": {
-      "name": "商业版",
+      "name": "企业版",
       "description": "适合大型团队和企业"
     },
     "enterprise": {
