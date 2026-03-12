@@ -6,6 +6,19 @@ import { trackSignUpClick } from "@/lib/gtm";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
+const FeatureItem = ({ children }: { children: React.ReactNode }) => (
+  <li className="flex items-start gap-3">
+    <div className="mt-[0.4rem] w-3.5 shrink-0 flex items-start">
+      <img
+        src="/images/check.svg"
+        alt="Check"
+        className="image-crisp w-auto h-[0.7rem]"
+      />
+    </div>
+    <div className="flex-1 flex items-center gap-2">{children}</div>
+  </li>
+);
+
 const PricingSection = () => {
   const { t: tPricing } = useTranslation("pricing");
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">(
@@ -359,246 +372,78 @@ const PricingSection = () => {
                           {tPricing("coreFeatures")}
                         </h4>
                         <ul className="space-y-2">
-                          <li className="flex items-start gap-3">
-                            <div
-                              style={{
-                                marginTop: "0.4rem",
-                                width: "0.875rem",
-                                flexShrink: 0,
-                                display: "flex",
-                                alignItems: "flex-start",
-                              }}
-                            >
-                              <img
-                                src="/images/check.svg"
-                                alt="Check"
-                                style={{
-                                  imageRendering: "crisp-edges",
-                                  width: "auto",
-                                  height: "0.7rem",
-                                }}
-                              />
-                            </div>
-                            <div className="flex-1">
-                              <span className="text-sm text-foreground">
-                                {tPricing(
-                                  `featureNames.server_${plan.features.servers}`
-                                )}
-                              </span>
-                            </div>
-                          </li>
-                          <li className="flex items-start gap-3">
-                            <div
-                              style={{
-                                marginTop: "0.4rem",
-                                width: "0.875rem",
-                                flexShrink: 0,
-                                display: "flex",
-                                alignItems: "flex-start",
-                              }}
-                            >
-                              <img
-                                src="/images/check.svg"
-                                alt="Check"
-                                style={{
-                                  imageRendering: "crisp-edges",
-                                  width: "auto",
-                                  height: "0.7rem",
-                                }}
-                              />
-                            </div>
-                            <div className="flex-1">
-                              <span className="text-sm text-foreground">
-                                {tPricing(
-                                  `featureNames.workspace_${plan.features.workspaces}`
-                                )}
-                              </span>
-                            </div>
-                          </li>
-                          <li className="flex items-start gap-3">
-                            <div
-                              style={{
-                                marginTop: "0.4rem",
-                                width: "0.875rem",
-                                flexShrink: 0,
-                                display: "flex",
-                                alignItems: "flex-start",
-                              }}
-                            >
-                              <img
-                                src="/images/check.svg"
-                                alt="Check"
-                                style={{
-                                  imageRendering: "crisp-edges",
-                                  width: "auto",
-                                  height: "0.7rem",
-                                }}
-                              />
-                            </div>
-                            <div className="flex-1">
-                              <span className="text-sm text-foreground">
-                                {tPricing(
-                                  `featureNames.member_${plan.features.teamMembers}`
-                                )}
-                              </span>
-                            </div>
-                          </li>
-                          <li className="flex items-start gap-3">
-                            <div
-                              style={{
-                                marginTop: "0.4rem",
-                                width: "0.875rem",
-                                flexShrink: 0,
-                                display: "flex",
-                                alignItems: "flex-start",
-                              }}
-                            >
-                              <img
-                                src="/images/check.svg"
-                                alt="Check"
-                                style={{
-                                  imageRendering: "crisp-edges",
-                                  width: "auto",
-                                  height: "0.7rem",
-                                }}
-                              />
-                            </div>
-                            <div className="flex-1">
-                              <span className="text-sm text-foreground">
-                                {tPricing("featureNames.advancedAnalytics")}
-                              </span>
-                            </div>
-                          </li>
+                          <FeatureItem>
+                            <span className="text-sm text-foreground">
+                              {tPricing(
+                                `featureNames.server_${plan.features.servers}`
+                              )}
+                            </span>
+                          </FeatureItem>
+                          <FeatureItem>
+                            <span className="text-sm text-foreground">
+                              {tPricing(
+                                `featureNames.workspace_${plan.features.workspaces}`
+                              )}
+                            </span>
+                          </FeatureItem>
+                          <FeatureItem>
+                            <span className="text-sm text-foreground">
+                              {tPricing(
+                                `featureNames.member_${plan.features.teamMembers}`
+                              )}
+                            </span>
+                          </FeatureItem>
+                          <FeatureItem>
+                            <span className="text-sm text-foreground">
+                              {tPricing("featureNames.advancedAnalytics")}
+                            </span>
+                          </FeatureItem>
                           {plan.features.queueManagement && (
-                            <li className="flex items-start gap-3">
-                              <div
-                                style={{
-                                  marginTop: "0.4rem",
-                                  width: "0.875rem",
-                                  flexShrink: 0,
-                                  display: "flex",
-                                  alignItems: "flex-start",
-                                }}
-                              >
-                                <img
-                                  src="/images/check.svg"
-                                  alt="Check"
-                                  style={{
-                                    imageRendering: "crisp-edges",
-                                    width: "auto",
-                                    height: "0.7rem",
-                                  }}
-                                />
-                              </div>
-                              <div className="flex-1">
-                                <span className="text-sm text-foreground">
-                                  {tPricing(
-                                    "featureNames.queueExchangeManagement"
-                                  )}
-                                </span>
-                              </div>
-                            </li>
+                            <FeatureItem>
+                              <span className="text-sm text-foreground">
+                                {tPricing(
+                                  "featureNames.queueExchangeManagement"
+                                )}
+                              </span>
+                            </FeatureItem>
                           )}
                           {plan.features.alertsNotification && (
-                            <li className="flex items-start gap-3">
-                              <div
-                                style={{
-                                  marginTop: "0.4rem",
-                                  width: "0.875rem",
-                                  flexShrink: 0,
-                                  display: "flex",
-                                  alignItems: "flex-start",
-                                }}
-                              >
-                                <img
-                                  src="/images/check.svg"
-                                  alt="Check"
-                                  style={{
-                                    imageRendering: "crisp-edges",
-                                    width: "auto",
-                                    height: "0.7rem",
-                                  }}
-                                />
-                              </div>
-                              <div className="flex-1">
-                                <span className="text-sm text-foreground">
-                                  {tPricing("featureNames.alertsWebhooks")}
-                                </span>
-                              </div>
-                            </li>
+                            <FeatureItem>
+                              <span className="text-sm text-foreground">
+                                {tPricing("featureNames.alertsWebhooks")}
+                              </span>
+                            </FeatureItem>
                           )}
                           {plan.features.topologyVisualization && (
-                            <li className="flex items-center gap-3">
-                              <div
-                                style={{
-                                  width: "0.875rem",
-                                  flexShrink: 0,
-                                  display: "flex",
-                                  alignItems: "center",
-                                }}
-                              >
-                                <img
-                                  src="/images/check.svg"
-                                  alt="Check"
-                                  style={{
-                                    imageRendering: "crisp-edges",
-                                    width: "auto",
-                                    height: "0.7rem",
-                                  }}
-                                />
-                              </div>
-                              <div className="flex-1 flex items-center gap-2">
-                                <span className="text-sm text-foreground">
-                                  {tPricing(
-                                    "featureNames.topologyVisualization"
-                                  )}
+                            <FeatureItem>
+                              <span className="text-sm text-foreground">
+                                {tPricing("featureNames.topologyVisualization")}
+                              </span>
+                              {plan.features.topologyVisualization ===
+                                "soon" && (
+                                <span
+                                  className="font-medium px-1 border border-border text-muted-foreground"
+                                  style={{ fontSize: "0.65rem" }}
+                                >
+                                  {tPricing("soon")}
                                 </span>
-                                {plan.features.topologyVisualization ===
-                                  "soon" && (
-                                  <span
-                                    className="font-medium px-1 border border-border text-muted-foreground"
-                                    style={{ fontSize: "0.65rem" }}
-                                  >
-                                    {tPricing("soon")}
-                                  </span>
-                                )}
-                              </div>
-                            </li>
+                              )}
+                            </FeatureItem>
                           )}
                           {plan.features.roleBasedAccess && (
-                            <li className="flex items-center gap-3">
-                              <div
-                                style={{
-                                  width: "0.875rem",
-                                  flexShrink: 0,
-                                  display: "flex",
-                                  alignItems: "center",
-                                }}
-                              >
-                                <img
-                                  src="/images/check.svg"
-                                  alt="Check"
-                                  style={{
-                                    imageRendering: "crisp-edges",
-                                    width: "auto",
-                                    height: "0.7rem",
-                                  }}
-                                />
-                              </div>
-                              <div className="flex-1 flex items-center gap-2">
-                                <span className="text-sm text-foreground">
-                                  {tPricing("featureNames.roleBasedAccess")}
+                            <FeatureItem>
+                              <span className="text-sm text-foreground">
+                                {tPricing("featureNames.roleBasedAccess")}
+                              </span>
+                              {plan.features.roleBasedAccess === "soon" && (
+                                <span
+                                  className="font-medium px-1 border border-border text-muted-foreground"
+                                  style={{ fontSize: "0.65rem" }}
+                                >
+                                  {tPricing("soon")}
                                 </span>
-                                {plan.features.roleBasedAccess === "soon" && (
-                                  <span
-                                    className="font-medium px-1 border border-border text-muted-foreground"
-                                    style={{ fontSize: "0.65rem" }}
-                                  >
-                                    {tPricing("soon")}
-                                  </span>
-                                )}
-                              </div>
-                            </li>
+                              )}
+                            </FeatureItem>
                           )}
                         </ul>
                       </div>
@@ -609,81 +454,20 @@ const PricingSection = () => {
                         </h4>
                         <ul className="space-y-2">
                           {plan.id === "ENTERPRISE" && (
-                            <li className="flex items-start gap-3">
-                              <div
-                                style={{
-                                  marginTop: "0.4rem",
-                                  width: "0.875rem",
-                                  flexShrink: 0,
-                                  display: "flex",
-                                  alignItems: "flex-start",
-                                }}
-                              >
-                                <img
-                                  src="/images/check.svg"
-                                  alt="Check"
-                                  style={{
-                                    imageRendering: "crisp-edges",
-                                    width: "auto",
-                                    height: "0.7rem",
-                                  }}
-                                />
-                              </div>
-                              <div className="flex-1">
-                                <span className="text-sm text-foreground">
-                                  {tPricing("featureNames.ssoSamlOidc")}
-                                </span>
-                              </div>
-                            </li>
-                          )}
-                          <li className="flex items-start gap-3">
-                            <div
-                              style={{
-                                marginTop: "0.4rem",
-                                width: "0.875rem",
-                                flexShrink: 0,
-                                display: "flex",
-                                alignItems: "flex-start",
-                              }}
-                            >
-                              <img
-                                src="/images/check.svg"
-                                alt="Check"
-                                style={{
-                                  imageRendering: "crisp-edges",
-                                  width: "auto",
-                                  height: "0.7rem",
-                                }}
-                              />
-                            </div>
-                            <div className="flex-1">
+                            <FeatureItem>
                               <span className="text-sm text-foreground">
-                                {tPricing("featureNames.soc2Compliance")}
+                                {tPricing("featureNames.ssoSamlOidc")}
                               </span>
-                            </div>
-                          </li>
+                            </FeatureItem>
+                          )}
+                          <FeatureItem>
+                            <span className="text-sm text-foreground">
+                              {tPricing("featureNames.soc2Compliance")}
+                            </span>
+                          </FeatureItem>
                           {plan.features.servers === "upTo1" && (
-                            <li className="flex items-start gap-3">
-                              <div
-                                style={{
-                                  marginTop: "0.4rem",
-                                  width: "0.875rem",
-                                  flexShrink: 0,
-                                  display: "flex",
-                                  alignItems: "flex-start",
-                                }}
-                              >
-                                <img
-                                  src="/images/check.svg"
-                                  alt="Check"
-                                  style={{
-                                    imageRendering: "crisp-edges",
-                                    width: "auto",
-                                    height: "0.7rem",
-                                  }}
-                                />
-                              </div>
-                              <div className="flex-1">
+                            <FeatureItem>
+                              <div>
                                 <span className="text-sm text-foreground">
                                   {tPricing("featureNames.ltsVersions")}
                                 </span>
@@ -691,30 +475,11 @@ const PricingSection = () => {
                                   {tPricing("featureNames.allLtsVersions")}
                                 </p>
                               </div>
-                            </li>
+                            </FeatureItem>
                           )}
                           {plan.features.servers !== "upTo1" && (
-                            <li className="flex items-start gap-3">
-                              <div
-                                style={{
-                                  marginTop: "0.4rem",
-                                  width: "0.875rem",
-                                  flexShrink: 0,
-                                  display: "flex",
-                                  alignItems: "flex-start",
-                                }}
-                              >
-                                <img
-                                  src="/images/check.svg"
-                                  alt="Check"
-                                  style={{
-                                    imageRendering: "crisp-edges",
-                                    width: "auto",
-                                    height: "0.7rem",
-                                  }}
-                                />
-                              </div>
-                              <div className="flex-1">
+                            <FeatureItem>
+                              <div>
                                 <span className="text-sm text-foreground">
                                   {tPricing("featureNames.allRabbitMQVersions")}
                                 </span>
@@ -722,7 +487,7 @@ const PricingSection = () => {
                                   {tPricing("featureNames.allVersions")}
                                 </p>
                               </div>
-                            </li>
+                            </FeatureItem>
                           )}
                         </ul>
                       </div>
@@ -732,59 +497,17 @@ const PricingSection = () => {
                           {tPricing("support")}
                         </h4>
                         <ul className="space-y-2">
-                          <li className="flex items-start gap-3">
-                            <div
-                              style={{
-                                marginTop: "0.4rem",
-                                width: "0.875rem",
-                                flexShrink: 0,
-                                display: "flex",
-                                alignItems: "flex-start",
-                              }}
-                            >
-                              <img
-                                src="/images/check.svg"
-                                alt="Check"
-                                style={{
-                                  imageRendering: "crisp-edges",
-                                  width: "auto",
-                                  height: "0.7rem",
-                                }}
-                              />
-                            </div>
-                            <div className="flex-1">
-                              <span className="text-sm text-foreground">
-                                {tPricing("featureNames.communitySupport")}
-                              </span>
-                            </div>
-                          </li>
+                          <FeatureItem>
+                            <span className="text-sm text-foreground">
+                              {tPricing("featureNames.communitySupport")}
+                            </span>
+                          </FeatureItem>
                           {plan.features.prioritySupport && (
-                            <li className="flex items-start gap-3">
-                              <div
-                                style={{
-                                  marginTop: "0.4rem",
-                                  width: "0.875rem",
-                                  flexShrink: 0,
-                                  display: "flex",
-                                  alignItems: "flex-start",
-                                }}
-                              >
-                                <img
-                                  src="/images/check.svg"
-                                  alt="Check"
-                                  style={{
-                                    imageRendering: "crisp-edges",
-                                    width: "auto",
-                                    height: "0.7rem",
-                                  }}
-                                />
-                              </div>
-                              <div className="flex-1">
-                                <span className="text-sm text-foreground">
-                                  {tPricing("featureNames.prioritySupport")}
-                                </span>
-                              </div>
-                            </li>
+                            <FeatureItem>
+                              <span className="text-sm text-foreground">
+                                {tPricing("featureNames.prioritySupport")}
+                              </span>
+                            </FeatureItem>
                           )}
                         </ul>
                       </div>
