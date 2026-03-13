@@ -1,7 +1,6 @@
 import { useTranslation } from "react-i18next";
 
-import { CheckCircle, Loader2 } from "lucide-react";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, CheckCircle, Loader2 } from "lucide-react";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { PaginationControls } from "@/components/ui/PaginationControls";

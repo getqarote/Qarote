@@ -64,8 +64,8 @@
   "advancedOptions": "Options avancées",
   "maxLength": "Longueur maximale",
   "maxLengthDesc": "Nombre maximum de messages dans la file d'attente",
-  "messageTtl": "TTL des messages (secondes)",
-  "messageTtlDesc": "Durée de vie des messages dans la file d'attente avant expiration",
+  "messageTtl": "TTL des messages (millisecondes)",
+  "messageTtlDesc": "Durée de vie des messages dans la file d'attente avant expiration (millisecondes)",
   "cancel": "Annuler",
   "creating": "Création...",
   "tooltipMaxLength": "Nombre maximum de messages que la file d'attente peut contenir",
@@ -89,5 +89,6 @@
   "toast.exchangeNotFound": "Exchange introuvable",
   "toast.exchangeNotFoundDesc": "L'exchange \"{{exchange}}\" n'existe pas. Veuillez sélectionner un exchange valide ou en créer un d'abord.",
   "toast.serverError": "Erreur du serveur",
-  "toast.serverErrorDesc": "Le serveur RabbitMQ sélectionné est introuvable ou vous n'y avez pas accès."
+  "toast.serverErrorDesc": "Le serveur RabbitMQ sélectionné est introuvable ou vous n'y avez pas accès.",
+  "toast.error": "Erreur"
 }

@@ -41,15 +41,15 @@ export function AddUserButton({
   useEffect(() => {
     if (createUserMutation.isSuccess && setPermissionsMutation.isSuccess) {
       queryClient.invalidateQueries({ queryKey: ["users", serverId] });
-      toast.success("User created successfully");
+      toast.success(t("createSuccess"));
       onSuccess?.();
     }
     if (createUserMutation.isError) {
-      toast.error(createUserMutation.error?.message || "Failed to create user");
+      toast.error(createUserMutation.error?.message || t("createError"));
     }
     if (setPermissionsMutation.isError) {
       toast.error(
-        setPermissionsMutation.error?.message || "Failed to set permissions"
+        setPermissionsMutation.error?.message || t("setPermissionsError")
       );
     }
   }, [
@@ -64,12 +64,12 @@ export function AddUserButton({
   const handleAddUserClick = async () => {
     // Validate required fields
     if (!initialName.trim()) {
-      toast.error("Username is required");
+      toast.error(t("usernameRequired"));
       return;
     }
 
     if (!workspace?.id) {
-      toast.error("Workspace ID is required");
+      toast.error(t("requiredWorkspace"));
       return;
     }
 
@@ -108,7 +108,7 @@ export function AddUserButton({
     >
       <Plus className="w-4 h-4" />
       {createUserMutation.isPending || setPermissionsMutation.isPending
-        ? "Creating..."
+        ? t("creating")
         : t("addUser")}
     </Button>
   );

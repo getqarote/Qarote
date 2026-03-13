@@ -125,7 +125,7 @@ export const AddServerForm = ({
       if (result.success) {
         setConnectionStatus({
           status: "success",
-          message: "Connection successful!",
+          message: t("connectionSuccessful"),
           details: {
             version: result.version,
             cluster_name: result.cluster_name,
@@ -134,14 +134,14 @@ export const AddServerForm = ({
       } else {
         setConnectionStatus({
           status: "error",
-          message: result.message || "Connection failed",
+          message: result.message || t("connectionFailed"),
         });
       }
     } catch (error) {
       setConnectionStatus({
         status: "error",
         message:
-          error instanceof Error ? error.message : "Connection test failed",
+          error instanceof Error ? error.message : t("connectionTestFailed"),
       });
     } finally {
       setIsTestingConnection(false);
@@ -212,8 +212,8 @@ export const AddServerForm = ({
           error instanceof Error
             ? error.message
             : mode === "edit"
-              ? "Failed to update server"
-              : "Failed to create server",
+              ? t("failedToUpdateServer")
+              : t("failedToCreateServer"),
       });
     } finally {
       setIsLoading(false);

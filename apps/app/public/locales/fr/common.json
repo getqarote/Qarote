@@ -72,6 +72,7 @@
   "addServer": "Ajouter un serveur",
   "manageServers": "Gérer les serveurs",
   "rabbitMQDashboard": "Tableau de bord",
+  "items": "éléments",
   "showingItems": "Affichage de {{start}}-{{end}} sur {{total}} {{label}}",
   "itemsPerPage": "Éléments par page :",
   "notFound": {

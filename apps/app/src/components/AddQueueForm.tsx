@@ -104,7 +104,7 @@ export function AddQueueForm({
   const onSubmit = (data: AddQueueFormData) => {
     if (!serverId) {
       toast({
-        title: "Error",
+        title: t("toast.error"),
         description: t("toast.noServerSelected"),
         variant: "destructive",
       });
@@ -140,7 +140,7 @@ export function AddQueueForm({
 
     if (!workspace?.id) {
       toast({
-        title: "Error",
+        title: t("toast.error"),
         description: t("toast.workspaceRequired"),
         variant: "destructive",
       });
