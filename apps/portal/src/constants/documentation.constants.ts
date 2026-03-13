@@ -29,6 +29,7 @@ export const dockerComposeContent = `services:
       PORT: 3000
       HOST: 0.0.0.0
       DATABASE_URL: postgres://postgres:\${POSTGRES_PASSWORD}@postgres:5432/qarote
+      DATABASE_POOL_SIZE: \${DATABASE_POOL_SIZE:-10}
       JWT_SECRET: \${JWT_SECRET}
       ENCRYPTION_KEY: \${ENCRYPTION_KEY}
       # Optional: Email configuration (disabled by default)
@@ -95,6 +96,8 @@ export const envExampleContent = `# Qarote Self-Hosted Deployment
 # Generate with: ./setup.sh
 POSTGRES_PASSWORD=your-secure-postgres-password
 POSTGRES_PORT=5432
+# Maximum database connections per process (default: 10)
+# DATABASE_POOL_SIZE=10
 
 # =============================================================================
 # REQUIRED - Security
