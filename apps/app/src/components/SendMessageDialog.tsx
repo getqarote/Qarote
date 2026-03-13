@@ -558,11 +558,10 @@ export function SendMessageDialog({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <MessageSquare className="h-5 w-5" />
-              Send Message to Exchange
+              {t("sendMessage.dialogTitle")}
             </DialogTitle>
             <DialogDescription>
-              Publish a message to a RabbitMQ exchange with optional routing key
-              and properties.
+              {t("sendMessage.dialogDescription")}
             </DialogDescription>
           </DialogHeader>
 
@@ -581,11 +580,11 @@ export function SendMessageDialog({
                         {routingError.details.reason}
                       </div>
                       <div>
-                        <strong>Exchange:</strong>{" "}
+                        <strong>{t("sendMessage.exchangeLabel2")}</strong>{" "}
                         {routingError.details.exchange}
                       </div>
                       <div>
-                        <strong>Routing Key:</strong>{" "}
+                        <strong>{t("sendMessage.routingKeyLabel2")}</strong>{" "}
                         {routingError.details.routingKey}
                       </div>
                     </div>
@@ -593,7 +592,9 @@ export function SendMessageDialog({
 
                   {routingError.suggestions.length > 0 && (
                     <div className="space-y-2">
-                      <div className="font-medium text-sm">Suggestions:</div>
+                      <div className="font-medium text-sm">
+                        {t("sendMessage.suggestionsTitle")}
+                      </div>
                       <div className="space-y-2">
                         {routingError.suggestions.map((suggestion, index) => (
                           <div
@@ -613,7 +614,7 @@ export function SendMessageDialog({
                                 }
                                 className="ml-2 text-xs"
                               >
-                                Apply
+                                {t("sendMessage.apply")}
                               </Button>
                             )}
                           </div>
@@ -626,7 +627,7 @@ export function SendMessageDialog({
                     routingError.details.possibleCauses.length > 0 && (
                       <div className="space-y-2">
                         <div className="font-medium text-sm">
-                          Possible causes:
+                          {t("sendMessage.possibleCausesTitle")}
                         </div>
                         <div className="space-y-1">
                           {routingError.details.possibleCauses.map(
@@ -651,7 +652,7 @@ export function SendMessageDialog({
                     onClick={() => setRoutingError(null)}
                     className="mt-2"
                   >
-                    Dismiss
+                    {t("sendMessage.dismiss")}
                   </Button>
                 </div>
               </AlertDescription>
@@ -670,8 +671,8 @@ export function SendMessageDialog({
                       <FormLabel>
                         <LabelWithTooltip
                           htmlFor="exchange"
-                          label="Exchange *"
-                          tooltip="The exchange to publish the message to. Exchanges route messages to queues based on routing rules and exchange type (direct, fanout, topic, headers)."
+                          label={t("sendMessage.exchangeLabel")}
+                          tooltip={t("sendMessage.exchangeTooltip")}
                         />
                       </FormLabel>
                       <Select
@@ -681,7 +682,9 @@ export function SendMessageDialog({
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select an exchange..." />
+                            <SelectValue
+                              placeholder={t("sendMessage.exchangePlaceholder")}
+                            />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -716,7 +719,7 @@ export function SendMessageDialog({
                             ))
                           ) : (
                             <SelectItem value="__no_exchanges__" disabled>
-                              No exchanges available
+                              {t("sendMessage.noExchangesAvailable")}
                             </SelectItem>
                           )}
                         </SelectContent>
@@ -733,8 +736,8 @@ export function SendMessageDialog({
                       <FormLabel>
                         <LabelWithTooltip
                           htmlFor="routingKey"
-                          label="Routing Key"
-                          tooltip="Determines how messages are routed to queues. For direct exchanges, use exact queue names. For topic exchanges, use patterns with wildcards (* for one word, # for multiple words)."
+                          label={t("sendMessage.routingKeyLabel")}
+                          tooltip={t("sendMessage.routingKeyTooltip")}
                           side="left"
                         />
                       </FormLabel>
@@ -742,7 +745,7 @@ export function SendMessageDialog({
                         <FormControl>
                           <Input
                             {...field}
-                            placeholder="e.g., user.created, logs.info"
+                            placeholder={t("sendMessage.routingKeyPlaceholder")}
                             list="routingKeySuggestions"
                             className="flex-1"
                           />
@@ -759,7 +762,9 @@ export function SendMessageDialog({
                             return (
                               <Select onValueChange={field.onChange}>
                                 <SelectTrigger className="w-[120px]">
-                                  <SelectValue placeholder="Quick select" />
+                                  <SelectValue
+                                    placeholder={t("sendMessage.quickSelect")}
+                                  />
                                 </SelectTrigger>
                                 <SelectContent>
                                   {queues.slice(0, 10).map((queue) => (
@@ -814,37 +819,28 @@ export function SendMessageDialog({
                   switch (type) {
                     case "direct":
                       return {
-                        description:
-                          "Messages are routed to queues based on an exact match between routing key and binding key.",
-                        routingKeyHelp:
-                          "Use exact queue names or specific routing keys.",
+                        description: t("sendMessage.directDescription"),
+                        routingKeyHelp: t("sendMessage.directRoutingKeyHelp"),
                       };
                     case "fanout":
                       return {
-                        description:
-                          "Messages are routed to all bound queues, ignoring the routing key.",
-                        routingKeyHelp:
-                          "Routing key is ignored for fanout exchanges.",
+                        description: t("sendMessage.fanoutDescription"),
+                        routingKeyHelp: t("sendMessage.fanoutRoutingKeyHelp"),
                       };
                     case "topic":
                       return {
-                        description:
-                          "Messages are routed based on wildcard matches between routing key and binding pattern.",
-                        routingKeyHelp:
-                          'Use patterns like "user.created", "logs.*", "events.#".',
+                        description: t("sendMessage.topicDescription"),
+                        routingKeyHelp: t("sendMessage.topicRoutingKeyHelp"),
                       };
                     case "headers":
                       return {
-                        description:
-                          "Messages are routed based on header values rather than routing key.",
-                        routingKeyHelp:
-                          "Routing key is typically ignored. Use message headers instead.",
+                        description: t("sendMessage.headersDescription"),
+                        routingKeyHelp: t("sendMessage.headersRoutingKeyHelp"),
                       };
                     default:
                       return {
-                        description: "Custom exchange type.",
-                        routingKeyHelp:
-                          "Refer to exchange-specific documentation.",
+                        description: t("sendMessage.defaultDescription"),
+                        routingKeyHelp: t("sendMessage.defaultRoutingKeyHelp"),
                       };
                   }
                 };
@@ -857,21 +853,25 @@ export function SendMessageDialog({
                     <AlertDescription className="space-y-2">
                       <div>
                         <strong>
-                          {selectedExchange.type.charAt(0).toUpperCase() +
-                            selectedExchange.type.slice(1)}{" "}
-                          Exchange:
+                          {t("sendMessage.exchangeTypeTitle", {
+                            type:
+                              selectedExchange.type.charAt(0).toUpperCase() +
+                              selectedExchange.type.slice(1),
+                          })}
                         </strong>{" "}
                         {info.description}
                       </div>
                       <div className="text-sm text-blue-700">
-                        <strong>Routing Key:</strong> {info.routingKeyHelp}
+                        <strong>{t("sendMessage.routingKeyInfoLabel")}</strong>{" "}
+                        {info.routingKeyHelp}
                       </div>
                       {selectedExchange.bindings &&
                         selectedExchange.bindings.length > 0 && (
                           <div className="text-sm text-blue-700">
-                            <strong>Bound to:</strong>{" "}
-                            {selectedExchange.bindings.length} queue
-                            {selectedExchange.bindings.length !== 1 ? "s" : ""}
+                            <strong>{t("sendMessage.boundTo")}</strong>{" "}
+                            {t("sendMessage.queues", {
+                              count: selectedExchange.bindings.length,
+                            })}
                           </div>
                         )}
                     </AlertDescription>
@@ -889,8 +889,8 @@ export function SendMessageDialog({
                       <FormLabel>
                         <LabelWithTooltip
                           htmlFor="payload"
-                          label="Message Payload *"
-                          tooltip="The actual content of your message. Can be JSON, XML, plain text, or any format. Make sure the Content Type property matches your payload format."
+                          label={t("sendMessage.payloadLabel")}
+                          tooltip={t("sendMessage.payloadTooltip")}
                         />
                       </FormLabel>
                       <Button
@@ -899,7 +899,7 @@ export function SendMessageDialog({
                         size="sm"
                         onClick={formatPayload}
                       >
-                        Format JSON
+                        {t("sendMessage.formatJson")}
                       </Button>
                     </div>
                     <FormControl>
