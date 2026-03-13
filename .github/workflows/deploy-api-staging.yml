@@ -119,7 +119,8 @@ jobs:
             NOTION_DATABASE_ID=${{ vars.NOTION_DATABASE_ID }} \
             NOTION_SYNC_ENABLED=${{ vars.NOTION_SYNC_ENABLED }} \
             ENABLE_NOTION=${{ vars.ENABLE_NOTION }} \
-            API_URL=${{ vars.API_URL }}
+            API_URL=${{ vars.API_URL }} \
+            DATABASE_POOL_SIZE=${{ vars.DATABASE_POOL_SIZE }}
 
       # Deploy the application
       - name: 🐳 Deploy to Dokku
