@@ -14,7 +14,7 @@ import { bootstrapAdmin } from "@/core/bootstrap-admin";
 import { bootstrapSso } from "@/core/bootstrap-sso";
 import { logger } from "@/core/logger";
 import { runMigrations } from "@/core/migrate";
-import { prisma } from "@/core/prisma";
+import { configurePostgresTimeouts, prisma } from "@/core/prisma";
 import { getDirname } from "@/core/utils";
 
 import { DeploymentService } from "@/services/deployment/deployment.service";
@@ -147,6 +147,9 @@ async function startServer() {
     await prisma.$connect();
     dbConnected = true;
     logger.info("Connected to database");
+
+    // Configure PostgreSQL timeouts to prevent zombie connections
+    await configurePostgresTimeouts();
 
     // Bootstrap admin account on first boot (if configured via setup CLI)
     await bootstrapAdmin();
