@@ -58,5 +58,10 @@
   "cannotDeleteAdmin": "无法删除管理员用户",
   "maxConnections": "最大连接数",
   "maxChannels": "最大通道数",
-  "limitsLabel": "限制"
+  "limitsLabel": "限制",
+  "createSuccess": "用户创建成功",
+  "createError": "创建用户失败",
+  "setPermissionsError": "设置权限失败",
+  "usernameRequired": "用户名为必填项",
+  "creating": "创建中..."
 }

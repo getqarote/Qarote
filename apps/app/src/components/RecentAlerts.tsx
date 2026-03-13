@@ -60,7 +60,7 @@ export const RecentAlerts = () => {
             <CardTitle className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-orange-500" />
               {t("recentAlerts")}
-              <Badge variant="outline">Error</Badge>
+              <Badge variant="outline">{t("error")}</Badge>
             </CardTitle>
           </div>
         </CardHeader>
@@ -188,8 +188,10 @@ export const RecentAlerts = () => {
                             variant="secondary"
                             className="text-xs flex items-center gap-1"
                           >
-                            vhost:{" "}
-                            {alert.vhost === "/" ? "Default" : alert.vhost}
+                            {t("vhostLabel")}{" "}
+                            {alert.vhost === "/"
+                              ? t("defaultVhost")
+                              : alert.vhost}
                           </Badge>
                         );
                       } else if (
@@ -201,7 +203,7 @@ export const RecentAlerts = () => {
                             variant="secondary"
                             className="text-xs flex items-center gap-1"
                           >
-                            cluster
+                            {t("cluster")}
                           </Badge>
                         );
                       }
@@ -213,7 +215,7 @@ export const RecentAlerts = () => {
                   </p>
                   {alert.details && (
                     <p className="text-xs text-muted-foreground mt-1">
-                      Current: {alert.details.current}
+                      {t("currentValue", { value: alert.details.current })}
                     </p>
                   )}
                 </div>

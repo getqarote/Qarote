@@ -64,8 +64,8 @@
   "advancedOptions": "高级选项",
   "maxLength": "最大长度",
   "maxLengthDesc": "队列中的最大消息数",
-  "messageTtl": "消息 TTL（秒）",
-  "messageTtlDesc": "消息在队列中过期前的存活时间",
+  "messageTtl": "消息 TTL（毫秒）",
+  "messageTtlDesc": "消息在队列中过期前的存活时间（毫秒）",
   "cancel": "取消",
   "creating": "创建中...",
   "tooltipMaxLength": "队列可以容纳的最大消息数",
@@ -89,5 +89,6 @@
   "toast.exchangeNotFound": "交换机未找到",
   "toast.exchangeNotFoundDesc": "交换机 \"{{exchange}}\" 不存在。请选择有效的交换机或先创建一个。",
   "toast.serverError": "服务器错误",
-  "toast.serverErrorDesc": "未找到所选的 RabbitMQ 服务器，或者您没有访问权限。"
+  "toast.serverErrorDesc": "未找到所选的 RabbitMQ 服务器，或者您没有访问权限。",
+  "toast.error": "错误"
 }

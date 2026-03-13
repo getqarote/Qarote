@@ -67,7 +67,7 @@ export const QueuedMessagesChart = ({
       <RabbitMQPermissionError
         requiredPermission={error.requiredPermission}
         message={error.message}
-        title="Cannot View Queued Messages"
+        title={t("cannotViewQueuedMessages")}
       />
     );
   }
@@ -106,24 +106,22 @@ export const QueuedMessagesChart = ({
                 </TooltipTrigger>
                 <TooltipContent className="max-w-sm p-3">
                   <div className="space-y-2 text-sm">
-                    <p className="font-medium">Queued Message Definitions:</p>
+                    <p className="font-medium">
+                      {t("queuedMessageDefinitions")}
+                    </p>
                     <div className="space-y-1 text-xs">
                       <p>
-                        <strong>Total:</strong> Total number of messages in all
-                        queues
+                        <strong>Total:</strong> {t("defTotal")}
                       </p>
                       <p>
-                        <strong>Ready:</strong> Messages ready to be delivered
-                        to consumers
+                        <strong>Ready:</strong> {t("defReady")}
                       </p>
                       <p>
-                        <strong>Unacked:</strong> Messages delivered but not yet
-                        acknowledged
+                        <strong>Unacked:</strong> {t("defUnacked")}
                       </p>
                     </div>
                     <p className="text-xs text-muted-foreground mt-2">
-                      These metrics show the current state of messages across
-                      all queues in the server.
+                      {t("queuedMetricsNote")}
                     </p>
                   </div>
                 </TooltipContent>
@@ -174,7 +172,7 @@ export const QueuedMessagesChart = ({
                   <YAxis
                     domain={[0, (dataMax: number) => Math.max(dataMax, 1)]}
                     label={{
-                      value: "messages",
+                      value: t("messagesUnit"),
                       angle: -90,
                       position: "insideLeft",
                       style: { textAnchor: "middle" },
@@ -183,13 +181,13 @@ export const QueuedMessagesChart = ({
                   />
                   <Tooltip
                     formatter={(value: number, name: string) => [
-                      `${value.toLocaleString()} messages`,
+                      `${value.toLocaleString()} ${t("messagesUnit")}`,
                       name === "total"
-                        ? "Total"
+                        ? t("total")
                         : name === "ready"
-                          ? "Ready"
+                          ? t("ready")
                           : name === "unacked"
-                            ? "Unacked"
+                            ? t("unacked")
                             : name,
                     ]}
                     labelFormatter={(
@@ -197,9 +195,11 @@ export const QueuedMessagesChart = ({
                       payload: ReadonlyArray<{ payload: { dateTime: string } }>
                     ) => {
                       if (payload && payload[0] && payload[0].payload) {
-                        return `Date & Time: ${payload[0].payload.dateTime}`;
+                        return t("dateAndTime", {
+                          dateTime: payload[0].payload.dateTime,
+                        });
                       }
-                      return `Time: ${time}`;
+                      return t("timeLabel", { time });
                     }}
                   />
                   {visibleLines.total && (
@@ -209,7 +209,7 @@ export const QueuedMessagesChart = ({
                       stroke="#DC2626"
                       strokeWidth={2}
                       dot={false}
-                      name="Total"
+                      name={t("total")}
                     />
                   )}
                   {visibleLines.ready && (
@@ -219,7 +219,7 @@ export const QueuedMessagesChart = ({
                       stroke="#F59E0B"
                       strokeWidth={2}
                       dot={false}
-                      name="Ready"
+                      name={t("ready")}
                     />
                   )}
                   {visibleLines.unacked && (
@@ -229,7 +229,7 @@ export const QueuedMessagesChart = ({
                       stroke="#06B6D4"
                       strokeWidth={2}
                       dot={false}
-                      name="Unacked"
+                      name={t("unacked")}
                     />
                   )}
                 </LineChart>
@@ -239,9 +239,9 @@ export const QueuedMessagesChart = ({
             {/* Custom Toggleable Legend */}
             <div className="mt-4 flex gap-4 text-xs">
               {[
-                { key: "total", name: "Total", color: "#DC2626" },
-                { key: "ready", name: "Ready", color: "#F59E0B" },
-                { key: "unacked", name: "Unacked", color: "#06B6D4" },
+                { key: "total", name: t("total"), color: "#DC2626" },
+                { key: "ready", name: t("ready"), color: "#F59E0B" },
+                { key: "unacked", name: t("unacked"), color: "#06B6D4" },
               ].map((metric) => (
                 <div
                   key={metric.key}

@@ -94,7 +94,7 @@ export const MessagesRatesChart = ({
       <RabbitMQPermissionError
         requiredPermission={error.requiredPermission}
         message={error.message}
-        title="Cannot View Live Rates"
+        title={t("cannotViewLiveRates")}
       />
     );
   }
@@ -146,67 +146,55 @@ export const MessagesRatesChart = ({
                 </TooltipTrigger>
                 <TooltipContent className="max-w-sm p-3">
                   <div className="space-y-2 text-sm">
-                    <p className="font-medium">Message Rate Definitions:</p>
+                    <p className="font-medium">{t("messageRateDefinitions")}</p>
                     <div className="space-y-1 text-xs">
                       <p>
-                        <strong>Publish:</strong> Rate at which messages are
-                        entering the server
+                        <strong>Publish:</strong> {t("defPublish")}
                       </p>
                       <p>
-                        <strong>Deliver:</strong> Rate at which messages are
-                        delivered to consumers
+                        <strong>Deliver:</strong> {t("defDeliver")}
                       </p>
                       <p>
-                        <strong>Ack:</strong> Rate at which message
-                        acknowledgments are received
+                        <strong>Ack:</strong> {t("defAck")}
                       </p>
                       <p>
-                        <strong>Deliver / Get:</strong> Combined rate of deliver
-                        + get operations
+                        <strong>Deliver / Get:</strong> {t("defDeliverGet")}
                       </p>
                       <p>
-                        <strong>Deliver (auto ack):</strong> Rate at which
-                        messages are delivered without requiring acknowledgment
+                        <strong>Deliver (auto ack):</strong>{" "}
+                        {t("defDeliverNoAck")}
                       </p>
                       <p>
-                        <strong>Confirm:</strong> Rate at which publisher
-                        confirms are received
+                        <strong>Confirm:</strong> {t("defConfirm")}
                       </p>
                       <p>
-                        <strong>Get:</strong> Rate at which messages are
-                        retrieved via basic.get
+                        <strong>Get:</strong> {t("defGet")}
                       </p>
                       <p>
-                        <strong>Get No Ack:</strong> Rate at which messages are
-                        retrieved without acknowledgment
+                        <strong>Get No Ack:</strong> {t("defGetNoAck")}
                       </p>
                       <p>
-                        <strong>Get (empty):</strong> Rate at which basic.get
-                        calls return empty
+                        <strong>Get (empty):</strong> {t("defGetEmpty")}
                       </p>
                       <p>
-                        <strong>Redeliver:</strong> Rate at which messages are
-                        redelivered
+                        <strong>Redeliver:</strong> {t("defRedeliver")}
                       </p>
                       <p>
-                        <strong>Reject:</strong> Rate at which messages are
-                        rejected by consumers
+                        <strong>Reject:</strong> {t("defReject")}
                       </p>
                       <p>
-                        <strong>Return Unroutable:</strong> Rate at which
-                        unroutable messages are returned
+                        <strong>Return Unroutable:</strong>{" "}
+                        {t("defReturnUnroutable")}
                       </p>
                       <p>
-                        <strong>Drop Unroutable:</strong> Rate at which
-                        unroutable messages are silently dropped
+                        <strong>Drop Unroutable:</strong>{" "}
+                        {t("defDropUnroutable")}
                       </p>
                       <p>
-                        <strong>Disk Reads:</strong> Rate at which messages are
-                        read from disk
+                        <strong>Disk Reads:</strong> {t("defDiskReads")}
                       </p>
                       <p>
-                        <strong>Disk Writes:</strong> Rate at which messages are
-                        written to disk
+                        <strong>Disk Writes:</strong> {t("defDiskWrites")}
                       </p>
                     </div>
                   </div>
@@ -235,12 +223,11 @@ export const MessagesRatesChart = ({
           <Alert className="mb-4">
             <Info className="h-4 w-4" />
             <AlertDescription>
-              Only instantaneous rates are available. To enable historical
-              time-series charts, set{" "}
+              {t("basicRatesAlertPrefix")}{" "}
               <code className="rounded bg-muted px-1 py-0.5 text-xs">
                 management.rates_mode = detailed
               </code>{" "}
-              in your RabbitMQ configuration and restart the node.
+              {t("basicRatesAlertSuffix")}
             </AlertDescription>
           </Alert>
         )}
@@ -269,7 +256,7 @@ export const MessagesRatesChart = ({
                   <YAxis
                     domain={[0, (dataMax: number) => Math.max(dataMax, 1)]}
                     label={{
-                      value: "msgs/s",
+                      value: t("msgsPerSec"),
                       angle: -90,
                       position: "insideLeft",
                       style: { textAnchor: "middle" },
@@ -278,7 +265,7 @@ export const MessagesRatesChart = ({
                   />
                   <Tooltip
                     formatter={(value: number, name: string) => [
-                      `${value.toFixed(2)} msgs/s`,
+                      `${value.toFixed(2)} ${t("msgsPerSec")}`,
                       name.charAt(0).toUpperCase() +
                         name.slice(1).replace("_", " "),
                     ]}
@@ -287,9 +274,11 @@ export const MessagesRatesChart = ({
                       payload: ReadonlyArray<{ payload?: { dateTime: string } }>
                     ) => {
                       if (payload && payload[0] && payload[0].payload) {
-                        return `Date & Time: ${payload[0].payload.dateTime}`;
+                        return t("dateAndTime", {
+                          dateTime: payload[0].payload.dateTime,
+                        });
                       }
-                      return `Time: ${time}`;
+                      return t("timeLabel", { time });
                     }}
                   />
                   {visibleLines.publish && (

@@ -58,5 +58,10 @@
   "cannotDeleteAdmin": "No se puede eliminar el usuario administrador",
   "maxConnections": "M\u00e1ximo de conexiones",
   "maxChannels": "M\u00e1ximo de canales",
-  "limitsLabel": "L\u00edmites"
+  "limitsLabel": "L\u00edmites",
+  "createSuccess": "Usuario creado exitosamente",
+  "createError": "Error al crear el usuario",
+  "setPermissionsError": "Error al establecer los permisos",
+  "usernameRequired": "El nombre de usuario es obligatorio",
+  "creating": "Creando..."
 }

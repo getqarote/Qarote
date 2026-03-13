@@ -58,5 +58,10 @@
   "cannotDeleteAdmin": "Cannot delete the admin user",
   "maxConnections": "Max Connections",
   "maxChannels": "Max Channels",
-  "limitsLabel": "Limits"
+  "limitsLabel": "Limits",
+  "createSuccess": "User created successfully",
+  "createError": "Failed to create user",
+  "setPermissionsError": "Failed to set permissions",
+  "usernameRequired": "Username is required",
+  "creating": "Creating..."
 }

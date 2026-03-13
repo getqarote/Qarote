@@ -64,8 +64,8 @@
   "advancedOptions": "Opciones avanzadas",
   "maxLength": "Longitud máxima",
   "maxLengthDesc": "Número máximo de mensajes en la cola",
-  "messageTtl": "TTL de mensajes (segundos)",
-  "messageTtlDesc": "Tiempo de vida de los mensajes en la cola antes de expirar",
+  "messageTtl": "TTL de mensajes (milisegundos)",
+  "messageTtlDesc": "Tiempo de vida de los mensajes en la cola antes de expirar (milisegundos)",
   "cancel": "Cancelar",
   "creating": "Creando...",
   "tooltipMaxLength": "Número máximo de mensajes que la cola puede contener",
@@ -89,5 +89,6 @@
   "toast.exchangeNotFound": "Exchange no encontrado",
   "toast.exchangeNotFoundDesc": "El exchange \"{{exchange}}\" no existe. Por favor selecciona un exchange válido o créalo primero.",
   "toast.serverError": "Error del servidor",
-  "toast.serverErrorDesc": "El servidor RabbitMQ seleccionado no fue encontrado o no tienes acceso a él."
+  "toast.serverErrorDesc": "El servidor RabbitMQ seleccionado no fue encontrado o no tienes acceso a él.",
+  "toast.error": "Error"
 }

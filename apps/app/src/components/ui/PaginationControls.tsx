@@ -32,9 +32,10 @@ export function PaginationControls({
   pageSize,
   onPageChange,
   onPageSizeChange,
-  itemLabel = "items",
+  itemLabel,
 }: PaginationControlsProps) {
   const { t } = useTranslation("common");
+  const displayLabel = itemLabel ?? t("items");
   const totalPages = Math.ceil(total / pageSize);
   const startItem = total === 0 ? 0 : (page - 1) * pageSize + 1;
   const endItem = Math.min(page * pageSize, total);
@@ -50,7 +51,7 @@ export function PaginationControls({
             start: startItem,
             end: endItem,
             total,
-            label: itemLabel,
+            label: displayLabel,
           })}
         </p>
         <div className="flex items-center gap-2">

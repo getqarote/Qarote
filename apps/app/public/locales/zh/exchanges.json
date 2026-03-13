@@ -45,7 +45,7 @@
   "deleteError": "删除交换机失败",
   "cannotDeleteExchange": "无法删除交换机",
   "failedToLoad": "加载交换机失败",
-  "addExchange": "添加交换器",
+  "addExchange": "添加交换机",
   "sendMessage": {
     "triggerButton": "发送消息",
     "dialogTitle": "发送消息到交换机",
