@@ -3,6 +3,10 @@ export const dockerComposeContent = `services:
     image: postgres:15-alpine
     container_name: qarote_postgres
     restart: unless-stopped
+    command: >
+      postgres
+      -c idle_session_timeout=30min
+      -c idle_in_transaction_session_timeout=5min
     environment:
       POSTGRES_DB: qarote
       POSTGRES_USER: postgres
