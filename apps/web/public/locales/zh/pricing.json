@@ -23,7 +23,7 @@
   "securityCompatibility": "安全 & 兼容性",
   "plans": {
     "starter": {
-      "name": "Community",
+      "name": "社区版",
       "description": "入门的理想选择"
     },
     "pro": {
