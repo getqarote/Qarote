@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { AddQueueButton } from "@/components/AddQueueButton";
 import { AddSendMessageButton } from "@/components/AddSendMessageButton";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -14,6 +16,7 @@ interface QueueHeaderProps {
 }
 
 export function QueueHeader({ selectedServerId, onRefetch }: QueueHeaderProps) {
+  const { t } = useTranslation("queues");
   const actions = (
     <>
       {/* Send Message Button */}
@@ -26,8 +29,8 @@ export function QueueHeader({ selectedServerId, onRefetch }: QueueHeaderProps) {
 
   return (
     <PageHeader
-      title="Queues"
-      subtitle="Manage and monitor all queues across your clusters"
+      title={t("pageTitle")}
+      subtitle={t("pageSubtitle")}
       actions={actions}
       showSidebarTrigger={false}
     />

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -126,6 +127,7 @@ export function SendMessageDialog({
   mode = queueName ? "queue" : "exchange",
   onSuccess,
 }: SendMessageDialogProps) {
+  const { t } = useTranslation("exchanges");
   const [open, setOpen] = useState(false);
   const [isPropertiesExpanded, setIsPropertiesExpanded] = useState(false);
 
@@ -209,10 +211,10 @@ export function SendMessageDialog({
         });
 
         toast({
-          title: "Message not routed",
+          title: t("sendMessage.notRoutedTitle"),
           description: (errorData.error ||
             errorData.message ||
-            "Message was published but not delivered to any queue") as string,
+            t("sendMessage.notRoutedDescription")) as string,
           variant: "destructive",
         });
         return;
@@ -222,8 +224,7 @@ export function SendMessageDialog({
     // For other types of errors, clear routing error and show generic message
     setRoutingError(null);
 
-    let errorMessage =
-      error.message || "An error occurred while sending the message.";
+    let errorMessage = error.message || t("sendMessage.errorDefault");
 
     // Try to extract more specific error information
     if (error.response?.data?.message) {
@@ -231,7 +232,7 @@ export function SendMessageDialog({
     }
 
     toast({
-      title: "Failed to send message",
+      title: t("sendMessage.failedTitle"),
       description: errorMessage,
       variant: "destructive",
     });
@@ -297,8 +298,8 @@ export function SendMessageDialog({
       // Direct queue publishing
       if (!workspace?.id) {
         toast({
-          title: "Error",
-          description: "Workspace ID is required",
+          title: t("sendMessage.errorTitle"),
+          description: t("sendMessage.workspaceRequired"),
           variant: "destructive",
         });
         return;
@@ -324,8 +325,13 @@ export function SendMessageDialog({
               setRoutingError(null); // Clear any previous routing errors
               setOpen(false);
               toast({
-                title: "Message sent successfully",
-                description: `Message sent via exchange "${data.exchange || "default"}" with routing key "${data.routingKey}" to queue "${queueName}". Message length: ${data.messageLength} characters.`,
+                title: t("sendMessage.successTitle"),
+                description: t("sendMessage.successQueueDescription", {
+                  exchange: data.exchange || "default",
+                  routingKey: data.routingKey,
+                  queueName,
+                  messageLength: data.messageLength,
+                }),
               });
               // Reset form
               resetForm();
@@ -337,18 +343,15 @@ export function SendMessageDialog({
             } else {
               // Message was published but not routed - show detailed error
               setRoutingError({
-                message:
-                  data.error ||
-                  "Message was published but not delivered to any queue",
+                message: data.error || t("sendMessage.notRoutedDescription"),
                 suggestions: data.suggestions || [],
                 details: data.details,
               });
 
               toast({
-                title: "Message not routed",
+                title: t("sendMessage.notRoutedTitle"),
                 description:
-                  data.error ||
-                  "Message was published but not delivered to any queue",
+                  data.error || t("sendMessage.notRoutedDescription"),
                 variant: "destructive",
               });
             }
@@ -360,8 +363,8 @@ export function SendMessageDialog({
       // Exchange publishing (now supported)
       if (!workspace?.id) {
         toast({
-          title: "Error",
-          description: "Workspace ID is required",
+          title: t("sendMessage.errorTitle"),
+          description: t("sendMessage.workspaceRequired"),
           variant: "destructive",
         });
         return;
@@ -386,8 +389,12 @@ export function SendMessageDialog({
               setRoutingError(null); // Clear any previous routing errors
               setOpen(false);
               toast({
-                title: "Message sent successfully",
-                description: `Message published to exchange "${data.exchange}" with routing key "${data.routingKey}". Message length: ${data.messageLength} characters.`,
+                title: t("sendMessage.successTitle"),
+                description: t("sendMessage.successExchangeDescription", {
+                  exchange: data.exchange,
+                  routingKey: data.routingKey,
+                  messageLength: data.messageLength,
+                }),
               });
               // Reset form
               resetForm();
@@ -399,18 +406,15 @@ export function SendMessageDialog({
             } else {
               // Message was published but not routed - show detailed error
               setRoutingError({
-                message:
-                  data.error ||
-                  "Message was published but not delivered to any queue",
+                message: data.error || t("sendMessage.notRoutedDescription"),
                 suggestions: data.suggestions || [],
                 details: data.details,
               });
 
               toast({
-                title: "Message not routed",
+                title: t("sendMessage.notRoutedTitle"),
                 description:
-                  data.error ||
-                  "Message was published but not delivered to any queue",
+                  data.error || t("sendMessage.notRoutedDescription"),
                 variant: "destructive",
               });
             }
@@ -420,11 +424,11 @@ export function SendMessageDialog({
       );
     } else {
       toast({
-        title: "Invalid configuration",
+        title: t("sendMessage.invalidConfigTitle"),
         description:
           mode === "queue"
-            ? "Queue name is required for queue publishing."
-            : "Exchange name is required for exchange publishing.",
+            ? t("sendMessage.invalidConfigQueue")
+            : t("sendMessage.invalidConfigExchange"),
         variant: "destructive",
       });
     }
@@ -467,17 +471,18 @@ export function SendMessageDialog({
       }
       setRoutingError(null);
       toast({
-        title: "Settings applied",
-        description:
-          "Switched to default exchange with queue name as routing key",
+        title: t("sendMessage.settingsAppliedTitle"),
+        description: t("sendMessage.settingsAppliedDefault"),
       });
     } else if (suggestion.includes("routing key")) {
       // Auto-suggest common routing keys based on available queues
       if (queues.length > 0) {
         form.setValue("routingKey", queues[0].name);
         toast({
-          title: "Settings applied",
-          description: `Set routing key to "${queues[0].name}" (first available queue)`,
+          title: t("sendMessage.settingsAppliedTitle"),
+          description: t("sendMessage.settingsAppliedRoutingKey", {
+            queueName: queues[0].name,
+          }),
         });
       }
     } else if (suggestion.includes("Verify that a queue is bound")) {
@@ -488,8 +493,10 @@ export function SendMessageDialog({
         if (!matchingQueue && queues.length > 0) {
           form.setValue("routingKey", queues[0].name);
           toast({
-            title: "Settings applied",
-            description: `Set routing key to "${queues[0].name}" (existing queue)`,
+            title: t("sendMessage.settingsAppliedTitle"),
+            description: t("sendMessage.settingsAppliedExisting", {
+              queueName: queues[0].name,
+            }),
           });
         }
       }
@@ -536,7 +543,7 @@ export function SendMessageDialog({
   const defaultTrigger = (
     <Button size="sm" className="gap-2">
       <Send className="h-4 w-4" />
-      Send Message
+      {t("sendMessage.triggerButton")}
     </Button>
   );
 
@@ -570,7 +577,8 @@ export function SendMessageDialog({
                   {routingError.details && (
                     <div className="text-sm space-y-2">
                       <div>
-                        <strong>Issue:</strong> {routingError.details.reason}
+                        <strong>{t("sendMessage.issueLabel")}</strong>{" "}
+                        {routingError.details.reason}
                       </div>
                       <div>
                         <strong>Exchange:</strong>{" "}

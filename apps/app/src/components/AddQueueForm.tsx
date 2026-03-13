@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -79,6 +80,7 @@ export function AddQueueForm({
   const { toast } = useToast();
   const { workspace } = useWorkspace();
   const { selectedVHost } = useVHostContext();
+  const { t } = useTranslation("queues");
 
   // Initialize form with react-hook-form
   const form = useForm<AddQueueFormData>({
@@ -103,7 +105,7 @@ export function AddQueueForm({
     if (!serverId) {
       toast({
         title: "Error",
-        description: "No server selected",
+        description: t("toast.noServerSelected"),
         variant: "destructive",
       });
       return;
@@ -125,8 +127,8 @@ export function AddQueueForm({
         parsedArguments = JSON.parse(arguments_);
       } catch {
         toast({
-          title: "Invalid JSON",
-          description: "Arguments must be valid JSON",
+          title: t("toast.invalidJson"),
+          description: t("toast.invalidJsonDesc"),
           variant: "destructive",
         });
         return;
@@ -139,7 +141,7 @@ export function AddQueueForm({
     if (!workspace?.id) {
       toast({
         title: "Error",
-        description: "Workspace ID is required",
+        description: t("toast.workspaceRequired"),
         variant: "destructive",
       });
       return;
@@ -162,12 +164,9 @@ export function AddQueueForm({
         onSuccess: () => {
           setOpen(false);
 
-          // Create detailed success message
-          const description = `Queue "${data.name}" has been created successfully.`;
-
           toast({
-            title: "Queue created successfully",
-            description,
+            title: t("toast.queueCreated"),
+            description: t("toast.queueCreatedDesc", { name: data.name }),
           });
 
           // Reset form
@@ -189,24 +188,25 @@ export function AddQueueForm({
         },
         onError: (error) => {
           // Extract user-friendly error message based on the error type
-          let title = "Failed to create queue";
-          let description = "An error occurred while creating the queue.";
+          let title = t("toast.failedToCreate");
+          let description = t("toast.createError");
 
           if (error.message) {
             // Handle specific error cases with user-friendly messages
             if (error.message.includes("already exists")) {
-              title = "Queue already exists";
-              description = `A queue named "${data.name}" already exists. Please choose a different name.`;
+              title = t("toast.alreadyExists");
+              description = t("toast.alreadyExistsDesc", { name: data.name });
             } else if (
               error.message.includes("Exchange") &&
               error.message.includes("does not exist")
             ) {
-              title = "Exchange not found";
-              description = `The exchange "${data.bindToExchange}" does not exist. Please select a valid exchange or create it first.`;
+              title = t("toast.exchangeNotFound");
+              description = t("toast.exchangeNotFoundDesc", {
+                exchange: data.bindToExchange,
+              });
             } else if (error.message.includes("Server not found")) {
-              title = "Server error";
-              description =
-                "The selected RabbitMQ server was not found or you don't have access to it.";
+              title = t("toast.serverError");
+              description = t("toast.serverErrorDesc");
             } else {
               // Use the original error message but make it more user-friendly
               description = error.message;
@@ -226,7 +226,7 @@ export function AddQueueForm({
   const defaultTrigger = (
     <Button size="sm" className="gap-2">
       <Plus className="h-4 w-4" />
-      Add Queue
+      {t("addQueue")}
     </Button>
   );
 
@@ -237,11 +237,9 @@ export function AddQueueForm({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <List className="h-5 w-5" />
-            Create New Queue
+            {t("createNewQueue")}
           </DialogTitle>
-          <DialogDescription>
-            Create a new RabbitMQ queue with optional binding to an exchange.
-          </DialogDescription>
+          <DialogDescription>{t("createNewQueueDesc")}</DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
@@ -252,12 +250,9 @@ export function AddQueueForm({
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Queue Name *</FormLabel>
+                  <FormLabel>{t("queueNameLabel")}</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="e.g., email.notifications, user.events"
-                      {...field}
-                    />
+                    <Input placeholder={t("queueNamePlaceholder")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -267,7 +262,7 @@ export function AddQueueForm({
             {/* Queue Properties */}
             <div className="space-y-4">
               <FormLabel className="text-sm font-medium">
-                Queue Properties
+                {t("queueProperties")}
               </FormLabel>
               <div className="space-y-3">
                 <FormField
@@ -283,11 +278,11 @@ export function AddQueueForm({
                       </FormControl>
                       <div className="space-y-1 leading-none">
                         <FormLabel className="text-sm font-normal">
-                          Durable
+                          {t("durable")}
                         </FormLabel>
                         <span className="text-xs text-gray-500">
                           {" "}
-                          (Queue survives server restarts)
+                          {t("durableDesc")}
                         </span>
                       </div>
                     </FormItem>
@@ -307,11 +302,11 @@ export function AddQueueForm({
                       </FormControl>
                       <div className="space-y-1 leading-none">
                         <FormLabel className="text-sm font-normal">
-                          Auto-delete
+                          {t("autoDelete")}
                         </FormLabel>
                         <span className="text-xs text-gray-500">
                           {" "}
-                          (Queue is deleted when last consumer unsubscribes)
+                          {t("autoDeleteDesc")}
                         </span>
                       </div>
                     </FormItem>
@@ -331,11 +326,11 @@ export function AddQueueForm({
                       </FormControl>
                       <div className="space-y-1 leading-none">
                         <FormLabel className="text-sm font-normal">
-                          Exclusive
+                          {t("exclusive")}
                         </FormLabel>
                         <span className="text-xs text-gray-500">
                           {" "}
-                          (Queue can only be used by one connection)
+                          {t("exclusiveDesc")}
                         </span>
                       </div>
                     </FormItem>
@@ -347,7 +342,7 @@ export function AddQueueForm({
             {/* Exchange Binding */}
             <div className="space-y-4">
               <FormLabel className="text-sm font-medium">
-                Exchange Binding (Recommended)
+                {t("exchangeBinding")}
               </FormLabel>
               <div className="grid grid-cols-2 gap-4">
                 <FormField
@@ -355,19 +350,21 @@ export function AddQueueForm({
                   name="bindToExchange"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Exchange</FormLabel>
+                      <FormLabel>{t("exchange")}</FormLabel>
                       <Select
                         onValueChange={field.onChange}
                         defaultValue={field.value}
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select an exchange..." />
+                            <SelectValue placeholder={t("selectExchange")} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
                           <SelectItem value="none">
-                            <span className="text-gray-500">No binding</span>
+                            <span className="text-gray-500">
+                              {t("noBinding")}
+                            </span>
                           </SelectItem>
                           {exchanges.length > 0 ? (
                             exchanges.map((ex) => (
@@ -400,7 +397,7 @@ export function AddQueueForm({
                             ))
                           ) : (
                             <SelectItem value="__no_exchanges__" disabled>
-                              No exchanges available
+                              {t("noExchangesAvailable")}
                             </SelectItem>
                           )}
                         </SelectContent>
@@ -415,10 +412,10 @@ export function AddQueueForm({
                   name="routingKey"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Routing Key</FormLabel>
+                      <FormLabel>{t("routingKey")}</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="e.g., user.created, logs.info"
+                          placeholder={t("routingKeyPlaceholder")}
                           disabled={
                             !form.watch("bindToExchange") ||
                             form.watch("bindToExchange") === "none"
@@ -437,13 +434,16 @@ export function AddQueueForm({
                   <Alert className="border-blue-200 bg-blue-50">
                     <AlertCircle className="h-4 w-4" />
                     <AlertDescription>
-                      The queue will be bound to exchange "
-                      {form.watch("bindToExchange") === "default"
-                        ? "(Default)"
-                        : form.watch("bindToExchange")}
-                      "
+                      {t("bindingAlert", {
+                        exchange:
+                          form.watch("bindToExchange") === "default"
+                            ? "(Default)"
+                            : form.watch("bindToExchange"),
+                      })}
                       {form.watch("routingKey") &&
-                        ` with routing key "${form.watch("routingKey")}"`}
+                        t("bindingAlertWithKey", {
+                          key: form.watch("routingKey"),
+                        })}
                       .
                     </AlertDescription>
                   </Alert>
@@ -453,7 +453,9 @@ export function AddQueueForm({
             {/* Arguments Section */}
             <div className="space-y-4">
               <div className="flex items-center gap-2">
-                <Label className="text-base font-medium">Arguments</Label>
+                <Label className="text-base font-medium">
+                  {t("arguments")}
+                </Label>
               </div>
               <Textarea
                 value={arguments_}
@@ -464,7 +466,7 @@ export function AddQueueForm({
               />
               <div className="space-y-2">
                 <p className="text-sm font-medium text-gray-700">
-                  Available options:
+                  {t("availableOptions")}
                 </p>
                 <div className="flex flex-wrap gap-2">
                   <TooltipProvider>
@@ -496,9 +498,7 @@ export function AddQueueForm({
                         </button>
                       </TooltipTrigger>
                       <TooltipContent side="top" className="z-50">
-                        <p className="max-w-xs">
-                          Maximum number of messages the queue can hold
-                        </p>
+                        <p className="max-w-xs">{t("tooltipMaxLength")}</p>
                       </TooltipContent>
                     </Tooltip>
 
@@ -529,10 +529,7 @@ export function AddQueueForm({
                         </button>
                       </TooltipTrigger>
                       <TooltipContent side="top" className="z-50">
-                        <p className="max-w-xs">
-                          Time in milliseconds that messages live in the queue
-                          before expiring
-                        </p>
+                        <p className="max-w-xs">{t("tooltipMessageTtl")}</p>
                       </TooltipContent>
                     </Tooltip>
 
@@ -563,10 +560,7 @@ export function AddQueueForm({
                         </button>
                       </TooltipTrigger>
                       <TooltipContent side="top" className="z-50">
-                        <p className="max-w-xs">
-                          Time in milliseconds after which the queue expires if
-                          unused
-                        </p>
+                        <p className="max-w-xs">{t("tooltipExpires")}</p>
                       </TooltipContent>
                     </Tooltip>
 
@@ -597,10 +591,7 @@ export function AddQueueForm({
                         </button>
                       </TooltipTrigger>
                       <TooltipContent side="top" className="z-50">
-                        <p className="max-w-xs">
-                          Maximum priority level for messages in this queue
-                          (0-255)
-                        </p>
+                        <p className="max-w-xs">{t("tooltipMaxPriority")}</p>
                       </TooltipContent>
                     </Tooltip>
 
@@ -631,10 +622,7 @@ export function AddQueueForm({
                         </button>
                       </TooltipTrigger>
                       <TooltipContent side="top" className="z-50">
-                        <p className="max-w-xs">
-                          Behavior when queue reaches max length: "drop-head",
-                          "reject-publish", or "reject-publish-dlx"
-                        </p>
+                        <p className="max-w-xs">{t("tooltipOverflow")}</p>
                       </TooltipContent>
                     </Tooltip>
 
@@ -667,7 +655,7 @@ export function AddQueueForm({
                       </TooltipTrigger>
                       <TooltipContent side="top" className="z-50">
                         <p className="max-w-xs">
-                          Exchange to route dead lettered messages to
+                          {t("tooltipDeadLetterExchange")}
                         </p>
                       </TooltipContent>
                     </Tooltip>
@@ -701,7 +689,7 @@ export function AddQueueForm({
                       </TooltipTrigger>
                       <TooltipContent side="top" className="z-50">
                         <p className="max-w-xs">
-                          Routing key to use when dead lettering messages
+                          {t("tooltipDeadLetterRoutingKey")}
                         </p>
                       </TooltipContent>
                     </Tooltip>
@@ -734,8 +722,7 @@ export function AddQueueForm({
                       </TooltipTrigger>
                       <TooltipContent side="top" className="z-50">
                         <p className="max-w-xs">
-                          Ensure only one consumer is active at a time for
-                          ordered message processing
+                          {t("tooltipSingleActiveConsumer")}
                         </p>
                       </TooltipContent>
                     </Tooltip>
@@ -760,7 +747,7 @@ export function AddQueueForm({
                   ) : (
                     <ChevronRight className="h-4 w-4" />
                   )}
-                  Advanced Options
+                  {t("advancedOptions")}
                 </Button>
               </CollapsibleTrigger>
               <CollapsibleContent className="space-y-4 mt-4">
@@ -770,7 +757,7 @@ export function AddQueueForm({
                     name="maxLength"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Max Length</FormLabel>
+                        <FormLabel>{t("maxLength")}</FormLabel>
                         <FormControl>
                           <Input
                             type="number"
@@ -780,7 +767,7 @@ export function AddQueueForm({
                           />
                         </FormControl>
                         <span className="text-xs text-gray-500">
-                          Maximum number of messages in queue
+                          {t("maxLengthDesc")}
                         </span>
                         <FormMessage />
                       </FormItem>
@@ -792,7 +779,7 @@ export function AddQueueForm({
                     name="messageTtl"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Message TTL (seconds)</FormLabel>
+                        <FormLabel>{t("messageTtl")}</FormLabel>
                         <FormControl>
                           <Input
                             type="number"
@@ -802,7 +789,7 @@ export function AddQueueForm({
                           />
                         </FormControl>
                         <span className="text-xs text-gray-500">
-                          Time messages live in queue before expiring
+                          {t("messageTtlDesc")}
                         </span>
                         <FormMessage />
                       </FormItem>
@@ -820,7 +807,7 @@ export function AddQueueForm({
                 onClick={() => setOpen(false)}
                 disabled={createQueueMutation.isPending}
               >
-                Cancel
+                {t("cancel")}
               </Button>
               <Button
                 type="submit"
@@ -832,12 +819,12 @@ export function AddQueueForm({
                 {createQueueMutation.isPending ? (
                   <>
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                    Creating...
+                    {t("creating")}
                   </>
                 ) : (
                   <>
                     <Plus className="h-4 w-4 mr-2" />
-                    Create Queue
+                    {t("createQueue")}
                   </>
                 )}
               </Button>

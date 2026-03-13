@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Lock, MessageSquare, Users } from "lucide-react";
 
 import { Queue } from "@/lib/api";
@@ -42,6 +44,7 @@ export function QueueTable({
   onPageChange,
   onPageSizeChange,
 }: QueueTableProps) {
+  const { t } = useTranslation("queues");
   const getQueueMetrics = (queue: Queue) => {
     return {
       messages: queue.messages || 0,
@@ -63,7 +66,7 @@ export function QueueTable({
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg font-semibold text-foreground">
-            All Queues
+            {t("allQueues")}
           </CardTitle>
         </div>
       </CardHeader>
@@ -79,18 +82,18 @@ export function QueueTable({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Queue Name</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Messages</TableHead>
-                  <TableHead>Ready</TableHead>
-                  <TableHead>Unacked</TableHead>
-                  <TableHead>Consumers</TableHead>
-                  <TableHead>Incoming</TableHead>
-                  <TableHead>Deliver / Get</TableHead>
-                  <TableHead>Ack</TableHead>
-                  <TableHead>Memory (MB)</TableHead>
-                  <TableHead>VHost</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead>{t("queueName")}</TableHead>
+                  <TableHead>{t("status")}</TableHead>
+                  <TableHead>{t("messages")}</TableHead>
+                  <TableHead>{t("ready")}</TableHead>
+                  <TableHead>{t("unacked")}</TableHead>
+                  <TableHead>{t("consumers")}</TableHead>
+                  <TableHead>{t("incoming")}</TableHead>
+                  <TableHead>{t("deliverGet")}</TableHead>
+                  <TableHead>{t("ack")}</TableHead>
+                  <TableHead>{t("memoryMB")}</TableHead>
+                  <TableHead>{t("vhost")}</TableHead>
+                  <TableHead>{t("actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -119,7 +122,7 @@ export function QueueTable({
                               title="Internal queue (not accessible via AMQP)"
                             >
                               <Lock className="w-3 h-3" />
-                              Internal
+                              {t("internal")}
                             </Badge>
                           )}
                         </div>
@@ -178,7 +181,7 @@ export function QueueTable({
               pageSize={pageSize}
               onPageChange={onPageChange}
               onPageSizeChange={onPageSizeChange}
-              itemLabel="queues"
+              itemLabel={t("queues")}
             />
           </>
         ) : (
@@ -186,8 +189,8 @@ export function QueueTable({
             <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <p className="text-gray-500">
               {searchTerm
-                ? `No queues found matching "${searchTerm}"`
-                : "No queues found on this server"}
+                ? t("noQueuesMatchingSearch", { term: searchTerm })
+                : t("noQueuesOnServer")}
             </p>
           </div>
         )}

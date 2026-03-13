@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Activity, HardDrive, MessageSquare, Users } from "lucide-react";
 
 import { Queue } from "@/lib/api";
@@ -10,6 +12,8 @@ interface QueueStatsProps {
 }
 
 export function QueueStats({ queue }: QueueStatsProps) {
+  const { t } = useTranslation("queues");
+
   const formatBytes = (bytes: number) => {
     if (bytes === 0) return "0 B";
     const k = 1024;
@@ -24,7 +28,7 @@ export function QueueStats({ queue }: QueueStatsProps) {
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">Status</p>
+              <p className="text-sm text-muted-foreground">{t("status")}</p>
               <QueueStatusBadge state={queue.state} />
             </div>
             <Activity className="w-8 h-8 text-blue-600" />
@@ -36,7 +40,9 @@ export function QueueStats({ queue }: QueueStatsProps) {
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">Total Messages</p>
+              <p className="text-sm text-muted-foreground">
+                {t("totalMessages")}
+              </p>
               <p className="text-2xl font-bold text-foreground">
                 {queue.messages.toLocaleString()}
               </p>
@@ -50,7 +56,7 @@ export function QueueStats({ queue }: QueueStatsProps) {
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">Consumers</p>
+              <p className="text-sm text-muted-foreground">{t("consumers")}</p>
               <p className="text-2xl font-bold text-foreground">
                 {queue.consumers}
               </p>
@@ -64,7 +70,9 @@ export function QueueStats({ queue }: QueueStatsProps) {
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">Memory Usage</p>
+              <p className="text-sm text-muted-foreground">
+                {t("memoryUsage")}
+              </p>
               <p className="text-2xl font-bold text-foreground">
                 {formatBytes(queue.memory)}
               </p>

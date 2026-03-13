@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import {
   AlertTriangle,
@@ -59,30 +60,30 @@ import {
   useUpdateAlertRule,
 } from "@/hooks/queries/useAlerts";
 
-const ALERT_TYPES: { value: AlertType; label: string }[] = [
-  { value: "QUEUE_DEPTH", label: "Queue Depth" },
-  { value: "MESSAGE_RATE", label: "Message Rate" },
-  { value: "CONSUMER_COUNT", label: "Consumer Count" },
-  { value: "MEMORY_USAGE", label: "Memory Usage" },
-  { value: "DISK_USAGE", label: "Disk Usage" },
-  { value: "CONNECTION_COUNT", label: "Connection Count" },
-  { value: "CHANNEL_COUNT", label: "Channel Count" },
-  { value: "NODE_DOWN", label: "Node Down" },
-  { value: "EXCHANGE_ERROR", label: "Exchange Error" },
+const ALERT_TYPE_KEYS: { value: AlertType; key: string }[] = [
+  { value: "QUEUE_DEPTH", key: "rules.type.queueDepth" },
+  { value: "MESSAGE_RATE", key: "rules.type.messageRate" },
+  { value: "CONSUMER_COUNT", key: "rules.type.consumerCount" },
+  { value: "MEMORY_USAGE", key: "rules.type.memoryUsage" },
+  { value: "DISK_USAGE", key: "rules.type.diskUsage" },
+  { value: "CONNECTION_COUNT", key: "rules.type.connectionCount" },
+  { value: "CHANNEL_COUNT", key: "rules.type.channelCount" },
+  { value: "NODE_DOWN", key: "rules.type.nodeDown" },
+  { value: "EXCHANGE_ERROR", key: "rules.type.exchangeError" },
 ];
 
-const OPERATORS: { value: ComparisonOperator; label: string }[] = [
-  { value: "GREATER_THAN", label: "Greater Than" },
-  { value: "LESS_THAN", label: "Less Than" },
-  { value: "EQUALS", label: "Equals" },
-  { value: "NOT_EQUALS", label: "Not Equals" },
+const OPERATOR_KEYS: { value: ComparisonOperator; key: string }[] = [
+  { value: "GREATER_THAN", key: "rules.operator.greaterThan" },
+  { value: "LESS_THAN", key: "rules.operator.lessThan" },
+  { value: "EQUALS", key: "rules.operator.equals" },
+  { value: "NOT_EQUALS", key: "rules.operator.notEquals" },
 ];
 
-const SEVERITIES: { value: AlertSeverity; label: string }[] = [
-  { value: "LOW", label: "Low" },
-  { value: "MEDIUM", label: "Medium" },
-  { value: "HIGH", label: "High" },
-  { value: "CRITICAL", label: "Critical" },
+const SEVERITY_KEYS: { value: AlertSeverity; key: string }[] = [
+  { value: "LOW", key: "rules.severity.low" },
+  { value: "MEDIUM", key: "rules.severity.medium" },
+  { value: "HIGH", key: "rules.severity.high" },
+  { value: "CRITICAL", key: "rules.severity.critical" },
 ];
 
 interface AlertRuleFormProps {
@@ -92,6 +93,7 @@ interface AlertRuleFormProps {
 }
 
 function AlertRuleForm({ rule, onClose, onSuccess }: AlertRuleFormProps) {
+  const { t } = useTranslation("alerts");
   const { selectedServerId } = useServerContext();
   const [formData, setFormData] = useState<CreateAlertRuleInput>({
     name: rule?.name || "",
@@ -113,7 +115,7 @@ function AlertRuleForm({ rule, onClose, onSuccess }: AlertRuleFormProps) {
     e.preventDefault();
 
     if (!selectedServerId) {
-      toast.error("Please select a server first");
+      toast.error(t("rules.toast.selectServer"));
       return;
     }
 
@@ -129,7 +131,7 @@ function AlertRuleForm({ rule, onClose, onSuccess }: AlertRuleFormProps) {
           enabled: formData.enabled,
         };
         await updateMutation.mutateAsync({ id: rule.id, ...updateData });
-        toast.success("Alert rule updated successfully");
+        toast.success(t("rules.toast.updateSuccess"));
       } else {
         const createData: CreateAlertRuleInput = {
           ...formData,
@@ -137,14 +139,14 @@ function AlertRuleForm({ rule, onClose, onSuccess }: AlertRuleFormProps) {
           description: formData.description || undefined,
         };
         await createMutation.mutateAsync(createData);
-        toast.success("Alert rule created successfully");
+        toast.success(t("rules.toast.createSuccess"));
       }
       onSuccess();
       onClose();
     } catch (error) {
       let errorMessage = rule
-        ? "Failed to update alert rule"
-        : "Failed to create alert rule";
+        ? t("rules.toast.updateError")
+        : t("rules.toast.createError");
       if (error instanceof Error) {
         errorMessage = error.message;
       } else if (typeof error === "object" && error !== null) {
@@ -161,30 +163,30 @@ function AlertRuleForm({ rule, onClose, onSuccess }: AlertRuleFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <Label htmlFor="name">Name *</Label>
+        <Label htmlFor="name">{t("rules.form.name")}</Label>
         <Input
           id="name"
           value={formData.name}
           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
           required
-          placeholder="e.g., High Queue Depth Alert"
+          placeholder={t("rules.form.namePlaceholder")}
         />
       </div>
 
       <div>
-        <Label htmlFor="description">Description</Label>
+        <Label htmlFor="description">{t("rules.form.description")}</Label>
         <Input
           id="description"
           value={formData.description || ""}
           onChange={(e) =>
             setFormData({ ...formData, description: e.target.value })
           }
-          placeholder="Optional description"
+          placeholder={t("rules.form.descriptionPlaceholder")}
         />
       </div>
 
       <div>
-        <Label htmlFor="type">Alert Type *</Label>
+        <Label htmlFor="type">{t("rules.form.alertType")}</Label>
         <Select
           value={formData.type}
           onValueChange={(value) =>
@@ -195,9 +197,9 @@ function AlertRuleForm({ rule, onClose, onSuccess }: AlertRuleFormProps) {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {ALERT_TYPES.map((type) => (
+            {ALERT_TYPE_KEYS.map((type) => (
               <SelectItem key={type.value} value={type.value}>
-                {type.label}
+                {t(type.key)}
               </SelectItem>
             ))}
           </SelectContent>
@@ -206,7 +208,7 @@ function AlertRuleForm({ rule, onClose, onSuccess }: AlertRuleFormProps) {
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <Label htmlFor="operator">Operator *</Label>
+          <Label htmlFor="operator">{t("rules.form.operator")}</Label>
           <Select
             value={formData.operator}
             onValueChange={(value) =>
@@ -220,9 +222,9 @@ function AlertRuleForm({ rule, onClose, onSuccess }: AlertRuleFormProps) {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {OPERATORS.map((op) => (
+              {OPERATOR_KEYS.map((op) => (
                 <SelectItem key={op.value} value={op.value}>
-                  {op.label}
+                  {t(op.key)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -230,7 +232,7 @@ function AlertRuleForm({ rule, onClose, onSuccess }: AlertRuleFormProps) {
         </div>
 
         <div>
-          <Label htmlFor="threshold">Threshold *</Label>
+          <Label htmlFor="threshold">{t("rules.form.threshold")}</Label>
           <Input
             id="threshold"
             type="number"
@@ -249,7 +251,7 @@ function AlertRuleForm({ rule, onClose, onSuccess }: AlertRuleFormProps) {
       </div>
 
       <div>
-        <Label htmlFor="severity">Severity *</Label>
+        <Label htmlFor="severity">{t("rules.form.severity")}</Label>
         <Select
           value={formData.severity}
           onValueChange={(value) =>
@@ -260,9 +262,9 @@ function AlertRuleForm({ rule, onClose, onSuccess }: AlertRuleFormProps) {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {SEVERITIES.map((sev) => (
+            {SEVERITY_KEYS.map((sev) => (
               <SelectItem key={sev.value} value={sev.value}>
-                {sev.label}
+                {t(sev.key)}
               </SelectItem>
             ))}
           </SelectContent>
@@ -277,23 +279,23 @@ function AlertRuleForm({ rule, onClose, onSuccess }: AlertRuleFormProps) {
             setFormData({ ...formData, enabled: checked })
           }
         />
-        <Label htmlFor="enabled">Enabled</Label>
+        <Label htmlFor="enabled">{t("rules.form.enabled")}</Label>
       </div>
 
       <div className="flex justify-end gap-2">
         <Button type="button" variant="outline" onClick={onClose}>
-          Cancel
+          {t("rules.form.cancel")}
         </Button>
         <Button type="submit" disabled={isSubmitting} className="btn-primary">
           {isSubmitting ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Saving...
+              {t("rules.form.saving")}
             </>
           ) : rule ? (
-            "Update Rule"
+            t("rules.form.updateRule")
           ) : (
-            "Create Rule"
+            t("rules.form.createRule")
           )}
         </Button>
       </div>
@@ -307,6 +309,7 @@ interface AlertRulesModalProps {
 }
 
 export function AlertRulesModal({ isOpen, onClose }: AlertRulesModalProps) {
+  const { t } = useTranslation("alerts");
   const { selectedServerId } = useServerContext();
   const [showFormModal, setShowFormModal] = useState(false);
   const [editingRule, setEditingRule] = useState<AlertRule | null>(null);
@@ -326,12 +329,12 @@ export function AlertRulesModal({ isOpen, onClose }: AlertRulesModalProps) {
 
     try {
       await deleteMutation.mutateAsync({ id: ruleToDelete.id });
-      toast.success("Alert rule deleted successfully");
+      toast.success(t("rules.toast.deleteSuccess"));
       setShowDeleteConfirm(false);
       setRuleToDelete(null);
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to delete alert rule"
+        error instanceof Error ? error.message : t("rules.toast.deleteError")
       );
     }
   };
@@ -362,7 +365,9 @@ export function AlertRulesModal({ isOpen, onClose }: AlertRulesModalProps) {
               : "secondary"
         }
       >
-        {SEVERITIES.find((s) => s.value === severity)?.label || severity}
+        {SEVERITY_KEYS.find((s) => s.value === severity)
+          ? t(SEVERITY_KEYS.find((s) => s.value === severity)!.key)
+          : severity}
       </Badge>
     );
   };
@@ -392,14 +397,12 @@ export function AlertRulesModal({ isOpen, onClose }: AlertRulesModalProps) {
           <DialogHeader>
             <div className="flex items-center justify-between pr-12">
               <div>
-                <DialogTitle>Alert Rules</DialogTitle>
-                <DialogDescription>
-                  Manage your custom alert rules for monitoring RabbitMQ metrics
-                </DialogDescription>
+                <DialogTitle>{t("rules.title")}</DialogTitle>
+                <DialogDescription>{t("rules.description")}</DialogDescription>
               </div>
               <Button onClick={handleCreate} className="btn-primary">
                 <Plus className="h-4 w-4 mr-2" />
-                Create Alert Rule
+                {t("rules.createRule")}
               </Button>
             </div>
           </DialogHeader>
@@ -409,26 +412,28 @@ export function AlertRulesModal({ isOpen, onClose }: AlertRulesModalProps) {
               <div className="text-center py-8">
                 <Loader2 className="h-8 w-8 mx-auto animate-spin text-muted-foreground" />
                 <p className="text-muted-foreground mt-2">
-                  Loading alert rules...
+                  {t("rules.loading")}
                 </p>
               </div>
             ) : !selectedServerId ? (
               <div className="text-center py-8">
                 <AlertTriangle className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                 <p className="text-muted-foreground">
-                  Please select a server to view alert rules
+                  {t("rules.selectServer")}
                 </p>
               </div>
             ) : filteredRules.length === 0 ? (
               <div className="text-center py-8">
                 <Settings className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-medium mb-2">No Alert Rules</h3>
+                <h3 className="text-lg font-medium mb-2">
+                  {t("rules.noRules")}
+                </h3>
                 <p className="text-muted-foreground mb-4">
-                  Create custom alert rules to monitor specific metrics
+                  {t("rules.noRulesDescription")}
                 </p>
                 <Button onClick={handleCreate} className="btn-primary">
                   <Plus className="h-4 w-4 mr-2" />
-                  Create Your First Rule
+                  {t("rules.createFirstRule")}
                 </Button>
               </div>
             ) : (
@@ -445,12 +450,12 @@ export function AlertRulesModal({ isOpen, onClose }: AlertRulesModalProps) {
                         {rule.enabled ? (
                           <Badge variant="outline" className="text-green-600">
                             <CheckCircle className="h-3 w-3 mr-1" />
-                            Enabled
+                            {t("rules.badge.enabled")}
                           </Badge>
                         ) : (
                           <Badge variant="outline" className="text-gray-500">
                             <XCircle className="h-3 w-3 mr-1" />
-                            Disabled
+                            {t("rules.badge.disabled")}
                           </Badge>
                         )}
                       </div>
@@ -461,21 +466,34 @@ export function AlertRulesModal({ isOpen, onClose }: AlertRulesModalProps) {
                       )}
                       <div className="text-sm text-muted-foreground space-y-1">
                         <div>
-                          <span className="font-medium">Type:</span>{" "}
-                          {ALERT_TYPES.find((t) => t.value === rule.type)
-                            ?.label || rule.type}
+                          <span className="font-medium">
+                            {t("rules.detail.type")}
+                          </span>{" "}
+                          {ALERT_TYPE_KEYS.find((at) => at.value === rule.type)
+                            ? t(
+                                ALERT_TYPE_KEYS.find(
+                                  (at) => at.value === rule.type
+                                )!.key
+                              )
+                            : rule.type}
                         </div>
                         <div>
-                          <span className="font-medium">Condition:</span>{" "}
+                          <span className="font-medium">
+                            {t("rules.detail.condition")}
+                          </span>{" "}
                           {getOperatorSymbol(rule.operator)} {rule.threshold}
                         </div>
                         <div>
-                          <span className="font-medium">Server:</span>{" "}
+                          <span className="font-medium">
+                            {t("rules.detail.server")}
+                          </span>{" "}
                           {rule.server.name}
                         </div>
                         {rule._count && (
                           <div>
-                            <span className="font-medium">Active Alerts:</span>{" "}
+                            <span className="font-medium">
+                              {t("rules.detail.activeAlerts")}
+                            </span>{" "}
                             {rule._count.alerts}
                           </div>
                         )}
@@ -519,12 +537,12 @@ export function AlertRulesModal({ isOpen, onClose }: AlertRulesModalProps) {
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              {editingRule ? "Edit Alert Rule" : "Create Alert Rule"}
+              {editingRule ? t("rules.editTitle") : t("rules.createRule")}
             </DialogTitle>
             <DialogDescription>
               {editingRule
-                ? "Update your custom alert rule configuration"
-                : "Create a custom alert rule to monitor specific RabbitMQ metrics"}
+                ? t("rules.editDescription")
+                : t("rules.createDescription")}
             </DialogDescription>
           </DialogHeader>
           <AlertRuleForm
@@ -542,16 +560,21 @@ export function AlertRulesModal({ isOpen, onClose }: AlertRulesModalProps) {
       <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Alert Rule</AlertDialogTitle>
+            <AlertDialogTitle>{t("rules.delete.title")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete the alert rule{" "}
-              <strong>"{ruleToDelete?.name}"</strong>? This action cannot be
-              undone.
+              <span
+                dangerouslySetInnerHTML={{
+                  __html: t("rules.delete.confirmation", {
+                    name: ruleToDelete?.name,
+                    interpolation: { escapeValue: true },
+                  }),
+                }}
+              />
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel onClick={() => setRuleToDelete(null)}>
-              Cancel
+              {t("rules.form.cancel")}
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteConfirm}
@@ -561,10 +584,10 @@ export function AlertRulesModal({ isOpen, onClose }: AlertRulesModalProps) {
               {deleteMutation.isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Deleting...
+                  {t("rules.delete.deleting")}
                 </>
               ) : (
-                "Delete"
+                t("rules.delete.delete")
               )}
             </AlertDialogAction>
           </AlertDialogFooter>

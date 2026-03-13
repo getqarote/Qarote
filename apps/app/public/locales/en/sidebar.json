@@ -23,5 +23,19 @@
   "addServer": "Add Server",
   "theme": "Theme",
   "ssoSettings": "SSO Settings",
-  "smtpSettings": "Email Settings"
+  "smtpSettings": "Email Settings",
+  "switchWorkspace": "Switch Workspace",
+  "owner": "Owner",
+  "member": "Member",
+  "servers": "{{count}} servers",
+  "servers_one": "{{count}} server",
+  "servers_other": "{{count}} servers",
+  "createNewWorkspace": "Create New Workspace",
+  "loadingWorkspaces": "Loading workspaces...",
+  "workspaceSwitched": "Workspace switched successfully!",
+  "workspaceSwitchFailed": "Failed to switch workspace. Please try again.",
+  "upgrade": "Upgrade",
+  "upgradeToCreate": "Upgrade to create multiple workspaces",
+  "multipleWorkspacesDeveloper": "Multiple workspaces available with Developer plan",
+  "multipleWorkspacesEnterprise": "Multiple workspaces available with Enterprise plan"
 }

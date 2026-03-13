@@ -136,7 +136,7 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
           <div className="space-y-4">
             <div>
               <h4 className="font-medium text-foreground mb-2">
-                What's included:
+                {t("plansSummary.whatsIncluded")}
               </h4>
               <ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
                 {currentBenefits.map((benefit, index) => (
@@ -154,7 +154,7 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
             {/* Features Overview */}
             <div className="pt-4 border-t">
               <h4 className="font-medium text-foreground mb-3">
-                Plan Features:
+                {t("plansSummary.planFeatures")}
               </h4>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                 <div className="text-center">
@@ -162,7 +162,7 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
                     {currentFeatures?.canAddQueue ? "✓" : "✗"}
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    Add Queues
+                    {t("plansSummary.addQueues")}
                   </div>
                 </div>
                 <div className="text-center">
@@ -170,7 +170,7 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
                     {currentFeatures?.canAddExchange ? "✓" : "✗"}
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    Add Exchanges
+                    {t("plansSummary.addExchanges")}
                   </div>
                 </div>
                 <div className="text-center">
@@ -178,22 +178,26 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
                     {currentFeatures?.canAddVirtualHost ? "✓" : "✗"}
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    Add VHosts
+                    {t("plansSummary.addVHosts")}
                   </div>
                 </div>
                 <div className="text-center">
                   <div className="text-lg font-semibold text-foreground">
                     {currentFeatures?.canAddRabbitMQUser ? "✓" : "✗"}
                   </div>
-                  <div className="text-xs text-muted-foreground">Add Users</div>
+                  <div className="text-xs text-muted-foreground">
+                    {t("plansSummary.addUsers")}
+                  </div>
                 </div>
                 <div className="text-center">
                   <div className="text-lg font-semibold text-foreground">
                     {currentFeatures?.hasPrioritySupport
-                      ? "Priority"
-                      : "Community"}
+                      ? t("plansSummary.prioritySupport")
+                      : t("plansSummary.communitySupport")}
                   </div>
-                  <div className="text-xs text-muted-foreground">Support</div>
+                  <div className="text-xs text-muted-foreground">
+                    {t("plansSummary.support")}
+                  </div>
                 </div>
               </div>
             </div>
@@ -213,11 +217,10 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
                   </div>
                   <div>
                     <h3 className="font-semibold text-foreground">
-                      Unlock premium features
+                      {t("plansSummary.unlockPremium")}
                     </h3>
                     <p className="text-sm text-muted-foreground">
-                      Activate a license to unlock alerting, Slack & webhook
-                      integrations, and more
+                      {t("plansSummary.unlockPremiumDesc")}
                     </p>
                   </div>
                 </div>
@@ -227,7 +230,7 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
                   onClick={() => navigate("/settings/license")}
                   className="btn-primary"
                 >
-                  Activate License
+                  {t("plansSummary.activateLicense")}
                 </Button>
                 <Button
                   variant="outline"
@@ -239,7 +242,7 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
                     )
                   }
                 >
-                  Purchase
+                  {t("plansSummary.purchase")}
                 </Button>
               </div>
             </div>
@@ -258,17 +261,19 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
                   </div>
                   <div>
                     <h3 className="font-semibold text-foreground">
-                      Ready to grow? Upgrade to {getPlanDisplayName(nextPlan)}
+                      {t("plansSummary.readyToGrow", {
+                        plan: getPlanDisplayName(nextPlan),
+                      })}
                     </h3>
                     <p className="text-sm text-muted-foreground">
-                      Unlock more features and higher limits
+                      {t("plansSummary.unlockMore")}
                     </p>
                   </div>
                 </div>
 
                 <div className="mb-4">
                   <h4 className="font-medium text-foreground mb-2">
-                    You'll get:
+                    {t("plansSummary.youllGet")}
                   </h4>
                   <ul className="grid grid-cols-1 md:grid-cols-2 gap-1">
                     {nextPlanBenefits.map((benefit, index) => (
@@ -293,10 +298,10 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
                   {isUpgrading ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Processing...
+                      {t("plansSummary.processing")}
                     </>
                   ) : (
-                    "Upgrade Now"
+                    t("plansSummary.upgradeNow")
                   )}
                 </Button>
               </div>
@@ -318,9 +323,11 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
                     <Key className="w-5 h-5 text-purple-600" />
                   </div>
                   <div className="flex-1">
-                    <h4 className="font-medium text-foreground">License</h4>
+                    <h4 className="font-medium text-foreground">
+                      {t("plansSummary.license")}
+                    </h4>
                     <p className="text-sm text-muted-foreground">
-                      Activate or manage your license
+                      {t("plansSummary.manageLicense")}
                     </p>
                   </div>
                   <Link to="/settings/license">
@@ -329,7 +336,7 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
                       size="sm"
                       className="text-purple-600"
                     >
-                      Manage
+                      {t("plansSummary.manage")}
                     </Button>
                   </Link>
                 </div>
@@ -345,10 +352,10 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
                     </div>
                     <div className="flex-1">
                       <h4 className="font-medium text-foreground">
-                        Billing & Usage
+                        {t("plansSummary.billingUsage")}
                       </h4>
                       <p className="text-sm text-muted-foreground">
-                        Manage your subscription
+                        {t("plansSummary.manageSubscription")}
                       </p>
                     </div>
                     <Link to="/billing">
@@ -357,7 +364,7 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
                         size="sm"
                         className="text-blue-600"
                       >
-                        Manage
+                        {t("plansSummary.manage")}
                       </Button>
                     </Link>
                   </div>
@@ -372,10 +379,10 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
                     </div>
                     <div className="flex-1">
                       <h4 className="font-medium text-foreground">
-                        Compare Plans
+                        {t("plansSummary.comparePlans")}
                       </h4>
                       <p className="text-sm text-muted-foreground">
-                        See all available options
+                        {t("plansSummary.seeAllOptions")}
                       </p>
                     </div>
                     <Link to="/plans">
@@ -384,7 +391,7 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
                         size="sm"
                         className="text-green-600"
                       >
-                        Compare
+                        {t("plansSummary.compare")}
                       </Button>
                     </Link>
                   </div>

@@ -23,5 +23,19 @@
   "theme": "主题",
   "ssoSettings": "SSO 设置",
   "smtpSettings": "邮件设置",
-  "settings": "设置"
+  "settings": "设置",
+  "switchWorkspace": "切换工作区",
+  "owner": "所有者",
+  "member": "成员",
+  "servers": "{{count}} 个服务器",
+  "servers_one": "{{count}} 个服务器",
+  "servers_other": "{{count}} 个服务器",
+  "createNewWorkspace": "创建新工作区",
+  "loadingWorkspaces": "加载工作区中...",
+  "workspaceSwitched": "工作区切换成功！",
+  "workspaceSwitchFailed": "切换工作区失败，请重试。",
+  "upgrade": "升级",
+  "upgradeToCreate": "升级以创建多个工作区",
+  "multipleWorkspacesDeveloper": "开发者计划可使用多个工作区",
+  "multipleWorkspacesEnterprise": "企业计划可使用多个工作区"
 }

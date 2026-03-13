@@ -1,4 +1,5 @@
 import { useCallback } from "react";
+import { useTranslation } from "react-i18next";
 
 import { BarChart3 } from "lucide-react";
 import {
@@ -67,6 +68,8 @@ export const QueueDepthsChart = ({
   queues = EMPTY_QUEUES,
   isLoading,
 }: QueueDepthsChartProps) => {
+  const { t } = useTranslation("dashboard");
+
   const tooltipContent = useCallback(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (props: any) => <CustomTooltip {...props} queues={queues} />,
@@ -97,16 +100,16 @@ export const QueueDepthsChart = ({
           <div>
             <CardTitle className="flex items-center gap-2 text-xl font-semibold text-foreground">
               <BarChart3 className="h-5 w-5 text-orange-600" />
-              Queue Depths
+              {t("queueDepths")}
             </CardTitle>
             <p className="text-sm text-muted-foreground">
-              Current message backlog by queue
+              {t("currentMessageBacklog")}
             </p>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
             <span className="text-xs text-muted-foreground">
-              Updates every 5 seconds
+              {t("updatesEvery5s")}
             </span>
           </div>
         </div>
@@ -120,7 +123,7 @@ export const QueueDepthsChart = ({
           <div className="h-80 flex items-center justify-center">
             <div className="text-center">
               <BarChart3 className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500">No queues found</p>
+              <p className="text-gray-500">{t("noQueuesFound")}</p>
             </div>
           </div>
         ) : (

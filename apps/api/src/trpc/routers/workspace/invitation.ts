@@ -152,6 +152,23 @@ export const invitationRouter = router({
         // Errors will be caught by planValidationProcedure middleware
         validateUserInvitation(ownerPlan, memberCount);
 
+        // Check if there's already a pending invitation for this email
+        const existingInvitation = await ctx.prisma.invitation.findFirst({
+          where: {
+            email,
+            workspaceId: user.workspaceId,
+            status: InvitationStatus.PENDING,
+            expiresAt: { gt: new Date() },
+          },
+        });
+
+        if (existingInvitation) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: te(ctx.locale, "workspace.invitationAlreadyPending"),
+          });
+        }
+
         // Check if user already exists
         const existingUser = await ctx.prisma.user.findUnique({
           where: { email },

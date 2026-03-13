@@ -130,5 +130,33 @@
   },
   "error": {
     "workspaceIdRequired": "L'identifiant de l'espace de travail est requis"
+  },
+  "plansSummary": {
+    "whatsIncluded": "Inclus :",
+    "planFeatures": "Fonctionnalités du forfait :",
+    "addQueues": "Ajouter des files",
+    "addExchanges": "Ajouter des échanges",
+    "addVHosts": "Ajouter des VHosts",
+    "addUsers": "Ajouter des utilisateurs",
+    "prioritySupport": "Prioritaire",
+    "communitySupport": "Communautaire",
+    "support": "Support",
+    "unlockPremium": "Débloquer les fonctionnalités premium",
+    "unlockPremiumDesc": "Activez une licence pour débloquer les alertes, les intégrations Slack et webhook, et plus encore",
+    "activateLicense": "Activer la licence",
+    "purchase": "Acheter",
+    "readyToGrow": "Prêt à évoluer ? Passez à {{plan}}",
+    "unlockMore": "Débloquez plus de fonctionnalités et des limites plus élevées",
+    "youllGet": "Vous obtiendrez :",
+    "processing": "Traitement...",
+    "upgradeNow": "Mettre à niveau",
+    "billingUsage": "Facturation et utilisation",
+    "manageSubscription": "Gérer votre abonnement",
+    "manage": "Gérer",
+    "comparePlans": "Comparer les forfaits",
+    "seeAllOptions": "Voir toutes les options disponibles",
+    "compare": "Comparer",
+    "license": "Licence",
+    "manageLicense": "Activer ou gérer votre licence"
   }
 }

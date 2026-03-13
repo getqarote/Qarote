@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router";
 
 import { AlertTriangle, ArrowRight } from "lucide-react";
@@ -23,6 +24,7 @@ import { useUser } from "@/hooks/ui/useUser";
 import { UserPlan } from "@/types/plans";
 
 export const RecentAlerts = () => {
+  const { t } = useTranslation("dashboard");
   const navigate = useNavigate();
   const { selectedServerId } = useServerContext();
   const { selectedVHost } = useVHostContext();
@@ -57,7 +59,7 @@ export const RecentAlerts = () => {
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-orange-500" />
-              Recent Alerts
+              {t("recentAlerts")}
               <Badge variant="outline">Error</Badge>
             </CardTitle>
           </div>
@@ -66,7 +68,7 @@ export const RecentAlerts = () => {
           <div className="text-center py-4">
             <AlertTriangle className="h-8 w-8 mx-auto text-orange-500 mb-2" />
             <p className="text-sm text-muted-foreground">
-              Failed to load alerts data
+              {t("failedToLoadAlerts")}
             </p>
           </div>
         </CardContent>
@@ -81,9 +83,9 @@ export const RecentAlerts = () => {
           <div>
             <CardTitle className="text-lg font-semibold text-foreground flex items-center gap-2">
               <AlertTriangle className="w-5 h-5 text-yellow-600" />
-              Recent Alerts
+              {t("recentAlerts")}
               {isLoading ? (
-                <Badge variant="outline">Loading...</Badge>
+                <Badge variant="outline">{t("loadingAlerts")}</Badge>
               ) : (
                 <Badge
                   variant={summary.total > 0 ? "destructive" : "secondary"}
@@ -93,14 +95,14 @@ export const RecentAlerts = () => {
               )}
             </CardTitle>
             <p className="text-sm text-muted-foreground">
-              Latest system notifications
+              {t("latestNotifications")}
             </p>
           </div>
           <Link
             to="/alerts"
             className="flex items-center gap-1 text-sm text-orange-600 hover:text-orange-700 transition-colors font-medium"
           >
-            View All
+            {t("viewAll")}
             <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
@@ -126,24 +128,23 @@ export const RecentAlerts = () => {
           <div className="flex flex-col items-center justify-center py-12 px-4">
             <AlertTriangle className="h-12 w-12 text-gray-300 mb-3" />
             <p className="text-sm text-gray-500 font-medium">
-              No recent alerts
+              {t("noRecentAlerts")}
             </p>
             <p className="text-xs text-gray-400 mt-1">
-              All systems are running normally
+              {t("allSystemsNormal")}
             </p>
           </div>
         ) : userPlan === UserPlan.FREE ? (
           <div className="text-center py-8">
             <AlertTriangle className="h-12 w-12 mx-auto text-yellow-500 mb-4" />
             <p className="text-sm text-muted-foreground mb-4">
-              Upgrade to Developer or Enterprise plan to view detailed alert
-              information and configure alert thresholds.
+              {t("upgradeRequired")}
             </p>
             <Button
               onClick={() => navigate(getUpgradePath())}
               className="btn-primary"
             >
-              Upgrade now
+              {t("upgradeNow")}
             </Button>
           </div>
         ) : (
@@ -152,12 +153,7 @@ export const RecentAlerts = () => {
             {recentAlerts.map((alert) => (
               <div
                 key={alert.id}
-                className="flex items-start gap-3 p-3 border rounded-lg hover:bg-accent transition-colors cursor-pointer"
-                onClick={() =>
-                  navigate(
-                    `/alerts${selectedServerId ? `/${selectedServerId}` : ""}`
-                  )
-                }
+                className="flex items-start gap-3 p-3 border rounded-lg"
               >
                 <div className="shrink-0 mt-0.5">
                   {getSeverityIcon(alert.severity, {

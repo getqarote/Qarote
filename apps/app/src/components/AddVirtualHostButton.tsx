@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Plus } from "lucide-react";
 
@@ -16,6 +17,7 @@ export const AddVirtualHostButton = ({
   onSuccess,
   initialName = "",
 }: AddVirtualHostButtonProps) => {
+  const { t } = useTranslation("vhosts");
   const [showCreateModal, setShowCreateModal] = useState(false);
 
   return (
@@ -25,7 +27,7 @@ export const AddVirtualHostButton = ({
         className="btn-primary flex items-center gap-2"
       >
         <Plus className="w-4 h-4" />
-        Add virtual host
+        {t("addVhost")}
       </Button>
 
       <CreateVHostModal

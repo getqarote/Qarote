@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router";
 
@@ -30,6 +31,7 @@ import { UserPlan } from "@/types/plans";
 import { CreateWorkspaceForm } from "./CreateWorkspaceForm";
 
 export function WorkspaceSelector() {
+  const { t } = useTranslation("sidebar");
   const { canCreateWorkspace, userPlan } = useUser();
   const { workspace } = useWorkspace();
   const navigate = useNavigate();
@@ -53,7 +55,7 @@ export function WorkspaceSelector() {
       queryClient.invalidateQueries({ queryKey: ["servers"] });
       queryClient.invalidateQueries({ queryKey: ["plan"] });
 
-      toast.success("Workspace switched successfully!");
+      toast.success(t("workspaceSwitched"));
 
       // Refresh the page to ensure all components reload with new workspace context
       window.location.reload();
@@ -63,7 +65,7 @@ export function WorkspaceSelector() {
         "Failed to switch workspace:",
         switchWorkspaceMutation.error
       );
-      toast.error("Failed to switch workspace. Please try again.");
+      toast.error(t("workspaceSwitchFailed"));
     }
   }, [
     switchWorkspaceMutation.isSuccess,
@@ -104,31 +106,31 @@ export function WorkspaceSelector() {
     switch (userPlan) {
       case UserPlan.FREE:
         return {
-          text: "Create New Workspace",
-          badge: "Upgrade",
+          text: t("createNewWorkspace"),
+          badge: t("upgrade"),
           badgeColor: "bg-orange-500",
-          title: "Upgrade to create multiple workspaces",
+          title: t("upgradeToCreate"),
         };
       case UserPlan.DEVELOPER:
         return {
-          text: "Create New Workspace",
-          badge: "Upgrade",
+          text: t("createNewWorkspace"),
+          badge: t("upgrade"),
           badgeColor: "bg-blue-500",
-          title: "Multiple workspaces available with Developer plan",
+          title: t("multipleWorkspacesDeveloper"),
         };
       case UserPlan.ENTERPRISE:
         return {
-          text: "Create New Workspace",
-          badge: "Upgrade",
+          text: t("createNewWorkspace"),
+          badge: t("upgrade"),
           badgeColor: "bg-purple-500",
-          title: "Multiple workspaces available with Enterprise plan",
+          title: t("multipleWorkspacesEnterprise"),
         };
       default:
         return {
-          text: "Create New Workspace",
-          badge: "Upgrade",
+          text: t("createNewWorkspace"),
+          badge: t("upgrade"),
           badgeColor: "bg-orange-500",
-          title: "Upgrade to create multiple workspaces",
+          title: t("upgradeToCreate"),
         };
     }
   };
@@ -141,7 +143,7 @@ export function WorkspaceSelector() {
   };
 
   const getRoleLabel = (workspace: WorkspaceInfo) => {
-    return workspace.isOwner ? "Owner" : workspace.userRole || "Member";
+    return workspace.isOwner ? t("owner") : workspace.userRole || t("member");
   };
 
   return (
@@ -170,7 +172,7 @@ export function WorkspaceSelector() {
 
         <DropdownMenuContent align="start" className="w-[280px]">
           <DropdownMenuLabel className="text-xs text-muted-foreground uppercase tracking-wider">
-            Switch Workspace
+            {t("switchWorkspace")}
           </DropdownMenuLabel>
 
           <DropdownMenuSeparator />
@@ -179,7 +181,7 @@ export function WorkspaceSelector() {
             <DropdownMenuItem disabled>
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 border-2 border-muted border-t-foreground rounded-full animate-spin"></div>
-                Loading workspaces...
+                {t("loadingWorkspaces")}
               </div>
             </DropdownMenuItem>
           ) : (
@@ -207,7 +209,9 @@ export function WorkspaceSelector() {
                             {getRoleLabel(ws)}
                           </span>
                           <span>•</span>
-                          <span>{ws._count.servers} servers</span>
+                          <span>
+                            {t("servers", { count: ws._count.servers })}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -241,7 +245,7 @@ export function WorkspaceSelector() {
                           : "text-muted-foreground/60"
                       }`}
                     >
-                      Create New Workspace
+                      {t("createNewWorkspace")}
                     </span>
                   </div>
                   {!canCreateWorkspace &&

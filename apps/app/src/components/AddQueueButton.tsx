@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Plus } from "lucide-react";
 
 import { AddQueueForm } from "@/components/AddQueueForm";
@@ -12,6 +14,8 @@ export const AddQueueButton = ({
   serverId,
   onSuccess,
 }: AddQueueButtonProps) => {
+  const { t } = useTranslation("queues");
+
   return (
     <AddQueueForm
       serverId={serverId}
@@ -19,7 +23,7 @@ export const AddQueueButton = ({
       trigger={
         <Button className="btn-primary flex items-center gap-2">
           <Plus className="w-4 h-4" />
-          Add Queue
+          {t("addQueue")}
         </Button>
       }
     />

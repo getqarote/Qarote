@@ -81,6 +81,7 @@
     "failedToUpdateInfo": "Failed to update workspace information",
     "userNotAuthenticatedOrNotInWorkspace": "User not authenticated or not in workspace",
     "userAlreadyMember": "User is already a member of this workspace",
+    "invitationAlreadyPending": "An invitation is already pending for this email",
     "failedToFetchInvitations": "Failed to fetch invitations",
     "failedToSendInvitation": "Failed to send invitation",
     "invitationNotFoundOrUsed": "Invitation not found or already used",

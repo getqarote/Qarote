@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Cpu, HardDrive, Server, ShieldAlert } from "lucide-react";
 
@@ -28,6 +29,7 @@ export const SecondaryMetricsCards = ({
   nodesError,
   nodesFetching = false,
 }: SecondaryMetricsCardsProps) => {
+  const { t } = useTranslation("dashboard");
   const [showNodesUpdating, setShowNodesUpdating] = useState(false);
 
   // Handle delayed updating indicator
@@ -46,7 +48,7 @@ export const SecondaryMetricsCards = ({
       <Card className="hover:shadow-lg transition-all duration-300 border-0 shadow-md bg-card backdrop-blur-xs">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">
-            Connected Nodes
+            {t("connectedNodes")}
           </CardTitle>
           {nodesError && isRabbitMQAuthError(nodesError) ? (
             <ShieldAlert className="h-5 w-5 text-orange-600" />
@@ -60,10 +62,10 @@ export const SecondaryMetricsCards = ({
           ) : nodesError && isRabbitMQAuthError(nodesError) ? (
             <div>
               <div className="text-lg font-semibold text-orange-600 mb-1">
-                Permission Required
+                {t("permissionRequired")}
               </div>
               <p className="text-xs text-orange-600">
-                Need 'monitor' permission
+                {t("needMonitorPermission")}
               </p>
             </div>
           ) : (
@@ -72,7 +74,8 @@ export const SecondaryMetricsCards = ({
                 {metrics.connectedNodes}
               </div>
               <p className="text-xs text-green-600 mt-1">
-                Updates every 30s{showNodesUpdating && " (updating...)"}
+                {t("updatesEvery30s")}
+                {showNodesUpdating && ` (${t("updating")})`}
               </p>
             </div>
           )}
@@ -82,7 +85,7 @@ export const SecondaryMetricsCards = ({
       <Card className="hover:shadow-lg transition-all duration-300 border-0 shadow-md bg-card backdrop-blur-xs">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">
-            CPU Usage
+            {t("cpuUsage")}
           </CardTitle>
           {metricsError && isRabbitMQAuthError(metricsError) ? (
             <ShieldAlert className="h-5 w-5 text-orange-600" />
@@ -96,10 +99,10 @@ export const SecondaryMetricsCards = ({
           ) : metricsError && isRabbitMQAuthError(metricsError) ? (
             <div>
               <div className="text-lg font-semibold text-orange-600 mb-1">
-                Permission Required
+                {t("permissionRequired")}
               </div>
               <p className="text-xs text-orange-600">
-                Need 'monitor' permission
+                {t("needMonitorPermission")}
               </p>
             </div>
           ) : (
@@ -108,7 +111,7 @@ export const SecondaryMetricsCards = ({
                 {metrics.cpuUsage.toFixed(1)}%
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                Updates every 15s{" "}
+                {t("updatesEvery15s")}{" "}
               </p>
             </div>
           )}
@@ -118,7 +121,7 @@ export const SecondaryMetricsCards = ({
       <Card className="hover:shadow-lg transition-all duration-300 border-0 shadow-md bg-card backdrop-blur-xs">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">
-            Memory Usage
+            {t("memoryUsage")}
           </CardTitle>
           {metricsError && isRabbitMQAuthError(metricsError) ? (
             <ShieldAlert className="h-5 w-5 text-orange-600" />
@@ -132,10 +135,10 @@ export const SecondaryMetricsCards = ({
           ) : metricsError && isRabbitMQAuthError(metricsError) ? (
             <div>
               <div className="text-lg font-semibold text-orange-600 mb-1">
-                Permission Required
+                {t("permissionRequired")}
               </div>
               <p className="text-xs text-orange-600">
-                Need 'monitor' permission
+                {t("needMonitorPermission")}
               </p>
             </div>
           ) : (
@@ -144,7 +147,7 @@ export const SecondaryMetricsCards = ({
                 {metrics.totalMemory.toFixed(1)} GB
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                Updates every 15s{" "}
+                {t("updatesEvery15s")}{" "}
               </p>
             </div>
           )}
