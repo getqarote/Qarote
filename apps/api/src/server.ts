@@ -148,8 +148,15 @@ async function startServer() {
     dbConnected = true;
     logger.info("Connected to database");
 
-    // Configure PostgreSQL timeouts to prevent zombie connections
-    await configurePostgresTimeouts();
+    // Configure PostgreSQL timeouts to prevent zombie connections (best-effort)
+    try {
+      await configurePostgresTimeouts();
+    } catch (error) {
+      logger.warn(
+        { error },
+        "Failed to configure PostgreSQL idle timeouts — startup continues"
+      );
+    }
 
     // Bootstrap admin account on first boot (if configured via setup CLI)
     await bootstrapAdmin();
