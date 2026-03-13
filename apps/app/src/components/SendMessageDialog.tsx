@@ -200,7 +200,7 @@ export function SendMessageDialog({
         setRoutingError({
           message: (errorData.error ||
             errorData.message ||
-            "Message not routed") as string,
+            t("sendMessage.notRoutedTitle")) as string,
           suggestions: (errorData.suggestions || []) as string[],
           details: errorData.details as {
             reason: string;
@@ -905,7 +905,7 @@ export function SendMessageDialog({
                     <FormControl>
                       <Textarea
                         {...field}
-                        placeholder="Enter your message payload..."
+                        placeholder={t("sendMessage.payloadPlaceholder")}
                         className="min-h-[120px] font-mono text-sm"
                         required
                       />
@@ -930,9 +930,9 @@ export function SendMessageDialog({
                   >
                     <div className="flex items-center gap-2">
                       <Settings className="h-4 w-4" />
-                      Message Properties
+                      {t("sendMessage.messageProperties")}
                       <Badge variant="secondary" className="text-xs">
-                        Optional
+                        {t("sendMessage.optional")}
                       </Badge>
                     </div>
                     {isPropertiesExpanded ? (
@@ -952,8 +952,8 @@ export function SendMessageDialog({
                           <FormLabel>
                             <LabelWithTooltip
                               htmlFor="deliveryMode"
-                              label="Delivery Mode"
-                              tooltip="Set the delivery mode for the message. Persistent messages are saved to disk and survive broker restarts. Transient messages are kept in memory and may be lost if the broker crashes."
+                              label={t("sendMessage.deliveryModeLabel")}
+                              tooltip={t("sendMessage.deliveryModeTooltip")}
                             />
                           </FormLabel>
                           <Select
@@ -966,8 +966,12 @@ export function SendMessageDialog({
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="1">Transient (1)</SelectItem>
-                              <SelectItem value="2">Persistent (2)</SelectItem>
+                              <SelectItem value="1">
+                                {t("sendMessage.transient")}
+                              </SelectItem>
+                              <SelectItem value="2">
+                                {t("sendMessage.persistent")}
+                              </SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -982,8 +986,8 @@ export function SendMessageDialog({
                           <FormLabel>
                             <LabelWithTooltip
                               htmlFor="priority"
-                              label="Priority (0-255)"
-                              tooltip="Message priority level from 0 (lowest) to 255 (highest). Higher priority messages are delivered before lower priority ones. Note: Priority queues must be declared with x-max-priority argument."
+                              label={t("sendMessage.priorityLabel")}
+                              tooltip={t("sendMessage.priorityTooltip")}
                               side="left"
                             />
                           </FormLabel>
@@ -1011,8 +1015,8 @@ export function SendMessageDialog({
                           <FormLabel>
                             <LabelWithTooltip
                               htmlFor="contentType"
-                              label="Content Type"
-                              tooltip="MIME type of the message body (e.g., application/json, text/plain, application/xml). Helps consumers understand how to process the message payload."
+                              label={t("sendMessage.contentTypeLabel")}
+                              tooltip={t("sendMessage.contentTypeTooltip")}
                             />
                           </FormLabel>
                           <Select
@@ -1021,7 +1025,11 @@ export function SendMessageDialog({
                           >
                             <FormControl>
                               <SelectTrigger>
-                                <SelectValue placeholder="Select content type..." />
+                                <SelectValue
+                                  placeholder={t(
+                                    "sendMessage.contentTypePlaceholder"
+                                  )}
+                                />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
@@ -1071,8 +1079,8 @@ export function SendMessageDialog({
                           <FormLabel>
                             <LabelWithTooltip
                               htmlFor="contentEncoding"
-                              label="Content Encoding"
-                              tooltip="Encoding method used for the message body (e.g., gzip, deflate, base64). Indicates compression or encoding applied to the payload."
+                              label={t("sendMessage.contentEncodingLabel")}
+                              tooltip={t("sendMessage.contentEncodingTooltip")}
                               side="left"
                             />
                           </FormLabel>
@@ -1082,11 +1090,17 @@ export function SendMessageDialog({
                           >
                             <FormControl>
                               <SelectTrigger>
-                                <SelectValue placeholder="Select encoding (optional)..." />
+                                <SelectValue
+                                  placeholder={t(
+                                    "sendMessage.contentEncodingPlaceholder"
+                                  )}
+                                />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="none">None</SelectItem>
+                              <SelectItem value="none">
+                                {t("sendMessage.encodingNone")}
+                              </SelectItem>
                               <SelectItem value="gzip">gzip</SelectItem>
                               <SelectItem value="deflate">deflate</SelectItem>
                               <SelectItem value="base64">base64</SelectItem>
@@ -1110,8 +1124,8 @@ export function SendMessageDialog({
                           <FormLabel>
                             <LabelWithTooltip
                               htmlFor="expiration"
-                              label="Expiration (ms)"
-                              tooltip="Time-to-live (TTL) for the message in milliseconds. After this time, the message will be discarded if not consumed. Use 0 or leave empty for no expiration."
+                              label={t("sendMessage.expirationLabel")}
+                              tooltip={t("sendMessage.expirationTooltip")}
                             />
                           </FormLabel>
                           <FormControl>
@@ -1129,8 +1143,8 @@ export function SendMessageDialog({
                           <FormLabel>
                             <LabelWithTooltip
                               htmlFor="messageType"
-                              label="Message Type"
-                              tooltip="Application-specific message type identifier (e.g., order.created, user.updated). Helps consumers route and process messages based on their type."
+                              label={t("sendMessage.messageTypeLabel")}
+                              tooltip={t("sendMessage.messageTypeTooltip")}
                               side="left"
                             />
                           </FormLabel>
@@ -1152,8 +1166,8 @@ export function SendMessageDialog({
                           <FormLabel>
                             <LabelWithTooltip
                               htmlFor="correlationId"
-                              label="Correlation ID"
-                              tooltip="Unique identifier to correlate request and response messages. Essential for request-reply patterns and distributed tracing."
+                              label={t("sendMessage.correlationIdLabel")}
+                              tooltip={t("sendMessage.correlationIdTooltip")}
                             />
                           </FormLabel>
                           <FormControl>
@@ -1171,8 +1185,8 @@ export function SendMessageDialog({
                           <FormLabel>
                             <LabelWithTooltip
                               htmlFor="replyTo"
-                              label="Reply To"
-                              tooltip="Queue name where reply messages should be sent. Used in request-reply messaging patterns to specify the callback queue."
+                              label={t("sendMessage.replyToLabel")}
+                              tooltip={t("sendMessage.replyToTooltip")}
                               side="left"
                             />
                           </FormLabel>
@@ -1194,8 +1208,8 @@ export function SendMessageDialog({
                           <FormLabel>
                             <LabelWithTooltip
                               htmlFor="messageId"
-                              label="Message ID"
-                              tooltip="Unique identifier for this specific message. Useful for message deduplication, logging, and tracking message flow through your system."
+                              label={t("sendMessage.messageIdLabel")}
+                              tooltip={t("sendMessage.messageIdTooltip")}
                             />
                           </FormLabel>
                           <FormControl>
@@ -1215,8 +1229,8 @@ export function SendMessageDialog({
                         <FormLabel>
                           <LabelWithTooltip
                             htmlFor="appId"
-                            label="Application ID"
-                            tooltip="Identifier of the application that published the message. Useful for monitoring, debugging, and routing decisions based on the source application."
+                            label={t("sendMessage.appIdLabel")}
+                            tooltip={t("sendMessage.appIdTooltip")}
                           />
                         </FormLabel>
                         <FormControl>
@@ -1235,8 +1249,8 @@ export function SendMessageDialog({
                         <FormLabel>
                           <LabelWithTooltip
                             htmlFor="headers"
-                            label="Custom Headers (JSON)"
-                            tooltip="Additional metadata for your message as key-value pairs in JSON format. Headers can be used for routing decisions, filtering, and passing application-specific data."
+                            label={t("sendMessage.headersLabel")}
+                            tooltip={t("sendMessage.headersTooltip")}
                           />
                         </FormLabel>
                         <FormControl>
@@ -1259,7 +1273,8 @@ export function SendMessageDialog({
                 <Alert variant="destructive">
                   <AlertCircle className="h-4 w-4" />
                   <AlertDescription>
-                    {publishMutation.error?.message || "Failed to send message"}
+                    {publishMutation.error?.message ||
+                      t("sendMessage.failedToSend")}
                   </AlertDescription>
                 </Alert>
               )}
@@ -1268,10 +1283,13 @@ export function SendMessageDialog({
                 <Alert className="border-green-200 bg-green-50 text-green-800">
                   <CheckCircle className="h-4 w-4" />
                   <AlertDescription>
-                    Message sent successfully to exchange "
-                    {form.getValues("exchange")}"
+                    {t("sendMessage.successAlertMessage", {
+                      exchange: form.getValues("exchange"),
+                    })}
                     {form.getValues("routingKey") &&
-                      ` with routing key "${form.getValues("routingKey")}"`}
+                      t("sendMessage.successAlertWithRoutingKey", {
+                        routingKey: form.getValues("routingKey"),
+                      })}
                   </AlertDescription>
                 </Alert>
               )}
@@ -1283,7 +1301,7 @@ export function SendMessageDialog({
                   variant="outline"
                   onClick={() => setOpen(false)}
                 >
-                  Cancel
+                  {t("sendMessage.cancel")}
                 </Button>
                 <Button
                   type="submit"
@@ -1297,12 +1315,12 @@ export function SendMessageDialog({
                   {publishMutation.isPending ? (
                     <>
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                      Sending...
+                      {t("sendMessage.sending")}
                     </>
                   ) : (
                     <>
                       <Send className="h-4 w-4" />
-                      Send Message
+                      {t("sendMessage.sendMessage")}
                     </>
                   )}
                 </Button>
