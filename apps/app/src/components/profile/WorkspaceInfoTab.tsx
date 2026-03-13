@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import {
   Building2,
   Calendar,
@@ -43,6 +45,7 @@ export const WorkspaceInfoTab = ({
   isUpdating,
 }: WorkspaceInfoTabProps) => {
   const { user, planData } = useUser();
+  const { t } = useTranslation("profile");
 
   if (!workspace) {
     return <NoWorkspaceCard />;
@@ -54,7 +57,7 @@ export const WorkspaceInfoTab = ({
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Building2 className="h-6 w-6" />
-            <span>Workspace Information</span>
+            <span>{t("workspace.information")}</span>
           </div>
           <PlanBadge />
         </CardTitle>
@@ -74,15 +77,21 @@ export const WorkspaceInfoTab = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-muted-foreground">
           <div className="flex items-center gap-2">
             <Users className="h-4 w-4" />
-            <span>Users: {planData?.usage.users.current || 0}</span>
+            <span>
+              {t("workspace.users")} {planData?.usage.users.current || 0}
+            </span>
           </div>
           <div className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
-            <span>Servers: {planData?.usage.servers.current || 0}</span>
+            <span>
+              {t("workspace.servers")} {planData?.usage.servers.current || 0}
+            </span>
           </div>
           <div className="flex items-center gap-2">
             <Calendar className="h-4 w-4" />
-            <span>Created: {formatDate(workspace.createdAt)}</span>
+            <span>
+              {t("workspace.created")} {formatDate(workspace.createdAt)}
+            </span>
           </div>
         </div>
 
@@ -96,7 +105,7 @@ export const WorkspaceInfoTab = ({
                   disabled={isUpdating}
                 >
                   <X className="h-4 w-4 mr-2" />
-                  Cancel
+                  {t("workspace.cancel")}
                 </Button>
                 <Button
                   onClick={onUpdateWorkspace}
@@ -104,7 +113,7 @@ export const WorkspaceInfoTab = ({
                   className="btn-primary"
                 >
                   <Save className="h-4 w-4 mr-2" />
-                  Save Changes
+                  {t("workspace.saveChanges")}
                 </Button>
               </>
             ) : (
@@ -113,7 +122,7 @@ export const WorkspaceInfoTab = ({
                 className="btn-primary"
               >
                 <Edit className="h-4 w-4 mr-2" />
-                Edit Workspace
+                {t("workspace.editWorkspace")}
               </Button>
             )}
           </div>

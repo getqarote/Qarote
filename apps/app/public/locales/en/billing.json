@@ -130,5 +130,33 @@
   },
   "error": {
     "workspaceIdRequired": "Workspace ID is required"
+  },
+  "plansSummary": {
+    "whatsIncluded": "What's included:",
+    "planFeatures": "Plan Features:",
+    "addQueues": "Add Queues",
+    "addExchanges": "Add Exchanges",
+    "addVHosts": "Add VHosts",
+    "addUsers": "Add Users",
+    "prioritySupport": "Priority",
+    "communitySupport": "Community",
+    "support": "Support",
+    "unlockPremium": "Unlock premium features",
+    "unlockPremiumDesc": "Activate a license to unlock alerting, Slack & webhook integrations, and more",
+    "activateLicense": "Activate License",
+    "purchase": "Purchase",
+    "readyToGrow": "Ready to grow? Upgrade to {{plan}}",
+    "unlockMore": "Unlock more features and higher limits",
+    "youllGet": "You'll get:",
+    "processing": "Processing...",
+    "upgradeNow": "Upgrade Now",
+    "billingUsage": "Billing & Usage",
+    "manageSubscription": "Manage your subscription",
+    "manage": "Manage",
+    "comparePlans": "Compare Plans",
+    "seeAllOptions": "See all available options",
+    "compare": "Compare",
+    "license": "License",
+    "manageLicense": "Activate or manage your license"
   }
 }

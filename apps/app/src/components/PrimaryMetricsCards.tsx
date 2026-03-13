@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Activity, Clock, MessageSquare, ShieldAlert, Zap } from "lucide-react";
 
@@ -27,6 +28,7 @@ export const PrimaryMetricsCards = ({
   metricsError,
   overviewFetching = false,
 }: PrimaryMetricsCardsProps) => {
+  const { t } = useTranslation("dashboard");
   const [showOverviewUpdating, setShowOverviewUpdating] = useState(false);
 
   // Handle delayed updating indicator
@@ -45,7 +47,7 @@ export const PrimaryMetricsCards = ({
       <Card className="hover:shadow-lg transition-all duration-300 border-0 shadow-md bg-card backdrop-blur-xs">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">
-            Messages/sec
+            {t("messagesPerSec")}
           </CardTitle>
           {metricsError && isRabbitMQAuthError(metricsError) ? (
             <ShieldAlert className="h-5 w-5 text-orange-600" />
@@ -59,10 +61,10 @@ export const PrimaryMetricsCards = ({
           ) : metricsError && isRabbitMQAuthError(metricsError) ? (
             <div>
               <div className="text-lg font-semibold text-orange-600 mb-1">
-                Permission Required
+                {t("permissionRequired")}
               </div>
               <p className="text-xs text-orange-600">
-                Need 'monitor' permission
+                {t("needMonitorPermission")}
               </p>
             </div>
           ) : (
@@ -71,7 +73,8 @@ export const PrimaryMetricsCards = ({
                 {metrics.messagesPerSec}
               </div>
               <p className="text-xs text-green-600 mt-1">
-                Updates every 10s{showOverviewUpdating && " (updating...)"}
+                {t("updatesEvery10s")}
+                {showOverviewUpdating && ` (${t("updating")})`}
               </p>
             </div>
           )}
@@ -81,7 +84,7 @@ export const PrimaryMetricsCards = ({
       <Card className="hover:shadow-lg transition-all duration-300 border-0 shadow-md bg-card backdrop-blur-xs">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">
-            Active Queues
+            {t("activeQueues")}
           </CardTitle>
           {metricsError && isRabbitMQAuthError(metricsError) ? (
             <ShieldAlert className="h-5 w-5 text-orange-600" />
@@ -95,10 +98,10 @@ export const PrimaryMetricsCards = ({
           ) : metricsError && isRabbitMQAuthError(metricsError) ? (
             <div>
               <div className="text-lg font-semibold text-orange-600 mb-1">
-                Permission Required
+                {t("permissionRequired")}
               </div>
               <p className="text-xs text-orange-600">
-                Need 'monitor' permission
+                {t("needMonitorPermission")}
               </p>
             </div>
           ) : (
@@ -107,7 +110,8 @@ export const PrimaryMetricsCards = ({
                 {metrics.activeQueues}
               </div>
               <p className="text-xs text-gray-500 mt-1">
-                Updates every 10s{showOverviewUpdating && " (updating...)"}
+                {t("updatesEvery10s")}
+                {showOverviewUpdating && ` (${t("updating")})`}
               </p>
             </div>
           )}
@@ -117,7 +121,7 @@ export const PrimaryMetricsCards = ({
       <Card className="hover:shadow-lg transition-all duration-300 border-0 shadow-md bg-card backdrop-blur-xs">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">
-            Queues Depth
+            {t("queuesDepth")}
           </CardTitle>
           {metricsError && isRabbitMQAuthError(metricsError) ? (
             <ShieldAlert className="h-5 w-5 text-orange-600" />
@@ -131,10 +135,10 @@ export const PrimaryMetricsCards = ({
           ) : metricsError && isRabbitMQAuthError(metricsError) ? (
             <div>
               <div className="text-lg font-semibold text-orange-600 mb-1">
-                Permission Required
+                {t("permissionRequired")}
               </div>
               <p className="text-xs text-orange-600">
-                Need 'monitor' permission
+                {t("needMonitorPermission")}
               </p>
             </div>
           ) : (
@@ -143,7 +147,8 @@ export const PrimaryMetricsCards = ({
                 {metrics.queueDepth}
               </div>
               <p className="text-xs text-orange-600 mt-1">
-                Updates every 10s{showOverviewUpdating && " (updating...)"}
+                {t("updatesEvery10s")}
+                {showOverviewUpdating && ` (${t("updating")})`}
               </p>
             </div>
           )}
@@ -153,7 +158,7 @@ export const PrimaryMetricsCards = ({
       <Card className="hover:shadow-lg transition-all duration-300 border-0 shadow-md bg-card backdrop-blur-xs">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">
-            Avg Latency
+            {t("avgLatency")}
           </CardTitle>
           {metricsError && isRabbitMQAuthError(metricsError) ? (
             <ShieldAlert className="h-5 w-5 text-orange-600" />
@@ -167,10 +172,10 @@ export const PrimaryMetricsCards = ({
           ) : metricsError && isRabbitMQAuthError(metricsError) ? (
             <div>
               <div className="text-lg font-semibold text-orange-600 mb-1">
-                Permission Required
+                {t("permissionRequired")}
               </div>
               <p className="text-xs text-orange-600">
-                Need 'monitor' permission
+                {t("needMonitorPermission")}
               </p>
             </div>
           ) : (
@@ -178,7 +183,9 @@ export const PrimaryMetricsCards = ({
               <div className="text-3xl font-bold text-foreground">
                 {metrics.avgLatency.toFixed(1)}ms
               </div>
-              <p className="text-xs text-gray-500 mt-1">Updates every 15s</p>
+              <p className="text-xs text-gray-500 mt-1">
+                {t("updatesEvery15s")}
+              </p>
             </div>
           )}
         </CardContent>

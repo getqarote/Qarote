@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { ArrowLeft, Pause, Play, Send, Trash2 } from "lucide-react";
 
 import { PauseQueueDialog } from "@/components/PauseQueueDialog";
@@ -27,6 +29,8 @@ export function QueueHeader({
   onRefetch,
   onDeleteQueue,
 }: QueueHeaderProps) {
+  const { t } = useTranslation("queues");
+
   // Get the actual pause status from the backend
   const { data: pauseStatus, refetch: refetchPauseStatus } =
     useQueuePauseStatus(selectedServerId, queueName);
@@ -61,7 +65,7 @@ export function QueueHeader({
                 className="flex items-center gap-2 text-blue-600 hover:text-blue-700"
               >
                 <Send className="w-4 h-4" />
-                Send Message
+                {t("sendMessage")}
               </Button>
             }
           />
@@ -77,7 +81,7 @@ export function QueueHeader({
                 className="flex items-center gap-2 text-red-600 hover:text-red-700"
               >
                 <Trash2 className="w-4 h-4" />
-                Purge Queue
+                {t("purgeQueue")}
               </Button>
             }
           />
@@ -105,7 +109,7 @@ export function QueueHeader({
                 ) : (
                   <Pause className="w-4 h-4" />
                 )}
-                {isPaused ? "Resume Queue" : "Pause Queue"}
+                {isPaused ? t("resumeQueue") : t("pauseQueue")}
               </Button>
             }
           />
@@ -118,7 +122,7 @@ export function QueueHeader({
               className="flex items-center gap-2 text-red-600 hover:text-red-700"
             >
               <Trash2 className="w-4 h-4" />
-              Delete Queue
+              {t("deleteQueue")}
             </Button>
           )}
         </div>

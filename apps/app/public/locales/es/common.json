@@ -72,6 +72,8 @@
   "addServer": "Agregar servidor",
   "manageServers": "Administrar servidores",
   "rabbitMQDashboard": "Panel",
+  "showingItems": "Mostrando {{start}}-{{end}} de {{total}} {{label}}",
+  "itemsPerPage": "Elementos por página:",
   "notFound": {
     "code": "404",
     "message": "Página no encontrada",

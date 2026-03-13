@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import {
   Pagination,
   PaginationContent,
@@ -32,6 +34,7 @@ export function PaginationControls({
   onPageSizeChange,
   itemLabel = "items",
 }: PaginationControlsProps) {
+  const { t } = useTranslation("common");
   const totalPages = Math.ceil(total / pageSize);
   const startItem = total === 0 ? 0 : (page - 1) * pageSize + 1;
   const endItem = Math.min(page * pageSize, total);
@@ -43,10 +46,17 @@ export function PaginationControls({
       {/* Total count and page size selector */}
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
-          Showing {startItem}-{endItem} of {total} {itemLabel}
+          {t("showingItems", {
+            start: startItem,
+            end: endItem,
+            total,
+            label: itemLabel,
+          })}
         </p>
         <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">Items per page:</span>
+          <span className="text-sm text-muted-foreground">
+            {t("itemsPerPage")}
+          </span>
           <Select
             value={pageSize.toString()}
             onValueChange={(value) => onPageSizeChange(Number(value))}

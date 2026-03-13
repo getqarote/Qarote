@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { HelpCircle, RefreshCw } from "lucide-react";
 import {
@@ -43,6 +44,8 @@ export const QueuedMessagesChart = ({
   timeRange = "1h",
   onTimeRangeChange,
 }: QueuedMessagesChartProps) => {
+  const { t } = useTranslation("dashboard");
+
   // State for toggling line visibility
   const [visibleLines, setVisibleLines] = useState({
     total: true,
@@ -94,7 +97,7 @@ export const QueuedMessagesChart = ({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <CardTitle className="text-lg font-semibold text-foreground">
-              Queued messages
+              {t("queuedMessages")}
             </CardTitle>
             <TooltipProvider>
               <UITooltip>
@@ -131,7 +134,7 @@ export const QueuedMessagesChart = ({
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
               <span className="text-xs text-gray-500">
-                Updates every 5 seconds
+                {t("updatesEvery5s")}
               </span>
             </div>
             {onTimeRangeChange && (
@@ -149,7 +152,7 @@ export const QueuedMessagesChart = ({
             <div className="flex flex-col items-center gap-2">
               <RefreshCw className="h-6 w-6 animate-spin text-blue-600" />
               <p className="text-sm text-gray-500">
-                Loading queued messages...
+                {t("loadingQueuedMessages")}
               </p>
             </div>
           </div>

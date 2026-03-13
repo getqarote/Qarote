@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Bug, Lightbulb, MessageSquare, Zap } from "lucide-react";
@@ -46,56 +47,69 @@ interface FeedbackFormProps {
   className?: string;
 }
 
-const feedbackTypes = [
-  {
-    value: "BUG" as const,
-    label: "Bug Report",
-    description: "Something isn't working as expected",
-    icon: Bug,
-    color: "text-red-600",
-  },
-  {
-    value: "FEATURE" as const,
-    label: "Feature Request",
-    description: "Suggest a new feature or enhancement",
-    icon: Lightbulb,
-    color: "text-yellow-600",
-  },
-  {
-    value: "IMPROVEMENT" as const,
-    label: "Improvement",
-    description: "Suggest ways to improve existing features",
-    icon: Zap,
-    color: "text-blue-600",
-  },
-  {
-    value: "GENERAL" as const,
-    label: "General Feedback",
-    description: "Any other feedback or questions",
-    icon: MessageSquare,
-    color: "text-green-600",
-  },
-];
-
-const categories = [
-  { value: "UI_UX", label: "User Interface & Experience" },
-  { value: "PERFORMANCE", label: "Performance & Speed" },
-  { value: "SECURITY", label: "Security & Privacy" },
-  { value: "FUNCTIONALITY", label: "Core Functionality" },
-  { value: "DOCUMENTATION", label: "Documentation & Help" },
-  { value: "OTHER", label: "Other" },
-];
-
-const priorities = [
-  { value: "LOW", label: "Low", description: "Nice to have" },
-  { value: "MEDIUM", label: "Medium", description: "Important but not urgent" },
-  { value: "HIGH", label: "High", description: "Urgent or blocking" },
-];
-
 export function FeedbackForm({ onSuccess, className }: FeedbackFormProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { t } = useTranslation("settings");
+
+  const feedbackTypes = [
+    {
+      value: "BUG" as const,
+      label: t("feedback.bugReport"),
+      description: t("feedback.bugReportDesc"),
+      icon: Bug,
+      color: "text-red-600",
+    },
+    {
+      value: "FEATURE" as const,
+      label: t("feedback.featureRequest"),
+      description: t("feedback.featureRequestDesc"),
+      icon: Lightbulb,
+      color: "text-yellow-600",
+    },
+    {
+      value: "IMPROVEMENT" as const,
+      label: t("feedback.improvement"),
+      description: t("feedback.improvementDesc"),
+      icon: Zap,
+      color: "text-blue-600",
+    },
+    {
+      value: "GENERAL" as const,
+      label: t("feedback.generalFeedback"),
+      description: t("feedback.generalFeedbackDesc"),
+      icon: MessageSquare,
+      color: "text-green-600",
+    },
+  ];
+
+  const categories = [
+    { value: "UI_UX", label: t("feedback.categoryUiUx") },
+    { value: "PERFORMANCE", label: t("feedback.categoryPerformance") },
+    { value: "SECURITY", label: t("feedback.categorySecurity") },
+    { value: "FUNCTIONALITY", label: t("feedback.categoryFunctionality") },
+    { value: "DOCUMENTATION", label: t("feedback.categoryDocumentation") },
+    { value: "OTHER", label: t("feedback.categoryOther") },
+  ];
+
+  const priorities = [
+    {
+      value: "LOW",
+      label: t("feedback.priorityLow"),
+      description: t("feedback.priorityLowDesc"),
+    },
+    {
+      value: "MEDIUM",
+      label: t("feedback.priorityMedium"),
+      description: t("feedback.priorityMediumDesc"),
+    },
+    {
+      value: "HIGH",
+      label: t("feedback.priorityHigh"),
+      description: t("feedback.priorityHighDesc"),
+    },
+  ];
 
   // Initialize form with react-hook-form
   const form = useForm<FeedbackFormData>({
@@ -116,9 +130,8 @@ export function FeedbackForm({ onSuccess, className }: FeedbackFormProps) {
   useEffect(() => {
     if (submitFeedbackMutation.isSuccess) {
       toast({
-        title: "Feedback Submitted",
-        description:
-          "Thank you for your feedback! We'll review it and get back to you if needed.",
+        title: t("feedback.toastSubmitted"),
+        description: t("feedback.toastSubmittedDesc"),
       });
 
       // Reset form
@@ -137,8 +150,8 @@ export function FeedbackForm({ onSuccess, className }: FeedbackFormProps) {
     if (submitFeedbackMutation.isError) {
       logger.error("Failed to submit feedback:", submitFeedbackMutation.error);
       toast({
-        title: "Submission Failed",
-        description: "Failed to submit feedback. Please try again.",
+        title: t("feedback.toastFailed"),
+        description: t("feedback.toastFailedDesc"),
         variant: "destructive",
       });
       setIsSubmitting(false);
@@ -175,12 +188,9 @@ export function FeedbackForm({ onSuccess, className }: FeedbackFormProps) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <MessageSquare className="w-5 h-5" />
-          Send Feedback
+          {t("feedback.title")}
         </CardTitle>
-        <CardDescription>
-          Help us improve the RabbitMQ Dashboard by sharing your thoughts,
-          reporting bugs, or suggesting new features.
-        </CardDescription>
+        <CardDescription>{t("feedback.description")}</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -192,7 +202,7 @@ export function FeedbackForm({ onSuccess, className }: FeedbackFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-sm font-medium">
-                    What type of feedback do you have? *
+                    {t("feedback.typeLabel")}
                   </FormLabel>
                   <FormControl>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -237,14 +247,16 @@ export function FeedbackForm({ onSuccess, className }: FeedbackFormProps) {
               name="category"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Category *</FormLabel>
+                  <FormLabel>{t("feedback.category")}</FormLabel>
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select a category" />
+                        <SelectValue
+                          placeholder={t("feedback.selectCategory")}
+                        />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -266,16 +278,16 @@ export function FeedbackForm({ onSuccess, className }: FeedbackFormProps) {
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Title *</FormLabel>
+                  <FormLabel>{t("feedback.titleLabel")}</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="Brief summary of your feedback"
+                      placeholder={t("feedback.titlePlaceholder")}
                       maxLength={100}
                       {...field}
                     />
                   </FormControl>
                   <p className="text-xs text-muted-foreground">
-                    {field.value?.length || 0}/100 characters
+                    {`${field.value?.length || 0}/100 ${t("feedback.characters")}`}
                   </p>
                   <FormMessage />
                 </FormItem>
@@ -288,17 +300,17 @@ export function FeedbackForm({ onSuccess, className }: FeedbackFormProps) {
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description *</FormLabel>
+                  <FormLabel>{t("feedback.descriptionLabel")}</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Provide detailed information about your feedback. For bugs, please include steps to reproduce."
+                      placeholder={t("feedback.descriptionPlaceholder")}
                       rows={4}
                       maxLength={1000}
                       {...field}
                     />
                   </FormControl>
                   <p className="text-xs text-muted-foreground">
-                    {field.value?.length || 0}/1000 characters
+                    {`${field.value?.length || 0}/1000 ${t("feedback.characters")}`}
                   </p>
                   <FormMessage />
                 </FormItem>
@@ -311,7 +323,7 @@ export function FeedbackForm({ onSuccess, className }: FeedbackFormProps) {
               name="priority"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Priority</FormLabel>
+                  <FormLabel>{t("feedback.priority")}</FormLabel>
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
@@ -345,7 +357,7 @@ export function FeedbackForm({ onSuccess, className }: FeedbackFormProps) {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email (optional)</FormLabel>
+                  <FormLabel>{t("feedback.emailOptional")}</FormLabel>
                   <FormControl>
                     <Input
                       type="email"
@@ -354,7 +366,7 @@ export function FeedbackForm({ onSuccess, className }: FeedbackFormProps) {
                     />
                   </FormControl>
                   <p className="text-xs text-muted-foreground">
-                    We'll only use this to follow up on your feedback if needed
+                    {t("feedback.emailHelp")}
                   </p>
                   <FormMessage />
                 </FormItem>
@@ -366,7 +378,9 @@ export function FeedbackForm({ onSuccess, className }: FeedbackFormProps) {
               disabled={isSubmitting || !form.formState.isValid}
               className="w-full btn-primary"
             >
-              {isSubmitting ? "Submitting..." : "Submit Feedback"}
+              {isSubmitting
+                ? t("feedback.submitting")
+                : t("feedback.submitFeedback")}
             </Button>
           </form>
         </Form>

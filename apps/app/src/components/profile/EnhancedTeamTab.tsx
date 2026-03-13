@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
 import {
@@ -83,6 +84,7 @@ export const EnhancedTeamTab = ({
   emailEnabled,
 }: EnhancedTeamTabProps) => {
   const navigate = useNavigate();
+  const { t } = useTranslation("profile");
   const { planData, user } = useUser();
   const { workspace } = useWorkspace();
   const planFeatures = planData?.planFeatures;
@@ -133,9 +135,7 @@ export const EnhancedTeamTab = ({
     return (
       <Card>
         <CardContent className="pt-6">
-          <p className="text-muted-foreground">
-            Only workspace administrators can view and manage team members.
-          </p>
+          <p className="text-muted-foreground">{t("team.adminOnly")}</p>
         </CardContent>
       </Card>
     );
@@ -149,14 +149,15 @@ export const EnhancedTeamTab = ({
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Users className="h-5 w-5" />
-              <span>Team</span>
+              <span>{t("team.title")}</span>
               <Badge variant="outline">
-                {totalUsers} {totalUsers === 1 ? "user" : "users"}
+                {totalUsers}{" "}
+                {totalUsers === 1 ? t("team.user") : t("team.users")}
               </Badge>
               {pendingInvitations > 0 && (
                 <Badge variant="secondary">
                   <Clock className="h-3 w-3 mr-1" />
-                  {pendingInvitations} pending
+                  {pendingInvitations} {t("team.pending")}
                 </Badge>
               )}
               {maxUsers && (
@@ -167,7 +168,7 @@ export const EnhancedTeamTab = ({
                       : "outline"
                   }
                 >
-                  {totalUsers + pendingInvitations}/{maxUsers} limit
+                  {totalUsers + pendingInvitations}/{maxUsers} {t("team.limit")}
                 </Badge>
               )}
             </div>
@@ -178,19 +179,19 @@ export const EnhancedTeamTab = ({
                 className="btn-primary"
               >
                 <UserPlus className="h-4 w-4 mr-2" />
-                Invite User
+                {t("team.inviteUser")}
               </Button>
             ) : (
               <Button
                 onClick={() => navigate(getUpgradePath())}
                 size="sm"
                 className="bg-gray-200 text-gray-400 cursor-pointer opacity-60 flex items-center gap-2 hover:bg-gray-300"
-                title="Upgrade to invite more users"
+                title={t("team.upgradeToInvite")}
               >
                 <Lock className="w-4 h-4" />
-                Invite User
+                {t("team.inviteUser")}
                 <span className="ml-1 px-1.5 py-0.5 bg-orange-500 text-white text-[10px] rounded-full font-semibold">
-                  Upgrade
+                  {t("team.upgrade")}
                 </span>
               </Button>
             )}
@@ -207,12 +208,12 @@ export const EnhancedTeamTab = ({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>User</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Last Login</TableHead>
-                  <TableHead>Joined</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead>{t("team.tableUser")}</TableHead>
+                  <TableHead>{t("team.tableRole")}</TableHead>
+                  <TableHead>{t("team.tableStatus")}</TableHead>
+                  <TableHead>{t("team.tableLastLogin")}</TableHead>
+                  <TableHead>{t("team.tableJoined")}</TableHead>
+                  <TableHead>{t("team.tableActions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -247,13 +248,15 @@ export const EnhancedTeamTab = ({
                           workspaceUser.isActive ? "default" : "secondary"
                         }
                       >
-                        {workspaceUser.isActive ? "Active" : "Inactive"}
+                        {workspaceUser.isActive
+                          ? t("team.active")
+                          : t("team.inactive")}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
                       {workspaceUser.lastLogin
                         ? formatDate(workspaceUser.lastLogin)
-                        : "Never"}
+                        : t("team.never")}
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
                       {formatDate(workspaceUser.createdAt)}
@@ -268,7 +271,7 @@ export const EnhancedTeamTab = ({
                             onClick={() => handleRemoveUserClick(workspaceUser)}
                             disabled={isRemoving}
                             className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                            title="Remove user from workspace"
+                            title={t("team.removeUser")}
                           >
                             <X className="h-4 w-4" />
                           </Button>
@@ -280,7 +283,7 @@ export const EnhancedTeamTab = ({
             </Table>
           ) : (
             <p className="text-muted-foreground text-center py-4">
-              No team members found. Invite users to get started.
+              {t("team.noTeamMembers")}
             </p>
           )}
         </CardContent>
@@ -292,7 +295,7 @@ export const EnhancedTeamTab = ({
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Mail className="h-5 w-5" />
-              <span>Pending Invitations</span>
+              <span>{t("team.pendingInvitations")}</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -309,12 +312,12 @@ export const EnhancedTeamTab = ({
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Role</TableHead>
-                    <TableHead>Invited By</TableHead>
-                    <TableHead>Invited</TableHead>
-                    <TableHead>Expires</TableHead>
-                    <TableHead>Actions</TableHead>
+                    <TableHead>{t("team.tableEmail")}</TableHead>
+                    <TableHead>{t("team.tableRole")}</TableHead>
+                    <TableHead>{t("team.tableInvitedBy")}</TableHead>
+                    <TableHead>{t("team.tableInvited")}</TableHead>
+                    <TableHead>{t("team.tableExpires")}</TableHead>
+                    <TableHead>{t("team.tableActions")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -365,8 +368,8 @@ export const EnhancedTeamTab = ({
                               }
                             }}
                             className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                            title="Copy invite link"
-                            aria-label="Copy invite link"
+                            title={t("team.copyInviteLink")}
+                            aria-label={t("team.copyInviteLink")}
                           >
                             {copiedToken === invitation.id ? (
                               <Check className="h-4 w-4" />
@@ -385,8 +388,8 @@ export const EnhancedTeamTab = ({
                             }
                             disabled={isRevoking}
                             className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                            title="Revoke invitation"
-                            aria-label="Revoke invitation"
+                            title={t("team.revokeInvitation")}
+                            aria-label={t("team.revokeInvitation")}
                           >
                             <X className="h-4 w-4" />
                           </Button>
@@ -398,7 +401,7 @@ export const EnhancedTeamTab = ({
               </Table>
             ) : (
               <p className="text-muted-foreground text-center py-4">
-                No pending invitations.
+                {t("team.noPendingInvitations")}
               </p>
             )}
           </CardContent>
@@ -422,28 +425,32 @@ export const EnhancedTeamTab = ({
       <Dialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Remove User from Workspace</DialogTitle>
+            <DialogTitle>{t("team.removeDialogTitle")}</DialogTitle>
             <DialogDescription>
-              Are you sure you want to remove{" "}
-              <strong>{userToRemove?.name}</strong> ({userToRemove?.email}) from
-              this workspace?
+              <span
+                dangerouslySetInnerHTML={{
+                  __html: t("team.removeDialogDescription", {
+                    name: userToRemove?.name,
+                    email: userToRemove?.email,
+                    interpolation: { escapeValue: false },
+                  }),
+                }}
+              />
               <br />
               <br />
-              This action cannot be undone. The user will lose access to all
-              workspace resources and will need to be re-invited to regain
-              access.
+              {t("team.removeDialogWarning")}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={handleCancelRemove}>
-              Cancel
+              {t("team.cancel")}
             </Button>
             <Button
               onClick={handleConfirmRemove}
               className="bg-red-600 hover:bg-red-700"
               disabled={isRemoving}
             >
-              {isRemoving ? "Removing..." : "Remove User"}
+              {isRemoving ? t("team.removing") : t("team.removeUserButton")}
             </Button>
           </DialogFooter>
         </DialogContent>

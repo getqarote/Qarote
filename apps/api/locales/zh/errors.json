@@ -81,6 +81,7 @@
     "failedToUpdateInfo": "更新工作区信息失败",
     "userNotAuthenticatedOrNotInWorkspace": "用户未认证或不在工作区中",
     "userAlreadyMember": "用户已是此工作区的成员",
+    "invitationAlreadyPending": "该邮箱已有待处理的邀请",
     "failedToFetchInvitations": "获取邀请列表失败",
     "failedToSendInvitation": "发送邀请失败",
     "invitationNotFoundOrUsed": "未找到邀请或邀请已被使用",

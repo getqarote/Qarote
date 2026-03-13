@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
 import { ArrowRight, Cpu, HardDrive, Server, Wifi } from "lucide-react";
@@ -22,6 +23,8 @@ export const ConnectedNodes = ({
   isLoading,
   nodesError,
 }: ConnectedNodesProps) => {
+  const { t } = useTranslation("dashboard");
+
   const getStatusBadge = (node: RabbitMQNode) => {
     if (!node.running) {
       return (
@@ -48,7 +51,7 @@ export const ConnectedNodes = ({
     return (
       <Badge variant="secondary" className="bg-green-100 text-green-700">
         <Wifi className="w-3 h-3 mr-1" />
-        Running
+        {t("running")}
       </Badge>
     );
   };
@@ -74,17 +77,17 @@ export const ConnectedNodes = ({
           <div>
             <CardTitle className="text-lg font-semibold text-foreground flex items-center gap-2">
               <Server className="h-5 w-5" />
-              Connected Nodes ({nodes.length})
+              {t("connectedNodesTitle")} ({nodes.length})
             </CardTitle>
             <p className="text-sm text-muted-foreground">
-              RabbitMQ cluster node status and metrics
+              {t("connectedNodesSubtitle")}
             </p>
           </div>
           <Link
             to="/nodes"
             className="flex items-center gap-1 text-sm text-orange-600 hover:text-orange-700 transition-colors font-medium"
           >
-            See more
+            {t("seeMore")}
             <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
@@ -126,12 +129,16 @@ export const ConnectedNodes = ({
 
                 <div className="space-y-2 text-sm">
                   <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Type:</span>
+                    <span className="text-muted-foreground">
+                      {t("nodeType")}:
+                    </span>
                     <span className="font-medium">{node.type}</span>
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Uptime:</span>
+                    <span className="text-muted-foreground">
+                      {t("uptime")}:
+                    </span>
                     <span className="font-medium">
                       {formatUptime(node.uptime)}
                     </span>
@@ -144,7 +151,7 @@ export const ConnectedNodes = ({
                         {formatBytes(node.mem_used)}
                       </div>
                       <div className="text-xs text-muted-foreground">
-                        Memory
+                        {t("memory")}
                       </div>
                     </div>
 
@@ -153,7 +160,9 @@ export const ConnectedNodes = ({
                       <div className="text-xs font-medium">
                         {node.processors}
                       </div>
-                      <div className="text-xs text-muted-foreground">CPUs</div>
+                      <div className="text-xs text-muted-foreground">
+                        {t("cpus")}
+                      </div>
                     </div>
 
                     <div className="text-center p-2 bg-card rounded">
@@ -162,7 +171,7 @@ export const ConnectedNodes = ({
                         {formatBytes(node.disk_free)}
                       </div>
                       <div className="text-xs text-muted-foreground">
-                        Disk Free
+                        {t("diskFree")}
                       </div>
                     </div>
                   </div>
@@ -173,7 +182,7 @@ export const ConnectedNodes = ({
         ) : (
           <div className="text-center py-8">
             <Server className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-500">No nodes found</p>
+            <p className="text-gray-500">{t("noNodesFound")}</p>
           </div>
         )}
       </CardContent>

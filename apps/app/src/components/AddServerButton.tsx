@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
 import { Lock } from "lucide-react";
@@ -12,6 +13,7 @@ import { useUser } from "@/hooks/ui/useUser";
 import { UserPlan } from "@/types/plans";
 
 export const AddServerButton = () => {
+  const { t } = useTranslation("dashboard");
   const {
     userPlan,
     canAddServer,
@@ -34,33 +36,31 @@ export const AddServerButton = () => {
     switch (userPlan) {
       case UserPlan.FREE:
         return {
-          text: "Add Server",
-          badge: "Upgrade",
+          text: t("addServer"),
+          badge: t("upgrade"),
           badgeColor: "bg-orange-500",
-          title: "Upgrade to add servers",
+          title: t("upgradeToAddServers"),
         };
       case UserPlan.DEVELOPER:
         return {
-          text: "Add Server",
+          text: t("addServer"),
           badge: `${serverUsage.current}/${serverUsage.limit || 2}`,
           badgeColor: "bg-blue-500",
-          title:
-            "You've reached your server limit. Upgrade to add more servers.",
+          title: t("serverLimitReached"),
         };
       case UserPlan.ENTERPRISE:
         return {
-          text: "Add Server",
+          text: t("addServer"),
           badge: `${serverUsage.current}/${serverUsage.limit || 5}`,
           badgeColor: "bg-purple-500",
-          title:
-            "You've reached your server limit. Upgrade to add more servers.",
+          title: t("serverLimitReached"),
         };
       default:
         return {
-          text: "Add Server",
-          badge: "Upgrade",
+          text: t("addServer"),
+          badge: t("upgrade"),
           badgeColor: "bg-orange-500",
-          title: "Upgrade to add servers",
+          title: t("upgradeToAddServers"),
         };
     }
   };

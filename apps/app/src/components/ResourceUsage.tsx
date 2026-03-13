@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import {
   Activity,
   Cpu,
@@ -41,6 +43,8 @@ export const ResourceUsage = ({
   metricsError,
   overviewError,
 }: ResourceUsageProps) => {
+  const { t } = useTranslation("dashboard");
+
   const getUsageColor = (percentage: number) => {
     if (percentage < 50) return "bg-green-500";
     if (percentage < 80) return "bg-yellow-500";
@@ -54,7 +58,7 @@ export const ResourceUsage = ({
 
   const resources = [
     {
-      name: "CPU Usage",
+      name: t("cpuUsage"),
       value: metrics.cpuUsage,
       unit: "%",
       icon: Cpu,
@@ -66,7 +70,7 @@ export const ResourceUsage = ({
       errorSource: "metrics" as const,
     },
     {
-      name: "System Memory",
+      name: t("systemMemory"),
       value: metrics.totalMemory,
       unit: "GB",
       icon: HardDrive,
@@ -78,7 +82,7 @@ export const ResourceUsage = ({
       errorSource: "metrics" as const,
     },
     {
-      name: "Disk Usage",
+      name: t("diskUsage"),
       value: metrics.diskUsage,
       unit: "%",
       icon: Database,
@@ -90,7 +94,7 @@ export const ResourceUsage = ({
       errorSource: "metrics" as const,
     },
     {
-      name: "Avg Latency",
+      name: t("avgLatency"),
       value: metrics.avgLatency,
       unit: "ms",
       icon: Network,
@@ -102,7 +106,7 @@ export const ResourceUsage = ({
       errorSource: "metrics" as const,
     },
     {
-      name: "Connections",
+      name: t("connectionsCount"),
       value: overview?.object_totals?.connections || 0,
       unit: "",
       icon: Activity,
@@ -115,7 +119,7 @@ export const ResourceUsage = ({
       errorSource: "overview" as const,
     },
     {
-      name: "Channels",
+      name: t("channelsCount"),
       value: overview?.object_totals?.channels || 0,
       unit: "",
       icon: Zap,
@@ -128,7 +132,7 @@ export const ResourceUsage = ({
       errorSource: "overview" as const,
     },
     {
-      name: "Consumers",
+      name: t("consumersCount"),
       value: overview?.object_totals?.consumers || 0,
       unit: "",
       icon: MessageSquare,
@@ -147,10 +151,10 @@ export const ResourceUsage = ({
       <CardHeader>
         <CardTitle className="text-lg font-semibold text-foreground flex items-center gap-2">
           <Cpu className="w-5 h-5 text-yellow-600" />
-          Resource Usage
+          {t("resourceUsage")}
         </CardTitle>
         <p className="text-sm text-muted-foreground">
-          Cluster-wide resource metrics and system usage
+          {t("resourceUsageSubtitle")}
         </p>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -171,7 +175,7 @@ export const ResourceUsage = ({
               {resource.hasError ? (
                 <div className="text-sm">
                   <span className="font-bold text-orange-600">
-                    Permission Required
+                    {t("permissionRequired")}
                   </span>
                 </div>
               ) : (

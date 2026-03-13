@@ -130,5 +130,33 @@
   },
   "error": {
     "workspaceIdRequired": "Se requiere el ID del espacio de trabajo"
+  },
+  "plansSummary": {
+    "whatsIncluded": "Incluido:",
+    "planFeatures": "Características del plan:",
+    "addQueues": "Agregar colas",
+    "addExchanges": "Agregar intercambios",
+    "addVHosts": "Agregar VHosts",
+    "addUsers": "Agregar usuarios",
+    "prioritySupport": "Prioritario",
+    "communitySupport": "Comunitario",
+    "support": "Soporte",
+    "unlockPremium": "Desbloquear funciones premium",
+    "unlockPremiumDesc": "Activa una licencia para desbloquear alertas, integraciones con Slack y webhook, y más",
+    "activateLicense": "Activar licencia",
+    "purchase": "Comprar",
+    "readyToGrow": "¿Listo para crecer? Actualiza a {{plan}}",
+    "unlockMore": "Desbloquea más funciones y límites más altos",
+    "youllGet": "Obtendrás:",
+    "processing": "Procesando...",
+    "upgradeNow": "Actualizar ahora",
+    "billingUsage": "Facturación y uso",
+    "manageSubscription": "Administra tu suscripción",
+    "manage": "Administrar",
+    "comparePlans": "Comparar planes",
+    "seeAllOptions": "Ver todas las opciones disponibles",
+    "compare": "Comparar",
+    "license": "Licencia",
+    "manageLicense": "Activar o administrar tu licencia"
   }
 }

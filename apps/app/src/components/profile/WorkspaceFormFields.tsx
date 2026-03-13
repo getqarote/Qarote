@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -23,11 +25,12 @@ export const WorkspaceFormFields = ({
   workspace,
   userEmail,
 }: WorkspaceFormFieldsProps) => {
+  const { t } = useTranslation("profile");
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="workspaceName">Workspace Name</Label>
+          <Label htmlFor="workspaceName">{t("workspace.name")}</Label>
           {editingWorkspace && isAdmin ? (
             <Input
               id="workspaceName"
@@ -46,7 +49,7 @@ export const WorkspaceFormFields = ({
           )}
         </div>
         <div className="space-y-2">
-          <Label htmlFor="contactEmail">Contact Email</Label>
+          <Label htmlFor="contactEmail">{t("workspace.contactEmail")}</Label>
           {editingWorkspace && isAdmin ? (
             <Input
               id="contactEmail"
@@ -62,7 +65,7 @@ export const WorkspaceFormFields = ({
             />
           ) : (
             <p className="text-sm p-2 border rounded-md bg-muted">
-              {workspace.contactEmail || userEmail || "Not set"}
+              {workspace.contactEmail || userEmail || t("workspace.notSet")}
             </p>
           )}
         </div>

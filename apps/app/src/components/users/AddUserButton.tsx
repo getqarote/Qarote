@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { Plus } from "lucide-react";
@@ -29,6 +30,7 @@ export function AddUserButton({
   initialTags = "",
   initialVhost = "/",
 }: AddUserButtonProps) {
+  const { t } = useTranslation("users");
   const { workspace } = useWorkspace();
   const queryClient = useQueryClient();
 
@@ -107,7 +109,7 @@ export function AddUserButton({
       <Plus className="w-4 h-4" />
       {createUserMutation.isPending || setPermissionsMutation.isPending
         ? "Creating..."
-        : "Add user"}
+        : t("addUser")}
     </Button>
   );
 }

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Edit, Loader2, Plus, Server } from "lucide-react";
@@ -47,6 +48,7 @@ export const AddServerForm = ({
   isOpen: controlledIsOpen,
   onOpenChange: controlledOnOpenChange,
 }: AddServerFormProps) => {
+  const { t } = useTranslation("dashboard");
   const { setSelectedServerId } = useServerContext();
   const { refetchPlan } = useUser();
   const { workspace } = useWorkspace();
@@ -239,7 +241,7 @@ export const AddServerForm = ({
           {trigger || (
             <Button className="btn-primary">
               <Plus className="h-4 w-4 mr-2" />
-              Add Server
+              {t("addServer")}
             </Button>
           )}
         </DialogTrigger>
@@ -250,19 +252,19 @@ export const AddServerForm = ({
             {mode === "edit" ? (
               <>
                 <Edit className="h-5 w-5" />
-                Edit RabbitMQ Server
+                {t("editRabbitMQServer")}
               </>
             ) : (
               <>
                 <Server className="h-5 w-5" />
-                Add RabbitMQ Server
+                {t("addRabbitMQServer")}
               </>
             )}
           </DialogTitle>
           <DialogDescription>
             {mode === "edit"
-              ? "Update the connection details for your RabbitMQ server."
-              : "Connect to your RabbitMQ server via the Management API. Ensure the Management plugin is enabled and use its port (default: 15672)."}
+              ? t("editServerFormDescription")
+              : t("addServerFormDescription")}
           </DialogDescription>
         </DialogHeader>
 
@@ -308,7 +310,7 @@ export const AddServerForm = ({
             ) : (
               <Plus className="h-4 w-4 mr-2" />
             )}
-            {mode === "edit" ? "Update Server" : "Add Server"}
+            {mode === "edit" ? t("updateServer") : t("addServer")}
           </Button>
         </DialogFooter>
       </DialogContent>

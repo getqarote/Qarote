@@ -130,5 +130,33 @@
   },
   "error": {
     "workspaceIdRequired": "需要工作区 ID"
+  },
+  "plansSummary": {
+    "whatsIncluded": "包含内容：",
+    "planFeatures": "计划功能：",
+    "addQueues": "添加队列",
+    "addExchanges": "添加交换器",
+    "addVHosts": "添加虚拟主机",
+    "addUsers": "添加用户",
+    "prioritySupport": "优先",
+    "communitySupport": "社区",
+    "support": "支持",
+    "unlockPremium": "解锁高级功能",
+    "unlockPremiumDesc": "激活许可证以解锁告警、Slack 和 Webhook 集成等功能",
+    "activateLicense": "激活许可证",
+    "purchase": "购买",
+    "readyToGrow": "准备升级？升级到 {{plan}}",
+    "unlockMore": "解锁更多功能和更高的限制",
+    "youllGet": "您将获得：",
+    "processing": "处理中...",
+    "upgradeNow": "立即升级",
+    "billingUsage": "账单和使用情况",
+    "manageSubscription": "管理您的订阅",
+    "manage": "管理",
+    "comparePlans": "比较计划",
+    "seeAllOptions": "查看所有可用选项",
+    "compare": "比较",
+    "license": "许可证",
+    "manageLicense": "激活或管理您的许可证"
   }
 }

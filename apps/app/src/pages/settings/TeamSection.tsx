@@ -137,7 +137,7 @@ const TeamSection = () => {
     email: string
   ) => {
     try {
-      await revokeInvitationMutation.mutateAsync(invitationId);
+      await revokeInvitationMutation.mutateAsync({ invitationId });
       toast.success(t("toast.invitationRevoked", { email }));
     } catch (error) {
       logger.error("Revoke invitation error:", error);

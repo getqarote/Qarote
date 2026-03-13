@@ -81,6 +81,7 @@
     "failedToUpdateInfo": "Error al actualizar la información del espacio de trabajo",
     "userNotAuthenticatedOrNotInWorkspace": "Usuario no autenticado o no pertenece al espacio de trabajo",
     "userAlreadyMember": "El usuario ya es miembro de este espacio de trabajo",
+    "invitationAlreadyPending": "Ya existe una invitación pendiente para este correo electrónico",
     "failedToFetchInvitations": "Error al obtener las invitaciones",
     "failedToSendInvitation": "Error al enviar la invitación",
     "invitationNotFoundOrUsed": "Invitación no encontrada o ya utilizada",

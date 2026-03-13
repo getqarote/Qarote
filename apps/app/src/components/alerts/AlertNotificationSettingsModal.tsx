@@ -5,6 +5,7 @@ import React, {
   useRef,
   useState,
 } from "react";
+import { useTranslation } from "react-i18next";
 
 import {
   Bell,
@@ -77,6 +78,7 @@ export function AlertNotificationSettingsModal({
   isOpen,
   onClose,
 }: AlertNotificationSettingsModalProps) {
+  const { t } = useTranslation("alerts");
   const { workspace, isLoading: isWorkspaceLoading } = useWorkspace();
   const [emailNotificationsEnabled, setEmailNotificationsEnabled] =
     useState(true);
@@ -272,18 +274,18 @@ export function AlertNotificationSettingsModal({
       // Validate email if notifications are enabled AND we're not only changing browser notifications
       if (!skipValidation && currentEnabled && !onlyBrowserNotifications) {
         if (!currentEmail.trim()) {
-          toast.error("Please provide an email address for notifications");
+          toast.error(t("modal.toastEmailRequired"));
           return;
         }
 
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(currentEmail)) {
-          toast.error("Please provide a valid email address");
+          toast.error(t("modal.toastEmailInvalid"));
           return;
         }
 
         // Validate at least one severity is selected
         if (currentSeverities.length === 0) {
-          toast.error("Please select at least one alert severity");
+          toast.error(t("modal.toastSelectSeverity"));
           return;
         }
       }
@@ -291,9 +293,7 @@ export function AlertNotificationSettingsModal({
       // Validate browser notification severities
       if (!skipValidation && currentBrowserEnabled && !onlyEmailNotifications) {
         if (currentBrowserSeverities.length === 0) {
-          toast.error(
-            "Please select at least one alert severity for browser notifications"
-          );
+          toast.error(t("modal.toastSelectBrowserSeverity"));
           return;
         }
       }
@@ -338,10 +338,11 @@ export function AlertNotificationSettingsModal({
 
       updateSettingsMutation.mutate(updatePayload, {
         onSuccess: () => {
-          toast.success("Settings updated successfully");
+          toast.success(t("modal.toastSettingsUpdated"));
         },
         onError: (error: ApiError) => {
-          const errorMessage = error.message || "Failed to update settings";
+          const errorMessage =
+            error.message || t("modal.toastSettingsUpdateFailed");
           toast.error(errorMessage);
           logger.error({ error }, errorMessage);
         },
@@ -421,8 +422,8 @@ export function AlertNotificationSettingsModal({
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Alert Notification Settings</DialogTitle>
-            <DialogDescription>Loading workspace...</DialogDescription>
+            <DialogTitle>{t("modal.title")}</DialogTitle>
+            <DialogDescription>{t("modal.loadingWorkspace")}</DialogDescription>
           </DialogHeader>
           <div className="flex items-center justify-center py-8">
             <Loader2 className="h-8 w-8 animate-spin" />
@@ -436,7 +437,7 @@ export function AlertNotificationSettingsModal({
 
   const handleSaveWebhook = () => {
     if (!webhookUrl.trim()) {
-      toast.error("Please provide a webhook URL");
+      toast.error(t("modal.toastWebhookUrlRequired"));
       return;
     }
 
@@ -445,15 +446,13 @@ export function AlertNotificationSettingsModal({
     try {
       urlObj = new URL(webhookUrl.trim());
     } catch {
-      toast.error("Please provide a valid webhook URL");
+      toast.error(t("modal.toastWebhookUrlInvalid"));
       return;
     }
 
     // Prevent Slack webhook URLs in general webhook section
     if (urlObj.hostname === "hooks.slack.com") {
-      toast.error(
-        "Slack webhook URLs should be added in the Slack Notifications section, not here."
-      );
+      toast.error(t("modal.toastWebhookSlackError"));
       return;
     }
 
@@ -468,10 +467,10 @@ export function AlertNotificationSettingsModal({
         },
         {
           onSuccess: () => {
-            toast.success("Webhook updated successfully");
+            toast.success(t("modal.toastWebhookUpdated"));
           },
           onError: (error: ApiError) => {
-            toast.error(error.message || "Failed to update webhook");
+            toast.error(error.message || t("modal.toastWebhookUpdateFailed"));
           },
         }
       );
@@ -485,10 +484,10 @@ export function AlertNotificationSettingsModal({
         },
         {
           onSuccess: () => {
-            toast.success("Webhook created successfully");
+            toast.success(t("modal.toastWebhookCreated"));
           },
           onError: (error: ApiError) => {
-            toast.error(error.message || "Failed to create webhook");
+            toast.error(error.message || t("modal.toastWebhookCreateFailed"));
           },
         }
       );
@@ -499,13 +498,13 @@ export function AlertNotificationSettingsModal({
     if (!firstWebhook) return;
     deleteWebhookMutation.mutate(firstWebhook.id, {
       onSuccess: () => {
-        toast.success("Webhook deleted successfully");
+        toast.success(t("modal.toastWebhookDeleted"));
         setWebhookUrl("");
         setWebhookSecret("");
         setWebhookEnabled(true);
       },
       onError: (error: ApiError) => {
-        toast.error(error.message || "Failed to delete webhook");
+        toast.error(error.message || t("modal.toastWebhookDeleteFailed"));
       },
     });
   };
@@ -514,7 +513,7 @@ export function AlertNotificationSettingsModal({
 
   const handleSaveSlack = () => {
     if (!slackWebhookUrl.trim()) {
-      toast.error("Please provide a Slack webhook URL");
+      toast.error(t("modal.toastSlackUrlRequired"));
       return;
     }
 
@@ -523,7 +522,7 @@ export function AlertNotificationSettingsModal({
     try {
       urlObj = new URL(slackWebhookUrl.trim());
     } catch {
-      toast.error("Please provide a valid webhook URL");
+      toast.error(t("modal.toastWebhookUrlInvalid"));
       return;
     }
 
@@ -533,9 +532,7 @@ export function AlertNotificationSettingsModal({
       !urlObj.pathname.startsWith("/services/") ||
       urlObj.pathname.split("/").length < 4
     ) {
-      toast.error(
-        "Invalid Slack webhook URL. Must be in the format: https://hooks.slack.com/services/"
-      );
+      toast.error(t("modal.toastSlackUrlInvalid"));
       return;
     }
 
@@ -549,12 +546,10 @@ export function AlertNotificationSettingsModal({
         },
         {
           onSuccess: () => {
-            toast.success("Slack configuration updated successfully");
+            toast.success(t("modal.toastSlackUpdated"));
           },
           onError: (error: ApiError) => {
-            toast.error(
-              error.message || "Failed to update Slack configuration"
-            );
+            toast.error(error.message || t("modal.toastSlackUpdateFailed"));
           },
         }
       );
@@ -567,12 +562,10 @@ export function AlertNotificationSettingsModal({
         },
         {
           onSuccess: () => {
-            toast.success("Slack configuration created successfully");
+            toast.success(t("modal.toastSlackCreated"));
           },
           onError: (error: ApiError) => {
-            toast.error(
-              error.message || "Failed to create Slack configuration"
-            );
+            toast.error(error.message || t("modal.toastSlackCreateFailed"));
           },
         }
       );
@@ -583,12 +576,12 @@ export function AlertNotificationSettingsModal({
     if (!firstSlack) return;
     deleteSlackConfigMutation.mutate(firstSlack.id, {
       onSuccess: () => {
-        toast.success("Slack configuration deleted successfully");
+        toast.success(t("modal.toastSlackDeleted"));
         setSlackWebhookUrl("");
         setSlackEnabled(true);
       },
       onError: (error: ApiError) => {
-        toast.error(error.message || "Failed to delete Slack configuration");
+        toast.error(error.message || t("modal.toastSlackDeleteFailed"));
       },
     });
   };
@@ -603,7 +596,7 @@ export function AlertNotificationSettingsModal({
       },
       {
         onError: (error: ApiError) => {
-          toast.error(error.message || "Failed to update Slack configuration");
+          toast.error(error.message || t("modal.toastSlackUpdateFailed"));
           // Revert state on error
           setSlackEnabled(!enabled);
         },
@@ -621,10 +614,14 @@ export function AlertNotificationSettingsModal({
       },
       {
         onSuccess: () => {
-          toast.success(`Webhook ${enabled ? "enabled" : "disabled"}`);
+          toast.success(
+            enabled
+              ? t("modal.toastWebhookEnabled")
+              : t("modal.toastWebhookDisabled")
+          );
         },
         onError: (error: ApiError) => {
-          toast.error(error.message || "Failed to update webhook");
+          toast.error(error.message || t("modal.toastWebhookUpdateFailed"));
           // Revert state on error
           setWebhookEnabled(!enabled);
         },
@@ -638,12 +635,9 @@ export function AlertNotificationSettingsModal({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Mail className="h-5 w-5" />
-            Alert Notification Settings
+            {t("modal.title")}
           </DialogTitle>
-          <DialogDescription>
-            Configure email and webhook notifications for new alerts. Select
-            which alert severities you want to receive notifications for.
-          </DialogDescription>
+          <DialogDescription>{t("modal.description")}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6">
@@ -651,10 +645,9 @@ export function AlertNotificationSettingsModal({
           {servers.length > 0 && (
             <div className="space-y-3 p-4 border rounded-lg">
               <div>
-                <Label className="text-base">Servers</Label>
+                <Label className="text-base">{t("modal.servers")}</Label>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Select which servers you want to receive notifications for. If
-                  none are selected, notifications will be sent for all servers.
+                  {t("modal.serversDescription")}
                 </p>
               </div>
 
@@ -711,8 +704,10 @@ export function AlertNotificationSettingsModal({
                         <Search className="h-4 w-4 text-muted-foreground" />
                         <span className="text-muted-foreground">
                           {selectedCount > 0
-                            ? `${selectedCount} server${selectedCount > 1 ? "s" : ""} selected`
-                            : "Search and select servers..."}
+                            ? t("modal.serversSelected", {
+                                count: selectedCount,
+                              })
+                            : t("modal.searchAndSelect")}
                         </span>
                       </div>
                     </Button>
@@ -720,15 +715,17 @@ export function AlertNotificationSettingsModal({
                   <PopoverContent className="w-[400px] p-0" align="start">
                     <Command>
                       <CommandInput
-                        placeholder="Search servers by name, host, or port..."
+                        placeholder={t("modal.searchPlaceholder")}
                         value={serverSearchTerm}
                         onValueChange={setServerSearchTerm}
                       />
                       <CommandList id="server-search-list">
                         <CommandEmpty>
                           {serverSearchTerm
-                            ? `No servers found matching "${serverSearchTerm}"`
-                            : "No servers available"}
+                            ? t("modal.noServersFound", {
+                                term: serverSearchTerm,
+                              })
+                            : t("modal.noServersAvailable")}
                         </CommandEmpty>
                         <CommandGroup>
                           {filteredServers.map((server) => (
@@ -770,16 +767,18 @@ export function AlertNotificationSettingsModal({
                     }}
                     disabled={updateSettingsMutation.isPending}
                   >
-                    Clear All
+                    {t("modal.clearAll")}
                   </Button>
                 )}
               </div>
 
               {selectedCount > 0 && (
                 <p className="text-xs text-muted-foreground">
-                  {selectedCount} of {servers.length} server
-                  {servers.length > 1 ? "s" : ""} selected. Leave empty to
-                  receive notifications for all servers.
+                  {t("modal.serverSelectionCount", {
+                    selected: selectedCount,
+                    total: servers.length,
+                    count: servers.length,
+                  })}
                 </p>
               )}
             </div>
@@ -787,10 +786,9 @@ export function AlertNotificationSettingsModal({
 
           {/* Alert Severity Selection */}
           <div className="space-y-3 p-4 border rounded-lg">
-            <Label className="text-base">Alert Severities</Label>
+            <Label className="text-base">{t("modal.alertSeverities")}</Label>
             <p className="text-sm text-muted-foreground mb-3">
-              Select which alert severities you want to receive notifications
-              for (applies to email, webhook, and Slack notifications)
+              {t("modal.alertSeveritiesDescription")}
             </p>
             <div className="space-y-3">
               <div className="flex items-center space-x-2">
@@ -810,9 +808,11 @@ export function AlertNotificationSettingsModal({
                   htmlFor="severity-critical"
                   className="flex items-center gap-2 cursor-pointer"
                 >
-                  <span className="text-red-600 font-medium">Critical</span>
+                  <span className="text-red-600 font-medium">
+                    {t("modal.severityCritical")}
+                  </span>
                   <span className="text-xs text-muted-foreground">
-                    - Immediate action required
+                    {t("modal.severityCriticalDesc")}
                   </span>
                 </Label>
               </div>
@@ -833,9 +833,11 @@ export function AlertNotificationSettingsModal({
                   htmlFor="severity-warning"
                   className="flex items-center gap-2 cursor-pointer"
                 >
-                  <span className="text-yellow-600 font-medium">Warning</span>
+                  <span className="text-yellow-600 font-medium">
+                    {t("modal.severityWarning")}
+                  </span>
                   <span className="text-xs text-muted-foreground">
-                    - Attention recommended
+                    {t("modal.severityWarningDesc")}
                   </span>
                 </Label>
               </div>
@@ -856,16 +858,18 @@ export function AlertNotificationSettingsModal({
                   htmlFor="severity-info"
                   className="flex items-center gap-2 cursor-pointer"
                 >
-                  <span className="text-blue-600 font-medium">Info</span>
+                  <span className="text-blue-600 font-medium">
+                    {t("modal.severityInfo")}
+                  </span>
                   <span className="text-xs text-muted-foreground">
-                    - Informational alerts
+                    {t("modal.severityInfoDesc")}
                   </span>
                 </Label>
               </div>
             </div>
             {notificationSeverities.length === 0 && (
               <p className="text-xs text-red-500 mt-2">
-                Please select at least one alert severity
+                {t("modal.selectAtLeastOneSeverity")}
               </p>
             )}
           </div>
@@ -879,11 +883,10 @@ export function AlertNotificationSettingsModal({
                   className="text-base flex items-center gap-2"
                 >
                   <Bell className="h-4 w-4" />
-                  Browser Notifications
+                  {t("modal.browserNotifications")}
                 </Label>
                 <p className="text-sm text-muted-foreground">
-                  Receive browser notifications for new alerts. You'll be
-                  prompted to allow notifications when you enable this feature.
+                  {t("modal.browserNotificationsDescription")}
                 </p>
               </div>
               <Switch
@@ -898,11 +901,10 @@ export function AlertNotificationSettingsModal({
             {browserNotificationsEnabled && (
               <div className="mt-4 space-y-3 pt-4 border-t">
                 <Label className="text-sm font-medium">
-                  Browser Notification Severities
+                  {t("modal.browserNotificationSeverities")}
                 </Label>
                 <p className="text-xs text-muted-foreground mb-3">
-                  Select which alert severities you want to receive browser
-                  notifications for
+                  {t("modal.browserNotificationSeveritiesDescription")}
                 </p>
                 <div className="space-y-3">
                   <div className="flex items-center space-x-2">
@@ -926,9 +928,11 @@ export function AlertNotificationSettingsModal({
                       htmlFor="browser-severity-critical"
                       className="flex items-center gap-2 cursor-pointer"
                     >
-                      <span className="text-red-600 font-medium">Critical</span>
+                      <span className="text-red-600 font-medium">
+                        {t("modal.severityCritical")}
+                      </span>
                       <span className="text-xs text-muted-foreground">
-                        - Immediate action required
+                        {t("modal.severityCriticalDesc")}
                       </span>
                     </Label>
                   </div>
@@ -954,10 +958,10 @@ export function AlertNotificationSettingsModal({
                       className="flex items-center gap-2 cursor-pointer"
                     >
                       <span className="text-yellow-600 font-medium">
-                        Warning
+                        {t("modal.severityWarning")}
                       </span>
                       <span className="text-xs text-muted-foreground">
-                        - Attention recommended
+                        {t("modal.severityWarningDesc")}
                       </span>
                     </Label>
                   </div>
@@ -980,17 +984,18 @@ export function AlertNotificationSettingsModal({
                       htmlFor="browser-severity-info"
                       className="flex items-center gap-2 cursor-pointer"
                     >
-                      <span className="text-blue-600 font-medium">Info</span>
+                      <span className="text-blue-600 font-medium">
+                        {t("modal.severityInfo")}
+                      </span>
                       <span className="text-xs text-muted-foreground">
-                        - Informational alerts
+                        {t("modal.severityInfoDesc")}
                       </span>
                     </Label>
                   </div>
                 </div>
                 {browserNotificationSeverities.length === 0 && (
                   <p className="text-xs text-red-500 mt-2">
-                    Please select at least one alert severity for browser
-                    notifications
+                    {t("modal.selectAtLeastOneBrowserSeverity")}
                   </p>
                 )}
               </div>
@@ -1000,8 +1005,7 @@ export function AlertNotificationSettingsModal({
               <Alert className="mt-4">
                 <BellOff className="h-4 w-4" />
                 <AlertDescription>
-                  Browser notifications are disabled. Enable this feature to
-                  receive desktop notifications for new alerts.
+                  {t("modal.browserNotificationsDisabled")}
                 </AlertDescription>
               </Alert>
             )}
@@ -1014,11 +1018,10 @@ export function AlertNotificationSettingsModal({
           <div className="flex items-center justify-between p-4 border rounded-lg">
             <div className="space-y-0.5">
               <Label htmlFor="email-notifications" className="text-base">
-                Email Notifications
+                {t("modal.emailNotifications")}
               </Label>
               <p className="text-sm text-muted-foreground">
-                Receive email alerts for new alerts based on your severity
-                preferences
+                {t("modal.emailNotificationsDescription")}
               </p>
             </div>
             <Switch
@@ -1035,7 +1038,7 @@ export function AlertNotificationSettingsModal({
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="contact-email">
-                  Notification Email Address
+                  {t("modal.notificationEmailAddress")}
                   <span className="text-red-500 ml-1">*</span>
                 </Label>
                 <Button
@@ -1055,7 +1058,7 @@ export function AlertNotificationSettingsModal({
                   className="bg-gradient-button hover:bg-gradient-button-hover text-white hover:text-white"
                 >
                   <Plus className="h-4 w-4 mr-2" />
-                  Update
+                  {t("modal.update")}
                 </Button>
               </div>
               <Input
@@ -1081,7 +1084,7 @@ export function AlertNotificationSettingsModal({
                 required={emailNotificationsEnabled}
               />
               <p className="text-xs text-muted-foreground">
-                This email will receive notifications for new alerts
+                {t("modal.emailHelp")}
               </p>
             </div>
           )}
@@ -1091,8 +1094,7 @@ export function AlertNotificationSettingsModal({
             <Alert>
               <BellOff className="h-4 w-4" />
               <AlertDescription>
-                Email notifications are disabled. You won't receive alerts via
-                email, but you can still view them in the dashboard.
+                {t("modal.emailNotificationsDisabled")}
               </AlertDescription>
             </Alert>
           )}
@@ -1102,7 +1104,9 @@ export function AlertNotificationSettingsModal({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Webhook className="h-5 w-5" />
-                <Label className="text-base">Webhook Notifications</Label>
+                <Label className="text-base">
+                  {t("modal.webhookNotifications")}
+                </Label>
               </div>
               <Button
                 type="button"
@@ -1110,18 +1114,17 @@ export function AlertNotificationSettingsModal({
                 size="sm"
                 onClick={() => setShowWebhookExample(true)}
               >
-                View Example Payload
+                {t("modal.viewExamplePayload")}
               </Button>
             </div>
             <p className="text-sm text-muted-foreground">
-              Configure webhook endpoint to receive alert notifications via POST
-              requests.
+              {t("modal.webhookDescription")}
             </p>
 
             <div className="p-4 border rounded-lg space-y-3">
               <div className="space-y-2">
                 <Label htmlFor="webhook-url">
-                  Webhook URL
+                  {t("modal.webhookUrl")}
                   <span className="text-red-500 ml-1">*</span>
                 </Label>
                 <Input
@@ -1137,12 +1140,14 @@ export function AlertNotificationSettingsModal({
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="webhook-secret">Secret (Optional)</Label>
+                <Label htmlFor="webhook-secret">
+                  {t("modal.webhookSecretOptional")}
+                </Label>
                 <div className="relative">
                   <Input
                     id="webhook-secret"
                     type={showSecret ? "text" : "password"}
-                    placeholder="Secret for HMAC signature"
+                    placeholder={t("modal.webhookSecretPlaceholder")}
                     value={webhookSecret}
                     onChange={(e) => setWebhookSecret(e.target.value)}
                     disabled={
@@ -1170,7 +1175,7 @@ export function AlertNotificationSettingsModal({
                   </Button>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Optional secret key for webhook signature verification
+                  {t("modal.webhookSecretHelp")}
                 </p>
               </div>
               <div className="flex items-center justify-between">
@@ -1185,7 +1190,7 @@ export function AlertNotificationSettingsModal({
                     }
                     className="data-[state=checked]:bg-gradient-button"
                   />
-                  <Label htmlFor="webhook-enabled">Enabled</Label>
+                  <Label htmlFor="webhook-enabled">{t("modal.enabled")}</Label>
                 </div>
                 <div className="flex gap-2">
                   {firstWebhook && (
@@ -1214,12 +1219,14 @@ export function AlertNotificationSettingsModal({
                     updateWebhookMutation.isPending ? (
                       <>
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        {firstWebhook ? "Updating..." : "Creating..."}
+                        {firstWebhook
+                          ? t("modal.updating")
+                          : t("modal.creating")}
                       </>
                     ) : firstWebhook ? (
-                      "Update"
+                      t("modal.update")
                     ) : (
-                      "Save"
+                      t("modal.save")
                     )}
                   </Button>
                 </div>
@@ -1231,17 +1238,18 @@ export function AlertNotificationSettingsModal({
           <div className="space-y-4 pt-6 border-t">
             <div className="flex items-center gap-2">
               <MessageSquare className="h-5 w-5" />
-              <Label className="text-base">Slack Notifications</Label>
+              <Label className="text-base">
+                {t("modal.slackNotifications")}
+              </Label>
             </div>
             <p className="text-sm text-muted-foreground">
-              Configure Slack webhook to receive alert notifications in your
-              Slack channels.
+              {t("modal.slackDescription")}
             </p>
 
             <div className="space-y-4 p-4 border rounded-lg">
               <div className="space-y-2">
                 <Label htmlFor="slack-webhook-url">
-                  Slack Webhook URL
+                  {t("modal.slackWebhookUrl")}
                   <span className="text-red-500 ml-1">*</span>
                 </Label>
                 <Input
@@ -1256,14 +1264,14 @@ export function AlertNotificationSettingsModal({
                   }
                 />
                 <p className="text-xs text-muted-foreground">
-                  You can get Slack Incoming Webhook URL in{" "}
+                  {t("modal.slackWebhookHelp")}{" "}
                   <a
                     href="https://api.slack.com/messaging/webhooks"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-primary hover:underline font-medium"
                   >
-                    Slack's Apps &gt; Incoming WebHooks
+                    {t("modal.slackWebhookLink")}
                   </a>
                   .
                 </p>
@@ -1280,7 +1288,7 @@ export function AlertNotificationSettingsModal({
                     }
                     className="data-[state=checked]:bg-gradient-button"
                   />
-                  <Label htmlFor="slack-enabled">Enabled</Label>
+                  <Label htmlFor="slack-enabled">{t("modal.enabled")}</Label>
                 </div>
                 <div className="flex gap-2">
                   {firstSlack && (
@@ -1308,12 +1316,12 @@ export function AlertNotificationSettingsModal({
                     updateSlackConfigMutation.isPending ? (
                       <>
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        {firstSlack ? "Updating..." : "Creating..."}
+                        {firstSlack ? t("modal.updating") : t("modal.creating")}
                       </>
                     ) : firstSlack ? (
-                      "Update"
+                      t("modal.update")
                     ) : (
-                      "Save"
+                      t("modal.save")
                     )}
                   </Button>
                 </div>
@@ -1329,7 +1337,7 @@ export function AlertNotificationSettingsModal({
               onClick={onClose}
               disabled={updateSettingsMutation.isPending}
             >
-              Close
+              {t("modal.close")}
             </Button>
           </div>
         </div>
@@ -1339,10 +1347,9 @@ export function AlertNotificationSettingsModal({
       <Dialog open={showWebhookExample} onOpenChange={setShowWebhookExample}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Webhook Payload Example</DialogTitle>
+            <DialogTitle>{t("modal.webhookPayloadExample")}</DialogTitle>
             <DialogDescription>
-              This is an example of the JSON payload that will be sent to your
-              webhook endpoint when alerts are triggered.
+              {t("modal.webhookPayloadExampleDescription")}
             </DialogDescription>
           </DialogHeader>
 
@@ -1352,7 +1359,7 @@ export function AlertNotificationSettingsModal({
                 htmlFor="webhook-version"
                 className="text-sm font-semibold"
               >
-                Version:
+                {t("modal.version")}
               </Label>
               <select
                 id="webhook-version"
@@ -1363,12 +1370,14 @@ export function AlertNotificationSettingsModal({
                 <option value="v1">v1</option>
               </select>
               <span className="text-xs text-muted-foreground">
-                (Only v1 is currently available)
+                {t("modal.onlyV1Available")}
               </span>
             </div>
 
             <div className="space-y-2">
-              <Label className="text-sm font-semibold">HTTP Headers</Label>
+              <Label className="text-sm font-semibold">
+                {t("modal.httpHeaders")}
+              </Label>
               <div className="p-4 bg-muted rounded-lg">
                 <pre className="text-xs overflow-x-auto">
                   {`Content-Type: application/json
@@ -1382,7 +1391,9 @@ X-Qarote-Signature: sha256=abc123... (if secret is configured)`}
             </div>
 
             <div className="space-y-2">
-              <Label className="text-sm font-semibold">JSON Payload</Label>
+              <Label className="text-sm font-semibold">
+                {t("modal.jsonPayload")}
+              </Label>
               <div className="p-4 bg-muted rounded-lg">
                 <pre className="text-xs overflow-x-auto">
                   {JSON.stringify(
@@ -1460,13 +1471,12 @@ X-Qarote-Signature: sha256=abc123... (if secret is configured)`}
             </div>
 
             <div className="p-4 bg-blue-50 dark:bg-blue-950 rounded-lg">
-              <p className="text-sm text-blue-900 dark:text-blue-100">
-                <strong>Note:</strong> If you configure a secret, the payload
-                will include an{" "}
-                <code className="font-mono">X-Qarote-Signature</code> header
-                with an HMAC-SHA256 signature. You can use this to verify the
-                authenticity of the webhook request.
-              </p>
+              <p
+                className="text-sm text-blue-900 dark:text-blue-100"
+                dangerouslySetInnerHTML={{
+                  __html: t("modal.webhookSignatureNote"),
+                }}
+              />
             </div>
           </div>
 
@@ -1476,7 +1486,7 @@ X-Qarote-Signature: sha256=abc123... (if secret is configured)`}
               variant="outline"
               onClick={() => setShowWebhookExample(false)}
             >
-              Close
+              {t("modal.close")}
             </Button>
           </div>
         </DialogContent>

@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import {
   Calendar,
   Carrot,
@@ -73,6 +75,7 @@ export const PersonalInfoTab = ({
   isCancellingEmailChange = false,
   emailEnabled = true,
 }: PersonalInfoTabProps) => {
+  const { t } = useTranslation("profile");
   return (
     <div className="space-y-6">
       <Card>
@@ -106,7 +109,7 @@ export const PersonalInfoTab = ({
         <CardContent className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="firstName">First Name</Label>
+              <Label htmlFor="firstName">{t("personal.firstName")}</Label>
               {editingProfile ? (
                 <Input
                   id="firstName"
@@ -120,12 +123,12 @@ export const PersonalInfoTab = ({
                 />
               ) : (
                 <p className="text-sm p-2 border rounded-md bg-muted">
-                  {profile.firstName || "Not set"}
+                  {profile.firstName || t("personal.notSet")}
                 </p>
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="lastName">Last Name</Label>
+              <Label htmlFor="lastName">{t("personal.lastName")}</Label>
               {editingProfile ? (
                 <Input
                   id="lastName"
@@ -139,7 +142,7 @@ export const PersonalInfoTab = ({
                 />
               ) : (
                 <p className="text-sm p-2 border rounded-md bg-muted">
-                  {profile.lastName || "Not set"}
+                  {profile.lastName || t("personal.notSet")}
                 </p>
               )}
             </div>
@@ -150,16 +153,22 @@ export const PersonalInfoTab = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
               <Mail className="h-4 w-4" />
-              <span>Email: {profile.email}</span>
+              <span>
+                {t("personal.email")} {profile.email}
+              </span>
             </div>
             <div className="flex items-center gap-2">
               <Calendar className="h-4 w-4" />
-              <span>Joined: {formatDate(profile.createdAt)}</span>
+              <span>
+                {t("personal.joined")} {formatDate(profile.createdAt)}
+              </span>
             </div>
             {profile.lastLogin && (
               <div className="flex items-center gap-2">
                 <Settings className="h-4 w-4" />
-                <span>Last login: {formatDate(profile.lastLogin)}</span>
+                <span>
+                  {t("personal.lastLogin")} {formatDate(profile.lastLogin)}
+                </span>
               </div>
             )}
           </div>
@@ -173,7 +182,7 @@ export const PersonalInfoTab = ({
                   disabled={isUpdating}
                 >
                   <X className="h-4 w-4 mr-2" />
-                  Cancel
+                  {t("personal.cancel")}
                 </Button>
                 <Button
                   onClick={onUpdateProfile}
@@ -181,7 +190,7 @@ export const PersonalInfoTab = ({
                   className="btn-primary"
                 >
                   <Save className="h-4 w-4 mr-2" />
-                  Save Changes
+                  {t("personal.saveChanges")}
                 </Button>
               </>
             ) : (
@@ -190,7 +199,7 @@ export const PersonalInfoTab = ({
                 className="btn-primary"
               >
                 <Edit className="h-4 w-4 mr-2" />
-                Edit Profile
+                {t("personal.editProfile")}
               </Button>
             )}
           </div>
@@ -204,10 +213,10 @@ export const PersonalInfoTab = ({
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Settings className="h-5 w-5" />
-                Security Settings
+                {t("personal.securitySettings")}
               </CardTitle>
               <CardDescription>
-                Manage your password and email address for account security
+                {t("personal.securityDescription")}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -216,7 +225,9 @@ export const PersonalInfoTab = ({
                 <div className="space-y-3 lg:pr-6 flex flex-col">
                   <div className="flex items-center gap-2 pb-1">
                     <Lock className="h-4 w-4 text-muted-foreground" />
-                    <h3 className="font-medium">Change Password</h3>
+                    <h3 className="font-medium">
+                      {t("personal.changePassword")}
+                    </h3>
                   </div>
                   <div className="flex-1">
                     <CompactPasswordChangeForm
@@ -230,7 +241,9 @@ export const PersonalInfoTab = ({
                 <div className="space-y-3 lg:pl-6 flex flex-col">
                   <div className="flex items-center gap-2 pb-1">
                     <Mail className="h-4 w-4 text-muted-foreground" />
-                    <h3 className="font-medium">Email Address</h3>
+                    <h3 className="font-medium">
+                      {t("personal.emailAddress")}
+                    </h3>
                   </div>
                   <div className="flex-1">
                     <CompactEmailChangeForm
