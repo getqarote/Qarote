@@ -1,3 +1,5 @@
+import { keepPreviousData } from "@tanstack/react-query";
+
 import { trpc } from "@/lib/trpc/client";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
@@ -95,6 +97,7 @@ export const useUserWorkspaces = () => {
   return trpc.workspace.management.getUserWorkspaces.useQuery(undefined, {
     enabled: isAuthenticated,
     staleTime: 30000, // 30 seconds
+    placeholderData: keepPreviousData,
   });
 };
 
@@ -105,6 +108,7 @@ export const useCurrentWorkspace = () => {
   return trpc.workspace.core.getCurrent.useQuery(undefined, {
     enabled: isAuthenticated,
     staleTime: 30000, // 30 seconds
+    placeholderData: keepPreviousData,
   });
 };
 

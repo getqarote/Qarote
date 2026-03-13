@@ -1,3 +1,5 @@
+import { keepPreviousData } from "@tanstack/react-query";
+
 import { trpc } from "@/lib/trpc/client";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
@@ -24,5 +26,6 @@ export const useCurrentPlan = () => {
   return trpc.workspace.plan.getCurrentPlan.useQuery(undefined, {
     enabled: isAuthenticated,
     staleTime: 30000, // 30 seconds
+    placeholderData: keepPreviousData,
   });
 };
