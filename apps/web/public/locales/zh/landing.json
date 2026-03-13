@@ -1,8 +1,10 @@
 {
   "hero": {
-    "title": "你的团队值得拥有的现代化 RabbitMQ 管理界面",
-    "subtitle": "Qarote 为你提供清晰统一的队列、交换器和消息视图，配备实时监控、告警和多工作区支持。",
-    "noCreditCard": "无需信用卡 \u2022 几分钟内即可开始管理队列"
+    "titleBefore": "监控 ",
+    "titleHighlight": "RabbitMQ",
+    "titleAfter": " 服务器的最简单方式",
+    "subtitle": "Qarote 提供简洁直观的界面，让你轻松监控、分析和管理 RabbitMQ 服务器。",
+    "noCreditCard": "14 天免费试用 \u2022 无需信用卡"
   },
   "cta": {
     "getStartedForFree": "免费开始使用",

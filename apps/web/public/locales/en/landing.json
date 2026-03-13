@@ -1,8 +1,10 @@
 {
   "hero": {
-    "title": "The modern RabbitMQ management interface your team deserves",
-    "subtitle": "Qarote gives you a clean, unified view of your queues, exchanges and messages, with real monitoring, alerts and multi-workspace support.",
-    "noCreditCard": "No credit card required \u2022 Start managing queues in minutes"
+    "titleBefore": "The easiest way to monitor your ",
+    "titleHighlight": "RabbitMQ",
+    "titleAfter": " servers",
+    "subtitle": "Qarote provides a clean and intuitive interface to monitor, analyze, and manage your RabbitMQ servers effortlessly.",
+    "noCreditCard": "14-day free trial \u2022 No credit card required"
   },
   "cta": {
     "getStartedForFree": "Get started for free",
@@ -36,27 +38,27 @@
     "title": "All you really care about.",
     "titleLine2": "Monitored in one place.",
     "liveQueueMonitoring": {
-      "title": "Live Queue Monitoring",
+      "title": "Live queue monitoring",
       "description": "Monitor queue depths, message rates, and consumer counts with live updates. Track message accumulation and processing performance."
     },
     "smartAlertingSystem": {
-      "title": "Smart Alerting System",
+      "title": "Smart alerting system",
       "description": "Intelligent alerts for queue backlogs, memory usage, and performance issues. Customizable thresholds with severity-based notifications."
     },
     "queueManagement": {
-      "title": "Queue Management",
+      "title": "Queue management",
       "description": "Pause, resume, and delete queues with one click. Create exchanges, bind queues, and manage routing keys through an intuitive interface."
     },
     "performanceAnalytics": {
-      "title": "Performance Analytics",
+      "title": "Performance analytics",
       "description": "Detailed metrics on memory usage, disk space, file descriptors, and message throughput. Visualize trends with beautiful charts and graphs."
     },
     "multiServerSupport": {
-      "title": "Multi-Server Support",
+      "title": "Multi-server support",
       "description": "Connect to multiple RabbitMQ clusters and switch between them seamlessly. Support for different environments and configurations."
     },
     "messagePublishing": {
-      "title": "Message Publishing",
+      "title": "Message publishing",
       "description": "Test and debug your applications by publishing messages directly to queues and exchanges. Perfect for development and troubleshooting."
     }
   },

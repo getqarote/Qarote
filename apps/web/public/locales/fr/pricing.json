@@ -23,7 +23,7 @@
   "securityCompatibility": "Sécurité & compatibilité",
   "plans": {
     "starter": {
-      "name": "Free",
+      "name": "Community",
       "description": "Idéal pour débuter"
     },
     "pro": {
@@ -54,6 +54,8 @@
     "teamMembers": "{{count}} membre d'équipe",
     "teamMembers_plural": "{{count}} membres d'équipe",
     "teamMembersDesc": "Collaborez avec votre équipe",
+    "basicStatistics": "Statistiques de base",
+    "advancedStatistics": "Statistiques avancées",
     "advancedAnalytics": "Analyses avancées",
     "advancedAnalyticsDesc": "Rapports et informations détaillés",
     "queueManagement": "Gestion des files d'attente",
@@ -89,13 +91,13 @@
     "allRabbitMQVersions": "Toutes les versions RabbitMQ",
     "ssoSamlOidc": "SSO, SAML & OIDC",
     "server_upTo1": "1 serveur RabbitMQ",
-    "server_upTo3": "Jusqu'à 3 serveurs RabbitMQ",
+    "server_upTo3": "3 serveurs RabbitMQ",
     "server_unlimited": "Serveurs RabbitMQ illimités",
     "workspace_upTo1": "1 espace de travail",
-    "workspace_upTo3": "Jusqu'à 3 espaces de travail",
+    "workspace_upTo3": "3 espaces de travail",
     "workspace_unlimited": "Espaces de travail illimités",
     "member_upTo1": "1 membre d'équipe",
-    "member_upTo3": "Jusqu'à 3 membres d'équipe",
+    "member_upTo3": "3 membres d'équipe",
     "member_unlimited": "Membres d'équipe illimités"
   },
   "limits": {

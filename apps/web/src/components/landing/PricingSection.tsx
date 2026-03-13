@@ -63,13 +63,13 @@ const PricingSection = () => {
       price: "$348",
       period: "/ year",
       ctaKey: "chooseDeveloper",
-      url: import.meta.env.VITE_PORTAL_URL,
+      url: `${import.meta.env.VITE_PORTAL_URL}/auth/sign-up`,
     },
     ENTERPRISE: {
       price: "$1,188",
       period: "/ year",
       ctaKey: "chooseEnterprise",
-      url: import.meta.env.VITE_PORTAL_URL,
+      url: `${import.meta.env.VITE_PORTAL_URL}/auth/sign-up`,
     },
   };
 
@@ -392,7 +392,9 @@ const PricingSection = () => {
                           </FeatureItem>
                           <FeatureItem>
                             <span className="text-sm text-foreground">
-                              {tPricing("featureNames.advancedAnalytics")}
+                              {plan.id === "FREE"
+                                ? tPricing("featureNames.basicStatistics")
+                                : tPricing("featureNames.advancedStatistics")}
                             </span>
                           </FeatureItem>
                           {plan.features.queueManagement && (

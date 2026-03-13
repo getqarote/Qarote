@@ -1,8 +1,10 @@
 {
   "hero": {
-    "title": "La interfaz moderna de gestión de RabbitMQ que tu equipo merece",
-    "subtitle": "Qarote te ofrece una vista limpia y unificada de tus colas, exchanges y mensajes, con monitoreo en tiempo real, alertas y soporte multi-espacio de trabajo.",
-    "noCreditCard": "No se requiere tarjeta de crédito \u2022 Comienza a gestionar tus colas en minutos"
+    "titleBefore": "La forma más fácil de monitorear tus servidores ",
+    "titleHighlight": "RabbitMQ",
+    "titleAfter": "",
+    "subtitle": "Qarote proporciona una interfaz clara e intuitiva para monitorear, analizar y gestionar tus servidores RabbitMQ sin esfuerzo.",
+    "noCreditCard": "Prueba gratuita de 14 días \u2022 No se requiere tarjeta de crédito"
   },
   "cta": {
     "getStartedForFree": "Comenzar gratis",
