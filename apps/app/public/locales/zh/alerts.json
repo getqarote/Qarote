@@ -82,7 +82,7 @@
     "serversSelected": "已选择 {{count}} 个服务器",
     "serversSelected_other": "已选择 {{count}} 个服务器",
     "searchPlaceholder": "按名称、主机或端口搜索服务器...",
-    "noServersFound": "未找到匹配"{{term}}"的服务器",
+    "noServersFound": "未找到匹配 \"{{term}}\" 的服务器",
     "noServersAvailable": "没有可用的服务器",
     "clearAll": "全部清除",
     "serverSelectionCount": "已选择 {{total}} 个服务器中的 {{selected}} 个。留空以接收所有服务器的通知。",
