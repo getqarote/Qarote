@@ -15,7 +15,11 @@
     "invitePlaceholder": "输入邮箱地址并按回车添加",
     "inviteHintWithLimit": "您当前的计划最多可邀请 {{count}} 名成员",
     "upgradeToInvite": "升级到 Developer 或 Enterprise 计划以邀请团队成员。",
-    "invalidEmail": "请输入有效的邮箱地址"
+    "invalidEmail": "请输入有效的邮箱地址",
+    "role": "角色",
+    "selectRole": "选择角色",
+    "roleMember": "成员",
+    "roleAdmin": "管理员"
   },
   "createForm": {
     "title": "创建新工作区",
@@ -30,6 +34,10 @@
     "invitePlaceholder": "输入邮箱地址并按回车添加",
     "inviteHintWithLimit": "您当前的计划最多可邀请 {{count}} 名成员",
     "upgradeToInvite": "升级到 Developer 或 Enterprise 计划以邀请团队成员。",
+    "role": "角色",
+    "selectRole": "选择角色",
+    "roleMember": "成员",
+    "roleAdmin": "管理员",
     "cancel": "取消",
     "creating": "创建中...",
     "submit": "创建工作区"

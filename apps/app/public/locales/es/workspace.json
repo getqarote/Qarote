@@ -15,7 +15,11 @@
     "invitePlaceholder": "Escribe un correo y presiona Enter para agregar",
     "inviteHintWithLimit": "Puedes invitar hasta {{count}} miembros con tu plan actual",
     "upgradeToInvite": "Actualiza al plan Developer o Enterprise para invitar miembros del equipo.",
-    "invalidEmail": "Por favor ingresa una dirección de correo válida"
+    "invalidEmail": "Por favor ingresa una dirección de correo válida",
+    "role": "Rol",
+    "selectRole": "Seleccionar un rol",
+    "roleMember": "Miembro",
+    "roleAdmin": "Admin"
   },
   "createForm": {
     "title": "Crear nuevo espacio de trabajo",
@@ -30,6 +34,10 @@
     "invitePlaceholder": "Escribe un correo y presiona Enter para agregar",
     "inviteHintWithLimit": "Puedes invitar hasta {{count}} miembros con tu plan actual",
     "upgradeToInvite": "Actualiza al plan Developer o Enterprise para invitar miembros del equipo.",
+    "role": "Rol",
+    "selectRole": "Seleccionar un rol",
+    "roleMember": "Miembro",
+    "roleAdmin": "Admin",
     "cancel": "Cancelar",
     "creating": "Creando...",
     "submit": "Crear espacio de trabajo"

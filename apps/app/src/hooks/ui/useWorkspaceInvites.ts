@@ -18,8 +18,10 @@ export function useWorkspaceInvites() {
   const { planData } = useUser();
   const sendInvitationMutation = useSendInvitation();
   const [inviteEmails, setInviteEmails] = useState<string[]>([]);
+  const [inviteRole, setInviteRole] = useState<"ADMIN" | "MEMBER">("MEMBER");
   const [inviteLinks, setInviteLinks] = useState<InviteLink[]>([]);
   const pendingInvites = useRef<string[]>([]);
+  const pendingRole = useRef<"ADMIN" | "MEMBER">("MEMBER");
   const pendingCount = useRef(0);
   const batchIdRef = useRef(0);
 
@@ -41,7 +43,8 @@ export function useWorkspaceInvites() {
 
   const storePendingInvites = useCallback(() => {
     pendingInvites.current = [...inviteEmails];
-  }, [inviteEmails]);
+    pendingRole.current = inviteRole;
+  }, [inviteEmails, inviteRole]);
 
   const sendPendingInvites = useCallback((): Promise<InviteLink[]> => {
     const emails = pendingInvites.current;
@@ -68,7 +71,7 @@ export function useWorkspaceInvites() {
 
       emails.forEach((email) => {
         sendInvitationMutation.mutate(
-          { email, role: "MEMBER" },
+          { email, role: pendingRole.current },
           {
             onSuccess: (data) => {
               if (currentBatchId !== batchIdRef.current) return;
@@ -105,14 +108,18 @@ export function useWorkspaceInvites() {
   const reset = useCallback(() => {
     batchIdRef.current++;
     setInviteEmails([]);
+    setInviteRole("MEMBER");
     setInviteLinks([]);
     pendingInvites.current = [];
+    pendingRole.current = "MEMBER";
     pendingCount.current = 0;
   }, []);
 
   return {
     inviteEmails,
     setInviteEmails: handleInviteEmailsChange,
+    inviteRole,
+    setInviteRole,
     inviteLinks,
     canInviteUsers,
     maxInvites,

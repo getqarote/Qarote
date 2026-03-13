@@ -51,6 +51,8 @@ export function CreateWorkspaceForm({
   const {
     inviteEmails,
     setInviteEmails,
+    inviteRole,
+    setInviteRole,
     inviteLinks,
     canInviteUsers,
     maxInvites,
@@ -192,6 +194,8 @@ export function CreateWorkspaceForm({
               <InviteMembersSection
                 inviteEmails={inviteEmails}
                 setInviteEmails={setInviteEmails}
+                inviteRole={inviteRole}
+                setInviteRole={setInviteRole}
                 canInviteUsers={canInviteUsers}
                 maxInvites={maxInvites}
                 disabled={createWorkspaceMutation.isPending}
