@@ -47,6 +47,8 @@ const Workspace = () => {
   const {
     inviteEmails,
     setInviteEmails,
+    inviteRole,
+    setInviteRole,
     inviteLinks,
     canInviteUsers,
     maxInvites,
@@ -269,6 +271,8 @@ const Workspace = () => {
                       <InviteMembersSection
                         inviteEmails={inviteEmails}
                         setInviteEmails={setInviteEmails}
+                        inviteRole={inviteRole}
+                        setInviteRole={setInviteRole}
                         canInviteUsers={canInviteUsers}
                         maxInvites={maxInvites}
                         disabled={createWorkspaceMutation.isPending}

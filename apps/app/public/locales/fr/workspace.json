@@ -15,7 +15,11 @@
     "invitePlaceholder": "Saisissez un e-mail et appuyez sur Entrée",
     "inviteHintWithLimit": "Vous pouvez inviter jusqu'à {{count}} membres avec votre forfait actuel",
     "upgradeToInvite": "Passez au forfait Developer ou Enterprise pour inviter des membres.",
-    "invalidEmail": "Veuillez saisir une adresse e-mail valide"
+    "invalidEmail": "Veuillez saisir une adresse e-mail valide",
+    "role": "Rôle",
+    "selectRole": "Sélectionner un rôle",
+    "roleMember": "Membre",
+    "roleAdmin": "Admin"
   },
   "createForm": {
     "title": "Créer un nouvel espace de travail",
@@ -30,6 +34,10 @@
     "invitePlaceholder": "Saisissez un e-mail et appuyez sur Entrée",
     "inviteHintWithLimit": "Vous pouvez inviter jusqu'à {{count}} membres avec votre forfait actuel",
     "upgradeToInvite": "Passez au forfait Developer ou Enterprise pour inviter des membres.",
+    "role": "Rôle",
+    "selectRole": "Sélectionner un rôle",
+    "roleMember": "Membre",
+    "roleAdmin": "Admin",
     "cancel": "Annuler",
     "creating": "Création...",
     "submit": "Créer l'espace de travail"

@@ -15,7 +15,11 @@
     "invitePlaceholder": "Type an email and press Enter to add",
     "inviteHintWithLimit": "You can invite up to {{count}} members on your current plan",
     "upgradeToInvite": "Upgrade to the Developer or Enterprise plan to invite team members.",
-    "invalidEmail": "Please enter a valid email address"
+    "invalidEmail": "Please enter a valid email address",
+    "role": "Role",
+    "selectRole": "Select a role",
+    "roleMember": "Member",
+    "roleAdmin": "Admin"
   },
   "createForm": {
     "title": "Create New Workspace",
@@ -30,6 +34,10 @@
     "invitePlaceholder": "Type an email and press Enter to add",
     "inviteHintWithLimit": "You can invite up to {{count}} members on your current plan",
     "upgradeToInvite": "Upgrade to the Developer or Enterprise plan to invite team members.",
+    "role": "Role",
+    "selectRole": "Select a role",
+    "roleMember": "Member",
+    "roleAdmin": "Admin",
     "cancel": "Cancel",
     "creating": "Creating...",
     "submit": "Create Workspace"
