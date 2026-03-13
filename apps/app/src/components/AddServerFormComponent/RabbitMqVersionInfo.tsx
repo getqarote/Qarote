@@ -70,9 +70,9 @@ export const RabbitMqVersionInfo = ({
     <div className={className}>
       {/* Management Plugin Requirement Notice */}
       {!isManagementAlertDismissed && (
-        <Alert className="mb-4 border-blue-200 bg-blue-50 relative">
-          <InfoIcon className="h-4 w-4 text-blue-600" />
-          <AlertDescription className="text-blue-800 pr-8">
+        <Alert className="mb-4 border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950 relative">
+          <InfoIcon className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+          <AlertDescription className="text-blue-800 dark:text-blue-200 pr-8">
             <div className="font-medium mb-1">
               RabbitMQ Management Plugin Required
             </div>
@@ -85,7 +85,7 @@ export const RabbitMqVersionInfo = ({
             </p>
             <p className="text-xs mt-2 opacity-90">
               To enable:{" "}
-              <span className="bg-blue-100 px-1 py-0.5 rounded text-xs font-mono">
+              <span className="bg-blue-100 dark:bg-blue-900 px-1 py-0.5 rounded text-xs font-mono">
                 rabbitmq-plugins enable rabbitmq_management
               </span>
             </p>
@@ -94,7 +94,7 @@ export const RabbitMqVersionInfo = ({
             variant="ghost"
             size="sm"
             onClick={() => setIsManagementAlertDismissed(true)}
-            className="absolute top-2 right-6 h-5 w-5 p-0"
+            className="absolute top-2 right-6 h-5 w-5 p-0 hover:bg-blue-200 dark:hover:bg-blue-800 text-blue-600 dark:text-blue-400"
           >
             <X
               className="h-3 w-3 cursor-pointer"
@@ -116,7 +116,7 @@ export const RabbitMqVersionInfo = ({
               variant="ghost"
               size="sm"
               onClick={() => setIsExpanded(!isExpanded)}
-              className="h-6 w-6 p-0 hover:bg-gray-100"
+              className="h-6 w-6 p-0 hover:bg-gray-100 dark:hover:bg-gray-800"
             >
               {isExpanded ? (
                 <ChevronUp className="h-4 w-4" />

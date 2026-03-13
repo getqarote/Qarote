@@ -314,7 +314,7 @@
 
     /* Orange primary theme for dark mode */
     --primary: 25 95% 53%;
-    --primary-foreground: 20 14.3% 4.1%;
+    --primary-foreground: 0 0% 98%;
 
     --secondary: 25 14% 12%;
     --secondary-foreground: 0 0% 95%;
