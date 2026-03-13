@@ -4,12 +4,10 @@ import {
   Edit,
   Save,
   Settings,
-  Shield,
   Users,
   X,
 } from "lucide-react";
 
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PlanBadge } from "@/components/ui/PlanBadge";
@@ -119,15 +117,6 @@ export const WorkspaceInfoTab = ({
               </Button>
             )}
           </div>
-        )}
-
-        {!isAdmin && (
-          <Alert>
-            <Shield className="h-4 w-4" />
-            <AlertDescription>
-              Only admin users can edit workspace information.
-            </AlertDescription>
-          </Alert>
         )}
       </CardContent>
     </Card>

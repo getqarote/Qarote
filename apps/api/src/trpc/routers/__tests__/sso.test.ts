@@ -127,7 +127,7 @@ function makeCtx(overrides: Record<string, unknown> = {}) {
 }
 
 const oidcConfigJson = JSON.stringify({
-  issuer: "https://idp.example.com/.well-known/openid-configuration",
+  issuer: "https://idp.example.com",
   discoveryEndpoint: "https://idp.example.com/.well-known/openid-configuration",
   clientId: "qarote",
   clientSecret: "super-secret",
@@ -137,7 +137,7 @@ const oidcConfigJson = JSON.stringify({
 const mockProvider = {
   id: "prov-1",
   providerId: "default",
-  issuer: "https://idp.example.com/.well-known/openid-configuration",
+  issuer: "https://idp.example.com",
   domain: "",
   oidcConfig: oidcConfigJson,
   samlConfig: null,
@@ -478,6 +478,85 @@ describe("ssoRouter", () => {
             "https://internal-idp.example.com/.well-known/openid-configuration",
         })
       ).rejects.toThrow(TRPCError);
+    });
+  });
+
+  // ─── registerProvider issuer normalization ────────────────────────────────
+
+  describe("registerProvider issuer normalization", () => {
+    it("strips .well-known/openid-configuration from OIDC discovery URL", async () => {
+      mockIsFeatureEnabled.mockResolvedValue(true);
+
+      const txSsoUpsert = vi.fn().mockResolvedValue({});
+      const txWscUpsert = vi.fn().mockResolvedValue({});
+      mockTransaction.mockImplementation(async (cb: (tx: unknown) => unknown) =>
+        cb({
+          ssoProvider: { upsert: txSsoUpsert },
+          workspaceSsoConfig: { upsert: txWscUpsert },
+        })
+      );
+
+      const caller = ssoRouter.createCaller(makeCtx() as never);
+      await caller.registerProvider({
+        type: "oidc",
+        oidcDiscoveryUrl:
+          "https://idp.example.com/.well-known/openid-configuration",
+        oidcClientId: "qarote",
+        oidcClientSecret: "secret",
+      });
+
+      const upsertCall = txSsoUpsert.mock.calls[0][0];
+      expect(upsertCall.create.issuer).toBe("https://idp.example.com");
+    });
+
+    it("preserves issuer when discovery URL has no .well-known suffix", async () => {
+      mockIsFeatureEnabled.mockResolvedValue(true);
+
+      const txSsoUpsert = vi.fn().mockResolvedValue({});
+      const txWscUpsert = vi.fn().mockResolvedValue({});
+      mockTransaction.mockImplementation(async (cb: (tx: unknown) => unknown) =>
+        cb({
+          ssoProvider: { upsert: txSsoUpsert },
+          workspaceSsoConfig: { upsert: txWscUpsert },
+        })
+      );
+
+      const caller = ssoRouter.createCaller(makeCtx() as never);
+      await caller.registerProvider({
+        type: "oidc",
+        oidcDiscoveryUrl: "https://idp.example.com",
+        oidcClientId: "qarote",
+        oidcClientSecret: "secret",
+      });
+
+      const upsertCall = txSsoUpsert.mock.calls[0][0];
+      expect(upsertCall.create.issuer).toBe("https://idp.example.com");
+    });
+
+    it("strips suffix in updateProvider too", async () => {
+      mockIsFeatureEnabled.mockResolvedValue(true);
+      mockSsoProviderFindUnique.mockResolvedValue(mockProvider);
+
+      const txSsoUpdate = vi.fn().mockResolvedValue({});
+      const txWscUpdate = vi.fn().mockResolvedValue({});
+      mockTransaction.mockImplementation(async (cb: (tx: unknown) => unknown) =>
+        cb({
+          ssoProvider: { update: txSsoUpdate },
+          workspaceSsoConfig: { update: txWscUpdate },
+        })
+      );
+
+      const caller = ssoRouter.createCaller(makeCtx() as never);
+      await caller.updateProvider({
+        type: "oidc",
+        oidcDiscoveryUrl:
+          "https://idp.example.com/.well-known/openid-configuration",
+        oidcClientId: "qarote",
+        oidcClientSecret: "new-secret",
+      });
+
+      const updateCall = txSsoUpdate.mock.calls[0][0];
+      expect(updateCall.data.issuer).toBe("https://idp.example.com");
     });
   });
 });

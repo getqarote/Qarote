@@ -26,8 +26,15 @@ export const coreRouter = router({
     const user = ctx.user;
 
     try {
-      // If user doesn't have a workspaceId, they don't have a current workspace
-      if (!user.workspaceId) {
+      // Read workspaceId fresh from DB to avoid stale session cookie cache
+      // (better-auth caches session data in a cookie for up to 5 minutes)
+      const freshUser = await ctx.prisma.user.findUnique({
+        where: { id: user.id },
+        select: { workspaceId: true },
+      });
+      const workspaceId = freshUser?.workspaceId;
+
+      if (!workspaceId) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: te(ctx.locale, "workspace.noWorkspaceAssigned"),
@@ -35,7 +42,7 @@ export const coreRouter = router({
       }
 
       const workspace = await ctx.prisma.workspace.findUnique({
-        where: { id: user.workspaceId },
+        where: { id: workspaceId },
         include: {
           _count: {
             select: {

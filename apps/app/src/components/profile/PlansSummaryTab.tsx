@@ -36,7 +36,7 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
 }) => {
   const { t } = useTranslation("billing");
   const { handleUpgrade, isUpgrading } = usePlanUpgrade();
-  const { planData } = useUser();
+  const { planData, user } = useUser();
   const { data: allPlansData } = useAllPlans();
   const currentFeatures = planData?.planFeatures;
   const isTrialing = planData?.user?.subscriptionStatus === "TRIALING";
@@ -93,6 +93,7 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
 
   const navigate = useNavigate();
   const selfHosted = isSelfHostedMode();
+  const isAdmin = user.role === "ADMIN";
   const currentPlanStyle = planStyle[currentPlan] ?? planStyle[UserPlan.FREE];
   const currentBenefits = getBenefits(currentPlan);
   const nextPlan = getNextPlan(currentPlan);
@@ -304,85 +305,95 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
         </Card>
       ) : null}
 
-      {/* Quick Actions */}
-      <div
-        className={`grid grid-cols-1 ${selfHosted ? "" : "md:grid-cols-2"} gap-4`}
-      >
-        {selfHosted ? (
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-                  <Key className="w-5 h-5 text-purple-600" />
-                </div>
-                <div className="flex-1">
-                  <h4 className="font-medium text-foreground">License</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Activate or manage your license
-                  </p>
-                </div>
-                <Link to="/settings/license">
-                  <Button variant="ghost" size="sm" className="text-purple-600">
-                    Manage
-                  </Button>
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
-        ) : (
-          <>
+      {/* Quick Actions - Only show for admins */}
+      {isAdmin && (
+        <div
+          className={`grid grid-cols-1 ${selfHosted ? "" : "md:grid-cols-2"} gap-4`}
+        >
+          {selfHosted ? (
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                    <Server className="w-5 h-5 text-blue-600" />
+                  <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                    <Key className="w-5 h-5 text-purple-600" />
                   </div>
                   <div className="flex-1">
-                    <h4 className="font-medium text-foreground">
-                      Billing & Usage
-                    </h4>
+                    <h4 className="font-medium text-foreground">License</h4>
                     <p className="text-sm text-muted-foreground">
-                      Manage your subscription
+                      Activate or manage your license
                     </p>
                   </div>
-                  <Link to="/billing">
-                    <Button variant="ghost" size="sm" className="text-blue-600">
+                  <Link to="/settings/license">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-purple-600"
+                    >
                       Manage
                     </Button>
                   </Link>
                 </div>
               </CardContent>
             </Card>
+          ) : (
+            <>
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                      <Server className="w-5 h-5 text-blue-600" />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-medium text-foreground">
+                        Billing & Usage
+                      </h4>
+                      <p className="text-sm text-muted-foreground">
+                        Manage your subscription
+                      </p>
+                    </div>
+                    <Link to="/billing">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-blue-600"
+                      >
+                        Manage
+                      </Button>
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
 
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                    <TrendingUp className="w-5 h-5 text-green-600" />
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                      <TrendingUp className="w-5 h-5 text-green-600" />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-medium text-foreground">
+                        Compare Plans
+                      </h4>
+                      <p className="text-sm text-muted-foreground">
+                        See all available options
+                      </p>
+                    </div>
+                    <Link to="/plans">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-green-600"
+                      >
+                        Compare
+                      </Button>
+                    </Link>
                   </div>
-                  <div className="flex-1">
-                    <h4 className="font-medium text-foreground">
-                      Compare Plans
-                    </h4>
-                    <p className="text-sm text-muted-foreground">
-                      See all available options
-                    </p>
-                  </div>
-                  <Link to="/plans">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-green-600"
-                    >
-                      Compare
-                    </Button>
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
-          </>
-        )}
-      </div>
+                </CardContent>
+              </Card>
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 };
