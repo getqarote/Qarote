@@ -1,7 +1,5 @@
 import { useTranslation } from "react-i18next";
 
-import { LanguageSwitcher } from "@/components/LanguageSwitcher";
-
 const FooterLinks = () => {
   const { t } = useTranslation("landing");
 
@@ -96,7 +94,7 @@ const FooterSection = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Mobile layout */}
         <div className="flex flex-col gap-6 md:hidden">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center">
             <div className="flex items-center gap-1">
               <img
                 src="/images/new_icon.svg"
@@ -108,7 +106,6 @@ const FooterSection = () => {
                 Qarote
               </h3>
             </div>
-            <LanguageSwitcher />
           </div>
 
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
@@ -129,8 +126,6 @@ const FooterSection = () => {
               Qarote
             </h3>
           </div>
-
-          <LanguageSwitcher />
 
           <div className="flex items-center gap-6">
             <FooterLinks />

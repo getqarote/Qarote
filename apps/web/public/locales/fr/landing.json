@@ -1,8 +1,10 @@
 {
   "hero": {
-    "title": "L'interface de gestion RabbitMQ moderne que votre équipe mérite",
-    "subtitle": "Qarote vous offre une vue claire et unifiée de vos files d'attente, échanges et messages, avec un monitoring en temps réel, des alertes et le support multi-espaces de travail.",
-    "noCreditCard": "Aucune carte de crédit requise \u2022 Gérez vos files d'attente en quelques minutes"
+    "titleBefore": "Le moyen le plus simple de monitorer vos serveurs ",
+    "titleHighlight": "RabbitMQ",
+    "titleAfter": "",
+    "subtitle": "Qarote fournit une interface claire et intuitive pour surveiller, analyser et gérer vos serveurs RabbitMQ sans effort.",
+    "noCreditCard": "Essai gratuit de 14 jours \u2022 Aucune carte de crédit requise"
   },
   "cta": {
     "getStartedForFree": "Commencer gratuitement",

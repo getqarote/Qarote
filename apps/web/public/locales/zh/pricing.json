@@ -23,7 +23,7 @@
   "securityCompatibility": "安全 & 兼容性",
   "plans": {
     "starter": {
-      "name": "免费版",
+      "name": "Community",
       "description": "入门的理想选择"
     },
     "pro": {
@@ -54,6 +54,8 @@
     "teamMembers": "{{count}} 个团队成员",
     "teamMembers_plural": "{{count}} 个团队成员",
     "teamMembersDesc": "与你的团队协作",
+    "basicStatistics": "基础统计",
+    "advancedStatistics": "高级统计",
     "advancedAnalytics": "高级分析",
     "advancedAnalyticsDesc": "详细的洞察和报告",
     "queueManagement": "队列管理",
@@ -89,13 +91,13 @@
     "allRabbitMQVersions": "所有 RabbitMQ 版本",
     "ssoSamlOidc": "SSO、SAML 和 OIDC",
     "server_upTo1": "1 个 RabbitMQ 服务器",
-    "server_upTo3": "最多 3 个 RabbitMQ 服务器",
+    "server_upTo3": "3 个 RabbitMQ 服务器",
     "server_unlimited": "无限 RabbitMQ 服务器",
     "workspace_upTo1": "1 个工作区",
-    "workspace_upTo3": "最多 3 个工作区",
+    "workspace_upTo3": "3 个工作区",
     "workspace_unlimited": "无限工作区",
     "member_upTo1": "1 个团队成员",
-    "member_upTo3": "最多 3 个团队成员",
+    "member_upTo3": "3 个团队成员",
     "member_unlimited": "无限团队成员"
   },
   "limits": {
