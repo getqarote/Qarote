@@ -3,6 +3,10 @@ import { useTranslation } from "react-i18next";
 import { AlertTriangle, Info } from "lucide-react";
 import { toast } from "sonner";
 
+import {
+  InviteFieldsLabels,
+  InviteMembersSection,
+} from "@/components/InviteMembersSection";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,15 +16,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { TagsInput } from "@/components/ui/tags-input";
 
 import { InviteFormState } from "./profileUtils";
 
@@ -65,6 +60,14 @@ export const InviteUserDialog = ({
     }
   };
 
+  const labels: InviteFieldsLabels = {
+    emailPlaceholder: t("invite.emailPlaceholder"),
+    role: t("invite.role"),
+    selectRole: t("invite.selectRole"),
+    roleMember: t("invite.member"),
+    roleAdmin: t("invite.admin"),
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
@@ -104,39 +107,18 @@ export const InviteUserDialog = ({
         )}
 
         <div className="space-y-4">
-          <div className="space-y-2">
-            <Label>{t("invite.emailAddress")}</Label>
-            <TagsInput
-              value={inviteForm.emails}
-              onChange={handleEmailsChange}
-              placeholder={t("invite.emailPlaceholder")}
-              maxTags={remainingSlots}
-              maxTagLength={100}
-              disabled={isInviting || !canInvite}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="role">{t("invite.role")}</Label>
-            <Select
-              value={inviteForm.role}
-              onValueChange={(value) =>
-                setInviteForm({
-                  ...inviteForm,
-                  role: value as "ADMIN" | "MEMBER",
-                })
-              }
-              disabled={isInviting || !canInvite}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder={t("invite.selectRole")} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="MEMBER">{t("invite.member")}</SelectItem>
-                <SelectItem value="ADMIN">{t("invite.admin")}</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          <InviteMembersSection
+            inviteEmails={inviteForm.emails}
+            setInviteEmails={handleEmailsChange}
+            inviteRole={inviteForm.role}
+            setInviteRole={(role) => setInviteForm({ ...inviteForm, role })}
+            canInviteUsers={canInvite}
+            maxInvites={remainingSlots}
+            disabled={isInviting || !canInvite}
+            labels={labels}
+            hideHeader
+            emailLabel={t("invite.emailAddress")}
+          />
 
           <div className="flex justify-end space-x-2">
             <Button
