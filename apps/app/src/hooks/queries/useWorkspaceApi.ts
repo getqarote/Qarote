@@ -127,9 +127,8 @@ export const useDeleteWorkspace = () => {
 
   return trpc.workspace.management.delete.useMutation({
     onSuccess: () => {
-      utils.auth.session.getSession.invalidate();
-      utils.workspace.management.getUserWorkspaces.invalidate();
-      utils.workspace.core.getCurrent.invalidate();
+      // Invalidate all queries so everything refetches with the new workspace context
+      utils.invalidate();
     },
   });
 };

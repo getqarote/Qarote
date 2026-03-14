@@ -404,10 +404,28 @@ export const managementRouter = router({
           });
         });
 
+        // Auto-switch the requesting user to their next available workspace
+        // Check both ownership and membership (same logic as getUserWorkspaces)
+        const nextWorkspace = await ctx.prisma.workspace.findFirst({
+          where: {
+            OR: [
+              { ownerId: user.id },
+              { members: { some: { userId: user.id } } },
+            ],
+          },
+          select: { id: true },
+        });
+
+        await ctx.prisma.user.update({
+          where: { id: user.id },
+          data: { workspaceId: nextWorkspace?.id ?? null },
+        });
+
         ctx.logger.info(
           {
             workspaceId,
             userId: user.id,
+            switchedTo: nextWorkspace?.id ?? null,
           },
           "Workspace deleted successfully"
         );
