@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router";
 
 import { toast } from "sonner";
 
 import { WorkspaceFormState, WorkspaceInfoTab } from "@/components/profile";
-
-import { useNavigate } from "react-router";
 
 import { useProfile } from "@/hooks/queries/useProfile";
 import {
@@ -49,19 +48,25 @@ const WorkspaceSection = () => {
     if (!workspace?.id) return;
     try {
       await deleteWorkspaceMutation.mutateAsync({ workspaceId: workspace.id });
-      toast.success(t("toast.workspaceDeleted"));
+    } catch {
+      toast.error(t("toast.workspaceDeleteFailed"));
+      return;
+    }
 
-      const remaining = userWorkspaces?.filter((w) => w.id !== workspace.id);
-      if (remaining?.length) {
+    toast.success(t("toast.workspaceDeleted"));
+
+    const remaining = userWorkspaces?.filter((w) => w.id !== workspace.id);
+    if (remaining?.length) {
+      try {
         await switchWorkspaceMutation.mutateAsync({
           workspaceId: remaining[0].id,
         });
-        navigate("/", { replace: true });
-      } else {
-        navigate("/workspace", { replace: true });
+      } catch {
+        // Switch failed — fall through to workspace creation page
       }
-    } catch {
-      toast.error(t("toast.workspaceDeleteFailed"));
+      navigate("/", { replace: true });
+    } else {
+      navigate("/workspace", { replace: true });
     }
   };
 
