@@ -77,7 +77,10 @@ export const planRouter = router({
         });
       }
 
-      // Always use workspace owner's subscription plan for workspace features
+      // Always use workspace owner's subscription plan for workspace features.
+      // When no workspace exists yet (e.g. first signup), fall back to the
+      // user's own subscription so trial features are available during
+      // workspace creation.
       let workspacePlan: UserPlan = UserPlan.FREE;
       const currentWorkspace = userWithSubscription.workspace;
 
@@ -93,6 +96,9 @@ export const planRouter = router({
         if (ownerSubscription) {
           workspacePlan = ownerSubscription.plan;
         }
+      } else if (userWithSubscription.subscription) {
+        // No workspace yet — use the user's own subscription (e.g. trial)
+        workspacePlan = userWithSubscription.subscription.plan;
       }
 
       // Self-hosted fallback: if no Stripe subscription exists, use the license JWT tier
