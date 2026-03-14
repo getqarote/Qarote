@@ -52,6 +52,7 @@ export const userRouter = router({
               select: {
                 id: true,
                 email: true,
+                image: true,
                 firstName: true,
                 lastName: true,
                 isActive: true,
@@ -102,6 +103,7 @@ export const userRouter = router({
         select: {
           id: true,
           email: true,
+          image: true,
           firstName: true,
           lastName: true,
           role: true,
@@ -246,6 +248,7 @@ export const userRouter = router({
             select: {
               id: true,
               email: true,
+              image: true,
               firstName: true,
               lastName: true,
               role: true,
@@ -275,6 +278,7 @@ export const userRouter = router({
             select: {
               id: true,
               email: true,
+              image: true,
               firstName: true,
               lastName: true,
               role: true,
@@ -364,6 +368,7 @@ export const userRouter = router({
           select: {
             id: true,
             email: true,
+            image: true,
             firstName: true,
             lastName: true,
             role: true,
@@ -459,6 +464,7 @@ export const userRouter = router({
           select: {
             id: true,
             email: true,
+            image: true,
             firstName: true,
             lastName: true,
             role: true,
