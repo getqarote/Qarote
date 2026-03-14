@@ -1,4 +1,5 @@
-import { useTranslation } from "react-i18next";
+import { useId, useState } from "react";
+import { Trans, useTranslation } from "react-i18next";
 
 import {
   Building2,
@@ -6,12 +7,24 @@ import {
   Edit,
   Save,
   Settings,
+  Trash2,
   Users,
   X,
 } from "lucide-react";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alertDialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { PlanBadge } from "@/components/ui/PlanBadge";
 import { Separator } from "@/components/ui/separator";
 
@@ -32,6 +45,8 @@ interface WorkspaceInfoTabProps {
   setEditingWorkspace: (editing: boolean) => void;
   onUpdateWorkspace: () => void;
   isUpdating: boolean;
+  onDeleteWorkspace: () => void;
+  isDeleting: boolean;
 }
 
 export const WorkspaceInfoTab = ({
@@ -43,9 +58,14 @@ export const WorkspaceInfoTab = ({
   setEditingWorkspace,
   onUpdateWorkspace,
   isUpdating,
+  onDeleteWorkspace,
+  isDeleting,
 }: WorkspaceInfoTabProps) => {
-  const { user, planData } = useUser();
   const { t } = useTranslation("profile");
+  const { user, planData } = useUser();
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [confirmName, setConfirmName] = useState("");
+  const confirmInputId = useId();
 
   if (!workspace) {
     return <NoWorkspaceCard />;
@@ -126,6 +146,77 @@ export const WorkspaceInfoTab = ({
               </Button>
             )}
           </div>
+        )}
+
+        {user.id === workspace.ownerId && (
+          <>
+            <Separator />
+
+            <div className="rounded-lg border border-destructive/50 p-4 space-y-3">
+              <h3 className="text-lg font-semibold text-destructive">
+                {t("workspace.dangerZone")}
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                {t("workspace.deleteDescription")}
+              </p>
+              <Button
+                variant="destructive"
+                onClick={() => setDeleteDialogOpen(true)}
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                {t("workspace.deleteWorkspace")}
+              </Button>
+            </div>
+
+            <AlertDialog
+              open={deleteDialogOpen}
+              onOpenChange={(open) => {
+                setDeleteDialogOpen(open);
+                if (!open) setConfirmName("");
+              }}
+            >
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>
+                    {t("workspace.deleteDialogTitle")}
+                  </AlertDialogTitle>
+                  <AlertDialogDescription asChild>
+                    <p>
+                      <Trans
+                        i18nKey="workspace.deleteDialogDescription"
+                        ns="profile"
+                        values={{ name: workspace.name }}
+                        components={{ strong: <strong /> }}
+                      />
+                    </p>
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <div className="space-y-2 py-2">
+                  <label htmlFor={confirmInputId} className="text-sm font-medium">
+                    {t("workspace.deleteDialogConfirmLabel")}
+                  </label>
+                  <Input
+                    id={confirmInputId}
+                    value={confirmName}
+                    onChange={(e) => setConfirmName(e.target.value)}
+                    placeholder={workspace.name}
+                  />
+                </div>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>{t("workspace.cancel")}</AlertDialogCancel>
+                  <AlertDialogAction
+                    disabled={confirmName !== workspace.name || isDeleting}
+                    onClick={onDeleteWorkspace}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    {isDeleting
+                      ? t("workspace.deleting")
+                      : t("workspace.deleteConfirm")}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </>
         )}
       </CardContent>
     </Card>

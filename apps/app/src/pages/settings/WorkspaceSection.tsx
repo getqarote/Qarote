@@ -5,15 +5,22 @@ import { toast } from "sonner";
 
 import { WorkspaceFormState, WorkspaceInfoTab } from "@/components/profile";
 
+import { useNavigate } from "react-router";
+
 import { useProfile } from "@/hooks/queries/useProfile";
-import { useUpdateWorkspace } from "@/hooks/queries/useWorkspaceApi";
+import {
+  useDeleteWorkspace,
+  useUpdateWorkspace,
+} from "@/hooks/queries/useWorkspaceApi";
 import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 const WorkspaceSection = () => {
   const { t } = useTranslation("profile");
   const { workspace, refetch: refetchWorkspace } = useWorkspace();
   const { data: profileData } = useProfile();
+  const navigate = useNavigate();
   const updateWorkspaceMutation = useUpdateWorkspace();
+  const deleteWorkspaceMutation = useDeleteWorkspace();
 
   const [editingWorkspace, setEditingWorkspace] = useState(false);
   const [workspaceForm, setWorkspaceForm] = useState<WorkspaceFormState>({
@@ -33,6 +40,17 @@ const WorkspaceSection = () => {
       contactEmail: workspace.contactEmail || "",
     });
   }
+
+  const handleDeleteWorkspace = async () => {
+    if (!workspace?.id) return;
+    try {
+      await deleteWorkspaceMutation.mutateAsync({ workspaceId: workspace.id });
+      toast.success(t("toast.workspaceDeleted"));
+      navigate("/workspace", { replace: true });
+    } catch {
+      toast.error(t("toast.workspaceDeleteFailed"));
+    }
+  };
 
   const handleUpdateWorkspace = async () => {
     if (!workspace?.id) {
@@ -63,6 +81,8 @@ const WorkspaceSection = () => {
         setEditingWorkspace={setEditingWorkspace}
         onUpdateWorkspace={handleUpdateWorkspace}
         isUpdating={updateWorkspaceMutation.isPending}
+        onDeleteWorkspace={handleDeleteWorkspace}
+        isDeleting={deleteWorkspaceMutation.isPending}
       />
     </div>
   );

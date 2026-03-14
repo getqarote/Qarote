@@ -384,17 +384,17 @@ export const managementRouter = router({
           });
         }
 
-        // Prevent deletion of user's current workspace
-        if (workspaceId === user.workspaceId) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: te(ctx.locale, "workspace.cannotDeleteCurrentActive"),
+        // Delete the workspace in a transaction:
+        // 1. Detach all users first (User.workspace has onDelete: Cascade, so without this all user accounts would be deleted)
+        // 2. Then delete the workspace (cascade deletes related workspace data)
+        await ctx.prisma.$transaction(async (tx) => {
+          await tx.user.updateMany({
+            where: { workspaceId },
+            data: { workspaceId: null },
           });
-        }
-
-        // Delete the workspace (this will cascade delete related records)
-        await ctx.prisma.workspace.delete({
-          where: { id: workspaceId },
+          await tx.workspace.delete({
+            where: { id: workspaceId },
+          });
         });
 
         ctx.logger.info(

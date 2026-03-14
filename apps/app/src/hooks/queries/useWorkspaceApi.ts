@@ -121,6 +121,19 @@ export const useCreateWorkspace = () => {
   });
 };
 
+// Delete workspace
+export const useDeleteWorkspace = () => {
+  const utils = trpc.useUtils();
+
+  return trpc.workspace.management.delete.useMutation({
+    onSuccess: () => {
+      utils.auth.session.getSession.invalidate();
+      utils.workspace.management.getUserWorkspaces.invalidate();
+      utils.workspace.core.getCurrent.invalidate();
+    },
+  });
+};
+
 // Switch workspace
 export const useSwitchWorkspace = () => {
   const utils = trpc.useUtils();
