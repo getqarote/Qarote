@@ -126,7 +126,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     syncSentryUser(newUser);
   }, []);
 
-  const refetchUser = useCallback(async () => {
+  const refetchUser = useCallback(async (): Promise<User | null> => {
     try {
       const response = await utils.auth.session.getSession.fetch();
       const updatedUser = {
@@ -135,8 +135,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       };
       dispatch({ type: "SET_USER", user: updatedUser });
       syncSentryUser(updatedUser);
+      return updatedUser;
     } catch (error) {
       logger.error("Failed to refetch user data:", error);
+      return null;
     }
   }, [utils]);
 

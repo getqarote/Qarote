@@ -156,10 +156,12 @@ export const rateLimitedAdminProcedure = adminProcedure.use(
  * Workspace ID can come from input, context, or user's workspaceId
  */
 export const workspaceProcedure = rateLimitedProcedure.use(async (opts) => {
-  const { ctx, input } = opts;
+  const { ctx } = opts;
 
-  // Try to get workspaceId from input (if provided), context, or user's workspaceId
-  const inputWorkspaceId = (input as { workspaceId?: string })?.workspaceId;
+  // Use getRawInput() because this middleware runs before .input() in the chain,
+  // so opts.input is undefined. getRawInput() accesses the actual HTTP input.
+  const rawInput = await opts.getRawInput();
+  const inputWorkspaceId = (rawInput as { workspaceId?: string })?.workspaceId;
   const workspaceId =
     inputWorkspaceId && inputWorkspaceId.trim() !== ""
       ? inputWorkspaceId

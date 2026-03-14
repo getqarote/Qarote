@@ -6,24 +6,23 @@ import { toast } from "sonner";
 
 import { WorkspaceFormState, WorkspaceInfoTab } from "@/components/profile";
 
+import { useAuth } from "@/contexts/AuthContextDefinition";
+
 import { useProfile } from "@/hooks/queries/useProfile";
 import {
   useDeleteWorkspace,
-  useSwitchWorkspace,
   useUpdateWorkspace,
-  useUserWorkspaces,
 } from "@/hooks/queries/useWorkspaceApi";
 import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 const WorkspaceSection = () => {
   const { t } = useTranslation("profile");
   const { workspace, refetch: refetchWorkspace } = useWorkspace();
+  const { refetchUser } = useAuth();
   const { data: profileData } = useProfile();
   const navigate = useNavigate();
   const updateWorkspaceMutation = useUpdateWorkspace();
   const deleteWorkspaceMutation = useDeleteWorkspace();
-  const switchWorkspaceMutation = useSwitchWorkspace();
-  const { data: userWorkspaces } = useUserWorkspaces();
 
   const [editingWorkspace, setEditingWorkspace] = useState(false);
   const [workspaceForm, setWorkspaceForm] = useState<WorkspaceFormState>({
@@ -53,21 +52,12 @@ const WorkspaceSection = () => {
       return;
     }
 
+    // Refetch auth user so user.workspaceId updates (auth context uses reducer state,
+    // not reactive to React Query cache invalidation)
+    const updatedUser = await refetchUser();
     toast.success(t("toast.workspaceDeleted"));
-
-    const remaining = userWorkspaces?.filter((w) => w.id !== workspace.id);
-    if (remaining?.length) {
-      try {
-        await switchWorkspaceMutation.mutateAsync({
-          workspaceId: remaining[0].id,
-        });
-      } catch {
-        // Switch failed — fall through to workspace creation page
-      }
-      navigate("/", { replace: true });
-    } else {
-      navigate("/workspace", { replace: true });
-    }
+    // Navigate directly to the right page based on whether user still has a workspace
+    navigate(updatedUser?.workspaceId ? "/" : "/workspace", { replace: true });
   };
 
   const handleUpdateWorkspace = async () => {

@@ -9,7 +9,7 @@ interface AuthContextType {
   login: (user: User) => void;
   logout: () => Promise<void>;
   updateUser: (user: User) => void;
-  refetchUser: () => Promise<void>;
+  refetchUser: () => Promise<User | null>;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(
