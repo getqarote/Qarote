@@ -72,7 +72,7 @@
   "addServer": "添加服务器",
   "manageServers": "管理服务器",
   "rabbitMQDashboard": "仪表盘",
-  "items": "条目",
+  "items": "项",
   "showingItems": "显示第 {{start}}-{{end}} 条，共 {{total}} 条{{label}}",
   "itemsPerPage": "每页条数：",
   "notFound": {
