@@ -192,7 +192,10 @@ export const WorkspaceInfoTab = ({
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <div className="space-y-2 py-2">
-                  <label htmlFor={confirmInputId} className="text-sm font-medium">
+                  <label
+                    htmlFor={confirmInputId}
+                    className="text-sm font-medium"
+                  >
                     {t("workspace.deleteDialogConfirmLabel")}
                   </label>
                   <Input
