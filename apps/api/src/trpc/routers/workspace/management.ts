@@ -385,12 +385,19 @@ export const managementRouter = router({
         }
 
         // Delete the workspace in a transaction:
-        // 1. Detach all users first (User.workspace has onDelete: Cascade, so without this all user accounts would be deleted)
-        // 2. Then delete the workspace (cascade deletes related workspace data)
+        // 1. Detach users (User.workspace has onDelete: Cascade, so without this all user accounts would be deleted)
+        // 2. Delete orphan-prone records that lack onDelete: Cascade on their workspace relation
+        // 3. Delete the workspace (cascade deletes remaining related data)
         await ctx.prisma.$transaction(async (tx) => {
           await tx.user.updateMany({
             where: { workspaceId },
             data: { workspaceId: null },
+          });
+          await tx.rabbitMQServer.deleteMany({
+            where: { workspaceId },
+          });
+          await tx.feedback.deleteMany({
+            where: { workspaceId },
           });
           await tx.workspace.delete({
             where: { id: workspaceId },
