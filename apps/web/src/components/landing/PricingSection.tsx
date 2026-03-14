@@ -108,7 +108,7 @@ const PricingSection = () => {
         prioritySupport: false,
         emailAlerts: false,
         topologyVisualization: false as false | "soon",
-        roleBasedAccess: false as false | "soon",
+        roleBasedAccess: "soon" as false | "soon",
       },
     },
     {
