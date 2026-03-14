@@ -10,7 +10,9 @@ import { useNavigate } from "react-router";
 import { useProfile } from "@/hooks/queries/useProfile";
 import {
   useDeleteWorkspace,
+  useSwitchWorkspace,
   useUpdateWorkspace,
+  useUserWorkspaces,
 } from "@/hooks/queries/useWorkspaceApi";
 import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
@@ -21,6 +23,8 @@ const WorkspaceSection = () => {
   const navigate = useNavigate();
   const updateWorkspaceMutation = useUpdateWorkspace();
   const deleteWorkspaceMutation = useDeleteWorkspace();
+  const switchWorkspaceMutation = useSwitchWorkspace();
+  const { data: userWorkspaces } = useUserWorkspaces();
 
   const [editingWorkspace, setEditingWorkspace] = useState(false);
   const [workspaceForm, setWorkspaceForm] = useState<WorkspaceFormState>({
@@ -46,7 +50,16 @@ const WorkspaceSection = () => {
     try {
       await deleteWorkspaceMutation.mutateAsync({ workspaceId: workspace.id });
       toast.success(t("toast.workspaceDeleted"));
-      navigate("/workspace", { replace: true });
+
+      const remaining = userWorkspaces?.filter((w) => w.id !== workspace.id);
+      if (remaining?.length) {
+        await switchWorkspaceMutation.mutateAsync({
+          workspaceId: remaining[0].id,
+        });
+        navigate("/", { replace: true });
+      } else {
+        navigate("/workspace", { replace: true });
+      }
     } catch {
       toast.error(t("toast.workspaceDeleteFailed"));
     }
