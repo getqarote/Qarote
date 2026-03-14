@@ -127,7 +127,12 @@ export const useDeleteWorkspace = () => {
 
   return trpc.workspace.management.delete.useMutation({
     onSuccess: () => {
-      // Invalidate all queries so everything refetches with the new workspace context
+      // Reset workspace queries to clear cached data immediately (not just mark stale).
+      // This prevents /workspace from seeing the deleted workspace in cache and
+      // briefly redirecting to / before the refetch completes.
+      utils.workspace.management.getUserWorkspaces.reset();
+      utils.workspace.core.getCurrent.reset();
+      // Invalidate all remaining queries so everything refetches
       utils.invalidate();
     },
   });
