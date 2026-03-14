@@ -16,6 +16,7 @@ type WorkspaceData = {
 export type PrismaUserWithDates = {
   id: string;
   email: string;
+  image?: string | null;
   firstName: string | null;
   lastName: string | null;
   role: string;
@@ -33,6 +34,7 @@ export type PrismaUserWithDates = {
 export type UserApiResponse = {
   id: string;
   email: string;
+  image?: string | null;
   firstName: string | null;
   lastName: string | null;
   role: string;

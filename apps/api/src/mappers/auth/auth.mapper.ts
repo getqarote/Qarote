@@ -17,6 +17,7 @@ export class UserMapper {
     const response: UserApiResponse = {
       id: user.id,
       email: user.email,
+      image: user.image ?? null,
       firstName: user.firstName,
       lastName: user.lastName,
       role: user.role,

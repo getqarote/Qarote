@@ -24,6 +24,7 @@ export const sessionRouter = router({
         select: {
           id: true,
           email: true,
+          image: true,
           firstName: true,
           lastName: true,
           role: true,
