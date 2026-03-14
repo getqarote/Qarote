@@ -32,7 +32,6 @@ import {
   useCreateWorkspace,
   useUserWorkspaces,
 } from "@/hooks/queries/useWorkspaceApi";
-import { useUser } from "@/hooks/ui/useUser";
 import { useWorkspaceInvites } from "@/hooks/ui/useWorkspaceInvites";
 
 import { WorkspaceFormData, workspaceSchema } from "@/schemas";
@@ -41,7 +40,6 @@ const Workspace = () => {
   const { t } = useTranslation("workspace");
   const navigate = useNavigate();
   const { user, updateUser } = useAuth();
-  const { refetchPlan } = useUser();
   const queryClient = useQueryClient();
   const [showSuccess, setShowSuccess] = useState(false);
   const isCreatingRef = useRef(false);
@@ -58,18 +56,6 @@ const Workspace = () => {
     sendPendingInvites,
     reset: resetInvites,
   } = useWorkspaceInvites();
-
-  // Trial provisioning happens async after OAuth callback — the initial
-  // plan fetch may return FREE before the subscription is created.
-  // Retry once after a short delay so the invite section appears.
-  const hasRetried = useRef(false);
-  useEffect(() => {
-    if (!canInviteUsers && !hasRetried.current) {
-      hasRetried.current = true;
-      const timer = setTimeout(() => refetchPlan(), 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [canInviteUsers, refetchPlan]);
 
   // Check if user already has workspaces
   const { data: workspacesData, isLoading: workspacesLoading } =

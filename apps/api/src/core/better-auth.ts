@@ -313,19 +313,23 @@ export const auth = betterAuth({
         after: async (user) => {
           const baUser = user as Record<string, unknown>;
 
-          // Auto-start Enterprise trial for cloud users (fire-and-forget)
+          // Auto-start Enterprise trial for cloud users
+          // Awaited so the subscription exists before the auth callback returns
+          // and the frontend can fetch the correct plan on first load.
           if (isCloudMode()) {
-            StripeCustomerService.provisionTrialForNewUser({
-              userId: user.id,
-              email: user.email,
-              name: user.name || "",
-              prisma,
-            }).catch((error) => {
+            try {
+              await StripeCustomerService.provisionTrialForNewUser({
+                userId: user.id,
+                email: user.email,
+                name: user.name || "",
+                prisma,
+              });
+            } catch (error) {
               logger.warn(
                 { error, userId: user.id },
                 "Failed to auto-start trial at registration"
               );
-            });
+            }
           }
 
           // Auto-verify email when email service is disabled (self-hosted/binary)
