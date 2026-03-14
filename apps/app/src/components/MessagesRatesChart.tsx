@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 
 import { HelpCircle, Info, RefreshCw } from "lucide-react";
 import {
@@ -223,11 +223,15 @@ export const MessagesRatesChart = ({
           <Alert className="mb-4">
             <Info className="h-4 w-4" />
             <AlertDescription>
-              {t("basicRatesAlertPrefix")}{" "}
-              <code className="rounded bg-muted px-1 py-0.5 text-xs">
-                management.rates_mode = detailed
-              </code>{" "}
-              {t("basicRatesAlertSuffix")}
+              <Trans
+                i18nKey="basicRatesAlert"
+                ns="dashboard"
+                components={{
+                  code: (
+                    <code className="rounded bg-muted px-1 py-0.5 text-xs" />
+                  ),
+                }}
+              />
             </AlertDescription>
           </Alert>
         )}

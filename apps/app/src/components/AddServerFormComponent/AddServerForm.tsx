@@ -109,7 +109,7 @@ export const AddServerForm = ({
 
     try {
       if (!workspace?.id) {
-        throw new Error("Workspace ID is required");
+        throw new Error(t("workspaceIdRequired"));
       }
       const result = await testConnectionMutation.mutateAsync({
         workspaceId: workspace.id,
@@ -153,7 +153,7 @@ export const AddServerForm = ({
 
     try {
       if (!workspace?.id) {
-        throw new Error("Workspace ID is required");
+        throw new Error(t("workspaceIdRequired"));
       }
       if (mode === "edit" && server) {
         // Update existing server
