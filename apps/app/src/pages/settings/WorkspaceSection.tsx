@@ -54,10 +54,11 @@ const WorkspaceSection = () => {
 
     // Refetch auth user so user.workspaceId updates (auth context uses reducer state,
     // not reactive to React Query cache invalidation)
-    const updatedUser = await refetchUser();
+    await refetchUser();
     toast.success(t("toast.workspaceDeleted"));
-    // Navigate directly to the right page based on whether user still has a workspace
-    navigate(updatedUser?.workspaceId ? "/" : "/workspace", { replace: true });
+    // Always navigate to /workspace — its loading state acts as a clean transition:
+    // if user has remaining workspaces, it redirects to /; otherwise shows creation form
+    navigate("/workspace", { replace: true });
   };
 
   const handleUpdateWorkspace = async () => {
