@@ -25,7 +25,9 @@
     "copyInviteLink": "Email is disabled. Share this link with the invited user.",
     "copyLink": "Copy Link",
     "linkCopied": "Invite link copied to clipboard.",
-    "invitationFailed": "Failed to invite {{email}}: {{error}}"
+    "invitationFailed": "Failed to invite {{email}}: {{error}}",
+    "workspaceDeleted": "Workspace deleted successfully.",
+    "workspaceDeleteFailed": "Failed to delete workspace."
   },
   "invite": {
     "title": "Invite Team Members",
@@ -81,7 +83,15 @@
     "created": "Created:",
     "cancel": "Cancel",
     "saveChanges": "Save Changes",
-    "editWorkspace": "Edit Workspace"
+    "editWorkspace": "Edit Workspace",
+    "dangerZone": "Danger Zone",
+    "deleteDescription": "Permanently delete this workspace and all its data. This action cannot be undone.",
+    "deleteWorkspace": "Delete Workspace",
+    "deleteDialogTitle": "Delete Workspace",
+    "deleteDialogDescription": "This will permanently delete the workspace <strong>{{name}}</strong> and all associated data including servers, alerts, alert rules, team members, invitations, and configuration. This action is irreversible.",
+    "deleteDialogConfirmLabel": "Type the workspace name to confirm:",
+    "deleteConfirm": "Delete Workspace",
+    "deleting": "Deleting..."
   },
   "team": {
     "title": "Team",

@@ -25,7 +25,9 @@
     "copyInviteLink": "El correo electrónico está deshabilitado. Comparta este enlace con el usuario invitado.",
     "copyLink": "Copiar enlace",
     "linkCopied": "Enlace de invitación copiado al portapapeles.",
-    "invitationFailed": "Error al invitar a {{email}}: {{error}}"
+    "invitationFailed": "Error al invitar a {{email}}: {{error}}",
+    "workspaceDeleted": "Espacio de trabajo eliminado con éxito.",
+    "workspaceDeleteFailed": "Error al eliminar el espacio de trabajo."
   },
   "invite": {
     "title": "Invitar miembros del equipo",
@@ -81,7 +83,15 @@
     "created": "Creado el:",
     "cancel": "Cancelar",
     "saveChanges": "Guardar cambios",
-    "editWorkspace": "Editar espacio de trabajo"
+    "editWorkspace": "Editar espacio de trabajo",
+    "dangerZone": "Zona de peligro",
+    "deleteDescription": "Eliminar permanentemente este espacio de trabajo y todos sus datos. Esta acción no se puede deshacer.",
+    "deleteWorkspace": "Eliminar espacio de trabajo",
+    "deleteDialogTitle": "Eliminar espacio de trabajo",
+    "deleteDialogDescription": "Esto eliminará permanentemente el espacio de trabajo <strong>{{name}}</strong> y todos los datos asociados, incluidos servidores, alertas, reglas de alertas, miembros del equipo, invitaciones y configuración. Esta acción es irreversible.",
+    "deleteDialogConfirmLabel": "Escribe el nombre del espacio de trabajo para confirmar:",
+    "deleteConfirm": "Eliminar espacio de trabajo",
+    "deleting": "Eliminando..."
   },
   "team": {
     "title": "Equipo",

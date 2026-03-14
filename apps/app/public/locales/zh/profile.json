@@ -25,7 +25,9 @@
     "copyInviteLink": "邮件已禁用。请将此链接分享给被邀请的用户。",
     "copyLink": "复制链接",
     "linkCopied": "邀请链接已复制到剪贴板。",
-    "invitationFailed": "邀请 {{email}} 失败：{{error}}"
+    "invitationFailed": "邀请 {{email}} 失败：{{error}}",
+    "workspaceDeleted": "工作区删除成功。",
+    "workspaceDeleteFailed": "工作区删除失败。"
   },
   "invite": {
     "title": "邀请团队成员",
@@ -81,7 +83,15 @@
     "created": "创建日期：",
     "cancel": "取消",
     "saveChanges": "保存更改",
-    "editWorkspace": "编辑工作区"
+    "editWorkspace": "编辑工作区",
+    "dangerZone": "危险区域",
+    "deleteDescription": "永久删除此工作区及其所有数据。此操作无法撤销。",
+    "deleteWorkspace": "删除工作区",
+    "deleteDialogTitle": "删除工作区",
+    "deleteDialogDescription": "这将永久删除工作区 <strong>{{name}}</strong> 及所有关联数据，包括服务器、警报、警报规则、团队成员、邀请和配置。此操作不可逆。",
+    "deleteDialogConfirmLabel": "输入工作区名称以确认：",
+    "deleteConfirm": "删除工作区",
+    "deleting": "删除中..."
   },
   "team": {
     "title": "团队",
