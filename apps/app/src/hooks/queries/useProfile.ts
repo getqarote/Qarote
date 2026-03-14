@@ -1,4 +1,4 @@
-import { useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useQueryClient } from "@tanstack/react-query";
 
 import { trpc } from "@/lib/trpc/client";
 
@@ -17,6 +17,7 @@ export const useProfile = () => {
   const query = trpc.auth.session.getSession.useQuery(undefined, {
     enabled: isAuthenticated && !!workspace?.id,
     staleTime: 30000, // 30 seconds
+    placeholderData: keepPreviousData,
   });
 
   return query;
