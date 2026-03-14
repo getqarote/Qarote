@@ -86,6 +86,7 @@ export function CreateWorkspaceForm({
           queryClient.invalidateQueries({ queryKey: ["workspaces"] });
           refreshWorkspace();
           setInviteEmails([]);
+          setInviteRole("MEMBER");
           onClose();
           form.reset();
         },
