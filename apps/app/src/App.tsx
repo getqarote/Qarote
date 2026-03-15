@@ -79,6 +79,16 @@ const FeedbackSection = lazy(() =>
     default: m.default,
   }))
 );
+const OrganizationSection = lazy(() =>
+  import("./pages/settings/OrganizationSection").then((m) => ({
+    default: m.default,
+  }))
+);
+const BillingSection = lazy(() =>
+  import("./pages/settings/BillingSection").then((m) => ({
+    default: m.default,
+  }))
+);
 const Plans = lazy(() => import("./pages/Plans"));
 const Billing = lazy(() => import("./pages/Billing"));
 const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
@@ -327,6 +337,14 @@ const AppCore = () => (
                             <Route
                               path="license"
                               element={<LicenseSection />}
+                            />
+                            <Route
+                              path="organization"
+                              element={<OrganizationSection />}
+                            />
+                            <Route
+                              path="billing"
+                              element={<BillingSection />}
                             />
                             <Route path="sso" element={<SSOSection />} />
                             <Route path="smtp" element={<SMTPSection />} />
