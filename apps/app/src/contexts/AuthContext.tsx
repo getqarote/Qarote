@@ -138,7 +138,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       return updatedUser;
     } catch (error) {
       logger.error("Failed to refetch user data:", error);
-      return null;
+      throw error;
     }
   }, [utils]);
 

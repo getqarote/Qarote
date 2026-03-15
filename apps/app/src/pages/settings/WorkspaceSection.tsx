@@ -54,7 +54,11 @@ const WorkspaceSection = () => {
 
     // Refetch auth user so user.workspaceId updates (auth context uses reducer state,
     // not reactive to React Query cache invalidation)
-    await refetchUser();
+    try {
+      await refetchUser();
+    } catch {
+      // Continue even if refetch fails — deletion already succeeded
+    }
     toast.success(t("toast.workspaceDeleted"));
     // Always navigate to /workspace — its loading state acts as a clean transition:
     // if user has remaining workspaces, it redirects to /; otherwise shows creation form
