@@ -4,6 +4,7 @@ import { Outlet } from "react-router";
 
 import { Settings as SettingsIcon } from "lucide-react";
 
+import { AppFooter } from "@/components/AppFooter";
 import { AppSidebar } from "@/components/AppSidebar";
 import { SettingsSidebar } from "@/components/settings/SettingsSidebar";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
@@ -27,26 +28,29 @@ const Settings = () => {
     <SidebarProvider>
       <div className="page-layout">
         <AppSidebar />
-        <main className="main-content-scrollable">
-          <div className="container mx-auto p-6 space-y-6">
-            <div className="flex items-center gap-3">
-              <SidebarTrigger />
-              <SettingsIcon className="h-8 w-8" />
-              <h1 className="title-page">{t("pageTitle")}</h1>
-            </div>
+        <div className="flex-1 flex flex-col min-h-screen">
+          <main className="flex-1 p-6">
+            <div className="container mx-auto space-y-6">
+              <div className="flex items-center gap-3">
+                <SidebarTrigger />
+                <SettingsIcon className="h-8 w-8" />
+                <h1 className="title-page">{t("pageTitle")}</h1>
+              </div>
 
-            {isMobile && <SettingsSidebar />}
+              {isMobile && <SettingsSidebar />}
 
-            <div className="flex gap-8">
-              {!isMobile && <SettingsSidebar />}
-              <div className="flex-1 min-w-0">
-                <Suspense fallback={<SectionLoader />}>
-                  <Outlet />
-                </Suspense>
+              <div className="flex gap-8">
+                {!isMobile && <SettingsSidebar />}
+                <div className="flex-1 min-w-0">
+                  <Suspense fallback={<SectionLoader />}>
+                    <Outlet />
+                  </Suspense>
+                </div>
               </div>
             </div>
-          </div>
-        </main>
+          </main>
+          <AppFooter />
+        </div>
       </div>
     </SidebarProvider>
   );
