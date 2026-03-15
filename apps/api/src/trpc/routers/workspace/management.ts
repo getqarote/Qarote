@@ -413,6 +413,7 @@ export const managementRouter = router({
               { members: { some: { userId: user.id } } },
             ],
           },
+          orderBy: { createdAt: "desc" },
           select: { id: true },
         });
 
