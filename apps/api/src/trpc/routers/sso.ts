@@ -1,7 +1,7 @@
 /**
  * Unified SSO Router
- * Manages SSO provider configuration for both cloud (per-workspace) and
- * self-hosted (instance-wide). Replaces the old selfhosted-sso.ts router.
+ * Manages SSO provider configuration for both cloud (per-org) and
+ * self-hosted (instance-wide). Replaces the old workspace-scoped SSO router.
  *
  * Procedures:
  * - getConfig      (PUBLIC)  — Login page uses this to show/hide SSO button
@@ -20,7 +20,7 @@ import { z } from "zod/v4";
 import { isFeatureEnabled } from "@/core/feature-flags";
 import { isPrivateIP } from "@/core/network";
 
-import { getUserPlan } from "@/services/plan/plan.service";
+import { getOrgPlan } from "@/services/plan/plan.service";
 
 import { isCloudMode } from "@/config/deployment";
 import { FEATURES } from "@/config/features";
@@ -31,7 +31,7 @@ import {
   router,
 } from "@/trpc/trpc";
 
-import { UserPlan } from "@/generated/prisma/client";
+import { OrgRole, UserPlan } from "@/generated/prisma/client";
 
 const REDACTED = "••••••••";
 
@@ -39,22 +39,42 @@ const REDACTED = "••••••••";
 const INSTANCE_PROVIDER_ID = "default";
 
 /**
+ * Resolve the caller's organization membership (OWNER or ADMIN).
+ * Returns the organizationId or throws FORBIDDEN.
+ */
+async function resolveOrgAdmin(
+  prisma: {
+    organizationMember: {
+      findFirst: (args: {
+        where: { userId: string; role: { in: OrgRole[] } };
+        select: { organizationId: true };
+      }) => Promise<{ organizationId: string } | null>;
+    };
+  },
+  userId: string
+): Promise<string> {
+  const membership = await prisma.organizationMember.findFirst({
+    where: { userId, role: { in: [OrgRole.OWNER, OrgRole.ADMIN] } },
+    select: { organizationId: true },
+  });
+  if (!membership) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "SSO configuration requires organization OWNER or ADMIN role",
+    });
+  }
+  return membership.organizationId;
+}
+
+/**
  * Admin procedure gated by enterprise entitlement.
- * - Cloud:       workspace owner must be on ENTERPRISE plan
+ * - Cloud:       user must be org OWNER/ADMIN with ENTERPRISE plan
  * - Self-hosted: license must have "sso" feature or be ENTERPRISE tier
  */
 const ssoAdminProcedure = rateLimitedAdminProcedure.use(async (opts) => {
   if (isCloudMode()) {
-    const workspace = await opts.ctx.prisma.workspace.findFirst({
-      where: { ownerId: opts.ctx.user.id },
-    });
-    if (!workspace) {
-      throw new TRPCError({
-        code: "FORBIDDEN",
-        message: "SSO configuration requires a workspace",
-      });
-    }
-    const plan = await getUserPlan(opts.ctx.user.id);
+    const orgId = await resolveOrgAdmin(opts.ctx.prisma, opts.ctx.user.id);
+    const plan = await getOrgPlan(orgId);
     if (plan !== UserPlan.ENTERPRISE) {
       throw new TRPCError({
         code: "FORBIDDEN",
@@ -76,7 +96,7 @@ const ssoAdminProcedure = rateLimitedAdminProcedure.use(async (opts) => {
 export const ssoRouter = router({
   /**
    * Get SSO config for the login page (PUBLIC).
-   * Self-hosted: returns instance-wide provider info if configured + enabled.
+   * Self-hosted: returns instance-wide provider info if configured.
    * Cloud:       returns a fixed { enabled: true, cloudSso: true } so the
    *              login page shows the email-based SSO flow. Domain discovery
    *              happens inside better-auth when the user submits their email.
@@ -92,22 +112,22 @@ export const ssoRouter = router({
       };
     }
 
-    const wsConfig = await ctx.prisma.workspaceSsoConfig.findFirst({
-      where: { workspaceId: null },
-      include: { ssoProvider: true },
+    const orgConfig = await ctx.prisma.orgSsoConfig.findFirst({
+      where: { organizationId: null },
+      include: { provider: true },
     });
 
-    if (!wsConfig?.enabled) return null;
+    if (!orgConfig) return null;
 
-    const type: "oidc" | "saml" = wsConfig.ssoProvider.oidcConfig
+    const type: "oidc" | "saml" = orgConfig.provider.oidcConfig
       ? "oidc"
       : "saml";
 
     return {
       enabled: true as const,
       cloudSso: false as const,
-      buttonLabel: wsConfig.buttonLabel,
-      providerId: wsConfig.providerId,
+      buttonLabel: "Sign in with SSO",
+      providerId: orgConfig.provider.providerId,
       type,
     };
   }),
@@ -117,28 +137,25 @@ export const ssoRouter = router({
    * Client secret is always redacted.
    */
   getProviderConfig: rateLimitedAdminProcedure.query(async ({ ctx }) => {
-    let wsConfig;
+    let orgConfig;
 
     if (isCloudMode()) {
-      const workspace = await ctx.prisma.workspace.findFirst({
-        where: { ownerId: ctx.user.id },
-      });
-      if (!workspace) return null;
+      const orgId = await resolveOrgAdmin(ctx.prisma, ctx.user.id);
 
-      wsConfig = await ctx.prisma.workspaceSsoConfig.findFirst({
-        where: { workspaceId: workspace.id },
-        include: { ssoProvider: true },
+      orgConfig = await ctx.prisma.orgSsoConfig.findFirst({
+        where: { organizationId: orgId },
+        include: { provider: true },
       });
     } else {
-      wsConfig = await ctx.prisma.workspaceSsoConfig.findFirst({
-        where: { workspaceId: null },
-        include: { ssoProvider: true },
+      orgConfig = await ctx.prisma.orgSsoConfig.findFirst({
+        where: { organizationId: null },
+        include: { provider: true },
       });
     }
 
-    if (!wsConfig) return null;
+    if (!orgConfig) return null;
 
-    const provider = wsConfig.ssoProvider;
+    const provider = orgConfig.provider;
     let oidcConfig: Record<string, unknown> | null = null;
     let samlConfig: Record<string, unknown> | null = null;
 
@@ -154,8 +171,6 @@ export const ssoRouter = router({
     }
 
     return {
-      enabled: wsConfig.enabled,
-      buttonLabel: wsConfig.buttonLabel,
       providerId: provider.providerId,
       domain: provider.domain,
       type: provider.oidcConfig ? ("oidc" as const) : ("saml" as const),
@@ -166,7 +181,7 @@ export const ssoRouter = router({
 
   /**
    * Register a new SSO provider (ADMIN + Enterprise gate).
-   * Cloud:       scoped to the calling user's workspace.
+   * Cloud:       scoped to the calling user's organization.
    * Self-hosted: instance-wide provider (providerId = "default").
    */
   registerProvider: ssoAdminProcedure
@@ -177,12 +192,11 @@ export const ssoRouter = router({
         oidcClientId: z.string().optional(),
         oidcClientSecret: z.string().optional(),
         samlMetadataUrl: z.string().optional(),
-        buttonLabel: z.string().optional(),
         domain: z.string().optional(),
       })
     )
     .mutation(async ({ input, ctx }) => {
-      let workspaceId: string | null = null;
+      let organizationId: string | null = null;
       let providerId: string;
 
       // Cloud: domain is required for email-based signIn.sso({ email }) discovery
@@ -195,17 +209,9 @@ export const ssoRouter = router({
       const domain = input.domain ?? "";
 
       if (isCloudMode()) {
-        const workspace = await ctx.prisma.workspace.findFirst({
-          where: { ownerId: ctx.user.id },
-        });
-        if (!workspace) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Workspace not found",
-          });
-        }
-        workspaceId = workspace.id;
-        providerId = `workspace-${workspace.id}`;
+        const orgId = await resolveOrgAdmin(ctx.prisma, ctx.user.id);
+        organizationId = orgId;
+        providerId = `org-${orgId}`;
       } else {
         providerId = INSTANCE_PROVIDER_ID;
       }
@@ -243,7 +249,7 @@ export const ssoRouter = router({
       }
 
       await ctx.prisma.$transaction(async (tx) => {
-        await tx.ssoProvider.upsert({
+        const provider = await tx.ssoProvider.upsert({
           where: { providerId },
           update: {
             issuer,
@@ -261,17 +267,15 @@ export const ssoRouter = router({
           },
         });
 
-        await tx.workspaceSsoConfig.upsert({
-          where: { providerId },
+        await tx.orgSsoConfig.upsert({
+          where: { providerId: provider.id },
           update: {
-            enabled: true,
-            buttonLabel: input.buttonLabel ?? "Sign in with SSO",
+            autoProvision: true,
           },
           create: {
-            workspaceId,
-            providerId,
-            enabled: true,
-            buttonLabel: input.buttonLabel ?? "Sign in with SSO",
+            organizationId,
+            providerId: provider.id,
+            autoProvision: true,
           },
         });
       });
@@ -295,23 +299,15 @@ export const ssoRouter = router({
         oidcClientId: z.string().optional(),
         oidcClientSecret: z.string().optional(),
         samlMetadataUrl: z.string().optional(),
-        buttonLabel: z.string().optional(),
         enabled: z.boolean().optional(),
         domain: z.string().optional(),
       })
     )
     .mutation(async ({ input, ctx }) => {
       const providerId = isCloudMode()
-        ? await ctx.prisma.workspace
-            .findFirst({ where: { ownerId: ctx.user.id } })
-            .then((ws) => {
-              if (!ws)
-                throw new TRPCError({
-                  code: "NOT_FOUND",
-                  message: "Workspace not found",
-                });
-              return `workspace-${ws.id}`;
-            })
+        ? await resolveOrgAdmin(ctx.prisma, ctx.user.id).then(
+            (orgId) => `org-${orgId}`
+          )
         : INSTANCE_PROVIDER_ID;
 
       const existing = await ctx.prisma.ssoProvider.findUnique({
@@ -371,26 +367,14 @@ export const ssoRouter = router({
         });
       }
 
-      await ctx.prisma.$transaction(async (tx) => {
-        await tx.ssoProvider.update({
-          where: { providerId },
-          data: {
-            issuer,
-            oidcConfig: oidcConfigJson,
-            samlConfig: samlConfigJson,
-            ...(input.domain !== undefined && { domain: input.domain }),
-          },
-        });
-
-        await tx.workspaceSsoConfig.update({
-          where: { providerId },
-          data: {
-            ...(input.enabled !== undefined && { enabled: input.enabled }),
-            ...(input.buttonLabel !== undefined && {
-              buttonLabel: input.buttonLabel,
-            }),
-          },
-        });
+      await ctx.prisma.ssoProvider.update({
+        where: { providerId },
+        data: {
+          issuer,
+          oidcConfig: oidcConfigJson,
+          samlConfig: samlConfigJson,
+          ...(input.domain !== undefined && { domain: input.domain }),
+        },
       });
 
       ctx.logger.info({ providerId }, "SSO provider updated");
@@ -402,19 +386,12 @@ export const ssoRouter = router({
    */
   deleteProvider: ssoAdminProcedure.mutation(async ({ ctx }) => {
     const providerId = isCloudMode()
-      ? await ctx.prisma.workspace
-          .findFirst({ where: { ownerId: ctx.user.id } })
-          .then((ws) => {
-            if (!ws)
-              throw new TRPCError({
-                code: "NOT_FOUND",
-                message: "Workspace not found",
-              });
-            return `workspace-${ws.id}`;
-          })
+      ? await resolveOrgAdmin(ctx.prisma, ctx.user.id).then(
+          (orgId) => `org-${orgId}`
+        )
       : INSTANCE_PROVIDER_ID;
 
-    // WorkspaceSsoConfig is deleted via cascade on SsoProvider
+    // OrgSsoConfig is deleted via cascade on SsoProvider
     await ctx.prisma.ssoProvider.deleteMany({ where: { providerId } });
 
     ctx.logger.info({ providerId }, "SSO provider deleted");
