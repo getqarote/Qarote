@@ -15,7 +15,7 @@ import { StripeCustomerService } from "@/services/stripe/customer.service";
 import { authConfig, config, emailConfig, googleConfig } from "@/config";
 import { isCloudMode } from "@/config/deployment";
 
-import { UserPlan } from "@/generated/prisma/client";
+import { OrgRole, UserPlan } from "@/generated/prisma/client";
 
 /**
  * Enforce that the SSO provider's workspace has an enterprise entitlement.
@@ -313,11 +313,13 @@ export const auth = betterAuth({
         after: async (user) => {
           const baUser = user as Record<string, unknown>;
 
-          // Auto-start Enterprise trial for cloud users
-          // Awaited so the subscription exists before the auth callback returns
-          // and the frontend can fetch the correct plan on first load.
+          // Auto-create Organization and provision trial for cloud users.
+          // For non-cloud (self-hosted), bootstrapOrg handles the default org
+          // so we only create a per-user org in cloud mode.
           if (isCloudMode()) {
             try {
+              // provisionTrialForNewUser now creates an Organization for the
+              // user and provisions the trial on the org (Phase 2 billing).
               await StripeCustomerService.provisionTrialForNewUser({
                 userId: user.id,
                 email: user.email,
@@ -327,8 +329,42 @@ export const auth = betterAuth({
             } catch (error) {
               logger.warn(
                 { error, userId: user.id },
-                "Failed to auto-start trial at registration"
+                "Failed to auto-create org and start trial at registration"
               );
+
+              // If trial provisioning failed but we still want the user to
+              // have an org, try to create one without billing.
+              try {
+                const existingMembership =
+                  await prisma.organizationMember.findFirst({
+                    where: { userId: user.id },
+                    select: { id: true },
+                  });
+
+                if (!existingMembership) {
+                  const orgSlug = `user-${user.id.slice(0, 8)}-${Date.now()}`;
+                  await prisma.organization.create({
+                    data: {
+                      name: user.name
+                        ? `${user.name}'s Organization`
+                        : "My Organization",
+                      slug: orgSlug,
+                      contactEmail: user.email,
+                      members: {
+                        create: {
+                          userId: user.id,
+                          role: OrgRole.OWNER,
+                        },
+                      },
+                    },
+                  });
+                }
+              } catch (orgError) {
+                logger.warn(
+                  { orgError, userId: user.id },
+                  "Failed to create fallback organization"
+                );
+              }
             }
           }
 
