@@ -218,6 +218,7 @@ model User {
   payments                Payment[]
   subscription            Subscription?
   organizationMembers     OrganizationMember[]
+  orgInvitationsSent      OrganizationInvitation[] @relation("OrgInvitationsSent")
 }
 
 // ─── Better Auth Models ─────────────────────────────────────────────
@@ -727,6 +728,7 @@ model Organization {
   updatedAt            DateTime @updatedAt
 
   members       OrganizationMember[]
+  invitations   OrganizationInvitation[]
   workspaces    Workspace[]
   subscription  Subscription?
   orgSsoConfigs OrgSsoConfig[]
@@ -746,6 +748,23 @@ model OrganizationMember {
   @@unique([userId, organizationId])
   @@index([userId])
   @@index([organizationId])
+}
+
+model OrganizationInvitation {
+  id             String    @id @default(uuid())
+  organizationId String
+  email          String
+  role           OrgRole   @default(MEMBER)
+  invitedById    String
+  expiresAt      DateTime
+  acceptedAt     DateTime?
+  createdAt      DateTime  @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  invitedBy    User         @relation("OrgInvitationsSent", fields: [invitedById], references: [id])
+
+  @@unique([organizationId, email])
+  @@index([email])
 }
 
 // ─── Self-hosted Configuration ───────────────────────────────────────

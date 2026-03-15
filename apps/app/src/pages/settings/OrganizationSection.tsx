@@ -2,6 +2,8 @@ import { useState } from "react";
 
 import {
   Building2,
+  Check,
+  Clock,
   Crown,
   Loader2,
   Mail,
@@ -11,6 +13,7 @@ import {
   User,
   UserPlus,
   Users,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -56,9 +59,13 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 
 import {
+  useAcceptOrgInvitation,
   useCurrentOrganization,
+  useDeclineOrgInvitation,
   useInviteOrgMember,
+  useMyOrgInvitations,
   useOrgMembers,
+  usePendingOrgInvitations,
   useRemoveOrgMember,
   useUpdateOrganization,
   useUpdateOrgMemberRole,
@@ -84,10 +91,14 @@ const getRoleIcon = (role: string) => {
 const OrganizationSection = () => {
   const { data: orgData, isLoading: orgLoading } = useCurrentOrganization();
   const { data: membersData, isLoading: membersLoading } = useOrgMembers();
+  const { data: pendingInvData } = usePendingOrgInvitations();
+  const { data: myInvData } = useMyOrgInvitations();
   const updateOrgMutation = useUpdateOrganization();
   const inviteMemberMutation = useInviteOrgMember();
   const updateRoleMutation = useUpdateOrgMemberRole();
   const removeMemberMutation = useRemoveOrgMember();
+  const acceptInvitationMutation = useAcceptOrgInvitation();
+  const declineInvitationMutation = useDeclineOrgInvitation();
 
   const [editing, setEditing] = useState(false);
   const [orgForm, setOrgForm] = useState({
@@ -109,6 +120,8 @@ const OrganizationSection = () => {
   const callerRole = orgData?.role;
   const isOrgAdmin = callerRole === "OWNER" || callerRole === "ADMIN";
   const members = membersData?.members ?? [];
+  const pendingInvitations = pendingInvData?.invitations ?? [];
+  const myInvitations = myInvData?.invitations ?? [];
 
   // Initialize form when org data loads
   const [prevOrgId, setPrevOrgId] = useState<string | null>(null);
@@ -185,6 +198,30 @@ const OrganizationSection = () => {
     }
   };
 
+  const handleAcceptInvitation = async (invitationId: string) => {
+    try {
+      await acceptInvitationMutation.mutateAsync({ invitationId });
+      toast.success("Invitation accepted");
+    } catch (error) {
+      logger.error("Accept invitation error:", error);
+      const msg =
+        error instanceof Error ? error.message : "Failed to accept invitation";
+      toast.error(msg);
+    }
+  };
+
+  const handleDeclineInvitation = async (invitationId: string) => {
+    try {
+      await declineInvitationMutation.mutateAsync({ invitationId });
+      toast.success("Invitation declined");
+    } catch (error) {
+      logger.error("Decline invitation error:", error);
+      const msg =
+        error instanceof Error ? error.message : "Failed to decline invitation";
+      toast.error(msg);
+    }
+  };
+
   if (orgLoading) {
     return (
       <div className="space-y-4">
@@ -207,6 +244,74 @@ const OrganizationSection = () => {
             </p>
           </div>
         </div>
+
+        {/* Invitations the current user can accept */}
+        {myInvitations.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Mail className="h-5 w-5" />
+                Pending Invitations
+              </CardTitle>
+              <CardDescription>
+                You have been invited to join the following organizations
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {myInvitations.map((inv) => (
+                  <div
+                    key={inv.id}
+                    className="flex items-center justify-between p-3 rounded-lg border"
+                  >
+                    <div className="min-w-0">
+                      <div className="font-medium text-sm">
+                        {inv.organization.name}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        Invited by {inv.invitedBy.firstName}{" "}
+                        {inv.invitedBy.lastName} as{" "}
+                        {ROLE_LABELS[inv.role] ?? inv.role}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <Button
+                        size="sm"
+                        className="bg-gradient-button hover:bg-gradient-button-hover text-white"
+                        onClick={() => handleAcceptInvitation(inv.id)}
+                        disabled={acceptInvitationMutation.isPending}
+                      >
+                        {acceptInvitationMutation.isPending ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <>
+                            <Check className="h-4 w-4 mr-1" />
+                            Accept
+                          </>
+                        )}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleDeclineInvitation(inv.id)}
+                        disabled={declineInvitationMutation.isPending}
+                      >
+                        {declineInvitationMutation.isPending ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <>
+                            <X className="h-4 w-4 mr-1" />
+                            Decline
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     );
   }
@@ -433,6 +538,115 @@ const OrganizationSection = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Pending Invitations Card (admin view) */}
+      {isOrgAdmin && pendingInvitations.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Clock className="h-5 w-5" />
+              Pending Invitations
+            </CardTitle>
+            <CardDescription>
+              {pendingInvitations.length} pending invitation
+              {pendingInvitations.length !== 1 ? "s" : ""}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {pendingInvitations.map((inv) => (
+                <div
+                  key={inv.id}
+                  className="flex items-center justify-between p-3 rounded-lg border"
+                >
+                  <div className="min-w-0">
+                    <div className="font-medium text-sm">{inv.email}</div>
+                    <div className="text-xs text-muted-foreground">
+                      Invited by {inv.invitedBy.firstName}{" "}
+                      {inv.invitedBy.lastName} &middot; Expires{" "}
+                      {new Date(inv.expiresAt).toLocaleDateString()}
+                    </div>
+                  </div>
+                  <Badge variant="secondary" className="text-xs shrink-0">
+                    {getRoleIcon(inv.role)}
+                    <span className="ml-1">
+                      {ROLE_LABELS[inv.role] ?? inv.role}
+                    </span>
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Invitations the current user can accept (when already in an org) */}
+      {myInvitations.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Mail className="h-5 w-5" />
+              Your Invitations
+            </CardTitle>
+            <CardDescription>
+              You have been invited to other organizations
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {myInvitations.map((inv) => (
+                <div
+                  key={inv.id}
+                  className="flex items-center justify-between p-3 rounded-lg border"
+                >
+                  <div className="min-w-0">
+                    <div className="font-medium text-sm">
+                      {inv.organization.name}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      Invited by {inv.invitedBy.firstName}{" "}
+                      {inv.invitedBy.lastName} as{" "}
+                      {ROLE_LABELS[inv.role] ?? inv.role}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Button
+                      size="sm"
+                      className="bg-gradient-button hover:bg-gradient-button-hover text-white"
+                      onClick={() => handleAcceptInvitation(inv.id)}
+                      disabled={acceptInvitationMutation.isPending}
+                    >
+                      {acceptInvitationMutation.isPending ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <>
+                          <Check className="h-4 w-4 mr-1" />
+                          Accept
+                        </>
+                      )}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleDeclineInvitation(inv.id)}
+                      disabled={declineInvitationMutation.isPending}
+                    >
+                      {declineInvitationMutation.isPending ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <>
+                          <X className="h-4 w-4 mr-1" />
+                          Decline
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Invite Dialog */}
       <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>

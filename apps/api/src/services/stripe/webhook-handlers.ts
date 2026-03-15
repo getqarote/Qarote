@@ -16,7 +16,7 @@ import {
   Subscription,
 } from "@/services/stripe/stripe.service";
 
-import { emailConfig } from "@/config";
+import { emailConfig, featureFlags } from "@/config";
 
 import {
   BillingInterval,
@@ -77,7 +77,7 @@ export async function handleCheckoutSessionCompleted(session: Session) {
     });
 
     // Dual-write to Organization if one owns this Stripe customer
-    if (customerId) {
+    if (featureFlags.useOrgBilling && customerId) {
       const org = await resolveOrgFromStripeCustomerId(customerId);
       if (org) {
         await prisma.organization.update({
@@ -154,9 +154,10 @@ export async function handleCheckoutSessionCompleted(session: Session) {
     );
 
     // Resolve org for linking the subscription record
-    const org = customerId
-      ? await resolveOrgFromStripeCustomerId(customerId)
-      : null;
+    const org =
+      featureFlags.useOrgBilling && customerId
+        ? await resolveOrgFromStripeCustomerId(customerId)
+        : null;
 
     await prisma.subscription.create({
       data: {
@@ -402,9 +403,10 @@ export async function handleSubscriptionChange(subscription: Subscription) {
     };
 
     // Resolve org for linking
-    const org = customerId
-      ? await resolveOrgFromStripeCustomerId(customerId)
-      : null;
+    const org =
+      featureFlags.useOrgBilling && customerId
+        ? await resolveOrgFromStripeCustomerId(customerId)
+        : null;
 
     if (existingSubscription) {
       await prisma.subscription.update({
@@ -423,7 +425,7 @@ export async function handleSubscriptionChange(subscription: Subscription) {
     }
 
     // Dual-write to Organization if applicable
-    if (org) {
+    if (featureFlags.useOrgBilling && org) {
       await prisma.organization.update({
         where: { id: org.id },
         data: {
