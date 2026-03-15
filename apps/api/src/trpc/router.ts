@@ -2,6 +2,7 @@ import { alertsRouter } from "./routers/alerts/index";
 import { authRouter } from "./routers/auth/index";
 import { discordRouter } from "./routers/discord";
 import { feedbackRouter } from "./routers/feedback";
+import { organizationRouter } from "./routers/organization/index";
 import { paymentRouter } from "./routers/payment/index";
 import { licenseRouter } from "./routers/portal/license";
 import { publicRouter } from "./routers/public/index";
@@ -21,6 +22,7 @@ export const appRouter = router({
   auth: authRouter,
   user: userRouter,
   workspace: workspaceRouter,
+  organization: organizationRouter,
   alerts: alertsRouter,
   feedback: feedbackRouter,
   license: licenseRouter,

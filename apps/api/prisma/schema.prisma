@@ -217,6 +217,7 @@ model User {
   workspaceMembers        WorkspaceMember[]        @relation("WorkspaceMembers")
   payments                Payment[]
   subscription            Subscription?
+  organizationMembers     OrganizationMember[]
 }
 
 // ─── Better Auth Models ─────────────────────────────────────────────
@@ -276,6 +277,7 @@ model Workspace {
   createdAt                     DateTime                  @default(now())
   updatedAt                     DateTime                  @updatedAt
   ownerId                       String?
+  organizationId                String
   tags                          Json?
   emailNotificationsEnabled     Boolean                   @default(true)
   notificationSeverities        Json?
@@ -295,7 +297,9 @@ model Workspace {
   seenAlerts                    SeenAlert[]
   slackConfigs                  SlackConfig[]
   webhooks                      Webhook[]
-  workspaceSsoConfig            WorkspaceSsoConfig?
+  organization                  Organization              @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId])
 }
 
 model WorkspaceAlertThresholds {
@@ -528,8 +532,10 @@ model Subscription {
   isRenewalAfterCancel Boolean            @default(false)
   previousCancelDate   DateTime?
   userId               String             @unique
+  organizationId       String?            @unique
   plan                 UserPlan
   user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization         Organization?      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   @@index([status], name: "subscription_status_idx")
   @@index([stripeSubscriptionId], name: "subscription_stripe_id_idx")
@@ -577,28 +583,26 @@ model SsoProvider {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  workspaceSsoConfig WorkspaceSsoConfig?
+  orgSsoConfig OrgSsoConfig?
 
   @@index([domain])
   @@map("ssoProvider")
 }
 
-/// Maps a workspace (or the whole instance for self-hosted) to a better-auth SSO provider.
-/// workspaceId = null means instance-wide (self-hosted only).
-model WorkspaceSsoConfig {
-  id          String   @id @default(uuid())
-  workspaceId String?  @unique
-  providerId  String   @unique
-  enabled     Boolean  @default(true)
-  buttonLabel String   @default("Sign in with SSO")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+/// Maps an organization (or the whole instance for self-hosted) to a better-auth SSO provider.
+/// organizationId = null means instance-wide (self-hosted only).
+model OrgSsoConfig {
+  id             String        @id @default(uuid())
+  organizationId String?
+  providerId     String        @unique
+  autoProvision  Boolean       @default(true)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
 
-  workspace   Workspace?  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  ssoProvider SsoProvider @relation(fields: [providerId], references: [providerId], onDelete: Cascade)
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  provider       SsoProvider   @relation(fields: [providerId], references: [id], onDelete: Cascade)
 
-  @@index([workspaceId])
-  @@index([providerId])
+  @@index([organizationId])
 }
 
 enum AlertSeverity {
@@ -701,6 +705,47 @@ enum UserRole {
   ADMIN
   MEMBER
   READONLY
+}
+
+enum OrgRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+// ─── Organization Models ──────────────────────────────────────────────
+
+model Organization {
+  id                   String   @id @default(uuid())
+  name                 String
+  slug                 String   @unique
+  contactEmail         String?
+  logoUrl              String?
+  stripeCustomerId     String?  @unique
+  stripeSubscriptionId String?  @unique
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  members       OrganizationMember[]
+  workspaces    Workspace[]
+  subscription  Subscription?
+  orgSsoConfigs OrgSsoConfig[]
+}
+
+model OrganizationMember {
+  id             String   @id @default(uuid())
+  userId         String
+  organizationId String
+  role           OrgRole
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, organizationId])
+  @@index([userId])
+  @@index([organizationId])
 }
 
 // ─── Self-hosted Configuration ───────────────────────────────────────

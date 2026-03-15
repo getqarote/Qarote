@@ -9,32 +9,35 @@ import { prisma } from "@/core/prisma";
 
 import { EmailVerificationService } from "@/services/email/email-verification.service";
 import { notionService } from "@/services/integrations/notion.service";
-import { getUserPlan } from "@/services/plan/plan.service";
+import { getOrgPlan } from "@/services/plan/plan.service";
 import { StripeCustomerService } from "@/services/stripe/customer.service";
 
 import { authConfig, config, emailConfig, googleConfig } from "@/config";
 import { isCloudMode } from "@/config/deployment";
 
-import { UserPlan } from "@/generated/prisma/client";
+import { OrgRole, UserPlan } from "@/generated/prisma/client";
 
 /**
- * Enforce that the SSO provider's workspace has an enterprise entitlement.
+ * Enforce that the SSO provider's organization has an enterprise entitlement.
  * Called in provisionUser (after IdP auth) as a second line of defense.
- * - Cloud: workspace owner must be on ENTERPRISE plan
+ * - Cloud: organization must be on ENTERPRISE plan
  * - Self-hosted: license JWT must have "sso" feature or be ENTERPRISE tier
  */
 async function enforceSsoEntitlement(providerId: string): Promise<void> {
   if (isCloudMode()) {
-    const wsConfig = await prisma.workspaceSsoConfig.findUnique({
+    // providerId here is the logical SsoProvider.providerId (e.g. "org-{orgId}").
+    // OrgSsoConfig.providerId is a FK to SsoProvider.id (PK), so look up via the provider relation.
+    const ssoProvider = await prisma.ssoProvider.findUnique({
       where: { providerId },
-      include: { workspace: true },
+      include: { orgSsoConfig: { include: { organization: true } } },
     });
 
-    if (!wsConfig?.workspaceId || !wsConfig.workspace?.ownerId) {
-      throw new Error("SSO not permitted: no workspace owner found");
+    const orgConfig = ssoProvider?.orgSsoConfig;
+    if (!orgConfig?.organizationId) {
+      throw new Error("SSO not permitted: no organization found");
     }
 
-    const plan = await getUserPlan(wsConfig.workspace.ownerId);
+    const plan = await getOrgPlan(orgConfig.organizationId);
     if (plan !== UserPlan.ENTERPRISE) {
       throw new Error("SSO requires Enterprise plan");
     }
@@ -181,48 +184,92 @@ export const auth = betterAuth({
             );
           });
 
-        // Assign user to workspace based on the SSO provider's WorkspaceSsoConfig
-        const wsConfig = await prisma.workspaceSsoConfig.findUnique({
+        // Assign user to organization based on the SSO provider's OrgSsoConfig.
+        // provider.providerId is the logical ID; OrgSsoConfig.providerId is FK to SsoProvider.id.
+        const ssoProviderWithConfig = await prisma.ssoProvider.findUnique({
           where: { providerId: provider.providerId },
+          include: {
+            orgSsoConfig: {
+              include: {
+                organization: {
+                  include: {
+                    workspaces: { take: 1, orderBy: { createdAt: "asc" } },
+                  },
+                },
+              },
+            },
+          },
         });
+        const orgConfig = ssoProviderWithConfig?.orgSsoConfig;
 
-        if (wsConfig?.workspaceId) {
-          await prisma.workspaceMember
+        if (orgConfig?.organizationId) {
+          // Add user as OrganizationMember
+          await prisma.organizationMember
             .upsert({
               where: {
-                userId_workspaceId: {
+                userId_organizationId: {
                   userId: user.id,
-                  workspaceId: wsConfig.workspaceId,
+                  organizationId: orgConfig.organizationId,
                 },
               },
               update: {},
               create: {
                 userId: user.id,
-                workspaceId: wsConfig.workspaceId,
-                role: "MEMBER",
+                organizationId: orgConfig.organizationId,
+                role: OrgRole.MEMBER,
               },
             })
             .catch((err) => {
               logger.warn(
-                { err, userId: user.id, workspaceId: wsConfig.workspaceId },
-                "Failed to upsert workspace member for SSO user"
+                {
+                  err,
+                  userId: user.id,
+                  organizationId: orgConfig.organizationId,
+                },
+                "Failed to upsert organization member for SSO user"
               );
             });
 
-          // Set primary workspace if not already set
-          const baUser = user as Record<string, unknown>;
-          if (!baUser.workspaceId) {
-            await prisma.user
-              .update({
-                where: { id: user.id },
-                data: { workspaceId: wsConfig.workspaceId },
+          // Assign to the org's first (default) workspace
+          const defaultWorkspace = orgConfig.organization?.workspaces?.[0];
+          if (defaultWorkspace) {
+            await prisma.workspaceMember
+              .upsert({
+                where: {
+                  userId_workspaceId: {
+                    userId: user.id,
+                    workspaceId: defaultWorkspace.id,
+                  },
+                },
+                update: {},
+                create: {
+                  userId: user.id,
+                  workspaceId: defaultWorkspace.id,
+                  role: "MEMBER",
+                },
               })
               .catch((err) => {
                 logger.warn(
-                  { err, userId: user.id },
-                  "Failed to set primary workspace for SSO user"
+                  { err, userId: user.id, workspaceId: defaultWorkspace.id },
+                  "Failed to upsert workspace member for SSO user"
                 );
               });
+
+            // Set primary workspace if not already set
+            const baUser = user as Record<string, unknown>;
+            if (!baUser.workspaceId) {
+              await prisma.user
+                .update({
+                  where: { id: user.id },
+                  data: { workspaceId: defaultWorkspace.id },
+                })
+                .catch((err) => {
+                  logger.warn(
+                    { err, userId: user.id },
+                    "Failed to set primary workspace for SSO user"
+                  );
+                });
+            }
           }
         }
       },
@@ -313,11 +360,13 @@ export const auth = betterAuth({
         after: async (user) => {
           const baUser = user as Record<string, unknown>;
 
-          // Auto-start Enterprise trial for cloud users
-          // Awaited so the subscription exists before the auth callback returns
-          // and the frontend can fetch the correct plan on first load.
+          // Auto-create Organization and provision trial for cloud users.
+          // For non-cloud (self-hosted), bootstrapOrg handles the default org
+          // so we only create a per-user org in cloud mode.
           if (isCloudMode()) {
             try {
+              // provisionTrialForNewUser now creates an Organization for the
+              // user and provisions the trial on the org (Phase 2 billing).
               await StripeCustomerService.provisionTrialForNewUser({
                 userId: user.id,
                 email: user.email,
@@ -327,8 +376,42 @@ export const auth = betterAuth({
             } catch (error) {
               logger.warn(
                 { error, userId: user.id },
-                "Failed to auto-start trial at registration"
+                "Failed to auto-create org and start trial at registration"
               );
+
+              // If trial provisioning failed but we still want the user to
+              // have an org, try to create one without billing.
+              try {
+                const existingMembership =
+                  await prisma.organizationMember.findFirst({
+                    where: { userId: user.id },
+                    select: { id: true },
+                  });
+
+                if (!existingMembership) {
+                  const orgSlug = `user-${user.id.slice(0, 8)}-${Date.now()}`;
+                  await prisma.organization.create({
+                    data: {
+                      name: user.name
+                        ? `${user.name}'s Organization`
+                        : "My Organization",
+                      slug: orgSlug,
+                      contactEmail: user.email,
+                      members: {
+                        create: {
+                          userId: user.id,
+                          role: OrgRole.OWNER,
+                        },
+                      },
+                    },
+                  });
+                }
+              } catch (orgError) {
+                logger.warn(
+                  { orgError, userId: user.id },
+                  "Failed to create fallback organization"
+                );
+              }
             }
           }
 

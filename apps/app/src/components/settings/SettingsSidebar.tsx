@@ -3,6 +3,8 @@ import { Link, useLocation } from "react-router";
 
 import {
   Building,
+  Building2,
+  CreditCard,
   KeyRound,
   Mail,
   MessageSquare,
@@ -59,6 +61,35 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
+    labelKey: "settings:groups.organization",
+    adminOnly: true,
+    items: [
+      {
+        key: "organization",
+        path: "/settings/organization",
+        icon: Building2,
+        labelKey: "settings:nav.organization",
+        adminOnly: true,
+        cloudOnly: true,
+      },
+      {
+        key: "billing",
+        path: "/settings/billing",
+        icon: CreditCard,
+        labelKey: "settings:nav.billing",
+        adminOnly: true,
+        cloudOnly: true,
+      },
+      {
+        key: "sso",
+        path: "/settings/sso",
+        icon: Shield,
+        labelKey: "settings:nav.sso",
+        adminOnly: true,
+      },
+    ],
+  },
+  {
     labelKey: "settings:groups.administration",
     adminOnly: true,
     items: [
@@ -76,13 +107,6 @@ const navGroups: NavGroup[] = [
         labelKey: "settings:nav.license",
         adminOnly: true,
         selfHostedOnly: true,
-      },
-      {
-        key: "sso",
-        path: "/settings/sso",
-        icon: Shield,
-        labelKey: "settings:nav.sso",
-        adminOnly: true,
       },
       {
         key: "smtp",
