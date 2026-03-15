@@ -63,11 +63,15 @@ async function seedDefaultOrganization(): Promise<void> {
       });
     }
 
-    // Link any existing workspaces that have no organization
-    await tx.workspace.updateMany({
-      where: { organizationId: null },
-      data: { organizationId: org.id },
-    });
+    // Link any existing workspaces that belong to the org owner but aren't
+    // yet associated with this organization (defensive, should not happen
+    // since organizationId is now required at creation time).
+    if (firstUser) {
+      await tx.workspace.updateMany({
+        where: { ownerId: firstUser.id },
+        data: { organizationId: org.id },
+      });
+    }
 
     logger.info(
       { organizationId: org.id },
