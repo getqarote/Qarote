@@ -409,7 +409,10 @@ export async function handleSubscriptionChange(subscription: Subscription) {
     if (existingSubscription) {
       await prisma.subscription.update({
         where: { stripeSubscriptionId: subscriptionId },
-        data: subscriptionData,
+        data: {
+          ...subscriptionData,
+          organizationId: org?.id ?? existingSubscription.organizationId,
+        },
       });
     } else {
       await prisma.subscription.create({

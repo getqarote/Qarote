@@ -28,7 +28,7 @@ import {
   workspaceProcedure,
 } from "@/trpc/trpc";
 
-import { UserPlan, UserRole } from "@/generated/prisma/client";
+import { OrgRole, UserPlan, UserRole } from "@/generated/prisma/client";
 import { te } from "@/i18n";
 
 /**
@@ -185,40 +185,49 @@ export const managementRouter = router({
 
       try {
         // Check if user belongs to an organization
-        const membership = await ctx.prisma.organizationMember.findFirst({
+        let membership = await ctx.prisma.organizationMember.findFirst({
           where: { userId: user.id },
           select: { organizationId: true },
         });
 
-        let currentPlan: UserPlan = UserPlan.FREE;
-        let workspaceCount: number;
+        // Auto-create an organization for the user if they don't have one
+        if (!membership) {
+          const orgSlug = `user-${user.id.slice(0, 8)}-${Date.now()}`;
+          const orgName = user.firstName
+            ? `${user.firstName}'s Organization`
+            : "My Organization";
 
-        if (membership) {
-          // Org-scoped validation
-          currentPlan = await getOrgPlan(membership.organizationId);
-          const orgCounts = await getOrgResourceCounts(
-            membership.organizationId
-          );
-          workspaceCount = orgCounts.workspaces;
-        } else {
-          // Fallback: user-level subscription
-          const userWithSubscription = await ctx.prisma.user.findUnique({
-            where: { id: user.id },
-            select: {
-              subscription: {
-                select: { plan: true },
+          try {
+            const org = await ctx.prisma.organization.create({
+              data: {
+                name: orgName,
+                slug: orgSlug,
+                contactEmail: user.email,
+                members: {
+                  create: {
+                    userId: user.id,
+                    role: OrgRole.OWNER,
+                  },
+                },
               },
-            },
-          });
-
-          if (userWithSubscription?.subscription) {
-            currentPlan = userWithSubscription.subscription.plan;
+            });
+            membership = { organizationId: org.id };
+          } catch (orgError) {
+            ctx.logger.error(
+              { error: orgError, userId: user.id },
+              "Failed to auto-create organization for user"
+            );
+            throw new TRPCError({
+              code: "INTERNAL_SERVER_ERROR",
+              message: te(ctx.locale, "workspace.failedToCreate"),
+            });
           }
-
-          workspaceCount = await ctx.prisma.workspace.count({
-            where: { ownerId: user.id },
-          });
         }
+
+        // Org-scoped validation
+        const currentPlan = await getOrgPlan(membership.organizationId);
+        const orgCounts = await getOrgResourceCounts(membership.organizationId);
+        const workspaceCount = orgCounts.workspaces;
 
         // Validate workspace creation against plan limits
         // Errors will be caught by planValidationProcedure middleware
@@ -241,14 +250,14 @@ export const managementRouter = router({
 
         // Create the new workspace and assign user to it
         const newWorkspace = await ctx.prisma.$transaction(async (tx) => {
-          // Create the workspace with organizationId if user belongs to one
+          // Create the workspace linked to the user's organization
           const workspace = await tx.workspace.create({
             data: {
               name,
               contactEmail,
               tags: tags ? tags : undefined, // Store tags as JSON array or undefined
               ownerId: user.id,
-              organizationId: membership?.organizationId ?? null,
+              organizationId: membership.organizationId,
             },
             include: {
               _count: {

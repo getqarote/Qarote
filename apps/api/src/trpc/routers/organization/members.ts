@@ -28,6 +28,7 @@ async function requireOrgAdmin(
       findFirst: (args: {
         where: { userId: string; role: { in: OrgRole[] } };
         select: { organizationId: true; role: true };
+        orderBy: { role: "asc" };
       }) => Promise<{ organizationId: string; role: OrgRole } | null>;
     };
   },
@@ -36,6 +37,7 @@ async function requireOrgAdmin(
   const membership = await prisma.organizationMember.findFirst({
     where: { userId, role: { in: [OrgRole.OWNER, OrgRole.ADMIN] } },
     select: { organizationId: true, role: true },
+    orderBy: { role: "asc" },
   });
   if (!membership) {
     throw new TRPCError({
@@ -155,6 +157,12 @@ export const membersRouter = router({
           acceptedAt: null,
         },
       });
+
+      // TODO: Send organization invitation email notification to the invited user.
+      // Follow the pattern in workspace/invitation.ts which uses CoreEmailService.loadEffectiveConfig()
+      // to check if email is enabled, then calls EmailService.sendInvitationEmail().
+      // An org-specific email template (e.g. EmailService.sendOrgInvitationEmail) needs to be
+      // implemented in the email service first.
 
       ctx.logger.info(
         {

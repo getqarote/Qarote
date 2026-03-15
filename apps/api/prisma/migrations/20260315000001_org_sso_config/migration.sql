@@ -26,8 +26,8 @@ CREATE TABLE "OrgSsoConfig" (
 -- CreateIndex
 CREATE UNIQUE INDEX "OrgSsoConfig_providerId_key" ON "OrgSsoConfig"("providerId");
 
--- CreateIndex
-CREATE INDEX "OrgSsoConfig_organizationId_idx" ON "OrgSsoConfig"("organizationId");
+-- CreateIndex (unique constraint prevents duplicate SSO configs per org)
+CREATE UNIQUE INDEX "OrgSsoConfig_organizationId_key" ON "OrgSsoConfig"("organizationId");
 
 -- AddForeignKey
 ALTER TABLE "OrgSsoConfig" ADD CONSTRAINT "OrgSsoConfig_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("id") ON DELETE CASCADE ON UPDATE CASCADE;
