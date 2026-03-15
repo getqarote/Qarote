@@ -345,20 +345,22 @@ export class StripeCustomerService {
   }
 
   /**
-   * Provision a full trial for a newly registered user.
-   * Creates Stripe customer + trial subscription + DB records.
+   * Provision a full trial on an Organization.
+   * Creates Stripe customer on the org + trial subscription + DB Subscription record.
    * Returns null if Stripe is not configured (self-hosted mode).
    * Does NOT send emails — caller decides.
    */
-  static async provisionTrialForNewUser({
-    userId,
+  static async provisionTrialForOrg({
+    organizationId,
     email,
     name,
+    userId,
     prisma,
   }: {
-    userId: string;
+    organizationId: string;
     email: string;
     name: string;
+    userId: string;
     prisma: PrismaClient;
   }) {
     // Skip if Stripe is not configured (self-hosted deployments)
@@ -370,32 +372,35 @@ export class StripeCustomerService {
     const billingInterval = "monthly" as const;
     const trialDays = 14;
 
-    logger.info({ userId, plan, trialDays }, "Provisioning trial for new user");
+    logger.info(
+      { organizationId, userId, plan, trialDays },
+      "Provisioning trial for organization"
+    );
 
     // Reuse existing Stripe customer if one was already created (race condition guard)
-    const user = await prisma.user.findUniqueOrThrow({
-      where: { id: userId },
+    const org = await prisma.organization.findUniqueOrThrow({
+      where: { id: organizationId },
       select: { stripeCustomerId: true },
     });
 
-    let customerId = user.stripeCustomerId;
+    let customerId = org.stripeCustomerId;
     if (!customerId) {
       const customer = await StripeCustomerService.createCustomer({
         email,
         name,
-        userId,
+        userId, // metadata still references the founding user
       });
       customerId = customer.id;
 
       // Conditional write: only set if still null (avoids overwriting concurrent request)
-      await prisma.user.updateMany({
-        where: { id: userId, stripeCustomerId: null },
+      await prisma.organization.updateMany({
+        where: { id: organizationId, stripeCustomerId: null },
         data: { stripeCustomerId: customerId },
       });
     }
 
     // Create trial subscription via Stripe API
-    const idempotencyKey = `auto_trial_${userId}`;
+    const idempotencyKey = `auto_trial_org_${organizationId}`;
     const subscription = await StripeCustomerService.createTrialSubscription({
       customerId,
       plan,
@@ -405,13 +410,13 @@ export class StripeCustomerService {
       idempotencyKey,
     });
 
-    // Update user with subscription ID
-    await prisma.user.update({
-      where: { id: userId },
+    // Update org with subscription ID
+    await prisma.organization.update({
+      where: { id: organizationId },
       data: { stripeSubscriptionId: subscription.id },
     });
 
-    // Upsert subscription record (idempotent against duplicate events/retries)
+    // Upsert subscription record linked to both user and org (idempotent)
     const firstItem = subscription.items?.data?.[0];
     const currentPeriodStart = firstItem?.current_period_start
       ? new Date(firstItem.current_period_start * 1000)
@@ -422,6 +427,7 @@ export class StripeCustomerService {
 
     const subscriptionData = {
       userId,
+      organizationId,
       stripeSubscriptionId: subscription.id,
       stripePriceId: firstItem?.price?.id || "",
       stripeCustomerId: customerId,
@@ -447,6 +453,7 @@ export class StripeCustomerService {
       where: { userId },
       create: subscriptionData,
       update: {
+        organizationId: subscriptionData.organizationId,
         stripeSubscriptionId: subscriptionData.stripeSubscriptionId,
         stripePriceId: subscriptionData.stripePriceId,
         stripeCustomerId: subscriptionData.stripeCustomerId,
@@ -460,13 +467,110 @@ export class StripeCustomerService {
 
     logger.info(
       {
+        organizationId,
         userId,
         subscriptionId: dbSubscription.stripeSubscriptionId,
         plan,
         trialEnd: dbSubscription.trialEnd,
       },
-      "Trial provisioned for new user"
+      "Trial provisioned for organization"
     );
+
+    return dbSubscription;
+  }
+
+  /**
+   * Provision a full trial for a newly registered user.
+   * Creates an Organization for the user, then provisions the trial on the org.
+   * Also dual-writes stripeCustomerId/subscriptionId to the User for backward compat.
+   * Returns null if Stripe is not configured (self-hosted mode).
+   * Does NOT send emails — caller decides.
+   */
+  static async provisionTrialForNewUser({
+    userId,
+    email,
+    name,
+    prisma,
+  }: {
+    userId: string;
+    email: string;
+    name: string;
+    prisma: PrismaClient;
+  }) {
+    // Skip if Stripe is not configured (self-hosted deployments)
+    if (!STRIPE_PRICE_IDS) {
+      return null;
+    }
+
+    const plan = UserPlan.ENTERPRISE;
+    const trialDays = 14;
+
+    logger.info({ userId, plan, trialDays }, "Provisioning trial for new user");
+
+    // Create an Organization for the user (or find existing one from a concurrent request)
+    const org = await prisma.organizationMember.findFirst({
+      where: { userId },
+      select: { organizationId: true, organization: true },
+    });
+
+    let organizationId: string;
+
+    if (org) {
+      organizationId = org.organizationId;
+    } else {
+      // Create the org inside a transaction to ensure atomicity
+      const slug = `${name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "")}-${userId.slice(0, 8)}`;
+      const newOrg = await prisma.$transaction(async (tx) => {
+        const created = await tx.organization.create({
+          data: {
+            name: name ? `${name}'s Organization` : "My Organization",
+            slug,
+            contactEmail: email,
+          },
+        });
+
+        // Add user as OWNER
+        // Role hierarchy:
+        // - Org OWNER: Can manage billing, SSO, delete org, manage all workspaces
+        // - Org ADMIN: Can create/manage workspaces, invite org members
+        // - Org MEMBER: Can access assigned workspaces only
+        await tx.organizationMember.create({
+          data: {
+            userId,
+            organizationId: created.id,
+            role: "OWNER",
+          },
+        });
+
+        return created;
+      });
+      organizationId = newOrg.id;
+    }
+
+    // Provision trial on the organization
+    const dbSubscription = await StripeCustomerService.provisionTrialForOrg({
+      organizationId,
+      email,
+      name,
+      userId,
+      prisma,
+    });
+
+    if (dbSubscription) {
+      // Dual-write to User for backward compatibility:
+      // Existing code that reads user.stripeCustomerId / stripeSubscriptionId
+      // will continue working until all read paths are fully migrated.
+      await prisma.user.update({
+        where: { id: userId },
+        data: {
+          stripeCustomerId: dbSubscription.stripeCustomerId,
+          stripeSubscriptionId: dbSubscription.stripeSubscriptionId,
+        },
+      });
+    }
 
     return dbSubscription;
   }

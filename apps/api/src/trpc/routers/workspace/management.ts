@@ -106,24 +106,45 @@ export const managementRouter = router({
       // For new users creating their first workspace, they won't have a workspaceId yet
       let currentPlan: UserPlan = UserPlan.FREE; // Default plan for new users
 
-      // Get user with subscription
-      const userWithSubscription = await ctx.prisma.user.findUnique({
-        where: { id: user.id },
+      // Resolve org membership for org-scoped plan and workspace counting
+      const membership = await ctx.prisma.organizationMember.findFirst({
+        where: { userId: user.id },
         select: {
-          subscription: {
-            select: { plan: true },
+          organizationId: true,
+          organization: {
+            select: {
+              subscription: {
+                select: { plan: true },
+              },
+            },
           },
         },
       });
 
-      // Plans are now user-level, get from user's subscription
-      if (userWithSubscription?.subscription) {
-        currentPlan = userWithSubscription.subscription.plan;
+      if (membership?.organization?.subscription) {
+        currentPlan = membership.organization.subscription.plan;
+      } else {
+        // Fallback: user-level subscription (backward compat)
+        const userWithSubscription = await ctx.prisma.user.findUnique({
+          where: { id: user.id },
+          select: {
+            subscription: {
+              select: { plan: true },
+            },
+          },
+        });
+
+        if (userWithSubscription?.subscription) {
+          currentPlan = userWithSubscription.subscription.plan;
+        }
       }
 
-      // Count owned workspaces
+      // Count workspaces: org-scoped if user has an org, else user-owned
+      const workspaceCountWhere = membership
+        ? { organizationId: membership.organizationId }
+        : { ownerId: user.id };
       const ownedWorkspaceCount = await ctx.prisma.workspace.count({
-        where: { ownerId: user.id },
+        where: workspaceCountWhere,
       });
 
       const planFeatures = getPlanFeatures(currentPlan);
@@ -164,30 +185,52 @@ export const managementRouter = router({
       const { name, contactEmail, tags } = input;
 
       try {
-        // Get user's current plan from their subscription
-        let currentPlan: UserPlan = UserPlan.FREE; // Default plan for new users
-
-        const userWithSubscription = await ctx.prisma.user.findUnique({
-          where: { id: user.id },
+        // Resolve user's org membership (if any) for org-scoped plan validation
+        const membership = await ctx.prisma.organizationMember.findFirst({
+          where: { userId: user.id },
           select: {
-            subscription: {
-              select: { plan: true },
+            organizationId: true,
+            organization: {
+              select: {
+                subscription: {
+                  select: { plan: true },
+                },
+              },
             },
           },
         });
 
-        if (userWithSubscription?.subscription) {
-          currentPlan = userWithSubscription.subscription.plan;
+        // Determine plan: org-level if available, else user-level
+        let currentPlan: UserPlan = UserPlan.FREE;
+
+        if (membership?.organization?.subscription) {
+          currentPlan = membership.organization.subscription.plan;
+        } else {
+          const userWithSubscription = await ctx.prisma.user.findUnique({
+            where: { id: user.id },
+            select: {
+              subscription: {
+                select: { plan: true },
+              },
+            },
+          });
+
+          if (userWithSubscription?.subscription) {
+            currentPlan = userWithSubscription.subscription.plan;
+          }
         }
 
-        // Count current owned workspaces
-        const ownedWorkspaceCount = await ctx.prisma.workspace.count({
-          where: { ownerId: user.id },
+        // Count workspaces: org-scoped if user has an org, else user-owned
+        const workspaceCountWhere = membership
+          ? { organizationId: membership.organizationId }
+          : { ownerId: user.id };
+        const workspaceCount = await ctx.prisma.workspace.count({
+          where: workspaceCountWhere,
         });
 
         // Validate workspace creation against plan limits
         // Errors will be caught by planValidationProcedure middleware
-        validateWorkspaceCreation(currentPlan, ownedWorkspaceCount);
+        validateWorkspaceCreation(currentPlan, workspaceCount);
 
         // Check if workspace name already exists for this user
         const existingWorkspace = await ctx.prisma.workspace.findFirst({
@@ -205,6 +248,9 @@ export const managementRouter = router({
         }
 
         // Create the new workspace and assign user to it
+        // Set organizationId from the user's org membership (if any)
+        const organizationId = membership?.organizationId ?? null;
+
         const newWorkspace = await ctx.prisma.$transaction(async (tx) => {
           // Create the workspace
           const workspace = await tx.workspace.create({
@@ -213,6 +259,7 @@ export const managementRouter = router({
               contactEmail,
               tags: tags ? tags : undefined, // Store tags as JSON array or undefined
               ownerId: user.id,
+              ...(organizationId && { organizationId }),
             },
             include: {
               _count: {

@@ -11,6 +11,9 @@ export interface PlanFeatures {
   canInviteUsers: boolean;
 
   // Limits
+  // Note: maxWorkspaces and maxUsers are counted per-Organization when an org
+  // exists. See getOrgResourceCounts() in plan.service.ts. If the user has no
+  // org, counts fall back to user-level ownership (backward compat).
   maxServers: number | null;
   maxWorkspaces: number | null;
   maxUsers: number | null;

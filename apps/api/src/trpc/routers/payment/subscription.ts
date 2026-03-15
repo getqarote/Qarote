@@ -15,6 +15,33 @@ import { router, strictRateLimitedProcedure } from "@/trpc/trpc";
 import { te } from "@/i18n";
 
 /**
+ * Resolve the Stripe subscription ID for a user.
+ * Prefers org-level subscription, falls back to user-level for backward compat.
+ */
+async function resolveStripeSubscriptionId(
+  userId: string,
+  userStripeSubId: string | null,
+  prisma: typeof import("@/core/prisma").prisma
+): Promise<string | null> {
+  // Check if user belongs to an org with a subscription
+  const membership = await prisma.organizationMember.findFirst({
+    where: { userId },
+    select: {
+      organization: {
+        select: { stripeSubscriptionId: true },
+      },
+    },
+  });
+
+  if (membership?.organization?.stripeSubscriptionId) {
+    return membership.organization.stripeSubscriptionId;
+  }
+
+  // Fallback to user-level
+  return userStripeSubId;
+}
+
+/**
  * Subscription router
  * Handles subscription cancellation and renewal
  */
@@ -29,7 +56,14 @@ export const subscriptionRouter = router({
       const { user, prisma } = ctx;
 
       try {
-        if (!user.stripeSubscriptionId) {
+        // Resolve subscription ID: prefer org-level, fall back to user-level
+        const stripeSubscriptionId = await resolveStripeSubscriptionId(
+          user.id,
+          user.stripeSubscriptionId,
+          prisma
+        );
+
+        if (!stripeSubscriptionId) {
           throw new TRPCError({
             code: "BAD_REQUEST",
             message: te(ctx.locale, "billing.noActiveSubscription"),
@@ -37,7 +71,7 @@ export const subscriptionRouter = router({
         }
 
         const subscription = await StripeService.cancelSubscription(
-          user.stripeSubscriptionId,
+          stripeSubscriptionId,
           cancelImmediately
         );
 

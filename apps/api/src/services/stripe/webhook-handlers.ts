@@ -76,6 +76,14 @@ export async function handleCheckoutSessionCompleted(session: Session) {
       },
     });
 
+    // Dual-write to Organization (if user belongs to one)
+    if (customerId) {
+      await dualWriteToOrg(customerId, {
+        stripeCustomerId: customerId,
+        stripeSubscriptionId: subscriptionId ?? undefined,
+      });
+    }
+
     // Get user for email
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -330,10 +338,31 @@ export async function handleSubscriptionChange(subscription: Subscription) {
       return;
     }
 
-    // Find user by Stripe customer ID
-    const user = await prisma.user.findFirst({
+    // Find user by Stripe customer ID (check User first, then resolve via org)
+    let user = await prisma.user.findFirst({
       where: { stripeCustomerId: customerId },
     });
+
+    if (!user) {
+      // Try to find via org: org owns the Stripe customer, find the owner member
+      const org = await prisma.organization.findUnique({
+        where: { stripeCustomerId: customerId },
+        select: {
+          id: true,
+          members: {
+            where: { role: "OWNER" },
+            select: { userId: true },
+            take: 1,
+          },
+        },
+      });
+
+      if (org?.members[0]) {
+        user = await prisma.user.findUnique({
+          where: { id: org.members[0].userId },
+        });
+      }
+    }
 
     if (!user) {
       logger.warn(
@@ -342,6 +371,11 @@ export async function handleSubscriptionChange(subscription: Subscription) {
       );
       return;
     }
+
+    // Dual-write subscription ID to Organization
+    await dualWriteToOrg(customerId, {
+      stripeSubscriptionId: subscriptionId,
+    });
 
     // Get or create subscription record
     const existingSubscription = await prisma.subscription.findUnique({
@@ -381,16 +415,23 @@ export async function handleSubscriptionChange(subscription: Subscription) {
       cancelAtPeriodEnd: subscription.cancel_at_period_end || false,
     };
 
+    // Resolve org for linking the subscription record
+    const resolvedOrg = await resolveOrgFromStripeCustomerId(customerId);
+
     if (existingSubscription) {
       await prisma.subscription.update({
         where: { stripeSubscriptionId: subscriptionId },
-        data: subscriptionData,
+        data: {
+          ...subscriptionData,
+          ...(resolvedOrg && { organizationId: resolvedOrg.id }),
+        },
       });
     } else {
       await prisma.subscription.create({
         data: {
           userId: user.id,
           stripeSubscriptionId: subscriptionId,
+          ...(resolvedOrg && { organizationId: resolvedOrg.id }),
           ...subscriptionData,
         },
       });
@@ -867,12 +908,34 @@ export async function handleTrialWillEnd(subscription: Subscription) {
       return;
     }
 
-    const user = await prisma.user.findFirst({
+    // Find user by Stripe customer ID (check User first, then resolve via org)
+    let user = await prisma.user.findFirst({
       where: { stripeCustomerId: customerId },
       include: {
         workspace: true,
       },
     });
+
+    if (!user) {
+      // Try to find via org owner
+      const org = await prisma.organization.findUnique({
+        where: { stripeCustomerId: customerId },
+        select: {
+          members: {
+            where: { role: "OWNER" },
+            select: { userId: true },
+            take: 1,
+          },
+        },
+      });
+
+      if (org?.members[0]) {
+        user = await prisma.user.findUnique({
+          where: { id: org.members[0].userId },
+          include: { workspace: true },
+        });
+      }
+    }
 
     if (!user) {
       logger.warn(
@@ -1086,6 +1149,77 @@ export async function handleCustomerUpdated(customer: Customer) {
       handler: "handleCustomerUpdated",
       error_message: error instanceof Error ? error.message : "Unknown error",
     });
+  }
+}
+
+/**
+ * Resolve an Organization from a Stripe customer ID.
+ * Checks Organization.stripeCustomerId first, then falls back to
+ * finding the User with that stripeCustomerId and their org membership.
+ * Returns null if no org can be resolved.
+ */
+async function resolveOrgFromStripeCustomerId(
+  customerId: string
+): Promise<{ id: string } | null> {
+  // Direct match: org owns the Stripe customer
+  const org = await prisma.organization.findUnique({
+    where: { stripeCustomerId: customerId },
+    select: { id: true },
+  });
+
+  if (org) return org;
+
+  // Indirect match: user owns the Stripe customer, find their org
+  const user = await prisma.user.findFirst({
+    where: { stripeCustomerId: customerId },
+    select: { id: true },
+  });
+
+  if (!user) return null;
+
+  const membership = await prisma.organizationMember.findFirst({
+    where: { userId: user.id },
+    select: { organizationId: true },
+  });
+
+  if (membership) {
+    return { id: membership.organizationId };
+  }
+
+  return null;
+}
+
+/**
+ * Dual-write stripeCustomerId and stripeSubscriptionId to the Organization
+ * associated with the given Stripe customer ID.
+ * This is a best-effort operation — failures are logged but do not block
+ * the webhook handler.
+ */
+async function dualWriteToOrg(
+  customerId: string,
+  data: {
+    stripeCustomerId?: string;
+    stripeSubscriptionId?: string;
+  }
+): Promise<void> {
+  try {
+    const org = await resolveOrgFromStripeCustomerId(customerId);
+    if (!org) return;
+
+    await prisma.organization.update({
+      where: { id: org.id },
+      data,
+    });
+
+    logger.info(
+      { organizationId: org.id, ...data },
+      "Dual-wrote Stripe IDs to organization"
+    );
+  } catch (error) {
+    logger.warn(
+      { error, customerId, data },
+      "Failed to dual-write Stripe IDs to organization (non-fatal)"
+    );
   }
 }
 

@@ -313,7 +313,10 @@ export const auth = betterAuth({
         after: async (user) => {
           const baUser = user as Record<string, unknown>;
 
-          // Auto-start Enterprise trial for cloud users
+          // Auto-create Organization and start Enterprise trial for cloud users.
+          // provisionTrialForNewUser() creates an Organization with the user as
+          // OWNER, provisions the Stripe trial on the org, and dual-writes
+          // stripeCustomerId/subscriptionId to the User for backward compat.
           // Awaited so the subscription exists before the auth callback returns
           // and the frontend can fetch the correct plan on first load.
           if (isCloudMode()) {
@@ -327,7 +330,7 @@ export const auth = betterAuth({
             } catch (error) {
               logger.warn(
                 { error, userId: user.id },
-                "Failed to auto-start trial at registration"
+                "Failed to auto-create org and start trial at registration"
               );
             }
           }
