@@ -76,6 +76,20 @@ export async function handleCheckoutSessionCompleted(session: Session) {
       },
     });
 
+    // Dual-write to Organization if one owns this Stripe customer
+    if (customerId) {
+      const org = await resolveOrgFromStripeCustomerId(customerId);
+      if (org) {
+        await prisma.organization.update({
+          where: { id: org.id },
+          data: {
+            stripeCustomerId: customerId,
+            stripeSubscriptionId: subscriptionId,
+          },
+        });
+      }
+    }
+
     // Get user for email
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -139,9 +153,15 @@ export async function handleCheckoutSessionCompleted(session: Session) {
       subscriptionData?.trial_end
     );
 
+    // Resolve org for linking the subscription record
+    const org = customerId
+      ? await resolveOrgFromStripeCustomerId(customerId)
+      : null;
+
     await prisma.subscription.create({
       data: {
         userId,
+        organizationId: org?.id ?? null,
         stripeSubscriptionId: subscriptionId!,
         stripePriceId: subscriptionData?.items?.data?.[0]?.price?.id || "",
         stripeCustomerId: customerId!,
@@ -381,6 +401,11 @@ export async function handleSubscriptionChange(subscription: Subscription) {
       cancelAtPeriodEnd: subscription.cancel_at_period_end || false,
     };
 
+    // Resolve org for linking
+    const org = customerId
+      ? await resolveOrgFromStripeCustomerId(customerId)
+      : null;
+
     if (existingSubscription) {
       await prisma.subscription.update({
         where: { stripeSubscriptionId: subscriptionId },
@@ -390,8 +415,20 @@ export async function handleSubscriptionChange(subscription: Subscription) {
       await prisma.subscription.create({
         data: {
           userId: user.id,
+          organizationId: org?.id ?? null,
           stripeSubscriptionId: subscriptionId,
           ...subscriptionData,
+        },
+      });
+    }
+
+    // Dual-write to Organization if applicable
+    if (org) {
+      await prisma.organization.update({
+        where: { id: org.id },
+        data: {
+          stripeCustomerId: customerId,
+          stripeSubscriptionId: subscriptionId,
         },
       });
     }
@@ -1090,3 +1127,16 @@ export async function handleCustomerUpdated(customer: Customer) {
 }
 
 // Helper functions
+
+/**
+ * Resolve the Organization that owns a given Stripe customer ID.
+ * Returns null if no org is found (backward compat for user-only customers).
+ */
+async function resolveOrgFromStripeCustomerId(
+  customerId: string
+): Promise<{ id: string } | null> {
+  return prisma.organization.findUnique({
+    where: { stripeCustomerId: customerId },
+    select: { id: true },
+  });
+}

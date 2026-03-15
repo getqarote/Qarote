@@ -262,10 +262,25 @@ export const billingRouter = router({
    * Create billing portal session (PROTECTED)
    */
   createBillingPortalSession: rateLimitedProcedure.mutation(async ({ ctx }) => {
-    const { user } = ctx;
+    const { user, prisma } = ctx;
 
     try {
-      if (!user.stripeCustomerId) {
+      // Prefer org-level Stripe customer, fall back to user-level
+      let stripeCustomerId = user.stripeCustomerId;
+
+      if (!stripeCustomerId) {
+        const membership = await prisma.organizationMember.findFirst({
+          where: { userId: user.id },
+          select: {
+            organization: {
+              select: { stripeCustomerId: true },
+            },
+          },
+        });
+        stripeCustomerId = membership?.organization?.stripeCustomerId ?? null;
+      }
+
+      if (!stripeCustomerId) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: te(ctx.locale, "billing.noStripeCustomerId"),
@@ -273,7 +288,7 @@ export const billingRouter = router({
       }
 
       const session = await StripeService.createPortalSession(
-        user.stripeCustomerId,
+        stripeCustomerId,
         `${config.FRONTEND_URL}/billing`
       );
 
@@ -294,10 +309,25 @@ export const billingRouter = router({
    * Create portal session (PROTECTED) - alias for createBillingPortalSession
    */
   createPortalSession: rateLimitedProcedure.mutation(async ({ ctx }) => {
-    const { user } = ctx;
+    const { user, prisma } = ctx;
 
     try {
-      if (!user.stripeCustomerId) {
+      // Prefer org-level Stripe customer, fall back to user-level
+      let stripeCustomerId = user.stripeCustomerId;
+
+      if (!stripeCustomerId) {
+        const membership = await prisma.organizationMember.findFirst({
+          where: { userId: user.id },
+          select: {
+            organization: {
+              select: { stripeCustomerId: true },
+            },
+          },
+        });
+        stripeCustomerId = membership?.organization?.stripeCustomerId ?? null;
+      }
+
+      if (!stripeCustomerId) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: te(ctx.locale, "billing.noStripeCustomerFound"),
@@ -305,7 +335,7 @@ export const billingRouter = router({
       }
 
       const session = await StripeService.createPortalSession(
-        user.stripeCustomerId,
+        stripeCustomerId,
         `${config.FRONTEND_URL}/billing`
       );
 
