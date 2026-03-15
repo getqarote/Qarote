@@ -1,7 +1,5 @@
 import { prisma } from "@/core/prisma";
 
-import { featureFlags } from "@/config";
-
 import { getPlanFeatures } from "./features.service";
 
 import { UserPlan } from "@/generated/prisma/client";
@@ -227,38 +225,17 @@ export async function getOrgPlan(orgId: string): Promise<UserPlan> {
 }
 
 /**
- * Get a user's plan. When USE_ORG_BILLING is enabled and the user belongs to
- * an organization, delegates to getOrgPlan. Otherwise uses user-level subscription.
+ * Get a user's plan by looking up their organization membership and
+ * delegating to getOrgPlan. Falls back to FREE if no membership is found.
  */
 export async function getUserPlan(userId: string) {
-  if (featureFlags.useOrgBilling) {
-    // Check if the user belongs to an organization
-    const membership = await prisma.organizationMember.findFirst({
-      where: { userId },
-      select: { organizationId: true },
-    });
-
-    if (membership) {
-      return getOrgPlan(membership.organizationId);
-    }
-  }
-
-  // User-level subscription (legacy path, or when USE_ORG_BILLING is off)
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: {
-      subscription: {
-        select: { plan: true },
-      },
-    },
+  const membership = await prisma.organizationMember.findFirst({
+    where: { userId },
+    select: { organizationId: true },
   });
 
-  if (!user) {
-    throw new Error("User not found");
-  }
-
-  if (user.subscription) {
-    return user.subscription.plan;
+  if (membership) {
+    return getOrgPlan(membership.organizationId);
   }
 
   return UserPlan.FREE;
@@ -292,48 +269,23 @@ export async function getOrgResourceCounts(orgId: string) {
 }
 
 /**
- * Get resource counts for a user. When USE_ORG_BILLING is enabled and the user
- * belongs to an organization, delegates to getOrgResourceCounts. Otherwise uses
- * user-level counts.
+ * Get resource counts for a user by looking up their organization membership
+ * and delegating to getOrgResourceCounts. Returns zeros if no membership is found.
  */
 export async function getUserResourceCounts(userId: string) {
-  if (featureFlags.useOrgBilling) {
-    // Check if user belongs to an organization
-    const membership = await prisma.organizationMember.findFirst({
-      where: { userId },
-      select: { organizationId: true },
-    });
+  const membership = await prisma.organizationMember.findFirst({
+    where: { userId },
+    select: { organizationId: true },
+  });
 
-    if (membership) {
-      return getOrgResourceCounts(membership.organizationId);
-    }
+  if (membership) {
+    return getOrgResourceCounts(membership.organizationId);
   }
 
-  // User-level counts (legacy path, or when USE_ORG_BILLING is off)
-  const [serverCount, userCount, workspaceCount] = await Promise.all([
-    prisma.rabbitMQServer.count({
-      where: {
-        workspace: {
-          ownerId: userId,
-        },
-      },
-    }),
-    prisma.user.count({
-      where: {
-        workspace: {
-          ownerId: userId,
-        },
-      },
-    }),
-    prisma.workspace.count({
-      where: { ownerId: userId },
-    }),
-  ]);
-
   return {
-    servers: serverCount,
-    users: userCount,
-    workspaces: workspaceCount,
+    servers: 0,
+    users: 0,
+    workspaces: 0,
   };
 }
 

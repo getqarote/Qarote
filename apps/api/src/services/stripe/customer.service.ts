@@ -3,8 +3,6 @@ import Stripe from "stripe";
 import { logger } from "@/core/logger";
 import { retryWithBackoff } from "@/core/retry";
 
-import { featureFlags } from "@/config";
-
 import {
   CoreStripeService,
   CreateCheckoutSessionParams,
@@ -483,9 +481,8 @@ export class StripeCustomerService {
 
   /**
    * Provision a full trial for a newly registered user.
-   * When USE_ORG_BILLING is enabled: creates an Organization, provisions the
-   * trial on the org, and dual-writes Stripe IDs to User.
-   * When USE_ORG_BILLING is disabled: provisions directly on the user (legacy).
+   * Creates an Organization, provisions the trial on the org, and dual-writes
+   * Stripe IDs to User.
    * Returns null if Stripe is not configured (self-hosted mode).
    * Does NOT send emails -- caller decides.
    */
@@ -503,15 +500,6 @@ export class StripeCustomerService {
     // Skip if Stripe is not configured (self-hosted deployments)
     if (!STRIPE_PRICE_IDS) {
       return null;
-    }
-
-    if (!featureFlags.useOrgBilling) {
-      return StripeCustomerService.provisionTrialForNewUserLegacy({
-        userId,
-        email,
-        name,
-        prisma,
-      });
     }
 
     logger.info({ userId }, "Provisioning trial for new user (org-based)");
@@ -563,117 +551,6 @@ export class StripeCustomerService {
         subscriptionId: dbSubscription.stripeSubscriptionId,
       },
       "Trial provisioned for new user via organization"
-    );
-
-    return dbSubscription;
-  }
-
-  /**
-   * Legacy user-level trial provisioning (USE_ORG_BILLING=false).
-   * Creates a Stripe customer and trial subscription directly on the user.
-   */
-  private static async provisionTrialForNewUserLegacy({
-    userId,
-    email,
-    name,
-    prisma,
-  }: {
-    userId: string;
-    email: string;
-    name: string;
-    prisma: PrismaClient;
-  }) {
-    const plan = UserPlan.ENTERPRISE;
-    const billingInterval = "monthly" as const;
-    const trialDays = 14;
-
-    logger.info(
-      { userId },
-      "Provisioning trial for new user (legacy user-level)"
-    );
-
-    const customer = await StripeCustomerService.createCustomer({
-      email,
-      name,
-      userId,
-    });
-
-    await prisma.user.update({
-      where: { id: userId },
-      data: { stripeCustomerId: customer.id },
-    });
-
-    const idempotencyKey = `auto_trial_user_${userId}`;
-    const subscription = await StripeCustomerService.createTrialSubscription({
-      customerId: customer.id,
-      plan,
-      billingInterval,
-      trialDays,
-      userId,
-      idempotencyKey,
-    });
-
-    await prisma.user.update({
-      where: { id: userId },
-      data: { stripeSubscriptionId: subscription.id },
-    });
-
-    const firstItem = subscription.items?.data?.[0];
-    const currentPeriodStart = firstItem?.current_period_start
-      ? new Date(firstItem.current_period_start * 1000)
-      : new Date();
-    const currentPeriodEnd = firstItem?.current_period_end
-      ? new Date(firstItem.current_period_end * 1000)
-      : new Date(Date.now() + trialDays * 24 * 60 * 60 * 1000);
-
-    const dbSubscription = await prisma.subscription.upsert({
-      where: { userId },
-      create: {
-        userId,
-        stripeSubscriptionId: subscription.id,
-        stripePriceId: firstItem?.price?.id || "",
-        stripeCustomerId: customer.id,
-        plan,
-        status: SubscriptionStatus.TRIALING,
-        billingInterval:
-          CoreStripeService.mapStripeBillingIntervalToBillingInterval(
-            billingInterval
-          ),
-        pricePerMonth: firstItem?.price?.unit_amount || 0,
-        currentPeriodStart,
-        currentPeriodEnd,
-        trialStart: subscription.trial_start
-          ? new Date(subscription.trial_start * 1000)
-          : new Date(),
-        trialEnd: subscription.trial_end
-          ? new Date(subscription.trial_end * 1000)
-          : new Date(Date.now() + trialDays * 24 * 60 * 60 * 1000),
-        cancelAtPeriodEnd: false,
-      },
-      update: {
-        stripeSubscriptionId: subscription.id,
-        stripePriceId: firstItem?.price?.id || "",
-        stripeCustomerId: customer.id,
-        status: SubscriptionStatus.TRIALING,
-        trialStart: subscription.trial_start
-          ? new Date(subscription.trial_start * 1000)
-          : new Date(),
-        trialEnd: subscription.trial_end
-          ? new Date(subscription.trial_end * 1000)
-          : new Date(Date.now() + trialDays * 24 * 60 * 60 * 1000),
-        currentPeriodStart,
-        currentPeriodEnd,
-      },
-    });
-
-    logger.info(
-      {
-        userId,
-        subscriptionId: dbSubscription.stripeSubscriptionId,
-        plan,
-        trialEnd: dbSubscription.trialEnd,
-      },
-      "Trial provisioned for new user (legacy)"
     );
 
     return dbSubscription;

@@ -242,8 +242,3 @@ export const deploymentConfig = {
   isCloud: () => config.DEPLOYMENT_MODE === "cloud",
   isSelfHosted: () => config.DEPLOYMENT_MODE === "selfhosted",
 } as const;
-
-export const featureFlags = {
-  /** When true, billing resolves through Organization. When false, uses legacy user-level billing. */
-  useOrgBilling: config.USE_ORG_BILLING,
-} as const;
