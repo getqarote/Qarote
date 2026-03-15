@@ -755,6 +755,7 @@ model OrganizationInvitation {
   id             String    @id @default(uuid())
   organizationId String
   email          String
+  token          String    @unique
   role           OrgRole   @default(MEMBER)
   invitedById    String
   expiresAt      DateTime

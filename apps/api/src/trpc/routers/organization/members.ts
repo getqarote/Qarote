@@ -1,6 +1,11 @@
 import { TRPCError } from "@trpc/server";
 
+import { getUserDisplayName } from "@/core/utils";
 import { ensureWorkspaceMember } from "@/core/workspace-access";
+
+import { CoreEmailService } from "@/services/email/core-email.service";
+import { EmailService } from "@/services/email/email.service";
+import { EncryptionService } from "@/services/encryption.service";
 
 import {
   AcceptOrgInvitationSchema,
@@ -10,6 +15,8 @@ import {
   RemoveOrgMemberSchema,
   UpdateOrgMemberRoleSchema,
 } from "@/schemas/organization";
+
+import { emailConfig } from "@/config";
 
 import { rateLimitedProcedure, router } from "@/trpc/trpc";
 
@@ -135,6 +142,15 @@ export const membersRouter = router({
         }
       }
 
+      // Generate invitation token
+      const token = EncryptionService.generateEncryptionKey();
+
+      // Get organization name for the email
+      const organization = await ctx.prisma.organization.findUnique({
+        where: { id: organizationId },
+        select: { name: true },
+      });
+
       // Upsert invitation (replaces expired/pending invitations for same email)
       const invitation = await ctx.prisma.organizationInvitation.upsert({
         where: {
@@ -146,11 +162,13 @@ export const membersRouter = router({
         create: {
           organizationId,
           email: input.email,
+          token,
           role: input.role as OrgRole,
           invitedById: ctx.user.id,
           expiresAt: new Date(Date.now() + INVITATION_EXPIRY_MS),
         },
         update: {
+          token,
           role: input.role as OrgRole,
           invitedById: ctx.user.id,
           expiresAt: new Date(Date.now() + INVITATION_EXPIRY_MS),
@@ -158,11 +176,48 @@ export const membersRouter = router({
         },
       });
 
-      // TODO: Send organization invitation email notification to the invited user.
-      // Follow the pattern in workspace/invitation.ts which uses CoreEmailService.loadEffectiveConfig()
-      // to check if email is enabled, then calls EmailService.sendInvitationEmail().
-      // An org-specific email template (e.g. EmailService.sendOrgInvitationEmail) needs to be
-      // implemented in the email service first.
+      // Build invite URL for sharing (useful when email is disabled)
+      const inviteUrl = `${emailConfig.frontendUrl}/org-invite/${token}`;
+
+      // Send invitation email (only attempt if email is enabled)
+      let emailSent = false;
+      let emailIsEnabled = false;
+      try {
+        const effectiveEmail = await CoreEmailService.loadEffectiveConfig();
+        emailIsEnabled = effectiveEmail.enabled;
+      } catch (configError) {
+        ctx.logger.error(
+          { error: configError, invitationId: invitation.id },
+          "Failed to load effective email config, skipping email"
+        );
+      }
+      if (emailIsEnabled) {
+        try {
+          await EmailService.sendOrgInvitationEmail({
+            to: input.email,
+            invitationToken: token,
+            orgName: organization?.name ?? "Organization",
+            inviterName: getUserDisplayName(ctx.user),
+            inviterEmail: ctx.user.email,
+            locale: ctx.locale,
+          });
+          emailSent = true;
+          ctx.logger.info(
+            { invitationId: invitation.id, email: input.email },
+            "Organization invitation email sent successfully"
+          );
+        } catch (emailError) {
+          ctx.logger.error(
+            {
+              error: emailError,
+              invitationId: invitation.id,
+              email: input.email,
+            },
+            "Failed to send organization invitation email"
+          );
+          // Don't fail the request if email sending fails
+        }
+      }
 
       ctx.logger.info(
         {
@@ -182,6 +237,8 @@ export const membersRouter = router({
           role: invitation.role,
           expiresAt: invitation.expiresAt.toISOString(),
         },
+        inviteUrl,
+        emailSent,
       };
     }),
 
