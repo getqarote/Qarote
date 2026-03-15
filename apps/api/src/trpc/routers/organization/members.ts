@@ -561,27 +561,31 @@ export const membersRouter = router({
         });
       }
 
-      // Verify the workspace belongs to the organization
-      const workspace = await ctx.prisma.workspace.findFirst({
-        where: {
-          id: input.workspaceId,
-          organizationId: caller.organizationId,
-        },
-      });
-
-      if (!workspace) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message:
-            "Workspace not found or does not belong to this organization",
+      // Wrap in a transaction so the membership check + workspace member upsert are atomic
+      await ctx.prisma.$transaction(async (tx) => {
+        // Verify the workspace belongs to the organization
+        const workspace = await tx.workspace.findFirst({
+          where: {
+            id: input.workspaceId,
+            organizationId: caller.organizationId,
+          },
         });
-      }
 
-      await ensureWorkspaceMember(
-        input.userId,
-        input.workspaceId,
-        input.role as UserRole
-      );
+        if (!workspace) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message:
+              "Workspace not found or does not belong to this organization",
+          });
+        }
+
+        await ensureWorkspaceMember(
+          input.userId,
+          input.workspaceId,
+          input.role as UserRole,
+          tx
+        );
+      });
 
       ctx.logger.info(
         {

@@ -533,6 +533,7 @@ model Subscription {
   isRenewalAfterCancel Boolean            @default(false)
   previousCancelDate   DateTime?
   userId               String             @unique
+  // Nullable during migration. PostgreSQL unique allows multiple NULLs. Will become required after transition.
   organizationId       String?            @unique
   plan                 UserPlan
   user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
