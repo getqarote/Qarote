@@ -163,7 +163,7 @@ export const workspaceProcedure = rateLimitedProcedure.use(async (opts) => {
   const rawInput = await opts.getRawInput();
   const inputWorkspaceId = (rawInput as { workspaceId?: string })?.workspaceId;
   const workspaceId =
-    inputWorkspaceId && inputWorkspaceId.trim() !== ""
+    typeof inputWorkspaceId === "string" && inputWorkspaceId.trim() !== ""
       ? inputWorkspaceId
       : ctx.workspaceId || ctx.user.workspaceId || null;
 
