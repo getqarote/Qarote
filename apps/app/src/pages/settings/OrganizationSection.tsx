@@ -4,6 +4,7 @@ import {
   Building2,
   Check,
   Clock,
+  Copy,
   Crown,
   Loader2,
   Mail,
@@ -115,6 +116,9 @@ const OrganizationSection = () => {
     id: string;
     email: string;
   } | null>(null);
+  const [lastInviteUrl, setLastInviteUrl] = useState<string | null>(null);
+  const [lastEmailSent, setLastEmailSent] = useState(true);
+  const [copiedUrl, setCopiedUrl] = useState(false);
 
   const org = orgData?.organization;
   const callerRole = orgData?.role;
@@ -150,14 +154,23 @@ const OrganizationSection = () => {
   const handleInvite = async () => {
     if (!inviteEmail) return;
     try {
-      await inviteMemberMutation.mutateAsync({
+      const result = await inviteMemberMutation.mutateAsync({
         email: inviteEmail,
         role: inviteRole,
       });
-      setInviteOpen(false);
       setInviteEmail("");
       setInviteRole("MEMBER");
-      toast.success(`Invited ${inviteEmail} to organization`);
+
+      if (result.emailSent) {
+        setInviteOpen(false);
+        setLastInviteUrl(null);
+        setLastEmailSent(true);
+        toast.success(`Invited ${result.invitation.email} to organization`);
+      } else {
+        // Email not configured - show the invite URL for manual sharing
+        setLastInviteUrl(result.inviteUrl);
+        setLastEmailSent(false);
+      }
     } catch (error) {
       logger.error("Invite error:", error);
       const msg =
@@ -649,61 +662,133 @@ const OrganizationSection = () => {
       )}
 
       {/* Invite Dialog */}
-      <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
+      <Dialog
+        open={inviteOpen}
+        onOpenChange={(open) => {
+          setInviteOpen(open);
+          if (!open) {
+            setLastInviteUrl(null);
+            setLastEmailSent(true);
+            setCopiedUrl(false);
+          }
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Invite to Organization</DialogTitle>
             <DialogDescription>
-              Add a member to your organization. They must have an existing
-              account.
+              Send an invitation to join your organization. If email is not
+              configured, you can copy the invite link to share manually.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="invite-email">Email</Label>
-              <Input
-                id="invite-email"
-                type="email"
-                value={inviteEmail}
-                onChange={(e) => setInviteEmail(e.target.value)}
-                placeholder="user@example.com"
-              />
+
+          {lastInviteUrl && !lastEmailSent ? (
+            <div className="space-y-4 py-4">
+              <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
+                <p className="text-sm font-medium text-amber-800 mb-2">
+                  Email is not configured. Share this link with the invited
+                  user:
+                </p>
+                <div className="flex items-center gap-2">
+                  <Input
+                    value={lastInviteUrl}
+                    readOnly
+                    className="text-xs bg-white"
+                  />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="shrink-0"
+                    onClick={async () => {
+                      try {
+                        await navigator.clipboard.writeText(lastInviteUrl);
+                        setCopiedUrl(true);
+                        setTimeout(() => setCopiedUrl(false), 2000);
+                      } catch {
+                        // Clipboard write failed
+                      }
+                    }}
+                  >
+                    {copiedUrl ? (
+                      <>
+                        <Check className="h-4 w-4 mr-1" />
+                        Copied
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="h-4 w-4 mr-1" />
+                        Copy
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setInviteOpen(false);
+                    setLastInviteUrl(null);
+                    setLastEmailSent(true);
+                    setCopiedUrl(false);
+                  }}
+                >
+                  Done
+                </Button>
+              </DialogFooter>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="invite-role">Role</Label>
-              <Select
-                value={inviteRole}
-                onValueChange={(v) => setInviteRole(v as "ADMIN" | "MEMBER")}
-              >
-                <SelectTrigger id="invite-role">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ADMIN">Admin</SelectItem>
-                  <SelectItem value="MEMBER">Member</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setInviteOpen(false)}>
-              Cancel
-            </Button>
-            <Button
-              className="bg-gradient-button hover:bg-gradient-button-hover text-white"
-              onClick={handleInvite}
-              disabled={inviteMemberMutation.isPending || !inviteEmail}
-            >
-              {inviteMemberMutation.isPending ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Inviting...
-                </>
-              ) : (
-                "Invite"
-              )}
-            </Button>
-          </DialogFooter>
+          ) : (
+            <>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="invite-email">Email</Label>
+                  <Input
+                    id="invite-email"
+                    type="email"
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                    placeholder="user@example.com"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="invite-role">Role</Label>
+                  <Select
+                    value={inviteRole}
+                    onValueChange={(v) =>
+                      setInviteRole(v as "ADMIN" | "MEMBER")
+                    }
+                  >
+                    <SelectTrigger id="invite-role">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ADMIN">Admin</SelectItem>
+                      <SelectItem value="MEMBER">Member</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setInviteOpen(false)}>
+                  Cancel
+                </Button>
+                <Button
+                  className="bg-gradient-button hover:bg-gradient-button-hover text-white"
+                  onClick={handleInvite}
+                  disabled={inviteMemberMutation.isPending || !inviteEmail}
+                >
+                  {inviteMemberMutation.isPending ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Inviting...
+                    </>
+                  ) : (
+                    "Invite"
+                  )}
+                </Button>
+              </DialogFooter>
+            </>
+          )}
         </DialogContent>
       </Dialog>
 

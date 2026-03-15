@@ -55,6 +55,7 @@ export const useInviteOrgMember = () => {
   return trpc.organization.members.invite.useMutation({
     onSuccess: () => {
       utils.organization.members.list.invalidate();
+      utils.organization.members.listPendingInvitations.invalidate();
       utils.organization.management.getCurrent.invalidate();
     },
   });

@@ -102,6 +102,7 @@ const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const VerifyEmail = lazy(() => import("./pages/VerifyEmail"));
 const AcceptInvitation = lazy(() => import("./pages/AcceptInvitation"));
+const AcceptOrgInvitation = lazy(() => import("./pages/AcceptOrgInvitation"));
 const SSOCallback = lazy(() => import("./pages/SSOCallback"));
 const Workspace = lazy(() => import("./pages/Workspace"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -179,6 +180,10 @@ const AppCore = () => (
                                 <AcceptInvitation />
                               </PublicRoute>
                             }
+                          />
+                          <Route
+                            path="/org-invite/:token"
+                            element={<AcceptOrgInvitation />}
                           />
 
                           {/* Protected routes */}
