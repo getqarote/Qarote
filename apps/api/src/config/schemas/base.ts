@@ -37,6 +37,9 @@ export const baseSchema = z.object({
   ALERT_CHECK_INTERVAL_MS: z.coerce.number().int().positive().default(300000), // 5 minutes
   ALERT_CHECK_CONCURRENCY: z.coerce.number().int().positive().default(10),
 
+  // Feature Flags
+  USE_ORG_BILLING: z.coerce.boolean().default(true),
+
   // NPM package version (for Sentry releases)
   npm_package_version: z.string().default("0.0.0"),
 });

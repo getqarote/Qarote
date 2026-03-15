@@ -33,3 +33,11 @@ export const AssignToWorkspaceSchema = z.object({
   workspaceId: z.string(),
   role: z.enum(["ADMIN", "MEMBER", "READONLY"]),
 });
+
+export const AcceptOrgInvitationSchema = z.object({
+  invitationId: z.string(),
+});
+
+export const DeclineOrgInvitationSchema = z.object({
+  invitationId: z.string(),
+});

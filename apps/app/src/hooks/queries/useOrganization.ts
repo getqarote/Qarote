@@ -94,3 +94,47 @@ export const useAssignToWorkspace = () => {
     },
   });
 };
+
+// List pending invitations for the organization (admin view)
+export const usePendingOrgInvitations = () => {
+  const { isAuthenticated } = useAuth();
+
+  return trpc.organization.members.listPendingInvitations.useQuery(undefined, {
+    enabled: isAuthenticated,
+    staleTime: 30000,
+  });
+};
+
+// List invitations for the current user (invitations they can accept)
+export const useMyOrgInvitations = () => {
+  const { isAuthenticated } = useAuth();
+
+  return trpc.organization.members.listMyInvitations.useQuery(undefined, {
+    enabled: isAuthenticated,
+    staleTime: 30000,
+  });
+};
+
+// Accept an organization invitation
+export const useAcceptOrgInvitation = () => {
+  const utils = trpc.useUtils();
+
+  return trpc.organization.members.acceptInvitation.useMutation({
+    onSuccess: () => {
+      utils.organization.members.listMyInvitations.invalidate();
+      utils.organization.members.list.invalidate();
+      utils.organization.management.getCurrent.invalidate();
+    },
+  });
+};
+
+// Decline an organization invitation
+export const useDeclineOrgInvitation = () => {
+  const utils = trpc.useUtils();
+
+  return trpc.organization.members.declineInvitation.useMutation({
+    onSuccess: () => {
+      utils.organization.members.listMyInvitations.invalidate();
+    },
+  });
+};
