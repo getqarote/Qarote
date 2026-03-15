@@ -60,6 +60,13 @@ export const managementRouter = router({
           ],
         },
         include: {
+          organization: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+            },
+          },
           _count: {
             select: {
               members: true,

@@ -277,7 +277,7 @@ model Workspace {
   createdAt                     DateTime                  @default(now())
   updatedAt                     DateTime                  @updatedAt
   ownerId                       String?
-  organizationId                String?
+  organizationId                String
   tags                          Json?
   emailNotificationsEnabled     Boolean                   @default(true)
   notificationSeverities        Json?
@@ -297,7 +297,7 @@ model Workspace {
   seenAlerts                    SeenAlert[]
   slackConfigs                  SlackConfig[]
   webhooks                      Webhook[]
-  organization                  Organization?             @relation(fields: [organizationId], references: [id])
+  organization                  Organization              @relation(fields: [organizationId], references: [id])
 
   @@index([organizationId])
 }
