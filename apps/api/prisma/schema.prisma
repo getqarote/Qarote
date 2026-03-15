@@ -603,7 +603,7 @@ model OrgSsoConfig {
   organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   provider       SsoProvider   @relation(fields: [providerId], references: [id], onDelete: Cascade)
 
-  @@index([organizationId])
+  @@unique([organizationId])
 }
 
 enum AlertSeverity {

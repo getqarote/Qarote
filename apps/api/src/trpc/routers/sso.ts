@@ -48,6 +48,7 @@ async function resolveOrgAdmin(
       findFirst: (args: {
         where: { userId: string; role: { in: OrgRole[] } };
         select: { organizationId: true };
+        orderBy: { role: "asc" };
       }) => Promise<{ organizationId: string } | null>;
     };
   },
@@ -56,6 +57,7 @@ async function resolveOrgAdmin(
   const membership = await prisma.organizationMember.findFirst({
     where: { userId, role: { in: [OrgRole.OWNER, OrgRole.ADMIN] } },
     select: { organizationId: true },
+    orderBy: { role: "asc" },
   });
   if (!membership) {
     throw new TRPCError({

@@ -385,18 +385,60 @@ export class StripeCustomerService {
 
     let customerId = org.stripeCustomerId;
     if (!customerId) {
-      const customer = await StripeCustomerService.createCustomer({
-        email,
-        name,
-        userId,
-      });
+      // Use idempotency key derived from org ID to prevent duplicate Stripe customers
+      const customer = await retryWithBackoff(
+        () =>
+          stripe.customers.create(
+            {
+              email,
+              name,
+              metadata: { userId },
+            },
+            { idempotencyKey: `org-customer-${organizationId}` }
+          ),
+        {
+          maxRetries: 3,
+          retryDelayMs: 1_000,
+          timeoutMs: 10_000,
+        },
+        "stripe"
+      );
       customerId = customer.id;
 
-      // Conditional write: only set if still null
+      // Conditional write: only set if still null (race-safe)
       await prisma.organization.updateMany({
         where: { id: organizationId, stripeCustomerId: null },
         data: { stripeCustomerId: customerId },
       });
+
+      // Re-read to use whichever customer ID won the race
+      const updatedOrg = await prisma.organization.findUniqueOrThrow({
+        where: { id: organizationId },
+        select: { stripeCustomerId: true },
+      });
+
+      if (
+        updatedOrg.stripeCustomerId &&
+        updatedOrg.stripeCustomerId !== customerId
+      ) {
+        // Another request's customer won the race — delete the orphaned one
+        try {
+          await stripe.customers.del(customerId);
+          logger.info(
+            {
+              orphanedCustomerId: customerId,
+              winningCustomerId: updatedOrg.stripeCustomerId,
+            },
+            "Deleted orphaned Stripe customer from race condition"
+          );
+        } catch (delError) {
+          logger.warn(
+            { error: delError, orphanedCustomerId: customerId },
+            "Failed to delete orphaned Stripe customer"
+          );
+        }
+        customerId = updatedOrg.stripeCustomerId;
+      }
     }
 
     // Create trial subscription via Stripe API

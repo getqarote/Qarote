@@ -232,6 +232,7 @@ export async function getUserPlan(userId: string) {
   const membership = await prisma.organizationMember.findFirst({
     where: { userId },
     select: { organizationId: true },
+    orderBy: { role: "asc" },
   });
 
   if (membership) {
@@ -276,6 +277,7 @@ export async function getUserResourceCounts(userId: string) {
   const membership = await prisma.organizationMember.findFirst({
     where: { userId },
     select: { organizationId: true },
+    orderBy: { role: "asc" },
   });
 
   if (membership) {
