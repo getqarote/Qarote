@@ -217,6 +217,7 @@ model User {
   workspaceMembers        WorkspaceMember[]        @relation("WorkspaceMembers")
   payments                Payment[]
   subscription            Subscription?
+  organizationMembers     OrganizationMember[]
 }
 
 // ─── Better Auth Models ─────────────────────────────────────────────
@@ -276,6 +277,7 @@ model Workspace {
   createdAt                     DateTime                  @default(now())
   updatedAt                     DateTime                  @updatedAt
   ownerId                       String?
+  organizationId                String?
   tags                          Json?
   emailNotificationsEnabled     Boolean                   @default(true)
   notificationSeverities        Json?
@@ -296,6 +298,9 @@ model Workspace {
   slackConfigs                  SlackConfig[]
   webhooks                      Webhook[]
   workspaceSsoConfig            WorkspaceSsoConfig?
+  organization                  Organization?             @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId])
 }
 
 model WorkspaceAlertThresholds {
@@ -528,8 +533,10 @@ model Subscription {
   isRenewalAfterCancel Boolean            @default(false)
   previousCancelDate   DateTime?
   userId               String             @unique
+  organizationId       String?            @unique
   plan                 UserPlan
   user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization         Organization?      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   @@index([status], name: "subscription_status_idx")
   @@index([stripeSubscriptionId], name: "subscription_stripe_id_idx")
@@ -701,6 +708,46 @@ enum UserRole {
   ADMIN
   MEMBER
   READONLY
+}
+
+enum OrgRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+// ─── Organization Models ──────────────────────────────────────────────
+
+model Organization {
+  id                   String   @id @default(uuid())
+  name                 String
+  slug                 String   @unique
+  contactEmail         String?
+  logoUrl              String?
+  stripeCustomerId     String?  @unique
+  stripeSubscriptionId String?  @unique
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  members      OrganizationMember[]
+  workspaces   Workspace[]
+  subscription Subscription?
+}
+
+model OrganizationMember {
+  id             String   @id @default(uuid())
+  userId         String
+  organizationId String
+  role           OrgRole
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, organizationId])
+  @@index([userId])
+  @@index([organizationId])
 }
 
 // ─── Self-hosted Configuration ───────────────────────────────────────
