@@ -232,6 +232,7 @@ export const notionConfig = {
   enabled: config.ENABLE_NOTION,
 } as const;
 
+/** @public Used by cron jobs registered at runtime */
 export const alertConfig = {
   checkIntervalMs: config.ALERT_CHECK_INTERVAL_MS,
   concurrency: config.ALERT_CHECK_CONCURRENCY,
