@@ -59,7 +59,14 @@
     "googleEmailMismatchInvitation": "Google account email does not match invitation email",
     "failedToAcceptInvitationGoogle": "Failed to accept invitation with Google",
     "insufficientPermissionsAdmin": "Insufficient permissions - Admin role required",
-    "insufficientPermissions": "Insufficient permissions"
+    "insufficientPermissions": "Insufficient permissions",
+    "invitationNotForYourAccount": "This invitation is not for your account",
+    "alreadyOrgMember": "You are already a member of this organization",
+    "userAlreadyOrgMember": "User is already a member of this organization",
+    "orgAdminRequired": "Organization OWNER or ADMIN role required",
+    "orgInvitationNotFound": "Invitation not found",
+    "orgInvitationAlreadyAccepted": "Invitation has already been accepted",
+    "orgInvitationExpired": "Invitation has expired"
   },
   "workspace": {
     "idRequired": "Workspace ID is required",

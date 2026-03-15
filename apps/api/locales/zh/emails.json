@@ -1,6 +1,7 @@
 {
   "subjects": {
     "invitedToWorkspace": "您已被邀请加入 Qarote 上的 {{workspaceName}}",
+    "invitedToOrganization": "您已被邀请加入 Qarote 上的 {{orgName}}",
     "welcome": "欢迎来到 Qarote，{{name}}！",
     "verifyEmailSignup": "请验证您的邮箱地址 - Qarote",
     "verifyEmailChange": "验证您的新邮箱地址 - Qarote",
