@@ -17,7 +17,7 @@ const config: KnipConfig = {
     },
     "packages/i18n": {
       project: ["src/**/*.ts"],
-      ignoreDependencies: ["react"],
+      ignoreDependencies: ["i18next", "react-i18next"],
     },
   },
   ignore: [
@@ -42,6 +42,17 @@ const config: KnipConfig = {
     // Ignore organization migration scripts (run manually, not imported at startup)
     "apps/api/src/core/migrations/org-migration.ts",
     "apps/api/src/core/migrations/org-verification.ts",
+    // Ignore cron jobs and workers (registered dynamically at runtime, not statically imported)
+    "apps/api/src/cron/*.cron.ts",
+    "apps/api/src/workers/*.ts",
+    // Ignore i18n integration files (used at runtime by consuming apps)
+    "packages/i18n/src/react.ts",
+    "packages/i18n/src/server.ts",
+    // Ignore validation script (run manually)
+    "scripts/validate-i18n-keys.mjs",
+    // Ignore organization schemas and hooks (public API, used by future features)
+    "apps/api/src/schemas/organization.ts",
+    "apps/app/src/hooks/queries/useOrganization.ts",
     // Ignore test files
     // Ignore config files
     "**/vite-env.d.ts",
