@@ -297,7 +297,6 @@ model Workspace {
   seenAlerts                    SeenAlert[]
   slackConfigs                  SlackConfig[]
   webhooks                      Webhook[]
-  workspaceSsoConfig            WorkspaceSsoConfig?
   organization                  Organization?             @relation(fields: [organizationId], references: [id])
 
   @@index([organizationId])
@@ -584,28 +583,26 @@ model SsoProvider {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  workspaceSsoConfig WorkspaceSsoConfig?
+  orgSsoConfig OrgSsoConfig?
 
   @@index([domain])
   @@map("ssoProvider")
 }
 
-/// Maps a workspace (or the whole instance for self-hosted) to a better-auth SSO provider.
-/// workspaceId = null means instance-wide (self-hosted only).
-model WorkspaceSsoConfig {
-  id          String   @id @default(uuid())
-  workspaceId String?  @unique
-  providerId  String   @unique
-  enabled     Boolean  @default(true)
-  buttonLabel String   @default("Sign in with SSO")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+/// Maps an organization (or the whole instance for self-hosted) to a better-auth SSO provider.
+/// organizationId = null means instance-wide (self-hosted only).
+model OrgSsoConfig {
+  id             String        @id @default(uuid())
+  organizationId String?
+  providerId     String        @unique
+  autoProvision  Boolean       @default(true)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
 
-  workspace   Workspace?  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  ssoProvider SsoProvider @relation(fields: [providerId], references: [providerId], onDelete: Cascade)
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  provider       SsoProvider   @relation(fields: [providerId], references: [id], onDelete: Cascade)
 
-  @@index([workspaceId])
-  @@index([providerId])
+  @@index([organizationId])
 }
 
 enum AlertSeverity {
@@ -729,9 +726,10 @@ model Organization {
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
 
-  members      OrganizationMember[]
-  workspaces   Workspace[]
-  subscription Subscription?
+  members       OrganizationMember[]
+  workspaces    Workspace[]
+  subscription  Subscription?
+  orgSsoConfigs OrgSsoConfig[]
 }
 
 model OrganizationMember {
