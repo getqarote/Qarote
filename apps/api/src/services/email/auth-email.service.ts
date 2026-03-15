@@ -100,7 +100,7 @@ export class AuthEmailService {
       inviterEmail,
       orgName,
       invitationToken,
-      locale: _locale = "en",
+      locale = "en",
     } = params;
 
     const { frontendUrl } = CoreEmailService.getConfig();
@@ -115,7 +115,7 @@ export class AuthEmailService {
 
     return CoreEmailService.sendEmail({
       to,
-      subject: `You've been invited to join ${orgName} on Qarote`,
+      subject: tEmail(locale, "subjects.invitedToOrganization", { orgName }),
       template,
       emailType: "org-invitation",
       context: {

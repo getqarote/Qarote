@@ -21,6 +21,7 @@ import { emailConfig } from "@/config";
 import { rateLimitedProcedure, router } from "@/trpc/trpc";
 
 import { OrgRole, UserRole } from "@/generated/prisma/client";
+import { te } from "@/i18n";
 
 /** Invitation validity period: 7 days */
 const INVITATION_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000;
@@ -39,7 +40,8 @@ async function requireOrgAdmin(
       }) => Promise<{ organizationId: string; role: OrgRole } | null>;
     };
   },
-  userId: string
+  userId: string,
+  locale = "en"
 ): Promise<{ organizationId: string; role: OrgRole }> {
   const membership = await prisma.organizationMember.findFirst({
     where: { userId, role: { in: [OrgRole.OWNER, OrgRole.ADMIN] } },
@@ -49,7 +51,7 @@ async function requireOrgAdmin(
   if (!membership) {
     throw new TRPCError({
       code: "FORBIDDEN",
-      message: "Organization OWNER or ADMIN role required",
+      message: te(locale, "auth.orgAdminRequired"),
     });
   }
   return membership;
@@ -115,7 +117,11 @@ export const membersRouter = router({
   invite: rateLimitedProcedure
     .input(InviteOrgMemberSchema)
     .mutation(async ({ input, ctx }) => {
-      const { organizationId } = await requireOrgAdmin(ctx.prisma, ctx.user.id);
+      const { organizationId } = await requireOrgAdmin(
+        ctx.prisma,
+        ctx.user.id,
+        ctx.locale
+      );
 
       // Check if already a member (by email)
       const existingUser = await ctx.prisma.user.findUnique({
@@ -137,7 +143,7 @@ export const membersRouter = router({
         if (existingMembership) {
           throw new TRPCError({
             code: "CONFLICT",
-            message: "User is already a member of this organization",
+            message: te(ctx.locale, "auth.userAlreadyOrgMember"),
           });
         }
       }
@@ -246,7 +252,11 @@ export const membersRouter = router({
    * List pending invitations for the caller's organization (OWNER/ADMIN only)
    */
   listPendingInvitations: rateLimitedProcedure.query(async ({ ctx }) => {
-    const { organizationId } = await requireOrgAdmin(ctx.prisma, ctx.user.id);
+    const { organizationId } = await requireOrgAdmin(
+      ctx.prisma,
+      ctx.user.id,
+      ctx.locale
+    );
 
     const invitations = await ctx.prisma.organizationInvitation.findMany({
       where: {
@@ -338,28 +348,28 @@ export const membersRouter = router({
       if (!invitation) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Invitation not found",
+          message: te(ctx.locale, "auth.orgInvitationNotFound"),
         });
       }
 
       if (invitation.email !== ctx.user.email) {
         throw new TRPCError({
           code: "FORBIDDEN",
-          message: "This invitation is not for your account",
+          message: te(ctx.locale, "auth.invitationNotForYourAccount"),
         });
       }
 
       if (invitation.acceptedAt) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "Invitation has already been accepted",
+          message: te(ctx.locale, "auth.orgInvitationAlreadyAccepted"),
         });
       }
 
       if (invitation.expiresAt < new Date()) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "Invitation has expired",
+          message: te(ctx.locale, "auth.orgInvitationExpired"),
         });
       }
 
@@ -384,24 +394,50 @@ export const membersRouter = router({
 
         throw new TRPCError({
           code: "CONFLICT",
-          message: "You are already a member of this organization",
+          message: te(ctx.locale, "auth.alreadyOrgMember"),
         });
       }
 
-      // Accept invitation and create membership in a transaction
-      await ctx.prisma.$transaction([
-        ctx.prisma.organizationInvitation.update({
+      // Accept invitation, create membership, and assign to all org workspaces
+      await ctx.prisma.$transaction(async (tx) => {
+        await tx.organizationInvitation.update({
           where: { id: input.invitationId },
           data: { acceptedAt: new Date() },
-        }),
-        ctx.prisma.organizationMember.create({
+        });
+
+        await tx.organizationMember.create({
           data: {
             userId: ctx.user.id,
             organizationId: invitation.organizationId,
             role: invitation.role,
           },
-        }),
-      ]);
+        });
+
+        // Fetch ALL workspaces in the organization and assign user to each
+        const orgWorkspaces = await tx.workspace.findMany({
+          where: { organizationId: invitation.organizationId },
+          select: { id: true },
+          orderBy: { createdAt: "asc" },
+        });
+
+        for (const workspace of orgWorkspaces) {
+          await ensureWorkspaceMember(
+            ctx.user.id,
+            workspace.id,
+            UserRole.MEMBER,
+            tx
+          );
+        }
+
+        // Set user's active workspace to the first org workspace if not set
+        const firstWorkspace = orgWorkspaces[0];
+        if (firstWorkspace && !ctx.user.workspaceId) {
+          await tx.user.update({
+            where: { id: ctx.user.id },
+            data: { workspaceId: firstWorkspace.id },
+          });
+        }
+      });
 
       ctx.logger.info(
         {
@@ -429,14 +465,14 @@ export const membersRouter = router({
       if (!invitation) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Invitation not found",
+          message: te(ctx.locale, "auth.orgInvitationNotFound"),
         });
       }
 
       if (invitation.email !== ctx.user.email) {
         throw new TRPCError({
           code: "FORBIDDEN",
-          message: "This invitation is not for your account",
+          message: te(ctx.locale, "auth.invitationNotForYourAccount"),
         });
       }
 
@@ -464,7 +500,7 @@ export const membersRouter = router({
   updateRole: rateLimitedProcedure
     .input(UpdateOrgMemberRoleSchema)
     .mutation(async ({ input, ctx }) => {
-      const caller = await requireOrgAdmin(ctx.prisma, ctx.user.id);
+      const caller = await requireOrgAdmin(ctx.prisma, ctx.user.id, ctx.locale);
 
       const target = await ctx.prisma.organizationMember.findUnique({
         where: { id: input.memberId },
@@ -534,7 +570,7 @@ export const membersRouter = router({
   remove: rateLimitedProcedure
     .input(RemoveOrgMemberSchema)
     .mutation(async ({ input, ctx }) => {
-      const caller = await requireOrgAdmin(ctx.prisma, ctx.user.id);
+      const caller = await requireOrgAdmin(ctx.prisma, ctx.user.id, ctx.locale);
 
       const target = await ctx.prisma.organizationMember.findUnique({
         where: { id: input.memberId },
@@ -601,7 +637,7 @@ export const membersRouter = router({
   assignToWorkspace: rateLimitedProcedure
     .input(AssignToWorkspaceSchema)
     .mutation(async ({ input, ctx }) => {
-      const caller = await requireOrgAdmin(ctx.prisma, ctx.user.id);
+      const caller = await requireOrgAdmin(ctx.prisma, ctx.user.id, ctx.locale);
 
       // Verify the user is an org member
       const orgMember = await ctx.prisma.organizationMember.findFirst({

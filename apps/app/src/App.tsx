@@ -181,6 +181,10 @@ const AppCore = () => (
                               </PublicRoute>
                             }
                           />
+                          {/* org-invite is NOT wrapped in PublicRoute because
+                              PublicRoute redirects authenticated users to "/".
+                              This page must work for both authenticated and
+                              unauthenticated users (dual-mode acceptance). */}
                           <Route
                             path="/org-invite/:token"
                             element={<AcceptOrgInvitation />}

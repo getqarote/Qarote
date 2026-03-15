@@ -40,7 +40,6 @@ export const orgInvitationRouter = router({
                 name: true,
                 workspaces: {
                   select: { id: true },
-                  take: 1,
                   orderBy: { createdAt: "asc" },
                 },
               },
@@ -59,7 +58,7 @@ export const orgInvitationRouter = router({
         if (invitation.email !== user.email) {
           throw new TRPCError({
             code: "FORBIDDEN",
-            message: "This invitation is not for your account",
+            message: te(ctx.locale, "auth.invitationNotForYourAccount"),
           });
         }
 
@@ -83,11 +82,12 @@ export const orgInvitationRouter = router({
 
           throw new TRPCError({
             code: "CONFLICT",
-            message: "You are already a member of this organization",
+            message: te(ctx.locale, "auth.alreadyOrgMember"),
           });
         }
 
-        const firstWorkspace = invitation.organization.workspaces[0];
+        const orgWorkspaces = invitation.organization.workspaces;
+        const firstWorkspace = orgWorkspaces[0];
 
         // Accept invitation and create membership in a transaction
         await ctx.prisma.$transaction(async (tx) => {
@@ -106,22 +106,22 @@ export const orgInvitationRouter = router({
             },
           });
 
-          // Assign to the org's first workspace if one exists
-          if (firstWorkspace) {
+          // Assign to ALL org workspaces
+          for (const workspace of orgWorkspaces) {
             await ensureWorkspaceMember(
               user.id,
-              firstWorkspace.id,
+              workspace.id,
               UserRole.MEMBER,
               tx
             );
+          }
 
-            // Update user's active workspace if they don't have one
-            if (!user.workspaceId) {
-              await tx.user.update({
-                where: { id: user.id },
-                data: { workspaceId: firstWorkspace.id },
-              });
-            }
+          // Update user's active workspace if they don't have one
+          if (firstWorkspace && !user.workspaceId) {
+            await tx.user.update({
+              where: { id: user.id },
+              data: { workspaceId: firstWorkspace.id },
+            });
           }
         });
 

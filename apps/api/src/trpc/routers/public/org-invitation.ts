@@ -69,7 +69,6 @@ export const publicOrgInvitationRouter = router({
             id: invitation.id,
             email: invitation.email,
             role: invitation.role,
-            token: invitation.token,
             expiresAt: invitation.expiresAt.toISOString(),
             organization: {
               id: invitation.organization.id,
@@ -119,7 +118,6 @@ export const publicOrgInvitationRouter = router({
                 name: true,
                 workspaces: {
                   select: { id: true },
-                  take: 1,
                   orderBy: { createdAt: "asc" },
                 },
               },
@@ -155,8 +153,9 @@ export const publicOrgInvitationRouter = router({
 
         const hashedPassword = await hashPassword(password);
 
-        // Determine the workspace to assign the new user to
-        const firstWorkspace = invitation.organization.workspaces[0];
+        // Determine the workspaces to assign the new user to
+        const orgWorkspaces = invitation.organization.workspaces;
+        const firstWorkspace = orgWorkspaces[0];
 
         const newUser = await ctx.prisma.$transaction(async (tx) => {
           const user = await tx.user.create({
@@ -170,6 +169,8 @@ export const publicOrgInvitationRouter = router({
               workspaceId: firstWorkspace?.id ?? null,
               isActive: true,
               emailVerified: true,
+              emailVerifiedAt: new Date(),
+              lastLogin: new Date(),
             },
           });
 
@@ -192,11 +193,11 @@ export const publicOrgInvitationRouter = router({
             },
           });
 
-          // Assign to the org's first workspace if one exists
-          if (firstWorkspace) {
+          // Assign to ALL org workspaces
+          for (const workspace of orgWorkspaces) {
             await ensureWorkspaceMember(
               user.id,
-              firstWorkspace.id,
+              workspace.id,
               UserRole.MEMBER,
               tx
             );
