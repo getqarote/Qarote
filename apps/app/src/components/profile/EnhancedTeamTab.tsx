@@ -1,21 +1,10 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router";
 
-import {
-  Check,
-  Clock,
-  Copy,
-  Lock,
-  Mail,
-  UserPlus,
-  Users,
-  X,
-} from "lucide-react";
+import { Check, Clock, Copy, Mail, Users, X } from "lucide-react";
 
 import { User } from "@/lib/api/authTypes";
 import { InvitationWithInviter } from "@/lib/api/authTypes";
-import { getUpgradePath } from "@/lib/featureFlags";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -83,7 +72,6 @@ export const EnhancedTeamTab = ({
   canInviteMoreUsers,
   emailEnabled,
 }: EnhancedTeamTabProps) => {
-  const navigate = useNavigate();
   const { t } = useTranslation("profile");
   const { planData, user } = useUser();
   const { workspace } = useWorkspace();
@@ -172,29 +160,7 @@ export const EnhancedTeamTab = ({
                 </Badge>
               )}
             </div>
-            {canInviteMoreUsers ? (
-              <Button
-                onClick={() => setInviteDialogOpen(true)}
-                size="sm"
-                className="btn-primary"
-              >
-                <UserPlus className="h-4 w-4 mr-2" />
-                {t("team.inviteUser")}
-              </Button>
-            ) : (
-              <Button
-                onClick={() => navigate(getUpgradePath())}
-                size="sm"
-                className="bg-gray-200 text-gray-400 cursor-pointer opacity-60 flex items-center gap-2 hover:bg-gray-300"
-                title={t("team.upgradeToInvite")}
-              >
-                <Lock className="w-4 h-4" />
-                {t("team.inviteUser")}
-                <span className="ml-1 px-1.5 py-0.5 bg-orange-500 text-white text-[10px] rounded-full font-semibold">
-                  {t("team.upgrade")}
-                </span>
-              </Button>
-            )}
+            {/* Workspace-level invitations disabled — use org invitations instead */}
           </CardTitle>
         </CardHeader>
         <CardContent>
