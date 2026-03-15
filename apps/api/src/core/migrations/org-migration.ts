@@ -34,11 +34,18 @@ function generateSlug(name: string): string {
   return `${base || "org"}-${suffix}`;
 }
 
+interface MigrationFailure {
+  userId: string;
+  stripeCustomerId: string | null;
+  error: string;
+}
+
 interface MigrationStats {
   orgsCreated: number;
   membersCreated: number;
   workspacesLinked: number;
   orphanSubscriptionsHandled: number;
+  failures: MigrationFailure[];
 }
 
 export async function runOrgMigration(): Promise<MigrationStats> {
@@ -47,6 +54,7 @@ export async function runOrgMigration(): Promise<MigrationStats> {
     membersCreated: 0,
     workspacesLinked: 0,
     orphanSubscriptionsHandled: 0,
+    failures: [],
   };
 
   // Track which users already have an org (from the workspace-owner pass)
@@ -94,91 +102,108 @@ export async function runOrgMigration(): Promise<MigrationStats> {
       user.name || `${user.firstName} ${user.lastName}`.trim() || "User";
     const orgName = `${displayName}'s Organization`;
 
-    await prisma.$transaction(async (tx) => {
-      // Create the Organization
-      const org = await tx.organization.create({
-        data: {
-          name: orgName,
-          slug: generateSlug(displayName),
-          stripeCustomerId: user.stripeCustomerId,
-          stripeSubscriptionId: user.stripeSubscriptionId,
-        },
-      });
-
-      stats.orgsCreated++;
-
-      // Create OWNER membership
-      await tx.organizationMember.create({
-        data: {
-          userId: user.id,
-          organizationId: org.id,
-          role: OrgRole.OWNER,
-        },
-      });
-      stats.membersCreated++;
-
-      // Link all workspaces owned by this user
-      const workspaces = await tx.workspace.findMany({
-        where: { ownerId: user.id },
-        select: { id: true },
-      });
-
-      for (const ws of workspaces) {
-        await tx.workspace.update({
-          where: { id: ws.id },
-          data: { organizationId: org.id },
-        });
-        stats.workspacesLinked++;
-      }
-
-      // Create MEMBER memberships for workspace members (deduplicated)
-      const workspaceIds = workspaces.map((ws) => ws.id);
-      const workspaceMembers = await tx.workspaceMember.findMany({
-        where: {
-          workspaceId: { in: workspaceIds },
-          userId: { not: user.id }, // Exclude the owner (already OWNER)
-        },
-        select: { userId: true },
-        distinct: ["userId"],
-      });
-
-      for (const wm of workspaceMembers) {
-        // Check for existing membership (idempotency within transaction)
-        const existing = await tx.organizationMember.findUnique({
-          where: {
-            userId_organizationId: {
-              userId: wm.userId,
-              organizationId: org.id,
-            },
+    try {
+      await prisma.$transaction(async (tx) => {
+        // Create the Organization
+        const org = await tx.organization.create({
+          data: {
+            name: orgName,
+            slug: generateSlug(displayName),
+            stripeCustomerId: user.stripeCustomerId,
+            stripeSubscriptionId: user.stripeSubscriptionId,
           },
         });
 
-        if (!existing) {
-          await tx.organizationMember.create({
-            data: {
-              userId: wm.userId,
-              organizationId: org.id,
-              role: OrgRole.MEMBER,
+        stats.orgsCreated++;
+
+        // Create OWNER membership
+        await tx.organizationMember.create({
+          data: {
+            userId: user.id,
+            organizationId: org.id,
+            role: OrgRole.OWNER,
+          },
+        });
+        stats.membersCreated++;
+
+        // Link all workspaces owned by this user
+        const workspaces = await tx.workspace.findMany({
+          where: { ownerId: user.id },
+          select: { id: true },
+        });
+
+        for (const ws of workspaces) {
+          await tx.workspace.update({
+            where: { id: ws.id },
+            data: { organizationId: org.id },
+          });
+          stats.workspacesLinked++;
+        }
+
+        // Create MEMBER memberships for workspace members (deduplicated)
+        const workspaceIds = workspaces.map((ws) => ws.id);
+        const workspaceMembers = await tx.workspaceMember.findMany({
+          where: {
+            workspaceId: { in: workspaceIds },
+            userId: { not: user.id }, // Exclude the owner (already OWNER)
+          },
+          select: { userId: true },
+          distinct: ["userId"],
+        });
+
+        for (const wm of workspaceMembers) {
+          // Check for existing membership (idempotency within transaction)
+          const existing = await tx.organizationMember.findUnique({
+            where: {
+              userId_organizationId: {
+                userId: wm.userId,
+                organizationId: org.id,
+              },
             },
           });
-          stats.membersCreated++;
-        }
-      }
 
-      // Link the user's subscription to the organization
-      const subscription = await tx.subscription.findUnique({
-        where: { userId: user.id },
+          if (!existing) {
+            await tx.organizationMember.create({
+              data: {
+                userId: wm.userId,
+                organizationId: org.id,
+                role: OrgRole.MEMBER,
+              },
+            });
+            stats.membersCreated++;
+          }
+        }
+
+        // Link the user's subscription to the organization
+        const subscription = await tx.subscription.findUnique({
+          where: { userId: user.id },
+        });
+
+        if (subscription && !subscription.organizationId) {
+          await tx.subscription.update({
+            where: { id: subscription.id },
+            data: { organizationId: org.id },
+          });
+        }
       });
 
-      if (subscription && !subscription.organizationId) {
-        await tx.subscription.update({
-          where: { id: subscription.id },
-          data: { organizationId: org.id },
-        });
-      }
-    });
-
-    usersWithOrg.add(ownerId);
+      usersWithOrg.add(ownerId);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      logger.error(
+        {
+          userId: ownerId,
+          stripeCustomerId: user.stripeCustomerId,
+          error: message,
+        },
+        "Failed to create organization for workspace owner — skipping"
+      );
+      stats.failures.push({
+        userId: ownerId,
+        stripeCustomerId: user.stripeCustomerId,
+        error: message,
+      });
+    }
   }
 
   // ── Pass 2: Orphan subscriptions ─────────────────────────────────────
@@ -210,36 +235,61 @@ export async function runOrgMigration(): Promise<MigrationStats> {
       user.name || `${user.firstName} ${user.lastName}`.trim() || "User";
     const orgName = `${displayName}'s Organization`;
 
-    await prisma.$transaction(async (tx) => {
-      const org = await tx.organization.create({
-        data: {
-          name: orgName,
-          slug: generateSlug(displayName),
+    try {
+      await prisma.$transaction(async (tx) => {
+        const org = await tx.organization.create({
+          data: {
+            name: orgName,
+            slug: generateSlug(displayName),
+            stripeCustomerId: user.stripeCustomerId,
+            stripeSubscriptionId: user.stripeSubscriptionId,
+          },
+        });
+
+        stats.orgsCreated++;
+
+        await tx.organizationMember.create({
+          data: {
+            userId: user.id,
+            organizationId: org.id,
+            role: OrgRole.OWNER,
+          },
+        });
+        stats.membersCreated++;
+
+        await tx.subscription.update({
+          where: { id: sub.id },
+          data: { organizationId: org.id },
+        });
+
+        stats.orphanSubscriptionsHandled++;
+      });
+
+      usersWithOrg.add(sub.userId);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      logger.error(
+        {
+          userId: sub.userId,
           stripeCustomerId: user.stripeCustomerId,
-          stripeSubscriptionId: user.stripeSubscriptionId,
+          subscriptionId: sub.id,
+          error: message,
         },
+        "Failed to create organization for orphan subscription — skipping"
+      );
+      stats.failures.push({
+        userId: sub.userId,
+        stripeCustomerId: user.stripeCustomerId,
+        error: message,
       });
+    }
+  }
 
-      stats.orgsCreated++;
-
-      await tx.organizationMember.create({
-        data: {
-          userId: user.id,
-          organizationId: org.id,
-          role: OrgRole.OWNER,
-        },
-      });
-      stats.membersCreated++;
-
-      await tx.subscription.update({
-        where: { id: sub.id },
-        data: { organizationId: org.id },
-      });
-
-      stats.orphanSubscriptionsHandled++;
-    });
-
-    usersWithOrg.add(sub.userId);
+  if (stats.failures.length > 0) {
+    logger.warn(
+      { failureCount: stats.failures.length, failures: stats.failures },
+      "Organization migration completed with failures"
+    );
   }
 
   logger.info(
@@ -248,6 +298,7 @@ export async function runOrgMigration(): Promise<MigrationStats> {
       membersCreated: stats.membersCreated,
       workspacesLinked: stats.workspacesLinked,
       orphanSubscriptionsHandled: stats.orphanSubscriptionsHandled,
+      failureCount: stats.failures.length,
     },
     "Organization migration completed"
   );
