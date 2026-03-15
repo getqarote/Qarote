@@ -29,7 +29,23 @@ export const subscriptionRouter = router({
       const { user, prisma } = ctx;
 
       try {
-        if (!user.stripeSubscriptionId) {
+        // Resolve subscription ID: prefer org-level, fall back to user-level
+        let subscriptionId = user.stripeSubscriptionId;
+
+        if (!subscriptionId) {
+          const membership = await prisma.organizationMember.findFirst({
+            where: { userId: user.id },
+            select: {
+              organization: {
+                select: { stripeSubscriptionId: true },
+              },
+            },
+          });
+          subscriptionId =
+            membership?.organization?.stripeSubscriptionId ?? null;
+        }
+
+        if (!subscriptionId) {
           throw new TRPCError({
             code: "BAD_REQUEST",
             message: te(ctx.locale, "billing.noActiveSubscription"),
@@ -37,7 +53,7 @@ export const subscriptionRouter = router({
         }
 
         const subscription = await StripeService.cancelSubscription(
-          user.stripeSubscriptionId,
+          subscriptionId,
           cancelImmediately
         );
 

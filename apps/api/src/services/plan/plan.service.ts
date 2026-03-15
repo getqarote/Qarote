@@ -212,7 +212,34 @@ export function getPlanDisplayName(plan: UserPlan): string {
   return getPlanFeatures(plan).displayName;
 }
 
+/**
+ * Get the plan for an organization by looking up its subscription.
+ */
+export async function getOrgPlan(orgId: string): Promise<UserPlan> {
+  const subscription = await prisma.subscription.findUnique({
+    where: { organizationId: orgId },
+    select: { plan: true },
+  });
+
+  return subscription?.plan ?? UserPlan.FREE;
+}
+
+/**
+ * Get a user's plan. If the user belongs to an organization, delegates to
+ * getOrgPlan. Falls back to user-level subscription for backward compat.
+ */
 export async function getUserPlan(userId: string) {
+  // Check if the user belongs to an organization
+  const membership = await prisma.organizationMember.findFirst({
+    where: { userId },
+    select: { organizationId: true },
+  });
+
+  if (membership) {
+    return getOrgPlan(membership.organizationId);
+  }
+
+  // Fallback: user-level subscription (backward compat for users without an org)
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: {
@@ -226,16 +253,56 @@ export async function getUserPlan(userId: string) {
     throw new Error("User not found");
   }
 
-  // If user has an active subscription, use that plan
   if (user.subscription) {
     return user.subscription.plan;
   }
 
-  // Otherwise, default to FREE plan
   return UserPlan.FREE;
 }
 
+/**
+ * Get resource counts scoped to an organization.
+ */
+export async function getOrgResourceCounts(orgId: string) {
+  const [serverCount, memberCount, workspaceCount] = await Promise.all([
+    prisma.rabbitMQServer.count({
+      where: {
+        workspace: {
+          organizationId: orgId,
+        },
+      },
+    }),
+    prisma.organizationMember.count({
+      where: { organizationId: orgId },
+    }),
+    prisma.workspace.count({
+      where: { organizationId: orgId },
+    }),
+  ]);
+
+  return {
+    servers: serverCount,
+    users: memberCount,
+    workspaces: workspaceCount,
+  };
+}
+
+/**
+ * Get resource counts for a user. If the user belongs to an organization,
+ * delegates to getOrgResourceCounts. Falls back to user-level counts.
+ */
 export async function getUserResourceCounts(userId: string) {
+  // Check if user belongs to an organization
+  const membership = await prisma.organizationMember.findFirst({
+    where: { userId },
+    select: { organizationId: true },
+  });
+
+  if (membership) {
+    return getOrgResourceCounts(membership.organizationId);
+  }
+
+  // Fallback: user-level counts (backward compat for users without an org)
   const [serverCount, userCount, workspaceCount] = await Promise.all([
     prisma.rabbitMQServer.count({
       where: {
