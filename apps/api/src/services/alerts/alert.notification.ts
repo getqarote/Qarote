@@ -11,6 +11,7 @@ import { FEATURES } from "@/config/features";
 
 import { generateAlertFingerprint } from "./alert.fingerprint";
 import { RabbitMQAlert } from "./alert.interfaces";
+import { toPrismaAlertSeverity } from "./alert.severity-map";
 
 /**
  * Alert Tracking and Notification System Summary
@@ -279,6 +280,59 @@ class AlertNotificationService {
           },
         });
 
+        // Dual-write to unified Alert table (Phase 1 — runs alongside SeenAlert)
+        try {
+          const prismaSeverity = toPrismaAlertSeverity(alert.severity);
+          const title = this.getAlertTitle(
+            alert.category,
+            alert.source.type,
+            alert.source.name
+          );
+          const description = this.getAlertDescription(
+            alert.category,
+            alert.source.type,
+            alert.source.name
+          );
+          const existingActiveAlert = await prisma.alert.findFirst({
+            where: { fingerprint, status: "ACTIVE" },
+            select: { id: true },
+          });
+          if (existingActiveAlert) {
+            await prisma.alert.update({
+              where: { id: existingActiveAlert.id },
+              data: {
+                lastSeenAt: now,
+                resolvedAt: null,
+                severity: prismaSeverity,
+              },
+            });
+          } else {
+            await prisma.alert.create({
+              data: {
+                title,
+                description,
+                fingerprint,
+                severity: prismaSeverity,
+                status: "ACTIVE",
+                category: alert.category,
+                sourceType: alert.source.type,
+                sourceName: alert.source.name,
+                serverId,
+                serverName,
+                workspaceId,
+                firstSeenAt: now,
+                lastSeenAt: now,
+                details: alert.details as object,
+              },
+            });
+          }
+        } catch (dualWriteError) {
+          logger.warn(
+            { error: dualWriteError, fingerprint },
+            "Alert dual-write to unified table failed — SeenAlert write succeeded"
+          );
+        }
+
         // Check if alert should trigger notification
         // Only send notifications for alerts that match severity preferences
         const shouldNotifyForSeverity = notificationSeverities.includes(
@@ -404,6 +458,24 @@ class AlertNotificationService {
               "Failed to save resolved alert"
             );
           }
+
+          // Dual-write resolution to unified Alert table (Phase 1)
+          try {
+            await prisma.alert.updateMany({
+              where: { fingerprint: seenAlert.fingerprint, status: "ACTIVE" },
+              data: {
+                status: "RESOLVED",
+                resolvedAt: now,
+                duration,
+                fingerprint: null, // Release partial unique index slot for re-firing
+              },
+            });
+          } catch (dualWriteError) {
+            logger.warn(
+              { error: dualWriteError, fingerprint: seenAlert.fingerprint },
+              "Alert resolution dual-write to unified table failed — ResolvedAlert write succeeded"
+            );
+          }
         }
       }
 
@@ -456,6 +528,11 @@ class AlertNotificationService {
               );
               await prisma.seenAlert.updateMany({
                 where: { fingerprint },
+                data: { emailSentAt: now },
+              });
+              // Dual-write emailSentAt to unified Alert table
+              await prisma.alert.updateMany({
+                where: { fingerprint, status: "ACTIVE" },
                 data: { emailSentAt: now },
               });
             }
