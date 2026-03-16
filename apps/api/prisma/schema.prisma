@@ -8,23 +8,42 @@ datasource db {
 }
 
 model Alert {
-  id             String        @id @default(uuid())
+  id             String          @id @default(uuid())
   title          String
   description    String
+  severity       AlertSeverity
+  status         AlertStatus     @default(ACTIVE)
+  workspaceId    String
   createdById    String?
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
-  resolvedAt     DateTime?
-  acknowledgedAt DateTime?
   alertRuleId    String?
   threshold      Float?
   value          Float?
-  severity       AlertSeverity
-  status         AlertStatus   @default(ACTIVE)
-  workspaceId    String
-  alertRule      AlertRule?    @relation(fields: [alertRuleId], references: [id])
-  user           User?         @relation(fields: [createdById], references: [id])
-  workspace      Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  resolvedAt     DateTime?
+  acknowledgedAt DateTime?
+  // Unified fields — populated for system-detected alerts, optional for custom rule alerts
+  serverId       String?
+  serverName     String?
+  fingerprint    String?
+  firstSeenAt    DateTime?
+  lastSeenAt     DateTime?
+  emailSentAt    DateTime?
+  category       String?
+  sourceType     String?
+  sourceName     String?
+  details        Json?
+  duration       Int?
+  alertRule      AlertRule?      @relation(fields: [alertRuleId], references: [id])
+  user           User?           @relation(fields: [createdById], references: [id])
+  server         RabbitMQServer? @relation(fields: [serverId], references: [id], onDelete: SetNull)
+  workspace      Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, status])
+  @@index([serverId, status])
+  @@index([fingerprint])
+  @@index([resolvedAt])
+  @@index([createdAt])
 }
 
 model AlertRule {
@@ -36,15 +55,20 @@ model AlertRule {
   operator    ComparisonOperator
   severity    AlertSeverity
   enabled     Boolean            @default(true)
-  serverId    String
-  createdById String
+  isDefault   Boolean            @default(false)
+  serverId    String?
+  createdById String?
   createdAt   DateTime           @default(now())
   updatedAt   DateTime           @updatedAt
   workspaceId String
   alerts      Alert[]
-  user        User               @relation(fields: [createdById], references: [id], onDelete: Cascade)
-  server      RabbitMQServer     @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  user        User?              @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  server      RabbitMQServer?    @relation(fields: [serverId], references: [id], onDelete: SetNull)
   workspace   Workspace          @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([serverId])
+  @@index([workspaceId])
+  @@index([isDefault])
 }
 
 model EmailVerificationToken {
@@ -173,6 +197,7 @@ model RabbitMQServer {
   queuePauseStates      Json?
   amqpPort              Int             @default(5672)
   alertRules            AlertRule[]
+  alerts                Alert[]
   queues                Queue[]
   workspace             Workspace?      @relation(fields: [workspaceId], references: [id])
   resolvedAlerts        ResolvedAlert[]
@@ -602,6 +627,7 @@ model WorkspaceSsoConfig {
 }
 
 enum AlertSeverity {
+  INFO
   LOW
   MEDIUM
   HIGH
