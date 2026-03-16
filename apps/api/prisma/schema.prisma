@@ -763,7 +763,7 @@ model OrganizationInvitation {
   createdAt      DateTime  @default(now())
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  invitedBy    User         @relation("OrgInvitationsSent", fields: [invitedById], references: [id])
+  invitedBy    User         @relation("OrgInvitationsSent", fields: [invitedById], references: [id], onDelete: Cascade)
 
   @@unique([organizationId, email])
   @@index([email])

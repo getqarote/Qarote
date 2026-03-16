@@ -68,6 +68,7 @@ export const useUpdateOrgMemberRole = () => {
   return trpc.organization.members.updateRole.useMutation({
     onSuccess: () => {
       utils.organization.members.list.invalidate();
+      utils.organization.management.getCurrent.invalidate();
     },
   });
 };
