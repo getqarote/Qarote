@@ -25,6 +25,10 @@ vi.mock("@/core/prisma", () => ({
       create: vi.fn(),
       update: vi.fn(),
     },
+    organization: {
+      findUnique: vi.fn(),
+      update: vi.fn(),
+    },
     license: {
       findMany: vi.fn(),
       findFirst: vi.fn(),
@@ -125,6 +129,7 @@ describe("handleCheckoutSessionCompleted", () => {
     } as any;
 
     vi.mocked(prisma.user.update).mockResolvedValue({} as any);
+    vi.mocked(prisma.organization.findUnique).mockResolvedValue(null);
     vi.mocked(prisma.user.findUnique).mockResolvedValue({
       id: "user-1",
       email: "user@test.com",
@@ -171,6 +176,7 @@ describe("handleCheckoutSessionCompleted", () => {
     } as any;
 
     vi.mocked(prisma.user.update).mockResolvedValue({} as any);
+    vi.mocked(prisma.organization.findUnique).mockResolvedValue(null);
     vi.mocked(prisma.user.findUnique).mockResolvedValue({
       id: "user-1",
       email: "user@test.com",
