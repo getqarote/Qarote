@@ -1,11 +1,20 @@
 import { TRPCError } from "@trpc/server";
+import { z } from "zod";
 
+import { applyWorkspaceAssignments } from "@/core/org-invitation-accept";
 import { getUserDisplayName } from "@/core/utils";
-import { ensureWorkspaceMember } from "@/core/workspace-access";
+import {
+  ensureWorkspaceMember,
+  getUserWorkspaceRole,
+} from "@/core/workspace-access";
 
 import { CoreEmailService } from "@/services/email/core-email.service";
 import { EmailService } from "@/services/email/email.service";
 import { EncryptionService } from "@/services/encryption.service";
+import {
+  getOrgPlan,
+  validateUserInvitation,
+} from "@/services/plan/plan.service";
 
 import {
   AcceptOrgInvitationSchema,
@@ -124,6 +133,55 @@ export const membersRouter = router({
         ctx.locale
       );
 
+      // Validate plan limits
+      const orgPlan = await getOrgPlan(organizationId);
+      const memberCount = await ctx.prisma.organizationMember.count({
+        where: { organizationId },
+      });
+      const pendingCount = await ctx.prisma.organizationInvitation.count({
+        where: {
+          organizationId,
+          acceptedAt: null,
+          expiresAt: { gt: new Date() },
+        },
+      });
+      validateUserInvitation(orgPlan, memberCount, pendingCount);
+
+      // Validate workspace assignments if provided
+      const assignments = input.workspaceAssignments ?? [];
+      if (assignments.length > 0) {
+        // Verify each workspace belongs to the caller's org
+        const workspaces = await ctx.prisma.workspace.findMany({
+          where: {
+            id: { in: assignments.map((a) => a.workspaceId) },
+            organizationId,
+          },
+          select: { id: true },
+        });
+        const orgWorkspaceIds = new Set(workspaces.map((w) => w.id));
+
+        for (const assignment of assignments) {
+          if (!orgWorkspaceIds.has(assignment.workspaceId)) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: `Workspace ${assignment.workspaceId} does not belong to this organization`,
+            });
+          }
+
+          // Verify the inviter has ADMIN role in the target workspace
+          const inviterRole = await getUserWorkspaceRole(
+            ctx.user.id,
+            assignment.workspaceId
+          );
+          if (inviterRole !== UserRole.ADMIN) {
+            throw new TRPCError({
+              code: "FORBIDDEN",
+              message: `You must be an ADMIN in workspace ${assignment.workspaceId} to assign members to it`,
+            });
+          }
+        }
+      }
+
       // Check if already a member (by email)
       const existingUser = await ctx.prisma.user.findUnique({
         where: { email: input.email },
@@ -173,6 +231,7 @@ export const membersRouter = router({
           role: input.role as OrgRole,
           invitedById: ctx.user.id,
           expiresAt: new Date(Date.now() + INVITATION_EXPIRY_MS),
+          workspaceAssignments: assignments,
         },
         update: {
           token,
@@ -180,6 +239,7 @@ export const membersRouter = router({
           invitedById: ctx.user.id,
           expiresAt: new Date(Date.now() + INVITATION_EXPIRY_MS),
           acceptedAt: null,
+          workspaceAssignments: assignments,
         },
       });
 
@@ -289,6 +349,7 @@ export const membersRouter = router({
           firstName: inv.invitedBy.firstName,
           lastName: inv.invitedBy.lastName,
         },
+        workspaceAssignments: inv.workspaceAssignments,
         expiresAt: inv.expiresAt.toISOString(),
         createdAt: inv.createdAt.toISOString(),
       })),
@@ -414,28 +475,18 @@ export const membersRouter = router({
           },
         });
 
-        // Fetch ALL workspaces in the organization and assign user to each
-        const orgWorkspaces = await tx.workspace.findMany({
-          where: { organizationId: invitation.organizationId },
-          select: { id: true },
-          orderBy: { createdAt: "asc" },
-        });
+        const firstWorkspaceId = await applyWorkspaceAssignments(
+          tx,
+          ctx.user.id,
+          invitation.organizationId,
+          invitation.workspaceAssignments
+        );
 
-        for (const workspace of orgWorkspaces) {
-          await ensureWorkspaceMember(
-            ctx.user.id,
-            workspace.id,
-            UserRole.MEMBER,
-            tx
-          );
-        }
-
-        // Set user's active workspace to the first org workspace if not set
-        const firstWorkspace = orgWorkspaces[0];
-        if (firstWorkspace && !ctx.user.workspaceId) {
+        // Set user's active workspace if not set
+        if (firstWorkspaceId && !ctx.user.workspaceId) {
           await tx.user.update({
             where: { id: ctx.user.id },
-            data: { workspaceId: firstWorkspace.id },
+            data: { workspaceId: firstWorkspaceId },
           });
         }
       });
@@ -704,5 +755,186 @@ export const membersRouter = router({
       );
 
       return { success: true };
+    }),
+
+  /**
+   * List all workspaces in the caller's organization (OWNER/ADMIN only)
+   */
+  listOrgWorkspaces: rateLimitedProcedure.query(async ({ ctx }) => {
+    const { organizationId } = await requireOrgAdmin(
+      ctx.prisma,
+      ctx.user.id,
+      ctx.locale
+    );
+
+    const workspaces = await ctx.prisma.workspace.findMany({
+      where: { organizationId },
+      select: { id: true, name: true },
+      orderBy: { createdAt: "asc" },
+    });
+
+    return { workspaces };
+  }),
+
+  /**
+   * Fetch a specific org member's workspace access (OWNER/ADMIN only)
+   */
+  getMemberWorkspaces: rateLimitedProcedure
+    .input(z.object({ userId: z.string() }))
+    .query(async ({ input, ctx }) => {
+      const { organizationId } = await requireOrgAdmin(
+        ctx.prisma,
+        ctx.user.id,
+        ctx.locale
+      );
+
+      // Verify user is an org member
+      const orgMember = await ctx.prisma.organizationMember.findFirst({
+        where: { userId: input.userId, organizationId },
+      });
+
+      if (!orgMember) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "User is not a member of this organization",
+        });
+      }
+
+      const memberships = await ctx.prisma.workspaceMember.findMany({
+        where: {
+          userId: input.userId,
+          workspace: { organizationId },
+        },
+        include: {
+          workspace: { select: { id: true, name: true } },
+        },
+      });
+
+      return {
+        memberships: memberships.map((m) => ({
+          workspaceId: m.workspace.id,
+          workspaceName: m.workspace.name,
+          role: m.role,
+        })),
+      };
+    }),
+
+  /**
+   * Remove an org member's access to a specific workspace (OWNER/ADMIN only)
+   */
+  removeFromWorkspace: rateLimitedProcedure
+    .input(z.object({ userId: z.string(), workspaceId: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      const caller = await requireOrgAdmin(ctx.prisma, ctx.user.id, ctx.locale);
+
+      // Verify workspace belongs to the org
+      const workspace = await ctx.prisma.workspace.findFirst({
+        where: {
+          id: input.workspaceId,
+          organizationId: caller.organizationId,
+        },
+      });
+
+      if (!workspace) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message:
+            "Workspace not found or does not belong to this organization",
+        });
+      }
+
+      // Delete the workspace membership
+      await ctx.prisma.workspaceMember.deleteMany({
+        where: {
+          userId: input.userId,
+          workspaceId: input.workspaceId,
+        },
+      });
+
+      // If this was the user's active workspace, clear it
+      await ctx.prisma.user.updateMany({
+        where: {
+          id: input.userId,
+          workspaceId: input.workspaceId,
+        },
+        data: { workspaceId: null },
+      });
+
+      ctx.logger.info(
+        {
+          organizationId: caller.organizationId,
+          userId: input.userId,
+          workspaceId: input.workspaceId,
+          removedBy: ctx.user.id,
+        },
+        "User removed from workspace"
+      );
+
+      return { success: true };
+    }),
+
+  /**
+   * List org members who do NOT have access to a specific workspace (OWNER/ADMIN only)
+   */
+  listOrgMembersNotInWorkspace: rateLimitedProcedure
+    .input(z.object({ workspaceId: z.string() }))
+    .query(async ({ input, ctx }) => {
+      const { organizationId } = await requireOrgAdmin(
+        ctx.prisma,
+        ctx.user.id,
+        ctx.locale
+      );
+
+      // Verify workspace belongs to org
+      const workspace = await ctx.prisma.workspace.findFirst({
+        where: { id: input.workspaceId, organizationId },
+      });
+
+      if (!workspace) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message:
+            "Workspace not found or does not belong to this organization",
+        });
+      }
+
+      // Get all org members
+      const orgMembers = await ctx.prisma.organizationMember.findMany({
+        where: { organizationId },
+        include: {
+          user: {
+            select: {
+              id: true,
+              email: true,
+              firstName: true,
+              lastName: true,
+              image: true,
+            },
+          },
+        },
+      });
+
+      // Get workspace member user IDs
+      const workspaceMembers = await ctx.prisma.workspaceMember.findMany({
+        where: { workspaceId: input.workspaceId },
+        select: { userId: true },
+      });
+      const workspaceMemberIds = new Set(workspaceMembers.map((m) => m.userId));
+
+      // Filter to org members NOT in workspace
+      const notInWorkspace = orgMembers.filter(
+        (m) => !workspaceMemberIds.has(m.user.id)
+      );
+
+      return {
+        members: notInWorkspace.map((m) => ({
+          userId: m.user.id,
+          email: m.user.email,
+          firstName: m.user.firstName,
+          lastName: m.user.lastName,
+          image: m.user.image,
+          orgRole: m.role,
+        })),
+      };
     }),
 });

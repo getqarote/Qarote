@@ -14,9 +14,25 @@ export const UpdateOrganizationSchema = z.object({
   logoUrl: z.string().url("Invalid URL").optional().nullable(),
 });
 
+export const WorkspaceAssignmentSchema = z.object({
+  workspaceId: z.string(),
+  role: z.enum(["ADMIN", "MEMBER", "READONLY"]),
+});
+
+export type WorkspaceAssignment = z.infer<typeof WorkspaceAssignmentSchema>;
+
 export const InviteOrgMemberSchema = z.object({
   email: z.string().email("Invalid email address"),
   role: z.enum(["ADMIN", "MEMBER"]),
+  workspaceAssignments: z
+    .array(WorkspaceAssignmentSchema)
+    .max(50, "Too many workspace assignments")
+    .optional()
+    .default([])
+    .refine(
+      (arr) => new Set(arr.map((a) => a.workspaceId)).size === arr.length,
+      "Duplicate workspace IDs"
+    ),
 });
 
 export const UpdateOrgMemberRoleSchema = z.object({

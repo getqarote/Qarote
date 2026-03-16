@@ -757,8 +757,9 @@ model OrganizationInvitation {
   role           OrgRole   @default(MEMBER)
   invitedById    String
   expiresAt      DateTime
-  acceptedAt     DateTime?
-  createdAt      DateTime  @default(now())
+  acceptedAt           DateTime?
+  createdAt            DateTime  @default(now())
+  workspaceAssignments Json      @default("[]")
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   invitedBy    User         @relation("OrgInvitationsSent", fields: [invitedById], references: [id], onDelete: Cascade)

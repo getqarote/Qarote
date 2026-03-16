@@ -70,7 +70,6 @@ const navGroups: NavGroup[] = [
         icon: Building2,
         labelKey: "settings:nav.organization",
         adminOnly: true,
-        cloudOnly: true,
       },
       {
         key: "billing",
