@@ -572,17 +572,9 @@ describe("membersRouter", () => {
         id: "ws-1",
         organizationId: "org-1",
       });
+      // DB-level filtering: mock returns only members NOT in the workspace
+      // (user-1 and user-3 are already in the workspace, so only user-2 is returned)
       mockOrgMemberFindMany.mockResolvedValue([
-        {
-          role: "ADMIN",
-          user: {
-            id: "user-1",
-            email: "a@test.com",
-            firstName: "A",
-            lastName: "User",
-            image: null,
-          },
-        },
         {
           role: "MEMBER",
           user: {
@@ -593,21 +585,6 @@ describe("membersRouter", () => {
             image: null,
           },
         },
-        {
-          role: "MEMBER",
-          user: {
-            id: "user-3",
-            email: "c@test.com",
-            firstName: "C",
-            lastName: "User",
-            image: null,
-          },
-        },
-      ]);
-      // user-1 and user-3 are already in the workspace
-      mockWorkspaceMemberFindMany.mockResolvedValue([
-        { userId: "user-1" },
-        { userId: "user-3" },
       ]);
 
       const ctx = makeCtx();

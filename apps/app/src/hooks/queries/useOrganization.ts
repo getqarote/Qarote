@@ -92,6 +92,7 @@ export const useAssignToWorkspace = () => {
   return trpc.organization.members.assignToWorkspace.useMutation({
     onSuccess: () => {
       utils.organization.members.list.invalidate();
+      utils.organization.members.listOrgMembersNotInWorkspace.invalidate();
       utils.workspace.management.getUserWorkspaces.invalidate();
     },
   });
@@ -155,7 +156,7 @@ export const useOrgWorkspaces = () => {
 
   return trpc.organization.members.listOrgWorkspaces.useQuery(undefined, {
     enabled: isAuthenticated,
-    staleTime: 0, // Always fresh on dialog open
+    staleTime: 30000,
     gcTime: 60000,
     retry: (failureCount, error) => {
       if (error.data?.code === "FORBIDDEN") return false;
@@ -186,6 +187,19 @@ export const useRemoveFromWorkspace = () => {
   return trpc.organization.members.removeFromWorkspace.useMutation({
     onSuccess: () => {
       utils.organization.members.list.invalidate();
+      utils.organization.members.getMemberWorkspaces.invalidate();
+      utils.organization.members.listOrgMembersNotInWorkspace.invalidate();
+      utils.workspace.management.getUserWorkspaces.invalidate();
+    },
+  });
+};
+
+// Update an org member's role in a specific workspace (atomic)
+export const useUpdateWorkspaceRole = () => {
+  const utils = trpc.useUtils();
+
+  return trpc.organization.members.updateWorkspaceRole.useMutation({
+    onSuccess: () => {
       utils.organization.members.getMemberWorkspaces.invalidate();
       utils.workspace.management.getUserWorkspaces.invalidate();
     },

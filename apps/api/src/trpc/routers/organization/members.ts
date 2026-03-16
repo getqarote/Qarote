@@ -164,7 +164,8 @@ export const membersRouter = router({
           if (!orgWorkspaceIds.has(assignment.workspaceId)) {
             throw new TRPCError({
               code: "BAD_REQUEST",
-              message: `Workspace ${assignment.workspaceId} does not belong to this organization`,
+              message:
+                "One or more selected workspaces do not belong to this organization",
             });
           }
 
@@ -176,7 +177,8 @@ export const membersRouter = router({
           if (inviterRole !== UserRole.ADMIN) {
             throw new TRPCError({
               code: "FORBIDDEN",
-              message: `You must be an ADMIN in workspace ${assignment.workspaceId} to assign members to it`,
+              message:
+                "You must be an ADMIN in each selected workspace to assign members to it",
             });
           }
         }
@@ -827,6 +829,21 @@ export const membersRouter = router({
     .mutation(async ({ input, ctx }) => {
       const caller = await requireOrgAdmin(ctx.prisma, ctx.user.id, ctx.locale);
 
+      // Verify the user is an org member
+      const orgMember = await ctx.prisma.organizationMember.findFirst({
+        where: {
+          userId: input.userId,
+          organizationId: caller.organizationId,
+        },
+      });
+
+      if (!orgMember) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "User is not a member of this organization",
+        });
+      }
+
       // Verify workspace belongs to the org
       const workspace = await ctx.prisma.workspace.findFirst({
         where: {
@@ -874,6 +891,75 @@ export const membersRouter = router({
     }),
 
   /**
+   * Update an org member's role in a specific workspace (OWNER/ADMIN only).
+   * Atomic alternative to remove + re-assign.
+   */
+  updateWorkspaceRole: rateLimitedProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+        workspaceId: z.string(),
+        role: z.enum(["ADMIN", "MEMBER", "READONLY"]),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const caller = await requireOrgAdmin(ctx.prisma, ctx.user.id, ctx.locale);
+
+      // Verify the user is an org member
+      const orgMember = await ctx.prisma.organizationMember.findFirst({
+        where: {
+          userId: input.userId,
+          organizationId: caller.organizationId,
+        },
+      });
+
+      if (!orgMember) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "User is not a member of this organization",
+        });
+      }
+
+      // Verify workspace belongs to the org and update role atomically
+      await ctx.prisma.$transaction(async (tx) => {
+        const workspace = await tx.workspace.findFirst({
+          where: {
+            id: input.workspaceId,
+            organizationId: caller.organizationId,
+          },
+        });
+
+        if (!workspace) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message:
+              "Workspace not found or does not belong to this organization",
+          });
+        }
+
+        await ensureWorkspaceMember(
+          input.userId,
+          input.workspaceId,
+          input.role as UserRole,
+          tx
+        );
+      });
+
+      ctx.logger.info(
+        {
+          organizationId: caller.organizationId,
+          userId: input.userId,
+          workspaceId: input.workspaceId,
+          role: input.role,
+          updatedBy: ctx.user.id,
+        },
+        "User workspace role updated"
+      );
+
+      return { success: true };
+    }),
+
+  /**
    * List org members who do NOT have access to a specific workspace (OWNER/ADMIN only)
    */
   listOrgMembersNotInWorkspace: rateLimitedProcedure
@@ -898,9 +984,16 @@ export const membersRouter = router({
         });
       }
 
-      // Get all org members
+      // Get org members NOT in the workspace (filtered at DB level)
       const orgMembers = await ctx.prisma.organizationMember.findMany({
-        where: { organizationId },
+        where: {
+          organizationId,
+          user: {
+            workspaceMembers: {
+              none: { workspaceId: input.workspaceId },
+            },
+          },
+        },
         include: {
           user: {
             select: {
@@ -914,20 +1007,8 @@ export const membersRouter = router({
         },
       });
 
-      // Get workspace member user IDs
-      const workspaceMembers = await ctx.prisma.workspaceMember.findMany({
-        where: { workspaceId: input.workspaceId },
-        select: { userId: true },
-      });
-      const workspaceMemberIds = new Set(workspaceMembers.map((m) => m.userId));
-
-      // Filter to org members NOT in workspace
-      const notInWorkspace = orgMembers.filter(
-        (m) => !workspaceMemberIds.has(m.user.id)
-      );
-
       return {
-        members: notInWorkspace.map((m) => ({
+        members: orgMembers.map((m) => ({
           userId: m.user.id,
           email: m.user.email,
           firstName: m.user.firstName,
