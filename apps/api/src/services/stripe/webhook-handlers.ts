@@ -76,18 +76,19 @@ export async function handleCheckoutSessionCompleted(session: Session) {
       },
     });
 
+    // Resolve org once — reused for dual-write and subscription linking below
+    const org = customerId
+      ? await resolveOrgFromStripeCustomerId(customerId)
+      : null;
+
     // Dual-write to Organization if one owns this Stripe customer
-    if (customerId) {
-      const org = await resolveOrgFromStripeCustomerId(customerId);
-      if (org) {
-        await prisma.organization.update({
-          where: { id: org.id },
-          data: {
-            stripeCustomerId: customerId,
-            stripeSubscriptionId: subscriptionId,
-          },
-        });
-      }
+    if (org) {
+      await prisma.organization.update({
+        where: { id: org.id },
+        data: {
+          stripeSubscriptionId: subscriptionId,
+        },
+      });
     }
 
     // Get user for email
@@ -152,11 +153,6 @@ export async function handleCheckoutSessionCompleted(session: Session) {
       subscriptionData?.trial_start,
       subscriptionData?.trial_end
     );
-
-    // Resolve org for linking the subscription record
-    const org = customerId
-      ? await resolveOrgFromStripeCustomerId(customerId)
-      : null;
 
     await prisma.subscription.create({
       data: {

@@ -427,7 +427,16 @@ const OrganizationSection = () => {
                 "Save"
               )}
             </Button>
-            <Button variant="outline" onClick={() => setEditing(false)}>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setOrgForm({
+                  name: org?.name || "",
+                  contactEmail: org?.contactEmail || "",
+                });
+                setEditing(false);
+              }}
+            >
               Cancel
             </Button>
           </CardFooter>

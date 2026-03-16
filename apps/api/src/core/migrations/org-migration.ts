@@ -103,6 +103,10 @@ export async function runOrgMigration(): Promise<MigrationStats> {
     const orgName = `${displayName}'s Organization`;
 
     try {
+      let txOrgs = 0;
+      let txMembers = 0;
+      let txWorkspaces = 0;
+
       await prisma.$transaction(async (tx) => {
         // Create the Organization
         const org = await tx.organization.create({
@@ -114,7 +118,7 @@ export async function runOrgMigration(): Promise<MigrationStats> {
           },
         });
 
-        stats.orgsCreated++;
+        txOrgs++;
 
         // Create OWNER membership
         await tx.organizationMember.create({
@@ -124,7 +128,7 @@ export async function runOrgMigration(): Promise<MigrationStats> {
             role: OrgRole.OWNER,
           },
         });
-        stats.membersCreated++;
+        txMembers++;
 
         // Link all workspaces owned by this user
         const workspaces = await tx.workspace.findMany({
@@ -137,7 +141,7 @@ export async function runOrgMigration(): Promise<MigrationStats> {
             where: { id: ws.id },
             data: { organizationId: org.id },
           });
-          stats.workspacesLinked++;
+          txWorkspaces++;
         }
 
         // Create MEMBER memberships for workspace members (deduplicated)
@@ -170,7 +174,7 @@ export async function runOrgMigration(): Promise<MigrationStats> {
                 role: OrgRole.MEMBER,
               },
             });
-            stats.membersCreated++;
+            txMembers++;
           }
         }
 
@@ -186,6 +190,10 @@ export async function runOrgMigration(): Promise<MigrationStats> {
           });
         }
       });
+
+      stats.orgsCreated += txOrgs;
+      stats.membersCreated += txMembers;
+      stats.workspacesLinked += txWorkspaces;
 
       usersWithOrg.add(ownerId);
     } catch (error) {
@@ -236,6 +244,10 @@ export async function runOrgMigration(): Promise<MigrationStats> {
     const orgName = `${displayName}'s Organization`;
 
     try {
+      let txOrgs = 0;
+      let txMembers = 0;
+      let txOrphans = 0;
+
       await prisma.$transaction(async (tx) => {
         const org = await tx.organization.create({
           data: {
@@ -246,7 +258,7 @@ export async function runOrgMigration(): Promise<MigrationStats> {
           },
         });
 
-        stats.orgsCreated++;
+        txOrgs++;
 
         await tx.organizationMember.create({
           data: {
@@ -255,15 +267,19 @@ export async function runOrgMigration(): Promise<MigrationStats> {
             role: OrgRole.OWNER,
           },
         });
-        stats.membersCreated++;
+        txMembers++;
 
         await tx.subscription.update({
           where: { id: sub.id },
           data: { organizationId: org.id },
         });
 
-        stats.orphanSubscriptionsHandled++;
+        txOrphans++;
       });
+
+      stats.orgsCreated += txOrgs;
+      stats.membersCreated += txMembers;
+      stats.orphanSubscriptionsHandled += txOrphans;
 
       usersWithOrg.add(sub.userId);
     } catch (error) {
