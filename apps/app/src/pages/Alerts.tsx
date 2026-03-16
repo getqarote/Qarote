@@ -47,8 +47,16 @@ const Alerts = () => {
     useFeatureFlags();
   // const [showConfigureModal, setShowConfigureModal] = useState(false);
   const [showNotificationSettingsModal, setShowNotificationSettingsModal] =
-    useState(() => searchParams.get("openNotificationSettings") === "true");
+    useState(false);
   const [showAlertRulesModal, setShowAlertRulesModal] = useState(false);
+
+  // Open notification settings from query param only for admins.
+  // useEffect defers until user is loaded so isAdmin is accurate.
+  useEffect(() => {
+    if (isAdmin && searchParams.get("openNotificationSettings") === "true") {
+      setShowNotificationSettingsModal(true);
+    }
+  }, [isAdmin]);
   const [viewMode, setViewMode] = useState<"active" | "resolved">("active");
 
   // Pagination state for Active Alerts
@@ -310,16 +318,20 @@ const Alerts = () => {
         </FeatureGate>
       </div>
       {/* Notification Settings Modal */}
-      <AlertNotificationSettingsModal
-        isOpen={showNotificationSettingsModal}
-        onClose={() => setShowNotificationSettingsModal(false)}
-      />
+      {isAdmin && (
+        <AlertNotificationSettingsModal
+          isOpen={showNotificationSettingsModal}
+          onClose={() => setShowNotificationSettingsModal(false)}
+        />
+      )}
 
       {/* Alert Rules Modal */}
-      <AlertRulesModal
-        isOpen={showAlertRulesModal}
-        onClose={() => setShowAlertRulesModal(false)}
-      />
+      {isAdmin && (
+        <AlertRulesModal
+          isOpen={showAlertRulesModal}
+          onClose={() => setShowAlertRulesModal(false)}
+        />
+      )}
     </SidebarProvider>
   );
 };

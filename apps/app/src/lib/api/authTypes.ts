@@ -12,7 +12,7 @@ export interface User {
   email: string;
   firstName?: string;
   lastName?: string;
-  role: string;
+  role: UserRole;
   // TODO: fix this shit
   workspaceId?: string | null;
   workspace?: Workspace;
@@ -52,7 +52,7 @@ export interface UserProfile extends User {
 interface Invitation {
   id: string;
   email: string;
-  role: string;
+  role: UserRole;
   status: string;
   token: string;
   createdAt: string;

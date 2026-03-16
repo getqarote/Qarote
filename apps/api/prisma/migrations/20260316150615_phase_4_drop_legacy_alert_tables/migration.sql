@@ -17,9 +17,6 @@ ALTER TABLE "SeenAlert" DROP CONSTRAINT "SeenAlert_serverId_fkey";
 -- DropForeignKey
 ALTER TABLE "SeenAlert" DROP CONSTRAINT "SeenAlert_workspaceId_fkey";
 
--- DropIndex
-DROP INDEX "alert_active_fingerprint_unique";
-
 -- DropTable
 DROP TABLE "ResolvedAlert";
 

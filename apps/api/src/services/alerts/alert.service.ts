@@ -298,7 +298,7 @@ class AlertService {
       workspaceId: string;
       status: "RESOLVED";
       resolvedAt: { not: null };
-      severity?: PrismaAlertSeverity;
+      severity?: PrismaAlertSeverity | { in: PrismaAlertSeverity[] };
       category?: string;
     };
 
@@ -310,14 +310,20 @@ class AlertService {
     };
 
     if (options?.severity) {
-      // Map incoming lowercase severity ("critical"/"warning"/"info") to Prisma enum
-      const legacyToPrisma: Record<string, PrismaAlertSeverity> = {
-        critical: PrismaAlertSeverity.CRITICAL,
-        warning: PrismaAlertSeverity.MEDIUM,
-        info: PrismaAlertSeverity.INFO,
-      };
-      const mapped = legacyToPrisma[options.severity];
-      if (mapped) where.severity = mapped;
+      // Map incoming lowercase severity ("critical"/"warning"/"info") to Prisma enum.
+      // "info" maps to both INFO and LOW since PRISMA_TO_LEGACY_SEVERITY maps both to "info".
+      if (options.severity === "info") {
+        where.severity = {
+          in: [PrismaAlertSeverity.INFO, PrismaAlertSeverity.LOW],
+        };
+      } else {
+        const legacyToPrisma: Record<string, PrismaAlertSeverity> = {
+          critical: PrismaAlertSeverity.CRITICAL,
+          warning: PrismaAlertSeverity.MEDIUM,
+        };
+        const mapped = legacyToPrisma[options.severity];
+        if (mapped) where.severity = mapped;
+      }
     }
 
     if (options?.category) {

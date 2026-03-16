@@ -912,16 +912,28 @@ export function AlertNotificationSettingsModal({
                 id="browser-notifications"
                 checked={browserNotificationsEnabled}
                 onCheckedChange={(checked) => {
-                  setBrowserNotificationsEnabled(checked);
-                  if (
-                    checked &&
-                    "Notification" in window &&
-                    Notification.permission === "default"
-                  ) {
-                    Notification.requestPermission().then((permission) => {
-                      setNotificationPermission(permission);
-                    });
+                  if (!checked) {
+                    setBrowserNotificationsEnabled(false);
+                    return;
                   }
+                  if (!("Notification" in window)) {
+                    setBrowserNotificationsEnabled(false);
+                    setNotificationPermission("unsupported");
+                    return;
+                  }
+                  if (Notification.permission === "granted") {
+                    setBrowserNotificationsEnabled(true);
+                    return;
+                  }
+                  if (Notification.permission === "denied") {
+                    setBrowserNotificationsEnabled(false);
+                    setNotificationPermission("denied");
+                    return;
+                  }
+                  Notification.requestPermission().then((permission) => {
+                    setNotificationPermission(permission);
+                    setBrowserNotificationsEnabled(permission === "granted");
+                  });
                 }}
                 disabled={updateSettingsMutation.isPending}
                 className="data-[state=checked]:bg-gradient-button"

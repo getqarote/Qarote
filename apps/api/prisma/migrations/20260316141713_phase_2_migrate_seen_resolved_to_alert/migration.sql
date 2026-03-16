@@ -70,6 +70,7 @@ INSERT INTO "Alert" (
   status,
   "workspaceId",
   "serverId",
+  "serverName",
   fingerprint,
   category,
   "sourceType",
@@ -109,6 +110,7 @@ SELECT
   'ACTIVE'::"AlertStatus",
   sa."workspaceId",
   sa."serverId",
+  r."name",
   sa.fingerprint,
   sa.category,
   sa."sourceType",
@@ -119,6 +121,7 @@ SELECT
   sa."createdAt",
   sa."updatedAt"
 FROM "SeenAlert" sa
+LEFT JOIN "RabbitMQServer" r ON sa."serverId" = r."id"
 WHERE sa."resolvedAt" IS NULL;
 
 -- 3. Migrate resolved SeenAlert rows (resolvedAt IS NOT NULL) → Alert with status=RESOLVED
@@ -131,6 +134,7 @@ INSERT INTO "Alert" (
   status,
   "workspaceId",
   "serverId",
+  "serverName",
   fingerprint,
   category,
   "sourceType",
@@ -171,6 +175,7 @@ SELECT
   'RESOLVED'::"AlertStatus",
   sa."workspaceId",
   sa."serverId",
+  r."name",
   NULL,
   sa.category,
   sa."sourceType",
@@ -182,6 +187,7 @@ SELECT
   sa."createdAt",
   sa."updatedAt"
 FROM "SeenAlert" sa
+LEFT JOIN "RabbitMQServer" r ON sa."serverId" = r."id"
 WHERE sa."resolvedAt" IS NOT NULL;
 
 -- 4. Create partial unique index for active alert fingerprints.
