@@ -62,21 +62,35 @@ export const billingRouter = router({
         );
       }
 
+      // Resolve Stripe IDs from Organization (billing authority)
+      const membership = await prisma.organizationMember.findFirst({
+        where: { userId: user.id },
+        select: {
+          organization: {
+            select: { stripeCustomerId: true, stripeSubscriptionId: true },
+          },
+        },
+      });
+      const orgStripeCustomerId =
+        membership?.organization?.stripeCustomerId ?? null;
+      const orgStripeSubscriptionId =
+        membership?.organization?.stripeSubscriptionId ?? null;
+
       let stripeSubscription = null;
       let upcomingInvoice = null;
       let paymentMethod = null;
 
       // Fetch Stripe subscription details if exists
-      if (userWithSubscription.stripeSubscriptionId) {
+      if (orgStripeSubscriptionId) {
         try {
           stripeSubscription = await StripeService.getSubscription(
-            userWithSubscription.stripeSubscriptionId
+            orgStripeSubscriptionId
           );
 
           // Get upcoming invoice
           if (stripeSubscription && !stripeSubscription.canceled_at) {
             upcomingInvoice = await StripeService.getUpcomingInvoice(
-              userWithSubscription.stripeSubscriptionId || ""
+              orgStripeSubscriptionId
             );
           }
 
@@ -86,11 +100,10 @@ export const billingRouter = router({
             | string
             | null;
 
-          if (!paymentMethodId && userWithSubscription.stripeCustomerId) {
+          if (!paymentMethodId && orgStripeCustomerId) {
             try {
-              const customer = await StripeService.getCustomer(
-                userWithSubscription.stripeCustomerId
-              );
+              const customer =
+                await StripeService.getCustomer(orgStripeCustomerId);
               if (
                 customer &&
                 !customer.deleted &&
@@ -171,8 +184,8 @@ export const billingRouter = router({
           ? {
               id: userWithSubscription.subscription.id,
               status: userWithSubscription.subscription.status,
-              stripeCustomerId: userWithSubscription.stripeCustomerId,
-              stripeSubscriptionId: userWithSubscription.stripeSubscriptionId,
+              stripeCustomerId: orgStripeCustomerId,
+              stripeSubscriptionId: orgStripeSubscriptionId,
               plan: userWithSubscription.subscription.plan,
               canceledAt: userWithSubscription.subscription.canceledAt
                 ? userWithSubscription.subscription.canceledAt.toISOString()
@@ -265,20 +278,16 @@ export const billingRouter = router({
     const { user, prisma } = ctx;
 
     try {
-      // Prefer org-level Stripe customer, fall back to user-level
-      let stripeCustomerId = user.stripeCustomerId;
-
-      if (!stripeCustomerId) {
-        const membership = await prisma.organizationMember.findFirst({
-          where: { userId: user.id },
-          select: {
-            organization: {
-              select: { stripeCustomerId: true },
-            },
+      const membership = await prisma.organizationMember.findFirst({
+        where: { userId: user.id },
+        select: {
+          organization: {
+            select: { stripeCustomerId: true },
           },
-        });
-        stripeCustomerId = membership?.organization?.stripeCustomerId ?? null;
-      }
+        },
+      });
+      const stripeCustomerId =
+        membership?.organization?.stripeCustomerId ?? null;
 
       if (!stripeCustomerId) {
         throw new TRPCError({
@@ -312,20 +321,16 @@ export const billingRouter = router({
     const { user, prisma } = ctx;
 
     try {
-      // Prefer org-level Stripe customer, fall back to user-level
-      let stripeCustomerId = user.stripeCustomerId;
-
-      if (!stripeCustomerId) {
-        const membership = await prisma.organizationMember.findFirst({
-          where: { userId: user.id },
-          select: {
-            organization: {
-              select: { stripeCustomerId: true },
-            },
+      const membership = await prisma.organizationMember.findFirst({
+        where: { userId: user.id },
+        select: {
+          organization: {
+            select: { stripeCustomerId: true },
           },
-        });
-        stripeCustomerId = membership?.organization?.stripeCustomerId ?? null;
-      }
+        },
+      });
+      const stripeCustomerId =
+        membership?.organization?.stripeCustomerId ?? null;
 
       if (!stripeCustomerId) {
         throw new TRPCError({

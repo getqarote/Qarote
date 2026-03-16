@@ -577,15 +577,6 @@ export class StripeCustomerService {
       return null;
     }
 
-    // Dual-write Stripe IDs to User for backward compatibility
-    await prisma.user.update({
-      where: { id: userId },
-      data: {
-        stripeCustomerId: dbSubscription.stripeCustomerId,
-        stripeSubscriptionId: dbSubscription.stripeSubscriptionId,
-      },
-    });
-
     logger.info(
       {
         userId,

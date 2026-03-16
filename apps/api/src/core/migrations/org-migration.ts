@@ -36,7 +36,6 @@ function generateSlug(name: string): string {
 
 interface MigrationFailure {
   userId: string;
-  stripeCustomerId: string | null;
   error: string;
 }
 
@@ -88,8 +87,6 @@ export async function runOrgMigration(): Promise<MigrationStats> {
         name: true,
         firstName: true,
         lastName: true,
-        stripeCustomerId: true,
-        stripeSubscriptionId: true,
       },
     });
 
@@ -113,8 +110,6 @@ export async function runOrgMigration(): Promise<MigrationStats> {
           data: {
             name: orgName,
             slug: generateSlug(displayName),
-            stripeCustomerId: user.stripeCustomerId,
-            stripeSubscriptionId: user.stripeSubscriptionId,
           },
         });
 
@@ -201,14 +196,12 @@ export async function runOrgMigration(): Promise<MigrationStats> {
       logger.error(
         {
           userId: ownerId,
-          stripeCustomerId: user.stripeCustomerId,
           error: message,
         },
         "Failed to create organization for workspace owner — skipping"
       );
       stats.failures.push({
         userId: ownerId,
-        stripeCustomerId: user.stripeCustomerId,
         error: message,
       });
     }
@@ -222,23 +215,17 @@ export async function runOrgMigration(): Promise<MigrationStats> {
     select: {
       id: true,
       userId: true,
-      user: {
-        select: {
-          id: true,
-          name: true,
-          firstName: true,
-          lastName: true,
-          stripeCustomerId: true,
-          stripeSubscriptionId: true,
-        },
-      },
     },
   });
 
   for (const sub of subscriptions) {
     if (usersWithOrg.has(sub.userId)) continue;
 
-    const user = sub.user;
+    const user = await prisma.user.findUnique({
+      where: { id: sub.userId },
+      select: { id: true, name: true, firstName: true, lastName: true },
+    });
+    if (!user) continue;
     const displayName =
       user.name || `${user.firstName} ${user.lastName}`.trim() || "User";
     const orgName = `${displayName}'s Organization`;
@@ -253,8 +240,6 @@ export async function runOrgMigration(): Promise<MigrationStats> {
           data: {
             name: orgName,
             slug: generateSlug(displayName),
-            stripeCustomerId: user.stripeCustomerId,
-            stripeSubscriptionId: user.stripeSubscriptionId,
           },
         });
 
@@ -287,7 +272,6 @@ export async function runOrgMigration(): Promise<MigrationStats> {
       logger.error(
         {
           userId: sub.userId,
-          stripeCustomerId: user.stripeCustomerId,
           subscriptionId: sub.id,
           error: message,
         },
@@ -295,7 +279,6 @@ export async function runOrgMigration(): Promise<MigrationStats> {
       );
       stats.failures.push({
         userId: sub.userId,
-        stripeCustomerId: user.stripeCustomerId,
         error: message,
       });
     }

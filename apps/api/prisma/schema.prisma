@@ -198,8 +198,6 @@ model User {
   pendingEmail            String?
   googleId                String?                  @unique
   ssoSubjectId            String?                  @unique
-  stripeCustomerId        String?                  @unique
-  stripeSubscriptionId    String?                  @unique
   locale                  String                   @default("en")
   discordJoined           Boolean                  @default(false)
   discordJoinedAt         DateTime?

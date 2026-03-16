@@ -67,25 +67,16 @@ export async function handleCheckoutSessionCompleted(session: Session) {
     const customerId = StripeService.extractCustomerId(session);
     const subscriptionId = StripeService.extractSubscriptionId(session);
 
-    // Update user with Stripe customer ID and subscription ID
-    await prisma.user.update({
-      where: { id: userId },
-      data: {
-        stripeCustomerId: customerId,
-        stripeSubscriptionId: subscriptionId,
-      },
-    });
-
-    // Resolve org once — reused for dual-write and subscription linking below
+    // Resolve org — Organization is the billing authority
     const org = customerId
       ? await resolveOrgFromStripeCustomerId(customerId)
       : null;
 
-    // Dual-write to Organization if one owns this Stripe customer
     if (org) {
       await prisma.organization.update({
         where: { id: org.id },
         data: {
+          stripeCustomerId: customerId,
           stripeSubscriptionId: subscriptionId,
         },
       });
@@ -346,18 +337,22 @@ export async function handleSubscriptionChange(subscription: Subscription) {
       return;
     }
 
-    // Find user by Stripe customer ID
-    const user = await prisma.user.findFirst({
-      where: { stripeCustomerId: customerId },
-    });
+    // Resolve org from Stripe customer — Organization is billing authority
+    const org = await resolveOrgFromStripeCustomerId(customerId);
 
-    if (!user) {
+    if (!org) {
       logger.warn(
         { customerId, subscriptionId },
-        "User not found for subscription change"
+        "Organization not found for subscription change"
       );
       return;
     }
+
+    // Find owner user for subscription record linkage
+    const ownerMember = await prisma.organizationMember.findFirst({
+      where: { organizationId: org.id, role: "OWNER" },
+      select: { userId: true },
+    });
 
     // Get or create subscription record
     const existingSubscription = await prisma.subscription.findUnique({
@@ -397,43 +392,36 @@ export async function handleSubscriptionChange(subscription: Subscription) {
       cancelAtPeriodEnd: subscription.cancel_at_period_end || false,
     };
 
-    // Resolve org for linking
-    const org = customerId
-      ? await resolveOrgFromStripeCustomerId(customerId)
-      : null;
-
     if (existingSubscription) {
       await prisma.subscription.update({
         where: { stripeSubscriptionId: subscriptionId },
         data: {
           ...subscriptionData,
-          organizationId: org?.id ?? existingSubscription.organizationId,
+          organizationId: org.id,
         },
       });
     } else {
       await prisma.subscription.create({
         data: {
-          userId: user.id,
-          organizationId: org?.id ?? null,
+          userId: ownerMember?.userId ?? "",
+          organizationId: org.id,
           stripeSubscriptionId: subscriptionId,
           ...subscriptionData,
         },
       });
     }
 
-    // Dual-write to Organization if applicable
-    if (org) {
-      await prisma.organization.update({
-        where: { id: org.id },
-        data: {
-          stripeCustomerId: customerId,
-          stripeSubscriptionId: subscriptionId,
-        },
-      });
-    }
+    // Update Organization stripe fields
+    await prisma.organization.update({
+      where: { id: org.id },
+      data: {
+        stripeCustomerId: customerId,
+        stripeSubscriptionId: subscriptionId,
+      },
+    });
 
     logger.info(
-      { subscriptionId, userId: user.id },
+      { subscriptionId, organizationId: org.id },
       "Subscription updated successfully"
     );
   } catch (error) {
@@ -903,17 +891,36 @@ export async function handleTrialWillEnd(subscription: Subscription) {
       return;
     }
 
-    const user = await prisma.user.findFirst({
-      where: { stripeCustomerId: customerId },
-      include: {
-        workspace: true,
+    // Resolve org from Stripe customer, then find owner for email
+    const org = await resolveOrgFromStripeCustomerId(customerId);
+    if (!org) {
+      logger.warn(
+        { customerId, subscriptionId },
+        "Organization not found for trial will end notification"
+      );
+      return;
+    }
+
+    const ownerMember = await prisma.organizationMember.findFirst({
+      where: { organizationId: org.id, role: "OWNER" },
+      select: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+            workspace: true,
+          },
+        },
       },
     });
+    const user = ownerMember?.user;
 
     if (!user) {
       logger.warn(
-        { customerId, subscriptionId },
-        "User not found for trial will end notification"
+        { customerId, subscriptionId, organizationId: org.id },
+        "Owner not found for trial will end notification"
       );
       return;
     }
@@ -934,7 +941,10 @@ export async function handleTrialWillEnd(subscription: Subscription) {
       });
     }
 
-    logger.info({ subscriptionId, userId: user.id }, "Trial ending email sent");
+    logger.info(
+      { subscriptionId, organizationId: org.id },
+      "Trial ending email sent"
+    );
   } catch (error) {
     logger.error({ error }, "Error handling trial will end");
     trackPaymentError(
@@ -1095,25 +1105,23 @@ export async function handleCustomerUpdated(customer: Customer) {
   try {
     const customerId = customer.id;
 
-    const user = await prisma.user.findFirst({
-      where: { stripeCustomerId: customerId },
-    });
-
-    if (!user) {
-      logger.warn({ customerId }, "User not found for customer update");
+    // Resolve org from Stripe customer
+    const org = await resolveOrgFromStripeCustomerId(customerId);
+    if (!org) {
+      logger.warn({ customerId }, "Organization not found for customer update");
       return;
     }
 
-    // Update user email if it changed in Stripe
-    if (customer.email && customer.email !== user.email) {
-      await prisma.user.update({
-        where: { id: user.id },
-        data: { email: customer.email },
+    // Update org contact email if changed in Stripe
+    if (customer.email) {
+      await prisma.organization.update({
+        where: { id: org.id },
+        data: { contactEmail: customer.email },
       });
 
       logger.info(
-        { userId: user.id, oldEmail: user.email, newEmail: customer.email },
-        "User email updated from Stripe customer"
+        { organizationId: org.id, newEmail: customer.email },
+        "Organization contact email updated from Stripe customer"
       );
     }
   } catch (error) {

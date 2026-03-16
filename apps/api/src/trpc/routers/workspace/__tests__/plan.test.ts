@@ -7,20 +7,33 @@ import { UserPlan } from "@/generated/prisma/client";
 // --- Mocks ---
 
 const mockUserFindUnique = vi.fn();
-const mockSubscriptionFindUnique = vi.fn();
 const mockWorkspaceCount = vi.fn();
+const mockOrgMemberFindFirst = vi.fn();
+const mockWorkspaceMemberCount = vi.fn();
 
 vi.mock("@/core/prisma", () => ({
   prisma: {
     user: { findUnique: (...args: unknown[]) => mockUserFindUnique(...args) },
-    subscription: {
-      findUnique: (...args: unknown[]) => mockSubscriptionFindUnique(...args),
-    },
     workspace: {
       count: (...args: unknown[]) => mockWorkspaceCount(...args),
     },
+    organizationMember: {
+      findFirst: (...args: unknown[]) => mockOrgMemberFindFirst(...args),
+    },
+    workspaceMember: {
+      count: (...args: unknown[]) => mockWorkspaceMemberCount(...args),
+    },
   },
 }));
+
+const mockGetWorkspacePlan = vi.fn();
+vi.mock("@/services/plan/plan.service", async (importOriginal) => {
+  const actual = (await importOriginal()) as Record<string, unknown>;
+  return {
+    ...actual,
+    getWorkspacePlan: (...args: unknown[]) => mockGetWorkspacePlan(...args),
+  };
+});
 
 const mockGetLicensePayload = vi.fn();
 vi.mock("@/core/feature-flags", () => ({
@@ -67,8 +80,9 @@ function makeCtx() {
   return {
     prisma: {
       user: { findUnique: mockUserFindUnique },
-      subscription: { findUnique: mockSubscriptionFindUnique },
       workspace: { count: mockWorkspaceCount },
+      organizationMember: { findFirst: mockOrgMemberFindFirst },
+      workspaceMember: { count: mockWorkspaceMemberCount },
     },
     logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() },
     user: {
@@ -84,28 +98,17 @@ function makeCtx() {
 }
 
 function mockUserWithWorkspace(overrides?: {
-  subscriptionPlan?: UserPlan;
-  ownerId?: string;
   memberCount?: number;
   serverCount?: number;
 }) {
-  const {
-    subscriptionPlan,
-    ownerId = "user-1",
-    memberCount = 1,
-    serverCount = 0,
-  } = overrides || {};
+  const { memberCount = 1, serverCount = 0 } = overrides || {};
 
   mockUserFindUnique.mockResolvedValue({
     id: "user-1",
     email: "admin@test.com",
-    subscription: subscriptionPlan
-      ? { plan: subscriptionPlan, status: "ACTIVE" }
-      : null,
     workspace: {
       id: "ws-1",
       name: "Test Workspace",
-      ownerId,
       _count: { members: memberCount, servers: serverCount },
     },
   });
@@ -117,12 +120,16 @@ describe("planRouter.getCurrentPlan", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockSelfHostedMode = false;
+    mockGetWorkspacePlan.mockResolvedValue(UserPlan.FREE);
+    mockOrgMemberFindFirst.mockResolvedValue({
+      organizationId: "org-1",
+    });
     mockWorkspaceCount.mockResolvedValue(1);
-    mockSubscriptionFindUnique.mockResolvedValue(null);
   });
 
   it("returns FREE plan when no subscription and not self-hosted", async () => {
     mockUserWithWorkspace();
+    mockGetWorkspacePlan.mockResolvedValue(UserPlan.FREE);
 
     const caller = planRouter.createCaller(makeCtx() as never);
     const result = await caller.getCurrentPlan();
@@ -132,11 +139,8 @@ describe("planRouter.getCurrentPlan", () => {
   });
 
   it("returns subscription plan when Stripe subscription exists", async () => {
-    mockUserWithWorkspace({ subscriptionPlan: UserPlan.ENTERPRISE });
-    mockSubscriptionFindUnique.mockResolvedValue({
-      plan: UserPlan.ENTERPRISE,
-      status: "ACTIVE",
-    });
+    mockUserWithWorkspace();
+    mockGetWorkspacePlan.mockResolvedValue(UserPlan.ENTERPRISE);
 
     const caller = planRouter.createCaller(makeCtx() as never);
     const result = await caller.getCurrentPlan();
@@ -152,6 +156,7 @@ describe("planRouter.getCurrentPlan", () => {
 
     it("uses license JWT tier when no Stripe subscription exists", async () => {
       mockUserWithWorkspace();
+      mockGetWorkspacePlan.mockResolvedValue(UserPlan.FREE);
       mockGetLicensePayload.mockResolvedValue(validPayload);
 
       const caller = planRouter.createCaller(makeCtx() as never);
@@ -165,6 +170,7 @@ describe("planRouter.getCurrentPlan", () => {
 
     it("uses ENTERPRISE tier from license JWT", async () => {
       mockUserWithWorkspace();
+      mockGetWorkspacePlan.mockResolvedValue(UserPlan.FREE);
       mockGetLicensePayload.mockResolvedValue({
         ...validPayload,
         tier: UserPlan.ENTERPRISE,
@@ -181,6 +187,7 @@ describe("planRouter.getCurrentPlan", () => {
 
     it("stays FREE when no license JWT exists", async () => {
       mockUserWithWorkspace();
+      mockGetWorkspacePlan.mockResolvedValue(UserPlan.FREE);
       mockGetLicensePayload.mockResolvedValue(null);
 
       const caller = planRouter.createCaller(makeCtx() as never);
@@ -191,25 +198,23 @@ describe("planRouter.getCurrentPlan", () => {
     });
 
     it("prefers Stripe subscription over license JWT", async () => {
-      mockUserWithWorkspace({ subscriptionPlan: UserPlan.ENTERPRISE });
-      mockSubscriptionFindUnique.mockResolvedValue({
-        plan: UserPlan.ENTERPRISE,
-        status: "ACTIVE",
-      });
-      // License says DEVELOPER, but Stripe says ENTERPRISE
+      mockUserWithWorkspace();
+      mockGetWorkspacePlan.mockResolvedValue(UserPlan.ENTERPRISE);
+      // License says DEVELOPER, but workspace plan says ENTERPRISE
       mockGetLicensePayload.mockResolvedValue(validPayload);
 
       const caller = planRouter.createCaller(makeCtx() as never);
       const result = await caller.getCurrentPlan();
 
-      // Should use Stripe subscription (ENTERPRISE), not license (DEVELOPER)
+      // Should use workspace plan (ENTERPRISE), not license (DEVELOPER)
       expect(result.user.plan).toBe(UserPlan.ENTERPRISE);
-      // getLicensePayload should not even be called since subscription exists
+      // getLicensePayload should not even be called since plan is not FREE
       expect(mockGetLicensePayload).not.toHaveBeenCalled();
     });
 
     it("returns correct usage limits for DEVELOPER license", async () => {
       mockUserWithWorkspace({ serverCount: 1 });
+      mockGetWorkspacePlan.mockResolvedValue(UserPlan.FREE);
       mockGetLicensePayload.mockResolvedValue(validPayload);
 
       const caller = planRouter.createCaller(makeCtx() as never);
@@ -224,6 +229,7 @@ describe("planRouter.getCurrentPlan", () => {
     it("does not use license fallback in cloud mode", async () => {
       mockSelfHostedMode = false;
       mockUserWithWorkspace();
+      mockGetWorkspacePlan.mockResolvedValue(UserPlan.FREE);
       mockGetLicensePayload.mockResolvedValue(validPayload);
 
       const caller = planRouter.createCaller(makeCtx() as never);
