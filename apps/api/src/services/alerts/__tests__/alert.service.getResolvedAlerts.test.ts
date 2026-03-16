@@ -4,6 +4,15 @@ import { afterEach, describe, expect, it, type MockInstance, vi } from "vitest";
 // Module mocks
 // ---------------------------------------------------------------------------
 
+vi.mock("@/core/logger", () => ({
+  logger: {
+    warn: vi.fn(),
+    debug: vi.fn(),
+    info: vi.fn(),
+    error: vi.fn(),
+  },
+}));
+
 vi.mock("@/core/prisma", () => ({
   prisma: {
     alert: { findMany: vi.fn(), count: vi.fn() },

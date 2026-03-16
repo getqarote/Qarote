@@ -181,6 +181,10 @@ class AlertNotificationService {
       const activeFingerprints = new Set<string>();
       const newAlerts: RabbitMQAlert[] = [];
       const now = new Date();
+      // Maps fingerprint → DB alert ID so emailSentAt can be stamped by ID after
+      // email send. Using ID avoids a race where the alert resolves between the
+      // email send and the stamp, making the fingerprint+status match miss.
+      const fingerprintToAlertId = new Map<string, string>();
 
       // Deduplicate alerts by fingerprint before processing.
       const dedupedAlerts: RabbitMQAlert[] = [];
@@ -234,25 +238,40 @@ class AlertNotificationService {
               severity: prismaSeverity,
             },
           });
+          fingerprintToAlertId.set(fingerprint, existingActiveAlert.id);
         } else {
-          await prisma.alert.create({
-            data: {
-              title,
-              description,
-              fingerprint,
-              severity: prismaSeverity,
-              status: "ACTIVE",
-              category: alert.category,
-              sourceType: alert.source.type,
-              sourceName: alert.source.name,
-              serverId,
-              serverName,
-              workspaceId,
-              firstSeenAt: now,
-              lastSeenAt: now,
-              details: alert.details as object,
-            },
-          });
+          try {
+            const created = await prisma.alert.create({
+              data: {
+                title,
+                description,
+                fingerprint,
+                severity: prismaSeverity,
+                status: "ACTIVE",
+                category: alert.category,
+                sourceType: alert.source.type,
+                sourceName: alert.source.name,
+                serverId,
+                serverName,
+                workspaceId,
+                firstSeenAt: now,
+                lastSeenAt: now,
+                details: alert.details as object,
+              },
+            });
+            fingerprintToAlertId.set(fingerprint, created.id);
+          } catch (error) {
+            if ((error as { code?: string }).code === "P2002") {
+              // Race: a concurrent invocation already created this alert.
+              // Skip — the winning call is responsible for sending the notification.
+              logger.debug(
+                { fingerprint },
+                "Skipping alert create: lost concurrent race (P2002)"
+              );
+              continue;
+            }
+            throw error;
+          }
         }
 
         const shouldNotifyForSeverity = notificationSeverities.includes(
@@ -370,10 +389,15 @@ class AlertNotificationService {
                 alert.source.name,
                 alert.vhost
               );
-              await prisma.alert.updateMany({
-                where: { fingerprint, status: "ACTIVE" },
-                data: { emailSentAt: now },
-              });
+              const alertId = fingerprintToAlertId.get(fingerprint);
+              if (alertId) {
+                // Stamp by ID — immune to the race where the alert resolves between
+                // email send and stamp (fingerprint+status would miss a resolved row).
+                await prisma.alert.update({
+                  where: { id: alertId },
+                  data: { emailSentAt: now },
+                });
+              }
             }
 
             logger.info(

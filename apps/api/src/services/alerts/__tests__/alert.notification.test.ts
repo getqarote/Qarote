@@ -790,7 +790,7 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
   // -------------------------------------------------------------------------
 
   describe("emailSentAt tracking", () => {
-    it("marks alerts as emailSentAt after a successful email send", async () => {
+    it("stamps emailSentAt by alert ID (not fingerprint+status) after a successful email send", async () => {
       setupDefaults({ activeAlerts: [] });
 
       await alertNotificationService.trackAndNotifyNewAlerts(
@@ -800,12 +800,25 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
         SERVER_NAME
       );
 
-      const emailSentUpdate = mockPrisma.alert.updateMany.mock.calls.find(
+      // Must use update(id) — NOT updateMany(fingerprint+status) — to avoid the
+      // race where the alert resolves between email send and stamp.
+      const emailSentUpdateMany = mockPrisma.alert.updateMany.mock.calls.find(
+        (call: unknown[]) =>
+          (call[0] as { data: { emailSentAt?: unknown } }).data?.emailSentAt !==
+          undefined
+      );
+      expect(emailSentUpdateMany).toBeUndefined();
+
+      const emailSentUpdate = mockPrisma.alert.update.mock.calls.find(
         (call: unknown[]) =>
           (call[0] as { data: { emailSentAt?: unknown } }).data?.emailSentAt !==
           undefined
       );
       expect(emailSentUpdate).toBeDefined();
+      // Must be stamped by ID, not fingerprint+status
+      expect(
+        (emailSentUpdate![0] as { where: { id?: string } }).where.id
+      ).toBeDefined();
     });
 
     it("does NOT update emailSentAt when email send fails", async () => {
@@ -819,7 +832,15 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
         SERVER_NAME
       );
 
-      const emailSentUpdate = mockPrisma.alert.updateMany.mock.calls.find(
+      // Neither update nor updateMany should stamp emailSentAt on failure
+      const emailSentUpdateMany = mockPrisma.alert.updateMany.mock.calls.find(
+        (call: unknown[]) =>
+          (call[0] as { data: { emailSentAt?: unknown } }).data?.emailSentAt !==
+          undefined
+      );
+      expect(emailSentUpdateMany).toBeUndefined();
+
+      const emailSentUpdate = mockPrisma.alert.update.mock.calls.find(
         (call: unknown[]) =>
           (call[0] as { data: { emailSentAt?: unknown } }).data?.emailSentAt !==
           undefined
@@ -1249,6 +1270,100 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
       const emailArgs = mockSendEmail.mock.calls[0][0];
       expect(emailArgs.alerts).toHaveLength(1);
       expect(emailArgs.alerts[0].category).toBe(AlertCategory.DISK);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // Race condition resilience (concurrent P2002 on create)
+  // -------------------------------------------------------------------------
+
+  describe("race condition resilience (P2002 on create)", () => {
+    function makeP2002() {
+      return Object.assign(new Error("Unique constraint violation"), {
+        code: "P2002",
+      });
+    }
+
+    it("completes without throwing when create races with a concurrent call", async () => {
+      setupDefaults({ activeAlerts: [] });
+      mockPrisma.alert.create.mockRejectedValueOnce(makeP2002());
+
+      const result = await alertNotificationService.trackAndNotifyNewAlerts(
+        [makeAlert()],
+        WORKSPACE_ID,
+        SERVER_ID,
+        SERVER_NAME
+      );
+
+      expect(result).toBeUndefined();
+    });
+
+    it("suppresses notification for the race-lost alert (the winner notifies)", async () => {
+      setupDefaults({ activeAlerts: [] });
+      mockPrisma.alert.create.mockRejectedValueOnce(makeP2002());
+
+      await alertNotificationService.trackAndNotifyNewAlerts(
+        [makeAlert()],
+        WORKSPACE_ID,
+        SERVER_ID,
+        SERVER_NAME
+      );
+
+      expect(mockSendEmail).not.toHaveBeenCalled();
+    });
+
+    it("continues processing other alerts in the batch after a race-lost create", async () => {
+      setupDefaults({ activeAlerts: [] });
+      // First alert loses the race; second alert should still be created + notified
+      mockPrisma.alert.create
+        .mockRejectedValueOnce(makeP2002())
+        .mockResolvedValueOnce({ id: "alert-disk-id" });
+
+      const alerts = [
+        makeAlert({
+          category: AlertCategory.MEMORY,
+          source: { type: "node", name: "rabbit@node1" },
+        }),
+        makeAlert({
+          category: AlertCategory.DISK,
+          source: { type: "node", name: "rabbit@node1" },
+        }),
+      ];
+
+      await alertNotificationService.trackAndNotifyNewAlerts(
+        alerts,
+        WORKSPACE_ID,
+        SERVER_ID,
+        SERVER_NAME
+      );
+
+      expect(mockPrisma.alert.create).toHaveBeenCalledTimes(2);
+      // Only the disk alert (winner) triggers a notification
+      expect(mockSendEmail).toHaveBeenCalledOnce();
+      const emailArgs = mockSendEmail.mock.calls[0][0];
+      expect(emailArgs.alerts).toHaveLength(1);
+      expect(emailArgs.alerts[0].category).toBe(AlertCategory.DISK);
+    });
+
+    it("does NOT suppress the alert when create fails for a non-P2002 reason", async () => {
+      // A generic DB error (not a race) should bubble to the outer catch and
+      // be logged — the function still completes but remaining alerts are skipped.
+      setupDefaults({ activeAlerts: [] });
+      mockPrisma.alert.create.mockRejectedValueOnce(
+        new Error("DB connection lost")
+      );
+
+      const result = await alertNotificationService.trackAndNotifyNewAlerts(
+        [makeAlert()],
+        WORKSPACE_ID,
+        SERVER_ID,
+        SERVER_NAME
+      );
+
+      // Outer catch swallows the error gracefully
+      expect(result).toBeUndefined();
+      // No notification was sent (error aborted the batch early)
+      expect(mockSendEmail).not.toHaveBeenCalled();
     });
   });
 

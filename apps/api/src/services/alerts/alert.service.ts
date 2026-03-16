@@ -139,34 +139,12 @@ class AlertService {
     workspaceId: string,
     vhost?: string
   ): Promise<{ alerts: RabbitMQAlert[]; summary: AlertSummary }> {
-    type WhereClause = {
-      serverId: string;
-      workspaceId: string;
-      status: "ACTIVE";
-      OR?: Array<
-        | { sourceType: string; fingerprint?: { contains: string } }
-        | { sourceType: string }
-      >;
-    };
-
-    const where: WhereClause = { serverId, workspaceId, status: "ACTIVE" };
-
-    if (vhost) {
-      // Queue fingerprint format: {serverId}-{category}-queue-{vhost}-{queueName}
-      // Exact vhost boundary: pattern "-queue-{vhost}-" appears between sourceType and sourceName
-      const vhostPattern = `-queue-${vhost}-`;
-      where.OR = [
-        { sourceType: "queue", fingerprint: { contains: vhostPattern } },
-        { sourceType: "node" },
-        { sourceType: "cluster" },
-      ];
-    }
-
     const rows = await prisma.alert.findMany({
-      where,
+      where: { serverId, workspaceId, status: "ACTIVE" },
       orderBy: { lastSeenAt: "desc" },
       select: {
         id: true,
+        fingerprint: true, // needed for exact vhost boundary check below
         serverId: true,
         serverName: true,
         severity: true,
@@ -181,7 +159,24 @@ class AlertService {
       },
     });
 
-    const alerts: RabbitMQAlert[] = rows.map((row) => ({
+    // Apply exact vhost boundary check in-memory. The fingerprint format for
+    // queue alerts is "{serverId}-{category}-queue-{vhost}-{sourceName}", so
+    // we must verify the vhost appears as a complete path segment — not as a
+    // prefix of a longer vhost name. A DB `contains` query for "-queue-prod-"
+    // would incorrectly match fingerprints for vhost "prod-v2" because
+    // "-queue-prod-v2-" starts with "-queue-prod-".
+    const filteredRows = vhost
+      ? rows.filter((row) => {
+          if (row.sourceType !== "queue") return true;
+          if (!row.fingerprint) return false;
+          const suffix = `-${row.sourceName ?? ""}`;
+          if (!row.fingerprint.endsWith(suffix)) return false;
+          const withoutSource = row.fingerprint.slice(0, -suffix.length);
+          return withoutSource.endsWith(`-queue-${vhost}`);
+        })
+      : rows;
+
+    const alerts: RabbitMQAlert[] = filteredRows.map((row) => ({
       id: row.id,
       serverId: row.serverId ?? "",
       serverName: row.serverName ?? "",
