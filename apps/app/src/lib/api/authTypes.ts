@@ -3,6 +3,12 @@
  * Contains interfaces for user authentication and management
  */
 
+export enum UserRole {
+  ADMIN = "ADMIN",
+  MEMBER = "MEMBER",
+  READONLY = "READONLY",
+}
+
 export interface User {
   id: string;
   email: string;

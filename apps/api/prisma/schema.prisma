@@ -200,8 +200,6 @@ model RabbitMQServer {
   alerts                Alert[]
   queues                Queue[]
   workspace             Workspace?      @relation(fields: [workspaceId], references: [id])
-  resolvedAlerts        ResolvedAlert[]
-  seenAlerts            SeenAlert[]
 }
 
 model User {
@@ -316,8 +314,6 @@ model Workspace {
   members                       WorkspaceMember[]         @relation("WorkspaceMembers")
   alertThresholds               WorkspaceAlertThresholds?
   licenses                      License[]
-  resolvedAlerts                ResolvedAlert[]
-  seenAlerts                    SeenAlert[]
   slackConfigs                  SlackConfig[]
   webhooks                      Webhook[]
   workspaceSsoConfig            WorkspaceSsoConfig?
@@ -447,57 +443,6 @@ model Payment {
   @@index([status], name: "payment_status_idx")
   @@index([stripePaymentId], name: "payment_stripe_id_idx")
   @@index([userId], name: "payment_user_idx")
-}
-
-model ResolvedAlert {
-  id          String         @id @default(uuid())
-  serverId    String
-  serverName  String
-  severity    String
-  category    String
-  title       String
-  description String
-  details     Json
-  sourceType  String
-  sourceName  String
-  fingerprint String
-  firstSeenAt DateTime
-  resolvedAt  DateTime       @default(now())
-  duration    Int?
-  workspaceId String
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-  server      RabbitMQServer @relation(fields: [serverId], references: [id], onDelete: Cascade)
-  workspace   Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-
-  @@index([fingerprint])
-  @@index([resolvedAt])
-  @@index([serverId])
-  @@index([workspaceId])
-}
-
-model SeenAlert {
-  id          String         @id @default(uuid())
-  fingerprint String         @unique
-  serverId    String
-  workspaceId String
-  severity    String
-  category    String
-  sourceType  String
-  sourceName  String
-  firstSeenAt DateTime       @default(now())
-  lastSeenAt  DateTime       @default(now())
-  resolvedAt  DateTime?
-  emailSentAt DateTime?
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-  server      RabbitMQServer @relation(fields: [serverId], references: [id], onDelete: Cascade)
-  workspace   Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-
-  @@index([fingerprint])
-  @@index([resolvedAt])
-  @@index([serverId])
-  @@index([workspaceId])
 }
 
 model SlackConfig {

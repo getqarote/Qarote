@@ -4,6 +4,8 @@ import { useParams, useSearchParams } from "react-router";
 
 import { AlertTriangle, Loader2, Mail, Settings } from "lucide-react";
 
+import { UserRole } from "@/lib/api";
+
 import { ActiveAlertsList } from "@/components/alerts/ActiveAlertsList";
 import { AlertNotificationSettingsModal } from "@/components/alerts/AlertNotificationSettingsModal";
 import { AlertRulesModal } from "@/components/alerts/AlertRulesModal";
@@ -39,7 +41,8 @@ const Alerts = () => {
   const { selectedServerId, hasServers, setSelectedServerId } =
     useServerContext();
   const { selectedVHost, setSelectedVHost } = useVHostContext();
-  const { userPlan } = useUser();
+  const { userPlan, user } = useUser();
+  const isAdmin = user?.role === UserRole.ADMIN;
   const { hasFeature: hasAlertingFeature, isLoading: featureFlagsLoading } =
     useFeatureFlags();
   // const [showConfigureModal, setShowConfigureModal] = useState(false);
@@ -188,22 +191,26 @@ const Alerts = () => {
                   {alertsLoading && (
                     <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                   )}
-                  <Button
-                    onClick={() => setShowAlertRulesModal(true)}
-                    variant="outline"
-                    className="flex items-center gap-2"
-                  >
-                    <Settings className="h-4 w-4" />
-                    {t("alertRules")}
-                  </Button>
-                  <Button
-                    onClick={() => setShowNotificationSettingsModal(true)}
-                    variant="outline"
-                    className="flex items-center gap-2"
-                  >
-                    <Mail className="h-4 w-4" />
-                    {t("notificationSettings")}
-                  </Button>
+                  {isAdmin && (
+                    <>
+                      <Button
+                        onClick={() => setShowAlertRulesModal(true)}
+                        variant="outline"
+                        className="flex items-center gap-2"
+                      >
+                        <Settings className="h-4 w-4" />
+                        {t("alertRules")}
+                      </Button>
+                      <Button
+                        onClick={() => setShowNotificationSettingsModal(true)}
+                        variant="outline"
+                        className="flex items-center gap-2"
+                      >
+                        <Mail className="h-4 w-4" />
+                        {t("notificationSettings")}
+                      </Button>
+                    </>
+                  )}
                 </div>
               </div>
 
