@@ -104,8 +104,16 @@ export const licenseRouter = router({
       const { tier } = input;
 
       try {
-        // Create Stripe customer if not exists
-        let customerId = user.stripeCustomerId;
+        // Resolve Stripe customer from Organization (billing authority)
+        const membership = await ctx.prisma.organizationMember.findFirst({
+          where: { userId: user.id },
+          select: {
+            organization: {
+              select: { id: true, stripeCustomerId: true },
+            },
+          },
+        });
+        let customerId = membership?.organization?.stripeCustomerId ?? null;
         if (!customerId) {
           const customer = await StripeService.createCustomer({
             email: user.email,
@@ -114,10 +122,12 @@ export const licenseRouter = router({
           });
           customerId = customer.id;
 
-          await ctx.prisma.user.update({
-            where: { id: user.id },
-            data: { stripeCustomerId: customerId },
-          });
+          if (membership?.organization) {
+            await ctx.prisma.organization.update({
+              where: { id: membership.organization.id },
+              data: { stripeCustomerId: customerId },
+            });
+          }
         }
 
         // Get yearly price ID (licenses are annual-only)

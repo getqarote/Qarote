@@ -243,6 +243,22 @@ export async function getUserPlan(userId: string) {
 }
 
 /**
+ * Get the plan for a workspace by resolving its organization.
+ */
+export async function getWorkspacePlan(workspaceId: string): Promise<UserPlan> {
+  const workspace = await prisma.workspace.findUnique({
+    where: { id: workspaceId },
+    select: { organizationId: true },
+  });
+
+  if (workspace?.organizationId) {
+    return getOrgPlan(workspace.organizationId);
+  }
+
+  return UserPlan.FREE;
+}
+
+/**
  * Get resource counts scoped to an organization.
  */
 export async function getOrgResourceCounts(orgId: string) {

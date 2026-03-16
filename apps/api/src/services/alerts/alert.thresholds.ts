@@ -1,6 +1,8 @@
 import { logger } from "@/core/logger";
 import { prisma } from "@/core/prisma";
 
+import { getWorkspacePlan } from "@/services/plan/plan.service";
+
 import { AlertThresholds } from "./alert.interfaces";
 
 import { UserPlan, WorkspaceAlertThresholds } from "@/generated/prisma/client";
@@ -28,24 +30,7 @@ class AlertThresholdsService {
    */
   async canModifyThresholds(workspaceId: string): Promise<boolean> {
     try {
-      const workspace = await prisma.workspace.findUnique({
-        where: { id: workspaceId },
-        select: {
-          ownerId: true,
-        },
-      });
-
-      if (!workspace || !workspace.ownerId) {
-        return false;
-      }
-
-      // Get workspace owner's subscription to determine plan
-      const ownerSubscription = await prisma.subscription.findUnique({
-        where: { userId: workspace.ownerId },
-        select: { plan: true },
-      });
-
-      const plan = ownerSubscription?.plan || "FREE";
+      const plan = await getWorkspacePlan(workspaceId);
 
       // Allow modifications for developer and enterprise plans
       return plan === UserPlan.DEVELOPER || plan === UserPlan.ENTERPRISE;

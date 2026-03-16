@@ -78,8 +78,6 @@ export const auth = betterAuth({
       locale: { type: "string", required: false },
       pendingEmail: { type: "string", required: false },
       lastLogin: { type: "date", required: false },
-      stripeCustomerId: { type: "string", required: false },
-      stripeSubscriptionId: { type: "string", required: false },
       discordJoined: { type: "boolean", required: false },
       discordJoinedAt: { type: "date", required: false },
     },

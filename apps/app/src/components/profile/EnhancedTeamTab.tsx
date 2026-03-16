@@ -28,7 +28,6 @@ import {
 } from "@/components/ui/table";
 
 import { useUser } from "@/hooks/ui/useUser";
-import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 import { InviteUserDialog } from "./InviteUserDialogEnhanced";
 import { formatDate, getRoleColor, InviteFormState } from "./profileUtils";
@@ -74,14 +73,14 @@ export const EnhancedTeamTab = ({
 }: EnhancedTeamTabProps) => {
   const { t } = useTranslation("profile");
   const { planData, user } = useUser();
-  const { workspace } = useWorkspace();
+
   const planFeatures = planData?.planFeatures;
   const totalUsers = workspaceUsers.length;
   const pendingInvitations = invitations.length;
   const maxUsers = planFeatures?.maxUsers;
 
-  // Check if current user is the workspace owner
-  const isWorkspaceOwner = workspace?.ownerId === user?.id;
+  // Admins can manage all members
+  const isWorkspaceOwner = isAdmin;
 
   // State for copy feedback
   const [copiedToken, setCopiedToken] = useState<string | null>(null);

@@ -6,7 +6,10 @@ import { formatInvitedBy, getUserDisplayName } from "@/core/utils";
 import { CoreEmailService } from "@/services/email/core-email.service";
 import { EmailService } from "@/services/email/email.service";
 import { EncryptionService } from "@/services/encryption.service";
-import { validateUserInvitation } from "@/services/plan/plan.service";
+import {
+  getWorkspacePlan,
+  validateUserInvitation,
+} from "@/services/plan/plan.service";
 
 import { inviteUserSchema } from "@/schemas/invitation";
 import { InvitationIdParamSchema } from "@/schemas/workspace";
@@ -19,7 +22,7 @@ import {
   router,
 } from "@/trpc/trpc";
 
-import { InvitationStatus, UserPlan } from "@/generated/prisma/client";
+import { InvitationStatus } from "@/generated/prisma/client";
 import { te } from "@/i18n";
 
 /**
@@ -118,7 +121,6 @@ export const invitationRouter = router({
           select: {
             id: true,
             name: true,
-            ownerId: true,
           },
         });
 
@@ -134,22 +136,10 @@ export const invitationRouter = router({
           where: { workspaceId: user.workspaceId },
         });
 
-        // Get owner's subscription plan
-        let ownerPlan: UserPlan = UserPlan.FREE;
-        if (workspace.ownerId) {
-          const ownerSubscription = await ctx.prisma.subscription.findUnique({
-            where: { userId: workspace.ownerId },
-            select: {
-              plan: true,
-            },
-          });
-          if (ownerSubscription) {
-            ownerPlan = ownerSubscription.plan;
-          }
-        }
+        // Get plan via workspace → organization
+        const ownerPlan = await getWorkspacePlan(user.workspaceId);
 
         // Validate invitation against plan limits
-        // Errors will be caught by planValidationProcedure middleware
         validateUserInvitation(ownerPlan, memberCount);
 
         // Check if there's already a pending invitation for this email

@@ -44,8 +44,16 @@ export const checkoutRouter = router({
           "Creating checkout session"
         );
 
-        // Create Stripe customer if not exists
-        let customerId = user.stripeCustomerId;
+        // Resolve Stripe customer from Organization (billing authority)
+        const membership = await prisma.organizationMember.findFirst({
+          where: { userId: user.id },
+          select: {
+            organization: {
+              select: { id: true, stripeCustomerId: true },
+            },
+          },
+        });
+        let customerId = membership?.organization?.stripeCustomerId ?? null;
         if (!customerId) {
           const customer = await StripeService.createCustomer({
             email: user.email,
@@ -54,11 +62,12 @@ export const checkoutRouter = router({
           });
           customerId = customer.id;
 
-          // Update user with customer ID
-          await prisma.user.update({
-            where: { id: user.id },
-            data: { stripeCustomerId: customerId },
-          });
+          if (membership?.organization) {
+            await prisma.organization.update({
+              where: { id: membership.organization.id },
+              data: { stripeCustomerId: customerId },
+            });
+          }
         }
 
         const session = await StripeService.createCheckoutSession({

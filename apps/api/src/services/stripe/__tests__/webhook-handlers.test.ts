@@ -128,8 +128,12 @@ describe("handleCheckoutSessionCompleted", () => {
       },
     } as any;
 
-    vi.mocked(prisma.user.update).mockResolvedValue({} as any);
-    vi.mocked(prisma.organization.findUnique).mockResolvedValue(null);
+    // Org found via stripeCustomerId — Organization is billing authority
+    vi.mocked(prisma.organization.findUnique).mockResolvedValue({
+      id: "org-1",
+      stripeCustomerId: "cus_123",
+    } as any);
+    vi.mocked(prisma.organization.update).mockResolvedValue({} as any);
     vi.mocked(prisma.user.findUnique).mockResolvedValue({
       id: "user-1",
       email: "user@test.com",
@@ -142,10 +146,10 @@ describe("handleCheckoutSessionCompleted", () => {
 
     await handleCheckoutSessionCompleted(session);
 
-    // User updated with Stripe IDs
-    expect(prisma.user.update).toHaveBeenCalledWith(
+    // Organization updated with Stripe IDs (not User)
+    expect(prisma.organization.update).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { id: "user-1" },
+        where: { id: "org-1" },
         data: expect.objectContaining({
           stripeCustomerId: "cus_123",
           stripeSubscriptionId: "sub_new",
@@ -429,47 +433,32 @@ describe("handleCustomerUpdated", () => {
   });
 
   it("syncs email when Stripe customer email changes", async () => {
-    vi.mocked(prisma.user.findFirst).mockResolvedValue({
-      id: "user-1",
-      email: "old@test.com",
+    vi.mocked(prisma.organization.findUnique).mockResolvedValue({
+      id: "org-1",
       stripeCustomerId: "cus_sync",
+      contactEmail: "old@test.com",
     } as any);
-    vi.mocked(prisma.user.update).mockResolvedValue({} as any);
+    vi.mocked(prisma.organization.update).mockResolvedValue({} as any);
 
     await handleCustomerUpdated({
       id: "cus_sync",
       email: "new@test.com",
     } as any);
 
-    expect(prisma.user.update).toHaveBeenCalledWith({
-      where: { id: "user-1" },
-      data: { email: "new@test.com" },
+    expect(prisma.organization.update).toHaveBeenCalledWith({
+      where: { id: "org-1" },
+      data: { contactEmail: "new@test.com" },
     });
   });
 
-  it("skips update when email has not changed", async () => {
-    vi.mocked(prisma.user.findFirst).mockResolvedValue({
-      id: "user-1",
-      email: "same@test.com",
-      stripeCustomerId: "cus_same",
-    } as any);
-
-    await handleCustomerUpdated({
-      id: "cus_same",
-      email: "same@test.com",
-    } as any);
-
-    expect(prisma.user.update).not.toHaveBeenCalled();
-  });
-
-  it("handles missing user gracefully", async () => {
-    vi.mocked(prisma.user.findFirst).mockResolvedValue(null);
+  it("handles missing org gracefully", async () => {
+    vi.mocked(prisma.organization.findUnique).mockResolvedValue(null);
 
     await handleCustomerUpdated({
       id: "cus_unknown",
       email: "ghost@test.com",
     } as any);
 
-    expect(prisma.user.update).not.toHaveBeenCalled();
+    expect(prisma.organization.update).not.toHaveBeenCalled();
   });
 });
