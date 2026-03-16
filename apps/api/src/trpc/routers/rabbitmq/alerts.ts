@@ -560,9 +560,10 @@ export const alertsRouter = router({
       while (!sig.aborted) {
         try {
           const userPlan = await getUserPlan(ctx.user.id);
-          const { alerts, summary } = await alertService.getServerAlerts(
+          // Read active alerts from the unified Alert table (written by the cron).
+          // This replaces the per-client RabbitMQ poll that caused an N+1 problem.
+          const { alerts, summary } = await alertService.getActiveAlertsFromDb(
             serverId,
-            server.name,
             workspaceId,
             vhost
           );
