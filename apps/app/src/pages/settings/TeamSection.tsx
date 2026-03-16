@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { Loader2, User, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 
 import { logger } from "@/lib/logger";
@@ -8,7 +9,28 @@ import { logger } from "@/lib/logger";
 import { InviteLinksDialog } from "@/components/InviteLinksDialog";
 import { EnhancedTeamTab, InviteFormState } from "@/components/profile";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 
+import {
+  useAssignToWorkspace,
+  useOrgMembersNotInWorkspace,
+} from "@/hooks/queries/useOrganization";
 import { useProfile } from "@/hooks/queries/useProfile";
 import { usePublicConfig } from "@/hooks/queries/usePublicConfig";
 import {
@@ -37,6 +59,9 @@ const TeamSection = () => {
   const sendInvitationMutation = useSendInvitation();
   const revokeInvitationMutation = useRevokeInvitation();
   const removeUserMutation = useRemoveUserFromWorkspace();
+  const assignToWorkspaceMutation = useAssignToWorkspace();
+  const { data: orgMembersNotInWs, isLoading: orgMembersLoading } =
+    useOrgMembersNotInWorkspace(workspace?.id);
 
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   const [inviteForm, setInviteForm] = useState<InviteFormState>({
@@ -44,6 +69,10 @@ const TeamSection = () => {
     role: "MEMBER",
   });
   const [inviteLinks, setInviteLinks] = useState<InviteLink[]>([]);
+  const [addFromOrgOpen, setAddFromOrgOpen] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<
+    "ADMIN" | "MEMBER" | "READONLY"
+  >("MEMBER");
 
   const profile = profileData?.user;
   const isAdmin = profile?.role === "ADMIN";
@@ -146,6 +175,29 @@ const TeamSection = () => {
     }
   };
 
+  const availableOrgMembers = orgMembersNotInWs?.members ?? [];
+
+  const handleAddFromOrg = async (userId: string, name: string) => {
+    if (!workspace?.id) return;
+    try {
+      await assignToWorkspaceMutation.mutateAsync({
+        userId,
+        workspaceId: workspace.id,
+        role: selectedRole,
+      });
+      toast.success(
+        t("toast.userAdded", {
+          name,
+          defaultValue: `${name} added to workspace`,
+        })
+      );
+    } catch (error) {
+      logger.error("Add from org error:", error);
+      const errorMessage = extractErrorMessage(error);
+      toast.error(errorMessage);
+    }
+  };
+
   const handleRemoveUser = async (userId: string, userName: string) => {
     if (!workspace?.id) {
       toast.error(t("toast.noWorkspaceFound"));
@@ -166,6 +218,20 @@ const TeamSection = () => {
 
   return (
     <div className="space-y-6">
+      {/* Add from organization button */}
+      {isAdmin && availableOrgMembers.length > 0 && (
+        <div className="flex justify-end">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setAddFromOrgOpen(true)}
+          >
+            <UserPlus className="h-4 w-4 mr-2" />
+            Add from organization
+          </Button>
+        </div>
+      )}
+
       <EnhancedTeamTab
         isAdmin={isAdmin}
         workspaceUsers={workspaceUsers}
@@ -190,6 +256,113 @@ const TeamSection = () => {
         inviteLinks={inviteLinks}
         onClose={() => setInviteLinks([])}
       />
+
+      {/* Add from Organization Dialog */}
+      <Dialog
+        open={addFromOrgOpen}
+        onOpenChange={(open) => {
+          setAddFromOrgOpen(open);
+          if (!open) setSelectedRole("MEMBER");
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add from Organization</DialogTitle>
+            <DialogDescription>
+              Add existing organization members to this workspace.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3 py-4">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-sm font-medium">Role:</span>
+              <Select
+                value={selectedRole}
+                onValueChange={(v) =>
+                  setSelectedRole(v as "ADMIN" | "MEMBER" | "READONLY")
+                }
+              >
+                <SelectTrigger className="w-32 h-8 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ADMIN">Admin</SelectItem>
+                  <SelectItem value="MEMBER">Member</SelectItem>
+                  <SelectItem value="READONLY">Read-only</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="max-h-64 overflow-y-auto space-y-2">
+              {orgMembersLoading ? (
+                <div className="space-y-2">
+                  <Skeleton className="h-10 w-full" />
+                  <Skeleton className="h-10 w-full" />
+                </div>
+              ) : availableOrgMembers.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  All organization members already have access.
+                </p>
+              ) : (
+                availableOrgMembers.map((member) => {
+                  const displayName =
+                    `${member.firstName ?? ""} ${member.lastName ?? ""}`.trim() ||
+                    member.email;
+                  return (
+                    <div
+                      key={member.userId}
+                      className="flex items-center justify-between p-2 rounded-md border"
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <div className="flex items-center justify-center h-7 w-7 rounded-full bg-muted shrink-0">
+                          {member.image ? (
+                            <img
+                              src={member.image}
+                              alt=""
+                              className="h-7 w-7 rounded-full object-cover"
+                            />
+                          ) : (
+                            <User className="h-3.5 w-3.5 text-muted-foreground" />
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <div className="text-sm font-medium truncate">
+                            {displayName}
+                          </div>
+                          <div className="text-xs text-muted-foreground truncate">
+                            {member.email}
+                          </div>
+                        </div>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="shrink-0"
+                        onClick={() =>
+                          handleAddFromOrg(member.userId, displayName)
+                        }
+                        disabled={assignToWorkspaceMutation.isPending}
+                      >
+                        {assignToWorkspaceMutation.isPending ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          "Add"
+                        )}
+                      </Button>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAddFromOrgOpen(false)}>
+              Done
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

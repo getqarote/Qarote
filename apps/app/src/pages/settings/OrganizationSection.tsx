@@ -9,6 +9,7 @@ import {
   Loader2,
   Mail,
   Pencil,
+  Settings,
   Shield,
   Trash2,
   User,
@@ -61,12 +62,16 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 import {
   useAcceptOrgInvitation,
+  useAssignToWorkspace,
   useCurrentOrganization,
   useDeclineOrgInvitation,
+  useGetMemberWorkspaces,
   useInviteOrgMember,
   useMyOrgInvitations,
   useOrgMembers,
+  useOrgWorkspaces,
   usePendingOrgInvitations,
+  useRemoveFromWorkspace,
   useRemoveOrgMember,
   useUpdateOrganization,
   useUpdateOrgMemberRole,
@@ -76,6 +81,18 @@ const ROLE_LABELS: Record<string, string> = {
   OWNER: "Owner",
   ADMIN: "Admin",
   MEMBER: "Member",
+};
+
+const WS_ROLE_OPTIONS: Array<"ADMIN" | "MEMBER" | "READONLY"> = [
+  "ADMIN",
+  "MEMBER",
+  "READONLY",
+];
+
+const WS_ROLE_LABELS: Record<string, string> = {
+  ADMIN: "Admin",
+  MEMBER: "Member",
+  READONLY: "Read-only",
 };
 
 const getRoleIcon = (role: string) => {
@@ -89,11 +106,211 @@ const getRoleIcon = (role: string) => {
   }
 };
 
+// ---------------------------------------------------------------------------
+// Workspace picker row used in both invite and manage dialogs
+// ---------------------------------------------------------------------------
+const WorkspaceRow = ({
+  workspace,
+  selected,
+  role,
+  onToggle,
+  onRoleChange,
+  disabled,
+}: {
+  workspace: { id: string; name: string };
+  selected: boolean;
+  role: "ADMIN" | "MEMBER" | "READONLY";
+  onToggle: () => void;
+  onRoleChange: (role: "ADMIN" | "MEMBER" | "READONLY") => void;
+  disabled?: boolean;
+}) => (
+  <div className="flex items-center justify-between gap-2 rounded-md border p-2">
+    <Button
+      type="button"
+      size="sm"
+      variant={selected ? "default" : "outline"}
+      className="shrink-0"
+      onClick={onToggle}
+      disabled={disabled}
+    >
+      {selected ? (
+        <Check className="h-4 w-4 mr-1" />
+      ) : (
+        <X className="h-4 w-4 mr-1 opacity-40" />
+      )}
+      {workspace.name}
+    </Button>
+    {selected && (
+      <Select
+        value={role}
+        onValueChange={(v) =>
+          onRoleChange(v as "ADMIN" | "MEMBER" | "READONLY")
+        }
+        disabled={disabled}
+      >
+        <SelectTrigger className="w-28 h-8 text-xs">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {WS_ROLE_OPTIONS.map((r) => (
+            <SelectItem key={r} value={r}>
+              {WS_ROLE_LABELS[r]}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    )}
+  </div>
+);
+
+// ---------------------------------------------------------------------------
+// Member workspace management dialog (Feature 2 / Step 8)
+// ---------------------------------------------------------------------------
+const MemberWorkspacesDialog = ({
+  open,
+  onOpenChange,
+  member,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  member: { id: string; userId: string; firstName: string; lastName: string };
+}) => {
+  const { data: wsData, isLoading: wsLoading } = useOrgWorkspaces();
+  const { data: memberWsData, isLoading: memberWsLoading } =
+    useGetMemberWorkspaces(open ? member.userId : undefined);
+  const assignMutation = useAssignToWorkspace();
+  const removeMutation = useRemoveFromWorkspace();
+
+  const workspaces = wsData?.workspaces ?? [];
+  const memberships = memberWsData?.memberships ?? [];
+
+  // Build a quick lookup: workspaceId -> current role
+  const currentMap = new Map(
+    memberships.map((m) => [
+      m.workspaceId,
+      m.role as "ADMIN" | "MEMBER" | "READONLY",
+    ])
+  );
+
+  const handleToggle = async (wsId: string) => {
+    if (currentMap.has(wsId)) {
+      try {
+        await removeMutation.mutateAsync({
+          userId: member.userId,
+          workspaceId: wsId,
+        });
+        toast.success("Removed from workspace");
+      } catch (error) {
+        logger.error("Remove from workspace error:", error);
+        toast.error(
+          error instanceof Error
+            ? error.message
+            : "Failed to remove from workspace"
+        );
+      }
+    } else {
+      try {
+        await assignMutation.mutateAsync({
+          userId: member.userId,
+          workspaceId: wsId,
+          role: "MEMBER",
+        });
+        toast.success("Assigned to workspace");
+      } catch (error) {
+        logger.error("Assign to workspace error:", error);
+        toast.error(
+          error instanceof Error
+            ? error.message
+            : "Failed to assign to workspace"
+        );
+      }
+    }
+  };
+
+  const handleRoleChange = async (
+    wsId: string,
+    newRole: "ADMIN" | "MEMBER" | "READONLY"
+  ) => {
+    // Remove then re-assign with new role
+    try {
+      await removeMutation.mutateAsync({
+        userId: member.userId,
+        workspaceId: wsId,
+      });
+      await assignMutation.mutateAsync({
+        userId: member.userId,
+        workspaceId: wsId,
+        role: newRole,
+      });
+      toast.success("Workspace role updated");
+    } catch (error) {
+      logger.error("Role change error:", error);
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to update workspace role"
+      );
+    }
+  };
+
+  const loading = wsLoading || memberWsLoading;
+  const mutating = assignMutation.isPending || removeMutation.isPending;
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Manage Workspaces</DialogTitle>
+          <DialogDescription>
+            Configure workspace access for {member.firstName} {member.lastName}.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-2 py-4 max-h-72 overflow-y-auto">
+          {loading ? (
+            <div className="space-y-2">
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+          ) : workspaces.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              No workspaces found in the organization.
+            </p>
+          ) : (
+            workspaces.map((ws) => (
+              <WorkspaceRow
+                key={ws.id}
+                workspace={ws}
+                selected={currentMap.has(ws.id)}
+                role={currentMap.get(ws.id) ?? "MEMBER"}
+                onToggle={() => handleToggle(ws.id)}
+                onRoleChange={(r) => handleRoleChange(ws.id, r)}
+                disabled={mutating}
+              />
+            ))
+          )}
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Done
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+// ---------------------------------------------------------------------------
+// Main component
+// ---------------------------------------------------------------------------
 const OrganizationSection = () => {
   const { data: orgData, isLoading: orgLoading } = useCurrentOrganization();
   const { data: membersData, isLoading: membersLoading } = useOrgMembers();
   const { data: pendingInvData } = usePendingOrgInvitations();
   const { data: myInvData } = useMyOrgInvitations();
+  const { data: wsData, isLoading: wsLoading } = useOrgWorkspaces();
   const updateOrgMutation = useUpdateOrganization();
   const inviteMemberMutation = useInviteOrgMember();
   const updateRoleMutation = useUpdateOrgMemberRole();
@@ -110,6 +327,10 @@ const OrganizationSection = () => {
   const [inviteOpen, setInviteOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState<"ADMIN" | "MEMBER">("MEMBER");
+  const [inviteAllWorkspaces, setInviteAllWorkspaces] = useState(true);
+  const [wsAssignments, setWsAssignments] = useState<
+    Map<string, "ADMIN" | "MEMBER" | "READONLY">
+  >(new Map());
 
   const [removeDialogOpen, setRemoveDialogOpen] = useState(false);
   const [memberToRemove, setMemberToRemove] = useState<{
@@ -120,12 +341,21 @@ const OrganizationSection = () => {
   const [lastEmailSent, setLastEmailSent] = useState(true);
   const [copiedUrl, setCopiedUrl] = useState(false);
 
+  // Member workspace management dialog state
+  const [manageWsMember, setManageWsMember] = useState<{
+    id: string;
+    userId: string;
+    firstName: string;
+    lastName: string;
+  } | null>(null);
+
   const org = orgData?.organization;
   const callerRole = orgData?.role;
   const isOrgAdmin = callerRole === "OWNER" || callerRole === "ADMIN";
   const members = membersData?.members ?? [];
   const pendingInvitations = pendingInvData?.invitations ?? [];
   const myInvitations = myInvData?.invitations ?? [];
+  const orgWorkspaces = wsData?.workspaces ?? [];
 
   // Initialize form when org data loads
   const [prevOrgId, setPrevOrgId] = useState<string | null>(null);
@@ -157,9 +387,17 @@ const OrganizationSection = () => {
       const result = await inviteMemberMutation.mutateAsync({
         email: inviteEmail,
         role: inviteRole,
+        workspaceAssignments: inviteAllWorkspaces
+          ? []
+          : Array.from(wsAssignments.entries()).map(([workspaceId, role]) => ({
+              workspaceId,
+              role,
+            })),
       });
       setInviteEmail("");
       setInviteRole("MEMBER");
+      setInviteAllWorkspaces(true);
+      setWsAssignments(new Map());
 
       if (result.emailSent) {
         setInviteOpen(false);
@@ -233,6 +471,30 @@ const OrganizationSection = () => {
         error instanceof Error ? error.message : "Failed to decline invitation";
       toast.error(msg);
     }
+  };
+
+  // Workspace assignment helpers for invite dialog
+  const toggleWsAssignment = (wsId: string) => {
+    setWsAssignments((prev) => {
+      const next = new Map(prev);
+      if (next.has(wsId)) {
+        next.delete(wsId);
+      } else {
+        next.set(wsId, "MEMBER");
+      }
+      return next;
+    });
+  };
+
+  const updateWsAssignmentRole = (
+    wsId: string,
+    role: "ADMIN" | "MEMBER" | "READONLY"
+  ) => {
+    setWsAssignments((prev) => {
+      const next = new Map(prev);
+      next.set(wsId, role);
+      return next;
+    });
   };
 
   if (orgLoading) {
@@ -537,21 +799,39 @@ const OrganizationSection = () => {
                     )}
 
                     {isOrgAdmin && member.role !== "OWNER" && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                        onClick={() => {
-                          setMemberToRemove({
-                            id: member.id,
-                            email: member.email,
-                          });
-                          setRemoveDialogOpen(true);
-                        }}
-                        disabled={removeMemberMutation.isPending}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      <>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          title="Manage workspaces"
+                          onClick={() =>
+                            setManageWsMember({
+                              id: member.id,
+                              userId: member.userId,
+                              firstName: member.firstName,
+                              lastName: member.lastName,
+                            })
+                          }
+                        >
+                          <Settings className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                          onClick={() => {
+                            setMemberToRemove({
+                              id: member.id,
+                              email: member.email,
+                            });
+                            setRemoveDialogOpen(true);
+                          }}
+                          disabled={removeMemberMutation.isPending}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </>
                     )}
                   </div>
                 </div>
@@ -679,6 +959,10 @@ const OrganizationSection = () => {
             setLastInviteUrl(null);
             setLastEmailSent(true);
             setCopiedUrl(false);
+            setInviteEmail("");
+            setInviteRole("MEMBER");
+            setInviteAllWorkspaces(true);
+            setWsAssignments(new Map());
           }
         }}
       >
@@ -760,7 +1044,7 @@ const OrganizationSection = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="invite-role">Role</Label>
+                  <Label htmlFor="invite-role">Organization role</Label>
                   <Select
                     value={inviteRole}
                     onValueChange={(v) =>
@@ -775,6 +1059,58 @@ const OrganizationSection = () => {
                       <SelectItem value="MEMBER">Member</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+
+                {/* Workspace access section */}
+                <div className="space-y-2">
+                  <Label>Workspace access</Label>
+                  <Button
+                    type="button"
+                    variant={inviteAllWorkspaces ? "default" : "outline"}
+                    size="sm"
+                    className="w-full justify-start"
+                    onClick={() => {
+                      setInviteAllWorkspaces((prev) => !prev);
+                      if (!inviteAllWorkspaces) {
+                        setWsAssignments(new Map());
+                      }
+                    }}
+                  >
+                    {inviteAllWorkspaces ? (
+                      <Check className="h-4 w-4 mr-2" />
+                    ) : (
+                      <X className="h-4 w-4 mr-2 opacity-40" />
+                    )}
+                    Grant access to all workspaces
+                  </Button>
+
+                  {!inviteAllWorkspaces && (
+                    <div className="space-y-2 max-h-48 overflow-y-auto pt-2">
+                      {wsLoading ? (
+                        <div className="space-y-2">
+                          <Skeleton className="h-10 w-full" />
+                          <Skeleton className="h-10 w-full" />
+                        </div>
+                      ) : orgWorkspaces.length === 0 ? (
+                        <p className="text-sm text-muted-foreground">
+                          No workspaces found.
+                        </p>
+                      ) : (
+                        orgWorkspaces.map((ws) => (
+                          <WorkspaceRow
+                            key={ws.id}
+                            workspace={ws}
+                            selected={wsAssignments.has(ws.id)}
+                            role={wsAssignments.get(ws.id) ?? "MEMBER"}
+                            onToggle={() => toggleWsAssignment(ws.id)}
+                            onRoleChange={(r) =>
+                              updateWsAssignmentRole(ws.id, r)
+                            }
+                          />
+                        ))
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
               <DialogFooter>
@@ -800,6 +1136,17 @@ const OrganizationSection = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Member Workspace Management Dialog */}
+      {manageWsMember && (
+        <MemberWorkspacesDialog
+          open={!!manageWsMember}
+          onOpenChange={(open) => {
+            if (!open) setManageWsMember(null);
+          }}
+          member={manageWsMember}
+        />
+      )}
 
       {/* Remove Member Confirm Dialog */}
       <AlertDialog open={removeDialogOpen} onOpenChange={setRemoveDialogOpen}>

@@ -148,3 +148,67 @@ export const useDeclineOrgInvitation = () => {
     },
   });
 };
+
+// List all workspaces in the organization (for invite dialog + member management)
+export const useOrgWorkspaces = () => {
+  const { isAuthenticated } = useAuth();
+
+  return trpc.organization.members.listOrgWorkspaces.useQuery(undefined, {
+    enabled: isAuthenticated,
+    staleTime: 0, // Always fresh on dialog open
+    gcTime: 60000,
+    retry: (failureCount, error) => {
+      if (error.data?.code === "FORBIDDEN") return false;
+      return failureCount < 3;
+    },
+    throwOnError: false,
+  });
+};
+
+// Get a specific member's workspace access within the org
+export const useGetMemberWorkspaces = (userId: string | undefined) => {
+  const { isAuthenticated } = useAuth();
+
+  return trpc.organization.members.getMemberWorkspaces.useQuery(
+    { userId: userId! },
+    {
+      enabled: isAuthenticated && !!userId,
+      staleTime: 0,
+      gcTime: 60000,
+    }
+  );
+};
+
+// Remove an org member from a specific workspace
+export const useRemoveFromWorkspace = () => {
+  const utils = trpc.useUtils();
+
+  return trpc.organization.members.removeFromWorkspace.useMutation({
+    onSuccess: () => {
+      utils.organization.members.list.invalidate();
+      utils.organization.members.getMemberWorkspaces.invalidate();
+      utils.workspace.management.getUserWorkspaces.invalidate();
+    },
+  });
+};
+
+// List org members who don't have access to a specific workspace
+export const useOrgMembersNotInWorkspace = (
+  workspaceId: string | undefined
+) => {
+  const { isAuthenticated } = useAuth();
+
+  return trpc.organization.members.listOrgMembersNotInWorkspace.useQuery(
+    { workspaceId: workspaceId! },
+    {
+      enabled: isAuthenticated && !!workspaceId,
+      staleTime: 0,
+      gcTime: 60000,
+      retry: (failureCount, error) => {
+        if (error.data?.code === "FORBIDDEN") return false;
+        return failureCount < 3;
+      },
+      throwOnError: false,
+    }
+  );
+};

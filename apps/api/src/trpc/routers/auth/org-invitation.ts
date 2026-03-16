@@ -1,12 +1,11 @@
 import { TRPCError } from "@trpc/server";
 
-import { ensureWorkspaceMember } from "@/core/workspace-access";
+import { applyWorkspaceAssignments } from "@/core/org-invitation-accept";
 
 import { InvitationTokenSchema } from "@/schemas/auth";
 
 import { rateLimitedProcedure, router } from "@/trpc/trpc";
 
-import { UserRole } from "@/generated/prisma/client";
 import { te } from "@/i18n";
 
 /**
@@ -38,10 +37,6 @@ export const orgInvitationRouter = router({
               select: {
                 id: true,
                 name: true,
-                workspaces: {
-                  select: { id: true },
-                  orderBy: { createdAt: "asc" },
-                },
               },
             },
           },
@@ -86,9 +81,6 @@ export const orgInvitationRouter = router({
           });
         }
 
-        const orgWorkspaces = invitation.organization.workspaces;
-        const firstWorkspace = orgWorkspaces[0];
-
         // Accept invitation and create membership in a transaction
         await ctx.prisma.$transaction(async (tx) => {
           // Mark invitation as accepted
@@ -106,21 +98,18 @@ export const orgInvitationRouter = router({
             },
           });
 
-          // Assign to ALL org workspaces
-          for (const workspace of orgWorkspaces) {
-            await ensureWorkspaceMember(
-              user.id,
-              workspace.id,
-              UserRole.MEMBER,
-              tx
-            );
-          }
+          const firstWorkspaceId = await applyWorkspaceAssignments(
+            tx,
+            user.id,
+            invitation.organizationId,
+            invitation.workspaceAssignments
+          );
 
           // Update user's active workspace if they don't have one
-          if (firstWorkspace && !user.workspaceId) {
+          if (firstWorkspaceId && !user.workspaceId) {
             await tx.user.update({
               where: { id: user.id },
-              data: { workspaceId: firstWorkspace.id },
+              data: { workspaceId: firstWorkspaceId },
             });
           }
         });

@@ -1,8 +1,8 @@
 import { TRPCError } from "@trpc/server";
 
 import { hashPassword } from "@/core/auth";
+import { applyWorkspaceAssignments } from "@/core/org-invitation-accept";
 import { formatInvitedBy } from "@/core/utils";
-import { ensureWorkspaceMember } from "@/core/workspace-access";
 
 import {
   AcceptInvitationWithRegistrationSchema,
@@ -11,7 +11,6 @@ import {
 
 import { rateLimitedPublicProcedure, router } from "@/trpc/trpc";
 
-import { UserRole } from "@/generated/prisma/client";
 import { te } from "@/i18n";
 
 /**
@@ -116,10 +115,6 @@ export const publicOrgInvitationRouter = router({
               select: {
                 id: true,
                 name: true,
-                workspaces: {
-                  select: { id: true },
-                  orderBy: { createdAt: "asc" },
-                },
               },
             },
             invitedBy: {
@@ -153,10 +148,6 @@ export const publicOrgInvitationRouter = router({
 
         const hashedPassword = await hashPassword(password);
 
-        // Determine the workspaces to assign the new user to
-        const orgWorkspaces = invitation.organization.workspaces;
-        const firstWorkspace = orgWorkspaces[0];
-
         const newUser = await ctx.prisma.$transaction(async (tx) => {
           const user = await tx.user.create({
             data: {
@@ -165,8 +156,7 @@ export const publicOrgInvitationRouter = router({
               firstName,
               lastName,
               name: `${firstName} ${lastName}`.trim(),
-              role: UserRole.MEMBER,
-              workspaceId: firstWorkspace?.id ?? null,
+              role: "MEMBER",
               isActive: true,
               emailVerified: true,
               emailVerifiedAt: new Date(),
@@ -193,14 +183,20 @@ export const publicOrgInvitationRouter = router({
             },
           });
 
-          // Assign to ALL org workspaces
-          for (const workspace of orgWorkspaces) {
-            await ensureWorkspaceMember(
-              user.id,
-              workspace.id,
-              UserRole.MEMBER,
-              tx
-            );
+          // Apply workspace assignments
+          const assignedWorkspaceId = await applyWorkspaceAssignments(
+            tx,
+            user.id,
+            invitation.organizationId,
+            invitation.workspaceAssignments
+          );
+
+          // Set active workspace
+          if (assignedWorkspaceId) {
+            await tx.user.update({
+              where: { id: user.id },
+              data: { workspaceId: assignedWorkspaceId },
+            });
           }
 
           // Mark invitation as accepted
@@ -209,7 +205,7 @@ export const publicOrgInvitationRouter = router({
             data: { acceptedAt: new Date() },
           });
 
-          return user;
+          return tx.user.findUniqueOrThrow({ where: { id: user.id } });
         });
 
         return {
