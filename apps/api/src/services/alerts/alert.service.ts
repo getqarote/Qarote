@@ -266,11 +266,6 @@ class AlertService {
   /**
    * Get resolved alerts for a server from the unified Alert table.
    * Reads Alert rows with status=RESOLVED ordered by resolvedAt desc.
-   *
-   * Note: vhost filtering is not applied to resolved alerts because the
-   * fingerprint (which encodes the vhost for queue alerts) is set to NULL
-   * on resolution to free the partial unique index slot. All resolved alerts
-   * for the server are returned regardless of vhost selection.
    */
   async getResolvedAlerts(
     serverId: string,
@@ -280,7 +275,6 @@ class AlertService {
       offset?: number;
       severity?: string;
       category?: string;
-      vhost?: string; // retained for API compat; not applied to resolved rows
     }
   ): Promise<{
     alerts: Array<{

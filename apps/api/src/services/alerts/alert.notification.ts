@@ -330,23 +330,26 @@ class AlertNotificationService {
           })
         : unresolvedAlerts;
 
-      for (const alert of alertsToResolve) {
-        if (!activeFingerprints.has(alert.fingerprint!)) {
-          const duration = now.getTime() - (alert.firstSeenAt ?? now).getTime();
-          await prisma.alert.updateMany({
-            where: { fingerprint: alert.fingerprint, status: "ACTIVE" },
-            data: {
-              status: "RESOLVED",
-              resolvedAt: now,
-              duration,
-              fingerprint: null, // Release partial unique index slot for re-firing
-            },
-          });
-          logger.debug(
-            `Resolved alert: ${alert.fingerprint} (${Math.round(duration / 1000 / 60)} min)`
-          );
-        }
-      }
+      await Promise.all(
+        alertsToResolve
+          .filter((alert) => !activeFingerprints.has(alert.fingerprint!))
+          .map(async (alert) => {
+            const duration =
+              now.getTime() - (alert.firstSeenAt ?? now).getTime();
+            await prisma.alert.updateMany({
+              where: { fingerprint: alert.fingerprint, status: "ACTIVE" },
+              data: {
+                status: "RESOLVED",
+                resolvedAt: now,
+                duration,
+                fingerprint: null, // Release partial unique index slot for re-firing
+              },
+            });
+            logger.debug(
+              `Resolved alert: ${alert.fingerprint} (${Math.round(duration / 1000 / 60)} min)`
+            );
+          })
+      );
 
       // Skip notifications if alerting feature is disabled (community mode)
       if (!alertingEnabled) {
@@ -381,24 +384,26 @@ class AlertNotificationService {
               serverId,
             });
 
-            for (const alert of alertsToNotify) {
-              const fingerprint = generateAlertFingerprint(
-                serverId,
-                alert.category,
-                alert.source.type,
-                alert.source.name,
-                alert.vhost
-              );
-              const alertId = fingerprintToAlertId.get(fingerprint);
-              if (alertId) {
-                // Stamp by ID — immune to the race where the alert resolves between
-                // email send and stamp (fingerprint+status would miss a resolved row).
-                await prisma.alert.update({
-                  where: { id: alertId },
-                  data: { emailSentAt: now },
-                });
-              }
-            }
+            await Promise.all(
+              alertsToNotify.map(async (alert) => {
+                const fingerprint = generateAlertFingerprint(
+                  serverId,
+                  alert.category,
+                  alert.source.type,
+                  alert.source.name,
+                  alert.vhost
+                );
+                const alertId = fingerprintToAlertId.get(fingerprint);
+                if (alertId) {
+                  // Stamp by ID — immune to the race where the alert resolves between
+                  // email send and stamp (fingerprint+status would miss a resolved row).
+                  await prisma.alert.update({
+                    where: { id: alertId },
+                    data: { emailSentAt: now },
+                  });
+                }
+              })
+            );
 
             logger.info(
               `Sent alert notification email for ${alertsToNotify.length} new/recurring alerts to ${workspace.contactEmail}`

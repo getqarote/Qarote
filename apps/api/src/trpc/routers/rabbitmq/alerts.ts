@@ -145,7 +145,7 @@ export const alertsRouter = router({
   getResolvedAlerts: workspaceProcedure
     .input(ServerWorkspaceInputSchema.merge(AlertsQueryWithOptionalVHostSchema))
     .query(async ({ input, ctx }) => {
-      const { serverId, workspaceId, vhost: vhostParam, ...query } = input;
+      const { serverId, workspaceId, ...query } = input;
 
       try {
         const server = await verifyServerAccess(serverId, workspaceId);
@@ -157,9 +157,6 @@ export const alertsRouter = router({
           });
         }
 
-        // Get vhost from validated query (required - filters queue-related alerts)
-        const vhost = vhostParam ? decodeURIComponent(vhostParam) : "/";
-
         const { alerts, total } = await alertService.getResolvedAlerts(
           serverId,
           workspaceId,
@@ -168,7 +165,6 @@ export const alertsRouter = router({
             offset: query.offset,
             severity: query.severity,
             category: query.category,
-            vhost, // Filter resolved alerts by vhost
           }
         );
 
