@@ -38,7 +38,7 @@ export async function applyWorkspaceAssignments(
     );
 
     for (const { workspaceId, role } of validAssignments) {
-      await ensureWorkspaceMember(userId, workspaceId, role as UserRole, tx);
+      await ensureWorkspaceMember(userId, workspaceId, role, tx);
     }
 
     return validAssignments[0]?.workspaceId ?? null;

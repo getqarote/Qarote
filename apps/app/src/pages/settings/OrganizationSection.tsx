@@ -75,6 +75,7 @@ import {
   useRemoveOrgMember,
   useUpdateOrganization,
   useUpdateOrgMemberRole,
+  useUpdateWorkspaceRole,
 } from "@/hooks/queries/useOrganization";
 
 const ROLE_LABELS: Record<string, string> = {
@@ -180,6 +181,7 @@ const MemberWorkspacesDialog = ({
     useGetMemberWorkspaces(open ? member.userId : undefined);
   const assignMutation = useAssignToWorkspace();
   const removeMutation = useRemoveFromWorkspace();
+  const updateRoleMutation = useUpdateWorkspaceRole();
 
   const workspaces = wsData?.workspaces ?? [];
   const memberships = memberWsData?.memberships ?? [];
@@ -231,13 +233,8 @@ const MemberWorkspacesDialog = ({
     wsId: string,
     newRole: "ADMIN" | "MEMBER" | "READONLY"
   ) => {
-    // Remove then re-assign with new role
     try {
-      await removeMutation.mutateAsync({
-        userId: member.userId,
-        workspaceId: wsId,
-      });
-      await assignMutation.mutateAsync({
+      await updateRoleMutation.mutateAsync({
         userId: member.userId,
         workspaceId: wsId,
         role: newRole,
@@ -254,7 +251,10 @@ const MemberWorkspacesDialog = ({
   };
 
   const loading = wsLoading || memberWsLoading;
-  const mutating = assignMutation.isPending || removeMutation.isPending;
+  const mutating =
+    assignMutation.isPending ||
+    removeMutation.isPending ||
+    updateRoleMutation.isPending;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

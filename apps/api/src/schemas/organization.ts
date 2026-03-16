@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { UserRole } from "@/generated/prisma/client";
+
 export const OrganizationIdParamSchema = z.object({
   organizationId: z.string(),
 });
@@ -16,7 +18,7 @@ export const UpdateOrganizationSchema = z.object({
 
 export const WorkspaceAssignmentSchema = z.object({
   workspaceId: z.string(),
-  role: z.enum(["ADMIN", "MEMBER", "READONLY"]),
+  role: z.nativeEnum(UserRole),
 });
 
 export type WorkspaceAssignment = z.infer<typeof WorkspaceAssignmentSchema>;
