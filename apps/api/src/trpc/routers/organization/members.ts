@@ -117,11 +117,16 @@ export const membersRouter = router({
   invite: rateLimitedProcedure
     .input(InviteOrgMemberSchema)
     .mutation(async ({ input, ctx }) => {
-      const { organizationId } = await requireOrgAdmin(
-        ctx.prisma,
-        ctx.user.id,
-        ctx.locale
-      );
+      const caller = await requireOrgAdmin(ctx.prisma, ctx.user.id, ctx.locale);
+      const { organizationId } = caller;
+
+      // Only OWNER can invite with OWNER role
+      if (input.role === OrgRole.OWNER && caller.role !== OrgRole.OWNER) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Only the organization owner can invite another owner",
+        });
+      }
 
       // Check if already a member (by email)
       const existingUser = await ctx.prisma.user.findUnique({
