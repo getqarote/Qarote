@@ -5,8 +5,6 @@
 
 export enum UserRole {
   ADMIN = "ADMIN",
-  MEMBER = "MEMBER",
-  READONLY = "READONLY",
 }
 
 export interface User {
