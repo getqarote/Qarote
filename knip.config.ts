@@ -50,9 +50,8 @@ const config: KnipConfig = {
     "packages/i18n/src/server.ts",
     // Ignore validation script (run manually)
     "scripts/validate-i18n-keys.mjs",
-    // Ignore organization schemas and hooks (public API, used by future features)
+    // Ignore organization schemas (public API surface, used by multiple routers)
     "apps/api/src/schemas/organization.ts",
-    "apps/app/src/hooks/queries/useOrganization.ts",
     // Ignore test files
     // Ignore config files
     "**/vite-env.d.ts",
