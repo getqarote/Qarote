@@ -349,7 +349,8 @@ class AlertNotificationService {
       const alertsToResolve = vhost
         ? unresolvedAlerts.filter((a) => {
             if (a.sourceType !== "queue") return true;
-            const suffix = `-${a.sourceName}`;
+            const suffix = `-${a.sourceName ?? ""}`;
+            if (suffix.length <= 1) return false;
             if (!a.fingerprint!.endsWith(suffix)) return false;
             const withoutSource = a.fingerprint!.slice(0, -suffix.length);
             return withoutSource.endsWith(`-queue-${vhost}`);

@@ -388,7 +388,7 @@ export const managementRouter = router({
         // 1. Detach users (User.workspace has onDelete: Cascade, so without this all user accounts would be deleted)
         // 2. Delete orphan-prone records that lack onDelete: Cascade on their workspace relation
         // 3. Delete the workspace (cascade deletes remaining related data)
-        await ctx.prisma.$transaction(async (tx) => {
+        const nextWorkspace = await ctx.prisma.$transaction(async (tx) => {
           await tx.user.updateMany({
             where: { workspaceId },
             data: { workspaceId: null },
@@ -402,24 +402,28 @@ export const managementRouter = router({
           await tx.workspace.delete({
             where: { id: workspaceId },
           });
-        });
 
-        // Auto-switch the requesting user to their next available workspace
-        // Check both ownership and membership (same logic as getUserWorkspaces)
-        const nextWorkspace = await ctx.prisma.workspace.findFirst({
-          where: {
-            OR: [
-              { ownerId: user.id },
-              { members: { some: { userId: user.id } } },
-            ],
-          },
-          orderBy: { createdAt: "desc" },
-          select: { id: true },
-        });
+          // Auto-switch the requesting user to their next available workspace.
+          // Runs inside the transaction so the update is rolled back if the
+          // delete fails, and the delete is rolled back if the update fails.
+          // Check both ownership and membership (same logic as getUserWorkspaces)
+          const next = await tx.workspace.findFirst({
+            where: {
+              OR: [
+                { ownerId: user.id },
+                { members: { some: { userId: user.id } } },
+              ],
+            },
+            orderBy: { createdAt: "desc" },
+            select: { id: true },
+          });
 
-        await ctx.prisma.user.update({
-          where: { id: user.id },
-          data: { workspaceId: nextWorkspace?.id ?? null },
+          await tx.user.update({
+            where: { id: user.id },
+            data: { workspaceId: next?.id ?? null },
+          });
+
+          return next;
         });
 
         ctx.logger.info(
