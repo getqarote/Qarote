@@ -251,33 +251,21 @@ describe("applyWorkspaceAssignments", () => {
     expect(result).toBe("ws-2");
   });
 
-  it("treats invalid JSON in rawAssignments as empty (falls back to all workspaces)", async () => {
+  it("throws on invalid rawAssignments instead of silently falling back", async () => {
     const mockTx = {
       workspace: {
         findMany: vi.fn().mockResolvedValue([{ id: "ws-1" }]),
       },
     };
 
-    const result = await applyWorkspaceAssignments(
-      mockTx as never,
-      "user-1",
-      "org-1",
-      "not-a-valid-array"
-    );
-
-    // Should fall back to all org workspaces
-    expect(mockTx.workspace.findMany).toHaveBeenCalledWith({
-      where: { organizationId: "org-1" },
-      select: { id: true },
-      orderBy: { createdAt: "asc" },
-    });
-    expect(mockEnsureWorkspaceMember).toHaveBeenCalledWith(
-      "user-1",
-      "ws-1",
-      "MEMBER",
-      mockTx
-    );
-    expect(result).toBe("ws-1");
+    await expect(
+      applyWorkspaceAssignments(
+        mockTx as never,
+        "user-1",
+        "org-1",
+        "not-a-valid-array"
+      )
+    ).rejects.toThrow("Invalid workspaceAssignments on invitation");
   });
 
   it("returns null when no workspaces exist", async () => {

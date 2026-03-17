@@ -182,6 +182,19 @@ const TeamSection = () => {
       toast.error(t("toast.noWorkspaceFound"));
       return;
     }
+
+    if (!canInviteMoreUsers()) {
+      toast.error(
+        t("toast.cannotInviteMoreUsers", {
+          plan: userPlan,
+          maxUsers: planFeatures.maxUsers,
+          currentUsers: currentUserCount,
+          pendingInvitations: pendingInvitationCount,
+        })
+      );
+      return;
+    }
+
     try {
       await assignToWorkspaceMutation.mutateAsync({
         userId,
