@@ -17,7 +17,6 @@ const config: KnipConfig = {
     },
     "packages/i18n": {
       project: ["src/**/*.ts"],
-      ignoreDependencies: ["i18next", "react-i18next"],
     },
   },
   ignore: [
@@ -39,19 +38,6 @@ const config: KnipConfig = {
     "apps/web/src/hooks/use-mobile.tsx",
     // Ignore email style exports (used in email templates but knip doesn't detect)
     "apps/api/src/services/email/shared/styles.ts",
-    // Ignore organization migration scripts (run manually, not imported at startup)
-    "apps/api/src/core/migrations/org-migration.ts",
-    "apps/api/src/core/migrations/org-verification.ts",
-    // Ignore cron jobs and workers (registered dynamically at runtime, not statically imported)
-    "apps/api/src/cron/*.cron.ts",
-    "apps/api/src/workers/*.ts",
-    // Ignore i18n integration files (used at runtime by consuming apps)
-    "packages/i18n/src/react.ts",
-    "packages/i18n/src/server.ts",
-    // Ignore validation script (run manually)
-    "scripts/validate-i18n-keys.mjs",
-    // Ignore organization schemas (public API surface, used by multiple routers)
-    "apps/api/src/schemas/organization.ts",
     // Ignore test files
     // Ignore config files
     "**/vite-env.d.ts",
