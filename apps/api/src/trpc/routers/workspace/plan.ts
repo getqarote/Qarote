@@ -91,14 +91,10 @@ export const planRouter = router({
       // Use workspace plan for all workspace features
       const planFeatures = getPlanFeatures(workspacePlan);
 
-      // Count workspaces via org membership
-      const membership = await ctx.prisma.organizationMember.findFirst({
-        where: { userId: user.id },
-        select: { organizationId: true },
-      });
-      const ownedWorkspaceCount = membership
+      // Count workspaces via the same org as the current workspace
+      const ownedWorkspaceCount = currentWorkspace
         ? await ctx.prisma.workspace.count({
-            where: { organizationId: membership.organizationId },
+            where: { organizationId: currentWorkspace.organizationId },
           })
         : await ctx.prisma.workspaceMember.count({
             where: { userId: user.id },

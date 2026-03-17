@@ -178,7 +178,10 @@ const TeamSection = () => {
   const availableOrgMembers = orgMembersNotInWs?.members ?? [];
 
   const handleAddFromOrg = async (userId: string, name: string) => {
-    if (!workspace?.id) return;
+    if (!workspace?.id) {
+      toast.error(t("toast.noWorkspaceFound"));
+      return;
+    }
     try {
       await assignToWorkspaceMutation.mutateAsync({
         userId,

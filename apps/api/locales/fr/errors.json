@@ -120,6 +120,7 @@
     "failedToCreateBillingPortal": "Échec de la création de la session du portail de facturation",
     "noStripeCustomerFound": "Aucun client Stripe trouvé",
     "failedToCreatePortalSession": "Échec de la création de la session du portail",
+    "noOrganization": "Aucune organisation trouvée pour votre espace de travail actif",
     "cannotCheckoutFreePlan": "Impossible de créer un paiement pour le plan GRATUIT",
     "failedToCreateCheckoutSession": "Échec de la création de la session de paiement",
     "noActiveSubscription": "Aucun abonnement actif trouvé",

@@ -458,9 +458,9 @@ const AcceptOrgInvitation = () => {
           <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
             <Building2 className="h-6 w-6 text-blue-600" />
           </div>
-          <CardTitle>Join Organization</CardTitle>
+          <CardTitle>{t("joinOrganization")}</CardTitle>
           <CardDescription>
-            Accept the invitation to join this organization
+            {t("acceptOrgInvitationDescription")}
           </CardDescription>
         </CardHeader>
 
@@ -481,10 +481,10 @@ const AcceptOrgInvitation = () => {
             {acceptAuthOrgInvitationMutation.isPending ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                Accepting...
+                {t("accepting")}
               </>
             ) : (
-              "Accept Invitation"
+              t("acceptInvitation")
             )}
           </Button>
         </CardContent>
@@ -499,7 +499,7 @@ const AcceptOrgInvitation = () => {
         <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
           <Mail className="h-6 w-6 text-blue-600" />
         </div>
-        <CardTitle>Join Organization</CardTitle>
+        <CardTitle>{t("joinOrganization")}</CardTitle>
         <CardDescription>{t("setUpAccount")}</CardDescription>
       </CardHeader>
 
