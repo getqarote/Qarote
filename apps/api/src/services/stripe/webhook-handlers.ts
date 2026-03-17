@@ -945,12 +945,21 @@ export async function handleTrialWillEnd(subscription: Subscription) {
           ? new Date(subscription.trial_end * 1000).toISOString()
           : new Date().toISOString(),
       });
+      logger.info(
+        { subscriptionId, organizationId: org.id },
+        "Trial ending email sent"
+      );
+    } else {
+      logger.debug(
+        {
+          subscriptionId,
+          organizationId: org.id,
+          hasWorkspace: !!user.workspace,
+          hasDbSubscription: !!dbSubscription,
+        },
+        "Trial ending email skipped — missing workspace or subscription"
+      );
     }
-
-    logger.info(
-      { subscriptionId, organizationId: org.id },
-      "Trial ending email sent"
-    );
   } catch (error) {
     logger.error({ error }, "Error handling trial will end");
     trackPaymentError(

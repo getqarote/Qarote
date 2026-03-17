@@ -136,22 +136,22 @@ export async function runOrgMigration(): Promise<MigrationStats> {
         });
         txMembers++;
 
-        // Link all workspaces owned by this user
+        // Link all workspaces owned by this user (single batch update)
         const workspaces = await tx.workspace.findMany({
           where: { ownerId: user.id },
           select: { id: true },
         });
+        const workspaceIds = workspaces.map((ws) => ws.id);
 
-        for (const ws of workspaces) {
-          await tx.workspace.update({
-            where: { id: ws.id },
+        if (workspaceIds.length > 0) {
+          const { count } = await tx.workspace.updateMany({
+            where: { id: { in: workspaceIds } },
             data: { organizationId: org.id },
           });
-          txWorkspaces++;
+          txWorkspaces += count;
         }
 
         // Create MEMBER memberships for workspace members (deduplicated)
-        const workspaceIds = workspaces.map((ws) => ws.id);
         const workspaceMembers = await tx.workspaceMember.findMany({
           where: {
             workspaceId: { in: workspaceIds },

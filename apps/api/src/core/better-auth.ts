@@ -232,8 +232,8 @@ export const auth = betterAuth({
           // Assign to the org's first (default) workspace
           const defaultWorkspace = orgConfig.organization?.workspaces?.[0];
           if (defaultWorkspace) {
-            await prisma.workspaceMember
-              .upsert({
+            try {
+              await prisma.workspaceMember.upsert({
                 where: {
                   userId_workspaceId: {
                     userId: user.id,
@@ -246,28 +246,28 @@ export const auth = betterAuth({
                   workspaceId: defaultWorkspace.id,
                   role: "MEMBER",
                 },
-              })
-              .catch((err) => {
-                logger.warn(
-                  { err, userId: user.id, workspaceId: defaultWorkspace.id },
-                  "Failed to upsert workspace member for SSO user"
-                );
               });
 
-            // Set primary workspace if not already set
-            const baUser = user as Record<string, unknown>;
-            if (!baUser.workspaceId) {
-              await prisma.user
-                .update({
-                  where: { id: user.id },
-                  data: { workspaceId: defaultWorkspace.id },
-                })
-                .catch((err) => {
-                  logger.warn(
-                    { err, userId: user.id },
-                    "Failed to set primary workspace for SSO user"
-                  );
-                });
+              // Set primary workspace only after membership is confirmed
+              const baUser = user as Record<string, unknown>;
+              if (!baUser.workspaceId) {
+                await prisma.user
+                  .update({
+                    where: { id: user.id },
+                    data: { workspaceId: defaultWorkspace.id },
+                  })
+                  .catch((err) => {
+                    logger.warn(
+                      { err, userId: user.id },
+                      "Failed to set primary workspace for SSO user"
+                    );
+                  });
+              }
+            } catch (err) {
+              logger.warn(
+                { err, userId: user.id, workspaceId: defaultWorkspace.id },
+                "Failed to upsert workspace member for SSO user"
+              );
             }
           }
         }

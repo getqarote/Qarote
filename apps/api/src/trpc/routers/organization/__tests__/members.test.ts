@@ -26,6 +26,7 @@ const mockOrgInvitationCount = vi.fn();
 const mockOrgInvitationDelete = vi.fn();
 const mockWorkspaceFindMany = vi.fn();
 const mockWorkspaceFindFirst = vi.fn();
+const mockWorkspaceFindUnique = vi.fn();
 const mockWorkspaceMemberFindMany = vi.fn();
 const mockWorkspaceMemberDeleteMany = vi.fn();
 const mockUserFindUnique = vi.fn();
@@ -105,6 +106,7 @@ function makeCtx(overrides: Record<string, unknown> = {}) {
       workspace: {
         findMany: mockWorkspaceFindMany,
         findFirst: mockWorkspaceFindFirst,
+        findUnique: mockWorkspaceFindUnique,
       },
       workspaceMember: {
         findMany: mockWorkspaceMemberFindMany,
@@ -139,7 +141,9 @@ function makeCtx(overrides: Record<string, unknown> = {}) {
 
 /** Set up requireOrgAdmin to succeed by default (OWNER). */
 function setupOrgAdmin(organizationId = "org-1", role = "OWNER") {
-  mockOrgMemberFindFirst.mockResolvedValue({ organizationId, role });
+  // requireOrgAdmin resolves org via workspace.findUnique, then checks membership via findUnique
+  mockWorkspaceFindUnique.mockResolvedValue({ organizationId });
+  mockOrgMemberFindUnique.mockResolvedValue({ organizationId, role });
 }
 
 // ─── Tests ────────────────────────────────────────────────────────────────────
@@ -511,6 +515,11 @@ describe("membersRouter", () => {
   describe("removeFromWorkspace", () => {
     it("removes workspace member and clears active workspace", async () => {
       setupOrgAdmin();
+      // Mock target user as org member (findFirst used to verify target)
+      mockOrgMemberFindFirst.mockResolvedValue({
+        userId: "user-2",
+        organizationId: "org-1",
+      });
       mockWorkspaceFindFirst.mockResolvedValue({
         id: "ws-1",
         organizationId: "org-1",
