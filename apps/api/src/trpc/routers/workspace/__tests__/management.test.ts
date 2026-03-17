@@ -195,21 +195,14 @@ describe("managementRouter.update", () => {
   it("rejects empty string contactEmail with BAD_REQUEST", async () => {
     const caller = managementRouter.createCaller(makeCtx() as never);
 
-    await expect(
-      caller.update({
-        workspaceId: "ws-1",
-        name: "My Workspace",
-        contactEmail: "",
-      })
-    ).rejects.toThrow(TRPCError);
+    const rejection = caller.update({
+      workspaceId: "ws-1",
+      name: "My Workspace",
+      contactEmail: "",
+    });
 
-    await expect(
-      caller.update({
-        workspaceId: "ws-1",
-        name: "My Workspace",
-        contactEmail: "",
-      })
-    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    await expect(rejection).rejects.toThrow(TRPCError);
+    await expect(rejection).rejects.toMatchObject({ code: "BAD_REQUEST" });
 
     // Ensure the DB update was never reached
     expect(mockWorkspaceUpdate).not.toHaveBeenCalled();
@@ -241,11 +234,10 @@ describe("managementRouter.update", () => {
       caller.update({ workspaceId: "ws-1", name: "My Workspace" })
     ).resolves.toBeDefined();
 
-    expect(mockWorkspaceUpdate).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: { id: "ws-1" },
-      })
-    );
+    const updateCall = mockWorkspaceUpdate.mock.calls[0][0];
+    expect(updateCall.where).toEqual({ id: "ws-1" });
+    expect(updateCall.data.name).toBe("My Workspace");
+    expect(updateCall.data).not.toHaveProperty("contactEmail");
   });
 
   it("updates workspace tags", async () => {

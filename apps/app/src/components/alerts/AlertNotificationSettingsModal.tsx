@@ -952,7 +952,7 @@ export function AlertNotificationSettingsModal({
 
             {"Notification" in window &&
               browserNotificationsEnabled &&
-              Notification.permission === "denied" && (
+              notificationPermission === "denied" && (
                 <Alert className="mt-4" variant="destructive">
                   <BellOff className="h-4 w-4" />
                   <AlertDescription>

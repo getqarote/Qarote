@@ -158,6 +158,7 @@ class AlertService {
         sourceName: true,
         lastSeenAt: true,
         firstSeenAt: true,
+        createdAt: true,
       },
     });
 
@@ -190,7 +191,7 @@ class AlertService {
       timestamp: (
         row.lastSeenAt ??
         row.firstSeenAt ??
-        new Date()
+        row.createdAt
       ).toISOString(),
       resolved: false,
       source: {
