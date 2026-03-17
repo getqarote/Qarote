@@ -15,22 +15,34 @@ BEGIN
     LEFT JOIN "User" u ON u.id = w."ownerId"
     WHERE w."organizationId" IS NULL
   LOOP
-    new_org_id := gen_random_uuid()::TEXT;
+    new_org_id := NULL;
 
-    INSERT INTO "Organization" (id, name, slug, "createdAt", "updatedAt")
-    VALUES (
-      new_org_id,
-      COALESCE(ws."firstName" || '''s Org', 'Default Org'),
-      'org-' || new_org_id,
-      NOW(),
-      NOW()
-    );
-
-    -- Make workspace owner an OWNER of the new org
+    -- Reuse existing org for the same owner (avoids fragmenting multi-workspace owners)
     IF ws."ownerId" IS NOT NULL THEN
-      INSERT INTO "OrganizationMember" (id, "userId", "organizationId", role, "createdAt", "updatedAt")
-      VALUES (gen_random_uuid()::TEXT, ws."ownerId", new_org_id, 'OWNER', NOW(), NOW())
-      ON CONFLICT ("userId", "organizationId") DO NOTHING;
+      SELECT om."organizationId" INTO new_org_id
+      FROM "OrganizationMember" om
+      WHERE om."userId" = ws."ownerId" AND om.role = 'OWNER'
+      LIMIT 1;
+    END IF;
+
+    -- Create a new org only when no existing org was found
+    IF new_org_id IS NULL THEN
+      new_org_id := gen_random_uuid()::TEXT;
+
+      INSERT INTO "Organization" (id, name, slug, "createdAt", "updatedAt")
+      VALUES (
+        new_org_id,
+        COALESCE(ws."firstName" || '''s Org', 'Default Org'),
+        'org-' || new_org_id,
+        NOW(),
+        NOW()
+      );
+
+      IF ws."ownerId" IS NOT NULL THEN
+        INSERT INTO "OrganizationMember" (id, "userId", "organizationId", role, "createdAt", "updatedAt")
+        VALUES (gen_random_uuid()::TEXT, ws."ownerId", new_org_id, 'OWNER', NOW(), NOW())
+        ON CONFLICT ("userId", "organizationId") DO NOTHING;
+      END IF;
     END IF;
 
     UPDATE "Workspace" SET "organizationId" = new_org_id WHERE id = ws.workspace_id;

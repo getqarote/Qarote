@@ -4,6 +4,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 // ─── Mocks ────────────────────────────────────────────────────────────────────
 
 const mockOrganizationMemberFindFirst = vi.fn();
+const mockOrganizationMemberFindUnique = vi.fn();
+const mockWorkspaceFindUnique = vi.fn();
 const mockOrgSsoConfigFindFirst = vi.fn();
 const mockSsoProviderFindUnique = vi.fn();
 const mockSsoProviderUpsert = vi.fn();
@@ -14,8 +16,12 @@ const mockTransaction = vi.fn();
 
 vi.mock("@/core/prisma", () => ({
   prisma: {
+    workspace: {
+      findUnique: (...a: unknown[]) => mockWorkspaceFindUnique(...a),
+    },
     organizationMember: {
       findFirst: (...a: unknown[]) => mockOrganizationMemberFindFirst(...a),
+      findUnique: (...a: unknown[]) => mockOrganizationMemberFindUnique(...a),
     },
     ssoProvider: {
       findUnique: (...a: unknown[]) => mockSsoProviderFindUnique(...a),
@@ -98,8 +104,12 @@ const REDACTED = "••••••••";
 function makeCtx(overrides: Record<string, unknown> = {}) {
   return {
     prisma: {
+      workspace: {
+        findUnique: mockWorkspaceFindUnique,
+      },
       organizationMember: {
         findFirst: mockOrganizationMemberFindFirst,
+        findUnique: mockOrganizationMemberFindUnique,
       },
       ssoProvider: {
         findUnique: mockSsoProviderFindUnique,
@@ -235,8 +245,11 @@ describe("ssoRouter", () => {
 
     it("cloud: looks up by org membership", async () => {
       mockIsCloudMode = true;
-      mockOrganizationMemberFindFirst.mockResolvedValue({
+      // resolveOrgAdmin now uses workspace.findUnique + organizationMember.findUnique
+      mockWorkspaceFindUnique.mockResolvedValue({ organizationId: "org-1" });
+      mockOrganizationMemberFindUnique.mockResolvedValue({
         organizationId: "org-1",
+        role: "OWNER",
       });
       mockOrgSsoConfigFindFirst.mockResolvedValue({
         ...mockOrgConfig,
@@ -321,8 +334,11 @@ describe("ssoRouter", () => {
     it("cloud: rejects non-enterprise plan", async () => {
       mockIsCloudMode = true;
       const { UserPlan } = await import("@/generated/prisma/client");
-      mockOrganizationMemberFindFirst.mockResolvedValue({
+      // resolveOrgAdmin uses workspace + org member findUnique
+      mockWorkspaceFindUnique.mockResolvedValue({ organizationId: "org-1" });
+      mockOrganizationMemberFindUnique.mockResolvedValue({
         organizationId: "org-1",
+        role: "OWNER",
       });
       mockGetOrgPlan.mockResolvedValue(UserPlan.DEVELOPER);
 
