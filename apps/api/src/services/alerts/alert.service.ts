@@ -22,6 +22,8 @@ import { AlertSeverity as PrismaAlertSeverity } from "@/generated/prisma/client"
 /** Maps Prisma AlertSeverity enum → internal lowercase severity for the frontend. */
 const PRISMA_TO_INTERNAL_SEVERITY: Record<string, AlertSeverity> = {
   CRITICAL: AlertSeverity.CRITICAL,
+  // HIGH is never written by the severity mapper (warning → MEDIUM) but is
+  // kept as a safe fallback for rows written via direct SQL or future paths.
   HIGH: AlertSeverity.WARNING,
   MEDIUM: AlertSeverity.WARNING,
   INFO: AlertSeverity.INFO,
@@ -31,6 +33,8 @@ const PRISMA_TO_INTERNAL_SEVERITY: Record<string, AlertSeverity> = {
 /** Maps Prisma AlertSeverity enum → legacy lowercase string (resolved-alert responses). */
 const PRISMA_TO_LEGACY_SEVERITY: Record<string, string> = {
   CRITICAL: "critical",
+  // HIGH is never written by the severity mapper (warning → MEDIUM) but is
+  // kept as a safe fallback for rows written via direct SQL or future paths.
   HIGH: "warning",
   MEDIUM: "warning",
   INFO: "info",
@@ -173,6 +177,7 @@ class AlertService {
           if (row.sourceType !== "queue") return true;
           if (!row.fingerprint) return false;
           const suffix = `-${row.sourceName ?? ""}`;
+          if (suffix.length <= 1) return false;
           if (!row.fingerprint.endsWith(suffix)) return false;
           const withoutSource = row.fingerprint.slice(0, -suffix.length);
           return withoutSource.endsWith(`-queue-${vhost}`);

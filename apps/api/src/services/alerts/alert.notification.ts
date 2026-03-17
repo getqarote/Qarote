@@ -326,9 +326,10 @@ class AlertNotificationService {
       }
 
       // Auto-resolve alerts that are no longer active.
-      // Fetch all active Alert rows for this server; vhost scoping applied in-memory
-      // to avoid false positives from a substring contains match
-      // (e.g. vhost "foo" incorrectly matching fingerprints for vhost "foo-bar").
+      // Second query, intentionally after the write loop: must reflect alerts just
+      // created above so newly-created rows are not immediately auto-resolved.
+      // Vhost scoping is applied in-memory to avoid false positives from a
+      // substring contains match (e.g. vhost "foo" matching "foo-bar").
       const unresolvedAlerts = await prisma.alert.findMany({
         where: {
           workspaceId,

@@ -28,7 +28,10 @@ async function startWorker() {
 }
 
 // Handle graceful shutdown
+let shuttingDown = false;
 async function shutdown() {
+  if (shuttingDown) return;
+  shuttingDown = true;
   logger.info("Shutting down Alert Monitor worker...");
   try {
     rabbitMQAlertsCronService.stop();
