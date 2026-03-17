@@ -36,7 +36,7 @@ model Alert {
   duration       Int?
   alertRule      AlertRule?      @relation(fields: [alertRuleId], references: [id])
   user           User?           @relation(fields: [createdById], references: [id])
-  server         RabbitMQServer? @relation(fields: [serverId], references: [id], onDelete: SetNull)
+  server         RabbitMQServer? @relation(fields: [serverId], references: [id], onDelete: Cascade)
   workspace      Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@index([workspaceId, status])
