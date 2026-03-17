@@ -6,6 +6,7 @@ import { createRabbitMQClient } from "@/trpc/routers/rabbitmq/shared";
 import { analyzeNodeHealth, analyzeQueueHealth } from "./alert.analyzer";
 import { alertHealthService } from "./alert.health";
 import {
+  AlertCategory,
   AlertSeverity,
   AlertSummary,
   AlertThresholds,
@@ -15,6 +16,26 @@ import {
 } from "./alert.interfaces";
 import { alertNotificationService } from "./alert.notification";
 import { alertThresholdsService } from "./alert.thresholds";
+
+import { AlertSeverity as PrismaAlertSeverity } from "@/generated/prisma/client";
+
+/** Maps Prisma AlertSeverity enum → internal lowercase severity for the frontend. */
+const PRISMA_TO_INTERNAL_SEVERITY: Record<string, AlertSeverity> = {
+  CRITICAL: AlertSeverity.CRITICAL,
+  HIGH: AlertSeverity.WARNING,
+  MEDIUM: AlertSeverity.WARNING,
+  INFO: AlertSeverity.INFO,
+  LOW: AlertSeverity.INFO,
+};
+
+/** Maps Prisma AlertSeverity enum → legacy lowercase string (resolved-alert responses). */
+const PRISMA_TO_LEGACY_SEVERITY: Record<string, string> = {
+  CRITICAL: "critical",
+  HIGH: "warning",
+  MEDIUM: "warning",
+  INFO: "info",
+  LOW: "info",
+};
 
 /**
  * Alert Service class
@@ -105,6 +126,92 @@ class AlertService {
   }
 
   /**
+   * Read active alerts for a server directly from the unified Alert table.
+   * Used by the watchAlerts subscription — reads DB instead of polling RabbitMQ
+   * per connected client, eliminating the N+1 polling problem.
+   *
+   * Returns the same { alerts, summary } shape as getServerAlerts so the
+   * existing processAlerts helper and tRPC response shape are unchanged.
+   *
+   * @param vhost - When provided, filters queue alerts to that vhost only.
+   *                Node and cluster alerts are always included.
+   */
+  async getActiveAlertsFromDb(
+    serverId: string,
+    workspaceId: string,
+    vhost?: string
+  ): Promise<{ alerts: RabbitMQAlert[]; summary: AlertSummary }> {
+    const rows = await prisma.alert.findMany({
+      where: { serverId, workspaceId, status: "ACTIVE" },
+      orderBy: { lastSeenAt: "desc" },
+      select: {
+        id: true,
+        fingerprint: true, // needed for exact vhost boundary check below
+        serverId: true,
+        serverName: true,
+        severity: true,
+        category: true,
+        title: true,
+        description: true,
+        details: true,
+        sourceType: true,
+        sourceName: true,
+        lastSeenAt: true,
+        firstSeenAt: true,
+      },
+    });
+
+    // Apply exact vhost boundary check in-memory. The fingerprint format for
+    // queue alerts is "{serverId}-{category}-queue-{vhost}-{sourceName}", so
+    // we must verify the vhost appears as a complete path segment — not as a
+    // prefix of a longer vhost name. A DB `contains` query for "-queue-prod-"
+    // would incorrectly match fingerprints for vhost "prod-v2" because
+    // "-queue-prod-v2-" starts with "-queue-prod-".
+    const filteredRows = vhost
+      ? rows.filter((row) => {
+          if (row.sourceType !== "queue") return true;
+          if (!row.fingerprint) return false;
+          const suffix = `-${row.sourceName ?? ""}`;
+          if (!row.fingerprint.endsWith(suffix)) return false;
+          const withoutSource = row.fingerprint.slice(0, -suffix.length);
+          return withoutSource.endsWith(`-queue-${vhost}`);
+        })
+      : rows;
+
+    const alerts: RabbitMQAlert[] = filteredRows.map((row) => ({
+      id: row.id,
+      serverId: row.serverId ?? "",
+      serverName: row.serverName ?? "",
+      severity: PRISMA_TO_INTERNAL_SEVERITY[row.severity] ?? AlertSeverity.INFO,
+      category: (row.category ?? "node") as AlertCategory,
+      title: row.title,
+      description: row.description,
+      details: (row.details ?? {}) as RabbitMQAlert["details"],
+      timestamp: (
+        row.lastSeenAt ??
+        row.firstSeenAt ??
+        new Date()
+      ).toISOString(),
+      resolved: false,
+      source: {
+        type: (row.sourceType ?? "node") as "node" | "queue" | "cluster",
+        name: row.sourceName ?? "",
+      },
+    }));
+
+    const summary: AlertSummary = {
+      total: alerts.length,
+      critical: alerts.filter((a) => a.severity === AlertSeverity.CRITICAL)
+        .length,
+      warning: alerts.filter((a) => a.severity === AlertSeverity.WARNING)
+        .length,
+      info: alerts.filter((a) => a.severity === AlertSeverity.INFO).length,
+    };
+
+    return { alerts, summary };
+  }
+
+  /**
    * Get cluster health summary
    */
   async getClusterHealthSummary(
@@ -159,8 +266,8 @@ class AlertService {
   }
 
   /**
-   * Get resolved alerts for a server
-   * @param vhost - Optional vhost to filter queue-related alerts. Node/cluster alerts are not filtered by vhost.
+   * Get resolved alerts for a server from the unified Alert table.
+   * Reads Alert rows with status=RESOLVED ordered by resolvedAt desc.
    */
   async getResolvedAlerts(
     serverId: string,
@@ -170,7 +277,6 @@ class AlertService {
       offset?: number;
       severity?: string;
       category?: string;
-      vhost?: string;
     }
   ): Promise<{
     alerts: Array<{
@@ -189,62 +295,45 @@ class AlertService {
     }>;
     total: number;
   }> {
-    const where: {
+    type WhereClause = {
       serverId: string;
       workspaceId: string;
-      severity?: string;
+      status: "RESOLVED";
+      resolvedAt: { not: null };
+      severity?: PrismaAlertSeverity | { in: PrismaAlertSeverity[] };
       category?: string;
-      fingerprint?: { notIn: string[] };
-      OR?: Array<{
-        sourceType: string;
-        fingerprint?: { contains: string };
-      }>;
-    } = {
+    };
+
+    const where: WhereClause = {
       serverId,
       workspaceId,
+      status: "RESOLVED",
+      resolvedAt: { not: null },
     };
 
     if (options?.severity) {
-      where.severity = options.severity;
+      // Map incoming lowercase severity ("critical"/"warning"/"info") to Prisma enum.
+      // "info" maps to both INFO and LOW since PRISMA_TO_LEGACY_SEVERITY maps both to "info".
+      if (options.severity === "info") {
+        where.severity = {
+          in: [PrismaAlertSeverity.INFO, PrismaAlertSeverity.LOW],
+        };
+      } else {
+        const legacyToPrisma: Record<string, PrismaAlertSeverity> = {
+          critical: PrismaAlertSeverity.CRITICAL,
+          warning: PrismaAlertSeverity.MEDIUM,
+        };
+        const mapped = legacyToPrisma[options.severity];
+        if (mapped) where.severity = mapped;
+      }
     }
 
     if (options?.category) {
       where.category = options.category;
     }
 
-    // Filter by vhost: queue alerts include vhost in fingerprint, node/cluster alerts don't
-    if (options?.vhost) {
-      const vhostPattern = `-queue-${options.vhost}-`;
-      where.OR = [
-        // Include queue alerts that match the vhost (fingerprint contains vhost pattern)
-        {
-          sourceType: "queue",
-          fingerprint: { contains: vhostPattern },
-        },
-        // Include all node and cluster alerts (not vhost-specific, so always include)
-        {
-          sourceType: "node",
-        },
-        {
-          sourceType: "cluster",
-        },
-      ];
-    }
-
-    // Exclude fingerprints that are currently active (SeenAlert with resolvedAt: null).
-    // Pushing this into the DB query (rather than filtering in-memory) ensures that
-    // take/skip pagination and the total count remain correct.
-    const activeSeenAlerts = await prisma.seenAlert.findMany({
-      where: { serverId, workspaceId, resolvedAt: null },
-      select: { fingerprint: true },
-    });
-    const activeFingerprints = activeSeenAlerts.map((a) => a.fingerprint);
-    if (activeFingerprints.length > 0) {
-      where.fingerprint = { notIn: activeFingerprints };
-    }
-
-    const [resolvedAlerts, total] = await Promise.all([
-      prisma.resolvedAlert.findMany({
+    const [rows, total] = await Promise.all([
+      prisma.alert.findMany({
         where,
         orderBy: { resolvedAt: "desc" },
         take: options?.limit,
@@ -263,27 +352,32 @@ class AlertService {
           firstSeenAt: true,
           resolvedAt: true,
           duration: true,
+          createdAt: true,
         },
       }),
-      prisma.resolvedAlert.count({ where }),
+      prisma.alert.count({ where }),
     ]);
 
     return {
-      alerts: resolvedAlerts.map((alert) => ({
+      alerts: rows.map((alert) => ({
         id: alert.id,
-        serverId: alert.serverId,
-        serverName: alert.serverName,
-        severity: alert.severity,
-        category: alert.category,
+        serverId: alert.serverId ?? "",
+        serverName: alert.serverName ?? "",
+        severity: PRISMA_TO_LEGACY_SEVERITY[alert.severity] ?? "info",
+        category: alert.category ?? "",
         title: alert.title,
         description: alert.description,
-        details: alert.details as Record<string, unknown>,
+        details: (alert.details ?? {}) as Record<string, unknown>,
         source: {
-          type: alert.sourceType,
-          name: alert.sourceName,
+          type: alert.sourceType ?? "",
+          name: alert.sourceName ?? "",
         },
-        firstSeenAt: alert.firstSeenAt.toISOString(),
-        resolvedAt: alert.resolvedAt.toISOString(),
+        firstSeenAt: (
+          alert.firstSeenAt ??
+          alert.createdAt ??
+          alert.resolvedAt
+        ).toISOString(),
+        resolvedAt: alert.resolvedAt!.toISOString(),
         duration: alert.duration,
       })),
       total,

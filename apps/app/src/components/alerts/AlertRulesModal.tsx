@@ -428,13 +428,9 @@ export function AlertRulesModal({ isOpen, onClose }: AlertRulesModalProps) {
                 <h3 className="text-lg font-medium mb-2">
                   {t("rules.noRules")}
                 </h3>
-                <p className="text-muted-foreground mb-4">
+                <p className="text-muted-foreground">
                   {t("rules.noRulesDescription")}
                 </p>
-                <Button onClick={handleCreate} className="btn-primary">
-                  <Plus className="h-4 w-4 mr-2" />
-                  {t("rules.createFirstRule")}
-                </Button>
               </div>
             ) : (
               <div className="space-y-4">

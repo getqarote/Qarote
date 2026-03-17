@@ -194,6 +194,8 @@
     "failedToGetRule": "Failed to get alert rule",
     "failedToCreateRule": "Failed to create alert rule",
     "failedToUpdateRule": "Failed to update alert rule",
+    "cannotDeleteDefaultRule": "Cannot delete a default alert rule",
+    "cannotModifyDefaultRule": "Cannot modify the structure of a default alert rule",
     "failedToDeleteRule": "Failed to delete alert rule",
     "failedToGetWebhooks": "Failed to get webhooks",
     "failedToCreateWebhook": "Failed to create webhook",

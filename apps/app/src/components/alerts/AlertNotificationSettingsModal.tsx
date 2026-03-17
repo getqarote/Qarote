@@ -95,6 +95,19 @@ export function AlertNotificationSettingsModal({
   >(null);
   const [serverSearchOpen, setServerSearchOpen] = useState(false);
   const [serverSearchTerm, setServerSearchTerm] = useState<string>("");
+  const [notificationPermission, setNotificationPermission] = useState<
+    NotificationPermission | "unsupported"
+  >("Notification" in window ? Notification.permission : "unsupported");
+
+  // Resync permission state on each open so changes made in browser settings
+  // between opens are reflected immediately.
+  useEffect(() => {
+    if (isOpen) {
+      setNotificationPermission(
+        "Notification" in window ? Notification.permission : "unsupported"
+      );
+    }
+  }, [isOpen]);
 
   // Track if this is the initial load to prevent auto-save on mount
   const isInitialMount = useRef(true);
@@ -884,6 +897,22 @@ export function AlertNotificationSettingsModal({
                 >
                   <Bell className="h-4 w-4" />
                   {t("modal.browserNotifications")}
+                  {notificationPermission === "granted" && (
+                    <Badge
+                      variant="secondary"
+                      className="text-xs font-normal text-green-600"
+                    >
+                      {t("modal.permissionGranted")}
+                    </Badge>
+                  )}
+                  {notificationPermission === "denied" && (
+                    <Badge
+                      variant="destructive"
+                      className="text-xs font-normal"
+                    >
+                      {t("modal.permissionDenied")}
+                    </Badge>
+                  )}
                 </Label>
                 <p className="text-sm text-muted-foreground">
                   {t("modal.browserNotificationsDescription")}
@@ -892,11 +921,45 @@ export function AlertNotificationSettingsModal({
               <Switch
                 id="browser-notifications"
                 checked={browserNotificationsEnabled}
-                onCheckedChange={setBrowserNotificationsEnabled}
+                onCheckedChange={(checked) => {
+                  if (!checked) {
+                    setBrowserNotificationsEnabled(false);
+                    return;
+                  }
+                  if (!("Notification" in window)) {
+                    setBrowserNotificationsEnabled(false);
+                    setNotificationPermission("unsupported");
+                    return;
+                  }
+                  if (Notification.permission === "granted") {
+                    setBrowserNotificationsEnabled(true);
+                    return;
+                  }
+                  if (Notification.permission === "denied") {
+                    setBrowserNotificationsEnabled(false);
+                    setNotificationPermission("denied");
+                    return;
+                  }
+                  Notification.requestPermission().then((permission) => {
+                    setNotificationPermission(permission);
+                    setBrowserNotificationsEnabled(permission === "granted");
+                  });
+                }}
                 disabled={updateSettingsMutation.isPending}
                 className="data-[state=checked]:bg-gradient-button"
               />
             </div>
+
+            {"Notification" in window &&
+              browserNotificationsEnabled &&
+              Notification.permission === "denied" && (
+                <Alert className="mt-4" variant="destructive">
+                  <BellOff className="h-4 w-4" />
+                  <AlertDescription>
+                    {t("modal.browserNotificationsBlocked")}
+                  </AlertDescription>
+                </Alert>
+              )}
 
             {browserNotificationsEnabled && (
               <div className="mt-4 space-y-3 pt-4 border-t">

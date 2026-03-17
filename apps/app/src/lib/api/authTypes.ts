@@ -3,12 +3,16 @@
  * Contains interfaces for user authentication and management
  */
 
+export enum UserRole {
+  ADMIN = "ADMIN",
+}
+
 export interface User {
   id: string;
   email: string;
   firstName?: string;
   lastName?: string;
-  role: string;
+  role: UserRole;
   // TODO: fix this shit
   workspaceId?: string | null;
   workspace?: Workspace;
@@ -48,7 +52,7 @@ export interface UserProfile extends User {
 interface Invitation {
   id: string;
   email: string;
-  role: string;
+  role: UserRole;
   status: string;
   token: string;
   createdAt: string;

@@ -4,6 +4,8 @@ import { useParams, useSearchParams } from "react-router";
 
 import { AlertTriangle, Loader2, Mail, Settings } from "lucide-react";
 
+import { UserRole } from "@/lib/api";
+
 import { ActiveAlertsList } from "@/components/alerts/ActiveAlertsList";
 import { AlertNotificationSettingsModal } from "@/components/alerts/AlertNotificationSettingsModal";
 import { AlertRulesModal } from "@/components/alerts/AlertRulesModal";
@@ -39,13 +41,30 @@ const Alerts = () => {
   const { selectedServerId, hasServers, setSelectedServerId } =
     useServerContext();
   const { selectedVHost, setSelectedVHost } = useVHostContext();
-  const { userPlan } = useUser();
+  const { userPlan, user, isLoading: isUserLoading } = useUser();
+  const isAdmin = user?.role === UserRole.ADMIN;
   const { hasFeature: hasAlertingFeature, isLoading: featureFlagsLoading } =
     useFeatureFlags();
   // const [showConfigureModal, setShowConfigureModal] = useState(false);
   const [showNotificationSettingsModal, setShowNotificationSettingsModal] =
-    useState(() => searchParams.get("openNotificationSettings") === "true");
+    useState(false);
   const [showAlertRulesModal, setShowAlertRulesModal] = useState(false);
+
+  // Open notification settings from query param only for admins.
+  // Wait for user context to hydrate so isAdmin is accurate before evaluating
+  // the deep-link param; also cleans up the param from the URL here so a
+  // separate cleanup effect is not needed.
+  useEffect(() => {
+    const shouldOpen = searchParams.get("openNotificationSettings") === "true";
+    if (isUserLoading || !shouldOpen) return;
+
+    if (isAdmin) {
+      setShowNotificationSettingsModal(true);
+    }
+
+    searchParams.delete("openNotificationSettings");
+    setSearchParams(searchParams, { replace: true });
+  }, [isAdmin, isUserLoading, searchParams, setSearchParams]);
   const [viewMode, setViewMode] = useState<"active" | "resolved">("active");
 
   // Pagination state for Active Alerts
@@ -89,14 +108,6 @@ const Alerts = () => {
   ]);
 
   const currentServerId = serverId || selectedServerId;
-
-  // Clean up the openNotificationSettings query parameter from URL after initial read
-  useEffect(() => {
-    if (searchParams.get("openNotificationSettings") === "true") {
-      searchParams.delete("openNotificationSettings");
-      setSearchParams(searchParams, { replace: true });
-    }
-  }, [searchParams, setSearchParams]);
 
   // Ensure vhost is always set (use "/" as default if not selected)
   const currentVHost = selectedVHost || "/";
@@ -188,22 +199,26 @@ const Alerts = () => {
                   {alertsLoading && (
                     <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                   )}
-                  <Button
-                    onClick={() => setShowAlertRulesModal(true)}
-                    variant="outline"
-                    className="flex items-center gap-2"
-                  >
-                    <Settings className="h-4 w-4" />
-                    {t("alertRules")}
-                  </Button>
-                  <Button
-                    onClick={() => setShowNotificationSettingsModal(true)}
-                    variant="outline"
-                    className="flex items-center gap-2"
-                  >
-                    <Mail className="h-4 w-4" />
-                    {t("notificationSettings")}
-                  </Button>
+                  {isAdmin && (
+                    <>
+                      <Button
+                        onClick={() => setShowAlertRulesModal(true)}
+                        variant="outline"
+                        className="flex items-center gap-2"
+                      >
+                        <Settings className="h-4 w-4" />
+                        {t("alertRules")}
+                      </Button>
+                      <Button
+                        onClick={() => setShowNotificationSettingsModal(true)}
+                        variant="outline"
+                        className="flex items-center gap-2"
+                      >
+                        <Mail className="h-4 w-4" />
+                        {t("notificationSettings")}
+                      </Button>
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -303,16 +318,20 @@ const Alerts = () => {
         </FeatureGate>
       </div>
       {/* Notification Settings Modal */}
-      <AlertNotificationSettingsModal
-        isOpen={showNotificationSettingsModal}
-        onClose={() => setShowNotificationSettingsModal(false)}
-      />
+      {isAdmin && (
+        <AlertNotificationSettingsModal
+          isOpen={showNotificationSettingsModal}
+          onClose={() => setShowNotificationSettingsModal(false)}
+        />
+      )}
 
       {/* Alert Rules Modal */}
-      <AlertRulesModal
-        isOpen={showAlertRulesModal}
-        onClose={() => setShowAlertRulesModal(false)}
-      />
+      {isAdmin && (
+        <AlertRulesModal
+          isOpen={showAlertRulesModal}
+          onClose={() => setShowAlertRulesModal(false)}
+        />
+      )}
     </SidebarProvider>
   );
 };

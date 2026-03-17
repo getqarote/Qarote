@@ -28,6 +28,7 @@ const WorkspaceSection = () => {
   const [workspaceForm, setWorkspaceForm] = useState<WorkspaceFormState>({
     name: "",
     contactEmail: "",
+    tags: [],
   });
 
   const profile = profileData?.user;
@@ -40,6 +41,7 @@ const WorkspaceSection = () => {
     setWorkspaceForm({
       name: workspace.name || "",
       contactEmail: workspace.contactEmail || "",
+      tags: workspace.tags || [],
     });
   }
 
@@ -73,7 +75,9 @@ const WorkspaceSection = () => {
     try {
       await updateWorkspaceMutation.mutateAsync({
         workspaceId: workspace.id,
-        ...workspaceForm,
+        name: workspaceForm.name,
+        contactEmail: workspaceForm.contactEmail || undefined,
+        tags: workspaceForm.tags.length > 0 ? workspaceForm.tags : undefined,
       });
       setEditingWorkspace(false);
       await refetchWorkspace();

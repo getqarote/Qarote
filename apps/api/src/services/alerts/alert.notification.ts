@@ -11,84 +11,41 @@ import { FEATURES } from "@/config/features";
 
 import { generateAlertFingerprint } from "./alert.fingerprint";
 import { RabbitMQAlert } from "./alert.interfaces";
+import { toPrismaAlertSeverity } from "./alert.severity-map";
 
 /**
- * Alert Tracking and Notification System Summary
- * ===============================================
+ * Alert Tracking and Notification System
+ * =======================================
  *
- * This system tracks RabbitMQ alerts and sends email notifications to prevent
- * duplicate emails while ensuring users are notified of new and recurring alerts.
+ * Tracks RabbitMQ alerts in the unified Alert table and sends notifications
+ * (email, webhook, Slack) to prevent duplicate sends while ensuring users are
+ * notified of new and recurring alerts.
  *
- * ## Core Components:
+ * ## Alert Table lifecycle (status=ACTIVE / status=RESOLVED)
  *
- * 1. **SeenAlert Table**: Tracks all alerts that have been seen before
- *    - `fingerprint`: Unique identifier (serverId-category-sourceType-sourceName)
- *    - `firstSeenAt`: When alert was first detected
- *    - `lastSeenAt`: Most recent time alert was seen
- *    - `resolvedAt`: When alert was auto-resolved (no longer active)
- *    - `emailSentAt`: When email notification was sent
+ * - Alert fires → Alert row created with status=ACTIVE, fingerprint set
+ * - Alert still firing → Alert row updated (lastSeenAt, severity)
+ * - Alert clears → Alert row set to status=RESOLVED, fingerprint=NULL
+ * - Alert re-fires → new Alert row created; isNew=true triggers a new notification
  *
- * 2. **Alert Fingerprinting**: Creates stable identifiers for alerts
- *    Format: `${serverId}-${category}-${sourceType}-${sourceName}`
- *    Example: "server-123-memory-node-rabbit@node1"
+ * A partial unique index on (fingerprint) WHERE status='ACTIVE' ensures only
+ * one active row exists per fingerprint at a time. Setting fingerprint=NULL on
+ * resolution frees the slot for re-firing.
  *
- * ## Notification Logic:
+ * ## Notification Logic
  *
- * Email notifications are sent when:
- * - Alert is brand new (never seen before)
- * - Alert was previously resolved and comes back (recurring alert)
- * - Alert hasn't been seen for > 7 days (cooldown period expired)
+ * Notifications are sent when:
+ * - isNew=true (brand-new alert OR alert that came back after resolution)
+ * - Ongoing alert AND 7-day cooldown since last email has expired
  *
- * Email notifications are NOT sent when:
- * - Alert is ongoing (same alert still active, within 7-day cooldown)
- * - Email notifications are disabled in workspace settings
- * - Workspace has no contact email configured
+ * Notifications are suppressed when:
+ * - Alert is ongoing within 7-day cooldown
+ * - emailNotificationsEnabled=false or contactEmail not set
  *
- * ## Auto-Resolution:
+ * ## Tracking Scope
  *
- * Alerts are automatically marked as resolved when:
- * - They disappear from the current alerts list (no longer active)
- * - This happens automatically on each alert check
- *
- * When an alert becomes active again after being resolved:
- * - `resolvedAt` is cleared (set to null)
- * - Alert is treated as "new" and triggers email notification
- *
- * ## Cooldown Period:
- *
- * - **Duration**: 7 days
- * - **Purpose**: Prevents spam for ongoing alerts
- * - **Behavior**: If an alert hasn't been seen for 7+ days, it's treated as new
- *
- * ## Example Scenarios:
- *
- * 1. **New Alert**:
- *    - Alert occurs → Creates SeenAlert record → Email sent
- *
- * 2. **Ongoing Alert** (within 7 days):
- *    - Alert still active → Updates lastSeenAt → No email (cooldown)
- *
- * 3. **Resolved Alert Returns**:
- *    - Alert disappears → Auto-resolved (resolvedAt set)
- *    - Alert returns → Clears resolvedAt → Email sent (treated as new)
- *
- * 4. **Long-term Recurring Alert** (after 7+ days):
- *    - Alert active for 2 weeks → No duplicate emails
- *    - Alert disappears → Auto-resolved
- *    - Alert returns after 10 days → Email sent (past cooldown)
- *
- * ## Workspace Settings:
- *
- * Email notifications respect workspace configuration:
- * - `emailNotificationsEnabled`: Must be true
- * - `contactEmail`: Must be set
- *
- * If either condition is false, no emails are sent (but alerts are still tracked).
- *
- * ## Tracking Scope:
- *
- * Only WARNING and CRITICAL alerts are tracked and can trigger emails.
- * INFO alerts are ignored for notification purposes.
+ * Only WARNING and CRITICAL alerts trigger email notifications by default.
+ * INFO alerts are tracked but do not notify unless the workspace has opted in.
  */
 class AlertNotificationService {
   private readonly COOLDOWN_PERIOD = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
@@ -160,21 +117,28 @@ class AlertNotificationService {
   }
 
   /**
-   * Track seen alerts and send email notifications for new warnings/critical alerts
+   * Track alerts in the unified Alert table and send notifications for new/recurring alerts.
+   *
+   * Phase 4: SeenAlert and ResolvedAlert tables have been dropped. The unified Alert table
+   * is now the sole store for both active and resolved alerts.
+   *
+   * Active alert lifecycle:
+   *   - Alert fires → Alert row created with status=ACTIVE, fingerprint set
+   *   - Alert still firing → Alert row updated (lastSeenAt, severity)
+   *   - Alert clears → Alert row set to status=RESOLVED, fingerprint set to NULL
+   *   - Alert re-fires → new Alert row created (previous resolved row has fingerprint=NULL
+   *     so it does not collide with the partial unique index; isNew=true triggers notification)
    */
   async trackAndNotifyNewAlerts(
     alerts: RabbitMQAlert[],
     workspaceId: string,
     serverId: string,
-    serverName: string, // Required - always available from caller
-    vhost?: string // Optional - undefined means "check all vhosts"
+    serverName: string,
+    vhost?: string
   ): Promise<void> {
-    // Check if alerting feature is enabled
-    // In community mode, alerts are tracked but notifications are not sent
     const alertingEnabled = await isFeatureEnabled(FEATURES.ALERTING);
 
     try {
-      // Get workspace to check for contact email and notification settings
       const workspace = await prisma.workspace.findUnique({
         where: { id: workspaceId },
         select: {
@@ -193,32 +157,36 @@ class AlertNotificationService {
         return;
       }
 
-      // Get notification severity preferences (default to critical + warning per documented scope)
       const notificationSeverities = workspace.notificationSeverities
         ? (workspace.notificationSeverities as string[])
         : ["critical", "warning"];
 
-      // Get all existing seen alerts for this workspace and server
-      const seenAlerts = await prisma.seenAlert.findMany({
-        where: { workspaceId, serverId },
+      // Bulk-fetch currently active Alert rows for this server so we can check
+      // notification cooldown without N+1 per-alert queries.
+      const activeAlertRows = await prisma.alert.findMany({
+        where: { workspaceId, serverId, status: "ACTIVE" },
         select: {
+          id: true,
           fingerprint: true,
           emailSentAt: true,
-          resolvedAt: true,
-          lastSeenAt: true,
-          firstSeenAt: true, // Added to fix notification cooldown bug
+          firstSeenAt: true,
         },
       });
+      const activeAlertByFingerprint = new Map(
+        activeAlertRows
+          .filter((a) => a.fingerprint != null)
+          .map((a) => [a.fingerprint!, a])
+      );
 
-      // Create set of currently active alert fingerprints
       const activeFingerprints = new Set<string>();
       const newAlerts: RabbitMQAlert[] = [];
       const now = new Date();
+      // Maps fingerprint → DB alert ID so emailSentAt can be stamped by ID after
+      // email send. Using ID avoids a race where the alert resolves between the
+      // email send and the stamp, making the fingerprint+status match miss.
+      const fingerprintToAlertId = new Map<string, string>();
 
       // Deduplicate alerts by fingerprint before processing.
-      // If the same fingerprint appears more than once in the batch (e.g. from
-      // duplicate entries in the source data) only the first occurrence is kept,
-      // preventing duplicate SeenAlert writes and double notification sends.
       const dedupedAlerts: RabbitMQAlert[] = [];
       const seenInBatch = new Set<string>();
       for (const alert of alerts) {
@@ -235,8 +203,6 @@ class AlertNotificationService {
         }
       }
 
-      // Process each alert - ALWAYS track alerts regardless of notification settings
-      // Severity preferences only affect notifications, not tracking
       for (const alert of dedupedAlerts) {
         const fingerprint = generateAlertFingerprint(
           serverId,
@@ -248,65 +214,108 @@ class AlertNotificationService {
 
         activeFingerprints.add(fingerprint);
 
-        const existingAlert = seenAlerts.find(
-          (a) => a.fingerprint === fingerprint
+        const existingActiveAlert = activeAlertByFingerprint.get(fingerprint);
+        let isNew = !existingActiveAlert;
+
+        const prismaSeverity = toPrismaAlertSeverity(alert.severity);
+        const title = this.getAlertTitle(
+          alert.category,
+          alert.source.type,
+          alert.source.name
         );
-        const isNew = !existingAlert;
+        const description = this.getAlertDescription(
+          alert.category,
+          alert.source.type,
+          alert.source.name
+        );
 
-        // Always track alerts in database, regardless of severity preferences
-        // NOTE: This loop issues one DB write per alert (N+1 pattern).
-        // Using upsert for idempotency: concurrent cron runs can race on
-        // fingerprint creation, so we atomically create-or-update rather than
-        // branching on the isNew snapshot.
-        await prisma.seenAlert.upsert({
-          where: { fingerprint },
-          create: {
-            fingerprint,
-            serverId,
-            workspaceId,
-            severity: alert.severity,
-            category: alert.category,
-            sourceType: alert.source.type,
-            sourceName: alert.source.name,
-            firstSeenAt: now,
-            lastSeenAt: now,
-            resolvedAt: null,
-          },
-          update: {
-            lastSeenAt: now,
-            resolvedAt: null, // Clear resolution since alert is active again
-            severity: alert.severity, // Update severity in case it changed
-          },
-        });
+        let activeAlertId: string | undefined;
 
-        // Check if alert should trigger notification
-        // Only send notifications for alerts that match severity preferences
+        if (existingActiveAlert) {
+          // Conditional update: only succeeds if the row is still ACTIVE with the
+          // expected fingerprint. Guards against a concurrent resolution that
+          // happened between the snapshot read and this write.
+          const result = await prisma.alert.updateMany({
+            where: {
+              id: existingActiveAlert.id,
+              status: "ACTIVE",
+              fingerprint,
+            },
+            data: {
+              lastSeenAt: now,
+              resolvedAt: null,
+              severity: prismaSeverity,
+              title,
+              description,
+              details: alert.details as object,
+            },
+          });
+          if (result.count === 1) {
+            activeAlertId = existingActiveAlert.id;
+          } else {
+            // Row was concurrently resolved; fall through to create a new row.
+            isNew = true;
+            logger.debug(
+              { fingerprint },
+              "Active alert was concurrently resolved; re-creating"
+            );
+          }
+        }
+
+        if (!activeAlertId) {
+          // Brand-new alert or post-resolution re-fire after concurrent resolve.
+          try {
+            const created = await prisma.alert.create({
+              data: {
+                title,
+                description,
+                fingerprint,
+                severity: prismaSeverity,
+                status: "ACTIVE",
+                category: alert.category,
+                sourceType: alert.source.type,
+                sourceName: alert.source.name,
+                serverId,
+                serverName,
+                workspaceId,
+                firstSeenAt: now,
+                lastSeenAt: now,
+                details: alert.details as object,
+              },
+            });
+            activeAlertId = created.id;
+          } catch (error) {
+            if ((error as { code?: string }).code === "P2002") {
+              // Race: a concurrent invocation already created this alert.
+              // Skip — the winning call is responsible for sending the notification.
+              logger.debug(
+                { fingerprint },
+                "Skipping alert create: lost concurrent race (P2002)"
+              );
+              continue;
+            }
+            throw error;
+          }
+        }
+
+        fingerprintToAlertId.set(fingerprint, activeAlertId);
+
         const shouldNotifyForSeverity = notificationSeverities.includes(
           alert.severity
         );
         let shouldNotify = false;
 
         if (isNew && shouldNotifyForSeverity) {
-          // Brand new alert that matches severity preferences - always notify
+          // Brand new alert OR alert that came back after resolution (isNew covers both).
           shouldNotify = true;
-        } else if (!isNew && shouldNotifyForSeverity) {
-          // Existing alert that matches severity preferences - check if should notify
-          const wasResolved = !!existingAlert.resolvedAt;
-
-          // Check time since last notification (emailSentAt) or first seen (if no email sent)
-          // This ensures we respect the cooldown period even if emailSentAt is null
+        } else if (!isNew && shouldNotifyForSeverity && existingActiveAlert) {
+          // Ongoing alert — notify only if cooldown has expired
           const referenceTime =
-            existingAlert.emailSentAt || existingAlert.firstSeenAt;
-          const timeSinceLastNotification = referenceTime
+            existingActiveAlert.emailSentAt || existingActiveAlert.firstSeenAt;
+          const timeSince = referenceTime
             ? now.getTime() - referenceTime.getTime()
             : 0;
-          const isPastNotificationCooldown =
-            timeSinceLastNotification > this.COOLDOWN_PERIOD;
-
-          // Should notify if:
-          // 1. Alert was previously resolved (came back after being fixed)
-          // 2. Enough time has passed since last notification (or first seen if never notified)
-          if (wasResolved || isPastNotificationCooldown) {
+          if (timeSince > this.COOLDOWN_PERIOD) {
             shouldNotify = true;
           }
         }
@@ -317,99 +326,58 @@ class AlertNotificationService {
       }
 
       // Auto-resolve alerts that are no longer active.
-      // Fetch all unresolved SeenAlerts for this server; vhost scoping is applied
-      // in-memory below to avoid false positives from a substring `contains` match
+      // Fetch all active Alert rows for this server; vhost scoping applied in-memory
+      // to avoid false positives from a substring contains match
       // (e.g. vhost "foo" incorrectly matching fingerprints for vhost "foo-bar").
-      const unresolvedSeenAlerts = await prisma.seenAlert.findMany({
-        where: { workspaceId, serverId, resolvedAt: null },
+      const unresolvedAlerts = await prisma.alert.findMany({
+        where: {
+          workspaceId,
+          serverId,
+          status: "ACTIVE",
+          fingerprint: { not: null },
+        },
         select: {
           fingerprint: true,
-          severity: true,
-          category: true,
           sourceType: true,
           sourceName: true,
           firstSeenAt: true,
         },
       });
 
-      // If vhost is specified, exclude queue alerts that belong to a different vhost.
-      // Exact boundary match: strip the known sourceName suffix, then verify the
-      // remainder ends with `-queue-${vhost}` exactly. This avoids false positives
-      // when one vhost name is a prefix of another (e.g. "foo" vs "foo-bar") and
-      // works correctly regardless of category (fixes the indexOf approach which
-      // could hit the category segment before the sourceType segment).
+      // Exact vhost boundary match: strip sourceName suffix, then verify the
+      // remainder ends with `-queue-${vhost}` exactly.
       const alertsToResolve = vhost
-        ? unresolvedSeenAlerts.filter((a) => {
+        ? unresolvedAlerts.filter((a) => {
             if (a.sourceType !== "queue") return true;
             const suffix = `-${a.sourceName}`;
-            if (!a.fingerprint.endsWith(suffix)) return false;
-            const withoutSource = a.fingerprint.slice(0, -suffix.length);
+            if (!a.fingerprint!.endsWith(suffix)) return false;
+            const withoutSource = a.fingerprint!.slice(0, -suffix.length);
             return withoutSource.endsWith(`-queue-${vhost}`);
           })
-        : unresolvedSeenAlerts;
+        : unresolvedAlerts;
 
-      for (const seenAlert of alertsToResolve) {
-        if (!activeFingerprints.has(seenAlert.fingerprint)) {
-          // Alert is no longer active, mark as resolved
-          await prisma.seenAlert.updateMany({
-            where: { fingerprint: seenAlert.fingerprint },
-            data: { resolvedAt: now },
-          });
-
-          // Calculate duration
-          const duration = now.getTime() - seenAlert.firstSeenAt.getTime();
-
-          // Reconstruct alert title and description from category and source
-          const title = this.getAlertTitle(
-            seenAlert.category,
-            seenAlert.sourceType,
-            seenAlert.sourceName
-          );
-          const description = this.getAlertDescription(
-            seenAlert.category,
-            seenAlert.sourceType,
-            seenAlert.sourceName
-          );
-
-          // Store resolved alert in database
-          try {
-            await prisma.resolvedAlert.create({
+      await Promise.all(
+        alertsToResolve
+          .filter((alert) => !activeFingerprints.has(alert.fingerprint!))
+          .map(async (alert) => {
+            const duration =
+              now.getTime() - (alert.firstSeenAt ?? now).getTime();
+            await prisma.alert.updateMany({
+              where: { fingerprint: alert.fingerprint, status: "ACTIVE" },
               data: {
-                serverId,
-                serverName,
-                severity: seenAlert.severity,
-                category: seenAlert.category,
-                title,
-                description,
-                details: {
-                  sourceType: seenAlert.sourceType,
-                  sourceName: seenAlert.sourceName,
-                  category: seenAlert.category,
-                },
-                sourceType: seenAlert.sourceType,
-                sourceName: seenAlert.sourceName,
-                fingerprint: seenAlert.fingerprint,
-                firstSeenAt: seenAlert.firstSeenAt,
+                status: "RESOLVED",
                 resolvedAt: now,
                 duration,
-                workspaceId,
+                fingerprint: null, // Release partial unique index slot for re-firing
               },
             });
             logger.debug(
-              `Saved resolved alert: ${seenAlert.fingerprint} (resolved after ${Math.round(duration / 1000 / 60)} minutes)`
+              `Resolved alert: ${alert.fingerprint} (${Math.round(duration / 1000 / 60)} min)`
             );
-          } catch (error) {
-            logger.error(
-              { error, fingerprint: seenAlert.fingerprint },
-              "Failed to save resolved alert"
-            );
-          }
-        }
-      }
+          })
+      );
 
-      // Send notifications (email and webhooks) for alerts that should trigger notification
       // Skip notifications if alerting feature is disabled (community mode)
-      // Alerts are still tracked in the database, but notifications are not sent
       if (!alertingEnabled) {
         logger.debug(
           "Alerting feature not enabled - alerts tracked but notifications skipped"
@@ -417,11 +385,9 @@ class AlertNotificationService {
         return;
       }
 
-      // Email-specific gate — webhook and Slack have their own independent feature flags
       const shouldSendEmail =
         workspace.emailNotificationsEnabled && !!workspace.contactEmail;
 
-      // Check if notifications are enabled for this server
       const notificationServerIds = workspace.notificationServerIds
         ? (workspace.notificationServerIds as string[])
         : null;
@@ -433,7 +399,6 @@ class AlertNotificationService {
       if (newAlerts.length > 0 && serverNotificationsEnabled) {
         const alertsToNotify = newAlerts;
 
-        // Send email notification (if enabled)
         if (shouldSendEmail) {
           try {
             await NotificationEmailService.sendAlertNotificationEmail({
@@ -445,20 +410,26 @@ class AlertNotificationService {
               serverId,
             });
 
-            // Mark alerts as email sent
-            for (const alert of alertsToNotify) {
-              const fingerprint = generateAlertFingerprint(
-                serverId,
-                alert.category,
-                alert.source.type,
-                alert.source.name,
-                alert.vhost
-              );
-              await prisma.seenAlert.updateMany({
-                where: { fingerprint },
-                data: { emailSentAt: now },
-              });
-            }
+            await Promise.all(
+              alertsToNotify.map(async (alert) => {
+                const fingerprint = generateAlertFingerprint(
+                  serverId,
+                  alert.category,
+                  alert.source.type,
+                  alert.source.name,
+                  alert.vhost
+                );
+                const alertId = fingerprintToAlertId.get(fingerprint);
+                if (alertId) {
+                  // Stamp by ID — immune to the race where the alert resolves between
+                  // email send and stamp (fingerprint+status would miss a resolved row).
+                  await prisma.alert.update({
+                    where: { id: alertId },
+                    data: { emailSentAt: now },
+                  });
+                }
+              })
+            );
 
             logger.info(
               `Sent alert notification email for ${alertsToNotify.length} new/recurring alerts to ${workspace.contactEmail}`
@@ -471,23 +442,14 @@ class AlertNotificationService {
           }
         }
 
-        // Send webhook notifications (only if webhook integration is enabled)
         const webhookEnabled = await isFeatureEnabled(
           FEATURES.WEBHOOK_INTEGRATION
         );
         if (webhookEnabled) {
           try {
             const webhook = await prisma.webhook.findFirst({
-              where: {
-                workspaceId,
-                enabled: true,
-              },
-              select: {
-                id: true,
-                url: true,
-                secret: true,
-                version: true,
-              },
+              where: { workspaceId, enabled: true },
+              select: { id: true, url: true, secret: true, version: true },
             });
 
             if (webhook) {
@@ -500,7 +462,6 @@ class AlertNotificationService {
                 alertsToNotify
               );
 
-              // Log webhook results
               const successful = webhookResults.filter(
                 (r) => r.result.success
               ).length;
@@ -518,7 +479,6 @@ class AlertNotificationService {
                   "Sent alert notification to webhook(s)"
                 );
               }
-
               if (failed > 0) {
                 logger.warn(
                   {
@@ -541,19 +501,12 @@ class AlertNotificationService {
           }
         }
 
-        // Send Slack notifications (only if Slack integration is enabled)
         const slackEnabled = await isFeatureEnabled(FEATURES.SLACK_INTEGRATION);
         if (slackEnabled) {
           try {
             const slackConfig = await prisma.slackConfig.findFirst({
-              where: {
-                workspaceId,
-                enabled: true,
-              },
-              select: {
-                id: true,
-                webhookUrl: true,
-              },
+              where: { workspaceId, enabled: true },
+              select: { id: true, webhookUrl: true },
             });
 
             if (slackConfig) {
@@ -566,7 +519,6 @@ class AlertNotificationService {
                 emailConfig.frontendUrl
               );
 
-              // Log Slack results
               const successful = slackResults.filter(
                 (r) => r.result.success
               ).length;
@@ -579,7 +531,6 @@ class AlertNotificationService {
                   `Sent alert notification to ${successful} Slack channel(s) for ${alertsToNotify.length} alerts`
                 );
               }
-
               if (failed > 0) {
                 logger.warn(
                   {
@@ -608,7 +559,6 @@ class AlertNotificationService {
       }
     } catch (error) {
       logger.error({ error }, "Error tracking and notifying new alerts");
-      // Don't throw - we don't want to break the alert retrieval if email fails
     }
   }
 }

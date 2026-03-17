@@ -248,6 +248,28 @@ export const rulesRouter = router({
           });
         }
 
+        // Default rules: only allow toggling enabled; block structural changes
+        if (existingRule.isDefault) {
+          const structuralFields = [
+            "name",
+            "description",
+            "type",
+            "threshold",
+            "operator",
+            "severity",
+            "serverId",
+          ] as const;
+          const hasStructuralChange = structuralFields.some(
+            (f) => data[f as keyof typeof data] !== undefined
+          );
+          if (hasStructuralChange) {
+            throw new TRPCError({
+              code: "FORBIDDEN",
+              message: te(ctx.locale, "alerts.cannotModifyDefaultRule"),
+            });
+          }
+        }
+
         // If serverId is being updated, verify new server belongs to workspace
         if (data.serverId && data.serverId !== existingRule.serverId) {
           const server = await ctx.prisma.rabbitMQServer.findFirst({
@@ -355,6 +377,13 @@ export const rulesRouter = router({
           throw new TRPCError({
             code: "NOT_FOUND",
             message: te(ctx.locale, "alerts.ruleNotFound"),
+          });
+        }
+
+        if (existingRule.isDefault) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: te(ctx.locale, "alerts.cannotDeleteDefaultRule"),
           });
         }
 
