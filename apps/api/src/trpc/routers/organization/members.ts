@@ -945,22 +945,22 @@ export const membersRouter = router({
         });
       }
 
-      // Delete the workspace membership
-      await ctx.prisma.workspaceMember.deleteMany({
-        where: {
-          userId: input.userId,
-          workspaceId: input.workspaceId,
-        },
-      });
-
-      // If this was the user's active workspace, clear it
-      await ctx.prisma.user.updateMany({
-        where: {
-          id: input.userId,
-          workspaceId: input.workspaceId,
-        },
-        data: { workspaceId: null },
-      });
+      // Delete workspace membership and clear active workspace atomically
+      await ctx.prisma.$transaction([
+        ctx.prisma.workspaceMember.deleteMany({
+          where: {
+            userId: input.userId,
+            workspaceId: input.workspaceId,
+          },
+        }),
+        ctx.prisma.user.updateMany({
+          where: {
+            id: input.userId,
+            workspaceId: input.workspaceId,
+          },
+          data: { workspaceId: null },
+        }),
+      ]);
 
       ctx.logger.info(
         {

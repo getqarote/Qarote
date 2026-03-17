@@ -90,6 +90,7 @@ export const checkoutRouter = router({
 
         return { url: session.url };
       } catch (error) {
+        if (error instanceof TRPCError) throw error;
         ctx.logger.error({ error }, "Error creating checkout session");
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",

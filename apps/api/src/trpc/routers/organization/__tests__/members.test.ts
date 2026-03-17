@@ -293,6 +293,10 @@ describe("applyWorkspaceAssignments", () => {
 describe("membersRouter", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Default: handle batch-array $transaction (individual tests override for callback form)
+    mockTransaction.mockImplementation((arg: unknown) =>
+      Array.isArray(arg) ? Promise.all(arg) : arg
+    );
   });
 
   // ─── invite ───────────────────────────────────────────────────────────────
