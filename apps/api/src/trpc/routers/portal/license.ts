@@ -17,7 +17,7 @@ import {
   router,
 } from "@/trpc/trpc";
 
-import { UserPlan } from "@/generated/prisma/client";
+import { OrgRole, UserPlan } from "@/generated/prisma/client";
 import { te } from "@/i18n";
 
 /**
@@ -109,6 +109,7 @@ export const licenseRouter = router({
           ? await ctx.prisma.workspace.findUnique({
               where: { id: user.workspaceId },
               select: {
+                organizationId: true,
                 organization: {
                   select: { id: true, stripeCustomerId: true },
                 },
@@ -117,10 +118,32 @@ export const licenseRouter = router({
           : null;
 
         const org = workspace?.organization ?? null;
-        if (!org) {
+        if (!org || !workspace?.organizationId) {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: "No organization found for your active workspace",
+            message: te(ctx.locale, "billing.noOrganization"),
+          });
+        }
+
+        // Verify caller is OWNER or ADMIN of the organization
+        const membership = await ctx.prisma.organizationMember.findUnique({
+          where: {
+            userId_organizationId: {
+              userId: user.id,
+              organizationId: workspace.organizationId,
+            },
+          },
+          select: { role: true },
+        });
+
+        if (
+          !membership ||
+          (membership.role !== OrgRole.OWNER &&
+            membership.role !== OrgRole.ADMIN)
+        ) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: te(ctx.locale, "auth.orgAdminRequired"),
           });
         }
 
