@@ -27,7 +27,8 @@
     "linkCopied": "Enlace de invitación copiado al portapapeles.",
     "invitationFailed": "Error al invitar a {{email}}: {{error}}",
     "workspaceDeleted": "Espacio de trabajo eliminado con éxito.",
-    "workspaceDeleteFailed": "Error al eliminar el espacio de trabajo."
+    "workspaceDeleteFailed": "Error al eliminar el espacio de trabajo.",
+    "userAdded": "{{name}} ha sido añadido al espacio de trabajo"
   },
   "invite": {
     "title": "Invitar miembros del equipo",

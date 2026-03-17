@@ -27,7 +27,8 @@
     "linkCopied": "Lien d'invitation copié dans le presse-papiers.",
     "invitationFailed": "Échec de l'invitation pour {{email}} : {{error}}",
     "workspaceDeleted": "Espace de travail supprimé avec succès.",
-    "workspaceDeleteFailed": "Échec de la suppression de l'espace de travail."
+    "workspaceDeleteFailed": "Échec de la suppression de l'espace de travail.",
+    "userAdded": "{{name}} a été ajouté à l'espace de travail"
   },
   "invite": {
     "title": "Inviter des membres",

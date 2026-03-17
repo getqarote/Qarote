@@ -27,7 +27,8 @@
     "linkCopied": "Invite link copied to clipboard.",
     "invitationFailed": "Failed to invite {{email}}: {{error}}",
     "workspaceDeleted": "Workspace deleted successfully.",
-    "workspaceDeleteFailed": "Failed to delete workspace."
+    "workspaceDeleteFailed": "Failed to delete workspace.",
+    "userAdded": "{{name}} added to workspace"
   },
   "invite": {
     "title": "Invite Team Members",

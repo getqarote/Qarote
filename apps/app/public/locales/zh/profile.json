@@ -27,7 +27,8 @@
     "linkCopied": "邀请链接已复制到剪贴板。",
     "invitationFailed": "邀请 {{email}} 失败：{{error}}",
     "workspaceDeleted": "工作区删除成功。",
-    "workspaceDeleteFailed": "工作区删除失败。"
+    "workspaceDeleteFailed": "工作区删除失败。",
+    "userAdded": "{{name}} 已添加到工作区"
   },
   "invite": {
     "title": "邀请团队成员",
