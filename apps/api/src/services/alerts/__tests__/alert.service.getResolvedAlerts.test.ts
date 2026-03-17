@@ -245,7 +245,7 @@ describe("AlertService.getResolvedAlerts", () => {
     expect(mockPrisma.alert.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({
-          severity: "MEDIUM", // "warning" maps to Prisma enum MEDIUM
+          severity: { in: ["MEDIUM", "HIGH"] }, // "warning" includes both
         }),
       })
     );
