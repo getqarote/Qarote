@@ -39,6 +39,9 @@ const config: KnipConfig = {
     "apps/web/src/hooks/use-mobile.tsx",
     // Ignore email style exports (used in email templates but knip doesn't detect)
     "apps/api/src/services/email/shared/styles.ts",
+    // Ignore organization migration scripts (run manually via npx tsx, not imported)
+    "apps/api/src/core/migrations/org-migration.ts",
+    "apps/api/src/core/migrations/org-verification.ts",
     // Ignore test files
     // Ignore config files
     "**/vite-env.d.ts",

@@ -17,8 +17,6 @@ export const WorkspaceAssignmentSchema = z.object({
   role: z.nativeEnum(UserRole),
 });
 
-export type WorkspaceAssignment = z.infer<typeof WorkspaceAssignmentSchema>;
-
 export const InviteOrgMemberSchema = z.object({
   email: z.string().email("Invalid email address"),
   role: z.enum(["ADMIN", "MEMBER"]),
