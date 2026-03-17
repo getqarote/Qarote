@@ -260,6 +260,27 @@ describe("ssoRouter", () => {
       const caller = ssoRouter.createCaller(makeCtx() as never);
       const result = await caller.getProviderConfig();
 
+      // Assert the full lookup chain was invoked correctly
+      expect(mockWorkspaceFindUnique).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: "ws-1" },
+        })
+      );
+      expect(mockOrganizationMemberFindUnique).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: {
+            userId_organizationId: {
+              userId: "admin-1",
+              organizationId: "org-1",
+            },
+          },
+        })
+      );
+      expect(mockOrgSsoConfigFindFirst).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ organizationId: "org-1" }),
+        })
+      );
       expect(result?.providerId).toBe("org-org-1");
     });
   });
@@ -322,6 +343,8 @@ describe("ssoRouter", () => {
       );
       expect(txOscUpsert).toHaveBeenCalledWith(
         expect.objectContaining({
+          where: { providerId: "prov-new" },
+          update: expect.objectContaining({ autoProvision: true }),
           create: expect.objectContaining({
             organizationId: null,
             providerId: "prov-new",

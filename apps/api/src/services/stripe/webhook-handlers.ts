@@ -358,10 +358,18 @@ export async function handleSubscriptionChange(subscription: Subscription) {
     const priceId = subscriptionFirstItem?.price?.id || "";
     const priceAmount = subscriptionFirstItem?.price?.unit_amount || 0;
 
+    const mappedPlan = CoreStripeService.mapStripePlanToUserPlan(priceId);
+    if (!mappedPlan) {
+      logger.warn(
+        { priceId, subscriptionId },
+        "Unmapped Stripe price ID — skipping plan field to avoid silent downgrade"
+      );
+    }
+
     const subscriptionData = {
       stripePriceId: priceId,
       stripeCustomerId: customerId,
-      plan: CoreStripeService.mapStripePlanToUserPlan(priceId) || UserPlan.FREE,
+      ...(mappedPlan ? { plan: mappedPlan } : {}),
       status: CoreStripeService.mapStripeStatusToSubscriptionStatus(
         subscription.status
       ),
@@ -413,6 +421,8 @@ export async function handleSubscriptionChange(subscription: Subscription) {
           organizationId: org.id,
           stripeSubscriptionId: subscriptionId,
           ...subscriptionData,
+          // plan is required on create — fall back to FREE only for new records
+          plan: mappedPlan ?? UserPlan.FREE,
         },
       });
     }

@@ -123,9 +123,9 @@ export const managementRouter = router({
         const orgCounts = await getOrgResourceCounts(organizationId);
         workspaceCount = orgCounts.workspaces;
       } else {
-        // No org membership — count workspaces where user is a member
-        workspaceCount = await ctx.prisma.workspaceMember.count({
-          where: { userId: user.id },
+        // No org context — count workspaces owned by the user
+        workspaceCount = await ctx.prisma.workspace.count({
+          where: { ownerId: user.id },
         });
       }
 
@@ -137,7 +137,7 @@ export const managementRouter = router({
 
       return {
         currentPlan: currentPlan,
-        ownedWorkspaceCount: workspaceCount,
+        workspaceCount,
         maxWorkspaces: planFeatures.maxWorkspaces,
         canCreateWorkspace,
         planFeatures: {
@@ -179,28 +179,40 @@ export const managementRouter = router({
           }
         }
 
-        // Auto-create an organization for the user if they don't have one
+        // Auto-create an organization for the user if they don't have one.
+        // Use a transaction with a re-check to prevent concurrent requests
+        // from creating duplicate organizations for the same user.
         if (!membership) {
-          const orgSlug = `user-${user.id.slice(0, 8)}-${Date.now()}`;
-          const orgName = user.firstName
-            ? `${user.firstName}'s Organization`
-            : "My Organization";
-
           try {
-            const org = await ctx.prisma.organization.create({
-              data: {
-                name: orgName,
-                slug: orgSlug,
-                contactEmail: user.email,
-                members: {
-                  create: {
-                    userId: user.id,
-                    role: OrgRole.OWNER,
+            const org = await ctx.prisma.$transaction(async (tx) => {
+              // Re-check inside transaction: another request may have created one
+              const existingMembership = await tx.organizationMember.findFirst({
+                where: { userId: user.id, role: OrgRole.OWNER },
+                select: { organizationId: true },
+              });
+              if (existingMembership) return existingMembership;
+
+              const orgSlug = `user-${user.id.slice(0, 8)}-${Date.now()}`;
+              const orgName = user.firstName
+                ? `${user.firstName}'s Organization`
+                : "My Organization";
+
+              const created = await tx.organization.create({
+                data: {
+                  name: orgName,
+                  slug: orgSlug,
+                  contactEmail: user.email,
+                  members: {
+                    create: {
+                      userId: user.id,
+                      role: OrgRole.OWNER,
+                    },
                   },
                 },
-              },
+              });
+              return { organizationId: created.id };
             });
-            membership = { organizationId: org.id };
+            membership = { organizationId: org.organizationId };
           } catch (orgError) {
             ctx.logger.error(
               { error: orgError, userId: user.id },

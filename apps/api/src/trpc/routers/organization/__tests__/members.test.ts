@@ -1,4 +1,3 @@
-import { TRPCError } from "@trpc/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // ─── Mocks ────────────────────────────────────────────────────────────────────
@@ -386,15 +385,11 @@ describe("membersRouter", () => {
           role: "MEMBER",
           workspaceAssignments: [{ workspaceId: "ws-unknown", role: "MEMBER" }],
         })
-      ).rejects.toThrow(TRPCError);
-
-      await expect(
-        caller.invite({
-          email: "new@test.com",
-          role: "MEMBER",
-          workspaceAssignments: [{ workspaceId: "ws-unknown", role: "MEMBER" }],
+      ).rejects.toThrow(
+        expect.objectContaining({
+          code: "BAD_REQUEST",
         })
-      ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+      );
     });
 
     it("throws FORBIDDEN when inviter is not ADMIN in target workspace", async () => {

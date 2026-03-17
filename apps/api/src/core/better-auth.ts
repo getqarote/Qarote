@@ -381,30 +381,34 @@ export const auth = betterAuth({
               // If trial provisioning failed but we still want the user to
               // have an org, try to create one without billing.
               try {
-                const existingMembership =
-                  await prisma.organizationMember.findFirst({
-                    where: { userId: user.id },
-                    select: { id: true },
-                  });
+                const orgSlug = `user-${user.id}`;
+                const org = await prisma.organization.upsert({
+                  where: { slug: orgSlug },
+                  create: {
+                    name: user.name
+                      ? `${user.name}'s Organization`
+                      : "My Organization",
+                    slug: orgSlug,
+                    contactEmail: user.email,
+                  },
+                  update: {},
+                  select: { id: true },
+                });
 
-                if (!existingMembership) {
-                  const orgSlug = `user-${user.id.slice(0, 8)}-${Date.now()}`;
-                  await prisma.organization.create({
-                    data: {
-                      name: user.name
-                        ? `${user.name}'s Organization`
-                        : "My Organization",
-                      slug: orgSlug,
-                      contactEmail: user.email,
-                      members: {
-                        create: {
-                          userId: user.id,
-                          role: OrgRole.OWNER,
-                        },
-                      },
+                await prisma.organizationMember.upsert({
+                  where: {
+                    userId_organizationId: {
+                      userId: user.id,
+                      organizationId: org.id,
                     },
-                  });
-                }
+                  },
+                  create: {
+                    userId: user.id,
+                    organizationId: org.id,
+                    role: OrgRole.OWNER,
+                  },
+                  update: {},
+                });
               } catch (orgError) {
                 logger.warn(
                   { orgError, userId: user.id },

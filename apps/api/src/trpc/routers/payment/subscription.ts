@@ -76,7 +76,7 @@ export const subscriptionRouter = router({
 
         const subscription = await StripeService.cancelSubscription(
           subscriptionId,
-          cancelImmediately
+          !cancelImmediately
         );
 
         // Update subscription in database

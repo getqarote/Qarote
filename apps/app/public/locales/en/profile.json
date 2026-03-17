@@ -128,6 +128,16 @@
     "removeDialogWarning": "This action cannot be undone. The user will lose access to all workspace resources and will need to be re-invited to regain access.",
     "cancel": "Cancel",
     "removing": "Removing...",
-    "removeUserButton": "Remove User"
+    "removeUserButton": "Remove User",
+    "addFromOrg": "Add from Organization",
+    "addFromOrgTitle": "Add from Organization",
+    "addFromOrgDescription": "Add existing organization members to this workspace.",
+    "addFromOrgRole": "Role:",
+    "addFromOrgAdd": "Add",
+    "addFromOrgDone": "Done",
+    "addFromOrgAllHaveAccess": "All organization members already have access.",
+    "roleAdmin": "Admin",
+    "roleMember": "Member",
+    "roleReadonly": "Read-only"
   }
 }
