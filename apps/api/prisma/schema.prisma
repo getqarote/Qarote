@@ -50,6 +50,7 @@ model AlertRule {
   id          String             @id @default(cuid())
   name        String
   description String?
+  slug        String?
   type        AlertType
   threshold   Float
   operator    ComparisonOperator
@@ -66,6 +67,7 @@ model AlertRule {
   server      RabbitMQServer?    @relation(fields: [serverId], references: [id], onDelete: SetNull)
   workspace   Workspace          @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
+  @@unique([serverId, slug])
   @@index([serverId])
   @@index([workspaceId])
   @@index([isDefault])

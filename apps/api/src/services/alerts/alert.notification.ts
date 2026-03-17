@@ -238,6 +238,7 @@ class AlertNotificationService {
               severity: prismaSeverity,
               title,
               description,
+              details: alert.details as object,
             },
           });
           fingerprintToAlertId.set(fingerprint, existingActiveAlert.id);
