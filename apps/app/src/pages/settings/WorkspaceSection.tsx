@@ -75,7 +75,9 @@ const WorkspaceSection = () => {
     try {
       await updateWorkspaceMutation.mutateAsync({
         workspaceId: workspace.id,
-        ...workspaceForm,
+        name: workspaceForm.name,
+        contactEmail: workspaceForm.contactEmail || undefined,
+        tags: workspaceForm.tags.length > 0 ? workspaceForm.tags : undefined,
       });
       setEditingWorkspace(false);
       await refetchWorkspace();
