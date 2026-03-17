@@ -38,5 +38,9 @@ BEGIN
 END
 $$;
 
+-- Replace ON DELETE SET NULL with ON DELETE RESTRICT (incompatible with NOT NULL)
+ALTER TABLE "Workspace" DROP CONSTRAINT "Workspace_organizationId_fkey";
+ALTER TABLE "Workspace" ADD CONSTRAINT "Workspace_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
 -- Now safe to set NOT NULL
 ALTER TABLE "Workspace" ALTER COLUMN "organizationId" SET NOT NULL;

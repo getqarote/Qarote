@@ -87,6 +87,13 @@ export async function runOrgMigration(): Promise<MigrationStats> {
         name: true,
         firstName: true,
         lastName: true,
+        email: true,
+        subscription: {
+          select: {
+            stripeCustomerId: true,
+            stripeSubscriptionId: true,
+          },
+        },
       },
     });
 
@@ -105,11 +112,15 @@ export async function runOrgMigration(): Promise<MigrationStats> {
       let txWorkspaces = 0;
 
       await prisma.$transaction(async (tx) => {
-        // Create the Organization
+        // Create the Organization with billing fields from the user's subscription
         const org = await tx.organization.create({
           data: {
             name: orgName,
             slug: generateSlug(displayName),
+            contactEmail: user.email,
+            stripeCustomerId: user.subscription?.stripeCustomerId ?? null,
+            stripeSubscriptionId:
+              user.subscription?.stripeSubscriptionId ?? null,
           },
         });
 
@@ -215,6 +226,8 @@ export async function runOrgMigration(): Promise<MigrationStats> {
     select: {
       id: true,
       userId: true,
+      stripeCustomerId: true,
+      stripeSubscriptionId: true,
     },
   });
 
@@ -223,7 +236,13 @@ export async function runOrgMigration(): Promise<MigrationStats> {
 
     const user = await prisma.user.findUnique({
       where: { id: sub.userId },
-      select: { id: true, name: true, firstName: true, lastName: true },
+      select: {
+        id: true,
+        name: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+      },
     });
     if (!user) continue;
     const displayName =
@@ -240,6 +259,9 @@ export async function runOrgMigration(): Promise<MigrationStats> {
           data: {
             name: orgName,
             slug: generateSlug(displayName),
+            contactEmail: user.email,
+            stripeCustomerId: sub.stripeCustomerId ?? null,
+            stripeSubscriptionId: sub.stripeSubscriptionId ?? null,
           },
         });
 

@@ -201,9 +201,9 @@ export const auth = betterAuth({
         const orgConfig = ssoProviderWithConfig?.orgSsoConfig;
 
         if (orgConfig?.organizationId) {
-          // Add user as OrganizationMember
-          await prisma.organizationMember
-            .upsert({
+          // Add user as OrganizationMember — skip workspace access if this fails
+          try {
+            await prisma.organizationMember.upsert({
               where: {
                 userId_organizationId: {
                   userId: user.id,
@@ -216,17 +216,18 @@ export const auth = betterAuth({
                 organizationId: orgConfig.organizationId,
                 role: OrgRole.MEMBER,
               },
-            })
-            .catch((err) => {
-              logger.warn(
-                {
-                  err,
-                  userId: user.id,
-                  organizationId: orgConfig.organizationId,
-                },
-                "Failed to upsert organization member for SSO user"
-              );
             });
+          } catch (err) {
+            logger.warn(
+              {
+                err,
+                userId: user.id,
+                organizationId: orgConfig.organizationId,
+              },
+              "Failed to upsert organization member for SSO user — skipping workspace access"
+            );
+            return;
+          }
 
           // Assign to the org's first (default) workspace
           const defaultWorkspace = orgConfig.organization?.workspaces?.[0];

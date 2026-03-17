@@ -21,7 +21,12 @@ export async function applyWorkspaceAssignments(
   rawAssignments: unknown
 ): Promise<string | null> {
   const parsed = z.array(WorkspaceAssignmentSchema).safeParse(rawAssignments);
-  const assignments = parsed.success ? parsed.data : [];
+  if (!parsed.success) {
+    throw new Error(
+      `Invalid workspaceAssignments on invitation: ${parsed.error.message}`
+    );
+  }
+  const assignments = parsed.data;
 
   if (assignments.length > 0) {
     // Filter to workspaces that still exist in the org (handles stale IDs)
