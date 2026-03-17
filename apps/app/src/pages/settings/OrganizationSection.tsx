@@ -203,7 +203,7 @@ const MemberWorkspacesDialog = ({
         });
         toast.success("Removed from workspace");
       } catch (error) {
-        logger.error("Remove from workspace error:", error);
+        logger.error({ error }, "Remove from workspace error");
         toast.error(
           error instanceof Error
             ? error.message
@@ -219,7 +219,7 @@ const MemberWorkspacesDialog = ({
         });
         toast.success("Assigned to workspace");
       } catch (error) {
-        logger.error("Assign to workspace error:", error);
+        logger.error({ error }, "Assign to workspace error");
         toast.error(
           error instanceof Error
             ? error.message
@@ -241,7 +241,7 @@ const MemberWorkspacesDialog = ({
       });
       toast.success("Workspace role updated");
     } catch (error) {
-      logger.error("Role change error:", error);
+      logger.error({ error }, "Role change error");
       toast.error(
         error instanceof Error
           ? error.message
@@ -376,7 +376,7 @@ const OrganizationSection = () => {
       setEditing(false);
       toast.success("Organization updated");
     } catch (error) {
-      logger.error("Update org error:", error);
+      logger.error({ error }, "Update org error");
       toast.error("Failed to update organization");
     }
   };
@@ -410,7 +410,7 @@ const OrganizationSection = () => {
         setLastEmailSent(false);
       }
     } catch (error) {
-      logger.error("Invite error:", error);
+      logger.error({ error }, "Invite error");
       const msg =
         error instanceof Error ? error.message : "Failed to invite member";
       toast.error(msg);
@@ -425,7 +425,7 @@ const OrganizationSection = () => {
       });
       toast.success("Role updated");
     } catch (error) {
-      logger.error("Role change error:", error);
+      logger.error({ error }, "Role change error");
       const msg =
         error instanceof Error ? error.message : "Failed to update role";
       toast.error(msg);
@@ -442,7 +442,7 @@ const OrganizationSection = () => {
       setMemberToRemove(null);
       toast.success("Member removed from organization");
     } catch (error) {
-      logger.error("Remove member error:", error);
+      logger.error({ error }, "Remove member error");
       const msg =
         error instanceof Error ? error.message : "Failed to remove member";
       toast.error(msg);
@@ -454,7 +454,7 @@ const OrganizationSection = () => {
       await acceptInvitationMutation.mutateAsync({ invitationId });
       toast.success("Invitation accepted");
     } catch (error) {
-      logger.error("Accept invitation error:", error);
+      logger.error({ error }, "Accept invitation error");
       const msg =
         error instanceof Error ? error.message : "Failed to accept invitation";
       toast.error(msg);
@@ -466,7 +466,7 @@ const OrganizationSection = () => {
       await declineInvitationMutation.mutateAsync({ invitationId });
       toast.success("Invitation declined");
     } catch (error) {
-      logger.error("Decline invitation error:", error);
+      logger.error({ error }, "Decline invitation error");
       const msg =
         error instanceof Error ? error.message : "Failed to decline invitation";
       toast.error(msg);

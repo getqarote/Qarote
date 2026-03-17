@@ -246,7 +246,7 @@ export function WorkspaceSelector() {
 
                         <div className="flex items-center gap-2 shrink-0">
                           {ws.id === workspace?.id && (
-                            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                            <div className="w-2 h-2 bg-primary rounded-full"></div>
                           )}
                         </div>
                       </div>

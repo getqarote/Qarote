@@ -44,29 +44,26 @@ async function checkWorkspacesHaveOrg(): Promise<CheckResult> {
 }
 
 async function checkOrgsHaveOwner(): Promise<CheckResult> {
-  const orgs = await prisma.organization.findMany({
-    select: { id: true, name: true },
+  // Single query: get all orgs with their OWNER members included
+  const orgsWithOwnerCounts = await prisma.organization.findMany({
+    select: {
+      id: true,
+      name: true,
+      members: {
+        where: { role: "OWNER" },
+        select: { id: true },
+      },
+    },
   });
 
-  const orgsWithoutOwner: string[] = [];
-
-  for (const org of orgs) {
-    const ownerCount = await prisma.organizationMember.count({
-      where: {
-        organizationId: org.id,
-        role: "OWNER",
-      },
-    });
-
-    if (ownerCount === 0) {
-      orgsWithoutOwner.push(`${org.name} (${org.id})`);
-    }
-  }
+  const orgsWithoutOwner = orgsWithOwnerCounts
+    .filter((org) => org.members.length === 0)
+    .map((org) => `${org.name} (${org.id})`);
 
   return {
     name: "Every organization has at least one OWNER member",
     passed: orgsWithoutOwner.length === 0,
-    count: orgs.length,
+    count: orgsWithOwnerCounts.length,
     details:
       orgsWithoutOwner.length > 0
         ? `${orgsWithoutOwner.length} org(s) without OWNER: ${orgsWithoutOwner.slice(0, 5).join(", ")}${orgsWithoutOwner.length > 5 ? "..." : ""}`

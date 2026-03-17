@@ -31,7 +31,7 @@ const BillingSection = () => {
         window.open(data.url, "_blank", "noopener,noreferrer");
       },
       onError: (error: Error) => {
-        logger.error("Failed to open billing portal:", error);
+        logger.error({ error }, "Failed to open billing portal");
       },
     });
 
