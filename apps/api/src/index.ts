@@ -5,6 +5,13 @@ if (process.argv[2] === "setup") {
   process.exit(0);
 }
 
+if (process.argv[2] === "worker") {
+  // Run the alert monitor as a standalone process.
+  // alert-monitor.js self-starts and registers its own signal handlers.
+  await import("./workers/alert-monitor.js");
+  // Process stays alive until SIGTERM/SIGINT handled by alert-monitor
+}
+
 import { parseArgs } from "node:util";
 
 // CLI argument parsing — overrides env vars for binary mode.
