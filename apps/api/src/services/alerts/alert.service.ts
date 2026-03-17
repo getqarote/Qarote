@@ -324,13 +324,14 @@ class AlertService {
         where.severity = {
           in: [PrismaAlertSeverity.INFO, PrismaAlertSeverity.LOW],
         };
-      } else {
-        const legacyToPrisma: Record<string, PrismaAlertSeverity> = {
-          critical: PrismaAlertSeverity.CRITICAL,
-          warning: PrismaAlertSeverity.MEDIUM,
+      } else if (options.severity === "warning") {
+        // HIGH is never written by the severity mapper (warning → MEDIUM) but
+        // must be included here so stored HIGH alerts appear in warning queries.
+        where.severity = {
+          in: [PrismaAlertSeverity.MEDIUM, PrismaAlertSeverity.HIGH],
         };
-        const mapped = legacyToPrisma[options.severity];
-        if (mapped) where.severity = mapped;
+      } else if (options.severity === "critical") {
+        where.severity = PrismaAlertSeverity.CRITICAL;
       }
     }
 

@@ -404,26 +404,42 @@ export const managementRouter = router({
           });
 
           // Auto-switch the requesting user to their next available workspace.
-          // Runs inside the transaction so the update is rolled back if the
-          // delete fails, and the delete is rolled back if the update fails.
-          // Check both ownership and membership (same logic as getUserWorkspaces)
-          const next = await tx.workspace.findFirst({
-            where: {
-              OR: [
-                { ownerId: user.id },
-                { members: { some: { userId: user.id } } },
-              ],
-            },
-            orderBy: { createdAt: "desc" },
-            select: { id: true },
-          });
+          // The updateMany above nulled all users' workspaceId (including the
+          // requester's), so we must always re-set it here.
+          //
+          // If the deleted workspace was the user's active one, find the next
+          // available workspace.  Otherwise, restore their previous workspaceId
+          // so their session is not disrupted.
+          const wasActive = user.workspaceId === workspaceId;
 
+          if (wasActive) {
+            // Check both ownership and membership (same logic as getUserWorkspaces)
+            const next = await tx.workspace.findFirst({
+              where: {
+                OR: [
+                  { ownerId: user.id },
+                  { members: { some: { userId: user.id } } },
+                ],
+              },
+              orderBy: { createdAt: "desc" },
+              select: { id: true },
+            });
+
+            await tx.user.update({
+              where: { id: user.id },
+              data: { workspaceId: next?.id ?? null },
+            });
+
+            return next;
+          }
+
+          // Restore the user's previous workspaceId (nulled by updateMany above)
           await tx.user.update({
             where: { id: user.id },
-            data: { workspaceId: next?.id ?? null },
+            data: { workspaceId: user.workspaceId },
           });
 
-          return next;
+          return { id: user.workspaceId } as { id: string };
         });
 
         ctx.logger.info(
