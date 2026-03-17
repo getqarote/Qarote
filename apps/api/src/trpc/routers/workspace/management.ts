@@ -435,7 +435,10 @@ export const managementRouter = router({
           "Workspace deleted successfully"
         );
 
-        return { message: te(ctx.locale, "messages.workspaceDeletedSuccess") };
+        return {
+          message: te(ctx.locale, "messages.workspaceDeletedSuccess"),
+          switchedTo: nextWorkspace?.id ?? null,
+        };
       } catch (error) {
         if (error instanceof TRPCError) {
           throw error;

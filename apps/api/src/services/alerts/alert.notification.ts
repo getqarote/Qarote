@@ -412,7 +412,7 @@ class AlertNotificationService {
               serverId,
             });
 
-            await Promise.all(
+            const stampResults = await Promise.allSettled(
               alertsToNotify.map(async (alert) => {
                 const fingerprint = generateAlertFingerprint(
                   serverId,
@@ -432,6 +432,14 @@ class AlertNotificationService {
                 }
               })
             );
+            for (const result of stampResults) {
+              if (result.status === "rejected") {
+                logger.error(
+                  { error: result.reason, workspaceId, serverId },
+                  "Failed to stamp emailSentAt on alert — may re-notify on next poll"
+                );
+              }
+            }
 
             logger.info(
               `Sent alert notification email for ${alertsToNotify.length} new/recurring alerts to ${workspace.contactEmail}`

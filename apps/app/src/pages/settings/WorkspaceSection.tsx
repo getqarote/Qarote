@@ -18,7 +18,7 @@ import { useWorkspace } from "@/hooks/ui/useWorkspace";
 const WorkspaceSection = () => {
   const { t } = useTranslation("profile");
   const { workspace, refetch: refetchWorkspace } = useWorkspace();
-  const { refetchUser } = useAuth();
+  const { user, updateUser, refetchUser } = useAuth();
   const { data: profileData } = useProfile();
   const navigate = useNavigate();
   const updateWorkspaceMutation = useUpdateWorkspace();
@@ -47,19 +47,28 @@ const WorkspaceSection = () => {
 
   const handleDeleteWorkspace = async () => {
     if (!workspace?.id) return;
+    let result;
     try {
-      await deleteWorkspaceMutation.mutateAsync({ workspaceId: workspace.id });
+      result = await deleteWorkspaceMutation.mutateAsync({
+        workspaceId: workspace.id,
+      });
     } catch {
       toast.error(t("toast.workspaceDeleteFailed"));
       return;
     }
+    const switchedTo = result.switchedTo;
 
-    // Refetch auth user so user.workspaceId updates (auth context uses reducer state,
-    // not reactive to React Query cache invalidation)
-    try {
-      await refetchUser();
-    } catch {
-      // Continue even if refetch fails — deletion already succeeded
+    // Update auth context immediately from the mutation response to avoid a
+    // stale workspaceId (auth context uses reducer state, not React Query cache).
+    // Fall back to refetchUser if user is not yet available in context.
+    if (user) {
+      updateUser({ ...user, workspaceId: switchedTo ?? undefined });
+    } else {
+      try {
+        await refetchUser();
+      } catch {
+        // Continue even if refetch fails — deletion already succeeded
+      }
     }
     toast.success(t("toast.workspaceDeleted"));
     // Always navigate to /workspace — its loading state acts as a clean transition:
