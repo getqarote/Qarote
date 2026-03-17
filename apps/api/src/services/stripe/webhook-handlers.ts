@@ -354,11 +354,6 @@ export async function handleSubscriptionChange(subscription: Subscription) {
       select: { userId: true },
     });
 
-    // Get or create subscription record
-    const existingSubscription = await prisma.subscription.findUnique({
-      where: { stripeSubscriptionId: subscriptionId },
-    });
-
     const subscriptionFirstItem = subscription.items?.data?.[0];
     const priceId = subscriptionFirstItem?.price?.id || "";
     const priceAmount = subscriptionFirstItem?.price?.unit_amount || 0;
@@ -366,10 +361,7 @@ export async function handleSubscriptionChange(subscription: Subscription) {
     const subscriptionData = {
       stripePriceId: priceId,
       stripeCustomerId: customerId,
-      plan:
-        CoreStripeService.mapStripePlanToUserPlan(priceId) ||
-        existingSubscription?.plan ||
-        UserPlan.FREE,
+      plan: CoreStripeService.mapStripePlanToUserPlan(priceId) || UserPlan.FREE,
       status: CoreStripeService.mapStripeStatusToSubscriptionStatus(
         subscription.status
       ),
@@ -392,24 +384,20 @@ export async function handleSubscriptionChange(subscription: Subscription) {
       cancelAtPeriodEnd: subscription.cancel_at_period_end || false,
     };
 
-    if (existingSubscription) {
-      await prisma.subscription.update({
-        where: { stripeSubscriptionId: subscriptionId },
-        data: {
-          ...subscriptionData,
-          organizationId: org.id,
-        },
-      });
-    } else {
-      await prisma.subscription.create({
-        data: {
-          userId: ownerMember?.userId ?? "",
-          organizationId: org.id,
-          stripeSubscriptionId: subscriptionId,
-          ...subscriptionData,
-        },
-      });
-    }
+    // Upsert to handle race conditions from duplicate webhook events
+    await prisma.subscription.upsert({
+      where: { stripeSubscriptionId: subscriptionId },
+      update: {
+        ...subscriptionData,
+        organizationId: org.id,
+      },
+      create: {
+        userId: ownerMember?.userId ?? "",
+        organizationId: org.id,
+        stripeSubscriptionId: subscriptionId,
+        ...subscriptionData,
+      },
+    });
 
     // Update Organization stripe fields
     await prisma.organization.update({

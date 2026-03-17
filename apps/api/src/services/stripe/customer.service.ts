@@ -452,9 +452,9 @@ export class StripeCustomerService {
       idempotencyKey,
     });
 
-    // Also store on the org for quick lookup
-    await prisma.organization.update({
-      where: { id: organizationId },
+    // Conditional write: only set if still null (race-safe)
+    await prisma.organization.updateMany({
+      where: { id: organizationId, stripeSubscriptionId: null },
       data: { stripeSubscriptionId: subscription.id },
     });
 
@@ -545,6 +545,30 @@ export class StripeCustomerService {
     }
 
     logger.info({ userId }, "Provisioning trial for new user (org-based)");
+
+    // Idempotency guard: check if user already has an organization
+    const existingMembership = await prisma.organizationMember.findFirst({
+      where: { userId },
+      include: { organization: true },
+    });
+
+    if (existingMembership) {
+      logger.info(
+        { userId, organizationId: existingMembership.organizationId },
+        "User already has organization, skipping org creation"
+      );
+      // Provision trial on existing org if not already provisioned
+      if (!existingMembership.organization.stripeSubscriptionId) {
+        return StripeCustomerService.provisionTrialForOrg({
+          organizationId: existingMembership.organizationId,
+          email,
+          name,
+          userId,
+          prisma,
+        });
+      }
+      return null;
+    }
 
     // Create an Organization for this user and make them the OWNER
     const orgSlug = `user-${userId.slice(0, 8)}-${Date.now()}`;
