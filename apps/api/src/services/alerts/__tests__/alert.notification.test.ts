@@ -273,9 +273,10 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
         SERVER_NAME
       );
 
-      expect(mockPrisma.alert.update).toHaveBeenCalledWith(
+      // Code uses updateMany with conditional predicate to guard against concurrent resolution
+      expect(mockPrisma.alert.updateMany).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: { id: existingActiveRow.id },
+          where: expect.objectContaining({ id: existingActiveRow.id }),
           data: expect.objectContaining({
             lastSeenAt: expect.any(Date),
             resolvedAt: null,
