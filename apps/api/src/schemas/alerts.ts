@@ -162,6 +162,7 @@ export const UpdateAlertNotificationSettingsRequestSchema = z.object({
 const AlertTypeSchema = z.enum([
   "QUEUE_DEPTH",
   "MESSAGE_RATE",
+  "UNACKED_MESSAGES",
   "CONSUMER_COUNT",
   "MEMORY_USAGE",
   "DISK_USAGE",
