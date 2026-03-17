@@ -137,7 +137,7 @@ describe("feedbackRouter.submit", () => {
     const caller = feedbackRouter.createCaller(makeCtx() as never);
     const result = await caller.submit({
       type: "BUG",
-      category: "UI",
+      category: "UI_UX",
       title: "Button broken",
       description: "The button does nothing",
       priority: "HIGH",
@@ -162,7 +162,7 @@ describe("feedbackRouter.submit", () => {
     const caller = feedbackRouter.createCaller(makeCtx() as never);
     await caller.submit({
       type: "FEATURE",
-      category: "UX",
+      category: "UI_UX",
       title: "Feature request",
       description: "Please add this",
       priority: "LOW",

@@ -215,7 +215,7 @@ describe("alertsRouter.updateThresholds", () => {
 
     const caller = alertsRouter.createCaller(makeCtx() as never);
     const result = await caller.updateThresholds({
-      thresholds: { queueMessageThreshold: 200 },
+      thresholds: { queueMessages: { warning: 200 } },
     });
 
     expect(result.success).toBe(true);
@@ -230,7 +230,9 @@ describe("alertsRouter.updateThresholds", () => {
 
     const caller = alertsRouter.createCaller(makeCtx() as never);
     await expect(
-      caller.updateThresholds({ thresholds: { queueMessageThreshold: 999 } })
+      caller.updateThresholds({
+        thresholds: { queueMessages: { warning: 999 } },
+      })
     ).rejects.toMatchObject({ code: "FORBIDDEN" });
   });
 });
