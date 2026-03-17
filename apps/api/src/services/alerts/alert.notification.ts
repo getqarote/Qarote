@@ -215,7 +215,7 @@ class AlertNotificationService {
         activeFingerprints.add(fingerprint);
 
         const existingActiveAlert = activeAlertByFingerprint.get(fingerprint);
-        const isNew = !existingActiveAlert;
+        let isNew = !existingActiveAlert;
 
         const prismaSeverity = toPrismaAlertSeverity(alert.severity);
         const title = this.getAlertTitle(
@@ -229,9 +229,18 @@ class AlertNotificationService {
           alert.source.name
         );
 
+        let activeAlertId: string | undefined;
+
         if (existingActiveAlert) {
-          await prisma.alert.update({
-            where: { id: existingActiveAlert.id },
+          // Conditional update: only succeeds if the row is still ACTIVE with the
+          // expected fingerprint. Guards against a concurrent resolution that
+          // happened between the snapshot read and this write.
+          const result = await prisma.alert.updateMany({
+            where: {
+              id: existingActiveAlert.id,
+              status: "ACTIVE",
+              fingerprint,
+            },
             data: {
               lastSeenAt: now,
               resolvedAt: null,
@@ -241,8 +250,20 @@ class AlertNotificationService {
               details: alert.details as object,
             },
           });
-          fingerprintToAlertId.set(fingerprint, existingActiveAlert.id);
-        } else {
+          if (result.count === 1) {
+            activeAlertId = existingActiveAlert.id;
+          } else {
+            // Row was concurrently resolved; fall through to create a new row.
+            isNew = true;
+            logger.debug(
+              { fingerprint },
+              "Active alert was concurrently resolved; re-creating"
+            );
+          }
+        }
+
+        if (!activeAlertId) {
+          // Brand-new alert or post-resolution re-fire after concurrent resolve.
           try {
             const created = await prisma.alert.create({
               data: {
@@ -262,7 +283,7 @@ class AlertNotificationService {
                 details: alert.details as object,
               },
             });
-            fingerprintToAlertId.set(fingerprint, created.id);
+            activeAlertId = created.id;
           } catch (error) {
             if ((error as { code?: string }).code === "P2002") {
               // Race: a concurrent invocation already created this alert.
@@ -277,6 +298,8 @@ class AlertNotificationService {
           }
         }
 
+        fingerprintToAlertId.set(fingerprint, activeAlertId);
+
         const shouldNotifyForSeverity = notificationSeverities.includes(
           alert.severity
         );
@@ -285,7 +308,7 @@ class AlertNotificationService {
         if (isNew && shouldNotifyForSeverity) {
           // Brand new alert OR alert that came back after resolution (isNew covers both).
           shouldNotify = true;
-        } else if (!isNew && shouldNotifyForSeverity) {
+        } else if (!isNew && shouldNotifyForSeverity && existingActiveAlert) {
           // Ongoing alert — notify only if cooldown has expired
           const referenceTime =
             existingActiveAlert.emailSentAt || existingActiveAlert.firstSeenAt;

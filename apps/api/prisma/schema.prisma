@@ -41,6 +41,19 @@ model Alert {
 
   @@index([workspaceId, status])
   @@index([serverId, status])
+  // NOTE: Prisma cannot express partial unique indexes, so the real invariant
+  // "one ACTIVE alert per fingerprint" is enforced by a hand-written raw SQL
+  // partial unique index named `alert_active_fingerprint_unique`:
+  //   CREATE UNIQUE INDEX "alert_active_fingerprint_unique"
+  //     ON "Alert" (fingerprint)
+  //     WHERE status = 'ACTIVE' AND fingerprint IS NOT NULL;
+  // This index is created in migration
+  // 20260316141713_phase_2_migrate_seen_resolved_to_alert/migration.sql.
+  // @@index([fingerprint]) below is a plain (non-unique, non-partial) index
+  // kept only for query performance. Do NOT remove or replace the raw SQL
+  // partial unique index with a Prisma-managed one — Prisma will drop it on
+  // the next `migrate dev` run unless the DROP INDEX is manually removed from
+  // the generated migration file and the index is restored via `prisma db execute`.
   @@index([fingerprint])
   @@index([resolvedAt])
   @@index([createdAt])
@@ -64,7 +77,7 @@ model AlertRule {
   workspaceId String
   alerts      Alert[]
   user        User?              @relation(fields: [createdById], references: [id], onDelete: SetNull)
-  server      RabbitMQServer?    @relation(fields: [serverId], references: [id], onDelete: SetNull)
+  server      RabbitMQServer?    @relation(fields: [serverId], references: [id], onDelete: Cascade)
   workspace   Workspace          @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@unique([serverId, slug])

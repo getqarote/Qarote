@@ -142,6 +142,7 @@ INSERT INTO "Alert" (
   "firstSeenAt",
   "lastSeenAt",
   "resolvedAt",
+  duration,
   "emailSentAt",
   "createdAt",
   "updatedAt"
@@ -183,6 +184,7 @@ SELECT
   sa."firstSeenAt",
   sa."lastSeenAt",
   sa."resolvedAt",
+  EXTRACT(EPOCH FROM (sa."resolvedAt" - COALESCE(sa."firstSeenAt", sa."createdAt")))::integer * 1000,
   sa."emailSentAt",
   sa."createdAt",
   sa."updatedAt"

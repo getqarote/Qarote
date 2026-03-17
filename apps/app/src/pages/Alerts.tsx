@@ -41,7 +41,7 @@ const Alerts = () => {
   const { selectedServerId, hasServers, setSelectedServerId } =
     useServerContext();
   const { selectedVHost, setSelectedVHost } = useVHostContext();
-  const { userPlan, user } = useUser();
+  const { userPlan, user, isLoading: isUserLoading } = useUser();
   const isAdmin = user?.role === UserRole.ADMIN;
   const { hasFeature: hasAlertingFeature, isLoading: featureFlagsLoading } =
     useFeatureFlags();
@@ -51,12 +51,20 @@ const Alerts = () => {
   const [showAlertRulesModal, setShowAlertRulesModal] = useState(false);
 
   // Open notification settings from query param only for admins.
-  // useEffect defers until user is loaded so isAdmin is accurate.
+  // Wait for user context to hydrate so isAdmin is accurate before evaluating
+  // the deep-link param; also cleans up the param from the URL here so a
+  // separate cleanup effect is not needed.
   useEffect(() => {
-    if (isAdmin && searchParams.get("openNotificationSettings") === "true") {
+    const shouldOpen = searchParams.get("openNotificationSettings") === "true";
+    if (isUserLoading || !shouldOpen) return;
+
+    if (isAdmin) {
       setShowNotificationSettingsModal(true);
     }
-  }, [isAdmin]);
+
+    searchParams.delete("openNotificationSettings");
+    setSearchParams(searchParams, { replace: true });
+  }, [isAdmin, isUserLoading, searchParams, setSearchParams]);
   const [viewMode, setViewMode] = useState<"active" | "resolved">("active");
 
   // Pagination state for Active Alerts
@@ -100,14 +108,6 @@ const Alerts = () => {
   ]);
 
   const currentServerId = serverId || selectedServerId;
-
-  // Clean up the openNotificationSettings query parameter from URL after initial read
-  useEffect(() => {
-    if (searchParams.get("openNotificationSettings") === "true") {
-      searchParams.delete("openNotificationSettings");
-      setSearchParams(searchParams, { replace: true });
-    }
-  }, [searchParams, setSearchParams]);
 
   // Ensure vhost is always set (use "/" as default if not selected)
   const currentVHost = selectedVHost || "/";

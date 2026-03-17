@@ -22,6 +22,7 @@ import { AlertSeverity as PrismaAlertSeverity } from "@/generated/prisma/client"
 /** Maps Prisma AlertSeverity enum → internal lowercase severity for the frontend. */
 const PRISMA_TO_INTERNAL_SEVERITY: Record<string, AlertSeverity> = {
   CRITICAL: AlertSeverity.CRITICAL,
+  HIGH: AlertSeverity.WARNING,
   MEDIUM: AlertSeverity.WARNING,
   INFO: AlertSeverity.INFO,
   LOW: AlertSeverity.INFO,
@@ -30,6 +31,7 @@ const PRISMA_TO_INTERNAL_SEVERITY: Record<string, AlertSeverity> = {
 /** Maps Prisma AlertSeverity enum → legacy lowercase string (resolved-alert responses). */
 const PRISMA_TO_LEGACY_SEVERITY: Record<string, string> = {
   CRITICAL: "critical",
+  HIGH: "warning",
   MEDIUM: "warning",
   INFO: "info",
   LOW: "info",
@@ -372,8 +374,8 @@ class AlertService {
         },
         firstSeenAt: (
           alert.firstSeenAt ??
-          alert.resolvedAt ??
-          alert.createdAt
+          alert.createdAt ??
+          alert.resolvedAt
         ).toISOString(),
         resolvedAt: alert.resolvedAt!.toISOString(),
         duration: alert.duration,

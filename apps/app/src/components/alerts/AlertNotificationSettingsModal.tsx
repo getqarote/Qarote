@@ -99,6 +99,16 @@ export function AlertNotificationSettingsModal({
     NotificationPermission | "unsupported"
   >("Notification" in window ? Notification.permission : "unsupported");
 
+  // Resync permission state on each open so changes made in browser settings
+  // between opens are reflected immediately.
+  useEffect(() => {
+    if (isOpen) {
+      setNotificationPermission(
+        "Notification" in window ? Notification.permission : "unsupported"
+      );
+    }
+  }, [isOpen]);
+
   // Track if this is the initial load to prevent auto-save on mount
   const isInitialMount = useRef(true);
 

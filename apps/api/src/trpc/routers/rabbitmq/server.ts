@@ -230,8 +230,10 @@ export const serverRouter = router({
           },
         });
 
-        // Seed default alert rules for the new server (non-blocking)
-        await seedDefaultAlertRules(server.id, workspaceId);
+        // Seed default alert rules for the new server — fire-and-forget;
+        // errors are caught and logged inside seedDefaultAlertRules so
+        // server creation is never blocked or rolled back by seeding failures.
+        void seedDefaultAlertRules(server.id, workspaceId);
 
         return {
           server: {
