@@ -394,7 +394,7 @@ export const managementRouter = router({
         return {
           workspace: {
             ...WorkspaceMapper.toApiResponse(updatedWorkspace),
-            isOwner: true,
+            isOwner: user.id === updatedWorkspace.ownerId,
             userRole: UserRole.ADMIN,
           },
         };

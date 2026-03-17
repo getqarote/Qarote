@@ -415,14 +415,23 @@ export async function handleSubscriptionChange(subscription: Subscription) {
         return;
       }
 
+      if (!mappedPlan) {
+        logger.error(
+          { priceId, subscriptionId },
+          "Cannot create subscription: unmapped Stripe price ID"
+        );
+        throw new Error(
+          `Unmapped Stripe price ID: ${priceId} — cannot create subscription`
+        );
+      }
+
       await prisma.subscription.create({
         data: {
           userId: ownerMember.userId,
           organizationId: org.id,
           stripeSubscriptionId: subscriptionId,
           ...subscriptionData,
-          // plan is required on create — fall back to FREE only for new records
-          plan: mappedPlan ?? UserPlan.FREE,
+          plan: mappedPlan,
         },
       });
     }

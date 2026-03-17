@@ -360,8 +360,7 @@ const TeamSection = () => {
                       </div>
                       <Button
                         size="sm"
-                        variant="outline"
-                        className="shrink-0"
+                        className="shrink-0 bg-gradient-button hover:bg-gradient-button-hover text-white"
                         onClick={() =>
                           handleAddFromOrg(member.userId, displayName)
                         }

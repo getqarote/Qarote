@@ -101,6 +101,7 @@ const Billing: React.FC = () => {
     trpc.payment.billing.createBillingPortalSession.useMutation({
       onError: (error: Error) => {
         logger.error("Failed to open billing portal:", error);
+        toast.error(t("error.failedToOpenBillingPortal"));
       },
     });
 
@@ -122,6 +123,7 @@ const Billing: React.FC = () => {
       },
       onError: () => {
         win?.close();
+        toast.error(t("error.failedToOpenBillingPortal"));
       },
     });
   };

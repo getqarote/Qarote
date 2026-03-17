@@ -30,8 +30,38 @@ function generateSlug(name: string): string {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .slice(0, 40);
-  const suffix = randomBytes(3).toString("hex");
+  const suffix = randomBytes(6).toString("hex");
   return `${base || "org"}-${suffix}`;
+}
+
+const MAX_SLUG_RETRIES = 5;
+
+/**
+ * Generate a slug that doesn't collide with existing organizations.
+ * Retries up to MAX_SLUG_RETRIES times on collision.
+ */
+async function generateUniqueSlug(
+  tx: {
+    organization: {
+      findUnique: (args: {
+        where: { slug: string };
+        select: { id: true };
+      }) => Promise<{ id: string } | null>;
+    };
+  },
+  name: string
+): Promise<string> {
+  for (let attempt = 0; attempt < MAX_SLUG_RETRIES; attempt++) {
+    const slug = generateSlug(name);
+    const existing = await tx.organization.findUnique({
+      where: { slug },
+      select: { id: true },
+    });
+    if (!existing) return slug;
+  }
+  throw new Error(
+    `Failed to generate unique slug for "${name}" after ${MAX_SLUG_RETRIES} attempts`
+  );
 }
 
 interface MigrationFailure {
@@ -130,7 +160,7 @@ export async function runOrgMigration(): Promise<MigrationStats> {
           const org = await tx.organization.create({
             data: {
               name: orgName,
-              slug: generateSlug(displayName),
+              slug: await generateUniqueSlug(tx, displayName),
               contactEmail: user.email,
               stripeCustomerId: user.subscription?.stripeCustomerId ?? null,
               stripeSubscriptionId:
@@ -272,7 +302,7 @@ export async function runOrgMigration(): Promise<MigrationStats> {
         const org = await tx.organization.create({
           data: {
             name: orgName,
-            slug: generateSlug(displayName),
+            slug: await generateUniqueSlug(tx, displayName),
             contactEmail: user.email,
             stripeCustomerId: sub.stripeCustomerId ?? null,
             stripeSubscriptionId: sub.stripeSubscriptionId ?? null,

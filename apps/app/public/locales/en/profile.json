@@ -28,7 +28,7 @@
     "invitationFailed": "Failed to invite {{email}}: {{error}}",
     "workspaceDeleted": "Workspace deleted successfully.",
     "workspaceDeleteFailed": "Failed to delete workspace.",
-    "userAdded": "{{name}} added to workspace"
+    "userAdded": "{{name}} added to workspace."
   },
   "invite": {
     "title": "Invite Team Members",
