@@ -17,6 +17,7 @@ const config: KnipConfig = {
     },
     "packages/i18n": {
       project: ["src/**/*.ts"],
+      ignoreDependencies: ["react"],
     },
   },
   ignore: [

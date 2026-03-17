@@ -2,10 +2,6 @@ import { z } from "zod";
 
 import { UserRole } from "@/generated/prisma/client";
 
-export const OrganizationIdParamSchema = z.object({
-  organizationId: z.string(),
-});
-
 export const UpdateOrganizationSchema = z.object({
   name: z
     .string()
