@@ -1,7 +1,9 @@
 import { useTranslation } from "react-i18next";
 
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { TagsInput } from "@/components/ui/tags-input";
 
 import { WorkspaceFormState } from "./profileUtils";
 
@@ -13,6 +15,7 @@ interface WorkspaceFormFieldsProps {
   workspace: {
     name: string;
     contactEmail?: string;
+    tags?: string[];
   };
   userEmail?: string;
 }
@@ -69,6 +72,30 @@ export const WorkspaceFormFields = ({
             </p>
           )}
         </div>
+      </div>
+      <div className="space-y-2">
+        <Label>{t("workspace.tags")}</Label>
+        {editingWorkspace && isAdmin ? (
+          <TagsInput
+            value={workspaceForm.tags}
+            onChange={(tags) => setWorkspaceForm({ ...workspaceForm, tags })}
+            placeholder={t("workspace.tagsPlaceholder")}
+          />
+        ) : (
+          <div className="flex flex-wrap gap-1 min-h-10 p-2 border rounded-md bg-muted">
+            {workspace.tags && workspace.tags.length > 0 ? (
+              workspace.tags.map((tag) => (
+                <Badge key={tag} variant="secondary" className="text-xs">
+                  {tag}
+                </Badge>
+              ))
+            ) : (
+              <span className="text-sm text-muted-foreground">
+                {t("workspace.notSet")}
+              </span>
+            )}
+          </div>
+        )}
       </div>
     </>
   );

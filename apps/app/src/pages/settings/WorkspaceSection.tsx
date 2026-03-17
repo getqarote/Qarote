@@ -28,6 +28,7 @@ const WorkspaceSection = () => {
   const [workspaceForm, setWorkspaceForm] = useState<WorkspaceFormState>({
     name: "",
     contactEmail: "",
+    tags: [],
   });
 
   const profile = profileData?.user;
@@ -40,6 +41,7 @@ const WorkspaceSection = () => {
     setWorkspaceForm({
       name: workspace.name || "",
       contactEmail: workspace.contactEmail || "",
+      tags: workspace.tags || [],
     });
   }
 
