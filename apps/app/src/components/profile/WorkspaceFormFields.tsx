@@ -82,10 +82,10 @@ export const WorkspaceFormFields = ({
             placeholder={t("workspace.tagsPlaceholder")}
           />
         ) : (
-          <div className="flex flex-wrap gap-1 min-h-10 p-2 border rounded-md bg-muted">
+          <div className="flex flex-wrap gap-2 py-1">
             {workspace.tags && workspace.tags.length > 0 ? (
               workspace.tags.map((tag) => (
-                <Badge key={tag} variant="secondary" className="text-xs">
+                <Badge key={tag} variant="outline" className="text-xs">
                   {tag}
                 </Badge>
               ))
