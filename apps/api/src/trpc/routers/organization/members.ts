@@ -199,6 +199,9 @@ export const membersRouter = router({
           organizationId,
           acceptedAt: null,
           expiresAt: { gt: new Date() },
+          // Exclude the invitation being refreshed so re-inviting the same
+          // email doesn't count against the plan limit.
+          email: { not: input.email },
         },
       });
       validateUserInvitation(orgPlan, memberCount, pendingCount);
@@ -374,6 +377,7 @@ export const membersRouter = router({
     const { organizationId } = await requireOrgAdmin(
       ctx.prisma,
       ctx.user.id,
+      ctx.user.workspaceId,
       ctx.locale
     );
 
@@ -645,25 +649,29 @@ export const membersRouter = router({
         });
       }
 
-      // Prevent removing the last owner
-      if (target.role === OrgRole.OWNER && input.role !== "OWNER") {
-        const ownerCount = await ctx.prisma.organizationMember.count({
-          where: {
-            organizationId: caller.organizationId,
-            role: OrgRole.OWNER,
-          },
-        });
-        if (ownerCount <= 1) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "Cannot remove the last owner. Transfer ownership first.",
+      // Wrap count check + update in a transaction to prevent concurrent
+      // demotions from leaving the organization with zero owners.
+      await ctx.prisma.$transaction(async (tx) => {
+        if (target.role === OrgRole.OWNER && input.role !== "OWNER") {
+          const ownerCount = await tx.organizationMember.count({
+            where: {
+              organizationId: caller.organizationId,
+              role: OrgRole.OWNER,
+            },
           });
+          if (ownerCount <= 1) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message:
+                "Cannot remove the last owner. Transfer ownership first.",
+            });
+          }
         }
-      }
 
-      await ctx.prisma.organizationMember.update({
-        where: { id: input.memberId },
-        data: { role: input.role as OrgRole },
+        await tx.organizationMember.update({
+          where: { id: input.memberId },
+          data: { role: input.role as OrgRole },
+        });
       });
 
       ctx.logger.info(
@@ -717,45 +725,46 @@ export const membersRouter = router({
         });
       }
 
-      // Cannot remove yourself if you're the last owner
-      if (target.userId === ctx.user.id && target.role === OrgRole.OWNER) {
-        const ownerCount = await ctx.prisma.organizationMember.count({
-          where: {
-            organizationId: caller.organizationId,
-            role: OrgRole.OWNER,
-          },
-        });
-        if (ownerCount <= 1) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message:
-              "Cannot leave the organization as the last owner. Transfer ownership first.",
+      // Remove workspace access, org membership, and clear active workspace atomically.
+      // The last-owner guard runs inside the transaction to prevent concurrent
+      // removals from both passing the count check.
+      await ctx.prisma.$transaction(async (tx) => {
+        if (target.userId === ctx.user.id && target.role === OrgRole.OWNER) {
+          const ownerCount = await tx.organizationMember.count({
+            where: {
+              organizationId: caller.organizationId,
+              role: OrgRole.OWNER,
+            },
           });
+          if (ownerCount <= 1) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message:
+                "Cannot leave the organization as the last owner. Transfer ownership first.",
+            });
+          }
         }
-      }
 
-      // Remove workspace access, org membership, and clear active workspace atomically
-      await ctx.prisma.$transaction([
         // Clear workspaceId if it points to a workspace in this org
-        ctx.prisma.user.updateMany({
+        await tx.user.updateMany({
           where: {
             id: target.userId,
             workspace: { organizationId: target.organizationId },
           },
           data: { workspaceId: null },
-        }),
+        });
         // Delete WorkspaceMember rows for all workspaces in this org
-        ctx.prisma.workspaceMember.deleteMany({
+        await tx.workspaceMember.deleteMany({
           where: {
             userId: target.userId,
             workspace: { organizationId: target.organizationId },
           },
-        }),
+        });
         // Delete the org membership
-        ctx.prisma.organizationMember.delete({
+        await tx.organizationMember.delete({
           where: { id: input.memberId },
-        }),
-      ]);
+        });
+      });
 
       ctx.logger.info(
         {
@@ -845,6 +854,7 @@ export const membersRouter = router({
     const { organizationId } = await requireOrgAdmin(
       ctx.prisma,
       ctx.user.id,
+      ctx.user.workspaceId,
       ctx.locale
     );
 

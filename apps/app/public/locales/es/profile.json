@@ -128,6 +128,16 @@
     "removeDialogWarning": "Esta acción no se puede deshacer. El usuario perderá el acceso a todos los recursos del espacio de trabajo y deberá ser reinvitado para recuperar el acceso.",
     "cancel": "Cancelar",
     "removing": "Eliminando...",
-    "removeUserButton": "Eliminar usuario"
+    "removeUserButton": "Eliminar usuario",
+    "addFromOrg": "Agregar desde la organización",
+    "addFromOrgTitle": "Agregar desde la organización",
+    "addFromOrgDescription": "Agrega miembros existentes de la organización a este espacio de trabajo.",
+    "addFromOrgRole": "Rol:",
+    "addFromOrgAdd": "Agregar",
+    "addFromOrgDone": "Listo",
+    "addFromOrgAllHaveAccess": "Todos los miembros de la organización ya tienen acceso.",
+    "roleAdmin": "Administrador",
+    "roleMember": "Miembro",
+    "roleReadonly": "Solo lectura"
   }
 }

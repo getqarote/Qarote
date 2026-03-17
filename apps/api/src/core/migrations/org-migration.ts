@@ -71,15 +71,6 @@ export async function runOrgMigration(): Promise<MigrationStats> {
   for (const { ownerId } of ownedWorkspaces) {
     if (!ownerId) continue;
 
-    // Skip if this user already has an organization (idempotency)
-    const existingMembership = await prisma.organizationMember.findFirst({
-      where: { userId: ownerId, role: OrgRole.OWNER },
-    });
-    if (existingMembership) {
-      usersWithOrg.add(ownerId);
-      continue;
-    }
-
     const user = await prisma.user.findUnique({
       where: { id: ownerId },
       select: {
@@ -102,8 +93,16 @@ export async function runOrgMigration(): Promise<MigrationStats> {
       continue;
     }
 
+    // Check if this user already has an organization (from bootstrap-org or prior run)
+    const existingMembership = await prisma.organizationMember.findFirst({
+      where: { userId: ownerId, role: OrgRole.OWNER },
+      select: { organizationId: true },
+    });
+
     const displayName =
-      user.name || `${user.firstName} ${user.lastName}`.trim() || "User";
+      user.name ||
+      [user.firstName, user.lastName].filter(Boolean).join(" ").trim() ||
+      "User";
     const orgName = `${displayName}'s Organization`;
 
     try {
@@ -112,41 +111,60 @@ export async function runOrgMigration(): Promise<MigrationStats> {
       let txWorkspaces = 0;
 
       await prisma.$transaction(async (tx) => {
-        // Create the Organization with billing fields from the user's subscription
-        const org = await tx.organization.create({
-          data: {
-            name: orgName,
-            slug: generateSlug(displayName),
-            contactEmail: user.email,
-            stripeCustomerId: user.subscription?.stripeCustomerId ?? null,
-            stripeSubscriptionId:
-              user.subscription?.stripeSubscriptionId ?? null,
-          },
-        });
+        let orgId: string;
 
-        txOrgs++;
+        if (existingMembership) {
+          // Hydrate preexisting org with missing billing/contact fields
+          orgId = existingMembership.organizationId;
+          await tx.organization.update({
+            where: { id: orgId },
+            data: {
+              contactEmail: user.email,
+              stripeCustomerId: user.subscription?.stripeCustomerId ?? null,
+              stripeSubscriptionId:
+                user.subscription?.stripeSubscriptionId ?? null,
+            },
+          });
+        } else {
+          // Create the Organization with billing fields from the user's subscription
+          const org = await tx.organization.create({
+            data: {
+              name: orgName,
+              slug: generateSlug(displayName),
+              contactEmail: user.email,
+              stripeCustomerId: user.subscription?.stripeCustomerId ?? null,
+              stripeSubscriptionId:
+                user.subscription?.stripeSubscriptionId ?? null,
+            },
+          });
+          orgId = org.id;
+          txOrgs++;
 
-        // Create OWNER membership
-        await tx.organizationMember.create({
-          data: {
-            userId: user.id,
-            organizationId: org.id,
-            role: OrgRole.OWNER,
-          },
-        });
-        txMembers++;
+          // Create OWNER membership
+          await tx.organizationMember.create({
+            data: {
+              userId: user.id,
+              organizationId: orgId,
+              role: OrgRole.OWNER,
+            },
+          });
+          txMembers++;
+        }
 
-        // Link all workspaces owned by this user (single batch update)
+        // Link all workspaces owned by this user that aren't yet linked
         const workspaces = await tx.workspace.findMany({
           where: { ownerId: user.id },
-          select: { id: true },
+          select: { id: true, organizationId: true },
         });
-        const workspaceIds = workspaces.map((ws) => ws.id);
+        const unlinkedIds = workspaces
+          .filter((ws) => ws.organizationId !== orgId)
+          .map((ws) => ws.id);
+        const allWorkspaceIds = workspaces.map((ws) => ws.id);
 
-        if (workspaceIds.length > 0) {
+        if (unlinkedIds.length > 0) {
           const { count } = await tx.workspace.updateMany({
-            where: { id: { in: workspaceIds } },
-            data: { organizationId: org.id },
+            where: { id: { in: unlinkedIds } },
+            data: { organizationId: orgId },
           });
           txWorkspaces += count;
         }
@@ -154,7 +172,7 @@ export async function runOrgMigration(): Promise<MigrationStats> {
         // Create MEMBER memberships for workspace members (deduplicated)
         const workspaceMembers = await tx.workspaceMember.findMany({
           where: {
-            workspaceId: { in: workspaceIds },
+            workspaceId: { in: allWorkspaceIds },
             userId: { not: user.id }, // Exclude the owner (already OWNER)
           },
           select: { userId: true },
@@ -167,7 +185,7 @@ export async function runOrgMigration(): Promise<MigrationStats> {
             where: {
               userId_organizationId: {
                 userId: wm.userId,
-                organizationId: org.id,
+                organizationId: orgId,
               },
             },
           });
@@ -176,7 +194,7 @@ export async function runOrgMigration(): Promise<MigrationStats> {
             await tx.organizationMember.create({
               data: {
                 userId: wm.userId,
-                organizationId: org.id,
+                organizationId: orgId,
                 role: OrgRole.MEMBER,
               },
             });
@@ -192,7 +210,7 @@ export async function runOrgMigration(): Promise<MigrationStats> {
         if (subscription && !subscription.organizationId) {
           await tx.subscription.update({
             where: { id: subscription.id },
-            data: { organizationId: org.id },
+            data: { organizationId: orgId },
           });
         }
       });
@@ -205,16 +223,10 @@ export async function runOrgMigration(): Promise<MigrationStats> {
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       logger.error(
-        {
-          userId: ownerId,
-          error: message,
-        },
+        { userId: ownerId, error },
         "Failed to create organization for workspace owner — skipping"
       );
-      stats.failures.push({
-        userId: ownerId,
-        error: message,
-      });
+      stats.failures.push({ userId: ownerId, error: message });
     }
   }
 
@@ -246,7 +258,9 @@ export async function runOrgMigration(): Promise<MigrationStats> {
     });
     if (!user) continue;
     const displayName =
-      user.name || `${user.firstName} ${user.lastName}`.trim() || "User";
+      user.name ||
+      [user.firstName, user.lastName].filter(Boolean).join(" ").trim() ||
+      "User";
     const orgName = `${displayName}'s Organization`;
 
     try {
@@ -292,17 +306,10 @@ export async function runOrgMigration(): Promise<MigrationStats> {
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       logger.error(
-        {
-          userId: sub.userId,
-          subscriptionId: sub.id,
-          error: message,
-        },
+        { userId: sub.userId, subscriptionId: sub.id, error },
         "Failed to create organization for orphan subscription — skipping"
       );
-      stats.failures.push({
-        userId: sub.userId,
-        error: message,
-      });
+      stats.failures.push({ userId: sub.userId, error: message });
     }
   }
 

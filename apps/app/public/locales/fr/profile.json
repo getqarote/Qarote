@@ -128,6 +128,16 @@
     "removeDialogWarning": "Cette action est irréversible. L'utilisateur perdra l'accès à toutes les ressources de l'espace de travail et devra être réinvité pour retrouver l'accès.",
     "cancel": "Annuler",
     "removing": "Suppression...",
-    "removeUserButton": "Retirer l'utilisateur"
+    "removeUserButton": "Retirer l'utilisateur",
+    "addFromOrg": "Ajouter depuis l'organisation",
+    "addFromOrgTitle": "Ajouter depuis l'organisation",
+    "addFromOrgDescription": "Ajoutez des membres existants de l'organisation à cet espace de travail.",
+    "addFromOrgRole": "Rôle :",
+    "addFromOrgAdd": "Ajouter",
+    "addFromOrgDone": "Terminé",
+    "addFromOrgAllHaveAccess": "Tous les membres de l'organisation ont déjà accès.",
+    "roleAdmin": "Administrateur",
+    "roleMember": "Membre",
+    "roleReadonly": "Lecture seule"
   }
 }

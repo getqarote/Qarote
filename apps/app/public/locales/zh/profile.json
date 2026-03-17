@@ -128,6 +128,16 @@
     "removeDialogWarning": "此操作无法撤销。该用户将失去对所有工作区资源的访问权限，需要重新邀请才能恢复访问。",
     "cancel": "取消",
     "removing": "移除中...",
-    "removeUserButton": "移除用户"
+    "removeUserButton": "移除用户",
+    "addFromOrg": "从组织添加",
+    "addFromOrgTitle": "从组织添加",
+    "addFromOrgDescription": "将现有组织成员添加到此工作区。",
+    "addFromOrgRole": "角色：",
+    "addFromOrgAdd": "添加",
+    "addFromOrgDone": "完成",
+    "addFromOrgAllHaveAccess": "所有组织成员已拥有访问权限。",
+    "roleAdmin": "管理员",
+    "roleMember": "成员",
+    "roleReadonly": "只读"
   }
 }

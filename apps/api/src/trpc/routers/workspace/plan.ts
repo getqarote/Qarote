@@ -92,12 +92,12 @@ export const planRouter = router({
       const planFeatures = getPlanFeatures(workspacePlan);
 
       // Count workspaces via the same org as the current workspace
-      const ownedWorkspaceCount = currentWorkspace
+      const workspaceCount = currentWorkspace
         ? await ctx.prisma.workspace.count({
             where: { organizationId: currentWorkspace.organizationId },
           })
-        : await ctx.prisma.workspaceMember.count({
-            where: { userId: user.id },
+        : await ctx.prisma.workspace.count({
+            where: { ownerId: user.id },
           });
 
       // Get current workspace counts
@@ -127,15 +127,13 @@ export const planRouter = router({
             : true,
         },
         workspaces: {
-          current: ownedWorkspaceCount,
+          current: workspaceCount,
           limit: planFeatures.maxWorkspaces,
           percentage: planFeatures.maxWorkspaces
-            ? Math.round(
-                (ownedWorkspaceCount / planFeatures.maxWorkspaces) * 100
-              )
+            ? Math.round((workspaceCount / planFeatures.maxWorkspaces) * 100)
             : 0,
           canAdd: planFeatures.maxWorkspaces
-            ? ownedWorkspaceCount < planFeatures.maxWorkspaces
+            ? workspaceCount < planFeatures.maxWorkspaces
             : true,
         },
       };

@@ -302,6 +302,8 @@ const AcceptOrgInvitation = () => {
 
   const form = useForm<AcceptInvitationFormData>({
     resolver: zodResolver(acceptInvitationSchema),
+    mode: "onChange",
+    reValidateMode: "onChange",
     defaultValues: {
       firstName: "",
       lastName: "",
@@ -404,7 +406,7 @@ const AcceptOrgInvitation = () => {
             );
             toast({
               title: t("invitationAccepted"),
-              description: t("signInToAccess"),
+              description: t("orgSignInToAccess"),
               variant: "default",
             });
             navigate("/auth/sign-in", { replace: true });
@@ -500,7 +502,7 @@ const AcceptOrgInvitation = () => {
           <Mail className="h-6 w-6 text-blue-600" />
         </div>
         <CardTitle>{t("joinOrganization")}</CardTitle>
-        <CardDescription>{t("setUpAccount")}</CardDescription>
+        <CardDescription>{t("orgSetUpAccount")}</CardDescription>
       </CardHeader>
 
       <CardContent className="space-y-6">
@@ -517,7 +519,11 @@ const AcceptOrgInvitation = () => {
           email={invitation?.email || ""}
           isPending={acceptOrgInvitationMutation.isPending}
           onSubmit={onSubmit}
-          onNavigateSignIn={() => navigate("/auth/sign-in")}
+          onNavigateSignIn={() =>
+            navigate(
+              `/auth/sign-in?redirect=${encodeURIComponent(`/org-invite/${token}`)}`
+            )
+          }
         />
       </CardContent>
     </PageWrapper>

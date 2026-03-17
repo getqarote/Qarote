@@ -70,6 +70,7 @@ const TeamSection = () => {
   });
   const [inviteLinks, setInviteLinks] = useState<InviteLink[]>([]);
   const [addFromOrgOpen, setAddFromOrgOpen] = useState(false);
+  const [pendingUserId, setPendingUserId] = useState<string | null>(null);
   const [selectedRole, setSelectedRole] = useState<
     "ADMIN" | "MEMBER" | "READONLY"
   >("MEMBER");
@@ -195,6 +196,7 @@ const TeamSection = () => {
       return;
     }
 
+    setPendingUserId(userId);
     try {
       await assignToWorkspaceMutation.mutateAsync({
         userId,
@@ -211,6 +213,8 @@ const TeamSection = () => {
       logger.error("Add from org error:", error);
       const errorMessage = extractErrorMessage(error);
       toast.error(errorMessage);
+    } finally {
+      setPendingUserId(null);
     }
   };
 
@@ -243,7 +247,7 @@ const TeamSection = () => {
             onClick={() => setAddFromOrgOpen(true)}
           >
             <UserPlus className="h-4 w-4 mr-2" />
-            Add from organization
+            {t("team.addFromOrg")}
           </Button>
         </div>
       )}
@@ -283,15 +287,17 @@ const TeamSection = () => {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add from Organization</DialogTitle>
+            <DialogTitle>{t("team.addFromOrgTitle")}</DialogTitle>
             <DialogDescription>
-              Add existing organization members to this workspace.
+              {t("team.addFromOrgDescription")}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-3 py-4">
             <div className="flex items-center gap-2 mb-2">
-              <span className="text-sm font-medium">Role:</span>
+              <span className="text-sm font-medium">
+                {t("team.addFromOrgRole")}
+              </span>
               <Select
                 value={selectedRole}
                 onValueChange={(v) =>
@@ -302,9 +308,11 @@ const TeamSection = () => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="ADMIN">Admin</SelectItem>
-                  <SelectItem value="MEMBER">Member</SelectItem>
-                  <SelectItem value="READONLY">Read-only</SelectItem>
+                  <SelectItem value="ADMIN">{t("team.roleAdmin")}</SelectItem>
+                  <SelectItem value="MEMBER">{t("team.roleMember")}</SelectItem>
+                  <SelectItem value="READONLY">
+                    {t("team.roleReadonly")}
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -317,7 +325,7 @@ const TeamSection = () => {
                 </div>
               ) : availableOrgMembers.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-4">
-                  All organization members already have access.
+                  {t("team.addFromOrgAllHaveAccess")}
                 </p>
               ) : (
                 availableOrgMembers.map((member) => {
@@ -357,12 +365,12 @@ const TeamSection = () => {
                         onClick={() =>
                           handleAddFromOrg(member.userId, displayName)
                         }
-                        disabled={assignToWorkspaceMutation.isPending}
+                        disabled={pendingUserId === member.userId}
                       >
-                        {assignToWorkspaceMutation.isPending ? (
+                        {pendingUserId === member.userId ? (
                           <Loader2 className="h-4 w-4 animate-spin" />
                         ) : (
-                          "Add"
+                          t("team.addFromOrgAdd")
                         )}
                       </Button>
                     </div>
@@ -374,7 +382,7 @@ const TeamSection = () => {
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setAddFromOrgOpen(false)}>
-              Done
+              {t("team.addFromOrgDone")}
             </Button>
           </DialogFooter>
         </DialogContent>

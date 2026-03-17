@@ -2,6 +2,8 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
 
+import { toast } from "sonner";
+
 import { logger } from "@/lib/logger";
 import { trpc } from "@/lib/trpc/client";
 
@@ -105,6 +107,7 @@ const Billing: React.FC = () => {
   const handleOpenBillingPortal = () => {
     if (!workspace?.id) {
       logger.error("Failed to open billing portal: workspace ID required");
+      toast.error(t("error.workspaceIdRequired"));
       return;
     }
     // Open blank tab synchronously during user gesture to avoid popup blockers
