@@ -112,7 +112,7 @@ const OrgInvitationInfo = ({
       <div className="flex items-center gap-2 text-sm text-gray-600">
         <Building2 className="h-4 w-4" />
         <span>
-          Organization: <strong>{invitation.organization.name}</strong>
+          {t("orgLabel")} <strong>{invitation.organization.name}</strong>
         </span>
       </div>
       <div className="flex items-center gap-2 text-sm text-gray-600">
@@ -349,8 +349,10 @@ const AcceptOrgInvitation = () => {
       {
         onSuccess: (result) => {
           toast({
-            title: "Welcome!",
-            description: `Successfully joined ${result.organization.name}`,
+            title: t("orgWelcome"),
+            description: t("orgSuccessfullyJoined", {
+              org: result.organization.name,
+            }),
           });
           navigate("/", { replace: true });
         },
@@ -395,7 +397,9 @@ const AcceptOrgInvitation = () => {
 
             toast({
               title: t("welcomeToQarote"),
-              description: `Successfully joined ${invitation?.organization.name || result.organization.name}`,
+              description: t("orgSuccessfullyJoined", {
+                org: invitation?.organization.name || result.organization.name,
+              }),
             });
 
             navigate("/", { replace: true });

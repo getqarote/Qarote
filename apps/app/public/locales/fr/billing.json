@@ -129,7 +129,8 @@
     "description": "Gérez votre forfait, cycle de facturation et paramètres d'abonnement pour tous vos espaces de travail"
   },
   "error": {
-    "workspaceIdRequired": "L'identifiant de l'espace de travail est requis"
+    "workspaceIdRequired": "L'identifiant de l'espace de travail est requis",
+    "failedToOpenBillingPortal": "Impossible d'ouvrir le portail de facturation."
   },
   "plansSummary": {
     "whatsIncluded": "Inclus :",

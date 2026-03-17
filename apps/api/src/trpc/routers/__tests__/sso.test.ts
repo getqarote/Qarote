@@ -279,6 +279,7 @@ describe("ssoRouter", () => {
       expect(mockOrgSsoConfigFindFirst).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({ organizationId: "org-1" }),
+          include: expect.objectContaining({ provider: true }),
         })
       );
       expect(result?.providerId).toBe("org-org-1");
