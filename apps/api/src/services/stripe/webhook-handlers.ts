@@ -384,20 +384,38 @@ export async function handleSubscriptionChange(subscription: Subscription) {
       cancelAtPeriodEnd: subscription.cancel_at_period_end || false,
     };
 
-    // Upsert to handle race conditions from duplicate webhook events
-    await prisma.subscription.upsert({
+    // Check if a subscription record already exists (update-only path doesn't need userId)
+    const existingSub = await prisma.subscription.findUnique({
       where: { stripeSubscriptionId: subscriptionId },
-      update: {
-        ...subscriptionData,
-        organizationId: org.id,
-      },
-      create: {
-        userId: ownerMember?.userId ?? "",
-        organizationId: org.id,
-        stripeSubscriptionId: subscriptionId,
-        ...subscriptionData,
-      },
     });
+
+    if (existingSub) {
+      await prisma.subscription.update({
+        where: { stripeSubscriptionId: subscriptionId },
+        data: {
+          ...subscriptionData,
+          organizationId: org.id,
+        },
+      });
+    } else {
+      // Create path requires a valid userId — abort if org has no OWNER
+      if (!ownerMember) {
+        logger.error(
+          { organizationId: org.id, subscriptionId },
+          "Cannot create subscription: organization has no OWNER member"
+        );
+        return;
+      }
+
+      await prisma.subscription.create({
+        data: {
+          userId: ownerMember.userId,
+          organizationId: org.id,
+          stripeSubscriptionId: subscriptionId,
+          ...subscriptionData,
+        },
+      });
+    }
 
     // Update Organization stripe fields
     await prisma.organization.update({

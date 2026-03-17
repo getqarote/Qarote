@@ -668,8 +668,16 @@ export const membersRouter = router({
         }
       }
 
-      // Remove workspace access and org membership atomically
+      // Remove workspace access, org membership, and clear active workspace atomically
       await ctx.prisma.$transaction([
+        // Clear workspaceId if it points to a workspace in this org
+        ctx.prisma.user.updateMany({
+          where: {
+            id: target.userId,
+            workspace: { organizationId: target.organizationId },
+          },
+          data: { workspaceId: null },
+        }),
         // Delete WorkspaceMember rows for all workspaces in this org
         ctx.prisma.workspaceMember.deleteMany({
           where: {

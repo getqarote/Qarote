@@ -104,19 +104,23 @@ export const managementRouter = router({
     const user = ctx.user;
 
     try {
-      // Check if user belongs to an organization
-      const membership = await ctx.prisma.organizationMember.findFirst({
-        where: { userId: user.id },
-        select: { organizationId: true },
-      });
+      // Resolve organization deterministically via active workspace
+      let organizationId: string | null = null;
+      if (user.workspaceId) {
+        const workspace = await ctx.prisma.workspace.findUnique({
+          where: { id: user.workspaceId },
+          select: { organizationId: true },
+        });
+        organizationId = workspace?.organizationId ?? null;
+      }
 
       let currentPlan: UserPlan = UserPlan.FREE;
       let workspaceCount: number;
 
-      if (membership) {
+      if (organizationId) {
         // Org-scoped: plan and counts come from the organization
-        currentPlan = await getOrgPlan(membership.organizationId);
-        const orgCounts = await getOrgResourceCounts(membership.organizationId);
+        currentPlan = await getOrgPlan(organizationId);
+        const orgCounts = await getOrgResourceCounts(organizationId);
         workspaceCount = orgCounts.workspaces;
       } else {
         // No org membership — count workspaces where user is a member
@@ -163,11 +167,17 @@ export const managementRouter = router({
       const { name, contactEmail, tags } = input;
 
       try {
-        // Check if user belongs to an organization
-        let membership = await ctx.prisma.organizationMember.findFirst({
-          where: { userId: user.id },
-          select: { organizationId: true },
-        });
+        // Resolve organization deterministically via active workspace
+        let membership: { organizationId: string } | null = null;
+        if (user.workspaceId) {
+          const ws = await ctx.prisma.workspace.findUnique({
+            where: { id: user.workspaceId },
+            select: { organizationId: true },
+          });
+          if (ws) {
+            membership = { organizationId: ws.organizationId };
+          }
+        }
 
         // Auto-create an organization for the user if they don't have one
         if (!membership) {

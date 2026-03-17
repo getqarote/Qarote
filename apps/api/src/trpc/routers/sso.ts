@@ -39,33 +39,70 @@ const REDACTED = "••••••••";
 const INSTANCE_PROVIDER_ID = "default";
 
 /**
- * Resolve the caller's organization membership (OWNER or ADMIN).
+ * Resolve the caller's organization via their active workspace,
+ * then verify they have OWNER or ADMIN role.
  * Returns the organizationId or throws FORBIDDEN.
  */
 async function resolveOrgAdmin(
   prisma: {
-    organizationMember: {
-      findFirst: (args: {
-        where: { userId: string; role: { in: OrgRole[] } };
+    workspace: {
+      findUnique: (args: {
+        where: { id: string };
         select: { organizationId: true };
-        orderBy: { role: "asc" };
       }) => Promise<{ organizationId: string } | null>;
     };
+    organizationMember: {
+      findUnique: (args: {
+        where: {
+          userId_organizationId: { userId: string; organizationId: string };
+        };
+        select: { role: true };
+      }) => Promise<{ role: OrgRole } | null>;
+    };
   },
-  userId: string
+  userId: string,
+  workspaceId: string | null
 ): Promise<string> {
-  const membership = await prisma.organizationMember.findFirst({
-    where: { userId, role: { in: [OrgRole.OWNER, OrgRole.ADMIN] } },
+  if (!workspaceId) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "Active workspace required for SSO configuration",
+    });
+  }
+
+  const workspace = await prisma.workspace.findUnique({
+    where: { id: workspaceId },
     select: { organizationId: true },
-    orderBy: { role: "asc" },
   });
-  if (!membership) {
+
+  if (!workspace) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "Active workspace not found",
+    });
+  }
+
+  const membership = await prisma.organizationMember.findUnique({
+    where: {
+      userId_organizationId: {
+        userId,
+        organizationId: workspace.organizationId,
+      },
+    },
+    select: { role: true },
+  });
+
+  if (
+    !membership ||
+    (membership.role !== OrgRole.OWNER && membership.role !== OrgRole.ADMIN)
+  ) {
     throw new TRPCError({
       code: "FORBIDDEN",
       message: "SSO configuration requires organization OWNER or ADMIN role",
     });
   }
-  return membership.organizationId;
+
+  return workspace.organizationId;
 }
 
 /**
@@ -75,7 +112,11 @@ async function resolveOrgAdmin(
  */
 const ssoAdminProcedure = rateLimitedAdminProcedure.use(async (opts) => {
   if (isCloudMode()) {
-    const orgId = await resolveOrgAdmin(opts.ctx.prisma, opts.ctx.user.id);
+    const orgId = await resolveOrgAdmin(
+      opts.ctx.prisma,
+      opts.ctx.user.id,
+      opts.ctx.user.workspaceId
+    );
     const plan = await getOrgPlan(orgId);
     if (plan !== UserPlan.ENTERPRISE) {
       throw new TRPCError({
@@ -142,7 +183,11 @@ export const ssoRouter = router({
     let orgConfig;
 
     if (isCloudMode()) {
-      const orgId = await resolveOrgAdmin(ctx.prisma, ctx.user.id);
+      const orgId = await resolveOrgAdmin(
+        ctx.prisma,
+        ctx.user.id,
+        ctx.user.workspaceId
+      );
 
       orgConfig = await ctx.prisma.orgSsoConfig.findFirst({
         where: { organizationId: orgId },
@@ -211,7 +256,11 @@ export const ssoRouter = router({
       const domain = input.domain ?? "";
 
       if (isCloudMode()) {
-        const orgId = await resolveOrgAdmin(ctx.prisma, ctx.user.id);
+        const orgId = await resolveOrgAdmin(
+          ctx.prisma,
+          ctx.user.id,
+          ctx.user.workspaceId
+        );
         organizationId = orgId;
         providerId = `org-${orgId}`;
       } else {
@@ -307,9 +356,11 @@ export const ssoRouter = router({
     )
     .mutation(async ({ input, ctx }) => {
       const providerId = isCloudMode()
-        ? await resolveOrgAdmin(ctx.prisma, ctx.user.id).then(
-            (orgId) => `org-${orgId}`
-          )
+        ? await resolveOrgAdmin(
+            ctx.prisma,
+            ctx.user.id,
+            ctx.user.workspaceId
+          ).then((orgId) => `org-${orgId}`)
         : INSTANCE_PROVIDER_ID;
 
       const existing = await ctx.prisma.ssoProvider.findUnique({
@@ -388,9 +439,11 @@ export const ssoRouter = router({
    */
   deleteProvider: ssoAdminProcedure.mutation(async ({ ctx }) => {
     const providerId = isCloudMode()
-      ? await resolveOrgAdmin(ctx.prisma, ctx.user.id).then(
-          (orgId) => `org-${orgId}`
-        )
+      ? await resolveOrgAdmin(
+          ctx.prisma,
+          ctx.user.id,
+          ctx.user.workspaceId
+        ).then((orgId) => `org-${orgId}`)
       : INSTANCE_PROVIDER_ID;
 
     // OrgSsoConfig is deleted via cascade on SsoProvider

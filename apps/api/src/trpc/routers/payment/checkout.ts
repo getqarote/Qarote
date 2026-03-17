@@ -44,16 +44,27 @@ export const checkoutRouter = router({
           "Creating checkout session"
         );
 
-        // Resolve Stripe customer from Organization (billing authority)
-        const membership = await prisma.organizationMember.findFirst({
-          where: { userId: user.id },
-          select: {
-            organization: {
-              select: { id: true, stripeCustomerId: true },
-            },
-          },
-        });
-        let customerId = membership?.organization?.stripeCustomerId ?? null;
+        // Resolve Organization deterministically via the user's active workspace
+        const workspace = user.workspaceId
+          ? await prisma.workspace.findUnique({
+              where: { id: user.workspaceId },
+              select: {
+                organization: {
+                  select: { id: true, stripeCustomerId: true },
+                },
+              },
+            })
+          : null;
+
+        const org = workspace?.organization ?? null;
+        if (!org) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: te(ctx.locale, "billing.noOrganization"),
+          });
+        }
+
+        let customerId = org.stripeCustomerId;
         if (!customerId) {
           const customer = await StripeService.createCustomer({
             email: user.email,
@@ -62,12 +73,10 @@ export const checkoutRouter = router({
           });
           customerId = customer.id;
 
-          if (membership?.organization) {
-            await prisma.organization.update({
-              where: { id: membership.organization.id },
-              data: { stripeCustomerId: customerId },
-            });
-          }
+          await prisma.organization.update({
+            where: { id: org.id },
+            data: { stripeCustomerId: customerId },
+          });
         }
 
         const session = await StripeService.createCheckoutSession({

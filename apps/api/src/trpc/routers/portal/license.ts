@@ -104,16 +104,27 @@ export const licenseRouter = router({
       const { tier } = input;
 
       try {
-        // Resolve Stripe customer from Organization (billing authority)
-        const membership = await ctx.prisma.organizationMember.findFirst({
-          where: { userId: user.id },
-          select: {
-            organization: {
-              select: { id: true, stripeCustomerId: true },
-            },
-          },
-        });
-        let customerId = membership?.organization?.stripeCustomerId ?? null;
+        // Resolve Organization deterministically via the user's active workspace
+        const workspace = user.workspaceId
+          ? await ctx.prisma.workspace.findUnique({
+              where: { id: user.workspaceId },
+              select: {
+                organization: {
+                  select: { id: true, stripeCustomerId: true },
+                },
+              },
+            })
+          : null;
+
+        const org = workspace?.organization ?? null;
+        if (!org) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "No organization found for your active workspace",
+          });
+        }
+
+        let customerId = org.stripeCustomerId;
         if (!customerId) {
           const customer = await StripeService.createCustomer({
             email: user.email,
@@ -122,12 +133,10 @@ export const licenseRouter = router({
           });
           customerId = customer.id;
 
-          if (membership?.organization) {
-            await ctx.prisma.organization.update({
-              where: { id: membership.organization.id },
-              data: { stripeCustomerId: customerId },
-            });
-          }
+          await ctx.prisma.organization.update({
+            where: { id: org.id },
+            data: { stripeCustomerId: customerId },
+          });
         }
 
         // Get yearly price ID (licenses are annual-only)

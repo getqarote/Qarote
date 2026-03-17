@@ -27,16 +27,26 @@ const BillingSection = () => {
 
   const createPortalMutation =
     trpc.payment.billing.createBillingPortalSession.useMutation({
-      onSuccess: (data: { url: string }) => {
-        window.open(data.url, "_blank", "noopener,noreferrer");
-      },
       onError: (error: Error) => {
         logger.error({ error }, "Failed to open billing portal");
       },
     });
 
   const handleOpenPortal = () => {
-    createPortalMutation.mutate();
+    // Open blank tab synchronously during user gesture to avoid popup blockers
+    const win = window.open("", "_blank", "noopener,noreferrer");
+    createPortalMutation.mutate(undefined, {
+      onSuccess: (data: { url: string }) => {
+        if (win) {
+          win.location.href = data.url;
+        } else {
+          window.location.href = data.url;
+        }
+      },
+      onError: () => {
+        win?.close();
+      },
+    });
   };
 
   if (isLoading) {

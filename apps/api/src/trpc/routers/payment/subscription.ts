@@ -29,17 +29,19 @@ export const subscriptionRouter = router({
       const { user, prisma } = ctx;
 
       try {
-        // Resolve subscription ID from Organization (billing authority)
-        const membership = await prisma.organizationMember.findFirst({
-          where: { userId: user.id },
-          select: {
-            organization: {
-              select: { stripeSubscriptionId: true },
-            },
-          },
-        });
+        // Resolve subscription ID from Organization via active workspace
+        const workspace = user.workspaceId
+          ? await prisma.workspace.findUnique({
+              where: { id: user.workspaceId },
+              select: {
+                organization: {
+                  select: { stripeSubscriptionId: true },
+                },
+              },
+            })
+          : null;
         const subscriptionId =
-          membership?.organization?.stripeSubscriptionId ?? null;
+          workspace?.organization?.stripeSubscriptionId ?? null;
 
         if (!subscriptionId) {
           throw new TRPCError({

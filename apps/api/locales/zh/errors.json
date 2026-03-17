@@ -120,6 +120,7 @@
     "failedToCreateBillingPortal": "创建账单门户会话失败",
     "noStripeCustomerFound": "未找到 Stripe 客户",
     "failedToCreatePortalSession": "创建门户会话失败",
+    "noOrganization": "未找到您当前工作区的组织",
     "cannotCheckoutFreePlan": "无法为免费套餐创建结账",
     "failedToCreateCheckoutSession": "创建结账会话失败",
     "noActiveSubscription": "未找到活动的订阅",

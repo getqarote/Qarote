@@ -97,23 +97,30 @@ const Billing: React.FC = () => {
 
   const createBillingPortalMutation =
     trpc.payment.billing.createBillingPortalSession.useMutation({
-      onSuccess: (data: { url: string }) => {
-        window.open(data.url, "_blank", "noopener,noreferrer");
-      },
       onError: (error: Error) => {
         logger.error("Failed to open billing portal:", error);
       },
     });
 
-  const handleOpenBillingPortal = async () => {
-    try {
-      if (!workspace?.id) {
-        throw new Error(t("error.workspaceIdRequired"));
-      }
-      createBillingPortalMutation.mutate();
-    } catch (error) {
-      logger.error("Failed to open billing portal:", error);
+  const handleOpenBillingPortal = () => {
+    if (!workspace?.id) {
+      logger.error("Failed to open billing portal: workspace ID required");
+      return;
     }
+    // Open blank tab synchronously during user gesture to avoid popup blockers
+    const win = window.open("", "_blank", "noopener,noreferrer");
+    createBillingPortalMutation.mutate(undefined, {
+      onSuccess: (data: { url: string }) => {
+        if (win) {
+          win.location.href = data.url;
+        } else {
+          window.location.href = data.url;
+        }
+      },
+      onError: () => {
+        win?.close();
+      },
+    });
   };
 
   const renewSubscriptionMutation =

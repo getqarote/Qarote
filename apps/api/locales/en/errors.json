@@ -119,6 +119,7 @@
     "failedToCreateBillingPortal": "Failed to create billing portal session",
     "noStripeCustomerFound": "No Stripe customer found",
     "failedToCreatePortalSession": "Failed to create portal session",
+    "noOrganization": "No organization found for your active workspace",
     "cannotCheckoutFreePlan": "Cannot create checkout for FREE plan",
     "failedToCreateCheckoutSession": "Failed to create checkout session",
     "noActiveSubscription": "No active subscription found",
