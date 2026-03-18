@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect, useReducer, useState } from "react";
+import { type ReactNode, useState } from "react";
 import { useForm, type UseFormReturn } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
@@ -33,59 +33,16 @@ import { PasswordRequirements } from "@/components/ui/password-requirements";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
 
+import {
+  type OrgInvitationDetails,
+  useOrgInvitationDetails,
+} from "@/hooks/queries/useOrgInvitationDetails";
 import { useToast } from "@/hooks/ui/useToast";
 
 import {
   type AcceptInvitationFormData,
   acceptInvitationSchema,
 } from "@/schemas";
-
-interface OrgInvitationDetails {
-  id: string;
-  email: string;
-  role: string;
-  expiresAt: string;
-  organization: {
-    id: string;
-    name: string;
-  };
-  invitedBy: {
-    id: string;
-    email: string;
-    displayName: string;
-  } | null;
-}
-
-type InvitationState = {
-  invitation: OrgInvitationDetails | null;
-  loading: boolean;
-  error: string | null;
-};
-
-type InvitationAction =
-  | { type: "FETCH_SUCCESS"; invitation: OrgInvitationDetails }
-  | { type: "FETCH_ERROR"; error: string }
-  | { type: "SET_ERROR"; error: string };
-
-const initialState: InvitationState = {
-  invitation: null,
-  loading: true,
-  error: null,
-};
-
-function invitationReducer(
-  state: InvitationState,
-  action: InvitationAction
-): InvitationState {
-  switch (action.type) {
-    case "FETCH_SUCCESS":
-      return { invitation: action.invitation, loading: false, error: null };
-    case "FETCH_ERROR":
-      return { invitation: null, loading: false, error: action.error };
-    case "SET_ERROR":
-      return { ...state, error: action.error };
-  }
-}
 
 const ROLE_DISPLAY_NAMES: Record<string, string> = {
   OWNER: "Owner",
@@ -295,10 +252,22 @@ const AcceptOrgInvitation = () => {
     trpc.auth.orgInvitation.acceptOrgInvitation.useMutation();
   const utils = trpc.useUtils();
 
-  const [{ invitation, loading, error }, dispatch] = useReducer(
-    invitationReducer,
-    initialState
-  );
+  const {
+    invitation,
+    loading,
+    error: fetchError,
+  } = useOrgInvitationDetails(token);
+  const [mutationError, setMutationError] = useState<string | null>(null);
+
+  const error =
+    mutationError ??
+    (fetchError
+      ? fetchError === "invalid-token"
+        ? t("invalidInvitationLink")
+        : fetchError === "invalid-or-expired"
+          ? t("invalidOrExpiredInvitation")
+          : fetchError
+      : null);
 
   const form = useForm<AcceptInvitationFormData>({
     resolver: zodResolver(acceptInvitationSchema),
@@ -311,34 +280,6 @@ const AcceptOrgInvitation = () => {
       confirmPassword: "",
     },
   });
-
-  useEffect(() => {
-    const fetchInvitationDetails = async () => {
-      if (!token) {
-        dispatch({ type: "FETCH_ERROR", error: t("invalidInvitationLink") });
-        return;
-      }
-      try {
-        const response = await utils.public.orgInvitation.getDetails.fetch({
-          token,
-        });
-        if (response.success) {
-          dispatch({ type: "FETCH_SUCCESS", invitation: response.invitation });
-        } else {
-          dispatch({
-            type: "FETCH_ERROR",
-            error: t("invalidOrExpiredInvitation"),
-          });
-        }
-      } catch (err: unknown) {
-        const errorMessage =
-          err instanceof Error ? err.message : t("failedLoadInvitation");
-        dispatch({ type: "FETCH_ERROR", error: errorMessage });
-      }
-    };
-
-    fetchInvitationDetails();
-  }, [token, utils]);
 
   // Handle acceptance for authenticated users
   const handleAuthAccept = () => {
@@ -359,7 +300,7 @@ const AcceptOrgInvitation = () => {
         onError: (err: unknown) => {
           const errorMessage =
             err instanceof Error ? err.message : t("failedAcceptInvitation");
-          dispatch({ type: "SET_ERROR", error: errorMessage });
+          setMutationError(errorMessage);
         },
       }
     );
@@ -419,7 +360,7 @@ const AcceptOrgInvitation = () => {
         onError: (err: unknown) => {
           const errorMessage =
             err instanceof Error ? err.message : t("failedAcceptInvitation");
-          dispatch({ type: "SET_ERROR", error: errorMessage });
+          setMutationError(errorMessage);
         },
       }
     );
