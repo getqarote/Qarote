@@ -35,6 +35,7 @@ export interface AlertRule {
   operator: ComparisonOperator;
   severity: AlertSeverity;
   enabled: boolean;
+  isDefault: boolean;
   serverId: string;
   workspaceId: string;
   createdById: string;

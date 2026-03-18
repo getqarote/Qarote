@@ -121,15 +121,19 @@ function AlertRuleForm({ rule, onClose, onSuccess }: AlertRuleFormProps) {
 
     try {
       if (rule) {
-        const updateData: UpdateAlertRuleInput = {
-          name: formData.name,
-          description: formData.description || undefined,
-          type: formData.type,
-          threshold: formData.threshold,
-          operator: formData.operator,
-          severity: formData.severity,
-          enabled: formData.enabled,
-        };
+        // Default rules only allow toggling enabled; sending structural
+        // fields would be rejected by the backend with FORBIDDEN.
+        const updateData: UpdateAlertRuleInput = rule.isDefault
+          ? { enabled: formData.enabled }
+          : {
+              name: formData.name,
+              description: formData.description || undefined,
+              type: formData.type,
+              threshold: formData.threshold,
+              operator: formData.operator,
+              severity: formData.severity,
+              enabled: formData.enabled,
+            };
         await updateMutation.mutateAsync({ id: rule.id, ...updateData });
         toast.success(t("rules.toast.updateSuccess"));
       } else {
@@ -160,6 +164,8 @@ function AlertRuleForm({ rule, onClose, onSuccess }: AlertRuleFormProps) {
     }
   };
 
+  const isDefault = rule?.isDefault ?? false;
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
@@ -169,6 +175,7 @@ function AlertRuleForm({ rule, onClose, onSuccess }: AlertRuleFormProps) {
           value={formData.name}
           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
           required
+          disabled={isDefault}
           placeholder={t("rules.form.namePlaceholder")}
         />
       </div>
@@ -181,6 +188,7 @@ function AlertRuleForm({ rule, onClose, onSuccess }: AlertRuleFormProps) {
           onChange={(e) =>
             setFormData({ ...formData, description: e.target.value })
           }
+          disabled={isDefault}
           placeholder={t("rules.form.descriptionPlaceholder")}
         />
       </div>
@@ -192,6 +200,7 @@ function AlertRuleForm({ rule, onClose, onSuccess }: AlertRuleFormProps) {
           onValueChange={(value) =>
             setFormData({ ...formData, type: value as AlertType })
           }
+          disabled={isDefault}
         >
           <SelectTrigger>
             <SelectValue />
@@ -217,6 +226,7 @@ function AlertRuleForm({ rule, onClose, onSuccess }: AlertRuleFormProps) {
                 operator: value as ComparisonOperator,
               })
             }
+            disabled={isDefault}
           >
             <SelectTrigger>
               <SelectValue />
@@ -246,6 +256,7 @@ function AlertRuleForm({ rule, onClose, onSuccess }: AlertRuleFormProps) {
               })
             }
             required
+            disabled={isDefault}
           />
         </div>
       </div>
@@ -257,6 +268,7 @@ function AlertRuleForm({ rule, onClose, onSuccess }: AlertRuleFormProps) {
           onValueChange={(value) =>
             setFormData({ ...formData, severity: value as AlertSeverity })
           }
+          disabled={isDefault}
         >
           <SelectTrigger>
             <SelectValue />
