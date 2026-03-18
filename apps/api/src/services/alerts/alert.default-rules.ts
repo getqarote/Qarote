@@ -145,6 +145,7 @@ export async function seedDefaultAlertRules(
   serverId: string,
   workspaceId: string
 ): Promise<void> {
+  logger.info({ serverId, workspaceId }, "Seeding default alert rules");
   try {
     const result = await prisma.alertRule.createMany({
       data: DEFAULT_RULE_DEFINITIONS.map((def) => ({
@@ -164,6 +165,42 @@ export async function seedDefaultAlertRules(
     logger.error(
       { error, serverId, workspaceId },
       "Failed to seed default alert rules — server creation will continue"
+    );
+  }
+}
+
+/**
+ * Backfill default alert rules for all servers that are missing them.
+ * Called on worker startup to recover from seeding failures (e.g. enum
+ * values not yet in the DB when the server was created).
+ */
+export async function backfillDefaultAlertRules(): Promise<void> {
+  try {
+    const servers = await prisma.rabbitMQServer.findMany({
+      select: { id: true, workspaceId: true },
+    });
+
+    let backfilled = 0;
+    for (const server of servers) {
+      const ruleCount = await prisma.alertRule.count({
+        where: { serverId: server.id, isDefault: true },
+      });
+      if (ruleCount < DEFAULT_RULE_DEFINITIONS.length) {
+        await seedDefaultAlertRules(server.id, server.workspaceId);
+        backfilled++;
+      }
+    }
+
+    if (backfilled > 0) {
+      logger.info(
+        { backfilled, total: servers.length },
+        "Backfilled default alert rules for servers with missing rules"
+      );
+    }
+  } catch (error) {
+    logger.error(
+      { error },
+      "Failed to backfill default alert rules — worker will continue"
     );
   }
 }

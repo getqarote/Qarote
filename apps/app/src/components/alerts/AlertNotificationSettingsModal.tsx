@@ -165,7 +165,9 @@ export function AlertNotificationSettingsModal({
       setEmailNotificationsEnabled(
         settingsData.settings.emailNotificationsEnabled
       );
-      setContactEmail(settingsData.settings.contactEmail || "");
+      setContactEmail(
+        settingsData.settings.contactEmail || workspace?.contactEmail || ""
+      );
       setNotificationSeverities(
         settingsData.settings.notificationSeverities || [
           "critical",
@@ -193,7 +195,7 @@ export function AlertNotificationSettingsModal({
       }, 200);
       return () => clearTimeout(timeoutId);
     }
-  }, [settingsData]);
+  }, [settingsData, workspace?.contactEmail]);
 
   // Update webhook fields from first webhook (if exists)
   useEffect(() => {
