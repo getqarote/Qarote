@@ -203,6 +203,8 @@
     "failedToGetRule": "Error al obtener la regla de alerta",
     "failedToCreateRule": "Error al crear la regla de alerta",
     "failedToUpdateRule": "Error al actualizar la regla de alerta",
+    "cannotDeleteDefaultRule": "No se puede eliminar una regla de alerta predeterminada",
+    "cannotModifyDefaultRule": "No se puede modificar la estructura de una regla de alerta predeterminada",
     "failedToDeleteRule": "Error al eliminar la regla de alerta",
     "failedToGetWebhooks": "Error al obtener los webhooks",
     "failedToCreateWebhook": "Error al crear el webhook",

@@ -444,7 +444,7 @@ export const managementRouter = router({
         // 1. Detach users (User.workspace has onDelete: Cascade, so without this all user accounts would be deleted)
         // 2. Delete orphan-prone records that lack onDelete: Cascade on their workspace relation
         // 3. Delete the workspace (cascade deletes remaining related data)
-        await ctx.prisma.$transaction(async (tx) => {
+        const nextWorkspace = await ctx.prisma.$transaction(async (tx) => {
           await tx.user.updateMany({
             where: { workspaceId },
             data: { workspaceId: null },
@@ -458,20 +458,44 @@ export const managementRouter = router({
           await tx.workspace.delete({
             where: { id: workspaceId },
           });
-        });
 
-        // Auto-switch the requesting user to their next available workspace
-        const nextWorkspace = await ctx.prisma.workspace.findFirst({
-          where: {
-            members: { some: { userId: user.id } },
-          },
-          orderBy: { createdAt: "desc" },
-          select: { id: true },
-        });
+          // Auto-switch the requesting user to their next available workspace.
+          // The updateMany above nulled all users' workspaceId (including the
+          // requester's), so we must always re-set it here.
+          //
+          // If the deleted workspace was the user's active one, find the next
+          // available workspace.  Otherwise, restore their previous workspaceId
+          // so their session is not disrupted.
+          const wasActive = user.workspaceId === workspaceId;
 
-        await ctx.prisma.user.update({
-          where: { id: user.id },
-          data: { workspaceId: nextWorkspace?.id ?? null },
+          if (wasActive) {
+            // Check both ownership and membership (same logic as getUserWorkspaces)
+            const next = await tx.workspace.findFirst({
+              where: {
+                OR: [
+                  { ownerId: user.id },
+                  { members: { some: { userId: user.id } } },
+                ],
+              },
+              orderBy: { createdAt: "desc" },
+              select: { id: true },
+            });
+
+            await tx.user.update({
+              where: { id: user.id },
+              data: { workspaceId: next?.id ?? null },
+            });
+
+            return next;
+          }
+
+          // Restore the user's previous workspaceId (nulled by updateMany above)
+          await tx.user.update({
+            where: { id: user.id },
+            data: { workspaceId: user.workspaceId },
+          });
+
+          return { id: user.workspaceId } as { id: string };
         });
 
         ctx.logger.info(
@@ -483,7 +507,10 @@ export const managementRouter = router({
           "Workspace deleted successfully"
         );
 
-        return { message: te(ctx.locale, "messages.workspaceDeletedSuccess") };
+        return {
+          message: te(ctx.locale, "messages.workspaceDeletedSuccess"),
+          switchedTo: nextWorkspace?.id ?? null,
+        };
       } catch (error) {
         if (error instanceof TRPCError) {
           throw error;

@@ -15,9 +15,11 @@ export interface WebhookPayload {
   alerts: RabbitMQAlert[];
   summary: {
     total: number;
-    critical: number;
-    warning: number;
     info: number;
+    low: number;
+    medium: number;
+    high: number;
+    critical: number;
   };
 }
 

@@ -92,7 +92,9 @@
     "deleteDialogDescription": "Esto eliminará permanentemente el espacio de trabajo <strong>{{name}}</strong> y todos los datos asociados, incluidos servidores, alertas, reglas de alertas, miembros del equipo, invitaciones y configuración. Esta acción es irreversible.",
     "deleteDialogConfirmLabel": "Escribe el nombre del espacio de trabajo para confirmar:",
     "deleteConfirm": "Eliminar espacio de trabajo",
-    "deleting": "Eliminando..."
+    "deleting": "Eliminando...",
+    "tags": "Etiquetas",
+    "tagsPlaceholder": "Agregar una etiqueta..."
   },
   "team": {
     "title": "Equipo",

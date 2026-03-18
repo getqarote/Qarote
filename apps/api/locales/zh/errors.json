@@ -203,6 +203,8 @@
     "failedToGetRule": "获取告警规则失败",
     "failedToCreateRule": "创建告警规则失败",
     "failedToUpdateRule": "更新告警规则失败",
+    "cannotDeleteDefaultRule": "无法删除默认告警规则",
+    "cannotModifyDefaultRule": "无法修改默认告警规则的结构",
     "failedToDeleteRule": "删除告警规则失败",
     "failedToGetWebhooks": "获取 Webhook 列表失败",
     "failedToCreateWebhook": "创建 Webhook 失败",

@@ -92,7 +92,9 @@
     "deleteDialogDescription": "This will permanently delete the workspace <strong>{{name}}</strong> and all associated data including servers, alerts, alert rules, team members, invitations, and configuration. This action is irreversible.",
     "deleteDialogConfirmLabel": "Type the workspace name to confirm:",
     "deleteConfirm": "Delete Workspace",
-    "deleting": "Deleting..."
+    "deleting": "Deleting...",
+    "tags": "Tags",
+    "tagsPlaceholder": "Add a tag..."
   },
   "team": {
     "title": "Team",

@@ -38,7 +38,8 @@
         "step5Title": "4. Exécuter les migrations de base de données",
         "step6Title": "5. Accéder à l'application",
         "step6Frontend": "<strong>Frontend :</strong>",
-        "step6BackendApi": "<strong>API Backend :</strong>"
+        "step6BackendApi": "<strong>API Backend :</strong>",
+        "step6AlertWorker": "<strong>Worker d'alertes :</strong> s'exécute en arrière-plan — interroge vos serveurs RabbitMQ toutes les 5 minutes et écrit les alertes en base de données."
       },
       "dokku": {
         "whyDokkuTitle": "Pourquoi Dokku ?",
@@ -54,7 +55,9 @@
         "step3Note": "<code>PORT</code> et <code>HOST</code> sont automatiquement définis par Dokku. Remplacez <code>https://your-domain.com</code> par votre nom de domaine réel.",
         "step4Title": "4. Déployer",
         "step5Title": "5. Exécuter les migrations de base de données",
-        "step6Title": "6. Domaine et SSL (Optionnel)",
+        "step5WorkerTitle": "6. Dimensionner le worker d'alertes",
+        "step5WorkerNote": "Le type de processus <code>worker</code> est défini dans le <code>Procfile</code> et exécute le moniteur d'alertes. Dokku ne le démarre pas automatiquement — vous devez le passer à 1. Définir <code>ALERT_WORKER_EMBEDDED=false</code> empêche le processus web de lancer le cron en parallèle.",
+        "step6Title": "7. Domaine et SSL (Optionnel)",
         "step6Note": "Votre application sera accessible à l'adresse <code>https://your-domain.com</code> (ou l'IP de votre serveur)."
       },
       "binary": {
@@ -68,7 +71,9 @@
         "step2Title": "3. Configuration interactive",
         "step2Note": "L'assistant de configuration vous demandera l'URL PostgreSQL, vérifiera la connexion et générera un fichier <code>.env</code> avec des secrets sécurisés.",
         "step3Title": "4. Démarrer Qarote",
-        "step4Title": "5. Accéder à l'application",
+        "step3WorkerTitle": "5. Démarrer le worker d'alertes",
+        "step3WorkerNote": "Le worker d'alertes interroge vos serveurs RabbitMQ toutes les 5 minutes et écrit les alertes dans la base de données. Exécutez-le dans un terminal séparé ou en tant que service en arrière-plan.",
+        "step4Title": "6. Accéder à l'application",
         "step4Description": "Ouvrez <code>http://localhost:3000</code> dans votre navigateur. Le binaire sert à la fois l'API et le frontend depuis un seul port.",
         "step4ManualSetup": "<strong>Configuration manuelle :</strong> Vous pouvez également ignorer l'assistant et configurer directement :",
         "cliFlagsTitle": "<strong>Options CLI disponibles :</strong>",

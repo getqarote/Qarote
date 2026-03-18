@@ -37,9 +37,18 @@ export const invitationRouter = router({
     const user = ctx.user;
 
     try {
-      if (!user.workspaceId) {
+      // Read workspaceId fresh from DB — better-auth caches session data for
+      // up to 5 minutes, so ctx.user.workspaceId may be stale immediately after
+      // workspace creation.
+      const freshUser = await ctx.prisma.user.findUnique({
+        where: { id: user.id },
+        select: { workspaceId: true },
+      });
+      const workspaceId = freshUser?.workspaceId;
+
+      if (!workspaceId) {
         throw new TRPCError({
-          code: "UNAUTHORIZED",
+          code: "FORBIDDEN", // authenticated but no workspace — must not trigger sign-out
           message: te(
             ctx.locale,
             "workspace.userNotAuthenticatedOrNotInWorkspace"
@@ -50,7 +59,7 @@ export const invitationRouter = router({
       // Get all pending invitations for the workspace
       const invitations = await ctx.prisma.invitation.findMany({
         where: {
-          workspaceId: user.workspaceId,
+          workspaceId,
           status: InvitationStatus.PENDING,
           expiresAt: {
             gt: new Date(),
@@ -105,9 +114,18 @@ export const invitationRouter = router({
       const { email, role } = input;
 
       try {
-        if (!user.workspaceId) {
+        // Read workspaceId fresh from DB — better-auth caches session data for
+        // up to 5 minutes, so ctx.user.workspaceId may be stale immediately after
+        // workspace creation (e.g. sending invites right after creating a workspace).
+        const freshUser = await ctx.prisma.user.findUnique({
+          where: { id: user.id },
+          select: { workspaceId: true },
+        });
+        const workspaceId = freshUser?.workspaceId;
+
+        if (!workspaceId) {
           throw new TRPCError({
-            code: "UNAUTHORIZED",
+            code: "FORBIDDEN", // authenticated but no workspace — must not trigger sign-out
             message: te(
               ctx.locale,
               "workspace.userNotAuthenticatedOrNotInWorkspace"
@@ -117,7 +135,7 @@ export const invitationRouter = router({
 
         // Get workspace basic info
         const workspace = await ctx.prisma.workspace.findUnique({
-          where: { id: user.workspaceId },
+          where: { id: workspaceId },
           select: {
             id: true,
             name: true,
@@ -133,7 +151,7 @@ export const invitationRouter = router({
 
         // Get workspace member count
         const memberCount = await ctx.prisma.workspaceMember.count({
-          where: { workspaceId: user.workspaceId },
+          where: { workspaceId },
         });
 
         // Get plan via workspace → organization
@@ -146,7 +164,7 @@ export const invitationRouter = router({
         const existingInvitation = await ctx.prisma.invitation.findFirst({
           where: {
             email,
-            workspaceId: user.workspaceId,
+            workspaceId,
             status: InvitationStatus.PENDING,
             expiresAt: { gt: new Date() },
           },
@@ -169,7 +187,7 @@ export const invitationRouter = router({
           const isMember = await ctx.prisma.workspaceMember.findFirst({
             where: {
               userId: existingUser.id,
-              workspaceId: user.workspaceId,
+              workspaceId,
             },
           });
 
@@ -194,7 +212,7 @@ export const invitationRouter = router({
             role,
             token,
             expiresAt,
-            workspaceId: user.workspaceId,
+            workspaceId,
             invitedById: user.id,
           },
           include: {
@@ -284,9 +302,18 @@ export const invitationRouter = router({
       const { invitationId } = input;
 
       try {
-        if (!user.workspaceId) {
+        // Read workspaceId fresh from DB — better-auth caches session data for
+        // up to 5 minutes, so ctx.user.workspaceId may be stale immediately after
+        // workspace creation.
+        const freshUser = await ctx.prisma.user.findUnique({
+          where: { id: user.id },
+          select: { workspaceId: true },
+        });
+        const workspaceId = freshUser?.workspaceId;
+
+        if (!workspaceId) {
           throw new TRPCError({
-            code: "UNAUTHORIZED",
+            code: "FORBIDDEN", // authenticated but no workspace — must not trigger sign-out
             message: te(
               ctx.locale,
               "workspace.userNotAuthenticatedOrNotInWorkspace"
@@ -298,7 +325,7 @@ export const invitationRouter = router({
         const invitation = await ctx.prisma.invitation.findFirst({
           where: {
             id: invitationId,
-            workspaceId: user.workspaceId,
+            workspaceId,
             status: InvitationStatus.PENDING,
           },
         });

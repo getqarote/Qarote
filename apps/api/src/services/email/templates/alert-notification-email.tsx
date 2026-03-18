@@ -37,10 +37,16 @@ interface AlertNotificationEmailProps {
 
 const getSeverityColor = (severity: string) => {
   switch (severity) {
-    case "critical":
+    case "CRITICAL":
       return colorVariants.error;
-    case "warning":
+    case "HIGH":
+      return colorVariants.error;
+    case "MEDIUM":
       return colorVariants.warning;
+    case "LOW":
+      return colorVariants.info;
+    case "INFO":
+      return colorVariants.info;
     default:
       return colorVariants.info;
   }
@@ -48,10 +54,16 @@ const getSeverityColor = (severity: string) => {
 
 const getSeverityIcon = (severity: string) => {
   switch (severity) {
-    case "critical":
+    case "CRITICAL":
       return "🔴";
-    case "warning":
+    case "HIGH":
+      return "🟠";
+    case "MEDIUM":
       return "⚠️";
+    case "LOW":
+      return "🔵";
+    case "INFO":
+      return "ℹ️";
     default:
       return "ℹ️";
   }
@@ -64,8 +76,10 @@ export default function AlertNotificationEmail({
   alerts,
   frontendUrl,
 }: AlertNotificationEmailProps): JSX.Element {
-  const criticalAlerts = alerts.filter((a) => a.severity === "critical");
-  const warningAlerts = alerts.filter((a) => a.severity === "warning");
+  const criticalAlerts = alerts.filter(
+    (a) => a.severity === "CRITICAL" || a.severity === "HIGH"
+  );
+  const warningAlerts = alerts.filter((a) => a.severity === "MEDIUM");
   const hasCritical = criticalAlerts.length > 0;
 
   // Determine vhost for URL - use the most common vhost from alerts, or first one if available

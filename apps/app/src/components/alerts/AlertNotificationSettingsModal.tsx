@@ -85,16 +85,29 @@ export function AlertNotificationSettingsModal({
   const [contactEmail, setContactEmail] = useState<string>("");
   const [notificationSeverities, setNotificationSeverities] = useState<
     string[]
-  >(["critical", "warning", "info"]);
+  >(["CRITICAL", "HIGH", "MEDIUM", "LOW", "INFO"]);
   const [browserNotificationsEnabled, setBrowserNotificationsEnabled] =
     useState(false);
   const [browserNotificationSeverities, setBrowserNotificationSeverities] =
-    useState<string[]>(["critical", "warning", "info"]);
+    useState<string[]>(["CRITICAL", "HIGH", "MEDIUM", "LOW", "INFO"]);
   const [notificationServerIds, setNotificationServerIds] = useState<
     string[] | null
   >(null);
   const [serverSearchOpen, setServerSearchOpen] = useState(false);
   const [serverSearchTerm, setServerSearchTerm] = useState<string>("");
+  const [notificationPermission, setNotificationPermission] = useState<
+    NotificationPermission | "unsupported"
+  >("Notification" in window ? Notification.permission : "unsupported");
+
+  // Resync permission state on each open so changes made in browser settings
+  // between opens are reflected immediately.
+  useEffect(() => {
+    if (isOpen) {
+      setNotificationPermission(
+        "Notification" in window ? Notification.permission : "unsupported"
+      );
+    }
+  }, [isOpen]);
 
   // Track if this is the initial load to prevent auto-save on mount
   const isInitialMount = useRef(true);
@@ -152,12 +165,16 @@ export function AlertNotificationSettingsModal({
       setEmailNotificationsEnabled(
         settingsData.settings.emailNotificationsEnabled
       );
-      setContactEmail(settingsData.settings.contactEmail || "");
+      setContactEmail(
+        settingsData.settings.contactEmail || workspace?.contactEmail || ""
+      );
       setNotificationSeverities(
         settingsData.settings.notificationSeverities || [
-          "critical",
-          "warning",
-          "info",
+          "CRITICAL",
+          "HIGH",
+          "MEDIUM",
+          "LOW",
+          "INFO",
         ]
       );
       setBrowserNotificationsEnabled(
@@ -165,9 +182,11 @@ export function AlertNotificationSettingsModal({
       );
       setBrowserNotificationSeverities(
         settingsData.settings.browserNotificationSeverities || [
-          "critical",
-          "warning",
-          "info",
+          "CRITICAL",
+          "HIGH",
+          "MEDIUM",
+          "LOW",
+          "INFO",
         ]
       );
       setNotificationServerIds(
@@ -180,7 +199,7 @@ export function AlertNotificationSettingsModal({
       }, 200);
       return () => clearTimeout(timeoutId);
     }
-  }, [settingsData]);
+  }, [settingsData, workspace?.contactEmail]);
 
   // Update webhook fields from first webhook (if exists)
   useEffect(() => {
@@ -794,11 +813,11 @@ export function AlertNotificationSettingsModal({
               <div className="flex items-center space-x-2">
                 <Checkbox
                   id="severity-critical"
-                  checked={notificationSeverities.includes("critical")}
+                  checked={notificationSeverities.includes("CRITICAL")}
                   onCheckedChange={(checked) => {
                     const newSeverities = checked
-                      ? [...notificationSeverities, "critical"]
-                      : notificationSeverities.filter((s) => s !== "critical");
+                      ? [...notificationSeverities, "CRITICAL"]
+                      : notificationSeverities.filter((s) => s !== "CRITICAL");
                     setNotificationSeverities(newSeverities);
                   }}
                   disabled={updateSettingsMutation.isPending}
@@ -818,37 +837,87 @@ export function AlertNotificationSettingsModal({
               </div>
               <div className="flex items-center space-x-2">
                 <Checkbox
-                  id="severity-warning"
-                  checked={notificationSeverities.includes("warning")}
+                  id="severity-high"
+                  checked={notificationSeverities.includes("HIGH")}
                   onCheckedChange={(checked) => {
                     const newSeverities = checked
-                      ? [...notificationSeverities, "warning"]
-                      : notificationSeverities.filter((s) => s !== "warning");
+                      ? [...notificationSeverities, "HIGH"]
+                      : notificationSeverities.filter((s) => s !== "HIGH");
                     setNotificationSeverities(newSeverities);
                   }}
                   disabled={updateSettingsMutation.isPending}
                   className="data-[state=checked]:bg-gradient-button data-[state=checked]:border-gradient-button"
                 />
                 <Label
-                  htmlFor="severity-warning"
+                  htmlFor="severity-high"
+                  className="flex items-center gap-2 cursor-pointer"
+                >
+                  <span className="text-orange-600 font-medium">
+                    {t("modal.severityHigh")}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {t("modal.severityHighDesc")}
+                  </span>
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="severity-medium"
+                  checked={notificationSeverities.includes("MEDIUM")}
+                  onCheckedChange={(checked) => {
+                    const newSeverities = checked
+                      ? [...notificationSeverities, "MEDIUM"]
+                      : notificationSeverities.filter((s) => s !== "MEDIUM");
+                    setNotificationSeverities(newSeverities);
+                  }}
+                  disabled={updateSettingsMutation.isPending}
+                  className="data-[state=checked]:bg-gradient-button data-[state=checked]:border-gradient-button"
+                />
+                <Label
+                  htmlFor="severity-medium"
                   className="flex items-center gap-2 cursor-pointer"
                 >
                   <span className="text-yellow-600 font-medium">
-                    {t("modal.severityWarning")}
+                    {t("modal.severityMedium")}
                   </span>
                   <span className="text-xs text-muted-foreground">
-                    {t("modal.severityWarningDesc")}
+                    {t("modal.severityMediumDesc")}
+                  </span>
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="severity-low"
+                  checked={notificationSeverities.includes("LOW")}
+                  onCheckedChange={(checked) => {
+                    const newSeverities = checked
+                      ? [...notificationSeverities, "LOW"]
+                      : notificationSeverities.filter((s) => s !== "LOW");
+                    setNotificationSeverities(newSeverities);
+                  }}
+                  disabled={updateSettingsMutation.isPending}
+                  className="data-[state=checked]:bg-gradient-button data-[state=checked]:border-gradient-button"
+                />
+                <Label
+                  htmlFor="severity-low"
+                  className="flex items-center gap-2 cursor-pointer"
+                >
+                  <span className="text-blue-600 font-medium">
+                    {t("modal.severityLow")}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {t("modal.severityLowDesc")}
                   </span>
                 </Label>
               </div>
               <div className="flex items-center space-x-2">
                 <Checkbox
                   id="severity-info"
-                  checked={notificationSeverities.includes("info")}
+                  checked={notificationSeverities.includes("INFO")}
                   onCheckedChange={(checked) => {
                     const newSeverities = checked
-                      ? [...notificationSeverities, "info"]
-                      : notificationSeverities.filter((s) => s !== "info");
+                      ? [...notificationSeverities, "INFO"]
+                      : notificationSeverities.filter((s) => s !== "INFO");
                     setNotificationSeverities(newSeverities);
                   }}
                   disabled={updateSettingsMutation.isPending}
@@ -858,7 +927,7 @@ export function AlertNotificationSettingsModal({
                   htmlFor="severity-info"
                   className="flex items-center gap-2 cursor-pointer"
                 >
-                  <span className="text-blue-600 font-medium">
+                  <span className="text-gray-600 font-medium">
                     {t("modal.severityInfo")}
                   </span>
                   <span className="text-xs text-muted-foreground">
@@ -884,6 +953,22 @@ export function AlertNotificationSettingsModal({
                 >
                   <Bell className="h-4 w-4" />
                   {t("modal.browserNotifications")}
+                  {notificationPermission === "granted" && (
+                    <Badge
+                      variant="secondary"
+                      className="text-xs font-normal text-green-600"
+                    >
+                      {t("modal.permissionGranted")}
+                    </Badge>
+                  )}
+                  {notificationPermission === "denied" && (
+                    <Badge
+                      variant="destructive"
+                      className="text-xs font-normal"
+                    >
+                      {t("modal.permissionDenied")}
+                    </Badge>
+                  )}
                 </Label>
                 <p className="text-sm text-muted-foreground">
                   {t("modal.browserNotificationsDescription")}
@@ -892,11 +977,52 @@ export function AlertNotificationSettingsModal({
               <Switch
                 id="browser-notifications"
                 checked={browserNotificationsEnabled}
-                onCheckedChange={setBrowserNotificationsEnabled}
+                onCheckedChange={(checked) => {
+                  if (!checked) {
+                    setBrowserNotificationsEnabled(false);
+                    return;
+                  }
+                  if (!("Notification" in window)) {
+                    setBrowserNotificationsEnabled(false);
+                    setNotificationPermission("unsupported");
+                    return;
+                  }
+                  if (Notification.permission === "granted") {
+                    setBrowserNotificationsEnabled(true);
+                    return;
+                  }
+                  if (Notification.permission === "denied") {
+                    setBrowserNotificationsEnabled(false);
+                    setNotificationPermission("denied");
+                    return;
+                  }
+                  Notification.requestPermission().then((permission) => {
+                    setNotificationPermission(permission);
+                    setBrowserNotificationsEnabled(permission === "granted");
+                  });
+                }}
                 disabled={updateSettingsMutation.isPending}
                 className="data-[state=checked]:bg-gradient-button"
               />
             </div>
+
+            {"Notification" in window &&
+              browserNotificationsEnabled &&
+              notificationPermission === "denied" && (
+                <Alert className="mt-4" variant="destructive">
+                  <BellOff className="h-4 w-4" />
+                  <AlertDescription>
+                    {t("modal.browserNotificationsBlocked")}
+                  </AlertDescription>
+                </Alert>
+              )}
+
+            {browserNotificationsEnabled &&
+              notificationPermission === "granted" && (
+                <p className="mt-2 text-xs text-muted-foreground">
+                  {t("modal.browserNotificationsSystemHint")}
+                </p>
+              )}
 
             {browserNotificationsEnabled && (
               <div className="mt-4 space-y-3 pt-4 border-t">
@@ -911,13 +1037,13 @@ export function AlertNotificationSettingsModal({
                     <Checkbox
                       id="browser-severity-critical"
                       checked={browserNotificationSeverities.includes(
-                        "critical"
+                        "CRITICAL"
                       )}
                       onCheckedChange={(checked) => {
                         const newSeverities = checked
-                          ? [...browserNotificationSeverities, "critical"]
+                          ? [...browserNotificationSeverities, "CRITICAL"]
                           : browserNotificationSeverities.filter(
-                              (s) => s !== "critical"
+                              (s) => s !== "CRITICAL"
                             );
                         setBrowserNotificationSeverities(newSeverities);
                       }}
@@ -938,15 +1064,13 @@ export function AlertNotificationSettingsModal({
                   </div>
                   <div className="flex items-center space-x-2">
                     <Checkbox
-                      id="browser-severity-warning"
-                      checked={browserNotificationSeverities.includes(
-                        "warning"
-                      )}
+                      id="browser-severity-high"
+                      checked={browserNotificationSeverities.includes("HIGH")}
                       onCheckedChange={(checked) => {
                         const newSeverities = checked
-                          ? [...browserNotificationSeverities, "warning"]
+                          ? [...browserNotificationSeverities, "HIGH"]
                           : browserNotificationSeverities.filter(
-                              (s) => s !== "warning"
+                              (s) => s !== "HIGH"
                             );
                         setBrowserNotificationSeverities(newSeverities);
                       }}
@@ -954,26 +1078,80 @@ export function AlertNotificationSettingsModal({
                       className="data-[state=checked]:bg-gradient-button data-[state=checked]:border-gradient-button"
                     />
                     <Label
-                      htmlFor="browser-severity-warning"
+                      htmlFor="browser-severity-high"
+                      className="flex items-center gap-2 cursor-pointer"
+                    >
+                      <span className="text-orange-600 font-medium">
+                        {t("modal.severityHigh")}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {t("modal.severityHighDesc")}
+                      </span>
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="browser-severity-medium"
+                      checked={browserNotificationSeverities.includes("MEDIUM")}
+                      onCheckedChange={(checked) => {
+                        const newSeverities = checked
+                          ? [...browserNotificationSeverities, "MEDIUM"]
+                          : browserNotificationSeverities.filter(
+                              (s) => s !== "MEDIUM"
+                            );
+                        setBrowserNotificationSeverities(newSeverities);
+                      }}
+                      disabled={updateSettingsMutation.isPending}
+                      className="data-[state=checked]:bg-gradient-button data-[state=checked]:border-gradient-button"
+                    />
+                    <Label
+                      htmlFor="browser-severity-medium"
                       className="flex items-center gap-2 cursor-pointer"
                     >
                       <span className="text-yellow-600 font-medium">
-                        {t("modal.severityWarning")}
+                        {t("modal.severityMedium")}
                       </span>
                       <span className="text-xs text-muted-foreground">
-                        {t("modal.severityWarningDesc")}
+                        {t("modal.severityMediumDesc")}
+                      </span>
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="browser-severity-low"
+                      checked={browserNotificationSeverities.includes("LOW")}
+                      onCheckedChange={(checked) => {
+                        const newSeverities = checked
+                          ? [...browserNotificationSeverities, "LOW"]
+                          : browserNotificationSeverities.filter(
+                              (s) => s !== "LOW"
+                            );
+                        setBrowserNotificationSeverities(newSeverities);
+                      }}
+                      disabled={updateSettingsMutation.isPending}
+                      className="data-[state=checked]:bg-gradient-button data-[state=checked]:border-gradient-button"
+                    />
+                    <Label
+                      htmlFor="browser-severity-low"
+                      className="flex items-center gap-2 cursor-pointer"
+                    >
+                      <span className="text-blue-600 font-medium">
+                        {t("modal.severityLow")}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {t("modal.severityLowDesc")}
                       </span>
                     </Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Checkbox
                       id="browser-severity-info"
-                      checked={browserNotificationSeverities.includes("info")}
+                      checked={browserNotificationSeverities.includes("INFO")}
                       onCheckedChange={(checked) => {
                         const newSeverities = checked
-                          ? [...browserNotificationSeverities, "info"]
+                          ? [...browserNotificationSeverities, "INFO"]
                           : browserNotificationSeverities.filter(
-                              (s) => s !== "info"
+                              (s) => s !== "INFO"
                             );
                         setBrowserNotificationSeverities(newSeverities);
                       }}
@@ -984,7 +1162,7 @@ export function AlertNotificationSettingsModal({
                       htmlFor="browser-severity-info"
                       className="flex items-center gap-2 cursor-pointer"
                     >
-                      <span className="text-blue-600 font-medium">
+                      <span className="text-gray-600 font-medium">
                         {t("modal.severityInfo")}
                       </span>
                       <span className="text-xs text-muted-foreground">
@@ -1414,7 +1592,7 @@ X-Qarote-Signature: sha256=abc123... (if secret is configured)`}
                           id: "alert-789",
                           serverId: "server-456",
                           serverName: "Production RabbitMQ",
-                          severity: "critical",
+                          severity: "CRITICAL",
                           category: "memory",
                           title: "High Memory Usage",
                           description:
@@ -1437,7 +1615,7 @@ X-Qarote-Signature: sha256=abc123... (if secret is configured)`}
                           id: "alert-790",
                           serverId: "server-456",
                           serverName: "Production RabbitMQ",
-                          severity: "warning",
+                          severity: "HIGH",
                           category: "disk",
                           title: "Disk Space Warning",
                           description:
@@ -1459,7 +1637,9 @@ X-Qarote-Signature: sha256=abc123... (if secret is configured)`}
                       summary: {
                         total: 2,
                         critical: 1,
-                        warning: 1,
+                        high: 1,
+                        medium: 0,
+                        low: 0,
                         info: 0,
                       },
                     },

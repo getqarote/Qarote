@@ -121,15 +121,23 @@ function AlertRuleForm({ rule, onClose, onSuccess }: AlertRuleFormProps) {
 
     try {
       if (rule) {
-        const updateData: UpdateAlertRuleInput = {
-          name: formData.name,
-          description: formData.description || undefined,
-          type: formData.type,
-          threshold: formData.threshold,
-          operator: formData.operator,
-          severity: formData.severity,
-          enabled: formData.enabled,
-        };
+        // Default rules allow threshold, severity, and enabled changes;
+        // identity fields (name, type, operator) are protected.
+        const updateData: UpdateAlertRuleInput = rule.isDefault
+          ? {
+              threshold: formData.threshold,
+              severity: formData.severity,
+              enabled: formData.enabled,
+            }
+          : {
+              name: formData.name,
+              description: formData.description || undefined,
+              type: formData.type,
+              threshold: formData.threshold,
+              operator: formData.operator,
+              severity: formData.severity,
+              enabled: formData.enabled,
+            };
         await updateMutation.mutateAsync({ id: rule.id, ...updateData });
         toast.success(t("rules.toast.updateSuccess"));
       } else {
@@ -160,6 +168,8 @@ function AlertRuleForm({ rule, onClose, onSuccess }: AlertRuleFormProps) {
     }
   };
 
+  const isDefault = rule?.isDefault ?? false;
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
@@ -169,6 +179,7 @@ function AlertRuleForm({ rule, onClose, onSuccess }: AlertRuleFormProps) {
           value={formData.name}
           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
           required
+          disabled={isDefault}
           placeholder={t("rules.form.namePlaceholder")}
         />
       </div>
@@ -181,6 +192,7 @@ function AlertRuleForm({ rule, onClose, onSuccess }: AlertRuleFormProps) {
           onChange={(e) =>
             setFormData({ ...formData, description: e.target.value })
           }
+          disabled={isDefault}
           placeholder={t("rules.form.descriptionPlaceholder")}
         />
       </div>
@@ -192,6 +204,7 @@ function AlertRuleForm({ rule, onClose, onSuccess }: AlertRuleFormProps) {
           onValueChange={(value) =>
             setFormData({ ...formData, type: value as AlertType })
           }
+          disabled={isDefault}
         >
           <SelectTrigger>
             <SelectValue />
@@ -217,6 +230,7 @@ function AlertRuleForm({ rule, onClose, onSuccess }: AlertRuleFormProps) {
                 operator: value as ComparisonOperator,
               })
             }
+            disabled={isDefault}
           >
             <SelectTrigger>
               <SelectValue />
@@ -428,13 +442,9 @@ export function AlertRulesModal({ isOpen, onClose }: AlertRulesModalProps) {
                 <h3 className="text-lg font-medium mb-2">
                   {t("rules.noRules")}
                 </h3>
-                <p className="text-muted-foreground mb-4">
+                <p className="text-muted-foreground">
                   {t("rules.noRulesDescription")}
                 </p>
-                <Button onClick={handleCreate} className="btn-primary">
-                  <Plus className="h-4 w-4 mr-2" />
-                  {t("rules.createFirstRule")}
-                </Button>
               </div>
             ) : (
               <div className="space-y-4">
@@ -507,14 +517,16 @@ export function AlertRulesModal({ isOpen, onClose }: AlertRulesModalProps) {
                       >
                         <Settings className="h-4 w-4" />
                       </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDeleteClick(rule)}
-                        disabled={deleteMutation.isPending}
-                      >
-                        <Trash2 className="h-4 w-4 text-red-500" />
-                      </Button>
+                      {!rule.isDefault && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDeleteClick(rule)}
+                          disabled={deleteMutation.isPending}
+                        >
+                          <Trash2 className="h-4 w-4 text-red-500" />
+                        </Button>
+                      )}
                     </div>
                   </div>
                 ))}

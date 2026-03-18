@@ -38,7 +38,8 @@
         "step5Title": "4. Ejecutar las migraciones de base de datos",
         "step6Title": "5. Acceder a la aplicación",
         "step6Frontend": "<strong>Frontend:</strong>",
-        "step6BackendApi": "<strong>API Backend:</strong>"
+        "step6BackendApi": "<strong>API Backend:</strong>",
+        "step6AlertWorker": "<strong>Worker de alertas:</strong> se ejecuta en segundo plano — consulta tus servidores RabbitMQ cada 5 minutos y escribe las alertas en la base de datos."
       },
       "dokku": {
         "whyDokkuTitle": "¿Por qué Dokku?",
@@ -54,7 +55,9 @@
         "step3Note": "<code>PORT</code> y <code>HOST</code> se establecen automáticamente por Dokku. Reemplaza <code>https://your-domain.com</code> con tu dominio real.",
         "step4Title": "4. Desplegar",
         "step5Title": "5. Ejecutar las migraciones de base de datos",
-        "step6Title": "6. Dominio y SSL (Opcional)",
+        "step5WorkerTitle": "6. Escalar el worker de alertas",
+        "step5WorkerNote": "El tipo de proceso <code>worker</code> está definido en el <code>Procfile</code> y ejecuta el monitor de alertas. Dokku no lo inicia automáticamente — debes escalarlo a 1. Establecer <code>ALERT_WORKER_EMBEDDED=false</code> evita que el proceso web también ejecute el cron.",
+        "step6Title": "7. Dominio y SSL (Opcional)",
         "step6Note": "Tu aplicación estará disponible en <code>https://your-domain.com</code> (o la IP de tu servidor)."
       },
       "binary": {
@@ -68,7 +71,9 @@
         "step2Title": "3. Configuración interactiva",
         "step2Note": "El asistente de configuración te pedirá la URL de PostgreSQL, verificará la conexión y generará un archivo <code>.env</code> con secretos seguros.",
         "step3Title": "4. Iniciar Qarote",
-        "step4Title": "5. Acceder a la aplicación",
+        "step3WorkerTitle": "5. Iniciar el worker de alertas",
+        "step3WorkerNote": "El worker de alertas consulta tus servidores RabbitMQ cada 5 minutos y escribe las alertas en la base de datos. Ejecútalo en una terminal separada o como un servicio en segundo plano.",
+        "step4Title": "6. Acceder a la aplicación",
         "step4Description": "Abre <code>http://localhost:3000</code> en tu navegador. El binario sirve tanto la API como el frontend desde un único puerto.",
         "step4ManualSetup": "<strong>Configuración manual:</strong> También puedes omitir el asistente y configurar directamente:",
         "cliFlagsTitle": "<strong>Opciones CLI disponibles:</strong>",

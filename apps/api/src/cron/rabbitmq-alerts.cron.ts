@@ -5,6 +5,8 @@ import { alertService } from "@/services/alerts/alert.service";
 
 import { alertConfig } from "@/config";
 
+import type { AlertRule } from "@/generated/prisma/client";
+
 /**
  * Process items with sliding window concurrency
  * Maintains constant concurrency - as soon as one task completes, the next starts
@@ -199,6 +201,21 @@ class RabbitMQAlertsCronService {
         return;
       }
 
+      // Batch-load all enabled alert rules in a single query to avoid N+1
+      const allRules = await prisma.alertRule.findMany({
+        where: { enabled: true },
+      });
+      const rulesByServer = new Map<string, AlertRule[]>();
+      for (const rule of allRules) {
+        if (!rule.serverId) continue; // Skip rules without a server
+        const existing = rulesByServer.get(rule.serverId);
+        if (existing) {
+          existing.push(rule);
+        } else {
+          rulesByServer.set(rule.serverId, [rule]);
+        }
+      }
+
       // Process servers with sliding window concurrency
       let successCount = 0;
       let errorCount = 0;
@@ -228,7 +245,8 @@ class RabbitMQAlertsCronService {
                   server.id,
                   server.name,
                   server.workspaceId || "",
-                  undefined // Check all vhosts
+                  undefined, // Check all vhosts
+                  rulesByServer.get(server.id) ?? []
                 ),
                 timeoutPromise,
               ]);

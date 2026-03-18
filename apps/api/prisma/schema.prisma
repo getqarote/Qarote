@@ -8,43 +8,82 @@ datasource db {
 }
 
 model Alert {
-  id             String        @id @default(uuid())
+  id             String          @id @default(uuid())
   title          String
   description    String
+  severity       AlertSeverity
+  status         AlertStatus     @default(ACTIVE)
+  workspaceId    String
   createdById    String?
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
-  resolvedAt     DateTime?
-  acknowledgedAt DateTime?
   alertRuleId    String?
   threshold      Float?
   value          Float?
-  severity       AlertSeverity
-  status         AlertStatus   @default(ACTIVE)
-  workspaceId    String
-  alertRule      AlertRule?    @relation(fields: [alertRuleId], references: [id])
-  user           User?         @relation(fields: [createdById], references: [id])
-  workspace      Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  resolvedAt     DateTime?
+  acknowledgedAt DateTime?
+  // Unified fields — populated for system-detected alerts, optional for custom rule alerts
+  serverId       String?
+  serverName     String?
+  fingerprint    String?
+  firstSeenAt    DateTime?
+  lastSeenAt     DateTime?
+  emailSentAt    DateTime?
+  category       String?
+  sourceType     String?
+  sourceName     String?
+  details        Json?
+  duration       Int?
+  alertRule      AlertRule?      @relation(fields: [alertRuleId], references: [id])
+  user           User?           @relation(fields: [createdById], references: [id])
+  server         RabbitMQServer? @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  workspace      Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, status])
+  @@index([serverId, status])
+  // NOTE: Prisma cannot express partial unique indexes, so the real invariant
+  // "one ACTIVE alert per fingerprint" is enforced by a hand-written raw SQL
+  // partial unique index named `alert_active_fingerprint_unique`:
+  //   CREATE UNIQUE INDEX "alert_active_fingerprint_unique"
+  //     ON "Alert" (fingerprint)
+  //     WHERE status = 'ACTIVE' AND fingerprint IS NOT NULL;
+  // This index is created in migration
+  // 20260316141713_phase_2_migrate_seen_resolved_to_alert/migration.sql.
+  // @@index([fingerprint]) below is a plain (non-unique, non-partial) index
+  // kept only for query performance. Do NOT remove or replace the raw SQL
+  // partial unique index with a Prisma-managed one — Prisma will drop it on
+  // the next `migrate dev` run unless the DROP INDEX is manually removed from
+  // the generated migration file and the index is restored via `prisma db execute`.
+  @@index([fingerprint])
+  @@index([resolvedAt])
+  @@index([createdAt])
 }
 
 model AlertRule {
   id          String             @id @default(cuid())
   name        String
   description String?
+  slug        String?
   type        AlertType
   threshold   Float
   operator    ComparisonOperator
   severity    AlertSeverity
   enabled     Boolean            @default(true)
-  serverId    String
-  createdById String
+  isDefault   Boolean            @default(false)
+  serverId    String?
+  createdById String?
   createdAt   DateTime           @default(now())
   updatedAt   DateTime           @updatedAt
   workspaceId String
   alerts      Alert[]
-  user        User               @relation(fields: [createdById], references: [id], onDelete: Cascade)
-  server      RabbitMQServer     @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  user        User?              @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  server      RabbitMQServer?    @relation(fields: [serverId], references: [id], onDelete: Cascade)
   workspace   Workspace          @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([serverId, slug])
+  @@index([serverId])
+  @@index([workspaceId])
+  @@index([isDefault])
 }
 
 model EmailVerificationToken {
@@ -173,10 +212,9 @@ model RabbitMQServer {
   queuePauseStates      Json?
   amqpPort              Int             @default(5672)
   alertRules            AlertRule[]
+  alerts                Alert[]
   queues                Queue[]
   workspace             Workspace?      @relation(fields: [workspaceId], references: [id])
-  resolvedAlerts        ResolvedAlert[]
-  seenAlerts            SeenAlert[]
 }
 
 model User {
@@ -290,39 +328,12 @@ model Workspace {
   servers                       RabbitMQServer[]
   users                         User[]
   members                       WorkspaceMember[]         @relation("WorkspaceMembers")
-  alertThresholds               WorkspaceAlertThresholds?
   licenses                      License[]
-  resolvedAlerts                ResolvedAlert[]
-  seenAlerts                    SeenAlert[]
   slackConfigs                  SlackConfig[]
   webhooks                      Webhook[]
   organization                  Organization              @relation(fields: [organizationId], references: [id])
 
   @@index([organizationId])
-}
-
-model WorkspaceAlertThresholds {
-  id                          String    @id @default(uuid())
-  memoryWarning               Float     @default(80.0)
-  memoryCritical              Float     @default(90.0)
-  diskWarning                 Float     @default(80.0)
-  diskCritical                Float     @default(90.0)
-  fileDescriptorsWarning      Float     @default(80.0)
-  fileDescriptorsCritical     Float     @default(90.0)
-  socketsWarning              Float     @default(80.0)
-  socketsCritical             Float     @default(90.0)
-  processesWarning            Float     @default(80.0)
-  processesCritical           Float     @default(90.0)
-  unackedMessagesWarning      Int       @default(1000)
-  unackedMessagesCritical     Int       @default(5000)
-  consumerUtilizationWarning  Float     @default(20.0)
-  consumerUtilizationCritical Float     @default(10.0)
-  runQueueWarning             Int       @default(50)
-  runQueueCritical            Int       @default(100)
-  workspaceId                 String    @unique
-  createdAt                   DateTime  @default(now())
-  updatedAt                   DateTime  @updatedAt
-  workspace                   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 }
 
 model WorkspaceMember {
@@ -425,57 +436,6 @@ model Payment {
   @@index([status], name: "payment_status_idx")
   @@index([stripePaymentId], name: "payment_stripe_id_idx")
   @@index([userId], name: "payment_user_idx")
-}
-
-model ResolvedAlert {
-  id          String         @id @default(uuid())
-  serverId    String
-  serverName  String
-  severity    String
-  category    String
-  title       String
-  description String
-  details     Json
-  sourceType  String
-  sourceName  String
-  fingerprint String
-  firstSeenAt DateTime
-  resolvedAt  DateTime       @default(now())
-  duration    Int?
-  workspaceId String
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-  server      RabbitMQServer @relation(fields: [serverId], references: [id], onDelete: Cascade)
-  workspace   Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-
-  @@index([fingerprint])
-  @@index([resolvedAt])
-  @@index([serverId])
-  @@index([workspaceId])
-}
-
-model SeenAlert {
-  id          String         @id @default(uuid())
-  fingerprint String         @unique
-  serverId    String
-  workspaceId String
-  severity    String
-  category    String
-  sourceType  String
-  sourceName  String
-  firstSeenAt DateTime       @default(now())
-  lastSeenAt  DateTime       @default(now())
-  resolvedAt  DateTime?
-  emailSentAt DateTime?
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-  server      RabbitMQServer @relation(fields: [serverId], references: [id], onDelete: Cascade)
-  workspace   Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-
-  @@index([fingerprint])
-  @@index([resolvedAt])
-  @@index([serverId])
-  @@index([workspaceId])
 }
 
 model SlackConfig {
@@ -606,6 +566,7 @@ model OrgSsoConfig {
 }
 
 enum AlertSeverity {
+  INFO
   LOW
   MEDIUM
   HIGH
@@ -621,13 +582,19 @@ enum AlertStatus {
 enum AlertType {
   QUEUE_DEPTH
   MESSAGE_RATE
+  UNACKED_MESSAGES
   CONSUMER_COUNT
+  CONSUMER_UTILIZATION
   MEMORY_USAGE
   DISK_USAGE
   CONNECTION_COUNT
   CHANNEL_COUNT
+  FILE_DESCRIPTOR_USAGE
   NODE_DOWN
   EXCHANGE_ERROR
+  SOCKET_USAGE
+  PROCESS_USAGE
+  RUN_QUEUE_LENGTH
 }
 
 enum BillingInterval {

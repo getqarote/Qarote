@@ -73,7 +73,6 @@ async function cleanDatabase(prisma: PrismaClient) {
     "Alert",
     "SlackConfig",
     "Webhook",
-    "WorkspaceAlertThresholds",
     "WorkspaceMember",
     "Payment",
     "Subscription",

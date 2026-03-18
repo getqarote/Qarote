@@ -6,15 +6,20 @@ import { createRabbitMQClient } from "@/trpc/routers/rabbitmq/shared";
 import { analyzeNodeHealth, analyzeQueueHealth } from "./alert.analyzer";
 import { alertHealthService } from "./alert.health";
 import {
-  AlertSeverity,
+  AlertCategory,
   AlertSummary,
-  AlertThresholds,
   ClusterHealthSummary,
   HealthCheck,
   RabbitMQAlert,
 } from "./alert.interfaces";
 import { alertNotificationService } from "./alert.notification";
-import { alertThresholdsService } from "./alert.thresholds";
+import {
+  buildThresholdsFromAlertRules,
+  loadThresholdsForServer,
+} from "./alert.rule-adapter";
+
+import type { AlertRule } from "@/generated/prisma/client";
+import { AlertSeverity } from "@/generated/prisma/client";
 
 /**
  * Alert Service class
@@ -24,19 +29,22 @@ class AlertService {
   /**
    * Get alerts for a server
    * @param vhost - Optional vhost to filter queue-related alerts. Node alerts are not filtered by vhost.
+   * @param preloadedRules - Optional pre-loaded alert rules (avoids extra DB query when batch-processing)
    */
   async getServerAlerts(
     serverId: string,
     serverName: string,
     workspaceId: string,
-    vhost?: string
+    vhost?: string,
+    preloadedRules?: AlertRule[]
   ): Promise<{ alerts: RabbitMQAlert[]; summary: AlertSummary }> {
     const alerts: RabbitMQAlert[] = [];
     const client = await createRabbitMQClient(serverId, workspaceId);
 
-    // Get workspace-specific thresholds
-    const thresholds =
-      await alertThresholdsService.getWorkspaceThresholds(workspaceId);
+    // Get per-server thresholds from AlertRule table
+    const thresholds = preloadedRules
+      ? buildThresholdsFromAlertRules(preloadedRules)
+      : await loadThresholdsForServer(serverId);
 
     try {
       // Analyze nodes (not filtered by vhost - nodes are cluster-wide)
@@ -76,7 +84,13 @@ class AlertService {
 
     // Sort alerts by severity and timestamp
     alerts.sort((a, b) => {
-      const severityOrder = { critical: 3, warning: 2, info: 1 };
+      const severityOrder: Record<string, number> = {
+        CRITICAL: 5,
+        HIGH: 4,
+        MEDIUM: 3,
+        LOW: 2,
+        INFO: 1,
+      };
       const severityDiff =
         severityOrder[b.severity] - severityOrder[a.severity];
       if (severityDiff !== 0) return severityDiff;
@@ -87,8 +101,9 @@ class AlertService {
       total: alerts.length,
       critical: alerts.filter((a) => a.severity === AlertSeverity.CRITICAL)
         .length,
-      warning: alerts.filter((a) => a.severity === AlertSeverity.WARNING)
-        .length,
+      high: alerts.filter((a) => a.severity === AlertSeverity.HIGH).length,
+      medium: alerts.filter((a) => a.severity === AlertSeverity.MEDIUM).length,
+      low: alerts.filter((a) => a.severity === AlertSeverity.LOW).length,
       info: alerts.filter((a) => a.severity === AlertSeverity.INFO).length,
     };
 
@@ -100,6 +115,95 @@ class AlertService {
       serverName,
       vhost // Pass vhost context for proper auto-resolution
     );
+
+    return { alerts, summary };
+  }
+
+  /**
+   * Read active alerts for a server directly from the unified Alert table.
+   * Used by the watchAlerts subscription — reads DB instead of polling RabbitMQ
+   * per connected client, eliminating the N+1 polling problem.
+   *
+   * Returns the same { alerts, summary } shape as getServerAlerts so the
+   * existing processAlerts helper and tRPC response shape are unchanged.
+   *
+   * @param vhost - When provided, filters queue alerts to that vhost only.
+   *                Node and cluster alerts are always included.
+   */
+  async getActiveAlertsFromDb(
+    serverId: string,
+    workspaceId: string,
+    vhost?: string
+  ): Promise<{ alerts: RabbitMQAlert[]; summary: AlertSummary }> {
+    const rows = await prisma.alert.findMany({
+      where: { serverId, workspaceId, status: "ACTIVE" },
+      orderBy: { lastSeenAt: "desc" },
+      select: {
+        id: true,
+        fingerprint: true, // needed for exact vhost boundary check below
+        serverId: true,
+        serverName: true,
+        severity: true,
+        category: true,
+        title: true,
+        description: true,
+        details: true,
+        sourceType: true,
+        sourceName: true,
+        lastSeenAt: true,
+        firstSeenAt: true,
+        createdAt: true,
+      },
+    });
+
+    // Apply exact vhost boundary check in-memory. The fingerprint format for
+    // queue alerts is "{serverId}-{category}-queue-{vhost}-{sourceName}", so
+    // we must verify the vhost appears as a complete path segment — not as a
+    // prefix of a longer vhost name. A DB `contains` query for "-queue-prod-"
+    // would incorrectly match fingerprints for vhost "prod-v2" because
+    // "-queue-prod-v2-" starts with "-queue-prod-".
+    const filteredRows = vhost
+      ? rows.filter((row) => {
+          if (row.sourceType !== "queue") return true;
+          if (!row.fingerprint) return false;
+          const suffix = `-${row.sourceName ?? ""}`;
+          if (suffix.length <= 1) return false;
+          if (!row.fingerprint.endsWith(suffix)) return false;
+          const withoutSource = row.fingerprint.slice(0, -suffix.length);
+          return withoutSource.endsWith(`-queue-${vhost}`);
+        })
+      : rows;
+
+    const alerts: RabbitMQAlert[] = filteredRows.map((row) => ({
+      id: row.id,
+      serverId: row.serverId ?? "",
+      serverName: row.serverName ?? "",
+      severity: row.severity,
+      category: (row.category ?? "node") as AlertCategory,
+      title: row.title,
+      description: row.description,
+      details: (row.details ?? {}) as RabbitMQAlert["details"],
+      timestamp: (
+        row.lastSeenAt ??
+        row.firstSeenAt ??
+        row.createdAt
+      ).toISOString(),
+      resolved: false,
+      source: {
+        type: (row.sourceType ?? "node") as "node" | "queue" | "cluster",
+        name: row.sourceName ?? "",
+      },
+    }));
+
+    const summary: AlertSummary = {
+      total: alerts.length,
+      critical: alerts.filter((a) => a.severity === AlertSeverity.CRITICAL)
+        .length,
+      high: alerts.filter((a) => a.severity === AlertSeverity.HIGH).length,
+      medium: alerts.filter((a) => a.severity === AlertSeverity.MEDIUM).length,
+      low: alerts.filter((a) => a.severity === AlertSeverity.LOW).length,
+      info: alerts.filter((a) => a.severity === AlertSeverity.INFO).length,
+    };
 
     return { alerts, summary };
   }
@@ -125,42 +229,8 @@ class AlertService {
   }
 
   /**
-   * Check if user can modify alert thresholds based on subscription plan
-   */
-  async canModifyThresholds(workspaceId: string): Promise<boolean> {
-    return alertThresholdsService.canModifyThresholds(workspaceId);
-  }
-
-  /**
-   * Get alert thresholds for a workspace
-   */
-  async getWorkspaceThresholds(workspaceId: string): Promise<AlertThresholds> {
-    return alertThresholdsService.getWorkspaceThresholds(workspaceId);
-  }
-
-  /**
-   * Update alert thresholds for a workspace
-   */
-  async updateWorkspaceThresholds(
-    workspaceId: string,
-    thresholds: Partial<AlertThresholds>
-  ): Promise<{ success: boolean; message: string }> {
-    return alertThresholdsService.updateWorkspaceThresholds(
-      workspaceId,
-      thresholds
-    );
-  }
-
-  /**
-   * Get default thresholds
-   */
-  getDefaultThresholds(): AlertThresholds {
-    return alertThresholdsService.getDefaultThresholds();
-  }
-
-  /**
-   * Get resolved alerts for a server
-   * @param vhost - Optional vhost to filter queue-related alerts. Node/cluster alerts are not filtered by vhost.
+   * Get resolved alerts for a server from the unified Alert table.
+   * Reads Alert rows with status=RESOLVED ordered by resolvedAt desc.
    */
   async getResolvedAlerts(
     serverId: string,
@@ -170,7 +240,6 @@ class AlertService {
       offset?: number;
       severity?: string;
       category?: string;
-      vhost?: string;
     }
   ): Promise<{
     alerts: Array<{
@@ -189,62 +258,36 @@ class AlertService {
     }>;
     total: number;
   }> {
-    const where: {
+    type WhereClause = {
       serverId: string;
       workspaceId: string;
-      severity?: string;
+      status: "RESOLVED";
+      resolvedAt: { not: null };
+      severity?: AlertSeverity;
       category?: string;
-      fingerprint?: { notIn: string[] };
-      OR?: Array<{
-        sourceType: string;
-        fingerprint?: { contains: string };
-      }>;
-    } = {
+    };
+
+    const where: WhereClause = {
       serverId,
       workspaceId,
+      status: "RESOLVED",
+      resolvedAt: { not: null },
     };
 
     if (options?.severity) {
-      where.severity = options.severity;
+      // Severity values are now uppercase Prisma enum values directly
+      const upper = options.severity.toUpperCase();
+      if (Object.values(AlertSeverity).includes(upper as AlertSeverity)) {
+        where.severity = upper as AlertSeverity;
+      }
     }
 
     if (options?.category) {
       where.category = options.category;
     }
 
-    // Filter by vhost: queue alerts include vhost in fingerprint, node/cluster alerts don't
-    if (options?.vhost) {
-      const vhostPattern = `-queue-${options.vhost}-`;
-      where.OR = [
-        // Include queue alerts that match the vhost (fingerprint contains vhost pattern)
-        {
-          sourceType: "queue",
-          fingerprint: { contains: vhostPattern },
-        },
-        // Include all node and cluster alerts (not vhost-specific, so always include)
-        {
-          sourceType: "node",
-        },
-        {
-          sourceType: "cluster",
-        },
-      ];
-    }
-
-    // Exclude fingerprints that are currently active (SeenAlert with resolvedAt: null).
-    // Pushing this into the DB query (rather than filtering in-memory) ensures that
-    // take/skip pagination and the total count remain correct.
-    const activeSeenAlerts = await prisma.seenAlert.findMany({
-      where: { serverId, workspaceId, resolvedAt: null },
-      select: { fingerprint: true },
-    });
-    const activeFingerprints = activeSeenAlerts.map((a) => a.fingerprint);
-    if (activeFingerprints.length > 0) {
-      where.fingerprint = { notIn: activeFingerprints };
-    }
-
-    const [resolvedAlerts, total] = await Promise.all([
-      prisma.resolvedAlert.findMany({
+    const [rows, total] = await Promise.all([
+      prisma.alert.findMany({
         where,
         orderBy: { resolvedAt: "desc" },
         take: options?.limit,
@@ -263,27 +306,32 @@ class AlertService {
           firstSeenAt: true,
           resolvedAt: true,
           duration: true,
+          createdAt: true,
         },
       }),
-      prisma.resolvedAlert.count({ where }),
+      prisma.alert.count({ where }),
     ]);
 
     return {
-      alerts: resolvedAlerts.map((alert) => ({
+      alerts: rows.map((alert) => ({
         id: alert.id,
-        serverId: alert.serverId,
-        serverName: alert.serverName,
+        serverId: alert.serverId ?? "",
+        serverName: alert.serverName ?? "",
         severity: alert.severity,
-        category: alert.category,
+        category: alert.category ?? "",
         title: alert.title,
         description: alert.description,
-        details: alert.details as Record<string, unknown>,
+        details: (alert.details ?? {}) as Record<string, unknown>,
         source: {
-          type: alert.sourceType,
-          name: alert.sourceName,
+          type: alert.sourceType ?? "",
+          name: alert.sourceName ?? "",
         },
-        firstSeenAt: alert.firstSeenAt.toISOString(),
-        resolvedAt: alert.resolvedAt.toISOString(),
+        firstSeenAt: (
+          alert.firstSeenAt ??
+          alert.createdAt ??
+          alert.resolvedAt
+        ).toISOString(),
+        resolvedAt: alert.resolvedAt!.toISOString(),
         duration: alert.duration,
       })),
       total,

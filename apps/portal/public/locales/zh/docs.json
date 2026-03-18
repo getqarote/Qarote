@@ -38,7 +38,8 @@
         "step5Title": "4. 运行数据库迁移",
         "step6Title": "5. 访问应用程序",
         "step6Frontend": "<strong>前端：</strong>",
-        "step6BackendApi": "<strong>后端 API：</strong>"
+        "step6BackendApi": "<strong>后端 API：</strong>",
+        "step6AlertWorker": "<strong>告警工作进程：</strong>在后台运行——每 5 分钟轮询一次您的 RabbitMQ 服务器并将告警写入数据库。"
       },
       "dokku": {
         "whyDokkuTitle": "为什么选择 Dokku？",
@@ -54,7 +55,9 @@
         "step3Note": "<code>PORT</code> 和 <code>HOST</code> 由 Dokku 自动设置。请将 <code>https://your-domain.com</code> 替换为你的实际域名。",
         "step4Title": "4. 部署",
         "step5Title": "5. 运行数据库迁移",
-        "step6Title": "6. 域名和 SSL（可选）",
+        "step5WorkerTitle": "6. 启动告警工作进程",
+        "step5WorkerNote": "<code>worker</code> 进程类型定义在 <code>Procfile</code> 中，负责运行告警监控器。Dokku 不会自动启动它——你需要将其扩容至 1。设置 <code>ALERT_WORKER_EMBEDDED=false</code> 可防止 web 进程同时运行 cron 任务。",
+        "step6Title": "7. 域名和 SSL（可选）",
         "step6Note": "你的应用将可通过 <code>https://your-domain.com</code>（或你的服务器 IP）访问。"
       },
       "binary": {
@@ -68,7 +71,9 @@
         "step2Title": "3. 交互式配置",
         "step2Note": "配置向导将询问你的 PostgreSQL URL，验证连接，并生成包含安全密钥的 <code>.env</code> 文件。",
         "step3Title": "4. 启动 Qarote",
-        "step4Title": "5. 访问应用程序",
+        "step3WorkerTitle": "5. 启动告警工作进程",
+        "step3WorkerNote": "告警工作进程每 5 分钟轮询一次你的 RabbitMQ 服务器，并将健康告警写入数据库。在单独的终端中运行，或作为后台服务运行。",
+        "step4Title": "6. 访问应用程序",
         "step4Description": "在浏览器中打开 <code>http://localhost:3000</code>。该二进制文件通过单个端口同时提供 API 和前端服务。",
         "step4ManualSetup": "<strong>手动配置：</strong>你也可以跳过向导，直接进行配置：",
         "cliFlagsTitle": "<strong>可用 CLI 选项：</strong>",

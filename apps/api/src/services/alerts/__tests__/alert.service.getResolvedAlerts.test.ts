@@ -4,10 +4,18 @@ import { afterEach, describe, expect, it, type MockInstance, vi } from "vitest";
 // Module mocks
 // ---------------------------------------------------------------------------
 
+vi.mock("@/core/logger", () => ({
+  logger: {
+    warn: vi.fn(),
+    debug: vi.fn(),
+    info: vi.fn(),
+    error: vi.fn(),
+  },
+}));
+
 vi.mock("@/core/prisma", () => ({
   prisma: {
-    seenAlert: { findMany: vi.fn() },
-    resolvedAlert: { findMany: vi.fn(), count: vi.fn() },
+    alert: { findMany: vi.fn(), count: vi.fn() },
   },
 }));
 
@@ -25,8 +33,8 @@ vi.mock("@/services/alerts/alert.notification", () => ({
   alertNotificationService: { trackAndNotifyNewAlerts: vi.fn() },
 }));
 
-vi.mock("@/services/alerts/alert.thresholds", () => ({
-  alertThresholdsService: { getWorkspaceThresholds: vi.fn() },
+vi.mock("@/services/alerts/alert.rule-adapter", () => ({
+  loadThresholdsForServer: vi.fn(),
 }));
 
 vi.mock("@/services/alerts/alert.health", () => ({
@@ -52,19 +60,22 @@ const SERVER_ID = "server-1";
 const WORKSPACE_ID = "ws-1";
 
 const mockPrisma = prisma as unknown as {
-  seenAlert: { findMany: MockInstance };
-  resolvedAlert: { findMany: MockInstance; count: MockInstance };
+  alert: { findMany: MockInstance; count: MockInstance };
 };
 
+/**
+ * Build a resolved Alert row as the DB would return it.
+ * severity uses the Prisma AlertSeverity enum values (CRITICAL, MEDIUM, INFO).
+ */
 function makeResolvedAlert(
-  fingerprint: string,
+  id: string,
   overrides: Record<string, unknown> = {}
 ) {
   return {
-    id: `ra-${fingerprint}`,
+    id,
     serverId: SERVER_ID,
     serverName: "Test Server",
-    severity: "warning",
+    severity: "MEDIUM",
     category: "memory",
     title: "High Memory Usage",
     description: "Memory issue on node rabbit@node1",
@@ -75,10 +86,10 @@ function makeResolvedAlert(
     },
     sourceType: "node",
     sourceName: "rabbit@node1",
-    fingerprint,
     firstSeenAt: new Date("2026-01-01T00:00:00Z"),
     resolvedAt: new Date("2026-01-01T01:00:00Z"),
     duration: 3_600_000,
+    createdAt: new Date("2026-01-01T00:00:00Z"),
     ...overrides,
   };
 }
@@ -92,14 +103,10 @@ describe("AlertService.getResolvedAlerts", () => {
     vi.clearAllMocks();
   });
 
-  it("returns resolved alerts that are not currently active", async () => {
-    const fp = `${SERVER_ID}-memory-node-rabbit@node1`;
-
-    mockPrisma.seenAlert.findMany.mockResolvedValue([]); // nothing active
-    mockPrisma.resolvedAlert.findMany.mockResolvedValue([
-      makeResolvedAlert(fp),
-    ]);
-    mockPrisma.resolvedAlert.count.mockResolvedValue(1);
+  it("returns resolved alerts from the unified Alert table", async () => {
+    const id = "ra-1";
+    mockPrisma.alert.findMany.mockResolvedValue([makeResolvedAlert(id)]);
+    mockPrisma.alert.count.mockResolvedValue(1);
 
     const result = await alertService.getResolvedAlerts(
       SERVER_ID,
@@ -111,65 +118,9 @@ describe("AlertService.getResolvedAlerts", () => {
     expect(result.alerts[0].source.type).toBe("node");
   });
 
-  it("passes active fingerprints as notIn to the resolvedAlert query", async () => {
-    const activeFp = `${SERVER_ID}-memory-node-rabbit@node1`;
-    const resolvedFp = `${SERVER_ID}-disk-node-rabbit@node1`;
-
-    mockPrisma.seenAlert.findMany.mockResolvedValue([
-      { fingerprint: activeFp },
-    ]);
-    // DB has already excluded the activeFp record via the notIn clause
-    mockPrisma.resolvedAlert.findMany.mockResolvedValue([
-      makeResolvedAlert(resolvedFp),
-    ]);
-    mockPrisma.resolvedAlert.count.mockResolvedValue(1);
-
-    const result = await alertService.getResolvedAlerts(
-      SERVER_ID,
-      WORKSPACE_ID
-    );
-
-    expect(result.alerts).toHaveLength(1);
-    expect(result.total).toBe(1);
-    expect(result.alerts[0].id).toBe(`ra-${resolvedFp}`);
-
-    // The DB query must include the notIn exclusion
-    expect(mockPrisma.resolvedAlert.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: expect.objectContaining({
-          fingerprint: { notIn: [activeFp] },
-        }),
-      })
-    );
-  });
-
-  it("does not add fingerprint notIn clause when there are no active alerts", async () => {
-    mockPrisma.seenAlert.findMany.mockResolvedValue([]);
-    mockPrisma.resolvedAlert.findMany.mockResolvedValue([
-      makeResolvedAlert(`${SERVER_ID}-memory-node-rabbit@node1`),
-    ]);
-    mockPrisma.resolvedAlert.count.mockResolvedValue(1);
-
-    await alertService.getResolvedAlerts(SERVER_ID, WORKSPACE_ID);
-
-    expect(mockPrisma.resolvedAlert.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: expect.not.objectContaining({ fingerprint: expect.anything() }),
-      })
-    );
-  });
-
-  it("returns empty list when all resolved alert fingerprints are currently active", async () => {
-    const fp1 = `${SERVER_ID}-memory-node-rabbit@node1`;
-    const fp2 = `${SERVER_ID}-disk-node-rabbit@node1`;
-
-    mockPrisma.seenAlert.findMany.mockResolvedValue([
-      { fingerprint: fp1 },
-      { fingerprint: fp2 },
-    ]);
-    // DB returns nothing because all fingerprints are excluded via notIn
-    mockPrisma.resolvedAlert.findMany.mockResolvedValue([]);
-    mockPrisma.resolvedAlert.count.mockResolvedValue(0);
+  it("returns empty list when the Alert table has no resolved rows", async () => {
+    mockPrisma.alert.findMany.mockResolvedValue([]);
+    mockPrisma.alert.count.mockResolvedValue(0);
 
     const result = await alertService.getResolvedAlerts(
       SERVER_ID,
@@ -180,13 +131,12 @@ describe("AlertService.getResolvedAlerts", () => {
     expect(result.total).toBe(0);
   });
 
-  it("returns all resolved alerts when there are no active alerts", async () => {
-    mockPrisma.seenAlert.findMany.mockResolvedValue([]);
-    mockPrisma.resolvedAlert.findMany.mockResolvedValue([
-      makeResolvedAlert(`${SERVER_ID}-memory-node-rabbit@node1`),
-      makeResolvedAlert(`${SERVER_ID}-disk-node-rabbit@node1`),
+  it("returns all resolved alerts when multiple rows exist", async () => {
+    mockPrisma.alert.findMany.mockResolvedValue([
+      makeResolvedAlert("ra-1"),
+      makeResolvedAlert("ra-2"),
     ]);
-    mockPrisma.resolvedAlert.count.mockResolvedValue(2);
+    mockPrisma.alert.count.mockResolvedValue(2);
 
     const result = await alertService.getResolvedAlerts(
       SERVER_ID,
@@ -197,28 +147,13 @@ describe("AlertService.getResolvedAlerts", () => {
     expect(result.total).toBe(2);
   });
 
-  it("returns empty list when both resolved and active alert tables are empty", async () => {
-    mockPrisma.seenAlert.findMany.mockResolvedValue([]);
-    mockPrisma.resolvedAlert.findMany.mockResolvedValue([]);
-    mockPrisma.resolvedAlert.count.mockResolvedValue(0);
-
-    const result = await alertService.getResolvedAlerts(
-      SERVER_ID,
-      WORKSPACE_ID
-    );
-
-    expect(result.alerts).toHaveLength(0);
-    expect(result.total).toBe(0);
-  });
-
   it("total comes from count query, not the length of the current page", async () => {
     // Simulates a paginated response: page returns 2 items but total is 50
-    mockPrisma.seenAlert.findMany.mockResolvedValue([]);
-    mockPrisma.resolvedAlert.findMany.mockResolvedValue([
-      makeResolvedAlert(`${SERVER_ID}-memory-node-rabbit@node1`),
-      makeResolvedAlert(`${SERVER_ID}-disk-node-rabbit@node1`),
+    mockPrisma.alert.findMany.mockResolvedValue([
+      makeResolvedAlert("ra-1"),
+      makeResolvedAlert("ra-2"),
     ]);
-    mockPrisma.resolvedAlert.count.mockResolvedValue(50);
+    mockPrisma.alert.count.mockResolvedValue(50);
 
     const result = await alertService.getResolvedAlerts(
       SERVER_ID,
@@ -230,12 +165,9 @@ describe("AlertService.getResolvedAlerts", () => {
   });
 
   it("maps resolved alert fields correctly", async () => {
-    const fp = `${SERVER_ID}-memory-node-rabbit@node1`;
-    mockPrisma.seenAlert.findMany.mockResolvedValue([]);
-    mockPrisma.resolvedAlert.findMany.mockResolvedValue([
-      makeResolvedAlert(fp),
-    ]);
-    mockPrisma.resolvedAlert.count.mockResolvedValue(1);
+    const id = "ra-memory-1";
+    mockPrisma.alert.findMany.mockResolvedValue([makeResolvedAlert(id)]);
+    mockPrisma.alert.count.mockResolvedValue(1);
 
     const result = await alertService.getResolvedAlerts(
       SERVER_ID,
@@ -243,10 +175,10 @@ describe("AlertService.getResolvedAlerts", () => {
     );
     const alert = result.alerts[0];
 
-    expect(alert.id).toBe(`ra-${fp}`);
+    expect(alert.id).toBe(id);
     expect(alert.serverId).toBe(SERVER_ID);
     expect(alert.serverName).toBe("Test Server");
-    expect(alert.severity).toBe("warning");
+    expect(alert.severity).toBe("MEDIUM");
     expect(alert.category).toBe("memory");
     expect(alert.source).toEqual({ type: "node", name: "rabbit@node1" });
     expect(alert.firstSeenAt).toBe("2026-01-01T00:00:00.000Z");
@@ -256,72 +188,100 @@ describe("AlertService.getResolvedAlerts", () => {
     expect(Object.keys(alert)).not.toContain("fingerprint");
   });
 
-  it("queries SeenAlert with resolvedAt: null to identify active fingerprints", async () => {
-    mockPrisma.seenAlert.findMany.mockResolvedValue([]);
-    mockPrisma.resolvedAlert.findMany.mockResolvedValue([]);
-    mockPrisma.resolvedAlert.count.mockResolvedValue(0);
+  it("maps CRITICAL severity correctly", async () => {
+    mockPrisma.alert.findMany.mockResolvedValue([
+      makeResolvedAlert("ra-1", { severity: "CRITICAL" }),
+    ]);
+    mockPrisma.alert.count.mockResolvedValue(1);
+
+    const result = await alertService.getResolvedAlerts(
+      SERVER_ID,
+      WORKSPACE_ID
+    );
+
+    expect(result.alerts[0].severity).toBe("CRITICAL");
+  });
+
+  it("maps INFO severity correctly", async () => {
+    mockPrisma.alert.findMany.mockResolvedValue([
+      makeResolvedAlert("ra-1", { severity: "INFO" }),
+    ]);
+    mockPrisma.alert.count.mockResolvedValue(1);
+
+    const result = await alertService.getResolvedAlerts(
+      SERVER_ID,
+      WORKSPACE_ID
+    );
+
+    expect(result.alerts[0].severity).toBe("INFO");
+  });
+
+  it("queries the Alert table with status=RESOLVED and resolvedAt IS NOT NULL", async () => {
+    mockPrisma.alert.findMany.mockResolvedValue([]);
+    mockPrisma.alert.count.mockResolvedValue(0);
 
     await alertService.getResolvedAlerts(SERVER_ID, WORKSPACE_ID);
 
-    expect(mockPrisma.seenAlert.findMany).toHaveBeenCalledWith(
+    expect(mockPrisma.alert.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({
           serverId: SERVER_ID,
           workspaceId: WORKSPACE_ID,
-          resolvedAt: null,
+          status: "RESOLVED",
+          resolvedAt: { not: null },
         }),
       })
     );
   });
 
-  describe("a recurring alert is not simultaneously in both lists", () => {
-    it("alert that recurred (came back) is excluded from resolved list", async () => {
-      // Scenario: alert fired, was resolved (ResolvedAlert created), then came back
-      // → SeenAlert.resolvedAt is now null again (active)
-      // → The old ResolvedAlert record is still in the DB
-      const fp = `${SERVER_ID}-memory-node-rabbit@node1`;
+  it("applies severity filter when option is provided", async () => {
+    mockPrisma.alert.findMany.mockResolvedValue([]);
+    mockPrisma.alert.count.mockResolvedValue(0);
 
-      // SeenAlert shows alert is currently active → notIn clause excludes it from DB query
-      mockPrisma.seenAlert.findMany.mockResolvedValue([{ fingerprint: fp }]);
-      mockPrisma.resolvedAlert.findMany.mockResolvedValue([]); // excluded by DB notIn
-      mockPrisma.resolvedAlert.count.mockResolvedValue(0);
-
-      const result = await alertService.getResolvedAlerts(
-        SERVER_ID,
-        WORKSPACE_ID
-      );
-
-      // The historical record must not appear because the alert is active again
-      expect(result.alerts).toHaveLength(0);
-      expect(result.total).toBe(0);
-
-      // Verify the exclusion is enforced at the DB level
-      expect(mockPrisma.resolvedAlert.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: expect.objectContaining({
-            fingerprint: { notIn: [fp] },
-          }),
-        })
-      );
+    await alertService.getResolvedAlerts(SERVER_ID, WORKSPACE_ID, {
+      severity: "MEDIUM",
     });
 
-    it("alert that has truly resolved (not active) appears in resolved list", async () => {
-      const fp = `${SERVER_ID}-memory-node-rabbit@node1`;
+    expect(mockPrisma.alert.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          severity: "MEDIUM",
+        }),
+      })
+    );
+  });
 
-      // No active SeenAlert for this fingerprint → no notIn clause added
-      mockPrisma.seenAlert.findMany.mockResolvedValue([]);
-      mockPrisma.resolvedAlert.findMany.mockResolvedValue([
-        makeResolvedAlert(fp),
-      ]);
-      mockPrisma.resolvedAlert.count.mockResolvedValue(1);
+  it("applies category filter when option is provided", async () => {
+    mockPrisma.alert.findMany.mockResolvedValue([]);
+    mockPrisma.alert.count.mockResolvedValue(0);
 
-      const result = await alertService.getResolvedAlerts(
-        SERVER_ID,
-        WORKSPACE_ID
-      );
-
-      expect(result.alerts).toHaveLength(1);
-      expect(result.total).toBe(1);
+    await alertService.getResolvedAlerts(SERVER_ID, WORKSPACE_ID, {
+      category: "memory",
     });
+
+    expect(mockPrisma.alert.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          category: "memory",
+        }),
+      })
+    );
+  });
+
+  it("passes pagination options (limit and offset) to the query", async () => {
+    mockPrisma.alert.findMany.mockResolvedValue([]);
+    mockPrisma.alert.count.mockResolvedValue(0);
+
+    await alertService.getResolvedAlerts(SERVER_ID, WORKSPACE_ID, {
+      limit: 10,
+      offset: 20,
+    });
+
+    expect(mockPrisma.alert.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        take: 10,
+        skip: 20,
+      })
+    );
   });
 });

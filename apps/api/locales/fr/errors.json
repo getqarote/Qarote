@@ -203,6 +203,8 @@
     "failedToGetRule": "Échec de la récupération de la règle d'alerte",
     "failedToCreateRule": "Échec de la création de la règle d'alerte",
     "failedToUpdateRule": "Échec de la mise à jour de la règle d'alerte",
+    "cannotDeleteDefaultRule": "Impossible de supprimer une règle d'alerte par défaut",
+    "cannotModifyDefaultRule": "Impossible de modifier la structure d'une règle d'alerte par défaut",
     "failedToDeleteRule": "Échec de la suppression de la règle d'alerte",
     "failedToGetWebhooks": "Échec de la récupération des webhooks",
     "failedToCreateWebhook": "Échec de la création du webhook",

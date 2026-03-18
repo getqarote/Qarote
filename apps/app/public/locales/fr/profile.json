@@ -92,7 +92,9 @@
     "deleteDialogDescription": "Cela supprimera définitivement l'espace de travail <strong>{{name}}</strong> et toutes les données associées, y compris les serveurs, alertes, règles d'alertes, membres de l'équipe, invitations et la configuration. Cette action est irréversible.",
     "deleteDialogConfirmLabel": "Saisissez le nom de l'espace de travail pour confirmer :",
     "deleteConfirm": "Supprimer l'espace de travail",
-    "deleting": "Suppression..."
+    "deleting": "Suppression...",
+    "tags": "Étiquettes",
+    "tagsPlaceholder": "Ajouter une étiquette..."
   },
   "team": {
     "title": "Équipe",

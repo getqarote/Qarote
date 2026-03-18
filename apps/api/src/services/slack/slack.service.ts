@@ -14,11 +14,15 @@ export class SlackService {
    */
   private static getSeverityColor(severity: string): string {
     switch (severity) {
-      case "critical":
+      case "CRITICAL":
         return "danger"; // Red
-      case "warning":
+      case "HIGH":
+        return "danger"; // Red
+      case "MEDIUM":
         return "warning"; // Yellow
-      case "info":
+      case "LOW":
+        return "good"; // Green
+      case "INFO":
         return "good"; // Green
       default:
         return "#36a64f"; // Default green
@@ -30,12 +34,12 @@ export class SlackService {
    */
   private static formatAlertMessage(alert: RabbitMQAlert): string {
     const emoji =
-      alert.severity === "critical"
+      alert.severity === "CRITICAL" || alert.severity === "HIGH"
         ? "🔴"
-        : alert.severity === "warning"
+        : alert.severity === "MEDIUM"
           ? "🟡"
           : "🔵";
-    return `${emoji} *${alert.severity.toUpperCase()}*: ${alert.title}\n${alert.description}`;
+    return `${emoji} *${alert.severity}*: ${alert.title}\n${alert.description}`;
   }
 
   /**
@@ -49,14 +53,16 @@ export class SlackService {
     frontendUrl?: string
   ): SlackMessage {
     const criticalCount = alerts.filter(
-      (a) => a.severity === "critical"
+      (a) => a.severity === "CRITICAL" || a.severity === "HIGH"
     ).length;
-    const warningCount = alerts.filter((a) => a.severity === "warning").length;
-    const infoCount = alerts.filter((a) => a.severity === "info").length;
+    const warningCount = alerts.filter((a) => a.severity === "MEDIUM").length;
+    const infoCount = alerts.filter(
+      (a) => a.severity === "INFO" || a.severity === "LOW"
+    ).length;
 
     // Determine overall severity for color
     const overallSeverity =
-      criticalCount > 0 ? "critical" : warningCount > 0 ? "warning" : "info";
+      criticalCount > 0 ? "CRITICAL" : warningCount > 0 ? "MEDIUM" : "INFO";
     const color = this.getSeverityColor(overallSeverity);
 
     // Create summary text
@@ -72,7 +78,7 @@ export class SlackService {
     // Build attachments with alert details
     const attachments = alerts.slice(0, 10).map((alert) => ({
       color: this.getSeverityColor(alert.severity),
-      title: `${alert.severity.toUpperCase()}: ${alert.title}`,
+      title: `${alert.severity}: ${alert.title}`,
       text: alert.description,
       fields: [
         {
