@@ -11,7 +11,6 @@ import { FEATURES } from "@/config/features";
 
 import { generateAlertFingerprint } from "./alert.fingerprint";
 import { RabbitMQAlert } from "./alert.interfaces";
-import { toPrismaAlertSeverity } from "./alert.severity-map";
 
 /**
  * Alert Tracking and Notification System
@@ -159,7 +158,7 @@ class AlertNotificationService {
 
       const notificationSeverities = workspace.notificationSeverities
         ? (workspace.notificationSeverities as string[])
-        : ["critical", "warning"];
+        : ["CRITICAL", "HIGH", "MEDIUM"];
 
       // Bulk-fetch currently active Alert rows for this server so we can check
       // notification cooldown without N+1 per-alert queries.
@@ -217,7 +216,7 @@ class AlertNotificationService {
         const existingActiveAlert = activeAlertByFingerprint.get(fingerprint);
         let isNew = !existingActiveAlert;
 
-        const prismaSeverity = toPrismaAlertSeverity(alert.severity);
+        const prismaSeverity = alert.severity;
         const title = this.getAlertTitle(
           alert.category,
           alert.source.type,

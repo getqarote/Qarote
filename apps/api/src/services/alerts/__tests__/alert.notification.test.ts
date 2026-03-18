@@ -94,7 +94,7 @@ function makeAlert(overrides: Partial<RabbitMQAlert> = {}): RabbitMQAlert {
     id: "alert-id-1",
     serverId: SERVER_ID,
     serverName: SERVER_NAME,
-    severity: AlertSeverity.WARNING,
+    severity: AlertSeverity.MEDIUM,
     category: AlertCategory.MEMORY,
     title: "High Memory Usage",
     description: "Memory usage is high",
@@ -111,7 +111,7 @@ function makeWorkspace(overrides: Record<string, unknown> = {}) {
     contactEmail: "admin@example.com",
     name: "My Workspace",
     emailNotificationsEnabled: true,
-    notificationSeverities: null, // null = use default ["critical", "warning"]
+    notificationSeverities: null, // null = use default ["CRITICAL", "HIGH", "MEDIUM"]
     notificationServerIds: null, // null = notify all servers
     ...overrides,
   };
@@ -337,7 +337,7 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
       setupDefaults({ activeAlerts: [] });
 
       await alertNotificationService.trackAndNotifyNewAlerts(
-        [makeAlert({ severity: AlertSeverity.WARNING })],
+        [makeAlert({ severity: AlertSeverity.MEDIUM })],
         WORKSPACE_ID,
         SERVER_ID,
         SERVER_NAME
@@ -363,7 +363,7 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
       setupDefaults({
         activeAlerts: [],
         workspace: makeWorkspace({
-          notificationSeverities: ["critical", "warning", "info"],
+          notificationSeverities: ["CRITICAL", "HIGH", "MEDIUM", "LOW", "INFO"],
         }),
       });
 
@@ -1181,7 +1181,7 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
 
       // Warning alert → should notify
       await alertNotificationService.trackAndNotifyNewAlerts(
-        [makeAlert({ severity: AlertSeverity.WARNING })],
+        [makeAlert({ severity: AlertSeverity.MEDIUM })],
         WORKSPACE_ID,
         SERVER_ID,
         SERVER_NAME

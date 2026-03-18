@@ -12,18 +12,17 @@ import {
   AlertThresholds,
 } from "../alert.interfaces";
 
-// Default thresholds matching the service defaults
+// Default thresholds matching the service defaults (5-level MetricThresholds)
 const DEFAULT_THRESHOLDS: AlertThresholds = {
-  memory: { warning: 80, critical: 95 },
-  disk: { warning: 15, critical: 10 },
-  fileDescriptors: { warning: 80, critical: 90 },
-  sockets: { warning: 80, critical: 90 },
-  processes: { warning: 80, critical: 90 },
-  queueMessages: { warning: 10_000, critical: 50_000 },
-  unackedMessages: { warning: 1_000, critical: 5_000 },
-  consumerUtilization: { warning: 10 },
-  connections: { warning: 80, critical: 95 },
-  runQueue: { warning: 10, critical: 20 },
+  memory: { medium: 80, critical: 95 },
+  disk: { medium: 15, critical: 10 },
+  fileDescriptors: { medium: 80, critical: 90 },
+  sockets: { medium: 80, critical: 90 },
+  processes: { medium: 80, critical: 90 },
+  queueMessages: { medium: 10_000, critical: 50_000 },
+  unackedMessages: { medium: 1_000, critical: 5_000 },
+  consumerUtilization: { medium: 10 },
+  runQueue: { medium: 10, critical: 20 },
 };
 
 function makeNode(overrides: Partial<RabbitMQNode> = {}): RabbitMQNode {
@@ -211,7 +210,7 @@ describe("analyzeNodeHealth", () => {
       const memAlert = alerts.find(
         (a) =>
           a.category === AlertCategory.MEMORY &&
-          a.severity === AlertSeverity.WARNING &&
+          a.severity === AlertSeverity.MEDIUM &&
           a.title === "High Memory Usage"
       );
       expect(memAlert).toBeDefined();
@@ -273,7 +272,7 @@ describe("analyzeNodeHealth", () => {
       const diskAlert = alerts.find(
         (a) =>
           a.category === AlertCategory.DISK &&
-          a.severity === AlertSeverity.WARNING &&
+          a.severity === AlertSeverity.MEDIUM &&
           a.title === "Low Disk Space"
       );
       expect(diskAlert).toBeDefined();
@@ -332,7 +331,7 @@ describe("analyzeNodeHealth", () => {
       const fdAlert = alerts.find(
         (a) =>
           a.category === AlertCategory.CONNECTION &&
-          a.severity === AlertSeverity.WARNING &&
+          a.severity === AlertSeverity.MEDIUM &&
           a.title === "High File Descriptor Usage"
       );
       expect(fdAlert).toBeDefined();
@@ -381,7 +380,7 @@ describe("analyzeNodeHealth", () => {
       const sockAlert = alerts.find(
         (a) =>
           a.category === AlertCategory.CONNECTION &&
-          a.severity === AlertSeverity.WARNING &&
+          a.severity === AlertSeverity.MEDIUM &&
           a.title === "High Socket Usage"
       );
       expect(sockAlert).toBeDefined();
@@ -415,7 +414,7 @@ describe("analyzeNodeHealth", () => {
       const procAlert = alerts.find(
         (a) =>
           a.category === AlertCategory.PERFORMANCE &&
-          a.severity === AlertSeverity.WARNING &&
+          a.severity === AlertSeverity.MEDIUM &&
           a.title === "High Process Usage"
       );
       expect(procAlert).toBeDefined();
@@ -449,7 +448,7 @@ describe("analyzeNodeHealth", () => {
       const rqAlert = alerts.find(
         (a) =>
           a.category === AlertCategory.PERFORMANCE &&
-          a.severity === AlertSeverity.WARNING &&
+          a.severity === AlertSeverity.MEDIUM &&
           a.title === "High Run Queue Length"
       );
       expect(rqAlert).toBeDefined();
@@ -581,7 +580,7 @@ describe("analyzeQueueHealth", () => {
       const alert = alerts.find(
         (a) =>
           a.category === AlertCategory.QUEUE &&
-          a.severity === AlertSeverity.WARNING &&
+          a.severity === AlertSeverity.MEDIUM &&
           a.title === "High Queue Backlog"
       );
       expect(alert).toBeDefined();
@@ -613,7 +612,7 @@ describe("analyzeQueueHealth", () => {
       );
       const alert = alerts.find((a) => a.title === "Queue Without Consumers");
       expect(alert).toBeDefined();
-      expect(alert?.severity).toBe(AlertSeverity.WARNING);
+      expect(alert?.severity).toBe(AlertSeverity.MEDIUM);
     });
 
     it("returns no consumer alert when queue has consumers", () => {
@@ -668,7 +667,7 @@ describe("analyzeQueueHealth", () => {
       const alert = alerts.find(
         (a) =>
           a.category === AlertCategory.QUEUE &&
-          a.severity === AlertSeverity.WARNING &&
+          a.severity === AlertSeverity.MEDIUM &&
           a.title === "High Unacknowledged Messages"
       );
       expect(alert).toBeDefined();
@@ -691,7 +690,7 @@ describe("analyzeQueueHealth", () => {
       );
       const alert = alerts.find((a) => a.title === "Low Consumer Utilization");
       expect(alert).toBeDefined();
-      expect(alert?.severity).toBe(AlertSeverity.WARNING);
+      expect(alert?.severity).toBe(AlertSeverity.MEDIUM);
     });
 
     it("returns no utilization alert when there are no consumers", () => {
@@ -747,7 +746,7 @@ describe("analyzeQueueHealth", () => {
       );
       const alert = alerts.find((a) => a.title === "Stale Messages Detected");
       expect(alert).toBeDefined();
-      expect(alert?.severity).toBe(AlertSeverity.WARNING);
+      expect(alert?.severity).toBe(AlertSeverity.MEDIUM);
     });
 
     it("returns no stale alert when delivery rate is greater than 0", () => {
@@ -806,7 +805,7 @@ describe("analyzeQueueHealth", () => {
       );
       const alert = alerts.find((a) => a.title === "Message Accumulation");
       expect(alert).toBeDefined();
-      expect(alert?.severity).toBe(AlertSeverity.WARNING);
+      expect(alert?.severity).toBe(AlertSeverity.MEDIUM);
     });
 
     it("returns no accumulation alert when ratio is exactly 0.5 (not > 0.5)", () => {

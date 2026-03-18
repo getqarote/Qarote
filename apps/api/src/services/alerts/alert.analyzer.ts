@@ -6,10 +6,66 @@ import {
 import { generateAlertId } from "./alert.fingerprint";
 import {
   AlertCategory,
-  AlertSeverity,
   AlertThresholds,
+  MetricThresholds,
   RabbitMQAlert,
 } from "./alert.interfaces";
+
+import { AlertSeverity } from "@/generated/prisma/client";
+
+/**
+ * Check a value against all 5 severity thresholds, returning the highest
+ * matching severity (top-down: CRITICAL first, then HIGH, MEDIUM, LOW, INFO).
+ *
+ * @param comparison - "gte" for GREATER_THAN metrics (memory, fd, sockets, etc.)
+ *                     "lte" for LESS_THAN metrics (disk free %, consumer utilization)
+ */
+function checkThreshold(
+  value: number,
+  thresholds: MetricThresholds,
+  comparison: "gte" | "lte"
+): AlertSeverity | null {
+  const levels: { key: keyof MetricThresholds; severity: AlertSeverity }[] = [
+    { key: "critical", severity: AlertSeverity.CRITICAL },
+    { key: "high", severity: AlertSeverity.HIGH },
+    { key: "medium", severity: AlertSeverity.MEDIUM },
+    { key: "low", severity: AlertSeverity.LOW },
+    { key: "info", severity: AlertSeverity.INFO },
+  ];
+
+  for (const { key, severity } of levels) {
+    const threshold = thresholds[key];
+    if (threshold === undefined) continue;
+
+    if (comparison === "gte" && value >= threshold) return severity;
+    if (comparison === "lte" && value <= threshold) return severity;
+  }
+
+  return null;
+}
+
+/**
+ * Returns the threshold value that matched for a given severity result.
+ * Used to populate the `threshold` field in alert details.
+ */
+function getMatchedThreshold(
+  thresholds: MetricThresholds,
+  severity: AlertSeverity
+): number | undefined {
+  const key = severity.toLowerCase() as keyof MetricThresholds;
+  return thresholds[key];
+}
+
+/**
+ * Severity-to-title mapping helpers for threshold-based alerts
+ */
+const SEVERITY_TITLE_PREFIX: Record<AlertSeverity, string> = {
+  CRITICAL: "Critical",
+  HIGH: "High",
+  MEDIUM: "High",
+  LOW: "Elevated",
+  INFO: "Notable",
+};
 
 /**
  * Analyze node health and generate alerts
@@ -23,7 +79,7 @@ export function analyzeNodeHealth(
   const alerts: RabbitMQAlert[] = [];
   const timestamp = new Date().toISOString();
 
-  // CRITICAL ALERTS
+  // CRITICAL ALERTS (boolean checks - not threshold-based)
 
   // Check if node is running
   if (!node.running) {
@@ -109,43 +165,34 @@ export function analyzeNodeHealth(
     });
   }
 
-  // WARNING ALERTS
+  // THRESHOLD-BASED ALERTS (5 severity levels)
 
   // Check memory usage percentage
   if (node.mem_limit > 0) {
     const memoryUsagePercent = (node.mem_used / node.mem_limit) * 100;
-    if (memoryUsagePercent >= thresholds.memory.critical) {
+    const severity = checkThreshold(
+      memoryUsagePercent,
+      thresholds.memory,
+      "gte"
+    );
+    if (severity) {
+      const prefix = SEVERITY_TITLE_PREFIX[severity];
       alerts.push({
         id: generateAlertId(serverId, AlertCategory.MEMORY, node.name),
         serverId,
         serverName,
-        severity: AlertSeverity.CRITICAL,
+        severity,
         category: AlertCategory.MEMORY,
-        title: "Critical Memory Usage",
-        description: `Node ${node.name} memory usage is critically high`,
+        title: `${prefix} Memory Usage`,
+        description: `Node ${node.name} memory usage is ${severity === AlertSeverity.CRITICAL ? "critically high" : "high"}`,
         details: {
           current: Math.round(memoryUsagePercent),
-          threshold: thresholds.memory.critical,
-          recommended: "Consider scaling or optimizing memory usage",
-          affected: [node.name],
-        },
-        timestamp,
-        resolved: false,
-        source: { type: "node", name: node.name },
-      });
-    } else if (memoryUsagePercent >= thresholds.memory.warning) {
-      alerts.push({
-        id: generateAlertId(serverId, AlertCategory.MEMORY, node.name),
-        serverId,
-        serverName,
-        severity: AlertSeverity.WARNING,
-        category: AlertCategory.MEMORY,
-        title: "High Memory Usage",
-        description: `Node ${node.name} memory usage is high`,
-        details: {
-          current: Math.round(memoryUsagePercent),
-          threshold: thresholds.memory.warning,
-          recommended: "Monitor memory usage and consider optimization",
+          threshold: getMatchedThreshold(thresholds.memory, severity),
+          recommended:
+            severity === AlertSeverity.CRITICAL ||
+            severity === AlertSeverity.HIGH
+              ? "Consider scaling or optimizing memory usage"
+              : "Monitor memory usage and consider optimization",
           affected: [node.name],
         },
         timestamp,
@@ -155,44 +202,34 @@ export function analyzeNodeHealth(
     }
   }
 
-  // Check disk space percentage (free space)
+  // Check disk space percentage (free space - LESS_THAN comparison)
   if (node.disk_free_limit > 0 && node.disk_free > 0) {
     const diskFreePercent =
       (node.disk_free /
         (node.disk_free + (node.disk_free_limit - node.disk_free))) *
       100;
-    if (diskFreePercent <= thresholds.disk.critical) {
+    const severity = checkThreshold(diskFreePercent, thresholds.disk, "lte");
+    if (severity) {
+      const prefix = SEVERITY_TITLE_PREFIX[severity];
       alerts.push({
         id: generateAlertId(serverId, AlertCategory.DISK, node.name),
         serverId,
         serverName,
-        severity: AlertSeverity.CRITICAL,
+        severity,
         category: AlertCategory.DISK,
-        title: "Critical Disk Space",
-        description: `Node ${node.name} has critically low disk space`,
+        title:
+          severity === AlertSeverity.CRITICAL || severity === AlertSeverity.HIGH
+            ? `${prefix} Disk Space`
+            : "Low Disk Space",
+        description: `Node ${node.name} has ${severity === AlertSeverity.CRITICAL ? "critically " : ""}low disk space`,
         details: {
           current: Math.round(diskFreePercent),
-          threshold: thresholds.disk.critical,
-          recommended: "Free disk space immediately",
-          affected: [node.name],
-        },
-        timestamp,
-        resolved: false,
-        source: { type: "node", name: node.name },
-      });
-    } else if (diskFreePercent <= thresholds.disk.warning) {
-      alerts.push({
-        id: generateAlertId(serverId, AlertCategory.DISK, node.name),
-        serverId,
-        serverName,
-        severity: AlertSeverity.WARNING,
-        category: AlertCategory.DISK,
-        title: "Low Disk Space",
-        description: `Node ${node.name} has low disk space`,
-        details: {
-          current: Math.round(diskFreePercent),
-          threshold: thresholds.disk.warning,
-          recommended: "Monitor disk usage and consider cleanup",
+          threshold: getMatchedThreshold(thresholds.disk, severity),
+          recommended:
+            severity === AlertSeverity.CRITICAL ||
+            severity === AlertSeverity.HIGH
+              ? "Free disk space immediately"
+              : "Monitor disk usage and consider cleanup",
           affected: [node.name],
         },
         timestamp,
@@ -205,38 +242,29 @@ export function analyzeNodeHealth(
   // Check file descriptor usage
   if (node.fd_total > 0) {
     const fdUsagePercent = (node.fd_used / node.fd_total) * 100;
-    if (fdUsagePercent >= thresholds.fileDescriptors.critical) {
+    const severity = checkThreshold(
+      fdUsagePercent,
+      thresholds.fileDescriptors,
+      "gte"
+    );
+    if (severity) {
+      const prefix = SEVERITY_TITLE_PREFIX[severity];
       alerts.push({
         id: generateAlertId(serverId, AlertCategory.CONNECTION, node.name),
         serverId,
         serverName,
-        severity: AlertSeverity.CRITICAL,
+        severity,
         category: AlertCategory.CONNECTION,
-        title: "Critical File Descriptor Usage",
-        description: `Node ${node.name} file descriptor usage is critically high`,
+        title: `${prefix} File Descriptor Usage`,
+        description: `Node ${node.name} file descriptor usage is ${severity === AlertSeverity.CRITICAL ? "critically high" : "high"}`,
         details: {
           current: Math.round(fdUsagePercent),
-          threshold: thresholds.fileDescriptors.critical,
-          recommended: "Increase file descriptor limit or reduce connections",
-          affected: [node.name],
-        },
-        timestamp,
-        resolved: false,
-        source: { type: "node", name: node.name },
-      });
-    } else if (fdUsagePercent >= thresholds.fileDescriptors.warning) {
-      alerts.push({
-        id: generateAlertId(serverId, AlertCategory.CONNECTION, node.name),
-        serverId,
-        serverName,
-        severity: AlertSeverity.WARNING,
-        category: AlertCategory.CONNECTION,
-        title: "High File Descriptor Usage",
-        description: `Node ${node.name} file descriptor usage is high`,
-        details: {
-          current: Math.round(fdUsagePercent),
-          threshold: thresholds.fileDescriptors.warning,
-          recommended: "Monitor file descriptor usage",
+          threshold: getMatchedThreshold(thresholds.fileDescriptors, severity),
+          recommended:
+            severity === AlertSeverity.CRITICAL ||
+            severity === AlertSeverity.HIGH
+              ? "Increase file descriptor limit or reduce connections"
+              : "Monitor file descriptor usage",
           affected: [node.name],
         },
         timestamp,
@@ -249,38 +277,29 @@ export function analyzeNodeHealth(
   // Check socket usage
   if (node.sockets_total > 0) {
     const socketUsagePercent = (node.sockets_used / node.sockets_total) * 100;
-    if (socketUsagePercent >= thresholds.sockets.critical) {
+    const severity = checkThreshold(
+      socketUsagePercent,
+      thresholds.sockets,
+      "gte"
+    );
+    if (severity) {
+      const prefix = SEVERITY_TITLE_PREFIX[severity];
       alerts.push({
         id: generateAlertId(serverId, AlertCategory.CONNECTION, node.name),
         serverId,
         serverName,
-        severity: AlertSeverity.CRITICAL,
+        severity,
         category: AlertCategory.CONNECTION,
-        title: "Critical Socket Usage",
-        description: `Node ${node.name} socket usage is critically high`,
+        title: `${prefix} Socket Usage`,
+        description: `Node ${node.name} socket usage is ${severity === AlertSeverity.CRITICAL ? "critically high" : "high"}`,
         details: {
           current: Math.round(socketUsagePercent),
-          threshold: thresholds.sockets.critical,
-          recommended: "Increase socket limit or reduce connections",
-          affected: [node.name],
-        },
-        timestamp,
-        resolved: false,
-        source: { type: "node", name: node.name },
-      });
-    } else if (socketUsagePercent >= thresholds.sockets.warning) {
-      alerts.push({
-        id: generateAlertId(serverId, AlertCategory.CONNECTION, node.name),
-        serverId,
-        serverName,
-        severity: AlertSeverity.WARNING,
-        category: AlertCategory.CONNECTION,
-        title: "High Socket Usage",
-        description: `Node ${node.name} socket usage is high`,
-        details: {
-          current: Math.round(socketUsagePercent),
-          threshold: thresholds.sockets.warning,
-          recommended: "Monitor socket usage",
+          threshold: getMatchedThreshold(thresholds.sockets, severity),
+          recommended:
+            severity === AlertSeverity.CRITICAL ||
+            severity === AlertSeverity.HIGH
+              ? "Increase socket limit or reduce connections"
+              : "Monitor socket usage",
           affected: [node.name],
         },
         timestamp,
@@ -293,38 +312,29 @@ export function analyzeNodeHealth(
   // Check Erlang process usage
   if (node.proc_total > 0) {
     const processUsagePercent = (node.proc_used / node.proc_total) * 100;
-    if (processUsagePercent >= thresholds.processes.critical) {
+    const severity = checkThreshold(
+      processUsagePercent,
+      thresholds.processes,
+      "gte"
+    );
+    if (severity) {
+      const prefix = SEVERITY_TITLE_PREFIX[severity];
       alerts.push({
         id: generateAlertId(serverId, AlertCategory.PERFORMANCE, node.name),
         serverId,
         serverName,
-        severity: AlertSeverity.CRITICAL,
+        severity,
         category: AlertCategory.PERFORMANCE,
-        title: "Critical Process Usage",
-        description: `Node ${node.name} Erlang process usage is critically high`,
+        title: `${prefix} Process Usage`,
+        description: `Node ${node.name} Erlang process usage is ${severity === AlertSeverity.CRITICAL ? "critically high" : "high"}`,
         details: {
           current: Math.round(processUsagePercent),
-          threshold: thresholds.processes.critical,
-          recommended: "Investigate process leaks and restart if necessary",
-          affected: [node.name],
-        },
-        timestamp,
-        resolved: false,
-        source: { type: "node", name: node.name },
-      });
-    } else if (processUsagePercent >= thresholds.processes.warning) {
-      alerts.push({
-        id: generateAlertId(serverId, AlertCategory.PERFORMANCE, node.name),
-        serverId,
-        serverName,
-        severity: AlertSeverity.WARNING,
-        category: AlertCategory.PERFORMANCE,
-        title: "High Process Usage",
-        description: `Node ${node.name} Erlang process usage is high`,
-        details: {
-          current: Math.round(processUsagePercent),
-          threshold: thresholds.processes.warning,
-          recommended: "Monitor process usage patterns",
+          threshold: getMatchedThreshold(thresholds.processes, severity),
+          recommended:
+            severity === AlertSeverity.CRITICAL ||
+            severity === AlertSeverity.HIGH
+              ? "Investigate process leaks and restart if necessary"
+              : "Monitor process usage patterns",
           affected: [node.name],
         },
         timestamp,
@@ -336,39 +346,25 @@ export function analyzeNodeHealth(
 
   // Check run queue length (scheduler performance)
   if (node.run_queue !== undefined && node.run_queue !== null) {
-    if (node.run_queue >= thresholds.runQueue.critical) {
+    const severity = checkThreshold(node.run_queue, thresholds.runQueue, "gte");
+    if (severity) {
+      const prefix = SEVERITY_TITLE_PREFIX[severity];
       alerts.push({
         id: generateAlertId(serverId, AlertCategory.PERFORMANCE, node.name),
         serverId,
         serverName,
-        severity: AlertSeverity.CRITICAL,
+        severity,
         category: AlertCategory.PERFORMANCE,
-        title: "Critical Run Queue Length",
-        description: `Node ${node.name} has critically high run queue length`,
+        title: `${prefix} Run Queue Length`,
+        description: `Node ${node.name} has ${severity === AlertSeverity.CRITICAL ? "critically " : ""}high run queue length`,
         details: {
           current: node.run_queue,
-          threshold: thresholds.runQueue.critical,
+          threshold: getMatchedThreshold(thresholds.runQueue, severity),
           recommended:
-            "System is overloaded, consider scaling or load balancing",
-          affected: [node.name],
-        },
-        timestamp,
-        resolved: false,
-        source: { type: "node", name: node.name },
-      });
-    } else if (node.run_queue >= thresholds.runQueue.warning) {
-      alerts.push({
-        id: generateAlertId(serverId, AlertCategory.PERFORMANCE, node.name),
-        serverId,
-        serverName,
-        severity: AlertSeverity.WARNING,
-        category: AlertCategory.PERFORMANCE,
-        title: "High Run Queue Length",
-        description: `Node ${node.name} has high run queue length`,
-        details: {
-          current: node.run_queue,
-          threshold: thresholds.runQueue.warning,
-          recommended: "Monitor system load and performance",
+            severity === AlertSeverity.CRITICAL ||
+            severity === AlertSeverity.HIGH
+              ? "System is overloaded, consider scaling or load balancing"
+              : "Monitor system load and performance",
           affected: [node.name],
         },
         timestamp,
@@ -400,39 +396,29 @@ export function analyzeQueueHealth(
 
   // Check high message count
   const messageCount = queue.messages || 0;
-  if (messageCount >= thresholds.queueMessages.critical) {
+  const msgSeverity = checkThreshold(
+    messageCount,
+    thresholds.queueMessages,
+    "gte"
+  );
+  if (msgSeverity) {
+    const prefix = SEVERITY_TITLE_PREFIX[msgSeverity];
     alerts.push({
       id: generateAlertId(serverId, AlertCategory.QUEUE, queue.name),
       serverId,
       serverName,
-      severity: AlertSeverity.CRITICAL,
+      severity: msgSeverity,
       category: AlertCategory.QUEUE,
-      title: "Critical Queue Backlog",
-      description: `Queue ${queue.name} has critically high message count`,
+      title: `${prefix} Queue Backlog`,
+      description: `Queue ${queue.name} has ${msgSeverity === AlertSeverity.CRITICAL ? "critically " : ""}high message count`,
       details: {
         current: messageCount,
-        threshold: thresholds.queueMessages.critical,
-        recommended: "Scale consumers or investigate processing issues",
-        affected: [queue.name],
-      },
-      timestamp,
-      resolved: false,
-      vhost: queueVhost,
-      source: { type: "queue", name: queue.name },
-    });
-  } else if (messageCount >= thresholds.queueMessages.warning) {
-    alerts.push({
-      id: generateAlertId(serverId, AlertCategory.QUEUE, queue.name),
-      serverId,
-      serverName,
-      severity: AlertSeverity.WARNING,
-      category: AlertCategory.QUEUE,
-      title: "High Queue Backlog",
-      description: `Queue ${queue.name} has high message count`,
-      details: {
-        current: messageCount,
-        threshold: thresholds.queueMessages.warning,
-        recommended: "Monitor consumer performance",
+        threshold: getMatchedThreshold(thresholds.queueMessages, msgSeverity),
+        recommended:
+          msgSeverity === AlertSeverity.CRITICAL ||
+          msgSeverity === AlertSeverity.HIGH
+            ? "Scale consumers or investigate processing issues"
+            : "Monitor consumer performance",
         affected: [queue.name],
       },
       timestamp,
@@ -448,7 +434,7 @@ export function analyzeQueueHealth(
       id: generateAlertId(serverId, AlertCategory.QUEUE, queue.name),
       serverId,
       serverName,
-      severity: AlertSeverity.WARNING,
+      severity: AlertSeverity.MEDIUM,
       category: AlertCategory.QUEUE,
       title: "Queue Without Consumers",
       description: `Queue ${queue.name} has messages but no consumers`,
@@ -466,40 +452,32 @@ export function analyzeQueueHealth(
 
   // Check high unacknowledged messages
   const unackedMessages = queue.messages_unacknowledged || 0;
-  if (unackedMessages >= thresholds.unackedMessages.critical) {
+  const unackedSeverity = checkThreshold(
+    unackedMessages,
+    thresholds.unackedMessages,
+    "gte"
+  );
+  if (unackedSeverity) {
+    const prefix = SEVERITY_TITLE_PREFIX[unackedSeverity];
     alerts.push({
       id: generateAlertId(serverId, AlertCategory.QUEUE, queue.name),
       serverId,
       serverName,
-      severity: AlertSeverity.CRITICAL,
+      severity: unackedSeverity,
       category: AlertCategory.QUEUE,
-      title: "Critical Unacknowledged Messages",
-      description: `Queue ${queue.name} has critically high number of unacknowledged messages`,
+      title: `${prefix} Unacknowledged Messages`,
+      description: `Queue ${queue.name} has ${unackedSeverity === AlertSeverity.CRITICAL ? "critically " : ""}high number of unacknowledged messages`,
       details: {
         current: unackedMessages,
-        threshold: thresholds.unackedMessages.critical,
+        threshold: getMatchedThreshold(
+          thresholds.unackedMessages,
+          unackedSeverity
+        ),
         recommended:
-          "Check consumer acknowledgment patterns and restart consumers if necessary",
-        affected: [queue.name],
-      },
-      timestamp,
-      resolved: false,
-      vhost: queueVhost,
-      source: { type: "queue", name: queue.name },
-    });
-  } else if (unackedMessages >= thresholds.unackedMessages.warning) {
-    alerts.push({
-      id: generateAlertId(serverId, AlertCategory.QUEUE, queue.name),
-      serverId,
-      serverName,
-      severity: AlertSeverity.WARNING,
-      category: AlertCategory.QUEUE,
-      title: "High Unacknowledged Messages",
-      description: `Queue ${queue.name} has high number of unacknowledged messages`,
-      details: {
-        current: unackedMessages,
-        threshold: thresholds.unackedMessages.warning,
-        recommended: "Monitor consumer acknowledgment patterns",
+          unackedSeverity === AlertSeverity.CRITICAL ||
+          unackedSeverity === AlertSeverity.HIGH
+            ? "Check consumer acknowledgment patterns and restart consumers if necessary"
+            : "Monitor consumer acknowledgment patterns",
         affected: [queue.name],
       },
       timestamp,
@@ -509,7 +487,7 @@ export function analyzeQueueHealth(
     });
   }
 
-  // Check consumer utilization
+  // Check consumer utilization (LESS_THAN comparison - low utilization is bad)
   const consumerCount = queue.consumers || 0;
   if (consumerCount > 0) {
     // Calculate consumer utilization based on message rates
@@ -520,18 +498,26 @@ export function analyzeQueueHealth(
     const consumerUtilization =
       publishRate > 0 ? (deliverRate / publishRate) * 100 : 100;
 
-    if (consumerUtilization < thresholds.consumerUtilization.warning) {
+    const cuSeverity = checkThreshold(
+      consumerUtilization,
+      thresholds.consumerUtilization,
+      "lte"
+    );
+    if (cuSeverity) {
       alerts.push({
         id: generateAlertId(serverId, AlertCategory.PERFORMANCE, queue.name),
         serverId,
         serverName,
-        severity: AlertSeverity.WARNING,
+        severity: cuSeverity,
         category: AlertCategory.PERFORMANCE,
         title: "Low Consumer Utilization",
         description: `Queue ${queue.name} has low consumer utilization`,
         details: {
           current: Math.round(consumerUtilization),
-          threshold: thresholds.consumerUtilization.warning,
+          threshold: getMatchedThreshold(
+            thresholds.consumerUtilization,
+            cuSeverity
+          ),
           recommended: "Check consumer performance or reduce consumer count",
           affected: [queue.name],
         },
@@ -553,7 +539,7 @@ export function analyzeQueueHealth(
         id: generateAlertId(serverId, AlertCategory.QUEUE, queue.name),
         serverId,
         serverName,
-        severity: AlertSeverity.WARNING,
+        severity: AlertSeverity.MEDIUM,
         category: AlertCategory.QUEUE,
         title: "Stale Messages Detected",
         description: `Queue ${queue.name} has ready messages but no delivery activity`,
@@ -584,7 +570,7 @@ export function analyzeQueueHealth(
         id: generateAlertId(serverId, AlertCategory.PERFORMANCE, queue.name),
         serverId,
         serverName,
-        severity: AlertSeverity.WARNING,
+        severity: AlertSeverity.MEDIUM,
         category: AlertCategory.PERFORMANCE,
         title: "Message Accumulation",
         description: `Queue ${queue.name} is accumulating messages faster than processing`,

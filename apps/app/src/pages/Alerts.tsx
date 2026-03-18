@@ -238,7 +238,9 @@ const Alerts = () => {
                       alertsData?.summary || {
                         total: 0,
                         critical: 0,
-                        warning: 0,
+                        high: 0,
+                        medium: 0,
+                        low: 0,
                         info: 0,
                       }
                     }

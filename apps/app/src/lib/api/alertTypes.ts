@@ -116,11 +116,13 @@ export interface UpdateAlertRuleInput {
 // RabbitMQ Alert Types
 // ============================================================================
 
-// Alert severity levels
+// Alert severity levels (matches Prisma AlertSeverity enum)
 export enum RabbitMQAlertSeverity {
-  CRITICAL = "critical",
-  WARNING = "warning",
-  INFO = "info",
+  INFO = "INFO",
+  LOW = "LOW",
+  MEDIUM = "MEDIUM",
+  HIGH = "HIGH",
+  CRITICAL = "CRITICAL",
 }
 
 // Alert categories

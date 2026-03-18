@@ -133,6 +133,63 @@ const DEFAULT_RULE_DEFINITIONS: DefaultRuleDefinition[] = [
     operator: ComparisonOperator.GREATER_THAN,
     severity: AlertSeverity.CRITICAL,
   },
+  // Sockets
+  {
+    slug: "high-socket-usage",
+    name: "High Socket Usage",
+    description: "Alert when socket usage exceeds 80%",
+    type: AlertType.SOCKET_USAGE,
+    threshold: 80,
+    operator: ComparisonOperator.GREATER_THAN,
+    severity: AlertSeverity.MEDIUM,
+  },
+  {
+    slug: "critical-socket-usage",
+    name: "Critical Socket Usage",
+    description: "Alert when socket usage exceeds 90%",
+    type: AlertType.SOCKET_USAGE,
+    threshold: 90,
+    operator: ComparisonOperator.GREATER_THAN,
+    severity: AlertSeverity.CRITICAL,
+  },
+  // Processes
+  {
+    slug: "high-process-usage",
+    name: "High Process Usage",
+    description: "Alert when process usage exceeds 80%",
+    type: AlertType.PROCESS_USAGE,
+    threshold: 80,
+    operator: ComparisonOperator.GREATER_THAN,
+    severity: AlertSeverity.MEDIUM,
+  },
+  {
+    slug: "critical-process-usage",
+    name: "Critical Process Usage",
+    description: "Alert when process usage exceeds 90%",
+    type: AlertType.PROCESS_USAGE,
+    threshold: 90,
+    operator: ComparisonOperator.GREATER_THAN,
+    severity: AlertSeverity.CRITICAL,
+  },
+  // Run queue
+  {
+    slug: "high-run-queue",
+    name: "High Run Queue",
+    description: "Alert when run queue length exceeds 10",
+    type: AlertType.RUN_QUEUE_LENGTH,
+    threshold: 10,
+    operator: ComparisonOperator.GREATER_THAN,
+    severity: AlertSeverity.MEDIUM,
+  },
+  {
+    slug: "critical-run-queue",
+    name: "Critical Run Queue",
+    description: "Alert when run queue length exceeds 20",
+    type: AlertType.RUN_QUEUE_LENGTH,
+    threshold: 20,
+    operator: ComparisonOperator.GREATER_THAN,
+    severity: AlertSeverity.CRITICAL,
+  },
 ];
 
 /**

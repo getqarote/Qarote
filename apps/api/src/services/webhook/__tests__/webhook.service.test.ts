@@ -30,7 +30,7 @@ function makePayload(overrides: Partial<WebhookPayload> = {}): WebhookPayload {
     workspace: { id: "ws-1", name: "My Workspace" },
     server: { id: "server-1", name: "My Server" },
     alerts: [],
-    summary: { total: 0, critical: 0, warning: 0, info: 0 },
+    summary: { total: 0, critical: 0, high: 0, medium: 0, low: 0, info: 0 },
     ...overrides,
   };
 }
@@ -437,7 +437,7 @@ describe("WebhookService", () => {
       const alerts = [
         makeAlert({ severity: AlertSeverity.CRITICAL }),
         makeAlert({ id: "a2", severity: AlertSeverity.CRITICAL }),
-        makeAlert({ id: "a3", severity: AlertSeverity.WARNING }),
+        makeAlert({ id: "a3", severity: AlertSeverity.MEDIUM }),
         makeAlert({ id: "a4", severity: AlertSeverity.INFO }),
       ];
 
@@ -456,7 +456,9 @@ describe("WebhookService", () => {
       expect(body.summary).toEqual({
         total: 4,
         critical: 2,
-        warning: 1,
+        high: 0,
+        medium: 1,
+        low: 0,
         info: 1,
       });
     });

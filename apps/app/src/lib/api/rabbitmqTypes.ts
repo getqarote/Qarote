@@ -200,7 +200,9 @@ type _AlertsResponse = {
   summary: {
     total: number;
     critical: number;
-    warning: number;
+    high: number;
+    medium: number;
+    low: number;
     info: number;
   };
   thresholds: AlertThresholds;
@@ -212,7 +214,10 @@ type _AlertsSummaryResponse = {
   clusterHealth: "healthy" | "warning" | "critical";
   summary: {
     critical: number;
-    warning: number;
+    high: number;
+    medium: number;
+    low: number;
+    info: number;
     total: number;
   };
   issues: string[];
@@ -565,9 +570,11 @@ interface NodeMemoryPlanAccess {
 
 // Alert Types
 enum AlertSeverity {
-  CRITICAL = "critical",
-  WARNING = "warning",
-  INFO = "info",
+  INFO = "INFO",
+  LOW = "LOW",
+  MEDIUM = "MEDIUM",
+  HIGH = "HIGH",
+  CRITICAL = "CRITICAL",
 }
 
 enum AlertCategory {
@@ -631,7 +638,9 @@ type _AlertsResponse2 = {
   summary: {
     total: number;
     critical: number;
-    warning: number;
+    high: number;
+    medium: number;
+    low: number;
     info: number;
   };
   thresholds: AlertThresholds;
@@ -643,7 +652,10 @@ type _AlertsSummaryResponse2 = {
   clusterHealth: "healthy" | "warning" | "critical";
   summary: {
     critical: number;
-    warning: number;
+    high: number;
+    medium: number;
+    low: number;
+    info: number;
     total: number;
   };
   issues: string[];

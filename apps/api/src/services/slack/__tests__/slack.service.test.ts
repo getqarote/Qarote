@@ -64,7 +64,7 @@ describe("SlackService", () => {
       it("sets color to 'danger' when any critical alert is present", () => {
         const alerts = [
           makeAlert({ severity: AlertSeverity.CRITICAL }),
-          makeAlert({ severity: AlertSeverity.WARNING }),
+          makeAlert({ severity: AlertSeverity.MEDIUM }),
         ];
         const message = SlackService.createAlertMessage(
           alerts,
@@ -77,8 +77,8 @@ describe("SlackService", () => {
 
       it("sets color to 'warning' when only warning alerts are present", () => {
         const alerts = [
-          makeAlert({ severity: AlertSeverity.WARNING }),
-          makeAlert({ severity: AlertSeverity.WARNING }),
+          makeAlert({ severity: AlertSeverity.MEDIUM }),
+          makeAlert({ severity: AlertSeverity.MEDIUM }),
         ];
         const message = SlackService.createAlertMessage(
           alerts,
@@ -136,7 +136,7 @@ describe("SlackService", () => {
       it("includes warning count alongside critical count", () => {
         const alerts = [
           makeAlert({ severity: AlertSeverity.CRITICAL }),
-          makeAlert({ severity: AlertSeverity.WARNING, id: "a2" }),
+          makeAlert({ severity: AlertSeverity.MEDIUM, id: "a2" }),
         ];
         const message = SlackService.createAlertMessage(alerts, "WS", "Server");
         expect(message.attachments?.[0].text).toContain("1 critical");

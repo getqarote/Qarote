@@ -7,39 +7,19 @@ import { analyzeNodeHealth, analyzeQueueHealth } from "./alert.analyzer";
 import { alertHealthService } from "./alert.health";
 import {
   AlertCategory,
-  AlertSeverity,
   AlertSummary,
-  AlertThresholds,
   ClusterHealthSummary,
   HealthCheck,
   RabbitMQAlert,
 } from "./alert.interfaces";
 import { alertNotificationService } from "./alert.notification";
-import { alertThresholdsService } from "./alert.thresholds";
+import {
+  buildThresholdsFromAlertRules,
+  loadThresholdsForServer,
+} from "./alert.rule-adapter";
 
-import { AlertSeverity as PrismaAlertSeverity } from "@/generated/prisma/client";
-
-/** Maps Prisma AlertSeverity enum → internal lowercase severity for the frontend. */
-const PRISMA_TO_INTERNAL_SEVERITY: Record<string, AlertSeverity> = {
-  CRITICAL: AlertSeverity.CRITICAL,
-  // HIGH is never written by the severity mapper (warning → MEDIUM) but is
-  // kept as a safe fallback for rows written via direct SQL or future paths.
-  HIGH: AlertSeverity.WARNING,
-  MEDIUM: AlertSeverity.WARNING,
-  INFO: AlertSeverity.INFO,
-  LOW: AlertSeverity.INFO,
-};
-
-/** Maps Prisma AlertSeverity enum → legacy lowercase string (resolved-alert responses). */
-const PRISMA_TO_LEGACY_SEVERITY: Record<string, string> = {
-  CRITICAL: "critical",
-  // HIGH is never written by the severity mapper (warning → MEDIUM) but is
-  // kept as a safe fallback for rows written via direct SQL or future paths.
-  HIGH: "warning",
-  MEDIUM: "warning",
-  INFO: "info",
-  LOW: "info",
-};
+import type { AlertRule } from "@/generated/prisma/client";
+import { AlertSeverity } from "@/generated/prisma/client";
 
 /**
  * Alert Service class
@@ -49,19 +29,22 @@ class AlertService {
   /**
    * Get alerts for a server
    * @param vhost - Optional vhost to filter queue-related alerts. Node alerts are not filtered by vhost.
+   * @param preloadedRules - Optional pre-loaded alert rules (avoids extra DB query when batch-processing)
    */
   async getServerAlerts(
     serverId: string,
     serverName: string,
     workspaceId: string,
-    vhost?: string
+    vhost?: string,
+    preloadedRules?: AlertRule[]
   ): Promise<{ alerts: RabbitMQAlert[]; summary: AlertSummary }> {
     const alerts: RabbitMQAlert[] = [];
     const client = await createRabbitMQClient(serverId, workspaceId);
 
-    // Get workspace-specific thresholds
-    const thresholds =
-      await alertThresholdsService.getWorkspaceThresholds(workspaceId);
+    // Get per-server thresholds from AlertRule table
+    const thresholds = preloadedRules
+      ? buildThresholdsFromAlertRules(preloadedRules)
+      : await loadThresholdsForServer(serverId);
 
     try {
       // Analyze nodes (not filtered by vhost - nodes are cluster-wide)
@@ -101,7 +84,13 @@ class AlertService {
 
     // Sort alerts by severity and timestamp
     alerts.sort((a, b) => {
-      const severityOrder = { critical: 3, warning: 2, info: 1 };
+      const severityOrder: Record<string, number> = {
+        CRITICAL: 5,
+        HIGH: 4,
+        MEDIUM: 3,
+        LOW: 2,
+        INFO: 1,
+      };
       const severityDiff =
         severityOrder[b.severity] - severityOrder[a.severity];
       if (severityDiff !== 0) return severityDiff;
@@ -112,8 +101,9 @@ class AlertService {
       total: alerts.length,
       critical: alerts.filter((a) => a.severity === AlertSeverity.CRITICAL)
         .length,
-      warning: alerts.filter((a) => a.severity === AlertSeverity.WARNING)
-        .length,
+      high: alerts.filter((a) => a.severity === AlertSeverity.HIGH).length,
+      medium: alerts.filter((a) => a.severity === AlertSeverity.MEDIUM).length,
+      low: alerts.filter((a) => a.severity === AlertSeverity.LOW).length,
       info: alerts.filter((a) => a.severity === AlertSeverity.INFO).length,
     };
 
@@ -188,7 +178,7 @@ class AlertService {
       id: row.id,
       serverId: row.serverId ?? "",
       serverName: row.serverName ?? "",
-      severity: PRISMA_TO_INTERNAL_SEVERITY[row.severity] ?? AlertSeverity.INFO,
+      severity: row.severity,
       category: (row.category ?? "node") as AlertCategory,
       title: row.title,
       description: row.description,
@@ -209,8 +199,9 @@ class AlertService {
       total: alerts.length,
       critical: alerts.filter((a) => a.severity === AlertSeverity.CRITICAL)
         .length,
-      warning: alerts.filter((a) => a.severity === AlertSeverity.WARNING)
-        .length,
+      high: alerts.filter((a) => a.severity === AlertSeverity.HIGH).length,
+      medium: alerts.filter((a) => a.severity === AlertSeverity.MEDIUM).length,
+      low: alerts.filter((a) => a.severity === AlertSeverity.LOW).length,
       info: alerts.filter((a) => a.severity === AlertSeverity.INFO).length,
     };
 
@@ -235,40 +226,6 @@ class AlertService {
     workspaceId: string
   ): Promise<HealthCheck> {
     return alertHealthService.getHealthCheck(serverId, workspaceId);
-  }
-
-  /**
-   * Check if user can modify alert thresholds based on subscription plan
-   */
-  async canModifyThresholds(workspaceId: string): Promise<boolean> {
-    return alertThresholdsService.canModifyThresholds(workspaceId);
-  }
-
-  /**
-   * Get alert thresholds for a workspace
-   */
-  async getWorkspaceThresholds(workspaceId: string): Promise<AlertThresholds> {
-    return alertThresholdsService.getWorkspaceThresholds(workspaceId);
-  }
-
-  /**
-   * Update alert thresholds for a workspace
-   */
-  async updateWorkspaceThresholds(
-    workspaceId: string,
-    thresholds: Partial<AlertThresholds>
-  ): Promise<{ success: boolean; message: string }> {
-    return alertThresholdsService.updateWorkspaceThresholds(
-      workspaceId,
-      thresholds
-    );
-  }
-
-  /**
-   * Get default thresholds
-   */
-  getDefaultThresholds(): AlertThresholds {
-    return alertThresholdsService.getDefaultThresholds();
   }
 
   /**
@@ -306,7 +263,7 @@ class AlertService {
       workspaceId: string;
       status: "RESOLVED";
       resolvedAt: { not: null };
-      severity?: PrismaAlertSeverity | { in: PrismaAlertSeverity[] };
+      severity?: AlertSeverity;
       category?: string;
     };
 
@@ -318,20 +275,10 @@ class AlertService {
     };
 
     if (options?.severity) {
-      // Map incoming lowercase severity ("critical"/"warning"/"info") to Prisma enum.
-      // "info" maps to both INFO and LOW since PRISMA_TO_LEGACY_SEVERITY maps both to "info".
-      if (options.severity === "info") {
-        where.severity = {
-          in: [PrismaAlertSeverity.INFO, PrismaAlertSeverity.LOW],
-        };
-      } else if (options.severity === "warning") {
-        // HIGH is never written by the severity mapper (warning → MEDIUM) but
-        // must be included here so stored HIGH alerts appear in warning queries.
-        where.severity = {
-          in: [PrismaAlertSeverity.MEDIUM, PrismaAlertSeverity.HIGH],
-        };
-      } else if (options.severity === "critical") {
-        where.severity = PrismaAlertSeverity.CRITICAL;
+      // Severity values are now uppercase Prisma enum values directly
+      const upper = options.severity.toUpperCase();
+      if (Object.values(AlertSeverity).includes(upper as AlertSeverity)) {
+        where.severity = upper as AlertSeverity;
       }
     }
 
@@ -370,7 +317,7 @@ class AlertService {
         id: alert.id,
         serverId: alert.serverId ?? "",
         serverName: alert.serverName ?? "",
-        severity: PRISMA_TO_LEGACY_SEVERITY[alert.severity] ?? "info",
+        severity: alert.severity,
         category: alert.category ?? "",
         title: alert.title,
         description: alert.description,

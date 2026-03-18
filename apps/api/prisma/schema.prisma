@@ -327,35 +327,10 @@ model Workspace {
   servers                       RabbitMQServer[]
   users                         User[]
   members                       WorkspaceMember[]         @relation("WorkspaceMembers")
-  alertThresholds               WorkspaceAlertThresholds?
   licenses                      License[]
   slackConfigs                  SlackConfig[]
   webhooks                      Webhook[]
   workspaceSsoConfig            WorkspaceSsoConfig?
-}
-
-model WorkspaceAlertThresholds {
-  id                          String    @id @default(uuid())
-  memoryWarning               Float     @default(80.0)
-  memoryCritical              Float     @default(90.0)
-  diskWarning                 Float     @default(80.0)
-  diskCritical                Float     @default(90.0)
-  fileDescriptorsWarning      Float     @default(80.0)
-  fileDescriptorsCritical     Float     @default(90.0)
-  socketsWarning              Float     @default(80.0)
-  socketsCritical             Float     @default(90.0)
-  processesWarning            Float     @default(80.0)
-  processesCritical           Float     @default(90.0)
-  unackedMessagesWarning      Int       @default(1000)
-  unackedMessagesCritical     Int       @default(5000)
-  consumerUtilizationWarning  Float     @default(20.0)
-  consumerUtilizationCritical Float     @default(10.0)
-  runQueueWarning             Int       @default(50)
-  runQueueCritical            Int       @default(100)
-  workspaceId                 String    @unique
-  createdAt                   DateTime  @default(now())
-  updatedAt                   DateTime  @updatedAt
-  workspace                   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 }
 
 model WorkspaceMember {
@@ -613,6 +588,9 @@ enum AlertType {
   FILE_DESCRIPTOR_USAGE
   NODE_DOWN
   EXCHANGE_ERROR
+  SOCKET_USAGE
+  PROCESS_USAGE
+  RUN_QUEUE_LENGTH
 }
 
 enum BillingInterval {

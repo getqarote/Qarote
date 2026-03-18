@@ -3,14 +3,13 @@ import { TRPCError } from "@trpc/server";
 import { prisma } from "@/core/prisma";
 import { abortableSleep } from "@/core/utils";
 
-import type { AlertThresholds } from "@/services/alerts/alert.interfaces";
+import { loadThresholdsForServer } from "@/services/alerts/alert.rule-adapter";
 import { alertService } from "@/services/alerts/alert.service";
 import { getUserPlan } from "@/services/plan/plan.service";
 
 import {
   AlertsQueryWithOptionalVHostSchema,
   UpdateAlertNotificationSettingsRequestSchema,
-  UpdateThresholdsRequestSchema,
 } from "@/schemas/alerts";
 import { ServerWorkspaceInputSchema } from "@/schemas/rabbitmq";
 
@@ -100,9 +99,8 @@ export const alertsRouter = router({
           vhost
         );
 
-        // Get current thresholds for response
-        const thresholds =
-          await alertService.getWorkspaceThresholds(workspaceId);
+        // Get per-server thresholds for response
+        const thresholds = await loadThresholdsForServer(serverId);
 
         // For free users, return only summary (no detailed alerts)
         if (userPlan === UserPlan.FREE) {
@@ -226,102 +224,6 @@ export const alertsRouter = router({
     }),
 
   /**
-   * Get alert thresholds for the workspace (used for alerts form)
-   */
-  getThresholds: workspaceProcedure.query(async ({ ctx }) => {
-    const { workspaceId } = ctx;
-
-    try {
-      // Verify workspace exists
-      const workspace = await prisma.workspace.findUnique({
-        where: { id: workspaceId },
-        select: { id: true },
-      });
-
-      if (!workspace) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: te(ctx.locale, "workspace.notFound"),
-        });
-      }
-
-      const thresholds = await alertService.getWorkspaceThresholds(workspaceId);
-      const canModify = await alertService.canModifyThresholds(workspaceId);
-
-      return {
-        success: true,
-        thresholds,
-        canModify,
-        defaults: alertService.getDefaultThresholds(),
-      };
-    } catch (error) {
-      if (error instanceof TRPCError) {
-        throw error;
-      }
-      ctx.logger.error({ error }, "Error getting thresholds");
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: te(ctx.locale, "rabbitmq.failedToGetThresholds"),
-      });
-    }
-  }),
-
-  /**
-   * Update alert thresholds for the workspace (used by alerts form)
-   */
-  updateThresholds: workspaceProcedure
-    .input(UpdateThresholdsRequestSchema)
-    .mutation(async ({ input, ctx }) => {
-      const { workspaceId } = ctx;
-      const { thresholds } = input;
-
-      try {
-        // Verify workspace exists
-        const workspace = await prisma.workspace.findUnique({
-          where: { id: workspaceId },
-          select: { id: true },
-        });
-
-        if (!workspace) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: te(ctx.locale, "workspace.notFound"),
-          });
-        }
-
-        const result = await alertService.updateWorkspaceThresholds(
-          workspaceId,
-          thresholds as Partial<AlertThresholds>
-        );
-
-        if (!result.success) {
-          throw new TRPCError({
-            code: "FORBIDDEN",
-            message: result.message,
-          });
-        }
-
-        const updatedThresholds =
-          await alertService.getWorkspaceThresholds(workspaceId);
-
-        return {
-          success: true,
-          message: result.message,
-          thresholds: updatedThresholds,
-        };
-      } catch (error) {
-        if (error instanceof TRPCError) {
-          throw error;
-        }
-        ctx.logger.error({ error }, "Error updating thresholds");
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: te(ctx.locale, "rabbitmq.failedToUpdateThresholds"),
-        });
-      }
-    }),
-
-  /**
    * Get alert notification settings for the workspace
    */
   getNotificationSettings: workspaceProcedure.query(async ({ ctx }) => {
@@ -350,7 +252,7 @@ export const alertsRouter = router({
       // Parse notificationSeverities from JSON, default to all severities if not set
       const notificationSeverities = workspace.notificationSeverities
         ? (workspace.notificationSeverities as string[])
-        : ["critical", "warning", "info"];
+        : ["INFO", "LOW", "MEDIUM", "HIGH", "CRITICAL"];
 
       // Parse notificationServerIds from JSON, null/empty means all servers
       const notificationServerIds = workspace.notificationServerIds
@@ -361,7 +263,7 @@ export const alertsRouter = router({
       const browserNotificationSeverities =
         workspace.browserNotificationSeverities
           ? (workspace.browserNotificationSeverities as string[])
-          : ["critical", "warning", "info"];
+          : ["INFO", "LOW", "MEDIUM", "HIGH", "CRITICAL"];
 
       return {
         success: true,
@@ -479,7 +381,7 @@ export const alertsRouter = router({
         // Parse notificationSeverities from JSON, default to all severities if not set
         const responseSeverities = updatedWorkspace.notificationSeverities
           ? (updatedWorkspace.notificationSeverities as string[])
-          : ["critical", "warning", "info"];
+          : ["INFO", "LOW", "MEDIUM", "HIGH", "CRITICAL"];
 
         // Parse notificationServerIds from JSON, null/empty means all servers
         const responseServerIds = updatedWorkspace.notificationServerIds
@@ -490,7 +392,7 @@ export const alertsRouter = router({
         const responseBrowserSeverities =
           updatedWorkspace.browserNotificationSeverities
             ? (updatedWorkspace.browserNotificationSeverities as string[])
-            : ["critical", "warning", "info"];
+            : ["INFO", "LOW", "MEDIUM", "HIGH", "CRITICAL"];
 
         return {
           success: true,
@@ -563,8 +465,7 @@ export const alertsRouter = router({
             workspaceId,
             vhost
           );
-          const thresholds =
-            await alertService.getWorkspaceThresholds(workspaceId);
+          const thresholds = await loadThresholdsForServer(serverId);
 
           if (userPlan === UserPlan.FREE) {
             lastPayload = {

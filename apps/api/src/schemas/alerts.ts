@@ -1,7 +1,13 @@
 import { z } from "zod";
 
 // Enum schemas
-const AlertSeveritySchema = z.enum(["critical", "warning", "info"]);
+const AlertSeveritySchema = z.enum([
+  "INFO",
+  "LOW",
+  "MEDIUM",
+  "HIGH",
+  "CRITICAL",
+]);
 
 const AlertCategorySchema = z.enum([
   "memory",
@@ -11,116 +17,6 @@ const AlertCategorySchema = z.enum([
   "node",
   "performance",
 ]);
-
-// Partial threshold schema for updates
-const UpdateAlertThresholdsSchema = z
-  .object({
-    memory: z
-      .object({
-        warning: z.number().min(0).max(100).optional(),
-        critical: z.number().min(0).max(100).optional(),
-      })
-      .optional(),
-    disk: z
-      .object({
-        warning: z.number().min(0).max(100).optional(),
-        critical: z.number().min(0).max(100).optional(),
-      })
-      .optional(),
-    fileDescriptors: z
-      .object({
-        warning: z.number().min(0).max(100).optional(),
-        critical: z.number().min(0).max(100).optional(),
-      })
-      .optional(),
-    sockets: z
-      .object({
-        warning: z.number().min(0).max(100).optional(),
-        critical: z.number().min(0).max(100).optional(),
-      })
-      .optional(),
-    processes: z
-      .object({
-        warning: z.number().min(0).max(100).optional(),
-        critical: z.number().min(0).max(100).optional(),
-      })
-      .optional(),
-    queueMessages: z
-      .object({
-        warning: z.number().min(0).optional(),
-        critical: z.number().min(0).optional(),
-      })
-      .optional(),
-    unackedMessages: z
-      .object({
-        warning: z.number().min(0).optional(),
-        critical: z.number().min(0).optional(),
-      })
-      .optional(),
-    consumerUtilization: z
-      .object({
-        warning: z.number().min(0).max(100).optional(),
-      })
-      .optional(),
-    connections: z
-      .object({
-        warning: z.number().min(0).max(100).optional(),
-        critical: z.number().min(0).max(100).optional(),
-      })
-      .optional(),
-    runQueue: z
-      .object({
-        warning: z.number().min(0).optional(),
-        critical: z.number().min(0).optional(),
-      })
-      .optional(),
-  })
-  .refine(
-    (data) => {
-      // Validate threshold relationships only when both values are provided
-      const validations = [];
-
-      if (data.memory?.warning && data.memory?.critical) {
-        validations.push(data.memory.critical > data.memory.warning);
-      }
-      if (data.disk?.warning && data.disk?.critical) {
-        validations.push(data.disk.critical < data.disk.warning); // disk is % free
-      }
-      if (data.fileDescriptors?.warning && data.fileDescriptors?.critical) {
-        validations.push(
-          data.fileDescriptors.critical > data.fileDescriptors.warning
-        );
-      }
-      if (data.sockets?.warning && data.sockets?.critical) {
-        validations.push(data.sockets.critical > data.sockets.warning);
-      }
-      if (data.processes?.warning && data.processes?.critical) {
-        validations.push(data.processes.critical > data.processes.warning);
-      }
-      if (data.queueMessages?.warning && data.queueMessages?.critical) {
-        validations.push(
-          data.queueMessages.critical > data.queueMessages.warning
-        );
-      }
-      if (data.unackedMessages?.warning && data.unackedMessages?.critical) {
-        validations.push(
-          data.unackedMessages.critical > data.unackedMessages.warning
-        );
-      }
-      if (data.connections?.warning && data.connections?.critical) {
-        validations.push(data.connections.critical > data.connections.warning);
-      }
-      if (data.runQueue?.warning && data.runQueue?.critical) {
-        validations.push(data.runQueue.critical > data.runQueue.warning);
-      }
-
-      return validations.every(Boolean);
-    },
-    {
-      message:
-        "Critical thresholds must be higher than warning thresholds (except disk which uses free space)",
-    }
-  );
 
 // Request/Response schemas for API endpoints
 
@@ -139,11 +35,6 @@ export const AlertsQueryWithOptionalVHostSchema = AlertsQuerySchema.omit({
   vhost: true,
 }).extend({
   vhost: z.string().optional().default("/"),
-});
-
-// PUT /thresholds request body
-export const UpdateThresholdsRequestSchema = z.object({
-  thresholds: UpdateAlertThresholdsSchema,
 });
 
 export const UpdateAlertNotificationSettingsRequestSchema = z.object({
@@ -172,6 +63,9 @@ const AlertTypeSchema = z.enum([
   "FILE_DESCRIPTOR_USAGE",
   "NODE_DOWN",
   "EXCHANGE_ERROR",
+  "SOCKET_USAGE",
+  "PROCESS_USAGE",
+  "RUN_QUEUE_LENGTH",
 ]);
 
 const LegacyAlertSeveritySchema = z.enum(["LOW", "MEDIUM", "HIGH", "CRITICAL"]);

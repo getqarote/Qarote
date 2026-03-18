@@ -3,7 +3,7 @@ import { logger } from "@/core/logger";
 import { createRabbitMQClient } from "@/trpc/routers/rabbitmq/shared";
 
 import { ClusterHealthSummary, HealthCheck } from "./alert.interfaces";
-import { alertThresholdsService } from "./alert.thresholds";
+import { loadThresholdsForServer } from "./alert.rule-adapter";
 
 /**
  * Alert Health Service
@@ -19,9 +19,8 @@ class AlertHealthService {
   ): Promise<ClusterHealthSummary> {
     const client = await createRabbitMQClient(serverId, workspaceId);
 
-    // Get workspace-specific thresholds
-    const thresholds =
-      await alertThresholdsService.getWorkspaceThresholds(workspaceId);
+    // Get per-server thresholds from AlertRule table
+    const thresholds = await loadThresholdsForServer(serverId);
 
     let clusterHealth: "healthy" | "degraded" | "critical" = "healthy";
     let criticalIssues = 0;
@@ -57,13 +56,19 @@ class AlertHealthService {
           // Check memory usage
           if (node.mem_limit > 0) {
             const memoryUsagePercent = (node.mem_used / node.mem_limit) * 100;
-            if (memoryUsagePercent >= thresholds.memory.critical) {
+            if (
+              thresholds.memory.critical !== undefined &&
+              memoryUsagePercent >= thresholds.memory.critical
+            ) {
               criticalIssues++;
               issues.push(
                 `Critical memory usage on ${node.name} (${Math.round(memoryUsagePercent)}%)`
               );
               clusterHealth = "critical";
-            } else if (memoryUsagePercent >= thresholds.memory.warning) {
+            } else if (
+              thresholds.memory.medium !== undefined &&
+              memoryUsagePercent >= thresholds.memory.medium
+            ) {
               warningIssues++;
               issues.push(
                 `High memory usage on ${node.name} (${Math.round(memoryUsagePercent)}%)`
@@ -86,13 +91,19 @@ class AlertHealthService {
       if (queuesResponse && Array.isArray(queuesResponse)) {
         for (const queue of queuesResponse) {
           const messageCount = queue.messages || 0;
-          if (messageCount >= thresholds.queueMessages.critical) {
+          if (
+            thresholds.queueMessages.critical !== undefined &&
+            messageCount >= thresholds.queueMessages.critical
+          ) {
             criticalIssues++;
             issues.push(
               `Critical queue backlog: ${queue.name} (${messageCount} messages)`
             );
             clusterHealth = "critical";
-          } else if (messageCount >= thresholds.queueMessages.warning) {
+          } else if (
+            thresholds.queueMessages.medium !== undefined &&
+            messageCount >= thresholds.queueMessages.medium
+          ) {
             warningIssues++;
             issues.push(
               `High queue backlog: ${queue.name} (${messageCount} messages)`
@@ -109,7 +120,9 @@ class AlertHealthService {
       clusterHealth,
       summary: {
         critical: criticalIssues,
-        warning: warningIssues,
+        high: 0,
+        medium: warningIssues,
+        low: 0,
         total: criticalIssues + warningIssues,
         info: 0,
       },
@@ -127,9 +140,8 @@ class AlertHealthService {
   ): Promise<HealthCheck> {
     const client = await createRabbitMQClient(serverId, workspaceId);
 
-    // Get workspace-specific thresholds
-    const thresholds =
-      await alertThresholdsService.getWorkspaceThresholds(workspaceId);
+    // Get per-server thresholds from AlertRule table
+    const thresholds = await loadThresholdsForServer(serverId);
 
     const healthCheck: HealthCheck = {
       overall: "healthy",
@@ -210,10 +222,13 @@ class AlertHealthService {
           healthCheck.checks.memory.message = `${memoryIssues} nodes have memory alarms`;
           healthCheck.overall = "critical";
         } else {
+          // Use the lowest non-critical threshold for "warning" detection
+          const warningThreshold =
+            thresholds.memory.medium ?? thresholds.memory.high;
           const highMemoryNodes = nodes.filter((n) => {
-            if (n.mem_limit > 0) {
+            if (n.mem_limit > 0 && warningThreshold !== undefined) {
               const usage = (n.mem_used / n.mem_limit) * 100;
-              return usage >= thresholds.memory.warning;
+              return usage >= warningThreshold;
             }
             return false;
           }).length;
@@ -263,15 +278,27 @@ class AlertHealthService {
           const unackedMessages = queue.messages_unacknowledged || 0;
 
           // Check for critical queue conditions
-          if (messageCount >= thresholds.queueMessages.critical) {
+          if (
+            thresholds.queueMessages.critical !== undefined &&
+            messageCount >= thresholds.queueMessages.critical
+          ) {
             criticalQueues++;
-          } else if (messageCount >= thresholds.queueMessages.warning) {
+          } else if (
+            thresholds.queueMessages.medium !== undefined &&
+            messageCount >= thresholds.queueMessages.medium
+          ) {
             warningQueues++;
           }
 
-          if (unackedMessages >= thresholds.unackedMessages.critical) {
+          if (
+            thresholds.unackedMessages.critical !== undefined &&
+            unackedMessages >= thresholds.unackedMessages.critical
+          ) {
             criticalQueues++;
-          } else if (unackedMessages >= thresholds.unackedMessages.warning) {
+          } else if (
+            thresholds.unackedMessages.medium !== undefined &&
+            unackedMessages >= thresholds.unackedMessages.medium
+          ) {
             warningQueues++;
           }
 

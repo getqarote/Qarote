@@ -75,7 +75,7 @@ function makeResolvedAlert(
     id,
     serverId: SERVER_ID,
     serverName: "Test Server",
-    severity: "MEDIUM", // Prisma enum → mapped to "warning" in response
+    severity: "MEDIUM",
     category: "memory",
     title: "High Memory Usage",
     description: "Memory issue on node rabbit@node1",
@@ -178,7 +178,7 @@ describe("AlertService.getResolvedAlerts", () => {
     expect(alert.id).toBe(id);
     expect(alert.serverId).toBe(SERVER_ID);
     expect(alert.serverName).toBe("Test Server");
-    expect(alert.severity).toBe("warning"); // MEDIUM → "warning"
+    expect(alert.severity).toBe("MEDIUM");
     expect(alert.category).toBe("memory");
     expect(alert.source).toEqual({ type: "node", name: "rabbit@node1" });
     expect(alert.firstSeenAt).toBe("2026-01-01T00:00:00.000Z");
@@ -199,7 +199,7 @@ describe("AlertService.getResolvedAlerts", () => {
       WORKSPACE_ID
     );
 
-    expect(result.alerts[0].severity).toBe("critical");
+    expect(result.alerts[0].severity).toBe("CRITICAL");
   });
 
   it("maps INFO severity correctly", async () => {
@@ -213,7 +213,7 @@ describe("AlertService.getResolvedAlerts", () => {
       WORKSPACE_ID
     );
 
-    expect(result.alerts[0].severity).toBe("info");
+    expect(result.alerts[0].severity).toBe("INFO");
   });
 
   it("queries the Alert table with status=RESOLVED and resolvedAt IS NOT NULL", async () => {
@@ -239,13 +239,13 @@ describe("AlertService.getResolvedAlerts", () => {
     mockPrisma.alert.count.mockResolvedValue(0);
 
     await alertService.getResolvedAlerts(SERVER_ID, WORKSPACE_ID, {
-      severity: "warning",
+      severity: "MEDIUM",
     });
 
     expect(mockPrisma.alert.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({
-          severity: { in: ["MEDIUM", "HIGH"] }, // "warning" includes both
+          severity: "MEDIUM",
         }),
       })
     );
