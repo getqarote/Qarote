@@ -2,15 +2,12 @@
   "pageTitle": "Paramètres",
   "groups": {
     "personal": "Personnel",
-    "organization": "Organisation",
     "administration": "Administration"
   },
   "nav": {
     "profile": "Profil",
     "workspace": "Espace de travail",
     "plans": "Forfaits",
-    "organization": "Organisation",
-    "billing": "Facturation",
     "team": "Équipe",
     "license": "Licence",
     "sso": "SSO",

@@ -198,6 +198,8 @@ model User {
   pendingEmail            String?
   googleId                String?                  @unique
   ssoSubjectId            String?                  @unique
+  stripeCustomerId        String?                  @unique
+  stripeSubscriptionId    String?                  @unique
   locale                  String                   @default("en")
   discordJoined           Boolean                  @default(false)
   discordJoinedAt         DateTime?
@@ -215,8 +217,6 @@ model User {
   workspaceMembers        WorkspaceMember[]        @relation("WorkspaceMembers")
   payments                Payment[]
   subscription            Subscription?
-  organizationMembers     OrganizationMember[]
-  orgInvitationsSent      OrganizationInvitation[] @relation("OrgInvitationsSent")
 }
 
 // ─── Better Auth Models ─────────────────────────────────────────────
@@ -276,7 +276,6 @@ model Workspace {
   createdAt                     DateTime                  @default(now())
   updatedAt                     DateTime                  @updatedAt
   ownerId                       String?
-  organizationId                String
   tags                          Json?
   emailNotificationsEnabled     Boolean                   @default(true)
   notificationSeverities        Json?
@@ -296,9 +295,7 @@ model Workspace {
   seenAlerts                    SeenAlert[]
   slackConfigs                  SlackConfig[]
   webhooks                      Webhook[]
-  organization                  Organization              @relation(fields: [organizationId], references: [id])
-
-  @@index([organizationId])
+  workspaceSsoConfig            WorkspaceSsoConfig?
 }
 
 model WorkspaceAlertThresholds {
@@ -531,11 +528,8 @@ model Subscription {
   isRenewalAfterCancel Boolean            @default(false)
   previousCancelDate   DateTime?
   userId               String             @unique
-  // Nullable during migration. PostgreSQL unique allows multiple NULLs. Will become required after transition.
-  organizationId       String?            @unique
   plan                 UserPlan
   user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  organization         Organization?      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   @@index([status], name: "subscription_status_idx")
   @@index([stripeSubscriptionId], name: "subscription_stripe_id_idx")
@@ -583,26 +577,28 @@ model SsoProvider {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  orgSsoConfig OrgSsoConfig?
+  workspaceSsoConfig WorkspaceSsoConfig?
 
   @@index([domain])
   @@map("ssoProvider")
 }
 
-/// Maps an organization (or the whole instance for self-hosted) to a better-auth SSO provider.
-/// organizationId = null means instance-wide (self-hosted only).
-model OrgSsoConfig {
-  id             String        @id @default(uuid())
-  organizationId String?
-  providerId     String        @unique
-  autoProvision  Boolean       @default(true)
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+/// Maps a workspace (or the whole instance for self-hosted) to a better-auth SSO provider.
+/// workspaceId = null means instance-wide (self-hosted only).
+model WorkspaceSsoConfig {
+  id          String   @id @default(uuid())
+  workspaceId String?  @unique
+  providerId  String   @unique
+  enabled     Boolean  @default(true)
+  buttonLabel String   @default("Sign in with SSO")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  provider       SsoProvider   @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  workspace   Workspace?  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  ssoProvider SsoProvider @relation(fields: [providerId], references: [providerId], onDelete: Cascade)
 
-  @@unique([organizationId])
+  @@index([workspaceId])
+  @@index([providerId])
 }
 
 enum AlertSeverity {
@@ -705,67 +701,6 @@ enum UserRole {
   ADMIN
   MEMBER
   READONLY
-}
-
-enum OrgRole {
-  OWNER
-  ADMIN
-  MEMBER
-}
-
-// ─── Organization Models ──────────────────────────────────────────────
-
-model Organization {
-  id                   String   @id @default(uuid())
-  name                 String
-  slug                 String   @unique
-  contactEmail         String?
-  logoUrl              String?
-  stripeCustomerId     String?  @unique
-  stripeSubscriptionId String?  @unique
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
-
-  members       OrganizationMember[]
-  invitations   OrganizationInvitation[]
-  workspaces    Workspace[]
-  subscription  Subscription?
-  orgSsoConfigs OrgSsoConfig[]
-}
-
-model OrganizationMember {
-  id             String   @id @default(uuid())
-  userId         String
-  organizationId String
-  role           OrgRole
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-
-  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, organizationId])
-  @@index([userId])
-  @@index([organizationId])
-}
-
-model OrganizationInvitation {
-  id             String    @id @default(uuid())
-  organizationId String
-  email          String
-  token          String    @unique
-  role           OrgRole   @default(MEMBER)
-  invitedById    String
-  expiresAt      DateTime
-  acceptedAt           DateTime?
-  createdAt            DateTime  @default(now())
-  workspaceAssignments Json      @default("[]")
-
-  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  invitedBy    User         @relation("OrgInvitationsSent", fields: [invitedById], references: [id], onDelete: Cascade)
-
-  @@unique([organizationId, email])
-  @@index([email])
 }
 
 // ─── Self-hosted Configuration ───────────────────────────────────────

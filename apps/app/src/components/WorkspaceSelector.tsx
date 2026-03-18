@@ -80,24 +80,6 @@ export function WorkspaceSelector() {
   const currentWorkspace =
     workspaces.find((w) => w.id === workspace?.id) || workspaces[0];
 
-  // Group workspaces by organization
-  const groupedWorkspaces = workspaces.reduce<
-    Map<string, { orgName: string; workspaces: WorkspaceInfo[] }>
-  >((groups, ws) => {
-    const org = ws.organization as
-      | { id: string; name: string; slug: string }
-      | undefined;
-    const orgId = org?.id ?? "ungrouped";
-    const orgName = org?.name ?? "";
-    if (!groups.has(orgId)) {
-      groups.set(orgId, { orgName, workspaces: [] });
-    }
-    groups.get(orgId)!.workspaces.push(ws);
-    return groups;
-  }, new Map());
-  const orgGroups = Array.from(groupedWorkspaces.entries());
-  const hasMultipleOrgs = orgGroups.length > 1;
-
   const handleWorkspaceSwitch = (workspaceId: string) => {
     if (workspaceId === workspace?.id) {
       setIsOpen(false);
@@ -204,55 +186,43 @@ export function WorkspaceSelector() {
             </DropdownMenuItem>
           ) : (
             <>
-              {orgGroups.map(([orgId, group], groupIdx) => (
-                <div key={orgId}>
-                  {hasMultipleOrgs && group.orgName && (
-                    <>
-                      {groupIdx > 0 && <DropdownMenuSeparator />}
-                      <DropdownMenuLabel className="text-xs text-muted-foreground truncate">
-                        {group.orgName}
-                      </DropdownMenuLabel>
-                    </>
-                  )}
-                  {group.workspaces.map((ws) => (
-                    <DropdownMenuItem
-                      key={ws.id}
-                      onClick={() => handleWorkspaceSwitch(ws.id)}
-                      className={`p-3 cursor-pointer ${
-                        ws.id === workspace?.id
-                          ? "bg-primary/10 border-l-2 border-l-primary"
-                          : ""
-                      }`}
-                    >
-                      <div className="flex items-center justify-between w-full">
-                        <div className="flex items-center gap-3 min-w-0">
-                          <Building2 className="w-4 h-4 text-muted-foreground shrink-0" />
-                          <div className="min-w-0">
-                            <div className="font-medium text-foreground truncate">
-                              {ws.name}
-                            </div>
-                            <div className="text-xs text-muted-foreground flex items-center gap-2">
-                              <span className="flex items-center gap-1">
-                                {getRoleIcon(ws)}
-                                {getRoleLabel(ws)}
-                              </span>
-                              <span>•</span>
-                              <span>
-                                {t("servers", { count: ws._count.servers })}
-                              </span>
-                            </div>
-                          </div>
+              {workspaces.map((ws) => (
+                <DropdownMenuItem
+                  key={ws.id}
+                  onClick={() => handleWorkspaceSwitch(ws.id)}
+                  className={`p-3 cursor-pointer ${
+                    ws.id === workspace?.id
+                      ? "bg-primary/10 border-l-2 border-l-primary"
+                      : ""
+                  }`}
+                >
+                  <div className="flex items-center justify-between w-full">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <Building2 className="w-4 h-4 text-muted-foreground shrink-0" />
+                      <div className="min-w-0">
+                        <div className="font-medium text-foreground truncate">
+                          {ws.name}
                         </div>
-
-                        <div className="flex items-center gap-2 shrink-0">
-                          {ws.id === workspace?.id && (
-                            <div className="w-2 h-2 bg-primary rounded-full"></div>
-                          )}
+                        <div className="text-xs text-muted-foreground flex items-center gap-2">
+                          <span className="flex items-center gap-1">
+                            {getRoleIcon(ws)}
+                            {getRoleLabel(ws)}
+                          </span>
+                          <span>•</span>
+                          <span>
+                            {t("servers", { count: ws._count.servers })}
+                          </span>
                         </div>
                       </div>
-                    </DropdownMenuItem>
-                  ))}
-                </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      {ws.id === workspace?.id && (
+                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      )}
+                    </div>
+                  </div>
+                </DropdownMenuItem>
               ))}
 
               <DropdownMenuSeparator />

@@ -2,15 +2,12 @@
   "pageTitle": "Configuración",
   "groups": {
     "personal": "Personal",
-    "organization": "Organización",
     "administration": "Administración"
   },
   "nav": {
     "profile": "Perfil",
     "workspace": "Espacio de trabajo",
     "plans": "Planes",
-    "organization": "Organización",
-    "billing": "Facturación",
     "team": "Equipo",
     "license": "Licencia",
     "sso": "SSO",

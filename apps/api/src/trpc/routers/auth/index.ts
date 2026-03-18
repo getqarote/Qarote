@@ -2,7 +2,6 @@ import { router } from "@/trpc/trpc";
 
 import { emailRouter } from "./email";
 import { invitationRouter } from "./invitation";
-import { orgInvitationRouter } from "./org-invitation";
 import { passwordRouter } from "./password";
 import { registrationRouter } from "./registration";
 import { sessionRouter } from "./session";
@@ -21,5 +20,4 @@ export const authRouter = router({
   verification: verificationRouter,
   email: emailRouter,
   invitation: invitationRouter,
-  orgInvitation: orgInvitationRouter,
 });

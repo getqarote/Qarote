@@ -129,8 +129,7 @@
     "description": "管理您所有工作区的方案、计费周期和订阅设置"
   },
   "error": {
-    "workspaceIdRequired": "需要工作区 ID",
-    "failedToOpenBillingPortal": "无法打开账单门户。"
+    "workspaceIdRequired": "需要工作区 ID"
   },
   "plansSummary": {
     "whatsIncluded": "包含内容：",

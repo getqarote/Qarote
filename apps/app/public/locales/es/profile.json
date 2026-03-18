@@ -27,8 +27,7 @@
     "linkCopied": "Enlace de invitación copiado al portapapeles.",
     "invitationFailed": "Error al invitar a {{email}}: {{error}}",
     "workspaceDeleted": "Espacio de trabajo eliminado con éxito.",
-    "workspaceDeleteFailed": "Error al eliminar el espacio de trabajo.",
-    "userAdded": "{{name}} ha sido añadido al espacio de trabajo."
+    "workspaceDeleteFailed": "Error al eliminar el espacio de trabajo."
   },
   "invite": {
     "title": "Invitar miembros del equipo",
@@ -128,16 +127,6 @@
     "removeDialogWarning": "Esta acción no se puede deshacer. El usuario perderá el acceso a todos los recursos del espacio de trabajo y deberá ser reinvitado para recuperar el acceso.",
     "cancel": "Cancelar",
     "removing": "Eliminando...",
-    "removeUserButton": "Eliminar usuario",
-    "addFromOrg": "Agregar desde la organización",
-    "addFromOrgTitle": "Agregar desde la organización",
-    "addFromOrgDescription": "Agrega miembros existentes de la organización a este espacio de trabajo.",
-    "addFromOrgRole": "Rol:",
-    "addFromOrgAdd": "Agregar",
-    "addFromOrgDone": "Listo",
-    "addFromOrgAllHaveAccess": "Todos los miembros de la organización ya tienen acceso.",
-    "roleAdmin": "Administrador",
-    "roleMember": "Miembro",
-    "roleReadonly": "Solo lectura"
+    "removeUserButton": "Eliminar usuario"
   }
 }

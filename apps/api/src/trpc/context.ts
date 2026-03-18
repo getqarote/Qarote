@@ -82,6 +82,8 @@ export async function createContext(opts: {
         createdAt: new Date(baUser.createdAt as string),
         updatedAt: new Date(baUser.updatedAt as string),
         locale: (baUser.locale as string) || undefined,
+        stripeCustomerId: (baUser.stripeCustomerId as string) || null,
+        stripeSubscriptionId: (baUser.stripeSubscriptionId as string) || null,
         // Subscription is loaded lazily by procedures that need it, not on every request
         subscription: null,
       };

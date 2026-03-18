@@ -2,15 +2,12 @@
   "pageTitle": "设置",
   "groups": {
     "personal": "个人",
-    "organization": "组织",
     "administration": "管理"
   },
   "nav": {
     "profile": "个人资料",
     "workspace": "工作区",
     "plans": "计划",
-    "organization": "组织",
-    "billing": "账单",
     "team": "团队",
     "license": "许可证",
     "sso": "SSO",

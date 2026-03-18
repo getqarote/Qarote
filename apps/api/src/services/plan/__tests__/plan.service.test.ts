@@ -22,12 +22,6 @@ vi.mock("@/core/prisma", () => ({
     user: {
       findUnique: vi.fn(),
     },
-    organizationMember: {
-      findFirst: vi.fn(),
-    },
-    subscription: {
-      findUnique: vi.fn(),
-    },
   },
 }));
 
@@ -350,32 +344,27 @@ describe("getUserPlan", () => {
     vi.clearAllMocks();
   });
 
-  it("returns the subscription plan when user has an org with active subscription", async () => {
-    vi.mocked(prisma.organizationMember.findFirst).mockResolvedValue({
-      organizationId: "org-1",
-    } as never);
-    vi.mocked(prisma.subscription.findUnique).mockResolvedValue({
-      plan: UserPlan.ENTERPRISE,
+  it("returns the subscription plan when user has an active subscription", async () => {
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({
+      subscription: { plan: UserPlan.ENTERPRISE },
     } as never);
 
     const plan = await getUserPlan("user-1");
     expect(plan).toBe(UserPlan.ENTERPRISE);
   });
 
-  it("returns FREE when user has an org but no subscription", async () => {
-    vi.mocked(prisma.organizationMember.findFirst).mockResolvedValue({
-      organizationId: "org-1",
+  it("returns FREE when user exists but has no subscription", async () => {
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({
+      subscription: null,
     } as never);
-    vi.mocked(prisma.subscription.findUnique).mockResolvedValue(null);
 
     const plan = await getUserPlan("user-1");
     expect(plan).toBe(UserPlan.FREE);
   });
 
-  it("returns FREE when user has no org membership", async () => {
-    vi.mocked(prisma.organizationMember.findFirst).mockResolvedValue(null);
+  it("throws 'User not found' when user does not exist", async () => {
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(null);
 
-    const plan = await getUserPlan("user-1");
-    expect(plan).toBe(UserPlan.FREE);
+    await expect(getUserPlan("non-existent")).rejects.toThrow("User not found");
   });
 });

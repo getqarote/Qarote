@@ -62,35 +62,21 @@ export const billingRouter = router({
         );
       }
 
-      // Resolve Stripe IDs from Organization (billing authority)
-      const membership = await prisma.organizationMember.findFirst({
-        where: { userId: user.id },
-        select: {
-          organization: {
-            select: { stripeCustomerId: true, stripeSubscriptionId: true },
-          },
-        },
-      });
-      const orgStripeCustomerId =
-        membership?.organization?.stripeCustomerId ?? null;
-      const orgStripeSubscriptionId =
-        membership?.organization?.stripeSubscriptionId ?? null;
-
       let stripeSubscription = null;
       let upcomingInvoice = null;
       let paymentMethod = null;
 
       // Fetch Stripe subscription details if exists
-      if (orgStripeSubscriptionId) {
+      if (userWithSubscription.stripeSubscriptionId) {
         try {
           stripeSubscription = await StripeService.getSubscription(
-            orgStripeSubscriptionId
+            userWithSubscription.stripeSubscriptionId
           );
 
           // Get upcoming invoice
           if (stripeSubscription && !stripeSubscription.canceled_at) {
             upcomingInvoice = await StripeService.getUpcomingInvoice(
-              orgStripeSubscriptionId
+              userWithSubscription.stripeSubscriptionId || ""
             );
           }
 
@@ -100,10 +86,11 @@ export const billingRouter = router({
             | string
             | null;
 
-          if (!paymentMethodId && orgStripeCustomerId) {
+          if (!paymentMethodId && userWithSubscription.stripeCustomerId) {
             try {
-              const customer =
-                await StripeService.getCustomer(orgStripeCustomerId);
+              const customer = await StripeService.getCustomer(
+                userWithSubscription.stripeCustomerId
+              );
               if (
                 customer &&
                 !customer.deleted &&
@@ -184,8 +171,8 @@ export const billingRouter = router({
           ? {
               id: userWithSubscription.subscription.id,
               status: userWithSubscription.subscription.status,
-              stripeCustomerId: orgStripeCustomerId,
-              stripeSubscriptionId: orgStripeSubscriptionId,
+              stripeCustomerId: userWithSubscription.stripeCustomerId,
+              stripeSubscriptionId: userWithSubscription.stripeSubscriptionId,
               plan: userWithSubscription.subscription.plan,
               canceledAt: userWithSubscription.subscription.canceledAt
                 ? userWithSubscription.subscription.canceledAt.toISOString()
@@ -275,21 +262,10 @@ export const billingRouter = router({
    * Create billing portal session (PROTECTED)
    */
   createBillingPortalSession: rateLimitedProcedure.mutation(async ({ ctx }) => {
-    const { user, prisma } = ctx;
+    const { user } = ctx;
 
     try {
-      const membership = await prisma.organizationMember.findFirst({
-        where: { userId: user.id },
-        select: {
-          organization: {
-            select: { stripeCustomerId: true },
-          },
-        },
-      });
-      const stripeCustomerId =
-        membership?.organization?.stripeCustomerId ?? null;
-
-      if (!stripeCustomerId) {
+      if (!user.stripeCustomerId) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: te(ctx.locale, "billing.noStripeCustomerId"),
@@ -297,7 +273,7 @@ export const billingRouter = router({
       }
 
       const session = await StripeService.createPortalSession(
-        stripeCustomerId,
+        user.stripeCustomerId,
         `${config.FRONTEND_URL}/billing`
       );
 
@@ -318,21 +294,10 @@ export const billingRouter = router({
    * Create portal session (PROTECTED) - alias for createBillingPortalSession
    */
   createPortalSession: rateLimitedProcedure.mutation(async ({ ctx }) => {
-    const { user, prisma } = ctx;
+    const { user } = ctx;
 
     try {
-      const membership = await prisma.organizationMember.findFirst({
-        where: { userId: user.id },
-        select: {
-          organization: {
-            select: { stripeCustomerId: true },
-          },
-        },
-      });
-      const stripeCustomerId =
-        membership?.organization?.stripeCustomerId ?? null;
-
-      if (!stripeCustomerId) {
+      if (!user.stripeCustomerId) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: te(ctx.locale, "billing.noStripeCustomerFound"),
@@ -340,7 +305,7 @@ export const billingRouter = router({
       }
 
       const session = await StripeService.createPortalSession(
-        stripeCustomerId,
+        user.stripeCustomerId,
         `${config.FRONTEND_URL}/billing`
       );
 

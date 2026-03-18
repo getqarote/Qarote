@@ -79,16 +79,6 @@ const FeedbackSection = lazy(() =>
     default: m.default,
   }))
 );
-const OrganizationSection = lazy(() =>
-  import("./pages/settings/OrganizationSection").then((m) => ({
-    default: m.default,
-  }))
-);
-const BillingSection = lazy(() =>
-  import("./pages/settings/BillingSection").then((m) => ({
-    default: m.default,
-  }))
-);
 const Plans = lazy(() => import("./pages/Plans"));
 const Billing = lazy(() => import("./pages/Billing"));
 const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
@@ -102,7 +92,6 @@ const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const VerifyEmail = lazy(() => import("./pages/VerifyEmail"));
 const AcceptInvitation = lazy(() => import("./pages/AcceptInvitation"));
-const AcceptOrgInvitation = lazy(() => import("./pages/AcceptOrgInvitation"));
 const SSOCallback = lazy(() => import("./pages/SSOCallback"));
 const Workspace = lazy(() => import("./pages/Workspace"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -180,14 +169,6 @@ const AppCore = () => (
                                 <AcceptInvitation />
                               </PublicRoute>
                             }
-                          />
-                          {/* org-invite is NOT wrapped in PublicRoute because
-                              PublicRoute redirects authenticated users to "/".
-                              This page must work for both authenticated and
-                              unauthenticated users (dual-mode acceptance). */}
-                          <Route
-                            path="/org-invite/:token"
-                            element={<AcceptOrgInvitation />}
                           />
 
                           {/* Protected routes */}
@@ -346,14 +327,6 @@ const AppCore = () => (
                             <Route
                               path="license"
                               element={<LicenseSection />}
-                            />
-                            <Route
-                              path="organization"
-                              element={<OrganizationSection />}
-                            />
-                            <Route
-                              path="billing"
-                              element={<BillingSection />}
                             />
                             <Route path="sso" element={<SSOSection />} />
                             <Route path="smtp" element={<SMTPSection />} />

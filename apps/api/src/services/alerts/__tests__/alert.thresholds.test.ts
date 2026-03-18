@@ -4,14 +4,12 @@ import { prisma } from "@/core/prisma";
 
 import { alertThresholdsService } from "../alert.thresholds";
 
-const mockGetWorkspacePlan = vi.fn();
-vi.mock("@/services/plan/plan.service", () => ({
-  getWorkspacePlan: (...args: unknown[]) => mockGetWorkspacePlan(...args),
-}));
-
 vi.mock("@/core/prisma", () => ({
   prisma: {
     workspace: {
+      findUnique: vi.fn(),
+    },
+    subscription: {
       findUnique: vi.fn(),
     },
     workspaceAlertThresholds: {
@@ -69,26 +67,66 @@ describe("AlertThresholdsService", () => {
   });
 
   describe("canModifyThresholds", () => {
+    it("returns false when workspace is not found", async () => {
+      vi.mocked(prisma.workspace.findUnique).mockResolvedValue(null);
+      const result = await alertThresholdsService.canModifyThresholds("ws-1");
+      expect(result).toBe(false);
+    });
+
+    it("returns false when workspace has no ownerId", async () => {
+      vi.mocked(prisma.workspace.findUnique).mockResolvedValue({
+        ownerId: null,
+      } as never);
+      const result = await alertThresholdsService.canModifyThresholds("ws-1");
+      expect(result).toBe(false);
+    });
+
     it("returns false for FREE plan", async () => {
-      mockGetWorkspacePlan.mockResolvedValue("FREE");
+      vi.mocked(prisma.workspace.findUnique).mockResolvedValue({
+        ownerId: "owner-1",
+      } as never);
+      vi.mocked(prisma.subscription.findUnique).mockResolvedValue({
+        plan: "FREE",
+      } as never);
       const result = await alertThresholdsService.canModifyThresholds("ws-1");
       expect(result).toBe(false);
     });
 
     it("returns true for DEVELOPER plan", async () => {
-      mockGetWorkspacePlan.mockResolvedValue("DEVELOPER");
+      vi.mocked(prisma.workspace.findUnique).mockResolvedValue({
+        ownerId: "owner-1",
+      } as never);
+      vi.mocked(prisma.subscription.findUnique).mockResolvedValue({
+        plan: "DEVELOPER",
+      } as never);
       const result = await alertThresholdsService.canModifyThresholds("ws-1");
       expect(result).toBe(true);
     });
 
     it("returns true for ENTERPRISE plan", async () => {
-      mockGetWorkspacePlan.mockResolvedValue("ENTERPRISE");
+      vi.mocked(prisma.workspace.findUnique).mockResolvedValue({
+        ownerId: "owner-1",
+      } as never);
+      vi.mocked(prisma.subscription.findUnique).mockResolvedValue({
+        plan: "ENTERPRISE",
+      } as never);
       const result = await alertThresholdsService.canModifyThresholds("ws-1");
       expect(result).toBe(true);
     });
 
-    it("returns false and does not throw on error", async () => {
-      mockGetWorkspacePlan.mockRejectedValue(new Error("DB error"));
+    it("returns false when owner has no subscription (defaults to FREE)", async () => {
+      vi.mocked(prisma.workspace.findUnique).mockResolvedValue({
+        ownerId: "owner-1",
+      } as never);
+      vi.mocked(prisma.subscription.findUnique).mockResolvedValue(null);
+      const result = await alertThresholdsService.canModifyThresholds("ws-1");
+      expect(result).toBe(false);
+    });
+
+    it("returns false and does not throw on Prisma error", async () => {
+      vi.mocked(prisma.workspace.findUnique).mockRejectedValue(
+        new Error("DB error")
+      );
       const result = await alertThresholdsService.canModifyThresholds("ws-1");
       expect(result).toBe(false);
     });
@@ -209,7 +247,12 @@ describe("AlertThresholdsService", () => {
     });
 
     it("calls prisma upsert with correctly mapped fields for memory thresholds", async () => {
-      mockGetWorkspacePlan.mockResolvedValue("ENTERPRISE");
+      vi.mocked(prisma.workspace.findUnique).mockResolvedValue({
+        ownerId: "owner-1",
+      } as never);
+      vi.mocked(prisma.subscription.findUnique).mockResolvedValue({
+        plan: "ENTERPRISE",
+      } as never);
       vi.mocked(prisma.workspaceAlertThresholds.upsert).mockResolvedValue(
         {} as never
       );
@@ -235,7 +278,12 @@ describe("AlertThresholdsService", () => {
     });
 
     it("returns success message on successful update", async () => {
-      mockGetWorkspacePlan.mockResolvedValue("ENTERPRISE");
+      vi.mocked(prisma.workspace.findUnique).mockResolvedValue({
+        ownerId: "owner-1",
+      } as never);
+      vi.mocked(prisma.subscription.findUnique).mockResolvedValue({
+        plan: "ENTERPRISE",
+      } as never);
       vi.mocked(prisma.workspaceAlertThresholds.upsert).mockResolvedValue(
         {} as never
       );
@@ -250,7 +298,12 @@ describe("AlertThresholdsService", () => {
     });
 
     it("returns failure message on Prisma error during upsert", async () => {
-      mockGetWorkspacePlan.mockResolvedValue("ENTERPRISE");
+      vi.mocked(prisma.workspace.findUnique).mockResolvedValue({
+        ownerId: "owner-1",
+      } as never);
+      vi.mocked(prisma.subscription.findUnique).mockResolvedValue({
+        plan: "ENTERPRISE",
+      } as never);
       vi.mocked(prisma.workspaceAlertThresholds.upsert).mockRejectedValue(
         new Error("DB error")
       );

@@ -148,7 +148,7 @@ export const WorkspaceInfoTab = ({
           </div>
         )}
 
-        {isAdmin && (
+        {user.id === workspace.ownerId && (
           <>
             <Separator />
 

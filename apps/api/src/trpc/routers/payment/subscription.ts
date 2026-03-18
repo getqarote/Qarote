@@ -12,7 +12,6 @@ import { config } from "@/config";
 
 import { router, strictRateLimitedProcedure } from "@/trpc/trpc";
 
-import { OrgRole } from "@/generated/prisma/client";
 import { te } from "@/i18n";
 
 /**
@@ -30,58 +29,21 @@ export const subscriptionRouter = router({
       const { user, prisma } = ctx;
 
       try {
-        // Resolve subscription ID from Organization via active workspace
-        const workspace = user.workspaceId
-          ? await prisma.workspace.findUnique({
-              where: { id: user.workspaceId },
-              select: {
-                organizationId: true,
-                organization: {
-                  select: { stripeSubscriptionId: true },
-                },
-              },
-            })
-          : null;
-        const subscriptionId =
-          workspace?.organization?.stripeSubscriptionId ?? null;
-
-        if (!subscriptionId || !workspace?.organizationId) {
+        if (!user.stripeSubscriptionId) {
           throw new TRPCError({
             code: "BAD_REQUEST",
             message: te(ctx.locale, "billing.noActiveSubscription"),
           });
         }
 
-        // Verify caller is OWNER or ADMIN of the organization
-        const membership = await prisma.organizationMember.findUnique({
-          where: {
-            userId_organizationId: {
-              userId: user.id,
-              organizationId: workspace.organizationId,
-            },
-          },
-          select: { role: true },
-        });
-
-        if (
-          !membership ||
-          (membership.role !== OrgRole.OWNER &&
-            membership.role !== OrgRole.ADMIN)
-        ) {
-          throw new TRPCError({
-            code: "FORBIDDEN",
-            message: te(ctx.locale, "auth.orgAdminRequired"),
-          });
-        }
-
         const subscription = await StripeService.cancelSubscription(
-          subscriptionId,
-          !cancelImmediately
+          user.stripeSubscriptionId,
+          cancelImmediately
         );
 
         // Update subscription in database
         await prisma.subscription.update({
-          where: { stripeSubscriptionId: subscriptionId },
+          where: { userId: user.id },
           data: {
             status: CoreStripeService.mapStripeStatusToSubscriptionStatus(
               subscription.status

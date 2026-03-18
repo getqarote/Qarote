@@ -17,7 +17,7 @@ import {
   router,
 } from "@/trpc/trpc";
 
-import { OrgRole, UserPlan } from "@/generated/prisma/client";
+import { UserPlan } from "@/generated/prisma/client";
 import { te } from "@/i18n";
 
 /**
@@ -104,50 +104,8 @@ export const licenseRouter = router({
       const { tier } = input;
 
       try {
-        // Resolve Organization deterministically via the user's active workspace
-        const workspace = user.workspaceId
-          ? await ctx.prisma.workspace.findUnique({
-              where: { id: user.workspaceId },
-              select: {
-                organizationId: true,
-                organization: {
-                  select: { id: true, stripeCustomerId: true },
-                },
-              },
-            })
-          : null;
-
-        const org = workspace?.organization ?? null;
-        if (!org || !workspace?.organizationId) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: te(ctx.locale, "billing.noOrganization"),
-          });
-        }
-
-        // Verify caller is OWNER or ADMIN of the organization
-        const membership = await ctx.prisma.organizationMember.findUnique({
-          where: {
-            userId_organizationId: {
-              userId: user.id,
-              organizationId: workspace.organizationId,
-            },
-          },
-          select: { role: true },
-        });
-
-        if (
-          !membership ||
-          (membership.role !== OrgRole.OWNER &&
-            membership.role !== OrgRole.ADMIN)
-        ) {
-          throw new TRPCError({
-            code: "FORBIDDEN",
-            message: te(ctx.locale, "auth.orgAdminRequired"),
-          });
-        }
-
-        let customerId = org.stripeCustomerId;
+        // Create Stripe customer if not exists
+        let customerId = user.stripeCustomerId;
         if (!customerId) {
           const customer = await StripeService.createCustomer({
             email: user.email,
@@ -156,8 +114,8 @@ export const licenseRouter = router({
           });
           customerId = customer.id;
 
-          await ctx.prisma.organization.update({
-            where: { id: org.id },
+          await ctx.prisma.user.update({
+            where: { id: user.id },
             data: { stripeCustomerId: customerId },
           });
         }

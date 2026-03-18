@@ -4,7 +4,7 @@
  * Runs at startup (self-hosted only) to:
  * 1. Migrate existing ssoSubjectId values to better-auth Account rows
  * 2. Seed an instance-wide SSO provider from env vars (SSO_ENABLED=true) if not already configured
- * 3. Migrate old Jackson SystemSetting "sso_config" to OrgSsoConfig + SsoProvider
+ * 3. Migrate old Jackson SystemSetting "sso_config" to WorkspaceSsoConfig + SsoProvider
  *
  * All operations are idempotent — safe to run on every startup.
  */
@@ -69,7 +69,7 @@ async function migrateSsoSubjectIds(): Promise<void> {
 
 /**
  * Seed an instance-wide SSO provider from environment variables.
- * Only runs if SSO_ENABLED=true and no OrgSsoConfig with organizationId=null exists.
+ * Only runs if SSO_ENABLED=true and no WorkspaceSsoConfig with workspaceId=null exists.
  *
  * Also migrates the old Jackson SystemSetting "sso_config" if present.
  */
@@ -77,8 +77,8 @@ async function seedSsoProviders(): Promise<void> {
   if (!isSelfHostedMode()) return;
 
   // Check if instance-wide SSO is already configured
-  const existing = await prisma.orgSsoConfig.findFirst({
-    where: { organizationId: null },
+  const existing = await prisma.workspaceSsoConfig.findFirst({
+    where: { workspaceId: null },
   });
 
   if (existing) return;
@@ -94,6 +94,7 @@ async function seedSsoProviders(): Promise<void> {
   let seedOidcClientId = ssoConfig.oidc.clientId;
   let seedOidcClientSecret = ssoConfig.oidc.clientSecret;
   let seedSamlMetadataUrl = ssoConfig.saml.metadataUrl;
+  let seedButtonLabel = ssoConfig.buttonLabel;
 
   if (oldSetting) {
     try {
@@ -108,6 +109,7 @@ async function seedSsoProviders(): Promise<void> {
         (oldConfig.oidcClientSecret as string) ?? seedOidcClientSecret;
       seedSamlMetadataUrl =
         (oldConfig.samlMetadataUrl as string) ?? seedSamlMetadataUrl;
+      seedButtonLabel = (oldConfig.buttonLabel as string) ?? seedButtonLabel;
 
       logger.info("Migrating old Jackson SSO config to better-auth SSO");
     } catch {
@@ -149,7 +151,7 @@ async function seedSsoProviders(): Promise<void> {
 
   await prisma.$transaction(async (tx) => {
     // Create the SsoProvider row (better-auth's table)
-    const provider = await tx.ssoProvider.upsert({
+    await tx.ssoProvider.upsert({
       where: { providerId: INSTANCE_PROVIDER_ID },
       update: {
         issuer,
@@ -166,14 +168,15 @@ async function seedSsoProviders(): Promise<void> {
       },
     });
 
-    // Create the OrgSsoConfig mapping (organizationId=null = instance-wide)
-    await tx.orgSsoConfig.upsert({
-      where: { providerId: provider.id },
-      update: { autoProvision: true },
+    // Create the WorkspaceSsoConfig mapping (workspaceId=null = instance-wide)
+    await tx.workspaceSsoConfig.upsert({
+      where: { providerId: INSTANCE_PROVIDER_ID },
+      update: { enabled: true, buttonLabel: seedButtonLabel },
       create: {
-        organizationId: null,
-        providerId: provider.id,
-        autoProvision: true,
+        workspaceId: null,
+        providerId: INSTANCE_PROVIDER_ID,
+        enabled: true,
+        buttonLabel: seedButtonLabel,
       },
     });
 

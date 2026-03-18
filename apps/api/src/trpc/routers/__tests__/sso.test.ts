@@ -3,35 +3,29 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // ─── Mocks ────────────────────────────────────────────────────────────────────
 
-const mockOrganizationMemberFindFirst = vi.fn();
-const mockOrganizationMemberFindUnique = vi.fn();
-const mockWorkspaceFindUnique = vi.fn();
-const mockOrgSsoConfigFindFirst = vi.fn();
+const mockWorkspaceFindFirst = vi.fn();
 const mockSsoProviderFindUnique = vi.fn();
+const mockWorkspaceSsoConfigFindFirst = vi.fn();
 const mockSsoProviderUpsert = vi.fn();
 const mockSsoProviderUpdate = vi.fn();
 const mockSsoProviderDeleteMany = vi.fn();
-const mockOrgSsoConfigUpsert = vi.fn();
+const mockWorkspaceSsoConfigUpsert = vi.fn();
+const mockWorkspaceSsoConfigUpdate = vi.fn();
 const mockTransaction = vi.fn();
 
 vi.mock("@/core/prisma", () => ({
   prisma: {
-    workspace: {
-      findUnique: (...a: unknown[]) => mockWorkspaceFindUnique(...a),
-    },
-    organizationMember: {
-      findFirst: (...a: unknown[]) => mockOrganizationMemberFindFirst(...a),
-      findUnique: (...a: unknown[]) => mockOrganizationMemberFindUnique(...a),
-    },
+    workspace: { findFirst: (...a: unknown[]) => mockWorkspaceFindFirst(...a) },
     ssoProvider: {
       findUnique: (...a: unknown[]) => mockSsoProviderFindUnique(...a),
       upsert: (...a: unknown[]) => mockSsoProviderUpsert(...a),
       update: (...a: unknown[]) => mockSsoProviderUpdate(...a),
       deleteMany: (...a: unknown[]) => mockSsoProviderDeleteMany(...a),
     },
-    orgSsoConfig: {
-      findFirst: (...a: unknown[]) => mockOrgSsoConfigFindFirst(...a),
-      upsert: (...a: unknown[]) => mockOrgSsoConfigUpsert(...a),
+    workspaceSsoConfig: {
+      findFirst: (...a: unknown[]) => mockWorkspaceSsoConfigFindFirst(...a),
+      upsert: (...a: unknown[]) => mockWorkspaceSsoConfigUpsert(...a),
+      update: (...a: unknown[]) => mockWorkspaceSsoConfigUpdate(...a),
     },
     $transaction: (...a: unknown[]) => mockTransaction(...a),
   },
@@ -43,10 +37,9 @@ vi.mock("@/config/deployment", () => ({
   isSelfHostedMode: () => !mockIsCloudMode,
 }));
 
-const mockGetOrgPlan = vi.fn();
+const mockGetUserPlan = vi.fn();
 vi.mock("@/services/plan/plan.service", () => ({
-  getOrgPlan: (...a: unknown[]) => mockGetOrgPlan(...a),
-  getUserPlan: vi.fn(),
+  getUserPlan: (...a: unknown[]) => mockGetUserPlan(...a),
   PlanErrorCode: { PLAN_RESTRICTION: "PLAN_RESTRICTION" },
   PlanLimitExceededError: class extends Error {},
   PlanValidationError: class extends Error {},
@@ -104,22 +97,17 @@ const REDACTED = "••••••••";
 function makeCtx(overrides: Record<string, unknown> = {}) {
   return {
     prisma: {
-      workspace: {
-        findUnique: mockWorkspaceFindUnique,
-      },
-      organizationMember: {
-        findFirst: mockOrganizationMemberFindFirst,
-        findUnique: mockOrganizationMemberFindUnique,
-      },
+      workspace: { findFirst: mockWorkspaceFindFirst },
       ssoProvider: {
         findUnique: mockSsoProviderFindUnique,
         upsert: mockSsoProviderUpsert,
         update: mockSsoProviderUpdate,
         deleteMany: mockSsoProviderDeleteMany,
       },
-      orgSsoConfig: {
-        findFirst: mockOrgSsoConfigFindFirst,
-        upsert: mockOrgSsoConfigUpsert,
+      workspaceSsoConfig: {
+        findFirst: mockWorkspaceSsoConfigFindFirst,
+        upsert: mockWorkspaceSsoConfigUpsert,
+        update: mockWorkspaceSsoConfigUpdate,
       },
       $transaction: mockTransaction,
     },
@@ -158,14 +146,15 @@ const mockProvider = {
   updatedAt: new Date(),
 };
 
-const mockOrgConfig = {
-  id: "osc-1",
-  organizationId: null,
-  providerId: "prov-1",
-  autoProvision: true,
+const mockWsConfig = {
+  id: "wsc-1",
+  workspaceId: null,
+  providerId: "default",
+  enabled: true,
+  buttonLabel: "Sign in with SSO",
   createdAt: new Date(),
   updatedAt: new Date(),
-  provider: mockProvider,
+  ssoProvider: mockProvider,
 };
 
 // ─── Tests ────────────────────────────────────────────────────────────────────
@@ -180,8 +169,8 @@ describe("ssoRouter", () => {
   // ─── getConfig ────────────────────────────────────────────────────────────
 
   describe("getConfig (public)", () => {
-    it("self-hosted: returns provider info when configured", async () => {
-      mockOrgSsoConfigFindFirst.mockResolvedValue(mockOrgConfig);
+    it("self-hosted: returns provider info when enabled", async () => {
+      mockWorkspaceSsoConfigFindFirst.mockResolvedValue(mockWsConfig);
 
       const caller = ssoRouter.createCaller(makeCtx() as never);
       const result = await caller.getConfig();
@@ -190,13 +179,25 @@ describe("ssoRouter", () => {
         enabled: true,
         cloudSso: false,
         buttonLabel: "Sign in with SSO",
-        providerId: "default", // returns SsoProvider.providerId (logical ID), not OrgSsoConfig.providerId (FK)
+        providerId: "default",
         type: "oidc",
       });
     });
 
     it("self-hosted: returns null when not configured", async () => {
-      mockOrgSsoConfigFindFirst.mockResolvedValue(null);
+      mockWorkspaceSsoConfigFindFirst.mockResolvedValue(null);
+
+      const caller = ssoRouter.createCaller(makeCtx() as never);
+      const result = await caller.getConfig();
+
+      expect(result).toBeNull();
+    });
+
+    it("self-hosted: returns null when disabled", async () => {
+      mockWorkspaceSsoConfigFindFirst.mockResolvedValue({
+        ...mockWsConfig,
+        enabled: false,
+      });
 
       const caller = ssoRouter.createCaller(makeCtx() as never);
       const result = await caller.getConfig();
@@ -223,7 +224,7 @@ describe("ssoRouter", () => {
 
   describe("getProviderConfig (admin)", () => {
     it("returns redacted config when provider exists", async () => {
-      mockOrgSsoConfigFindFirst.mockResolvedValue(mockOrgConfig);
+      mockWorkspaceSsoConfigFindFirst.mockResolvedValue(mockWsConfig);
 
       const caller = ssoRouter.createCaller(makeCtx() as never);
       const result = await caller.getProviderConfig();
@@ -235,7 +236,7 @@ describe("ssoRouter", () => {
     });
 
     it("returns null when no provider configured", async () => {
-      mockOrgSsoConfigFindFirst.mockResolvedValue(null);
+      mockWorkspaceSsoConfigFindFirst.mockResolvedValue(null);
 
       const caller = ssoRouter.createCaller(makeCtx() as never);
       const result = await caller.getProviderConfig();
@@ -243,46 +244,21 @@ describe("ssoRouter", () => {
       expect(result).toBeNull();
     });
 
-    it("cloud: looks up by org membership", async () => {
+    it("cloud: looks up by workspace owner", async () => {
       mockIsCloudMode = true;
-      // resolveOrgAdmin now uses workspace.findUnique + organizationMember.findUnique
-      mockWorkspaceFindUnique.mockResolvedValue({ organizationId: "org-1" });
-      mockOrganizationMemberFindUnique.mockResolvedValue({
-        organizationId: "org-1",
-        role: "OWNER",
-      });
-      mockOrgSsoConfigFindFirst.mockResolvedValue({
-        ...mockOrgConfig,
-        organizationId: "org-1",
-        provider: { ...mockProvider, providerId: "org-org-1" },
+      const workspace = { id: "ws-1", ownerId: "admin-1" };
+      mockWorkspaceFindFirst.mockResolvedValue(workspace);
+      mockWorkspaceSsoConfigFindFirst.mockResolvedValue({
+        ...mockWsConfig,
+        workspaceId: "ws-1",
+        providerId: "workspace-ws-1",
+        ssoProvider: { ...mockProvider, providerId: "workspace-ws-1" },
       });
 
       const caller = ssoRouter.createCaller(makeCtx() as never);
       const result = await caller.getProviderConfig();
 
-      // Assert the full lookup chain was invoked correctly
-      expect(mockWorkspaceFindUnique).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: { id: "ws-1" },
-        })
-      );
-      expect(mockOrganizationMemberFindUnique).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: {
-            userId_organizationId: {
-              userId: "admin-1",
-              organizationId: "org-1",
-            },
-          },
-        })
-      );
-      expect(mockOrgSsoConfigFindFirst).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: expect.objectContaining({ organizationId: "org-1" }),
-          include: expect.objectContaining({ provider: true }),
-        })
-      );
-      expect(result?.providerId).toBe("org-org-1");
+      expect(result?.providerId).toBe("workspace-ws-1");
     });
   });
 
@@ -294,7 +270,7 @@ describe("ssoRouter", () => {
       mockTransaction.mockImplementation(async (cb: (tx: unknown) => unknown) =>
         cb({
           ssoProvider: { upsert: vi.fn() },
-          orgSsoConfig: { upsert: vi.fn() },
+          workspaceSsoConfig: { upsert: vi.fn() },
         })
       );
 
@@ -313,12 +289,12 @@ describe("ssoRouter", () => {
     it("self-hosted: registers OIDC provider with enterprise license", async () => {
       mockIsFeatureEnabled.mockResolvedValue(true);
 
-      const txSsoUpsert = vi.fn().mockResolvedValue({ id: "prov-new" });
-      const txOscUpsert = vi.fn().mockResolvedValue({});
+      const txSsoUpsert = vi.fn().mockResolvedValue({});
+      const txWscUpsert = vi.fn().mockResolvedValue({});
       mockTransaction.mockImplementation(async (cb: (tx: unknown) => unknown) =>
         cb({
           ssoProvider: { upsert: txSsoUpsert },
-          orgSsoConfig: { upsert: txOscUpsert },
+          workspaceSsoConfig: { upsert: txWscUpsert },
         })
       );
 
@@ -329,6 +305,7 @@ describe("ssoRouter", () => {
           "https://idp.example.com/.well-known/openid-configuration",
         oidcClientId: "qarote",
         oidcClientSecret: "secret",
+        buttonLabel: "Sign in with Acme",
       });
 
       expect(result.success).toBe(true);
@@ -342,14 +319,12 @@ describe("ssoRouter", () => {
           }),
         })
       );
-      expect(txOscUpsert).toHaveBeenCalledWith(
+      expect(txWscUpsert).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: { providerId: "prov-new" },
-          update: expect.objectContaining({ autoProvision: true }),
           create: expect.objectContaining({
-            organizationId: null,
-            providerId: "prov-new",
-            autoProvision: true,
+            workspaceId: null,
+            providerId: "default",
+            buttonLabel: "Sign in with Acme",
           }),
         })
       );
@@ -358,13 +333,11 @@ describe("ssoRouter", () => {
     it("cloud: rejects non-enterprise plan", async () => {
       mockIsCloudMode = true;
       const { UserPlan } = await import("@/generated/prisma/client");
-      // resolveOrgAdmin uses workspace + org member findUnique
-      mockWorkspaceFindUnique.mockResolvedValue({ organizationId: "org-1" });
-      mockOrganizationMemberFindUnique.mockResolvedValue({
-        organizationId: "org-1",
-        role: "OWNER",
+      mockWorkspaceFindFirst.mockResolvedValue({
+        id: "ws-1",
+        ownerId: "admin-1",
       });
-      mockGetOrgPlan.mockResolvedValue(UserPlan.DEVELOPER);
+      mockGetUserPlan.mockResolvedValue(UserPlan.DEVELOPER);
 
       const caller = ssoRouter.createCaller(makeCtx() as never);
       await expect(
@@ -381,7 +354,7 @@ describe("ssoRouter", () => {
       mockTransaction.mockImplementation(async (cb: (tx: unknown) => unknown) =>
         cb({
           ssoProvider: { upsert: vi.fn() },
-          orgSsoConfig: { upsert: vi.fn() },
+          workspaceSsoConfig: { upsert: vi.fn() },
         })
       );
 
@@ -398,7 +371,15 @@ describe("ssoRouter", () => {
     it("preserves client secret when REDACTED placeholder is sent", async () => {
       mockIsFeatureEnabled.mockResolvedValue(true);
       mockSsoProviderFindUnique.mockResolvedValue(mockProvider);
-      mockSsoProviderUpdate.mockResolvedValue({});
+
+      const txSsoUpdate = vi.fn().mockResolvedValue({});
+      const txWscUpdate = vi.fn().mockResolvedValue({});
+      mockTransaction.mockImplementation(async (cb: (tx: unknown) => unknown) =>
+        cb({
+          ssoProvider: { update: txSsoUpdate },
+          workspaceSsoConfig: { update: txWscUpdate },
+        })
+      );
 
       const caller = ssoRouter.createCaller(makeCtx() as never);
       await caller.updateProvider({
@@ -409,7 +390,7 @@ describe("ssoRouter", () => {
         oidcClientSecret: REDACTED, // send redacted
       });
 
-      const updateCall = mockSsoProviderUpdate.mock.calls[0][0];
+      const updateCall = txSsoUpdate.mock.calls[0][0];
       const savedConfig = JSON.parse(updateCall.data.oidcConfig);
       expect(savedConfig.clientSecret).toBe("super-secret"); // original preserved
     });
@@ -506,12 +487,12 @@ describe("ssoRouter", () => {
     it("strips .well-known/openid-configuration from OIDC discovery URL", async () => {
       mockIsFeatureEnabled.mockResolvedValue(true);
 
-      const txSsoUpsert = vi.fn().mockResolvedValue({ id: "prov-new" });
-      const txOscUpsert = vi.fn().mockResolvedValue({});
+      const txSsoUpsert = vi.fn().mockResolvedValue({});
+      const txWscUpsert = vi.fn().mockResolvedValue({});
       mockTransaction.mockImplementation(async (cb: (tx: unknown) => unknown) =>
         cb({
           ssoProvider: { upsert: txSsoUpsert },
-          orgSsoConfig: { upsert: txOscUpsert },
+          workspaceSsoConfig: { upsert: txWscUpsert },
         })
       );
 
@@ -531,12 +512,12 @@ describe("ssoRouter", () => {
     it("preserves issuer when discovery URL has no .well-known suffix", async () => {
       mockIsFeatureEnabled.mockResolvedValue(true);
 
-      const txSsoUpsert = vi.fn().mockResolvedValue({ id: "prov-new" });
-      const txOscUpsert = vi.fn().mockResolvedValue({});
+      const txSsoUpsert = vi.fn().mockResolvedValue({});
+      const txWscUpsert = vi.fn().mockResolvedValue({});
       mockTransaction.mockImplementation(async (cb: (tx: unknown) => unknown) =>
         cb({
           ssoProvider: { upsert: txSsoUpsert },
-          orgSsoConfig: { upsert: txOscUpsert },
+          workspaceSsoConfig: { upsert: txWscUpsert },
         })
       );
 
@@ -555,7 +536,15 @@ describe("ssoRouter", () => {
     it("strips suffix in updateProvider too", async () => {
       mockIsFeatureEnabled.mockResolvedValue(true);
       mockSsoProviderFindUnique.mockResolvedValue(mockProvider);
-      mockSsoProviderUpdate.mockResolvedValue({});
+
+      const txSsoUpdate = vi.fn().mockResolvedValue({});
+      const txWscUpdate = vi.fn().mockResolvedValue({});
+      mockTransaction.mockImplementation(async (cb: (tx: unknown) => unknown) =>
+        cb({
+          ssoProvider: { update: txSsoUpdate },
+          workspaceSsoConfig: { update: txWscUpdate },
+        })
+      );
 
       const caller = ssoRouter.createCaller(makeCtx() as never);
       await caller.updateProvider({
@@ -566,7 +555,7 @@ describe("ssoRouter", () => {
         oidcClientSecret: "new-secret",
       });
 
-      const updateCall = mockSsoProviderUpdate.mock.calls[0][0];
+      const updateCall = txSsoUpdate.mock.calls[0][0];
       expect(updateCall.data.issuer).toBe("https://idp.example.com");
     });
   });
