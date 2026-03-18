@@ -105,6 +105,7 @@
     "permissionGranted": "Autorisé",
     "permissionDenied": "Bloqué",
     "browserNotificationsBlocked": "Les notifications du navigateur sont bloquées. Pour les activer, cliquez sur l'icône de cadenas dans la barre d'adresse de votre navigateur et autorisez les notifications pour ce site.",
+    "browserNotificationsSystemHint": "Vous ne voyez pas les notifications ? Vérifiez que les notifications de votre navigateur sont également activées dans les paramètres de votre système (ex. macOS : Réglages Système → Notifications → Chrome).",
     "emailNotifications": "Notifications par e-mail",
     "emailNotificationsDescription": "Recevez des alertes par e-mail pour les nouvelles alertes en fonction de vos préférences de gravité",
     "notificationEmailAddress": "Adresse e-mail de notification",

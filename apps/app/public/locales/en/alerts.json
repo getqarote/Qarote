@@ -105,6 +105,7 @@
     "permissionGranted": "Authorized",
     "permissionDenied": "Blocked",
     "browserNotificationsBlocked": "Browser notifications are blocked. To enable them, click the lock icon in your browser's address bar and allow notifications for this site.",
+    "browserNotificationsSystemHint": "Not seeing notifications? Make sure notifications for your browser are also enabled in your operating system settings (e.g. macOS: System Settings → Notifications → Chrome).",
     "emailNotifications": "Email Notifications",
     "emailNotificationsDescription": "Receive email alerts for new alerts based on your severity preferences",
     "notificationEmailAddress": "Notification Email Address",

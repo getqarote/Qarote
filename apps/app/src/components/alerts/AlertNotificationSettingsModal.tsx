@@ -963,6 +963,13 @@ export function AlertNotificationSettingsModal({
                 </Alert>
               )}
 
+            {browserNotificationsEnabled &&
+              notificationPermission === "granted" && (
+                <p className="mt-2 text-xs text-muted-foreground">
+                  {t("modal.browserNotificationsSystemHint")}
+                </p>
+              )}
+
             {browserNotificationsEnabled && (
               <div className="mt-4 space-y-3 pt-4 border-t">
                 <Label className="text-sm font-medium">

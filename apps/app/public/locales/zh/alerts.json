@@ -105,6 +105,7 @@
     "permissionGranted": "已授权",
     "permissionDenied": "已屏蔽",
     "browserNotificationsBlocked": "浏览器通知已被屏蔽。要启用它们，请点击浏览器地址栏中的锁形图标，并允许该网站发送通知。",
+    "browserNotificationsSystemHint": "看不到通知？请确保在操作系统设置中也启用了浏览器的通知权限（例如 macOS：系统设置 → 通知 → Chrome）。",
     "emailNotifications": "电子邮件通知",
     "emailNotificationsDescription": "根据您的严重级别偏好接收新告警的电子邮件通知",
     "notificationEmailAddress": "通知电子邮件地址",

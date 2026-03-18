@@ -44,7 +44,8 @@
 - **[Architecture - API](./architecture-api.md)** - Technical architecture and design
 - **[API Contracts](./api-contracts-api.md)** - tRPC endpoints and integration points
 - **[Data Models](./data-models-api.md)** - PostgreSQL schema (21 models)
-- **[Alerts Notification Workflow](./alerts-notification-workflow.md)** - Alert monitoring, tracking, deduplication, and multi-channel notifications
+- **[Alerts Notification Workflow](./alerts-notification-workflow.md)** - Alert monitoring, tracking, deduplication, and multi-channel notifications (legacy — pre-unification)
+- **[Alerts Feature — Unified Table](./alerts-feature-unified-table.md)** - Full recap of the unified Alert table redesign: schema, migration phases, lifecycle, fingerprinting, notification logic, default rules, frontend changes
 
 **Key Information:**
 - **Framework:** Hono.js with tRPC for type-safe APIs
