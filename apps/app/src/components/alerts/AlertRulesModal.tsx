@@ -121,10 +121,14 @@ function AlertRuleForm({ rule, onClose, onSuccess }: AlertRuleFormProps) {
 
     try {
       if (rule) {
-        // Default rules only allow toggling enabled; sending structural
-        // fields would be rejected by the backend with FORBIDDEN.
+        // Default rules allow threshold, severity, and enabled changes;
+        // identity fields (name, type, operator) are protected.
         const updateData: UpdateAlertRuleInput = rule.isDefault
-          ? { enabled: formData.enabled }
+          ? {
+              threshold: formData.threshold,
+              severity: formData.severity,
+              enabled: formData.enabled,
+            }
           : {
               name: formData.name,
               description: formData.description || undefined,
@@ -256,7 +260,6 @@ function AlertRuleForm({ rule, onClose, onSuccess }: AlertRuleFormProps) {
               })
             }
             required
-            disabled={isDefault}
           />
         </div>
       </div>
@@ -268,7 +271,6 @@ function AlertRuleForm({ rule, onClose, onSuccess }: AlertRuleFormProps) {
           onValueChange={(value) =>
             setFormData({ ...formData, severity: value as AlertSeverity })
           }
-          disabled={isDefault}
         >
           <SelectTrigger>
             <SelectValue />
