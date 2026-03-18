@@ -211,7 +211,7 @@ describe("analyzeNodeHealth", () => {
         (a) =>
           a.category === AlertCategory.MEMORY &&
           a.severity === AlertSeverity.MEDIUM &&
-          a.title === "High Memory Usage"
+          a.title === "Moderate Memory Usage"
       );
       expect(memAlert).toBeDefined();
     });
@@ -227,7 +227,7 @@ describe("analyzeNodeHealth", () => {
         alerts.find((a) => a.title === "Critical Memory Usage")
       ).toBeUndefined();
       expect(
-        alerts.find((a) => a.title === "High Memory Usage")
+        alerts.find((a) => a.title === "Moderate Memory Usage")
       ).toBeUndefined();
     });
 
@@ -332,7 +332,7 @@ describe("analyzeNodeHealth", () => {
         (a) =>
           a.category === AlertCategory.CONNECTION &&
           a.severity === AlertSeverity.MEDIUM &&
-          a.title === "High File Descriptor Usage"
+          a.title === "Moderate File Descriptor Usage"
       );
       expect(fdAlert).toBeDefined();
     });
@@ -348,7 +348,7 @@ describe("analyzeNodeHealth", () => {
         alerts.find((a) => a.title === "Critical File Descriptor Usage")
       ).toBeUndefined();
       expect(
-        alerts.find((a) => a.title === "High File Descriptor Usage")
+        alerts.find((a) => a.title === "Moderate File Descriptor Usage")
       ).toBeUndefined();
     });
   });
@@ -381,7 +381,7 @@ describe("analyzeNodeHealth", () => {
         (a) =>
           a.category === AlertCategory.CONNECTION &&
           a.severity === AlertSeverity.MEDIUM &&
-          a.title === "High Socket Usage"
+          a.title === "Moderate Socket Usage"
       );
       expect(sockAlert).toBeDefined();
     });
@@ -415,7 +415,7 @@ describe("analyzeNodeHealth", () => {
         (a) =>
           a.category === AlertCategory.PERFORMANCE &&
           a.severity === AlertSeverity.MEDIUM &&
-          a.title === "High Process Usage"
+          a.title === "Moderate Process Usage"
       );
       expect(procAlert).toBeDefined();
     });
@@ -449,7 +449,7 @@ describe("analyzeNodeHealth", () => {
         (a) =>
           a.category === AlertCategory.PERFORMANCE &&
           a.severity === AlertSeverity.MEDIUM &&
-          a.title === "High Run Queue Length"
+          a.title === "Moderate Run Queue Length"
       );
       expect(rqAlert).toBeDefined();
     });
@@ -465,7 +465,7 @@ describe("analyzeNodeHealth", () => {
         alerts.find((a) => a.title === "Critical Run Queue Length")
       ).toBeUndefined();
       expect(
-        alerts.find((a) => a.title === "High Run Queue Length")
+        alerts.find((a) => a.title === "Moderate Run Queue Length")
       ).toBeUndefined();
     });
 
@@ -581,7 +581,7 @@ describe("analyzeQueueHealth", () => {
         (a) =>
           a.category === AlertCategory.QUEUE &&
           a.severity === AlertSeverity.MEDIUM &&
-          a.title === "High Queue Backlog"
+          a.title === "Moderate Queue Backlog"
       );
       expect(alert).toBeDefined();
     });
@@ -597,7 +597,7 @@ describe("analyzeQueueHealth", () => {
         alerts.find((a) => a.title === "Critical Queue Backlog")
       ).toBeUndefined();
       expect(
-        alerts.find((a) => a.title === "High Queue Backlog")
+        alerts.find((a) => a.title === "Moderate Queue Backlog")
       ).toBeUndefined();
     });
   });
@@ -668,7 +668,7 @@ describe("analyzeQueueHealth", () => {
         (a) =>
           a.category === AlertCategory.QUEUE &&
           a.severity === AlertSeverity.MEDIUM &&
-          a.title === "High Unacknowledged Messages"
+          a.title === "Moderate Unacknowledged Messages"
       );
       expect(alert).toBeDefined();
     });

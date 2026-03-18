@@ -10,15 +10,21 @@
 export type AlertType =
   | "QUEUE_DEPTH"
   | "MESSAGE_RATE"
+  | "UNACKED_MESSAGES"
   | "CONSUMER_COUNT"
+  | "CONSUMER_UTILIZATION"
   | "MEMORY_USAGE"
   | "DISK_USAGE"
   | "CONNECTION_COUNT"
   | "CHANNEL_COUNT"
+  | "FILE_DESCRIPTOR_USAGE"
   | "NODE_DOWN"
-  | "EXCHANGE_ERROR";
+  | "EXCHANGE_ERROR"
+  | "SOCKET_USAGE"
+  | "PROCESS_USAGE"
+  | "RUN_QUEUE_LENGTH";
 
-export type AlertSeverity = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+export type AlertSeverity = "INFO" | "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
 type AlertStatus = "ACTIVE" | "ACKNOWLEDGED" | "RESOLVED";
 export type ComparisonOperator =
   | "GREATER_THAN"

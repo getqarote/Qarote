@@ -118,6 +118,8 @@ class AlertHealthService {
 
     return {
       clusterHealth,
+      // Health check only classifies into critical/medium — other levels
+      // are not produced by the health summarizer (intentionally simplified).
       summary: {
         critical: criticalIssues,
         high: 0,

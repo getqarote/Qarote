@@ -171,27 +171,24 @@ interface RabbitMQAlert {
   };
 }
 
+interface MetricThresholds {
+  info?: number;
+  low?: number;
+  medium?: number;
+  high?: number;
+  critical?: number;
+}
+
 interface AlertThresholds {
-  memory: {
-    warning: number;
-    critical: number;
-  };
-  disk: {
-    warning: number;
-    critical: number;
-  };
-  fileDescriptors: {
-    warning: number;
-    critical: number;
-  };
-  queueMessages: {
-    warning: number;
-    critical: number;
-  };
-  connections: {
-    warning: number;
-    critical: number;
-  };
+  memory: MetricThresholds;
+  disk: MetricThresholds;
+  fileDescriptors: MetricThresholds;
+  sockets: MetricThresholds;
+  processes: MetricThresholds;
+  queueMessages: MetricThresholds;
+  unackedMessages: MetricThresholds;
+  consumerUtilization: MetricThresholds;
+  runQueue: MetricThresholds;
 }
 
 type _AlertsResponse = {
@@ -609,28 +606,8 @@ interface RabbitMQAlert {
   };
 }
 
-interface AlertThresholds {
-  memory: {
-    warning: number;
-    critical: number;
-  };
-  disk: {
-    warning: number;
-    critical: number;
-  };
-  fileDescriptors: {
-    warning: number;
-    critical: number;
-  };
-  queueMessages: {
-    warning: number;
-    critical: number;
-  };
-  connections: {
-    warning: number;
-    critical: number;
-  };
-}
+// _AlertsResponse2, _AlertsSummaryResponse2 use the same AlertThresholds
+// defined above (MetricThresholds-based, 5-level).
 
 type _AlertsResponse2 = {
   success: boolean;
@@ -660,17 +637,4 @@ type _AlertsSummaryResponse2 = {
   };
   issues: string[];
   timestamp: string;
-};
-
-type _ThresholdsResponse = {
-  success: boolean;
-  thresholds: AlertThresholds;
-  canModify: boolean;
-  defaults: AlertThresholds;
-};
-
-type _UpdateThresholdsResponse = {
-  success: boolean;
-  message: string;
-  thresholds: AlertThresholds;
 };

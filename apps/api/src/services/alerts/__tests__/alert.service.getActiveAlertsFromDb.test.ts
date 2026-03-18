@@ -33,8 +33,8 @@ vi.mock("@/services/alerts/alert.notification", () => ({
   alertNotificationService: { trackAndNotifyNewAlerts: vi.fn() },
 }));
 
-vi.mock("@/services/alerts/alert.thresholds", () => ({
-  alertThresholdsService: { getWorkspaceThresholds: vi.fn() },
+vi.mock("@/services/alerts/alert.rule-adapter", () => ({
+  loadThresholdsForServer: vi.fn(),
 }));
 
 vi.mock("@/services/alerts/alert.health", () => ({

@@ -62,7 +62,7 @@ function getMatchedThreshold(
 const SEVERITY_TITLE_PREFIX: Record<AlertSeverity, string> = {
   CRITICAL: "Critical",
   HIGH: "High",
-  MEDIUM: "High",
+  MEDIUM: "Moderate",
   LOW: "Elevated",
   INFO: "Notable",
 };
