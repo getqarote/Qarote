@@ -517,14 +517,16 @@ export function AlertRulesModal({ isOpen, onClose }: AlertRulesModalProps) {
                       >
                         <Settings className="h-4 w-4" />
                       </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDeleteClick(rule)}
-                        disabled={deleteMutation.isPending}
-                      >
-                        <Trash2 className="h-4 w-4 text-red-500" />
-                      </Button>
+                      {!rule.isDefault && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDeleteClick(rule)}
+                          disabled={deleteMutation.isPending}
+                        >
+                          <Trash2 className="h-4 w-4 text-red-500" />
+                        </Button>
+                      )}
                     </div>
                   </div>
                 ))}
