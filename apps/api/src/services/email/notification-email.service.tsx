@@ -361,9 +361,9 @@ export class NotificationEmailService {
 
     // Determine subject line based on alert severity
     const criticalCount = alerts.filter(
-      (a) => a.severity === "critical"
+      (a) => a.severity === "CRITICAL" || a.severity === "HIGH"
     ).length;
-    const warningCount = alerts.filter((a) => a.severity === "warning").length;
+    const warningCount = alerts.filter((a) => a.severity === "MEDIUM").length;
 
     let subject: string;
     if (criticalCount > 0) {

@@ -154,9 +154,11 @@ export class WebhookService {
     // Calculate summary
     const summary = {
       total: alerts.length,
-      critical: alerts.filter((a) => a.severity === "critical").length,
-      warning: alerts.filter((a) => a.severity === "warning").length,
-      info: alerts.filter((a) => a.severity === "info").length,
+      critical: alerts.filter((a) => a.severity === "CRITICAL").length,
+      high: alerts.filter((a) => a.severity === "HIGH").length,
+      medium: alerts.filter((a) => a.severity === "MEDIUM").length,
+      low: alerts.filter((a) => a.severity === "LOW").length,
+      info: alerts.filter((a) => a.severity === "INFO").length,
     };
 
     // Create payload

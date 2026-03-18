@@ -7,7 +7,7 @@
  */
 
 // Export all types for external use (types are still needed)
-export type * from "./authTypes";
+export * from "./authTypes";
 export type * from "./logTypes";
 export type * from "./messageTypes";
 export type * from "./planClient";

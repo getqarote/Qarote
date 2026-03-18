@@ -75,6 +75,26 @@ services:
     networks:
       - qarote_network
 
+  alert-worker:
+    build:
+      context: .
+      dockerfile: ./apps/api/Dockerfile
+    container_name: qarote_alert_worker
+    restart: unless-stopped
+    command: ["pnpm", "run", "start:alert"]
+    environment:
+      TZ: UTC
+      DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD}@postgres:5432/qarote
+      DATABASE_POOL_SIZE: ${DATABASE_POOL_SIZE:-10}
+      JWT_SECRET: ${JWT_SECRET}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+      ALERT_CHECK_INTERVAL_MS: ${ALERT_CHECK_INTERVAL_MS:-300000}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - qarote_network
+
   frontend:
     build:
       context: .

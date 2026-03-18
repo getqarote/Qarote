@@ -26,12 +26,12 @@ vi.mock("@/core/logger", () => ({
 vi.mock("@/core/prisma", () => ({
   prisma: {
     workspace: { findUnique: vi.fn() },
-    seenAlert: {
+    alert: {
       findMany: vi.fn(),
-      upsert: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
       updateMany: vi.fn(),
     },
-    resolvedAlert: { create: vi.fn() },
     webhook: { findFirst: vi.fn() },
     slackConfig: { findFirst: vi.fn() },
   },
@@ -94,7 +94,7 @@ function makeAlert(overrides: Partial<RabbitMQAlert> = {}): RabbitMQAlert {
     id: "alert-id-1",
     serverId: SERVER_ID,
     serverName: SERVER_NAME,
-    severity: AlertSeverity.WARNING,
+    severity: AlertSeverity.MEDIUM,
     category: AlertCategory.MEMORY,
     title: "High Memory Usage",
     description: "Memory usage is high",
@@ -111,8 +111,36 @@ function makeWorkspace(overrides: Record<string, unknown> = {}) {
     contactEmail: "admin@example.com",
     name: "My Workspace",
     emailNotificationsEnabled: true,
-    notificationSeverities: null, // null = use default ["critical", "warning"]
+    notificationSeverities: null, // null = use default ["CRITICAL", "HIGH", "MEDIUM"]
     notificationServerIds: null, // null = notify all servers
+    ...overrides,
+  };
+}
+
+/** Active Alert row shape returned by the first findMany call. */
+function makeActiveAlertRow(
+  fingerprint: string,
+  overrides: Record<string, unknown> = {}
+) {
+  return {
+    id: `alert-${fingerprint}`,
+    fingerprint,
+    emailSentAt: null as Date | null,
+    firstSeenAt: new Date(Date.now() - 30 * 60 * 1000),
+    ...overrides,
+  };
+}
+
+/** Unresolved Alert row shape returned by the second findMany call (for auto-resolution). */
+function makeUnresolvedAlertRow(
+  fingerprint: string,
+  overrides: Record<string, unknown> = {}
+) {
+  return {
+    fingerprint,
+    sourceType: "node",
+    sourceName: "rabbit@node1",
+    firstSeenAt: new Date(Date.now() - 30 * 60 * 1000),
     ...overrides,
   };
 }
@@ -120,12 +148,12 @@ function makeWorkspace(overrides: Record<string, unknown> = {}) {
 // Shorthand to cast prisma mock fields
 const mockPrisma = prisma as unknown as {
   workspace: { findUnique: MockInstance };
-  seenAlert: {
+  alert: {
     findMany: MockInstance;
-    upsert: MockInstance;
+    create: MockInstance;
+    update: MockInstance;
     updateMany: MockInstance;
   };
-  resolvedAlert: { create: MockInstance };
   webhook: { findFirst: MockInstance };
   slackConfig: { findFirst: MockInstance };
 };
@@ -147,8 +175,8 @@ function setupDefaults({
   webhookEnabled = false,
   slackEnabled = false,
   workspace = makeWorkspace(),
-  seenAlerts = [] as unknown[],
-  unresolvedSeenAlerts = [] as unknown[],
+  activeAlerts = [] as unknown[], // existing ACTIVE Alert rows (first findMany)
+  unresolvedAlerts = [] as unknown[], // all ACTIVE Alert rows for auto-resolution (second findMany)
 } = {}) {
   mockIsFeatureEnabled.mockImplementation((feature: string) => {
     if (feature === "alerting") return Promise.resolve(alertingEnabled);
@@ -160,14 +188,15 @@ function setupDefaults({
 
   mockPrisma.workspace.findUnique.mockResolvedValue(workspace);
 
-  // First call: seenAlerts for tracking; second call: unresolvedSeenAlerts for auto-resolution
-  mockPrisma.seenAlert.findMany
-    .mockResolvedValueOnce(seenAlerts)
-    .mockResolvedValueOnce(unresolvedSeenAlerts);
+  // First call: activeAlerts for notification cooldown tracking
+  // Second call: unresolvedAlerts for auto-resolution
+  mockPrisma.alert.findMany
+    .mockResolvedValueOnce(activeAlerts)
+    .mockResolvedValueOnce(unresolvedAlerts);
 
-  mockPrisma.seenAlert.upsert.mockResolvedValue({});
-  mockPrisma.seenAlert.updateMany.mockResolvedValue({ count: 1 });
-  mockPrisma.resolvedAlert.create.mockResolvedValue({});
+  mockPrisma.alert.create.mockResolvedValue({ id: "new-alert-id" });
+  mockPrisma.alert.update.mockResolvedValue({});
+  mockPrisma.alert.updateMany.mockResolvedValue({ count: 1 });
   mockPrisma.webhook.findFirst.mockResolvedValue(null);
   mockPrisma.slackConfig.findFirst.mockResolvedValue(null);
   mockSendEmail.mockResolvedValue(undefined);
@@ -202,8 +231,8 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
         SERVER_NAME
       );
 
-      expect(mockPrisma.seenAlert.findMany).not.toHaveBeenCalled();
-      expect(mockPrisma.seenAlert.upsert).not.toHaveBeenCalled();
+      expect(mockPrisma.alert.findMany).not.toHaveBeenCalled();
+      expect(mockPrisma.alert.create).not.toHaveBeenCalled();
     });
   });
 
@@ -212,8 +241,8 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
   // -------------------------------------------------------------------------
 
   describe("alert tracking", () => {
-    it("creates a SeenAlert record for a brand-new alert", async () => {
-      setupDefaults({ seenAlerts: [] });
+    it("creates an Alert record for a brand-new alert", async () => {
+      setupDefaults({ activeAlerts: [] });
 
       await alertNotificationService.trackAndNotifyNewAlerts(
         [makeAlert()],
@@ -222,25 +251,20 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
         SERVER_NAME
       );
 
-      expect(mockPrisma.seenAlert.upsert).toHaveBeenCalledOnce();
-      const created = mockPrisma.seenAlert.upsert.mock.calls[0][0].create;
+      expect(mockPrisma.alert.create).toHaveBeenCalledOnce();
+      const created = mockPrisma.alert.create.mock.calls[0][0].data;
       expect(created.serverId).toBe(SERVER_ID);
       expect(created.workspaceId).toBe(WORKSPACE_ID);
       expect(created.category).toBe(AlertCategory.MEMORY);
       expect(created.sourceType).toBe("node");
       expect(created.sourceName).toBe("rabbit@node1");
-      expect(created.resolvedAt).toBeNull();
+      expect(created.status).toBe("ACTIVE");
     });
 
     it("updates lastSeenAt for an existing alert and clears resolvedAt", async () => {
-      const existingSeenAlert = {
-        fingerprint: `${SERVER_ID}-memory-node-rabbit@node1`,
-        emailSentAt: new Date(),
-        resolvedAt: null,
-        lastSeenAt: new Date(),
-        firstSeenAt: new Date(),
-      };
-      setupDefaults({ seenAlerts: [existingSeenAlert] });
+      const fingerprint = `${SERVER_ID}-memory-node-rabbit@node1`;
+      const existingActiveRow = makeActiveAlertRow(fingerprint);
+      setupDefaults({ activeAlerts: [existingActiveRow] });
 
       await alertNotificationService.trackAndNotifyNewAlerts(
         [makeAlert()],
@@ -249,15 +273,22 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
         SERVER_NAME
       );
 
-      expect(mockPrisma.seenAlert.upsert).toHaveBeenCalledWith(
+      // Code uses updateMany with conditional predicate to guard against concurrent resolution
+      expect(mockPrisma.alert.updateMany).toHaveBeenCalledWith(
         expect.objectContaining({
-          update: expect.objectContaining({ resolvedAt: null }),
+          where: expect.objectContaining({ id: existingActiveRow.id }),
+          data: expect.objectContaining({
+            lastSeenAt: expect.any(Date),
+            resolvedAt: null,
+          }),
         })
       );
+      // Should not create a new row since one already exists
+      expect(mockPrisma.alert.create).not.toHaveBeenCalled();
     });
 
     it("tracks alerts even when alerting feature is disabled (community mode)", async () => {
-      setupDefaults({ alertingEnabled: false, seenAlerts: [] });
+      setupDefaults({ alertingEnabled: false, activeAlerts: [] });
 
       await alertNotificationService.trackAndNotifyNewAlerts(
         [makeAlert()],
@@ -266,11 +297,11 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
         SERVER_NAME
       );
 
-      expect(mockPrisma.seenAlert.upsert).toHaveBeenCalledOnce();
+      expect(mockPrisma.alert.create).toHaveBeenCalledOnce();
     });
 
     it("tracks info alerts in the database even though they are excluded from notifications by default", async () => {
-      setupDefaults({ seenAlerts: [] });
+      setupDefaults({ activeAlerts: [] });
       const infoAlert = makeAlert({ severity: AlertSeverity.INFO });
 
       await alertNotificationService.trackAndNotifyNewAlerts(
@@ -280,7 +311,7 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
         SERVER_NAME
       );
 
-      expect(mockPrisma.seenAlert.upsert).toHaveBeenCalledOnce();
+      expect(mockPrisma.alert.create).toHaveBeenCalledOnce();
     });
   });
 
@@ -290,7 +321,7 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
 
   describe("new alert notification", () => {
     it("sends email for a brand-new critical alert", async () => {
-      setupDefaults({ seenAlerts: [] });
+      setupDefaults({ activeAlerts: [] });
 
       await alertNotificationService.trackAndNotifyNewAlerts(
         [makeAlert({ severity: AlertSeverity.CRITICAL })],
@@ -303,10 +334,10 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
     });
 
     it("sends email for a brand-new warning alert", async () => {
-      setupDefaults({ seenAlerts: [] });
+      setupDefaults({ activeAlerts: [] });
 
       await alertNotificationService.trackAndNotifyNewAlerts(
-        [makeAlert({ severity: AlertSeverity.WARNING })],
+        [makeAlert({ severity: AlertSeverity.MEDIUM })],
         WORKSPACE_ID,
         SERVER_ID,
         SERVER_NAME
@@ -316,7 +347,7 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
     });
 
     it("does NOT send email for a brand-new info alert (excluded by default severity filter)", async () => {
-      setupDefaults({ seenAlerts: [] });
+      setupDefaults({ activeAlerts: [] });
 
       await alertNotificationService.trackAndNotifyNewAlerts(
         [makeAlert({ severity: AlertSeverity.INFO })],
@@ -330,9 +361,9 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
 
     it("sends email for info alerts when workspace explicitly enables info severity", async () => {
       setupDefaults({
-        seenAlerts: [],
+        activeAlerts: [],
         workspace: makeWorkspace({
-          notificationSeverities: ["critical", "warning", "info"],
+          notificationSeverities: ["CRITICAL", "HIGH", "MEDIUM", "LOW", "INFO"],
         }),
       });
 
@@ -353,14 +384,12 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
 
   describe("cooldown period", () => {
     it("does NOT send email for an ongoing alert within the 7-day cooldown", async () => {
-      const recentlySeen = {
-        fingerprint: `${SERVER_ID}-memory-node-rabbit@node1`,
+      const fingerprint = `${SERVER_ID}-memory-node-rabbit@node1`;
+      const recentlySeen = makeActiveAlertRow(fingerprint, {
         emailSentAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // 1 day ago
-        resolvedAt: null,
-        lastSeenAt: new Date(),
         firstSeenAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-      };
-      setupDefaults({ seenAlerts: [recentlySeen] });
+      });
+      setupDefaults({ activeAlerts: [recentlySeen] });
 
       await alertNotificationService.trackAndNotifyNewAlerts(
         [makeAlert()],
@@ -374,14 +403,12 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
 
     it("sends email again after the 7-day cooldown expires", async () => {
       const eightDaysAgo = new Date(Date.now() - 8 * 24 * 60 * 60 * 1000);
-      const oldSeenAlert = {
-        fingerprint: `${SERVER_ID}-memory-node-rabbit@node1`,
+      const fingerprint = `${SERVER_ID}-memory-node-rabbit@node1`;
+      const oldActiveRow = makeActiveAlertRow(fingerprint, {
         emailSentAt: eightDaysAgo,
-        resolvedAt: null,
-        lastSeenAt: new Date(),
         firstSeenAt: eightDaysAgo,
-      };
-      setupDefaults({ seenAlerts: [oldSeenAlert] });
+      });
+      setupDefaults({ activeAlerts: [oldActiveRow] });
 
       await alertNotificationService.trackAndNotifyNewAlerts(
         [makeAlert()],
@@ -396,14 +423,12 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
     it("uses firstSeenAt as the cooldown reference when emailSentAt is null", async () => {
       // Alert was seen 8 days ago but no email was ever sent (e.g. notifications were off)
       const eightDaysAgo = new Date(Date.now() - 8 * 24 * 60 * 60 * 1000);
-      const seenNoEmail = {
-        fingerprint: `${SERVER_ID}-memory-node-rabbit@node1`,
+      const fingerprint = `${SERVER_ID}-memory-node-rabbit@node1`;
+      const seenNoEmail = makeActiveAlertRow(fingerprint, {
         emailSentAt: null,
-        resolvedAt: null,
-        lastSeenAt: new Date(),
         firstSeenAt: eightDaysAgo,
-      };
-      setupDefaults({ seenAlerts: [seenNoEmail] });
+      });
+      setupDefaults({ activeAlerts: [seenNoEmail] });
 
       await alertNotificationService.trackAndNotifyNewAlerts(
         [makeAlert()],
@@ -417,14 +442,12 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
 
     it("does NOT send when firstSeenAt is recent and emailSentAt is null", async () => {
       const oneDayAgo = new Date(Date.now() - 1 * 24 * 60 * 60 * 1000);
-      const seenNoEmail = {
-        fingerprint: `${SERVER_ID}-memory-node-rabbit@node1`,
+      const fingerprint = `${SERVER_ID}-memory-node-rabbit@node1`;
+      const seenNoEmail = makeActiveAlertRow(fingerprint, {
         emailSentAt: null,
-        resolvedAt: null,
-        lastSeenAt: new Date(),
         firstSeenAt: oneDayAgo,
-      };
-      setupDefaults({ seenAlerts: [seenNoEmail] });
+      });
+      setupDefaults({ activeAlerts: [seenNoEmail] });
 
       await alertNotificationService.trackAndNotifyNewAlerts(
         [makeAlert()],
@@ -443,14 +466,11 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
 
   describe("resolved alert returning", () => {
     it("sends email when a previously resolved alert comes back", async () => {
-      const resolvedAlert = {
-        fingerprint: `${SERVER_ID}-memory-node-rabbit@node1`,
-        emailSentAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // within cooldown
-        resolvedAt: new Date(Date.now() - 12 * 60 * 60 * 1000), // was resolved 12h ago
-        lastSeenAt: new Date(Date.now() - 12 * 60 * 60 * 1000),
-        firstSeenAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-      };
-      setupDefaults({ seenAlerts: [resolvedAlert] });
+      // In the unified Alert table, a resolved alert has fingerprint=NULL and
+      // status=RESOLVED. When the alert re-fires, no ACTIVE row exists for
+      // that fingerprint, so isNew=true and a new notification is sent even
+      // if the cooldown would have prevented it for an ongoing alert.
+      setupDefaults({ activeAlerts: [] }); // no active row → isNew=true
 
       await alertNotificationService.trackAndNotifyNewAlerts(
         [makeAlert()],
@@ -459,13 +479,9 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
         SERVER_NAME
       );
 
-      // resolvedAt is cleared in DB via upsert
-      expect(mockPrisma.seenAlert.upsert).toHaveBeenCalledWith(
-        expect.objectContaining({
-          update: expect.objectContaining({ resolvedAt: null }),
-        })
-      );
-      // Email should be sent
+      // A new Alert row is created for the re-fired alert
+      expect(mockPrisma.alert.create).toHaveBeenCalledOnce();
+      // Email is sent because isNew=true
       expect(mockSendEmail).toHaveBeenCalledOnce();
     });
   });
@@ -477,7 +493,7 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
   describe("workspace notification settings", () => {
     it("does NOT send email when emailNotificationsEnabled is false", async () => {
       setupDefaults({
-        seenAlerts: [],
+        activeAlerts: [],
         workspace: makeWorkspace({ emailNotificationsEnabled: false }),
       });
 
@@ -493,7 +509,7 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
 
     it("does NOT send email when contactEmail is null", async () => {
       setupDefaults({
-        seenAlerts: [],
+        activeAlerts: [],
         workspace: makeWorkspace({ contactEmail: null }),
       });
 
@@ -509,7 +525,7 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
 
     it("does NOT send email when serverId is not in notificationServerIds", async () => {
       setupDefaults({
-        seenAlerts: [],
+        activeAlerts: [],
         workspace: makeWorkspace({ notificationServerIds: ["server-other"] }),
       });
 
@@ -525,7 +541,7 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
 
     it("sends email when notificationServerIds is an empty array (notify all servers)", async () => {
       setupDefaults({
-        seenAlerts: [],
+        activeAlerts: [],
         workspace: makeWorkspace({ notificationServerIds: [] }),
       });
 
@@ -541,7 +557,7 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
 
     it("sends email when serverId is in notificationServerIds", async () => {
       setupDefaults({
-        seenAlerts: [],
+        activeAlerts: [],
         workspace: makeWorkspace({
           notificationServerIds: [SERVER_ID, "server-other"],
         }),
@@ -559,7 +575,7 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
 
     it("sends webhook even when email notifications are disabled", async () => {
       setupDefaults({
-        seenAlerts: [],
+        activeAlerts: [],
         webhookEnabled: true,
         workspace: makeWorkspace({ emailNotificationsEnabled: false }),
       });
@@ -583,7 +599,7 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
 
     it("sends Slack even when email notifications are disabled", async () => {
       setupDefaults({
-        seenAlerts: [],
+        activeAlerts: [],
         slackEnabled: true,
         workspace: makeWorkspace({ emailNotificationsEnabled: false }),
       });
@@ -610,7 +626,7 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
 
   describe("feature flag gating", () => {
     it("does NOT send any notifications when ALERTING feature is disabled", async () => {
-      setupDefaults({ alertingEnabled: false, seenAlerts: [] });
+      setupDefaults({ alertingEnabled: false, activeAlerts: [] });
 
       await alertNotificationService.trackAndNotifyNewAlerts(
         [makeAlert()],
@@ -625,7 +641,7 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
     });
 
     it("does NOT send webhook when WEBHOOK_INTEGRATION feature is disabled", async () => {
-      setupDefaults({ seenAlerts: [], webhookEnabled: false });
+      setupDefaults({ activeAlerts: [], webhookEnabled: false });
       mockPrisma.webhook.findFirst.mockResolvedValue({
         id: "wh-1",
         url: "https://example.com/hook",
@@ -644,7 +660,7 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
     });
 
     it("sends webhook when WEBHOOK_INTEGRATION feature is enabled and webhook exists", async () => {
-      setupDefaults({ seenAlerts: [], webhookEnabled: true });
+      setupDefaults({ activeAlerts: [], webhookEnabled: true });
       mockPrisma.webhook.findFirst.mockResolvedValue({
         id: "wh-1",
         url: "https://example.com/hook",
@@ -663,7 +679,7 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
     });
 
     it("does NOT send Slack when SLACK_INTEGRATION feature is disabled", async () => {
-      setupDefaults({ seenAlerts: [], slackEnabled: false });
+      setupDefaults({ activeAlerts: [], slackEnabled: false });
       mockPrisma.slackConfig.findFirst.mockResolvedValue({
         id: "slack-1",
         webhookUrl: "https://hooks.slack.com/test",
@@ -680,7 +696,7 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
     });
 
     it("sends Slack when SLACK_INTEGRATION feature is enabled and config exists", async () => {
-      setupDefaults({ seenAlerts: [], slackEnabled: true });
+      setupDefaults({ activeAlerts: [], slackEnabled: true });
       mockPrisma.slackConfig.findFirst.mockResolvedValue({
         id: "slack-1",
         webhookUrl: "https://hooks.slack.com/test",
@@ -698,12 +714,12 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
   });
 
   // -------------------------------------------------------------------------
-  // serverName param correctness (fix for shadowing bug)
+  // serverName param correctness
   // -------------------------------------------------------------------------
 
   describe("serverName parameter usage", () => {
     it("passes the serverName function parameter to the email service", async () => {
-      setupDefaults({ seenAlerts: [] });
+      setupDefaults({ activeAlerts: [] });
 
       await alertNotificationService.trackAndNotifyNewAlerts(
         [makeAlert()],
@@ -720,7 +736,7 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
     });
 
     it("passes the serverName function parameter to the webhook service", async () => {
-      setupDefaults({ seenAlerts: [], webhookEnabled: true });
+      setupDefaults({ activeAlerts: [], webhookEnabled: true });
       mockPrisma.webhook.findFirst.mockResolvedValue({
         id: "wh-1",
         url: "https://example.com/hook",
@@ -746,7 +762,7 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
     });
 
     it("passes the serverName function parameter to the Slack service", async () => {
-      setupDefaults({ seenAlerts: [], slackEnabled: true });
+      setupDefaults({ activeAlerts: [], slackEnabled: true });
       mockPrisma.slackConfig.findFirst.mockResolvedValue({
         id: "slack-1",
         webhookUrl: "https://hooks.slack.com/test",
@@ -775,8 +791,8 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
   // -------------------------------------------------------------------------
 
   describe("emailSentAt tracking", () => {
-    it("marks alerts as emailSentAt after a successful email send", async () => {
-      setupDefaults({ seenAlerts: [] });
+    it("stamps emailSentAt by alert ID (not fingerprint+status) after a successful email send", async () => {
+      setupDefaults({ activeAlerts: [] });
 
       await alertNotificationService.trackAndNotifyNewAlerts(
         [makeAlert()],
@@ -785,16 +801,29 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
         SERVER_NAME
       );
 
-      const emailSentUpdate = mockPrisma.seenAlert.updateMany.mock.calls.find(
+      // Must use update(id) — NOT updateMany(fingerprint+status) — to avoid the
+      // race where the alert resolves between email send and stamp.
+      const emailSentUpdateMany = mockPrisma.alert.updateMany.mock.calls.find(
+        (call: unknown[]) =>
+          (call[0] as { data: { emailSentAt?: unknown } }).data?.emailSentAt !==
+          undefined
+      );
+      expect(emailSentUpdateMany).toBeUndefined();
+
+      const emailSentUpdate = mockPrisma.alert.update.mock.calls.find(
         (call: unknown[]) =>
           (call[0] as { data: { emailSentAt?: unknown } }).data?.emailSentAt !==
           undefined
       );
       expect(emailSentUpdate).toBeDefined();
+      // Must be stamped by ID, not fingerprint+status
+      expect(
+        (emailSentUpdate![0] as { where: { id?: string } }).where.id
+      ).toBeDefined();
     });
 
     it("does NOT update emailSentAt when email send fails", async () => {
-      setupDefaults({ seenAlerts: [] });
+      setupDefaults({ activeAlerts: [] });
       mockSendEmail.mockRejectedValue(new Error("SMTP error"));
 
       await alertNotificationService.trackAndNotifyNewAlerts(
@@ -804,7 +833,15 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
         SERVER_NAME
       );
 
-      const emailSentUpdate = mockPrisma.seenAlert.updateMany.mock.calls.find(
+      // Neither update nor updateMany should stamp emailSentAt on failure
+      const emailSentUpdateMany = mockPrisma.alert.updateMany.mock.calls.find(
+        (call: unknown[]) =>
+          (call[0] as { data: { emailSentAt?: unknown } }).data?.emailSentAt !==
+          undefined
+      );
+      expect(emailSentUpdateMany).toBeUndefined();
+
+      const emailSentUpdate = mockPrisma.alert.update.mock.calls.find(
         (call: unknown[]) =>
           (call[0] as { data: { emailSentAt?: unknown } }).data?.emailSentAt !==
           undefined
@@ -818,22 +855,14 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
   // -------------------------------------------------------------------------
 
   describe("auto-resolution", () => {
-    it("marks an alert as resolved when it disappears from the active list", async () => {
+    it("resolves an alert via updateMany when it disappears from the active list", async () => {
       const fingerprint = `${SERVER_ID}-memory-node-rabbit@node1`;
-      const unresolvedSeen = {
-        fingerprint,
-        severity: "warning",
-        category: "memory",
-        sourceType: "node",
-        sourceName: "rabbit@node1",
-        firstSeenAt: new Date(Date.now() - 30 * 60 * 1000),
-      };
       setupDefaults({
-        seenAlerts: [],
-        unresolvedSeenAlerts: [unresolvedSeen],
+        activeAlerts: [],
+        unresolvedAlerts: [makeUnresolvedAlertRow(fingerprint)],
       });
 
-      // Pass an empty alerts array — nothing active, so the seen alert should resolve
+      // Pass an empty alerts array — nothing active, so the alert should resolve
       await alertNotificationService.trackAndNotifyNewAlerts(
         [],
         WORKSPACE_ID,
@@ -841,43 +870,13 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
         SERVER_NAME
       );
 
-      expect(mockPrisma.seenAlert.updateMany).toHaveBeenCalledWith(
+      expect(mockPrisma.alert.updateMany).toHaveBeenCalledWith(
         expect.objectContaining({
-          data: expect.objectContaining({ resolvedAt: expect.any(Date) }),
-        })
-      );
-    });
-
-    it("creates a ResolvedAlert record with correct serverName when an alert resolves", async () => {
-      const fingerprint = `${SERVER_ID}-memory-node-rabbit@node1`;
-      const unresolvedSeen = {
-        fingerprint,
-        severity: "critical",
-        category: "memory",
-        sourceType: "node",
-        sourceName: "rabbit@node1",
-        firstSeenAt: new Date(Date.now() - 60 * 60 * 1000),
-      };
-      setupDefaults({
-        seenAlerts: [],
-        unresolvedSeenAlerts: [unresolvedSeen],
-      });
-
-      await alertNotificationService.trackAndNotifyNewAlerts(
-        [],
-        WORKSPACE_ID,
-        SERVER_ID,
-        "Resolution Server Name"
-      );
-
-      expect(mockPrisma.resolvedAlert.create).toHaveBeenCalledWith(
-        expect.objectContaining({
+          where: expect.objectContaining({ fingerprint, status: "ACTIVE" }),
           data: expect.objectContaining({
-            serverName: "Resolution Server Name",
-            serverId: SERVER_ID,
-            workspaceId: WORKSPACE_ID,
-            severity: "critical",
-            category: "memory",
+            status: "RESOLVED",
+            resolvedAt: expect.any(Date),
+            fingerprint: null, // releases partial unique index slot
           }),
         })
       );
@@ -885,17 +884,9 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
 
     it("does NOT resolve an alert that is still active", async () => {
       const fingerprint = `${SERVER_ID}-memory-node-rabbit@node1`;
-      const unresolvedSeen = {
-        fingerprint,
-        severity: "warning",
-        category: "memory",
-        sourceType: "node",
-        sourceName: "rabbit@node1",
-        firstSeenAt: new Date(Date.now() - 10 * 60 * 1000),
-      };
       setupDefaults({
-        seenAlerts: [],
-        unresolvedSeenAlerts: [unresolvedSeen],
+        activeAlerts: [],
+        unresolvedAlerts: [makeUnresolvedAlertRow(fingerprint)],
       });
 
       // The alert IS still active in the current list
@@ -906,30 +897,24 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
         SERVER_NAME
       );
 
-      // resolvedAt should only have been set to null (clearing), not to a date value
-      const resolveUpdate = mockPrisma.seenAlert.updateMany.mock.calls.find(
+      // No updateMany call with status=RESOLVED
+      const resolveUpdate = mockPrisma.alert.updateMany.mock.calls.find(
         (call: unknown[]) => {
-          const data = (call[0] as { data: { resolvedAt?: unknown } }).data;
-          return data?.resolvedAt instanceof Date;
+          const data = (call[0] as { data: { status?: unknown } }).data;
+          return data?.status === "RESOLVED";
         }
       );
       expect(resolveUpdate).toBeUndefined();
     });
 
-    it("calculates a positive duration for the ResolvedAlert record", async () => {
+    it("calculates a positive duration when resolving", async () => {
       const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
       const fingerprint = `${SERVER_ID}-memory-node-rabbit@node1`;
-      const unresolvedSeen = {
-        fingerprint,
-        severity: "warning",
-        category: "memory",
-        sourceType: "node",
-        sourceName: "rabbit@node1",
-        firstSeenAt: tenMinutesAgo,
-      };
       setupDefaults({
-        seenAlerts: [],
-        unresolvedSeenAlerts: [unresolvedSeen],
+        activeAlerts: [],
+        unresolvedAlerts: [
+          makeUnresolvedAlertRow(fingerprint, { firstSeenAt: tenMinutesAgo }),
+        ],
       });
 
       await alertNotificationService.trackAndNotifyNewAlerts(
@@ -939,8 +924,13 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
         SERVER_NAME
       );
 
-      const createCall = mockPrisma.resolvedAlert.create.mock.calls[0][0];
-      expect(createCall.data.duration).toBeGreaterThan(0);
+      const resolveCall = mockPrisma.alert.updateMany.mock.calls.find(
+        (call: unknown[]) => {
+          const data = (call[0] as { data: { status?: unknown } }).data;
+          return data?.status === "RESOLVED";
+        }
+      );
+      expect(resolveCall?.[0].data.duration).toBeGreaterThan(0);
     });
   });
 
@@ -949,26 +939,21 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
   // -------------------------------------------------------------------------
 
   describe("vhost-scoped auto-resolution", () => {
-    function makeQueueSeenAlert(
+    function makeQueueUnresolvedRow(
       vhost: string,
       overrides: Record<string, unknown> = {}
     ) {
       // Fingerprint format: ${serverId}-${category}-queue-${vhost}-${sourceName}
-      return {
-        fingerprint: `${SERVER_ID}-memory-queue-${vhost}-myqueue`,
-        severity: "warning",
-        category: "memory",
-        sourceType: "queue",
-        sourceName: "myqueue",
-        firstSeenAt: new Date(Date.now() - 30 * 60 * 1000),
-        ...overrides,
-      };
+      return makeUnresolvedAlertRow(
+        `${SERVER_ID}-memory-queue-${vhost}-myqueue`,
+        { sourceType: "queue", sourceName: "myqueue", ...overrides }
+      );
     }
 
     it("resolves queue alerts that match the specified vhost", async () => {
       setupDefaults({
-        seenAlerts: [],
-        unresolvedSeenAlerts: [makeQueueSeenAlert("default")],
+        activeAlerts: [],
+        unresolvedAlerts: [makeQueueUnresolvedRow("default")],
       });
 
       await alertNotificationService.trackAndNotifyNewAlerts(
@@ -979,17 +964,17 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
         "default"
       );
 
-      expect(mockPrisma.seenAlert.updateMany).toHaveBeenCalledWith(
+      expect(mockPrisma.alert.updateMany).toHaveBeenCalledWith(
         expect.objectContaining({
-          data: expect.objectContaining({ resolvedAt: expect.any(Date) }),
+          data: expect.objectContaining({ status: "RESOLVED" }),
         })
       );
     });
 
     it("does NOT resolve queue alerts that belong to a different vhost", async () => {
       setupDefaults({
-        seenAlerts: [],
-        unresolvedSeenAlerts: [makeQueueSeenAlert("other")],
+        activeAlerts: [],
+        unresolvedAlerts: [makeQueueUnresolvedRow("other")],
       });
 
       // Checking vhost "default" — alert for "other" vhost must be skipped
@@ -1001,27 +986,21 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
         "default"
       );
 
-      const resolveUpdate = mockPrisma.seenAlert.updateMany.mock.calls.find(
+      const resolveUpdate = mockPrisma.alert.updateMany.mock.calls.find(
         (call: unknown[]) => {
-          const data = (call[0] as { data: { resolvedAt?: unknown } }).data;
-          return data?.resolvedAt instanceof Date;
+          const data = (call[0] as { data: { status?: unknown } }).data;
+          return data?.status === "RESOLVED";
         }
       );
       expect(resolveUpdate).toBeUndefined();
     });
 
     it("always resolves node alerts regardless of the vhost filter", async () => {
-      const nodeAlert = {
-        fingerprint: `${SERVER_ID}-memory-node-rabbit@node1`,
-        severity: "warning",
-        category: "memory",
-        sourceType: "node",
-        sourceName: "rabbit@node1",
-        firstSeenAt: new Date(Date.now() - 30 * 60 * 1000),
-      };
       setupDefaults({
-        seenAlerts: [],
-        unresolvedSeenAlerts: [nodeAlert],
+        activeAlerts: [],
+        unresolvedAlerts: [
+          makeUnresolvedAlertRow(`${SERVER_ID}-memory-node-rabbit@node1`),
+        ],
       });
 
       await alertNotificationService.trackAndNotifyNewAlerts(
@@ -1032,9 +1011,9 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
         "default" // vhost filter specified, but node alerts are always evaluated
       );
 
-      expect(mockPrisma.seenAlert.updateMany).toHaveBeenCalledWith(
+      expect(mockPrisma.alert.updateMany).toHaveBeenCalledWith(
         expect.objectContaining({
-          data: expect.objectContaining({ resolvedAt: expect.any(Date) }),
+          data: expect.objectContaining({ status: "RESOLVED" }),
         })
       );
     });
@@ -1043,18 +1022,11 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
       // Fingerprint: server-1-queue-queue-foo-bar-myqueue
       // Strip sourceName "myqueue" → server-1-queue-queue-foo-bar
       // Check endsWith("-queue-foo") → FALSE ✓
-      const fooBarAlert = {
-        fingerprint: `${SERVER_ID}-queue-queue-foo-bar-myqueue`,
-        severity: "warning",
-        category: "queue",
-        sourceType: "queue",
-        sourceName: "myqueue",
-        firstSeenAt: new Date(Date.now() - 30 * 60 * 1000),
-      };
-      setupDefaults({
-        seenAlerts: [],
-        unresolvedSeenAlerts: [fooBarAlert],
-      });
+      const fooBarAlert = makeUnresolvedAlertRow(
+        `${SERVER_ID}-queue-queue-foo-bar-myqueue`,
+        { sourceType: "queue", sourceName: "myqueue" }
+      );
+      setupDefaults({ activeAlerts: [], unresolvedAlerts: [fooBarAlert] });
 
       await alertNotificationService.trackAndNotifyNewAlerts(
         [],
@@ -1064,33 +1036,26 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
         "foo"
       );
 
-      const resolveUpdate = mockPrisma.seenAlert.updateMany.mock.calls.find(
+      const resolveUpdate = mockPrisma.alert.updateMany.mock.calls.find(
         (call: unknown[]) => {
-          const data = (call[0] as { data: { resolvedAt?: unknown } }).data;
-          return data?.resolvedAt instanceof Date;
+          const data = (call[0] as { data: { status?: unknown } }).data;
+          return data?.status === "RESOLVED";
         }
       );
       expect(resolveUpdate).toBeUndefined();
     });
 
     it("is exact-boundary-safe: vhost 'foo' does not match a fingerprint whose actual vhost is 'foo-bar' (category='memory')", async () => {
-      // This was the false positive in the old indexOf/startsWith approach:
-      // indexOf("-queue-") found the sourceType segment, then startsWith("foo-")
-      // matched "foo-bar-myqueue". The endsWith approach correctly returns FALSE.
       // Fingerprint: server-1-memory-queue-foo-bar-myqueue
       // Strip sourceName "myqueue" → server-1-memory-queue-foo-bar
       // Check endsWith("-queue-foo") → FALSE ✓
-      const fooBarMemoryAlert = {
-        fingerprint: `${SERVER_ID}-memory-queue-foo-bar-myqueue`,
-        severity: "warning",
-        category: "memory",
-        sourceType: "queue",
-        sourceName: "myqueue",
-        firstSeenAt: new Date(Date.now() - 30 * 60 * 1000),
-      };
+      const fooBarMemoryAlert = makeUnresolvedAlertRow(
+        `${SERVER_ID}-memory-queue-foo-bar-myqueue`,
+        { sourceType: "queue", sourceName: "myqueue" }
+      );
       setupDefaults({
-        seenAlerts: [],
-        unresolvedSeenAlerts: [fooBarMemoryAlert],
+        activeAlerts: [],
+        unresolvedAlerts: [fooBarMemoryAlert],
       });
 
       await alertNotificationService.trackAndNotifyNewAlerts(
@@ -1101,10 +1066,10 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
         "foo"
       );
 
-      const resolveUpdate = mockPrisma.seenAlert.updateMany.mock.calls.find(
+      const resolveUpdate = mockPrisma.alert.updateMany.mock.calls.find(
         (call: unknown[]) => {
-          const data = (call[0] as { data: { resolvedAt?: unknown } }).data;
-          return data?.resolvedAt instanceof Date;
+          const data = (call[0] as { data: { status?: unknown } }).data;
+          return data?.status === "RESOLVED";
         }
       );
       expect(resolveUpdate).toBeUndefined();
@@ -1112,18 +1077,11 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
 
     it("resolves both matching-vhost queue alerts and node alerts when vhost is specified", async () => {
       setupDefaults({
-        seenAlerts: [],
-        unresolvedSeenAlerts: [
-          makeQueueSeenAlert("default"), // matches → resolve
-          makeQueueSeenAlert("other"), // different vhost → skip
-          {
-            fingerprint: `${SERVER_ID}-memory-node-rabbit@node1`,
-            severity: "warning",
-            category: "memory",
-            sourceType: "node",
-            sourceName: "rabbit@node1",
-            firstSeenAt: new Date(Date.now() - 30 * 60 * 1000),
-          }, // node → always resolve
+        activeAlerts: [],
+        unresolvedAlerts: [
+          makeQueueUnresolvedRow("default"), // matches → resolve
+          makeQueueUnresolvedRow("other"), // different vhost → skip
+          makeUnresolvedAlertRow(`${SERVER_ID}-memory-node-rabbit@node1`), // node → always resolve
         ],
       });
 
@@ -1135,10 +1093,10 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
         "default"
       );
 
-      const resolveUpdates = mockPrisma.seenAlert.updateMany.mock.calls.filter(
+      const resolveUpdates = mockPrisma.alert.updateMany.mock.calls.filter(
         (call: unknown[]) => {
-          const data = (call[0] as { data: { resolvedAt?: unknown } }).data;
-          return data?.resolvedAt instanceof Date;
+          const data = (call[0] as { data: { status?: unknown } }).data;
+          return data?.status === "RESOLVED";
         }
       );
       // "default" queue alert + node alert = 2 resolved, "other" queue alert skipped
@@ -1152,7 +1110,7 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
 
   describe("batch deduplication", () => {
     it("processes each fingerprint only once when the same alert appears twice in the batch", async () => {
-      setupDefaults({ seenAlerts: [] });
+      setupDefaults({ activeAlerts: [] });
 
       const alert = makeAlert();
       // Pass the same alert twice — same fingerprint
@@ -1163,12 +1121,12 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
         SERVER_NAME
       );
 
-      // upsert should be called once, not twice
-      expect(mockPrisma.seenAlert.upsert).toHaveBeenCalledOnce();
+      // create should be called once, not twice
+      expect(mockPrisma.alert.create).toHaveBeenCalledOnce();
     });
 
     it("sends only one notification when the same alert appears twice in the batch", async () => {
-      setupDefaults({ seenAlerts: [] });
+      setupDefaults({ activeAlerts: [] });
 
       const alert = makeAlert();
       await alertNotificationService.trackAndNotifyNewAlerts(
@@ -1185,7 +1143,7 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
     });
 
     it("keeps distinct alerts when fingerprints are different", async () => {
-      setupDefaults({ seenAlerts: [] });
+      setupDefaults({ activeAlerts: [] });
 
       const alerts = [
         makeAlert({
@@ -1205,25 +1163,25 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
         SERVER_NAME
       );
 
-      expect(mockPrisma.seenAlert.upsert).toHaveBeenCalledTimes(2);
+      expect(mockPrisma.alert.create).toHaveBeenCalledTimes(2);
     });
   });
 
   // -------------------------------------------------------------------------
-  // Default severity filter (fix 3)
+  // Default severity filter
   // -------------------------------------------------------------------------
 
   describe("default notificationSeverities", () => {
     it("defaults to ['critical', 'warning'] when workspace has no severity config", async () => {
       // workspace.notificationSeverities = null → default
       setupDefaults({
-        seenAlerts: [],
+        activeAlerts: [],
         workspace: makeWorkspace({ notificationSeverities: null }),
       });
 
       // Warning alert → should notify
       await alertNotificationService.trackAndNotifyNewAlerts(
-        [makeAlert({ severity: AlertSeverity.WARNING })],
+        [makeAlert({ severity: AlertSeverity.MEDIUM })],
         WORKSPACE_ID,
         SERVER_ID,
         SERVER_NAME
@@ -1233,7 +1191,7 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
 
     it("does NOT notify for info alerts when workspace uses the default severity config", async () => {
       setupDefaults({
-        seenAlerts: [],
+        activeAlerts: [],
         workspace: makeWorkspace({ notificationSeverities: null }),
       });
 
@@ -1253,7 +1211,7 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
 
   describe("multiple alerts", () => {
     it("sends a single email containing all notifiable alerts", async () => {
-      setupDefaults({ seenAlerts: [] });
+      setupDefaults({ activeAlerts: [] });
 
       const alerts = [
         makeAlert({
@@ -1285,14 +1243,11 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
 
     it("only sends email for notifiable alerts when some are within cooldown", async () => {
       const fingerprint = `${SERVER_ID}-memory-node-rabbit@node1`;
-      const recentlySeen = {
-        fingerprint,
+      const recentlySeen = makeActiveAlertRow(fingerprint, {
         emailSentAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // within cooldown
-        resolvedAt: null,
-        lastSeenAt: new Date(),
         firstSeenAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-      };
-      setupDefaults({ seenAlerts: [recentlySeen] });
+      });
+      setupDefaults({ activeAlerts: [recentlySeen] });
 
       const alerts = [
         makeAlert({
@@ -1320,26 +1275,119 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
   });
 
   // -------------------------------------------------------------------------
+  // Race condition resilience (concurrent P2002 on create)
+  // -------------------------------------------------------------------------
+
+  describe("race condition resilience (P2002 on create)", () => {
+    function makeP2002() {
+      return Object.assign(new Error("Unique constraint violation"), {
+        code: "P2002",
+      });
+    }
+
+    it("completes without throwing when create races with a concurrent call", async () => {
+      setupDefaults({ activeAlerts: [] });
+      mockPrisma.alert.create.mockRejectedValueOnce(makeP2002());
+
+      const result = await alertNotificationService.trackAndNotifyNewAlerts(
+        [makeAlert()],
+        WORKSPACE_ID,
+        SERVER_ID,
+        SERVER_NAME
+      );
+
+      expect(result).toBeUndefined();
+    });
+
+    it("suppresses notification for the race-lost alert (the winner notifies)", async () => {
+      setupDefaults({ activeAlerts: [] });
+      mockPrisma.alert.create.mockRejectedValueOnce(makeP2002());
+
+      await alertNotificationService.trackAndNotifyNewAlerts(
+        [makeAlert()],
+        WORKSPACE_ID,
+        SERVER_ID,
+        SERVER_NAME
+      );
+
+      expect(mockSendEmail).not.toHaveBeenCalled();
+    });
+
+    it("continues processing other alerts in the batch after a race-lost create", async () => {
+      setupDefaults({ activeAlerts: [] });
+      // First alert loses the race; second alert should still be created + notified
+      mockPrisma.alert.create
+        .mockRejectedValueOnce(makeP2002())
+        .mockResolvedValueOnce({ id: "alert-disk-id" });
+
+      const alerts = [
+        makeAlert({
+          category: AlertCategory.MEMORY,
+          source: { type: "node", name: "rabbit@node1" },
+        }),
+        makeAlert({
+          category: AlertCategory.DISK,
+          source: { type: "node", name: "rabbit@node1" },
+        }),
+      ];
+
+      await alertNotificationService.trackAndNotifyNewAlerts(
+        alerts,
+        WORKSPACE_ID,
+        SERVER_ID,
+        SERVER_NAME
+      );
+
+      expect(mockPrisma.alert.create).toHaveBeenCalledTimes(2);
+      // Only the disk alert (winner) triggers a notification
+      expect(mockSendEmail).toHaveBeenCalledOnce();
+      const emailArgs = mockSendEmail.mock.calls[0][0];
+      expect(emailArgs.alerts).toHaveLength(1);
+      expect(emailArgs.alerts[0].category).toBe(AlertCategory.DISK);
+    });
+
+    it("does NOT suppress the alert when create fails for a non-P2002 reason", async () => {
+      // A generic DB error (not a race) should bubble to the outer catch and
+      // be logged — the function still completes but remaining alerts are skipped.
+      setupDefaults({ activeAlerts: [] });
+      mockPrisma.alert.create.mockRejectedValueOnce(
+        new Error("DB connection lost")
+      );
+
+      const result = await alertNotificationService.trackAndNotifyNewAlerts(
+        [makeAlert()],
+        WORKSPACE_ID,
+        SERVER_ID,
+        SERVER_NAME
+      );
+
+      // Outer catch swallows the error gracefully
+      expect(result).toBeUndefined();
+      // No notification was sent (error aborted the batch early)
+      expect(mockSendEmail).not.toHaveBeenCalled();
+    });
+  });
+
+  // -------------------------------------------------------------------------
   // Error resilience
   // -------------------------------------------------------------------------
 
   describe("error resilience", () => {
     it("does not throw when email service fails", async () => {
-      setupDefaults({ seenAlerts: [] });
+      setupDefaults({ activeAlerts: [] });
       mockSendEmail.mockRejectedValue(new Error("SMTP failure"));
 
-      await expect(
-        alertNotificationService.trackAndNotifyNewAlerts(
-          [makeAlert()],
-          WORKSPACE_ID,
-          SERVER_ID,
-          SERVER_NAME
-        )
-      ).resolves.not.toThrow();
+      const result = await alertNotificationService.trackAndNotifyNewAlerts(
+        [makeAlert()],
+        WORKSPACE_ID,
+        SERVER_ID,
+        SERVER_NAME
+      );
+      expect(result).toBeUndefined();
     });
 
     it("does not throw when webhook service fails", async () => {
-      setupDefaults({ seenAlerts: [], webhookEnabled: true });
+      setupDefaults({ activeAlerts: [], webhookEnabled: true });
       mockPrisma.webhook.findFirst.mockResolvedValue({
         id: "wh-1",
         url: "https://example.com",
@@ -1348,71 +1396,30 @@ describe("AlertNotificationService.trackAndNotifyNewAlerts", () => {
       });
       mockSendWebhook.mockRejectedValue(new Error("Webhook timeout"));
 
-      await expect(
-        alertNotificationService.trackAndNotifyNewAlerts(
-          [makeAlert()],
-          WORKSPACE_ID,
-          SERVER_ID,
-          SERVER_NAME
-        )
-      ).resolves.not.toThrow();
+      const result = await alertNotificationService.trackAndNotifyNewAlerts(
+        [makeAlert()],
+        WORKSPACE_ID,
+        SERVER_ID,
+        SERVER_NAME
+      );
+      expect(result).toBeUndefined();
     });
 
     it("does not throw when Slack service fails", async () => {
-      setupDefaults({ seenAlerts: [], slackEnabled: true });
+      setupDefaults({ activeAlerts: [], slackEnabled: true });
       mockPrisma.slackConfig.findFirst.mockResolvedValue({
         id: "slack-1",
         webhookUrl: "https://hooks.slack.com/test",
       });
       mockSendSlack.mockRejectedValue(new Error("Slack unreachable"));
 
-      await expect(
-        alertNotificationService.trackAndNotifyNewAlerts(
-          [makeAlert()],
-          WORKSPACE_ID,
-          SERVER_ID,
-          SERVER_NAME
-        )
-      ).resolves.not.toThrow();
-    });
-
-    it("continues processing when resolvedAlert.create fails for one alert", async () => {
-      const firstResolved = {
-        fingerprint: `${SERVER_ID}-memory-node-rabbit@node1`,
-        severity: "warning",
-        category: "memory",
-        sourceType: "node",
-        sourceName: "rabbit@node1",
-        firstSeenAt: new Date(Date.now() - 30 * 60 * 1000),
-      };
-      const secondResolved = {
-        fingerprint: `${SERVER_ID}-disk-node-rabbit@node1`,
-        severity: "critical",
-        category: "disk",
-        sourceType: "node",
-        sourceName: "rabbit@node1",
-        firstSeenAt: new Date(Date.now() - 60 * 60 * 1000),
-      };
-      setupDefaults({
-        seenAlerts: [],
-        unresolvedSeenAlerts: [firstResolved, secondResolved],
-      });
-
-      // First resolvedAlert.create fails, second should still be attempted
-      mockPrisma.resolvedAlert.create
-        .mockRejectedValueOnce(new Error("DB constraint"))
-        .mockResolvedValueOnce({});
-
-      await expect(
-        alertNotificationService.trackAndNotifyNewAlerts(
-          [],
-          WORKSPACE_ID,
-          SERVER_ID,
-          SERVER_NAME
-        )
-      ).resolves.not.toThrow();
-
-      expect(mockPrisma.resolvedAlert.create).toHaveBeenCalledTimes(2);
+      const result = await alertNotificationService.trackAndNotifyNewAlerts(
+        [makeAlert()],
+        WORKSPACE_ID,
+        SERVER_ID,
+        SERVER_NAME
+      );
+      expect(result).toBeUndefined();
     });
   });
 });

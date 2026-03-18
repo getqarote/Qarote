@@ -248,6 +248,26 @@ export const rulesRouter = router({
           });
         }
 
+        // Default rules: allow threshold, severity, and enabled changes; block identity changes
+        if (existingRule.isDefault) {
+          const protectedFields = [
+            "name",
+            "description",
+            "type",
+            "operator",
+            "serverId",
+          ] as const;
+          const hasProtectedChange = protectedFields.some(
+            (f) => data[f as keyof typeof data] !== undefined
+          );
+          if (hasProtectedChange) {
+            throw new TRPCError({
+              code: "FORBIDDEN",
+              message: te(ctx.locale, "alerts.cannotModifyDefaultRule"),
+            });
+          }
+        }
+
         // If serverId is being updated, verify new server belongs to workspace
         if (data.serverId && data.serverId !== existingRule.serverId) {
           const server = await ctx.prisma.rabbitMQServer.findFirst({
@@ -280,7 +300,19 @@ export const rulesRouter = router({
         if (data.description !== undefined)
           updateData.description = data.description;
         if (data.type !== undefined) updateData.type = data.type as AlertType;
-        if (data.threshold !== undefined) updateData.threshold = data.threshold;
+        if (data.threshold !== undefined) {
+          updateData.threshold = data.threshold;
+          // Auto-update description for default rules when threshold changes
+          if (existingRule.isDefault && existingRule.description) {
+            const formatted = Number.isInteger(data.threshold)
+              ? data.threshold.toLocaleString("en-US")
+              : data.threshold.toString();
+            updateData.description = existingRule.description.replace(
+              /[\d,]+(\.\d+)?(%?)(?=\s*$)/,
+              `${formatted}$2`
+            );
+          }
+        }
         if (data.operator !== undefined)
           updateData.operator = data.operator as ComparisonOperator;
         if (data.severity !== undefined)
@@ -355,6 +387,13 @@ export const rulesRouter = router({
           throw new TRPCError({
             code: "NOT_FOUND",
             message: te(ctx.locale, "alerts.ruleNotFound"),
+          });
+        }
+
+        if (existingRule.isDefault) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: te(ctx.locale, "alerts.cannotDeleteDefaultRule"),
           });
         }
 

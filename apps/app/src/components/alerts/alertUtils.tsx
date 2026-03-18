@@ -27,10 +27,14 @@ export const getSeverityBadgeVariant = (
   switch (severity) {
     case RabbitMQAlertSeverity.CRITICAL:
       return "destructive";
-    case RabbitMQAlertSeverity.WARNING:
+    case RabbitMQAlertSeverity.HIGH:
+      return "destructive";
+    case RabbitMQAlertSeverity.MEDIUM:
       return "default";
-    case RabbitMQAlertSeverity.INFO:
+    case RabbitMQAlertSeverity.LOW:
       return "secondary";
+    case RabbitMQAlertSeverity.INFO:
+      return "outline";
     default:
       return "outline";
   }
@@ -56,15 +60,27 @@ export const getSeverityIcon = (
       return (
         <XCircle className={`${size} ${showColors ? "text-red-500" : ""}`} />
       );
-    case RabbitMQAlertSeverity.WARNING:
+    case RabbitMQAlertSeverity.HIGH:
+      return (
+        <AlertTriangle
+          className={`${size} ${showColors ? "text-orange-500" : ""}`}
+        />
+      );
+    case RabbitMQAlertSeverity.MEDIUM:
       return (
         <AlertTriangle
           className={`${size} ${showColors ? "text-yellow-500" : ""}`}
         />
       );
-    case RabbitMQAlertSeverity.INFO:
+    case RabbitMQAlertSeverity.LOW:
       return (
         <Info className={`${size} ${showColors ? "text-blue-500" : ""}`} />
+      );
+    case RabbitMQAlertSeverity.INFO:
+      return (
+        <Info
+          className={`${size} ${showColors ? "text-muted-foreground" : ""}`}
+        />
       );
     default:
       return <Activity className={size} />;

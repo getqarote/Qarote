@@ -57,9 +57,8 @@ export function useBrowserNotifications(
         return;
       }
 
-      // Determine notification icon and badge based on severity
-      const icon = "/favicon.ico"; // Default icon
-      const badge = "/favicon.ico";
+      const icon = "/images/favicon.png";
+      const badge = "/images/favicon.png";
       const tag = `alert-${alert.severity}`;
 
       // Create notification

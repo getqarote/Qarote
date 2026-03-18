@@ -1,6 +1,8 @@
 import { logger } from "@/core/logger";
 import { prisma } from "@/core/prisma";
 
+import { backfillDefaultAlertRules } from "@/services/alerts/alert.default-rules";
+
 import { rabbitMQAlertsCronService } from "@/cron/rabbitmq-alerts.cron";
 
 /**
@@ -15,6 +17,9 @@ async function startWorker() {
     await prisma.$connect();
     logger.info("Connected to database");
 
+    // Backfill default alert rules for servers that missed seeding
+    await backfillDefaultAlertRules();
+
     // Start the RabbitMQ alerts cron service
     rabbitMQAlertsCronService.start();
     logger.info("RabbitMQ alerts cron service started");
@@ -28,7 +33,10 @@ async function startWorker() {
 }
 
 // Handle graceful shutdown
+let shuttingDown = false;
 async function shutdown() {
+  if (shuttingDown) return;
+  shuttingDown = true;
   logger.info("Shutting down Alert Monitor worker...");
   try {
     rabbitMQAlertsCronService.stop();

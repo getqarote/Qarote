@@ -63,6 +63,27 @@ export const dockerComposeContent = `services:
     networks:
       - qarote_network
 
+  alert-worker:
+    build:
+      context: .
+      dockerfile: ./apps/api/Dockerfile
+    container_name: qarote_alert_worker
+    restart: unless-stopped
+    command: ["pnpm", "run", "start:alert"]
+    environment:
+      TZ: UTC
+      DATABASE_URL: postgres://postgres:\${POSTGRES_PASSWORD}@postgres:5432/qarote
+      DATABASE_POOL_SIZE: \${DATABASE_POOL_SIZE:-10}
+      JWT_SECRET: \${JWT_SECRET}
+      ENCRYPTION_KEY: \${ENCRYPTION_KEY}
+      # Alert check interval in milliseconds (default: 5 minutes)
+      ALERT_CHECK_INTERVAL_MS: \${ALERT_CHECK_INTERVAL_MS:-300000}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - qarote_network
+
   frontend:
     build:
       context: .
@@ -98,6 +119,13 @@ POSTGRES_PASSWORD=your-secure-postgres-password
 POSTGRES_PORT=5432
 # Maximum database connections per process (default: 10)
 # DATABASE_POOL_SIZE=10
+
+# =============================================================================
+# OPTIONAL - Alert Worker Configuration
+# =============================================================================
+# How often the alert worker polls your RabbitMQ servers (milliseconds)
+# Default: 300000 (5 minutes). Lower values increase freshness but add load.
+# ALERT_CHECK_INTERVAL_MS=300000
 
 # =============================================================================
 # REQUIRED - Security

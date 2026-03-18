@@ -91,7 +91,9 @@
     "deleteDialogDescription": "这将永久删除工作区 <strong>{{name}}</strong> 及所有关联数据，包括服务器、警报、警报规则、团队成员、邀请和配置。此操作不可逆。",
     "deleteDialogConfirmLabel": "输入工作区名称以确认：",
     "deleteConfirm": "删除工作区",
-    "deleting": "删除中..."
+    "deleting": "删除中...",
+    "tags": "标签",
+    "tagsPlaceholder": "添加标签..."
   },
   "team": {
     "title": "团队",

@@ -211,7 +211,7 @@ cd qarote`}
                   {t("installGuide.quickStart.dockerCompose.step4Title")}
                 </h5>
                 <CodeBlock
-                  code={`# Start all services
+                  code={`# Start all services (postgres, backend, alert-worker, frontend)
 docker compose -f docker-compose.selfhosted.yml up -d
 
 # View logs
@@ -269,6 +269,15 @@ docker compose -f docker-compose.selfhosted.yml logs -f`}
                       >
                         http://localhost:3000
                       </a>
+                    </li>
+                    <li>
+                      <span
+                        dangerouslySetInnerHTML={{
+                          __html: t(
+                            "installGuide.quickStart.dockerCompose.step6AlertWorker"
+                          ),
+                        }}
+                      />
                     </li>
                   </ul>
                 </div>
@@ -407,6 +416,22 @@ git push dokku main`}
 
               <div className="space-y-3">
                 <h5 className="text-sm font-medium">
+                  {t("installGuide.quickStart.dokku.step5WorkerTitle")}
+                </h5>
+                <CodeBlock
+                  code={`dokku ps:scale qarote worker=1`}
+                  language="bash"
+                />
+                <p
+                  className="text-sm text-muted-foreground"
+                  dangerouslySetInnerHTML={{
+                    __html: t("installGuide.quickStart.dokku.step5WorkerNote"),
+                  }}
+                />
+              </div>
+
+              <div className="space-y-3">
+                <h5 className="text-sm font-medium">
                   {t("installGuide.quickStart.dokku.step6Title")}
                 </h5>
                 <CodeBlock
@@ -532,10 +557,25 @@ sudo -u postgres psql -c "CREATE DATABASE qarote OWNER qarote;"`}
                   {t("installGuide.quickStart.binary.step3Title")}
                 </h5>
                 <CodeBlock
-                  code={`# Start the server (reads .env automatically)
+                  code={`# Start the web server (reads .env automatically)
 # Database migrations run automatically on first start
 ./qarote`}
                   language="bash"
+                />
+
+                <h5 className="text-sm font-medium">
+                  {t("installGuide.quickStart.binary.step3WorkerTitle")}
+                </h5>
+                <CodeBlock
+                  code={`# In a separate terminal (or as a systemd service)
+./qarote worker`}
+                  language="bash"
+                />
+                <p
+                  className="text-sm text-muted-foreground"
+                  dangerouslySetInnerHTML={{
+                    __html: t("installGuide.quickStart.binary.step3WorkerNote"),
+                  }}
                 />
 
                 <h5 className="text-sm font-medium">
@@ -572,6 +612,7 @@ sudo -u postgres psql -c "CREATE DATABASE qarote OWNER qarote;"`}
                   />
                   <CodeBlock
                     code={`./qarote setup                  # Interactive setup wizard (generates .env)
+./qarote worker                 # Start alert worker process (separate terminal)
 --database-url <url>            # PostgreSQL connection URL
 --jwt-secret <secret>           # JWT signing secret (min 32 chars)
 --encryption-key <key>          # Encryption key (min 32 chars)

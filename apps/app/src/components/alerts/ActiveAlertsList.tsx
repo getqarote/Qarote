@@ -17,7 +17,9 @@ interface ActiveAlertsListProps {
   summary: {
     total: number;
     critical: number;
-    warning: number;
+    high: number;
+    medium: number;
+    low: number;
     info: number;
   };
   userPlan: UserPlan;
@@ -52,7 +54,7 @@ export const ActiveAlertsList = ({
         </h3>
         <p className="text-muted-foreground mb-4">
           {summary.total > 0
-            ? `You have ${summary.critical > 0 ? `${summary.critical} critical` : ""}${summary.critical > 0 && summary.warning > 0 ? " and " : ""}${summary.warning > 0 ? `${summary.warning} warning` : ""} alert${summary.total > 1 ? "s" : ""} on your system.`
+            ? `You have ${summary.critical > 0 ? `${summary.critical} critical` : ""}${summary.critical > 0 && summary.high > 0 ? " and " : ""}${summary.high > 0 ? `${summary.high} high` : ""} alert${summary.total > 1 ? "s" : ""} on your system.`
             : "Your RabbitMQ cluster is running smoothly with no alerts."}
         </p>
         {summary.total > 0 && (

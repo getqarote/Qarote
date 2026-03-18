@@ -10,6 +10,7 @@ export interface ProfileFormState {
 export interface WorkspaceFormState {
   name: string;
   contactEmail: string;
+  tags: string[];
 }
 
 export interface InviteFormState {

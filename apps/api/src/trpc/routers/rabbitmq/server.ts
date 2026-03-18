@@ -3,6 +3,7 @@ import { TRPCError } from "@trpc/server";
 import { prisma } from "@/core/prisma";
 import { RabbitMQClient } from "@/core/rabbitmq";
 
+import { seedDefaultAlertRules } from "@/services/alerts/alert.default-rules";
 import { EncryptionService } from "@/services/encryption.service";
 import {
   extractMajorMinorVersion,
@@ -228,6 +229,11 @@ export const serverRouter = router({
             workspaceId,
           },
         });
+
+        // Seed default alert rules for the new server — fire-and-forget;
+        // errors are caught and logged inside seedDefaultAlertRules so
+        // server creation is never blocked or rolled back by seeding failures.
+        void seedDefaultAlertRules(server.id, workspaceId);
 
         return {
           server: {

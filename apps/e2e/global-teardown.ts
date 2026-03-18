@@ -35,7 +35,6 @@ async function globalTeardown() {
         "Alert",
         "SlackConfig",
         "Webhook",
-        "WorkspaceAlertThresholds",
         "WorkspaceMember",
         "Payment",
         "Subscription",

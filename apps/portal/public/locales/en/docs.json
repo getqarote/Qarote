@@ -37,7 +37,8 @@
         "step5Title": "4. Run Database Migrations",
         "step6Title": "5. Access the Application",
         "step6Frontend": "<strong>Frontend:</strong>",
-        "step6BackendApi": "<strong>Backend API:</strong>"
+        "step6BackendApi": "<strong>Backend API:</strong>",
+        "step6AlertWorker": "<strong>Alert Worker:</strong> running in background — polls your RabbitMQ servers every 5 minutes and writes alerts to the database."
       },
       "dokku": {
         "whyDokkuTitle": "Why Dokku?",
@@ -53,7 +54,9 @@
         "step3Note": "<code>PORT</code> and <code>HOST</code> are automatically set by Dokku. Replace <code>https://your-domain.com</code> with your actual domain.",
         "step4Title": "4. Deploy",
         "step5Title": "5. Run Database Migrations",
-        "step6Title": "6. Domain and SSL (Optional)",
+        "step5WorkerTitle": "6. Scale the Alert Worker",
+        "step5WorkerNote": "The <code>worker</code> process type is defined in the <code>Procfile</code> and runs the alert monitor. Dokku does not start it automatically — you must scale it to 1. Setting <code>ALERT_WORKER_EMBEDDED=false</code> prevents the web process from also running the cron.",
+        "step6Title": "7. Domain and SSL (Optional)",
         "step6Note": "Your app will be available at <code>https://your-domain.com</code> (or your server's IP)."
       },
       "binary": {
@@ -67,7 +70,9 @@
         "step2Title": "3. Interactive Setup",
         "step2Note": "The setup wizard will ask for your PostgreSQL URL, verify the connection, and generate a <code>.env</code> file with secure secrets.",
         "step3Title": "4. Start Qarote",
-        "step4Title": "5. Access Application",
+        "step3WorkerTitle": "5. Start the Alert Worker",
+        "step3WorkerNote": "The alert worker polls your RabbitMQ servers every 5 minutes and writes health alerts to the database. Run it in a separate terminal or as a background service.",
+        "step4Title": "6. Access Application",
         "step4Description": "Open <code>http://localhost:3000</code> in your browser. The binary serves both the API and frontend from a single port.",
         "step4ManualSetup": "<strong>Manual setup:</strong> You can also skip the wizard and configure directly:",
         "cliFlagsTitle": "<strong>Available CLI flags:</strong>",
