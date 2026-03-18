@@ -4,8 +4,6 @@ import { hashPassword } from "@/core/auth";
 import { formatInvitedBy } from "@/core/utils";
 import { ensureWorkspaceMember } from "@/core/workspace-access";
 
-import { getWorkspacePlan } from "@/services/plan/plan.service";
-
 import {
   AcceptInvitationWithRegistrationSchema,
   InvitationTokenSchema,
@@ -13,7 +11,11 @@ import {
 
 import { rateLimitedPublicProcedure, router } from "@/trpc/trpc";
 
-import { InvitationStatus, UserRole } from "@/generated/prisma/client";
+import {
+  InvitationStatus,
+  UserPlan,
+  UserRole,
+} from "@/generated/prisma/client";
 import { te } from "@/i18n";
 
 /**
@@ -47,6 +49,7 @@ export const publicInvitationRouter = router({
                 id: true,
                 name: true,
                 contactEmail: true,
+                ownerId: true,
               },
             },
             invitedBy: {
@@ -67,8 +70,17 @@ export const publicInvitationRouter = router({
           });
         }
 
-        // Resolve plan via workspace → organization
-        const ownerPlan = await getWorkspacePlan(invitation.workspace.id);
+        // Self-hosted deployments may not have a Subscription record — default to FREE
+        let ownerPlan: UserPlan = UserPlan.FREE;
+        if (invitation.workspace.ownerId) {
+          const ownerSubscription = await ctx.prisma.subscription.findUnique({
+            where: { userId: invitation.workspace.ownerId },
+            select: { plan: true },
+          });
+          if (ownerSubscription) {
+            ownerPlan = ownerSubscription.plan;
+          }
+        }
 
         return {
           success: true,

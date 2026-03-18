@@ -44,27 +44,8 @@ export const checkoutRouter = router({
           "Creating checkout session"
         );
 
-        // Resolve Organization deterministically via the user's active workspace
-        const workspace = user.workspaceId
-          ? await prisma.workspace.findUnique({
-              where: { id: user.workspaceId },
-              select: {
-                organization: {
-                  select: { id: true, stripeCustomerId: true },
-                },
-              },
-            })
-          : null;
-
-        const org = workspace?.organization ?? null;
-        if (!org) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: te(ctx.locale, "billing.noOrganization"),
-          });
-        }
-
-        let customerId = org.stripeCustomerId;
+        // Create Stripe customer if not exists
+        let customerId = user.stripeCustomerId;
         if (!customerId) {
           const customer = await StripeService.createCustomer({
             email: user.email,
@@ -73,8 +54,9 @@ export const checkoutRouter = router({
           });
           customerId = customer.id;
 
-          await prisma.organization.update({
-            where: { id: org.id },
+          // Update user with customer ID
+          await prisma.user.update({
+            where: { id: user.id },
             data: { stripeCustomerId: customerId },
           });
         }
@@ -90,7 +72,6 @@ export const checkoutRouter = router({
 
         return { url: session.url };
       } catch (error) {
-        if (error instanceof TRPCError) throw error;
         ctx.logger.error({ error }, "Error creating checkout session");
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",

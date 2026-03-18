@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { Link, useNavigate, useSearchParams } from "react-router";
+import { Link, useNavigate } from "react-router";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -38,13 +38,6 @@ import { type SignInFormData, signInSchema } from "@/schemas";
 const SignIn: React.FC = () => {
   const { t } = useTranslation("auth");
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const rawRedirect = searchParams.get("redirect");
-  // Only allow relative paths to prevent open redirect
-  const redirectTo =
-    rawRedirect?.startsWith("/") && !rawRedirect.startsWith("//")
-      ? rawRedirect
-      : null;
   const [showPassword, setShowPassword] = useState(false);
   const loginMutation = useLogin();
   const { showAlternativeAuth } = useShowAlternativeAuth();
@@ -68,7 +61,7 @@ const SignIn: React.FC = () => {
       },
       {
         onSuccess: () => {
-          navigate(redirectTo || "/workspace", { replace: true });
+          navigate("/workspace", { replace: true });
         },
       }
     );

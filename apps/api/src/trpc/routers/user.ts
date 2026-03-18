@@ -27,7 +27,7 @@ import {
   workspaceProcedure,
 } from "@/trpc/trpc";
 
-import { OrgRole, UserRole } from "@/generated/prisma/client";
+import { UserRole } from "@/generated/prisma/client";
 import { te } from "@/i18n";
 
 /**
@@ -599,25 +599,17 @@ export const userRouter = router({
           });
         }
 
-        // Prevent removing other admins (only org owner can remove admins)
+        // Prevent removing other admins (only workspace owner can remove admins)
         if (workspaceRole === UserRole.ADMIN) {
-          // Check if current user is an org owner
-          const workspace = await ctx.prisma.workspace.findUnique({
-            where: { id: workspaceId },
-            select: { organizationId: true },
+          // Check if current user is the workspace owner
+          const workspace = await ctx.prisma.workspace.findFirst({
+            where: {
+              id: workspaceId,
+              ownerId: currentUser.id,
+            },
           });
 
-          const isOrgOwner = workspace?.organizationId
-            ? !!(await ctx.prisma.organizationMember.findFirst({
-                where: {
-                  userId: currentUser.id,
-                  organizationId: workspace.organizationId,
-                  role: OrgRole.OWNER,
-                },
-              }))
-            : false;
-
-          if (!isOrgOwner) {
+          if (!workspace) {
             throw new TRPCError({
               code: "FORBIDDEN",
               message: te(ctx.locale, "user.onlyOwnerCanRemoveAdmin"),

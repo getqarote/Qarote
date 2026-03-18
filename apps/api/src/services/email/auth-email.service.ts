@@ -1,7 +1,6 @@
 import { CoreEmailService, EmailResult } from "./core-email.service";
 import { EmailVerification } from "./templates/email-verification";
 import { InvitationEmail } from "./templates/invitation-email";
-import { OrgInvitationEmail } from "./templates/org-invitation-email";
 import WelcomeEmail from "./templates/welcome-email";
 
 import { UserPlan } from "@/generated/prisma/client";
@@ -22,15 +21,6 @@ interface SendWelcomeEmailParams {
   name: string;
   workspaceName?: string;
   plan: UserPlan;
-  locale?: string;
-}
-
-interface SendOrgInvitationEmailParams {
-  to: string;
-  inviterName: string;
-  inviterEmail: string;
-  orgName: string;
-  invitationToken: string;
   locale?: string;
 }
 
@@ -84,43 +74,6 @@ export class AuthEmailService {
         inviterEmail,
         workspaceName,
         plan,
-      },
-    });
-  }
-
-  /**
-   * Send an organization invitation email using React Email templates
-   */
-  static async sendOrgInvitationEmail(
-    params: SendOrgInvitationEmailParams
-  ): Promise<EmailResult> {
-    const {
-      to,
-      inviterName,
-      inviterEmail,
-      orgName,
-      invitationToken,
-      locale = "en",
-    } = params;
-
-    const { frontendUrl } = CoreEmailService.getConfig();
-
-    const template = OrgInvitationEmail({
-      inviterName,
-      inviterEmail,
-      orgName,
-      invitationToken,
-      frontendUrl,
-    });
-
-    return CoreEmailService.sendEmail({
-      to,
-      subject: tEmail(locale, "subjects.invitedToOrganization", { orgName }),
-      template,
-      emailType: "org-invitation",
-      context: {
-        inviterEmail,
-        orgName,
       },
     });
   }

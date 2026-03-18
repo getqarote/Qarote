@@ -59,14 +59,7 @@
     "googleEmailMismatchInvitation": "L'adresse e-mail du compte Google ne correspond pas à celle de l'invitation",
     "failedToAcceptInvitationGoogle": "Échec de l'acceptation de l'invitation avec Google",
     "insufficientPermissionsAdmin": "Permissions insuffisantes — Rôle administrateur requis",
-    "insufficientPermissions": "Permissions insuffisantes",
-    "invitationNotForYourAccount": "Cette invitation ne correspond pas à votre compte",
-    "alreadyOrgMember": "Vous êtes déjà membre de cette organisation",
-    "userAlreadyOrgMember": "L'utilisateur est déjà membre de cette organisation",
-    "orgAdminRequired": "Rôle PROPRIÉTAIRE ou ADMINISTRATEUR de l'organisation requis",
-    "orgInvitationNotFound": "Invitation introuvable",
-    "orgInvitationAlreadyAccepted": "L'invitation a déjà été acceptée",
-    "orgInvitationExpired": "L'invitation a expiré"
+    "insufficientPermissions": "Permissions insuffisantes"
   },
   "workspace": {
     "idRequired": "L'identifiant de l'espace de travail est requis",
@@ -120,7 +113,6 @@
     "failedToCreateBillingPortal": "Échec de la création de la session du portail de facturation",
     "noStripeCustomerFound": "Aucun client Stripe trouvé",
     "failedToCreatePortalSession": "Échec de la création de la session du portail",
-    "noOrganization": "Aucune organisation trouvée pour votre espace de travail actif",
     "cannotCheckoutFreePlan": "Impossible de créer un paiement pour le plan GRATUIT",
     "failedToCreateCheckoutSession": "Échec de la création de la session de paiement",
     "noActiveSubscription": "Aucun abonnement actif trouvé",

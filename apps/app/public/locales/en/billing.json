@@ -129,8 +129,7 @@
     "description": "Manage your plan, billing cycle, and subscription settings for all your workspaces"
   },
   "error": {
-    "workspaceIdRequired": "Workspace ID is required",
-    "failedToOpenBillingPortal": "Failed to open billing portal."
+    "workspaceIdRequired": "Workspace ID is required"
   },
   "plansSummary": {
     "whatsIncluded": "What's included:",

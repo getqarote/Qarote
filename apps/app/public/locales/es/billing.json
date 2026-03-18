@@ -129,8 +129,7 @@
     "description": "Gestiona tu plan, ciclo de facturación y configuración de suscripción para todos tus espacios de trabajo"
   },
   "error": {
-    "workspaceIdRequired": "Se requiere el ID del espacio de trabajo",
-    "failedToOpenBillingPortal": "Error al abrir el portal de facturación."
+    "workspaceIdRequired": "Se requiere el ID del espacio de trabajo"
   },
   "plansSummary": {
     "whatsIncluded": "Incluido:",

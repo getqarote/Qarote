@@ -9,7 +9,6 @@ import { getAllPremiumFeatures } from "@/config/features";
 import { publicProcedure, router } from "@/trpc/trpc";
 
 import { publicInvitationRouter } from "./invitation";
-import { publicOrgInvitationRouter } from "./org-invitation";
 
 /**
  * Public router
@@ -17,7 +16,6 @@ import { publicOrgInvitationRouter } from "./org-invitation";
  */
 export const publicRouter = router({
   invitation: publicInvitationRouter,
-  orgInvitation: publicOrgInvitationRouter,
 
   /**
    * Get public app configuration (PUBLIC)

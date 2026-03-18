@@ -1,10 +1,21 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router";
 
-import { Check, Clock, Copy, Mail, Users, X } from "lucide-react";
+import {
+  Check,
+  Clock,
+  Copy,
+  Lock,
+  Mail,
+  UserPlus,
+  Users,
+  X,
+} from "lucide-react";
 
 import { User } from "@/lib/api/authTypes";
 import { InvitationWithInviter } from "@/lib/api/authTypes";
+import { getUpgradePath } from "@/lib/featureFlags";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -28,6 +39,7 @@ import {
 } from "@/components/ui/table";
 
 import { useUser } from "@/hooks/ui/useUser";
+import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 import { InviteUserDialog } from "./InviteUserDialogEnhanced";
 import { formatDate, getRoleColor, InviteFormState } from "./profileUtils";
@@ -71,16 +83,17 @@ export const EnhancedTeamTab = ({
   canInviteMoreUsers,
   emailEnabled,
 }: EnhancedTeamTabProps) => {
+  const navigate = useNavigate();
   const { t } = useTranslation("profile");
   const { planData, user } = useUser();
-
+  const { workspace } = useWorkspace();
   const planFeatures = planData?.planFeatures;
   const totalUsers = workspaceUsers.length;
   const pendingInvitations = invitations.length;
   const maxUsers = planFeatures?.maxUsers;
 
-  // Admins can manage all members
-  const isWorkspaceOwner = isAdmin;
+  // Check if current user is the workspace owner
+  const isWorkspaceOwner = workspace?.ownerId === user?.id;
 
   // State for copy feedback
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
@@ -159,7 +172,29 @@ export const EnhancedTeamTab = ({
                 </Badge>
               )}
             </div>
-            {/* Workspace-level invitations disabled — use org invitations instead */}
+            {canInviteMoreUsers ? (
+              <Button
+                onClick={() => setInviteDialogOpen(true)}
+                size="sm"
+                className="btn-primary"
+              >
+                <UserPlus className="h-4 w-4 mr-2" />
+                {t("team.inviteUser")}
+              </Button>
+            ) : (
+              <Button
+                onClick={() => navigate(getUpgradePath())}
+                size="sm"
+                className="bg-gray-200 text-gray-400 cursor-pointer opacity-60 flex items-center gap-2 hover:bg-gray-300"
+                title={t("team.upgradeToInvite")}
+              >
+                <Lock className="w-4 h-4" />
+                {t("team.inviteUser")}
+                <span className="ml-1 px-1.5 py-0.5 bg-orange-500 text-white text-[10px] rounded-full font-semibold">
+                  {t("team.upgrade")}
+                </span>
+              </Button>
+            )}
           </CardTitle>
         </CardHeader>
         <CardContent>

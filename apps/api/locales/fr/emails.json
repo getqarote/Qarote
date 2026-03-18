@@ -1,7 +1,6 @@
 {
   "subjects": {
     "invitedToWorkspace": "Vous êtes invité(e) à rejoindre {{workspaceName}} sur Qarote",
-    "invitedToOrganization": "Vous êtes invité(e) à rejoindre {{orgName}} sur Qarote",
     "welcome": "Bienvenue sur Qarote, {{name}} !",
     "verifyEmailSignup": "Veuillez vérifier votre adresse e-mail - Qarote",
     "verifyEmailChange": "Vérifiez votre nouvelle adresse e-mail - Qarote",

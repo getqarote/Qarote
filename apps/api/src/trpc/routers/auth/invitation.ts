@@ -4,8 +4,6 @@ import { comparePassword, hashPassword } from "@/core/auth";
 import { formatInvitedBy } from "@/core/utils";
 import { ensureWorkspaceMember } from "@/core/workspace-access";
 
-import { getWorkspacePlan } from "@/services/plan/plan.service";
-
 import {
   AcceptInvitationSchema,
   AcceptInvitationWithRegistrationTokenSchema,
@@ -53,6 +51,7 @@ export const invitationRouter = router({
                 id: true,
                 name: true,
                 contactEmail: true,
+                ownerId: true,
               },
             },
             invitedBy: {
@@ -73,8 +72,17 @@ export const invitationRouter = router({
           });
         }
 
-        // Resolve plan via workspace → organization
-        const workspacePlan = await getWorkspacePlan(invitation.workspace.id);
+        const ownerSubscription = await ctx.prisma.subscription.findUnique({
+          where: { userId: invitation.workspace.ownerId! },
+          select: { plan: true },
+        });
+
+        if (!ownerSubscription) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: te(ctx.locale, "auth.workspaceOwnerNoSubscription"),
+          });
+        }
 
         return {
           success: true,
@@ -88,7 +96,7 @@ export const invitationRouter = router({
               id: invitation.workspace.id,
               name: invitation.workspace.name,
               contactEmail: invitation.workspace.contactEmail,
-              plan: workspacePlan,
+              plan: ownerSubscription.plan,
             },
             invitedBy: formatInvitedBy(invitation.invitedBy),
           },

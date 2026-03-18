@@ -8,7 +8,7 @@ import { ensureWorkspaceMember } from "@/core/workspace-access";
 
 import { adminBootstrapConfig } from "@/config";
 
-import { OrgRole, UserRole } from "@/generated/prisma/client";
+import { UserRole } from "@/generated/prisma/client";
 
 /**
  * Bootstrap the first admin user on first boot.
@@ -45,20 +45,10 @@ export async function bootstrapAdmin(): Promise<void> {
       return;
     }
 
-    // Create a default organization for the admin user
-    const org = await tx.organization.create({
-      data: {
-        name: "Default Organization",
-        slug: `default-${Date.now()}`,
-        contactEmail: email,
-      },
-    });
-
     const workspace = await tx.workspace.create({
       data: {
         name: "Default Workspace",
         contactEmail: email,
-        organizationId: org.id,
       },
     });
 
@@ -79,15 +69,6 @@ export async function bootstrapAdmin(): Promise<void> {
     await tx.workspace.update({
       where: { id: workspace.id },
       data: { ownerId: user.id },
-    });
-
-    // Make the admin user the organization owner
-    await tx.organizationMember.create({
-      data: {
-        userId: user.id,
-        organizationId: org.id,
-        role: OrgRole.OWNER,
-      },
     });
 
     await ensureWorkspaceMember(user.id, workspace.id, UserRole.ADMIN, tx);

@@ -11,7 +11,6 @@ import { secureHeaders } from "hono/secure-headers";
 
 import { auth } from "@/core/better-auth";
 import { bootstrapAdmin } from "@/core/bootstrap-admin";
-import { bootstrapOrg } from "@/core/bootstrap-org";
 import { bootstrapSso } from "@/core/bootstrap-sso";
 import { logger } from "@/core/logger";
 import { runMigrations } from "@/core/migrate";
@@ -161,9 +160,6 @@ async function startServer() {
 
     // Bootstrap admin account on first boot (if configured via setup CLI)
     await bootstrapAdmin();
-
-    // Bootstrap default organization for self-hosted instances
-    await bootstrapOrg();
 
     // Migrate legacy SSO data and seed instance-wide provider from env vars
     await bootstrapSso();
