@@ -182,6 +182,7 @@ export async function backfillDefaultAlertRules(): Promise<void> {
 
     let backfilled = 0;
     for (const server of servers) {
+      if (!server.workspaceId) continue;
       const ruleCount = await prisma.alertRule.count({
         where: { serverId: server.id, isDefault: true },
       });
