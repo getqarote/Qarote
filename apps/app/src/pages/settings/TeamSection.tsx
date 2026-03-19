@@ -52,10 +52,16 @@ const TeamSection = () => {
   const { workspace } = useWorkspace();
   const { data: profileData } = useProfile();
   const { data: publicConfig } = usePublicConfig();
+
+  const [usersPage, setUsersPage] = useState(1);
+  const [usersPageSize, setUsersPageSize] = useState(10);
+  const [invPage, setInvPage] = useState(1);
+  const [invPageSize, setInvPageSize] = useState(10);
+
   const { data: workspaceUsersData, isLoading: usersLoading } =
-    useWorkspaceUsers();
+    useWorkspaceUsers({ page: usersPage, limit: usersPageSize });
   const { data: invitationsData, isLoading: invitationsLoading } =
-    useInvitations();
+    useInvitations({ page: invPage, limit: invPageSize });
   const sendInvitationMutation = useSendInvitation();
   const revokeInvitationMutation = useRevokeInvitation();
   const removeUserMutation = useRemoveUserFromWorkspace();
@@ -81,8 +87,11 @@ const TeamSection = () => {
   const invitations = invitationsData?.invitations || [];
 
   const planFeatures = planData?.planFeatures;
-  const currentUserCount = workspaceUsers.length;
-  const pendingInvitationCount = invitations.length;
+  const usersTotal =
+    workspaceUsersData?.pagination?.total ?? workspaceUsers.length;
+  const invTotal = invitationsData?.pagination?.total ?? invitations.length;
+  const currentUserCount = usersTotal;
+  const pendingInvitationCount = invTotal;
 
   const canInviteMoreUsers = () => {
     if (!planFeatures?.maxUsers) return true;
@@ -270,6 +279,22 @@ const TeamSection = () => {
         isRemoving={removeUserMutation.isPending}
         canInviteMoreUsers={canInviteMoreUsers()}
         emailEnabled={publicConfig?.emailEnabled ?? true}
+        usersTotal={usersTotal}
+        usersPage={usersPage}
+        usersPageSize={usersPageSize}
+        onUsersPageChange={setUsersPage}
+        onUsersPageSizeChange={(size) => {
+          setUsersPageSize(size);
+          setUsersPage(1);
+        }}
+        invTotal={invTotal}
+        invPage={invPage}
+        invPageSize={invPageSize}
+        onInvPageChange={setInvPage}
+        onInvPageSizeChange={(size) => {
+          setInvPageSize(size);
+          setInvPage(1);
+        }}
       />
 
       <InviteLinksDialog

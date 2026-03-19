@@ -7,6 +7,7 @@ import { EmailVerificationService } from "@/services/email/email-verification.se
 
 import { hasWorkspaceAccess } from "@/middlewares/workspace";
 
+import { paginateQuery, paginationMeta } from "@/schemas/pagination";
 import {
   GetInvitationsSchema,
   GetUserSchema,
@@ -44,26 +45,30 @@ export const userRouter = router({
       const { workspaceId } = input;
 
       try {
-        // Get all workspace members via WorkspaceMember table
-        const workspaceMembers = await ctx.prisma.workspaceMember.findMany({
-          where: { workspaceId },
-          include: {
-            user: {
-              select: {
-                id: true,
-                email: true,
-                image: true,
-                firstName: true,
-                lastName: true,
-                isActive: true,
-                lastLogin: true,
-                createdAt: true,
-                updatedAt: true,
+        const where = { workspaceId };
+        const [workspaceMembers, total] = await Promise.all([
+          ctx.prisma.workspaceMember.findMany({
+            where,
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  email: true,
+                  image: true,
+                  firstName: true,
+                  lastName: true,
+                  isActive: true,
+                  lastLogin: true,
+                  createdAt: true,
+                  updatedAt: true,
+                },
               },
             },
-          },
-          orderBy: { createdAt: "desc" },
-        });
+            orderBy: { createdAt: "desc" },
+            ...paginateQuery(input),
+          }),
+          ctx.prisma.workspaceMember.count({ where }),
+        ]);
 
         // Format response to match expected structure
         const users = workspaceMembers.map((member) => ({
@@ -78,7 +83,10 @@ export const userRouter = router({
           updatedAt: member.user.updatedAt.toISOString(),
         }));
 
-        return { users };
+        return {
+          users,
+          pagination: paginationMeta(input.page, input.limit, total),
+        };
       } catch (error) {
         ctx.logger.error(
           { error },

@@ -24,6 +24,11 @@ import {
   RemoveOrgMemberSchema,
   UpdateOrgMemberRoleSchema,
 } from "@/schemas/organization";
+import {
+  paginateQuery,
+  PaginationInputSchema,
+  paginationMeta,
+} from "@/schemas/pagination";
 
 import { emailConfig } from "@/config";
 
@@ -110,69 +115,86 @@ export const membersRouter = router({
   /**
    * List organization members (PROTECTED)
    */
-  list: rateLimitedProcedure.query(async ({ ctx }) => {
-    const user = ctx.user;
+  list: rateLimitedProcedure
+    .input(PaginationInputSchema)
+    .query(async ({ ctx, input }) => {
+      const user = ctx.user;
 
-    // Resolve org via active workspace for multi-org correctness
-    if (!user.workspaceId) {
-      return { members: [] };
-    }
+      // Resolve org via active workspace for multi-org correctness
+      if (!user.workspaceId) {
+        return {
+          members: [],
+          pagination: paginationMeta(input.page, input.limit, 0),
+        };
+      }
 
-    const workspace = await ctx.prisma.workspace.findUnique({
-      where: { id: user.workspaceId },
-      select: { organizationId: true },
-    });
+      const workspace = await ctx.prisma.workspace.findUnique({
+        where: { id: user.workspaceId },
+        select: { organizationId: true },
+      });
 
-    if (!workspace) {
-      return { members: [] };
-    }
+      if (!workspace) {
+        return {
+          members: [],
+          pagination: paginationMeta(input.page, input.limit, 0),
+        };
+      }
 
-    // Verify the user is a member of this org
-    const membership = await ctx.prisma.organizationMember.findUnique({
-      where: {
-        userId_organizationId: {
-          userId: user.id,
-          organizationId: workspace.organizationId,
-        },
-      },
-      select: { organizationId: true },
-    });
-
-    if (!membership) {
-      return { members: [] };
-    }
-
-    const members = await ctx.prisma.organizationMember.findMany({
-      where: { organizationId: membership.organizationId },
-      include: {
-        user: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-            image: true,
-            lastLogin: true,
+      // Verify the user is a member of this org
+      const membership = await ctx.prisma.organizationMember.findUnique({
+        where: {
+          userId_organizationId: {
+            userId: user.id,
+            organizationId: workspace.organizationId,
           },
         },
-      },
-      orderBy: [{ role: "asc" }, { createdAt: "asc" }],
-    });
+        select: { organizationId: true },
+      });
 
-    return {
-      members: members.map((m) => ({
-        id: m.id,
-        userId: m.user.id,
-        email: m.user.email,
-        firstName: m.user.firstName,
-        lastName: m.user.lastName,
-        image: m.user.image,
-        role: m.role,
-        lastLogin: m.user.lastLogin?.toISOString() ?? null,
-        joinedAt: m.createdAt.toISOString(),
-      })),
-    };
-  }),
+      if (!membership) {
+        return {
+          members: [],
+          pagination: paginationMeta(input.page, input.limit, 0),
+        };
+      }
+
+      const where = { organizationId: membership.organizationId };
+      const [members, total] = await Promise.all([
+        ctx.prisma.organizationMember.findMany({
+          where,
+          include: {
+            user: {
+              select: {
+                id: true,
+                email: true,
+                firstName: true,
+                lastName: true,
+                image: true,
+                lastLogin: true,
+              },
+            },
+          },
+          orderBy: [{ role: "asc" }, { createdAt: "asc" }],
+          ...paginateQuery(input),
+        }),
+        ctx.prisma.organizationMember.count({ where }),
+      ]);
+
+      return {
+        members: members.map((m) => ({
+          id: m.id,
+          userId: m.user.id,
+          email: m.user.email,
+          firstName: m.user.firstName,
+          lastName: m.user.lastName,
+          image: m.user.image,
+          role: m.role,
+          lastLogin: m.user.lastLogin?.toISOString() ?? null,
+          joinedAt: m.createdAt.toISOString(),
+        })),
+        pagination: paginationMeta(input.page, input.limit, total),
+      };
+    }),
 
   /**
    * Invite a user to the organization (OWNER/ADMIN only).
@@ -373,50 +395,58 @@ export const membersRouter = router({
   /**
    * List pending invitations for the caller's organization (OWNER/ADMIN only)
    */
-  listPendingInvitations: rateLimitedProcedure.query(async ({ ctx }) => {
-    const { organizationId } = await requireOrgAdmin(
-      ctx.prisma,
-      ctx.user.id,
-      ctx.user.workspaceId,
-      ctx.locale
-    );
+  listPendingInvitations: rateLimitedProcedure
+    .input(PaginationInputSchema)
+    .query(async ({ ctx, input }) => {
+      const { organizationId } = await requireOrgAdmin(
+        ctx.prisma,
+        ctx.user.id,
+        ctx.user.workspaceId,
+        ctx.locale
+      );
 
-    const invitations = await ctx.prisma.organizationInvitation.findMany({
-      where: {
+      const where = {
         organizationId,
         acceptedAt: null,
         expiresAt: { gt: new Date() },
-      },
-      include: {
-        invitedBy: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
+      };
+      const [invitations, total] = await Promise.all([
+        ctx.prisma.organizationInvitation.findMany({
+          where,
+          include: {
+            invitedBy: {
+              select: {
+                id: true,
+                email: true,
+                firstName: true,
+                lastName: true,
+              },
+            },
           },
-        },
-      },
-      orderBy: { createdAt: "desc" },
-    });
+          orderBy: { createdAt: "desc" },
+          ...paginateQuery(input),
+        }),
+        ctx.prisma.organizationInvitation.count({ where }),
+      ]);
 
-    return {
-      invitations: invitations.map((inv) => ({
-        id: inv.id,
-        email: inv.email,
-        role: inv.role,
-        invitedBy: {
-          id: inv.invitedBy.id,
-          email: inv.invitedBy.email,
-          firstName: inv.invitedBy.firstName,
-          lastName: inv.invitedBy.lastName,
-        },
-        workspaceAssignments: inv.workspaceAssignments,
-        expiresAt: inv.expiresAt.toISOString(),
-        createdAt: inv.createdAt.toISOString(),
-      })),
-    };
-  }),
+      return {
+        invitations: invitations.map((inv) => ({
+          id: inv.id,
+          email: inv.email,
+          role: inv.role,
+          invitedBy: {
+            id: inv.invitedBy.id,
+            email: inv.invitedBy.email,
+            firstName: inv.invitedBy.firstName,
+            lastName: inv.invitedBy.lastName,
+          },
+          workspaceAssignments: inv.workspaceAssignments,
+          expiresAt: inv.expiresAt.toISOString(),
+          createdAt: inv.createdAt.toISOString(),
+        })),
+        pagination: paginationMeta(input.page, input.limit, total),
+      };
+    }),
 
   /**
    * List pending invitations for the current user (invitations they can accept)

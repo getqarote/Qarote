@@ -39,13 +39,16 @@ export const useOrgBillingInfo = () => {
 };
 
 // List organization members
-export const useOrgMembers = () => {
+export const useOrgMembers = (options?: { page?: number; limit?: number }) => {
   const { isAuthenticated } = useAuth();
 
-  return trpc.organization.members.list.useQuery(undefined, {
-    enabled: isAuthenticated,
-    staleTime: 30000,
-  });
+  return trpc.organization.members.list.useQuery(
+    { page: options?.page ?? 1, limit: options?.limit ?? 20 },
+    {
+      enabled: isAuthenticated,
+      staleTime: 30000,
+    }
+  );
 };
 
 // Invite member to organization
@@ -101,19 +104,25 @@ export const useAssignToWorkspace = () => {
 // List pending invitations for the organization (admin view)
 // The server throws FORBIDDEN for non-admin users, so we avoid retrying
 // and suppress error boundaries to prevent console noise.
-export const usePendingOrgInvitations = () => {
+export const usePendingOrgInvitations = (options?: {
+  page?: number;
+  limit?: number;
+}) => {
   const { isAuthenticated } = useAuth();
 
-  return trpc.organization.members.listPendingInvitations.useQuery(undefined, {
-    enabled: isAuthenticated,
-    staleTime: 30000,
-    retry: (failureCount, error) => {
-      // Don't retry on FORBIDDEN — the user simply isn't an admin
-      if (error.data?.code === "FORBIDDEN") return false;
-      return failureCount < 3;
-    },
-    throwOnError: false,
-  });
+  return trpc.organization.members.listPendingInvitations.useQuery(
+    { page: options?.page ?? 1, limit: options?.limit ?? 20 },
+    {
+      enabled: isAuthenticated,
+      staleTime: 30000,
+      retry: (failureCount, error) => {
+        // Don't retry on FORBIDDEN — the user simply isn't an admin
+        if (error.data?.code === "FORBIDDEN") return false;
+        return failureCount < 3;
+      },
+      throwOnError: false,
+    }
+  );
 };
 
 // List invitations for the current user (invitations they can accept)

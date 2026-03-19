@@ -2,6 +2,7 @@ import { useState } from "react";
 
 import {
   Building2,
+  Calendar,
   Check,
   Clock,
   Copy,
@@ -51,6 +52,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PaginationControls } from "@/components/ui/PaginationControls";
 import {
   Select,
   SelectContent,
@@ -306,9 +308,20 @@ const MemberWorkspacesDialog = ({
 // Main component
 // ---------------------------------------------------------------------------
 const OrganizationSection = () => {
+  const [membersPage, setMembersPage] = useState(1);
+  const [membersPageSize, setMembersPageSize] = useState(10);
+  const [invitationsPage, setInvitationsPage] = useState(1);
+  const [invitationsPageSize, setInvitationsPageSize] = useState(10);
+
   const { data: orgData, isLoading: orgLoading } = useCurrentOrganization();
-  const { data: membersData, isLoading: membersLoading } = useOrgMembers();
-  const { data: pendingInvData } = usePendingOrgInvitations();
+  const { data: membersData, isLoading: membersLoading } = useOrgMembers({
+    page: membersPage,
+    limit: membersPageSize,
+  });
+  const { data: pendingInvData } = usePendingOrgInvitations({
+    page: invitationsPage,
+    limit: invitationsPageSize,
+  });
   const { data: myInvData } = useMyOrgInvitations();
   const { data: wsData, isLoading: wsLoading } = useOrgWorkspaces();
   const updateOrgMutation = useUpdateOrganization();
@@ -356,6 +369,9 @@ const OrganizationSection = () => {
   const pendingInvitations = pendingInvData?.invitations ?? [];
   const myInvitations = myInvData?.invitations ?? [];
   const orgWorkspaces = wsData?.workspaces ?? [];
+  const membersTotal = membersData?.pagination?.total ?? members.length;
+  const invitationsTotal =
+    pendingInvData?.pagination?.total ?? pendingInvitations.length;
 
   // Initialize form when org data loads
   const [prevOrgId, setPrevOrgId] = useState<string | null>(null);
@@ -374,7 +390,7 @@ const OrganizationSection = () => {
         contactEmail: orgForm.contactEmail || null,
       });
       setEditing(false);
-      toast.success("Organization updated");
+      toast.success("Organization updated successfully.");
     } catch (error) {
       logger.error({ error }, "Update org error");
       toast.error("Failed to update organization");
@@ -594,14 +610,24 @@ const OrganizationSection = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <Building2 className="h-6 w-6" />
-        <div>
-          <h2 className="text-xl font-semibold">Organization</h2>
-          <p className="text-sm text-muted-foreground">
-            Manage your organization settings and members
-          </p>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Building2 className="h-6 w-6" />
+          <div>
+            <h2 className="text-xl font-semibold">Organization</h2>
+            <p className="text-sm text-muted-foreground">
+              Manage your organization settings and members
+            </p>
+          </div>
         </div>
+        <span
+          className="inline-flex items-center gap-1.5 rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-xs font-medium text-orange-700 dark:border-orange-800 dark:bg-orange-950 dark:text-orange-300"
+          role="status"
+          aria-label={`Your role: ${ROLE_LABELS[callerRole ?? "MEMBER"] ?? callerRole}`}
+        >
+          {getRoleIcon(callerRole ?? "MEMBER")}
+          {ROLE_LABELS[callerRole ?? "MEMBER"] ?? callerRole}
+        </span>
       </div>
 
       {/* Organization Info Card */}
@@ -613,53 +639,70 @@ const OrganizationSection = () => {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="org-name">Name</Label>
-            {editing ? (
-              <Input
-                id="org-name"
-                value={orgForm.name}
-                onChange={(e) =>
-                  setOrgForm((prev) => ({ ...prev, name: e.target.value }))
-                }
-                placeholder="Organization name"
-              />
-            ) : (
-              <p className="text-sm text-foreground">{org.name}</p>
-            )}
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="org-email">Contact Email</Label>
-            {editing ? (
-              <Input
-                id="org-email"
-                type="email"
-                value={orgForm.contactEmail}
-                onChange={(e) =>
-                  setOrgForm((prev) => ({
-                    ...prev,
-                    contactEmail: e.target.value,
-                  }))
-                }
-                placeholder="contact@example.com"
-              />
-            ) : (
-              <p className="text-sm text-foreground">
-                {org.contactEmail || (
-                  <span className="text-muted-foreground">Not set</span>
-                )}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="org-name">Name</Label>
+              {editing ? (
+                <Input
+                  id="org-name"
+                  value={orgForm.name}
+                  onChange={(e) =>
+                    setOrgForm((prev) => ({ ...prev, name: e.target.value }))
+                  }
+                  placeholder="Organization name"
+                />
+              ) : (
+                <p className="text-sm text-foreground">{org.name}</p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="org-email">Billing Email</Label>
+              {editing ? (
+                <Input
+                  id="org-email"
+                  type="email"
+                  value={orgForm.contactEmail}
+                  onChange={(e) =>
+                    setOrgForm((prev) => ({
+                      ...prev,
+                      contactEmail: e.target.value,
+                    }))
+                  }
+                  placeholder="contact@example.com"
+                />
+              ) : (
+                <p className="text-sm text-foreground">
+                  {org.contactEmail || (
+                    <span className="text-muted-foreground">Not set</span>
+                  )}
+                </p>
+              )}
+              <p className="text-xs text-muted-foreground">
+                Used for billing and administrative communications.
               </p>
-            )}
-          </div>
-          <div className="space-y-2">
-            <Label>Your Role</Label>
-            <div className="flex items-center gap-2">
-              {getRoleIcon(callerRole ?? "MEMBER")}
-              <span className="text-sm">
-                {ROLE_LABELS[callerRole ?? "MEMBER"] ?? callerRole}
-              </span>
             </div>
           </div>
+          {!editing && (
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
+              <span className="inline-flex items-center gap-1.5">
+                <Users className="h-4 w-4" />
+                Members: {org._count?.members ?? 0}
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <Settings className="h-4 w-4" />
+                Workspaces: {org._count?.workspaces ?? 0}
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <Calendar className="h-4 w-4" />
+                Created:{" "}
+                {new Date(org.createdAt).toLocaleDateString(undefined, {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
+              </span>
+            </div>
+          )}
           {isOrgAdmin && (
             <div className="flex justify-end gap-2">
               {editing ? (
@@ -714,7 +757,7 @@ const OrganizationSection = () => {
                 Members
               </CardTitle>
               <CardDescription>
-                {members.length} member{members.length !== 1 ? "s" : ""} in this
+                {membersTotal} member{membersTotal !== 1 ? "s" : ""} in this
                 organization
               </CardDescription>
             </div>
@@ -737,105 +780,118 @@ const OrganizationSection = () => {
               <Skeleton className="h-12 w-full" />
             </div>
           ) : (
-            <div className="space-y-2">
-              {members.map((member) => (
-                <div
-                  key={member.id}
-                  className="flex items-center justify-between p-3 rounded-lg border"
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="flex items-center justify-center h-8 w-8 rounded-full bg-muted shrink-0">
-                      {member.image ? (
-                        <img
-                          src={member.image}
-                          alt=""
-                          className="h-8 w-8 rounded-full object-cover"
-                        />
+            <>
+              <div className="space-y-2">
+                {members.map((member) => (
+                  <div
+                    key={member.id}
+                    className="flex items-center justify-between p-3 rounded-lg border"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="flex items-center justify-center h-8 w-8 rounded-full bg-muted shrink-0">
+                        {member.image ? (
+                          <img
+                            src={member.image}
+                            alt=""
+                            className="h-8 w-8 rounded-full object-cover"
+                          />
+                        ) : (
+                          <User className="h-4 w-4 text-muted-foreground" />
+                        )}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="font-medium text-sm truncate">
+                          {member.firstName} {member.lastName}
+                        </div>
+                        <div className="text-xs text-muted-foreground flex items-center gap-1">
+                          <Mail className="h-3 w-3" />
+                          {member.email}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      {isOrgAdmin && member.role !== "OWNER" ? (
+                        <Select
+                          value={member.role}
+                          onValueChange={(value) =>
+                            handleRoleChange(member.id, value)
+                          }
+                          disabled={updateRoleMutation.isPending}
+                        >
+                          <SelectTrigger className="w-28 h-8 text-xs">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="ADMIN">Admin</SelectItem>
+                            <SelectItem value="MEMBER">Member</SelectItem>
+                          </SelectContent>
+                        </Select>
                       ) : (
-                        <User className="h-4 w-4 text-muted-foreground" />
+                        <Badge
+                          variant={
+                            member.role === "OWNER" ? "default" : "secondary"
+                          }
+                          className="text-xs"
+                        >
+                          <span className="flex items-center gap-1">
+                            {getRoleIcon(member.role)}
+                            {ROLE_LABELS[member.role]}
+                          </span>
+                        </Badge>
+                      )}
+
+                      {isOrgAdmin && member.role !== "OWNER" && (
+                        <>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            title="Manage workspaces"
+                            onClick={() =>
+                              setManageWsMember({
+                                id: member.id,
+                                userId: member.userId,
+                                firstName: member.firstName,
+                                lastName: member.lastName,
+                              })
+                            }
+                          >
+                            <Settings className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                            onClick={() => {
+                              setMemberToRemove({
+                                id: member.id,
+                                email: member.email,
+                              });
+                              setRemoveDialogOpen(true);
+                            }}
+                            disabled={removeMemberMutation.isPending}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </>
                       )}
                     </div>
-                    <div className="min-w-0">
-                      <div className="font-medium text-sm truncate">
-                        {member.firstName} {member.lastName}
-                      </div>
-                      <div className="text-xs text-muted-foreground flex items-center gap-1">
-                        <Mail className="h-3 w-3" />
-                        {member.email}
-                      </div>
-                    </div>
                   </div>
-
-                  <div className="flex items-center gap-2 shrink-0">
-                    {isOrgAdmin && member.role !== "OWNER" ? (
-                      <Select
-                        value={member.role}
-                        onValueChange={(value) =>
-                          handleRoleChange(member.id, value)
-                        }
-                        disabled={updateRoleMutation.isPending}
-                      >
-                        <SelectTrigger className="w-28 h-8 text-xs">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="ADMIN">Admin</SelectItem>
-                          <SelectItem value="MEMBER">Member</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    ) : (
-                      <Badge
-                        variant={
-                          member.role === "OWNER" ? "default" : "secondary"
-                        }
-                        className="text-xs"
-                      >
-                        <span className="flex items-center gap-1">
-                          {getRoleIcon(member.role)}
-                          {ROLE_LABELS[member.role]}
-                        </span>
-                      </Badge>
-                    )}
-
-                    {isOrgAdmin && member.role !== "OWNER" && (
-                      <>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8"
-                          title="Manage workspaces"
-                          onClick={() =>
-                            setManageWsMember({
-                              id: member.id,
-                              userId: member.userId,
-                              firstName: member.firstName,
-                              lastName: member.lastName,
-                            })
-                          }
-                        >
-                          <Settings className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                          onClick={() => {
-                            setMemberToRemove({
-                              id: member.id,
-                              email: member.email,
-                            });
-                            setRemoveDialogOpen(true);
-                          }}
-                          disabled={removeMemberMutation.isPending}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+              <PaginationControls
+                total={membersTotal}
+                page={membersPage}
+                pageSize={membersPageSize}
+                onPageChange={setMembersPage}
+                onPageSizeChange={(size) => {
+                  setMembersPageSize(size);
+                  setMembersPage(1);
+                }}
+                itemLabel="members"
+              />
+            </>
           )}
         </CardContent>
       </Card>
@@ -849,8 +905,8 @@ const OrganizationSection = () => {
               Pending Invitations
             </CardTitle>
             <CardDescription>
-              {pendingInvitations.length} pending invitation
-              {pendingInvitations.length !== 1 ? "s" : ""}
+              {invitationsTotal} pending invitation
+              {invitationsTotal !== 1 ? "s" : ""}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -877,6 +933,17 @@ const OrganizationSection = () => {
                 </div>
               ))}
             </div>
+            <PaginationControls
+              total={invitationsTotal}
+              page={invitationsPage}
+              pageSize={invitationsPageSize}
+              onPageChange={setInvitationsPage}
+              onPageSizeChange={(size) => {
+                setInvitationsPageSize(size);
+                setInvitationsPage(1);
+              }}
+              itemLabel="invitations"
+            />
           </CardContent>
         </Card>
       )}

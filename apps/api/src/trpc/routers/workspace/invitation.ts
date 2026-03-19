@@ -12,6 +12,11 @@ import {
 } from "@/services/plan/plan.service";
 
 import { inviteUserSchema } from "@/schemas/invitation";
+import {
+  paginateQuery,
+  PaginationInputSchema,
+  paginationMeta,
+} from "@/schemas/pagination";
 import { InvitationIdParamSchema } from "@/schemas/workspace";
 
 import { emailConfig } from "@/config";
@@ -33,76 +38,83 @@ export const invitationRouter = router({
   /**
    * Get all pending invitations for workspace (PROTECTED)
    */
-  getInvitations: rateLimitedProcedure.query(async ({ ctx }) => {
-    const user = ctx.user;
+  getInvitations: rateLimitedProcedure
+    .input(PaginationInputSchema)
+    .query(async ({ ctx, input }) => {
+      const user = ctx.user;
 
-    try {
-      // Read workspaceId fresh from DB — better-auth caches session data for
-      // up to 5 minutes, so ctx.user.workspaceId may be stale immediately after
-      // workspace creation.
-      const freshUser = await ctx.prisma.user.findUnique({
-        where: { id: user.id },
-        select: { workspaceId: true },
-      });
-      const workspaceId = freshUser?.workspaceId;
-
-      if (!workspaceId) {
-        throw new TRPCError({
-          code: "FORBIDDEN", // authenticated but no workspace — must not trigger sign-out
-          message: te(
-            ctx.locale,
-            "workspace.userNotAuthenticatedOrNotInWorkspace"
-          ),
+      try {
+        // Read workspaceId fresh from DB — better-auth caches session data for
+        // up to 5 minutes, so ctx.user.workspaceId may be stale immediately after
+        // workspace creation.
+        const freshUser = await ctx.prisma.user.findUnique({
+          where: { id: user.id },
+          select: { workspaceId: true },
         });
-      }
+        const workspaceId = freshUser?.workspaceId;
 
-      // Get all pending invitations for the workspace
-      const invitations = await ctx.prisma.invitation.findMany({
-        where: {
+        if (!workspaceId) {
+          throw new TRPCError({
+            code: "FORBIDDEN", // authenticated but no workspace — must not trigger sign-out
+            message: te(
+              ctx.locale,
+              "workspace.userNotAuthenticatedOrNotInWorkspace"
+            ),
+          });
+        }
+
+        const where = {
           workspaceId,
           status: InvitationStatus.PENDING,
-          expiresAt: {
-            gt: new Date(),
-          },
-        },
-        select: {
-          id: true,
-          email: true,
-          role: true,
-          token: true,
-          expiresAt: true,
-          createdAt: true,
-          invitedBy: {
+          expiresAt: { gt: new Date() },
+        };
+        const [invitations, total] = await Promise.all([
+          ctx.prisma.invitation.findMany({
+            where,
             select: {
               id: true,
               email: true,
-              firstName: true,
-              lastName: true,
+              role: true,
+              token: true,
+              expiresAt: true,
+              createdAt: true,
+              invitedBy: {
+                select: {
+                  id: true,
+                  email: true,
+                  firstName: true,
+                  lastName: true,
+                },
+              },
             },
-          },
-        },
-        orderBy: { createdAt: "desc" },
-      });
+            orderBy: { createdAt: "desc" },
+            ...paginateQuery(input),
+          }),
+          ctx.prisma.invitation.count({ where }),
+        ]);
 
-      const formattedInvitations = invitations.map((invitation) => ({
-        ...invitation,
-        expiresAt: invitation.expiresAt.toISOString(),
-        createdAt: invitation.createdAt.toISOString(),
-        invitedBy: formatInvitedBy(invitation.invitedBy),
-      }));
+        const formattedInvitations = invitations.map((invitation) => ({
+          ...invitation,
+          expiresAt: invitation.expiresAt.toISOString(),
+          createdAt: invitation.createdAt.toISOString(),
+          invitedBy: formatInvitedBy(invitation.invitedBy),
+        }));
 
-      return { invitations: formattedInvitations };
-    } catch (error) {
-      if (error instanceof TRPCError) {
-        throw error;
+        return {
+          invitations: formattedInvitations,
+          pagination: paginationMeta(input.page, input.limit, total),
+        };
+      } catch (error) {
+        if (error instanceof TRPCError) {
+          throw error;
+        }
+        ctx.logger.error({ error }, "Error fetching invitations");
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: te(ctx.locale, "workspace.failedToFetchInvitations"),
+        });
       }
-      ctx.logger.error({ error }, "Error fetching invitations");
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: te(ctx.locale, "workspace.failedToFetchInvitations"),
-      });
-    }
-  }),
+    }),
 
   /**
    * Send invitation (PROTECTED with plan validation)
@@ -155,7 +167,7 @@ export const invitationRouter = router({
         });
 
         // Get plan via workspace → organization
-        const ownerPlan = await getWorkspacePlan(user.workspaceId);
+        const ownerPlan = await getWorkspacePlan(workspaceId!);
 
         // Validate invitation against plan limits
         validateUserInvitation(ownerPlan, memberCount);

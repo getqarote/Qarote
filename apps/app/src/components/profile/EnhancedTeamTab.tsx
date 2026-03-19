@@ -18,6 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { PaginationControls } from "@/components/ui/PaginationControls";
 import {
   Table,
   TableBody,
@@ -50,6 +51,16 @@ interface EnhancedTeamTabProps {
   isRemoving: boolean;
   canInviteMoreUsers: boolean;
   emailEnabled?: boolean;
+  usersTotal: number;
+  usersPage: number;
+  usersPageSize: number;
+  onUsersPageChange: (page: number) => void;
+  onUsersPageSizeChange: (size: number) => void;
+  invTotal: number;
+  invPage: number;
+  invPageSize: number;
+  onInvPageChange: (page: number) => void;
+  onInvPageSizeChange: (size: number) => void;
 }
 
 export const EnhancedTeamTab = ({
@@ -70,13 +81,23 @@ export const EnhancedTeamTab = ({
   isRemoving,
   canInviteMoreUsers,
   emailEnabled,
+  usersTotal,
+  usersPage,
+  usersPageSize,
+  onUsersPageChange,
+  onUsersPageSizeChange,
+  invTotal,
+  invPage,
+  invPageSize,
+  onInvPageChange,
+  onInvPageSizeChange,
 }: EnhancedTeamTabProps) => {
   const { t } = useTranslation("profile");
   const { planData, user } = useUser();
 
   const planFeatures = planData?.planFeatures;
-  const totalUsers = workspaceUsers.length;
-  const pendingInvitations = invitations.length;
+  const totalUsers = usersTotal;
+  const pendingInvitations = invTotal;
   const maxUsers = planFeatures?.maxUsers;
 
   // Admins can manage all members
@@ -170,82 +191,94 @@ export const EnhancedTeamTab = ({
               ))}
             </div>
           ) : workspaceUsers.length > 0 ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t("team.tableUser")}</TableHead>
-                  <TableHead>{t("team.tableRole")}</TableHead>
-                  <TableHead>{t("team.tableStatus")}</TableHead>
-                  <TableHead>{t("team.tableLastLogin")}</TableHead>
-                  <TableHead>{t("team.tableJoined")}</TableHead>
-                  <TableHead>{t("team.tableActions")}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {workspaceUsers.map((workspaceUser) => (
-                  <TableRow key={workspaceUser.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Avatar className="h-8 w-8">
-                          <AvatarFallback>
-                            {workspaceUser.firstName?.[0]}
-                            {workspaceUser.lastName?.[0]}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-medium">
-                            {workspaceUser.firstName} {workspaceUser.lastName}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {workspaceUser.email}
-                          </p>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge className={getRoleColor(workspaceUser.role)}>
-                        {workspaceUser.role}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={
-                          workspaceUser.isActive ? "default" : "secondary"
-                        }
-                      >
-                        {workspaceUser.isActive
-                          ? t("team.active")
-                          : t("team.inactive")}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {workspaceUser.lastLogin
-                        ? formatDate(workspaceUser.lastLogin)
-                        : t("team.never")}
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {formatDate(workspaceUser.createdAt)}
-                    </TableCell>
-                    <TableCell>
-                      {workspaceUser.id !== user?.id &&
-                        (isWorkspaceOwner ||
-                          workspaceUser.role !== "ADMIN") && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleRemoveUserClick(workspaceUser)}
-                            disabled={isRemoving}
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                            title={t("team.removeUser")}
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        )}
-                    </TableCell>
+            <>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{t("team.tableUser")}</TableHead>
+                    <TableHead>{t("team.tableRole")}</TableHead>
+                    <TableHead>{t("team.tableStatus")}</TableHead>
+                    <TableHead>{t("team.tableLastLogin")}</TableHead>
+                    <TableHead>{t("team.tableJoined")}</TableHead>
+                    <TableHead>{t("team.tableActions")}</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {workspaceUsers.map((workspaceUser) => (
+                    <TableRow key={workspaceUser.id}>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Avatar className="h-8 w-8">
+                            <AvatarFallback>
+                              {workspaceUser.firstName?.[0]}
+                              {workspaceUser.lastName?.[0]}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="font-medium">
+                              {workspaceUser.firstName} {workspaceUser.lastName}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              {workspaceUser.email}
+                            </p>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge className={getRoleColor(workspaceUser.role)}>
+                          {workspaceUser.role}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={
+                            workspaceUser.isActive ? "default" : "secondary"
+                          }
+                        >
+                          {workspaceUser.isActive
+                            ? t("team.active")
+                            : t("team.inactive")}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {workspaceUser.lastLogin
+                          ? formatDate(workspaceUser.lastLogin)
+                          : t("team.never")}
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {formatDate(workspaceUser.createdAt)}
+                      </TableCell>
+                      <TableCell>
+                        {workspaceUser.id !== user?.id &&
+                          (isWorkspaceOwner ||
+                            workspaceUser.role !== "ADMIN") && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() =>
+                                handleRemoveUserClick(workspaceUser)
+                              }
+                              disabled={isRemoving}
+                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                              title={t("team.removeUser")}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+              <PaginationControls
+                total={usersTotal}
+                page={usersPage}
+                pageSize={usersPageSize}
+                onPageChange={onUsersPageChange}
+                onPageSizeChange={onUsersPageSizeChange}
+                itemLabel="members"
+              />
+            </>
           ) : (
             <p className="text-muted-foreground text-center py-4">
               {t("team.noTeamMembers")}
@@ -274,96 +307,108 @@ export const EnhancedTeamTab = ({
                 ))}
               </div>
             ) : invitations.length > 0 ? (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{t("team.tableEmail")}</TableHead>
-                    <TableHead>{t("team.tableRole")}</TableHead>
-                    <TableHead>{t("team.tableInvitedBy")}</TableHead>
-                    <TableHead>{t("team.tableInvited")}</TableHead>
-                    <TableHead>{t("team.tableExpires")}</TableHead>
-                    <TableHead>{t("team.tableActions")}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {invitations.map((invitation) => (
-                    <TableRow key={invitation.id}>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Mail className="h-4 w-4 text-amber-500" />
-                          <span className="font-medium">
-                            {invitation.email}
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={getRoleColor(invitation.role)}>
-                          {invitation.role}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="text-sm">
-                          <p className="font-medium">
-                            {invitation.invitedBy.displayName}
-                          </p>
-                          <p className="text-muted-foreground">
-                            {invitation.invitedBy.email}
-                          </p>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
-                        {formatDate(invitation.createdAt)}
-                      </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
-                        {formatDate(invitation.expiresAt)}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={async () => {
-                              try {
-                                const inviteUrl = `${window.location.origin}/invite/${invitation.token}`;
-                                await navigator.clipboard.writeText(inviteUrl);
-                                setCopiedToken(invitation.id);
-                                setTimeout(() => setCopiedToken(null), 2000);
-                              } catch {
-                                // Clipboard write failed (e.g. permissions denied)
-                              }
-                            }}
-                            className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                            title={t("team.copyInviteLink")}
-                            aria-label={t("team.copyInviteLink")}
-                          >
-                            {copiedToken === invitation.id ? (
-                              <Check className="h-4 w-4" />
-                            ) : (
-                              <Copy className="h-4 w-4" />
-                            )}
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() =>
-                              onRevokeInvitation(
-                                invitation.id,
-                                invitation.email
-                              )
-                            }
-                            disabled={isRevoking}
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                            title={t("team.revokeInvitation")}
-                            aria-label={t("team.revokeInvitation")}
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
+              <>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>{t("team.tableEmail")}</TableHead>
+                      <TableHead>{t("team.tableRole")}</TableHead>
+                      <TableHead>{t("team.tableInvitedBy")}</TableHead>
+                      <TableHead>{t("team.tableInvited")}</TableHead>
+                      <TableHead>{t("team.tableExpires")}</TableHead>
+                      <TableHead>{t("team.tableActions")}</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {invitations.map((invitation) => (
+                      <TableRow key={invitation.id}>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Mail className="h-4 w-4 text-amber-500" />
+                            <span className="font-medium">
+                              {invitation.email}
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge className={getRoleColor(invitation.role)}>
+                            {invitation.role}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-sm">
+                            <p className="font-medium">
+                              {invitation.invitedBy.displayName}
+                            </p>
+                            <p className="text-muted-foreground">
+                              {invitation.invitedBy.email}
+                            </p>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {formatDate(invitation.createdAt)}
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {formatDate(invitation.expiresAt)}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={async () => {
+                                try {
+                                  const inviteUrl = `${window.location.origin}/invite/${invitation.token}`;
+                                  await navigator.clipboard.writeText(
+                                    inviteUrl
+                                  );
+                                  setCopiedToken(invitation.id);
+                                  setTimeout(() => setCopiedToken(null), 2000);
+                                } catch {
+                                  // Clipboard write failed (e.g. permissions denied)
+                                }
+                              }}
+                              className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                              title={t("team.copyInviteLink")}
+                              aria-label={t("team.copyInviteLink")}
+                            >
+                              {copiedToken === invitation.id ? (
+                                <Check className="h-4 w-4" />
+                              ) : (
+                                <Copy className="h-4 w-4" />
+                              )}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() =>
+                                onRevokeInvitation(
+                                  invitation.id,
+                                  invitation.email
+                                )
+                              }
+                              disabled={isRevoking}
+                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                              title={t("team.revokeInvitation")}
+                              aria-label={t("team.revokeInvitation")}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+                <PaginationControls
+                  total={invTotal}
+                  page={invPage}
+                  pageSize={invPageSize}
+                  onPageChange={onInvPageChange}
+                  onPageSizeChange={onInvPageSizeChange}
+                  itemLabel="invitations"
+                />
+              </>
             ) : (
               <p className="text-muted-foreground text-center py-4">
                 {t("team.noPendingInvitations")}
