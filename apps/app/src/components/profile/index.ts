@@ -1,6 +1,5 @@
 export { EnhancedTeamTab } from "./EnhancedTeamTab";
 export { PersonalInfoTab } from "./PersonalInfoTab";
-export { PlansSummaryTab } from "./PlansSummaryTab";
 export { ProfileLoading } from "./ProfileLoading";
 export * from "./profileUtils";
 export { WorkspaceInfoTab } from "./WorkspaceInfoTab";
