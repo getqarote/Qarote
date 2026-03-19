@@ -5,7 +5,7 @@ export const PaginationInputSchema = z.object({
   limit: z.number().int().positive().max(100).optional().default(20),
 });
 
-export type PaginationInput = z.infer<typeof PaginationInputSchema>;
+type PaginationInput = z.infer<typeof PaginationInputSchema>;
 
 export function paginateQuery(input: PaginationInput) {
   const { page, limit } = input;
