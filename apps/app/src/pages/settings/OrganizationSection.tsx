@@ -607,19 +607,7 @@ const OrganizationSection = () => {
       {/* Organization Info Card */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>General</CardTitle>
-            {isOrgAdmin && !editing && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setEditing(true)}
-              >
-                <Pencil className="h-4 w-4 mr-2" />
-                Edit
-              </Button>
-            )}
-          </div>
+          <CardTitle>General</CardTitle>
           <CardDescription>
             Basic information about your organization
           </CardDescription>
@@ -672,6 +660,14 @@ const OrganizationSection = () => {
               </span>
             </div>
           </div>
+          {isOrgAdmin && !editing && (
+            <div className="flex justify-end">
+              <Button className="btn-primary" onClick={() => setEditing(true)}>
+                <Pencil className="h-4 w-4 mr-2" />
+                Edit Organization
+              </Button>
+            </div>
+          )}
         </CardContent>
         {editing && (
           <CardFooter className="flex gap-2">
