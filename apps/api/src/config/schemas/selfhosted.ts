@@ -21,7 +21,9 @@ export const selfhostedSchema = baseSchema.extend({
     .string()
     .trim()
     .min(1)
-    .regex(/^[^\r\n]*$/, "FROM_EMAIL must not contain CR or LF")
+    .refine((value) => !/[\r\n]/.test(value), {
+      message: "FROM_EMAIL must not contain CR or LF",
+    })
     .optional()
     .default("Qarote <noreply@localhost>")
     .describe("Email sender address - only needed if ENABLE_EMAIL=true"),
