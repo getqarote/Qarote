@@ -111,19 +111,9 @@ const Billing: React.FC = () => {
       toast.error(t("error.workspaceIdRequired"));
       return;
     }
-    // Open blank tab synchronously during user gesture to avoid popup blockers
-    const win = window.open("", "_blank", "noopener,noreferrer");
     createBillingPortalMutation.mutate(undefined, {
       onSuccess: (data: { url: string }) => {
-        if (win) {
-          win.location.href = data.url;
-        } else {
-          window.location.href = data.url;
-        }
-      },
-      onError: () => {
-        win?.close();
-        toast.error(t("error.failedToOpenBillingPortal"));
+        window.location.href = data.url;
       },
     });
   };
@@ -188,7 +178,7 @@ const Billing: React.FC = () => {
             paymentMethod={billingData.paymentMethod}
             onManagePaymentMethod={handleOpenBillingPortal}
             onCancelSubscription={
-              isTrialing && !cancelAtPeriodEnd
+              isTrialing && !cancelAtPeriodEnd && billingData.paymentMethod
                 ? handleCancelSubscription
                 : undefined
             }
