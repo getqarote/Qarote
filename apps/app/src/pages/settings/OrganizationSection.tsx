@@ -9,6 +9,7 @@ import {
   Loader2,
   Mail,
   Pencil,
+  Save,
   Settings,
   Shield,
   Trash2,
@@ -37,7 +38,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -660,45 +660,48 @@ const OrganizationSection = () => {
               </span>
             </div>
           </div>
-          {isOrgAdmin && !editing && (
-            <div className="flex justify-end">
-              <Button className="btn-primary" onClick={() => setEditing(true)}>
-                <Pencil className="h-4 w-4 mr-2" />
-                Edit Organization
-              </Button>
+          {isOrgAdmin && (
+            <div className="flex justify-end gap-2">
+              {editing ? (
+                <>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setOrgForm({
+                        name: org?.name || "",
+                        contactEmail: org?.contactEmail || "",
+                      });
+                      setEditing(false);
+                    }}
+                  >
+                    <X className="h-4 w-4 mr-2" />
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleUpdateOrg}
+                    disabled={updateOrgMutation.isPending}
+                    className="btn-primary"
+                  >
+                    {updateOrgMutation.isPending ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Save className="h-4 w-4 mr-2" />
+                    )}
+                    {updateOrgMutation.isPending ? "Saving..." : "Save Changes"}
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  className="btn-primary"
+                  onClick={() => setEditing(true)}
+                >
+                  <Pencil className="h-4 w-4 mr-2" />
+                  Edit Organization
+                </Button>
+              )}
             </div>
           )}
         </CardContent>
-        {editing && (
-          <CardFooter className="flex gap-2">
-            <Button
-              className="bg-gradient-button hover:bg-gradient-button-hover text-white"
-              onClick={handleUpdateOrg}
-              disabled={updateOrgMutation.isPending}
-            >
-              {updateOrgMutation.isPending ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                "Save"
-              )}
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setOrgForm({
-                  name: org?.name || "",
-                  contactEmail: org?.contactEmail || "",
-                });
-                setEditing(false);
-              }}
-            >
-              Cancel
-            </Button>
-          </CardFooter>
-        )}
       </Card>
 
       {/* Members Card */}
