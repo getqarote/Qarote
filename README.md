@@ -11,7 +11,7 @@
 
 [Features](#-features) • [Editions](#-editions) • [Quick Start](#-quick-start) • [Documentation](#-documentation) • [Contributing](#-contributing)
 
-![Qarote Demo](assets/demo.gif)
+[![Animated demo showing Qarote's dashboard monitoring RabbitMQ queues, exchanges, and system metrics](assets/demo.gif)](https://www.youtube.com/watch?v=g9Coi3niYIY)
 
 </div>
 
