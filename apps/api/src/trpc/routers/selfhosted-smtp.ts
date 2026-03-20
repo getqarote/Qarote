@@ -259,7 +259,7 @@ export const selfhostedSmtpRouter = router({
 
         // Send a test email
         await transporter.sendMail({
-          from: cfg.fromEmail || "noreply@localhost",
+          from: cfg.fromEmail || "Qarote <noreply@localhost>",
           to: input.recipientEmail,
           subject: "Qarote SMTP Test",
           html: "<p>This is a test email from Qarote. Your SMTP configuration is working correctly.</p>",

@@ -18,9 +18,14 @@ export const selfhostedSchema = baseSchema.extend({
   ENABLE_EMAIL: z.coerce.boolean().default(false),
   EMAIL_PROVIDER: z.literal("smtp").default("smtp"),
   FROM_EMAIL: z
-    .email()
+    .string()
+    .trim()
+    .min(1)
+    .refine((value) => !/[\r\n]/.test(value), {
+      message: "FROM_EMAIL must not contain CR or LF",
+    })
     .optional()
-    .default("noreply@localhost")
+    .default("Qarote <noreply@localhost>")
     .describe("Email sender address - only needed if ENABLE_EMAIL=true"),
   FRONTEND_URL: z
     .url()

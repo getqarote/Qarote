@@ -18,6 +18,7 @@ export function useBrowserNotifications(
   options: BrowserNotificationOptions
 ) {
   const previousAlertIdsRef = useRef<Set<string>>(new Set());
+  const isInitialLoadRef = useRef(true);
   const permissionRequestedRef = useRef(false);
 
   // Request notification permission when enabled
@@ -98,6 +99,14 @@ export function useBrowserNotifications(
     }
 
     const currentAlertIds = new Set(alerts.map((alert) => alert.id));
+
+    // Skip notifications on initial load — existing alerts aren't "new"
+    if (isInitialLoadRef.current) {
+      isInitialLoadRef.current = false;
+      previousAlertIdsRef.current = currentAlertIds;
+      return;
+    }
+
     const previousAlertIds = previousAlertIdsRef.current;
 
     // Find new alerts (alerts that weren't in the previous set)

@@ -14,7 +14,13 @@ export const cloudSchema = baseSchema.extend({
   RESEND_API_KEY: z
     .string()
     .min(1, "RESEND_API_KEY is required for cloud mode"),
-  FROM_EMAIL: z.email().describe("noreply@qarote.io"),
+  FROM_EMAIL: z
+    .string()
+    .trim()
+    .min(1, "FROM_EMAIL is required")
+    .refine((value) => !/[\r\n]/.test(value), {
+      message: "FROM_EMAIL must not contain newlines",
+    }),
   FRONTEND_URL: z.url("FRONTEND_URL must be a valid URL"),
   API_URL: z
     .url("API_URL must be a valid URL")
