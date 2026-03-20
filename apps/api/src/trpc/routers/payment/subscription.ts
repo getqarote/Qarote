@@ -10,7 +10,7 @@ import {
 
 import { config } from "@/config";
 
-import { router, strictRateLimitedProcedure } from "@/trpc/trpc";
+import { router, strictRateLimitedAdminProcedure } from "@/trpc/trpc";
 
 import { OrgRole } from "@/generated/prisma/client";
 import { te } from "@/i18n";
@@ -23,7 +23,7 @@ export const subscriptionRouter = router({
   /**
    * Cancel subscription (PROTECTED - STRICT RATE LIMITED)
    */
-  cancelSubscription: strictRateLimitedProcedure
+  cancelSubscription: strictRateLimitedAdminProcedure
     .input(cancelSubscriptionSchema)
     .mutation(async ({ input, ctx }) => {
       const { cancelImmediately = false, reason = "", feedback = "" } = input;
@@ -140,7 +140,7 @@ export const subscriptionRouter = router({
   /**
    * Renew subscription (PROTECTED - STRICT RATE LIMITED)
    */
-  renewSubscription: strictRateLimitedProcedure
+  renewSubscription: strictRateLimitedAdminProcedure
     .input(renewSubscriptionSchema)
     .mutation(async ({ input, ctx }) => {
       const { plan, interval = "monthly" } = input;

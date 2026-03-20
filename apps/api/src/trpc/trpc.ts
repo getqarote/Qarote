@@ -152,6 +152,22 @@ export const rateLimitedAdminProcedure = adminProcedure.use(
 );
 
 /**
+ * Admin procedure with strict rate limiting (5 requests/minute)
+ * Use for admin-only sensitive operations like payments, cancellations
+ */
+export const strictRateLimitedAdminProcedure = adminProcedure.use(
+  strictRateLimiter as Parameters<typeof adminProcedure.use>[0]
+);
+
+/**
+ * Admin procedure with billing rate limiting (30 requests/minute)
+ * Use for admin-only billing overview and portal access
+ */
+export const billingRateLimitedAdminProcedure = adminProcedure.use(
+  billingRateLimiter as Parameters<typeof adminProcedure.use>[0]
+);
+
+/**
  * Workspace-scoped procedure - requires workspace access and rate limiting
  * Workspace ID can come from input, context, or user's workspaceId
  */

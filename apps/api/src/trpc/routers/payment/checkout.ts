@@ -8,7 +8,7 @@ import { createCheckoutSessionSchema } from "@/schemas/payment";
 
 import { emailConfig } from "@/config";
 
-import { router, strictRateLimitedProcedure } from "@/trpc/trpc";
+import { router, strictRateLimitedAdminProcedure } from "@/trpc/trpc";
 
 import { UserPlan } from "@/generated/prisma/client";
 import { te } from "@/i18n";
@@ -21,7 +21,7 @@ export const checkoutRouter = router({
   /**
    * Create checkout session for subscription (PROTECTED - STRICT RATE LIMITED)
    */
-  createCheckoutSession: strictRateLimitedProcedure
+  createCheckoutSession: strictRateLimitedAdminProcedure
     .input(createCheckoutSessionSchema)
     .mutation(async ({ input, ctx }) => {
       const { plan, billingInterval } = input;
