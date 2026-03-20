@@ -2,18 +2,17 @@
   "pageTitle": "Settings",
   "groups": {
     "personal": "Personal",
-    "organization": "Organization",
-    "administration": "Administration"
+    "workspace": "Workspace",
+    "organization": "Organization"
   },
   "nav": {
     "profile": "Profile",
-    "workspace": "Workspace",
-    "plans": "Plans",
-    "organization": "Organization",
-    "billing": "Billing",
-    "team": "Team",
-    "license": "License",
+    "workspaceSettings": "Settings",
+    "members": "Members",
+    "organization": "Settings",
+    "subscription": "Subscription",
     "sso": "SSO",
+    "license": "License",
     "smtp": "Email",
     "feedback": "Feedback"
   },

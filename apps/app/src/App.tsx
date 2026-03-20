@@ -49,12 +49,7 @@ const WorkspaceSection = lazy(() =>
     default: m.default,
   }))
 );
-const PlansSection = lazy(() =>
-  import("./pages/settings/PlansSection").then((m) => ({
-    default: m.default,
-  }))
-);
-const TeamSection = lazy(() =>
+const MembersSection = lazy(() =>
   import("./pages/settings/TeamSection").then((m) => ({
     default: m.default,
   }))
@@ -84,7 +79,7 @@ const OrganizationSection = lazy(() =>
     default: m.default,
   }))
 );
-const BillingSection = lazy(() =>
+const SubscriptionSection = lazy(() =>
   import("./pages/settings/BillingSection").then((m) => ({
     default: m.default,
   }))
@@ -341,8 +336,23 @@ const AppCore = () => (
                               path="workspace"
                               element={<WorkspaceSection />}
                             />
-                            <Route path="plans" element={<PlansSection />} />
-                            <Route path="team" element={<TeamSection />} />
+                            <Route
+                              path="members"
+                              element={<MembersSection />}
+                            />
+                            {/* Redirects for old routes */}
+                            <Route
+                              path="plans"
+                              element={
+                                <Navigate to="/settings/subscription" replace />
+                              }
+                            />
+                            <Route
+                              path="team"
+                              element={
+                                <Navigate to="/settings/members" replace />
+                              }
+                            />
                             <Route
                               path="license"
                               element={<LicenseSection />}
@@ -352,8 +362,14 @@ const AppCore = () => (
                               element={<OrganizationSection />}
                             />
                             <Route
+                              path="subscription"
+                              element={<SubscriptionSection />}
+                            />
+                            <Route
                               path="billing"
-                              element={<BillingSection />}
+                              element={
+                                <Navigate to="/settings/subscription" replace />
+                              }
                             />
                             <Route path="sso" element={<SSOSection />} />
                             <Route path="smtp" element={<SMTPSection />} />

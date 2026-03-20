@@ -2,18 +2,17 @@
   "pageTitle": "Paramètres",
   "groups": {
     "personal": "Personnel",
-    "organization": "Organisation",
-    "administration": "Administration"
+    "workspace": "Espace de travail",
+    "organization": "Organisation"
   },
   "nav": {
     "profile": "Profil",
-    "workspace": "Espace de travail",
-    "plans": "Forfaits",
-    "organization": "Organisation",
-    "billing": "Facturation",
-    "team": "Équipe",
-    "license": "Licence",
+    "workspaceSettings": "Paramètres",
+    "members": "Membres",
+    "organization": "Paramètres",
+    "subscription": "Abonnement",
     "sso": "SSO",
+    "license": "Licence",
     "smtp": "E-mail",
     "feedback": "Commentaires"
   },

@@ -7,8 +7,6 @@ import {
   CreditCard,
   KeyRound,
   Mail,
-  MessageSquare,
-  Rabbit,
   Shield,
   User,
   Users,
@@ -46,17 +44,25 @@ const navGroups: NavGroup[] = [
         icon: User,
         labelKey: "settings:nav.profile",
       },
+    ],
+  },
+  {
+    labelKey: "settings:groups.workspace",
+    adminOnly: true,
+    items: [
       {
         key: "workspace",
         path: "/settings/workspace",
         icon: Building,
-        labelKey: "settings:nav.workspace",
+        labelKey: "settings:nav.workspaceSettings",
+        adminOnly: true,
       },
       {
-        key: "plans",
-        path: "/settings/plans",
-        icon: Rabbit,
-        labelKey: "settings:nav.plans",
+        key: "members",
+        path: "/settings/members",
+        icon: Users,
+        labelKey: "settings:nav.members",
+        adminOnly: true,
       },
     ],
   },
@@ -72,10 +78,10 @@ const navGroups: NavGroup[] = [
         adminOnly: true,
       },
       {
-        key: "billing",
-        path: "/settings/billing",
+        key: "subscription",
+        path: "/settings/subscription",
         icon: CreditCard,
-        labelKey: "settings:nav.billing",
+        labelKey: "settings:nav.subscription",
         adminOnly: true,
         cloudOnly: true,
       },
@@ -84,19 +90,6 @@ const navGroups: NavGroup[] = [
         path: "/settings/sso",
         icon: Shield,
         labelKey: "settings:nav.sso",
-        adminOnly: true,
-      },
-    ],
-  },
-  {
-    labelKey: "settings:groups.administration",
-    adminOnly: true,
-    items: [
-      {
-        key: "team",
-        path: "/settings/team",
-        icon: Users,
-        labelKey: "settings:nav.team",
         adminOnly: true,
       },
       {
@@ -117,18 +110,19 @@ const navGroups: NavGroup[] = [
       },
     ],
   },
-  {
-    labelKey: null,
-    items: [
-      {
-        key: "feedback",
-        path: "/settings/feedback",
-        icon: MessageSquare,
-        labelKey: "settings:nav.feedback",
-        cloudOnly: true,
-      },
-    ],
-  },
+  // Feedback section hidden for now — backend kept for future use
+  // {
+  //   labelKey: null,
+  //   items: [
+  //     {
+  //       key: "feedback",
+  //       path: "/settings/feedback",
+  //       icon: MessageSquare,
+  //       labelKey: "settings:nav.feedback",
+  //       cloudOnly: true,
+  //     },
+  //   ],
+  // },
 ];
 
 export const SettingsSidebar = () => {

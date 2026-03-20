@@ -164,7 +164,8 @@ export const managementRouter = router({
     .input(CreateWorkspaceSchema)
     .mutation(async ({ input, ctx }) => {
       const user = ctx.user;
-      const { name, contactEmail, tags } = input;
+      const { name, contactEmail: inputContactEmail, tags } = input;
+      const contactEmail = inputContactEmail || user.email;
 
       try {
         // Resolve organization deterministically via active workspace

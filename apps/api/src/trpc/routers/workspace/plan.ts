@@ -4,6 +4,7 @@ import { getLicensePayload } from "@/core/feature-flags";
 
 import {
   getPlanFeatures,
+  getUserPlan,
   getWorkspacePlan,
   PLAN_FEATURES,
 } from "@/services/plan/plan.service";
@@ -75,10 +76,11 @@ export const planRouter = router({
       }
 
       // Resolve plan via workspace → organization → subscription
+      // When no workspace exists yet, fall back to user → org membership → subscription
       const currentWorkspace = userWithWorkspace.workspace;
       let workspacePlan: UserPlan = currentWorkspace
         ? await getWorkspacePlan(currentWorkspace.id)
-        : UserPlan.FREE;
+        : await getUserPlan(user.id);
 
       // Self-hosted fallback: if no Stripe subscription exists, use the license JWT tier
       if (workspacePlan === UserPlan.FREE && isSelfHostedMode()) {

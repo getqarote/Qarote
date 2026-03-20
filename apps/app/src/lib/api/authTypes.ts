@@ -33,7 +33,6 @@ interface Workspace {
   contactEmail?: string;
   logoUrl?: string;
   ownerId?: string;
-  // plan: "FREE" | "DEVELOPER" | "ENTERPRISE";
   autoDelete: boolean;
   consentGiven: boolean;
   consentDate?: string;
