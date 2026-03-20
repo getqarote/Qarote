@@ -12,6 +12,7 @@ import {
   Users,
 } from "lucide-react";
 
+import { UserRole } from "@/lib/api";
 import { isCloudMode } from "@/lib/featureFlags";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
@@ -130,7 +131,7 @@ export const SettingsSidebar = () => {
   const location = useLocation();
   const { user } = useAuth();
   const isMobile = useIsMobile();
-  const isAdmin = user?.role === "ADMIN";
+  const isAdmin = user?.role === UserRole.ADMIN;
   const cloudMode = isCloudMode();
 
   const filterItem = (item: NavItem) => {

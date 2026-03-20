@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router";
 
 import { ArrowRight, Crown, Key, Loader2, Users, Zap } from "lucide-react";
 
+import { UserRole } from "@/lib/api";
 import { isSelfHostedMode } from "@/lib/featureFlags";
 import { formatDate } from "@/lib/utils";
 
@@ -85,7 +86,7 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
 
   const navigate = useNavigate();
   const selfHosted = isSelfHostedMode();
-  const isAdmin = user.role === "ADMIN";
+  const isAdmin = user.role === UserRole.ADMIN;
   const currentPlanStyle = planStyle[currentPlan] ?? planStyle[UserPlan.FREE];
   const currentBenefits = getBenefits(currentPlan);
   const nextPlan = getNextPlan(currentPlan);

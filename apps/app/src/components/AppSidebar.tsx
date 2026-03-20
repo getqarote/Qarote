@@ -18,6 +18,8 @@ import {
   User,
 } from "lucide-react";
 
+import { UserRole } from "@/lib/api";
+
 import { AddServerForm } from "@/components/AddServerFormComponent";
 import { DiscordLink } from "@/components/DiscordLink";
 import { PlanUpgradeModal } from "@/components/plans/PlanUpgradeModal";
@@ -124,20 +126,22 @@ export function AppSidebar() {
             <span className="text-xs font-semibold text-sidebar-foreground/70 uppercase tracking-wider">
               {t("server")}
             </span>
-            <div className="flex items-center gap-1">
-              <ServerManagement
-                trigger={
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="h-6 w-6 p-0"
-                    title={t("common:manageServers")}
-                  >
-                    <Settings className="h-3 w-3" />
-                  </Button>
-                }
-              />
-            </div>
+            {user?.role === UserRole.ADMIN && (
+              <div className="flex items-center gap-1">
+                <ServerManagement
+                  trigger={
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-6 w-6 p-0"
+                      title={t("common:manageServers")}
+                    >
+                      <Settings className="h-3 w-3" />
+                    </Button>
+                  }
+                />
+              </div>
+            )}
           </div>
 
           {servers.length > 0 ? (
@@ -283,7 +287,7 @@ export function AppSidebar() {
               {menuItems
                 .filter((item) => {
                   // Filter admin-only items for non-admin users
-                  if (item.adminOnly && user?.role !== "ADMIN") {
+                  if (item.adminOnly && user?.role !== UserRole.ADMIN) {
                     return false;
                   }
                   return true;

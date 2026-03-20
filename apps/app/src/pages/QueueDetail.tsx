@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 
+import { UserRole } from "@/lib/api";
 import { logger } from "@/lib/logger";
 
 import { AppSidebar } from "@/components/AppSidebar";
@@ -30,6 +31,7 @@ import {
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
+import { useAuth } from "@/contexts/AuthContextDefinition";
 import { useServerContext } from "@/contexts/ServerContext";
 import { useVHostContext } from "@/contexts/VHostContextDefinition";
 
@@ -47,6 +49,8 @@ const QueueDetail = () => {
   const { t } = useTranslation("queues");
   const { queueName } = useParams<{ queueName: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const isAdmin = user?.role === UserRole.ADMIN;
   const { selectedServerId } = useServerContext();
   const { selectedVHost } = useVHostContext();
   const { toast } = useToast();
@@ -146,9 +150,10 @@ const QueueDetail = () => {
                 selectedServerId={selectedServerId}
                 messageCount={queue?.messages || 0}
                 consumerCount={queue?.consumers || 0}
+                isAdmin={isAdmin}
                 onNavigateBack={handleNavigateBack}
                 onRefetch={refetch}
-                onDeleteQueue={confirmDeleteQueue}
+                onDeleteQueue={isAdmin ? confirmDeleteQueue : undefined}
               />
 
               {isLoading ? (

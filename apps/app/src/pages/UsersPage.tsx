@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
+import { UserRole } from "@/lib/api";
 import { RabbitMQUser } from "@/lib/api/userTypes";
 import { formatTagsDisplay, formatVhostsDisplay } from "@/lib/formatTags";
 
@@ -81,7 +82,7 @@ export default function UsersPage() {
   const { workspace } = useWorkspace();
 
   // Redirect non-admin users
-  if (user?.role !== "ADMIN") {
+  if (user?.role !== UserRole.ADMIN) {
     return (
       <SidebarProvider>
         <div className="page-layout">

@@ -4,6 +4,8 @@ import { useNavigate } from "react-router";
 
 import { Server } from "lucide-react";
 
+import { UserRole } from "@/lib/api";
+
 import { AddServerButton } from "@/components/AddServerButton";
 import { AppSidebar } from "@/components/AppSidebar";
 import { ConnectedNodes } from "@/components/ConnectedNodes";
@@ -133,7 +135,7 @@ const Index = () => {
               </div>
               <div className="flex items-center gap-3">
                 <PlanBadge />
-                <AddServerButton />
+                {user?.role === UserRole.ADMIN && <AddServerButton />}
               </div>
             </div>
 

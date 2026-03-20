@@ -22,6 +22,7 @@ import { isPrivateIP } from "@/core/network";
 
 import { getOrgPlan } from "@/services/plan/plan.service";
 
+import { isDevelopment } from "@/config";
 import { isCloudMode } from "@/config/deployment";
 import { FEATURES } from "@/config/features";
 
@@ -456,13 +457,15 @@ export const ssoRouter = router({
   /**
    * Test OIDC connection by fetching the discovery document (ADMIN).
    * SSRF-protected: blocks private IPs, local hostnames, and non-HTTPS.
+   * In development, SSRF checks are relaxed to allow localhost HTTP IdPs.
    */
   testConnection: ssoAdminProcedure
     .input(z.object({ discoveryUrl: z.string().check(z.url()) }))
     .mutation(async ({ input }) => {
       const url = new URL(input.discoveryUrl);
+      const isDev = isDevelopment();
 
-      if (url.protocol !== "https:") {
+      if (!isDev && url.protocol !== "https:") {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Discovery URL must use HTTPS",
@@ -471,9 +474,10 @@ export const ssoRouter = router({
 
       const hostname = url.hostname;
       if (
-        hostname === "localhost" ||
-        hostname.endsWith(".local") ||
-        hostname.endsWith(".internal")
+        !isDev &&
+        (hostname === "localhost" ||
+          hostname.endsWith(".local") ||
+          hostname.endsWith(".internal"))
       ) {
         throw new TRPCError({
           code: "BAD_REQUEST",
@@ -481,19 +485,24 @@ export const ssoRouter = router({
         });
       }
 
-      const { address, family } = await dns.promises.lookup(hostname);
-      if (isPrivateIP(address)) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Discovery URL must not resolve to a private or internal IP",
-        });
-      }
+      // Skip IP resolution checks in dev (localhost is private by definition)
+      let fetchUrl = new URL(input.discoveryUrl);
+      if (!isDev) {
+        const { address, family } = await dns.promises.lookup(hostname);
+        if (isPrivateIP(address)) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message:
+              "Discovery URL must not resolve to a private or internal IP",
+          });
+        }
 
-      // Use the pre-resolved IP to avoid TOCTOU re-resolution by fetch.
-      // IPv6 addresses must be wrapped in brackets in URLs.
-      const resolvedHost = family === 6 ? `[${address}]` : address;
-      const fetchUrl = new URL(input.discoveryUrl);
-      fetchUrl.hostname = resolvedHost;
+        // Use the pre-resolved IP to avoid TOCTOU re-resolution by fetch.
+        // IPv6 addresses must be wrapped in brackets in URLs.
+        const resolvedHost = family === 6 ? `[${address}]` : address;
+        fetchUrl = new URL(input.discoveryUrl);
+        fetchUrl.hostname = resolvedHost;
+      }
 
       try {
         const controller = new AbortController();

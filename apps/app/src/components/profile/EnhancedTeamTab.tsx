@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 
 import { Check, Clock, Copy, Mail, Users, X } from "lucide-react";
 
+import { UserRole } from "@/lib/api";
 import { User } from "@/lib/api/authTypes";
 import { InvitationWithInviter } from "@/lib/api/authTypes";
 
@@ -251,7 +252,7 @@ export const EnhancedTeamTab = ({
                       <TableCell>
                         {workspaceUser.id !== user?.id &&
                           (isWorkspaceOwner ||
-                            workspaceUser.role !== "ADMIN") && (
+                            workspaceUser.role !== UserRole.ADMIN) && (
                             <Button
                               variant="ghost"
                               size="sm"

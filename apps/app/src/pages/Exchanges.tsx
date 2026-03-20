@@ -16,6 +16,7 @@ import {
   Trash2,
 } from "lucide-react";
 
+import { UserRole } from "@/lib/api";
 import { logger } from "@/lib/logger";
 
 import { AddExchangeButton } from "@/components/AddExchangeButton";
@@ -43,6 +44,7 @@ import { PlanBadge } from "@/components/ui/PlanBadge";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
+import { useAuth } from "@/contexts/AuthContextDefinition";
 import { useServerContext } from "@/contexts/ServerContext";
 import { useVHostContext } from "@/contexts/VHostContextDefinition";
 
@@ -54,6 +56,8 @@ import { ApiErrorWithCode } from "@/types/apiErrors";
 
 const Exchanges = () => {
   const { t } = useTranslation("exchanges");
+  const { user } = useAuth();
+  const isAdmin = user?.role === UserRole.ADMIN;
   const { selectedServerId, hasServers } = useServerContext();
   const { selectedVHost } = useVHostContext();
   const { toast } = useToast();
@@ -251,9 +255,11 @@ const Exchanges = () => {
               </div>
               <div className="flex items-center gap-4">
                 <PlanBadge />
-                <AddExchangeButton
-                  onAddClick={() => setShowCreateExchangeModal(true)}
-                />
+                {isAdmin && (
+                  <AddExchangeButton
+                    onAddClick={() => setShowCreateExchangeModal(true)}
+                  />
+                )}
               </div>
             </div>
 

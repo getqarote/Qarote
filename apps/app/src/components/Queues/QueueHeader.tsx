@@ -10,22 +10,24 @@ interface QueueHeaderProps {
   workspaceLoading: boolean;
   canAddQueue: boolean;
   canSendMessages: boolean;
+  isAdmin?: boolean;
   onAddQueueClick?: () => void;
   onSendMessageClick?: () => void;
-  onRefetch?: () => void; // Callback to refresh queue data
+  onRefetch?: () => void;
 }
 
-export function QueueHeader({ selectedServerId, onRefetch }: QueueHeaderProps) {
+export function QueueHeader({
+  selectedServerId,
+  isAdmin,
+  onRefetch,
+}: QueueHeaderProps) {
   const { t } = useTranslation("queues");
-  const actions = (
+  const actions = isAdmin ? (
     <>
-      {/* Send Message Button */}
       <AddSendMessageButton serverId={selectedServerId} onSuccess={onRefetch} />
-
-      {/* Add Queue Button */}
       <AddQueueButton serverId={selectedServerId} onSuccess={onRefetch} />
     </>
-  );
+  ) : null;
 
   return (
     <PageHeader

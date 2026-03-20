@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
+import { UserRole } from "@/lib/api";
 import { isSelfHostedMode } from "@/lib/featureFlags";
 
 import { Badge } from "@/components/ui/badge";
@@ -71,7 +72,7 @@ const LicenseSection = () => {
     deactivateMutation.mutate();
   };
 
-  if (!isSelfHostedMode() || (user && user.role !== "ADMIN")) {
+  if (!isSelfHostedMode() || (user && user.role !== UserRole.ADMIN)) {
     return <Navigate to="/settings/profile" replace />;
   }
 

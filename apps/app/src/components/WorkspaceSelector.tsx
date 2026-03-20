@@ -6,6 +6,7 @@ import { useNavigate } from "react-router";
 import { Building2, Carrot, ChevronDown, Lock, Plus, User } from "lucide-react";
 import { toast } from "sonner";
 
+import { UserRole } from "@/lib/api";
 import { getUpgradePath } from "@/lib/featureFlags";
 import { logger } from "@/lib/logger";
 
@@ -18,6 +19,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdownMenu";
+
+import { useAuth } from "@/contexts/AuthContextDefinition";
 
 import {
   useSwitchWorkspace,
@@ -32,6 +35,8 @@ import { CreateWorkspaceForm } from "./CreateWorkspaceForm";
 
 export function WorkspaceSelector() {
   const { t } = useTranslation("sidebar");
+  const { user } = useAuth();
+  const isAdmin = user?.role === UserRole.ADMIN;
   const { canCreateWorkspace, userPlan } = useUser();
   const { workspace } = useWorkspace();
   const navigate = useNavigate();
@@ -255,42 +260,46 @@ export function WorkspaceSelector() {
                 </div>
               ))}
 
-              <DropdownMenuSeparator />
+              {isAdmin && (
+                <>
+                  <DropdownMenuSeparator />
 
-              <DropdownMenuItem
-                onClick={handleCreateWorkspace}
-                className={`p-3 ${canCreateWorkspace ? "cursor-pointer" : "cursor-pointer opacity-60"}`}
-              >
-                <div className="flex items-center justify-between w-full">
-                  <div className="flex items-center gap-3">
-                    {canCreateWorkspace ? (
-                      <Plus className="w-4 h-4 text-muted-foreground" />
-                    ) : (
-                      <Lock className="w-4 h-4 text-muted-foreground/60" />
-                    )}
-                    <span
-                      className={`font-medium ${
-                        canCreateWorkspace
-                          ? "text-foreground"
-                          : "text-muted-foreground/60"
-                      }`}
-                    >
-                      {t("createNewWorkspace")}
-                    </span>
-                  </div>
-                  {!canCreateWorkspace &&
-                    (() => {
-                      const buttonConfig = getCreateWorkspaceButtonConfig();
-                      return buttonConfig ? (
+                  <DropdownMenuItem
+                    onClick={handleCreateWorkspace}
+                    className={`p-3 ${canCreateWorkspace ? "cursor-pointer" : "cursor-pointer opacity-60"}`}
+                  >
+                    <div className="flex items-center justify-between w-full">
+                      <div className="flex items-center gap-3">
+                        {canCreateWorkspace ? (
+                          <Plus className="w-4 h-4 text-muted-foreground" />
+                        ) : (
+                          <Lock className="w-4 h-4 text-muted-foreground/60" />
+                        )}
                         <span
-                          className={`px-1.5 py-0.5 ${buttonConfig.badgeColor} text-white text-[10px] rounded-full font-semibold`}
+                          className={`font-medium ${
+                            canCreateWorkspace
+                              ? "text-foreground"
+                              : "text-muted-foreground/60"
+                          }`}
                         >
-                          {buttonConfig.badge}
+                          {t("createNewWorkspace")}
                         </span>
-                      ) : null;
-                    })()}
-                </div>
-              </DropdownMenuItem>
+                      </div>
+                      {!canCreateWorkspace &&
+                        (() => {
+                          const buttonConfig = getCreateWorkspaceButtonConfig();
+                          return buttonConfig ? (
+                            <span
+                              className={`px-1.5 py-0.5 ${buttonConfig.badgeColor} text-white text-[10px] rounded-full font-semibold`}
+                            >
+                              {buttonConfig.badge}
+                            </span>
+                          ) : null;
+                        })()}
+                    </div>
+                  </DropdownMenuItem>
+                </>
+              )}
             </>
           )}
         </DropdownMenuContent>

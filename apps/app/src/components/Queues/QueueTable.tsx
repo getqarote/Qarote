@@ -23,6 +23,7 @@ interface QueueTableProps {
   queues: Queue[];
   isLoading: boolean;
   searchTerm: string;
+  isAdmin?: boolean;
   onNavigateToQueue: (queueName: string) => void;
   onRefetch: () => void;
   total: number;
@@ -36,6 +37,7 @@ export function QueueTable({
   queues,
   isLoading,
   searchTerm,
+  isAdmin,
   onNavigateToQueue,
   onRefetch,
   total,
@@ -93,7 +95,7 @@ export function QueueTable({
                   <TableHead>{t("ack")}</TableHead>
                   <TableHead>{t("memoryMB")}</TableHead>
                   <TableHead>{t("vhost")}</TableHead>
-                  <TableHead>{t("actions")}</TableHead>
+                  {isAdmin && <TableHead>{t("actions")}</TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -162,14 +164,16 @@ export function QueueTable({
                           {metrics.vhost}
                         </Badge>
                       </TableCell>
-                      <TableCell>
-                        <PurgeQueueDialog
-                          queueName={queue.name}
-                          messageCount={queue.messages}
-                          vhost={metrics.vhost}
-                          onSuccess={() => onRefetch()}
-                        />
-                      </TableCell>
+                      {isAdmin && (
+                        <TableCell>
+                          <PurgeQueueDialog
+                            queueName={queue.name}
+                            messageCount={queue.messages}
+                            vhost={metrics.vhost}
+                            onSuccess={() => onRefetch()}
+                          />
+                        </TableCell>
+                      )}
                     </TableRow>
                   );
                 })}

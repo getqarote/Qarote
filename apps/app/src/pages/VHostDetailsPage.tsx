@@ -5,6 +5,8 @@ import { useNavigate, useParams } from "react-router";
 import { AlertCircle, ArrowLeft, Lock } from "lucide-react";
 import { toast } from "sonner";
 
+import { UserRole } from "@/lib/api";
+
 import { AppSidebar } from "@/components/AppSidebar";
 import { ConnectionStatus } from "@/components/ConnectionStatus";
 import { PageLoader } from "@/components/PageLoader";
@@ -192,7 +194,7 @@ export default function VHostDetailsPage() {
   };
 
   // Redirect non-admin users
-  if (user?.role !== "ADMIN") {
+  if (user?.role !== UserRole.ADMIN) {
     return (
       <SidebarProvider>
         <div className="flex min-h-screen w-full">

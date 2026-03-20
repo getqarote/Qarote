@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Loader2, User, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 
+import { UserRole } from "@/lib/api";
 import { logger } from "@/lib/logger";
 
 import { InviteLinksDialog } from "@/components/InviteLinksDialog";
@@ -82,7 +83,7 @@ const TeamSection = () => {
   >("MEMBER");
 
   const profile = profileData?.user;
-  const isAdmin = profile?.role === "ADMIN";
+  const isAdmin = profile?.role === UserRole.ADMIN;
   const workspaceUsers = workspaceUsersData?.users || [];
   const invitations = invitationsData?.invitations || [];
 

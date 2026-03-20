@@ -11,6 +11,7 @@ import {
   X,
 } from "lucide-react";
 
+import { UserRole } from "@/lib/api";
 import { UserProfile } from "@/lib/api/authTypes";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -83,7 +84,7 @@ export const PersonalInfoTab = ({
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Avatar className="h-10 w-10">
-                <AvatarImage src="" />
+                <AvatarImage src={profile.image || ""} />
                 <AvatarFallback>
                   {profile.firstName?.[0]}
                   {profile.lastName?.[0]}
@@ -100,7 +101,7 @@ export const PersonalInfoTab = ({
               <Badge className={getRoleColor(profile.role)}>
                 {profile.role}
               </Badge>
-              {profile.role === "ADMIN" && (
+              {profile.role === UserRole.ADMIN && (
                 <Carrot className="h-4 w-4 text-orange-500" />
               )}
             </div>
@@ -207,7 +208,7 @@ export const PersonalInfoTab = ({
       </Card>
 
       {/* Security Settings Section - Show only for admins with password-based accounts */}
-      {profile.role === "ADMIN" &&
+      {profile.role === UserRole.ADMIN &&
         (profile.hasPassword ?? profile.authProvider === "password") && (
           <Card>
             <CardHeader>

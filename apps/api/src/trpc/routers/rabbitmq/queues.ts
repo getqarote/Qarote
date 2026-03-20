@@ -814,9 +814,9 @@ export const queuesRouter = router({
     }),
 
   /**
-   * Get pause status of a queue (ADMIN ONLY)
+   * Get pause status of a queue
    */
-  getPauseStatus: authorize([UserRole.ADMIN])
+  getPauseStatus: authorize([UserRole.ADMIN, UserRole.MEMBER])
     .input(ServerWorkspaceWithQueueNameSchema)
     .query(async ({ input, ctx }) => {
       const { serverId, workspaceId, queueName } = input;
