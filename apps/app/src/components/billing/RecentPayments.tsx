@@ -1,6 +1,6 @@
 import React from "react";
 
-import { Receipt } from "lucide-react";
+import { CheckCircle, Receipt } from "lucide-react";
 
 import { formatCurrency, formatDate } from "@/lib/utils";
 
@@ -26,38 +26,48 @@ export const RecentPayments: React.FC<RecentPaymentsProps> = ({
 
   return (
     <Card>
-      <CardContent className="p-5">
-        <div className="flex items-center gap-3 mb-5">
-          <div className="p-2 rounded-lg bg-muted">
+      <CardContent className="pt-6 pb-2 px-6">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="h-9 w-9 rounded-lg bg-muted flex items-center justify-center shrink-0">
             <Receipt className="w-4 h-4 text-muted-foreground" />
           </div>
-          <h3 className="font-medium text-sm">Recent Payments</h3>
+          <div>
+            <h3 className="font-semibold text-sm">Recent Payments</h3>
+            <p className="text-xs text-muted-foreground">
+              Your latest transactions
+            </p>
+          </div>
         </div>
 
-        <div className="space-y-0 divide-y">
+        <div className="divide-y divide-border">
           {recentPayments.map((payment) => (
             <div
               key={payment.id}
-              className="flex items-center justify-between py-3 first:pt-0 last:pb-0"
+              className="flex items-center justify-between py-3"
             >
-              <div>
-                <p className="text-sm font-medium">
-                  {payment.description || "Subscription payment"}
-                </p>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  {formatDate(new Date(payment.createdAt))}
-                </p>
-              </div>
               <div className="flex items-center gap-3">
+                <div className="h-8 w-8 rounded-full bg-emerald-50 dark:bg-emerald-950/30 flex items-center justify-center shrink-0">
+                  <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium">
+                    {payment.description || "Subscription payment"}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {formatDate(new Date(payment.createdAt))}
+                  </p>
+                </div>
+              </div>
+              <div className="text-right flex items-center gap-3">
                 <Badge
                   variant="outline"
-                  className="text-xs bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-800"
+                  className="text-xs text-emerald-600 border-emerald-200 bg-emerald-50 dark:text-emerald-400 dark:border-emerald-800 dark:bg-emerald-950/30"
                 >
                   {payment.status}
                 </Badge>
-                <span className="text-sm font-medium tabular-nums">
+                <p className="font-semibold text-sm tabular-nums">
                   {formatCurrency(payment.amount)}
-                </span>
+                </p>
               </div>
             </div>
           ))}

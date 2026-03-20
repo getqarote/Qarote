@@ -1,7 +1,14 @@
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { Calendar, Clock, CreditCard, ExternalLink } from "lucide-react";
+import {
+  Calendar,
+  Clock,
+  CreditCard,
+  ExternalLink,
+  Sparkles,
+  X,
+} from "lucide-react";
 
 import { formatCurrency, formatDate } from "@/lib/utils";
 
@@ -61,27 +68,14 @@ export const CurrentPlanCard: React.FC<CurrentPlanCardProps> = ({
   const [showCancelModal, setShowCancelModal] = useState(false);
   const plan = subscription?.plan ?? UserPlan.FREE;
   const isTrialing = subscription?.status === "TRIALING";
-  const trialEndDate = subscription?.trialEnd
-    ? new Date(subscription.trialEnd)
-    : null;
+  const trialEndDate = useMemo(
+    () => (subscription?.trialEnd ? new Date(subscription.trialEnd) : null),
+    [subscription]
+  );
 
-  const { trialProgress, daysRemaining } = useMemo(() => {
-    if (!isTrialing || !trialEndDate || !stripeSubscription) {
-      return { trialProgress: 0, daysRemaining: 0 };
-    }
-    const start = stripeSubscription.current_period_start * 1000;
-    const end = trialEndDate.getTime();
-    const now = Date.now();
-    const total = end - start;
-    const elapsed = now - start;
-    const progress =
-      total > 0 ? Math.min(100, Math.max(0, (elapsed / total) * 100)) : 0;
-    const remaining = Math.max(
-      0,
-      Math.ceil((end - now) / (1000 * 60 * 60 * 24))
-    );
-    return { trialProgress: progress, daysRemaining: remaining };
-  }, [isTrialing, trialEndDate, stripeSubscription]);
+  const price = stripeSubscription?.items?.data[0]?.price?.unit_amount || 0;
+  const interval =
+    stripeSubscription?.items?.data[0]?.price?.recurring?.interval || "";
 
   const handleCancelConfirm = async (data: {
     cancelImmediately: boolean;
@@ -92,249 +86,277 @@ export const CurrentPlanCard: React.FC<CurrentPlanCardProps> = ({
     setShowCancelModal(false);
   };
 
-  const formatLocalDate = (date: Date) =>
+  const formatTrialDate = (date: Date) =>
     date.toLocaleDateString(i18n.language, {
       year: "numeric",
       month: "long",
       day: "numeric",
     });
 
+  // Capture current time once on mount to avoid impure Date.now() in render
+  const [now] = useState(() => Date.now());
+
+  // Calculate trial progress percentage
+  const trialProgress = useMemo(() => {
+    if (!isTrialing || !trialEndDate || !stripeSubscription) return 0;
+    const start = stripeSubscription.current_period_start * 1000;
+    const end = trialEndDate.getTime();
+    if (now >= end) return 100;
+    if (now <= start) return 0;
+    return Math.round(((now - start) / (end - start)) * 100);
+  }, [isTrialing, trialEndDate, stripeSubscription, now]);
+
+  const daysRemaining = useMemo(() => {
+    if (!trialEndDate) return 0;
+    const diff = trialEndDate.getTime() - now;
+    return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+  }, [trialEndDate, now]);
+
   return (
     <>
-      {/* Plan Overview */}
-      <Card className="overflow-hidden">
-        <div className="h-1 bg-linear-to-r from-orange-500 to-red-500" />
-        <CardContent className="p-6">
-          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2.5">
-                <h2 className="text-xl font-semibold">
-                  {t("currentPlan.planName", {
-                    plan: getPlanDisplayName(plan),
-                  })}
-                </h2>
-                <Badge
-                  variant={
-                    cancelAtPeriodEnd
-                      ? "destructive"
-                      : isTrialing
-                        ? "outline"
-                        : "default"
-                  }
-                  className="text-xs"
-                >
-                  {cancelAtPeriodEnd
-                    ? t("trial.trialCanceled")
-                    : isTrialing
-                      ? t("trial.badge")
-                      : t("status.active", "Active")}
-                </Badge>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                {plan === UserPlan.FREE
-                  ? t("currentPlan.noSubscription")
-                  : t("currentPlan.billingInterval", {
-                      interval:
-                        stripeSubscription?.items?.data[0]?.price?.recurring
-                          ?.interval || "",
-                    })}
-              </p>
-            </div>
-            {stripeSubscription && (
-              <div className="text-left sm:text-right">
-                <div className="text-3xl font-bold tabular-nums">
-                  {formatCurrency(
-                    stripeSubscription.items?.data[0]?.price?.unit_amount || 0
+      <div className="space-y-4">
+        {/* ── Plan Overview Card ── */}
+        <Card className="overflow-hidden">
+          <div className="relative">
+            {/* Subtle gradient accent bar */}
+            <div className="absolute inset-x-0 top-0 h-1 bg-linear-to-r from-orange-500 to-red-500" />
+
+            <CardContent className="pt-8 pb-6 px-6">
+              {/* Plan header row */}
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-3">
+                    <h2 className="text-xl font-semibold tracking-tight">
+                      {t("currentPlan.planName", {
+                        plan: getPlanDisplayName(plan),
+                      })}
+                    </h2>
+                    <Badge
+                      variant={isTrialing ? "outline" : "default"}
+                      className={
+                        isTrialing
+                          ? "border-orange-300 text-orange-600 bg-orange-50 dark:border-orange-700 dark:text-orange-400 dark:bg-orange-950/50"
+                          : cancelAtPeriodEnd
+                            ? "bg-destructive/10 text-destructive border-destructive/20"
+                            : ""
+                      }
+                    >
+                      {isTrialing
+                        ? t("trial.badge")
+                        : cancelAtPeriodEnd
+                          ? "Canceling"
+                          : t("status.active", "Active")}
+                    </Badge>
+                  </div>
+                  {interval && (
+                    <p className="text-sm text-muted-foreground">
+                      {t("currentPlan.billingInterval", { interval })}
+                    </p>
                   )}
                 </div>
-                <div className="text-sm text-muted-foreground">
-                  {t("currentPlan.perInterval", {
-                    interval:
-                      stripeSubscription.items?.data[0]?.price?.recurring
-                        ?.interval,
-                  })}
-                </div>
-              </div>
-            )}
-          </div>
 
-          {/* Trial progress bar */}
-          {isTrialing && !cancelAtPeriodEnd && trialEndDate && (
-            <div className="mt-5 space-y-2">
-              <div className="flex items-center justify-between text-xs text-muted-foreground">
-                <span>Trial progress</span>
-                <span className="font-medium text-orange-600">
-                  {daysRemaining} {daysRemaining === 1 ? "day" : "days"}{" "}
-                  remaining
-                </span>
-              </div>
-              <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-                <div
-                  className="h-full rounded-full bg-linear-to-r from-orange-500 to-red-500 transition-all duration-500"
-                  style={{ width: `${trialProgress}%` }}
-                />
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Billing Details Grid */}
-      {stripeSubscription && (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="p-1.5 rounded-md bg-muted">
-                  <Calendar className="w-3.5 h-3.5 text-muted-foreground" />
-                </div>
-                <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                  {t("currentPlan.currentPeriod")}
-                </span>
-              </div>
-              <p className="font-medium text-sm">
-                {formatDate(
-                  new Date(stripeSubscription.current_period_start * 1000)
-                )}{" "}
-                –{" "}
-                {formatDate(
-                  new Date(stripeSubscription.current_period_end * 1000)
-                )}
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="p-1.5 rounded-md bg-muted">
-                  <Clock className="w-3.5 h-3.5 text-muted-foreground" />
-                </div>
-                <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                  {isTrialing && trialEndDate
-                    ? t("trial.endsOn")
-                    : t("currentPlan.nextBilling")}
-                </span>
-              </div>
-              <p className="font-medium text-sm">
-                {isTrialing && trialEndDate
-                  ? formatDate(trialEndDate)
-                  : formatDate(
-                      new Date(stripeSubscription.current_period_end * 1000)
+                {/* Price display */}
+                {stripeSubscription && (
+                  <div className="text-left sm:text-right">
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-3xl font-bold tracking-tight">
+                        {formatCurrency(price)}
+                      </span>
+                      <span className="text-sm text-muted-foreground font-medium">
+                        / {interval}
+                      </span>
+                    </div>
+                    {isTrialing && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {daysRemaining} day{daysRemaining !== 1 ? "s" : ""}{" "}
+                        remaining in trial
+                      </p>
                     )}
-              </p>
-              {isTrialing && daysRemaining > 0 && (
-                <p className="text-xs text-orange-600 mt-1 font-medium">
-                  {daysRemaining} {daysRemaining === 1 ? "day" : "days"} left
-                </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Trial progress bar */}
+              {isTrialing && trialEndDate && (
+                <div className="mt-6">
+                  <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
+                    <span>Trial started</span>
+                    <span>Trial ends {formatTrialDate(trialEndDate)}</span>
+                  </div>
+                  <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
+                    <div
+                      className="h-full rounded-full bg-linear-to-r from-orange-500 to-red-500 transition-all duration-500"
+                      style={{ width: `${trialProgress}%` }}
+                    />
+                  </div>
+                </div>
               )}
             </CardContent>
-          </Card>
+          </div>
+        </Card>
 
-          <Card
-            className={`group ${onManagePaymentMethod ? "cursor-pointer hover:border-primary/30 transition-colors" : ""}`}
-            onClick={paymentMethod ? onManagePaymentMethod : undefined}
-            data-testid="current-plan-payment-section"
-          >
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="p-1.5 rounded-md bg-muted">
-                  <CreditCard className="w-3.5 h-3.5 text-muted-foreground" />
-                </div>
-                <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                  {t("currentPlan.paymentMethod")}
-                </span>
-                {paymentMethod && (
-                  <ExternalLink className="w-3 h-3 text-muted-foreground ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
-                )}
-              </div>
-              <p className="font-medium text-sm flex items-center gap-1.5">
-                {paymentMethod ? (
-                  <>
-                    <CreditCard className="w-4 h-4 text-muted-foreground" />
-                    •••• {paymentMethod.card?.last4}
-                  </>
-                ) : (
-                  <span className="text-muted-foreground">
-                    {t("trial.noPaymentMethod")}
+        {/* ── Billing Details Grid ── */}
+        {stripeSubscription && (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {/* Current Period */}
+            <Card>
+              <CardContent className="pt-5 pb-5 px-5">
+                <div className="flex items-center gap-2 text-muted-foreground mb-3">
+                  <Calendar className="w-4 h-4" />
+                  <span className="text-xs font-medium uppercase tracking-wider">
+                    {t("currentPlan.currentPeriod")}
                   </span>
-                )}
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+                </div>
+                <p className="font-semibold text-sm">
+                  {formatDate(
+                    new Date(stripeSubscription.current_period_start * 1000)
+                  )}
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  to{" "}
+                  {formatDate(
+                    new Date(stripeSubscription.current_period_end * 1000)
+                  )}
+                </p>
+              </CardContent>
+            </Card>
 
-      {/* Trial Status Banner */}
-      {isTrialing && (
-        <Card
-          className={`border ${
-            cancelAtPeriodEnd
-              ? "border-destructive/20 bg-destructive/5"
-              : "border-orange-200 bg-orange-50/50 dark:border-orange-900/30 dark:bg-orange-950/20"
-          }`}
-        >
-          <CardContent className="p-5">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-              <div className="flex items-start gap-3 flex-1">
-                <Clock
-                  className={`w-5 h-5 mt-0.5 shrink-0 ${
-                    cancelAtPeriodEnd ? "text-destructive" : "text-orange-600"
-                  }`}
-                />
-                <div>
-                  <h4
-                    className={`font-medium text-sm ${
+            {/* Trial End / Next Billing */}
+            <Card>
+              <CardContent className="pt-5 pb-5 px-5">
+                <div className="flex items-center gap-2 text-muted-foreground mb-3">
+                  <Clock className="w-4 h-4" />
+                  <span className="text-xs font-medium uppercase tracking-wider">
+                    {isTrialing && trialEndDate
+                      ? t("trial.endsOn")
+                      : t("currentPlan.nextBilling")}
+                  </span>
+                </div>
+                <p className="font-semibold text-sm">
+                  {isTrialing && trialEndDate
+                    ? formatDate(trialEndDate)
+                    : formatDate(
+                        new Date(stripeSubscription.current_period_end * 1000)
+                      )}
+                </p>
+                {isTrialing && daysRemaining > 0 && (
+                  <p className="text-xs text-orange-600 dark:text-orange-400 mt-0.5 font-medium">
+                    {daysRemaining} day{daysRemaining !== 1 ? "s" : ""} left
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Payment Method */}
+            <Card data-testid="current-plan-payment-section">
+              <CardContent className="pt-5 pb-5 px-5">
+                <div className="flex items-center gap-2 text-muted-foreground mb-3">
+                  <CreditCard className="w-4 h-4" />
+                  <span className="text-xs font-medium uppercase tracking-wider">
+                    {t("currentPlan.paymentMethod")}
+                  </span>
+                </div>
+                {paymentMethod ? (
+                  <button
+                    onClick={onManagePaymentMethod}
+                    className="group flex items-center gap-2 hover:text-primary transition-colors"
+                    title={t("currentPlan.changePaymentMethod")}
+                  >
+                    <span className="font-semibold text-sm">
+                      •••• {paymentMethod.card?.last4}
+                    </span>
+                    <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </button>
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    {t("trial.noPaymentMethod")}
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* ── Trial Status Banner ── */}
+        {isTrialing && stripeSubscription && (
+          <Card
+            className={
+              cancelAtPeriodEnd
+                ? "border-destructive/30 bg-destructive/5"
+                : "border-orange-200 bg-orange-50/50 dark:border-orange-900/50 dark:bg-orange-950/20"
+            }
+          >
+            <CardContent className="py-5 px-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-start gap-3">
+                  <div
+                    className={`mt-0.5 shrink-0 rounded-full p-1.5 ${
                       cancelAtPeriodEnd
-                        ? "text-destructive"
-                        : "text-orange-700 dark:text-orange-400"
+                        ? "bg-destructive/10"
+                        : "bg-orange-100 dark:bg-orange-900/30"
                     }`}
                   >
-                    {cancelAtPeriodEnd
-                      ? t("trial.trialCanceled")
-                      : t("trial.trialActive")}
-                  </h4>
-                  <p
-                    className={`text-sm mt-0.5 ${
-                      cancelAtPeriodEnd
-                        ? "text-destructive/80"
-                        : "text-orange-600/80 dark:text-orange-400/70"
-                    }`}
-                  >
-                    {cancelAtPeriodEnd
-                      ? t("trial.trialEndsOnDate", {
-                          date: trialEndDate
-                            ? formatLocalDate(trialEndDate)
-                            : "",
-                        })
-                      : paymentMethod
-                        ? t("trial.trialActiveWithPayment", {
+                    {cancelAtPeriodEnd ? (
+                      <X className="w-4 h-4 text-destructive" />
+                    ) : (
+                      <Sparkles className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                    )}
+                  </div>
+                  <div>
+                    <h3
+                      className={`font-semibold text-sm ${
+                        cancelAtPeriodEnd
+                          ? "text-destructive"
+                          : "text-foreground"
+                      }`}
+                    >
+                      {cancelAtPeriodEnd
+                        ? t("trial.trialCanceled")
+                        : t("trial.trialActive")}
+                    </h3>
+                    <p
+                      className={`text-sm mt-0.5 ${
+                        cancelAtPeriodEnd
+                          ? "text-destructive/80"
+                          : "text-muted-foreground"
+                      }`}
+                    >
+                      {cancelAtPeriodEnd
+                        ? t("trial.trialEndsOnDate", {
                             date: trialEndDate
-                              ? formatLocalDate(trialEndDate)
+                              ? formatTrialDate(trialEndDate)
                               : "",
                           })
-                        : t("trial.addPaymentToKeep", {
-                            date: trialEndDate
-                              ? formatLocalDate(trialEndDate)
-                              : "",
-                          })}
-                  </p>
+                        : paymentMethod
+                          ? t("trial.trialActiveWithPayment", {
+                              date: trialEndDate
+                                ? formatTrialDate(trialEndDate)
+                                : "",
+                            })
+                          : t("trial.addPaymentToKeep", {
+                              date: trialEndDate
+                                ? formatTrialDate(trialEndDate)
+                                : "",
+                            })}
+                    </p>
+                  </div>
                 </div>
-              </div>
 
-              {!cancelAtPeriodEnd && (
+                {/* CTA buttons */}
                 <div className="flex items-center gap-2 sm:shrink-0">
-                  {!paymentMethod && onManagePaymentMethod && (
-                    <Button
-                      onClick={onManagePaymentMethod}
-                      size="sm"
-                      className="btn-primary"
-                    >
-                      <CreditCard className="w-4 h-4 mr-2" />
-                      {t("trial.addPaymentMethod")}
-                    </Button>
-                  )}
-                  {paymentMethod && onCancelSubscription && (
+                  {!cancelAtPeriodEnd &&
+                    !paymentMethod &&
+                    onManagePaymentMethod && (
+                      <Button
+                        onClick={onManagePaymentMethod}
+                        size="sm"
+                        className="btn-primary"
+                      >
+                        <CreditCard className="w-4 h-4 mr-2" />
+                        {t("trial.addPaymentMethod")}
+                      </Button>
+                    )}
+                  {isTrialing && onCancelSubscription && !cancelAtPeriodEnd && (
                     <Button
                       onClick={() => setShowCancelModal(true)}
                       variant="ghost"
@@ -346,11 +368,11 @@ export const CurrentPlanCard: React.FC<CurrentPlanCardProps> = ({
                     </Button>
                   )}
                 </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
 
       {onCancelSubscription && (
         <CancelSubscriptionModal

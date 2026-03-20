@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { RefreshCw, Settings, X } from "lucide-react";
+import { Clock, RefreshCw, Settings, X } from "lucide-react";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -50,6 +51,10 @@ export const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({
   const { t } = useTranslation("billing");
   const [showCancelModal, setShowCancelModal] = useState(false);
 
+  const handleCancelClick = () => {
+    setShowCancelModal(true);
+  };
+
   const handleCancelConfirm = async (data: {
     cancelImmediately: boolean;
     reason: string;
@@ -62,14 +67,14 @@ export const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({
   return (
     <>
       <Card>
-        <CardContent className="p-5">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-            <div className="flex items-center gap-3 flex-1">
-              <div className="p-2 rounded-lg bg-muted">
+        <CardContent className="pt-6 pb-6 px-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="h-9 w-9 rounded-lg bg-muted flex items-center justify-center shrink-0">
                 <Settings className="w-4 h-4 text-muted-foreground" />
               </div>
               <div>
-                <h3 className="font-medium text-sm">
+                <h3 className="font-semibold text-sm">
                   {t("subscriptionManagement.title")}
                 </h3>
                 <p className="text-xs text-muted-foreground">
@@ -78,7 +83,8 @@ export const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({
               </div>
             </div>
 
-            <div className="flex items-center gap-2 sm:shrink-0">
+            {/* Subscription Actions */}
+            <div className="flex items-center gap-2">
               {currentPlan === UserPlan.FREE &&
               subscriptionCanceled &&
               lastPlan &&
@@ -95,7 +101,7 @@ export const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({
               ) : currentPlan !== UserPlan.FREE ? (
                 <>
                   {cancelAtPeriodEnd ? (
-                    <>
+                    <div className="flex items-center gap-3">
                       {onRenewSubscription && (
                         <Button
                           onClick={onRenewSubscription}
@@ -107,26 +113,29 @@ export const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({
                           Reactivate
                         </Button>
                       )}
-                      <span className="text-xs text-muted-foreground">
+                      <Badge
+                        variant="outline"
+                        className="border-orange-300 text-orange-600 bg-orange-50 dark:border-orange-700 dark:text-orange-400 dark:bg-orange-950/50 py-1.5 px-3"
+                      >
+                        <Clock className="w-3 h-3 mr-1.5" />
                         Ends{" "}
                         {periodEnd
                           ? new Date(periodEnd).toLocaleDateString("en-US", {
                               month: "short",
                               day: "numeric",
-                              year: "numeric",
                             })
-                          : "at end of period"}
-                      </span>
-                    </>
+                          : "soon"}
+                      </Badge>
+                    </div>
                   ) : (
                     <Button
-                      onClick={() => setShowCancelModal(true)}
+                      onClick={handleCancelClick}
                       variant="ghost"
                       size="sm"
                       className="text-muted-foreground hover:text-destructive"
                       disabled={isLoading}
                     >
-                      <X className="w-3.5 h-3.5 mr-1.5" />
+                      <X className="w-4 h-4 mr-2" />
                       Cancel Subscription
                     </Button>
                   )}
@@ -134,28 +143,30 @@ export const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({
               ) : null}
             </div>
           </div>
+
+          {/* Renewal CTA for canceled users */}
+          {currentPlan === UserPlan.FREE &&
+            subscriptionCanceled &&
+            lastPlan && (
+              <div className="mt-4 rounded-lg border border-orange-200 bg-orange-50/50 dark:border-orange-900/50 dark:bg-orange-950/20 p-4">
+                <div className="flex items-start gap-3">
+                  <div className="shrink-0 rounded-full p-1.5 bg-orange-100 dark:bg-orange-900/30 mt-0.5">
+                    <RefreshCw className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-sm">
+                      Ready to come back?
+                    </h4>
+                    <p className="text-sm text-muted-foreground mt-0.5">
+                      Your {lastPlan} plan was canceled, but you can restart it
+                      anytime with all the same features.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
         </CardContent>
       </Card>
-
-      {currentPlan === UserPlan.FREE && subscriptionCanceled && lastPlan && (
-        <Card className="border-orange-200 bg-orange-50/50 dark:border-orange-900/30 dark:bg-orange-950/20">
-          <CardContent className="p-5">
-            <div className="flex items-start gap-3">
-              <RefreshCw className="w-5 h-5 text-orange-600 mt-0.5 shrink-0" />
-              <div>
-                <h4 className="font-medium text-sm text-orange-700 dark:text-orange-400 mb-1">
-                  Ready to come back?
-                </h4>
-                <p className="text-sm text-orange-600/80 dark:text-orange-400/70">
-                  Your {lastPlan} plan subscription was canceled, but you can
-                  easily restart it anytime. You'll get all the same great
-                  features you had before across all your workspaces.
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       <CancelSubscriptionModal
         isOpen={showCancelModal}
