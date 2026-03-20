@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import {
   Building2,
@@ -65,6 +66,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   useAcceptOrgInvitation,
   useAssignToWorkspace,
+  useCancelOrgInvitation,
   useCurrentOrganization,
   useDeclineOrgInvitation,
   useGetMemberWorkspaces,
@@ -80,23 +82,11 @@ import {
   useUpdateWorkspaceRole,
 } from "@/hooks/queries/useOrganization";
 
-const ROLE_LABELS: Record<string, string> = {
-  OWNER: "Owner",
-  ADMIN: "Admin",
-  MEMBER: "Member",
-};
-
 const WS_ROLE_OPTIONS: Array<"ADMIN" | "MEMBER" | "READONLY"> = [
   "ADMIN",
   "MEMBER",
   "READONLY",
 ];
-
-const WS_ROLE_LABELS: Record<string, string> = {
-  ADMIN: "Admin",
-  MEMBER: "Member",
-  READONLY: "Read-only",
-};
 
 const getRoleIcon = (role: string) => {
   switch (role) {
@@ -107,6 +97,16 @@ const getRoleIcon = (role: string) => {
     default:
       return <User className="h-3.5 w-3.5 text-muted-foreground" />;
   }
+};
+
+const useRoleLabels = () => {
+  const { t } = useTranslation("profile");
+  return {
+    OWNER: t("org.roleOwner"),
+    ADMIN: t("org.roleAdmin"),
+    MEMBER: t("org.roleMember"),
+    READONLY: t("org.roleReadonly"),
+  } as Record<string, string>;
 };
 
 // ---------------------------------------------------------------------------
@@ -126,45 +126,48 @@ const WorkspaceRow = ({
   onToggle: () => void;
   onRoleChange: (role: "ADMIN" | "MEMBER" | "READONLY") => void;
   disabled?: boolean;
-}) => (
-  <div className="flex items-center justify-between gap-2 rounded-md border p-2">
-    <Button
-      type="button"
-      size="sm"
-      variant={selected ? "default" : "outline"}
-      className="shrink-0"
-      onClick={onToggle}
-      disabled={disabled}
-    >
-      {selected ? (
-        <Check className="h-4 w-4 mr-1" />
-      ) : (
-        <X className="h-4 w-4 mr-1 opacity-40" />
-      )}
-      {workspace.name}
-    </Button>
-    {selected && (
-      <Select
-        value={role}
-        onValueChange={(v) =>
-          onRoleChange(v as "ADMIN" | "MEMBER" | "READONLY")
-        }
+}) => {
+  const roleLabels = useRoleLabels();
+  return (
+    <div className="flex items-center justify-between gap-2 rounded-md border p-2">
+      <Button
+        type="button"
+        size="sm"
+        variant={selected ? "default" : "outline"}
+        className="shrink-0"
+        onClick={onToggle}
         disabled={disabled}
       >
-        <SelectTrigger className="w-28 h-8 text-xs">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {WS_ROLE_OPTIONS.map((r) => (
-            <SelectItem key={r} value={r}>
-              {WS_ROLE_LABELS[r]}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    )}
-  </div>
-);
+        {selected ? (
+          <Check className="h-4 w-4 mr-1" />
+        ) : (
+          <X className="h-4 w-4 mr-1 opacity-40" />
+        )}
+        {workspace.name}
+      </Button>
+      {selected && (
+        <Select
+          value={role}
+          onValueChange={(v) =>
+            onRoleChange(v as "ADMIN" | "MEMBER" | "READONLY")
+          }
+          disabled={disabled}
+        >
+          <SelectTrigger className="w-28 h-8 text-xs">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {WS_ROLE_OPTIONS.map((r) => (
+              <SelectItem key={r} value={r}>
+                {roleLabels[r]}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
+    </div>
+  );
+};
 
 // ---------------------------------------------------------------------------
 // Member workspace management dialog (Feature 2 / Step 8)
@@ -178,6 +181,7 @@ const MemberWorkspacesDialog = ({
   onOpenChange: (open: boolean) => void;
   member: { id: string; userId: string; firstName: string; lastName: string };
 }) => {
+  const { t } = useTranslation("profile");
   const { data: wsData, isLoading: wsLoading } = useOrgWorkspaces();
   const { data: memberWsData, isLoading: memberWsLoading } =
     useGetMemberWorkspaces(open ? member.userId : undefined);
@@ -203,13 +207,13 @@ const MemberWorkspacesDialog = ({
           userId: member.userId,
           workspaceId: wsId,
         });
-        toast.success("Removed from workspace");
+        toast.success(t("org.toast.removedFromWs"));
       } catch (error) {
         logger.error({ error }, "Remove from workspace error");
         toast.error(
           error instanceof Error
             ? error.message
-            : "Failed to remove from workspace"
+            : t("org.toast.removedFromWsFailed")
         );
       }
     } else {
@@ -219,13 +223,13 @@ const MemberWorkspacesDialog = ({
           workspaceId: wsId,
           role: "MEMBER",
         });
-        toast.success("Assigned to workspace");
+        toast.success(t("org.toast.assignedToWs"));
       } catch (error) {
         logger.error({ error }, "Assign to workspace error");
         toast.error(
           error instanceof Error
             ? error.message
-            : "Failed to assign to workspace"
+            : t("org.toast.assignedToWsFailed")
         );
       }
     }
@@ -241,13 +245,13 @@ const MemberWorkspacesDialog = ({
         workspaceId: wsId,
         role: newRole,
       });
-      toast.success("Workspace role updated");
+      toast.success(t("org.toast.wsRoleUpdated"));
     } catch (error) {
       logger.error({ error }, "Role change error");
       toast.error(
         error instanceof Error
           ? error.message
-          : "Failed to update workspace role"
+          : t("org.toast.wsRoleUpdateFailed")
       );
     }
   };
@@ -262,9 +266,11 @@ const MemberWorkspacesDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Manage Workspaces</DialogTitle>
+          <DialogTitle>{t("org.manageWorkspacesTitle")}</DialogTitle>
           <DialogDescription>
-            Configure workspace access for {member.firstName} {member.lastName}.
+            {t("org.manageWorkspacesDesc", {
+              name: `${member.firstName} ${member.lastName}`,
+            })}
           </DialogDescription>
         </DialogHeader>
 
@@ -277,7 +283,7 @@ const MemberWorkspacesDialog = ({
             </div>
           ) : workspaces.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              No workspaces found in the organization.
+              {t("org.noWorkspacesInOrg")}
             </p>
           ) : (
             workspaces.map((ws) => (
@@ -296,7 +302,7 @@ const MemberWorkspacesDialog = ({
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Done
+            {t("org.done")}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -308,6 +314,8 @@ const MemberWorkspacesDialog = ({
 // Main component
 // ---------------------------------------------------------------------------
 const OrganizationSection = () => {
+  const { t } = useTranslation("profile");
+  const roleLabels = useRoleLabels();
   const [membersPage, setMembersPage] = useState(1);
   const [membersPageSize, setMembersPageSize] = useState(10);
   const [invitationsPage, setInvitationsPage] = useState(1);
@@ -330,6 +338,7 @@ const OrganizationSection = () => {
   const removeMemberMutation = useRemoveOrgMember();
   const acceptInvitationMutation = useAcceptOrgInvitation();
   const declineInvitationMutation = useDeclineOrgInvitation();
+  const cancelInvitationMutation = useCancelOrgInvitation();
 
   const [editing, setEditing] = useState(false);
   const [orgForm, setOrgForm] = useState({
@@ -390,10 +399,10 @@ const OrganizationSection = () => {
         contactEmail: orgForm.contactEmail || null,
       });
       setEditing(false);
-      toast.success("Organization updated successfully.");
+      toast.success(t("org.toast.orgUpdated"));
     } catch (error) {
       logger.error({ error }, "Update org error");
-      toast.error("Failed to update organization");
+      toast.error(t("org.toast.orgUpdateFailed"));
     }
   };
 
@@ -419,7 +428,9 @@ const OrganizationSection = () => {
         setInviteOpen(false);
         setLastInviteUrl(null);
         setLastEmailSent(true);
-        toast.success(`Invited ${result.invitation.email} to organization`);
+        toast.success(
+          t("org.toast.invitedToOrg", { email: result.invitation.email })
+        );
       } else {
         // Email not configured - show the invite URL for manual sharing
         setLastInviteUrl(result.inviteUrl);
@@ -428,7 +439,7 @@ const OrganizationSection = () => {
     } catch (error) {
       logger.error({ error }, "Invite error");
       const msg =
-        error instanceof Error ? error.message : "Failed to invite member";
+        error instanceof Error ? error.message : t("org.toast.inviteFailed");
       toast.error(msg);
     }
   };
@@ -439,7 +450,7 @@ const OrganizationSection = () => {
         memberId,
         role: newRole as "OWNER" | "ADMIN" | "MEMBER",
       });
-      toast.success("Role updated");
+      toast.success(t("toast.roleUpdated"));
     } catch (error) {
       logger.error({ error }, "Role change error");
       const msg =
@@ -456,11 +467,13 @@ const OrganizationSection = () => {
       });
       setRemoveDialogOpen(false);
       setMemberToRemove(null);
-      toast.success("Member removed from organization");
+      toast.success(t("org.toast.memberRemoved"));
     } catch (error) {
       logger.error({ error }, "Remove member error");
       const msg =
-        error instanceof Error ? error.message : "Failed to remove member";
+        error instanceof Error
+          ? error.message
+          : t("org.toast.memberRemoveFailed");
       toast.error(msg);
     }
   };
@@ -468,11 +481,13 @@ const OrganizationSection = () => {
   const handleAcceptInvitation = async (invitationId: string) => {
     try {
       await acceptInvitationMutation.mutateAsync({ invitationId });
-      toast.success("Invitation accepted");
+      toast.success(t("org.toast.invitationAccepted"));
     } catch (error) {
       logger.error({ error }, "Accept invitation error");
       const msg =
-        error instanceof Error ? error.message : "Failed to accept invitation";
+        error instanceof Error
+          ? error.message
+          : t("org.toast.invitationAcceptFailed");
       toast.error(msg);
     }
   };
@@ -480,11 +495,13 @@ const OrganizationSection = () => {
   const handleDeclineInvitation = async (invitationId: string) => {
     try {
       await declineInvitationMutation.mutateAsync({ invitationId });
-      toast.success("Invitation declined");
+      toast.success(t("org.toast.invitationDeclined"));
     } catch (error) {
       logger.error({ error }, "Decline invitation error");
       const msg =
-        error instanceof Error ? error.message : "Failed to decline invitation";
+        error instanceof Error
+          ? error.message
+          : t("org.toast.invitationDeclineFailed");
       toast.error(msg);
     }
   };
@@ -529,10 +546,8 @@ const OrganizationSection = () => {
         <div className="flex items-center gap-3">
           <Building2 className="h-6 w-6" />
           <div>
-            <h2 className="text-xl font-semibold">Organization</h2>
-            <p className="text-sm text-muted-foreground">
-              You are not part of an organization yet.
-            </p>
+            <h2 className="text-xl font-semibold">{t("org.title")}</h2>
+            <p className="text-sm text-muted-foreground">{t("org.notInOrg")}</p>
           </div>
         </div>
 
@@ -542,11 +557,9 @@ const OrganizationSection = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Mail className="h-5 w-5" />
-                Pending Invitations
+                {t("org.pendingInvitations")}
               </CardTitle>
-              <CardDescription>
-                You have been invited to join the following organizations
-              </CardDescription>
+              <CardDescription>{t("org.yourInvitationsNoOrg")}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
@@ -560,9 +573,10 @@ const OrganizationSection = () => {
                         {inv.organization.name}
                       </div>
                       <div className="text-xs text-muted-foreground">
-                        Invited by {inv.invitedBy.firstName}{" "}
-                        {inv.invitedBy.lastName} as{" "}
-                        {ROLE_LABELS[inv.role] ?? inv.role}
+                        {t("org.invitedByAs", {
+                          name: `${inv.invitedBy.firstName} ${inv.invitedBy.lastName}`,
+                          role: roleLabels[inv.role] ?? inv.role,
+                        })}
                       </div>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
@@ -577,7 +591,7 @@ const OrganizationSection = () => {
                         ) : (
                           <>
                             <Check className="h-4 w-4 mr-1" />
-                            Accept
+                            {t("org.accept")}
                           </>
                         )}
                       </Button>
@@ -592,7 +606,7 @@ const OrganizationSection = () => {
                         ) : (
                           <>
                             <X className="h-4 w-4 mr-1" />
-                            Decline
+                            {t("org.decline")}
                           </>
                         )}
                       </Button>
@@ -614,34 +628,32 @@ const OrganizationSection = () => {
         <div className="flex items-center gap-3">
           <Building2 className="h-6 w-6" />
           <div>
-            <h2 className="text-xl font-semibold">Organization</h2>
-            <p className="text-sm text-muted-foreground">
-              Manage your organization settings and members
-            </p>
+            <h2 className="text-xl font-semibold">{t("org.title")}</h2>
+            <p className="text-sm text-muted-foreground">{t("org.subtitle")}</p>
           </div>
         </div>
         <span
           className="inline-flex items-center gap-1.5 rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-xs font-medium text-orange-700 dark:border-orange-800 dark:bg-orange-950 dark:text-orange-300"
           role="status"
-          aria-label={`Your role: ${ROLE_LABELS[callerRole ?? "MEMBER"] ?? callerRole}`}
+          aria-label={t("org.yourRole", {
+            role: roleLabels[callerRole ?? "MEMBER"] ?? callerRole,
+          })}
         >
           {getRoleIcon(callerRole ?? "MEMBER")}
-          {ROLE_LABELS[callerRole ?? "MEMBER"] ?? callerRole}
+          {roleLabels[callerRole ?? "MEMBER"] ?? callerRole}
         </span>
       </div>
 
       {/* Organization Info Card */}
       <Card>
         <CardHeader>
-          <CardTitle>General</CardTitle>
-          <CardDescription>
-            Basic information about your organization
-          </CardDescription>
+          <CardTitle>{t("org.general")}</CardTitle>
+          <CardDescription>{t("org.generalDesc")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="org-name">Name</Label>
+              <Label htmlFor="org-name">{t("org.name")}</Label>
               {editing ? (
                 <Input
                   id="org-name"
@@ -649,14 +661,14 @@ const OrganizationSection = () => {
                   onChange={(e) =>
                     setOrgForm((prev) => ({ ...prev, name: e.target.value }))
                   }
-                  placeholder="Organization name"
+                  placeholder={t("org.namePlaceholder")}
                 />
               ) : (
                 <p className="text-sm text-foreground">{org.name}</p>
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="org-email">Billing Email</Label>
+              <Label htmlFor="org-email">{t("org.billingEmail")}</Label>
               {editing ? (
                 <Input
                   id="org-email"
@@ -668,17 +680,19 @@ const OrganizationSection = () => {
                       contactEmail: e.target.value,
                     }))
                   }
-                  placeholder="contact@example.com"
+                  placeholder={t("org.billingEmailPlaceholder")}
                 />
               ) : (
                 <p className="text-sm text-foreground">
                   {org.contactEmail || (
-                    <span className="text-muted-foreground">Not set</span>
+                    <span className="text-muted-foreground">
+                      {t("org.billingEmailNotSet")}
+                    </span>
                   )}
                 </p>
               )}
               <p className="text-xs text-muted-foreground">
-                Used for billing and administrative communications.
+                {t("org.billingEmailDesc")}
               </p>
             </div>
           </div>
@@ -686,15 +700,15 @@ const OrganizationSection = () => {
             <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
               <span className="inline-flex items-center gap-1.5">
                 <Users className="h-4 w-4" />
-                Members: {org._count?.members ?? 0}
+                {t("org.members")}: {org._count?.members ?? 0}
               </span>
               <span className="inline-flex items-center gap-1.5">
                 <Settings className="h-4 w-4" />
-                Workspaces: {org._count?.workspaces ?? 0}
+                {t("org.workspaces")}: {org._count?.workspaces ?? 0}
               </span>
               <span className="inline-flex items-center gap-1.5">
                 <Calendar className="h-4 w-4" />
-                Created:{" "}
+                {t("org.created")}:{" "}
                 {new Date(org.createdAt).toLocaleDateString(undefined, {
                   year: "numeric",
                   month: "long",
@@ -718,7 +732,7 @@ const OrganizationSection = () => {
                     }}
                   >
                     <X className="h-4 w-4 mr-2" />
-                    Cancel
+                    {t("org.cancel")}
                   </Button>
                   <Button
                     onClick={handleUpdateOrg}
@@ -730,7 +744,9 @@ const OrganizationSection = () => {
                     ) : (
                       <Save className="h-4 w-4 mr-2" />
                     )}
-                    {updateOrgMutation.isPending ? "Saving..." : "Save Changes"}
+                    {updateOrgMutation.isPending
+                      ? t("org.saving")
+                      : t("org.saveChanges")}
                   </Button>
                 </>
               ) : (
@@ -739,7 +755,7 @@ const OrganizationSection = () => {
                   onClick={() => setEditing(true)}
                 >
                   <Pencil className="h-4 w-4 mr-2" />
-                  Edit Organization
+                  {t("org.editOrganization")}
                 </Button>
               )}
             </div>
@@ -754,11 +770,10 @@ const OrganizationSection = () => {
             <div>
               <CardTitle className="flex items-center gap-2">
                 <Users className="h-5 w-5" />
-                Members
+                {t("org.members")}
               </CardTitle>
               <CardDescription>
-                {membersTotal} member{membersTotal !== 1 ? "s" : ""} in this
-                organization
+                {t("org.membersCount", { count: membersTotal })}
               </CardDescription>
             </div>
             {isOrgAdmin && (
@@ -768,7 +783,7 @@ const OrganizationSection = () => {
                 onClick={() => setInviteOpen(true)}
               >
                 <UserPlus className="h-4 w-4 mr-2" />
-                Invite
+                {t("org.invite")}
               </Button>
             )}
           </div>
@@ -823,8 +838,12 @@ const OrganizationSection = () => {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="ADMIN">Admin</SelectItem>
-                            <SelectItem value="MEMBER">Member</SelectItem>
+                            <SelectItem value="ADMIN">
+                              {roleLabels["ADMIN"]}
+                            </SelectItem>
+                            <SelectItem value="MEMBER">
+                              {roleLabels["MEMBER"]}
+                            </SelectItem>
                           </SelectContent>
                         </Select>
                       ) : (
@@ -836,7 +855,7 @@ const OrganizationSection = () => {
                         >
                           <span className="flex items-center gap-1">
                             {getRoleIcon(member.role)}
-                            {ROLE_LABELS[member.role]}
+                            {roleLabels[member.role]}
                           </span>
                         </Badge>
                       )}
@@ -847,7 +866,7 @@ const OrganizationSection = () => {
                             variant="ghost"
                             size="icon"
                             className="h-8 w-8"
-                            title="Manage workspaces"
+                            title={t("org.manageWorkspaces")}
                             onClick={() =>
                               setManageWsMember({
                                 id: member.id,
@@ -902,11 +921,10 @@ const OrganizationSection = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Clock className="h-5 w-5" />
-              Pending Invitations
+              {t("org.pendingInvitations")}
             </CardTitle>
             <CardDescription>
-              {invitationsTotal} pending invitation
-              {invitationsTotal !== 1 ? "s" : ""}
+              {t("org.pendingInvitationsCount", { count: invitationsTotal })}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -919,17 +937,54 @@ const OrganizationSection = () => {
                   <div className="min-w-0">
                     <div className="font-medium text-sm">{inv.email}</div>
                     <div className="text-xs text-muted-foreground">
-                      Invited by {inv.invitedBy.firstName}{" "}
-                      {inv.invitedBy.lastName} &middot; Expires{" "}
-                      {new Date(inv.expiresAt).toLocaleDateString()}
+                      {t("org.invitedBy", {
+                        name: `${inv.invitedBy.firstName} ${inv.invitedBy.lastName}`,
+                      })}{" "}
+                      &middot;{" "}
+                      {t("org.expires", {
+                        date: new Date(inv.expiresAt).toLocaleDateString(),
+                      })}
                     </div>
                   </div>
-                  <Badge variant="secondary" className="text-xs shrink-0">
-                    {getRoleIcon(inv.role)}
-                    <span className="ml-1">
-                      {ROLE_LABELS[inv.role] ?? inv.role}
-                    </span>
-                  </Badge>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Badge variant="secondary" className="text-xs">
+                      {getRoleIcon(inv.role)}
+                      <span className="ml-1">
+                        {roleLabels[inv.role] ?? inv.role}
+                      </span>
+                    </Badge>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                      disabled={cancelInvitationMutation.isPending}
+                      onClick={() => {
+                        cancelInvitationMutation.mutate(
+                          { invitationId: inv.id },
+                          {
+                            onSuccess: () => {
+                              toast.success(
+                                t("toast.invitationRevoked", {
+                                  email: inv.email,
+                                })
+                              );
+                            },
+                            onError: (err) => {
+                              toast.error(
+                                err.message ||
+                                  t("toast.invitationFailed", {
+                                    email: inv.email,
+                                    error: "",
+                                  })
+                              );
+                            },
+                          }
+                        );
+                      }}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -954,11 +1009,9 @@ const OrganizationSection = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Mail className="h-5 w-5" />
-              Your Invitations
+              {t("org.yourInvitations")}
             </CardTitle>
-            <CardDescription>
-              You have been invited to other organizations
-            </CardDescription>
+            <CardDescription>{t("org.yourInvitationsDesc")}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
@@ -972,9 +1025,10 @@ const OrganizationSection = () => {
                       {inv.organization.name}
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      Invited by {inv.invitedBy.firstName}{" "}
-                      {inv.invitedBy.lastName} as{" "}
-                      {ROLE_LABELS[inv.role] ?? inv.role}
+                      {t("org.invitedByAs", {
+                        name: `${inv.invitedBy.firstName} ${inv.invitedBy.lastName}`,
+                        role: roleLabels[inv.role] ?? inv.role,
+                      })}
                     </div>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
@@ -989,7 +1043,7 @@ const OrganizationSection = () => {
                       ) : (
                         <>
                           <Check className="h-4 w-4 mr-1" />
-                          Accept
+                          {t("org.accept")}
                         </>
                       )}
                     </Button>
@@ -1004,7 +1058,7 @@ const OrganizationSection = () => {
                       ) : (
                         <>
                           <X className="h-4 w-4 mr-1" />
-                          Decline
+                          {t("org.decline")}
                         </>
                       )}
                     </Button>
@@ -1034,19 +1088,15 @@ const OrganizationSection = () => {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Invite to Organization</DialogTitle>
-            <DialogDescription>
-              Send an invitation to join your organization. If email is not
-              configured, you can copy the invite link to share manually.
-            </DialogDescription>
+            <DialogTitle>{t("org.inviteToOrgTitle")}</DialogTitle>
+            <DialogDescription>{t("org.inviteToOrgDesc")}</DialogDescription>
           </DialogHeader>
 
           {lastInviteUrl && !lastEmailSent ? (
             <div className="space-y-4 py-4">
               <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
                 <p className="text-sm font-medium text-amber-800 mb-2">
-                  Email is not configured. Share this link with the invited
-                  user:
+                  {t("org.emailNotConfigured")}
                 </p>
                 <div className="flex items-center gap-2">
                   <Input
@@ -1071,12 +1121,12 @@ const OrganizationSection = () => {
                     {copiedUrl ? (
                       <>
                         <Check className="h-4 w-4 mr-1" />
-                        Copied
+                        {t("org.copied")}
                       </>
                     ) : (
                       <>
                         <Copy className="h-4 w-4 mr-1" />
-                        Copy
+                        {t("org.copy")}
                       </>
                     )}
                   </Button>
@@ -1092,7 +1142,7 @@ const OrganizationSection = () => {
                     setCopiedUrl(false);
                   }}
                 >
-                  Done
+                  {t("org.done")}
                 </Button>
               </DialogFooter>
             </div>
@@ -1100,7 +1150,7 @@ const OrganizationSection = () => {
             <>
               <div className="space-y-4 py-4">
                 <div className="space-y-2">
-                  <Label htmlFor="invite-email">Email</Label>
+                  <Label htmlFor="invite-email">{t("org.email")}</Label>
                   <Input
                     id="invite-email"
                     type="email"
@@ -1110,7 +1160,7 @@ const OrganizationSection = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="invite-role">Organization role</Label>
+                  <Label htmlFor="invite-role">{t("org.orgRole")}</Label>
                   <Select
                     value={inviteRole}
                     onValueChange={(v) =>
@@ -1121,15 +1171,19 @@ const OrganizationSection = () => {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="ADMIN">Admin</SelectItem>
-                      <SelectItem value="MEMBER">Member</SelectItem>
+                      <SelectItem value="ADMIN">
+                        {roleLabels["ADMIN"]}
+                      </SelectItem>
+                      <SelectItem value="MEMBER">
+                        {roleLabels["MEMBER"]}
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 {/* Workspace access section */}
                 <div className="space-y-2">
-                  <Label>Workspace access</Label>
+                  <Label>{t("org.workspaceAccess")}</Label>
                   <Button
                     type="button"
                     variant={inviteAllWorkspaces ? "default" : "outline"}
@@ -1147,7 +1201,7 @@ const OrganizationSection = () => {
                     ) : (
                       <X className="h-4 w-4 mr-2 opacity-40" />
                     )}
-                    Grant access to all workspaces
+                    {t("org.grantAllWorkspaces")}
                   </Button>
 
                   {!inviteAllWorkspaces && (
@@ -1159,7 +1213,7 @@ const OrganizationSection = () => {
                         </div>
                       ) : orgWorkspaces.length === 0 ? (
                         <p className="text-sm text-muted-foreground">
-                          No workspaces found.
+                          {t("org.noWorkspacesFound")}
                         </p>
                       ) : (
                         orgWorkspaces.map((ws) => (
@@ -1181,7 +1235,7 @@ const OrganizationSection = () => {
               </div>
               <DialogFooter>
                 <Button variant="outline" onClick={() => setInviteOpen(false)}>
-                  Cancel
+                  {t("org.cancel")}
                 </Button>
                 <Button
                   className="bg-gradient-button hover:bg-gradient-button-hover text-white"
@@ -1191,10 +1245,10 @@ const OrganizationSection = () => {
                   {inviteMemberMutation.isPending ? (
                     <>
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Inviting...
+                      {t("org.inviting")}
                     </>
                   ) : (
-                    "Invite"
+                    t("org.inviteButton")
                   )}
                 </Button>
               </DialogFooter>
@@ -1218,10 +1272,11 @@ const OrganizationSection = () => {
       <AlertDialog open={removeDialogOpen} onOpenChange={setRemoveDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Remove Member</AlertDialogTitle>
+            <AlertDialogTitle>{t("org.removeMemberTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Remove {memberToRemove?.email} from the organization? They will
-              lose access to all organization workspaces.
+              {t("org.removeMemberDesc", {
+                email: memberToRemove?.email,
+              })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -1231,13 +1286,13 @@ const OrganizationSection = () => {
                 setMemberToRemove(null);
               }}
             >
-              Cancel
+              {t("org.cancel")}
             </AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive text-white hover:bg-destructive/90"
               onClick={handleRemoveMember}
             >
-              Remove
+              {t("org.remove")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
