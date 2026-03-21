@@ -2,12 +2,14 @@ import { TRPCError } from "@trpc/server";
 import { addDays } from "date-fns";
 
 import { formatInvitedBy, getUserDisplayName } from "@/core/utils";
+import { ensureWorkspaceMember } from "@/core/workspace-access";
 
 import { CoreEmailService } from "@/services/email/core-email.service";
 import { EmailService } from "@/services/email/email.service";
 import { EncryptionService } from "@/services/encryption.service";
 import { validateUserInvitation } from "@/services/plan/plan.service";
 
+import { InvitationTokenSchema } from "@/schemas/auth";
 import { inviteUserSchema } from "@/schemas/invitation";
 import { InvitationIdParamSchema } from "@/schemas/workspace";
 
@@ -365,6 +367,123 @@ export const invitationRouter = router({
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: te(ctx.locale, "workspace.failedToRevokeInvitation"),
+        });
+      }
+    }),
+
+  /**
+   * Accept invitation for an already-authenticated user (PROTECTED)
+   * Used when a signed-in user accepts an invitation via Google OAuth
+   * or clicks an invite link while already logged in.
+   */
+  acceptForAuthenticatedUser: rateLimitedProcedure
+    .input(InvitationTokenSchema)
+    .mutation(async ({ input, ctx }) => {
+      const user = ctx.user;
+      const { token } = input;
+
+      try {
+        const invitation = await ctx.prisma.invitation.findFirst({
+          where: {
+            token,
+            status: InvitationStatus.PENDING,
+            expiresAt: {
+              gt: new Date(),
+            },
+          },
+          include: {
+            workspace: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        });
+
+        if (!invitation) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: te(ctx.locale, "auth.invalidOrExpiredInvitation"),
+          });
+        }
+
+        // Verify the authenticated user's email matches the invitation
+        if (user.email !== invitation.email) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: `This invitation was sent to ${invitation.email}. You are signed in as ${user.email}. Please sign out and try again with the correct account.`,
+          });
+        }
+
+        // Idempotent: if already a member, just mark accepted
+        const existingMember = await ctx.prisma.workspaceMember.findFirst({
+          where: {
+            userId: user.id,
+            workspaceId: invitation.workspaceId,
+          },
+        });
+
+        if (existingMember) {
+          await ctx.prisma.invitation.update({
+            where: { id: invitation.id },
+            data: {
+              status: InvitationStatus.ACCEPTED,
+              invitedUserId: user.id,
+            },
+          });
+
+          return {
+            success: true,
+            workspace: {
+              id: invitation.workspace.id,
+              name: invitation.workspace.name,
+            },
+          };
+        }
+
+        await ctx.prisma.$transaction(async (tx) => {
+          await ensureWorkspaceMember(
+            user.id,
+            invitation.workspaceId,
+            invitation.role,
+            tx
+          );
+
+          await tx.user.update({
+            where: { id: user.id },
+            data: {
+              workspaceId: invitation.workspaceId,
+            },
+          });
+
+          await tx.invitation.update({
+            where: { id: invitation.id },
+            data: {
+              status: InvitationStatus.ACCEPTED,
+              invitedUserId: user.id,
+            },
+          });
+        });
+
+        return {
+          success: true,
+          workspace: {
+            id: invitation.workspace.id,
+            name: invitation.workspace.name,
+          },
+        };
+      } catch (error) {
+        if (error instanceof TRPCError) {
+          throw error;
+        }
+        ctx.logger.error(
+          { error },
+          "Error accepting invitation for authenticated user"
+        );
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: te(ctx.locale, "auth.failedToAcceptInvitation"),
         });
       }
     }),

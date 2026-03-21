@@ -10,6 +10,7 @@ import { authClient } from "@/lib/auth-client";
 import { logger } from "@/lib/logger";
 import { trpc } from "@/lib/trpc/client";
 
+import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,6 +34,7 @@ import { PasswordRequirements } from "@/components/ui/password-requirements";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
 
+import { useShowAlternativeAuth } from "@/hooks/queries/useSsoConfig";
 import { useToast } from "@/hooks/ui/useToast";
 
 import {
@@ -286,9 +288,12 @@ const AcceptInvitation = () => {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { login } = useAuth();
+  const { login, isAuthenticated, user } = useAuth();
   const acceptInvitationMutation = trpc.public.invitation.accept.useMutation();
+  const acceptForAuthenticatedMutation =
+    trpc.workspace.invitation.acceptForAuthenticatedUser.useMutation();
   const utils = trpc.useUtils();
+  const { showAlternativeAuth } = useShowAlternativeAuth();
 
   const [{ invitation, loading, error }, dispatch] = useReducer(
     invitationReducer,
@@ -333,6 +338,48 @@ const AcceptInvitation = () => {
     fetchInvitationDetails();
   }, [token, utils]);
 
+  const handleGoogleSignUp = () => {
+    if (token) {
+      sessionStorage.setItem("pendingInviteToken", token);
+    }
+  };
+
+  const handleAcceptAsAuthenticated = () => {
+    if (!token) return;
+
+    acceptForAuthenticatedMutation.mutate(
+      { token },
+      {
+        onSuccess: async (result) => {
+          try {
+            const response = await utils.auth.session.getSession.fetch();
+            const sessionUser = {
+              ...response.user,
+              workspaceId: response.user.workspace?.id,
+            };
+            login(sessionUser);
+          } catch {
+            // Session refresh failed, but invite was accepted
+          }
+
+          toast({
+            title: t("welcomeToQarote"),
+            description: t("successfullyJoinedWorkspace", {
+              workspace: result.workspace.name,
+            }),
+          });
+
+          navigate("/", { replace: true });
+        },
+        onError: (err: unknown) => {
+          const errorMessage =
+            err instanceof Error ? err.message : t("failedAcceptInvitation");
+          dispatch({ type: "SET_ERROR", error: errorMessage });
+        },
+      }
+    );
+  };
+
   const onSubmit = (data: AcceptInvitationFormData) => {
     if (!token) return;
 
@@ -356,11 +403,11 @@ const AcceptInvitation = () => {
             }
 
             const response = await utils.auth.session.getSession.fetch();
-            const user = {
+            const sessionUser = {
               ...response.user,
               workspaceId: response.user.workspace?.id,
             };
-            login(user);
+            login(sessionUser);
 
             toast({
               title: t("welcomeToQarote"),
@@ -425,6 +472,51 @@ const AcceptInvitation = () => {
     invitation?.workspace.plan ||
     "";
 
+  // Authenticated user — show simplified accept UI
+  if (isAuthenticated && invitation) {
+    return (
+      <PageWrapper>
+        <CardHeader className="text-center">
+          <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
+            <Mail className="h-6 w-6 text-blue-600" />
+          </div>
+          <CardTitle>{t("joinQaroteTitle")}</CardTitle>
+          <CardDescription>
+            {t("signedInAs", { email: user?.email })}
+          </CardDescription>
+        </CardHeader>
+
+        <CardContent className="space-y-6">
+          <InvitationInfo
+            invitation={invitation}
+            planDisplayName={planDisplayName}
+          />
+
+          {error && (
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+
+          <Button
+            onClick={handleAcceptAsAuthenticated}
+            className="w-full bg-gradient-button hover:bg-gradient-button-hover"
+            disabled={acceptForAuthenticatedMutation.isPending}
+          >
+            {acceptForAuthenticatedMutation.isPending ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                {t("accepting")}
+              </>
+            ) : (
+              t("acceptInvitationAndCreate")
+            )}
+          </Button>
+        </CardContent>
+      </PageWrapper>
+    );
+  }
+
   return (
     <PageWrapper>
       <CardHeader className="text-center">
@@ -456,6 +548,30 @@ const AcceptInvitation = () => {
           onSubmit={onSubmit}
           onNavigateSignIn={() => navigate("/auth/sign-in")}
         />
+
+        {showAlternativeAuth && (
+          <>
+            <div className="relative my-6">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-card px-2 text-muted-foreground">
+                  {t("orContinueWith")}
+                </span>
+              </div>
+            </div>
+
+            <div onClick={handleGoogleSignUp}>
+              <GoogleLoginButton
+                mode="signup"
+                onError={(error) => {
+                  logger.error("Google signup error:", error);
+                }}
+              />
+            </div>
+          </>
+        )}
       </CardContent>
     </PageWrapper>
   );

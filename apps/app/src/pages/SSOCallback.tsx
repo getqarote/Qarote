@@ -1,5 +1,9 @@
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
+
+import { authClient } from "@/lib/auth-client";
+import { logger } from "@/lib/logger";
+import { trpc } from "@/lib/trpc/client";
 
 import { PageLoader } from "@/components/PageLoader";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -7,6 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
+
+import { useToast } from "@/hooks/ui/useToast";
 
 const ERROR_MESSAGES: Record<string, string> = {
   missing_code: "Authorization code was not provided.",
@@ -28,25 +34,104 @@ const ERROR_MESSAGES: Record<string, string> = {
 const SSOCallback: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { isAuthenticated, isLoading, user } = useAuth();
+  const { isAuthenticated, isLoading, user, logout } = useAuth();
+  const { toast } = useToast();
+  const acceptMutation =
+    trpc.workspace.invitation.acceptForAuthenticatedUser.useMutation();
+  const inviteProcessedRef = useRef(false);
+  const [inviteError, setInviteError] = useState<string | null>(null);
+  const [inviteToken, setInviteToken] = useState<string | null>(null);
+
   const errorParam = searchParams.get("error");
   const error = errorParam
     ? ERROR_MESSAGES[errorParam] || `Authentication error: ${errorParam}`
     : null;
 
-  // Wait for auth to resolve, then navigate based on state
+  // Handle pending invite token after OAuth completes
   useEffect(() => {
-    if (error || isLoading) return;
+    if (error || isLoading || !isAuthenticated || inviteProcessedRef.current)
+      return;
 
-    if (isAuthenticated) {
-      // Authenticated: go to dashboard if user has workspace, otherwise workspace creation
+    const pendingToken = sessionStorage.getItem("pendingInviteToken");
+    if (!pendingToken) {
+      // No pending invite — normal redirect
       const target = user?.workspaceId ? "/" : "/workspace";
       navigate(target, { replace: true });
-    } else {
-      // Session cookie was expected but auth check found nothing — redirect to sign-in
+      return;
+    }
+
+    // Remove from storage immediately to prevent double-processing
+    sessionStorage.removeItem("pendingInviteToken");
+    inviteProcessedRef.current = true;
+    setInviteToken(pendingToken);
+
+    acceptMutation.mutate(
+      { token: pendingToken },
+      {
+        onSuccess: (result) => {
+          toast({
+            title: "Welcome!",
+            description: `You've joined ${result.workspace.name}.`,
+          });
+          navigate("/", { replace: true });
+        },
+        onError: (err) => {
+          logger.error("Failed to accept invitation after OAuth:", err);
+          setInviteError(err.message);
+        },
+      }
+    );
+  }, [error, isLoading, isAuthenticated, user?.workspaceId, navigate]);
+
+  // Wait for auth to resolve when no pending invite
+  useEffect(() => {
+    if (error || isLoading || inviteProcessedRef.current) return;
+
+    if (!isAuthenticated) {
       navigate("/auth/sign-in", { replace: true });
     }
-  }, [error, isLoading, isAuthenticated, user?.workspaceId, navigate]);
+  }, [error, isLoading, isAuthenticated, navigate]);
+
+  // Invite acceptance error — show actionable UI
+  if (inviteError) {
+    const isEmailMismatch = inviteError.includes("signed in as");
+
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-auth py-12 px-4">
+        <Card className="max-w-md w-full bg-card/95 backdrop-blur-xs border-border/20 shadow-2xl">
+          <CardHeader>
+            <CardTitle className="text-card-foreground">
+              Invitation Error
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Alert variant="destructive">
+              <AlertDescription>{inviteError}</AlertDescription>
+            </Alert>
+            {isEmailMismatch ? (
+              <Button
+                className="w-full bg-gradient-button hover:bg-gradient-button-hover"
+                onClick={async () => {
+                  await authClient.signOut();
+                  logout();
+                  navigate(`/invite/${inviteToken}`, { replace: true });
+                }}
+              >
+                Sign out and try again
+              </Button>
+            ) : (
+              <Button
+                className="w-full bg-gradient-button hover:bg-gradient-button-hover"
+                onClick={() => navigate("/", { replace: true })}
+              >
+                Continue to dashboard
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   if (error) {
     return (

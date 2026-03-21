@@ -164,11 +164,7 @@ const AppCore = () => (
                           />
                           <Route
                             path="/invite/:token"
-                            element={
-                              <PublicRoute>
-                                <AcceptInvitation />
-                              </PublicRoute>
-                            }
+                            element={<AcceptInvitation />}
                           />
 
                           {/* Protected routes */}
