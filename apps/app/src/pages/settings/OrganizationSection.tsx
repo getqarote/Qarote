@@ -834,15 +834,27 @@ const OrganizationSection = () => {
                           }
                           disabled={updateRoleMutation.isPending}
                         >
-                          <SelectTrigger className="w-28 h-8 text-xs">
-                            <SelectValue />
+                          <SelectTrigger
+                            className="w-32 h-8 text-xs"
+                            aria-label={t("org.colOrgRole")}
+                          >
+                            <span className="flex! items-center gap-1.5">
+                              {getRoleIcon(member.role)}
+                              {roleLabels[member.role]}
+                            </span>
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="ADMIN">
-                              {roleLabels["ADMIN"]}
+                              <span className="flex items-center gap-1.5">
+                                {getRoleIcon("ADMIN")}
+                                {roleLabels["ADMIN"]}
+                              </span>
                             </SelectItem>
                             <SelectItem value="MEMBER">
-                              {roleLabels["MEMBER"]}
+                              <span className="flex items-center gap-1.5">
+                                {getRoleIcon("MEMBER")}
+                                {roleLabels["MEMBER"]}
+                              </span>
                             </SelectItem>
                           </SelectContent>
                         </Select>
@@ -863,10 +875,9 @@ const OrganizationSection = () => {
                       {isOrgAdmin && member.role !== "OWNER" && (
                         <>
                           <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8"
-                            title={t("org.manageWorkspaces")}
+                            variant="outline"
+                            size="sm"
+                            className="h-8 text-xs gap-1"
                             onClick={() =>
                               setManageWsMember({
                                 id: member.id,
@@ -876,7 +887,10 @@ const OrganizationSection = () => {
                               })
                             }
                           >
-                            <Settings className="h-4 w-4" />
+                            <Settings className="h-3.5 w-3.5" />
+                            <span className="hidden sm:inline">
+                              {t("org.workspaces")}
+                            </span>
                           </Button>
                           <Button
                             variant="ghost"
