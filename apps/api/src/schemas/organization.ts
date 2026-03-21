@@ -53,3 +53,7 @@ export const AcceptOrgInvitationSchema = z.object({
 export const DeclineOrgInvitationSchema = z.object({
   invitationId: z.string(),
 });
+
+export const CancelOrgInvitationSchema = z.object({
+  invitationId: z.string(),
+});

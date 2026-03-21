@@ -159,6 +159,17 @@ export const useDeclineOrgInvitation = () => {
   });
 };
 
+// Cancel a pending invitation (admin)
+export const useCancelOrgInvitation = () => {
+  const utils = trpc.useUtils();
+
+  return trpc.organization.members.cancelInvitation.useMutation({
+    onSuccess: () => {
+      utils.organization.members.listPendingInvitations.invalidate();
+    },
+  });
+};
+
 // List all workspaces in the organization (for invite dialog + member management)
 export const useOrgWorkspaces = () => {
   const { isAuthenticated } = useAuth();

@@ -19,6 +19,7 @@ import {
 import {
   AcceptOrgInvitationSchema,
   AssignToWorkspaceSchema,
+  CancelOrgInvitationSchema,
   DeclineOrgInvitationSchema,
   InviteOrgMemberSchema,
   RemoveOrgMemberSchema,
@@ -632,6 +633,46 @@ export const membersRouter = router({
           userId: ctx.user.id,
         },
         "Organization invitation declined"
+      );
+
+      return { success: true };
+    }),
+
+  /**
+   * Cancel a pending invitation (OWNER/ADMIN only)
+   */
+  cancelInvitation: rateLimitedProcedure
+    .input(CancelOrgInvitationSchema)
+    .mutation(async ({ input, ctx }) => {
+      const { organizationId } = await requireOrgAdmin(
+        ctx.prisma,
+        ctx.user.id,
+        ctx.user.workspaceId,
+        ctx.locale
+      );
+
+      const invitation = await ctx.prisma.organizationInvitation.findUnique({
+        where: { id: input.invitationId },
+      });
+
+      if (!invitation || invitation.organizationId !== organizationId) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: te(ctx.locale, "auth.orgInvitationNotFound"),
+        });
+      }
+
+      await ctx.prisma.organizationInvitation.delete({
+        where: { id: input.invitationId },
+      });
+
+      ctx.logger.info(
+        {
+          invitationId: input.invitationId,
+          organizationId,
+          cancelledBy: ctx.user.id,
+        },
+        "Organization invitation cancelled by admin"
       );
 
       return { success: true };
