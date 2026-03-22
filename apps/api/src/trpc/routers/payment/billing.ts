@@ -20,14 +20,25 @@ import { te } from "@/i18n";
  * Resolve payment method from Stripe subscription, falling back to customer default.
  * During trials, Stripe often sets the payment method on the customer, not the subscription.
  */
+/**
+ * Extract a payment method ID from a field that may be a string ID or an expanded PaymentMethod object.
+ */
+function extractPaymentMethodId(
+  field: string | Stripe.PaymentMethod | null | undefined
+): string | null {
+  if (!field) return null;
+  if (typeof field === "string") return field;
+  return field.id;
+}
+
 async function resolvePaymentMethod(
   stripeSubscription: Stripe.Subscription,
   stripeCustomerId: string | null,
   log: typeof appLogger
 ) {
-  let paymentMethodId = stripeSubscription.default_payment_method as
-    | string
-    | null;
+  let paymentMethodId = extractPaymentMethodId(
+    stripeSubscription.default_payment_method
+  );
 
   if (!paymentMethodId && stripeCustomerId) {
     try {
@@ -37,12 +48,13 @@ async function resolvePaymentMethod(
         !customer.deleted &&
         customer.invoice_settings?.default_payment_method
       ) {
-        paymentMethodId = customer.invoice_settings
-          .default_payment_method as string;
+        paymentMethodId = extractPaymentMethodId(
+          customer.invoice_settings.default_payment_method
+        );
       }
     } catch (customerError) {
       log.warn(
-        { customerError },
+        { error: customerError },
         "Failed to fetch customer for payment method fallback"
       );
     }
@@ -165,7 +177,7 @@ export const billingRouter = router({
           );
         } catch (stripeError) {
           ctx.logger.warn(
-            { stripeError },
+            { error: stripeError },
             "Failed to fetch Stripe subscription"
           );
         }
@@ -219,11 +231,6 @@ export const billingRouter = router({
           );
         }
       }
-
-      ctx.logger.info(
-        { totalMs: Date.now() - totalStart },
-        "Billing overview: total"
-      );
 
       return {
         workspace: currentWorkspace
@@ -320,6 +327,11 @@ export const billingRouter = router({
         code: "INTERNAL_SERVER_ERROR",
         message: te(ctx.locale, "billing.failedToFetchBillingOverview"),
       });
+    } finally {
+      ctx.logger.info(
+        { totalMs: Date.now() - totalStart },
+        "Billing overview: total"
+      );
     }
   }),
 
