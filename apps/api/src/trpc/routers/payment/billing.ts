@@ -103,11 +103,8 @@ export const billingRouter = router({
    */
   getBillingOverview: billingRateLimitedProcedure.query(async ({ ctx }) => {
     const { user, prisma } = ctx;
-    const totalStart = Date.now();
-
     try {
       // Phase 1: Parallel DB queries — all only need ctx.user.id / ctx.user.workspaceId
-      const phase1Start = Date.now();
       const [
         userWithSubscription,
         currentWorkspace,
@@ -139,10 +136,6 @@ export const billingRouter = router({
         }),
         getUserResourceCounts(user.id),
       ]);
-      ctx.logger.info(
-        { phase: "db-parallel", durationMs: Date.now() - phase1Start },
-        "Billing overview: Phase 1 complete"
-      );
 
       if (!userWithSubscription) {
         throw new TRPCError({
@@ -170,7 +163,6 @@ export const billingRouter = router({
 
       // Phase 2: Fetch Stripe subscription (gateway to all other Stripe calls)
       if (userWithSubscription.stripeSubscriptionId) {
-        const phase2Start = Date.now();
         try {
           stripeSubscription = await StripeService.getSubscription(
             userWithSubscription.stripeSubscriptionId
@@ -181,17 +173,8 @@ export const billingRouter = router({
             "Failed to fetch Stripe subscription"
           );
         }
-        ctx.logger.info(
-          {
-            phase: "stripe-subscription",
-            durationMs: Date.now() - phase2Start,
-          },
-          "Billing overview: Phase 2 complete"
-        );
-
         // Phase 3: Parallel Stripe calls — upcoming invoice + payment method resolution
         if (stripeSubscription) {
-          const phase3Start = Date.now();
           const [invoiceResult, paymentMethodResult] = await Promise.allSettled(
             [
               !stripeSubscription.canceled_at
@@ -224,11 +207,6 @@ export const billingRouter = router({
               "Failed to resolve payment method"
             );
           }
-
-          ctx.logger.info(
-            { phase: "stripe-parallel", durationMs: Date.now() - phase3Start },
-            "Billing overview: Phase 3 complete"
-          );
         }
       }
 
@@ -327,11 +305,6 @@ export const billingRouter = router({
         code: "INTERNAL_SERVER_ERROR",
         message: te(ctx.locale, "billing.failedToFetchBillingOverview"),
       });
-    } finally {
-      ctx.logger.info(
-        { totalMs: Date.now() - totalStart },
-        "Billing overview: total"
-      );
     }
   }),
 
