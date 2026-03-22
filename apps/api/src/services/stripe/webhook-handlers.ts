@@ -1,3 +1,5 @@
+import { addDays, addMonths, addYears } from "date-fns";
+
 import { logger } from "@/core/logger";
 import { prisma } from "@/core/prisma";
 import { getUserDisplayName } from "@/core/utils";
@@ -243,12 +245,9 @@ async function handleLicensePurchase(
     }
 
     // Calculate expiration date
-    const expiresAt = new Date();
-    if (billingInterval === "yearly") {
-      expiresAt.setFullYear(expiresAt.getFullYear() + 1);
-    } else {
-      expiresAt.setMonth(expiresAt.getMonth() + 1);
-    }
+    const now = new Date();
+    const expiresAt =
+      billingInterval === "yearly" ? addYears(now, 1) : addMonths(now, 1);
 
     // Generate license
     const { licenseKey, licenseId } = await licenseService.generateLicense({
@@ -590,9 +589,8 @@ export async function handleInvoicePaymentSucceeded(invoice: Invoice) {
             continue;
           }
 
-          // Calculate new expiration date (365 days from now)
-          const newExpiresAt = new Date();
-          newExpiresAt.setFullYear(newExpiresAt.getFullYear() + 1);
+          // Calculate new expiration date (1 year from now)
+          const newExpiresAt = addYears(new Date(), 1);
 
           // Renew license (updates expiresAt and increments version)
           const { newVersion } = await licenseService.renewLicense(
@@ -736,8 +734,7 @@ export async function handleInvoicePaymentFailed(invoice: Invoice) {
     // Calculate days since first payment failure (for grace period tracking)
     // Stripe retries for 7 days, we allow 7 more = 14 days total
     const now = new Date();
-    const gracePeriodEnd = new Date(subscription.currentPeriodEnd);
-    gracePeriodEnd.setDate(gracePeriodEnd.getDate() + 14); // 14-day grace period
+    const gracePeriodEnd = addDays(subscription.currentPeriodEnd, 14); // 14-day grace period
 
     const isInGracePeriod = now < gracePeriodEnd;
     const daysRemaining = Math.ceil(
