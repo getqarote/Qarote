@@ -734,7 +734,7 @@ export async function handleInvoicePaymentFailed(invoice: Invoice) {
     // Calculate days since first payment failure (for grace period tracking)
     // Stripe retries for 7 days, we allow 7 more = 14 days total
     const now = new Date();
-    const gracePeriodEnd = addDays(new Date(subscription.currentPeriodEnd), 14); // 14-day grace period
+    const gracePeriodEnd = addDays(subscription.currentPeriodEnd, 14); // 14-day grace period
 
     const isInGracePeriod = now < gracePeriodEnd;
     const daysRemaining = Math.ceil(
