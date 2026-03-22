@@ -82,11 +82,7 @@ import {
   useUpdateWorkspaceRole,
 } from "@/hooks/queries/useOrganization";
 
-const WS_ROLE_OPTIONS: Array<"ADMIN" | "MEMBER" | "READONLY"> = [
-  "ADMIN",
-  "MEMBER",
-  "READONLY",
-];
+const WS_ROLE_OPTIONS: Array<"ADMIN" | "MEMBER"> = ["ADMIN", "MEMBER"];
 
 const getRoleIcon = (role: string) => {
   switch (role) {
@@ -122,12 +118,20 @@ const WorkspaceRow = ({
 }: {
   workspace: { id: string; name: string };
   selected: boolean;
-  role: "ADMIN" | "MEMBER" | "READONLY";
+  role: "ADMIN" | "MEMBER";
   onToggle: () => void;
-  onRoleChange: (role: "ADMIN" | "MEMBER" | "READONLY") => void;
+  onRoleChange: (role: "ADMIN" | "MEMBER") => void;
   disabled?: boolean;
 }) => {
+  const { t } = useTranslation("profile");
   const roleLabels = useRoleLabels();
+
+  const wsRoleDescKeys: Record<string, string> = {
+    ADMIN: "org.roleDescWsAdmin",
+    MEMBER: "org.roleDescWsMember",
+    READONLY: "org.roleDescWsReadonly",
+  };
+
   return (
     <div className="flex items-center justify-between gap-2 rounded-md border p-2">
       <Button
@@ -148,18 +152,21 @@ const WorkspaceRow = ({
       {selected && (
         <Select
           value={role}
-          onValueChange={(v) =>
-            onRoleChange(v as "ADMIN" | "MEMBER" | "READONLY")
-          }
+          onValueChange={(v) => onRoleChange(v as "ADMIN" | "MEMBER")}
           disabled={disabled}
         >
           <SelectTrigger className="w-28 h-8 text-xs">
             <SelectValue />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="min-w-56">
             {WS_ROLE_OPTIONS.map((r) => (
-              <SelectItem key={r} value={r}>
-                {roleLabels[r]}
+              <SelectItem key={r} value={r} className="py-2">
+                <div>
+                  <span>{roleLabels[r]}</span>
+                  <p className="text-[11px] text-muted-foreground mt-0.5 font-normal">
+                    {t(wsRoleDescKeys[r])}
+                  </p>
+                </div>
               </SelectItem>
             ))}
           </SelectContent>
@@ -194,10 +201,7 @@ const MemberWorkspacesDialog = ({
 
   // Build a quick lookup: workspaceId -> current role
   const currentMap = new Map(
-    memberships.map((m) => [
-      m.workspaceId,
-      m.role as "ADMIN" | "MEMBER" | "READONLY",
-    ])
+    memberships.map((m) => [m.workspaceId, m.role as "ADMIN" | "MEMBER"])
   );
 
   const handleToggle = async (wsId: string) => {
@@ -237,7 +241,7 @@ const MemberWorkspacesDialog = ({
 
   const handleRoleChange = async (
     wsId: string,
-    newRole: "ADMIN" | "MEMBER" | "READONLY"
+    newRole: "ADMIN" | "MEMBER"
   ) => {
     try {
       await updateRoleMutation.mutateAsync({
@@ -351,7 +355,7 @@ const OrganizationSection = () => {
   const [inviteRole, setInviteRole] = useState<"ADMIN" | "MEMBER">("MEMBER");
   const [inviteAllWorkspaces, setInviteAllWorkspaces] = useState(true);
   const [wsAssignments, setWsAssignments] = useState<
-    Map<string, "ADMIN" | "MEMBER" | "READONLY">
+    Map<string, "ADMIN" | "MEMBER">
   >(new Map());
 
   const [removeDialogOpen, setRemoveDialogOpen] = useState(false);
@@ -519,10 +523,7 @@ const OrganizationSection = () => {
     });
   };
 
-  const updateWsAssignmentRole = (
-    wsId: string,
-    role: "ADMIN" | "MEMBER" | "READONLY"
-  ) => {
+  const updateWsAssignmentRole = (wsId: string, role: "ADMIN" | "MEMBER") => {
     setWsAssignments((prev) => {
       const next = new Map(prev);
       next.set(wsId, role);
@@ -843,18 +844,28 @@ const OrganizationSection = () => {
                               {roleLabels[member.role]}
                             </span>
                           </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="ADMIN">
-                              <span className="flex items-center gap-1.5">
-                                {getRoleIcon("ADMIN")}
-                                {roleLabels["ADMIN"]}
-                              </span>
+                          <SelectContent className="min-w-56">
+                            <SelectItem value="ADMIN" className="py-2">
+                              <div>
+                                <span className="flex items-center gap-1.5">
+                                  {getRoleIcon("ADMIN")}
+                                  {roleLabels["ADMIN"]}
+                                </span>
+                                <p className="text-[11px] text-muted-foreground mt-0.5 font-normal">
+                                  {t("org.roleDescOrgAdmin")}
+                                </p>
+                              </div>
                             </SelectItem>
-                            <SelectItem value="MEMBER">
-                              <span className="flex items-center gap-1.5">
-                                {getRoleIcon("MEMBER")}
-                                {roleLabels["MEMBER"]}
-                              </span>
+                            <SelectItem value="MEMBER" className="py-2">
+                              <div>
+                                <span className="flex items-center gap-1.5">
+                                  {getRoleIcon("MEMBER")}
+                                  {roleLabels["MEMBER"]}
+                                </span>
+                                <p className="text-[11px] text-muted-foreground mt-0.5 font-normal">
+                                  {t("org.roleDescOrgMember")}
+                                </p>
+                              </div>
                             </SelectItem>
                           </SelectContent>
                         </Select>
@@ -1184,12 +1195,28 @@ const OrganizationSection = () => {
                     <SelectTrigger id="invite-role">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="ADMIN">
-                        {roleLabels["ADMIN"]}
+                    <SelectContent className="min-w-56">
+                      <SelectItem value="ADMIN" className="py-2">
+                        <div>
+                          <span className="flex items-center gap-1.5">
+                            {getRoleIcon("ADMIN")}
+                            {roleLabels["ADMIN"]}
+                          </span>
+                          <p className="text-[11px] text-muted-foreground mt-0.5 font-normal">
+                            {t("org.roleDescOrgAdmin")}
+                          </p>
+                        </div>
                       </SelectItem>
-                      <SelectItem value="MEMBER">
-                        {roleLabels["MEMBER"]}
+                      <SelectItem value="MEMBER" className="py-2">
+                        <div>
+                          <span className="flex items-center gap-1.5">
+                            {getRoleIcon("MEMBER")}
+                            {roleLabels["MEMBER"]}
+                          </span>
+                          <p className="text-[11px] text-muted-foreground mt-0.5 font-normal">
+                            {t("org.roleDescOrgMember")}
+                          </p>
+                        </div>
                       </SelectItem>
                     </SelectContent>
                   </Select>
