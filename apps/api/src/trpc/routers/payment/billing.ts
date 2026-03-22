@@ -1,4 +1,7 @@
 import { TRPCError } from "@trpc/server";
+import type Stripe from "stripe";
+
+import type { logger as appLogger } from "@/core/logger";
 
 import { getUserResourceCounts } from "@/services/plan/plan.service";
 import { StripeService } from "@/services/stripe/stripe.service";
@@ -14,6 +17,83 @@ import {
 import { te } from "@/i18n";
 
 /**
+ * Resolve payment method from Stripe subscription, falling back to customer default.
+ * During trials, Stripe often sets the payment method on the customer, not the subscription.
+ */
+/**
+ * Extract a payment method ID from a field that may be a string ID or an expanded PaymentMethod object.
+ */
+function extractPaymentMethodId(
+  field: string | Stripe.PaymentMethod | null | undefined
+): string | null {
+  if (!field) return null;
+  if (typeof field === "string") return field;
+  return field.id;
+}
+
+async function resolvePaymentMethod(
+  stripeSubscription: Stripe.Subscription,
+  stripeCustomerId: string | null,
+  log: typeof appLogger
+) {
+  let paymentMethodId = extractPaymentMethodId(
+    stripeSubscription.default_payment_method
+  );
+
+  if (!paymentMethodId && stripeCustomerId) {
+    try {
+      const customer = await StripeService.getCustomer(stripeCustomerId);
+      if (
+        customer &&
+        !customer.deleted &&
+        customer.invoice_settings?.default_payment_method
+      ) {
+        paymentMethodId = extractPaymentMethodId(
+          customer.invoice_settings.default_payment_method
+        );
+      }
+    } catch (customerError) {
+      log.warn(
+        { error: customerError },
+        "Failed to fetch customer for payment method fallback"
+      );
+    }
+  }
+
+  if (!paymentMethodId) return null;
+
+  try {
+    const fullPaymentMethod =
+      await StripeService.getPaymentMethod(paymentMethodId);
+
+    return {
+      id: fullPaymentMethod.id,
+      type: fullPaymentMethod.type,
+      card: fullPaymentMethod.card
+        ? {
+            brand: fullPaymentMethod.card.brand,
+            last4: fullPaymentMethod.card.last4,
+            exp_month: fullPaymentMethod.card.exp_month,
+            exp_year: fullPaymentMethod.card.exp_year,
+          }
+        : null,
+      billing_details: fullPaymentMethod.billing_details
+        ? {
+            name: fullPaymentMethod.billing_details.name,
+            email: fullPaymentMethod.billing_details.email,
+          }
+        : null,
+    };
+  } catch (paymentMethodError) {
+    log.error(
+      { error: paymentMethodError, paymentMethodId },
+      "Failed to fetch payment method"
+    );
+    return null;
+  }
+}
+
+/**
  * Billing router
  * Handles billing overview and portal session creation
  */
@@ -23,15 +103,39 @@ export const billingRouter = router({
    */
   getBillingOverview: billingRateLimitedProcedure.query(async ({ ctx }) => {
     const { user, prisma } = ctx;
-
     try {
-      // Get user with subscription
-      const userWithSubscription = await prisma.user.findUnique({
-        where: { id: user.id },
-        include: {
-          subscription: true,
-        },
-      });
+      // Phase 1: Parallel DB queries — all only need ctx.user.id / ctx.user.workspaceId
+      const [
+        userWithSubscription,
+        currentWorkspace,
+        recentPayments,
+        resourceCounts,
+      ] = await Promise.all([
+        prisma.user.findUnique({
+          where: { id: user.id },
+          include: { subscription: true },
+        }),
+        // Get workspace for display purposes (use user's current workspace)
+        // Note: Users cannot have a subscription without a workspace per business rules.
+        // However, we allow users without workspaces to access billing to see their status
+        // (which will show no subscription) and to create a workspace.
+        user.workspaceId
+          ? prisma.workspace.findUnique({ where: { id: user.workspaceId } })
+          : Promise.resolve(null),
+        prisma.payment.findMany({
+          where: { userId: user.id },
+          orderBy: { createdAt: "desc" },
+          take: 10,
+          select: {
+            id: true,
+            amount: true,
+            status: true,
+            description: true,
+            createdAt: true,
+          },
+        }),
+        getUserResourceCounts(user.id),
+      ]);
 
       if (!userWithSubscription) {
         throw new TRPCError({
@@ -39,16 +143,6 @@ export const billingRouter = router({
           message: te(ctx.locale, "auth.userNotFound"),
         });
       }
-
-      // Get workspace for display purposes (use user's current workspace)
-      // Note: Users cannot have a subscription without a workspace per business rules.
-      // However, we allow users without workspaces to access billing to see their status
-      // (which will show no subscription) and to create a workspace.
-      const currentWorkspace = user.workspaceId
-        ? await prisma.workspace.findUnique({
-            where: { id: user.workspaceId },
-          })
-        : null;
 
       // Data integrity check: If user has a subscription but no workspace, log a warning
       // This shouldn't happen per business rules, but we don't block the response
@@ -62,103 +156,59 @@ export const billingRouter = router({
         );
       }
 
-      let stripeSubscription = null;
+      let stripeSubscription: Stripe.Subscription | null = null;
       let upcomingInvoice = null;
-      let paymentMethod = null;
+      let paymentMethod: Awaited<ReturnType<typeof resolvePaymentMethod>> =
+        null;
 
-      // Fetch Stripe subscription details if exists
+      // Phase 2: Fetch Stripe subscription (gateway to all other Stripe calls)
       if (userWithSubscription.stripeSubscriptionId) {
         try {
           stripeSubscription = await StripeService.getSubscription(
             userWithSubscription.stripeSubscriptionId
           );
+        } catch (stripeError) {
+          ctx.logger.warn(
+            { error: stripeError },
+            "Failed to fetch Stripe subscription"
+          );
+        }
+        // Phase 3: Parallel Stripe calls — upcoming invoice + payment method resolution
+        if (stripeSubscription) {
+          const [invoiceResult, paymentMethodResult] = await Promise.allSettled(
+            [
+              !stripeSubscription.canceled_at
+                ? StripeService.getUpcomingInvoice(
+                    userWithSubscription.stripeSubscriptionId!
+                  )
+                : Promise.resolve(null),
+              resolvePaymentMethod(
+                stripeSubscription,
+                userWithSubscription.stripeCustomerId,
+                ctx.logger
+              ),
+            ]
+          );
 
-          // Get upcoming invoice
-          if (stripeSubscription && !stripeSubscription.canceled_at) {
-            upcomingInvoice = await StripeService.getUpcomingInvoice(
-              userWithSubscription.stripeSubscriptionId || ""
+          if (invoiceResult.status === "fulfilled") {
+            upcomingInvoice = invoiceResult.value;
+          } else {
+            ctx.logger.warn(
+              { error: invoiceResult.reason },
+              "Failed to fetch upcoming invoice"
             );
           }
 
-          // Get payment method: check subscription first, then fall back to customer default
-          // During trials, Stripe often sets the payment method on the customer, not the subscription
-          let paymentMethodId = stripeSubscription?.default_payment_method as
-            | string
-            | null;
-
-          if (!paymentMethodId && userWithSubscription.stripeCustomerId) {
-            try {
-              const customer = await StripeService.getCustomer(
-                userWithSubscription.stripeCustomerId
-              );
-              if (
-                customer &&
-                !customer.deleted &&
-                customer.invoice_settings?.default_payment_method
-              ) {
-                paymentMethodId = customer.invoice_settings
-                  .default_payment_method as string;
-              }
-            } catch (customerError) {
-              ctx.logger.warn(
-                { customerError },
-                "Failed to fetch customer for payment method fallback"
-              );
-            }
+          if (paymentMethodResult.status === "fulfilled") {
+            paymentMethod = paymentMethodResult.value;
+          } else {
+            ctx.logger.warn(
+              { error: paymentMethodResult.reason },
+              "Failed to resolve payment method"
+            );
           }
-
-          if (paymentMethodId) {
-            try {
-              const fullPaymentMethod =
-                await StripeService.getPaymentMethod(paymentMethodId);
-
-              paymentMethod = {
-                id: fullPaymentMethod.id,
-                type: fullPaymentMethod.type,
-                card: fullPaymentMethod.card
-                  ? {
-                      brand: fullPaymentMethod.card.brand,
-                      last4: fullPaymentMethod.card.last4,
-                      exp_month: fullPaymentMethod.card.exp_month,
-                      exp_year: fullPaymentMethod.card.exp_year,
-                    }
-                  : null,
-                billing_details: fullPaymentMethod.billing_details
-                  ? {
-                      name: fullPaymentMethod.billing_details.name,
-                      email: fullPaymentMethod.billing_details.email,
-                    }
-                  : null,
-              };
-            } catch (paymentMethodError) {
-              ctx.logger.error(
-                { error: paymentMethodError, paymentMethodId },
-                "Failed to fetch payment method"
-              );
-            }
-          }
-        } catch (stripeError) {
-          ctx.logger.warn({ stripeError }, "Failed to fetch Stripe data");
-          // Continue without Stripe data
         }
       }
-
-      // Get recent payments
-      const recentPayments = await prisma.payment.findMany({
-        where: { userId: user.id },
-        orderBy: { createdAt: "desc" },
-        take: 10,
-        select: {
-          id: true,
-          amount: true,
-          status: true,
-          description: true,
-          createdAt: true,
-        },
-      });
-
-      // Get current usage
-      const resourceCounts = await getUserResourceCounts(user.id);
 
       return {
         workspace: currentWorkspace
