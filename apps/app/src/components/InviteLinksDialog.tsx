@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { Check, Copy, Link } from "lucide-react";
+import { AlertTriangle, Check, Copy, Link } from "lucide-react";
 import { toast } from "sonner";
 
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -15,6 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 
+import { usePublicConfig } from "@/hooks/queries/usePublicConfig";
 import { type InviteLink } from "@/hooks/ui/useWorkspaceInvites";
 
 interface InviteLinksDialogProps {
@@ -22,14 +24,37 @@ interface InviteLinksDialogProps {
   onClose: () => void;
 }
 
+function isLocalhostUrl(url: string): boolean {
+  return url.includes("localhost") || url.includes("127.0.0.1");
+}
+
 export function InviteLinksDialog({
   inviteLinks,
   onClose,
 }: InviteLinksDialogProps) {
   const { t } = useTranslation("workspace");
+  const { data: publicConfig } = usePublicConfig();
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const [editableUrls, setEditableUrls] = useState<string[]>([]);
 
-  const handleCopy = async (url: string, index: number) => {
+  const showLocalhostWarning =
+    publicConfig?.frontendUrl && isLocalhostUrl(publicConfig.frontendUrl);
+
+  useEffect(() => {
+    setEditableUrls(inviteLinks.map((link) => link.inviteUrl));
+  }, [inviteLinks]);
+
+  const handleUrlChange = (index: number, value: string) => {
+    setEditableUrls((prev) => {
+      const next = [...prev];
+      next[index] = value;
+      return next;
+    });
+  };
+
+  const handleCopy = async (index: number) => {
+    const url = editableUrls[index];
+    if (!url) return;
     try {
       await navigator.clipboard.writeText(url);
       setCopiedIndex(index);
@@ -50,6 +75,16 @@ export function InviteLinksDialog({
           <DialogDescription>{t("inviteLinks.description")}</DialogDescription>
         </DialogHeader>
 
+        {showLocalhostWarning && (
+          <Alert variant="destructive">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle>{t("inviteLinks.localhostWarningTitle")}</AlertTitle>
+            <AlertDescription>
+              {t("inviteLinks.localhostWarningDescription")}
+            </AlertDescription>
+          </Alert>
+        )}
+
         <div className="space-y-3">
           {inviteLinks.map((link, index) => (
             <div key={link.email} className="space-y-1">
@@ -58,8 +93,8 @@ export function InviteLinksDialog({
               </p>
               <div className="flex gap-2">
                 <Input
-                  readOnly
-                  value={link.inviteUrl}
+                  value={editableUrls[index] ?? link.inviteUrl}
+                  onChange={(e) => handleUrlChange(index, e.target.value)}
                   className="font-mono text-xs"
                   aria-label={`Invite URL for ${link.email}`}
                 />
@@ -67,7 +102,7 @@ export function InviteLinksDialog({
                   variant="outline"
                   size="icon"
                   className="shrink-0"
-                  onClick={() => handleCopy(link.inviteUrl, index)}
+                  onClick={() => handleCopy(index)}
                   aria-label={`Copy invite link for ${link.email}`}
                 >
                   {copiedIndex === index ? (

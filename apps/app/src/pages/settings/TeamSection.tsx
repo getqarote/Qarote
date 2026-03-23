@@ -105,9 +105,15 @@ const TeamSection = () => {
             if (result.emailSent) {
               toast.success(t("toast.invitationSent", { email }));
             } else {
+              const backendUrl = result.inviteUrl;
+              const isLocalhost =
+                backendUrl &&
+                (backendUrl.includes("localhost") ||
+                  backendUrl.includes("127.0.0.1"));
               const inviteUrl =
-                result.inviteUrl ||
-                `${window.location.origin}/invite/${result.invitation.token}`;
+                !backendUrl || isLocalhost
+                  ? `${window.location.origin}/invite/${result.invitation.token}`
+                  : backendUrl;
               collectedLinks.push({ email, inviteUrl });
               toast.success(t("toast.invitationCreated", { email }));
             }

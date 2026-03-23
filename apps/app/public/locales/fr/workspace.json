@@ -46,7 +46,9 @@
     "title": "Partager les liens d'invitation",
     "description": "L'e-mail n'est pas configuré. Partagez ces liens manuellement avec les membres de votre équipe.",
     "done": "Terminé",
-    "copyFailed": "Échec de la copie du lien"
+    "copyFailed": "Échec de la copie du lien",
+    "localhostWarningTitle": "Le lien d'invitation contient localhost",
+    "localhostWarningDescription": "L'URL de votre serveur (FRONTEND_URL) est définie sur localhost. Ce lien a été ajusté pour utiliser l'adresse de votre navigateur, mais vous devriez mettre à jour FRONTEND_URL dans votre fichier .env avec l'adresse réseau de votre serveur (ex : http://192.168.1.50:8080) et redémarrer Qarote."
   },
   "invites": {
     "invalidEmail": "Veuillez saisir une adresse e-mail valide",
