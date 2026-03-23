@@ -1,4 +1,10 @@
 {
+  "section": {
+    "title": "Subscription",
+    "subtitle": "Manage your organization's subscription and billing",
+    "noInfo": "No organization billing information available.",
+    "billingTitle": "Billing"
+  },
   "plans": {
     "chooseYourPlan": "Choose Your Plan",
     "subtitle": "Scale your RabbitMQ monitoring with plans designed for teams of all sizes.",

@@ -1,4 +1,10 @@
 {
+  "section": {
+    "title": "Suscripción",
+    "subtitle": "Gestiona la suscripción y facturación de tu organización",
+    "noInfo": "No hay información de facturación disponible.",
+    "billingTitle": "Facturación"
+  },
   "plans": {
     "chooseYourPlan": "Elige tu plan",
     "subtitle": "Escala tu monitoreo de RabbitMQ con planes diseñados para equipos de todos los tamaños.",

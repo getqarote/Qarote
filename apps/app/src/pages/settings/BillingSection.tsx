@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { CreditCard } from "lucide-react";
 
 import { PlansSummaryTab } from "@/components/profile/PlansSummaryTab";
@@ -7,6 +9,7 @@ import { useOrgBillingInfo } from "@/hooks/queries/useOrganization";
 import { useUser } from "@/hooks/ui/useUser";
 
 const BillingSection = () => {
+  const { t } = useTranslation("billing");
   const { userPlan } = useUser();
   const { data: billingInfo, isLoading } = useOrgBillingInfo();
 
@@ -26,9 +29,11 @@ const BillingSection = () => {
         <div className="flex items-center gap-3">
           <CreditCard className="h-6 w-6" />
           <div>
-            <h2 className="text-xl font-semibold">Billing</h2>
+            <h2 className="text-xl font-semibold">
+              {t("section.billingTitle")}
+            </h2>
             <p className="text-sm text-muted-foreground">
-              No organization billing information available.
+              {t("section.noInfo")}
             </p>
           </div>
         </div>
@@ -41,9 +46,9 @@ const BillingSection = () => {
       <div className="flex items-center gap-3">
         <CreditCard className="h-6 w-6" />
         <div>
-          <h2 className="text-xl font-semibold">Subscription</h2>
+          <h2 className="text-xl font-semibold">{t("section.title")}</h2>
           <p className="text-sm text-muted-foreground">
-            Manage your organization&apos;s subscription and billing
+            {t("section.subtitle")}
           </p>
         </div>
       </div>
