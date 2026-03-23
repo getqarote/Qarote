@@ -22,8 +22,8 @@ import { InvitationIdParamSchema } from "@/schemas/workspace";
 import { emailConfig } from "@/config";
 
 import {
-  planValidationProcedure,
-  rateLimitedProcedure,
+  adminPlanValidationProcedure,
+  rateLimitedAdminProcedure,
   router,
 } from "@/trpc/trpc";
 
@@ -38,7 +38,7 @@ export const invitationRouter = router({
   /**
    * Get all pending invitations for workspace (PROTECTED)
    */
-  getInvitations: rateLimitedProcedure
+  getInvitations: rateLimitedAdminProcedure
     .input(PaginationInputSchema)
     .query(async ({ ctx, input }) => {
       const user = ctx.user;
@@ -119,7 +119,7 @@ export const invitationRouter = router({
   /**
    * Send invitation (PROTECTED with plan validation)
    */
-  sendInvitation: planValidationProcedure
+  sendInvitation: adminPlanValidationProcedure
     .input(inviteUserSchema)
     .mutation(async ({ input, ctx }) => {
       const user = ctx.user;
@@ -307,7 +307,7 @@ export const invitationRouter = router({
   /**
    * Revoke invitation (PROTECTED)
    */
-  revokeInvitation: rateLimitedProcedure
+  revokeInvitation: rateLimitedAdminProcedure
     .input(InvitationIdParamSchema)
     .mutation(async ({ input, ctx }) => {
       const user = ctx.user;
