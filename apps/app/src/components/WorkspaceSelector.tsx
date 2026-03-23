@@ -80,6 +80,11 @@ export function WorkspaceSelector() {
   ]);
 
   const workspaces = workspacesData?.workspaces || [];
+  interface Organization {
+    id: string;
+    name: string;
+    slug: string;
+  }
   type WorkspaceInfo = (typeof workspaces)[number];
 
   const currentWorkspace =
@@ -89,9 +94,7 @@ export function WorkspaceSelector() {
   const groupedWorkspaces = workspaces.reduce<
     Map<string, { orgName: string; workspaces: WorkspaceInfo[] }>
   >((groups, ws) => {
-    const org = ws.organization as
-      | { id: string; name: string; slug: string }
-      | undefined;
+    const org = ws.organization as Organization | undefined;
     const orgId = org?.id ?? "ungrouped";
     const orgName = org?.name ?? "";
     if (!groups.has(orgId)) {
