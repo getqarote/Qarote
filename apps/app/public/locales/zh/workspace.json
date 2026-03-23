@@ -46,7 +46,9 @@
     "title": "分享邀请链接",
     "description": "邮件服务未配置。请手动将这些链接分享给您的团队成员。",
     "done": "完成",
-    "copyFailed": "复制链接失败"
+    "copyFailed": "复制链接失败",
+    "localhostWarningTitle": "邀请链接包含 localhost",
+    "localhostWarningDescription": "您的服务器地址 (FRONTEND_URL) 设置为 localhost。此链接已调整为使用您当前的浏览器地址，但您应该在 .env 文件中将 FRONTEND_URL 更新为服务器的网络地址（例如：http://192.168.1.50:8080），然后重启 Qarote。"
   },
   "invites": {
     "invalidEmail": "请输入有效的邮箱地址",

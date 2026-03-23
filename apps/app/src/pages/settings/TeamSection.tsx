@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import { logger } from "@/lib/logger";
+import { isLocalhostUrl } from "@/lib/url-utils";
 
 import { InviteLinksDialog } from "@/components/InviteLinksDialog";
 import { EnhancedTeamTab, InviteFormState } from "@/components/profile";
@@ -105,9 +106,11 @@ const TeamSection = () => {
             if (result.emailSent) {
               toast.success(t("toast.invitationSent", { email }));
             } else {
+              const backendUrl = result.inviteUrl;
               const inviteUrl =
-                result.inviteUrl ||
-                `${window.location.origin}/invite/${result.invitation.token}`;
+                !backendUrl || isLocalhostUrl(backendUrl)
+                  ? `${window.location.origin}/invite/${result.invitation.token}`
+                  : backendUrl;
               collectedLinks.push({ email, inviteUrl });
               toast.success(t("toast.invitationCreated", { email }));
             }
