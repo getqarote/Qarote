@@ -1,3 +1,4 @@
+import { addDays, subDays } from "date-fns";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { prisma } from "@/core/prisma";
@@ -209,8 +210,7 @@ describe("handleCustomerSubscriptionDeleted", () => {
       customer: "cus_123",
     } as any;
 
-    const futureDate = new Date();
-    futureDate.setDate(futureDate.getDate() + 30);
+    const futureDate = addDays(new Date(), 30);
 
     vi.mocked(prisma.subscription.findUnique).mockResolvedValue({
       id: "db-sub-id",
@@ -336,8 +336,7 @@ describe("handleInvoicePaymentFailed", () => {
     const invoice = makeInvoice("sub_grace");
 
     // Period ended recently — still within 14-day grace period
-    const recentPeriodEnd = new Date();
-    recentPeriodEnd.setDate(recentPeriodEnd.getDate() - 2); // 2 days ago
+    const recentPeriodEnd = subDays(new Date(), 2); // 2 days ago
 
     vi.mocked(prisma.subscription.findUnique).mockResolvedValue({
       id: "db-sub",
@@ -378,8 +377,7 @@ describe("handleInvoicePaymentFailed", () => {
     const invoice = makeInvoice("sub_expired");
 
     // Period ended 20 days ago — past 14-day grace period
-    const expiredPeriodEnd = new Date();
-    expiredPeriodEnd.setDate(expiredPeriodEnd.getDate() - 20);
+    const expiredPeriodEnd = subDays(new Date(), 20);
 
     vi.mocked(prisma.subscription.findUnique).mockResolvedValue({
       id: "db-sub",
