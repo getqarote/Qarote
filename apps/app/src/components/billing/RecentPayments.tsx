@@ -1,11 +1,46 @@
 import React from "react";
 
-import { CheckCircle, Receipt } from "lucide-react";
+import { AlertCircle, CheckCircle, Clock, Receipt } from "lucide-react";
 
 import { formatCurrency, formatDate } from "@/lib/utils";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+
+function getStatusStyle(status: string) {
+  const s = status.toLowerCase();
+  if (s === "paid" || s === "succeeded" || s === "success") {
+    return {
+      icon: (
+        <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+      ),
+      iconBg: "bg-emerald-50 dark:bg-emerald-950/30",
+      badge:
+        "text-emerald-600 border-emerald-200 bg-emerald-50 dark:text-emerald-400 dark:border-emerald-800 dark:bg-emerald-950/30",
+    };
+  }
+  if (s === "failed" || s === "error") {
+    return {
+      icon: <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400" />,
+      iconBg: "bg-red-50 dark:bg-red-950/30",
+      badge:
+        "text-red-600 border-red-200 bg-red-50 dark:text-red-400 dark:border-red-800 dark:bg-red-950/30",
+    };
+  }
+  if (s === "pending" || s === "processing") {
+    return {
+      icon: <Clock className="w-4 h-4 text-amber-600 dark:text-amber-400" />,
+      iconBg: "bg-amber-50 dark:bg-amber-950/30",
+      badge:
+        "text-amber-600 border-amber-200 bg-amber-50 dark:text-amber-400 dark:border-amber-800 dark:bg-amber-950/30",
+    };
+  }
+  return {
+    icon: <Receipt className="w-4 h-4 text-muted-foreground" />,
+    iconBg: "bg-muted",
+    badge: "text-muted-foreground border-border bg-muted",
+  };
+}
 
 interface RecentPaymentsProps {
   recentPayments: Array<{
@@ -46,8 +81,10 @@ export const RecentPayments: React.FC<RecentPaymentsProps> = ({
               className="flex items-center justify-between py-3"
             >
               <div className="flex items-center gap-3">
-                <div className="h-8 w-8 rounded-full bg-emerald-50 dark:bg-emerald-950/30 flex items-center justify-center shrink-0">
-                  <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                <div
+                  className={`h-8 w-8 rounded-full ${getStatusStyle(payment.status).iconBg} flex items-center justify-center shrink-0`}
+                >
+                  {getStatusStyle(payment.status).icon}
                 </div>
                 <div>
                   <p className="text-sm font-medium">
@@ -61,7 +98,7 @@ export const RecentPayments: React.FC<RecentPaymentsProps> = ({
               <div className="text-right flex items-center gap-3">
                 <Badge
                   variant="outline"
-                  className="text-xs text-emerald-600 border-emerald-200 bg-emerald-50 dark:text-emerald-400 dark:border-emerald-800 dark:bg-emerald-950/30"
+                  className={`text-xs ${getStatusStyle(payment.status).badge}`}
                 >
                   {payment.status}
                 </Badge>
