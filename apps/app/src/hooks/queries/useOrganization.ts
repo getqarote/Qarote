@@ -246,3 +246,13 @@ export const useOrgMembersNotInWorkspace = (
     }
   );
 };
+
+// Accept org invitation via token (public — new user registration flow)
+export const useAcceptOrgInvitationPublic = () => {
+  return trpc.public.orgInvitation.accept.useMutation();
+};
+
+// Accept org invitation via token (authenticated user)
+export const useAcceptOrgInvitationAuth = () => {
+  return trpc.auth.orgInvitation.acceptOrgInvitation.useMutation();
+};

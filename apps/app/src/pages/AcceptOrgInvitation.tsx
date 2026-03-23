@@ -34,6 +34,10 @@ import { PasswordRequirements } from "@/components/ui/password-requirements";
 import { useAuth } from "@/contexts/AuthContextDefinition";
 
 import {
+  useAcceptOrgInvitationAuth,
+  useAcceptOrgInvitationPublic,
+} from "@/hooks/queries/useOrganization";
+import {
   type OrgInvitationDetails,
   useOrgInvitationDetails,
 } from "@/hooks/queries/useOrgInvitationDetails";
@@ -246,10 +250,8 @@ const AcceptOrgInvitation = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user: authUser, login } = useAuth();
-  const acceptOrgInvitationMutation =
-    trpc.public.orgInvitation.accept.useMutation();
-  const acceptAuthOrgInvitationMutation =
-    trpc.auth.orgInvitation.acceptOrgInvitation.useMutation();
+  const acceptOrgInvitationMutation = useAcceptOrgInvitationPublic();
+  const acceptAuthOrgInvitationMutation = useAcceptOrgInvitationAuth();
   const utils = trpc.useUtils();
 
   const {
