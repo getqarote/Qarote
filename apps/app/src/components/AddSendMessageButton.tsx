@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { MessageSquare } from "lucide-react";
 
 import { SendMessageDialog } from "@/components/SendMessageDialog";
@@ -12,6 +14,8 @@ export const AddSendMessageButton = ({
   serverId,
   onSuccess,
 }: AddSendMessageButtonProps) => {
+  const { t } = useTranslation("queues");
+
   return (
     <SendMessageDialog
       serverId={serverId}
@@ -20,7 +24,7 @@ export const AddSendMessageButton = ({
       trigger={
         <Button variant="outline" className="flex items-center gap-2">
           <MessageSquare className="w-4 h-4" />
-          Send Message
+          {t("sendMessage")}
         </Button>
       }
     />

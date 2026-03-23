@@ -334,7 +334,7 @@ export const PlansPage: React.FC<PlansPageProps> = ({
                 <SidebarTrigger />
                 <button
                   type="button"
-                  onClick={() => navigate("/settings/plans")}
+                  onClick={() => navigate("/settings/subscription")}
                   className="p-2 hover:bg-muted rounded-lg transition-colors"
                   title={t("plans.backToPlans")}
                   aria-label={t("plans.backToPlans")}

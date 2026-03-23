@@ -6,6 +6,7 @@ import { UpdateWorkspaceSchema } from "@/schemas/workspace";
 // --- Mocks ---
 
 const mockWorkspaceFindFirst = vi.fn();
+const mockWorkspaceFindUnique = vi.fn();
 const mockWorkspaceFindMany = vi.fn();
 const mockWorkspaceUpdate = vi.fn();
 const mockWorkspaceCount = vi.fn();
@@ -17,6 +18,7 @@ vi.mock("@/core/prisma", () => ({
   prisma: {
     workspace: {
       findFirst: (...a: unknown[]) => mockWorkspaceFindFirst(...a),
+      findUnique: (...a: unknown[]) => mockWorkspaceFindUnique(...a),
       findMany: (...a: unknown[]) => mockWorkspaceFindMany(...a),
       update: (...a: unknown[]) => mockWorkspaceUpdate(...a),
       count: (...a: unknown[]) => mockWorkspaceCount(...a),
@@ -85,6 +87,7 @@ function makeCtx(overrides: Record<string, unknown> = {}) {
     prisma: {
       workspace: {
         findFirst: mockWorkspaceFindFirst,
+        findUnique: mockWorkspaceFindUnique,
         findMany: mockWorkspaceFindMany,
         update: mockWorkspaceUpdate,
         count: mockWorkspaceCount,
@@ -209,7 +212,7 @@ describe("managementRouter.update", () => {
   });
 
   it("updates workspace with valid contactEmail", async () => {
-    mockWorkspaceFindFirst.mockResolvedValue(mockWorkspaceData);
+    mockWorkspaceFindUnique.mockResolvedValue(mockWorkspaceData);
     mockWorkspaceUpdate.mockResolvedValue({
       ...mockWorkspaceData,
       contactEmail: "new@example.com",
@@ -226,7 +229,7 @@ describe("managementRouter.update", () => {
   });
 
   it("updates workspace when contactEmail is omitted (undefined)", async () => {
-    mockWorkspaceFindFirst.mockResolvedValue(mockWorkspaceData);
+    mockWorkspaceFindUnique.mockResolvedValue(mockWorkspaceData);
     mockWorkspaceUpdate.mockResolvedValue(mockWorkspaceData);
 
     const caller = managementRouter.createCaller(makeCtx() as never);
@@ -241,7 +244,7 @@ describe("managementRouter.update", () => {
   });
 
   it("updates workspace tags", async () => {
-    mockWorkspaceFindFirst.mockResolvedValue(mockWorkspaceData);
+    mockWorkspaceFindUnique.mockResolvedValue(mockWorkspaceData);
     mockWorkspaceUpdate.mockResolvedValue({
       ...mockWorkspaceData,
       tags: ["production", "eu-west"],
@@ -258,7 +261,7 @@ describe("managementRouter.update", () => {
   });
 
   it("throws NOT_FOUND when workspace does not belong to user", async () => {
-    mockWorkspaceFindFirst.mockResolvedValue(null);
+    mockWorkspaceFindUnique.mockResolvedValue(null);
 
     const caller = managementRouter.createCaller(makeCtx() as never);
     await expect(

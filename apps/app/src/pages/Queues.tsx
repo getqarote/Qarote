@@ -2,6 +2,8 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
+import { UserRole } from "@/lib/api";
+
 import { AppSidebar } from "@/components/AppSidebar";
 import { NoServerConfigured } from "@/components/NoServerConfigured";
 import { QueueHeader } from "@/components/Queues/QueueHeader";
@@ -9,6 +11,7 @@ import { QueueTable } from "@/components/Queues/QueueTable";
 import { Input } from "@/components/ui/input";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 
+import { useAuth } from "@/contexts/AuthContextDefinition";
 import { useServerContext } from "@/contexts/ServerContext";
 import { useVHostContext } from "@/contexts/VHostContextDefinition";
 
@@ -21,6 +24,8 @@ const handleRefetch = () => {};
 const Queues = () => {
   const { t } = useTranslation("queues");
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const isAdmin = user?.role === UserRole.ADMIN;
   const { isLoading: workspaceLoading } = useUser();
   const [filterRegex, setFilterRegex] = useState("");
   const [page, setPage] = useState(1);
@@ -114,6 +119,7 @@ const Queues = () => {
                   workspaceLoading={workspaceLoading}
                   canAddQueue={true}
                   canSendMessages={true}
+                  isAdmin={isAdmin}
                   onRefetch={handleRefetch}
                 />
               </div>
@@ -140,6 +146,7 @@ const Queues = () => {
               queues={paginatedQueues}
               isLoading={isLoading}
               searchTerm={filterRegex}
+              isAdmin={isAdmin}
               onNavigateToQueue={(queueName) =>
                 navigate(`/queues/${queueName}`)
               }

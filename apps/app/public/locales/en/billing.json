@@ -1,4 +1,10 @@
 {
+  "section": {
+    "title": "Subscription",
+    "subtitle": "Manage your organization's subscription and billing",
+    "noInfo": "No organization billing information available.",
+    "billingTitle": "Billing"
+  },
   "plans": {
     "chooseYourPlan": "Choose Your Plan",
     "subtitle": "Scale your RabbitMQ monitoring with plans designed for teams of all sizes.",
@@ -126,10 +132,18 @@
   },
   "subscriptionManagement": {
     "title": "Subscription Management",
-    "description": "Manage your plan, billing cycle, and subscription settings for all your workspaces"
+    "description": "Manage your plan, billing cycle, and subscription settings for all your workspaces",
+    "renewPlan": "Renew {{plan}} Plan",
+    "reactivate": "Reactivate",
+    "cancelSubscription": "Cancel Subscription",
+    "endsSoon": "Ends soon",
+    "endsOn": "Ends {{date}}",
+    "readyToComeBack": "Ready to come back?",
+    "renewDescription": "Your {{plan}} plan was canceled, but you can restart it anytime with all the same features."
   },
   "error": {
-    "workspaceIdRequired": "Workspace ID is required"
+    "workspaceIdRequired": "Workspace ID is required",
+    "failedToOpenBillingPortal": "Failed to open billing portal."
   },
   "plansSummary": {
     "whatsIncluded": "What's included:",
@@ -151,7 +165,7 @@
     "processing": "Processing...",
     "upgradeNow": "Upgrade Now",
     "billingUsage": "Billing & Usage",
-    "manageSubscription": "Manage your subscription",
+    "manageSubscription": "View recent payments, manage subscription, and cancellation",
     "manage": "Manage",
     "comparePlans": "Compare Plans",
     "seeAllOptions": "See all available options",

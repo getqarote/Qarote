@@ -1,4 +1,10 @@
 {
+  "section": {
+    "title": "订阅",
+    "subtitle": "管理组织的订阅和账单",
+    "noInfo": "没有可用的组织账单信息。",
+    "billingTitle": "账单"
+  },
   "plans": {
     "chooseYourPlan": "选择您的方案",
     "subtitle": "通过专为各种规模团队设计的方案扩展您的 RabbitMQ 监控能力。",
@@ -126,10 +132,18 @@
   },
   "subscriptionManagement": {
     "title": "订阅管理",
-    "description": "管理您所有工作区的方案、计费周期和订阅设置"
+    "description": "管理您所有工作区的方案、计费周期和订阅设置",
+    "renewPlan": "续订 {{plan}} 方案",
+    "reactivate": "重新激活",
+    "cancelSubscription": "取消订阅",
+    "endsSoon": "即将到期",
+    "endsOn": "{{date}} 到期",
+    "readyToComeBack": "准备回来了吗？",
+    "renewDescription": "您的 {{plan}} 方案已取消，但您可以随时以相同功能重新启动。"
   },
   "error": {
-    "workspaceIdRequired": "需要工作区 ID"
+    "workspaceIdRequired": "需要工作区 ID",
+    "failedToOpenBillingPortal": "无法打开账单门户。"
   },
   "plansSummary": {
     "whatsIncluded": "包含内容：",

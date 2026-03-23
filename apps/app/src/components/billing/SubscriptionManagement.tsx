@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { Clock, RefreshCw, X } from "lucide-react";
+import { Clock, RefreshCw, Settings, X } from "lucide-react";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 
 import { UserPlan } from "@/types/plans";
 
@@ -66,94 +67,107 @@ export const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({
   return (
     <>
       <Card>
-        <CardHeader>
-          <div className="flex justify-between items-start">
-            <div>
-              <CardTitle>{t("subscriptionManagement.title")}</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                {t("subscriptionManagement.description")}
-              </p>
-            </div>
-            {/* Subscription Actions */}
-            {currentPlan === UserPlan.FREE &&
-            subscriptionCanceled &&
-            lastPlan &&
-            onRenewSubscription ? (
-              <Button
-                onClick={onRenewSubscription}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground"
-                disabled={isLoading}
-              >
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Renew {lastPlan} Plan
-              </Button>
-            ) : currentPlan !== UserPlan.FREE ? (
-              <>
-                {cancelAtPeriodEnd ? (
-                  <div className="flex items-center gap-3">
-                    {onRenewSubscription && (
-                      <Button
-                        onClick={onRenewSubscription}
-                        className="bg-primary hover:bg-primary/90 text-primary-foreground"
-                        disabled={isLoading}
-                      >
-                        <RefreshCw className="w-4 h-4 mr-2" />
-                        Reactivate Subscription
-                      </Button>
-                    )}
-                    <div className="flex items-center gap-2 text-primary bg-primary/10 px-3 py-2 rounded-md border border-primary/20">
-                      <Clock className="w-4 h-4" />
-                      <div className="text-sm">
-                        <div className="font-medium">Subscription ending</div>
-                        <div className="text-xs text-primary/80">
-                          Will end on{" "}
-                          {periodEnd
-                            ? new Date(periodEnd).toLocaleDateString("en-US", {
-                                year: "numeric",
-                                month: "long",
-                                day: "numeric",
-                              })
-                            : "end of period"}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <Button
-                    onClick={handleCancelClick}
-                    variant="outline"
-                    className="text-destructive border-destructive/20 hover:bg-destructive/10"
-                    disabled={isLoading}
-                  >
-                    <X className="w-4 h-4 mr-2" />
-                    Cancel Subscription
-                  </Button>
-                )}
-              </>
-            ) : null}
-          </div>
-        </CardHeader>
-        {currentPlan === UserPlan.FREE && subscriptionCanceled && lastPlan && (
-          <CardContent>
-            <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
-              <div className="flex items-start gap-3">
-                <div className="shrink-0">
-                  <RefreshCw className="w-5 h-5 text-primary mt-0.5" />
-                </div>
-                <div>
-                  <h4 className="font-medium text-primary mb-1">
-                    Ready to come back?
-                  </h4>
-                  <p className="text-sm text-primary/80 mb-3">
-                    Your {lastPlan} plan subscription was canceled, but you can
-                    easily restart it anytime. You'll get all the same great
-                    features you had before across all your workspaces.
-                  </p>
-                </div>
+        <CardContent className="pt-6 pb-6 px-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="h-9 w-9 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                <Settings className="w-4 h-4 text-muted-foreground" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-sm">
+                  {t("subscriptionManagement.title")}
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  {t("subscriptionManagement.description")}
+                </p>
               </div>
             </div>
-          </CardContent>
-        )}
+
+            {/* Subscription Actions */}
+            <div className="flex items-center gap-2">
+              {currentPlan === UserPlan.FREE &&
+              subscriptionCanceled &&
+              lastPlan &&
+              onRenewSubscription ? (
+                <Button
+                  onClick={onRenewSubscription}
+                  size="sm"
+                  className="btn-primary"
+                  disabled={isLoading}
+                >
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  {t("subscriptionManagement.renewPlan", { plan: lastPlan })}
+                </Button>
+              ) : currentPlan !== UserPlan.FREE ? (
+                <>
+                  {cancelAtPeriodEnd ? (
+                    <div className="flex items-center gap-3">
+                      {onRenewSubscription && (
+                        <Button
+                          onClick={onRenewSubscription}
+                          size="sm"
+                          className="btn-primary"
+                          disabled={isLoading}
+                        >
+                          <RefreshCw className="w-4 h-4 mr-2" />
+                          {t("subscriptionManagement.reactivate")}
+                        </Button>
+                      )}
+                      <Badge
+                        variant="outline"
+                        className="border-orange-300 text-orange-600 bg-orange-50 dark:border-orange-700 dark:text-orange-400 dark:bg-orange-950/50 py-1.5 px-3"
+                      >
+                        <Clock className="w-3 h-3 mr-1.5" />
+                        {periodEnd
+                          ? t("subscriptionManagement.endsOn", {
+                              date: new Date(periodEnd).toLocaleDateString(
+                                undefined,
+                                { month: "short", day: "numeric" }
+                              ),
+                            })
+                          : t("subscriptionManagement.endsSoon")}
+                      </Badge>
+                    </div>
+                  ) : (
+                    <Button
+                      onClick={handleCancelClick}
+                      variant="ghost"
+                      size="sm"
+                      className="text-muted-foreground hover:text-destructive"
+                      disabled={isLoading}
+                    >
+                      <X className="w-4 h-4 mr-2" />
+                      {t("subscriptionManagement.cancelSubscription")}
+                    </Button>
+                  )}
+                </>
+              ) : null}
+            </div>
+          </div>
+
+          {/* Renewal CTA for canceled users */}
+          {currentPlan === UserPlan.FREE &&
+            subscriptionCanceled &&
+            lastPlan && (
+              <div className="mt-4 rounded-lg border border-orange-200 bg-orange-50/50 dark:border-orange-900/50 dark:bg-orange-950/20 p-4">
+                <div className="flex items-start gap-3">
+                  <div className="shrink-0 rounded-full p-1.5 bg-orange-100 dark:bg-orange-900/30 mt-0.5">
+                    <RefreshCw className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-sm">
+                      {t("subscriptionManagement.readyToComeBack")}
+                    </h4>
+                    <p className="text-sm text-muted-foreground mt-0.5">
+                      {t("subscriptionManagement.renewDescription", {
+                        plan: lastPlan,
+                      })}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+        </CardContent>
       </Card>
 
       <CancelSubscriptionModal

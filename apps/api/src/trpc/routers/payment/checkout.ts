@@ -8,7 +8,7 @@ import { createCheckoutSessionSchema } from "@/schemas/payment";
 
 import { emailConfig } from "@/config";
 
-import { router, strictRateLimitedProcedure } from "@/trpc/trpc";
+import { router, strictRateLimitedAdminProcedure } from "@/trpc/trpc";
 
 import { UserPlan } from "@/generated/prisma/client";
 import { te } from "@/i18n";
@@ -21,7 +21,7 @@ export const checkoutRouter = router({
   /**
    * Create checkout session for subscription (PROTECTED - STRICT RATE LIMITED)
    */
-  createCheckoutSession: strictRateLimitedProcedure
+  createCheckoutSession: strictRateLimitedAdminProcedure
     .input(createCheckoutSessionSchema)
     .mutation(async ({ input, ctx }) => {
       const { plan, billingInterval } = input;
@@ -44,8 +44,25 @@ export const checkoutRouter = router({
           "Creating checkout session"
         );
 
-        // Create Stripe customer if not exists
-        let customerId = user.stripeCustomerId;
+        // Resolve Organization from user's org membership
+        const orgMembership = await prisma.organizationMember.findFirst({
+          where: { userId: user.id },
+          select: {
+            organization: {
+              select: { id: true, stripeCustomerId: true },
+            },
+          },
+        });
+
+        const org = orgMembership?.organization ?? null;
+        if (!org) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: te(ctx.locale, "billing.noOrganization"),
+          });
+        }
+
+        let customerId = org.stripeCustomerId;
         if (!customerId) {
           const customer = await StripeService.createCustomer({
             email: user.email,
@@ -54,9 +71,8 @@ export const checkoutRouter = router({
           });
           customerId = customer.id;
 
-          // Update user with customer ID
-          await prisma.user.update({
-            where: { id: user.id },
+          await prisma.organization.update({
+            where: { id: org.id },
             data: { stripeCustomerId: customerId },
           });
         }
@@ -72,6 +88,7 @@ export const checkoutRouter = router({
 
         return { url: session.url };
       } catch (error) {
+        if (error instanceof TRPCError) throw error;
         ctx.logger.error({ error }, "Error creating checkout session");
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",

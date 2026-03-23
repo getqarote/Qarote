@@ -9,17 +9,13 @@ import { StripeService } from "@/services/stripe/stripe.service";
 import { config } from "@/config";
 
 import {
-  billingRateLimitedProcedure,
-  rateLimitedProcedure,
+  billingRateLimitedAdminProcedure,
+  rateLimitedAdminProcedure,
   router,
 } from "@/trpc/trpc";
 
 import { te } from "@/i18n";
 
-/**
- * Resolve payment method from Stripe subscription, falling back to customer default.
- * During trials, Stripe often sets the payment method on the customer, not the subscription.
- */
 /**
  * Extract a payment method ID from a field that may be a string ID or an expanded PaymentMethod object.
  */
@@ -31,6 +27,10 @@ function extractPaymentMethodId(
   return field.id;
 }
 
+/**
+ * Resolve payment method from Stripe subscription, falling back to customer default.
+ * During trials, Stripe often sets the payment method on the customer, not the subscription.
+ */
 async function resolvePaymentMethod(
   stripeSubscription: Stripe.Subscription,
   stripeCustomerId: string | null,
@@ -99,255 +99,292 @@ async function resolvePaymentMethod(
  */
 export const billingRouter = router({
   /**
-   * Get comprehensive billing overview (PROTECTED - BILLING RATE LIMITED)
+   * Get comprehensive billing overview (PROTECTED - ADMIN ONLY, BILLING RATE LIMITED)
    */
-  getBillingOverview: billingRateLimitedProcedure.query(async ({ ctx }) => {
-    const { user, prisma } = ctx;
-    try {
-      // Phase 1: Parallel DB queries — all only need ctx.user.id / ctx.user.workspaceId
-      const [
-        userWithSubscription,
-        currentWorkspace,
-        recentPayments,
-        resourceCounts,
-      ] = await Promise.all([
-        prisma.user.findUnique({
-          where: { id: user.id },
-          include: { subscription: true },
-        }),
-        // Get workspace for display purposes (use user's current workspace)
-        // Note: Users cannot have a subscription without a workspace per business rules.
-        // However, we allow users without workspaces to access billing to see their status
-        // (which will show no subscription) and to create a workspace.
-        user.workspaceId
-          ? prisma.workspace.findUnique({ where: { id: user.workspaceId } })
-          : Promise.resolve(null),
-        prisma.payment.findMany({
-          where: { userId: user.id },
-          orderBy: { createdAt: "desc" },
-          take: 10,
-          select: {
-            id: true,
-            amount: true,
-            status: true,
-            description: true,
-            createdAt: true,
-          },
-        }),
-        getUserResourceCounts(user.id),
-      ]);
+  getBillingOverview: billingRateLimitedAdminProcedure.query(
+    async ({ ctx }) => {
+      const { user, prisma } = ctx;
 
-      if (!userWithSubscription) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: te(ctx.locale, "auth.userNotFound"),
-        });
-      }
+      try {
+        // Phase 1: Parallel DB queries
+        const [
+          userWithSubscription,
+          currentWorkspace,
+          recentPayments,
+          resourceCounts,
+          membership,
+        ] = await Promise.all([
+          prisma.user.findUnique({
+            where: { id: user.id },
+            include: { subscription: true },
+          }),
+          user.workspaceId
+            ? prisma.workspace.findUnique({ where: { id: user.workspaceId } })
+            : Promise.resolve(null),
+          prisma.payment.findMany({
+            where: { userId: user.id },
+            orderBy: { createdAt: "desc" },
+            take: 10,
+            select: {
+              id: true,
+              amount: true,
+              status: true,
+              description: true,
+              createdAt: true,
+            },
+          }),
+          getUserResourceCounts(user.id),
+          // Resolve Stripe IDs from Organization (billing authority)
+          prisma.organizationMember.findFirst({
+            where: { userId: user.id },
+            select: {
+              organization: {
+                select: {
+                  stripeCustomerId: true,
+                  stripeSubscriptionId: true,
+                },
+              },
+            },
+          }),
+        ]);
 
-      // Data integrity check: If user has a subscription but no workspace, log a warning
-      // This shouldn't happen per business rules, but we don't block the response
-      if (userWithSubscription.subscription && !currentWorkspace) {
-        ctx.logger.warn(
-          {
-            userId: user.id,
-            subscriptionId: userWithSubscription.subscription.id,
-          },
-          "User has subscription but no workspace - data integrity issue"
-        );
-      }
+        if (!userWithSubscription) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: te(ctx.locale, "auth.userNotFound"),
+          });
+        }
 
-      let stripeSubscription: Stripe.Subscription | null = null;
-      let upcomingInvoice = null;
-      let paymentMethod: Awaited<ReturnType<typeof resolvePaymentMethod>> =
-        null;
-
-      // Phase 2: Fetch Stripe subscription (gateway to all other Stripe calls)
-      if (userWithSubscription.stripeSubscriptionId) {
-        try {
-          stripeSubscription = await StripeService.getSubscription(
-            userWithSubscription.stripeSubscriptionId
-          );
-        } catch (stripeError) {
+        // Data integrity check: If user has a subscription but no workspace, log a warning
+        if (userWithSubscription.subscription && !currentWorkspace) {
           ctx.logger.warn(
-            { error: stripeError },
-            "Failed to fetch Stripe subscription"
+            {
+              userId: user.id,
+              subscriptionId: userWithSubscription.subscription.id,
+            },
+            "User has subscription but no workspace - data integrity issue"
           );
         }
-        // Phase 3: Parallel Stripe calls — upcoming invoice + payment method resolution
-        if (stripeSubscription) {
-          const [invoiceResult, paymentMethodResult] = await Promise.allSettled(
-            [
-              !stripeSubscription.canceled_at
-                ? StripeService.getUpcomingInvoice(
-                    userWithSubscription.stripeSubscriptionId!
-                  )
-                : Promise.resolve(null),
-              resolvePaymentMethod(
-                stripeSubscription,
-                userWithSubscription.stripeCustomerId,
-                ctx.logger
-              ),
-            ]
-          );
 
-          if (invoiceResult.status === "fulfilled") {
-            upcomingInvoice = invoiceResult.value;
-          } else {
+        const orgStripeCustomerId =
+          membership?.organization?.stripeCustomerId ?? null;
+        const orgStripeSubscriptionId =
+          membership?.organization?.stripeSubscriptionId ?? null;
+
+        let stripeSubscription: Stripe.Subscription | null = null;
+        let upcomingInvoice = null;
+        let paymentMethod: Awaited<ReturnType<typeof resolvePaymentMethod>> =
+          null;
+
+        // Phase 2: Fetch Stripe subscription (gateway to all other Stripe calls)
+        if (orgStripeSubscriptionId) {
+          try {
+            stripeSubscription = await StripeService.getSubscription(
+              orgStripeSubscriptionId
+            );
+          } catch (stripeError) {
             ctx.logger.warn(
-              { error: invoiceResult.reason },
-              "Failed to fetch upcoming invoice"
+              { error: stripeError },
+              "Failed to fetch Stripe subscription"
             );
           }
+          // Phase 3: Parallel Stripe calls — upcoming invoice + payment method resolution
+          if (stripeSubscription) {
+            const [invoiceResult, paymentMethodResult] =
+              await Promise.allSettled([
+                !stripeSubscription.canceled_at
+                  ? StripeService.getUpcomingInvoice(orgStripeSubscriptionId!)
+                  : Promise.resolve(null),
+                resolvePaymentMethod(
+                  stripeSubscription,
+                  orgStripeCustomerId,
+                  ctx.logger
+                ),
+              ]);
 
-          if (paymentMethodResult.status === "fulfilled") {
-            paymentMethod = paymentMethodResult.value;
-          } else {
-            ctx.logger.warn(
-              { error: paymentMethodResult.reason },
-              "Failed to resolve payment method"
-            );
+            if (invoiceResult.status === "fulfilled") {
+              upcomingInvoice = invoiceResult.value;
+            } else {
+              ctx.logger.warn(
+                { error: invoiceResult.reason },
+                "Failed to fetch upcoming invoice"
+              );
+            }
+
+            if (paymentMethodResult.status === "fulfilled") {
+              paymentMethod = paymentMethodResult.value;
+            } else {
+              ctx.logger.warn(
+                { error: paymentMethodResult.reason },
+                "Failed to resolve payment method"
+              );
+            }
           }
         }
-      }
 
-      return {
-        workspace: currentWorkspace
-          ? {
-              id: currentWorkspace.id,
-              name: currentWorkspace.name,
-            }
-          : null,
-        subscription: userWithSubscription.subscription
-          ? {
-              id: userWithSubscription.subscription.id,
-              status: userWithSubscription.subscription.status,
-              stripeCustomerId: userWithSubscription.stripeCustomerId,
-              stripeSubscriptionId: userWithSubscription.stripeSubscriptionId,
-              plan: userWithSubscription.subscription.plan,
-              canceledAt: userWithSubscription.subscription.canceledAt
-                ? userWithSubscription.subscription.canceledAt.toISOString()
-                : null,
-              isRenewalAfterCancel:
-                userWithSubscription.subscription.isRenewalAfterCancel,
-              previousCancelDate: userWithSubscription.subscription
-                .previousCancelDate
-                ? userWithSubscription.subscription.previousCancelDate.toISOString()
-                : null,
-              trialStart: userWithSubscription.subscription.trialStart
-                ? userWithSubscription.subscription.trialStart.toISOString()
-                : null,
-              trialEnd: userWithSubscription.subscription.trialEnd
-                ? userWithSubscription.subscription.trialEnd.toISOString()
-                : null,
-              createdAt:
-                userWithSubscription.subscription.createdAt.toISOString(),
-              updatedAt:
-                userWithSubscription.subscription.updatedAt.toISOString(),
-            }
-          : null,
-        stripeSubscription: stripeSubscription
-          ? {
-              id: stripeSubscription.id,
-              status: stripeSubscription.status,
-              current_period_start:
-                stripeSubscription.items?.data?.[0]?.current_period_start,
-              current_period_end:
-                stripeSubscription.items?.data?.[0]?.current_period_end,
-              cancel_at_period_end: stripeSubscription.cancel_at_period_end,
-              canceled_at: stripeSubscription.canceled_at,
-              default_payment_method: stripeSubscription.default_payment_method,
-              currency: stripeSubscription.currency,
-              // Maintain frontend compatibility with items structure
-              items: stripeSubscription.items
-                ? {
-                    data: stripeSubscription.items.data.map((item) => ({
-                      price: {
-                        id: item.price.id,
-                        unit_amount: item.price.unit_amount,
-                        currency: item.price.currency,
-                        recurring: item.price.recurring
-                          ? {
-                              interval: item.price.recurring.interval,
-                            }
-                          : null,
-                      },
-                    })),
-                  }
-                : null,
-            }
-          : null,
-        upcomingInvoice,
-        paymentMethod,
-        currentUsage: {
-          servers: resourceCounts.servers,
-          users: resourceCounts.users,
-          queues: 0, // TODO: Add queue counting when needed
-          messagesThisMonth: 0, // TODO: Add message counting when needed
-        },
-        recentPayments: recentPayments.map((payment) => ({
-          id: payment.id,
-          amount: payment.amount,
-          status: payment.status,
-          description: StripeService.transformPaymentDescription(
-            payment.description,
-            userWithSubscription.subscription?.plan || "UNKNOWN",
-            userWithSubscription.subscription?.billingInterval || "MONTH"
-          ),
-          createdAt: payment.createdAt.toISOString(),
-        })),
-      };
-    } catch (error) {
-      if (error instanceof TRPCError) {
-        throw error;
-      }
-      ctx.logger.error({ error }, "Error fetching billing overview");
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: te(ctx.locale, "billing.failedToFetchBillingOverview"),
-      });
-    }
-  }),
-
-  /**
-   * Create billing portal session (PROTECTED)
-   */
-  createBillingPortalSession: rateLimitedProcedure.mutation(async ({ ctx }) => {
-    const { user } = ctx;
-
-    try {
-      if (!user.stripeCustomerId) {
+        return {
+          workspace: currentWorkspace
+            ? {
+                id: currentWorkspace.id,
+                name: currentWorkspace.name,
+              }
+            : null,
+          subscription: userWithSubscription.subscription
+            ? {
+                id: userWithSubscription.subscription.id,
+                status: userWithSubscription.subscription.status,
+                stripeCustomerId: orgStripeCustomerId,
+                stripeSubscriptionId: orgStripeSubscriptionId,
+                plan: userWithSubscription.subscription.plan,
+                canceledAt: userWithSubscription.subscription.canceledAt
+                  ? userWithSubscription.subscription.canceledAt.toISOString()
+                  : null,
+                isRenewalAfterCancel:
+                  userWithSubscription.subscription.isRenewalAfterCancel,
+                previousCancelDate: userWithSubscription.subscription
+                  .previousCancelDate
+                  ? userWithSubscription.subscription.previousCancelDate.toISOString()
+                  : null,
+                trialStart: userWithSubscription.subscription.trialStart
+                  ? userWithSubscription.subscription.trialStart.toISOString()
+                  : null,
+                trialEnd: userWithSubscription.subscription.trialEnd
+                  ? userWithSubscription.subscription.trialEnd.toISOString()
+                  : null,
+                createdAt:
+                  userWithSubscription.subscription.createdAt.toISOString(),
+                updatedAt:
+                  userWithSubscription.subscription.updatedAt.toISOString(),
+              }
+            : null,
+          stripeSubscription: stripeSubscription
+            ? {
+                id: stripeSubscription.id,
+                status: stripeSubscription.status,
+                current_period_start:
+                  stripeSubscription.items?.data?.[0]?.current_period_start,
+                current_period_end:
+                  stripeSubscription.items?.data?.[0]?.current_period_end,
+                cancel_at_period_end: stripeSubscription.cancel_at_period_end,
+                canceled_at: stripeSubscription.canceled_at,
+                default_payment_method:
+                  stripeSubscription.default_payment_method,
+                currency: stripeSubscription.currency,
+                items: stripeSubscription.items
+                  ? {
+                      data: stripeSubscription.items.data.map((item) => ({
+                        price: {
+                          id: item.price.id,
+                          unit_amount: item.price.unit_amount,
+                          currency: item.price.currency,
+                          recurring: item.price.recurring
+                            ? {
+                                interval: item.price.recurring.interval,
+                              }
+                            : null,
+                        },
+                      })),
+                    }
+                  : null,
+              }
+            : null,
+          upcomingInvoice,
+          paymentMethod,
+          currentUsage: {
+            servers: resourceCounts.servers,
+            users: resourceCounts.users,
+            queues: 0,
+            messagesThisMonth: 0,
+          },
+          recentPayments: recentPayments.map((payment) => ({
+            id: payment.id,
+            amount: payment.amount,
+            status: payment.status,
+            description: StripeService.transformPaymentDescription(
+              payment.description,
+              userWithSubscription.subscription?.plan || "UNKNOWN",
+              userWithSubscription.subscription?.billingInterval || "MONTH"
+            ),
+            createdAt: payment.createdAt.toISOString(),
+          })),
+        };
+      } catch (error) {
+        if (error instanceof TRPCError) {
+          throw error;
+        }
+        ctx.logger.error({ error }, "Error fetching billing overview");
         throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: te(ctx.locale, "billing.noStripeCustomerId"),
+          code: "INTERNAL_SERVER_ERROR",
+          message: te(ctx.locale, "billing.failedToFetchBillingOverview"),
         });
       }
-
-      const session = await StripeService.createPortalSession(
-        user.stripeCustomerId,
-        `${config.FRONTEND_URL}/billing`
-      );
-
-      return { url: session.url };
-    } catch (error) {
-      if (error instanceof TRPCError) {
-        throw error;
-      }
-      ctx.logger.error({ error }, "Error creating billing portal session");
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: te(ctx.locale, "billing.failedToCreateBillingPortal"),
-      });
     }
-  }),
+  ),
 
   /**
-   * Create portal session (PROTECTED) - alias for createBillingPortalSession
+   * Create billing portal session (PROTECTED - ADMIN ONLY)
    */
-  createPortalSession: rateLimitedProcedure.mutation(async ({ ctx }) => {
-    const { user } = ctx;
+  createBillingPortalSession: rateLimitedAdminProcedure.mutation(
+    async ({ ctx }) => {
+      const { user, prisma } = ctx;
+
+      try {
+        const membership = await prisma.organizationMember.findFirst({
+          where: { userId: user.id },
+          select: {
+            organization: {
+              select: { stripeCustomerId: true },
+            },
+          },
+        });
+        const stripeCustomerId =
+          membership?.organization?.stripeCustomerId ?? null;
+
+        if (!stripeCustomerId) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: te(ctx.locale, "billing.noStripeCustomerId"),
+          });
+        }
+
+        const session = await StripeService.createPortalSession(
+          stripeCustomerId,
+          `${config.FRONTEND_URL}/billing`
+        );
+
+        return { url: session.url };
+      } catch (error) {
+        if (error instanceof TRPCError) {
+          throw error;
+        }
+        ctx.logger.error({ error }, "Error creating billing portal session");
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: te(ctx.locale, "billing.failedToCreateBillingPortal"),
+        });
+      }
+    }
+  ),
+
+  /**
+   * Create portal session (PROTECTED - ADMIN ONLY) - alias for createBillingPortalSession
+   */
+  createPortalSession: rateLimitedAdminProcedure.mutation(async ({ ctx }) => {
+    const { user, prisma } = ctx;
 
     try {
-      if (!user.stripeCustomerId) {
+      const membership = await prisma.organizationMember.findFirst({
+        where: { userId: user.id },
+        select: {
+          organization: {
+            select: { stripeCustomerId: true },
+          },
+        },
+      });
+      const stripeCustomerId =
+        membership?.organization?.stripeCustomerId ?? null;
+
+      if (!stripeCustomerId) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: te(ctx.locale, "billing.noStripeCustomerFound"),
@@ -355,7 +392,7 @@ export const billingRouter = router({
       }
 
       const session = await StripeService.createPortalSession(
-        user.stripeCustomerId,
+        stripeCustomerId,
         `${config.FRONTEND_URL}/billing`
       );
 

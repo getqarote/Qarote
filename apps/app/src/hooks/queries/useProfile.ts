@@ -27,7 +27,9 @@ export const useUpdateProfile = () => {
 
   return trpc.user.updateProfile.useMutation({
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["profile"] });
+      queryClient.invalidateQueries({
+        queryKey: [["auth", "session", "getSession"]],
+      });
     },
   });
 };

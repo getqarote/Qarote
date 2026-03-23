@@ -99,7 +99,25 @@ export const MessagesRatesChart = ({
     );
   }
 
-  const chartData = messagesRates?.map((point) => ({
+  const emptyPoint = {
+    publish: 0,
+    deliver: 0,
+    ack: 0,
+    deliver_get: 0,
+    deliver_no_ack: 0,
+    confirm: 0,
+    get: 0,
+    get_no_ack: 0,
+    get_empty: 0,
+    redeliver: 0,
+    reject: 0,
+    return_unroutable: 0,
+    drop_unroutable: 0,
+    disk_reads: 0,
+    disk_writes: 0,
+  };
+
+  const mappedData = messagesRates?.map((point) => ({
     timestamp: point.timestamp,
     time: new Date(point.timestamp).toLocaleTimeString([], {
       hour: "2-digit",
@@ -130,6 +148,24 @@ export const MessagesRatesChart = ({
     disk_reads: point.disk_reads || 0,
     disk_writes: point.disk_writes || 0,
   }));
+
+  // Generate placeholder data when no rates exist so the chart renders axes/grid
+  const chartData =
+    mappedData && mappedData.length > 0
+      ? mappedData
+      : Array.from({ length: 7 }, (_, i) => {
+          const ts = Date.now() - (6 - i) * 10000;
+          return {
+            ...emptyPoint,
+            timestamp: ts,
+            time: new Date(ts).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+              second: "2-digit",
+            }),
+            dateTime: "",
+          };
+        });
 
   return (
     <Card className="border-0 shadow-md bg-card backdrop-blur-xs">

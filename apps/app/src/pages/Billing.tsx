@@ -2,6 +2,8 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
 
+import { toast } from "sonner";
+
 import { logger } from "@/lib/logger";
 import { trpc } from "@/lib/trpc/client";
 
@@ -85,9 +87,6 @@ const Billing: React.FC = () => {
     feedback: string;
   }) => {
     try {
-      if (!workspace?.id) {
-        throw new Error(t("error.workspaceIdRequired"));
-      }
       return await cancelSubscriptionMutation.mutateAsync(data);
     } catch (error) {
       logger.error("Failed to cancel subscription:", error);
@@ -97,23 +96,18 @@ const Billing: React.FC = () => {
 
   const createBillingPortalMutation =
     trpc.payment.billing.createBillingPortalSession.useMutation({
-      onSuccess: (data: { url: string }) => {
-        window.open(data.url, "_blank", "noopener,noreferrer");
-      },
       onError: (error: Error) => {
         logger.error("Failed to open billing portal:", error);
+        toast.error(t("error.failedToOpenBillingPortal"));
       },
     });
 
-  const handleOpenBillingPortal = async () => {
-    try {
-      if (!workspace?.id) {
-        throw new Error(t("error.workspaceIdRequired"));
-      }
-      createBillingPortalMutation.mutate();
-    } catch (error) {
-      logger.error("Failed to open billing portal:", error);
-    }
+  const handleOpenBillingPortal = () => {
+    createBillingPortalMutation.mutate(undefined, {
+      onSuccess: (data: { url: string }) => {
+        window.location.href = data.url;
+      },
+    });
   };
 
   const renewSubscriptionMutation =
@@ -128,9 +122,6 @@ const Billing: React.FC = () => {
 
   const handleRenewSubscription = async () => {
     try {
-      if (!workspace?.id) {
-        throw new Error(t("error.workspaceIdRequired"));
-      }
       // Determine the plan to renew based on subscription history
       const planToRenew = billingData?.subscription?.plan || UserPlan.DEVELOPER;
       renewSubscriptionMutation.mutate({
@@ -176,7 +167,7 @@ const Billing: React.FC = () => {
             paymentMethod={billingData.paymentMethod}
             onManagePaymentMethod={handleOpenBillingPortal}
             onCancelSubscription={
-              isTrialing && !cancelAtPeriodEnd
+              isTrialing && !cancelAtPeriodEnd && billingData.paymentMethod
                 ? handleCancelSubscription
                 : undefined
             }

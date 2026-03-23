@@ -2,7 +2,12 @@ import { TRPCError } from "@trpc/server";
 
 import { getLicensePayload } from "@/core/feature-flags";
 
-import { getPlanFeatures, PLAN_FEATURES } from "@/services/plan/plan.service";
+import {
+  getPlanFeatures,
+  getUserPlan,
+  getWorkspacePlan,
+  PLAN_FEATURES,
+} from "@/services/plan/plan.service";
 
 import { isSelfHostedMode } from "@/config/deployment";
 
@@ -46,17 +51,10 @@ export const planRouter = router({
     const user = ctx.user;
 
     try {
-      // Get user with subscription and workspace information
-      const userWithSubscription = await ctx.prisma.user.findUnique({
+      // Get user with workspace information
+      const userWithWorkspace = await ctx.prisma.user.findUnique({
         where: { id: user.id },
         include: {
-          subscription: {
-            select: {
-              plan: true,
-              status: true,
-              trialEnd: true,
-            },
-          },
           workspace: {
             include: {
               _count: {
@@ -70,36 +68,19 @@ export const planRouter = router({
         },
       });
 
-      if (!userWithSubscription) {
+      if (!userWithWorkspace) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: te(ctx.locale, "auth.userNotFound"),
         });
       }
 
-      // Always use workspace owner's subscription plan for workspace features.
-      // When no workspace exists yet (e.g. first signup), fall back to the
-      // user's own subscription so trial features are available during
-      // workspace creation.
-      let workspacePlan: UserPlan = UserPlan.FREE;
-      const currentWorkspace = userWithSubscription.workspace;
-
-      if (currentWorkspace?.ownerId) {
-        const ownerSubscription = await ctx.prisma.subscription.findUnique({
-          where: { userId: currentWorkspace.ownerId },
-          select: {
-            plan: true,
-            status: true,
-          },
-        });
-
-        if (ownerSubscription) {
-          workspacePlan = ownerSubscription.plan;
-        }
-      } else if (userWithSubscription.subscription) {
-        // No workspace yet — use the user's own subscription (e.g. trial)
-        workspacePlan = userWithSubscription.subscription.plan;
-      }
+      // Resolve plan via workspace → organization → subscription
+      // When no workspace exists yet, fall back to user → org membership → subscription
+      const currentWorkspace = userWithWorkspace.workspace;
+      let workspacePlan: UserPlan = currentWorkspace
+        ? await getWorkspacePlan(currentWorkspace.id)
+        : await getUserPlan(user.id);
 
       // Self-hosted fallback: if no Stripe subscription exists, use the license JWT tier
       if (workspacePlan === UserPlan.FREE && isSelfHostedMode()) {
@@ -112,10 +93,14 @@ export const planRouter = router({
       // Use workspace plan for all workspace features
       const planFeatures = getPlanFeatures(workspacePlan);
 
-      // Count owned workspaces for workspace usage calculation
-      const ownedWorkspaceCount = await ctx.prisma.workspace.count({
-        where: { ownerId: user.id },
-      });
+      // Count workspaces via the same org as the current workspace
+      const workspaceCount = currentWorkspace
+        ? await ctx.prisma.workspace.count({
+            where: { organizationId: currentWorkspace.organizationId },
+          })
+        : await ctx.prisma.workspace.count({
+            where: { ownerId: user.id },
+          });
 
       // Get current workspace counts
       const workspaceUsers = currentWorkspace?._count.members || 0;
@@ -144,15 +129,13 @@ export const planRouter = router({
             : true,
         },
         workspaces: {
-          current: ownedWorkspaceCount,
+          current: workspaceCount,
           limit: planFeatures.maxWorkspaces,
           percentage: planFeatures.maxWorkspaces
-            ? Math.round(
-                (ownedWorkspaceCount / planFeatures.maxWorkspaces) * 100
-              )
+            ? Math.round((workspaceCount / planFeatures.maxWorkspaces) * 100)
             : 0,
           canAdd: planFeatures.maxWorkspaces
-            ? ownedWorkspaceCount < planFeatures.maxWorkspaces
+            ? workspaceCount < planFeatures.maxWorkspaces
             : true,
         },
       };
@@ -166,13 +149,11 @@ export const planRouter = router({
 
       const response = {
         user: {
-          id: userWithSubscription.id,
-          email: userWithSubscription.email,
-          plan: workspacePlan, // Always return workspace plan
-          subscriptionStatus: userWithSubscription.subscription?.status || null,
-          trialEnd: userWithSubscription.subscription?.trialEnd
-            ? userWithSubscription.subscription.trialEnd.toISOString()
-            : null,
+          id: userWithWorkspace.id,
+          email: userWithWorkspace.email,
+          plan: workspacePlan,
+          subscriptionStatus: null,
+          trialEnd: null,
         },
         workspace: currentWorkspace
           ? {

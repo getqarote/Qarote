@@ -56,7 +56,7 @@
     "test:smtp": "pnpm --filter=qarote-api test:smtp",
     "test:smtp:ethereal": "pnpm --filter=qarote-api test:smtp:ethereal",
     "update:selfhosted": "bash scripts/update.sh",
-    "knip": "knip",
+    "knip": "knip --no-config-hints",
     "knip:fix": "knip --fix",
     "validate:i18n": "node scripts/validate-i18n-keys.mjs",
     "test:e2e": "pnpm --filter=qarote-e2e test",

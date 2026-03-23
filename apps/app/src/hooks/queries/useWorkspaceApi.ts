@@ -28,12 +28,17 @@ export const useUpdateWorkspace = () => {
 };
 
 // Workspace users hook (new workspace API)
-export const useWorkspaceUsers = () => {
+export const useWorkspaceUsers = (options?: {
+  page?: number;
+  limit?: number;
+}) => {
   const { workspace } = useWorkspace();
 
   const query = trpc.user.getWorkspaceUsers.useQuery(
     {
       workspaceId: workspace?.id || "",
+      page: options?.page ?? 1,
+      limit: options?.limit ?? 20,
     },
     {
       enabled: !!workspace?.id,
@@ -45,13 +50,16 @@ export const useWorkspaceUsers = () => {
 };
 
 // New invitation hooks
-export const useInvitations = () => {
+export const useInvitations = (options?: { page?: number; limit?: number }) => {
   const { isAuthenticated } = useAuth();
 
-  return trpc.workspace.invitation.getInvitations.useQuery(undefined, {
-    enabled: isAuthenticated,
-    staleTime: 30000, // 30 seconds
-  });
+  return trpc.workspace.invitation.getInvitations.useQuery(
+    { page: options?.page ?? 1, limit: options?.limit ?? 20 },
+    {
+      enabled: isAuthenticated,
+      staleTime: 30000, // 30 seconds
+    }
+  );
 };
 
 export const useSendInvitation = () => {
@@ -116,6 +124,7 @@ export const useCreateWorkspace = () => {
     onSuccess: () => {
       utils.workspace.management.getUserWorkspaces.invalidate();
       utils.workspace.core.getCurrent.invalidate();
+      utils.workspace.plan.getCurrentPlan.invalidate();
       utils.auth.session.getSession.invalidate();
     },
   });

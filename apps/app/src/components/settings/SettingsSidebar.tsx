@@ -3,15 +3,16 @@ import { Link, useLocation } from "react-router";
 
 import {
   Building,
+  Building2,
+  CreditCard,
   KeyRound,
   Mail,
-  MessageSquare,
-  Rabbit,
   Shield,
   User,
   Users,
 } from "lucide-react";
 
+import { UserRole } from "@/lib/api";
 import { isCloudMode } from "@/lib/featureFlags";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
@@ -44,29 +45,52 @@ const navGroups: NavGroup[] = [
         icon: User,
         labelKey: "settings:nav.profile",
       },
+    ],
+  },
+  {
+    labelKey: "settings:groups.workspace",
+    adminOnly: true,
+    items: [
       {
         key: "workspace",
         path: "/settings/workspace",
         icon: Building,
-        labelKey: "settings:nav.workspace",
+        labelKey: "settings:nav.workspaceSettings",
+        adminOnly: true,
       },
       {
-        key: "plans",
-        path: "/settings/plans",
-        icon: Rabbit,
-        labelKey: "settings:nav.plans",
+        key: "members",
+        path: "/settings/members",
+        icon: Users,
+        labelKey: "settings:nav.members",
+        adminOnly: true,
       },
     ],
   },
   {
-    labelKey: "settings:groups.administration",
+    labelKey: "settings:groups.organization",
     adminOnly: true,
     items: [
       {
-        key: "team",
-        path: "/settings/team",
-        icon: Users,
-        labelKey: "settings:nav.team",
+        key: "organization",
+        path: "/settings/organization",
+        icon: Building2,
+        labelKey: "settings:nav.organization",
+        adminOnly: true,
+      },
+      {
+        key: "subscription",
+        path: "/settings/subscription",
+        icon: CreditCard,
+        labelKey: "settings:nav.subscription",
+        adminOnly: true,
+        cloudOnly: true,
+      },
+      {
+        key: "sso",
+        path: "/settings/sso",
+        icon: Shield,
+        labelKey: "settings:nav.sso",
         adminOnly: true,
       },
       {
@@ -78,13 +102,6 @@ const navGroups: NavGroup[] = [
         selfHostedOnly: true,
       },
       {
-        key: "sso",
-        path: "/settings/sso",
-        icon: Shield,
-        labelKey: "settings:nav.sso",
-        adminOnly: true,
-      },
-      {
         key: "smtp",
         path: "/settings/smtp",
         icon: Mail,
@@ -94,18 +111,19 @@ const navGroups: NavGroup[] = [
       },
     ],
   },
-  {
-    labelKey: null,
-    items: [
-      {
-        key: "feedback",
-        path: "/settings/feedback",
-        icon: MessageSquare,
-        labelKey: "settings:nav.feedback",
-        cloudOnly: true,
-      },
-    ],
-  },
+  // Feedback section hidden for now — backend kept for future use
+  // {
+  //   labelKey: null,
+  //   items: [
+  //     {
+  //       key: "feedback",
+  //       path: "/settings/feedback",
+  //       icon: MessageSquare,
+  //       labelKey: "settings:nav.feedback",
+  //       cloudOnly: true,
+  //     },
+  //   ],
+  // },
 ];
 
 export const SettingsSidebar = () => {
@@ -113,7 +131,7 @@ export const SettingsSidebar = () => {
   const location = useLocation();
   const { user } = useAuth();
   const isMobile = useIsMobile();
-  const isAdmin = user?.role === "ADMIN";
+  const isAdmin = user?.role === UserRole.ADMIN;
   const cloudMode = isCloudMode();
 
   const filterItem = (item: NavItem) => {

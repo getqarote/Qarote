@@ -137,18 +137,26 @@ export const strictRateLimitedProcedure = protectedProcedure.use(
 );
 
 /**
- * Protected procedure with billing rate limiting (30 requests/minute)
- * Use for billing overview and less sensitive operations
- */
-export const billingRateLimitedProcedure = protectedProcedure.use(
-  billingRateLimiter as Parameters<typeof protectedProcedure.use>[0]
-);
-
-/**
  * Admin procedure with standard rate limiting
  */
 export const rateLimitedAdminProcedure = adminProcedure.use(
   standardRateLimiter as Parameters<typeof adminProcedure.use>[0]
+);
+
+/**
+ * Admin procedure with strict rate limiting (5 requests/minute)
+ * Use for admin-only sensitive operations like payments, cancellations
+ */
+export const strictRateLimitedAdminProcedure = adminProcedure.use(
+  strictRateLimiter as Parameters<typeof adminProcedure.use>[0]
+);
+
+/**
+ * Admin procedure with billing rate limiting (30 requests/minute)
+ * Use for admin-only billing overview and portal access
+ */
+export const billingRateLimitedAdminProcedure = adminProcedure.use(
+  billingRateLimiter as Parameters<typeof adminProcedure.use>[0]
 );
 
 /**

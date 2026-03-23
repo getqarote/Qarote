@@ -15,6 +15,7 @@ interface QueueHeaderProps {
   selectedServerId: string;
   messageCount: number;
   consumerCount?: number;
+  isAdmin?: boolean;
   onNavigateBack: () => void;
   onRefetch: () => void;
   onDeleteQueue?: () => void;
@@ -25,6 +26,7 @@ export function QueueHeader({
   selectedServerId,
   messageCount,
   consumerCount = 0,
+  isAdmin,
   onNavigateBack,
   onRefetch,
   onDeleteQueue,
@@ -53,79 +55,81 @@ export function QueueHeader({
           <h1 className="text-2xl font-bold text-foreground">{queueName}</h1>
         </div>
 
-        <div className="flex items-center gap-2">
-          {/* Send Message Button */}
-          <SendMessageDialog
-            queueName={queueName}
-            serverId={selectedServerId}
-            onSuccess={onRefetch}
-            trigger={
-              <Button
-                variant="outline"
-                className="flex items-center gap-2 text-blue-600 hover:text-blue-700"
-              >
-                <Send className="w-4 h-4" />
-                {t("sendMessage")}
-              </Button>
-            }
-          />
+        {isAdmin && (
+          <div className="flex items-center gap-2">
+            {/* Send Message Button */}
+            <SendMessageDialog
+              queueName={queueName}
+              serverId={selectedServerId}
+              onSuccess={onRefetch}
+              trigger={
+                <Button
+                  variant="outline"
+                  className="flex items-center gap-2 text-blue-600 hover:text-blue-700"
+                >
+                  <Send className="w-4 h-4" />
+                  {t("sendMessage")}
+                </Button>
+              }
+            />
 
-          {/* Purge Queue Button */}
-          <PurgeQueueDialog
-            queueName={queueName}
-            messageCount={messageCount}
-            onSuccess={onRefetch}
-            trigger={
+            {/* Purge Queue Button */}
+            <PurgeQueueDialog
+              queueName={queueName}
+              messageCount={messageCount}
+              onSuccess={onRefetch}
+              trigger={
+                <Button
+                  variant="outline"
+                  className="flex items-center gap-2 text-red-600 hover:text-red-700"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  {t("purgeQueue")}
+                </Button>
+              }
+            />
+
+            {/* Pause/Resume Queue Button */}
+            <PauseQueueDialog
+              queueName={queueName}
+              consumerCount={consumerCount}
+              isPaused={isPaused}
+              onSuccess={() => {
+                onRefetch();
+                refetchPauseStatus();
+              }}
+              trigger={
+                <Button
+                  variant="outline"
+                  className={`flex items-center gap-2 ${
+                    isPaused
+                      ? "text-green-600 hover:text-green-700"
+                      : "text-yellow-600 hover:text-yellow-700"
+                  }`}
+                >
+                  {isPaused ? (
+                    <Play className="w-4 h-4" />
+                  ) : (
+                    <Pause className="w-4 h-4" />
+                  )}
+                  {isPaused ? t("resumeQueue") : t("pauseQueue")}
+                </Button>
+              }
+            />
+
+            {/* Delete Queue Button */}
+            {onDeleteQueue && (
               <Button
+                onClick={onDeleteQueue}
                 variant="outline"
                 className="flex items-center gap-2 text-red-600 hover:text-red-700"
               >
                 <Trash2 className="w-4 h-4" />
-                {t("purgeQueue")}
+                {t("deleteQueue")}
               </Button>
-            }
-          />
-
-          {/* Pause/Resume Queue Button */}
-          <PauseQueueDialog
-            queueName={queueName}
-            consumerCount={consumerCount}
-            isPaused={isPaused}
-            onSuccess={() => {
-              onRefetch();
-              refetchPauseStatus();
-            }}
-            trigger={
-              <Button
-                variant="outline"
-                className={`flex items-center gap-2 ${
-                  isPaused
-                    ? "text-green-600 hover:text-green-700"
-                    : "text-yellow-600 hover:text-yellow-700"
-                }`}
-              >
-                {isPaused ? (
-                  <Play className="w-4 h-4" />
-                ) : (
-                  <Pause className="w-4 h-4" />
-                )}
-                {isPaused ? t("resumeQueue") : t("pauseQueue")}
-              </Button>
-            }
-          />
-
-          {/* Delete Queue Button */}
-          {onDeleteQueue && (
-            <Button
-              onClick={onDeleteQueue}
-              variant="outline"
-              className="flex items-center gap-2 text-red-600 hover:text-red-700"
-            >
-              <Trash2 className="w-4 h-4" />
-              {t("deleteQueue")}
-            </Button>
-          )}
-        </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

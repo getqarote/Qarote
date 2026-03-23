@@ -80,18 +80,22 @@ async function cleanDatabase(prisma: PrismaClient) {
     "LicenseFileVersion",
     "LicenseRenewalEmail",
     "Invitation",
+    "OrganizationInvitation",
+    "OrganizationMember",
     "PasswordReset",
     "EmailVerificationToken",
     "Feedback",
     "StripeWebhookEvent",
     "SsoAuthCode",
     "SsoState",
+    "OrgSsoConfig",
     "Session",
     "Account",
     "Verification",
     "RabbitMQServer",
     "User",
     "Workspace",
+    "Organization",
     "SystemSetting",
     "SystemState",
   ];
@@ -112,11 +116,20 @@ async function cleanDatabase(prisma: PrismaClient) {
 async function seedBaseData(prisma: PrismaClient) {
   const passwordHash = hashSync("TestPassword123!", 1);
 
-  // Create workspace
+  // Create organization and workspace
+  const organization = await prisma.organization.create({
+    data: {
+      name: "E2E Test Organization",
+      slug: "e2e-test-org",
+      contactEmail: "admin@e2e-test.local",
+    },
+  });
+
   const workspace = await prisma.workspace.create({
     data: {
       name: "E2E Test Workspace",
       contactEmail: "admin@e2e-test.local",
+      organizationId: organization.id,
     },
   });
 
@@ -142,6 +155,15 @@ async function seedBaseData(prisma: PrismaClient) {
       accountId: adminUser.id,
       providerId: "credential",
       password: passwordHash,
+    },
+  });
+
+  // Create organization membership for admin
+  await prisma.organizationMember.create({
+    data: {
+      userId: adminUser.id,
+      organizationId: organization.id,
+      role: "OWNER",
     },
   });
 
@@ -182,6 +204,15 @@ async function seedBaseData(prisma: PrismaClient) {
       accountId: readonlyUser.id,
       providerId: "credential",
       password: passwordHash,
+    },
+  });
+
+  // Create organization membership for readonly user
+  await prisma.organizationMember.create({
+    data: {
+      userId: readonlyUser.id,
+      organizationId: organization.id,
+      role: "MEMBER",
     },
   });
 

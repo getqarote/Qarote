@@ -17,7 +17,7 @@ import {
   router,
 } from "@/trpc/trpc";
 
-import { UserPlan } from "@/generated/prisma/client";
+import { OrgRole, UserPlan } from "@/generated/prisma/client";
 import { te } from "@/i18n";
 
 /**
@@ -104,8 +104,47 @@ export const licenseRouter = router({
       const { tier } = input;
 
       try {
-        // Create Stripe customer if not exists
-        let customerId = user.stripeCustomerId;
+        // Resolve Organization from the user's org membership
+        const orgMembership = await ctx.prisma.organizationMember.findFirst({
+          where: { userId: user.id },
+          select: {
+            organization: {
+              select: { id: true, stripeCustomerId: true },
+            },
+          },
+        });
+        const org = orgMembership?.organization ?? null;
+
+        if (!org) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: te(ctx.locale, "billing.noOrganization"),
+          });
+        }
+
+        // Verify caller is OWNER or ADMIN of the organization
+        const membership = await ctx.prisma.organizationMember.findUnique({
+          where: {
+            userId_organizationId: {
+              userId: user.id,
+              organizationId: org.id,
+            },
+          },
+          select: { role: true },
+        });
+
+        if (
+          !membership ||
+          (membership.role !== OrgRole.OWNER &&
+            membership.role !== OrgRole.ADMIN)
+        ) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: te(ctx.locale, "auth.orgAdminRequired"),
+          });
+        }
+
+        let customerId = org.stripeCustomerId;
         if (!customerId) {
           const customer = await StripeService.createCustomer({
             email: user.email,
@@ -114,8 +153,8 @@ export const licenseRouter = router({
           });
           customerId = customer.id;
 
-          await ctx.prisma.user.update({
-            where: { id: user.id },
+          await ctx.prisma.organization.update({
+            where: { id: org.id },
             data: { stripeCustomerId: customerId },
           });
         }

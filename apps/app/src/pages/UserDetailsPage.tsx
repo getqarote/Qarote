@@ -5,6 +5,7 @@ import { useNavigate, useParams } from "react-router";
 import { AlertCircle, ArrowLeft, HelpCircle } from "lucide-react";
 import { toast } from "sonner";
 
+import { UserRole } from "@/lib/api";
 import { formatTagsDisplay } from "@/lib/formatTags";
 
 import { AppSidebar } from "@/components/AppSidebar";
@@ -120,7 +121,7 @@ export default function UserDetailsPage() {
   const { workspace } = useWorkspace();
 
   // Redirect non-admin users
-  if (user?.role !== "ADMIN") {
+  if (user?.role !== UserRole.ADMIN) {
     return (
       <SidebarProvider>
         <div className="page-layout">

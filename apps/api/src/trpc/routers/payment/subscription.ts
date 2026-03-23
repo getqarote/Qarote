@@ -10,8 +10,9 @@ import {
 
 import { config } from "@/config";
 
-import { router, strictRateLimitedProcedure } from "@/trpc/trpc";
+import { router, strictRateLimitedAdminProcedure } from "@/trpc/trpc";
 
+import { OrgRole } from "@/generated/prisma/client";
 import { te } from "@/i18n";
 
 /**
@@ -22,28 +23,54 @@ export const subscriptionRouter = router({
   /**
    * Cancel subscription (PROTECTED - STRICT RATE LIMITED)
    */
-  cancelSubscription: strictRateLimitedProcedure
+  cancelSubscription: strictRateLimitedAdminProcedure
     .input(cancelSubscriptionSchema)
     .mutation(async ({ input, ctx }) => {
       const { cancelImmediately = false, reason = "", feedback = "" } = input;
       const { user, prisma } = ctx;
 
       try {
-        if (!user.stripeSubscriptionId) {
+        // Resolve organization from user's membership
+        const membership = await prisma.organizationMember.findFirst({
+          where: { userId: user.id },
+          select: {
+            role: true,
+            organization: {
+              select: { id: true, stripeSubscriptionId: true },
+            },
+          },
+        });
+
+        const subscriptionId =
+          membership?.organization?.stripeSubscriptionId ?? null;
+
+        if (!subscriptionId) {
           throw new TRPCError({
             code: "BAD_REQUEST",
             message: te(ctx.locale, "billing.noActiveSubscription"),
           });
         }
 
+        if (
+          !membership ||
+          (membership.role !== OrgRole.OWNER &&
+            membership.role !== OrgRole.ADMIN)
+        ) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: te(ctx.locale, "auth.orgAdminRequired"),
+          });
+        }
+
         const subscription = await StripeService.cancelSubscription(
-          user.stripeSubscriptionId,
-          cancelImmediately
+          subscriptionId,
+          !cancelImmediately
         );
 
-        // Update subscription in database
-        await prisma.subscription.update({
-          where: { userId: user.id },
+        // Update subscription in database (use updateMany to avoid throwing
+        // if the local row is missing — Stripe cancel already succeeded)
+        const { count } = await prisma.subscription.updateMany({
+          where: { stripeSubscriptionId: subscriptionId },
           data: {
             status: CoreStripeService.mapStripeStatusToSubscriptionStatus(
               subscription.status
@@ -54,6 +81,13 @@ export const subscriptionRouter = router({
             cancelAtPeriodEnd: subscription.cancel_at_period_end,
           },
         });
+
+        if (count === 0) {
+          ctx.logger.warn(
+            { stripeSubscriptionId: subscriptionId },
+            "Local subscription row not found after Stripe cancel — will sync on next webhook"
+          );
+        }
 
         // Log cancellation reason and feedback
         if (reason || feedback) {
@@ -102,7 +136,7 @@ export const subscriptionRouter = router({
   /**
    * Renew subscription (PROTECTED - STRICT RATE LIMITED)
    */
-  renewSubscription: strictRateLimitedProcedure
+  renewSubscription: strictRateLimitedAdminProcedure
     .input(renewSubscriptionSchema)
     .mutation(async ({ input, ctx }) => {
       const { plan, interval = "monthly" } = input;

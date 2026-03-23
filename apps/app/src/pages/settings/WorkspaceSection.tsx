@@ -4,6 +4,8 @@ import { useNavigate } from "react-router";
 
 import { toast } from "sonner";
 
+import { UserRole } from "@/lib/api";
+
 import { WorkspaceFormState, WorkspaceInfoTab } from "@/components/profile";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
@@ -32,7 +34,7 @@ const WorkspaceSection = () => {
   });
 
   const profile = profileData?.user;
-  const isAdmin = profile?.role === "ADMIN";
+  const isAdmin = profile?.role === UserRole.ADMIN;
 
   // Initialize form when workspace data first loads
   const [prevWorkspaceId, setPrevWorkspaceId] = useState<string | null>(null);

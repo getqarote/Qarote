@@ -26,52 +26,29 @@ export const WorkspaceFormFields = ({
   workspaceForm,
   setWorkspaceForm,
   workspace,
-  userEmail,
+  userEmail: _userEmail,
 }: WorkspaceFormFieldsProps) => {
   const { t } = useTranslation("profile");
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="workspaceName">{t("workspace.name")}</Label>
-          {editingWorkspace && isAdmin ? (
-            <Input
-              id="workspaceName"
-              value={workspaceForm.name}
-              onChange={(e) =>
-                setWorkspaceForm({
-                  ...workspaceForm,
-                  name: e.target.value,
-                })
-              }
-            />
-          ) : (
-            <p className="text-sm p-2 border rounded-md bg-muted">
-              {workspace.name}
-            </p>
-          )}
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="contactEmail">{t("workspace.contactEmail")}</Label>
-          {editingWorkspace && isAdmin ? (
-            <Input
-              id="contactEmail"
-              type="email"
-              value={workspaceForm.contactEmail}
-              onChange={(e) =>
-                setWorkspaceForm({
-                  ...workspaceForm,
-                  contactEmail: e.target.value,
-                })
-              }
-              placeholder={userEmail || "contact@company.com"}
-            />
-          ) : (
-            <p className="text-sm p-2 border rounded-md bg-muted">
-              {workspace.contactEmail || userEmail || t("workspace.notSet")}
-            </p>
-          )}
-        </div>
+      <div className="space-y-2">
+        <Label htmlFor="workspaceName">{t("workspace.name")}</Label>
+        {editingWorkspace && isAdmin ? (
+          <Input
+            id="workspaceName"
+            value={workspaceForm.name}
+            onChange={(e) =>
+              setWorkspaceForm({
+                ...workspaceForm,
+                name: e.target.value,
+              })
+            }
+          />
+        ) : (
+          <p className="text-sm p-2 border rounded-md bg-muted">
+            {workspace.name}
+          </p>
+        )}
       </div>
       <div className="space-y-2">
         <Label>{t("workspace.tags")}</Label>

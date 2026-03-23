@@ -54,6 +54,8 @@ import {
 } from "@/components/ui/popover";
 import { Switch } from "@/components/ui/switch";
 
+import { useAuth } from "@/contexts/AuthContextDefinition";
+
 import {
   useAlertNotificationSettings,
   useCreateSlackConfig,
@@ -80,6 +82,7 @@ export function AlertNotificationSettingsModal({
 }: AlertNotificationSettingsModalProps) {
   const { t } = useTranslation("alerts");
   const { workspace, isLoading: isWorkspaceLoading } = useWorkspace();
+  const { user } = useAuth();
   const [emailNotificationsEnabled, setEmailNotificationsEnabled] =
     useState(true);
   const [contactEmail, setContactEmail] = useState<string>("");
@@ -166,7 +169,10 @@ export function AlertNotificationSettingsModal({
         settingsData.settings.emailNotificationsEnabled
       );
       setContactEmail(
-        settingsData.settings.contactEmail || workspace?.contactEmail || ""
+        settingsData.settings.contactEmail ||
+          workspace?.contactEmail ||
+          user?.email ||
+          ""
       );
       setNotificationSeverities(
         settingsData.settings.notificationSeverities || [

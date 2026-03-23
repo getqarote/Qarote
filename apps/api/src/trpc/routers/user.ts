@@ -7,6 +7,7 @@ import { EmailVerificationService } from "@/services/email/email-verification.se
 
 import { hasWorkspaceAccess } from "@/middlewares/workspace";
 
+import { paginateQuery, paginationMeta } from "@/schemas/pagination";
 import {
   GetInvitationsSchema,
   GetUserSchema,
@@ -27,7 +28,7 @@ import {
   workspaceProcedure,
 } from "@/trpc/trpc";
 
-import { UserRole } from "@/generated/prisma/client";
+import { OrgRole, UserRole } from "@/generated/prisma/client";
 import { te } from "@/i18n";
 
 /**
@@ -44,26 +45,30 @@ export const userRouter = router({
       const { workspaceId } = input;
 
       try {
-        // Get all workspace members via WorkspaceMember table
-        const workspaceMembers = await ctx.prisma.workspaceMember.findMany({
-          where: { workspaceId },
-          include: {
-            user: {
-              select: {
-                id: true,
-                email: true,
-                image: true,
-                firstName: true,
-                lastName: true,
-                isActive: true,
-                lastLogin: true,
-                createdAt: true,
-                updatedAt: true,
+        const where = { workspaceId };
+        const [workspaceMembers, total] = await Promise.all([
+          ctx.prisma.workspaceMember.findMany({
+            where,
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  email: true,
+                  image: true,
+                  firstName: true,
+                  lastName: true,
+                  isActive: true,
+                  lastLogin: true,
+                  createdAt: true,
+                  updatedAt: true,
+                },
               },
             },
-          },
-          orderBy: { createdAt: "desc" },
-        });
+            orderBy: { createdAt: "desc" },
+            ...paginateQuery(input),
+          }),
+          ctx.prisma.workspaceMember.count({ where }),
+        ]);
 
         // Format response to match expected structure
         const users = workspaceMembers.map((member) => ({
@@ -78,7 +83,10 @@ export const userRouter = router({
           updatedAt: member.user.updatedAt.toISOString(),
         }));
 
-        return { users };
+        return {
+          users,
+          pagination: paginationMeta(input.page, input.limit, total),
+        };
       } catch (error) {
         ctx.logger.error(
           { error },
@@ -581,7 +589,8 @@ export const userRouter = router({
         // Check if user is a member of this workspace
         const workspaceRole = await getUserWorkspaceRole(
           userIdToRemove,
-          workspaceId
+          workspaceId,
+          ctx.prisma
         );
 
         if (!workspaceRole) {
@@ -599,17 +608,25 @@ export const userRouter = router({
           });
         }
 
-        // Prevent removing other admins (only workspace owner can remove admins)
+        // Prevent removing other admins (only org owner can remove admins)
         if (workspaceRole === UserRole.ADMIN) {
-          // Check if current user is the workspace owner
-          const workspace = await ctx.prisma.workspace.findFirst({
-            where: {
-              id: workspaceId,
-              ownerId: currentUser.id,
-            },
+          // Check if current user is an org owner
+          const workspace = await ctx.prisma.workspace.findUnique({
+            where: { id: workspaceId },
+            select: { organizationId: true },
           });
 
-          if (!workspace) {
+          const isOrgOwner = workspace?.organizationId
+            ? !!(await ctx.prisma.organizationMember.findFirst({
+                where: {
+                  userId: currentUser.id,
+                  organizationId: workspace.organizationId,
+                  role: OrgRole.OWNER,
+                },
+              }))
+            : false;
+
+          if (!isOrgOwner) {
             throw new TRPCError({
               code: "FORBIDDEN",
               message: te(ctx.locale, "user.onlyOwnerCanRemoveAdmin"),

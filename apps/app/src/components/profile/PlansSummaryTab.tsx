@@ -2,16 +2,9 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router";
 
-import {
-  Crown,
-  Key,
-  Loader2,
-  Server,
-  TrendingUp,
-  Users,
-  Zap,
-} from "lucide-react";
+import { ArrowRight, Crown, Key, Loader2, Users, Zap } from "lucide-react";
 
+import { UserRole } from "@/lib/api";
 import { isSelfHostedMode } from "@/lib/featureFlags";
 import { formatDate } from "@/lib/utils";
 
@@ -38,7 +31,7 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
   const { handleUpgrade, isUpgrading } = usePlanUpgrade();
   const { planData, user } = useUser();
   const { data: allPlansData } = useAllPlans();
-  const currentFeatures = planData?.planFeatures;
+
   const isTrialing = planData?.user?.subscriptionStatus === "TRIALING";
   const trialEndDate = planData?.user?.trialEnd
     ? new Date(planData.user.trialEnd)
@@ -93,7 +86,7 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
 
   const navigate = useNavigate();
   const selfHosted = isSelfHostedMode();
-  const isAdmin = user.role === "ADMIN";
+  const isAdmin = user.role === UserRole.ADMIN;
   const currentPlanStyle = planStyle[currentPlan] ?? planStyle[UserPlan.FREE];
   const currentBenefits = getBenefits(currentPlan);
   const nextPlan = getNextPlan(currentPlan);
@@ -118,10 +111,16 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
                     plan: getPlanDisplayName(currentPlan),
                   })}
                   <Badge variant="outline" className="text-xs">
-                    {isTrialing
-                      ? t("trial.badge")
-                      : t("status.active", "Active")}
+                    {t("status.active", "Active")}
                   </Badge>
+                  {isTrialing && (
+                    <Badge
+                      variant="outline"
+                      className="text-xs border-purple-300 text-purple-600"
+                    >
+                      {t("trial.badge")}
+                    </Badge>
+                  )}
                 </CardTitle>
                 <p className="text-sm text-muted-foreground mt-1">
                   {isTrialing && trialEndDate
@@ -149,57 +148,6 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
                   </li>
                 ))}
               </ul>
-            </div>
-
-            {/* Features Overview */}
-            <div className="pt-4 border-t">
-              <h4 className="font-medium text-foreground mb-3">
-                {t("plansSummary.planFeatures")}
-              </h4>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                <div className="text-center">
-                  <div className="text-lg font-semibold text-foreground">
-                    {currentFeatures?.canAddQueue ? "✓" : "✗"}
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    {t("plansSummary.addQueues")}
-                  </div>
-                </div>
-                <div className="text-center">
-                  <div className="text-lg font-semibold text-foreground">
-                    {currentFeatures?.canAddExchange ? "✓" : "✗"}
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    {t("plansSummary.addExchanges")}
-                  </div>
-                </div>
-                <div className="text-center">
-                  <div className="text-lg font-semibold text-foreground">
-                    {currentFeatures?.canAddVirtualHost ? "✓" : "✗"}
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    {t("plansSummary.addVHosts")}
-                  </div>
-                </div>
-                <div className="text-center">
-                  <div className="text-lg font-semibold text-foreground">
-                    {currentFeatures?.canAddRabbitMQUser ? "✓" : "✗"}
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    {t("plansSummary.addUsers")}
-                  </div>
-                </div>
-                <div className="text-center">
-                  <div className="text-lg font-semibold text-foreground">
-                    {currentFeatures?.hasPrioritySupport
-                      ? t("plansSummary.prioritySupport")
-                      : t("plansSummary.communitySupport")}
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    {t("plansSummary.support")}
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </CardContent>
@@ -316,87 +264,52 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
           className={`grid grid-cols-1 ${selfHosted ? "" : "md:grid-cols-2"} gap-4`}
         >
           {selfHosted ? (
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-                    <Key className="w-5 h-5 text-purple-600" />
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="font-medium text-foreground">
-                      {t("plansSummary.license")}
-                    </h4>
+            <Link to="/settings/license">
+              <Card className="cursor-pointer hover:border-primary/30 transition-colors">
+                <CardContent className="flex items-center justify-between py-4">
+                  <div>
+                    <p className="font-medium">{t("plansSummary.license")}</p>
                     <p className="text-sm text-muted-foreground">
                       {t("plansSummary.manageLicense")}
                     </p>
                   </div>
-                  <Link to="/settings/license">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-purple-600"
-                    >
-                      {t("plansSummary.manage")}
-                    </Button>
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
+                  <ArrowRight className="h-5 w-5 text-muted-foreground" />
+                </CardContent>
+              </Card>
+            </Link>
           ) : (
             <>
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                      <Server className="w-5 h-5 text-blue-600" />
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-medium text-foreground">
+              <Link to="/billing">
+                <Card className="cursor-pointer hover:border-primary/30 transition-colors h-full">
+                  <CardContent className="flex items-center justify-between py-4">
+                    <div>
+                      <p className="font-medium">
                         {t("plansSummary.billingUsage")}
-                      </h4>
+                      </p>
                       <p className="text-sm text-muted-foreground">
                         {t("plansSummary.manageSubscription")}
                       </p>
                     </div>
-                    <Link to="/billing">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-blue-600"
-                      >
-                        {t("plansSummary.manage")}
-                      </Button>
-                    </Link>
-                  </div>
-                </CardContent>
-              </Card>
+                    <ArrowRight className="h-5 w-5 text-muted-foreground shrink-0" />
+                  </CardContent>
+                </Card>
+              </Link>
 
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                      <TrendingUp className="w-5 h-5 text-green-600" />
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-medium text-foreground">
+              <Link to="/plans">
+                <Card className="cursor-pointer hover:border-primary/30 transition-colors h-full">
+                  <CardContent className="flex items-center justify-between py-4">
+                    <div>
+                      <p className="font-medium">
                         {t("plansSummary.comparePlans")}
-                      </h4>
+                      </p>
                       <p className="text-sm text-muted-foreground">
                         {t("plansSummary.seeAllOptions")}
                       </p>
                     </div>
-                    <Link to="/plans">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-green-600"
-                      >
-                        {t("plansSummary.compare")}
-                      </Button>
-                    </Link>
-                  </div>
-                </CardContent>
-              </Card>
+                    <ArrowRight className="h-5 w-5 text-muted-foreground shrink-0" />
+                  </CardContent>
+                </Card>
+              </Link>
             </>
           )}
         </div>

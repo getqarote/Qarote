@@ -13,6 +13,7 @@ import { NotificationEmailService } from "./notification-email.service";
 export class EmailService {
   // Authentication emails
   static sendInvitationEmail = AuthEmailService.sendInvitationEmail;
+  static sendOrgInvitationEmail = AuthEmailService.sendOrgInvitationEmail;
   static sendWelcomeEmail = AuthEmailService.sendWelcomeEmail;
   static sendVerificationEmail = AuthEmailService.sendVerificationEmail;
 

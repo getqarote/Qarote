@@ -12,6 +12,7 @@ import {
 } from "./core.service";
 
 import {
+  OrgRole,
   PrismaClient,
   SubscriptionStatus,
   UserPlan,
@@ -345,23 +346,24 @@ export class StripeCustomerService {
   }
 
   /**
-   * Provision a full trial for a newly registered user.
-   * Creates Stripe customer + trial subscription + DB records.
-   * Returns null if Stripe is not configured (self-hosted mode).
-   * Does NOT send emails — caller decides.
+   * Provision a trial subscription on an Organization.
+   * Creates Stripe customer on the org, a trial subscription, and the DB
+   * Subscription record linked to the org. Returns null if Stripe is not
+   * configured (self-hosted mode).
    */
-  static async provisionTrialForNewUser({
-    userId,
+  static async provisionTrialForOrg({
+    organizationId,
     email,
     name,
+    userId,
     prisma,
   }: {
-    userId: string;
+    organizationId: string;
     email: string;
     name: string;
+    userId: string;
     prisma: PrismaClient;
   }) {
-    // Skip if Stripe is not configured (self-hosted deployments)
     if (!STRIPE_PRICE_IDS) {
       return null;
     }
@@ -370,32 +372,77 @@ export class StripeCustomerService {
     const billingInterval = "monthly" as const;
     const trialDays = 14;
 
-    logger.info({ userId, plan, trialDays }, "Provisioning trial for new user");
+    logger.info(
+      { organizationId, userId, plan, trialDays },
+      "Provisioning trial for organization"
+    );
 
-    // Reuse existing Stripe customer if one was already created (race condition guard)
-    const user = await prisma.user.findUniqueOrThrow({
-      where: { id: userId },
+    // Reuse existing Stripe customer on the org (race condition guard)
+    const org = await prisma.organization.findUniqueOrThrow({
+      where: { id: organizationId },
       select: { stripeCustomerId: true },
     });
 
-    let customerId = user.stripeCustomerId;
+    let customerId = org.stripeCustomerId;
     if (!customerId) {
-      const customer = await StripeCustomerService.createCustomer({
-        email,
-        name,
-        userId,
-      });
+      // Use idempotency key derived from org ID to prevent duplicate Stripe customers
+      const customer = await retryWithBackoff(
+        () =>
+          stripe.customers.create(
+            {
+              email,
+              name,
+              metadata: { userId },
+            },
+            { idempotencyKey: `org-customer-${organizationId}` }
+          ),
+        {
+          maxRetries: 3,
+          retryDelayMs: 1_000,
+          timeoutMs: 10_000,
+        },
+        "stripe"
+      );
       customerId = customer.id;
 
-      // Conditional write: only set if still null (avoids overwriting concurrent request)
-      await prisma.user.updateMany({
-        where: { id: userId, stripeCustomerId: null },
+      // Conditional write: only set if still null (race-safe)
+      await prisma.organization.updateMany({
+        where: { id: organizationId, stripeCustomerId: null },
         data: { stripeCustomerId: customerId },
       });
+
+      // Re-read to use whichever customer ID won the race
+      const updatedOrg = await prisma.organization.findUniqueOrThrow({
+        where: { id: organizationId },
+        select: { stripeCustomerId: true },
+      });
+
+      if (
+        updatedOrg.stripeCustomerId &&
+        updatedOrg.stripeCustomerId !== customerId
+      ) {
+        // Another request's customer won the race — delete the orphaned one
+        try {
+          await stripe.customers.del(customerId);
+          logger.info(
+            {
+              orphanedCustomerId: customerId,
+              winningCustomerId: updatedOrg.stripeCustomerId,
+            },
+            "Deleted orphaned Stripe customer from race condition"
+          );
+        } catch (delError) {
+          logger.warn(
+            { error: delError, orphanedCustomerId: customerId },
+            "Failed to delete orphaned Stripe customer"
+          );
+        }
+        customerId = updatedOrg.stripeCustomerId;
+      }
     }
 
     // Create trial subscription via Stripe API
-    const idempotencyKey = `auto_trial_${userId}`;
+    const idempotencyKey = `auto_trial_org_${organizationId}`;
     const subscription = await StripeCustomerService.createTrialSubscription({
       customerId,
       plan,
@@ -405,13 +452,13 @@ export class StripeCustomerService {
       idempotencyKey,
     });
 
-    // Update user with subscription ID
-    await prisma.user.update({
-      where: { id: userId },
+    // Conditional write: only set if still null (race-safe)
+    await prisma.organization.updateMany({
+      where: { id: organizationId, stripeSubscriptionId: null },
       data: { stripeSubscriptionId: subscription.id },
     });
 
-    // Upsert subscription record (idempotent against duplicate events/retries)
+    // Upsert subscription record linked to both user and org
     const firstItem = subscription.items?.data?.[0];
     const currentPeriodStart = firstItem?.current_period_start
       ? new Date(firstItem.current_period_start * 1000)
@@ -422,6 +469,7 @@ export class StripeCustomerService {
 
     const subscriptionData = {
       userId,
+      organizationId,
       stripeSubscriptionId: subscription.id,
       stripePriceId: firstItem?.price?.id || "",
       stripeCustomerId: customerId,
@@ -447,6 +495,7 @@ export class StripeCustomerService {
       where: { userId },
       create: subscriptionData,
       update: {
+        organizationId,
         stripeSubscriptionId: subscriptionData.stripeSubscriptionId,
         stripePriceId: subscriptionData.stripePriceId,
         stripeCustomerId: subscriptionData.stripeCustomerId,
@@ -460,12 +509,105 @@ export class StripeCustomerService {
 
     logger.info(
       {
+        organizationId,
         userId,
         subscriptionId: dbSubscription.stripeSubscriptionId,
         plan,
         trialEnd: dbSubscription.trialEnd,
       },
-      "Trial provisioned for new user"
+      "Trial provisioned for organization"
+    );
+
+    return dbSubscription;
+  }
+
+  /**
+   * Provision a full trial for a newly registered user.
+   * Creates an Organization, provisions the trial on the org, and dual-writes
+   * Stripe IDs to User.
+   * Returns null if Stripe is not configured (self-hosted mode).
+   * Does NOT send emails -- caller decides.
+   */
+  static async provisionTrialForNewUser({
+    userId,
+    email,
+    name,
+    prisma,
+  }: {
+    userId: string;
+    email: string;
+    name: string;
+    prisma: PrismaClient;
+  }) {
+    // Skip if Stripe is not configured (self-hosted deployments)
+    if (!STRIPE_PRICE_IDS) {
+      return null;
+    }
+
+    logger.info({ userId }, "Provisioning trial for new user (org-based)");
+
+    // Idempotency guard: check if user already has an organization
+    const existingMembership = await prisma.organizationMember.findFirst({
+      where: { userId },
+      include: { organization: true },
+    });
+
+    if (existingMembership) {
+      logger.info(
+        { userId, organizationId: existingMembership.organizationId },
+        "User already has organization, skipping org creation"
+      );
+      // Provision trial on existing org if not already provisioned
+      if (!existingMembership.organization.stripeSubscriptionId) {
+        return StripeCustomerService.provisionTrialForOrg({
+          organizationId: existingMembership.organizationId,
+          email,
+          name,
+          userId,
+          prisma,
+        });
+      }
+      return null;
+    }
+
+    // Create an Organization for this user and make them the OWNER
+    const orgSlug = `user-${userId.slice(0, 8)}-${Date.now()}`;
+    const orgName = name ? `${name}'s Organization` : "My Organization";
+
+    const org = await prisma.organization.create({
+      data: {
+        name: orgName,
+        slug: orgSlug,
+        contactEmail: email,
+        members: {
+          create: {
+            userId,
+            role: OrgRole.OWNER,
+          },
+        },
+      },
+    });
+
+    // Provision trial on the organization
+    const dbSubscription = await StripeCustomerService.provisionTrialForOrg({
+      organizationId: org.id,
+      email,
+      name,
+      userId,
+      prisma,
+    });
+
+    if (!dbSubscription) {
+      return null;
+    }
+
+    logger.info(
+      {
+        userId,
+        organizationId: org.id,
+        subscriptionId: dbSubscription.stripeSubscriptionId,
+      },
+      "Trial provisioned for new user via organization"
     );
 
     return dbSubscription;

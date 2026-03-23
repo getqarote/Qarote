@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { AlertTriangle, Trash2 } from "lucide-react";
 
@@ -43,6 +44,7 @@ export const PurgeQueueDialog = ({
   const { selectedVHost } = useVHostContext();
   const { workspace } = useWorkspace();
   const { toast } = useToast();
+  const { t } = useTranslation("queues");
 
   const purgeQueueMutation = usePurgeQueue();
 
@@ -53,8 +55,8 @@ export const PurgeQueueDialog = ({
   useEffect(() => {
     if (purgeQueueMutation.isSuccess) {
       toast({
-        title: "Queue Purged Successfully",
-        description: `All messages in queue "${queueName}" have been purged`,
+        title: t("purge.successTitle"),
+        description: t("purge.successDescription", { queueName }),
         variant: "default",
       });
 
@@ -63,7 +65,7 @@ export const PurgeQueueDialog = ({
     }
     if (purgeQueueMutation.isError) {
       toast({
-        title: "Failed to Purge Queue",
+        title: t("purge.errorTitle"),
         description:
           purgeQueueMutation.error?.message || "An unexpected error occurred",
         variant: "destructive",
@@ -78,16 +80,16 @@ export const PurgeQueueDialog = ({
   const handlePurge = () => {
     if (!selectedServerId) {
       toast({
-        title: "Error",
-        description: "No server selected",
+        title: t("toast.error"),
+        description: t("purge.noServer"),
         variant: "destructive",
       });
       return;
     }
     if (!workspace?.id) {
       toast({
-        title: "Error",
-        description: "No workspace selected",
+        title: t("toast.error"),
+        description: t("purge.noWorkspace"),
         variant: "destructive",
       });
       return;
@@ -110,7 +112,7 @@ export const PurgeQueueDialog = ({
             className="text-red-600 hover:text-red-700"
           >
             <Trash2 className="w-4 h-4 mr-1" />
-            Purge
+            {t("purge.trigger")}
           </Button>
         )}
       </AlertDialogTrigger>
@@ -118,51 +120,51 @@ export const PurgeQueueDialog = ({
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2">
             <AlertTriangle className="w-5 h-5 text-red-600" />
-            Purge Queue "{queueName}"?
+            {t("purge.title", { queueName })}
           </AlertDialogTitle>
           <AlertDialogDescription className="space-y-3">
             <div>
-              <strong>⚠️ This action cannot be undone!</strong>
+              <strong>⚠️ {t("purge.cannotBeUndone")}</strong>
             </div>
-            <div>
-              You are about to permanently delete all messages from the queue:
-            </div>
+            <div>{t("purge.description")}</div>
             <div className="p-3 bg-gray-50 rounded-lg border">
               <div className="flex items-center justify-between">
                 <span className="font-medium">{queueName}</span>
                 {messageCount > 0 && (
                   <Badge variant="secondary">
-                    {messageCount.toLocaleString()} messages
+                    {t("purge.messagesCount", {
+                      count: messageCount.toLocaleString(),
+                    })}
                   </Badge>
                 )}
               </div>
             </div>
             <div className="text-sm text-gray-600">
               {messageCount > 0
-                ? `All ${messageCount.toLocaleString()} messages in this queue will be permanently deleted.`
-                : "All messages in this queue will be permanently deleted."}{" "}
-              This operation will:
+                ? t("purge.allMessagesDeleted", {
+                    count: messageCount.toLocaleString(),
+                  })
+                : t("purge.allMessagesDeletedEmpty")}{" "}
+              {t("purge.operationWill")}
             </div>
             <ul className="text-sm text-gray-600 list-disc list-inside space-y-1">
-              <li>Remove all pending messages</li>
-              <li>Clear both ready and unacknowledged messages</li>
-              <li>Reset the queue message count to zero</li>
-              <li>Cannot be reversed once executed</li>
+              <li>{t("purge.removeAllPending")}</li>
+              <li>{t("purge.clearReadyAndUnacked")}</li>
+              <li>{t("purge.resetCount")}</li>
+              <li>{t("purge.cannotBeReversed")}</li>
             </ul>
             <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
               <div className="flex items-start gap-2">
                 <div className="w-4 h-4 text-blue-600 mt-0.5">ℹ️</div>
                 <div className="text-sm text-blue-800">
-                  <strong>Note:</strong> Queue purging is an asynchronous
-                  operation. The message count may take a few moments to update
-                  in the interface after the purge is initiated.
+                  <strong>Note:</strong> {t("purge.note")}
                 </div>
               </div>
             </div>
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
           <AlertDialogAction
             onClick={handlePurge}
             disabled={purgeQueueMutation.isPending}
@@ -171,12 +173,12 @@ export const PurgeQueueDialog = ({
             {purgeQueueMutation.isPending ? (
               <>
                 <div className="w-4 h-4 animate-spin rounded-full border-2 border-white border-t-transparent mr-2" />
-                Purging...
+                {t("purge.purging")}
               </>
             ) : (
               <>
                 <Trash2 className="w-4 h-4 mr-2" />
-                Yes, Purge Queue
+                {t("purge.confirm")}
               </>
             )}
           </AlertDialogAction>

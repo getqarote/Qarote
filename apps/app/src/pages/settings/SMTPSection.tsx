@@ -5,6 +5,7 @@ import { Navigate } from "react-router";
 import { AlertCircle, CheckCircle, Loader2, Mail, Send } from "lucide-react";
 import { toast } from "sonner";
 
+import { UserRole } from "@/lib/api";
 import { isSelfHostedMode } from "@/lib/featureFlags";
 
 import { Badge } from "@/components/ui/badge";
@@ -372,10 +373,10 @@ const SMTPSection = () => {
     isLoading,
     refetch,
   } = useSelfhostedSmtpSettings({
-    enabled: isSelfHostedMode() && user?.role === "ADMIN",
+    enabled: isSelfHostedMode() && user?.role === UserRole.ADMIN,
   });
 
-  if (!isSelfHostedMode() || (user && user.role !== "ADMIN")) {
+  if (!isSelfHostedMode() || (user && user.role !== UserRole.ADMIN)) {
     return <Navigate to="/settings/profile" replace />;
   }
 

@@ -8,8 +8,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { CheckCircle, Loader2, Plus } from "lucide-react";
 import { toast } from "sonner";
 
-import { User } from "@/lib/api";
-
 import { InviteLinksDialog } from "@/components/InviteLinksDialog";
 import { InviteMembersSection } from "@/components/InviteMembersSection";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -39,7 +37,7 @@ import { WorkspaceFormData, workspaceSchema } from "@/schemas";
 const Workspace = () => {
   const { t } = useTranslation("workspace");
   const navigate = useNavigate();
-  const { user, updateUser } = useAuth();
+  const { refetchUser } = useAuth();
   const queryClient = useQueryClient();
   const [showSuccess, setShowSuccess] = useState(false);
   const isCreatingRef = useRef(false);
@@ -95,18 +93,12 @@ const Workspace = () => {
             : undefined,
       },
       {
-        onSuccess: async (responseData) => {
+        onSuccess: async () => {
           queryClient.invalidateQueries({ queryKey: ["workspaces"] });
 
-          // Update user state directly with the new workspaceId
-          const newWorkspaceId = responseData.workspace.id;
-          if (user) {
-            const updatedUser: User = {
-              ...user,
-              workspaceId: newWorkspaceId,
-            };
-            updateUser(updatedUser);
-          }
+          // Refetch full session to pick up workspaceId, role, and plan
+          // (server sets workspaceId + role=ADMIN in the create transaction)
+          await refetchUser();
 
           const links = await sendPendingInvites();
 

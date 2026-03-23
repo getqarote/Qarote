@@ -28,9 +28,9 @@ import { te } from "@/i18n";
  */
 export const vhostRouter = router({
   /**
-   * Get all virtual hosts for a server (ADMIN ONLY)
+   * Get all virtual hosts for a server
    */
-  getVHosts: authorize([UserRole.ADMIN])
+  getVHosts: authorize([UserRole.ADMIN, UserRole.MEMBER])
     .input(ServerWorkspaceInputSchema)
     .query(async ({ input, ctx }) => {
       const { serverId, workspaceId } = input;
@@ -132,9 +132,9 @@ export const vhostRouter = router({
     }),
 
   /**
-   * Get a specific virtual host details (ADMIN ONLY)
+   * Get a specific virtual host details
    */
-  getVHost: authorize([UserRole.ADMIN])
+  getVHost: authorize([UserRole.ADMIN, UserRole.MEMBER])
     .input(ServerWorkspaceWithVHostNameSchema)
     .query(async ({ input, ctx }) => {
       const { serverId, workspaceId, vhostName } = input;

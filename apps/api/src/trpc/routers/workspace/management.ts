@@ -7,6 +7,8 @@ import {
 
 import {
   canUserAddWorkspaceWithCount,
+  getOrgPlan,
+  getOrgResourceCounts,
   getPlanFeatures,
   validateWorkspaceCreation,
 } from "@/services/plan/plan.service";
@@ -26,7 +28,7 @@ import {
   workspaceProcedure,
 } from "@/trpc/trpc";
 
-import { UserPlan, UserRole } from "@/generated/prisma/client";
+import { OrgRole, UserPlan, UserRole } from "@/generated/prisma/client";
 import { te } from "@/i18n";
 
 /**
@@ -41,23 +43,23 @@ export const managementRouter = router({
     const user = ctx.user;
 
     try {
-      // Get all workspaces where user is a member (via WorkspaceMember or owner)
+      // Get all workspaces where user is a member (via WorkspaceMember)
       const allUserWorkspaces = await ctx.prisma.workspace.findMany({
         where: {
-          OR: [
-            // Workspaces owned by the user
-            { ownerId: user.id },
-            // Workspaces where user is a member (via WorkspaceMember)
-            {
-              members: {
-                some: {
-                  userId: user.id,
-                },
-              },
+          members: {
+            some: {
+              userId: user.id,
             },
-          ],
+          },
         },
         include: {
+          organization: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+            },
+          },
           _count: {
             select: {
               members: true,
@@ -71,11 +73,10 @@ export const managementRouter = router({
       // Format the response with user role from WorkspaceMember
       const workspaces = await Promise.all(
         allUserWorkspaces.map(async (workspace) => {
+          const userRole =
+            (await getUserWorkspaceRole(user.id, workspace.id, ctx.prisma)) ||
+            UserRole.MEMBER;
           const isOwner = workspace.ownerId === user.id;
-          const userRole = isOwner
-            ? UserRole.ADMIN
-            : (await getUserWorkspaceRole(user.id, workspace.id)) ||
-              UserRole.MEMBER;
 
           const mappedWorkspace = WorkspaceMapper.toApiResponse(workspace);
           return {
@@ -103,38 +104,37 @@ export const managementRouter = router({
     const user = ctx.user;
 
     try {
-      // For new users creating their first workspace, they won't have a workspaceId yet
-      let currentPlan: UserPlan = UserPlan.FREE; // Default plan for new users
-
-      // Get user with subscription
-      const userWithSubscription = await ctx.prisma.user.findUnique({
-        where: { id: user.id },
-        select: {
-          subscription: {
-            select: { plan: true },
-          },
-        },
+      // Resolve organization from the user's org membership
+      const orgMembership = await ctx.prisma.organizationMember.findFirst({
+        where: { userId: user.id },
+        select: { organizationId: true },
       });
+      const organizationId = orgMembership?.organizationId ?? null;
 
-      // Plans are now user-level, get from user's subscription
-      if (userWithSubscription?.subscription) {
-        currentPlan = userWithSubscription.subscription.plan;
+      let currentPlan: UserPlan = UserPlan.FREE;
+      let workspaceCount: number;
+
+      if (organizationId) {
+        // Org-scoped: plan and counts come from the organization
+        currentPlan = await getOrgPlan(organizationId);
+        const orgCounts = await getOrgResourceCounts(organizationId);
+        workspaceCount = orgCounts.workspaces;
+      } else {
+        // No org context — count workspaces owned by the user
+        workspaceCount = await ctx.prisma.workspace.count({
+          where: { ownerId: user.id },
+        });
       }
-
-      // Count owned workspaces
-      const ownedWorkspaceCount = await ctx.prisma.workspace.count({
-        where: { ownerId: user.id },
-      });
 
       const planFeatures = getPlanFeatures(currentPlan);
       const canCreateWorkspace = canUserAddWorkspaceWithCount(
         currentPlan,
-        ownedWorkspaceCount
+        workspaceCount
       );
 
       return {
         currentPlan: currentPlan,
-        ownedWorkspaceCount,
+        workspaceCount,
         maxWorkspaces: planFeatures.maxWorkspaces,
         canCreateWorkspace,
         planFeatures: {
@@ -161,38 +161,95 @@ export const managementRouter = router({
     .input(CreateWorkspaceSchema)
     .mutation(async ({ input, ctx }) => {
       const user = ctx.user;
-      const { name, contactEmail, tags } = input;
+      const { name, contactEmail: inputContactEmail, tags } = input;
+      const contactEmail = inputContactEmail || user.email;
 
       try {
-        // Get user's current plan from their subscription
-        let currentPlan: UserPlan = UserPlan.FREE; // Default plan for new users
-
-        const userWithSubscription = await ctx.prisma.user.findUnique({
-          where: { id: user.id },
-          select: {
-            subscription: {
-              select: { plan: true },
-            },
-          },
+        // Resolve organization from the user's org membership
+        let membership = await ctx.prisma.organizationMember.findFirst({
+          where: { userId: user.id },
+          select: { organizationId: true, role: true },
         });
 
-        if (userWithSubscription?.subscription) {
-          currentPlan = userWithSubscription.subscription.plan;
+        // Existing org members must be OWNER or ADMIN to create workspaces
+        if (
+          membership &&
+          membership.role !== OrgRole.OWNER &&
+          membership.role !== OrgRole.ADMIN
+        ) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: te(ctx.locale, "auth.orgAdminRequired"),
+          });
         }
 
-        // Count current owned workspaces
-        const ownedWorkspaceCount = await ctx.prisma.workspace.count({
-          where: { ownerId: user.id },
-        });
+        // Auto-create an organization for the user if they don't have one.
+        // Use a transaction with a re-check to prevent concurrent requests
+        // from creating duplicate organizations for the same user.
+        if (!membership) {
+          // Deterministic slug ensures the unique constraint on Organization.slug
+          // prevents duplicate orgs from concurrent requests for the same user.
+          const orgSlug = `user-${user.id}`;
+          const orgName = user.firstName
+            ? `${user.firstName}'s Organization`
+            : "My Organization";
+
+          try {
+            const created = await ctx.prisma.organization.create({
+              data: {
+                name: orgName,
+                slug: orgSlug,
+                contactEmail: user.email,
+                members: {
+                  create: {
+                    userId: user.id,
+                    role: OrgRole.OWNER,
+                  },
+                },
+              },
+            });
+            membership = { organizationId: created.id, role: OrgRole.OWNER };
+          } catch (orgError) {
+            // P2002: unique constraint on slug — concurrent request already created the org
+            if ((orgError as { code?: string }).code === "P2002") {
+              const existing = await ctx.prisma.organizationMember.findFirst({
+                where: { userId: user.id },
+                select: { organizationId: true, role: true },
+              });
+              if (existing) {
+                membership = existing;
+              } else {
+                throw new TRPCError({
+                  code: "INTERNAL_SERVER_ERROR",
+                  message: te(ctx.locale, "workspace.failedToCreate"),
+                });
+              }
+            } else {
+              ctx.logger.error(
+                { error: orgError, userId: user.id },
+                "Failed to auto-create organization for user"
+              );
+              throw new TRPCError({
+                code: "INTERNAL_SERVER_ERROR",
+                message: te(ctx.locale, "workspace.failedToCreate"),
+              });
+            }
+          }
+        }
+
+        // Org-scoped validation
+        const currentPlan = await getOrgPlan(membership.organizationId);
+        const orgCounts = await getOrgResourceCounts(membership.organizationId);
+        const workspaceCount = orgCounts.workspaces;
 
         // Validate workspace creation against plan limits
         // Errors will be caught by planValidationProcedure middleware
-        validateWorkspaceCreation(currentPlan, ownedWorkspaceCount);
+        validateWorkspaceCreation(currentPlan, workspaceCount);
 
-        // Check if workspace name already exists for this user
+        // Check if workspace name already exists in this organization
         const existingWorkspace = await ctx.prisma.workspace.findFirst({
           where: {
-            ownerId: user.id,
+            organizationId: membership.organizationId,
             name: name,
           },
         });
@@ -206,13 +263,14 @@ export const managementRouter = router({
 
         // Create the new workspace and assign user to it
         const newWorkspace = await ctx.prisma.$transaction(async (tx) => {
-          // Create the workspace
+          // Create the workspace linked to the user's organization
           const workspace = await tx.workspace.create({
             data: {
               name,
               contactEmail,
               tags: tags ? tags : undefined, // Store tags as JSON array or undefined
               ownerId: user.id,
+              organizationId: membership.organizationId,
             },
             include: {
               _count: {
@@ -284,12 +342,21 @@ export const managementRouter = router({
       const { workspaceId, ...updateData } = input;
 
       try {
-        // Check if user owns this workspace
-        const workspace = await ctx.prisma.workspace.findFirst({
-          where: {
-            id: workspaceId,
-            ownerId: user.id,
-          },
+        // Check if user has ADMIN role in this workspace
+        const role = await getUserWorkspaceRole(
+          user.id,
+          workspaceId,
+          ctx.prisma
+        );
+        if (role !== UserRole.ADMIN) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: te(ctx.locale, "workspace.notFoundOrNoPermissionUpdate"),
+          });
+        }
+
+        const workspace = await ctx.prisma.workspace.findUnique({
+          where: { id: workspaceId },
         });
 
         if (!workspace) {
@@ -303,7 +370,7 @@ export const managementRouter = router({
         if (updateData.name && updateData.name !== workspace.name) {
           const existingWorkspace = await ctx.prisma.workspace.findFirst({
             where: {
-              ownerId: user.id,
+              organizationId: workspace.organizationId,
               name: updateData.name,
               id: { not: workspaceId },
             },
@@ -343,7 +410,7 @@ export const managementRouter = router({
         return {
           workspace: {
             ...WorkspaceMapper.toApiResponse(updatedWorkspace),
-            isOwner: true,
+            isOwner: user.id === updatedWorkspace.ownerId,
             userRole: UserRole.ADMIN,
           },
         };
@@ -369,12 +436,21 @@ export const managementRouter = router({
       const { workspaceId } = input;
 
       try {
-        // Check if user owns this workspace
-        const workspace = await ctx.prisma.workspace.findFirst({
-          where: {
-            id: workspaceId,
-            ownerId: user.id,
-          },
+        // Check if user has ADMIN role in this workspace
+        const role = await getUserWorkspaceRole(
+          user.id,
+          workspaceId,
+          ctx.prisma
+        );
+        if (role !== UserRole.ADMIN) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: te(ctx.locale, "workspace.notFoundOrNoPermissionDelete"),
+          });
+        }
+
+        const workspace = await ctx.prisma.workspace.findUnique({
+          where: { id: workspaceId },
         });
 
         if (!workspace) {

@@ -1,4 +1,10 @@
 {
+  "section": {
+    "title": "Suscripción",
+    "subtitle": "Gestiona la suscripción y facturación de tu organización",
+    "noInfo": "No hay información de facturación disponible.",
+    "billingTitle": "Facturación"
+  },
   "plans": {
     "chooseYourPlan": "Elige tu plan",
     "subtitle": "Escala tu monitoreo de RabbitMQ con planes diseñados para equipos de todos los tamaños.",
@@ -126,10 +132,18 @@
   },
   "subscriptionManagement": {
     "title": "Gestión de suscripción",
-    "description": "Gestiona tu plan, ciclo de facturación y configuración de suscripción para todos tus espacios de trabajo"
+    "description": "Gestiona tu plan, ciclo de facturación y configuración de suscripción para todos tus espacios de trabajo",
+    "renewPlan": "Renovar plan {{plan}}",
+    "reactivate": "Reactivar",
+    "cancelSubscription": "Cancelar suscripción",
+    "endsSoon": "Termina pronto",
+    "endsOn": "Termina el {{date}}",
+    "readyToComeBack": "¿Listo para volver?",
+    "renewDescription": "Tu plan {{plan}} fue cancelado, pero puedes reiniciarlo en cualquier momento con las mismas funcionalidades."
   },
   "error": {
-    "workspaceIdRequired": "Se requiere el ID del espacio de trabajo"
+    "workspaceIdRequired": "Se requiere el ID del espacio de trabajo",
+    "failedToOpenBillingPortal": "Error al abrir el portal de facturación."
   },
   "plansSummary": {
     "whatsIncluded": "Incluido:",

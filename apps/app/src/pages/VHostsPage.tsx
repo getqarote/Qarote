@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
+import { UserRole } from "@/lib/api";
 import { VHost } from "@/lib/api/vhostTypes";
 
 import { AddVirtualHostButton } from "@/components/AddVirtualHostButton";
@@ -76,7 +77,7 @@ export default function VHostsPage() {
   const { workspace } = useWorkspace();
 
   // Redirect non-admin users
-  if (user?.role !== "ADMIN") {
+  if (user?.role !== UserRole.ADMIN) {
     return (
       <SidebarProvider>
         <div className="page-layout">

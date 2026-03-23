@@ -2,15 +2,17 @@
   "pageTitle": "Configuración",
   "groups": {
     "personal": "Personal",
-    "administration": "Administración"
+    "workspace": "Espacio de trabajo",
+    "organization": "Organización"
   },
   "nav": {
     "profile": "Perfil",
-    "workspace": "Espacio de trabajo",
-    "plans": "Planes",
-    "team": "Equipo",
-    "license": "Licencia",
+    "workspaceSettings": "Configuración",
+    "members": "Miembros",
+    "organization": "Configuración",
+    "subscription": "Suscripción",
     "sso": "SSO",
+    "license": "Licencia",
     "smtp": "Correo",
     "feedback": "Comentarios"
   },

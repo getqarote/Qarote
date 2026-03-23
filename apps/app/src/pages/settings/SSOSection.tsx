@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
+import { UserRole } from "@/lib/api";
 import { isCloudMode } from "@/lib/featureFlags";
 
 import {
@@ -24,7 +25,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alertDialog";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -44,7 +44,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Switch } from "@/components/ui/switch";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
 
@@ -60,7 +59,7 @@ const REDACTED = "••••••••";
 
 async function copyToClipboard(
   text: string,
-  t: (key: string, opts?: object) => string
+  t: (key: string, opts?: Record<string, unknown>) => string
 ) {
   try {
     await navigator.clipboard.writeText(text);
@@ -101,7 +100,7 @@ function SSOForm({
   const apiUrl = getApiUrl();
 
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-  const [enabled, setEnabled] = useState(initialData.enabled);
+  const enabled = true;
   const [type, setType] = useState<"oidc" | "saml">(initialData.type);
   const [oidcDiscoveryUrl, setOidcDiscoveryUrl] = useState(
     (initialData.oidcConfig?.discoveryEndpoint as string) || ""
@@ -115,7 +114,6 @@ function SSOForm({
   const [samlMetadataUrl, setSamlMetadataUrl] = useState(
     (initialData.samlConfig?.metadataUrl as string) || ""
   );
-  const [buttonLabel, setButtonLabel] = useState(initialData.buttonLabel);
   const [domain, setDomain] = useState(initialData.domain);
 
   const updateMutation = useUpdateSsoProvider({
@@ -159,7 +157,6 @@ function SSOForm({
       oidcClientId: oidcClientId || undefined,
       oidcClientSecret: oidcClientSecret || undefined,
       samlMetadataUrl: samlMetadataUrl || undefined,
-      buttonLabel,
       domain: domain || undefined,
     });
   };
@@ -190,38 +187,6 @@ function SSOForm({
           <p className="text-sm text-muted-foreground">{t("description")}</p>
         </div>
       </div>
-
-      {/* Status */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>{t("status")}</CardTitle>
-            {isCloudMode() ? (
-              <Badge variant="default">
-                {t("cloudLabel", { defaultValue: "Cloud (per-workspace)" })}
-              </Badge>
-            ) : (
-              <Badge variant="secondary">
-                {t("selfHostedLabel", { defaultValue: "Self-hosted" })}
-              </Badge>
-            )}
-          </div>
-          <CardDescription>{t("statusDescription")}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center space-x-4">
-            <Switch
-              id="sso-enabled"
-              checked={enabled}
-              onCheckedChange={setEnabled}
-              className="data-[state=checked]:bg-gradient-button"
-            />
-            <Label htmlFor="sso-enabled">
-              {enabled ? t("enabled") : t("disabled")}
-            </Label>
-          </div>
-        </CardContent>
-      </Card>
 
       {enabled && (
         <>
@@ -279,6 +244,25 @@ function SSOForm({
                         )}
                       </Button>
                     </div>
+                    {testMutation.data && (
+                      <div className="mt-1">
+                        {testMutation.data.success ? (
+                          <div className="flex items-center gap-2 text-green-600 text-sm">
+                            <CheckCircle className="h-4 w-4" />
+                            <span>
+                              {t("testSuccess", {
+                                issuer: testMutation.data.issuer,
+                              })}
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2 text-red-600 text-sm">
+                            <AlertCircle className="h-4 w-4" />
+                            <span>{testMutation.data.error}</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="client-id">{t("oidcClientId")}</Label>
@@ -379,15 +363,6 @@ function SSOForm({
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-2">
-                <Label htmlFor="button-label">{t("buttonLabel")}</Label>
-                <Input
-                  id="button-label"
-                  placeholder="Sign in with SSO"
-                  value={buttonLabel}
-                  onChange={(e) => setButtonLabel(e.target.value)}
-                />
-              </div>
               {isCloudMode() && (
                 <div className="space-y-2">
                   <Label htmlFor="domain">
@@ -409,29 +384,6 @@ function SSOForm({
               )}
             </CardContent>
           </Card>
-
-          {/* Test result */}
-          {testMutation.data && (
-            <Card>
-              <CardContent className="pt-6">
-                {testMutation.data.success ? (
-                  <div className="flex items-center gap-2 text-green-600">
-                    <CheckCircle className="h-5 w-5" />
-                    <span>
-                      {t("testSuccess", {
-                        issuer: testMutation.data.issuer,
-                      })}
-                    </span>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2 text-red-600">
-                    <AlertCircle className="h-5 w-5" />
-                    <span>{testMutation.data.error}</span>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
         </>
       )}
 
@@ -510,7 +462,6 @@ function SetupForm({ onRefetch }: { onRefetch: () => void }) {
   const [oidcClientId, setOidcClientId] = useState("");
   const [oidcClientSecret, setOidcClientSecret] = useState("");
   const [samlMetadataUrl, setSamlMetadataUrl] = useState("");
-  const [buttonLabel, setButtonLabel] = useState("Sign in with SSO");
   const [domain, setDomain] = useState("");
 
   const testMutation = useTestSsoConnection({
@@ -539,7 +490,6 @@ function SetupForm({ onRefetch }: { onRefetch: () => void }) {
       oidcClientId: oidcClientId || undefined,
       oidcClientSecret: oidcClientSecret || undefined,
       samlMetadataUrl: samlMetadataUrl || undefined,
-      buttonLabel,
       domain: domain || undefined,
     });
   };
@@ -618,6 +568,25 @@ function SetupForm({ onRefetch }: { onRefetch: () => void }) {
                     )}
                   </Button>
                 </div>
+                {testMutation.data && (
+                  <div className="mt-1">
+                    {testMutation.data.success ? (
+                      <div className="flex items-center gap-2 text-green-600 text-sm">
+                        <CheckCircle className="h-4 w-4" />
+                        <span>
+                          {t("testSuccess", {
+                            issuer: testMutation.data.issuer,
+                          })}
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2 text-red-600 text-sm">
+                        <AlertCircle className="h-4 w-4" />
+                        <span>{testMutation.data.error}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="setup-client-id">{t("oidcClientId")}</Label>
@@ -654,24 +623,6 @@ function SetupForm({ onRefetch }: { onRefetch: () => void }) {
               />
             </div>
           )}
-
-          {testMutation.data && (
-            <div className="mt-2">
-              {testMutation.data.success ? (
-                <div className="flex items-center gap-2 text-green-600 text-sm">
-                  <CheckCircle className="h-4 w-4" />
-                  <span>
-                    {t("testSuccess", { issuer: testMutation.data.issuer })}
-                  </span>
-                </div>
-              ) : (
-                <div className="flex items-center gap-2 text-red-600 text-sm">
-                  <AlertCircle className="h-4 w-4" />
-                  <span>{testMutation.data.error}</span>
-                </div>
-              )}
-            </div>
-          )}
         </CardContent>
       </Card>
 
@@ -692,22 +643,13 @@ function SetupForm({ onRefetch }: { onRefetch: () => void }) {
         </Card>
       )}
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{t("displaySettings")}</CardTitle>
-          <CardDescription>{t("displaySettingsDescription")}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            <Label htmlFor="setup-button-label">{t("buttonLabel")}</Label>
-            <Input
-              id="setup-button-label"
-              placeholder="Sign in with SSO"
-              value={buttonLabel}
-              onChange={(e) => setButtonLabel(e.target.value)}
-            />
-          </div>
-          {isCloudMode() && (
+      {isCloudMode() && (
+        <Card>
+          <CardHeader>
+            <CardTitle>{t("displaySettings")}</CardTitle>
+            <CardDescription>{t("displaySettingsDescription")}</CardDescription>
+          </CardHeader>
+          <CardContent>
             <div className="space-y-2">
               <Label htmlFor="setup-domain">
                 {t("domain", { defaultValue: "Email Domain" })}
@@ -725,9 +667,9 @@ function SetupForm({ onRefetch }: { onRefetch: () => void }) {
                 })}
               </p>
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardFooter className="pt-6">
@@ -761,9 +703,9 @@ const SSOSection = () => {
     data: providerConfig,
     isLoading,
     refetch,
-  } = useSsoProviderConfig({ enabled: user?.role === "ADMIN" });
+  } = useSsoProviderConfig({ enabled: user?.role === UserRole.ADMIN });
 
-  if (user?.role !== "ADMIN") {
+  if (user?.role !== UserRole.ADMIN) {
     return null;
   }
 
