@@ -849,7 +849,7 @@ const OrganizationSection = () => {
                         >
                           <SelectTrigger
                             className="w-32 h-8 text-xs"
-                            aria-label={t("org.colOrgRole")}
+                            aria-label={t("org.orgRole")}
                           >
                             <span className="flex! items-center gap-1.5">
                               {getRoleIcon(member.role)}
