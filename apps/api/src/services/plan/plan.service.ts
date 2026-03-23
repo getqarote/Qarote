@@ -229,6 +229,8 @@ export async function getOrgPlan(orgId: string): Promise<UserPlan> {
  * delegating to getOrgPlan. Falls back to FREE if no membership is found.
  */
 export async function getUserPlan(userId: string) {
+  // Pick the highest-privilege membership. Prisma sorts enums by declaration
+  // order (OWNER=0, ADMIN=1, MEMBER=2), so "asc" gives OWNER first.
   const membership = await prisma.organizationMember.findFirst({
     where: { userId },
     select: { organizationId: true },
