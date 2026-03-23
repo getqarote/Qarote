@@ -1331,8 +1331,15 @@ const OrganizationSection = () => {
             </AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive text-white hover:bg-destructive/90"
-              onClick={handleRemoveMember}
+              disabled={removeMemberMutation.isPending}
+              onClick={(e) => {
+                e.preventDefault();
+                handleRemoveMember();
+              }}
             >
+              {removeMemberMutation.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : null}
               {t("org.remove")}
             </AlertDialogAction>
           </AlertDialogFooter>
