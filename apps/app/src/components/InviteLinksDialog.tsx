@@ -51,7 +51,7 @@ export function InviteLinksDialog({
   };
 
   const handleCopy = async (index: number) => {
-    const url = editableUrls[index];
+    const url = editableUrls[index] ?? inviteLinks[index]?.inviteUrl;
     if (!url) return;
     try {
       await navigator.clipboard.writeText(url);
