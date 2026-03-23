@@ -4,6 +4,8 @@ import { useTranslation } from "react-i18next";
 import { AlertTriangle, Check, Copy, Link } from "lucide-react";
 import { toast } from "sonner";
 
+import { isLocalhostUrl } from "@/lib/url-utils";
+
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,10 +24,6 @@ import { type InviteLink } from "@/hooks/ui/useWorkspaceInvites";
 interface InviteLinksDialogProps {
   inviteLinks: InviteLink[];
   onClose: () => void;
-}
-
-function isLocalhostUrl(url: string): boolean {
-  return url.includes("localhost") || url.includes("127.0.0.1");
 }
 
 export function InviteLinksDialog({
