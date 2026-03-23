@@ -87,9 +87,6 @@ const Billing: React.FC = () => {
     feedback: string;
   }) => {
     try {
-      if (!workspace?.id) {
-        throw new Error(t("error.workspaceIdRequired"));
-      }
       return await cancelSubscriptionMutation.mutateAsync(data);
     } catch (error) {
       logger.error("Failed to cancel subscription:", error);
@@ -106,11 +103,6 @@ const Billing: React.FC = () => {
     });
 
   const handleOpenBillingPortal = () => {
-    if (!workspace?.id) {
-      logger.error("Failed to open billing portal: workspace ID required");
-      toast.error(t("error.workspaceIdRequired"));
-      return;
-    }
     createBillingPortalMutation.mutate(undefined, {
       onSuccess: (data: { url: string }) => {
         window.location.href = data.url;
@@ -130,9 +122,6 @@ const Billing: React.FC = () => {
 
   const handleRenewSubscription = async () => {
     try {
-      if (!workspace?.id) {
-        throw new Error(t("error.workspaceIdRequired"));
-      }
       // Determine the plan to renew based on subscription history
       const planToRenew = billingData?.subscription?.plan || UserPlan.DEVELOPER;
       renewSubscriptionMutation.mutate({

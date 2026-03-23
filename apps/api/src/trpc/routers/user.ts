@@ -589,7 +589,8 @@ export const userRouter = router({
         // Check if user is a member of this workspace
         const workspaceRole = await getUserWorkspaceRole(
           userIdToRemove,
-          workspaceId
+          workspaceId,
+          ctx.prisma
         );
 
         if (!workspaceRole) {

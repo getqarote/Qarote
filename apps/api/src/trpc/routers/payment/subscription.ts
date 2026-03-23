@@ -30,38 +30,26 @@ export const subscriptionRouter = router({
       const { user, prisma } = ctx;
 
       try {
-        // Resolve subscription ID from Organization via active workspace
-        const workspace = user.workspaceId
-          ? await prisma.workspace.findUnique({
-              where: { id: user.workspaceId },
-              select: {
-                organizationId: true,
-                organization: {
-                  select: { stripeSubscriptionId: true },
-                },
-              },
-            })
-          : null;
-        const subscriptionId =
-          workspace?.organization?.stripeSubscriptionId ?? null;
+        // Resolve organization from user's membership
+        const membership = await prisma.organizationMember.findFirst({
+          where: { userId: user.id },
+          select: {
+            role: true,
+            organization: {
+              select: { id: true, stripeSubscriptionId: true },
+            },
+          },
+        });
 
-        if (!subscriptionId || !workspace?.organizationId) {
+        const subscriptionId =
+          membership?.organization?.stripeSubscriptionId ?? null;
+
+        if (!subscriptionId) {
           throw new TRPCError({
             code: "BAD_REQUEST",
             message: te(ctx.locale, "billing.noActiveSubscription"),
           });
         }
-
-        // Verify caller is OWNER or ADMIN of the organization
-        const membership = await prisma.organizationMember.findUnique({
-          where: {
-            userId_organizationId: {
-              userId: user.id,
-              organizationId: workspace.organizationId,
-            },
-          },
-          select: { role: true },
-        });
 
         if (
           !membership ||
@@ -79,8 +67,9 @@ export const subscriptionRouter = router({
           !cancelImmediately
         );
 
-        // Update subscription in database
-        await prisma.subscription.update({
+        // Update subscription in database (use updateMany to avoid throwing
+        // if the local row is missing — Stripe cancel already succeeded)
+        const { count } = await prisma.subscription.updateMany({
           where: { stripeSubscriptionId: subscriptionId },
           data: {
             status: CoreStripeService.mapStripeStatusToSubscriptionStatus(
@@ -92,6 +81,13 @@ export const subscriptionRouter = router({
             cancelAtPeriodEnd: subscription.cancel_at_period_end,
           },
         });
+
+        if (count === 0) {
+          ctx.logger.warn(
+            { stripeSubscriptionId: subscriptionId },
+            "Local subscription row not found after Stripe cancel — will sync on next webhook"
+          );
+        }
 
         // Log cancellation reason and feedback
         if (reason || feedback) {

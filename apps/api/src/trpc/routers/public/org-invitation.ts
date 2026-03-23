@@ -227,6 +227,13 @@ export const publicOrgInvitationRouter = router({
         if (error instanceof TRPCError) {
           throw error;
         }
+        // Concurrent duplicate accept: unique constraint on user email or org membership
+        if ((error as { code?: string }).code === "P2002") {
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: te(ctx.locale, "auth.userWithEmailAlreadyExists"),
+          });
+        }
         ctx.logger.error({ error }, "Error accepting organization invitation");
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",

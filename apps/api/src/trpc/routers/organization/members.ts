@@ -47,51 +47,19 @@ const INVITATION_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000;
  */
 async function requireOrgAdmin(
   prisma: Parameters<typeof ensureWorkspaceMember>[3] & {
-    workspace: {
-      findUnique: (args: {
-        where: { id: string };
-        select: { organizationId: true };
-      }) => Promise<{ organizationId: string } | null>;
-    };
     organizationMember: {
-      findUnique: (args: {
-        where: {
-          userId_organizationId: { userId: string; organizationId: string };
-        };
+      findFirst: (args: {
+        where: { userId: string };
         select: { organizationId: true; role: true };
       }) => Promise<{ organizationId: string; role: OrgRole } | null>;
     };
   },
   userId: string,
-  workspaceId: string | null,
+  _workspaceId: string | null,
   locale = "en"
 ): Promise<{ organizationId: string; role: OrgRole }> {
-  if (!workspaceId) {
-    throw new TRPCError({
-      code: "BAD_REQUEST",
-      message: "Active workspace required for organization management",
-    });
-  }
-
-  const workspace = await prisma.workspace.findUnique({
-    where: { id: workspaceId },
-    select: { organizationId: true },
-  });
-
-  if (!workspace) {
-    throw new TRPCError({
-      code: "BAD_REQUEST",
-      message: "Active workspace not found",
-    });
-  }
-
-  const membership = await prisma.organizationMember.findUnique({
-    where: {
-      userId_organizationId: {
-        userId,
-        organizationId: workspace.organizationId,
-      },
-    },
+  const membership = await prisma.organizationMember.findFirst({
+    where: { userId },
     select: { organizationId: true, role: true },
   });
 
@@ -121,34 +89,9 @@ export const membersRouter = router({
     .query(async ({ ctx, input }) => {
       const user = ctx.user;
 
-      // Resolve org via active workspace for multi-org correctness
-      if (!user.workspaceId) {
-        return {
-          members: [],
-          pagination: paginationMeta(input.page, input.limit, 0),
-        };
-      }
-
-      const workspace = await ctx.prisma.workspace.findUnique({
-        where: { id: user.workspaceId },
-        select: { organizationId: true },
-      });
-
-      if (!workspace) {
-        return {
-          members: [],
-          pagination: paginationMeta(input.page, input.limit, 0),
-        };
-      }
-
-      // Verify the user is a member of this org
-      const membership = await ctx.prisma.organizationMember.findUnique({
-        where: {
-          userId_organizationId: {
-            userId: user.id,
-            organizationId: workspace.organizationId,
-          },
-        },
+      // Resolve org from user's membership
+      const membership = await ctx.prisma.organizationMember.findFirst({
+        where: { userId: user.id },
         select: { organizationId: true },
       });
 
@@ -254,7 +197,8 @@ export const membersRouter = router({
           // Verify the inviter has ADMIN role in the target workspace
           const inviterRole = await getUserWorkspaceRole(
             ctx.user.id,
-            assignment.workspaceId
+            assignment.workspaceId,
+            ctx.prisma
           );
           if (inviterRole !== UserRole.ADMIN) {
             throw new TRPCError({

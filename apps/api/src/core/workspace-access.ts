@@ -7,9 +7,14 @@ import { Prisma, UserRole } from "@/generated/prisma/client";
  */
 export async function getUserWorkspaceRole(
   userId: string,
-  workspaceId: string
+  workspaceId: string,
+  db?: Omit<
+    Prisma.TransactionClient,
+    "$connect" | "$disconnect" | "$on" | "$transaction" | "$extends"
+  >
 ): Promise<UserRole | null> {
-  const member = await prisma.workspaceMember.findUnique({
+  const client = db ?? prisma;
+  const member = await client.workspaceMember.findUnique({
     where: {
       userId_workspaceId: {
         userId,

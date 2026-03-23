@@ -104,21 +104,18 @@ export const licenseRouter = router({
       const { tier } = input;
 
       try {
-        // Resolve Organization deterministically via the user's active workspace
-        const workspace = user.workspaceId
-          ? await ctx.prisma.workspace.findUnique({
-              where: { id: user.workspaceId },
-              select: {
-                organizationId: true,
-                organization: {
-                  select: { id: true, stripeCustomerId: true },
-                },
-              },
-            })
-          : null;
+        // Resolve Organization from the user's org membership
+        const orgMembership = await ctx.prisma.organizationMember.findFirst({
+          where: { userId: user.id },
+          select: {
+            organization: {
+              select: { id: true, stripeCustomerId: true },
+            },
+          },
+        });
+        const org = orgMembership?.organization ?? null;
 
-        const org = workspace?.organization ?? null;
-        if (!org || !workspace?.organizationId) {
+        if (!org) {
           throw new TRPCError({
             code: "BAD_REQUEST",
             message: te(ctx.locale, "billing.noOrganization"),
@@ -130,7 +127,7 @@ export const licenseRouter = router({
           where: {
             userId_organizationId: {
               userId: user.id,
-              organizationId: workspace.organizationId,
+              organizationId: org.id,
             },
           },
           select: { role: true },

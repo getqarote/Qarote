@@ -390,7 +390,7 @@ const TeamSection = () => {
                         onClick={() =>
                           handleAddFromOrg(member.userId, displayName)
                         }
-                        disabled={pendingUserId === member.userId}
+                        disabled={pendingUserId !== null}
                       >
                         {pendingUserId === member.userId ? (
                           <Loader2 className="h-4 w-4 animate-spin" />

@@ -68,20 +68,7 @@ export const orgInvitationRouter = router({
             },
           });
 
-        if (existingMembership) {
-          // Mark invitation as accepted even if already a member
-          await ctx.prisma.organizationInvitation.update({
-            where: { id: invitation.id },
-            data: { acceptedAt: new Date() },
-          });
-
-          throw new TRPCError({
-            code: "CONFLICT",
-            message: te(ctx.locale, "auth.alreadyOrgMember"),
-          });
-        }
-
-        // Accept invitation and create membership in a transaction
+        // Accept invitation and create/update membership in a transaction
         await ctx.prisma.$transaction(async (tx) => {
           // Mark invitation as accepted
           await tx.organizationInvitation.update({
@@ -89,15 +76,24 @@ export const orgInvitationRouter = router({
             data: { acceptedAt: new Date() },
           });
 
-          // Create organization membership
-          await tx.organizationMember.create({
-            data: {
-              userId: user.id,
-              organizationId: invitation.organizationId,
-              role: invitation.role,
-            },
-          });
+          if (existingMembership) {
+            // Re-invite: update role to match the new invitation
+            await tx.organizationMember.update({
+              where: { id: existingMembership.id },
+              data: { role: invitation.role },
+            });
+          } else {
+            // First invite: create organization membership
+            await tx.organizationMember.create({
+              data: {
+                userId: user.id,
+                organizationId: invitation.organizationId,
+                role: invitation.role,
+              },
+            });
+          }
 
+          // Apply workspace assignments (idempotent via ensureWorkspaceMember)
           const firstWorkspaceId = await applyWorkspaceAssignments(
             tx,
             user.id,

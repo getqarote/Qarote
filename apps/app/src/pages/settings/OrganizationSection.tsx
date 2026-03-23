@@ -364,6 +364,10 @@ const OrganizationSection = () => {
     email: string;
   } | null>(null);
   const [lastInviteUrl, setLastInviteUrl] = useState<string | null>(null);
+  const [pendingInvitationAction, setPendingInvitationAction] = useState<{
+    id: string;
+    action: "accept" | "decline";
+  } | null>(null);
   const [lastEmailSent, setLastEmailSent] = useState(true);
   const [copiedUrl, setCopiedUrl] = useState(false);
 
@@ -483,6 +487,7 @@ const OrganizationSection = () => {
   };
 
   const handleAcceptInvitation = async (invitationId: string) => {
+    setPendingInvitationAction({ id: invitationId, action: "accept" });
     try {
       await acceptInvitationMutation.mutateAsync({ invitationId });
       toast.success(t("org.toast.invitationAccepted"));
@@ -493,10 +498,13 @@ const OrganizationSection = () => {
           ? error.message
           : t("org.toast.invitationAcceptFailed");
       toast.error(msg);
+    } finally {
+      setPendingInvitationAction(null);
     }
   };
 
   const handleDeclineInvitation = async (invitationId: string) => {
+    setPendingInvitationAction({ id: invitationId, action: "decline" });
     try {
       await declineInvitationMutation.mutateAsync({ invitationId });
       toast.success(t("org.toast.invitationDeclined"));
@@ -507,6 +515,8 @@ const OrganizationSection = () => {
           ? error.message
           : t("org.toast.invitationDeclineFailed");
       toast.error(msg);
+    } finally {
+      setPendingInvitationAction(null);
     }
   };
 
@@ -585,9 +595,10 @@ const OrganizationSection = () => {
                         size="sm"
                         className="bg-gradient-button hover:bg-gradient-button-hover text-white"
                         onClick={() => handleAcceptInvitation(inv.id)}
-                        disabled={acceptInvitationMutation.isPending}
+                        disabled={pendingInvitationAction !== null}
                       >
-                        {acceptInvitationMutation.isPending ? (
+                        {pendingInvitationAction?.id === inv.id &&
+                        pendingInvitationAction.action === "accept" ? (
                           <Loader2 className="h-4 w-4 animate-spin" />
                         ) : (
                           <>
@@ -600,9 +611,10 @@ const OrganizationSection = () => {
                         size="sm"
                         variant="outline"
                         onClick={() => handleDeclineInvitation(inv.id)}
-                        disabled={declineInvitationMutation.isPending}
+                        disabled={pendingInvitationAction !== null}
                       >
-                        {declineInvitationMutation.isPending ? (
+                        {pendingInvitationAction?.id === inv.id &&
+                        pendingInvitationAction.action === "decline" ? (
                           <Loader2 className="h-4 w-4 animate-spin" />
                         ) : (
                           <>
@@ -1061,9 +1073,10 @@ const OrganizationSection = () => {
                       size="sm"
                       className="bg-gradient-button hover:bg-gradient-button-hover text-white"
                       onClick={() => handleAcceptInvitation(inv.id)}
-                      disabled={acceptInvitationMutation.isPending}
+                      disabled={pendingInvitationAction !== null}
                     >
-                      {acceptInvitationMutation.isPending ? (
+                      {pendingInvitationAction?.id === inv.id &&
+                      pendingInvitationAction.action === "accept" ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
                       ) : (
                         <>
@@ -1076,9 +1089,10 @@ const OrganizationSection = () => {
                       size="sm"
                       variant="outline"
                       onClick={() => handleDeclineInvitation(inv.id)}
-                      disabled={declineInvitationMutation.isPending}
+                      disabled={pendingInvitationAction !== null}
                     >
-                      {declineInvitationMutation.isPending ? (
+                      {pendingInvitationAction?.id === inv.id &&
+                      pendingInvitationAction.action === "decline" ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
                       ) : (
                         <>

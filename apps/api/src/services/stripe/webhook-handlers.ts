@@ -339,20 +339,6 @@ export async function handleSubscriptionChange(subscription: Subscription) {
     // Resolve org from Stripe customer — Organization is billing authority
     const org = await resolveOrgFromStripeCustomerId(customerId);
 
-    if (!org) {
-      logger.warn(
-        { customerId, subscriptionId },
-        "Organization not found for subscription change"
-      );
-      return;
-    }
-
-    // Find owner user for subscription record linkage
-    const ownerMember = await prisma.organizationMember.findFirst({
-      where: { organizationId: org.id, role: "OWNER" },
-      select: { userId: true },
-    });
-
     const subscriptionFirstItem = subscription.items?.data?.[0];
     const priceId = subscriptionFirstItem?.price?.id || "";
     const priceAmount = subscriptionFirstItem?.price?.unit_amount || 0;
@@ -401,11 +387,16 @@ export async function handleSubscriptionChange(subscription: Subscription) {
         where: { stripeSubscriptionId: subscriptionId },
         data: {
           ...subscriptionData,
-          organizationId: org.id,
+          ...(org ? { organizationId: org.id } : {}),
         },
       });
-    } else {
-      // Create path requires a valid userId — abort if org has no OWNER
+    } else if (org) {
+      // New subscription with org context — find owner for userId linkage
+      const ownerMember = await prisma.organizationMember.findFirst({
+        where: { organizationId: org.id, role: "OWNER" },
+        select: { userId: true },
+      });
+
       if (!ownerMember) {
         logger.error(
           { organizationId: org.id, subscriptionId },
@@ -433,19 +424,57 @@ export async function handleSubscriptionChange(subscription: Subscription) {
           plan: mappedPlan,
         },
       });
+    } else {
+      // Legacy user-scoped customer with no org — look up user by stripeCustomerId
+      const legacyUser = await prisma.subscription.findFirst({
+        where: { stripeCustomerId: customerId },
+        select: { userId: true },
+      });
+
+      if (!legacyUser) {
+        logger.warn(
+          { customerId, subscriptionId },
+          "No organization or legacy user found for subscription — skipping"
+        );
+        return;
+      }
+
+      if (!mappedPlan) {
+        logger.error(
+          { priceId, subscriptionId },
+          "Cannot create subscription: unmapped Stripe price ID"
+        );
+        throw new Error(
+          `Unmapped Stripe price ID: ${priceId} — cannot create subscription`
+        );
+      }
+
+      await prisma.subscription.create({
+        data: {
+          userId: legacyUser.userId,
+          stripeSubscriptionId: subscriptionId,
+          ...subscriptionData,
+          plan: mappedPlan,
+        },
+      });
     }
 
-    // Update Organization stripe fields
-    await prisma.organization.update({
-      where: { id: org.id },
-      data: {
-        stripeCustomerId: customerId,
-        stripeSubscriptionId: subscriptionId,
-      },
-    });
+    // Update Organization stripe fields when org context is available
+    if (org) {
+      await prisma.organization.update({
+        where: { id: org.id },
+        data: {
+          stripeCustomerId: customerId,
+          stripeSubscriptionId: subscriptionId,
+        },
+      });
+    }
 
     logger.info(
-      { subscriptionId, organizationId: org.id },
+      {
+        subscriptionId,
+        ...(org ? { organizationId: org.id } : { customerId }),
+      },
       "Subscription updated successfully"
     );
   } catch (error) {
@@ -914,7 +943,10 @@ export async function handleTrialWillEnd(subscription: Subscription) {
     }
 
     // Resolve org from Stripe customer, then find owner for email
-    const org = await resolveOrgFromStripeCustomerId(customerId);
+    const org = await prisma.organization.findUnique({
+      where: { stripeCustomerId: customerId },
+      select: { id: true, name: true },
+    });
     if (!org) {
       logger.warn(
         { customerId, subscriptionId },
@@ -932,7 +964,6 @@ export async function handleTrialWillEnd(subscription: Subscription) {
             email: true,
             firstName: true,
             lastName: true,
-            workspace: true,
           },
         },
       },
@@ -951,11 +982,11 @@ export async function handleTrialWillEnd(subscription: Subscription) {
       where: { stripeSubscriptionId: subscriptionId },
     });
 
-    if (user.workspace && dbSubscription) {
+    if (dbSubscription) {
       await EmailService.sendTrialEndingEmail({
         to: user.email,
         name: getUserDisplayName(user),
-        workspaceName: user.workspace.name,
+        workspaceName: org.name,
         plan: dbSubscription.plan,
         trialEndDate: subscription.trial_end
           ? new Date(subscription.trial_end * 1000).toISOString()
@@ -970,10 +1001,9 @@ export async function handleTrialWillEnd(subscription: Subscription) {
         {
           subscriptionId,
           organizationId: org.id,
-          hasWorkspace: !!user.workspace,
-          hasDbSubscription: !!dbSubscription,
+          hasDbSubscription: false,
         },
-        "Trial ending email skipped — missing workspace or subscription"
+        "Trial ending email skipped — subscription not found"
       );
     }
   } catch (error) {

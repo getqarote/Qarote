@@ -74,7 +74,7 @@ export const managementRouter = router({
       const workspaces = await Promise.all(
         allUserWorkspaces.map(async (workspace) => {
           const userRole =
-            (await getUserWorkspaceRole(user.id, workspace.id)) ||
+            (await getUserWorkspaceRole(user.id, workspace.id, ctx.prisma)) ||
             UserRole.MEMBER;
           const isOwner = workspace.ownerId === user.id;
 
@@ -104,15 +104,12 @@ export const managementRouter = router({
     const user = ctx.user;
 
     try {
-      // Resolve organization deterministically via active workspace
-      let organizationId: string | null = null;
-      if (user.workspaceId) {
-        const workspace = await ctx.prisma.workspace.findUnique({
-          where: { id: user.workspaceId },
-          select: { organizationId: true },
-        });
-        organizationId = workspace?.organizationId ?? null;
-      }
+      // Resolve organization from the user's org membership
+      const orgMembership = await ctx.prisma.organizationMember.findFirst({
+        where: { userId: user.id },
+        select: { organizationId: true },
+      });
+      const organizationId = orgMembership?.organizationId ?? null;
 
       let currentPlan: UserPlan = UserPlan.FREE;
       let workspaceCount: number;
@@ -168,61 +165,75 @@ export const managementRouter = router({
       const contactEmail = inputContactEmail || user.email;
 
       try {
-        // Resolve organization deterministically via active workspace
-        let membership: { organizationId: string } | null = null;
-        if (user.workspaceId) {
-          const ws = await ctx.prisma.workspace.findUnique({
-            where: { id: user.workspaceId },
-            select: { organizationId: true },
+        // Resolve organization from the user's org membership
+        let membership = await ctx.prisma.organizationMember.findFirst({
+          where: { userId: user.id },
+          select: { organizationId: true, role: true },
+        });
+
+        // Existing org members must be OWNER or ADMIN to create workspaces
+        if (
+          membership &&
+          membership.role !== OrgRole.OWNER &&
+          membership.role !== OrgRole.ADMIN
+        ) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: te(ctx.locale, "auth.orgAdminRequired"),
           });
-          if (ws) {
-            membership = { organizationId: ws.organizationId };
-          }
         }
 
         // Auto-create an organization for the user if they don't have one.
         // Use a transaction with a re-check to prevent concurrent requests
         // from creating duplicate organizations for the same user.
         if (!membership) {
+          // Deterministic slug ensures the unique constraint on Organization.slug
+          // prevents duplicate orgs from concurrent requests for the same user.
+          const orgSlug = `user-${user.id}`;
+          const orgName = user.firstName
+            ? `${user.firstName}'s Organization`
+            : "My Organization";
+
           try {
-            const org = await ctx.prisma.$transaction(async (tx) => {
-              // Re-check inside transaction: another request may have created one
-              const existingMembership = await tx.organizationMember.findFirst({
-                where: { userId: user.id, role: OrgRole.OWNER },
-                select: { organizationId: true },
-              });
-              if (existingMembership) return existingMembership;
-
-              const orgSlug = `user-${user.id.slice(0, 8)}-${Date.now()}`;
-              const orgName = user.firstName
-                ? `${user.firstName}'s Organization`
-                : "My Organization";
-
-              const created = await tx.organization.create({
-                data: {
-                  name: orgName,
-                  slug: orgSlug,
-                  contactEmail: user.email,
-                  members: {
-                    create: {
-                      userId: user.id,
-                      role: OrgRole.OWNER,
-                    },
+            const created = await ctx.prisma.organization.create({
+              data: {
+                name: orgName,
+                slug: orgSlug,
+                contactEmail: user.email,
+                members: {
+                  create: {
+                    userId: user.id,
+                    role: OrgRole.OWNER,
                   },
                 },
-              });
-              return { organizationId: created.id };
+              },
             });
-            membership = { organizationId: org.organizationId };
+            membership = { organizationId: created.id, role: OrgRole.OWNER };
           } catch (orgError) {
-            ctx.logger.error(
-              { error: orgError, userId: user.id },
-              "Failed to auto-create organization for user"
-            );
-            throw new TRPCError({
-              code: "INTERNAL_SERVER_ERROR",
-              message: te(ctx.locale, "workspace.failedToCreate"),
-            });
+            // P2002: unique constraint on slug — concurrent request already created the org
+            if ((orgError as { code?: string }).code === "P2002") {
+              const existing = await ctx.prisma.organizationMember.findFirst({
+                where: { userId: user.id },
+                select: { organizationId: true, role: true },
+              });
+              if (existing) {
+                membership = existing;
+              } else {
+                throw new TRPCError({
+                  code: "INTERNAL_SERVER_ERROR",
+                  message: te(ctx.locale, "workspace.failedToCreate"),
+                });
+              }
+            } else {
+              ctx.logger.error(
+                { error: orgError, userId: user.id },
+                "Failed to auto-create organization for user"
+              );
+              throw new TRPCError({
+                code: "INTERNAL_SERVER_ERROR",
+                message: te(ctx.locale, "workspace.failedToCreate"),
+              });
+            }
           }
         }
 
@@ -332,7 +343,11 @@ export const managementRouter = router({
 
       try {
         // Check if user has ADMIN role in this workspace
-        const role = await getUserWorkspaceRole(user.id, workspaceId);
+        const role = await getUserWorkspaceRole(
+          user.id,
+          workspaceId,
+          ctx.prisma
+        );
         if (role !== UserRole.ADMIN) {
           throw new TRPCError({
             code: "NOT_FOUND",
@@ -422,7 +437,11 @@ export const managementRouter = router({
 
       try {
         // Check if user has ADMIN role in this workspace
-        const role = await getUserWorkspaceRole(user.id, workspaceId);
+        const role = await getUserWorkspaceRole(
+          user.id,
+          workspaceId,
+          ctx.prisma
+        );
         if (role !== UserRole.ADMIN) {
           throw new TRPCError({
             code: "NOT_FOUND",
