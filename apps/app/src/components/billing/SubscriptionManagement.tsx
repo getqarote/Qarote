@@ -96,7 +96,7 @@ export const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({
                   disabled={isLoading}
                 >
                   <RefreshCw className="w-4 h-4 mr-2" />
-                  Renew {lastPlan} Plan
+                  {t("subscriptionManagement.renewPlan", { plan: lastPlan })}
                 </Button>
               ) : currentPlan !== UserPlan.FREE ? (
                 <>
@@ -110,7 +110,7 @@ export const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({
                           disabled={isLoading}
                         >
                           <RefreshCw className="w-4 h-4 mr-2" />
-                          Reactivate
+                          {t("subscriptionManagement.reactivate")}
                         </Button>
                       )}
                       <Badge
@@ -118,13 +118,14 @@ export const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({
                         className="border-orange-300 text-orange-600 bg-orange-50 dark:border-orange-700 dark:text-orange-400 dark:bg-orange-950/50 py-1.5 px-3"
                       >
                         <Clock className="w-3 h-3 mr-1.5" />
-                        Ends{" "}
                         {periodEnd
-                          ? new Date(periodEnd).toLocaleDateString("en-US", {
-                              month: "short",
-                              day: "numeric",
+                          ? t("subscriptionManagement.endsOn", {
+                              date: new Date(periodEnd).toLocaleDateString(
+                                undefined,
+                                { month: "short", day: "numeric" }
+                              ),
                             })
-                          : "soon"}
+                          : t("subscriptionManagement.endsSoon")}
                       </Badge>
                     </div>
                   ) : (
@@ -136,7 +137,7 @@ export const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({
                       disabled={isLoading}
                     >
                       <X className="w-4 h-4 mr-2" />
-                      Cancel Subscription
+                      {t("subscriptionManagement.cancelSubscription")}
                     </Button>
                   )}
                 </>
@@ -155,11 +156,12 @@ export const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({
                   </div>
                   <div>
                     <h4 className="font-semibold text-sm">
-                      Ready to come back?
+                      {t("subscriptionManagement.readyToComeBack")}
                     </h4>
                     <p className="text-sm text-muted-foreground mt-0.5">
-                      Your {lastPlan} plan was canceled, but you can restart it
-                      anytime with all the same features.
+                      {t("subscriptionManagement.renewDescription", {
+                        plan: lastPlan,
+                      })}
                     </p>
                   </div>
                 </div>

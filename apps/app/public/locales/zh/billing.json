@@ -132,7 +132,14 @@
   },
   "subscriptionManagement": {
     "title": "订阅管理",
-    "description": "管理您所有工作区的方案、计费周期和订阅设置"
+    "description": "管理您所有工作区的方案、计费周期和订阅设置",
+    "renewPlan": "续订 {{plan}} 方案",
+    "reactivate": "重新激活",
+    "cancelSubscription": "取消订阅",
+    "endsSoon": "即将到期",
+    "endsOn": "{{date}} 到期",
+    "readyToComeBack": "准备回来了吗？",
+    "renewDescription": "您的 {{plan}} 方案已取消，但您可以随时以相同功能重新启动。"
   },
   "error": {
     "workspaceIdRequired": "需要工作区 ID",

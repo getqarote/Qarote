@@ -132,7 +132,14 @@
   },
   "subscriptionManagement": {
     "title": "Gestión de suscripción",
-    "description": "Gestiona tu plan, ciclo de facturación y configuración de suscripción para todos tus espacios de trabajo"
+    "description": "Gestiona tu plan, ciclo de facturación y configuración de suscripción para todos tus espacios de trabajo",
+    "renewPlan": "Renovar plan {{plan}}",
+    "reactivate": "Reactivar",
+    "cancelSubscription": "Cancelar suscripción",
+    "endsSoon": "Termina pronto",
+    "endsOn": "Termina el {{date}}",
+    "readyToComeBack": "¿Listo para volver?",
+    "renewDescription": "Tu plan {{plan}} fue cancelado, pero puedes reiniciarlo en cualquier momento con las mismas funcionalidades."
   },
   "error": {
     "workspaceIdRequired": "Se requiere el ID del espacio de trabajo",

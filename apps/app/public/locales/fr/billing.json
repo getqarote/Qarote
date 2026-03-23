@@ -132,7 +132,14 @@
   },
   "subscriptionManagement": {
     "title": "Gestion de l'abonnement",
-    "description": "Gérez votre forfait, cycle de facturation et paramètres d'abonnement pour tous vos espaces de travail"
+    "description": "Gérez votre forfait, cycle de facturation et paramètres d'abonnement pour tous vos espaces de travail",
+    "renewPlan": "Renouveler le forfait {{plan}}",
+    "reactivate": "Réactiver",
+    "cancelSubscription": "Annuler l'abonnement",
+    "endsSoon": "Se termine bientôt",
+    "endsOn": "Se termine le {{date}}",
+    "readyToComeBack": "Prêt à revenir ?",
+    "renewDescription": "Votre forfait {{plan}} a été annulé, mais vous pouvez le relancer à tout moment avec les mêmes fonctionnalités."
   },
   "error": {
     "workspaceIdRequired": "L'identifiant de l'espace de travail est requis",

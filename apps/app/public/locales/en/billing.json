@@ -132,7 +132,14 @@
   },
   "subscriptionManagement": {
     "title": "Subscription Management",
-    "description": "Manage your plan, billing cycle, and subscription settings for all your workspaces"
+    "description": "Manage your plan, billing cycle, and subscription settings for all your workspaces",
+    "renewPlan": "Renew {{plan}} Plan",
+    "reactivate": "Reactivate",
+    "cancelSubscription": "Cancel Subscription",
+    "endsSoon": "Ends soon",
+    "endsOn": "Ends {{date}}",
+    "readyToComeBack": "Ready to come back?",
+    "renewDescription": "Your {{plan}} plan was canceled, but you can restart it anytime with all the same features."
   },
   "error": {
     "workspaceIdRequired": "Workspace ID is required",
