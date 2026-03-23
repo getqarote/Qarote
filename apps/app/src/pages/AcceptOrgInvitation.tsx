@@ -284,6 +284,7 @@ const AcceptOrgInvitation = () => {
   // Handle acceptance for authenticated users
   const handleAuthAccept = () => {
     if (!token) return;
+    setMutationError(null);
 
     acceptAuthOrgInvitationMutation.mutate(
       { token },
@@ -309,6 +310,7 @@ const AcceptOrgInvitation = () => {
   // Handle acceptance for new users (registration flow)
   const onSubmit = (data: AcceptInvitationFormData) => {
     if (!token) return;
+    setMutationError(null);
 
     acceptOrgInvitationMutation.mutate(
       {
