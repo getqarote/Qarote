@@ -140,9 +140,8 @@ function makeCtx(overrides: Record<string, unknown> = {}) {
 
 /** Set up requireOrgAdmin to succeed by default (OWNER). */
 function setupOrgAdmin(organizationId = "org-1", role = "OWNER") {
-  // requireOrgAdmin resolves org via workspace.findUnique, then checks membership via findUnique
-  mockWorkspaceFindUnique.mockResolvedValue({ organizationId });
-  mockOrgMemberFindUnique.mockResolvedValue({ organizationId, role });
+  // requireOrgAdmin resolves org via organizationMember.findFirst
+  mockOrgMemberFindFirst.mockResolvedValue({ organizationId, role });
 }
 
 // ─── Tests ────────────────────────────────────────────────────────────────────
@@ -513,12 +512,13 @@ describe("membersRouter", () => {
 
   describe("removeFromWorkspace", () => {
     it("removes workspace member and clears active workspace", async () => {
-      setupOrgAdmin();
-      // Mock target user as org member (findFirst used to verify target)
-      mockOrgMemberFindFirst.mockResolvedValue({
-        userId: "user-2",
-        organizationId: "org-1",
-      });
+      // First call: requireOrgAdmin, second call: verify target is org member
+      mockOrgMemberFindFirst
+        .mockResolvedValueOnce({ organizationId: "org-1", role: "OWNER" })
+        .mockResolvedValueOnce({
+          userId: "user-2",
+          organizationId: "org-1",
+        });
       mockWorkspaceFindFirst.mockResolvedValue({
         id: "ws-1",
         organizationId: "org-1",
@@ -544,7 +544,13 @@ describe("membersRouter", () => {
     });
 
     it("throws NOT_FOUND when workspace is not in org", async () => {
-      setupOrgAdmin();
+      // First call: requireOrgAdmin, second call: verify target is org member
+      mockOrgMemberFindFirst
+        .mockResolvedValueOnce({ organizationId: "org-1", role: "OWNER" })
+        .mockResolvedValueOnce({
+          userId: "user-2",
+          organizationId: "org-1",
+        });
       mockWorkspaceFindFirst.mockResolvedValue(null);
 
       const ctx = makeCtx();

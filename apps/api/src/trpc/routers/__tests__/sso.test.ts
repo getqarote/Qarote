@@ -245,9 +245,8 @@ describe("ssoRouter", () => {
 
     it("cloud: looks up by org membership", async () => {
       mockIsCloudMode = true;
-      // resolveOrgAdmin now uses workspace.findUnique + organizationMember.findUnique
-      mockWorkspaceFindUnique.mockResolvedValue({ organizationId: "org-1" });
-      mockOrganizationMemberFindUnique.mockResolvedValue({
+      // resolveOrgAdmin uses organizationMember.findFirst to resolve org + role
+      mockOrganizationMemberFindFirst.mockResolvedValue({
         organizationId: "org-1",
         role: "OWNER",
       });
@@ -260,20 +259,10 @@ describe("ssoRouter", () => {
       const caller = ssoRouter.createCaller(makeCtx() as never);
       const result = await caller.getProviderConfig();
 
-      // Assert the full lookup chain was invoked correctly
-      expect(mockWorkspaceFindUnique).toHaveBeenCalledWith(
+      // Assert the membership lookup was invoked
+      expect(mockOrganizationMemberFindFirst).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: { id: "ws-1" },
-        })
-      );
-      expect(mockOrganizationMemberFindUnique).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: {
-            userId_organizationId: {
-              userId: "admin-1",
-              organizationId: "org-1",
-            },
-          },
+          where: { userId: "admin-1" },
         })
       );
       expect(mockOrgSsoConfigFindFirst).toHaveBeenCalledWith(
