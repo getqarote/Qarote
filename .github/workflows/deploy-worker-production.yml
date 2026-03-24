@@ -74,7 +74,7 @@ jobs:
           echo "✓ Dokku SSH key is present"
 
       - name: 🔑 Setup SSH
-        uses: webfactory/ssh-agent@v0.9.1
+        uses: webfactory/ssh-agent@v0.10.0
         with:
           ssh-private-key: ${{ secrets.DOKKU_SSH_PRIVATE_KEY }}
 
@@ -151,7 +151,7 @@ jobs:
           echo "✓ Dokku SSH key is present"
 
       - name: 🔑 Setup SSH
-        uses: webfactory/ssh-agent@v0.9.1
+        uses: webfactory/ssh-agent@v0.10.0
         with:
           ssh-private-key: ${{ secrets.DOKKU_SSH_PRIVATE_KEY }}
 
