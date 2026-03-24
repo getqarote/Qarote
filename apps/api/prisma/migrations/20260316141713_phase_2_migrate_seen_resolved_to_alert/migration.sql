@@ -184,7 +184,7 @@ SELECT
   sa."firstSeenAt",
   sa."lastSeenAt",
   sa."resolvedAt",
-  EXTRACT(EPOCH FROM (sa."resolvedAt" - COALESCE(sa."firstSeenAt", sa."createdAt")))::integer * 1000,
+  LEAST(EXTRACT(EPOCH FROM (sa."resolvedAt" - COALESCE(sa."firstSeenAt", sa."createdAt"))) * 1000, 2147483647)::integer,
   sa."emailSentAt",
   sa."createdAt",
   sa."updatedAt"
