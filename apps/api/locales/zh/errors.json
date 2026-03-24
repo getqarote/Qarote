@@ -171,6 +171,7 @@
     "failedToCreateUser": "创建用户失败",
     "failedToUpdateUser": "更新用户失败",
     "failedToDeleteUser": "删除用户失败",
+    "cannotModifyConnectionUser": "无法修改或删除连接用户。这是 Qarote 用于连接此 RabbitMQ 服务器的账户。",
     "failedToSetPermissions": "设置权限失败",
     "failedToDeletePermissions": "删除权限失败",
     "failedToFetchVhosts": "获取虚拟主机列表失败",

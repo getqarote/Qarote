@@ -1,5 +1,7 @@
 import { TRPCError } from "@trpc/server";
 
+import { EncryptionService } from "@/services/encryption.service";
+
 import {
   CreateUserSchema,
   ServerWorkspaceInputSchema,
@@ -12,7 +14,11 @@ import { UserMapper } from "@/mappers/rabbitmq";
 
 import { authorize, router } from "@/trpc/trpc";
 
-import { createRabbitMQClient, verifyServerAccess } from "./shared";
+import {
+  createRabbitMQClient,
+  createRabbitMQClientFromServer,
+  verifyServerAccess,
+} from "./shared";
 
 import { UserRole } from "@/generated/prisma/client";
 import { te } from "@/i18n";
@@ -170,7 +176,18 @@ export const usersRouter = router({
           });
         }
 
-        const client = await createRabbitMQClient(serverId, workspaceId);
+        // Prevent modifying the connection user (the user Qarote uses to connect)
+        const connectionUsername = EncryptionService.decrypt(
+          verifiedServer.username
+        );
+        if (username === connectionUsername) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: te(ctx.locale, "rabbitmq.cannotModifyConnectionUser"),
+          });
+        }
+
+        const client = createRabbitMQClientFromServer(verifiedServer);
 
         const payload: {
           tags?: string;
@@ -209,9 +226,15 @@ export const usersRouter = router({
           throw error;
         }
         ctx.logger.error({ error }, "Error updating user:");
+        const reason =
+          error instanceof Error && typeof error.cause === "string"
+            ? error.cause
+            : undefined;
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: te(ctx.locale, "rabbitmq.failedToUpdateUser"),
+          message: reason
+            ? `${te(ctx.locale, "rabbitmq.failedToUpdateUser")}: ${reason}`
+            : te(ctx.locale, "rabbitmq.failedToUpdateUser"),
         });
       }
     }),
@@ -234,7 +257,18 @@ export const usersRouter = router({
           });
         }
 
-        const client = await createRabbitMQClient(serverId, workspaceId);
+        // Prevent deleting the connection user (the user Qarote uses to connect)
+        const connectionUsername = EncryptionService.decrypt(
+          verifiedServer.username
+        );
+        if (username === connectionUsername) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: te(ctx.locale, "rabbitmq.cannotModifyConnectionUser"),
+          });
+        }
+
+        const client = createRabbitMQClientFromServer(verifiedServer);
         await client.deleteUser(username);
 
         ctx.logger.info(
