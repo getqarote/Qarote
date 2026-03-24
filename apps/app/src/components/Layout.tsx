@@ -1,6 +1,5 @@
 import { ReactNode } from "react";
 
-import { AppFooter } from "./AppFooter";
 import { AppHeader } from "./AppHeader";
 
 interface LayoutProps {
@@ -15,9 +14,6 @@ export function Layout({ children }: LayoutProps) {
 
       {/* Main content */}
       <div className="flex-1">{children}</div>
-
-      {/* Footer - positioned to account for sidebar */}
-      <AppFooter className="ml-0 md:ml-64 transition-[margin] duration-200 ease-linear" />
     </div>
   );
 }

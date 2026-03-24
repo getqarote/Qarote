@@ -4,7 +4,6 @@ import { Outlet } from "react-router";
 
 import { Settings as SettingsIcon } from "lucide-react";
 
-import { AppFooter } from "@/components/AppFooter";
 import { AppSidebar } from "@/components/AppSidebar";
 import { SettingsSidebar } from "@/components/settings/SettingsSidebar";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
@@ -49,7 +48,6 @@ const Settings = () => {
               </div>
             </div>
           </main>
-          <AppFooter />
         </div>
       </div>
     </SidebarProvider>
