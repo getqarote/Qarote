@@ -179,8 +179,8 @@ jobs:
 
       - name: 📈 Scale processes (disable web, enable workers)
         run: |
-          echo "Scaling processes: web=0, worker=1, license-worker=1, release-notifier=1..."
-          ssh dokku@${{ vars.DOKKU_HOST }} ps:scale ${{ env.APP_NAME }} web=0 worker=1 license-worker=1 release-notifier=1
+          echo "Scaling processes: web=0, worker=1, license_worker=1, release_notifier=1..."
+          ssh dokku@${{ vars.DOKKU_HOST }} ps:scale ${{ env.APP_NAME }} web=0 worker=1 license_worker=1 release_notifier=1
 
       - name: 🔍 Verify worker is running
         run: |
