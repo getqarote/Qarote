@@ -111,7 +111,7 @@ jobs:
             FRONTEND_URL=${{ vars.FRONTEND_URL }} \
             PORTAL_FRONTEND_URL=${{ vars.PORTAL_FRONTEND_URL }} \
             RESEND_API_KEY=${{ secrets.RESEND_API_KEY }} \
-            FROM_EMAIL=${{ vars.FROM_EMAIL }} \
+            FROM_EMAIL="${{ vars.FROM_EMAIL }}" \
             STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY }} \
             STRIPE_WEBHOOK_SECRET=${{ secrets.STRIPE_WEBHOOK_SECRET }} \
             STRIPE_DEVELOPER_MONTHLY_PRICE_ID=${{ vars.STRIPE_DEVELOPER_MONTHLY_PRICE_ID }} \
