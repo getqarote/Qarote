@@ -135,7 +135,6 @@ jobs:
             FRONTEND_URL=${{ vars.FRONTEND_URL }} \
             PORTAL_FRONTEND_URL=${{ vars.PORTAL_FRONTEND_URL }} \
             RESEND_API_KEY=${{ secrets.RESEND_API_KEY }} \
-            FROM_EMAIL="${{ vars.FROM_EMAIL }}" \
             STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY }} \
             STRIPE_WEBHOOK_SECRET=${{ secrets.STRIPE_WEBHOOK_SECRET }} \
             STRIPE_DEVELOPER_MONTHLY_PRICE_ID=${{ vars.STRIPE_DEVELOPER_MONTHLY_PRICE_ID }} \
@@ -152,6 +151,7 @@ jobs:
             ENABLE_NOTION=${{ vars.ENABLE_NOTION }} \
             API_URL=${{ vars.API_URL }} \
             DATABASE_POOL_SIZE=${{ vars.DATABASE_POOL_SIZE }}
+          ssh dokku@${{ vars.DOKKU_HOST_APP1 }} config:set --no-restart ${{ env.APP_NAME }} 'FROM_EMAIL=${{ vars.FROM_EMAIL }}'
 
       - name: 🔍 Debug Dokku Environment
         run: |
