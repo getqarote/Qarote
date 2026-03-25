@@ -20,6 +20,8 @@ import {
   MessageSquare,
 } from "lucide-react";
 
+import { isCloudMode } from "@/lib/featureFlags";
+
 import { AppSidebar } from "@/components/AppSidebar";
 import { DiscordLink } from "@/components/DiscordLink";
 import { Button } from "@/components/ui/button";
@@ -167,34 +169,36 @@ function HelpSupport() {
                   </CardContent>
                 </Card>
 
-                {/* Live Chat */}
-                <Card className="border-0 shadow-md bg-card">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <MessageCircle className="w-5 h-5" />
-                      {t("chat.title")}
-                    </CardTitle>
-                    <CardDescription>{t("chat.description")}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <Button
-                      onClick={() => {
-                        if (window.Tawk_API?.maximize) {
-                          window.Tawk_API.maximize();
-                        } else {
-                          toast({
-                            title: t("chat.unavailable"),
-                            variant: "destructive",
-                          });
-                        }
-                      }}
-                      className="w-full bg-gradient-button hover:bg-gradient-button-hover text-white"
-                    >
-                      <MessageCircle className="w-4 h-4 mr-2" />
-                      {t("chat.startChat")}
-                    </Button>
-                  </CardContent>
-                </Card>
+                {/* Live Chat - only shown in cloud mode where Tawk.to widget is mounted */}
+                {isCloudMode() && (
+                  <Card className="border-0 shadow-md bg-card">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <MessageCircle className="w-5 h-5" />
+                        {t("chat.title")}
+                      </CardTitle>
+                      <CardDescription>{t("chat.description")}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Button
+                        onClick={() => {
+                          if (window.Tawk_API?.maximize) {
+                            window.Tawk_API.maximize();
+                          } else {
+                            toast({
+                              title: t("chat.unavailable"),
+                              variant: "destructive",
+                            });
+                          }
+                        }}
+                        className="w-full bg-gradient-button hover:bg-gradient-button-hover text-white"
+                      >
+                        <MessageCircle className="w-4 h-4 mr-2" />
+                        {t("chat.startChat")}
+                      </Button>
+                    </CardContent>
+                  </Card>
+                )}
 
                 {/* Community Support */}
                 <Card className="border-0 shadow-md bg-card">
