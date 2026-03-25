@@ -359,7 +359,7 @@ export function AppSidebar() {
           to="/help"
           className={`flex items-center gap-2 text-sm rounded-md px-2 py-1.5 transition-colors ${
             location.pathname === "/help"
-              ? "bg-primary text-primary-foreground font-medium"
+              ? "bg-linear-to-r from-orange-600 to-red-600 text-white font-medium"
               : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent"
           }`}
         >
@@ -370,8 +370,17 @@ export function AppSidebar() {
         {/* User section */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-sm">
-            <User className="w-4 h-4 text-sidebar-foreground/70" />
-            <div className="flex flex-col">
+            {user?.image ? (
+              <img
+                src={user.image}
+                alt=""
+                className="w-6 h-6 rounded-full object-cover shrink-0"
+                referrerPolicy="no-referrer"
+              />
+            ) : (
+              <User className="w-4 h-4 text-sidebar-foreground/70 shrink-0" />
+            )}
+            <div className="flex flex-col min-w-0">
               <span className="font-medium text-sidebar-foreground">
                 {user?.firstName} {user?.lastName}
               </span>

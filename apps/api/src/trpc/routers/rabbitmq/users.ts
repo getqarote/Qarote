@@ -14,11 +14,7 @@ import { UserMapper } from "@/mappers/rabbitmq";
 
 import { authorize, router } from "@/trpc/trpc";
 
-import {
-  createRabbitMQClient,
-  createRabbitMQClientFromServer,
-  verifyServerAccess,
-} from "./shared";
+import { createRabbitMQClientFromServer, verifyServerAccess } from "./shared";
 
 import { UserRole } from "@/generated/prisma/client";
 import { te } from "@/i18n";
@@ -46,7 +42,7 @@ export const usersRouter = router({
           });
         }
 
-        const client = await createRabbitMQClient(serverId, workspaceId);
+        const client = createRabbitMQClientFromServer(verifiedServer);
         const users = await client.getUsers();
 
         // Map users to API response format (only include fields used by web)
@@ -83,7 +79,7 @@ export const usersRouter = router({
           });
         }
 
-        const client = await createRabbitMQClient(serverId, workspaceId);
+        const client = createRabbitMQClientFromServer(verifiedServer);
         const userDetails = await client.getUser(username);
         const permissions = await client.getUserPermissions(username);
 
@@ -124,7 +120,7 @@ export const usersRouter = router({
           });
         }
 
-        const client = await createRabbitMQClient(serverId, workspaceId);
+        const client = createRabbitMQClientFromServer(verifiedServer);
         await client.createUser(username, {
           password,
           tags,
@@ -311,7 +307,7 @@ export const usersRouter = router({
           });
         }
 
-        const client = await createRabbitMQClient(serverId, workspaceId);
+        const client = createRabbitMQClientFromServer(verifiedServer);
         await client.setUserPermissions(vhost, username, {
           user: username,
           configure,
@@ -358,7 +354,7 @@ export const usersRouter = router({
           });
         }
 
-        const client = await createRabbitMQClient(serverId, workspaceId);
+        const client = createRabbitMQClientFromServer(verifiedServer);
         await client.deleteUserPermissions(vhost, username);
 
         ctx.logger.info(

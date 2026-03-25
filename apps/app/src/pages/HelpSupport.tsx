@@ -1,17 +1,26 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router";
+
+interface TawkAPI {
+  maximize: () => void;
+}
+
+declare global {
+  interface Window {
+    Tawk_API?: TawkAPI;
+  }
+}
 
 import {
-  Book,
   ChevronDown,
   ChevronRight,
   Copy,
-  ExternalLink,
   Mail,
+  MessageCircle,
   MessageSquare,
-  Zap,
 } from "lucide-react";
+
+import { isCloudMode } from "@/lib/featureFlags";
 
 import { AppSidebar } from "@/components/AppSidebar";
 import { DiscordLink } from "@/components/DiscordLink";
@@ -28,7 +37,6 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { PlanBadge } from "@/components/ui/PlanBadge";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
@@ -39,7 +47,7 @@ function HelpSupport() {
   const { t } = useTranslation("help");
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const { toast } = useToast();
-  const { user: _user } = useAuth();
+  const { user } = useAuth();
 
   const faqs = [
     {
@@ -47,44 +55,40 @@ function HelpSupport() {
       answer: t("faqs.connectServer.answer"),
     },
     {
-      question: t("faqs.cantSeeQueues.question"),
-      answer: t("faqs.cantSeeQueues.answer"),
+      question: t("faqs.credentialsSecurity.question"),
+      answer: t("faqs.credentialsSecurity.answer"),
     },
     {
-      question: t("faqs.dataStorage.question"),
-      answer: t("faqs.dataStorage.answer"),
+      question: t("faqs.readOnly.question"),
+      answer: t("faqs.readOnly.answer"),
+    },
+    {
+      question: t("faqs.compatibility.question"),
+      answer: t("faqs.compatibility.answer"),
+    },
+    {
+      question: t("faqs.multipleServers.question"),
+      answer: t("faqs.multipleServers.answer"),
+    },
+    {
+      question: t("faqs.refreshRate.question"),
+      answer: t("faqs.refreshRate.answer"),
+    },
+    {
+      question: t("faqs.availability.question"),
+      answer: t("faqs.availability.answer"),
     },
     {
       question: t("faqs.setupAlerts.question"),
       answer: t("faqs.setupAlerts.answer"),
     },
     {
-      question: t("faqs.managePermissions.question"),
-      answer: t("faqs.managePermissions.answer"),
-    },
-  ];
-
-  const quickLinks = [
-    {
-      title: t("quickLinks.dashboard.title"),
-      description: t("quickLinks.dashboard.description"),
-      icon: Zap,
-      link: "/",
-      external: false,
+      question: t("faqs.teamMembers.question"),
+      answer: t("faqs.teamMembers.answer"),
     },
     {
-      title: t("quickLinks.queueManagement.title"),
-      description: t("quickLinks.queueManagement.description"),
-      icon: MessageSquare,
-      link: "/queues",
-      external: false,
-    },
-    {
-      title: t("quickLinks.rabbitMQDocs.title"),
-      description: t("quickLinks.rabbitMQDocs.description"),
-      icon: Book,
-      link: "https://www.rabbitmq.com/documentation.html",
-      external: true,
+      question: t("faqs.plans.question"),
+      answer: t("faqs.plans.answer"),
     },
   ];
 
@@ -104,18 +108,6 @@ function HelpSupport() {
     }
   };
 
-  const handleEmailClick = (e: React.MouseEvent) => {
-    // For better UX, we'll always try mailto first
-    // but provide a fallback copy option
-    try {
-      // The browser will handle this - no need to intercept
-      // Just let the normal mailto: behavior work
-    } catch {
-      e.preventDefault();
-      handleEmailCopy();
-    }
-  };
-
   return (
     <SidebarProvider>
       <div className="page-layout">
@@ -131,71 +123,11 @@ function HelpSupport() {
                   <p className="text-muted-foreground">{t("subtitle")}</p>
                 </div>
               </div>
-              <PlanBadge />
             </div>
 
             <div className="grid lg:grid-cols-5 gap-6">
-              {/* Quick Help Links */}
+              {/* Support Options */}
               <div className="lg:col-span-2 space-y-6">
-                <div>
-                  <h2 className="text-xl font-semibold mb-4 text-foreground">
-                    {t("quickLinksTitle")}
-                  </h2>
-                  <div className="grid gap-3">
-                    {quickLinks.map((link, index) => {
-                      const Icon = link.icon;
-
-                      return (
-                        <div key={index}>
-                          {link.external ? (
-                            <a
-                              href={link.link}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="block"
-                            >
-                              <Card className="border-0 shadow-md bg-card hover:shadow-lg transition-shadow cursor-pointer">
-                                <CardContent className="p-4">
-                                  <div className="flex items-start gap-3">
-                                    <Icon className="w-5 h-5 text-blue-600 mt-0.5" />
-                                    <div className="flex-1">
-                                      <h3 className="font-medium">
-                                        {link.title}
-                                      </h3>
-                                      <p className="text-sm text-muted-foreground mt-1">
-                                        {link.description}
-                                      </p>
-                                    </div>
-                                    <ExternalLink className="w-4 h-4 text-muted-foreground" />
-                                  </div>
-                                </CardContent>
-                              </Card>
-                            </a>
-                          ) : (
-                            <Link to={link.link} className="block">
-                              <Card className="border-0 shadow-md bg-card hover:shadow-lg transition-shadow cursor-pointer">
-                                <CardContent className="p-4">
-                                  <div className="flex items-start gap-3">
-                                    <Icon className="w-5 h-5 text-blue-600 mt-0.5" />
-                                    <div className="flex-1">
-                                      <h3 className="font-medium">
-                                        {link.title}
-                                      </h3>
-                                      <p className="text-sm text-muted-foreground mt-1">
-                                        {link.description}
-                                      </p>
-                                    </div>
-                                  </div>
-                                </CardContent>
-                              </Card>
-                            </Link>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
                 {/* Contact */}
                 <Card className="border-0 shadow-md bg-card">
                   <CardHeader>
@@ -216,7 +148,6 @@ function HelpSupport() {
                         <a
                           href="mailto:support@qarote.io?subject=Qarote Support Request"
                           className="text-sm text-blue-600 hover:text-blue-700"
-                          onClick={handleEmailClick}
                         >
                           support@qarote.io
                         </a>
@@ -238,6 +169,37 @@ function HelpSupport() {
                   </CardContent>
                 </Card>
 
+                {/* Live Chat - only shown in cloud mode where Tawk.to widget is mounted */}
+                {isCloudMode() && (
+                  <Card className="border-0 shadow-md bg-card">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <MessageCircle className="w-5 h-5" />
+                        {t("chat.title")}
+                      </CardTitle>
+                      <CardDescription>{t("chat.description")}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Button
+                        onClick={() => {
+                          if (window.Tawk_API?.maximize) {
+                            window.Tawk_API.maximize();
+                          } else {
+                            toast({
+                              title: t("chat.unavailable"),
+                              variant: "destructive",
+                            });
+                          }
+                        }}
+                        className="w-full bg-gradient-button hover:bg-gradient-button-hover text-white"
+                      >
+                        <MessageCircle className="w-4 h-4 mr-2" />
+                        {t("chat.startChat")}
+                      </Button>
+                    </CardContent>
+                  </Card>
+                )}
+
                 {/* Community Support */}
                 <Card className="border-0 shadow-md bg-card">
                   <CardHeader>
@@ -250,7 +212,7 @@ function HelpSupport() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <DiscordLink userId={_user?.id} userEmail={_user?.email} />
+                    <DiscordLink userId={user?.id} userEmail={user?.email} />
                   </CardContent>
                 </Card>
               </div>

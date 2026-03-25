@@ -21,7 +21,6 @@ import { ResourceUsage } from "@/components/ResourceUsage";
 import { SecondaryMetricsCards } from "@/components/SecondaryMetricsCards";
 import { TimeRange } from "@/components/TimeRangeSelector";
 import { Card, CardContent } from "@/components/ui/card";
-import { PlanBadge } from "@/components/ui/PlanBadge";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
@@ -96,7 +95,6 @@ const Index = () => {
                     <p className="text-gray-500">{t("selectServerPrompt")}</p>
                   </div>
                 </div>
-                <PlanBadge />
               </div>
               <Card className="border-0 shadow-md bg-card">
                 <CardContent className="p-6">
@@ -132,7 +130,6 @@ const Index = () => {
                   <h1 className="title-page">{t("pageTitle")}</h1>
                 </div>
                 <div className="flex items-center gap-3">
-                  <PlanBadge />
                   {user?.role === UserRole.ADMIN && <AddServerButton />}
                 </div>
               </div>

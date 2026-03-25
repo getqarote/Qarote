@@ -16,9 +16,14 @@ import {
 import { UserRole } from "@/lib/api";
 import { isCloudMode } from "@/lib/featureFlags";
 
+import { Badge } from "@/components/ui/badge";
+
 import { useAuth } from "@/contexts/AuthContextDefinition";
 
 import { useIsMobile } from "@/hooks/ui/useMobile";
+import { useUser } from "@/hooks/ui/useUser";
+
+import { UserPlan } from "@/types/plans";
 
 interface NavItem {
   key: string;
@@ -28,6 +33,7 @@ interface NavItem {
   adminOnly?: boolean;
   selfHostedOnly?: boolean;
   cloudOnly?: boolean;
+  enterpriseOnly?: boolean;
 }
 
 interface NavGroup {
@@ -99,6 +105,7 @@ const navGroups: NavGroup[] = [
         icon: Shield,
         labelKey: "settings:nav.sso",
         adminOnly: true,
+        enterpriseOnly: true,
       },
       {
         key: "license",
@@ -138,7 +145,9 @@ export const SettingsSidebar = () => {
   const location = useLocation();
   const { user } = useAuth();
   const isMobile = useIsMobile();
+  const { userPlan } = useUser();
   const isAdmin = user?.role === UserRole.ADMIN;
+  const isEnterprise = userPlan === UserPlan.ENTERPRISE;
   const cloudMode = isCloudMode();
 
   const filterItem = (item: NavItem) => {
@@ -176,6 +185,18 @@ export const SettingsSidebar = () => {
             >
               <item.icon className="h-3.5 w-3.5" />
               {t(item.labelKey)}
+              {item.enterpriseOnly && !isEnterprise && (
+                <Badge
+                  variant="outline"
+                  className={`text-[10px] px-1.5 py-0 font-medium ${
+                    isActive
+                      ? "border-white/40 text-white/90"
+                      : "border-purple-300 text-purple-600 dark:border-purple-500 dark:text-purple-400"
+                  }`}
+                >
+                  {t("settings:nav.enterprise")}
+                </Badge>
+              )}
             </Link>
           );
         })}
@@ -210,7 +231,19 @@ export const SettingsSidebar = () => {
                       }`}
                     >
                       <item.icon className="h-4 w-4" />
-                      {t(item.labelKey)}
+                      <span className="flex-1">{t(item.labelKey)}</span>
+                      {item.enterpriseOnly && !isEnterprise && (
+                        <Badge
+                          variant="outline"
+                          className={`text-[10px] px-1.5 py-0 font-medium ${
+                            isActive
+                              ? "border-white/40 text-white/90"
+                              : "border-purple-300 text-purple-600 dark:border-purple-500 dark:text-purple-400"
+                          }`}
+                        >
+                          {t("settings:nav.enterprise")}
+                        </Badge>
+                      )}
                     </Link>
                   </li>
                 );

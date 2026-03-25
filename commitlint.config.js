@@ -29,8 +29,8 @@ module.exports = {
     "type-empty": [2, "never"],
     // Scope must be lowercase
     "scope-case": [2, "always", "lower-case"],
-    // Subject must be lowercase (conventional commits standard)
-    "subject-case": [2, "always", "lower-case"],
+    // Allow any case in subject
+    "subject-case": [0],
     // Header must not exceed 100 characters
     "header-max-length": [2, "always", 100],
     // Body must have a blank line before it

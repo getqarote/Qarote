@@ -4,7 +4,6 @@ import { AppSidebar } from "@/components/AppSidebar";
 import { EnhancedNodesOverview } from "@/components/nodes/EnhancedNodesOverview";
 import { EnhancedNodesTable } from "@/components/nodes/EnhancedNodesTable";
 import { NoServerConfigured } from "@/components/NoServerConfigured";
-import { PlanBadge } from "@/components/ui/PlanBadge";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 
 import { useServerContext } from "@/contexts/ServerContext";
@@ -88,7 +87,6 @@ const Nodes = () => {
                   <p className="text-gray-500">{t("pageSubtitle")}</p>
                 </div>
               </div>
-              <PlanBadge />
             </div>
 
             {/* Cluster Overview */}

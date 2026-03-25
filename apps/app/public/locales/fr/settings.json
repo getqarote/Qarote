@@ -15,7 +15,19 @@
     "sso": "SSO",
     "license": "Licence",
     "smtp": "E-mail",
-    "feedback": "Commentaires"
+    "feedback": "Commentaires",
+    "enterprise": "Enterprise"
+  },
+  "sso": {
+    "upgradeTitle": "Fonctionnalité Enterprise",
+    "upgradeDescription": "Le SSO avec OIDC et SAML 2.0 est disponible avec le plan Enterprise.",
+    "upgradeRequirement": "Plan Enterprise requis",
+    "upgradeCloudHint": "Mettez à niveau votre plan pour configurer l'authentification unique pour votre organisation.",
+    "upgradeSelfHostedHint": "Activez une licence Enterprise pour configurer l'authentification unique pour votre organisation.",
+    "viewPlans": "Voir les plans",
+    "contactSales": "Contacter les ventes",
+    "activateLicense": "Activer la licence",
+    "purchaseLicense": "Acheter une licence"
   },
   "feedback": {
     "title": "Envoyer un commentaire",

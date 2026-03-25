@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router";
 
 import {
   AlertCircle,
   CheckCircle,
   Copy,
   Loader2,
+  Lock,
   Shield,
   Trash2,
   Wifi,
@@ -54,6 +56,9 @@ import {
   useTestSsoConnection,
   useUpdateSsoProvider,
 } from "@/hooks/queries/useSsoProvider";
+import { useUser } from "@/hooks/ui/useUser";
+
+import { UserPlan } from "@/types/plans";
 
 const REDACTED = "••••••••";
 
@@ -696,17 +701,108 @@ function SetupForm({ onRefetch }: { onRefetch: () => void }) {
 
 // ─── SSOSection (main export) ─────────────────────────────────────────────────
 
+function SSOUpgradePrompt() {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const cloud = isCloudMode();
+
+  return (
+    <div className="flex items-center justify-center py-12">
+      <Card className="w-full max-w-md border-2">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Lock className="h-5 w-5 text-muted-foreground" />
+            <CardTitle>{t("settings:sso.upgradeTitle")}</CardTitle>
+          </div>
+          <CardDescription>
+            {t("settings:sso.upgradeDescription")}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-start gap-3 rounded-lg border bg-muted/50 p-4">
+            <AlertCircle className="h-5 w-5 text-muted-foreground mt-0.5" />
+            <div className="space-y-1">
+              <p className="text-sm font-medium">
+                {t("settings:sso.upgradeRequirement")}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                {cloud
+                  ? t("settings:sso.upgradeCloudHint")
+                  : t("settings:sso.upgradeSelfHostedHint")}
+              </p>
+            </div>
+          </div>
+        </CardContent>
+        <CardFooter className="flex gap-2">
+          {cloud ? (
+            <>
+              <Button
+                className="flex-1 bg-gradient-button hover:bg-gradient-button-hover text-white"
+                onClick={() => navigate("/plans")}
+              >
+                {t("settings:sso.viewPlans")}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() =>
+                  window.open(
+                    "https://qarote.io/contact",
+                    "_blank",
+                    "noopener,noreferrer"
+                  )
+                }
+              >
+                {t("settings:sso.contactSales")}
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                className="flex-1 bg-gradient-button hover:bg-gradient-button-hover text-white"
+                onClick={() => navigate("/settings/license")}
+              >
+                {t("settings:sso.activateLicense")}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() =>
+                  window.open(
+                    `${import.meta.env.VITE_PORTAL_URL}/purchase`,
+                    "_blank",
+                    "noopener,noreferrer"
+                  )
+                }
+              >
+                {t("settings:sso.purchaseLicense")}
+              </Button>
+            </>
+          )}
+        </CardFooter>
+      </Card>
+    </div>
+  );
+}
+
 const SSOSection = () => {
   const { user } = useAuth();
+  const { userPlan } = useUser();
+
+  const isEnterprise = userPlan === UserPlan.ENTERPRISE;
 
   const {
     data: providerConfig,
     isLoading,
     refetch,
-  } = useSsoProviderConfig({ enabled: user?.role === UserRole.ADMIN });
+  } = useSsoProviderConfig({
+    enabled: user?.role === UserRole.ADMIN && isEnterprise,
+  });
 
   if (user?.role !== UserRole.ADMIN) {
     return null;
+  }
+
+  if (!isEnterprise) {
+    return <SSOUpgradePrompt />;
   }
 
   if (isLoading) {

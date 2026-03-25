@@ -76,6 +76,13 @@
     "description": "Configure email and webhook notifications for new alerts. Select which alert severities you want to receive notifications for.",
     "loadingWorkspace": "Loading workspace...",
     "close": "Close",
+    "tabs": {
+      "general": "General",
+      "email": "Email",
+      "browser": "Browser",
+      "webhook": "Webhook",
+      "slack": "Slack"
+    },
     "servers": "Servers",
     "serversDescription": "Select which servers you want to receive notifications for. If none are selected, notifications will be sent for all servers.",
     "searchAndSelect": "Search and select servers...",
@@ -139,6 +146,9 @@
     "httpHeaders": "HTTP Headers",
     "jsonPayload": "JSON Payload",
     "webhookSignatureNote": "<strong>Note:</strong> If you configure a secret, the payload will include an <code>X-Qarote-Signature</code> header with an HMAC-SHA256 signature. You can use this to verify the authenticity of the webhook request.",
+    "webhookSignatureNoteLabel": "Note:",
+    "webhookSignatureNoteText": "If you configure a secret, the payload will include an",
+    "webhookSignatureNoteSuffix": "header with an HMAC-SHA256 signature. You can use this to verify the authenticity of the webhook request.",
     "toastSettingsUpdated": "Settings updated successfully",
     "toastEmailRequired": "Please provide an email address for notifications",
     "toastEmailInvalid": "Please provide a valid email address",
@@ -163,6 +173,8 @@
     "toastSlackCreated": "Slack configuration created successfully",
     "toastSlackCreateFailed": "Failed to create Slack configuration",
     "toastSlackDeleted": "Slack configuration deleted successfully",
-    "toastSlackDeleteFailed": "Failed to delete Slack configuration"
+    "toastSlackDeleteFailed": "Failed to delete Slack configuration",
+    "toastSlackEnabled": "Slack notifications enabled",
+    "toastSlackDisabled": "Slack notifications disabled"
   }
 }

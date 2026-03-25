@@ -171,6 +171,9 @@
     "seeAllOptions": "查看所有可用选项",
     "compare": "比较",
     "license": "许可证",
-    "manageLicense": "激活或管理您的许可证"
+    "manageLicense": "激活或管理您的许可证",
+    "preferSelfHost": "更喜欢自托管？",
+    "preferSelfHostDesc": "使用许可证密钥在您自己的基础设施上部署 Qarote。",
+    "learnMore": "了解更多"
   }
 }

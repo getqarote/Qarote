@@ -25,7 +25,6 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { PlanBadge } from "@/components/ui/PlanBadge";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 
 import { useServerContext } from "@/contexts/ServerContext";
@@ -186,7 +185,6 @@ const Connections = () => {
                   <p className="text-muted-foreground">{t("pageSubtitle")}</p>
                 </div>
               </div>
-              <PlanBadge />
             </div>
 
             {/* Overview Cards */}

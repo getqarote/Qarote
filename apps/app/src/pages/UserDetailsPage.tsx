@@ -754,9 +754,7 @@ export default function UserDetailsPage() {
                   <Button
                     variant="destructive"
                     onClick={() => setShowDeleteModal(true)}
-                    disabled={
-                      decodedUsername === "admin" || isConnectionUser
-                    }
+                    disabled={decodedUsername === "admin" || isConnectionUser}
                     title={
                       isConnectionUser
                         ? t("cannotModifyConnectionUser")

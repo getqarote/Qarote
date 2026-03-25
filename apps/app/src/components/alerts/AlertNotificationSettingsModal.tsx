@@ -1,43 +1,20 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import {
   Bell,
-  BellOff,
-  Eye,
-  EyeOff,
   Loader2,
   Mail,
   MessageSquare,
-  Plus,
-  Search,
-  Trash2,
+  Settings,
   Webhook,
-  X,
 } from "lucide-react";
 import { toast } from "sonner";
 
 import { ApiError } from "@/lib/api/types";
 import { logger } from "@/lib/logger";
 
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
 import {
   Dialog,
   DialogContent,
@@ -45,14 +22,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
 
@@ -71,9 +41,27 @@ import {
 import { useServers } from "@/hooks/queries/useServer";
 import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
+import { BrowserTab } from "./notification-settings/BrowserTab";
+import { EmailTab } from "./notification-settings/EmailTab";
+import { GeneralTab } from "./notification-settings/GeneralTab";
+import { SlackTab } from "./notification-settings/SlackTab";
+import { WebhookExampleModal } from "./notification-settings/WebhookExampleModal";
+import { WebhookTab } from "./notification-settings/WebhookTab";
+
 interface AlertNotificationSettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
+}
+
+function StatusDot({ enabled }: { enabled: boolean }) {
+  return (
+    <span
+      aria-hidden="true"
+      className={`h-2 w-2 rounded-full shrink-0 ${
+        enabled ? "bg-green-500" : "bg-muted-foreground/30"
+      }`}
+    />
+  );
 }
 
 export function AlertNotificationSettingsModal({
@@ -102,8 +90,7 @@ export function AlertNotificationSettingsModal({
     NotificationPermission | "unsupported"
   >("Notification" in window ? Notification.permission : "unsupported");
 
-  // Resync permission state on each open so changes made in browser settings
-  // between opens are reflected immediately.
+  // Resync permission state on each open
   useEffect(() => {
     if (isOpen) {
       setNotificationPermission(
@@ -150,13 +137,13 @@ export function AlertNotificationSettingsModal({
   // Selected servers count
   const selectedCount = notificationServerIds?.length || 0;
 
-  // Webhook hooks (must be called before any early returns)
+  // Webhook hooks
   const { data: webhooks = [] } = useWebhooks(isOpen);
   const createWebhookMutation = useCreateWebhook();
   const updateWebhookMutation = useUpdateWebhook();
   const deleteWebhookMutation = useDeleteWebhook();
 
-  // Slack hooks (must be called before any early returns)
+  // Slack hooks
   const { data: slackConfigs = [] } = useSlackConfigs(isOpen);
   const createSlackConfigMutation = useCreateSlackConfig();
   const updateSlackConfigMutation = useUpdateSlackConfig();
@@ -198,8 +185,6 @@ export function AlertNotificationSettingsModal({
       setNotificationServerIds(
         settingsData.settings.notificationServerIds || null
       );
-      // Mark initial load as complete after settings are loaded
-      // Use a small delay to ensure state updates are complete
       const timeoutId = setTimeout(() => {
         isInitialMount.current = false;
       }, 200);
@@ -207,7 +192,7 @@ export function AlertNotificationSettingsModal({
     }
   }, [settingsData, workspace?.contactEmail]);
 
-  // Update webhook fields from first webhook (if exists)
+  // Update webhook fields from first webhook
   useEffect(() => {
     const firstWebhook = webhooks[0];
     if (firstWebhook) {
@@ -221,7 +206,7 @@ export function AlertNotificationSettingsModal({
     }
   }, [webhooks]);
 
-  // Update Slack fields from first Slack config (if exists)
+  // Update Slack fields from first Slack config
   useEffect(() => {
     const firstSlack = slackConfigs[0];
     if (firstSlack) {
@@ -233,7 +218,7 @@ export function AlertNotificationSettingsModal({
     }
   }, [slackConfigs]);
 
-  // Show loading state only if workspace is loading (settings will use placeholder data for instant display)
+  // Show loading state only if workspace is loading
   const isLoading = isWorkspaceLoading || !workspace?.id;
 
   // Mutation for updating settings
@@ -248,10 +233,8 @@ export function AlertNotificationSettingsModal({
   const [slackEnabled, setSlackEnabled] = useState(true);
 
   const [showWebhookExample, setShowWebhookExample] = useState(false);
-  const [webhookExampleVersion, setWebhookExampleVersion] = useState("v1");
 
-  // Auto-save function for email notifications and severities
-  // Use refs to access latest values without causing re-renders
+  // Auto-save refs
   const emailNotificationsEnabledRef = useRef(emailNotificationsEnabled);
   const contactEmailRef = useRef(contactEmail);
   const notificationSeveritiesRef = useRef(notificationSeverities);
@@ -260,7 +243,7 @@ export function AlertNotificationSettingsModal({
     browserNotificationSeverities
   );
 
-  // Keep refs in sync with state
+  // Keep refs in sync
   useEffect(() => {
     emailNotificationsEnabledRef.current = emailNotificationsEnabled;
   }, [emailNotificationsEnabled]);
@@ -296,26 +279,21 @@ export function AlertNotificationSettingsModal({
       const currentBrowserEnabled = browserNotificationsEnabledRef.current;
       const currentBrowserSeverities = browserNotificationSeveritiesRef.current;
 
-      // Validate email if notifications are enabled AND we're not only changing browser notifications
       if (!skipValidation && currentEnabled && !onlyBrowserNotifications) {
         if (!currentEmail.trim()) {
           toast.error(t("modal.toastEmailRequired"));
           return;
         }
-
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(currentEmail)) {
           toast.error(t("modal.toastEmailInvalid"));
           return;
         }
-
-        // Validate at least one severity is selected
         if (currentSeverities.length === 0) {
           toast.error(t("modal.toastSelectSeverity"));
           return;
         }
       }
 
-      // Validate browser notification severities
       if (!skipValidation && currentBrowserEnabled && !onlyEmailNotifications) {
         if (currentBrowserSeverities.length === 0) {
           toast.error(t("modal.toastSelectBrowserSeverity"));
@@ -323,7 +301,6 @@ export function AlertNotificationSettingsModal({
         }
       }
 
-      // Build the update payload - only include fields that are being changed
       const updatePayload: {
         emailNotificationsEnabled?: boolean;
         contactEmail?: string | null;
@@ -334,13 +311,11 @@ export function AlertNotificationSettingsModal({
       } = {};
 
       if (onlyBrowserNotifications) {
-        // Only update browser notification settings
         updatePayload.browserNotificationsEnabled = currentBrowserEnabled;
         updatePayload.browserNotificationSeverities = currentBrowserEnabled
           ? currentBrowserSeverities
           : undefined;
       } else if (onlyEmailNotifications) {
-        // Only update email notification settings
         updatePayload.emailNotificationsEnabled = currentEnabled;
         updatePayload.contactEmail = currentEnabled ? currentEmail : null;
         updatePayload.notificationSeverities = currentEnabled
@@ -348,7 +323,6 @@ export function AlertNotificationSettingsModal({
           : undefined;
         updatePayload.notificationServerIds = notificationServerIds;
       } else {
-        // Update all settings
         updatePayload.emailNotificationsEnabled = currentEnabled;
         updatePayload.contactEmail = currentEnabled ? currentEmail : null;
         updatePayload.notificationSeverities = currentEnabled
@@ -379,47 +353,49 @@ export function AlertNotificationSettingsModal({
   // Auto-save when email notifications toggle changes
   useEffect(() => {
     if (isInitialMount.current) return;
-
     const timeoutId = setTimeout(() => {
       autoSaveSettings({
-        skipValidation: !emailNotificationsEnabled, // Skip validation when toggling off
-        onlyEmailNotifications: true, // Only update email notification settings
+        skipValidation: !emailNotificationsEnabled,
+        onlyEmailNotifications: true,
       });
     }, 100);
-
     return () => clearTimeout(timeoutId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [emailNotificationsEnabled]);
 
-  // Email input changes - no auto-save, only save on button click
-
   // Auto-save when severities change
   useEffect(() => {
     if (isInitialMount.current) return;
-
     const timeoutId = setTimeout(() => {
       if (emailNotificationsEnabled) {
-        autoSaveSettings({
-          onlyEmailNotifications: true, // Only update email notification settings
-        });
+        autoSaveSettings({ onlyEmailNotifications: true });
       }
     }, 100);
-
     return () => clearTimeout(timeoutId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [notificationSeverities]);
 
+  // Auto-save when notification server IDs change
+  useEffect(() => {
+    if (isInitialMount.current) return;
+    const timeoutId = setTimeout(() => {
+      if (emailNotificationsEnabled) {
+        autoSaveSettings({ onlyEmailNotifications: true });
+      }
+    }, 100);
+    return () => clearTimeout(timeoutId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [notificationServerIds]);
+
   // Auto-save when browser notifications toggle changes
   useEffect(() => {
     if (isInitialMount.current) return;
-
     const timeoutId = setTimeout(() => {
       autoSaveSettings({
-        skipValidation: !browserNotificationsEnabled, // Skip validation when toggling off
-        onlyBrowserNotifications: true, // Only update browser notification settings
+        skipValidation: !browserNotificationsEnabled,
+        onlyBrowserNotifications: true,
       });
     }, 100);
-
     return () => clearTimeout(timeoutId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [browserNotificationsEnabled]);
@@ -427,21 +403,15 @@ export function AlertNotificationSettingsModal({
   // Auto-save when browser notification severities change
   useEffect(() => {
     if (isInitialMount.current) return;
-
     const timeoutId = setTimeout(() => {
       if (browserNotificationsEnabled) {
-        autoSaveSettings({
-          onlyBrowserNotifications: true, // Only update browser notification settings
-        });
+        autoSaveSettings({ onlyBrowserNotifications: true });
       }
     }, 100);
-
     return () => clearTimeout(timeoutId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [browserNotificationSeverities]);
 
-  // Show modal immediately, but show loading state only if workspace is loading
-  // Settings will use placeholder data for instant display
   if (isLoading) {
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
@@ -459,14 +429,14 @@ export function AlertNotificationSettingsModal({
   }
 
   const firstWebhook = webhooks[0];
+  const firstSlack = slackConfigs[0];
 
+  // --- Webhook handlers ---
   const handleSaveWebhook = () => {
     if (!webhookUrl.trim()) {
       toast.error(t("modal.toastWebhookUrlRequired"));
       return;
     }
-
-    // Validate URL format
     let urlObj: URL;
     try {
       urlObj = new URL(webhookUrl.trim());
@@ -474,15 +444,11 @@ export function AlertNotificationSettingsModal({
       toast.error(t("modal.toastWebhookUrlInvalid"));
       return;
     }
-
-    // Prevent Slack webhook URLs in general webhook section
     if (urlObj.hostname === "hooks.slack.com") {
       toast.error(t("modal.toastWebhookSlackError"));
       return;
     }
-
     if (firstWebhook) {
-      // Update existing webhook
       updateWebhookMutation.mutate(
         {
           id: firstWebhook.id,
@@ -491,16 +457,12 @@ export function AlertNotificationSettingsModal({
           secret: webhookSecret.trim() || null,
         },
         {
-          onSuccess: () => {
-            toast.success(t("modal.toastWebhookUpdated"));
-          },
-          onError: (error: ApiError) => {
-            toast.error(error.message || t("modal.toastWebhookUpdateFailed"));
-          },
+          onSuccess: () => toast.success(t("modal.toastWebhookUpdated")),
+          onError: (error: ApiError) =>
+            toast.error(error.message || t("modal.toastWebhookUpdateFailed")),
         }
       );
     } else {
-      // Create new webhook
       createWebhookMutation.mutate(
         {
           url: webhookUrl.trim(),
@@ -508,12 +470,9 @@ export function AlertNotificationSettingsModal({
           secret: webhookSecret.trim() || null,
         },
         {
-          onSuccess: () => {
-            toast.success(t("modal.toastWebhookCreated"));
-          },
-          onError: (error: ApiError) => {
-            toast.error(error.message || t("modal.toastWebhookCreateFailed"));
-          },
+          onSuccess: () => toast.success(t("modal.toastWebhookCreated")),
+          onError: (error: ApiError) =>
+            toast.error(error.message || t("modal.toastWebhookCreateFailed")),
         }
       );
     }
@@ -528,21 +487,37 @@ export function AlertNotificationSettingsModal({
         setWebhookSecret("");
         setWebhookEnabled(true);
       },
-      onError: (error: ApiError) => {
-        toast.error(error.message || t("modal.toastWebhookDeleteFailed"));
-      },
+      onError: (error: ApiError) =>
+        toast.error(error.message || t("modal.toastWebhookDeleteFailed")),
     });
   };
 
-  const firstSlack = slackConfigs[0];
+  const handleToggleWebhook = (enabled: boolean) => {
+    setWebhookEnabled(enabled);
+    if (!firstWebhook) return;
+    updateWebhookMutation.mutate(
+      { id: firstWebhook.id, enabled },
+      {
+        onSuccess: () =>
+          toast.success(
+            enabled
+              ? t("modal.toastWebhookEnabled")
+              : t("modal.toastWebhookDisabled")
+          ),
+        onError: (error: ApiError) => {
+          toast.error(error.message || t("modal.toastWebhookUpdateFailed"));
+          setWebhookEnabled(!enabled);
+        },
+      }
+    );
+  };
 
+  // --- Slack handlers ---
   const handleSaveSlack = () => {
     if (!slackWebhookUrl.trim()) {
       toast.error(t("modal.toastSlackUrlRequired"));
       return;
     }
-
-    // Validate URL format
     let urlObj: URL;
     try {
       urlObj = new URL(slackWebhookUrl.trim());
@@ -550,8 +525,6 @@ export function AlertNotificationSettingsModal({
       toast.error(t("modal.toastWebhookUrlInvalid"));
       return;
     }
-
-    // Validate Slack webhook URL format
     if (
       urlObj.hostname !== "hooks.slack.com" ||
       !urlObj.pathname.startsWith("/services/") ||
@@ -560,9 +533,7 @@ export function AlertNotificationSettingsModal({
       toast.error(t("modal.toastSlackUrlInvalid"));
       return;
     }
-
     if (firstSlack) {
-      // Update existing Slack config
       updateSlackConfigMutation.mutate(
         {
           id: firstSlack.id,
@@ -570,28 +541,18 @@ export function AlertNotificationSettingsModal({
           enabled: slackEnabled,
         },
         {
-          onSuccess: () => {
-            toast.success(t("modal.toastSlackUpdated"));
-          },
-          onError: (error: ApiError) => {
-            toast.error(error.message || t("modal.toastSlackUpdateFailed"));
-          },
+          onSuccess: () => toast.success(t("modal.toastSlackUpdated")),
+          onError: (error: ApiError) =>
+            toast.error(error.message || t("modal.toastSlackUpdateFailed")),
         }
       );
     } else {
-      // Create new Slack config
       createSlackConfigMutation.mutate(
+        { webhookUrl: slackWebhookUrl.trim(), enabled: slackEnabled },
         {
-          webhookUrl: slackWebhookUrl.trim(),
-          enabled: slackEnabled,
-        },
-        {
-          onSuccess: () => {
-            toast.success(t("modal.toastSlackCreated"));
-          },
-          onError: (error: ApiError) => {
-            toast.error(error.message || t("modal.toastSlackCreateFailed"));
-          },
+          onSuccess: () => toast.success(t("modal.toastSlackCreated")),
+          onError: (error: ApiError) =>
+            toast.error(error.message || t("modal.toastSlackCreateFailed")),
         }
       );
     }
@@ -605,1078 +566,206 @@ export function AlertNotificationSettingsModal({
         setSlackWebhookUrl("");
         setSlackEnabled(true);
       },
-      onError: (error: ApiError) => {
-        toast.error(error.message || t("modal.toastSlackDeleteFailed"));
-      },
+      onError: (error: ApiError) =>
+        toast.error(error.message || t("modal.toastSlackDeleteFailed")),
     });
   };
 
   const handleToggleSlack = (enabled: boolean) => {
     setSlackEnabled(enabled);
-    if (!firstSlack) return; // Just update local state if no config exists yet
+    if (!firstSlack) return;
     updateSlackConfigMutation.mutate(
+      { id: firstSlack.id, enabled },
       {
-        id: firstSlack.id,
-        enabled,
-      },
-      {
+        onSuccess: () =>
+          toast.success(
+            enabled
+              ? t("modal.toastSlackEnabled")
+              : t("modal.toastSlackDisabled")
+          ),
         onError: (error: ApiError) => {
           toast.error(error.message || t("modal.toastSlackUpdateFailed"));
-          // Revert state on error
           setSlackEnabled(!enabled);
         },
       }
     );
   };
 
-  const handleToggleWebhook = (enabled: boolean) => {
-    setWebhookEnabled(enabled);
-    if (!firstWebhook) return; // Just update local state if no webhook exists yet
-    updateWebhookMutation.mutate(
-      {
-        id: firstWebhook.id,
-        enabled,
-      },
-      {
-        onSuccess: () => {
-          toast.success(
-            enabled
-              ? t("modal.toastWebhookEnabled")
-              : t("modal.toastWebhookDisabled")
-          );
-        },
-        onError: (error: ApiError) => {
-          toast.error(error.message || t("modal.toastWebhookUpdateFailed"));
-          // Revert state on error
-          setWebhookEnabled(!enabled);
-        },
-      }
-    );
+  const handleSaveEmail = () => {
+    if (contactEmail.trim() && emailNotificationsEnabled) {
+      autoSaveSettings({ onlyEmailNotifications: true });
+    }
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Mail className="h-5 w-5" />
-            {t("modal.title")}
-          </DialogTitle>
-          <DialogDescription>{t("modal.description")}</DialogDescription>
-        </DialogHeader>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden p-0">
+        <div className="p-6 pb-0">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Mail className="h-5 w-5" />
+              {t("modal.title")}
+            </DialogTitle>
+            <DialogDescription>{t("modal.description")}</DialogDescription>
+          </DialogHeader>
+        </div>
 
-        <div className="space-y-6">
-          {/* Server Selection */}
-          {servers.length > 0 && (
-            <div className="space-y-3 p-4 border rounded-lg">
-              <div>
-                <Label className="text-base">{t("modal.servers")}</Label>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {t("modal.serversDescription")}
-                </p>
-              </div>
-
-              {/* Selected Servers as Tags */}
-              {selectedServers.length > 0 && (
-                <div className="flex flex-wrap gap-2 p-3 border rounded-md bg-muted/50">
-                  {selectedServers.map((server) => (
-                    <Badge
-                      key={server.id}
-                      variant="secondary"
-                      className="flex items-center gap-1.5 pr-1"
-                    >
-                      <span className="text-xs">
-                        {server.name} ({server.host}:{server.port})
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const currentIds = notificationServerIds || [];
-                          const newIds = currentIds.filter(
-                            (id) => id !== server.id
-                          );
-                          setNotificationServerIds(
-                            newIds.length > 0 ? newIds : null
-                          );
-                        }}
-                        disabled={updateSettingsMutation.isPending}
-                        className="ml-1 rounded-full hover:bg-destructive hover:text-destructive-foreground transition-colors"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </Badge>
-                  ))}
-                </div>
-              )}
-
-              {/* Search Input with Popover */}
-              <div className="flex items-center gap-2">
-                <Popover
-                  open={serverSearchOpen}
-                  onOpenChange={setServerSearchOpen}
-                >
-                  <PopoverTrigger asChild>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      role="combobox"
-                      aria-controls="server-search-list"
-                      aria-expanded={serverSearchOpen}
-                      className="w-full justify-between"
-                      disabled={updateSettingsMutation.isPending}
-                    >
-                      <div className="flex items-center gap-2">
-                        <Search className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-muted-foreground">
-                          {selectedCount > 0
-                            ? t("modal.serversSelected", {
-                                count: selectedCount,
-                              })
-                            : t("modal.searchAndSelect")}
-                        </span>
-                      </div>
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-[400px] p-0" align="start">
-                    <Command>
-                      <CommandInput
-                        placeholder={t("modal.searchPlaceholder")}
-                        value={serverSearchTerm}
-                        onValueChange={setServerSearchTerm}
-                      />
-                      <CommandList id="server-search-list">
-                        <CommandEmpty>
-                          {serverSearchTerm
-                            ? t("modal.noServersFound", {
-                                term: serverSearchTerm,
-                              })
-                            : t("modal.noServersAvailable")}
-                        </CommandEmpty>
-                        <CommandGroup>
-                          {filteredServers.map((server) => (
-                            <CommandItem
-                              key={server.id}
-                              value={`${server.name} ${server.host} ${server.port}`}
-                              onSelect={() => {
-                                const currentIds = notificationServerIds || [];
-                                const newIds = [...currentIds, server.id];
-                                setNotificationServerIds(newIds);
-                                setServerSearchTerm("");
-                                // Keep popover open for multiple selections
-                              }}
-                            >
-                              <div className="flex flex-col">
-                                <span className="font-medium">
-                                  {server.name}
-                                </span>
-                                <span className="text-xs text-muted-foreground">
-                                  {server.host}:{server.port}
-                                </span>
-                              </div>
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-
-                {selectedCount > 0 && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setNotificationServerIds(null);
-                      setServerSearchOpen(false);
-                    }}
-                    disabled={updateSettingsMutation.isPending}
-                  >
-                    {t("modal.clearAll")}
-                  </Button>
-                )}
-              </div>
-
-              {selectedCount > 0 && (
-                <p className="text-xs text-muted-foreground">
-                  {t("modal.serverSelectionCount", {
-                    selected: selectedCount,
-                    total: servers.length,
-                    count: servers.length,
-                  })}
-                </p>
-              )}
-            </div>
-          )}
-
-          {/* Alert Severity Selection */}
-          <div className="space-y-3 p-4 border rounded-lg">
-            <Label className="text-base">{t("modal.alertSeverities")}</Label>
-            <p className="text-sm text-muted-foreground mb-3">
-              {t("modal.alertSeveritiesDescription")}
-            </p>
-            <div className="space-y-3">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="severity-critical"
-                  checked={notificationSeverities.includes("CRITICAL")}
-                  onCheckedChange={(checked) => {
-                    const newSeverities = checked
-                      ? [...notificationSeverities, "CRITICAL"]
-                      : notificationSeverities.filter((s) => s !== "CRITICAL");
-                    setNotificationSeverities(newSeverities);
-                  }}
-                  disabled={updateSettingsMutation.isPending}
-                  className="data-[state=checked]:bg-gradient-button data-[state=checked]:border-gradient-button"
-                />
-                <Label
-                  htmlFor="severity-critical"
-                  className="flex items-center gap-2 cursor-pointer"
-                >
-                  <span className="text-red-600 font-medium">
-                    {t("modal.severityCritical")}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {t("modal.severityCriticalDesc")}
-                  </span>
-                </Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="severity-high"
-                  checked={notificationSeverities.includes("HIGH")}
-                  onCheckedChange={(checked) => {
-                    const newSeverities = checked
-                      ? [...notificationSeverities, "HIGH"]
-                      : notificationSeverities.filter((s) => s !== "HIGH");
-                    setNotificationSeverities(newSeverities);
-                  }}
-                  disabled={updateSettingsMutation.isPending}
-                  className="data-[state=checked]:bg-gradient-button data-[state=checked]:border-gradient-button"
-                />
-                <Label
-                  htmlFor="severity-high"
-                  className="flex items-center gap-2 cursor-pointer"
-                >
-                  <span className="text-orange-600 font-medium">
-                    {t("modal.severityHigh")}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {t("modal.severityHighDesc")}
-                  </span>
-                </Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="severity-medium"
-                  checked={notificationSeverities.includes("MEDIUM")}
-                  onCheckedChange={(checked) => {
-                    const newSeverities = checked
-                      ? [...notificationSeverities, "MEDIUM"]
-                      : notificationSeverities.filter((s) => s !== "MEDIUM");
-                    setNotificationSeverities(newSeverities);
-                  }}
-                  disabled={updateSettingsMutation.isPending}
-                  className="data-[state=checked]:bg-gradient-button data-[state=checked]:border-gradient-button"
-                />
-                <Label
-                  htmlFor="severity-medium"
-                  className="flex items-center gap-2 cursor-pointer"
-                >
-                  <span className="text-yellow-600 font-medium">
-                    {t("modal.severityMedium")}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {t("modal.severityMediumDesc")}
-                  </span>
-                </Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="severity-low"
-                  checked={notificationSeverities.includes("LOW")}
-                  onCheckedChange={(checked) => {
-                    const newSeverities = checked
-                      ? [...notificationSeverities, "LOW"]
-                      : notificationSeverities.filter((s) => s !== "LOW");
-                    setNotificationSeverities(newSeverities);
-                  }}
-                  disabled={updateSettingsMutation.isPending}
-                  className="data-[state=checked]:bg-gradient-button data-[state=checked]:border-gradient-button"
-                />
-                <Label
-                  htmlFor="severity-low"
-                  className="flex items-center gap-2 cursor-pointer"
-                >
-                  <span className="text-blue-600 font-medium">
-                    {t("modal.severityLow")}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {t("modal.severityLowDesc")}
-                  </span>
-                </Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="severity-info"
-                  checked={notificationSeverities.includes("INFO")}
-                  onCheckedChange={(checked) => {
-                    const newSeverities = checked
-                      ? [...notificationSeverities, "INFO"]
-                      : notificationSeverities.filter((s) => s !== "INFO");
-                    setNotificationSeverities(newSeverities);
-                  }}
-                  disabled={updateSettingsMutation.isPending}
-                  className="data-[state=checked]:bg-gradient-button data-[state=checked]:border-gradient-button"
-                />
-                <Label
-                  htmlFor="severity-info"
-                  className="flex items-center gap-2 cursor-pointer"
-                >
-                  <span className="text-gray-600 font-medium">
-                    {t("modal.severityInfo")}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {t("modal.severityInfoDesc")}
-                  </span>
-                </Label>
-              </div>
-            </div>
-            {notificationSeverities.length === 0 && (
-              <p className="text-xs text-red-500 mt-2">
-                {t("modal.selectAtLeastOneSeverity")}
-              </p>
-            )}
-          </div>
-
-          {/* Browser Notifications Section */}
-          <div className="space-y-3 p-4 border rounded-lg">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label
-                  htmlFor="browser-notifications"
-                  className="text-base flex items-center gap-2"
-                >
-                  <Bell className="h-4 w-4" />
-                  {t("modal.browserNotifications")}
-                  {notificationPermission === "granted" && (
-                    <Badge
-                      variant="secondary"
-                      className="text-xs font-normal text-green-600"
-                    >
-                      {t("modal.permissionGranted")}
-                    </Badge>
-                  )}
-                  {notificationPermission === "denied" && (
-                    <Badge
-                      variant="destructive"
-                      className="text-xs font-normal"
-                    >
-                      {t("modal.permissionDenied")}
-                    </Badge>
-                  )}
-                </Label>
-                <p className="text-sm text-muted-foreground">
-                  {t("modal.browserNotificationsDescription")}
-                </p>
-              </div>
-              <Switch
-                id="browser-notifications"
-                checked={browserNotificationsEnabled}
-                onCheckedChange={(checked) => {
-                  if (!checked) {
-                    setBrowserNotificationsEnabled(false);
-                    return;
-                  }
-                  if (!("Notification" in window)) {
-                    setBrowserNotificationsEnabled(false);
-                    setNotificationPermission("unsupported");
-                    return;
-                  }
-                  if (Notification.permission === "granted") {
-                    setBrowserNotificationsEnabled(true);
-                    return;
-                  }
-                  if (Notification.permission === "denied") {
-                    setBrowserNotificationsEnabled(false);
-                    setNotificationPermission("denied");
-                    return;
-                  }
-                  Notification.requestPermission().then((permission) => {
-                    setNotificationPermission(permission);
-                    setBrowserNotificationsEnabled(permission === "granted");
-                  });
-                }}
-                disabled={updateSettingsMutation.isPending}
-                className="data-[state=checked]:bg-gradient-button"
-              />
-            </div>
-
-            {"Notification" in window &&
-              browserNotificationsEnabled &&
-              notificationPermission === "denied" && (
-                <Alert className="mt-4" variant="destructive">
-                  <BellOff className="h-4 w-4" />
-                  <AlertDescription>
-                    {t("modal.browserNotificationsBlocked")}
-                  </AlertDescription>
-                </Alert>
-              )}
-
-            {browserNotificationsEnabled &&
-              notificationPermission === "granted" && (
-                <p className="mt-2 text-xs text-muted-foreground">
-                  {t("modal.browserNotificationsSystemHint")}
-                </p>
-              )}
-
-            {browserNotificationsEnabled && (
-              <div className="mt-4 space-y-3 pt-4 border-t">
-                <Label className="text-sm font-medium">
-                  {t("modal.browserNotificationSeverities")}
-                </Label>
-                <p className="text-xs text-muted-foreground mb-3">
-                  {t("modal.browserNotificationSeveritiesDescription")}
-                </p>
-                <div className="space-y-3">
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="browser-severity-critical"
-                      checked={browserNotificationSeverities.includes(
-                        "CRITICAL"
-                      )}
-                      onCheckedChange={(checked) => {
-                        const newSeverities = checked
-                          ? [...browserNotificationSeverities, "CRITICAL"]
-                          : browserNotificationSeverities.filter(
-                              (s) => s !== "CRITICAL"
-                            );
-                        setBrowserNotificationSeverities(newSeverities);
-                      }}
-                      disabled={updateSettingsMutation.isPending}
-                      className="data-[state=checked]:bg-gradient-button data-[state=checked]:border-gradient-button"
-                    />
-                    <Label
-                      htmlFor="browser-severity-critical"
-                      className="flex items-center gap-2 cursor-pointer"
-                    >
-                      <span className="text-red-600 font-medium">
-                        {t("modal.severityCritical")}
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        {t("modal.severityCriticalDesc")}
-                      </span>
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="browser-severity-high"
-                      checked={browserNotificationSeverities.includes("HIGH")}
-                      onCheckedChange={(checked) => {
-                        const newSeverities = checked
-                          ? [...browserNotificationSeverities, "HIGH"]
-                          : browserNotificationSeverities.filter(
-                              (s) => s !== "HIGH"
-                            );
-                        setBrowserNotificationSeverities(newSeverities);
-                      }}
-                      disabled={updateSettingsMutation.isPending}
-                      className="data-[state=checked]:bg-gradient-button data-[state=checked]:border-gradient-button"
-                    />
-                    <Label
-                      htmlFor="browser-severity-high"
-                      className="flex items-center gap-2 cursor-pointer"
-                    >
-                      <span className="text-orange-600 font-medium">
-                        {t("modal.severityHigh")}
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        {t("modal.severityHighDesc")}
-                      </span>
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="browser-severity-medium"
-                      checked={browserNotificationSeverities.includes("MEDIUM")}
-                      onCheckedChange={(checked) => {
-                        const newSeverities = checked
-                          ? [...browserNotificationSeverities, "MEDIUM"]
-                          : browserNotificationSeverities.filter(
-                              (s) => s !== "MEDIUM"
-                            );
-                        setBrowserNotificationSeverities(newSeverities);
-                      }}
-                      disabled={updateSettingsMutation.isPending}
-                      className="data-[state=checked]:bg-gradient-button data-[state=checked]:border-gradient-button"
-                    />
-                    <Label
-                      htmlFor="browser-severity-medium"
-                      className="flex items-center gap-2 cursor-pointer"
-                    >
-                      <span className="text-yellow-600 font-medium">
-                        {t("modal.severityMedium")}
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        {t("modal.severityMediumDesc")}
-                      </span>
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="browser-severity-low"
-                      checked={browserNotificationSeverities.includes("LOW")}
-                      onCheckedChange={(checked) => {
-                        const newSeverities = checked
-                          ? [...browserNotificationSeverities, "LOW"]
-                          : browserNotificationSeverities.filter(
-                              (s) => s !== "LOW"
-                            );
-                        setBrowserNotificationSeverities(newSeverities);
-                      }}
-                      disabled={updateSettingsMutation.isPending}
-                      className="data-[state=checked]:bg-gradient-button data-[state=checked]:border-gradient-button"
-                    />
-                    <Label
-                      htmlFor="browser-severity-low"
-                      className="flex items-center gap-2 cursor-pointer"
-                    >
-                      <span className="text-blue-600 font-medium">
-                        {t("modal.severityLow")}
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        {t("modal.severityLowDesc")}
-                      </span>
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="browser-severity-info"
-                      checked={browserNotificationSeverities.includes("INFO")}
-                      onCheckedChange={(checked) => {
-                        const newSeverities = checked
-                          ? [...browserNotificationSeverities, "INFO"]
-                          : browserNotificationSeverities.filter(
-                              (s) => s !== "INFO"
-                            );
-                        setBrowserNotificationSeverities(newSeverities);
-                      }}
-                      disabled={updateSettingsMutation.isPending}
-                      className="data-[state=checked]:bg-gradient-button data-[state=checked]:border-gradient-button"
-                    />
-                    <Label
-                      htmlFor="browser-severity-info"
-                      className="flex items-center gap-2 cursor-pointer"
-                    >
-                      <span className="text-gray-600 font-medium">
-                        {t("modal.severityInfo")}
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        {t("modal.severityInfoDesc")}
-                      </span>
-                    </Label>
-                  </div>
-                </div>
-                {browserNotificationSeverities.length === 0 && (
-                  <p className="text-xs text-red-500 mt-2">
-                    {t("modal.selectAtLeastOneBrowserSeverity")}
-                  </p>
-                )}
-              </div>
-            )}
-
-            {!browserNotificationsEnabled && (
-              <Alert className="mt-4">
-                <BellOff className="h-4 w-4" />
-                <AlertDescription>
-                  {t("modal.browserNotificationsDisabled")}
-                </AlertDescription>
-              </Alert>
-            )}
-          </div>
-
-          {/* Divider */}
-          <hr className="border-t border-border" />
-
-          {/* Email Notifications Toggle */}
-          <div className="flex items-center justify-between p-4 border rounded-lg">
-            <div className="space-y-0.5">
-              <Label htmlFor="email-notifications" className="text-base">
-                {t("modal.emailNotifications")}
-              </Label>
-              <p className="text-sm text-muted-foreground">
-                {t("modal.emailNotificationsDescription")}
-              </p>
-            </div>
-            <Switch
-              id="email-notifications"
-              checked={emailNotificationsEnabled}
-              onCheckedChange={setEmailNotificationsEnabled}
-              disabled={updateSettingsMutation.isPending}
-              className="data-[state=checked]:bg-gradient-button"
-            />
-          </div>
-
-          {/* Contact Email Input */}
-          {emailNotificationsEnabled && (
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="contact-email">
-                  {t("modal.notificationEmailAddress")}
-                  <span className="text-red-500 ml-1">*</span>
-                </Label>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    if (contactEmail.trim() && emailNotificationsEnabled) {
-                      autoSaveSettings({
-                        onlyEmailNotifications: true, // Only update email notification settings
-                      });
-                    }
-                  }}
-                  disabled={
-                    updateSettingsMutation.isPending || !contactEmail.trim()
-                  }
-                  className="bg-gradient-button hover:bg-gradient-button-hover text-white hover:text-white"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  {t("modal.update")}
-                </Button>
-              </div>
-              <Input
-                id="contact-email"
-                type="email"
-                placeholder="your-email@example.com"
-                value={contactEmail}
-                onChange={(e) => setContactEmail(e.target.value)}
-                onKeyDown={(e) => {
-                  // Save on Enter key
-                  if (
-                    e.key === "Enter" &&
-                    contactEmail.trim() &&
-                    emailNotificationsEnabled
-                  ) {
-                    e.preventDefault();
-                    autoSaveSettings({
-                      onlyEmailNotifications: true, // Only update email notification settings
-                    });
-                  }
-                }}
-                disabled={updateSettingsMutation.isPending}
-                required={emailNotificationsEnabled}
-              />
-              <p className="text-xs text-muted-foreground">
-                {t("modal.emailHelp")}
-              </p>
-            </div>
-          )}
-
-          {/* Info Alert */}
-          {!emailNotificationsEnabled && (
-            <Alert>
-              <BellOff className="h-4 w-4" />
-              <AlertDescription>
-                {t("modal.emailNotificationsDisabled")}
-              </AlertDescription>
-            </Alert>
-          )}
-
-          {/* Webhooks Section */}
-          <div className="space-y-4 pt-6 border-t">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Webhook className="h-5 w-5" />
-                <Label className="text-base">
-                  {t("modal.webhookNotifications")}
-                </Label>
-              </div>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setShowWebhookExample(true)}
-              >
-                {t("modal.viewExamplePayload")}
-              </Button>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              {t("modal.webhookDescription")}
-            </p>
-
-            <div className="p-4 border rounded-lg space-y-3">
-              <div className="space-y-2">
-                <Label htmlFor="webhook-url">
-                  {t("modal.webhookUrl")}
-                  <span className="text-red-500 ml-1">*</span>
-                </Label>
-                <Input
-                  id="webhook-url"
-                  type="url"
-                  placeholder="https://your-endpoint.com/webhook"
-                  value={webhookUrl}
-                  onChange={(e) => setWebhookUrl(e.target.value)}
-                  disabled={
-                    createWebhookMutation.isPending ||
-                    updateWebhookMutation.isPending
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="webhook-secret">
-                  {t("modal.webhookSecretOptional")}
-                </Label>
-                <div className="relative">
-                  <Input
-                    id="webhook-secret"
-                    type={showSecret ? "text" : "password"}
-                    placeholder={t("modal.webhookSecretPlaceholder")}
-                    value={webhookSecret}
-                    onChange={(e) => setWebhookSecret(e.target.value)}
-                    disabled={
-                      createWebhookMutation.isPending ||
-                      updateWebhookMutation.isPending
-                    }
-                    className="pr-10"
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
-                    onClick={() => setShowSecret(!showSecret)}
-                    disabled={
-                      createWebhookMutation.isPending ||
-                      updateWebhookMutation.isPending
-                    }
-                  >
-                    {showSecret ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
-                  </Button>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  {t("modal.webhookSecretHelp")}
-                </p>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="webhook-enabled"
-                    checked={webhookEnabled}
-                    onCheckedChange={handleToggleWebhook}
-                    disabled={
-                      createWebhookMutation.isPending ||
-                      updateWebhookMutation.isPending
-                    }
-                    className="data-[state=checked]:bg-gradient-button"
-                  />
-                  <Label htmlFor="webhook-enabled">{t("modal.enabled")}</Label>
-                </div>
-                <div className="flex gap-2">
-                  {firstWebhook && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleDeleteWebhook}
-                      disabled={deleteWebhookMutation.isPending}
-                    >
-                      <Trash2 className="h-4 w-4 text-red-600" />
-                    </Button>
-                  )}
-                  <Button
-                    type="button"
-                    size="sm"
-                    onClick={handleSaveWebhook}
-                    disabled={
-                      createWebhookMutation.isPending ||
-                      updateWebhookMutation.isPending ||
-                      !webhookUrl.trim()
-                    }
-                    className="bg-gradient-button hover:bg-gradient-button-hover text-white hover:text-white"
-                  >
-                    {createWebhookMutation.isPending ||
-                    updateWebhookMutation.isPending ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        {firstWebhook
-                          ? t("modal.updating")
-                          : t("modal.creating")}
-                      </>
-                    ) : firstWebhook ? (
-                      t("modal.update")
-                    ) : (
-                      t("modal.save")
-                    )}
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Slack Section */}
-          <div className="space-y-4 pt-6 border-t">
-            <div className="flex items-center gap-2">
-              <MessageSquare className="h-5 w-5" />
-              <Label className="text-base">
-                {t("modal.slackNotifications")}
-              </Label>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              {t("modal.slackDescription")}
-            </p>
-
-            <div className="space-y-4 p-4 border rounded-lg">
-              <div className="space-y-2">
-                <Label htmlFor="slack-webhook-url">
-                  {t("modal.slackWebhookUrl")}
-                  <span className="text-red-500 ml-1">*</span>
-                </Label>
-                <Input
-                  id="slack-webhook-url"
-                  type="url"
-                  placeholder="https://hooks.slack.com/services/..."
-                  value={slackWebhookUrl}
-                  onChange={(e) => setSlackWebhookUrl(e.target.value)}
-                  disabled={
-                    createSlackConfigMutation.isPending ||
-                    updateSlackConfigMutation.isPending
-                  }
-                />
-                <p className="text-xs text-muted-foreground">
-                  {t("modal.slackWebhookHelp")}{" "}
-                  <a
-                    href="https://api.slack.com/messaging/webhooks"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary hover:underline font-medium"
-                  >
-                    {t("modal.slackWebhookLink")}
-                  </a>
-                  .
-                </p>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Switch
-                    checked={slackEnabled}
-                    onCheckedChange={handleToggleSlack}
-                    disabled={
-                      createSlackConfigMutation.isPending ||
-                      updateSlackConfigMutation.isPending
-                    }
-                    className="data-[state=checked]:bg-gradient-button"
-                  />
-                  <Label htmlFor="slack-enabled">{t("modal.enabled")}</Label>
-                </div>
-                <div className="flex gap-2">
-                  {firstSlack && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleDeleteSlack}
-                      disabled={deleteSlackConfigMutation.isPending}
-                    >
-                      <Trash2 className="h-4 w-4 text-red-600" />
-                    </Button>
-                  )}
-                  <Button
-                    type="button"
-                    onClick={handleSaveSlack}
-                    disabled={
-                      createSlackConfigMutation.isPending ||
-                      updateSlackConfigMutation.isPending ||
-                      !slackWebhookUrl.trim()
-                    }
-                    className="bg-gradient-button hover:bg-gradient-button-hover text-white hover:text-white"
-                  >
-                    {createSlackConfigMutation.isPending ||
-                    updateSlackConfigMutation.isPending ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        {firstSlack ? t("modal.updating") : t("modal.creating")}
-                      </>
-                    ) : firstSlack ? (
-                      t("modal.update")
-                    ) : (
-                      t("modal.save")
-                    )}
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Actions */}
-          <div className="flex items-center justify-end gap-2 pt-4 border-t">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-              disabled={updateSettingsMutation.isPending}
+        <Tabs
+          defaultValue="general"
+          orientation="vertical"
+          className="flex flex-1 min-h-0 px-6"
+        >
+          <TabsList className="flex flex-col h-auto bg-transparent gap-1 pr-4 border-r min-w-[160px] rounded-none justify-start py-2">
+            <TabsTrigger
+              value="general"
+              className="w-full justify-start gap-2 px-3 py-2 data-[state=active]:bg-muted rounded-md"
             >
-              {t("modal.close")}
-            </Button>
+              <Settings className="h-4 w-4" />
+              {t("modal.tabs.general")}
+            </TabsTrigger>
+            <TabsTrigger
+              value="email"
+              className="w-full justify-start gap-2 px-3 py-2 data-[state=active]:bg-muted rounded-md"
+            >
+              <Mail className="h-4 w-4" />
+              {t("modal.tabs.email")}
+              <StatusDot enabled={emailNotificationsEnabled} />
+            </TabsTrigger>
+            <TabsTrigger
+              value="browser"
+              className="w-full justify-start gap-2 px-3 py-2 data-[state=active]:bg-muted rounded-md"
+            >
+              <Bell className="h-4 w-4" />
+              {t("modal.tabs.browser")}
+              <StatusDot enabled={browserNotificationsEnabled} />
+            </TabsTrigger>
+            <TabsTrigger
+              value="webhook"
+              className="w-full justify-start gap-2 px-3 py-2 data-[state=active]:bg-muted rounded-md"
+            >
+              <Webhook className="h-4 w-4" />
+              {t("modal.tabs.webhook")}
+              <StatusDot enabled={!!firstWebhook?.enabled} />
+            </TabsTrigger>
+            <TabsTrigger
+              value="slack"
+              className="w-full justify-start gap-2 px-3 py-2 data-[state=active]:bg-muted rounded-md"
+            >
+              <MessageSquare className="h-4 w-4" />
+              {t("modal.tabs.slack")}
+              <StatusDot enabled={!!firstSlack?.enabled} />
+            </TabsTrigger>
+          </TabsList>
+
+          <div className="flex-1 min-h-0 overflow-y-auto pl-6 py-2">
+            <TabsContent value="general" className="mt-0 min-h-[400px]">
+              <GeneralTab
+                servers={servers}
+                notificationServerIds={notificationServerIds}
+                setNotificationServerIds={setNotificationServerIds}
+                selectedServers={selectedServers}
+                filteredServers={filteredServers}
+                selectedCount={selectedCount}
+                serverSearchOpen={serverSearchOpen}
+                setServerSearchOpen={setServerSearchOpen}
+                serverSearchTerm={serverSearchTerm}
+                setServerSearchTerm={setServerSearchTerm}
+                notificationSeverities={notificationSeverities}
+                setNotificationSeverities={setNotificationSeverities}
+                isPending={updateSettingsMutation.isPending}
+                t={t}
+              />
+            </TabsContent>
+
+            <TabsContent value="email" className="mt-0 min-h-[400px]">
+              <EmailTab
+                emailNotificationsEnabled={emailNotificationsEnabled}
+                setEmailNotificationsEnabled={setEmailNotificationsEnabled}
+                contactEmail={contactEmail}
+                setContactEmail={setContactEmail}
+                onSaveEmail={handleSaveEmail}
+                isPending={updateSettingsMutation.isPending}
+                t={t}
+              />
+            </TabsContent>
+
+            <TabsContent value="browser" className="mt-0 min-h-[400px]">
+              <BrowserTab
+                browserNotificationsEnabled={browserNotificationsEnabled}
+                setBrowserNotificationsEnabled={setBrowserNotificationsEnabled}
+                browserNotificationSeverities={browserNotificationSeverities}
+                setBrowserNotificationSeverities={
+                  setBrowserNotificationSeverities
+                }
+                notificationPermission={notificationPermission}
+                setNotificationPermission={setNotificationPermission}
+                isPending={updateSettingsMutation.isPending}
+                t={t}
+              />
+            </TabsContent>
+
+            <TabsContent value="webhook" className="mt-0 min-h-[400px]">
+              <WebhookTab
+                webhookUrl={webhookUrl}
+                setWebhookUrl={setWebhookUrl}
+                webhookSecret={webhookSecret}
+                setWebhookSecret={setWebhookSecret}
+                webhookEnabled={webhookEnabled}
+                showSecret={showSecret}
+                setShowSecret={setShowSecret}
+                onToggleWebhook={handleToggleWebhook}
+                onSaveWebhook={handleSaveWebhook}
+                onDeleteWebhook={handleDeleteWebhook}
+                onShowExample={() => setShowWebhookExample(true)}
+                hasExistingWebhook={!!firstWebhook}
+                isSaving={
+                  createWebhookMutation.isPending ||
+                  updateWebhookMutation.isPending
+                }
+                isDeleting={deleteWebhookMutation.isPending}
+                t={t}
+              />
+            </TabsContent>
+
+            <TabsContent value="slack" className="mt-0 min-h-[400px]">
+              <SlackTab
+                slackWebhookUrl={slackWebhookUrl}
+                setSlackWebhookUrl={setSlackWebhookUrl}
+                slackEnabled={slackEnabled}
+                onToggleSlack={handleToggleSlack}
+                onSaveSlack={handleSaveSlack}
+                onDeleteSlack={handleDeleteSlack}
+                hasExistingSlack={!!firstSlack}
+                isSaving={
+                  createSlackConfigMutation.isPending ||
+                  updateSlackConfigMutation.isPending
+                }
+                isDeleting={deleteSlackConfigMutation.isPending}
+                t={t}
+              />
+            </TabsContent>
           </div>
+        </Tabs>
+
+        {/* Footer */}
+        <div className="flex items-center justify-end gap-2 p-6 pt-4 border-t">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onClose}
+            disabled={updateSettingsMutation.isPending}
+          >
+            {t("modal.close")}
+          </Button>
         </div>
       </DialogContent>
 
       {/* Webhook Example Payload Modal */}
-      <Dialog open={showWebhookExample} onOpenChange={setShowWebhookExample}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{t("modal.webhookPayloadExample")}</DialogTitle>
-            <DialogDescription>
-              {t("modal.webhookPayloadExampleDescription")}
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <Label
-                htmlFor="webhook-version"
-                className="text-sm font-semibold"
-              >
-                {t("modal.version")}
-              </Label>
-              <select
-                id="webhook-version"
-                value={webhookExampleVersion}
-                onChange={(e) => setWebhookExampleVersion(e.target.value)}
-                className="px-3 py-1.5 text-sm border rounded-md bg-background"
-              >
-                <option value="v1">v1</option>
-              </select>
-              <span className="text-xs text-muted-foreground">
-                {t("modal.onlyV1Available")}
-              </span>
-            </div>
-
-            <div className="space-y-2">
-              <Label className="text-sm font-semibold">
-                {t("modal.httpHeaders")}
-              </Label>
-              <div className="p-4 bg-muted rounded-lg">
-                <pre className="text-xs overflow-x-auto">
-                  {`Content-Type: application/json
-User-Agent: Qarote-Webhook/1.0
-X-Qarote-Event: alert.notification
-X-Qarote-Version: ${webhookExampleVersion}
-X-Qarote-Timestamp: 2024-01-15T10:30:00.000Z
-X-Qarote-Signature: sha256=abc123... (if secret is configured)`}
-                </pre>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label className="text-sm font-semibold">
-                {t("modal.jsonPayload")}
-              </Label>
-              <div className="p-4 bg-muted rounded-lg">
-                <pre className="text-xs overflow-x-auto">
-                  {JSON.stringify(
-                    {
-                      version: webhookExampleVersion,
-                      event: "alert.notification",
-                      timestamp: "2024-01-15T10:30:00.000Z",
-                      workspace: {
-                        id: "workspace-123",
-                        name: "My Workspace",
-                      },
-                      server: {
-                        id: "server-456",
-                        name: "Production RabbitMQ",
-                      },
-                      alerts: [
-                        {
-                          id: "alert-789",
-                          serverId: "server-456",
-                          serverName: "Production RabbitMQ",
-                          severity: "CRITICAL",
-                          category: "memory",
-                          title: "High Memory Usage",
-                          description:
-                            "Memory usage has exceeded the threshold of 80%",
-                          details: {
-                            current: "85%",
-                            threshold: 80,
-                            recommended:
-                              "Consider adding more memory or reducing queue sizes",
-                            affected: ["node1", "node2"],
-                          },
-                          timestamp: "2024-01-15T10:30:00.000Z",
-                          resolved: false,
-                          source: {
-                            type: "node",
-                            name: "rabbit@node1",
-                          },
-                        },
-                        {
-                          id: "alert-790",
-                          serverId: "server-456",
-                          serverName: "Production RabbitMQ",
-                          severity: "HIGH",
-                          category: "disk",
-                          title: "Disk Space Warning",
-                          description:
-                            "Disk usage is approaching the threshold of 90%",
-                          details: {
-                            current: "87%",
-                            threshold: 90,
-                            recommended:
-                              "Consider cleaning up old logs or increasing disk space",
-                          },
-                          timestamp: "2024-01-15T10:25:00.000Z",
-                          resolved: false,
-                          source: {
-                            type: "node",
-                            name: "rabbit@node1",
-                          },
-                        },
-                      ],
-                      summary: {
-                        total: 2,
-                        critical: 1,
-                        high: 1,
-                        medium: 0,
-                        low: 0,
-                        info: 0,
-                      },
-                    },
-                    null,
-                    2
-                  )}
-                </pre>
-              </div>
-            </div>
-
-            <div className="p-4 bg-blue-50 dark:bg-blue-950 rounded-lg">
-              <p
-                className="text-sm text-blue-900 dark:text-blue-100"
-                dangerouslySetInnerHTML={{
-                  __html: t("modal.webhookSignatureNote"),
-                }}
-              />
-            </div>
-          </div>
-
-          <div className="flex items-center justify-end gap-2 pt-4 border-t">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setShowWebhookExample(false)}
-            >
-              {t("modal.close")}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <WebhookExampleModal
+        open={showWebhookExample}
+        onOpenChange={setShowWebhookExample}
+        t={t}
+      />
     </Dialog>
   );
 }

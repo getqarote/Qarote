@@ -8,7 +8,6 @@ import { AppSidebar } from "@/components/AppSidebar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { PlanBadge } from "@/components/ui/PlanBadge";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 
 import { useAllPlans } from "@/hooks/queries/usePlans";
@@ -346,7 +345,6 @@ export const PlansPage: React.FC<PlansPageProps> = ({
                   <p className="text-muted-foreground">{t("plans.subtitle")}</p>
                 </div>
               </div>
-              <PlanBadge />
             </div>
 
             {/* Pricing Section */}

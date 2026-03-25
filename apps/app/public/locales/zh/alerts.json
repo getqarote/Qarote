@@ -76,6 +76,13 @@
     "description": "配置新告警的电子邮件和 Webhook 通知。选择您希望接收通知的告警严重级别。",
     "loadingWorkspace": "正在加载工作区...",
     "close": "关闭",
+    "tabs": {
+      "general": "常规",
+      "email": "邮件",
+      "browser": "浏览器",
+      "webhook": "Webhook",
+      "slack": "Slack"
+    },
     "servers": "服务器",
     "serversDescription": "选择您希望接收通知的服务器。如果未选择任何服务器，将发送所有服务器的通知。",
     "searchAndSelect": "搜索并选择服务器...",
@@ -139,6 +146,9 @@
     "httpHeaders": "HTTP 请求头",
     "jsonPayload": "JSON 负载",
     "webhookSignatureNote": "<strong>注意：</strong>如果您配置了密钥，负载将包含带有 HMAC-SHA256 签名的 <code>X-Qarote-Signature</code> 请求头。您可以使用它来验证 Webhook 请求的真实性。",
+    "webhookSignatureNoteLabel": "注意：",
+    "webhookSignatureNoteText": "如果您配置了密钥，负载将包含带有 HMAC-SHA256 签名的",
+    "webhookSignatureNoteSuffix": "请求头。您可以使用它来验证 Webhook 请求的真实性。",
     "toastSettingsUpdated": "设置更新成功",
     "toastEmailRequired": "请提供用于通知的电子邮件地址",
     "toastEmailInvalid": "请提供有效的电子邮件地址",
@@ -163,6 +173,8 @@
     "toastSlackCreated": "Slack 配置创建成功",
     "toastSlackCreateFailed": "Slack 配置创建失败",
     "toastSlackDeleted": "Slack 配置删除成功",
-    "toastSlackDeleteFailed": "Slack 配置删除失败"
+    "toastSlackDeleteFailed": "Slack 配置删除失败",
+    "toastSlackEnabled": "Slack 通知已启用",
+    "toastSlackDisabled": "Slack 通知已禁用"
   }
 }

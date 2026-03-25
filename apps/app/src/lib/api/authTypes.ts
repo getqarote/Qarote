@@ -25,6 +25,7 @@ export interface User {
   updatedAt: string;
   authProvider?: "google" | "password";
   hasPassword?: boolean;
+  image?: string | null;
 }
 
 interface Workspace {
