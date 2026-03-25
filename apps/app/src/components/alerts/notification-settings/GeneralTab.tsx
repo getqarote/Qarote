@@ -62,6 +62,7 @@ export function GeneralTab({
                   </span>
                   <button
                     type="button"
+                    aria-label={`Remove ${server.name || server.id}`}
                     onClick={() => {
                       const currentIds = notificationServerIds || [];
                       const newIds = currentIds.filter(

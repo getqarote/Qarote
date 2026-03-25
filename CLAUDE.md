@@ -49,7 +49,7 @@ pnpm db:studio        # Open Prisma Studio
 
 ## Key Directories
 
-```
+```text
 apps/api/src/          # Backend source
 apps/api/prisma/       # Prisma schema & migrations
 apps/app/src/          # Frontend source

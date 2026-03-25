@@ -564,6 +564,12 @@ export function AlertNotificationSettingsModal({
     updateSlackConfigMutation.mutate(
       { id: firstSlack.id, enabled },
       {
+        onSuccess: () =>
+          toast.success(
+            enabled
+              ? t("modal.toastSlackEnabled")
+              : t("modal.toastSlackDisabled")
+          ),
         onError: (error: ApiError) => {
           toast.error(error.message || t("modal.toastSlackUpdateFailed"));
           setSlackEnabled(!enabled);

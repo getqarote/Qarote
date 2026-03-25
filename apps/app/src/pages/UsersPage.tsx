@@ -225,7 +225,6 @@ export default function UsersPage() {
                     {users.length}
                   </Badge>
                 </div>
-                <div className="flex items-center gap-3"></div>
               </div>
 
               {/* Filter */}

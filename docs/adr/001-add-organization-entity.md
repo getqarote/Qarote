@@ -1,4 +1,4 @@
-yes# ADR-001: Add Organization Entity
+# ADR-001: Add Organization Entity
 
 **Status:** Proposed
 **Date:** 2026-03-15

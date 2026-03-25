@@ -150,12 +150,14 @@ X-Qarote-Signature: sha256=abc123... (if secret is configured)`}
           </div>
 
           <div className="p-4 bg-blue-50 dark:bg-blue-950 rounded-lg">
-            <p
-              className="text-sm text-blue-900 dark:text-blue-100"
-              dangerouslySetInnerHTML={{
-                __html: t("modal.webhookSignatureNote"),
-              }}
-            />
+            <p className="text-sm text-blue-900 dark:text-blue-100">
+              <strong>{t("modal.webhookSignatureNoteLabel")}</strong>{" "}
+              {t("modal.webhookSignatureNoteText")}{" "}
+              <code className="text-xs bg-blue-100 dark:bg-blue-900 px-1 py-0.5 rounded">
+                X-Qarote-Signature
+              </code>{" "}
+              {t("modal.webhookSignatureNoteSuffix")}
+            </p>
           </div>
         </div>
 

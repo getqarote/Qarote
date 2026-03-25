@@ -59,6 +59,7 @@ export function SlackTab({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Switch
+              id="slack-enabled"
               checked={slackEnabled}
               onCheckedChange={onToggleSlack}
               disabled={isSaving}
@@ -74,6 +75,7 @@ export function SlackTab({
                 size="sm"
                 onClick={onDeleteSlack}
                 disabled={isDeleting}
+                aria-label="Delete Slack integration"
               >
                 <Trash2 className="h-4 w-4 text-red-600" />
               </Button>

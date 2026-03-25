@@ -35,7 +35,7 @@ function HelpSupport() {
   const { t } = useTranslation("help");
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const { toast } = useToast();
-  const { user: _user } = useAuth();
+  const { user: user } = useAuth();
 
   const faqs = [
     {
@@ -96,18 +96,6 @@ function HelpSupport() {
     }
   };
 
-  const handleEmailClick = (e: React.MouseEvent) => {
-    // For better UX, we'll always try mailto first
-    // but provide a fallback copy option
-    try {
-      // The browser will handle this - no need to intercept
-      // Just let the normal mailto: behavior work
-    } catch {
-      e.preventDefault();
-      handleEmailCopy();
-    }
-  };
-
   return (
     <SidebarProvider>
       <div className="page-layout">
@@ -148,7 +136,6 @@ function HelpSupport() {
                         <a
                           href="mailto:support@qarote.io?subject=Qarote Support Request"
                           className="text-sm text-blue-600 hover:text-blue-700"
-                          onClick={handleEmailClick}
                         >
                           support@qarote.io
                         </a>
@@ -217,7 +204,7 @@ function HelpSupport() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <DiscordLink userId={_user?.id} userEmail={_user?.email} />
+                    <DiscordLink userId={user?.id} userEmail={user?.email} />
                   </CardContent>
                 </Card>
               </div>

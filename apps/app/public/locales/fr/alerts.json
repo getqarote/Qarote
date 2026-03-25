@@ -146,6 +146,9 @@
     "httpHeaders": "En-têtes HTTP",
     "jsonPayload": "Charge utile JSON",
     "webhookSignatureNote": "<strong>Remarque :</strong> Si vous configurez un secret, la charge utile inclura un en-tête <code>X-Qarote-Signature</code> avec une signature HMAC-SHA256. Vous pouvez l'utiliser pour vérifier l'authenticité de la requête webhook.",
+    "webhookSignatureNoteLabel": "Remarque :",
+    "webhookSignatureNoteText": "Si vous configurez un secret, la charge utile inclura un en-tête",
+    "webhookSignatureNoteSuffix": "avec une signature HMAC-SHA256. Vous pouvez l'utiliser pour vérifier l'authenticité de la requête webhook.",
     "toastSettingsUpdated": "Paramètres mis à jour avec succès",
     "toastEmailRequired": "Veuillez fournir une adresse e-mail pour les notifications",
     "toastEmailInvalid": "Veuillez fournir une adresse e-mail valide",
@@ -170,6 +173,8 @@
     "toastSlackCreated": "Configuration Slack créée avec succès",
     "toastSlackCreateFailed": "Échec de la création de la configuration Slack",
     "toastSlackDeleted": "Configuration Slack supprimée avec succès",
-    "toastSlackDeleteFailed": "Échec de la suppression de la configuration Slack"
+    "toastSlackDeleteFailed": "Échec de la suppression de la configuration Slack",
+    "toastSlackEnabled": "Notifications Slack activées",
+    "toastSlackDisabled": "Notifications Slack désactivées"
   }
 }
