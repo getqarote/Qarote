@@ -145,6 +145,16 @@
     </script>
     <!-- End Google Tag Manager -->
 
+    <!-- Google Tag Manager (noscript) - production only -->
+    <script>
+      if ("%VITE_ENVIRONMENT%" === "production") {
+        document.write(
+          '<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-52CRNTFK" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>'
+        );
+      }
+    </script>
+    <!-- End Google Tag Manager (noscript) -->
+
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
