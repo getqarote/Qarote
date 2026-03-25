@@ -56,6 +56,7 @@
   "dangerZone": "危险操作",
   "deleteUser": "删除用户",
   "cannotDeleteAdmin": "无法删除管理员用户",
+  "cannotModifyConnectionUser": "无法修改或删除连接用户。这是 Qarote 用于连接此服务器的账户。",
   "maxConnections": "最大连接数",
   "maxChannels": "最大通道数",
   "limitsLabel": "限制",

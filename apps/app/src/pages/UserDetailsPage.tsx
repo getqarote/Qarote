@@ -79,9 +79,13 @@ export default function UserDetailsPage() {
   const currentServerId = serverId || selectedServerId;
   const decodedUsername = decodeURIComponent(username || "");
   // Validate that the server actually exists
-  const serverExists = currentServerId
-    ? servers.some((s) => s.id === currentServerId)
-    : false;
+  const currentServer = currentServerId
+    ? servers.find((s) => s.id === currentServerId)
+    : undefined;
+  const serverExists = !!currentServer;
+
+  // Check if this is the connection user (the account Qarote uses to connect)
+  const isConnectionUser = currentServer?.username === decodedUsername;
 
   const {
     data: userData,
@@ -720,7 +724,14 @@ export default function UserDetailsPage() {
                         <Button
                           className="btn-primary"
                           onClick={handleUpdateUser}
-                          disabled={updateUserMutation.isPending}
+                          disabled={
+                            updateUserMutation.isPending || isConnectionUser
+                          }
+                          title={
+                            isConnectionUser
+                              ? t("cannotModifyConnectionUser")
+                              : undefined
+                          }
                         >
                           {updateUserMutation.isPending
                             ? t("updating")
@@ -743,13 +754,25 @@ export default function UserDetailsPage() {
                   <Button
                     variant="destructive"
                     onClick={() => setShowDeleteModal(true)}
-                    disabled={decodedUsername === "admin"}
+                    disabled={
+                      decodedUsername === "admin" || isConnectionUser
+                    }
+                    title={
+                      isConnectionUser
+                        ? t("cannotModifyConnectionUser")
+                        : undefined
+                    }
                   >
                     {t("deleteUser")}
                   </Button>
                   {decodedUsername === "admin" && (
                     <p className="text-sm text-muted-foreground mt-2">
                       {t("cannotDeleteAdmin")}
+                    </p>
+                  )}
+                  {isConnectionUser && (
+                    <p className="text-sm text-muted-foreground mt-2">
+                      {t("cannotModifyConnectionUser")}
                     </p>
                   )}
                 </CardContent>

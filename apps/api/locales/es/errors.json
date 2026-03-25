@@ -171,6 +171,7 @@
     "failedToCreateUser": "Error al crear el usuario",
     "failedToUpdateUser": "Error al actualizar el usuario",
     "failedToDeleteUser": "Error al eliminar el usuario",
+    "cannotModifyConnectionUser": "No se puede modificar o eliminar el usuario de conexión. Esta es la cuenta que Qarote utiliza para conectarse a este servidor RabbitMQ.",
     "failedToSetPermissions": "Error al establecer los permisos",
     "failedToDeletePermissions": "Error al eliminar los permisos",
     "failedToFetchVhosts": "Error al obtener los hosts virtuales",
