@@ -15,7 +15,19 @@
     "sso": "SSO",
     "license": "许可证",
     "smtp": "邮件",
-    "feedback": "反馈"
+    "feedback": "反馈",
+    "enterprise": "企业版"
+  },
+  "sso": {
+    "upgradeTitle": "企业版功能",
+    "upgradeDescription": "支持 OIDC 和 SAML 2.0 的单点登录仅在企业版计划中提供。",
+    "upgradeRequirement": "需要企业版计划",
+    "upgradeCloudHint": "升级您的计划以为您的组织配置单点登录。",
+    "upgradeSelfHostedHint": "激活企业版许可证以为您的组织配置单点登录。",
+    "viewPlans": "查看计划",
+    "contactSales": "联系销售",
+    "activateLicense": "激活许可证",
+    "purchaseLicense": "购买许可证"
   },
   "feedback": {
     "title": "发送反馈",
