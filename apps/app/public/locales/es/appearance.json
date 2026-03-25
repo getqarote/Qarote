@@ -1,0 +1,9 @@
+{
+  "title": "Apariencia",
+  "subtitle": "Personaliza el aspecto del panel de control.",
+  "themeTitle": "Tema",
+  "themeDescription": "Selecciona tu esquema de colores preferido.",
+  "light": "Claro",
+  "dark": "Oscuro",
+  "system": "Sistema"
+}

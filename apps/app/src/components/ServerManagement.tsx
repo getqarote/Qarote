@@ -4,6 +4,7 @@ import { useNavigate, useParams } from "react-router";
 import {
   Edit,
   Loader2,
+  Plus,
   Server as ServerIcon,
   Settings,
   Trash2,
@@ -70,7 +71,7 @@ export function ServerManagement({ trigger }: ServerManagementProps) {
             Server Management
           </DialogTitle>
           <DialogDescription>
-            Edit, or remove RabbitMQ server connections.
+            Add, edit, or remove RabbitMQ server connections.
           </DialogDescription>
         </DialogHeader>
 
@@ -100,6 +101,17 @@ export function ServerManagement({ trigger }: ServerManagementProps) {
               ))}
             </div>
           )}
+
+          {/* Add Server CTA */}
+          <AddServerForm
+            trigger={
+              <button className="flex items-center gap-2 w-full p-4 border-2 border-dashed rounded-lg text-muted-foreground hover:text-foreground hover:border-primary/50 hover:bg-accent cursor-pointer transition-colors">
+                <Plus className="h-4 w-4" />
+                <span className="font-medium">Add Server</span>
+              </button>
+            }
+            onServerAdded={handleServerAction}
+          />
         </div>
       </DialogContent>
     </Dialog>

@@ -44,6 +44,11 @@ const ProfileSection = lazy(() =>
     default: m.default,
   }))
 );
+const AppearanceSection = lazy(() =>
+  import("./pages/settings/AppearanceSection").then((m) => ({
+    default: m.default,
+  }))
+);
 const WorkspaceSection = lazy(() =>
   import("./pages/settings/WorkspaceSection").then((m) => ({
     default: m.default,
@@ -331,6 +336,10 @@ const AppCore = () => (
                             <Route
                               path="profile"
                               element={<ProfileSection />}
+                            />
+                            <Route
+                              path="appearance"
+                              element={<AppearanceSection />}
                             />
                             <Route
                               path="workspace"

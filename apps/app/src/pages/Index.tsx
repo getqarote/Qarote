@@ -125,18 +125,18 @@ const Index = () => {
         <main className="main-content-scrollable">
           <div className="content-container-large">
             {/* Header */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <SidebarTrigger />
-                <div>
+            <div className="space-y-3">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-center gap-4">
+                  <SidebarTrigger />
                   <h1 className="title-page">{t("pageTitle")}</h1>
-                  <ConnectionStatus />
+                </div>
+                <div className="flex items-center gap-3">
+                  <PlanBadge />
+                  {user?.role === UserRole.ADMIN && <AddServerButton />}
                 </div>
               </div>
-              <div className="flex items-center gap-3">
-                <PlanBadge />
-                {user?.role === UserRole.ADMIN && <AddServerButton />}
-              </div>
+              <ConnectionStatus />
             </div>
 
             {/* Primary Metrics Cards */}

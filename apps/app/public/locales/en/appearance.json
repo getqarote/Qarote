@@ -1,0 +1,9 @@
+{
+  "title": "Appearance",
+  "subtitle": "Customize how the dashboard looks and feels.",
+  "themeTitle": "Theme",
+  "themeDescription": "Select your preferred color scheme.",
+  "light": "Light",
+  "dark": "Dark",
+  "system": "System"
+}

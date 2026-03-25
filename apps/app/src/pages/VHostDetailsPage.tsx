@@ -197,7 +197,7 @@ export default function VHostDetailsPage() {
   if (user?.role !== UserRole.ADMIN) {
     return (
       <SidebarProvider>
-        <div className="flex min-h-screen w-full">
+        <div className="page-layout">
           <AppSidebar />
           <main className="main-content">
             <div className="container mx-auto">
@@ -215,7 +215,7 @@ export default function VHostDetailsPage() {
   if (!currentServerId) {
     return (
       <SidebarProvider>
-        <div className="flex min-h-screen w-full">
+        <div className="page-layout">
           <AppSidebar />
           <main className="main-content">
             <div className="container mx-auto">
@@ -233,7 +233,7 @@ export default function VHostDetailsPage() {
   if (isLoading) {
     return (
       <SidebarProvider>
-        <div className="flex min-h-screen w-full">
+        <div className="page-layout">
           <AppSidebar />
           <main className="flex-1">
             <PageLoader />
@@ -246,7 +246,7 @@ export default function VHostDetailsPage() {
   if (error) {
     return (
       <SidebarProvider>
-        <div className="flex min-h-screen w-full">
+        <div className="page-layout">
           <AppSidebar />
           <main className="main-content">
             <div className="container mx-auto">
@@ -268,7 +268,7 @@ export default function VHostDetailsPage() {
   if (!vhost) {
     return (
       <SidebarProvider>
-        <div className="flex min-h-screen w-full">
+        <div className="page-layout">
           <AppSidebar />
           <main className="main-content">
             <div className="container mx-auto">

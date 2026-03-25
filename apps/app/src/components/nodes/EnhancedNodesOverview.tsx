@@ -3,7 +3,6 @@ import {
   AlertTriangle,
   CheckCircle,
   HardDrive,
-  HelpCircle,
   Network,
   Server,
   XCircle,
@@ -15,12 +14,6 @@ import { RabbitMQPermissionError } from "@/components/RabbitMQPermissionError";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 
 import { isRabbitMQAuthError } from "@/types/apiErrors";
 
@@ -108,73 +101,6 @@ export const EnhancedNodesOverview = ({
   const healthStatus = getHealthStatus();
   const HealthIcon = healthStatus.icon;
 
-  const getOverviewTooltipContent = (statName: string) => {
-    switch (statName) {
-      case "Cluster Health":
-        return (
-          <div className="text-sm">
-            <div className="font-medium mb-2">Cluster Health Status</div>
-            <p>
-              Shows the percentage of healthy nodes in your RabbitMQ cluster.
-            </p>
-            <div className="mt-2 space-y-1 text-xs">
-              <div>
-                • <span className="font-medium">100%:</span> All nodes healthy
-              </div>
-              <div>
-                • <span className="font-medium">80-99%:</span> Some nodes
-                degraded
-              </div>
-              <div>
-                • <span className="font-medium">&lt;80%:</span> Critical cluster
-                state
-              </div>
-            </div>
-          </div>
-        );
-      case "Memory Usage":
-        return (
-          <div className="text-sm">
-            <div className="font-medium mb-2">Cluster Memory Usage</div>
-            <p>
-              Total memory consumption across all RabbitMQ nodes in the cluster.
-            </p>
-            <div className="mt-2 space-y-1 text-xs">
-              <div>• Monitor for high usage patterns</div>
-              <div>• Configure memory alarms when needed</div>
-              <div>• Scale nodes if consistently high</div>
-            </div>
-          </div>
-        );
-      case "Disk Space":
-        return (
-          <div className="text-sm">
-            <div className="font-medium mb-2">Available Disk Space</div>
-            <p>Total free disk space across all cluster nodes.</p>
-            <div className="mt-2 space-y-1 text-xs">
-              <div>• Critical for message persistence</div>
-              <div>• Low space triggers disk alarms</div>
-              <div>• Monitor to prevent storage issues</div>
-            </div>
-          </div>
-        );
-      case "Connections":
-        return (
-          <div className="text-sm">
-            <div className="font-medium mb-2">Active Connections</div>
-            <p>Total number of client connections across all cluster nodes.</p>
-            <div className="mt-2 space-y-1 text-xs">
-              <div>• Includes publishers and consumers</div>
-              <div>• High counts may impact performance</div>
-              <div>• Monitor for connection leaks</div>
-            </div>
-          </div>
-        );
-      default:
-        return <div className="text-sm">Information about this metric</div>;
-    }
-  };
-
   const overviewStats = [
     {
       name: "Total Nodes",
@@ -253,49 +179,39 @@ export const EnhancedNodesOverview = ({
             ))}
           </div>
         ) : (
-          <TooltipProvider>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {overviewStats.map((stat) => {
-                const StatIcon = stat.icon;
-                return (
-                  <div
-                    key={stat.name}
-                    className="p-4 bg-card rounded-lg border border-border hover:shadow-md transition-all duration-300"
-                  >
-                    <div className="flex items-center justify-between mb-3">
-                      <StatIcon className={`h-5 w-5 ${stat.color}`} />
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <HelpCircle className="h-4 w-4 text-muted-foreground hover:text-foreground cursor-help" />
-                        </TooltipTrigger>
-                        <TooltipContent className="max-w-sm">
-                          {getOverviewTooltipContent(stat.name)}
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-                    <div className="space-y-1">
-                      <h3 className="text-sm font-medium text-muted-foreground">
-                        {stat.name}
-                      </h3>
-                      <div className="flex items-baseline gap-1">
-                        <span className={`text-2xl font-bold ${stat.color}`}>
-                          {stat.value}
-                        </span>
-                        {stat.unit && (
-                          <span className="text-sm text-muted-foreground">
-                            {stat.unit}
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        {stat.description}
-                      </p>
-                    </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {overviewStats.map((stat) => {
+              const StatIcon = stat.icon;
+              return (
+                <div
+                  key={stat.name}
+                  className="p-4 bg-card rounded-lg border border-border hover:shadow-md transition-all duration-300"
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <StatIcon className={`h-5 w-5 ${stat.color}`} />
                   </div>
-                );
-              })}
-            </div>
-          </TooltipProvider>
+                  <div className="space-y-1">
+                    <h3 className="text-sm font-medium text-muted-foreground">
+                      {stat.name}
+                    </h3>
+                    <div className="flex items-baseline gap-1">
+                      <span className={`text-2xl font-bold ${stat.color}`}>
+                        {stat.value}
+                      </span>
+                      {stat.unit && (
+                        <span className="text-sm text-muted-foreground">
+                          {stat.unit}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {stat.description}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         )}
       </CardContent>
     </Card>

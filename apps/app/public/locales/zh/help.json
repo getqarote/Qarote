@@ -28,6 +28,10 @@
     "copyFailed": "复制失败",
     "copyFailedDescription": "请手动复制：support@qarote.io"
   },
+  "community": {
+    "title": "社区支持",
+    "description": "加入我们的 Discord 社区，从其他用户和团队获取帮助。"
+  },
   "faqTitle": "常见问题",
   "faqs": {
     "connectServer": {

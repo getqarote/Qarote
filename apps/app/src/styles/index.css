@@ -197,7 +197,7 @@
 
 @utility page-layout {
   /* Page Layout Components */
-  @apply min-h-screen flex w-full;
+  @apply h-screen flex w-full overflow-hidden;
 }
 
 @utility btn-primary {
@@ -237,11 +237,11 @@
 
 @utility main-content {
   /* Main Content Layout */
-  @apply flex-1 p-6;
+  @apply flex-1 p-6 overflow-auto;
 }
 
 @utility main-content-scrollable {
-  @apply flex-1 p-6 overflow-auto;
+  @apply flex-1 p-4 sm:p-6 overflow-auto;
 }
 
 @utility content-container {

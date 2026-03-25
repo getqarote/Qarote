@@ -28,6 +28,10 @@
     "copyFailed": "Copy failed",
     "copyFailedDescription": "Please manually copy: support@qarote.io"
   },
+  "community": {
+    "title": "Community Support",
+    "description": "Join our Discord community to get help from other users and the team."
+  },
   "faqTitle": "Frequently Asked Questions",
   "faqs": {
     "connectServer": {

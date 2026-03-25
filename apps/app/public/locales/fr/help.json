@@ -28,6 +28,10 @@
     "copyFailed": "Échec de la copie",
     "copyFailedDescription": "Veuillez copier manuellement : support@qarote.io"
   },
+  "community": {
+    "title": "Support communautaire",
+    "description": "Rejoignez notre communauté Discord pour obtenir de l'aide des autres utilisateurs et de l'équipe."
+  },
   "faqTitle": "Questions fréquemment posées",
   "faqs": {
     "connectServer": {

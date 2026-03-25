@@ -21,10 +21,8 @@ import {
 import { UserRole } from "@/lib/api";
 
 import { AddServerForm } from "@/components/AddServerFormComponent";
-import { DiscordLink } from "@/components/DiscordLink";
 import { PlanUpgradeModal } from "@/components/plans/PlanUpgradeModal";
 import { ServerManagement } from "@/components/ServerManagement";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -52,6 +50,7 @@ import { useVHostContext } from "@/contexts/VHostContextDefinition";
 
 import { useServers } from "@/hooks/queries/useServer";
 import { useLogout } from "@/hooks/ui/useAuth";
+import { useUser } from "@/hooks/ui/useUser";
 
 const menuItems = [
   { titleKey: "sidebar:dashboard", url: "/", icon: Activity },
@@ -69,7 +68,6 @@ const menuItems = [
   { titleKey: "sidebar:users", url: "/users", icon: User, adminOnly: true },
   { titleKey: "sidebar:alerts", url: "/alerts", icon: AlertTriangle },
   { titleKey: "sidebar:settings", url: "/settings", icon: Settings },
-  { titleKey: "sidebar:helpSupport", url: "/help", icon: HelpCircle },
 ];
 
 // Helper function to shorten hostnames
@@ -96,6 +94,7 @@ export function AppSidebar() {
   const { t } = useTranslation("sidebar");
   const location = useLocation();
   const { selectedServerId, setSelectedServerId } = useServerContext();
+  const [showAddServerForm, setShowAddServerForm] = useState(false);
   const {
     selectedVHost,
     setSelectedVHost,
@@ -103,6 +102,7 @@ export function AppSidebar() {
     isLoading: vhostsLoading,
   } = useVHostContext();
   const { user } = useAuth();
+  const { canAddServer } = useUser();
   const logoutMutation = useLogout();
   const { data: serversData } = useServers();
   const servers = serversData?.servers || [];
@@ -145,59 +145,86 @@ export function AppSidebar() {
           </div>
 
           {servers.length > 0 ? (
-            <Select
-              value={selectedServerId}
-              onValueChange={setSelectedServerId}
-            >
-              <SelectTrigger className="w-full text-sm">
-                <SelectValue placeholder={t("selectServer")}>
-                  {selectedServerId &&
-                    servers.find((s) => s.id === selectedServerId) && (
+            <>
+              <Select
+                value={selectedServerId}
+                onValueChange={(value) => {
+                  if (value === "__add_server__") {
+                    setShowAddServerForm(true);
+                    return;
+                  }
+                  setSelectedServerId(value);
+                }}
+              >
+                <SelectTrigger className="w-full text-sm text-left">
+                  <SelectValue placeholder={t("selectServer")}>
+                    {selectedServerId &&
+                      servers.find((s) => s.id === selectedServerId) && (
+                        <div className="flex items-center gap-2 w-full min-w-0">
+                          <Server className="h-3 w-3 shrink-0" />
+                          <div className="flex flex-col min-w-0 flex-1 text-left">
+                            <span className="truncate font-medium">
+                              {
+                                servers.find((s) => s.id === selectedServerId)
+                                  ?.name
+                              }
+                            </span>
+                            <span
+                              className="text-xs text-sidebar-foreground/70 truncate"
+                              title={
+                                servers.find((s) => s.id === selectedServerId)
+                                  ?.host
+                              }
+                            >
+                              {shortenHost(
+                                servers.find((s) => s.id === selectedServerId)
+                                  ?.host || ""
+                              )}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent className="min-w-[300px]">
+                  {servers.map((server) => (
+                    <SelectItem key={server.id} value={server.id}>
                       <div className="flex items-center gap-2 w-full min-w-0">
                         <Server className="h-3 w-3 shrink-0" />
                         <div className="flex flex-col min-w-0 flex-1">
-                          <span className="truncate font-medium">
-                            {
-                              servers.find((s) => s.id === selectedServerId)
-                                ?.name
-                            }
-                          </span>
+                          <span className="font-medium">{server.name}</span>
                           <span
-                            className="text-xs text-sidebar-foreground/70 truncate"
-                            title={
-                              servers.find((s) => s.id === selectedServerId)
-                                ?.host
-                            }
+                            className="text-xs text-muted-foreground truncate"
+                            title={server.host}
                           >
-                            {shortenHost(
-                              servers.find((s) => s.id === selectedServerId)
-                                ?.host || ""
-                            )}
+                            {shortenHost(server.host)}
                           </span>
                         </div>
                       </div>
-                    )}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent className="min-w-[300px]">
-                {servers.map((server) => (
-                  <SelectItem key={server.id} value={server.id}>
-                    <div className="flex items-center gap-2 w-full min-w-0">
-                      <Server className="h-3 w-3 shrink-0" />
-                      <div className="flex flex-col min-w-0 flex-1">
-                        <span className="font-medium">{server.name}</span>
-                        <span
-                          className="text-xs text-muted-foreground truncate"
-                          title={server.host}
-                        >
-                          {shortenHost(server.host)}
-                        </span>
-                      </div>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+                    </SelectItem>
+                  ))}
+                  {user?.role === UserRole.ADMIN && canAddServer && (
+                    <>
+                      <div className="-mx-1 my-1 h-px bg-muted" />
+                      <SelectItem
+                        value="__add_server__"
+                        className="cursor-pointer py-3"
+                      >
+                        <div className="flex items-center gap-2">
+                          <Plus className="h-4 w-4 text-muted-foreground" />
+                          <span className="font-medium">{t("addServer")}</span>
+                        </div>
+                      </SelectItem>
+                    </>
+                  )}
+                </SelectContent>
+              </Select>
+              {/* Add Server Form (controlled by select CTA) */}
+              <AddServerForm
+                isOpen={showAddServerForm}
+                onOpenChange={setShowAddServerForm}
+              />
+            </>
           ) : (
             <div className="text-center p-3 bg-sidebar-accent rounded-lg border-2 border-dashed border-sidebar-border">
               <Server className="h-8 w-8 text-sidebar-foreground/70 mx-auto mb-2" />
@@ -327,16 +354,18 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="border-t border-sidebar-border p-4 space-y-4">
-        {/* Community Support */}
-        <DiscordLink userId={user?.id} userEmail={user?.email} />
-
-        {/* Theme Toggle */}
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-sidebar-foreground/70">
-            {t("theme")}
-          </span>
-          <ThemeToggle />
-        </div>
+        {/* Help & Support */}
+        <Link
+          to="/help"
+          className={`flex items-center gap-2 text-sm rounded-md px-2 py-1.5 transition-colors ${
+            location.pathname === "/help"
+              ? "bg-primary text-primary-foreground font-medium"
+              : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent"
+          }`}
+        >
+          <HelpCircle className="w-4 h-4" />
+          {t("helpSupport")}
+        </Link>
 
         {/* User section */}
         <div className="flex items-center justify-between">

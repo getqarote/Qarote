@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 
 import { AppSidebar } from "@/components/AppSidebar";
+import { DiscordLink } from "@/components/DiscordLink";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -234,6 +235,22 @@ function HelpSupport() {
                         {t("contact.responseTime")}
                       </p>
                     </div>
+                  </CardContent>
+                </Card>
+
+                {/* Community Support */}
+                <Card className="border-0 shadow-md bg-card">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <MessageSquare className="w-5 h-5" />
+                      {t("community.title")}
+                    </CardTitle>
+                    <CardDescription>
+                      {t("community.description")}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <DiscordLink userId={_user?.id} userEmail={_user?.email} />
                   </CardContent>
                 </Card>
               </div>
