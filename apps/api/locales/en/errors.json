@@ -170,6 +170,7 @@
     "failedToCreateUser": "Failed to create user",
     "failedToUpdateUser": "Failed to update user",
     "failedToDeleteUser": "Failed to delete user",
+    "cannotModifyConnectionUser": "Cannot modify or delete the connection user. This is the account Qarote uses to connect to this RabbitMQ server.",
     "failedToSetPermissions": "Failed to set permissions",
     "failedToDeletePermissions": "Failed to delete permissions",
     "failedToFetchVhosts": "Failed to fetch virtual hosts",

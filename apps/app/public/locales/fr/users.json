@@ -56,6 +56,7 @@
   "dangerZone": "Zone dangereuse",
   "deleteUser": "Supprimer l'utilisateur",
   "cannotDeleteAdmin": "Impossible de supprimer l'utilisateur administrateur",
+  "cannotModifyConnectionUser": "Impossible de modifier ou supprimer l'utilisateur de connexion. C'est le compte utilisé par Qarote pour se connecter à ce serveur.",
   "maxConnections": "Connexions max.",
   "maxChannels": "Canaux max.",
   "limitsLabel": "Limites",

@@ -1,5 +1,7 @@
 import { TRPCError } from "@trpc/server";
 
+import { EncryptionService } from "@/services/encryption.service";
+
 import {
   CreateUserSchema,
   ServerWorkspaceInputSchema,
@@ -170,6 +172,17 @@ export const usersRouter = router({
           });
         }
 
+        // Prevent modifying the connection user (the user Qarote uses to connect)
+        const connectionUsername = EncryptionService.decrypt(
+          verifiedServer.username
+        );
+        if (username === connectionUsername) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: te(ctx.locale, "rabbitmq.cannotModifyConnectionUser"),
+          });
+        }
+
         const client = createRabbitMQClientFromServer(verifiedServer);
 
         const payload: {
@@ -209,9 +222,15 @@ export const usersRouter = router({
           throw error;
         }
         ctx.logger.error({ error }, "Error updating user:");
+        const reason =
+          error instanceof Error && typeof error.cause === "string"
+            ? error.cause
+            : undefined;
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: te(ctx.locale, "rabbitmq.failedToUpdateUser"),
+          message: reason
+            ? `${te(ctx.locale, "rabbitmq.failedToUpdateUser")}: ${reason}`
+            : te(ctx.locale, "rabbitmq.failedToUpdateUser"),
         });
       }
     }),
@@ -231,6 +250,17 @@ export const usersRouter = router({
           throw new TRPCError({
             code: "NOT_FOUND",
             message: te(ctx.locale, "rabbitmq.serverNotFoundOrAccessDenied"),
+          });
+        }
+
+        // Prevent deleting the connection user (the user Qarote uses to connect)
+        const connectionUsername = EncryptionService.decrypt(
+          verifiedServer.username
+        );
+        if (username === connectionUsername) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: te(ctx.locale, "rabbitmq.cannotModifyConnectionUser"),
           });
         }
 
