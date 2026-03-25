@@ -171,6 +171,9 @@
     "seeAllOptions": "See all available options",
     "compare": "Compare",
     "license": "License",
-    "manageLicense": "Activate or manage your license"
+    "manageLicense": "Activate or manage your license",
+    "preferSelfHost": "Prefer to self-host?",
+    "preferSelfHostDesc": "Deploy Qarote on your own infrastructure with a license key.",
+    "learnMore": "Learn more"
   }
 }

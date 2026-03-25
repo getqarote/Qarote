@@ -171,6 +171,9 @@
     "seeAllOptions": "Ver todas las opciones disponibles",
     "compare": "Comparar",
     "license": "Licencia",
-    "manageLicense": "Activar o administrar tu licencia"
+    "manageLicense": "Activar o administrar tu licencia",
+    "preferSelfHost": "¿Prefieres el auto-alojamiento?",
+    "preferSelfHostDesc": "Despliega Qarote en tu propia infraestructura con una clave de licencia.",
+    "learnMore": "Más información"
   }
 }

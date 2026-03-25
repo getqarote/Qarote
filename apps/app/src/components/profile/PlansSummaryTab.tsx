@@ -2,7 +2,16 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router";
 
-import { ArrowRight, Crown, Key, Loader2, Users, Zap } from "lucide-react";
+import {
+  ArrowRight,
+  Crown,
+  ExternalLink,
+  Key,
+  Loader2,
+  Server,
+  Users,
+  Zap,
+} from "lucide-react";
 
 import { UserRole } from "@/lib/api";
 import { isSelfHostedMode } from "@/lib/featureFlags";
@@ -313,6 +322,32 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
             </>
           )}
         </div>
+      )}
+
+      {/* Self-host callout - Only show in cloud mode */}
+      {!selfHosted && (
+        <a
+          href={`${import.meta.env.VITE_PORTAL_URL}/documentation`}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <Card className="cursor-pointer hover:border-primary/30 transition-colors">
+            <CardContent className="flex items-center justify-between py-4">
+              <div className="flex items-center gap-3">
+                <Server className="h-5 w-5 text-muted-foreground shrink-0" />
+                <div>
+                  <p className="font-medium">
+                    {t("plansSummary.preferSelfHost")}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {t("plansSummary.preferSelfHostDesc")}
+                  </p>
+                </div>
+              </div>
+              <ExternalLink className="h-5 w-5 text-muted-foreground shrink-0" />
+            </CardContent>
+          </Card>
+        </a>
       )}
     </div>
   );
