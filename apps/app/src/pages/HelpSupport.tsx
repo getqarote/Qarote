@@ -1,13 +1,10 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router";
 
 import {
-  Book,
   ChevronDown,
   ChevronRight,
   Copy,
-  ExternalLink,
   Mail,
   MessageCircle,
   MessageSquare,
@@ -28,7 +25,6 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { PlanBadge } from "@/components/ui/PlanBadge";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
@@ -84,16 +80,6 @@ function HelpSupport() {
     },
   ];
 
-  const quickLinks = [
-    {
-      title: t("quickLinks.rabbitMQDocs.title"),
-      description: t("quickLinks.rabbitMQDocs.description"),
-      icon: Book,
-      link: "https://www.rabbitmq.com/documentation.html",
-      external: true,
-    },
-  ];
-
   const handleEmailCopy = async () => {
     try {
       await navigator.clipboard.writeText("support@qarote.io");
@@ -137,71 +123,11 @@ function HelpSupport() {
                   <p className="text-muted-foreground">{t("subtitle")}</p>
                 </div>
               </div>
-              <PlanBadge />
             </div>
 
             <div className="grid lg:grid-cols-5 gap-6">
-              {/* Quick Help Links */}
+              {/* Support Options */}
               <div className="lg:col-span-2 space-y-6">
-                <div>
-                  <h2 className="text-xl font-semibold mb-4 text-foreground">
-                    {t("quickLinksTitle")}
-                  </h2>
-                  <div className="grid gap-3">
-                    {quickLinks.map((link, index) => {
-                      const Icon = link.icon;
-
-                      return (
-                        <div key={index}>
-                          {link.external ? (
-                            <a
-                              href={link.link}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="block"
-                            >
-                              <Card className="border-0 shadow-md bg-card hover:shadow-lg transition-shadow cursor-pointer">
-                                <CardContent className="p-4">
-                                  <div className="flex items-start gap-3">
-                                    <Icon className="w-5 h-5 text-blue-600 mt-0.5" />
-                                    <div className="flex-1">
-                                      <h3 className="font-medium">
-                                        {link.title}
-                                      </h3>
-                                      <p className="text-sm text-muted-foreground mt-1">
-                                        {link.description}
-                                      </p>
-                                    </div>
-                                    <ExternalLink className="w-4 h-4 text-muted-foreground" />
-                                  </div>
-                                </CardContent>
-                              </Card>
-                            </a>
-                          ) : (
-                            <Link to={link.link} className="block">
-                              <Card className="border-0 shadow-md bg-card hover:shadow-lg transition-shadow cursor-pointer">
-                                <CardContent className="p-4">
-                                  <div className="flex items-start gap-3">
-                                    <Icon className="w-5 h-5 text-blue-600 mt-0.5" />
-                                    <div className="flex-1">
-                                      <h3 className="font-medium">
-                                        {link.title}
-                                      </h3>
-                                      <p className="text-sm text-muted-foreground mt-1">
-                                        {link.description}
-                                      </p>
-                                    </div>
-                                  </div>
-                                </CardContent>
-                              </Card>
-                            </Link>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
                 {/* Contact */}
                 <Card className="border-0 shadow-md bg-card">
                   <CardHeader>
