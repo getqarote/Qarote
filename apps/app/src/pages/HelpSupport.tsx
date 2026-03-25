@@ -9,8 +9,8 @@ import {
   Copy,
   ExternalLink,
   Mail,
+  MessageCircle,
   MessageSquare,
-  Zap,
 } from "lucide-react";
 
 import { AppSidebar } from "@/components/AppSidebar";
@@ -47,38 +47,44 @@ function HelpSupport() {
       answer: t("faqs.connectServer.answer"),
     },
     {
-      question: t("faqs.cantSeeQueues.question"),
-      answer: t("faqs.cantSeeQueues.answer"),
+      question: t("faqs.credentialsSecurity.question"),
+      answer: t("faqs.credentialsSecurity.answer"),
     },
     {
-      question: t("faqs.dataStorage.question"),
-      answer: t("faqs.dataStorage.answer"),
+      question: t("faqs.readOnly.question"),
+      answer: t("faqs.readOnly.answer"),
+    },
+    {
+      question: t("faqs.compatibility.question"),
+      answer: t("faqs.compatibility.answer"),
+    },
+    {
+      question: t("faqs.multipleServers.question"),
+      answer: t("faqs.multipleServers.answer"),
+    },
+    {
+      question: t("faqs.refreshRate.question"),
+      answer: t("faqs.refreshRate.answer"),
+    },
+    {
+      question: t("faqs.availability.question"),
+      answer: t("faqs.availability.answer"),
     },
     {
       question: t("faqs.setupAlerts.question"),
       answer: t("faqs.setupAlerts.answer"),
     },
     {
-      question: t("faqs.managePermissions.question"),
-      answer: t("faqs.managePermissions.answer"),
+      question: t("faqs.teamMembers.question"),
+      answer: t("faqs.teamMembers.answer"),
+    },
+    {
+      question: t("faqs.plans.question"),
+      answer: t("faqs.plans.answer"),
     },
   ];
 
   const quickLinks = [
-    {
-      title: t("quickLinks.dashboard.title"),
-      description: t("quickLinks.dashboard.description"),
-      icon: Zap,
-      link: "/",
-      external: false,
-    },
-    {
-      title: t("quickLinks.queueManagement.title"),
-      description: t("quickLinks.queueManagement.description"),
-      icon: MessageSquare,
-      link: "/queues",
-      external: false,
-    },
     {
       title: t("quickLinks.rabbitMQDocs.title"),
       description: t("quickLinks.rabbitMQDocs.description"),
@@ -235,6 +241,41 @@ function HelpSupport() {
                         {t("contact.responseTime")}
                       </p>
                     </div>
+                  </CardContent>
+                </Card>
+
+                {/* Live Chat */}
+                <Card className="border-0 shadow-md bg-card">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <MessageCircle className="w-5 h-5" />
+                      {t("chat.title")}
+                    </CardTitle>
+                    <CardDescription>{t("chat.description")}</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Button
+                      onClick={() => {
+                        // Try to open Tawk.to chat widget
+                        const w = window as Record<string, unknown>;
+                        if (
+                          w.Tawk_API &&
+                          typeof (w.Tawk_API as Record<string, unknown>)
+                            .maximize === "function"
+                        ) {
+                          (w.Tawk_API as { maximize: () => void }).maximize();
+                        } else {
+                          toast({
+                            title: t("chat.unavailable"),
+                            variant: "destructive",
+                          });
+                        }
+                      }}
+                      className="w-full bg-gradient-button hover:bg-gradient-button-hover text-white"
+                    >
+                      <MessageCircle className="w-4 h-4 mr-2" />
+                      {t("chat.startChat")}
+                    </Button>
                   </CardContent>
                 </Card>
 

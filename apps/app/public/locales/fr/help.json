@@ -28,6 +28,12 @@
     "copyFailed": "Échec de la copie",
     "copyFailedDescription": "Veuillez copier manuellement : support@qarote.io"
   },
+  "chat": {
+    "title": "Chat en direct",
+    "description": "Besoin d'aide en temps réel ? Démarrez une conversation avec notre équipe.",
+    "startChat": "Démarrer une conversation",
+    "unavailable": "Le chat est actuellement indisponible. Veuillez réessayer plus tard ou nous contacter par email."
+  },
   "community": {
     "title": "Support communautaire",
     "description": "Rejoignez notre communauté Discord pour obtenir de l'aide des autres utilisateurs et de l'équipe."
@@ -36,23 +42,43 @@
   "faqs": {
     "connectServer": {
       "question": "Comment me connecter à mon serveur RabbitMQ ?",
-      "answer": "Allez sur le tableau de bord et cherchez le sélecteur de serveur ou l'option 'Ajouter un serveur'. Entrez les détails de votre connexion RabbitMQ, y compris l'hôte, le port, le nom d'utilisateur et le mot de passe. Vous pouvez tester la connexion avant de l'enregistrer."
+      "answer": "Depuis la barre latérale, cliquez sur le sélecteur de serveur ou l'icône engrenage, puis 'Ajouter un serveur'. Entrez l'hôte, le port et les identifiants de l'API Management RabbitMQ. Cliquez sur 'Tester la connexion' pour vérifier avant d'enregistrer. Qarote se connecte via l'API HTTP Management (port par défaut 15672 ou 443 pour TLS)."
     },
-    "cantSeeQueues": {
-      "question": "Pourquoi ne puis-je pas voir mes files d'attente ?",
-      "answer": "Assurez-vous que votre serveur RabbitMQ est en cours d'exécution et accessible. Vérifiez que votre utilisateur dispose des permissions nécessaires pour afficher les files d'attente. Vous pouvez tester la connexion depuis le tableau de bord ou en sélectionnant un autre serveur dans le menu déroulant."
+    "credentialsSecurity": {
+      "question": "Mon mot de passe RabbitMQ est-il stocké de manière sécurisée ?",
+      "answer": "Oui. Vos identifiants serveur sont chiffrés au repos avec un chiffrement AES-256. Ils ne sont jamais exposés dans l'interface après la configuration initiale et sont uniquement utilisés côté serveur pour communiquer avec votre API Management RabbitMQ via HTTPS."
     },
-    "dataStorage": {
-      "question": "Quelles données le tableau de bord stocke-t-il ?",
-      "answer": "Le tableau de bord fonctionne en mode temps réel sans stockage persistant."
+    "readOnly": {
+      "question": "Qarote modifie-t-il mon serveur RabbitMQ ?",
+      "answer": "Qarote est principalement un outil de surveillance en lecture seule. Il utilise l'API Management RabbitMQ pour récupérer les métriques, files d'attente, connexions et données des nœuds. Les actions sur les files (purge, suppression) sont des actions utilisateur explicites nécessitant une confirmation — Qarote ne modifie jamais votre serveur automatiquement."
+    },
+    "compatibility": {
+      "question": "Puis-je utiliser Qarote avec Amazon MQ, CloudAMQP ou en auto-hébergé ?",
+      "answer": "Oui. Qarote fonctionne avec toute instance RabbitMQ qui expose l'API Management, y compris Amazon MQ pour RabbitMQ, CloudAMQP, Bitnami, Docker et les installations bare-metal. Assurez-vous simplement que le plugin Management est activé et que le port API est accessible."
+    },
+    "multipleServers": {
+      "question": "Puis-je surveiller plusieurs serveurs dans différents environnements ?",
+      "answer": "Oui. Vous pouvez ajouter plusieurs serveurs (dev, staging, production) à votre espace de travail et basculer entre eux depuis la barre latérale. Chaque serveur a ses propres paramètres de connexion et sélecteur de virtual host."
+    },
+    "refreshRate": {
+      "question": "À quelle fréquence le tableau de bord actualise-t-il les données ?",
+      "answer": "Les cartes métriques se rafraîchissent toutes les 10 à 30 secondes selon le type de données. Le graphique des messages en file se met à jour toutes les 5 secondes. L'intervalle de rafraîchissement est affiché sur chaque carte. Les données sont récupérées directement depuis votre serveur RabbitMQ et brièvement mises en cache entre les cycles de rafraîchissement pour la performance."
+    },
+    "availability": {
+      "question": "Que se passe-t-il si Qarote tombe en panne ?",
+      "answer": "Rien. Qarote est un observateur passif — il lit les données de vos serveurs RabbitMQ mais n'est pas dans le chemin des messages. Si Qarote est indisponible, vos clusters RabbitMQ continuent de fonctionner normalement. Vous perdez temporairement la visibilité du tableau de bord et les notifications d'alerte."
     },
     "setupAlerts": {
       "question": "Comment configurer les alertes ?",
-      "answer": "Allez sur la page Alertes et créez des règles d'alerte basées sur les métriques des files d'attente comme le nombre de messages, le nombre de consommateurs ou l'utilisation de la mémoire. Vous pouvez définir vos préférences de seuils."
+      "answer": "Allez sur la page Alertes et cliquez sur 'Créer une règle d'alerte'. Choisissez un type de métrique (profondeur de file, mémoire, disque, etc.), définissez un seuil et un niveau de sévérité. Vous serez notifié via vos canaux configurés (email, navigateur, webhook ou Slack) lorsque le seuil est dépassé."
     },
-    "managePermissions": {
-      "question": "Comment gérer les permissions des utilisateurs ?",
-      "answer": "Les administrateurs de l'espace de travail peuvent gérer les rôles et les permissions des utilisateurs depuis la page Utilisateurs. Les différents rôles offrent différents niveaux d'accès aux fonctionnalités et aux données."
+    "teamMembers": {
+      "question": "Comment ajouter des membres à mon espace de travail ?",
+      "answer": "Allez dans Paramètres > Organisation et cliquez sur 'Inviter'. Entrez l'email de votre collègue — il recevra une invitation à rejoindre votre espace de travail. Vous pouvez attribuer des rôles (Membre ou Admin) pour contrôler les niveaux d'accès."
+    },
+    "plans": {
+      "question": "Quelle est la différence entre les plans gratuit et payant ?",
+      "answer": "Le plan gratuit inclut 1 serveur et la surveillance de base. Les plans payants débloquent plusieurs serveurs, les alertes avancées, les intégrations webhook/Slack, la collaboration en équipe et le support prioritaire. Consultez Paramètres > Abonnement pour les détails de votre plan actuel et les options de mise à niveau."
     }
   }
 }

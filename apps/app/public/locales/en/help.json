@@ -28,6 +28,12 @@
     "copyFailed": "Copy failed",
     "copyFailedDescription": "Please manually copy: support@qarote.io"
   },
+  "chat": {
+    "title": "Live Chat",
+    "description": "Prefer real-time help? Start a conversation with our team.",
+    "startChat": "Start a conversation",
+    "unavailable": "Chat is currently unavailable. Please try again later or contact us via email."
+  },
   "community": {
     "title": "Community Support",
     "description": "Join our Discord community to get help from other users and the team."
@@ -36,23 +42,43 @@
   "faqs": {
     "connectServer": {
       "question": "How do I connect to my RabbitMQ server?",
-      "answer": "Go to the Dashboard and look for the server selector or 'Add Server' option. Enter your RabbitMQ connection details including host, port, username, and password. You can test the connection before saving."
+      "answer": "From the sidebar, click the server selector or the gear icon, then 'Add Server'. Enter your RabbitMQ Management API host, port, and credentials. Hit 'Test Connection' to verify before saving. Qarote connects via the HTTP Management API (default port 15672 or 443 for TLS)."
     },
-    "cantSeeQueues": {
-      "question": "Why can't I see my queues?",
-      "answer": "Make sure your RabbitMQ server is running and accessible. Check that your user has the necessary permissions to view queues. You can test the connection from the Dashboard or by selecting a different server from the server dropdown."
+    "credentialsSecurity": {
+      "question": "Is my RabbitMQ password stored securely?",
+      "answer": "Yes. Your server credentials are encrypted at rest using AES-256 encryption. They are never exposed in the UI after initial setup, and are only used server-side to communicate with your RabbitMQ Management API over HTTPS."
     },
-    "dataStorage": {
-      "question": "What data does the dashboard store?",
-      "answer": "The dashboard operates in live mode with no persistent storage."
+    "readOnly": {
+      "question": "Does Qarote modify my RabbitMQ server?",
+      "answer": "Qarote is primarily a read-only monitoring tool. It uses the RabbitMQ Management API to fetch metrics, queues, connections, and node data. Queue actions like purge or delete are explicit user actions that require confirmation — Qarote never modifies your server automatically."
+    },
+    "compatibility": {
+      "question": "Can I use Qarote with Amazon MQ, CloudAMQP, or self-hosted?",
+      "answer": "Yes. Qarote works with any RabbitMQ instance that exposes the Management API, including Amazon MQ for RabbitMQ, CloudAMQP, Bitnami, Docker, and bare-metal installations. Just make sure the Management plugin is enabled and the API port is accessible."
+    },
+    "multipleServers": {
+      "question": "Can I monitor multiple servers across environments?",
+      "answer": "Yes. You can add multiple servers (dev, staging, production) to your workspace and switch between them from the sidebar. Each server has its own connection settings and virtual host selector."
+    },
+    "refreshRate": {
+      "question": "How often does the dashboard refresh data?",
+      "answer": "Metric cards refresh every 10-30 seconds depending on the data type. The queued messages chart updates every 5 seconds. You can see the refresh interval displayed on each card. Data is fetched directly from your RabbitMQ server and briefly cached between refresh cycles for performance."
+    },
+    "availability": {
+      "question": "What happens if Qarote goes down?",
+      "answer": "Nothing. Qarote is a passive observer — it reads data from your RabbitMQ servers but is not in the message path. If Qarote is unavailable, your RabbitMQ clusters continue operating normally. You just temporarily lose dashboard visibility and alert notifications."
     },
     "setupAlerts": {
       "question": "How do I set up alerts?",
-      "answer": "Go to the Alerts page and create alert rules based on queue metrics like message count, consumer count, or memory usage. You can set threshold preferences."
+      "answer": "Go to the Alerts page and click 'Create Alert Rule'. Choose a metric type (queue depth, memory, disk, etc.), set a threshold and severity level. You'll be notified via your configured channels (email, browser, webhook, or Slack) when the threshold is breached."
     },
-    "managePermissions": {
-      "question": "How do I manage user permissions?",
-      "answer": "Workspace administrators can manage user roles and permissions from the Users page. Different roles have different levels of access to features and data."
+    "teamMembers": {
+      "question": "How do I add team members to my workspace?",
+      "answer": "Go to Settings > Organization and click 'Invite'. Enter your teammate's email — they'll receive an invitation to join your workspace. You can assign roles (Member or Admin) to control access levels."
+    },
+    "plans": {
+      "question": "What's the difference between free and paid plans?",
+      "answer": "The free plan includes 1 server and basic monitoring. Paid plans unlock multiple servers, advanced alerts, webhook/Slack integrations, team collaboration, and priority support. Check Settings > Subscription for current plan details and upgrade options."
     }
   }
 }
