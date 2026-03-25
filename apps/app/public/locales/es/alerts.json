@@ -76,6 +76,13 @@
     "description": "Configura las notificaciones por correo electrónico y webhook para nuevas alertas. Selecciona los niveles de gravedad para los que deseas recibir notificaciones.",
     "loadingWorkspace": "Cargando espacio de trabajo...",
     "close": "Cerrar",
+    "tabs": {
+      "general": "General",
+      "email": "Correo",
+      "browser": "Navegador",
+      "webhook": "Webhook",
+      "slack": "Slack"
+    },
     "servers": "Servidores",
     "serversDescription": "Selecciona los servidores para los que deseas recibir notificaciones. Si no se selecciona ninguno, se enviarán notificaciones para todos los servidores.",
     "searchAndSelect": "Buscar y seleccionar servidores...",

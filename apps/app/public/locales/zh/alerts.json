@@ -76,6 +76,13 @@
     "description": "配置新告警的电子邮件和 Webhook 通知。选择您希望接收通知的告警严重级别。",
     "loadingWorkspace": "正在加载工作区...",
     "close": "关闭",
+    "tabs": {
+      "general": "常规",
+      "email": "邮件",
+      "browser": "浏览器",
+      "webhook": "Webhook",
+      "slack": "Slack"
+    },
     "servers": "服务器",
     "serversDescription": "选择您希望接收通知的服务器。如果未选择任何服务器，将发送所有服务器的通知。",
     "searchAndSelect": "搜索并选择服务器...",

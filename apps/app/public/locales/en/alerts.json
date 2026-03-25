@@ -76,6 +76,13 @@
     "description": "Configure email and webhook notifications for new alerts. Select which alert severities you want to receive notifications for.",
     "loadingWorkspace": "Loading workspace...",
     "close": "Close",
+    "tabs": {
+      "general": "General",
+      "email": "Email",
+      "browser": "Browser",
+      "webhook": "Webhook",
+      "slack": "Slack"
+    },
     "servers": "Servers",
     "serversDescription": "Select which servers you want to receive notifications for. If none are selected, notifications will be sent for all servers.",
     "searchAndSelect": "Search and select servers...",
