@@ -1,6 +1,13 @@
 /// <reference types="vite/client" />
 
-// Google Tag Manager type definitions
+interface ImportMetaEnv {
+  readonly VITE_ENVIRONMENT?: string;
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv;
+}
+
 interface Window {
   dataLayer?: unknown[];
   __QAROTE_CONFIG__?: {
