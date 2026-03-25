@@ -18,7 +18,6 @@ import { PageLoader } from "@/components/PageLoader";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { PlanBadge } from "@/components/ui/PlanBadge";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -195,7 +194,6 @@ const Alerts = () => {
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <PlanBadge />
                   {alertsLoading && (
                     <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                   )}

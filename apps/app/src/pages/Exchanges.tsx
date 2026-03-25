@@ -40,7 +40,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { PlanBadge } from "@/components/ui/PlanBadge";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -254,7 +253,6 @@ const Exchanges = () => {
                 </div>
               </div>
               <div className="flex items-center gap-4">
-                <PlanBadge />
                 {isAdmin && (
                   <AddExchangeButton
                     onAddClick={() => setShowCreateExchangeModal(true)}

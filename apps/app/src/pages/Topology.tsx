@@ -25,7 +25,6 @@ import { PageLoader } from "@/components/PageLoader";
 import { ExchangeNode } from "@/components/topology/ExchangeNode";
 import { QueueNode } from "@/components/topology/QueueNode";
 import { Card, CardContent } from "@/components/ui/card";
-import { PlanBadge } from "@/components/ui/PlanBadge";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 
 import { useServerContext } from "@/contexts/ServerContext";
@@ -153,7 +152,6 @@ const Topology = () => {
                     <p className="text-muted-foreground">{t("pageSubtitle")}</p>
                   </div>
                 </div>
-                <PlanBadge />
               </div>
 
               <Card className="border-0 shadow-md bg-card">
