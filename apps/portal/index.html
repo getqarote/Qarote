@@ -10,31 +10,31 @@
     />
     <link rel="icon" type="image/svg+xml" href="images/new_icon.svg" />
 
-    <!-- Google Tag Manager -->
+    <!-- Google Tag Manager (production only) -->
     <script>
-      (function (w, d, s, l, i) {
+      (function () {
+        if ("%VITE_ENVIRONMENT%" !== "production") return;
+        var w = window, d = document, l = "dataLayer", i = "GTM-52CRNTFK";
         w[l] = w[l] || [];
         w[l].push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
-        var f = d.getElementsByTagName(s)[0],
-          j = d.createElement(s),
-          dl = l != "dataLayer" ? "&l=" + l : "";
+        var f = d.getElementsByTagName("script")[0],
+          j = d.createElement("script");
         j.async = true;
-        j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + dl;
+        j.src = "https://www.googletagmanager.com/gtm.js?id=" + i;
         f.parentNode.insertBefore(j, f);
-      })(window, document, "script", "dataLayer", "GTM-52CRNTFK");
+      })();
     </script>
     <!-- End Google Tag Manager -->
   </head>
   <body>
-    <!-- Google Tag Manager (noscript) -->
-    <noscript
-      ><iframe
-        src="https://www.googletagmanager.com/ns.html?id=GTM-52CRNTFK"
-        height="0"
-        width="0"
-        style="display: none; visibility: hidden"
-      ></iframe
-    ></noscript>
+    <!-- Google Tag Manager (noscript) - production only -->
+    <script>
+      if ("%VITE_ENVIRONMENT%" === "production") {
+        document.write(
+          '<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-52CRNTFK" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>'
+        );
+      }
+    </script>
     <!-- End Google Tag Manager (noscript) -->
 
     <div id="root"></div>
