@@ -1,7 +1,11 @@
+import type { Server } from "@/lib/api/types";
+
 import type { Dispatch, SetStateAction } from "react";
 
 /** Shared translation function signature for all notification setting components */
 type TranslationFn = (key: string, options?: Record<string, unknown>) => string;
+
+export type { Server };
 
 export interface SeverityCheckboxGroupProps {
   severities: string[];
@@ -9,13 +13,6 @@ export interface SeverityCheckboxGroupProps {
   disabled?: boolean;
   idPrefix: string;
   t: TranslationFn;
-}
-
-export interface Server {
-  id: string;
-  name: string;
-  host: string;
-  port: number;
 }
 
 export interface GeneralTabProps {

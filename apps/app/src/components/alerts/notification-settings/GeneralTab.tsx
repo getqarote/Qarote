@@ -22,7 +22,6 @@ import type { GeneralTabProps } from "./types";
 
 export function GeneralTab({
   servers,
-  notificationServerIds: _notificationServerIds,
   setNotificationServerIds,
   selectedServers,
   filteredServers,
