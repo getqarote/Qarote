@@ -1,6 +1,16 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
+interface TawkAPI {
+  maximize: () => void;
+}
+
+declare global {
+  interface Window {
+    Tawk_API?: TawkAPI;
+  }
+}
+
 import {
   ChevronDown,
   ChevronRight,
@@ -169,14 +179,8 @@ function HelpSupport() {
                   <CardContent>
                     <Button
                       onClick={() => {
-                        // Try to open Tawk.to chat widget
-                        const w = window as Record<string, unknown>;
-                        if (
-                          w.Tawk_API &&
-                          typeof (w.Tawk_API as Record<string, unknown>)
-                            .maximize === "function"
-                        ) {
-                          (w.Tawk_API as { maximize: () => void }).maximize();
+                        if (window.Tawk_API?.maximize) {
+                          window.Tawk_API.maximize();
                         } else {
                           toast({
                             title: t("chat.unavailable"),
