@@ -35,7 +35,7 @@ function HelpSupport() {
   const { t } = useTranslation("help");
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const { toast } = useToast();
-  const { user: user } = useAuth();
+  const { user } = useAuth();
 
   const faqs = [
     {

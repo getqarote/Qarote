@@ -9,6 +9,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface WebhookExampleModalProps {
   open: boolean;
@@ -38,14 +45,14 @@ export function WebhookExampleModal({
             <Label htmlFor="webhook-version" className="text-sm font-semibold">
               {t("modal.version")}
             </Label>
-            <select
-              id="webhook-version"
-              value={version}
-              onChange={(e) => setVersion(e.target.value)}
-              className="px-3 py-1.5 text-sm border rounded-md bg-background"
-            >
-              <option value="v1">v1</option>
-            </select>
+            <Select value={version} onValueChange={setVersion}>
+              <SelectTrigger id="webhook-version" className="w-20">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="v1">v1</SelectItem>
+              </SelectContent>
+            </Select>
             <span className="text-xs text-muted-foreground">
               {t("modal.onlyV1Available")}
             </span>

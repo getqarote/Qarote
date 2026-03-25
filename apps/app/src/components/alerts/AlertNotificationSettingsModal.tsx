@@ -56,6 +56,7 @@ interface AlertNotificationSettingsModalProps {
 function StatusDot({ enabled }: { enabled: boolean }) {
   return (
     <span
+      aria-hidden="true"
       className={`h-2 w-2 rounded-full shrink-0 ${
         enabled ? "bg-green-500" : "bg-muted-foreground/30"
       }`}

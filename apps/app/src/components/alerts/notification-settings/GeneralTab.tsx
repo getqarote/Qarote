@@ -128,9 +128,11 @@ export function GeneralTab({
                           key={server.id}
                           value={`${server.name} ${server.host} ${server.port}`}
                           onSelect={() => {
-                            const currentIds = notificationServerIds || [];
-                            const newIds = [...currentIds, server.id];
-                            setNotificationServerIds(newIds);
+                            setNotificationServerIds((prev) => {
+                              const ids = new Set(prev || []);
+                              ids.add(server.id);
+                              return Array.from(ids);
+                            });
                             setServerSearchTerm("");
                           }}
                         >
