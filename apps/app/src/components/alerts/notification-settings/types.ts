@@ -1,3 +1,5 @@
+import type { Dispatch, SetStateAction } from "react";
+
 export interface SeverityCheckboxGroupProps {
   severities: string[];
   onChange: (severities: string[]) => void;
@@ -16,7 +18,7 @@ export interface Server {
 export interface GeneralTabProps {
   servers: Server[];
   notificationServerIds: string[] | null;
-  setNotificationServerIds: (ids: string[] | null) => void;
+  setNotificationServerIds: Dispatch<SetStateAction<string[] | null>>;
   selectedServers: Server[];
   filteredServers: Server[];
   selectedCount: number;

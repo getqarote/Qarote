@@ -375,6 +375,18 @@ export function AlertNotificationSettingsModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [notificationSeverities]);
 
+  // Auto-save when notification server IDs change
+  useEffect(() => {
+    if (isInitialMount.current) return;
+    const timeoutId = setTimeout(() => {
+      if (emailNotificationsEnabled) {
+        autoSaveSettings({ onlyEmailNotifications: true });
+      }
+    }, 100);
+    return () => clearTimeout(timeoutId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [notificationServerIds]);
+
   // Auto-save when browser notifications toggle changes
   useEffect(() => {
     if (isInitialMount.current) return;

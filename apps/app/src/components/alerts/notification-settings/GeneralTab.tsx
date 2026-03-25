@@ -22,7 +22,7 @@ import type { GeneralTabProps } from "./types";
 
 export function GeneralTab({
   servers,
-  notificationServerIds,
+  notificationServerIds: _notificationServerIds,
   setNotificationServerIds,
   selectedServers,
   filteredServers,
@@ -64,13 +64,12 @@ export function GeneralTab({
                     type="button"
                     aria-label={`Remove ${server.name || server.id}`}
                     onClick={() => {
-                      const currentIds = notificationServerIds || [];
-                      const newIds = currentIds.filter(
-                        (id) => id !== server.id
-                      );
-                      setNotificationServerIds(
-                        newIds.length > 0 ? newIds : null
-                      );
+                      setNotificationServerIds((prev) => {
+                        const newIds = (prev || []).filter(
+                          (id) => id !== server.id
+                        );
+                        return newIds.length > 0 ? newIds : null;
+                      });
                     }}
                     disabled={isPending}
                     className="ml-1 rounded-full hover:bg-destructive hover:text-destructive-foreground transition-colors"
@@ -192,7 +191,7 @@ export function GeneralTab({
           t={t}
         />
         {notificationSeverities.length === 0 && (
-          <p className="text-xs text-red-500 mt-2">
+          <p className="text-xs text-destructive mt-2">
             {t("modal.selectAtLeastOneSeverity")}
           </p>
         )}
