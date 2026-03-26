@@ -216,6 +216,7 @@ export default function VHostsPage() {
                   {vhosts.length}
                 </Badge>
               </div>
+              <AddVirtualHostButton serverId={currentServerId} />
             </div>
 
             {/* Filter */}
@@ -340,11 +341,6 @@ export default function VHostsPage() {
                 </div>
               </CardContent>
             </Card>
-
-            {/* Add Virtual Host */}
-            <div className="flex justify-end">
-              <AddVirtualHostButton serverId={currentServerId} />
-            </div>
 
             {deleteVHost && (
               <DeleteVHostModal
