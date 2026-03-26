@@ -22,7 +22,6 @@ import {
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -221,9 +220,6 @@ export function EditUserModal({
                       {...field}
                     />
                   </FormControl>
-                  <FormDescription>
-                    {t("passwordUpdatePlaceholder")}
-                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
