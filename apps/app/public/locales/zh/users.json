@@ -78,5 +78,8 @@
   "passwordAwsNote": "在 AWS Amazon MQ 上，即使未设置密码也会生成密码哈希。",
   "passwordKeep": "保留当前密码",
   "passwordNewPlaceholder": "输入新密码",
-  "noVhostsAvailable": "没有可用的虚拟主机"
+  "noVhostsAvailable": "没有可用的虚拟主机",
+  "configureRegexpTooltip": "正则表达式模式，控制用户可以配置哪些资源（创建/删除队列、交换器、绑定）。使用 \".*\" 获得完全访问权限，或使用特定模式如 \"^myqueue.*\"。",
+  "writeRegexpTooltip": "正则表达式模式，控制用户可以向哪些交换器和路由键发布消息。使用 \".*\" 获得完全发布权限，或使用模式如 \"^logs.*\"。",
+  "readRegexpTooltip": "正则表达式模式，控制用户可以从哪些队列消费消息。使用 \".*\" 获得完全读取权限，或使用模式如 \"^user_.*\"。"
 }

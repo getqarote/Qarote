@@ -133,10 +133,10 @@ export function EditUserModal({
     }
     const tagList = currentTags
       .split(",")
-      .map((t) => t.trim())
+      .map((s) => s.trim())
       .filter(Boolean);
     if (tagList.includes(tag)) {
-      form.setValue("tags", tagList.filter((t) => t !== tag).join(", "));
+      form.setValue("tags", tagList.filter((s) => s !== tag).join(", "));
     } else {
       form.setValue("tags", [...tagList, tag].join(", "));
     }

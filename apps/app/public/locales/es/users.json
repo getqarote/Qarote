@@ -78,5 +78,8 @@
   "passwordAwsNote": "En AWS Amazon MQ, siempre se genera un hash de contraseña incluso sin contraseña.",
   "passwordKeep": "Mantener la contraseña actual",
   "passwordNewPlaceholder": "Ingrese nueva contraseña",
-  "noVhostsAvailable": "No hay hosts virtuales disponibles"
+  "noVhostsAvailable": "No hay hosts virtuales disponibles",
+  "configureRegexpTooltip": "Expresión regular que controla qué recursos puede configurar el usuario (crear/eliminar colas, exchanges, enlaces). Use \".*\" para acceso completo o patrones específicos como \"^myqueue.*\".",
+  "writeRegexpTooltip": "Expresión regular que controla en qué exchanges y claves de enrutamiento puede publicar mensajes el usuario. Use \".*\" para acceso completo o patrones como \"^logs.*\".",
+  "readRegexpTooltip": "Expresión regular que controla de qué colas puede consumir mensajes el usuario. Use \".*\" para acceso completo o patrones como \"^user_.*\"."
 }

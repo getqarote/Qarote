@@ -468,13 +468,7 @@ export default function UserDetailsPage() {
                           </label>
                         </TooltipTrigger>
                         <TooltipContent side="top" className="max-w-xs">
-                          <p>
-                            Regular expression pattern controlling which
-                            resources the user can configure (create/delete
-                            queues, exchanges, bindings). Use ".*" for full
-                            access or specific patterns like "^myqueue.*" for
-                            resources starting with "myqueue".
-                          </p>
+                          <p>{t("configureRegexpTooltip")}</p>
                         </TooltipContent>
                       </Tooltip>
                       <Input
@@ -492,12 +486,7 @@ export default function UserDetailsPage() {
                           </label>
                         </TooltipTrigger>
                         <TooltipContent side="top" className="max-w-xs">
-                          <p>
-                            Regular expression pattern controlling which
-                            exchanges and routing keys the user can publish
-                            messages to. Use ".*" for full publish access or
-                            patterns like "^logs.*" for specific routing keys.
-                          </p>
+                          <p>{t("writeRegexpTooltip")}</p>
                         </TooltipContent>
                       </Tooltip>
                       <Input
@@ -515,13 +504,7 @@ export default function UserDetailsPage() {
                           </label>
                         </TooltipTrigger>
                         <TooltipContent side="top" className="max-w-xs">
-                          <p>
-                            Regular expression pattern controlling which queues
-                            the user can consume messages from (read/get
-                            operations). Use ".*" for full read access or
-                            patterns like "^user_.*" for queues starting with
-                            "user_".
-                          </p>
+                          <p>{t("readRegexpTooltip")}</p>
                         </TooltipContent>
                       </Tooltip>
                       <Input
