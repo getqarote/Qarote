@@ -89,15 +89,15 @@ export default function UserDetailsPage() {
   // Check if this is the connection user (the account Qarote uses to connect)
   const isConnectionUser = currentServer?.username === decodedUsername;
 
-  // Check if this is a protected user (e.g., AWS-managed system accounts)
-  const isProtectedUser = userData?.user?.tags?.includes("protected") ?? false;
-
   const {
     data: userData,
     isLoading,
     error,
     refetch,
   } = useUser(currentServerId, decodedUsername, serverExists);
+
+  // Check if this is a protected user (e.g., AWS-managed system accounts)
+  const isProtectedUser = userData?.user?.tags?.includes("protected") ?? false;
 
   // Fetch available virtual hosts for the dropdown
   const { data: vhostsData, isLoading: vhostsLoading } = useVHosts(
