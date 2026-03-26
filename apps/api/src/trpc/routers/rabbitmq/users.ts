@@ -214,9 +214,16 @@ export const usersRouter = router({
         }
         if (password) {
           payload.password = password;
-        }
-        if (removePassword) {
+        } else if (removePassword) {
           payload.password_hash = "";
+        } else {
+          // Preserve existing password by fetching the current hash
+          // RabbitMQ PUT /users/{name} is a full replacement, so omitting
+          // password/password_hash would remove the existing password
+          const existingUser = await client.getUser(username);
+          if (existingUser?.password_hash) {
+            payload.password_hash = existingUser.password_hash;
+          }
         }
 
         ctx.logger.debug(
