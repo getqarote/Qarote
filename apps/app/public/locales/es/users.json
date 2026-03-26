@@ -74,5 +74,6 @@
   "noPassword": "Sin contraseña",
   "deleteUserConfirmation": "¿Está seguro de que desea eliminar al usuario <strong>{{name}}</strong>? Esta acción no se puede deshacer.",
   "deleting": "Eliminando...",
-  "cannotModifyProtectedUser": "Este es un usuario del sistema protegido y no se puede modificar ni eliminar."
+  "cannotModifyProtectedUser": "Este es un usuario del sistema protegido y no se puede modificar ni eliminar.",
+  "passwordAwsNote": "En AWS Amazon MQ, siempre se genera un hash de contraseña incluso sin contraseña."
 }

@@ -205,6 +205,7 @@ export function CreateUserModal({
                       {...field}
                     />
                   </FormControl>
+                  <FormDescription>{t("passwordAwsNote")}</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
