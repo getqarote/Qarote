@@ -551,15 +551,16 @@ export default function UserDetailsPage() {
                   >
                     {t("deleteUser")}
                   </Button>
-                  {decodedUsername === "admin" && (
-                    <p className="text-sm text-muted-foreground mt-2">
-                      {t("cannotDeleteAdmin")}
-                    </p>
-                  )}
-                  {isConnectionUser && (
+                  {isConnectionUser ? (
                     <p className="text-sm text-muted-foreground mt-2">
                       {t("cannotModifyConnectionUser")}
                     </p>
+                  ) : (
+                    decodedUsername === "admin" && (
+                      <p className="text-sm text-muted-foreground mt-2">
+                        {t("cannotDeleteAdmin")}
+                      </p>
+                    )
                   )}
                 </CardContent>
               </Card>
