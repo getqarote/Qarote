@@ -75,5 +75,7 @@
   "deleteUserConfirmation": "Are you sure you want to delete user <strong>{{name}}</strong>? This action cannot be undone.",
   "deleting": "Deleting...",
   "cannotModifyProtectedUser": "This is a protected system user and cannot be modified or deleted.",
-  "passwordAwsNote": "On AWS Amazon MQ, a password hash is always generated even without a password."
+  "passwordAwsNote": "On AWS Amazon MQ, a password hash is always generated even without a password.",
+  "passwordKeep": "Keep current password",
+  "passwordNewPlaceholder": "Enter new password"
 }

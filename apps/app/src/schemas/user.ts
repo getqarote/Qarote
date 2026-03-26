@@ -12,7 +12,7 @@ export type CreateUserForm = z.infer<typeof createUserSchema>;
 export const editUserSchema = z.object({
   password: z.string().optional(),
   tags: z.string().optional().default(""),
-  removePassword: z.boolean().default(false),
+  passwordAction: z.enum(["keep", "set", "remove"]).default("keep"),
 });
 
 export type EditUserForm = z.infer<typeof editUserSchema>;

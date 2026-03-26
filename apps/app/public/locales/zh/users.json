@@ -75,5 +75,7 @@
   "deleteUserConfirmation": "确定要删除用户 <strong>{{name}}</strong> 吗？此操作无法撤消。",
   "deleting": "删除中...",
   "cannotModifyProtectedUser": "这是受保护的系统用户，无法修改或删除。",
-  "passwordAwsNote": "在 AWS Amazon MQ 上，即使未设置密码也会生成密码哈希。"
+  "passwordAwsNote": "在 AWS Amazon MQ 上，即使未设置密码也会生成密码哈希。",
+  "passwordKeep": "保留当前密码",
+  "passwordNewPlaceholder": "输入新密码"
 }

@@ -10,7 +10,6 @@ import { toast } from "sonner";
 import { RabbitMQUser } from "@/lib/api/userTypes";
 
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -28,6 +27,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 import { useUpdateUser } from "@/hooks/queries/useRabbitMQUsers";
 import { useWorkspace } from "@/hooks/ui/useWorkspace";
@@ -65,7 +65,7 @@ export function EditUserModal({
     defaultValues: {
       password: "",
       tags: user.tags?.join(", ") || "",
-      removePassword: false,
+      passwordAction: "keep",
     },
   });
 
@@ -75,14 +75,12 @@ export function EditUserModal({
       form.reset({
         password: "",
         tags: user.tags?.join(", ") || "",
-        removePassword: false,
+        passwordAction: "keep",
       });
     }
   }, [isOpen, user]);
 
   const updateUserMutation = useUpdateUser();
-
-  const removePassword = form.watch("removePassword");
 
   // Handle success/error
   useEffect(() => {
@@ -113,9 +111,12 @@ export function EditUserModal({
       serverId,
       workspaceId: workspace.id,
       username: user.name,
-      password: data.removePassword ? "" : data.password?.trim() || undefined,
+      password:
+        data.passwordAction === "set"
+          ? data.password?.trim() || undefined
+          : undefined,
       tags: data.tags || "",
-      removePassword: data.removePassword,
+      removePassword: data.passwordAction === "remove",
     });
   };
 
@@ -190,35 +191,74 @@ export function EditUserModal({
 
             <FormField
               control={form.control}
-              name="removePassword"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                  <FormControl>
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                  <div className="space-y-1 leading-none">
-                    <FormLabel>{t("removePassword")}</FormLabel>
-                  </div>
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="password"
+              name="passwordAction"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>{t("password")}</FormLabel>
                   <FormControl>
-                    <Input
-                      type="password"
-                      placeholder={t("passwordUpdatePlaceholder")}
-                      disabled={removePassword}
-                      {...field}
-                    />
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="radio"
+                          id="pw-keep"
+                          value="keep"
+                          checked={field.value === "keep"}
+                          onChange={() => field.onChange("keep")}
+                          className="accent-primary"
+                        />
+                        <Label
+                          htmlFor="pw-keep"
+                          className="font-normal cursor-pointer"
+                        >
+                          {t("passwordKeep")}
+                        </Label>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="radio"
+                            id="pw-set"
+                            value="set"
+                            checked={field.value === "set"}
+                            onChange={() => field.onChange("set")}
+                            className="accent-primary"
+                          />
+                          <Label
+                            htmlFor="pw-set"
+                            className="font-normal cursor-pointer"
+                          >
+                            {t("passwordSet")}
+                          </Label>
+                        </div>
+                        {field.value === "set" && (
+                          <Input
+                            type="password"
+                            placeholder={t("passwordNewPlaceholder")}
+                            value={form.watch("password") || ""}
+                            onChange={(e) =>
+                              form.setValue("password", e.target.value)
+                            }
+                            className="ml-6"
+                          />
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="radio"
+                          id="pw-remove"
+                          value="remove"
+                          checked={field.value === "remove"}
+                          onChange={() => field.onChange("remove")}
+                          className="accent-primary"
+                        />
+                        <Label
+                          htmlFor="pw-remove"
+                          className="font-normal cursor-pointer text-red-600"
+                        >
+                          {t("removePassword")}
+                        </Label>
+                      </div>
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
