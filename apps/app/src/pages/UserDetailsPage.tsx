@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 
-import { AlertCircle, ArrowLeft, HelpCircle } from "lucide-react";
+import { ArrowLeft, HelpCircle } from "lucide-react";
 import { toast } from "sonner";
 
 import { UserRole } from "@/lib/api";
@@ -10,8 +10,8 @@ import { formatTagsDisplay } from "@/lib/formatTags";
 
 import { AppSidebar } from "@/components/AppSidebar";
 import { ConnectionStatus } from "@/components/ConnectionStatus";
+import { PageError } from "@/components/PageError";
 import { PageLoader } from "@/components/PageLoader";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -91,6 +91,7 @@ export default function UserDetailsPage() {
     data: userData,
     isLoading,
     error,
+    refetch,
   } = useUser(currentServerId, decodedUsername, serverExists);
 
   // Fetch available virtual hosts for the dropdown
@@ -181,12 +182,10 @@ export default function UserDetailsPage() {
           <AppSidebar />
           <main className="main-content">
             <div className="container mx-auto">
-              <Alert>
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                  {t("failedToLoad")}: {(error as Error).message}
-                </AlertDescription>
-              </Alert>
+              <PageError
+                message={`${t("failedToLoad")}: ${(error as Error).message}`}
+                onRetry={() => refetch()}
+              />
             </div>
           </main>
         </div>

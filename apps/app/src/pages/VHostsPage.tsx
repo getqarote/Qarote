@@ -19,6 +19,7 @@ import { VHost } from "@/lib/api/vhostTypes";
 import { AddVirtualHostButton } from "@/components/AddVirtualHostButton";
 import { AppSidebar } from "@/components/AppSidebar";
 import { NoServerConfigured } from "@/components/NoServerConfigured";
+import { PageError } from "@/components/PageError";
 import { PageLoader } from "@/components/PageLoader";
 import { PlanUpgradeModal } from "@/components/plans/PlanUpgradeModal";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -67,6 +68,7 @@ export default function VHostsPage() {
     data: vhostsData,
     isLoading,
     error,
+    refetch,
   } = useVHosts(currentServerId, serverExists);
 
   const deleteVHostMutation = useDeleteVHost();
@@ -172,12 +174,10 @@ export default function VHostsPage() {
               <div className="flex items-center gap-4">
                 <SidebarTrigger />
               </div>
-              <Alert>
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                  Failed to load virtual hosts: {(error as Error).message}
-                </AlertDescription>
-              </Alert>
+              <PageError
+                message={`${t("failedToLoad")}: ${(error as Error).message}`}
+                onRetry={() => refetch()}
+              />
             </div>
           </main>
         </div>

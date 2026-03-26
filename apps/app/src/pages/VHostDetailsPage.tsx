@@ -2,15 +2,15 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 
-import { AlertCircle, ArrowLeft, Lock, Pencil, Radio } from "lucide-react";
+import { ArrowLeft, Lock, Pencil, Radio } from "lucide-react";
 import { toast } from "sonner";
 
 import { UserRole } from "@/lib/api";
 
 import { AppSidebar } from "@/components/AppSidebar";
 import { ConnectionStatus } from "@/components/ConnectionStatus";
+import { PageError } from "@/components/PageError";
 import { PageLoader } from "@/components/PageLoader";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -79,6 +79,7 @@ export default function VHostDetailsPage() {
     data: vhostData,
     isLoading,
     error,
+    refetch,
   } = useVHost(currentServerId, decodedVHostName, serverExists);
 
   // Fetch users for the permission form
@@ -250,12 +251,10 @@ export default function VHostDetailsPage() {
           <AppSidebar />
           <main className="main-content">
             <div className="container mx-auto">
-              <Alert>
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                  {t("failedToLoad")}: {(error as Error).message}
-                </AlertDescription>
-              </Alert>
+              <PageError
+                message={`${t("failedToLoad")}: ${(error as Error).message}`}
+                onRetry={() => refetch()}
+              />
             </div>
           </main>
         </div>
