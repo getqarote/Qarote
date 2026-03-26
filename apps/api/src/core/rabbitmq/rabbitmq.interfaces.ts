@@ -689,12 +689,14 @@ export interface VHostTopicPermissions {
 export interface CreateVHostRequest {
   name: string;
   description?: string;
+  default_queue_type?: string;
   tags?: string[];
   tracing?: boolean;
 }
 
 export interface UpdateVHostRequest {
   description?: string;
+  default_queue_type?: string;
   tags?: string[];
   tracing?: boolean;
 }

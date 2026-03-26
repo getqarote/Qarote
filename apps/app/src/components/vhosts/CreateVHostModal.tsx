@@ -26,6 +26,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 
 import { useCreateVHost } from "@/hooks/queries/useRabbitMQVHosts";
@@ -99,6 +106,7 @@ export function CreateVHostModal({
       workspaceId: workspace.id,
       name: data.name,
       description: data.description,
+      default_queue_type: data.default_queue_type,
       tracing: data.tracing,
     });
   };
@@ -152,6 +160,32 @@ export function CreateVHostModal({
                       {...field}
                     />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="default_queue_type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Default Queue Type (Optional)</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Server default" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="classic">Classic</SelectItem>
+                      <SelectItem value="quorum">Quorum</SelectItem>
+                      <SelectItem value="stream">Stream</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormDescription>
+                    Default type for queues created in this virtual host
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}

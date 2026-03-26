@@ -723,6 +723,7 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
         method: "PUT",
         body: JSON.stringify({
           description: data.description,
+          default_queue_type: data.default_queue_type,
           tags: data.tags,
           tracing: data.tracing,
         }),

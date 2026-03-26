@@ -27,6 +27,13 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 
 import { useUpdateVHost } from "@/hooks/queries/useRabbitMQVHosts";
@@ -54,6 +61,10 @@ export function EditVHostModal({
     resolver: zodResolver(editVHostSchema),
     defaultValues: {
       description: vhost.description || "",
+      default_queue_type:
+        vhost.default_queue_type && vhost.default_queue_type !== "undefined"
+          ? (vhost.default_queue_type as "classic" | "quorum" | "stream")
+          : undefined,
       tracing: vhost.tracing || false,
     },
   });
@@ -128,6 +139,32 @@ export function EditVHostModal({
                       {...field}
                     />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="default_queue_type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Default Queue Type</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Server default" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="classic">Classic</SelectItem>
+                      <SelectItem value="quorum">Quorum</SelectItem>
+                      <SelectItem value="stream">Stream</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormDescription>
+                    Default type for queues created in this virtual host
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
