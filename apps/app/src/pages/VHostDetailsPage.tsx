@@ -325,12 +325,12 @@ export default function VHostDetailsPage() {
                         {t("tracing")}
                       </Badge>
                     )}
-                    {vhost.default_queue_type &&
-                      vhost.default_queue_type !== "undefined" && (
-                        <Badge variant="outline">
-                          {vhost.default_queue_type}
-                        </Badge>
-                      )}
+                    <Badge variant="outline">
+                      {vhost.default_queue_type &&
+                      vhost.default_queue_type !== "undefined"
+                        ? vhost.default_queue_type
+                        : "classic"}
+                    </Badge>
                   </div>
                   {vhost.description && (
                     <p className="text-sm text-muted-foreground mt-1">

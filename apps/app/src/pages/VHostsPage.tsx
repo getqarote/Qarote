@@ -300,7 +300,7 @@ export default function VHostsPage() {
                                   )}
                                 </div>
                                 {vhost.description && (
-                                  <p className="text-xs text-muted-foreground font-normal truncate">
+                                  <p className="text-xs text-muted-foreground font-normal truncate max-w-[300px]">
                                     {vhost.description}
                                   </p>
                                 )}
