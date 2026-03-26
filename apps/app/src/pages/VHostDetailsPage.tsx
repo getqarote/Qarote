@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 
-import { AlertCircle, ArrowLeft, Lock, Radio } from "lucide-react";
+import { AlertCircle, ArrowLeft, Lock, Pencil, Radio } from "lucide-react";
 import { toast } from "sonner";
 
 import { UserRole } from "@/lib/api";
@@ -339,7 +339,18 @@ export default function VHostDetailsPage() {
                   )}
                 </div>
               </div>
-              <ConnectionStatus />
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowEditModal(true)}
+                  className="flex items-center gap-2"
+                >
+                  <Pencil className="h-3 w-3" />
+                  {t("common:edit")}
+                </Button>
+                <ConnectionStatus />
+              </div>
             </div>
 
             {/* Message stats */}
