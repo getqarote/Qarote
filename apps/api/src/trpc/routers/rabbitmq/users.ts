@@ -45,8 +45,27 @@ export const usersRouter = router({
         const client = createRabbitMQClientFromServer(verifiedServer);
         const users = await client.getUsers();
 
+        // Fetch permissions for all users in parallel to build accessible vhosts map
+        const permissionsResults = await Promise.allSettled(
+          users.map((user) => client.getUserPermissions(user.name))
+        );
+
+        const accessibleVhostsMap = new Map<string, string[]>();
+        users.forEach((user, index) => {
+          const result = permissionsResults[index];
+          if (result.status === "fulfilled" && result.value) {
+            accessibleVhostsMap.set(
+              user.name,
+              result.value.map((p) => p.vhost)
+            );
+          }
+        });
+
         // Map users to API response format (only include fields used by web)
-        const mappedUsers = UserMapper.toApiResponseArray(users);
+        const mappedUsers = UserMapper.toApiResponseArray(
+          users,
+          accessibleVhostsMap
+        );
 
         return { users: mappedUsers };
       } catch (error) {
