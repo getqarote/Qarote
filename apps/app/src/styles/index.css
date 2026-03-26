@@ -197,7 +197,7 @@
 
 @utility page-layout {
   /* Page Layout Components */
-  @apply h-dvh flex w-full overflow-hidden;
+  @apply h-full flex w-full overflow-hidden;
 }
 
 @utility btn-primary {
