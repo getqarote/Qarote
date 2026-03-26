@@ -237,11 +237,11 @@
 
 @utility main-content {
   /* Main Content Layout */
-  @apply flex-1 p-6 overflow-auto;
+  @apply flex-1 p-6 pb-12 min-h-0 overflow-auto;
 }
 
 @utility main-content-scrollable {
-  @apply flex-1 p-4 sm:p-6 overflow-auto;
+  @apply flex-1 p-4 sm:p-6 pb-12 min-h-0 overflow-auto;
 }
 
 @utility content-container {
