@@ -13,7 +13,7 @@
   "hasPassword": "Possède un mot de passe",
   "addUser": "Ajouter un utilisateur",
   "username": "Nom d'utilisateur",
-  "usernamePlaceholder": "briceth",
+  "usernamePlaceholder": "ex. jean_dupont",
   "password": "Mot de passe",
   "passwordPlaceholder": "Laisser vide pour l'authentification par certificat",
   "passwordOptional": "(facultatif)",

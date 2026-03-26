@@ -13,7 +13,7 @@
   "hasPassword": "Has password",
   "addUser": "Add user",
   "username": "Username",
-  "usernamePlaceholder": "briceth",
+  "usernamePlaceholder": "e.g., john_doe",
   "password": "Password",
   "passwordPlaceholder": "Leave empty for certificate-based auth",
   "passwordOptional": "(optional)",

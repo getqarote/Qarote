@@ -13,7 +13,7 @@
   "hasPassword": "已设密码",
   "addUser": "添加用户",
   "username": "用户名",
-  "usernamePlaceholder": "briceth",
+  "usernamePlaceholder": "例如 john_doe",
   "password": "密码",
   "passwordPlaceholder": "留空则使用基于证书的认证",
   "passwordOptional": "（可选）",

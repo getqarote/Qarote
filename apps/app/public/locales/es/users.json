@@ -13,7 +13,7 @@
   "hasPassword": "Tiene contrase\u00f1a",
   "addUser": "Agregar usuario",
   "username": "Nombre de usuario",
-  "usernamePlaceholder": "briceth",
+  "usernamePlaceholder": "ej. juan_perez",
   "password": "Contrase\u00f1a",
   "passwordPlaceholder": "Dejar vac\u00edo para autenticaci\u00f3n basada en certificado",
   "passwordOptional": "(opcional)",
