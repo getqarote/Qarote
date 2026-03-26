@@ -200,7 +200,11 @@ export function EditVHostModal({
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={updateVHostMutation.isPending}>
+              <Button
+                type="submit"
+                disabled={updateVHostMutation.isPending}
+                className="btn-primary text-white"
+              >
                 {updateVHostMutation.isPending ? "Updating..." : "Update"}
               </Button>
             </DialogFooter>
