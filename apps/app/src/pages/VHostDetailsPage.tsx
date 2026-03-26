@@ -290,19 +290,19 @@ export default function VHostDetailsPage() {
         <main className="main-content">
           <div className="max-w-6xl mx-auto space-y-8">
             {/* Header */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <SidebarTrigger className="mr-2" />
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex items-start gap-2 min-w-0">
+                <SidebarTrigger className="mr-2 mt-1" />
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => navigate("/vhosts")}
-                  className="mr-2 flex items-center gap-1"
+                  className="mr-2 flex items-center gap-1 shrink-0"
                 >
                   <ArrowLeft className="h-4 w-4" />
                 </Button>
-                <div>
-                  <div className="flex items-center gap-2">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <h1 className="title-page">
                       {t("virtualHostPrefix", { name: decodedVHostName })}
                     </h1>
@@ -333,13 +333,13 @@ export default function VHostDetailsPage() {
                     </Badge>
                   </div>
                   {vhost.description && (
-                    <p className="text-sm text-muted-foreground mt-1 max-w-2xl line-clamp-2">
+                    <p className="text-sm text-muted-foreground mt-1 line-clamp-2 break-all">
                       {vhost.description}
                     </p>
                   )}
                 </div>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 shrink-0">
                 <Button
                   variant="outline"
                   size="sm"
