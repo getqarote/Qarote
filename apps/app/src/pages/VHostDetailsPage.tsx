@@ -8,7 +8,6 @@ import { toast } from "sonner";
 import { UserRole } from "@/lib/api";
 
 import { AppSidebar } from "@/components/AppSidebar";
-import { ConnectionStatus } from "@/components/ConnectionStatus";
 import { PageError } from "@/components/PageError";
 import { PageLoader } from "@/components/PageLoader";
 import { Badge } from "@/components/ui/badge";
@@ -338,18 +337,13 @@ export default function VHostDetailsPage() {
                   )}
                 </div>
               </div>
-              <div className="flex items-center gap-3 shrink-0">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowEditModal(true)}
-                  className="flex items-center gap-2"
-                >
-                  <Pencil className="h-3 w-3" />
-                  {t("common:edit")}
-                </Button>
-                <ConnectionStatus />
-              </div>
+              <Button
+                onClick={() => setShowEditModal(true)}
+                className="btn-primary text-white flex items-center gap-2 shrink-0"
+              >
+                <Pencil className="h-4 w-4" />
+                {t("common:edit")}
+              </Button>
             </div>
 
             {/* Message stats */}
