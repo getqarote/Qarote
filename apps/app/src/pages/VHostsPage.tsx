@@ -35,7 +35,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { CreateVHostModal } from "@/components/vhosts/CreateVHostModal";
 import { DeleteVHostModal } from "@/components/vhosts/DeleteVHostModal";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
@@ -54,10 +53,8 @@ export default function VHostsPage() {
   const { data: serversData } = useServers();
   const servers = serversData?.servers || [];
 
-  const [showCreateModal, setShowCreateModal] = useState(false);
   const [deleteVHost, setDeleteVHost] = useState<VHost | null>(null);
   const [filterRegex, setFilterRegex] = useState("");
-  const [newVHostName, setNewVHostName] = useState("");
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   const currentServerId = serverId || selectedServerId;
@@ -344,45 +341,10 @@ export default function VHostsPage() {
               </CardContent>
             </Card>
 
-            {/* Add Virtual Host Form */}
-            <Card className="border-0 shadow-md bg-card">
-              <CardHeader>
-                <CardTitle className="text-lg">{t("addVhost")}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-end gap-4">
-                  <div className="flex-1">
-                    <label
-                      htmlFor="vhost-name"
-                      className="block text-sm font-medium mb-2"
-                    >
-                      {t("vhostName")}
-                    </label>
-                    <Input
-                      id="vhost-name"
-                      value={newVHostName}
-                      onChange={(e) => setNewVHostName(e.target.value)}
-                      placeholder={t("vhostPlaceholder")}
-                      className="max-w-md"
-                    />
-                  </div>
-                  <AddVirtualHostButton
-                    serverId={currentServerId}
-                    onSuccess={() => setNewVHostName("")}
-                    initialName={newVHostName}
-                  />
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Modals */}
-            <CreateVHostModal
-              isOpen={showCreateModal}
-              onClose={() => setShowCreateModal(false)}
-              serverId={currentServerId}
-              initialName={newVHostName}
-              onSuccess={() => setNewVHostName("")}
-            />
+            {/* Add Virtual Host */}
+            <div className="flex justify-end">
+              <AddVirtualHostButton serverId={currentServerId} />
+            </div>
 
             {deleteVHost && (
               <DeleteVHostModal
