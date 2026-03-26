@@ -15,6 +15,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import {
   Table,
@@ -428,22 +435,22 @@ export default function UserDetailsPage() {
                       <label className="block text-sm font-medium mb-2">
                         {t("virtualHost")}
                       </label>
-                      <select
-                        className="w-full p-2 border rounded-md bg-background"
+                      <Select
                         value={selectedVHost}
-                        onChange={(e) => setSelectedVHost(e.target.value)}
+                        onValueChange={(value) => setSelectedVHost(value)}
                         disabled={vhostsLoading}
                       >
-                        {vhostsLoading ? (
-                          <option value="/">{t("common:loading")}</option>
-                        ) : (
-                          vhostsData?.vhosts?.map((vhost) => (
-                            <option key={vhost.name} value={vhost.name}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {vhostsData?.vhosts?.map((vhost) => (
+                            <SelectItem key={vhost.name} value={vhost.name}>
                               {vhost.name}
-                            </option>
-                          )) || <option value="/">/</option>
-                        )}
-                      </select>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                     <div>
                       <Tooltip>
