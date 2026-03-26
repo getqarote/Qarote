@@ -64,5 +64,14 @@
   "createError": "Error al crear el usuario",
   "setPermissionsError": "Error al establecer los permisos",
   "usernameRequired": "El nombre de usuario es obligatorio",
-  "creating": "Creando..."
+  "creating": "Creando...",
+  "createUserDescription": "Agregar un nuevo usuario de RabbitMQ con contraseña y roles opcionales.",
+  "cancel": "Cancelar",
+  "create": "Crear",
+  "editUser": "Editar usuario",
+  "editUserDescription": "Actualizar la configuración del usuario <strong>{{name}}</strong>.",
+  "passwordSet": "Contraseña establecida",
+  "noPassword": "Sin contraseña",
+  "deleteUserConfirmation": "¿Está seguro de que desea eliminar al usuario <strong>{{name}}</strong>? Esta acción no se puede deshacer.",
+  "deleting": "Eliminando..."
 }

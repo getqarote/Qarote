@@ -14,7 +14,6 @@ import { toast } from "sonner";
 
 import { UserRole } from "@/lib/api";
 import { RabbitMQUser } from "@/lib/api/userTypes";
-import { formatTagsDisplay, formatVhostsDisplay } from "@/lib/formatTags";
 
 import { AppSidebar } from "@/components/AppSidebar";
 import { NoServerConfigured } from "@/components/NoServerConfigured";
@@ -43,7 +42,6 @@ import { useAuth } from "@/contexts/AuthContextDefinition";
 import { useServerContext } from "@/contexts/ServerContext";
 
 import { useDeleteUser, useUsers } from "@/hooks/queries/useRabbitMQUsers";
-import { useVHosts } from "@/hooks/queries/useRabbitMQVHosts";
 import { useServers } from "@/hooks/queries/useServer";
 import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
@@ -58,10 +56,6 @@ export default function UsersPage() {
 
   const [deleteUser, setDeleteUser] = useState<RabbitMQUser | null>(null);
   const [filterRegex, setFilterRegex] = useState("");
-  const [newUserName, setNewUserName] = useState("");
-  const [newUserPassword, setNewUserPassword] = useState("");
-  const [newUserTags, setNewUserTags] = useState("");
-  const [newUserVhost, setNewUserVhost] = useState("/");
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   const currentServerId = serverId || selectedServerId;
@@ -76,8 +70,6 @@ export default function UsersPage() {
     error,
     refetch,
   } = useUsers(currentServerId, serverExists);
-
-  const { data: vhostsData } = useVHosts(currentServerId, serverExists);
 
   const deleteUserMutation = useDeleteUser();
   const { workspace } = useWorkspace();
@@ -225,6 +217,7 @@ export default function UsersPage() {
                     {users.length}
                   </Badge>
                 </div>
+                <AddUserButton serverId={currentServerId} />
               </div>
 
               {/* Filter */}
@@ -284,10 +277,39 @@ export default function UsersPage() {
                               </div>
                             </TableCell>
                             <TableCell>
-                              {formatTagsDisplay(user.tags)}
+                              {user.tags && user.tags.length > 0 ? (
+                                <div className="flex flex-wrap gap-1">
+                                  {user.tags.map((tag) => (
+                                    <Badge
+                                      key={tag}
+                                      variant="secondary"
+                                      className="text-xs"
+                                    >
+                                      {tag}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              ) : (
+                                <span className="text-muted-foreground">-</span>
+                              )}
                             </TableCell>
                             <TableCell>
-                              {formatVhostsDisplay(user.accessibleVhosts)}
+                              {user.accessibleVhosts &&
+                              user.accessibleVhosts.length > 0 ? (
+                                <div className="flex flex-wrap gap-1">
+                                  {user.accessibleVhosts.map((vhost) => (
+                                    <Badge
+                                      key={vhost}
+                                      variant="outline"
+                                      className="text-xs"
+                                    >
+                                      {vhost}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              ) : (
+                                <span className="text-muted-foreground">-</span>
+                              )}
                             </TableCell>
                             <TableCell>
                               <div
@@ -328,185 +350,6 @@ export default function UsersPage() {
                         ))}
                       </TableBody>
                     </Table>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Add User Form */}
-              <Card className="border-0 shadow-md bg-card">
-                <CardHeader>
-                  <CardTitle className="text-lg">{t("addUser")}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 gap-6 max-w-lg">
-                    <div>
-                      <label
-                        htmlFor="user-name"
-                        className="block text-sm font-medium mb-2"
-                      >
-                        {t("username")}
-                      </label>
-                      <Input
-                        id="user-name"
-                        value={newUserName}
-                        onChange={(e) => setNewUserName(e.target.value)}
-                        placeholder={t("usernamePlaceholder")}
-                        className="w-full"
-                      />
-                    </div>
-
-                    <div>
-                      <label
-                        htmlFor="user-password"
-                        className="block text-sm font-medium mb-2"
-                      >
-                        {t("password")}{" "}
-                        <span className="text-muted-foreground">
-                          {t("passwordOptional")}
-                        </span>
-                      </label>
-                      <Input
-                        id="user-password"
-                        type="password"
-                        value={newUserPassword}
-                        onChange={(e) => setNewUserPassword(e.target.value)}
-                        placeholder={t("passwordPlaceholder")}
-                        className="w-full"
-                      />
-                    </div>
-
-                    <div>
-                      <label
-                        htmlFor="user-tags"
-                        className="block text-sm font-medium mb-2"
-                      >
-                        {t("tagLabel")}
-                      </label>
-                      <Input
-                        id="user-tags"
-                        value={newUserTags}
-                        onChange={(e) => setNewUserTags(e.target.value)}
-                        placeholder={t("tagPlaceholder")}
-                        className="w-full"
-                      />
-                      <div className="mt-2 text-sm text-muted-foreground">
-                        <span
-                          className="font-medium cursor-pointer hover:text-foreground transition-colors"
-                          onClick={() => {
-                            const tag = "administrator";
-                            if (newUserTags.trim()) {
-                              setNewUserTags(newUserTags + ", " + tag);
-                            } else {
-                              setNewUserTags(tag);
-                            }
-                          }}
-                        >
-                          {t("administrator")}
-                        </span>{" "}
-                        |{" "}
-                        <span
-                          className="font-medium cursor-pointer hover:text-foreground transition-colors"
-                          onClick={() => {
-                            const tag = "policymaker";
-                            if (newUserTags.trim()) {
-                              setNewUserTags(newUserTags + ", " + tag);
-                            } else {
-                              setNewUserTags(tag);
-                            }
-                          }}
-                        >
-                          {t("policymaker")}
-                        </span>{" "}
-                        |{" "}
-                        <span
-                          className="font-medium cursor-pointer hover:text-foreground transition-colors"
-                          onClick={() => {
-                            const tag = "monitoring";
-                            if (newUserTags.trim()) {
-                              setNewUserTags(newUserTags + ", " + tag);
-                            } else {
-                              setNewUserTags(tag);
-                            }
-                          }}
-                        >
-                          {t("monitoring")}
-                        </span>{" "}
-                        |{" "}
-                        <span
-                          className="font-medium cursor-pointer hover:text-foreground transition-colors"
-                          onClick={() => {
-                            const tag = "management";
-                            if (newUserTags.trim()) {
-                              setNewUserTags(newUserTags + ", " + tag);
-                            } else {
-                              setNewUserTags(tag);
-                            }
-                          }}
-                        >
-                          {t("management")}
-                        </span>{" "}
-                        |{" "}
-                        <span
-                          className="font-medium cursor-pointer hover:text-foreground transition-colors"
-                          onClick={() => {
-                            const tag = "impersonator";
-                            if (newUserTags.trim()) {
-                              setNewUserTags(newUserTags + ", " + tag);
-                            } else {
-                              setNewUserTags(tag);
-                            }
-                          }}
-                        >
-                          {t("impersonator")}
-                        </span>{" "}
-                        |{" "}
-                        <span
-                          className="font-medium cursor-pointer hover:text-foreground transition-colors"
-                          onClick={() => {
-                            setNewUserTags("");
-                          }}
-                        >
-                          {t("none")}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Virtual Host Access Section */}
-                    <div>
-                      <label className="block text-sm font-medium mb-2">
-                        {t("virtualHostAccess")}
-                      </label>
-                      <select
-                        className="w-full p-2 border rounded-md bg-background"
-                        value={newUserVhost}
-                        onChange={(e) => setNewUserVhost(e.target.value)}
-                      >
-                        {vhostsData?.vhosts?.map((vhost) => (
-                          <option key={vhost.name} value={vhost.name}>
-                            {vhost.name}
-                          </option>
-                        ))}
-                      </select>
-                      <div className="mt-1 text-xs text-muted-foreground">
-                        {t("userPermissions")}
-                      </div>
-                    </div>
-
-                    <div>
-                      <AddUserButton
-                        serverId={currentServerId}
-                        onSuccess={() => {
-                          setNewUserName("");
-                          setNewUserPassword("");
-                          setNewUserTags("");
-                          setNewUserVhost("/");
-                        }}
-                        initialName={newUserName}
-                        initialPassword={newUserPassword}
-                        initialTags={newUserTags}
-                        initialVhost={newUserVhost}
-                      />
-                    </div>
                   </div>
                 </CardContent>
               </Card>

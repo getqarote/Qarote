@@ -64,5 +64,14 @@
   "createError": "Failed to create user",
   "setPermissionsError": "Failed to set permissions",
   "usernameRequired": "Username is required",
-  "creating": "Creating..."
+  "creating": "Creating...",
+  "createUserDescription": "Add a new RabbitMQ user with optional password and role tags.",
+  "cancel": "Cancel",
+  "create": "Create",
+  "editUser": "Edit user",
+  "editUserDescription": "Update settings for <strong>{{name}}</strong> user.",
+  "passwordSet": "Password set",
+  "noPassword": "No password",
+  "deleteUserConfirmation": "Are you sure you want to delete user <strong>{{name}}</strong>? This action cannot be undone.",
+  "deleting": "Deleting..."
 }
