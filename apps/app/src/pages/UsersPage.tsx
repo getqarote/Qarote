@@ -275,10 +275,12 @@ export default function UsersPage() {
                               )
                             }
                           >
-                            <TableCell className="font-medium">
-                              <div className="flex items-center gap-2">
-                                <User className="h-4 w-4" />
-                                {user.name}
+                            <TableCell className="font-medium max-w-[300px]">
+                              <div className="flex items-center gap-2 min-w-0">
+                                <User className="h-4 w-4 shrink-0" />
+                                <span className="truncate" title={user.name}>
+                                  {user.name}
+                                </span>
                               </div>
                             </TableCell>
                             <TableCell>

@@ -306,7 +306,10 @@ const Connections = () => {
                                       connection.protocol
                                     )}
                                   </div>
-                                  <span className="font-medium">
+                                  <span
+                                    className="font-medium truncate max-w-[300px]"
+                                    title={connection.name}
+                                  >
                                     {connection.name}
                                   </span>
                                 </div>

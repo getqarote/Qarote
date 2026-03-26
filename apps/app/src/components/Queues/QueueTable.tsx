@@ -106,14 +106,15 @@ export function QueueTable({
                       key={`${queue.name}-${queue.vhost}`}
                       className="hover:bg-accent/50"
                     >
-                      <TableCell className="font-medium">
-                        <div className="flex items-center gap-2">
+                      <TableCell className="font-medium max-w-[300px]">
+                        <div className="flex items-center gap-2 min-w-0">
                           <button
                             type="button"
                             onClick={() =>
                               onNavigateToQueue(encodeURIComponent(queue.name))
                             }
-                            className="text-left font-medium text-orange-600 hover:text-orange-700 hover:underline transition-colors cursor-pointer"
+                            className="text-left font-medium text-orange-600 hover:text-orange-700 hover:underline transition-colors cursor-pointer truncate"
+                            title={queue.name}
                           >
                             {queue.name}
                           </button>
