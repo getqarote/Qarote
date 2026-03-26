@@ -2,15 +2,14 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 
-import { AlertCircle, ArrowLeft, Lock } from "lucide-react";
+import { ArrowLeft, Lock, Pencil, Radio } from "lucide-react";
 import { toast } from "sonner";
 
 import { UserRole } from "@/lib/api";
 
 import { AppSidebar } from "@/components/AppSidebar";
-import { ConnectionStatus } from "@/components/ConnectionStatus";
+import { PageError } from "@/components/PageError";
 import { PageLoader } from "@/components/PageLoader";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -79,6 +78,7 @@ export default function VHostDetailsPage() {
     data: vhostData,
     isLoading,
     error,
+    refetch,
   } = useVHost(currentServerId, decodedVHostName, serverExists);
 
   // Fetch users for the permission form
@@ -250,12 +250,10 @@ export default function VHostDetailsPage() {
           <AppSidebar />
           <main className="main-content">
             <div className="container mx-auto">
-              <Alert>
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                  {t("failedToLoad")}: {(error as Error).message}
-                </AlertDescription>
-              </Alert>
+              <PageError
+                message={`${t("failedToLoad")}: ${(error as Error).message}`}
+                onRetry={() => refetch()}
+              />
             </div>
           </main>
         </div>
@@ -290,34 +288,62 @@ export default function VHostDetailsPage() {
         <main className="main-content">
           <div className="max-w-6xl mx-auto space-y-8">
             {/* Header */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <SidebarTrigger className="mr-2" />
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex items-start gap-2 min-w-0">
+                <SidebarTrigger className="mr-2 mt-1" />
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => navigate("/vhosts")}
-                  className="mr-2 flex items-center gap-1"
+                  className="mr-2 flex items-center gap-1 shrink-0"
                 >
                   <ArrowLeft className="h-4 w-4" />
                 </Button>
-                <div className="flex items-center gap-2">
-                  <h1 className="title-page">
-                    {t("virtualHostPrefix", { name: decodedVHostName })}
-                  </h1>
-                  {vhost.protected_from_deletion && (
-                    <Badge
-                      variant="secondary"
-                      className="flex items-center gap-1"
-                      title={t("protectedTooltip")}
-                    >
-                      <Lock className="w-3 h-3" />
-                      {t("protected")}
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h1 className="title-page">
+                      {t("virtualHostPrefix", { name: decodedVHostName })}
+                    </h1>
+                    {vhost.protected_from_deletion && (
+                      <Badge
+                        variant="secondary"
+                        className="flex items-center gap-1"
+                        title={t("protectedTooltip")}
+                      >
+                        <Lock className="w-3 h-3" />
+                        {t("protected")}
+                      </Badge>
+                    )}
+                    {vhost.tracing && (
+                      <Badge
+                        variant="outline"
+                        className="flex items-center gap-1"
+                      >
+                        <Radio className="w-3 h-3" />
+                        {t("tracing")}
+                      </Badge>
+                    )}
+                    <Badge variant="outline">
+                      {vhost.default_queue_type &&
+                      vhost.default_queue_type !== "undefined"
+                        ? vhost.default_queue_type
+                        : t("serverDefault")}
                     </Badge>
+                  </div>
+                  {vhost.description && (
+                    <p className="text-sm text-muted-foreground mt-1 line-clamp-2 break-all">
+                      {vhost.description}
+                    </p>
                   )}
                 </div>
               </div>
-              <ConnectionStatus />
+              <Button
+                onClick={() => setShowEditModal(true)}
+                className="btn-primary text-white flex items-center gap-2 shrink-0"
+              >
+                <Pencil className="h-4 w-4" />
+                {t("common:edit")}
+              </Button>
             </div>
 
             {/* Message stats */}

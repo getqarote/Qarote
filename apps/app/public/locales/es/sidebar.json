@@ -20,6 +20,7 @@
   "noVhostsAvailable": "No hay vhosts disponibles",
   "loadingVhosts": "Cargando vhosts...",
   "addServer": "Agregar servidor",
+  "createVirtualHost": "Crear host virtual",
   "theme": "Tema",
   "ssoSettings": "Configuración SSO",
   "smtpSettings": "Configuración de correo",

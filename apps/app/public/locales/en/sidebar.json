@@ -21,6 +21,7 @@
   "noVhostsAvailable": "No vhosts available",
   "loadingVhosts": "Loading vhosts...",
   "addServer": "Add Server",
+  "createVirtualHost": "Create Virtual Host",
   "theme": "Theme",
   "ssoSettings": "SSO Settings",
   "smtpSettings": "Email Settings",

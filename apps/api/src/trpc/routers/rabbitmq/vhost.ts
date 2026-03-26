@@ -376,7 +376,14 @@ export const vhostRouter = router({
   createVHost: authorize([UserRole.ADMIN])
     .input(ServerWorkspaceInputSchema.merge(CreateVHostSchema))
     .mutation(async ({ input, ctx }) => {
-      const { serverId, workspaceId, name, description, tracing } = input;
+      const {
+        serverId,
+        workspaceId,
+        name,
+        description,
+        default_queue_type,
+        tracing,
+      } = input;
 
       try {
         // Verify server access
@@ -392,6 +399,7 @@ export const vhostRouter = router({
         await client.createVHost({
           name,
           description,
+          default_queue_type,
           tracing,
         });
 
@@ -405,6 +413,7 @@ export const vhostRouter = router({
           vhost: {
             name,
             description,
+            default_queue_type,
             tracing,
           },
         };

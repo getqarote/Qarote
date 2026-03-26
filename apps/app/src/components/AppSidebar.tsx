@@ -43,6 +43,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { CreateVHostModal } from "@/components/vhosts/CreateVHostModal";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
 import { useServerContext } from "@/contexts/ServerContext";
@@ -95,6 +96,7 @@ export function AppSidebar() {
   const location = useLocation();
   const { selectedServerId, setSelectedServerId } = useServerContext();
   const [showAddServerForm, setShowAddServerForm] = useState(false);
+  const [showCreateVHostModal, setShowCreateVHostModal] = useState(false);
   const {
     selectedVHost,
     setSelectedVHost,
@@ -258,46 +260,88 @@ export function AppSidebar() {
                   </p>
                 </div>
               ) : availableVHosts.length > 0 ? (
-                <Select
-                  value={selectedVHost || ""}
-                  onValueChange={setSelectedVHost}
-                >
-                  <SelectTrigger className="w-full text-sm">
-                    <SelectValue placeholder={t("selectVhost")}>
-                      {selectedVHost && (
-                        <div className="flex items-center gap-2 w-full min-w-0">
-                          <FolderTree className="h-3 w-3 shrink-0" />
-                          <span className="truncate font-medium">
-                            {selectedVHost === "/"
-                              ? t("common:default")
-                              : selectedVHost}
-                          </span>
-                        </div>
+                <>
+                  <Select
+                    value={selectedVHost || ""}
+                    onValueChange={(value) => {
+                      if (value === "__create_vhost__") {
+                        setShowCreateVHostModal(true);
+                        return;
+                      }
+                      setSelectedVHost(value);
+                    }}
+                  >
+                    <SelectTrigger className="w-full text-sm">
+                      <SelectValue placeholder={t("selectVhost")}>
+                        {selectedVHost && (
+                          <div className="flex items-center gap-2 w-full min-w-0">
+                            <FolderTree className="h-3 w-3 shrink-0" />
+                            <span className="truncate font-medium">
+                              {selectedVHost === "/"
+                                ? t("common:default")
+                                : selectedVHost}
+                            </span>
+                          </div>
+                        )}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent className="min-w-[300px]">
+                      {availableVHosts.map((vhost) => (
+                        <SelectItem key={vhost.name} value={vhost.name}>
+                          <div className="flex items-center gap-2 w-full min-w-0">
+                            <FolderTree className="h-3 w-3 shrink-0" />
+                            <span className="font-medium">
+                              {vhost.name === "/"
+                                ? t("common:default")
+                                : vhost.name}
+                            </span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                      {user?.role === UserRole.ADMIN && (
+                        <>
+                          <div className="-mx-1 my-1 h-px bg-muted" />
+                          <SelectItem
+                            value="__create_vhost__"
+                            className="cursor-pointer py-3"
+                          >
+                            <div className="flex items-center gap-2">
+                              <Plus className="h-4 w-4 text-muted-foreground" />
+                              <span className="font-medium">
+                                {t("createVirtualHost")}
+                              </span>
+                            </div>
+                          </SelectItem>
+                        </>
                       )}
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent className="min-w-[300px]">
-                    {availableVHosts.map((vhost) => (
-                      <SelectItem key={vhost.name} value={vhost.name}>
-                        <div className="flex items-center gap-2 w-full min-w-0">
-                          <FolderTree className="h-3 w-3 shrink-0" />
-                          <span className="font-medium">
-                            {vhost.name === "/"
-                              ? t("common:default")
-                              : vhost.name}
-                          </span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                    </SelectContent>
+                  </Select>
+                </>
               ) : (
                 <div className="text-center p-3 bg-sidebar-accent rounded-lg border-2 border-dashed border-sidebar-border">
                   <FolderTree className="h-8 w-8 text-sidebar-foreground/70 mx-auto mb-2" />
-                  <p className="text-xs text-sidebar-foreground/70">
+                  <p className="text-xs text-sidebar-foreground/70 mb-2">
                     {t("noVhostsAvailable")}
                   </p>
+                  {user?.role === UserRole.ADMIN && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="text-xs"
+                      onClick={() => setShowCreateVHostModal(true)}
+                    >
+                      <Plus className="h-3 w-3 mr-1" />
+                      {t("createVirtualHost")}
+                    </Button>
+                  )}
                 </div>
+              )}
+              {selectedServerId && (
+                <CreateVHostModal
+                  isOpen={showCreateVHostModal}
+                  onClose={() => setShowCreateVHostModal(false)}
+                  serverId={selectedServerId}
+                />
               )}
             </div>
           )}

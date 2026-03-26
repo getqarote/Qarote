@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { Trans, useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -27,6 +28,13 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 
 import { useUpdateVHost } from "@/hooks/queries/useRabbitMQVHosts";
@@ -47,6 +55,7 @@ export function EditVHostModal({
   serverId,
   vhost,
 }: EditVHostModalProps) {
+  const { t } = useTranslation("vhosts");
   const queryClient = useQueryClient();
   const { workspace } = useWorkspace();
 
@@ -54,6 +63,11 @@ export function EditVHostModal({
     resolver: zodResolver(editVHostSchema),
     defaultValues: {
       description: vhost.description || "",
+      default_queue_type: (["classic", "quorum", "stream"] as const).includes(
+        vhost.default_queue_type as "classic" | "quorum" | "stream"
+      )
+        ? (vhost.default_queue_type as "classic" | "quorum" | "stream")
+        : undefined,
       tracing: vhost.tracing || false,
     },
   });
@@ -67,13 +81,11 @@ export function EditVHostModal({
         queryKey: ["vhost", serverId, vhost.name],
       });
       queryClient.invalidateQueries({ queryKey: ["vhosts", serverId] });
-      toast.success("Virtual host updated successfully");
+      toast.success(t("updateSuccess"));
       onClose();
     }
     if (updateVHostMutation.isError) {
-      toast.error(
-        updateVHostMutation.error?.message || "Failed to update virtual host"
-      );
+      toast.error(updateVHostMutation.error?.message || t("updateError"));
     }
   }, [
     updateVHostMutation.isSuccess,
@@ -83,7 +95,7 @@ export function EditVHostModal({
 
   const onSubmit = (data: EditVHostForm) => {
     if (!workspace?.id) {
-      toast.error("Workspace ID is required");
+      toast.error(t("workspaceRequired"));
       return;
     }
     updateVHostMutation.mutate({
@@ -105,12 +117,16 @@ export function EditVHostModal({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Database className="h-5 w-5" />
-            Edit Virtual Host
+            {t("editVhost")}
           </DialogTitle>
           <DialogDescription>
-            Update the configuration for{" "}
-            <strong>{vhost.name === "/" ? "Default" : vhost.name}</strong>{" "}
-            virtual host.
+            <Trans
+              i18nKey="vhosts:editVhostDescription"
+              values={{
+                name: vhost.name === "/" ? t("common:default") : vhost.name,
+              }}
+              components={{ strong: <strong /> }}
+            />
           </DialogDescription>
         </DialogHeader>
 
@@ -121,13 +137,45 @@ export function EditVHostModal({
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description</FormLabel>
+                  <FormLabel>{t("description")}</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Description of the virtual host purpose"
+                      placeholder={t("descriptionPlaceholder")}
                       {...field}
                     />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="default_queue_type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t("defaultQueueType")}</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder={t("serverDefault")} />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="classic">
+                        {t("queueTypeClassic")}
+                      </SelectItem>
+                      <SelectItem value="quorum">
+                        {t("queueTypeQuorum")}
+                      </SelectItem>
+                      <SelectItem value="stream">
+                        {t("queueTypeStream")}
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormDescription>
+                    {t("defaultQueueTypeDescription")}
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -145,9 +193,9 @@ export function EditVHostModal({
                     />
                   </FormControl>
                   <div className="space-y-1 leading-none">
-                    <FormLabel>Enable Tracing</FormLabel>
+                    <FormLabel>{t("enableTracing")}</FormLabel>
                     <FormDescription>
-                      Enable message tracing for this virtual host
+                      {t("enableTracingDescription")}
                     </FormDescription>
                   </div>
                 </FormItem>
@@ -161,10 +209,14 @@ export function EditVHostModal({
                 onClick={handleClose}
                 disabled={updateVHostMutation.isPending}
               >
-                Cancel
+                {t("cancel")}
               </Button>
-              <Button type="submit" disabled={updateVHostMutation.isPending}>
-                {updateVHostMutation.isPending ? "Updating..." : "Update"}
+              <Button
+                type="submit"
+                disabled={updateVHostMutation.isPending}
+                className="btn-primary text-white"
+              >
+                {updateVHostMutation.isPending ? t("updating") : t("update")}
               </Button>
             </DialogFooter>
           </form>

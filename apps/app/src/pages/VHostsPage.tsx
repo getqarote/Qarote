@@ -19,6 +19,7 @@ import { VHost } from "@/lib/api/vhostTypes";
 import { AddVirtualHostButton } from "@/components/AddVirtualHostButton";
 import { AppSidebar } from "@/components/AppSidebar";
 import { NoServerConfigured } from "@/components/NoServerConfigured";
+import { PageError } from "@/components/PageError";
 import { PageLoader } from "@/components/PageLoader";
 import { PlanUpgradeModal } from "@/components/plans/PlanUpgradeModal";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -35,7 +36,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { CreateVHostModal } from "@/components/vhosts/CreateVHostModal";
 import { DeleteVHostModal } from "@/components/vhosts/DeleteVHostModal";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
@@ -54,10 +54,8 @@ export default function VHostsPage() {
   const { data: serversData } = useServers();
   const servers = serversData?.servers || [];
 
-  const [showCreateModal, setShowCreateModal] = useState(false);
   const [deleteVHost, setDeleteVHost] = useState<VHost | null>(null);
   const [filterRegex, setFilterRegex] = useState("");
-  const [newVHostName, setNewVHostName] = useState("");
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   const currentServerId = serverId || selectedServerId;
@@ -70,6 +68,7 @@ export default function VHostsPage() {
     data: vhostsData,
     isLoading,
     error,
+    refetch,
   } = useVHosts(currentServerId, serverExists);
 
   const deleteVHostMutation = useDeleteVHost();
@@ -175,12 +174,10 @@ export default function VHostsPage() {
               <div className="flex items-center gap-4">
                 <SidebarTrigger />
               </div>
-              <Alert>
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                  Failed to load virtual hosts: {(error as Error).message}
-                </AlertDescription>
-              </Alert>
+              <PageError
+                message={`${t("failedToLoad")}: ${(error as Error).message}`}
+                onRetry={() => refetch()}
+              />
             </div>
           </main>
         </div>
@@ -219,6 +216,7 @@ export default function VHostsPage() {
                   {vhosts.length}
                 </Badge>
               </div>
+              <AddVirtualHostButton serverId={currentServerId} />
             </div>
 
             {/* Filter */}
@@ -287,17 +285,26 @@ export default function VHostsPage() {
                         >
                           <TableCell className="font-medium">
                             <div className="flex items-center gap-2">
-                              <Database className="h-4 w-4" />
-                              {vhost.name}
-                              {vhost.protected_from_deletion && (
-                                <Badge
-                                  variant="secondary"
-                                  className="text-xs flex items-center gap-1"
-                                  title={t("protectedFromDeletion")}
-                                >
-                                  <Lock className="w-3 h-3" />
-                                </Badge>
-                              )}
+                              <Database className="h-4 w-4 shrink-0" />
+                              <div className="min-w-0">
+                                <div className="flex items-center gap-2">
+                                  {vhost.name}
+                                  {vhost.protected_from_deletion && (
+                                    <Badge
+                                      variant="secondary"
+                                      className="text-xs flex items-center gap-1"
+                                      title={t("protectedFromDeletion")}
+                                    >
+                                      <Lock className="w-3 h-3" />
+                                    </Badge>
+                                  )}
+                                </div>
+                                {vhost.description && (
+                                  <p className="text-xs text-muted-foreground font-normal truncate max-w-[300px]">
+                                    {vhost.description}
+                                  </p>
+                                )}
+                              </div>
                             </div>
                           </TableCell>
                           <TableCell>{vhost.permissionCount || 0}</TableCell>
@@ -343,46 +350,6 @@ export default function VHostsPage() {
                 </div>
               </CardContent>
             </Card>
-
-            {/* Add Virtual Host Form */}
-            <Card className="border-0 shadow-md bg-card">
-              <CardHeader>
-                <CardTitle className="text-lg">{t("addVhost")}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-end gap-4">
-                  <div className="flex-1">
-                    <label
-                      htmlFor="vhost-name"
-                      className="block text-sm font-medium mb-2"
-                    >
-                      {t("vhostName")}
-                    </label>
-                    <Input
-                      id="vhost-name"
-                      value={newVHostName}
-                      onChange={(e) => setNewVHostName(e.target.value)}
-                      placeholder={t("vhostPlaceholder")}
-                      className="max-w-md"
-                    />
-                  </div>
-                  <AddVirtualHostButton
-                    serverId={currentServerId}
-                    onSuccess={() => setNewVHostName("")}
-                    initialName={newVHostName}
-                  />
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Modals */}
-            <CreateVHostModal
-              isOpen={showCreateModal}
-              onClose={() => setShowCreateModal(false)}
-              serverId={currentServerId}
-              initialName={newVHostName}
-              onSuccess={() => setNewVHostName("")}
-            />
 
             {deleteVHost && (
               <DeleteVHostModal

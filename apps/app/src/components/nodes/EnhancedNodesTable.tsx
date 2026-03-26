@@ -341,10 +341,15 @@ export const EnhancedNodesTable = ({
                           <ChevronRight className="h-4 w-4 text-muted-foreground" />
                         )}
                       </TableCell>
-                      <TableCell className="font-medium">
-                        <div className="flex items-center gap-2">
-                          <Server className="h-4 w-4 text-blue-600" />
-                          <span className="text-foreground">{node.name}</span>
+                      <TableCell className="font-medium max-w-[300px]">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <Server className="h-4 w-4 text-blue-600 shrink-0" />
+                          <span
+                            className="text-foreground truncate"
+                            title={node.name}
+                          >
+                            {node.name}
+                          </span>
                         </div>
                       </TableCell>
                       <TableCell>

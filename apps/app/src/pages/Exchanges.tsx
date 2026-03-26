@@ -431,9 +431,12 @@ const Exchanges = () => {
                           <CollapsibleTrigger asChild>
                             <div className="flex items-center justify-between p-4 hover:bg-accent cursor-pointer">
                               <div className="flex items-center gap-4">
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-2 min-w-0 max-w-[300px]">
                                   {getExchangeIcon(exchange.type)}
-                                  <span className="font-medium">
+                                  <span
+                                    className="font-medium truncate"
+                                    title={exchange.name || "(Default)"}
+                                  >
                                     {exchange.name || "(Default)"}
                                   </span>
                                 </div>

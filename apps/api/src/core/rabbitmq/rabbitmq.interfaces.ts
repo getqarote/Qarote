@@ -686,15 +686,19 @@ export interface VHostTopicPermissions {
   read: string;
 }
 
+export type RabbitMQQueueType = "classic" | "quorum" | "stream";
+
 export interface CreateVHostRequest {
   name: string;
   description?: string;
+  default_queue_type?: RabbitMQQueueType;
   tags?: string[];
   tracing?: boolean;
 }
 
 export interface UpdateVHostRequest {
   description?: string;
+  default_queue_type?: RabbitMQQueueType;
   tags?: string[];
   tracing?: boolean;
 }

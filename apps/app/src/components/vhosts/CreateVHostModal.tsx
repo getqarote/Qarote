@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -26,6 +27,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 
 import { useCreateVHost } from "@/hooks/queries/useRabbitMQVHosts";
@@ -48,6 +56,7 @@ export function CreateVHostModal({
   initialName = "",
   onSuccess,
 }: CreateVHostModalProps) {
+  const { t } = useTranslation("vhosts");
   const queryClient = useQueryClient();
   const { workspace } = useWorkspace();
 
@@ -73,15 +82,13 @@ export function CreateVHostModal({
   useEffect(() => {
     if (createVHostMutation.isSuccess) {
       queryClient.invalidateQueries({ queryKey: ["vhosts", serverId] });
-      toast.success("Virtual host created successfully");
+      toast.success(t("createSuccess"));
       form.reset();
       onSuccess?.();
       onClose();
     }
     if (createVHostMutation.isError) {
-      toast.error(
-        createVHostMutation.error?.message || "Failed to create virtual host"
-      );
+      toast.error(createVHostMutation.error?.message || t("createError"));
     }
   }, [
     createVHostMutation.isSuccess,
@@ -91,7 +98,7 @@ export function CreateVHostModal({
 
   const onSubmit = (data: CreateVHostForm) => {
     if (!workspace?.id) {
-      toast.error("Workspace ID is required");
+      toast.error(t("workspaceRequired"));
       return;
     }
     createVHostMutation.mutate({
@@ -99,6 +106,7 @@ export function CreateVHostModal({
       workspaceId: workspace.id,
       name: data.name,
       description: data.description,
+      default_queue_type: data.default_queue_type,
       tracing: data.tracing,
     });
   };
@@ -114,11 +122,9 @@ export function CreateVHostModal({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Database className="h-5 w-5" />
-            Create Virtual Host
+            {t("createVhost")}
           </DialogTitle>
-          <DialogDescription>
-            Create a new virtual host for logical isolation of resources.
-          </DialogDescription>
+          <DialogDescription>{t("createVhostDescription")}</DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
@@ -128,13 +134,11 @@ export function CreateVHostModal({
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Name</FormLabel>
+                  <FormLabel>{t("name")}</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., production, staging" {...field} />
+                    <Input placeholder={t("namePlaceholder")} {...field} />
                   </FormControl>
-                  <FormDescription>
-                    Unique name for the virtual host
-                  </FormDescription>
+                  <FormDescription>{t("nameDescription")}</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -145,13 +149,45 @@ export function CreateVHostModal({
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description (Optional)</FormLabel>
+                  <FormLabel>{t("descriptionOptional")}</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Description of the virtual host purpose"
+                      placeholder={t("descriptionPlaceholder")}
                       {...field}
                     />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="default_queue_type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t("defaultQueueTypeOptional")}</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder={t("serverDefault")} />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="classic">
+                        {t("queueTypeClassic")}
+                      </SelectItem>
+                      <SelectItem value="quorum">
+                        {t("queueTypeQuorum")}
+                      </SelectItem>
+                      <SelectItem value="stream">
+                        {t("queueTypeStream")}
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormDescription>
+                    {t("defaultQueueTypeDescription")}
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -169,9 +205,9 @@ export function CreateVHostModal({
                     />
                   </FormControl>
                   <div className="space-y-1 leading-none">
-                    <FormLabel>Enable Tracing</FormLabel>
+                    <FormLabel>{t("enableTracing")}</FormLabel>
                     <FormDescription>
-                      Enable message tracing for this virtual host
+                      {t("enableTracingDescription")}
                     </FormDescription>
                   </div>
                 </FormItem>
@@ -185,14 +221,14 @@ export function CreateVHostModal({
                 onClick={handleClose}
                 disabled={createVHostMutation.isPending}
               >
-                Cancel
+                {t("cancel")}
               </Button>
               <Button
                 type="submit"
                 disabled={createVHostMutation.isPending}
                 className="btn-primary text-white"
               >
-                {createVHostMutation.isPending ? "Creating..." : "Create"}
+                {createVHostMutation.isPending ? t("creating") : t("create")}
               </Button>
             </DialogFooter>
           </form>
