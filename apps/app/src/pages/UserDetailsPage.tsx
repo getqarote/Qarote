@@ -89,6 +89,9 @@ export default function UserDetailsPage() {
   // Check if this is the connection user (the account Qarote uses to connect)
   const isConnectionUser = currentServer?.username === decodedUsername;
 
+  // Check if this is a protected user (e.g., AWS-managed system accounts)
+  const isProtectedUser = userData?.user?.tags?.includes("protected") ?? false;
+
   const {
     data: userData,
     isLoading,
@@ -280,21 +283,25 @@ export default function UserDetailsPage() {
                           : t("noPassword")}
                       </Badge>
                     </div>
-                    {isConnectionUser && (
+                    {(isConnectionUser || isProtectedUser) && (
                       <p className="text-sm text-muted-foreground mt-1">
-                        {t("cannotModifyConnectionUser")}
+                        {isConnectionUser
+                          ? t("cannotModifyConnectionUser")
+                          : t("cannotModifyProtectedUser")}
                       </p>
                     )}
                   </div>
                 </div>
                 <Button
                   onClick={() => setShowEditModal(true)}
-                  disabled={isConnectionUser}
+                  disabled={isConnectionUser || isProtectedUser}
                   className="btn-primary text-white flex items-center gap-2 shrink-0"
                   title={
                     isConnectionUser
                       ? t("cannotModifyConnectionUser")
-                      : undefined
+                      : isProtectedUser
+                        ? t("cannotModifyProtectedUser")
+                        : undefined
                   }
                 >
                   <Pencil className="h-4 w-4" />
@@ -549,11 +556,17 @@ export default function UserDetailsPage() {
                   <Button
                     variant="destructive"
                     onClick={() => setShowDeleteModal(true)}
-                    disabled={decodedUsername === "admin" || isConnectionUser}
+                    disabled={
+                      decodedUsername === "admin" ||
+                      isConnectionUser ||
+                      isProtectedUser
+                    }
                     title={
                       isConnectionUser
                         ? t("cannotModifyConnectionUser")
-                        : undefined
+                        : isProtectedUser
+                          ? t("cannotModifyProtectedUser")
+                          : undefined
                     }
                   >
                     {t("deleteUser")}
@@ -561,6 +574,10 @@ export default function UserDetailsPage() {
                   {isConnectionUser ? (
                     <p className="text-sm text-muted-foreground mt-2">
                       {t("cannotModifyConnectionUser")}
+                    </p>
+                  ) : isProtectedUser ? (
+                    <p className="text-sm text-muted-foreground mt-2">
+                      {t("cannotModifyProtectedUser")}
                     </p>
                   ) : (
                     decodedUsername === "admin" && (

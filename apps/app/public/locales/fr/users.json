@@ -73,5 +73,6 @@
   "passwordSet": "Mot de passe défini",
   "noPassword": "Pas de mot de passe",
   "deleteUserConfirmation": "Êtes-vous sûr de vouloir supprimer l'utilisateur <strong>{{name}}</strong> ? Cette action est irréversible.",
-  "deleting": "Suppression..."
+  "deleting": "Suppression...",
+  "cannotModifyProtectedUser": "Cet utilisateur système est protégé et ne peut pas être modifié ou supprimé."
 }

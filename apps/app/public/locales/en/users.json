@@ -73,5 +73,6 @@
   "passwordSet": "Password set",
   "noPassword": "No password",
   "deleteUserConfirmation": "Are you sure you want to delete user <strong>{{name}}</strong>? This action cannot be undone.",
-  "deleting": "Deleting..."
+  "deleting": "Deleting...",
+  "cannotModifyProtectedUser": "This is a protected system user and cannot be modified or deleted."
 }
