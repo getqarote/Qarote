@@ -81,7 +81,7 @@ export function CreateUserModal({
 
   const createUserMutation = useCreateUser();
   const setPermissionsMutation = useSetUserPermissions();
-  const { data: vhosts } = useVHosts(serverId);
+  const { data: vhostsData } = useVHosts(serverId);
 
   // Handle success/error
   useEffect(() => {
@@ -251,7 +251,7 @@ export function CreateUserModal({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {vhosts?.map((vhost) => (
+                      {vhostsData?.vhosts?.map((vhost) => (
                         <SelectItem key={vhost.name} value={vhost.name}>
                           {vhost.name}
                         </SelectItem>
