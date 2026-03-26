@@ -333,10 +333,7 @@ export default function VHostDetailsPage() {
                     </Badge>
                   </div>
                   {vhost.description && (
-                    <p
-                      className="text-sm text-muted-foreground mt-1 truncate max-w-[600px]"
-                      title={vhost.description}
-                    >
+                    <p className="text-sm text-muted-foreground mt-1 max-w-2xl line-clamp-2">
                       {vhost.description}
                     </p>
                   )}
