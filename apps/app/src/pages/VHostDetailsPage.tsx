@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 
-import { AlertCircle, ArrowLeft, Lock } from "lucide-react";
+import { AlertCircle, ArrowLeft, Lock, Radio } from "lucide-react";
 import { toast } from "sonner";
 
 import { UserRole } from "@/lib/api";
@@ -301,19 +301,40 @@ export default function VHostDetailsPage() {
                 >
                   <ArrowLeft className="h-4 w-4" />
                 </Button>
-                <div className="flex items-center gap-2">
-                  <h1 className="title-page">
-                    {t("virtualHostPrefix", { name: decodedVHostName })}
-                  </h1>
-                  {vhost.protected_from_deletion && (
-                    <Badge
-                      variant="secondary"
-                      className="flex items-center gap-1"
-                      title={t("protectedTooltip")}
-                    >
-                      <Lock className="w-3 h-3" />
-                      {t("protected")}
-                    </Badge>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h1 className="title-page">
+                      {t("virtualHostPrefix", { name: decodedVHostName })}
+                    </h1>
+                    {vhost.protected_from_deletion && (
+                      <Badge
+                        variant="secondary"
+                        className="flex items-center gap-1"
+                        title={t("protectedTooltip")}
+                      >
+                        <Lock className="w-3 h-3" />
+                        {t("protected")}
+                      </Badge>
+                    )}
+                    {vhost.tracing && (
+                      <Badge
+                        variant="outline"
+                        className="flex items-center gap-1"
+                      >
+                        <Radio className="w-3 h-3" />
+                        {t("tracing")}
+                      </Badge>
+                    )}
+                    {vhost.default_queue_type && (
+                      <Badge variant="outline">
+                        {vhost.default_queue_type}
+                      </Badge>
+                    )}
+                  </div>
+                  {vhost.description && (
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {vhost.description}
+                    </p>
                   )}
                 </div>
               </div>

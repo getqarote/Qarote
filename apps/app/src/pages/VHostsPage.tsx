@@ -285,17 +285,26 @@ export default function VHostsPage() {
                         >
                           <TableCell className="font-medium">
                             <div className="flex items-center gap-2">
-                              <Database className="h-4 w-4" />
-                              {vhost.name}
-                              {vhost.protected_from_deletion && (
-                                <Badge
-                                  variant="secondary"
-                                  className="text-xs flex items-center gap-1"
-                                  title={t("protectedFromDeletion")}
-                                >
-                                  <Lock className="w-3 h-3" />
-                                </Badge>
-                              )}
+                              <Database className="h-4 w-4 shrink-0" />
+                              <div className="min-w-0">
+                                <div className="flex items-center gap-2">
+                                  {vhost.name}
+                                  {vhost.protected_from_deletion && (
+                                    <Badge
+                                      variant="secondary"
+                                      className="text-xs flex items-center gap-1"
+                                      title={t("protectedFromDeletion")}
+                                    >
+                                      <Lock className="w-3 h-3" />
+                                    </Badge>
+                                  )}
+                                </div>
+                                {vhost.description && (
+                                  <p className="text-xs text-muted-foreground font-normal truncate">
+                                    {vhost.description}
+                                  </p>
+                                )}
+                              </div>
                             </div>
                           </TableCell>
                           <TableCell>{vhost.permissionCount || 0}</TableCell>
