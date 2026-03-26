@@ -331,19 +331,20 @@ export default function UsersPage() {
                                 >
                                   <Edit className="h-3 w-3" />
                                 </Button>
-                                {user.name !== "admin" && (
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setDeleteUser(user);
-                                    }}
-                                    className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
-                                  >
-                                    <Trash2 className="h-3 w-3" />
-                                  </Button>
-                                )}
+                                {user.name !== "admin" &&
+                                  !user.tags?.includes("protected") && (
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setDeleteUser(user);
+                                      }}
+                                      className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+                                    >
+                                      <Trash2 className="h-3 w-3" />
+                                    </Button>
+                                  )}
                               </div>
                             </TableCell>
                           </TableRow>
