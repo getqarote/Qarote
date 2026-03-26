@@ -54,5 +54,6 @@
   "failedToLoad": "Failed to load virtual host details",
   "leaveEmptyForNoLimit": "Leave empty for no limit",
   "virtualHostPrefix": "Virtual host / {{name}}",
-  "tracing": "Tracing"
+  "tracing": "Tracing",
+  "serverDefault": "Server default"
 }

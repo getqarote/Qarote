@@ -328,7 +328,7 @@ export default function VHostDetailsPage() {
                       {vhost.default_queue_type &&
                       vhost.default_queue_type !== "undefined"
                         ? vhost.default_queue_type
-                        : "classic"}
+                        : t("serverDefault")}
                     </Badge>
                   </div>
                   {vhost.description && (

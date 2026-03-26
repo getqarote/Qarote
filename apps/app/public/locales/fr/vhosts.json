@@ -54,5 +54,6 @@
   "failedToLoad": "Échec du chargement des détails de l'hôte virtuel",
   "leaveEmptyForNoLimit": "Laisser vide pour aucune limite",
   "virtualHostPrefix": "Hôte virtuel / {{name}}",
-  "tracing": "Traçage"
+  "tracing": "Traçage",
+  "serverDefault": "Défaut du serveur"
 }

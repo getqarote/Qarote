@@ -413,6 +413,7 @@ export const vhostRouter = router({
           vhost: {
             name,
             description,
+            default_queue_type,
             tracing,
           },
         };

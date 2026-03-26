@@ -61,10 +61,11 @@ export function EditVHostModal({
     resolver: zodResolver(editVHostSchema),
     defaultValues: {
       description: vhost.description || "",
-      default_queue_type:
-        vhost.default_queue_type && vhost.default_queue_type !== "undefined"
-          ? (vhost.default_queue_type as "classic" | "quorum" | "stream")
-          : undefined,
+      default_queue_type: (["classic", "quorum", "stream"] as const).includes(
+        vhost.default_queue_type as "classic" | "quorum" | "stream"
+      )
+        ? (vhost.default_queue_type as "classic" | "quorum" | "stream")
+        : undefined,
       tracing: vhost.tracing || false,
     },
   });

@@ -316,21 +316,32 @@ export function AppSidebar() {
                       )}
                     </SelectContent>
                   </Select>
-                  {selectedServerId && (
-                    <CreateVHostModal
-                      isOpen={showCreateVHostModal}
-                      onClose={() => setShowCreateVHostModal(false)}
-                      serverId={selectedServerId}
-                    />
-                  )}
                 </>
               ) : (
                 <div className="text-center p-3 bg-sidebar-accent rounded-lg border-2 border-dashed border-sidebar-border">
                   <FolderTree className="h-8 w-8 text-sidebar-foreground/70 mx-auto mb-2" />
-                  <p className="text-xs text-sidebar-foreground/70">
+                  <p className="text-xs text-sidebar-foreground/70 mb-2">
                     {t("noVhostsAvailable")}
                   </p>
+                  {user?.role === UserRole.ADMIN && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="text-xs"
+                      onClick={() => setShowCreateVHostModal(true)}
+                    >
+                      <Plus className="h-3 w-3 mr-1" />
+                      {t("createVirtualHost")}
+                    </Button>
+                  )}
                 </div>
+              )}
+              {selectedServerId && (
+                <CreateVHostModal
+                  isOpen={showCreateVHostModal}
+                  onClose={() => setShowCreateVHostModal(false)}
+                  serverId={selectedServerId}
+                />
               )}
             </div>
           )}

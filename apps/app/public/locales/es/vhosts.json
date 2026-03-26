@@ -54,5 +54,6 @@
   "failedToLoad": "No se pudieron cargar los detalles del host virtual",
   "leaveEmptyForNoLimit": "Dejar vac\u00edo para sin l\u00edmite",
   "virtualHostPrefix": "Host virtual / {{name}}",
-  "tracing": "Rastreo"
+  "tracing": "Rastreo",
+  "serverDefault": "Predeterminado del servidor"
 }
