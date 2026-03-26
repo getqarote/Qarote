@@ -77,5 +77,6 @@
   "cannotModifyProtectedUser": "Cet utilisateur système est protégé et ne peut pas être modifié ou supprimé.",
   "passwordAwsNote": "Sur AWS Amazon MQ, un hash de mot de passe est toujours généré même sans mot de passe.",
   "passwordKeep": "Conserver le mot de passe actuel",
-  "passwordNewPlaceholder": "Entrer un nouveau mot de passe"
+  "passwordNewPlaceholder": "Entrer un nouveau mot de passe",
+  "noVhostsAvailable": "Aucun hôte virtuel disponible"
 }

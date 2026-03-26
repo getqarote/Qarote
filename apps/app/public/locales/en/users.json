@@ -77,5 +77,6 @@
   "cannotModifyProtectedUser": "This is a protected system user and cannot be modified or deleted.",
   "passwordAwsNote": "On AWS Amazon MQ, a password hash is always generated even without a password.",
   "passwordKeep": "Keep current password",
-  "passwordNewPlaceholder": "Enter new password"
+  "passwordNewPlaceholder": "Enter new password",
+  "noVhostsAvailable": "No virtual hosts available"
 }

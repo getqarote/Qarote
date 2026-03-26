@@ -77,5 +77,6 @@
   "cannotModifyProtectedUser": "这是受保护的系统用户，无法修改或删除。",
   "passwordAwsNote": "在 AWS Amazon MQ 上，即使未设置密码也会生成密码哈希。",
   "passwordKeep": "保留当前密码",
-  "passwordNewPlaceholder": "输入新密码"
+  "passwordNewPlaceholder": "输入新密码",
+  "noVhostsAvailable": "没有可用的虚拟主机"
 }

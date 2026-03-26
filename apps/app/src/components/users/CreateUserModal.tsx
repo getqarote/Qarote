@@ -36,6 +36,7 @@ import {
 
 import {
   useCreateUser,
+  useDeleteUser,
   useSetUserPermissions,
 } from "@/hooks/queries/useRabbitMQUsers";
 import { useVHosts } from "@/hooks/queries/useRabbitMQVHosts";
@@ -81,7 +82,8 @@ export function CreateUserModal({
 
   const createUserMutation = useCreateUser();
   const setPermissionsMutation = useSetUserPermissions();
-  const { data: vhostsData } = useVHosts(serverId);
+  const deleteUserMutation = useDeleteUser();
+  const { data: vhostsData, isLoading: vhostsLoading } = useVHosts(serverId);
 
   // Handle success/error
   useEffect(() => {
@@ -124,17 +126,30 @@ export function CreateUserModal({
         tags: data.tags || "",
       });
 
-      await setPermissionsMutation.mutateAsync({
-        serverId,
-        workspaceId: workspace.id,
-        username: data.username,
-        vhost: data.vhost,
-        configure: ".*",
-        write: ".*",
-        read: ".*",
-      });
+      try {
+        await setPermissionsMutation.mutateAsync({
+          serverId,
+          workspaceId: workspace.id,
+          username: data.username,
+          vhost: data.vhost,
+          configure: ".*",
+          write: ".*",
+          read: ".*",
+        });
+      } catch {
+        // Permission setup failed — clean up the orphaned user
+        try {
+          await deleteUserMutation.mutateAsync({
+            serverId,
+            workspaceId: workspace.id,
+            username: data.username,
+          });
+        } catch {
+          // Cleanup failed — user exists without permissions
+        }
+      }
     } catch {
-      // Error handling is done in useEffect
+      // User creation failed — error handling is done in useEffect
     }
   };
 
@@ -151,10 +166,10 @@ export function CreateUserModal({
     }
     const tagList = currentTags
       .split(",")
-      .map((t) => t.trim())
+      .map((s) => s.trim())
       .filter(Boolean);
     if (tagList.includes(tag)) {
-      form.setValue("tags", tagList.filter((t) => t !== tag).join(", "));
+      form.setValue("tags", tagList.filter((s) => s !== tag).join(", "));
     } else {
       form.setValue("tags", [...tagList, tag].join(", "));
     }
@@ -245,18 +260,38 @@ export function CreateUserModal({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>{t("virtualHostAccess")}</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value}
+                    disabled={vhostsLoading}
+                  >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue />
+                        <SelectValue
+                          placeholder={
+                            vhostsLoading
+                              ? t("common:loading")
+                              : t("virtualHostAccess")
+                          }
+                        />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {vhostsData?.vhosts?.map((vhost) => (
-                        <SelectItem key={vhost.name} value={vhost.name}>
-                          {vhost.name}
+                      {vhostsLoading ? (
+                        <SelectItem value="/" disabled>
+                          {t("common:loading")}
                         </SelectItem>
-                      ))}
+                      ) : vhostsData?.vhosts?.length ? (
+                        vhostsData.vhosts.map((vhost) => (
+                          <SelectItem key={vhost.name} value={vhost.name}>
+                            {vhost.name}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value="/" disabled>
+                          {t("noVhostsAvailable")}
+                        </SelectItem>
+                      )}
                     </SelectContent>
                   </Select>
                   <FormDescription>{t("userPermissions")}</FormDescription>
