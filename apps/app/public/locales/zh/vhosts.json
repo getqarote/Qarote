@@ -54,5 +54,6 @@
   "failedToLoad": "加载虚拟主机详情失败",
   "leaveEmptyForNoLimit": "留空表示无限制",
   "virtualHostPrefix": "虚拟主机 / {{name}}",
-  "tracing": "追踪"
+  "tracing": "追踪",
+  "serverDefault": "服务器默认"
 }
