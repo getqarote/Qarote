@@ -62,11 +62,7 @@ export const WorkspaceFormFields = ({
           <div className="flex flex-wrap gap-2 py-1">
             {workspace.tags && workspace.tags.length > 0 ? (
               workspace.tags.map((tag) => (
-                <Badge
-                  key={tag}
-                  variant="outline"
-                  className="border-orange-200 bg-orange-50 px-3 py-1 text-xs font-medium text-orange-700 dark:border-orange-800 dark:bg-orange-950 dark:text-orange-300"
-                >
+                <Badge key={tag} variant="soft-orange">
                   {tag}
                 </Badge>
               ))

@@ -645,8 +645,7 @@ const OrganizationSection = () => {
           </div>
         </div>
         <Badge
-          variant="outline"
-          className="border-orange-200 bg-orange-50 px-3 py-1 text-xs font-medium text-orange-700 dark:border-orange-800 dark:bg-orange-950 dark:text-orange-300"
+          variant="soft-orange"
           role="status"
           aria-label={t("org.yourRole", {
             role: roleLabels[callerRole ?? "MEMBER"] ?? callerRole,
@@ -881,10 +880,7 @@ const OrganizationSection = () => {
                           </SelectContent>
                         </Select>
                       ) : (
-                        <Badge
-                          variant="outline"
-                          className="border-orange-200 bg-orange-50 px-3 py-1 text-xs font-medium text-orange-700 dark:border-orange-800 dark:bg-orange-950 dark:text-orange-300"
-                        >
+                        <Badge variant="soft-orange">
                           {roleLabels[member.role]}
                         </Badge>
                       )}

@@ -229,21 +229,15 @@ export const EnhancedTeamTab = ({
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge
-                          variant="outline"
-                          className="border-orange-200 bg-orange-50 px-3 py-1 text-xs font-medium text-orange-700 dark:border-orange-800 dark:bg-orange-950 dark:text-orange-300"
-                        >
+                        <Badge variant="soft-orange">
                           {workspaceUser.role.charAt(0) +
                             workspaceUser.role.slice(1).toLowerCase()}
                         </Badge>
                       </TableCell>
                       <TableCell>
                         <Badge
-                          variant="outline"
-                          className={
-                            workspaceUser.isActive
-                              ? "border-green-200 bg-green-50 px-3 py-1 text-xs font-medium text-green-700 dark:border-green-800 dark:bg-green-950 dark:text-green-300"
-                              : "border-gray-200 bg-gray-50 px-3 py-1 text-xs font-medium text-gray-700 dark:border-gray-800 dark:bg-gray-950 dark:text-gray-300"
+                          variant={
+                            workspaceUser.isActive ? "soft-green" : "soft-gray"
                           }
                         >
                           {workspaceUser.isActive
@@ -342,10 +336,7 @@ export const EnhancedTeamTab = ({
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge
-                            variant="outline"
-                            className="border-orange-200 bg-orange-50 px-3 py-1 text-xs font-medium text-orange-700 dark:border-orange-800 dark:bg-orange-950 dark:text-orange-300"
-                          >
+                          <Badge variant="soft-orange">
                             {invitation.role.charAt(0) +
                               invitation.role.slice(1).toLowerCase()}
                           </Badge>

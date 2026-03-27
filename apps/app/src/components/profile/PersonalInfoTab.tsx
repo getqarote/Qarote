@@ -87,10 +87,7 @@ export const PersonalInfoTab = ({
                 <p className="text-sm text-muted-foreground">{profile.email}</p>
               </div>
             </div>
-            <Badge
-              variant="outline"
-              className="border-orange-200 bg-orange-50 px-3 py-1 text-xs font-medium text-orange-700 dark:border-orange-800 dark:bg-orange-950 dark:text-orange-300"
-            >
+            <Badge variant="soft-orange">
               {profile.role.charAt(0) + profile.role.slice(1).toLowerCase()}
             </Badge>
           </CardTitle>
