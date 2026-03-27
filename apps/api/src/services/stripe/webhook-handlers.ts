@@ -740,8 +740,8 @@ export async function handleInvoicePaymentSucceeded(invoice: Invoice) {
       );
     }
 
-    // Send payment confirmation email
-    if (subscription.user) {
+    // Send payment confirmation email (skip $0 invoices from trials/free signups)
+    if (subscription.user && invoice.amount_paid > 0) {
       await EmailService.sendPaymentConfirmationEmail({
         to: subscription.user.email,
         userName: getUserDisplayName(subscription.user),
