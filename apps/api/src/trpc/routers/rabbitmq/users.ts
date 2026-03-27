@@ -45,10 +45,18 @@ export const usersRouter = router({
         const client = createRabbitMQClientFromServer(verifiedServer);
         const users = await client.getUsers();
 
-        // Fetch permissions for all users in parallel to build accessible vhosts map
-        const permissionsResults = await Promise.allSettled(
-          users.map((user) => client.getUserPermissions(user.name))
-        );
+        // Fetch permissions with limited concurrency to avoid overwhelming the RabbitMQ API
+        const CONCURRENCY_LIMIT = 10;
+        const permissionsResults: PromiseSettledResult<
+          Awaited<ReturnType<typeof client.getUserPermissions>>
+        >[] = [];
+        for (let i = 0; i < users.length; i += CONCURRENCY_LIMIT) {
+          const batch = users
+            .slice(i, i + CONCURRENCY_LIMIT)
+            .map((user) => client.getUserPermissions(user.name));
+          const batchResults = await Promise.allSettled(batch);
+          permissionsResults.push(...batchResults);
+        }
 
         const accessibleVhostsMap = new Map<string, string[]>();
         users.forEach((user, index) => {
