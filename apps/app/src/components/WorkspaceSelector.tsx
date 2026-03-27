@@ -268,7 +268,7 @@ export function WorkspaceSelector() {
           >
             <div className="flex items-center gap-1.5 min-w-0">
               <Building2 className="w-4 h-4 text-muted-foreground shrink-0" />
-              {isMultiOrg && currentOrg && (
+              {currentOrg && (
                 <>
                   <span className="truncate text-muted-foreground text-sm">
                     {currentOrg.name}
@@ -294,8 +294,8 @@ export function WorkspaceSelector() {
             </DropdownMenuItem>
           ) : (
             <>
-              {/* Organizations section (only for multi-org users) */}
-              {isMultiOrg && (
+              {/* Organizations section */}
+              {organizations.length > 0 && (
                 <>
                   <DropdownMenuLabel className="text-xs text-muted-foreground uppercase tracking-wider">
                     {t("organizations")}
@@ -307,6 +307,7 @@ export function WorkspaceSelector() {
                       <DropdownMenuItem
                         key={org.id}
                         onClick={() => handleOrgSwitch(org.id)}
+                        disabled={isActive && !isMultiOrg}
                         className={`p-3 cursor-pointer ${
                           isActive
                             ? "bg-primary/10 border-l-2 border-l-primary"
