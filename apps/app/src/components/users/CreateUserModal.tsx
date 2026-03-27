@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
@@ -85,32 +84,6 @@ export function CreateUserModal({
   const deleteUserMutation = useDeleteUser();
   const { data: vhostsData, isLoading: vhostsLoading } = useVHosts(serverId);
 
-  // Handle success/error
-  useEffect(() => {
-    if (createUserMutation.isSuccess && setPermissionsMutation.isSuccess) {
-      queryClient.invalidateQueries({ queryKey: ["users", serverId] });
-      toast.success(t("createSuccess"));
-      form.reset();
-      onSuccess?.();
-      onClose();
-    }
-    if (createUserMutation.isError) {
-      toast.error(createUserMutation.error?.message || t("createError"));
-    }
-    if (setPermissionsMutation.isError) {
-      toast.error(
-        setPermissionsMutation.error?.message || t("setPermissionsError")
-      );
-    }
-  }, [
-    createUserMutation.isSuccess,
-    createUserMutation.isError,
-    createUserMutation.error,
-    setPermissionsMutation.isSuccess,
-    setPermissionsMutation.isError,
-    setPermissionsMutation.error,
-  ]);
-
   const onSubmit = async (data: CreateUserForm) => {
     if (!workspace?.id) {
       toast.error(t("requiredWorkspace"));
@@ -125,32 +98,44 @@ export function CreateUserModal({
         password: data.password?.trim() || undefined,
         tags: data.tags || "",
       });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : t("createError"));
+      return;
+    }
 
+    try {
+      await setPermissionsMutation.mutateAsync({
+        serverId,
+        workspaceId: workspace.id,
+        username: data.username,
+        vhost: data.vhost,
+        configure: ".*",
+        write: ".*",
+        read: ".*",
+      });
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : t("setPermissionsError")
+      );
+      // Permission setup failed — clean up the orphaned user
       try {
-        await setPermissionsMutation.mutateAsync({
+        await deleteUserMutation.mutateAsync({
           serverId,
           workspaceId: workspace.id,
           username: data.username,
-          vhost: data.vhost,
-          configure: ".*",
-          write: ".*",
-          read: ".*",
         });
       } catch {
-        // Permission setup failed — clean up the orphaned user
-        try {
-          await deleteUserMutation.mutateAsync({
-            serverId,
-            workspaceId: workspace.id,
-            username: data.username,
-          });
-        } catch {
-          // Cleanup failed — user exists without permissions
-        }
+        // Cleanup failed — user exists without permissions
       }
-    } catch {
-      // User creation failed — error handling is done in useEffect
+      return;
     }
+
+    // Both mutations succeeded
+    queryClient.invalidateQueries({ queryKey: ["users", serverId] });
+    toast.success(t("createSuccess"));
+    form.reset();
+    onSuccess?.();
+    onClose();
   };
 
   const handleClose = () => {

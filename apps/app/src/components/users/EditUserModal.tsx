@@ -82,42 +82,34 @@ export function EditUserModal({
 
   const updateUserMutation = useUpdateUser();
 
-  // Handle success/error
-  useEffect(() => {
-    if (updateUserMutation.isSuccess) {
+  const onSubmit = async (data: EditUserForm) => {
+    if (!workspace?.id) {
+      toast.error(t("requiredWorkspace"));
+      return;
+    }
+
+    try {
+      await updateUserMutation.mutateAsync({
+        serverId,
+        workspaceId: workspace.id,
+        username: user.name,
+        password:
+          data.passwordAction === "set"
+            ? data.password?.trim() || undefined
+            : undefined,
+        tags: data.tags || "",
+        removePassword: data.passwordAction === "remove",
+      });
+
       queryClient.invalidateQueries({
         queryKey: ["user", serverId, user.name],
       });
       queryClient.invalidateQueries({ queryKey: ["users", serverId] });
       toast.success(t("updateSuccess"));
       onClose();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : t("updateError"));
     }
-    if (updateUserMutation.isError) {
-      toast.error(updateUserMutation.error?.message || t("updateError"));
-    }
-  }, [
-    updateUserMutation.isSuccess,
-    updateUserMutation.isError,
-    updateUserMutation.error,
-  ]);
-
-  const onSubmit = (data: EditUserForm) => {
-    if (!workspace?.id) {
-      toast.error(t("requiredWorkspace"));
-      return;
-    }
-
-    updateUserMutation.mutate({
-      serverId,
-      workspaceId: workspace.id,
-      username: user.name,
-      password:
-        data.passwordAction === "set"
-          ? data.password?.trim() || undefined
-          : undefined,
-      tags: data.tags || "",
-      removePassword: data.passwordAction === "remove",
-    });
   };
 
   const handleClose = () => {
