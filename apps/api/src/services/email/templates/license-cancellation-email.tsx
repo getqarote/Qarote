@@ -3,7 +3,6 @@ import {
   Button,
   Container,
   Head,
-  Hr,
   Html,
   Link,
   Preview,
@@ -12,13 +11,14 @@ import {
 } from "@react-email/components";
 import type { JSX } from "react";
 
+import { EmailFooter } from "../shared/email-footer";
+import { EmailHeader } from "../shared/email-header";
 import {
   baseStyles,
   buttonStyles,
   contentStyles,
   sectionStyles,
   textStyles,
-  utilityStyles,
 } from "../shared/styles";
 
 import { UserPlan } from "@/generated/prisma/client";
@@ -30,6 +30,7 @@ interface LicenseCancellationEmailProps {
   expiresAt: Date;
   gracePeriodDays: number;
   portalUrl: string;
+  locale?: string;
 }
 
 export default function LicenseCancellationEmail({
@@ -39,6 +40,7 @@ export default function LicenseCancellationEmail({
   expiresAt,
   gracePeriodDays,
   portalUrl,
+  locale = "en",
 }: LicenseCancellationEmailProps): JSX.Element {
   const tierDisplay = tier.charAt(0) + tier.slice(1).toLowerCase();
   const accessUntil = expiresAt.toLocaleDateString("en-US", {
@@ -56,6 +58,8 @@ export default function LicenseCancellationEmail({
       </Preview>
       <Body style={baseStyles.main}>
         <Container style={baseStyles.container}>
+          <EmailHeader frontendUrl={portalUrl} />
+
           <Section style={contentStyles.contentPadded}>
             <Text style={contentStyles.title}>License Cancelled</Text>
 
@@ -137,13 +141,7 @@ export default function LicenseCancellationEmail({
               .
             </Text>
 
-            <Hr style={utilityStyles.hr} />
-
-            <Text style={contentStyles.paragraph}>
-              Thank you for using Qarote. We hope to see you again!
-            </Text>
-
-            <Text style={contentStyles.signature}>The Qarote Team</Text>
+            <EmailFooter locale={locale} frontendUrl={portalUrl} />
           </Section>
         </Container>
       </Body>

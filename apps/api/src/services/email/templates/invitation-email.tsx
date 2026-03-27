@@ -3,7 +3,6 @@ import {
   Button,
   Container,
   Head,
-  Hr,
   Html,
   Link,
   Preview,
@@ -11,14 +10,16 @@ import {
   Text,
 } from "@react-email/components";
 
+import { EmailFooter } from "../shared/email-footer";
+import { EmailHeader } from "../shared/email-header";
 import {
   baseStyles,
   buttonStyles,
   contentStyles,
-  headerStyles,
   textStyles,
-  utilityStyles,
 } from "../shared/styles";
+
+import { tEmail } from "@/i18n";
 
 interface InvitationEmailProps {
   inviterName: string;
@@ -26,6 +27,7 @@ interface InvitationEmailProps {
   workspaceName: string;
   invitationToken: string;
   frontendUrl: string;
+  locale?: string;
 }
 
 export const InvitationEmail = ({
@@ -34,19 +36,24 @@ export const InvitationEmail = ({
   workspaceName,
   invitationToken,
   frontendUrl,
+  locale = "en",
 }: InvitationEmailProps) => {
   const inviteUrl = `${frontendUrl}/invite/${invitationToken}`;
 
   return (
     <Html>
       <Head />
-      <Preview>You've been invited to join {workspaceName} on Qarote</Preview>
+      <Preview>
+        {tEmail(locale, "invitation.preview", { inviterName, workspaceName })}
+      </Preview>
       <Body style={baseStyles.main}>
         <Container style={baseStyles.container}>
-          <Section style={headerStyles.header}></Section>
+          <EmailHeader frontendUrl={frontendUrl} />
 
           <Section style={contentStyles.contentPadded}>
-            <Text style={contentStyles.title}>You're invited to Qarote!</Text>
+            <Text style={contentStyles.title}>
+              {tEmail(locale, "invitation.title", { workspaceName })}
+            </Text>
 
             <Text style={contentStyles.paragraph}>
               <strong>{inviterName}</strong> ({inviterEmail}) has invited you to
@@ -55,12 +62,12 @@ export const InvitationEmail = ({
 
             <Section style={buttonStyles.buttonSection}>
               <Button style={buttonStyles.primaryButton} href={inviteUrl}>
-                Accept Invitation
+                {tEmail(locale, "invitation.acceptButton")}
               </Button>
             </Section>
 
             <Text style={contentStyles.paragraph}>
-              Or copy and paste this URL into your browser:
+              {tEmail(locale, "common.ifButtonDoesntWork")}
             </Text>
             <Text style={textStyles.linkText}>
               <Link href={inviteUrl} style={textStyles.link}>
@@ -68,37 +75,10 @@ export const InvitationEmail = ({
               </Link>
             </Text>
 
-            <Hr style={utilityStyles.hr} />
-
-            <Text style={contentStyles.paragraph}>Happy monitoring! 🐰</Text>
-
-            <Text style={contentStyles.signature}>The Qarote Team</Text>
+            <EmailFooter locale={locale} frontendUrl={frontendUrl} />
           </Section>
         </Container>
       </Body>
     </Html>
   );
 };
-
-// Custom styles for this template
-const _styles = {
-  detailText: {
-    fontSize: "16px",
-    lineHeight: "1.5",
-    color: "#6b7280",
-    margin: "0 0 8px",
-  },
-
-  footerText: {
-    color: "#6b7280",
-    fontSize: "14px",
-    lineHeight: "1.5",
-    margin: "0 0 16px",
-  },
-
-  footerNote: {
-    color: "#9ca3af",
-    fontSize: "12px",
-    lineHeight: "1.4",
-  },
-} as const;

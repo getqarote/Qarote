@@ -3,7 +3,6 @@ import {
   Button,
   Container,
   Head,
-  Hr,
   Html,
   Link,
   Preview,
@@ -14,16 +13,18 @@ import type { JSX } from "react";
 
 import { getPlanFeatures } from "@/services/plan/plan.service";
 
+import { EmailFooter } from "../shared/email-footer";
+import { EmailHeader } from "../shared/email-header";
 import {
   baseStyles,
   buttonStyles,
   contentStyles,
   sectionStyles,
   textStyles,
-  utilityStyles,
 } from "../shared/styles";
 
 import { UserPlan } from "@/generated/prisma/client";
+import { tEmail } from "@/i18n";
 
 interface PaymentActionRequiredEmailProps {
   name: string;
@@ -33,6 +34,7 @@ interface PaymentActionRequiredEmailProps {
   amount: string;
   currency: string;
   frontendUrl: string;
+  locale?: string;
 }
 
 const styles = {
@@ -69,6 +71,7 @@ export default function PaymentActionRequiredEmail({
   amount,
   currency,
   frontendUrl,
+  locale = "en",
 }: PaymentActionRequiredEmailProps): JSX.Element {
   const planDisplayName = plan.charAt(0) + plan.slice(1).toLowerCase();
   const planFeatures = getPlanFeatures(plan);
@@ -81,13 +84,17 @@ export default function PaymentActionRequiredEmail({
       </Preview>
       <Body style={baseStyles.main}>
         <Container style={baseStyles.container}>
-          {/* Header */}
+          <EmailHeader frontendUrl={frontendUrl} />
 
           {/* Main Content */}
           <Section style={contentStyles.contentPadded}>
-            <Text style={contentStyles.title}>Payment action required</Text>
+            <Text style={contentStyles.title}>
+              {tEmail(locale, "paymentActionRequired.title")}
+            </Text>
 
-            <Text style={contentStyles.paragraph}>Hi {name},</Text>
+            <Text style={contentStyles.paragraph}>
+              {tEmail(locale, "common.greeting", { name })}
+            </Text>
 
             <Text style={contentStyles.paragraph}>
               We were unable to process the payment for your{" "}
@@ -166,23 +173,19 @@ export default function PaymentActionRequiredEmail({
             {/* Call to Action */}
             <Section style={buttonStyles.buttonSection}>
               <Button style={buttonStyles.primaryButton} href={invoiceUrl}>
-                Complete Payment
+                {tEmail(locale, "paymentActionRequired.updatePayment")}
               </Button>
             </Section>
 
             <Text style={contentStyles.paragraph}>
               Need help? Contact our{" "}
               <Link href={`${frontendUrl}/help`} style={textStyles.link}>
-                support team
+                {tEmail(locale, "common.supportTeam")}
               </Link>{" "}
               and we'll assist you right away.
             </Text>
 
-            <Hr style={utilityStyles.hr} />
-
-            <Text style={contentStyles.paragraph}>Happy monitoring! 🐰</Text>
-
-            <Text style={contentStyles.signature}>The Qarote Team</Text>
+            <EmailFooter locale={locale} frontendUrl={frontendUrl} />
           </Section>
         </Container>
       </Body>

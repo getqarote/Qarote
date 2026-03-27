@@ -30,7 +30,8 @@
     "signature": "El equipo de Qarote",
     "supportTeam": "equipo de soporte",
     "ifButtonDoesntWork": "Si el botón de arriba no funciona, también puedes copiar y pegar este enlace en tu navegador:",
-    "automatedNotification": "Esta es una notificación automática de Qarote."
+    "automatedNotification": "Esta es una notificación automática de Qarote.",
+    "supportFooter": "¿Necesitas ayuda? Responde a este correo o contacta a nuestro"
   },
   "verification": {
     "titleSignup": "Por favor, verifica tu dirección de correo electrónico",
@@ -65,7 +66,8 @@
     "featurePrioritySupport": "🎯 Obtén soporte prioritario y asesoramiento experto",
     "ctaWithWorkspace": "Ir al panel de control",
     "ctaWithoutWorkspace": "Crear tu espacio de trabajo",
-    "needHelp": "Si necesitas ayuda para comenzar, consulta nuestra"
+    "needHelp": "Si necesitas ayuda para comenzar, consulta nuestra",
+    "trialInfo": "Actualmente estás en un período de prueba gratuito de {{trialDays}} días del plan {{planName}}. Tu prueba termina el {{trialEndDate}}. No se requiere pago durante el período de prueba."
   },
   "invitation": {
     "preview": "{{inviterName}} te ha invitado a unirte a {{workspaceName}} en Qarote",
@@ -74,6 +76,13 @@
     "aboutQarote": "Qarote es un potente panel de monitoreo de RabbitMQ que ayuda a los equipos a gestionar sus colas de mensajes de manera eficiente.",
     "acceptButton": "Aceptar invitación",
     "expiryWarning": "Esta invitación expirará en 7 días. Si no esperabas esta invitación, puedes ignorar este correo electrónico con total seguridad.",
+    "havingTrouble": "Si tienes algún problema, no dudes en contactar a nuestro"
+  },
+  "orgInvitation": {
+    "preview": "{{inviterName}} te ha invitado a unirte a {{orgName}} en Qarote",
+    "title": "¡Has sido invitado/a a unirte a una organización!",
+    "body": "{{inviterName}} ({{inviterEmail}}) te ha invitado a unirte a la organización <strong>{{orgName}}</strong> en Qarote.",
+    "acceptButton": "Aceptar invitación",
     "havingTrouble": "Si tienes algún problema, no dudes en contactar a nuestro"
   },
   "passwordReset": {

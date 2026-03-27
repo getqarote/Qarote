@@ -11,6 +11,8 @@ import {
   Text,
 } from "@react-email/components";
 
+import { EmailFooter } from "../shared/email-footer";
+import { EmailHeader } from "../shared/email-header";
 import {
   baseStyles,
   buttonStyles,
@@ -19,6 +21,8 @@ import {
   utilityStyles,
 } from "../shared/styles";
 
+import { tEmail } from "@/i18n";
+
 interface EmailVerificationProps {
   email: string;
   userName?: string;
@@ -26,7 +30,7 @@ interface EmailVerificationProps {
   type: "SIGNUP" | "EMAIL_CHANGE";
   frontendUrl: string;
   expiryHours: number;
-  // Remove frontendUrl dependency for logo
+  locale?: string;
 }
 
 export const EmailVerification = ({
@@ -36,13 +40,17 @@ export const EmailVerification = ({
   type,
   frontendUrl,
   expiryHours,
+  locale = "en",
 }: EmailVerificationProps) => {
   const isSignup = type === "SIGNUP";
-  const emailTitle = isSignup
-    ? "Please verify your email address"
-    : "Verify your new email address";
+  const emailTitle = tEmail(
+    locale,
+    isSignup ? "verification.titleSignup" : "verification.titleEmailChange"
+  );
 
-  const greeting = userName ? `Hi ${userName},` : "Hello,";
+  const greeting = userName
+    ? tEmail(locale, "common.greeting", { name: userName })
+    : tEmail(locale, "common.greetingGeneric");
 
   const mainText = isSignup
     ? "Thank you for signing up for Qarote! To complete your registration and access your account, please verify your email address by clicking the button below."
@@ -55,13 +63,16 @@ export const EmailVerification = ({
     <Html>
       <Head />
       <Preview>
-        {isSignup
-          ? "Verify your email to get started with Qarote"
-          : "Confirm your new email address"}
+        {tEmail(
+          locale,
+          isSignup
+            ? "verification.previewSignup"
+            : "verification.previewEmailChange"
+        )}
       </Preview>
       <Body style={baseStyles.main}>
         <Container style={baseStyles.container}>
-          {/* Header */}
+          <EmailHeader frontendUrl={frontendUrl} />
 
           {/* Main Content */}
           <Section style={contentStyles.contentPadded}>
@@ -72,19 +83,19 @@ export const EmailVerification = ({
             <Text style={contentStyles.paragraph}>{mainText}</Text>
 
             <Text style={contentStyles.paragraph}>
-              <strong>Email:</strong> {email}
+              <strong>{tEmail(locale, "verification.emailLabel")}</strong>{" "}
+              {email}
             </Text>
 
             {/* Call to Action */}
             <Section style={buttonStyles.buttonSection}>
               <Button style={buttonStyles.primaryButton} href={verificationUrl}>
-                Verify Email Address
+                {tEmail(locale, "verification.verifyButton")}
               </Button>
             </Section>
 
             <Text style={contentStyles.paragraph}>
-              If the button above doesn't work, you can also copy and paste this
-              link into your browser:
+              {tEmail(locale, "common.ifButtonDoesntWork")}
             </Text>
 
             <Text style={textStyles.linkText}>
@@ -96,27 +107,28 @@ export const EmailVerification = ({
             <Hr style={utilityStyles.hr} />
 
             <Text style={contentStyles.paragraph}>
-              <strong>Important:</strong> This verification link will expire in{" "}
-              {expiryHours} hours. If you didn't request this{" "}
-              {isSignup ? "account" : "email change"}, you can safely ignore
-              this email.
+              {tEmail(locale, "verification.expiryWarning", {
+                expiryHours,
+                requestType: tEmail(
+                  locale,
+                  isSignup
+                    ? "verification.requestTypeAccount"
+                    : "verification.requestTypeEmailChange"
+                ),
+              })}
             </Text>
 
             {
               <Text style={contentStyles.paragraph}>
-                If you're having trouble, feel free to contact our{" "}
+                {tEmail(locale, "verification.havingTrouble")}{" "}
                 <Link href={supportUrl} style={textStyles.link}>
-                  support team
+                  {tEmail(locale, "common.supportTeam")}
                 </Link>
                 .
               </Text>
             }
 
-            <Hr style={utilityStyles.hr} />
-
-            <Text style={contentStyles.paragraph}>Happy monitoring! 🐰</Text>
-
-            <Text style={contentStyles.signature}>The Qarote Team</Text>
+            <EmailFooter locale={locale} frontendUrl={frontendUrl} />
           </Section>
         </Container>
       </Body>

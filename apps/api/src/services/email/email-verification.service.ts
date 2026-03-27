@@ -217,10 +217,43 @@ export class EmailVerificationService {
             subscription: {
               select: {
                 plan: true,
+                trialEnd: true,
+                status: true,
               },
             },
           },
         });
+
+        // Compute trial info for the welcome email
+        let trialDaysRemaining: number | undefined;
+        let trialEndDate: string | undefined;
+        if (
+          updatedUser.subscription?.trialEnd &&
+          updatedUser.subscription.status === "TRIALING"
+        ) {
+          const now = new Date();
+          const trialEnd = new Date(updatedUser.subscription.trialEnd);
+          const diffMs = trialEnd.getTime() - now.getTime();
+          trialDaysRemaining = Math.max(
+            0,
+            Math.ceil(diffMs / (1000 * 60 * 60 * 24))
+          );
+          trialEndDate = trialEnd.toLocaleDateString(
+            locale === "fr"
+              ? "fr-FR"
+              : locale === "es"
+                ? "es-ES"
+                : locale === "zh"
+                  ? "zh-CN"
+                  : "en-US",
+            {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+              timeZone: "UTC",
+            }
+          );
+        }
 
         // Send welcome email after successful email verification
         try {
@@ -228,6 +261,8 @@ export class EmailVerificationService {
             to: updatedUser.email,
             name: updatedUser.firstName || updatedUser.email,
             plan: updatedUser.subscription?.plan || "FREE",
+            trialDaysRemaining,
+            trialEndDate,
             locale,
           });
 

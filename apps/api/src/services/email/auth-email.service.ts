@@ -22,6 +22,8 @@ interface SendWelcomeEmailParams {
   name: string;
   workspaceName?: string;
   plan: UserPlan;
+  trialDaysRemaining?: number;
+  trialEndDate?: string;
   locale?: string;
 }
 
@@ -73,6 +75,7 @@ export class AuthEmailService {
       workspaceName,
       invitationToken,
       frontendUrl,
+      locale,
     });
 
     return CoreEmailService.sendEmail({
@@ -111,6 +114,7 @@ export class AuthEmailService {
       orgName,
       invitationToken,
       frontendUrl,
+      locale,
     });
 
     return CoreEmailService.sendEmail({
@@ -131,7 +135,15 @@ export class AuthEmailService {
   static async sendWelcomeEmail(
     params: SendWelcomeEmailParams
   ): Promise<EmailResult> {
-    const { to, name, workspaceName, plan, locale = "en" } = params;
+    const {
+      to,
+      name,
+      workspaceName,
+      plan,
+      trialDaysRemaining,
+      trialEndDate,
+      locale = "en",
+    } = params;
 
     const { frontendUrl } = CoreEmailService.getConfig();
 
@@ -141,6 +153,9 @@ export class AuthEmailService {
       workspaceName,
       plan,
       frontendUrl,
+      locale,
+      trialDaysRemaining,
+      trialEndDate,
     });
 
     return CoreEmailService.sendEmail({
@@ -194,6 +209,7 @@ export class AuthEmailService {
       type,
       frontendUrl,
       expiryHours,
+      locale,
     });
 
     const subject =

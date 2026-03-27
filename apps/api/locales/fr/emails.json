@@ -30,7 +30,8 @@
     "signature": "L'équipe Qarote",
     "supportTeam": "l'équipe de support",
     "ifButtonDoesntWork": "Si le bouton ci-dessus ne fonctionne pas, vous pouvez également copier et coller ce lien dans votre navigateur :",
-    "automatedNotification": "Ceci est une notification automatique de Qarote."
+    "automatedNotification": "Ceci est une notification automatique de Qarote.",
+    "supportFooter": "Besoin d'aide ? Répondez à cet e-mail ou contactez notre"
   },
   "verification": {
     "titleSignup": "Veuillez vérifier votre adresse e-mail",
@@ -65,7 +66,8 @@
     "featurePrioritySupport": "🎯 Bénéficiez d'un support prioritaire et de conseils d'experts",
     "ctaWithWorkspace": "Accéder au tableau de bord",
     "ctaWithoutWorkspace": "Créer votre espace de travail",
-    "needHelp": "Si vous avez besoin d'aide pour commencer, consultez notre"
+    "needHelp": "Si vous avez besoin d'aide pour commencer, consultez notre",
+    "trialInfo": "Vous bénéficiez actuellement d'un essai gratuit de {{trialDays}} jours du plan {{planName}}. Votre essai se termine le {{trialEndDate}}. Aucun paiement n'est requis pendant la période d'essai."
   },
   "invitation": {
     "preview": "{{inviterName}} vous a invité(e) à rejoindre {{workspaceName}} sur Qarote",
@@ -74,6 +76,13 @@
     "aboutQarote": "Qarote est un puissant tableau de bord de surveillance RabbitMQ qui aide les équipes à gérer efficacement leurs files d'attente de messages.",
     "acceptButton": "Accepter l'invitation",
     "expiryWarning": "Cette invitation expirera dans 7 jours. Si vous n'attendiez pas cette invitation, vous pouvez ignorer cet e-mail en toute sécurité.",
+    "havingTrouble": "Si vous rencontrez des difficultés, n'hésitez pas à contacter notre"
+  },
+  "orgInvitation": {
+    "preview": "{{inviterName}} vous a invité(e) à rejoindre {{orgName}} sur Qarote",
+    "title": "Vous êtes invité(e) à rejoindre une organisation !",
+    "body": "{{inviterName}} ({{inviterEmail}}) vous a invité(e) à rejoindre l'organisation <strong>{{orgName}}</strong> sur Qarote.",
+    "acceptButton": "Accepter l'invitation",
     "havingTrouble": "Si vous rencontrez des difficultés, n'hésitez pas à contacter notre"
   },
   "passwordReset": {

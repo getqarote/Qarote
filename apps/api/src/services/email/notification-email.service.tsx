@@ -116,6 +116,7 @@ export class NotificationEmailService {
       plan,
       trialEndDate,
       frontendUrl,
+      locale,
     });
 
     // Create compelling subject line with usage data
@@ -168,6 +169,7 @@ export class NotificationEmailService {
       amount,
       currency,
       frontendUrl,
+      locale,
     });
 
     return CoreEmailService.sendEmail({
@@ -213,6 +215,7 @@ export class NotificationEmailService {
       invoiceDate,
       nextBillingDate,
       frontendUrl,
+      locale,
     });
 
     return CoreEmailService.sendEmail({
@@ -252,6 +255,7 @@ export class NotificationEmailService {
       currency,
       paymentMethod,
       frontendUrl,
+      locale,
     });
 
     const formattedAmount = new Intl.NumberFormat("en-US", {
@@ -357,6 +361,7 @@ export class NotificationEmailService {
       serverId,
       alerts,
       frontendUrl,
+      locale,
     });
 
     // Determine subject line based on alert severity
@@ -412,11 +417,15 @@ export class NotificationEmailService {
     // Get deployment-specific update instructions
     const deploymentInfo = await DeploymentService.getUpdateInstructions();
 
+    const { frontendUrl } = CoreEmailService.getConfig();
+
     const template = UpdateAvailableEmail({
       currentVersion,
       latestVersion,
       releaseUrl,
       updateInstructions: deploymentInfo.instructions,
+      frontendUrl,
+      locale,
     });
 
     return CoreEmailService.sendEmail({

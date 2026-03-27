@@ -3,7 +3,6 @@ import {
   Button,
   Container,
   Head,
-  Hr,
   Html,
   Link,
   Preview,
@@ -14,16 +13,18 @@ import type { JSX } from "react";
 
 import { getPlanFeatures } from "@/services/plan/plan.service";
 
+import { EmailFooter } from "../shared/email-footer";
+import { EmailHeader } from "../shared/email-header";
 import {
   baseStyles,
   buttonStyles,
   contentStyles,
   sectionStyles,
   textStyles,
-  utilityStyles,
 } from "../shared/styles";
 
 import { UserPlan } from "@/generated/prisma/client";
+import { tEmail } from "@/i18n";
 
 interface TrialEndingEmailProps {
   name: string;
@@ -31,6 +32,7 @@ interface TrialEndingEmailProps {
   plan: UserPlan;
   trialEndDate: string;
   frontendUrl: string;
+  locale?: string;
 }
 
 const styles = {
@@ -50,6 +52,7 @@ export default function TrialEndingEmail({
   plan,
   trialEndDate,
   frontendUrl,
+  locale = "en",
 }: TrialEndingEmailProps): JSX.Element {
   const planDisplayName = plan.charAt(0) + plan.slice(1).toLowerCase();
   const planFeatures = getPlanFeatures(plan);
@@ -63,13 +66,17 @@ export default function TrialEndingEmail({
       </Preview>
       <Body style={baseStyles.main}>
         <Container style={baseStyles.container}>
-          {/* Header */}
+          <EmailHeader frontendUrl={frontendUrl} />
 
           {/* Main Content */}
           <Section style={contentStyles.contentPadded}>
-            <Text style={contentStyles.title}>Your trial is ending soon</Text>
+            <Text style={contentStyles.title}>
+              {tEmail(locale, "trialEnding.title")}
+            </Text>
 
-            <Text style={contentStyles.paragraph}>Hi {name},</Text>
+            <Text style={contentStyles.paragraph}>
+              {tEmail(locale, "common.greeting", { name })}
+            </Text>
 
             <Text style={contentStyles.paragraph}>
               Your <strong>{planDisplayName}</strong> trial for workspace{" "}
@@ -127,23 +134,19 @@ export default function TrialEndingEmail({
                 style={buttonStyles.primaryButton}
                 href={`${frontendUrl}/billing`}
               >
-                Add Payment Method
+                {tEmail(locale, "trialEnding.upgradeCta")}
               </Button>
             </Section>
 
             <Text style={contentStyles.paragraph}>
               Have questions about your subscription? Our{" "}
               <Link href={`${frontendUrl}/help`} style={textStyles.link}>
-                support team
+                {tEmail(locale, "common.supportTeam")}
               </Link>{" "}
               is here to help.
             </Text>
 
-            <Hr style={utilityStyles.hr} />
-
-            <Text style={contentStyles.paragraph}>Happy monitoring! 🐰</Text>
-
-            <Text style={contentStyles.signature}>The Qarote Team</Text>
+            <EmailFooter locale={locale} frontendUrl={frontendUrl} />
           </Section>
         </Container>
       </Body>

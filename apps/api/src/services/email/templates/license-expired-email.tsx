@@ -3,7 +3,6 @@ import {
   Button,
   Container,
   Head,
-  Hr,
   Html,
   Link,
   Preview,
@@ -12,13 +11,14 @@ import {
 } from "@react-email/components";
 import type { JSX } from "react";
 
+import { EmailFooter } from "../shared/email-footer";
+import { EmailHeader } from "../shared/email-header";
 import {
   baseStyles,
   buttonStyles,
   contentStyles,
   sectionStyles,
   textStyles,
-  utilityStyles,
 } from "../shared/styles";
 
 import { UserPlan } from "@/generated/prisma/client";
@@ -30,6 +30,7 @@ interface LicenseExpiredEmailProps {
   expiredAt: Date;
   renewalUrl: string;
   portalUrl: string;
+  locale?: string;
 }
 
 export default function LicenseExpiredEmail({
@@ -39,6 +40,7 @@ export default function LicenseExpiredEmail({
   expiredAt,
   renewalUrl,
   portalUrl,
+  locale = "en",
 }: LicenseExpiredEmailProps): JSX.Element {
   const tierDisplay = tier.charAt(0) + tier.slice(1).toLowerCase();
   const expiredDate = expiredAt.toLocaleDateString("en-US", {
@@ -57,6 +59,8 @@ export default function LicenseExpiredEmail({
       </Preview>
       <Body style={baseStyles.main}>
         <Container style={baseStyles.container}>
+          <EmailHeader frontendUrl={portalUrl} />
+
           <Section style={contentStyles.contentPadded}>
             <Text style={contentStyles.title}>❌ License Expired</Text>
 
@@ -129,13 +133,7 @@ export default function LicenseExpiredEmail({
               .
             </Text>
 
-            <Hr style={utilityStyles.hr} />
-
-            <Text style={contentStyles.paragraph}>
-              Need help? Contact our support team and we'll assist you.
-            </Text>
-
-            <Text style={contentStyles.signature}>The Qarote Team</Text>
+            <EmailFooter locale={locale} frontendUrl={portalUrl} />
           </Section>
         </Container>
       </Body>

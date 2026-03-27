@@ -30,7 +30,8 @@
     "signature": "The Qarote Team",
     "supportTeam": "support team",
     "ifButtonDoesntWork": "If the button above doesn't work, you can also copy and paste this link into your browser:",
-    "automatedNotification": "This is an automated notification from Qarote."
+    "automatedNotification": "This is an automated notification from Qarote.",
+    "supportFooter": "Need help? Reply to this email or reach out to our"
   },
   "verification": {
     "titleSignup": "Please verify your email address",
@@ -65,7 +66,8 @@
     "featurePrioritySupport": "🎯 Get priority support and expert insights",
     "ctaWithWorkspace": "Go to Dashboard",
     "ctaWithoutWorkspace": "Create Your Workspace",
-    "needHelp": "If you need help getting started, check out our"
+    "needHelp": "If you need help getting started, check out our",
+    "trialInfo": "You're currently on a {{trialDays}}-day free trial of the {{planName}} plan. Your trial ends on {{trialEndDate}}. No payment is required during the trial period."
   },
   "invitation": {
     "preview": "{{inviterName}} has invited you to join {{workspaceName}} on Qarote",
@@ -74,6 +76,13 @@
     "aboutQarote": "Qarote is a powerful RabbitMQ monitoring dashboard that helps teams manage their message queues effectively.",
     "acceptButton": "Accept Invitation",
     "expiryWarning": "This invitation will expire in 7 days. If you didn't expect this invitation, you can safely ignore this email.",
+    "havingTrouble": "If you're having trouble, feel free to contact our"
+  },
+  "orgInvitation": {
+    "preview": "{{inviterName}} has invited you to join {{orgName}} on Qarote",
+    "title": "You're invited to join an organization!",
+    "body": "{{inviterName}} ({{inviterEmail}}) has invited you to join the <strong>{{orgName}}</strong> organization on Qarote.",
+    "acceptButton": "Accept Invitation",
     "havingTrouble": "If you're having trouble, feel free to contact our"
   },
   "passwordReset": {

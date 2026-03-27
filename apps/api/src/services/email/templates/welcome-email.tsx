@@ -3,7 +3,6 @@ import {
   Button,
   Container,
   Head,
-  Hr,
   Html,
   Link,
   Preview,
@@ -12,22 +11,27 @@ import {
 } from "@react-email/components";
 import type { JSX } from "react";
 
+import { EmailFooter } from "../shared/email-footer";
+import { EmailHeader } from "../shared/email-header";
 import {
   baseStyles,
   buttonStyles,
   contentStyles,
   sectionStyles,
   textStyles,
-  utilityStyles,
 } from "../shared/styles";
 
 import { UserPlan } from "@/generated/prisma/client";
+import { tEmail } from "@/i18n";
 
 interface WelcomeEmailProps {
   name: string;
   workspaceName?: string;
   plan: UserPlan;
   frontendUrl: string;
+  locale?: string;
+  trialDaysRemaining?: number;
+  trialEndDate?: string;
 }
 
 const styles = {
@@ -42,25 +46,29 @@ export default function WelcomeEmail({
   workspaceName,
   plan,
   frontendUrl,
+  locale = "en",
+  trialDaysRemaining,
+  trialEndDate,
 }: WelcomeEmailProps): JSX.Element {
   const planDisplayName = plan.charAt(0) + plan.slice(1).toLowerCase();
 
   return (
     <Html>
       <Head />
-      <Preview>
-        Welcome to Qarote, {name}!
-        {workspaceName ? " Your workspace is ready to go." : ""}
-      </Preview>
+      <Preview>{tEmail(locale, "subjects.welcome", { name })}</Preview>
       <Body style={baseStyles.main}>
         <Container style={baseStyles.container}>
-          {/* Header */}
+          <EmailHeader frontendUrl={frontendUrl} />
 
           {/* Main Content */}
           <Section style={contentStyles.contentPadded}>
-            <Text style={contentStyles.title}>Welcome to Qarote!</Text>
+            <Text style={contentStyles.title}>
+              {tEmail(locale, "welcome.title")}
+            </Text>
 
-            <Text style={contentStyles.paragraph}>Hi {name},</Text>
+            <Text style={contentStyles.paragraph}>
+              {tEmail(locale, "common.greeting", { name })}
+            </Text>
 
             <Text style={contentStyles.paragraph}>
               {workspaceName ? (
@@ -100,37 +108,53 @@ export default function WelcomeEmail({
               )}
             </Text>
 
+            {/* Trial Info Section */}
+            {trialDaysRemaining !== undefined && trialEndDate && (
+              <Section style={sectionStyles.infoSection}>
+                <Text style={textStyles.infoText}>
+                  {tEmail(locale, "welcome.trialInfo", {
+                    trialDays: trialDaysRemaining,
+                    planName: planDisplayName,
+                    trialEndDate,
+                  })}
+                </Text>
+              </Section>
+            )}
+
             {/* Plan Features Section */}
             <Section style={sectionStyles.featuresSection}>
               <Text style={contentStyles.heading}>
-                {workspaceName
-                  ? "What you can do now:"
-                  : "What you can do once you create your workspace:"}
+                {tEmail(
+                  locale,
+                  workspaceName
+                    ? "welcome.featuresHeadingWithWorkspace"
+                    : "welcome.featuresHeadingWithoutWorkspace"
+                )}
               </Text>
 
               {!workspaceName && (
                 <Section style={styles.featureItem}>
                   <Text style={textStyles.featureText}>
-                    🏢 Create your first workspace to get started
+                    {tEmail(locale, "welcome.featureCreateWorkspace")}
                   </Text>
                 </Section>
               )}
 
               <Section style={styles.featureItem}>
                 <Text style={textStyles.featureText}>
-                  🚀 Add your first RabbitMQ server
+                  {tEmail(locale, "welcome.featureAddServer")}
                 </Text>
               </Section>
 
               <Section style={styles.featureItem}>
                 <Text style={textStyles.featureText}>
-                  📊 Explore dashboard and metrics
+                  {tEmail(locale, "welcome.featureExploreDashboard")}
                 </Text>
               </Section>
 
               <Section style={styles.featureItem}>
                 <Text style={textStyles.featureText}>
-                  🔔 Set up alerts for your queues
+                  {tEmail(locale, "welcome.featureSetupAlerts")}
                 </Text>
               </Section>
 
@@ -138,13 +162,13 @@ export default function WelcomeEmail({
                 <>
                   <Section style={styles.featureItem}>
                     <Text style={textStyles.featureText}>
-                      📈 Access advanced analytics
+                      {tEmail(locale, "welcome.featureAdvancedAnalytics")}
                     </Text>
                   </Section>
 
                   <Section style={styles.featureItem}>
                     <Text style={textStyles.featureText}>
-                      👥 Invite team members to collaborate
+                      {tEmail(locale, "welcome.featureInviteTeam")}
                     </Text>
                   </Section>
                 </>
@@ -152,13 +176,13 @@ export default function WelcomeEmail({
 
               <Section style={styles.featureItem}>
                 <Text style={textStyles.featureText}>
-                  🧠 View detailed memory metrics and optimization tips
+                  {tEmail(locale, "welcome.featureMemoryMetrics")}
                 </Text>
               </Section>
 
               <Section style={styles.featureItem}>
                 <Text style={textStyles.featureText}>
-                  🎯 Get priority support and expert insights
+                  {tEmail(locale, "welcome.featurePrioritySupport")}
                 </Text>
               </Section>
             </Section>
@@ -166,23 +190,24 @@ export default function WelcomeEmail({
             {/* Call to Action */}
             <Section style={buttonStyles.buttonSection}>
               <Button style={buttonStyles.primaryButton} href={frontendUrl}>
-                {workspaceName ? "Go to Dashboard" : "Create Your Workspace"}
+                {tEmail(
+                  locale,
+                  workspaceName
+                    ? "welcome.ctaWithWorkspace"
+                    : "welcome.ctaWithoutWorkspace"
+                )}
               </Button>
             </Section>
 
             <Text style={contentStyles.paragraph}>
-              If you need help getting started, check out our{" "}
+              {tEmail(locale, "welcome.needHelp")}{" "}
               <Link href={`${frontendUrl}/help`} style={textStyles.link}>
-                support team
+                {tEmail(locale, "common.supportTeam")}
               </Link>
               .
             </Text>
 
-            <Hr style={utilityStyles.hr} />
-
-            <Text style={contentStyles.paragraph}>Happy monitoring! 🐰</Text>
-
-            <Text style={contentStyles.signature}>The Qarote Team</Text>
+            <EmailFooter locale={locale} frontendUrl={frontendUrl} />
           </Section>
         </Container>
       </Body>

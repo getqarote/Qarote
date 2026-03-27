@@ -14,17 +14,19 @@ import {
 
 import { getPlanFeatures } from "@/services/plan/plan.service";
 
+import { EmailFooter } from "../shared/email-footer";
+import { EmailHeader } from "../shared/email-header";
 import {
   baseStyles,
   buttonStyles,
   contentStyles,
-  headerStyles,
   sectionStyles,
   textStyles,
   utilityStyles,
 } from "../shared/styles";
 
 import { UserPlan } from "@/generated/prisma/client";
+import { tEmail } from "@/i18n";
 
 interface UpgradeConfirmationEmailProps {
   userName: string;
@@ -32,6 +34,7 @@ interface UpgradeConfirmationEmailProps {
   plan: UserPlan;
   billingInterval: "monthly" | "yearly";
   frontendUrl: string;
+  locale?: string;
 }
 
 export const UpgradeConfirmationEmail = ({
@@ -40,6 +43,7 @@ export const UpgradeConfirmationEmail = ({
   plan,
   billingInterval,
   frontendUrl,
+  locale = "en",
 }: UpgradeConfirmationEmailProps) => {
   const planDisplayName = plan.charAt(0) + plan.slice(1).toLowerCase();
   const planFeatures = getPlanFeatures(plan);
@@ -48,20 +52,26 @@ export const UpgradeConfirmationEmail = ({
     <Html>
       <Head />
       <Preview>
-        Welcome to {planDisplayName} Plan! Your upgrade is confirmed.
+        {tEmail(locale, "upgradeConfirmation.title", {
+          plan: planDisplayName,
+        })}
       </Preview>
       <Body style={baseStyles.main}>
         <Container style={baseStyles.container}>
-          <Section style={headerStyles.header}></Section>
+          <EmailHeader frontendUrl={frontendUrl} />
 
           <Section style={contentStyles.contentPadded}>
             <Heading style={contentStyles.title}>
-              🎉 Welcome to {planDisplayName} Plan!
+              {tEmail(locale, "upgradeConfirmation.title", {
+                plan: planDisplayName,
+              })}
             </Heading>
           </Section>
 
           <Section style={contentStyles.content}>
-            <Text style={contentStyles.paragraph}>Hi {userName},</Text>
+            <Text style={contentStyles.paragraph}>
+              {tEmail(locale, "common.greeting", { name: userName })}
+            </Text>
 
             <Text style={contentStyles.paragraph}>
               Great news! Your workspace "{workspaceName}" has been successfully
@@ -83,7 +93,7 @@ export const UpgradeConfirmationEmail = ({
 
             <Section style={buttonStyles.buttonSection}>
               <Button style={buttonStyles.primaryButton} href={frontendUrl}>
-                Start Using Your New Features
+                {tEmail(locale, "upgradeConfirmation.viewDashboard")}
               </Button>
             </Section>
 
@@ -112,16 +122,12 @@ export const UpgradeConfirmationEmail = ({
             <Text style={contentStyles.paragraph}>
               If you need help getting started, check out our{" "}
               <Link href={`${frontendUrl}/help`} style={textStyles.link}>
-                support team
+                {tEmail(locale, "common.supportTeam")}
               </Link>
               .
             </Text>
 
-            <Hr style={utilityStyles.hr} />
-
-            <Text style={contentStyles.paragraph}>Happy monitoring! 🐰</Text>
-
-            <Text style={contentStyles.signature}>The Qarote Team</Text>
+            <EmailFooter locale={locale} frontendUrl={frontendUrl} />
           </Section>
         </Container>
       </Body>

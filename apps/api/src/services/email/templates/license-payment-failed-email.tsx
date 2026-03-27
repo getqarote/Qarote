@@ -3,7 +3,6 @@ import {
   Button,
   Container,
   Head,
-  Hr,
   Html,
   Link,
   Preview,
@@ -12,13 +11,14 @@ import {
 } from "@react-email/components";
 import type { JSX } from "react";
 
+import { EmailFooter } from "../shared/email-footer";
+import { EmailHeader } from "../shared/email-header";
 import {
   baseStyles,
   buttonStyles,
   contentStyles,
   sectionStyles,
   textStyles,
-  utilityStyles,
 } from "../shared/styles";
 
 import { UserPlan } from "@/generated/prisma/client";
@@ -31,6 +31,7 @@ interface LicensePaymentFailedEmailProps {
   isInGracePeriod: boolean;
   willDeactivate: boolean;
   portalUrl: string;
+  locale?: string;
 }
 
 export default function LicensePaymentFailedEmail({
@@ -41,6 +42,7 @@ export default function LicensePaymentFailedEmail({
   isInGracePeriod,
   willDeactivate,
   portalUrl,
+  locale = "en",
 }: LicensePaymentFailedEmailProps): JSX.Element {
   const tierDisplay = tier.charAt(0) + tier.slice(1).toLowerCase();
 
@@ -53,6 +55,8 @@ export default function LicensePaymentFailedEmail({
       </Preview>
       <Body style={baseStyles.main}>
         <Container style={baseStyles.container}>
+          <EmailHeader frontendUrl={portalUrl} />
+
           <Section style={contentStyles.contentPadded}>
             <Text style={contentStyles.title}>⚠️ License Payment Failed</Text>
 
@@ -138,14 +142,7 @@ export default function LicensePaymentFailedEmail({
               .
             </Text>
 
-            <Hr style={utilityStyles.hr} />
-
-            <Text style={contentStyles.paragraph}>
-              Questions? Contact our support team - we're here to help resolve
-              this quickly.
-            </Text>
-
-            <Text style={contentStyles.signature}>The Qarote Team</Text>
+            <EmailFooter locale={locale} frontendUrl={portalUrl} />
           </Section>
         </Container>
       </Body>

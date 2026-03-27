@@ -3,7 +3,6 @@ import {
   Button,
   Container,
   Head,
-  Hr,
   Html,
   Link,
   Preview,
@@ -12,16 +11,18 @@ import {
 } from "@react-email/components";
 import type { JSX } from "react";
 
+import { EmailFooter } from "../shared/email-footer";
+import { EmailHeader } from "../shared/email-header";
 import {
   baseStyles,
   buttonStyles,
   contentStyles,
   sectionStyles,
   textStyles,
-  utilityStyles,
 } from "../shared/styles";
 
 import { UserPlan } from "@/generated/prisma/client";
+import { tEmail } from "@/i18n";
 
 interface LicenseDeliveryEmailProps {
   userName?: string;
@@ -30,6 +31,7 @@ interface LicenseDeliveryEmailProps {
   expiresAt: Date;
   downloadUrl: string;
   portalUrl: string;
+  locale?: string;
 }
 
 export default function LicenseDeliveryEmail({
@@ -39,6 +41,7 @@ export default function LicenseDeliveryEmail({
   expiresAt,
   downloadUrl,
   portalUrl,
+  locale = "en",
 }: LicenseDeliveryEmailProps): JSX.Element {
   const tierDisplay = tier.charAt(0) + tier.slice(1).toLowerCase();
   const expiryDate = expiresAt.toLocaleDateString("en-US", {
@@ -57,13 +60,15 @@ export default function LicenseDeliveryEmail({
       </Preview>
       <Body style={baseStyles.main}>
         <Container style={baseStyles.container}>
+          <EmailHeader frontendUrl={portalUrl} />
+
           <Section style={contentStyles.contentPadded}>
             <Text style={contentStyles.title}>
-              🎉 Your Qarote License is Ready!
+              {tEmail(locale, "licenseDelivery.title")}
             </Text>
 
             <Text style={contentStyles.paragraph}>
-              {userName ? `Hi ${userName}` : "Hi"},
+              {tEmail(locale, "common.greeting", { name: userName || "" })}
             </Text>
 
             <Text style={contentStyles.paragraph}>
@@ -125,14 +130,7 @@ export default function LicenseDeliveryEmail({
               .
             </Text>
 
-            <Hr style={utilityStyles.hr} />
-
-            <Text style={contentStyles.paragraph}>
-              Your license will automatically renew 12 months from now. You'll
-              receive reminder emails before renewal.
-            </Text>
-
-            <Text style={contentStyles.signature}>The Qarote Team</Text>
+            <EmailFooter locale={locale} frontendUrl={portalUrl} />
           </Section>
         </Container>
       </Body>

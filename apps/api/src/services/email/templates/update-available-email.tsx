@@ -3,7 +3,6 @@ import {
   Button,
   Container,
   Head,
-  Hr,
   Html,
   Preview,
   Section,
@@ -11,6 +10,8 @@ import {
 } from "@react-email/components";
 import type { JSX } from "react";
 
+import { EmailFooter } from "../shared/email-footer";
+import { EmailHeader } from "../shared/email-header";
 import {
   baseStyles,
   buttonStyles,
@@ -18,8 +19,9 @@ import {
   contentStyles,
   sectionStyles,
   textStyles,
-  utilityStyles,
 } from "../shared/styles";
+
+import { tEmail } from "@/i18n";
 
 interface UpdateAvailableEmailProps {
   currentVersion: string;
@@ -30,6 +32,8 @@ interface UpdateAvailableEmailProps {
     command: string;
     description: string;
   };
+  frontendUrl: string;
+  locale?: string;
 }
 
 export default function UpdateAvailableEmail({
@@ -37,6 +41,8 @@ export default function UpdateAvailableEmail({
   latestVersion,
   releaseUrl,
   updateInstructions,
+  frontendUrl,
+  locale = "en",
 }: UpdateAvailableEmailProps): JSX.Element {
   return (
     <Html>
@@ -46,8 +52,12 @@ export default function UpdateAvailableEmail({
       </Preview>
       <Body style={baseStyles.main}>
         <Container style={baseStyles.container}>
+          <EmailHeader frontendUrl={frontendUrl} />
+
           <Section style={contentStyles.contentPadded}>
-            <Text style={contentStyles.title}>New Update Available</Text>
+            <Text style={contentStyles.title}>
+              {tEmail(locale, "updateAvailable.title")}
+            </Text>
 
             <Text style={contentStyles.paragraph}>
               A new version of Qarote is available for your self-hosted
@@ -88,9 +98,7 @@ export default function UpdateAvailableEmail({
               </Button>
             </Section>
 
-            <Hr style={utilityStyles.hr} />
-
-            <Text style={contentStyles.signature}>The Qarote Team</Text>
+            <EmailFooter locale={locale} frontendUrl={frontendUrl} />
           </Section>
         </Container>
       </Body>

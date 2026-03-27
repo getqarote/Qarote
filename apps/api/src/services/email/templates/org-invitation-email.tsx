@@ -3,7 +3,6 @@ import {
   Button,
   Container,
   Head,
-  Hr,
   Html,
   Link,
   Preview,
@@ -11,14 +10,16 @@ import {
   Text,
 } from "@react-email/components";
 
+import { EmailFooter } from "../shared/email-footer";
+import { EmailHeader } from "../shared/email-header";
 import {
   baseStyles,
   buttonStyles,
   contentStyles,
-  headerStyles,
   textStyles,
-  utilityStyles,
 } from "../shared/styles";
+
+import { tEmail } from "@/i18n";
 
 interface OrgInvitationEmailProps {
   inviterName: string;
@@ -26,6 +27,7 @@ interface OrgInvitationEmailProps {
   orgName: string;
   invitationToken: string;
   frontendUrl: string;
+  locale?: string;
 }
 
 export const OrgInvitationEmail = ({
@@ -34,20 +36,23 @@ export const OrgInvitationEmail = ({
   orgName,
   invitationToken,
   frontendUrl,
+  locale = "en",
 }: OrgInvitationEmailProps) => {
   const inviteUrl = `${frontendUrl}/org-invite/${invitationToken}`;
 
   return (
     <Html>
       <Head />
-      <Preview>You've been invited to join {orgName} on Qarote</Preview>
+      <Preview>
+        {tEmail(locale, "orgInvitation.preview", { inviterName, orgName })}
+      </Preview>
       <Body style={baseStyles.main}>
         <Container style={baseStyles.container}>
-          <Section style={headerStyles.header}></Section>
+          <EmailHeader frontendUrl={frontendUrl} />
 
           <Section style={contentStyles.contentPadded}>
             <Text style={contentStyles.title}>
-              You're invited to join an organization!
+              {tEmail(locale, "orgInvitation.title")}
             </Text>
 
             <Text style={contentStyles.paragraph}>
@@ -57,12 +62,12 @@ export const OrgInvitationEmail = ({
 
             <Section style={buttonStyles.buttonSection}>
               <Button style={buttonStyles.primaryButton} href={inviteUrl}>
-                Accept Invitation
+                {tEmail(locale, "orgInvitation.acceptButton")}
               </Button>
             </Section>
 
             <Text style={contentStyles.paragraph}>
-              Or copy and paste this URL into your browser:
+              {tEmail(locale, "common.ifButtonDoesntWork")}
             </Text>
             <Text style={textStyles.linkText}>
               <Link href={inviteUrl} style={textStyles.link}>
@@ -70,11 +75,7 @@ export const OrgInvitationEmail = ({
               </Link>
             </Text>
 
-            <Hr style={utilityStyles.hr} />
-
-            <Text style={contentStyles.paragraph}>Happy monitoring!</Text>
-
-            <Text style={contentStyles.signature}>The Qarote Team</Text>
+            <EmailFooter locale={locale} frontendUrl={frontendUrl} />
           </Section>
         </Container>
       </Body>

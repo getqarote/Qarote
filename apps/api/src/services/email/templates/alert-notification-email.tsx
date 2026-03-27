@@ -3,7 +3,6 @@ import {
   Button,
   Container,
   Head,
-  Hr,
   Html,
   Link,
   Preview,
@@ -14,6 +13,8 @@ import type { JSX } from "react";
 
 import { RabbitMQAlert } from "@/services/alerts/alert.interfaces";
 
+import { EmailFooter } from "../shared/email-footer";
+import { EmailHeader } from "../shared/email-header";
 import {
   baseStyles,
   buttonStyles,
@@ -26,6 +27,8 @@ import {
   utilityStyles,
 } from "../shared/styles";
 
+import { tEmail } from "@/i18n";
+
 interface AlertNotificationEmailProps {
   workspaceName: string;
   workspaceId: string;
@@ -33,6 +36,7 @@ interface AlertNotificationEmailProps {
   serverId: string;
   alerts: RabbitMQAlert[];
   frontendUrl: string;
+  locale?: string;
 }
 
 const getSeverityColor = (severity: string) => {
@@ -75,6 +79,7 @@ export default function AlertNotificationEmail({
   serverId,
   alerts,
   frontendUrl,
+  locale = "en",
 }: AlertNotificationEmailProps): JSX.Element {
   const criticalAlerts = alerts.filter(
     (a) => a.severity === "CRITICAL" || a.severity === "HIGH"
@@ -126,9 +131,16 @@ export default function AlertNotificationEmail({
       </Preview>
       <Body style={baseStyles.main}>
         <Container style={baseStyles.container}>
+          <EmailHeader frontendUrl={frontendUrl} />
+
           <Section style={contentStyles.contentPadded}>
             <Text style={contentStyles.title}>
-              {hasCritical ? "🔴 Critical Alert" : "⚠️ Warning Alert"}
+              {tEmail(
+                locale,
+                hasCritical
+                  ? "alertNotification.titleCritical"
+                  : "alertNotification.titleWarning"
+              )}
             </Text>
 
             <Text style={contentStyles.paragraph}>
@@ -169,7 +181,9 @@ export default function AlertNotificationEmail({
                       marginBottom: "16px",
                     }}
                   >
-                    {category} Alerts
+                    {tEmail(locale, "alertNotification.categoryAlerts", {
+                      category,
+                    })}
                   </Text>
 
                   {categoryAlerts.map((alert, index) => {
@@ -248,29 +262,22 @@ export default function AlertNotificationEmail({
                 style={buttonStyles.primaryButton}
                 href={alertsUrl.toString()}
               >
-                View Alerts in Dashboard
+                {tEmail(locale, "alertNotification.viewAlerts")}
               </Button>
             </Section>
 
             <Text style={contentStyles.paragraph}>
-              You can manage alert thresholds and preferences in your{" "}
+              {tEmail(locale, "alertNotification.managePreferences")}{" "}
               <Link
                 href={`${frontendUrl}/alerts?openNotificationSettings=true`}
                 style={textStyles.link}
               >
-                alerts settings
+                {tEmail(locale, "alertNotification.alertsSettings")}
               </Link>
               .
             </Text>
 
-            <Hr style={utilityStyles.hr} />
-
-            <Text style={contentStyles.paragraph}>
-              This is an automated notification from Qarote. You're receiving
-              this because new alerts were detected on your monitored server.
-            </Text>
-
-            <Text style={contentStyles.signature}>The Qarote Team</Text>
+            <EmailFooter locale={locale} frontendUrl={frontendUrl} />
           </Section>
         </Container>
       </Body>

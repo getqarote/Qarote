@@ -12,16 +12,19 @@ import {
   Text,
 } from "@react-email/components";
 
+import { EmailFooter } from "../shared/email-footer";
+import { EmailHeader } from "../shared/email-header";
 import {
   baseStyles,
   buttonStyles,
   contentStyles,
-  headerStyles,
   layoutStyles,
   sectionStyles,
   textStyles,
   utilityStyles,
 } from "../shared/styles";
+
+import { tEmail } from "@/i18n";
 
 interface PaymentConfirmationEmailProps {
   userName: string;
@@ -29,6 +32,7 @@ interface PaymentConfirmationEmailProps {
   currency: string;
   paymentMethod: string;
   frontendUrl: string;
+  locale?: string;
 }
 
 const PaymentConfirmationEmail: React.FC<PaymentConfirmationEmailProps> = ({
@@ -37,6 +41,7 @@ const PaymentConfirmationEmail: React.FC<PaymentConfirmationEmailProps> = ({
   currency,
   paymentMethod,
   frontendUrl,
+  locale = "en",
 }) => {
   const formatAmount = (amount: number, currency: string) => {
     return new Intl.NumberFormat("en-US", {
@@ -65,17 +70,21 @@ const PaymentConfirmationEmail: React.FC<PaymentConfirmationEmailProps> = ({
   return (
     <Html>
       <Head />
-      <Preview>Payment Confirmed - Your Qarote subscription is active</Preview>
+      <Preview>{tEmail(locale, "paymentConfirmation.title")}</Preview>
       <Body style={baseStyles.main}>
         <Container style={baseStyles.container}>
-          <Section style={headerStyles.header}></Section>
+          <EmailHeader frontendUrl={frontendUrl} />
 
           <Section style={contentStyles.contentPadded}>
-            <Heading style={contentStyles.title}>✅ Payment Confirmed!</Heading>
+            <Heading style={contentStyles.title}>
+              {tEmail(locale, "paymentConfirmation.title")}
+            </Heading>
           </Section>
 
           <Section style={contentStyles.content}>
-            <Text style={contentStyles.paragraph}>Hi {userName},</Text>
+            <Text style={contentStyles.paragraph}>
+              {tEmail(locale, "common.greeting", { name: userName })}
+            </Text>
 
             <Text style={contentStyles.paragraph}>
               Great news! Your payment has been successfully processed and your
@@ -115,7 +124,7 @@ const PaymentConfirmationEmail: React.FC<PaymentConfirmationEmailProps> = ({
 
             <Section style={buttonStyles.buttonSection}>
               <Button style={buttonStyles.primaryButton} href={frontendUrl}>
-                Go to Dashboard
+                {tEmail(locale, "paymentConfirmation.viewBilling")}
               </Button>
             </Section>
 
@@ -125,16 +134,12 @@ const PaymentConfirmationEmail: React.FC<PaymentConfirmationEmailProps> = ({
               If you have any questions about this payment, please don't
               hesitate to contact our{" "}
               <Link href={`${frontendUrl}/help`} style={textStyles.link}>
-                support team
+                {tEmail(locale, "common.supportTeam")}
               </Link>
               .
             </Text>
 
-            <Hr style={utilityStyles.hr} />
-
-            <Text style={contentStyles.paragraph}>Happy monitoring! 🐰</Text>
-
-            <Text style={contentStyles.signature}>The Qarote Team</Text>
+            <EmailFooter locale={locale} frontendUrl={frontendUrl} />
           </Section>
         </Container>
       </Body>

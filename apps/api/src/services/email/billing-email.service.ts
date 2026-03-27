@@ -53,6 +53,7 @@ export class BillingEmailService {
       plan,
       billingInterval,
       frontendUrl,
+      locale,
     });
 
     const result = await CoreEmailService.sendEmail({
@@ -97,6 +98,7 @@ export class BillingEmailService {
       billingInterval,
       previousCancelDate,
       frontendUrl,
+      locale,
     });
 
     const result = await CoreEmailService.sendEmail({

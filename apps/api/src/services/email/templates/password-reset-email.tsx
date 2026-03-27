@@ -4,7 +4,6 @@ import {
   Container,
   Head,
   Heading,
-  Hr,
   Html,
   Link,
   Preview,
@@ -13,20 +12,24 @@ import {
 } from "@react-email/components";
 import React from "react";
 
+import { EmailFooter } from "../shared/email-footer";
+import { EmailHeader } from "../shared/email-header";
 import {
   baseStyles,
   buttonStyles,
   contentStyles,
   sectionStyles,
   textStyles,
-  utilityStyles,
 } from "../shared/styles";
+
+import { tEmail } from "@/i18n";
 
 interface PasswordResetEmailProps {
   userName?: string;
   expiresAt: string;
   frontendUrl: string;
   token: string;
+  locale?: string;
 }
 
 export const PasswordResetEmail: React.FC<PasswordResetEmailProps> = ({
@@ -34,38 +37,41 @@ export const PasswordResetEmail: React.FC<PasswordResetEmailProps> = ({
   expiresAt,
   frontendUrl,
   token,
+  locale = "en",
 }) => {
   const resetUrl = `${frontendUrl}/reset-password?token=${token}`;
 
   return (
     <Html>
       <Head />
-      <Preview>Reset your password for RabbitMQ Dashboard</Preview>
+      <Preview>{tEmail(locale, "passwordReset.preview")}</Preview>
       <Body style={baseStyles.main}>
         <Container style={baseStyles.container}>
           <Section style={sectionStyles.section}>
-            {/* Add Logo */}
+            <EmailHeader frontendUrl={frontendUrl} />
 
             <Section style={contentStyles.contentPadded}>
-              <Heading style={contentStyles.title}>Reset your password</Heading>
+              <Heading style={contentStyles.title}>
+                {tEmail(locale, "passwordReset.title")}
+              </Heading>
             </Section>
 
-            <Text style={contentStyles.paragraph}>Hello {userName},</Text>
+            <Text style={contentStyles.paragraph}>
+              {tEmail(locale, "common.greeting", { name: userName })}
+            </Text>
 
             <Text style={contentStyles.paragraph}>
-              We received a request to reset your password for your RabbitMQ
-              Dashboard account. If you didn't request this, you can safely
-              ignore this email.
+              {tEmail(locale, "passwordReset.body")}
             </Text>
 
             <Section style={buttonStyles.buttonSection}>
               <Button style={buttonStyles.primaryButton} href={resetUrl}>
-                Reset Password
+                {tEmail(locale, "passwordReset.resetButton")}
               </Button>
             </Section>
 
             <Text style={contentStyles.paragraph}>
-              Or copy and paste this URL into your browser:
+              {tEmail(locale, "common.ifButtonDoesntWork")}
             </Text>
             <Text style={textStyles.linkText}>
               <Link href={resetUrl} style={textStyles.link}>
@@ -74,14 +80,10 @@ export const PasswordResetEmail: React.FC<PasswordResetEmailProps> = ({
             </Text>
 
             <Text style={styles.footerText}>
-              This password reset link will expire on {expiresAt}.
+              {tEmail(locale, "passwordReset.securityNote", { expiresAt })}
             </Text>
 
-            <Hr style={utilityStyles.hr} />
-
-            <Text style={contentStyles.paragraph}>Happy monitoring! 🐰</Text>
-
-            <Text style={contentStyles.signature}>The Qarote Team</Text>
+            <EmailFooter locale={locale} frontendUrl={frontendUrl} />
           </Section>
         </Container>
       </Body>

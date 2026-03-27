@@ -27,6 +27,7 @@ class PasswordResetEmailService {
       expiresAt,
       frontendUrl,
       token: resetToken,
+      locale,
     });
 
     await CoreEmailService.sendEmail({

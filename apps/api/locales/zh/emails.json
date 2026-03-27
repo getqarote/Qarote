@@ -30,7 +30,8 @@
     "signature": "Qarote 团队",
     "supportTeam": "支持团队",
     "ifButtonDoesntWork": "如果以上按钮无法使用，您也可以将以下链接复制粘贴到浏览器中：",
-    "automatedNotification": "这是来自 Qarote 的自动通知。"
+    "automatedNotification": "这是来自 Qarote 的自动通知。",
+    "supportFooter": "需要帮助？回复此邮件或联系我们的"
   },
   "verification": {
     "titleSignup": "请验证您的邮箱地址",
@@ -65,7 +66,8 @@
     "featurePrioritySupport": "🎯 获取优先支持和专家建议",
     "ctaWithWorkspace": "前往仪表板",
     "ctaWithoutWorkspace": "创建您的工作区",
-    "needHelp": "如果您需要入门帮助，请查看我们的"
+    "needHelp": "如果您需要入门帮助，请查看我们的",
+    "trialInfo": "您正在使用 {{planName}} 套餐的 {{trialDays}} 天免费试用。试用将于 {{trialEndDate}} 结束。试用期内无需付款。"
   },
   "invitation": {
     "preview": "{{inviterName}} 邀请您加入 Qarote 上的 {{workspaceName}}",
@@ -74,6 +76,13 @@
     "aboutQarote": "Qarote 是一个强大的 RabbitMQ 监控仪表板，帮助团队高效管理消息队列。",
     "acceptButton": "接受邀请",
     "expiryWarning": "此邀请将在 7 天后过期。如果您没有收到预期的邀请，可以安全地忽略此邮件。",
+    "havingTrouble": "如果您遇到问题，请随时联系我们的"
+  },
+  "orgInvitation": {
+    "preview": "{{inviterName}} 邀请您加入 Qarote 上的 {{orgName}} 组织",
+    "title": "您已被邀请加入一个组织！",
+    "body": "{{inviterName}}（{{inviterEmail}}）邀请您加入 Qarote 上的 <strong>{{orgName}}</strong> 组织。",
+    "acceptButton": "接受邀请",
     "havingTrouble": "如果您遇到问题，请随时联系我们的"
   },
   "passwordReset": {

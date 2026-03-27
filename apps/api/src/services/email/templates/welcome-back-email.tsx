@@ -3,7 +3,6 @@ import {
   Container,
   Head,
   Heading,
-  Hr,
   Html,
   Link,
   Section,
@@ -12,16 +11,18 @@ import {
 
 import { getPlanFeatures } from "@/services/plan/plan.service";
 
+import { EmailFooter } from "../shared/email-footer";
+import { EmailHeader } from "../shared/email-header";
 import {
   baseStyles,
   buttonStyles,
   contentStyles,
   sectionStyles,
   textStyles,
-  utilityStyles,
 } from "../shared/styles";
 
 import { UserPlan } from "@/generated/prisma/client";
+import { tEmail } from "@/i18n";
 
 interface WelcomeBackEmailProps {
   userName: string;
@@ -30,6 +31,7 @@ interface WelcomeBackEmailProps {
   billingInterval: "monthly" | "yearly";
   previousCancelDate?: string;
   frontendUrl: string;
+  locale?: string;
 }
 
 export const WelcomeBackEmail = ({
@@ -38,6 +40,7 @@ export const WelcomeBackEmail = ({
   billingInterval,
   previousCancelDate,
   frontendUrl,
+  locale = "en",
 }: WelcomeBackEmailProps) => {
   const planDisplayName = plan.charAt(0) + plan.slice(1).toLowerCase();
 
@@ -46,12 +49,12 @@ export const WelcomeBackEmail = ({
       <Head />
       <Body style={baseStyles.main}>
         <Container style={baseStyles.container}>
-          {/* Logo */}
+          <EmailHeader frontendUrl={frontendUrl} />
 
           {/* Main Content */}
           <Section style={sectionStyles.featuresSection}>
             <Heading style={contentStyles.title}>
-              Great to see you again!
+              {tEmail(locale, "welcomeBack.title")}
             </Heading>
             <Text style={contentStyles.paragraph}>
               We noticed you've renewed your subscription for{" "}
@@ -101,7 +104,7 @@ export const WelcomeBackEmail = ({
           {/* CTA Button */}
           <Section style={buttonStyles.buttonSection}>
             <Link href={frontendUrl} style={buttonStyles.primaryButton}>
-              Access Your Dashboard
+              {tEmail(locale, "welcomeBack.viewDashboard")}
             </Link>
           </Section>
 
@@ -113,15 +116,11 @@ export const WelcomeBackEmail = ({
             <Text style={contentStyles.paragraph}>
               Our team is here to help! check out our{" "}
               <Link href={`${frontendUrl}/help`} style={textStyles.link}>
-                support team
+                {tEmail(locale, "common.supportTeam")}
               </Link>{" "}
             </Text>
 
-            <Hr style={utilityStyles.hr} />
-
-            <Text style={contentStyles.paragraph}>Happy monitoring! 🐰</Text>
-
-            <Text style={contentStyles.signature}>The Qarote Team</Text>
+            <EmailFooter locale={locale} frontendUrl={frontendUrl} />
           </Section>
         </Container>
       </Body>

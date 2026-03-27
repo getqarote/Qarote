@@ -110,6 +110,7 @@ export class LicenseEmailService {
       expiresAt,
       downloadUrl,
       portalUrl,
+      locale,
     });
 
     return CoreEmailService.sendEmail({
@@ -156,6 +157,7 @@ export class LicenseEmailService {
       newExpiresAt,
       downloadUrl,
       portalUrl,
+      locale,
     });
 
     return CoreEmailService.sendEmail({
@@ -203,6 +205,7 @@ export class LicenseEmailService {
       expiresAt,
       renewalUrl,
       portalUrl,
+      locale,
     });
 
     return CoreEmailService.sendEmail({
@@ -250,6 +253,7 @@ export class LicenseEmailService {
       expiredAt,
       renewalUrl,
       portalUrl,
+      locale,
     });
 
     return CoreEmailService.sendEmail({
@@ -296,6 +300,7 @@ export class LicenseEmailService {
       isInGracePeriod,
       willDeactivate,
       portalUrl,
+      locale,
     });
 
     return CoreEmailService.sendEmail({
@@ -342,6 +347,7 @@ export class LicenseEmailService {
       expiresAt,
       gracePeriodDays,
       portalUrl,
+      locale,
     });
 
     return CoreEmailService.sendEmail({
