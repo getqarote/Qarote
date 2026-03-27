@@ -287,28 +287,6 @@ export async function getOrgResourceCounts(orgId: string) {
   };
 }
 
-/**
- * Get resource counts for a user by looking up their organization membership
- * and delegating to getOrgResourceCounts. Returns zeros if no membership is found.
- */
-export async function getUserResourceCounts(userId: string) {
-  const membership = await prisma.organizationMember.findFirst({
-    where: { userId },
-    select: { organizationId: true },
-    orderBy: { role: "asc" },
-  });
-
-  if (membership) {
-    return getOrgResourceCounts(membership.organizationId);
-  }
-
-  return {
-    servers: 0,
-    users: 0,
-    workspaces: 0,
-  };
-}
-
 export function getOverLimitWarningMessage(
   plan: UserPlan,
   currentCount: number
