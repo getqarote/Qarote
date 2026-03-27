@@ -97,22 +97,25 @@ export const QueuedMessagesChart = ({
     unacked: point.messages_unacknowledged || 0,
   }));
 
-  // Generate placeholder data when no queues exist so the chart renders axes/grid
+  // Only generate placeholder data when queueTotals is a defined empty array
+  // (no queues exist). When undefined, data is unavailable — don't fake zeros.
   const chartData =
-    mappedData && mappedData.length > 0
-      ? mappedData
-      : Array.from({ length: 7 }, (_, i) => {
-          const ts = Date.now() - (6 - i) * 10000;
-          return {
-            ...emptyPoint,
-            timestamp: ts,
-            time: new Date(ts).toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            }),
-            dateTime: "",
-          };
-        });
+    mappedData === undefined
+      ? undefined
+      : mappedData.length > 0
+        ? mappedData
+        : Array.from({ length: 7 }, (_, i) => {
+            const ts = Date.now() - (6 - i) * 10000;
+            return {
+              ...emptyPoint,
+              timestamp: ts,
+              time: new Date(ts).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              }),
+              dateTime: "",
+            };
+          });
 
   return (
     <Card className="border-0 shadow-md bg-card backdrop-blur-xs">
