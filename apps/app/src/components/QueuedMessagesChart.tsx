@@ -99,13 +99,14 @@ export const QueuedMessagesChart = ({
 
   // Only generate placeholder data when queueTotals is a defined empty array
   // (no queues exist). When undefined, data is unavailable — don't fake zeros.
+  const now = Date.now();
   const chartData =
     mappedData === undefined
       ? undefined
       : mappedData.length > 0
         ? mappedData
         : Array.from({ length: 7 }, (_, i) => {
-            const ts = Date.now() - (6 - i) * 10000;
+            const ts = now - (6 - i) * 10000;
             return {
               ...emptyPoint,
               timestamp: ts,
