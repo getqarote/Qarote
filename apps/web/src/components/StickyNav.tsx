@@ -32,13 +32,16 @@ const StickyNav = ({ onVideoClick }: StickyNavProps) => {
           onVideoClick();
         }, 500);
       }
+    } else {
+      // Navigate to homepage with anchor if section doesn't exist on current page
+      window.location.assign(`/#${id}`);
     }
   };
 
   return (
     <nav className="sticky top-0 z-50 border-b border-border bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center h-16">
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center h-16">
           <div className="flex items-center gap-1">
             <img
               src="/images/new_icon.svg"

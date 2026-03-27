@@ -1,10 +1,8 @@
 import { useMemo } from "react";
-import { useNavigate } from "react-router";
 
-import { ArrowLeft } from "lucide-react";
-
+import FooterSection from "@/components/landing/FooterSection";
 import SEO from "@/components/SEO";
-import { Button } from "@/components/ui/button";
+import StickyNav from "@/components/StickyNav";
 
 import changelogRaw from "../../../../CHANGELOG.md?raw";
 
@@ -67,11 +65,11 @@ function parseChangelog(raw: string): ChangelogEntry[] {
 }
 
 const Changelog = () => {
-  const navigate = useNavigate();
   const entries = useMemo(() => parseChangelog(changelogRaw), []);
 
   return (
     <div className="min-h-screen bg-background">
+      <StickyNav />
       <SEO
         title="Changelog - Qarote"
         description="See what's new in Qarote. Browse the latest features, improvements, and bug fixes."
@@ -81,20 +79,6 @@ const Changelog = () => {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header */}
         <div className="mb-12">
-          <Button
-            variant="ghost"
-            onClick={() => {
-              if (window.history.length > 1) {
-                navigate(-1);
-              } else {
-                navigate("/");
-              }
-            }}
-            className="mb-6"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
-          </Button>
           <h1 className="text-4xl font-bold text-foreground mb-2">
             What's New
           </h1>
@@ -159,6 +143,7 @@ const Changelog = () => {
           </div>
         </div>
       </div>
+      <FooterSection />
     </div>
   );
 };
