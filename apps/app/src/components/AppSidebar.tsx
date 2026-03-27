@@ -118,7 +118,9 @@ export function AppSidebar() {
         <div className="flex items-center gap-3">
           <img src="/images/new_icon.svg" alt="Qarote" className="w-6 h-6" />
           <div>
-            <h2 className="font-bold text-sidebar-foreground">Qarote</h2>
+            <h2 className="font-normal text-[1.2rem] text-sidebar-foreground">
+              Qarote
+            </h2>
           </div>
         </div>
 
