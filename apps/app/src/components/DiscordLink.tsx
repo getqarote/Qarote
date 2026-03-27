@@ -13,7 +13,7 @@ interface DiscordLinkProps {
   userEmail?: string;
 }
 
-const DISCORD_INVITE_URL = "https://discord.gg/Zk2sE7zF";
+const DISCORD_INVITE_URL = "https://discord.gg/GwHRbGwyUG";
 
 export const DiscordLink: React.FC<DiscordLinkProps> = ({
   userId,
