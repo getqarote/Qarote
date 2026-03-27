@@ -42,6 +42,7 @@
   "organizations": "组织",
   "workspaces": "工作区",
   "admin": "管理员",
+  "switchOrganization": "切换组织",
   "orgSwitched": "组织切换成功！",
   "orgSwitchedDescription": "已切换到 {{orgName}}"
 }
