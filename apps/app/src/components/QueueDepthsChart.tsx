@@ -32,6 +32,33 @@ interface QueueDepthsChartProps {
 
 const EMPTY_QUEUES: QueueData[] = [];
 
+const CustomXAxisTick = ({
+  x,
+  y,
+  payload,
+}: {
+  x?: number;
+  y?: number;
+  payload?: { value: string };
+}) => {
+  if (!payload) return null;
+  return (
+    <g transform={`translate(${x},${y})`}>
+      <text
+        x={0}
+        y={0}
+        dy={8}
+        textAnchor="end"
+        fill="#6b7280"
+        fontSize={11}
+        transform="rotate(-40)"
+      >
+        {payload.value}
+      </text>
+    </g>
+  );
+};
+
 const CustomTooltip = ({
   active,
   payload,
@@ -127,22 +154,17 @@ export const QueueDepthsChart = ({
             </div>
           </div>
         ) : (
-          <div className="h-80">
+          <div className="h-96">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={chartData}
-                margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+                margin={{ top: 20, right: 30, left: 20, bottom: 80 }}
               >
                 <CartesianGrid strokeDasharray="3 3" stroke="#e0e7ff" />
                 <XAxis
                   dataKey="name"
-                  tick={{ fontSize: 12, fill: "#6b7280" }}
-                  tickFormatter={(name) =>
-                    name.length > 15 ? `${name.slice(0, 15)}...` : name
-                  }
-                  angle={-45}
-                  textAnchor="end"
-                  height={80}
+                  tick={<CustomXAxisTick />}
+                  height={130}
                   interval={0}
                 />
                 <YAxis

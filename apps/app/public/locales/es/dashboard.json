@@ -1,5 +1,6 @@
 {
   "pageTitle": "Panel",
+  "pageSubtitle": "Resumen del estado y rendimiento de tu servidor RabbitMQ",
   "rabbitMQDashboard": "Panel",
   "addServerDescription": "Agrega una conexi\u00f3n de servidor RabbitMQ para comenzar a monitorear tus colas y mensajes.",
   "selectServerPrompt": "Por favor selecciona un servidor RabbitMQ para ver el panel",

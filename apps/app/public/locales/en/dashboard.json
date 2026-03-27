@@ -1,5 +1,6 @@
 {
   "pageTitle": "Dashboard",
+  "pageSubtitle": "Overview of your RabbitMQ server health and performance",
   "rabbitMQDashboard": "Dashboard",
   "addServerDescription": "Add a RabbitMQ server connection to start monitoring your queues and messages.",
   "selectServerPrompt": "Please select a RabbitMQ server to view the dashboard",

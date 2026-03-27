@@ -72,6 +72,7 @@ const Index = () => {
             </div>
             <NoServerConfigured
               title={t("rabbitMQDashboard")}
+              subtitle={t("pageSubtitle")}
               description={t("addServerDescription")}
             />
           </main>

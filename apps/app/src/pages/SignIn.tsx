@@ -82,11 +82,11 @@ const SignIn: React.FC = () => {
             {t("signInToAccount")}
           </h2>
           {publicConfig?.registrationEnabled === true && (
-            <p className="mt-2 text-sm text-orange-100">
+            <p className="mt-2 text-sm text-white/80">
               {t("or")}{" "}
               <Link
                 to="/auth/sign-up"
-                className="font-medium text-orange-300 hover:text-orange-200 transition-colors"
+                className="font-medium text-white underline hover:text-white/90 transition-colors"
               >
                 {t("createAccount")}
               </Link>

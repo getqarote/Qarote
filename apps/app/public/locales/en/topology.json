@@ -1,7 +1,7 @@
 {
   "pageTitle": "Topology",
   "pageSubtitle": "Visual map of exchanges, queues, and bindings",
-  "noServerTitle": "No Server Configured",
+  "noServerTitle": "Topology",
   "noServerDescription": "Add a RabbitMQ server to view its topology.",
   "noServerSelected": "No Server Selected",
   "selectServerPrompt": "Select a server from the sidebar to view its topology.",

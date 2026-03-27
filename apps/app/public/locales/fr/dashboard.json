@@ -1,5 +1,6 @@
 {
   "pageTitle": "Tableau de bord",
+  "pageSubtitle": "Aperçu de la santé et des performances de votre serveur RabbitMQ",
   "rabbitMQDashboard": "Tableau de bord",
   "addServerDescription": "Ajoutez une connexion à un serveur RabbitMQ pour commencer à surveiller vos files d'attente et vos messages.",
   "selectServerPrompt": "Veuillez sélectionner un serveur RabbitMQ pour afficher le tableau de bord",

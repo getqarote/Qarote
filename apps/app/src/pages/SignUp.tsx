@@ -103,11 +103,11 @@ const SignUp: React.FC = () => {
           <h2 className="mt-6 text-3xl font-extrabold text-white">
             {t("createYourAccount")}
           </h2>
-          <p className="mt-2 text-sm text-orange-100">
+          <p className="mt-2 text-sm text-white/80">
             {t("or")}{" "}
             <Link
               to="/auth/sign-in"
-              className="font-medium text-orange-300 hover:text-orange-200 transition-colors"
+              className="font-medium text-white underline hover:text-white/90 transition-colors"
             >
               {t("signInToExisting")}
             </Link>

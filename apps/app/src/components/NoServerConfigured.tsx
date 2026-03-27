@@ -8,11 +8,13 @@ import { Card, CardContent } from "@/components/ui/card";
 
 interface NoServerConfiguredProps {
   title: string;
+  subtitle: string;
   description: string;
 }
 
 export function NoServerConfigured({
   title,
+  subtitle,
   description,
 }: NoServerConfiguredProps) {
   const { t } = useTranslation("common");
@@ -22,7 +24,7 @@ export function NoServerConfigured({
       <div className="flex items-center justify-between">
         <div>
           <h1 className="title-page">{title}</h1>
-          <p className="text-muted-foreground">{description}</p>
+          <p className="text-muted-foreground">{subtitle}</p>
         </div>
       </div>
       <Card className="border-0 shadow-md bg-card backdrop-blur-xs">

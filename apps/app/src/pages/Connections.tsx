@@ -128,6 +128,7 @@ const Connections = () => {
             </div>
             <NoServerConfigured
               title={t("noServerTitle")}
+              subtitle={t("pageSubtitle")}
               description={t("noServerDescription")}
             />
           </main>

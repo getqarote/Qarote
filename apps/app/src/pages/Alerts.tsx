@@ -164,6 +164,7 @@ const Alerts = () => {
             </div>
             <NoServerConfigured
               title={t("noServerTitle")}
+              subtitle={t("pageSubtitle")}
               description={t("noServerDescription")}
             />
           </main>

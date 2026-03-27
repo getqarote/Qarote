@@ -1,7 +1,7 @@
 {
   "pageTitle": "Topología",
   "pageSubtitle": "Mapa visual de intercambios, colas y enlaces",
-  "noServerTitle": "Servidor no configurado",
+  "noServerTitle": "Topología",
   "noServerDescription": "Agregue un servidor RabbitMQ para ver su topología.",
   "noServerSelected": "Servidor no seleccionado",
   "selectServerPrompt": "Seleccione un servidor de la barra lateral para ver su topología.",

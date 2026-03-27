@@ -267,6 +267,14 @@ export const CurrentPlanCard: React.FC<CurrentPlanCardProps> = ({
                     </span>
                     <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                   </button>
+                ) : onManagePaymentMethod ? (
+                  <button
+                    onClick={onManagePaymentMethod}
+                    className="group flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    <span>{t("trial.noPaymentMethod")}</span>
+                    <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </button>
                 ) : (
                   <p className="text-sm text-muted-foreground">
                     {t("trial.noPaymentMethod")}
@@ -344,18 +352,16 @@ export const CurrentPlanCard: React.FC<CurrentPlanCardProps> = ({
 
                 {/* CTA buttons */}
                 <div className="flex items-center gap-2 sm:shrink-0">
-                  {!cancelAtPeriodEnd &&
-                    !paymentMethod &&
-                    onManagePaymentMethod && (
-                      <Button
-                        onClick={onManagePaymentMethod}
-                        size="sm"
-                        className="btn-primary"
-                      >
-                        <CreditCard className="w-4 h-4 mr-2" />
-                        {t("trial.addPaymentMethod")}
-                      </Button>
-                    )}
+                  {!paymentMethod && onManagePaymentMethod && (
+                    <Button
+                      onClick={onManagePaymentMethod}
+                      size="sm"
+                      className="btn-primary"
+                    >
+                      <CreditCard className="w-4 h-4 mr-2" />
+                      {t("trial.addPaymentMethod")}
+                    </Button>
+                  )}
                   {isTrialing && onCancelSubscription && !cancelAtPeriodEnd && (
                     <Button
                       onClick={() => setShowCancelModal(true)}

@@ -1,7 +1,7 @@
 {
   "pageTitle": "Topologie",
   "pageSubtitle": "Carte visuelle des échanges, files d'attente et liaisons",
-  "noServerTitle": "Aucun serveur configuré",
+  "noServerTitle": "Topologie",
   "noServerDescription": "Ajoutez un serveur RabbitMQ pour voir sa topologie.",
   "noServerSelected": "Aucun serveur sélectionné",
   "selectServerPrompt": "Sélectionnez un serveur dans la barre latérale pour voir sa topologie.",
