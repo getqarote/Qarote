@@ -72,7 +72,13 @@ export const QueuedMessagesChart = ({
     );
   }
 
-  const chartData = queueTotals?.map((point) => ({
+  const emptyPoint = {
+    total: 0,
+    ready: 0,
+    unacked: 0,
+  };
+
+  const mappedData = queueTotals?.map((point) => ({
     timestamp: point.timestamp,
     time: new Date(point.timestamp).toLocaleTimeString([], {
       hour: "2-digit",
@@ -90,6 +96,27 @@ export const QueuedMessagesChart = ({
     ready: point.messages_ready || 0,
     unacked: point.messages_unacknowledged || 0,
   }));
+
+  // Only generate placeholder data when queueTotals is a defined empty array
+  // (no queues exist). When undefined, data is unavailable — don't fake zeros.
+  const now = Date.now();
+  const chartData =
+    mappedData === undefined
+      ? undefined
+      : mappedData.length > 0
+        ? mappedData
+        : Array.from({ length: 7 }, (_, i) => {
+            const ts = now - (6 - i) * 10000;
+            return {
+              ...emptyPoint,
+              timestamp: ts,
+              time: new Date(ts).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              }),
+              dateTime: "",
+            };
+          });
 
   return (
     <Card className="border-0 shadow-md bg-card backdrop-blur-xs">
