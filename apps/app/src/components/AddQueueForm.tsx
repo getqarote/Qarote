@@ -98,7 +98,7 @@ export function AddQueueForm({
   });
 
   // Fetch exchanges for binding options
-  const { data: exchangesData } = useExchanges(serverId);
+  const { data: exchangesData } = useExchanges(serverId, selectedVHost);
   const exchanges = exchangesData?.exchanges || [];
 
   const onSubmit = (data: AddQueueFormData) => {

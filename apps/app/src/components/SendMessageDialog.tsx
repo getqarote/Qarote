@@ -175,7 +175,7 @@ export function SendMessageDialog({
   });
 
   // Fetch exchanges and queues for selection
-  const { data: exchangesData } = useExchanges(serverId);
+  const { data: exchangesData } = useExchanges(serverId, selectedVHost);
   const { data: queuesData } = useQueues(serverId);
 
   // Filter out exchanges with empty names and ensure they're valid
