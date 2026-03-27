@@ -44,17 +44,19 @@ export const checkoutRouter = router({
           "Creating checkout session"
         );
 
-        // Resolve Organization from user's org membership
-        const orgMembership = await prisma.organizationMember.findFirst({
-          where: { userId: user.id },
-          select: {
-            organization: {
-              select: { id: true, stripeCustomerId: true },
-            },
-          },
+        // Use pre-resolved organization from context
+        if (!ctx.organizationId) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: te(ctx.locale, "billing.noOrganization"),
+          });
+        }
+
+        const org = await prisma.organization.findUnique({
+          where: { id: ctx.organizationId },
+          select: { id: true, stripeCustomerId: true },
         });
 
-        const org = orgMembership?.organization ?? null;
         if (!org) {
           throw new TRPCError({
             code: "BAD_REQUEST",

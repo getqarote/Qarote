@@ -63,6 +63,7 @@
     "invitationNotForYourAccount": "此邀请不属于您的账户",
     "alreadyOrgMember": "您已经是此组织的成员",
     "userAlreadyOrgMember": "该用户已经是此组织的成员",
+    "orgMembershipRequired": "需要组织成员资格",
     "orgAdminRequired": "需要组织所有者或管理员角色",
     "orgInvitationNotFound": "未找到邀请",
     "orgInvitationAlreadyAccepted": "邀请已被接受",

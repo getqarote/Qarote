@@ -15,61 +15,90 @@ import { OrgRole } from "@/generated/prisma/client";
 export const managementRouter = router({
   /**
    * Get current user's organization (PROTECTED)
+   * Uses ctx.organizationId resolved from the user's active workspace
    */
   getCurrent: rateLimitedProcedure.query(async ({ ctx }) => {
-    const user = ctx.user;
+    if (!ctx.organizationId) {
+      return null;
+    }
 
-    const membership = await ctx.prisma.organizationMember.findFirst({
-      where: { userId: user.id },
+    const org = await ctx.prisma.organization.findUnique({
+      where: { id: ctx.organizationId },
       include: {
-        organization: {
-          include: {
-            _count: {
-              select: {
-                members: true,
-                workspaces: true,
-              },
-            },
+        _count: {
+          select: {
+            members: true,
+            workspaces: true,
           },
         },
       },
     });
 
-    if (!membership) {
+    if (!org) {
       return null;
     }
 
     return {
       organization: {
-        id: membership.organization.id,
-        name: membership.organization.name,
-        slug: membership.organization.slug,
-        contactEmail: membership.organization.contactEmail,
-        logoUrl: membership.organization.logoUrl,
-        createdAt: membership.organization.createdAt.toISOString(),
-        _count: membership.organization._count,
+        id: org.id,
+        name: org.name,
+        slug: org.slug,
+        contactEmail: org.contactEmail,
+        logoUrl: org.logoUrl,
+        createdAt: org.createdAt.toISOString(),
+        _count: org._count,
       },
-      role: membership.role,
+      role: ctx.orgRole,
+    };
+  }),
+
+  /**
+   * List all organizations the current user belongs to (PROTECTED)
+   */
+  listMyOrganizations: rateLimitedProcedure.query(async ({ ctx }) => {
+    const memberships = await ctx.prisma.organizationMember.findMany({
+      where: { userId: ctx.user.id },
+      include: {
+        organization: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            _count: {
+              select: { workspaces: true },
+            },
+          },
+        },
+      },
+      orderBy: { createdAt: "asc" },
+    });
+
+    return {
+      organizations: memberships.map((m) => ({
+        id: m.organization.id,
+        name: m.organization.name,
+        slug: m.organization.slug,
+        role: m.role,
+        workspaceCount: m.organization._count.workspaces,
+      })),
     };
   }),
 
   /**
    * Update organization (PROTECTED - OWNER/ADMIN only)
+   * Uses ctx.organizationId and ctx.orgRole for authorization
    */
   update: rateLimitedProcedure
     .input(UpdateOrganizationSchema)
     .mutation(async ({ input, ctx }) => {
-      const user = ctx.user;
+      if (!ctx.organizationId || !ctx.orgRole) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Organization OWNER or ADMIN role required",
+        });
+      }
 
-      const membership = await ctx.prisma.organizationMember.findFirst({
-        where: {
-          userId: user.id,
-          role: { in: [OrgRole.OWNER, OrgRole.ADMIN] },
-        },
-        select: { organizationId: true },
-      });
-
-      if (!membership) {
+      if (ctx.orgRole !== OrgRole.OWNER && ctx.orgRole !== OrgRole.ADMIN) {
         throw new TRPCError({
           code: "FORBIDDEN",
           message: "Organization OWNER or ADMIN role required",
@@ -77,7 +106,7 @@ export const managementRouter = router({
       }
 
       const updated = await ctx.prisma.organization.update({
-        where: { id: membership.organizationId },
+        where: { id: ctx.organizationId },
         data: {
           ...(input.name !== undefined && { name: input.name }),
           ...(input.contactEmail !== undefined && {
@@ -98,7 +127,7 @@ export const managementRouter = router({
       ctx.logger.info(
         {
           organizationId: updated.id,
-          userId: user.id,
+          userId: ctx.user.id,
         },
         "Organization updated successfully"
       );
@@ -118,30 +147,28 @@ export const managementRouter = router({
 
   /**
    * Get organization billing info (PROTECTED - OWNER/ADMIN only)
-   * Delegates to existing plan service
+   * Uses ctx.organizationId and ctx.orgRole for authorization
    */
   getBillingInfo: rateLimitedProcedure.query(async ({ ctx }) => {
-    const user = ctx.user;
-
-    const membership = await ctx.prisma.organizationMember.findFirst({
-      where: {
-        userId: user.id,
-        role: { in: [OrgRole.OWNER, OrgRole.ADMIN] },
-      },
-      include: {
-        organization: {
-          include: {
-            subscription: true,
-          },
-        },
-      },
-    });
-
-    if (!membership) {
+    if (!ctx.organizationId || !ctx.orgRole) {
       return null;
     }
 
-    const org = membership.organization;
+    if (ctx.orgRole !== OrgRole.OWNER && ctx.orgRole !== OrgRole.ADMIN) {
+      return null;
+    }
+
+    const org = await ctx.prisma.organization.findUnique({
+      where: { id: ctx.organizationId },
+      include: {
+        subscription: true,
+      },
+    });
+
+    if (!org) {
+      return null;
+    }
+
     const plan = await getOrgPlan(org.id);
 
     return {

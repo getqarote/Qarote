@@ -38,5 +38,10 @@
   "upgrade": "升级",
   "upgradeToCreate": "升级以创建多个工作区",
   "multipleWorkspacesDeveloper": "开发者计划可使用多个工作区",
-  "multipleWorkspacesEnterprise": "企业计划可使用多个工作区"
+  "multipleWorkspacesEnterprise": "企业计划可使用多个工作区",
+  "organizations": "组织",
+  "workspaces": "工作区",
+  "admin": "管理员",
+  "orgSwitched": "组织切换成功！",
+  "orgSwitchedDescription": "已切换到 {{orgName}}"
 }

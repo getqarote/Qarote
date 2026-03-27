@@ -1,9 +1,9 @@
 import { TRPCError } from "@trpc/server";
 
 import {
+  getOrgPlan,
   getOverLimitWarningMessage,
   getUpgradeRecommendationForOverLimit,
-  getUserPlan,
 } from "@/services/plan/plan.service";
 
 import { ServerWorkspaceInputSchema } from "@/schemas/rabbitmq";
@@ -14,6 +14,7 @@ import { router, workspaceProcedure } from "@/trpc/trpc";
 
 import { createRabbitMQClient, verifyServerAccess } from "./shared";
 
+import { UserPlan } from "@/generated/prisma/client";
 import { te } from "@/i18n";
 
 /**
@@ -65,7 +66,9 @@ export const overviewRouter = router({
         // Add warning information if server is over the queue limit
         // Note: We still need the original overview for queue_totals calculation
         if (server.isOverQueueLimit && server.workspace && ctx.user) {
-          const userPlan = await getUserPlan(ctx.user.id);
+          const userPlan = ctx.organizationId
+            ? await getOrgPlan(ctx.organizationId)
+            : UserPlan.FREE;
           const warningMessage = getOverLimitWarningMessage(
             userPlan,
             overview.queue_totals?.messages || 0

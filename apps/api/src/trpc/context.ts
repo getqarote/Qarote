@@ -6,6 +6,9 @@ import { extractUserFromToken } from "@/core/auth";
 import { auth } from "@/core/better-auth";
 import { logger } from "@/core/logger";
 import { prisma } from "@/core/prisma";
+import { resolveCurrentOrganization } from "@/core/resolve-org";
+
+import type { OrgRole } from "@/generated/prisma/client";
 
 /**
  * tRPC Context
@@ -14,6 +17,8 @@ import { prisma } from "@/core/prisma";
 export interface Context extends Record<string, unknown> {
   user: SafeUser | null;
   workspaceId: string | null;
+  organizationId: string | null;
+  orgRole: OrgRole | null;
   locale: string;
   prisma: typeof prisma;
   logger: typeof logger;
@@ -123,12 +128,20 @@ export async function createContext(opts: {
   // Extract workspace ID
   const workspaceId = extractWorkspaceId(req);
 
+  // Resolve organization from workspace context
+  const effectiveWorkspaceId = workspaceId || user?.workspaceId || null;
+  const orgInfo = user
+    ? await resolveCurrentOrganization(prisma, user.id, effectiveWorkspaceId)
+    : null;
+
   // Resolve locale: user preference > Accept-Language header > default
   const locale = resolveLocale(req, user);
 
   return {
     user,
     workspaceId,
+    organizationId: orgInfo?.organizationId ?? null,
+    orgRole: orgInfo?.role ?? null,
     locale,
     prisma,
     logger,

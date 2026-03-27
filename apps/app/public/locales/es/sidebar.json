@@ -38,5 +38,10 @@
   "upgrade": "Actualizar",
   "upgradeToCreate": "Actualiza para crear múltiples espacios de trabajo",
   "multipleWorkspacesDeveloper": "Múltiples espacios de trabajo disponibles con el plan Desarrollador",
-  "multipleWorkspacesEnterprise": "Múltiples espacios de trabajo disponibles con el plan Empresa"
+  "multipleWorkspacesEnterprise": "Múltiples espacios de trabajo disponibles con el plan Empresa",
+  "organizations": "Organizaciones",
+  "workspaces": "Espacios de trabajo",
+  "admin": "Administrador",
+  "orgSwitched": "Organización cambiada con éxito!",
+  "orgSwitchedDescription": "Cambiado a {{orgName}}"
 }

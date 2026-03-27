@@ -69,7 +69,7 @@ export const orgInvitationRouter = router({
           });
 
         // Accept invitation and create/update membership in a transaction
-        await ctx.prisma.$transaction(async (tx) => {
+        const firstWorkspaceId = await ctx.prisma.$transaction(async (tx) => {
           // Mark invitation as accepted
           await tx.organizationInvitation.update({
             where: { id: invitation.id },
@@ -94,7 +94,7 @@ export const orgInvitationRouter = router({
           }
 
           // Apply workspace assignments (idempotent via ensureWorkspaceMember)
-          const firstWorkspaceId = await applyWorkspaceAssignments(
+          const assignedWorkspaceId = await applyWorkspaceAssignments(
             tx,
             user.id,
             invitation.organizationId,
@@ -102,12 +102,14 @@ export const orgInvitationRouter = router({
           );
 
           // Update user's active workspace if they don't have one
-          if (firstWorkspaceId && !user.workspaceId) {
+          if (assignedWorkspaceId && !user.workspaceId) {
             await tx.user.update({
               where: { id: user.id },
-              data: { workspaceId: firstWorkspaceId },
+              data: { workspaceId: assignedWorkspaceId },
             });
           }
+
+          return assignedWorkspaceId;
         });
 
         ctx.logger.info(
@@ -126,6 +128,7 @@ export const orgInvitationRouter = router({
             id: invitation.organization.id,
             name: invitation.organization.name,
           },
+          firstWorkspaceId: firstWorkspaceId ?? null,
         };
       } catch (error) {
         if (error instanceof TRPCError) {

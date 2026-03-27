@@ -30,35 +30,32 @@ export const subscriptionRouter = router({
       const { user, prisma } = ctx;
 
       try {
-        // Resolve organization from user's membership
-        const membership = await prisma.organizationMember.findFirst({
-          where: { userId: user.id },
-          select: {
-            role: true,
-            organization: {
-              select: { id: true, stripeSubscriptionId: true },
-            },
-          },
+        // Use pre-resolved organization from context
+        if (!ctx.organizationId) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: te(ctx.locale, "billing.noOrganization"),
+          });
+        }
+
+        if (ctx.orgRole !== OrgRole.OWNER && ctx.orgRole !== OrgRole.ADMIN) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: te(ctx.locale, "auth.orgAdminRequired"),
+          });
+        }
+
+        const org = await prisma.organization.findUnique({
+          where: { id: ctx.organizationId },
+          select: { stripeSubscriptionId: true },
         });
 
-        const subscriptionId =
-          membership?.organization?.stripeSubscriptionId ?? null;
+        const subscriptionId = org?.stripeSubscriptionId ?? null;
 
         if (!subscriptionId) {
           throw new TRPCError({
             code: "BAD_REQUEST",
             message: te(ctx.locale, "billing.noActiveSubscription"),
-          });
-        }
-
-        if (
-          !membership ||
-          (membership.role !== OrgRole.OWNER &&
-            membership.role !== OrgRole.ADMIN)
-        ) {
-          throw new TRPCError({
-            code: "FORBIDDEN",
-            message: te(ctx.locale, "auth.orgAdminRequired"),
           });
         }
 

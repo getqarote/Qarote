@@ -2,7 +2,7 @@ import { TRPCError } from "@trpc/server";
 
 import type { MessageProperties } from "@/core/rabbitmq/rabbitmq.interfaces";
 
-import { getUserPlan } from "@/services/plan/plan.service";
+import { getOrgPlan } from "@/services/plan/plan.service";
 
 import {
   PublishMessageWithQueueSchema,
@@ -13,7 +13,7 @@ import { authorize, router } from "@/trpc/trpc";
 
 import { createRabbitMQClient, verifyServerAccess } from "./shared";
 
-import { UserRole } from "@/generated/prisma/client";
+import { UserPlan, UserRole } from "@/generated/prisma/client";
 import { te } from "@/i18n";
 
 /**
@@ -57,7 +57,9 @@ export const messagesRouter = router({
           });
         }
 
-        const plan = await getUserPlan(ctx.user.id);
+        const plan = ctx.organizationId
+          ? await getOrgPlan(ctx.organizationId)
+          : UserPlan.FREE;
 
         ctx.logger.info({ plan }, "Message sending validation");
 

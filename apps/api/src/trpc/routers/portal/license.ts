@@ -104,18 +104,8 @@ export const licenseRouter = router({
       const { tier } = input;
 
       try {
-        // Resolve Organization from the user's org membership
-        const orgMembership = await ctx.prisma.organizationMember.findFirst({
-          where: { userId: user.id },
-          select: {
-            organization: {
-              select: { id: true, stripeCustomerId: true },
-            },
-          },
-        });
-        const org = orgMembership?.organization ?? null;
-
-        if (!org) {
+        // Use pre-resolved organization from context
+        if (!ctx.organizationId) {
           throw new TRPCError({
             code: "BAD_REQUEST",
             message: te(ctx.locale, "billing.noOrganization"),
@@ -123,24 +113,22 @@ export const licenseRouter = router({
         }
 
         // Verify caller is OWNER or ADMIN of the organization
-        const membership = await ctx.prisma.organizationMember.findUnique({
-          where: {
-            userId_organizationId: {
-              userId: user.id,
-              organizationId: org.id,
-            },
-          },
-          select: { role: true },
-        });
-
-        if (
-          !membership ||
-          (membership.role !== OrgRole.OWNER &&
-            membership.role !== OrgRole.ADMIN)
-        ) {
+        if (ctx.orgRole !== OrgRole.OWNER && ctx.orgRole !== OrgRole.ADMIN) {
           throw new TRPCError({
             code: "FORBIDDEN",
             message: te(ctx.locale, "auth.orgAdminRequired"),
+          });
+        }
+
+        const org = await ctx.prisma.organization.findUnique({
+          where: { id: ctx.organizationId },
+          select: { id: true, stripeCustomerId: true },
+        });
+
+        if (!org) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: te(ctx.locale, "billing.noOrganization"),
           });
         }
 

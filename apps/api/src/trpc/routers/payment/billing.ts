@@ -3,7 +3,7 @@ import type Stripe from "stripe";
 
 import type { logger as appLogger } from "@/core/logger";
 
-import { getUserResourceCounts } from "@/services/plan/plan.service";
+import { getOrgResourceCounts } from "@/services/plan/plan.service";
 import { StripeService } from "@/services/stripe/stripe.service";
 
 import { config } from "@/config";
@@ -106,13 +106,21 @@ export const billingRouter = router({
       const { user, prisma } = ctx;
 
       try {
+        // Use pre-resolved organization from context
+        if (!ctx.organizationId) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: te(ctx.locale, "billing.noOrganization"),
+          });
+        }
+
         // Phase 1: Parallel DB queries
         const [
           userWithSubscription,
           currentWorkspace,
           recentPayments,
           resourceCounts,
-          membership,
+          org,
         ] = await Promise.all([
           prisma.user.findUnique({
             where: { id: user.id },
@@ -133,17 +141,15 @@ export const billingRouter = router({
               createdAt: true,
             },
           }),
-          getUserResourceCounts(user.id),
+          ctx.organizationId
+            ? getOrgResourceCounts(ctx.organizationId)
+            : Promise.resolve({ servers: 0, users: 0, workspaces: 0 }),
           // Resolve Stripe IDs from Organization (billing authority)
-          prisma.organizationMember.findFirst({
-            where: { userId: user.id },
+          prisma.organization.findUnique({
+            where: { id: ctx.organizationId },
             select: {
-              organization: {
-                select: {
-                  stripeCustomerId: true,
-                  stripeSubscriptionId: true,
-                },
-              },
+              stripeCustomerId: true,
+              stripeSubscriptionId: true,
             },
           }),
         ]);
@@ -166,10 +172,8 @@ export const billingRouter = router({
           );
         }
 
-        const orgStripeCustomerId =
-          membership?.organization?.stripeCustomerId ?? null;
-        const orgStripeSubscriptionId =
-          membership?.organization?.stripeSubscriptionId ?? null;
+        const orgStripeCustomerId = org?.stripeCustomerId ?? null;
+        const orgStripeSubscriptionId = org?.stripeSubscriptionId ?? null;
 
         let stripeSubscription: Stripe.Subscription | null = null;
         let upcomingInvoice = null;
@@ -326,19 +330,21 @@ export const billingRouter = router({
    */
   createBillingPortalSession: rateLimitedAdminProcedure.mutation(
     async ({ ctx }) => {
-      const { user, prisma } = ctx;
+      const { prisma } = ctx;
 
       try {
-        const membership = await prisma.organizationMember.findFirst({
-          where: { userId: user.id },
-          select: {
-            organization: {
-              select: { stripeCustomerId: true },
-            },
-          },
+        if (!ctx.organizationId) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: te(ctx.locale, "billing.noOrganization"),
+          });
+        }
+
+        const org = await prisma.organization.findUnique({
+          where: { id: ctx.organizationId },
+          select: { stripeCustomerId: true },
         });
-        const stripeCustomerId =
-          membership?.organization?.stripeCustomerId ?? null;
+        const stripeCustomerId = org?.stripeCustomerId ?? null;
 
         if (!stripeCustomerId) {
           throw new TRPCError({
@@ -370,19 +376,21 @@ export const billingRouter = router({
    * Create portal session (PROTECTED - ADMIN ONLY) - alias for createBillingPortalSession
    */
   createPortalSession: rateLimitedAdminProcedure.mutation(async ({ ctx }) => {
-    const { user, prisma } = ctx;
+    const { prisma } = ctx;
 
     try {
-      const membership = await prisma.organizationMember.findFirst({
-        where: { userId: user.id },
-        select: {
-          organization: {
-            select: { stripeCustomerId: true },
-          },
-        },
+      if (!ctx.organizationId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: te(ctx.locale, "billing.noOrganization"),
+        });
+      }
+
+      const org = await prisma.organization.findUnique({
+        where: { id: ctx.organizationId },
+        select: { stripeCustomerId: true },
       });
-      const stripeCustomerId =
-        membership?.organization?.stripeCustomerId ?? null;
+      const stripeCustomerId = org?.stripeCustomerId ?? null;
 
       if (!stripeCustomerId) {
         throw new TRPCError({

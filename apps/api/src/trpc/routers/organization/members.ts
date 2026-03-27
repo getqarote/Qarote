@@ -42,38 +42,30 @@ import { te } from "@/i18n";
 const INVITATION_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000;
 
 /**
- * Resolve the caller's organization membership (OWNER or ADMIN)
- * via their active workspace. Returns the organizationId or throws.
+ * Verify the caller has OWNER or ADMIN role in their current organization.
+ * Uses the pre-resolved org context from the tRPC context instead of
+ * querying the database, fixing multi-org resolution bugs.
  */
-async function requireOrgAdmin(
-  prisma: Parameters<typeof ensureWorkspaceMember>[3] & {
-    organizationMember: {
-      findFirst: (args: {
-        where: { userId: string };
-        select: { organizationId: true; role: true };
-      }) => Promise<{ organizationId: string; role: OrgRole } | null>;
-    };
-  },
-  userId: string,
-  _workspaceId: string | null,
+function requireOrgAdmin(
+  organizationId: string | null,
+  orgRole: OrgRole | null,
   locale = "en"
-): Promise<{ organizationId: string; role: OrgRole }> {
-  const membership = await prisma.organizationMember.findFirst({
-    where: { userId },
-    select: { organizationId: true, role: true },
-  });
+): { organizationId: string; role: OrgRole } {
+  if (!organizationId || !orgRole) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: te(locale, "auth.orgMembershipRequired"),
+    });
+  }
 
-  if (
-    !membership ||
-    (membership.role !== OrgRole.OWNER && membership.role !== OrgRole.ADMIN)
-  ) {
+  if (orgRole !== OrgRole.OWNER && orgRole !== OrgRole.ADMIN) {
     throw new TRPCError({
       code: "FORBIDDEN",
       message: te(locale, "auth.orgAdminRequired"),
     });
   }
 
-  return membership;
+  return { organizationId, role: orgRole };
 }
 
 /**
@@ -87,22 +79,14 @@ export const membersRouter = router({
   list: rateLimitedProcedure
     .input(PaginationInputSchema)
     .query(async ({ ctx, input }) => {
-      const user = ctx.user;
-
-      // Resolve org from user's membership
-      const membership = await ctx.prisma.organizationMember.findFirst({
-        where: { userId: user.id },
-        select: { organizationId: true },
-      });
-
-      if (!membership) {
+      if (!ctx.organizationId) {
         return {
           members: [],
           pagination: paginationMeta(input.page, input.limit, 0),
         };
       }
 
-      const where = { organizationId: membership.organizationId };
+      const where = { organizationId: ctx.organizationId };
       const [members, total] = await Promise.all([
         ctx.prisma.organizationMember.findMany({
           where,
@@ -148,10 +132,9 @@ export const membersRouter = router({
     .input(InviteOrgMemberSchema)
     .mutation(async ({ input, ctx }) => {
       // OWNER role is excluded from InviteOrgMemberSchema — only ADMIN/MEMBER allowed
-      const { organizationId } = await requireOrgAdmin(
-        ctx.prisma,
-        ctx.user.id,
-        ctx.user.workspaceId,
+      const { organizationId } = requireOrgAdmin(
+        ctx.organizationId,
+        ctx.orgRole,
         ctx.locale
       );
 
@@ -343,10 +326,9 @@ export const membersRouter = router({
   listPendingInvitations: rateLimitedProcedure
     .input(PaginationInputSchema)
     .query(async ({ ctx, input }) => {
-      const { organizationId } = await requireOrgAdmin(
-        ctx.prisma,
-        ctx.user.id,
-        ctx.user.workspaceId,
+      const { organizationId } = requireOrgAdmin(
+        ctx.organizationId,
+        ctx.orgRole,
         ctx.locale
       );
 
@@ -588,10 +570,9 @@ export const membersRouter = router({
   cancelInvitation: rateLimitedProcedure
     .input(CancelOrgInvitationSchema)
     .mutation(async ({ input, ctx }) => {
-      const { organizationId } = await requireOrgAdmin(
-        ctx.prisma,
-        ctx.user.id,
-        ctx.user.workspaceId,
+      const { organizationId } = requireOrgAdmin(
+        ctx.organizationId,
+        ctx.orgRole,
         ctx.locale
       );
 
@@ -629,10 +610,9 @@ export const membersRouter = router({
   updateRole: rateLimitedProcedure
     .input(UpdateOrgMemberRoleSchema)
     .mutation(async ({ input, ctx }) => {
-      const caller = await requireOrgAdmin(
-        ctx.prisma,
-        ctx.user.id,
-        ctx.user.workspaceId,
+      const caller = requireOrgAdmin(
+        ctx.organizationId,
+        ctx.orgRole,
         ctx.locale
       );
 
@@ -708,10 +688,9 @@ export const membersRouter = router({
   remove: rateLimitedProcedure
     .input(RemoveOrgMemberSchema)
     .mutation(async ({ input, ctx }) => {
-      const caller = await requireOrgAdmin(
-        ctx.prisma,
-        ctx.user.id,
-        ctx.user.workspaceId,
+      const caller = requireOrgAdmin(
+        ctx.organizationId,
+        ctx.orgRole,
         ctx.locale
       );
 
@@ -800,10 +779,9 @@ export const membersRouter = router({
   assignToWorkspace: rateLimitedProcedure
     .input(AssignToWorkspaceSchema)
     .mutation(async ({ input, ctx }) => {
-      const caller = await requireOrgAdmin(
-        ctx.prisma,
-        ctx.user.id,
-        ctx.user.workspaceId,
+      const caller = requireOrgAdmin(
+        ctx.organizationId,
+        ctx.orgRole,
         ctx.locale
       );
 
@@ -866,10 +844,9 @@ export const membersRouter = router({
    * List all workspaces in the caller's organization (OWNER/ADMIN only)
    */
   listOrgWorkspaces: rateLimitedProcedure.query(async ({ ctx }) => {
-    const { organizationId } = await requireOrgAdmin(
-      ctx.prisma,
-      ctx.user.id,
-      ctx.user.workspaceId,
+    const { organizationId } = requireOrgAdmin(
+      ctx.organizationId,
+      ctx.orgRole,
       ctx.locale
     );
 
@@ -888,10 +865,9 @@ export const membersRouter = router({
   getMemberWorkspaces: rateLimitedProcedure
     .input(z.object({ userId: z.string() }))
     .query(async ({ input, ctx }) => {
-      const { organizationId } = await requireOrgAdmin(
-        ctx.prisma,
-        ctx.user.id,
-        ctx.user.workspaceId,
+      const { organizationId } = requireOrgAdmin(
+        ctx.organizationId,
+        ctx.orgRole,
         ctx.locale
       );
 
@@ -932,10 +908,9 @@ export const membersRouter = router({
   removeFromWorkspace: rateLimitedProcedure
     .input(z.object({ userId: z.string(), workspaceId: z.string() }))
     .mutation(async ({ input, ctx }) => {
-      const caller = await requireOrgAdmin(
-        ctx.prisma,
-        ctx.user.id,
-        ctx.user.workspaceId,
+      const caller = requireOrgAdmin(
+        ctx.organizationId,
+        ctx.orgRole,
         ctx.locale
       );
 
@@ -1013,10 +988,9 @@ export const membersRouter = router({
       })
     )
     .mutation(async ({ input, ctx }) => {
-      const caller = await requireOrgAdmin(
-        ctx.prisma,
-        ctx.user.id,
-        ctx.user.workspaceId,
+      const caller = requireOrgAdmin(
+        ctx.organizationId,
+        ctx.orgRole,
         ctx.locale
       );
 
@@ -1080,10 +1054,9 @@ export const membersRouter = router({
   listOrgMembersNotInWorkspace: rateLimitedProcedure
     .input(z.object({ workspaceId: z.string() }))
     .query(async ({ input, ctx }) => {
-      const { organizationId } = await requireOrgAdmin(
-        ctx.prisma,
-        ctx.user.id,
-        ctx.user.workspaceId,
+      const { organizationId } = requireOrgAdmin(
+        ctx.organizationId,
+        ctx.orgRole,
         ctx.locale
       );
 

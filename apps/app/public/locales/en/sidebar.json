@@ -38,5 +38,10 @@
   "upgrade": "Upgrade",
   "upgradeToCreate": "Upgrade to create multiple workspaces",
   "multipleWorkspacesDeveloper": "Multiple workspaces available with Developer plan",
-  "multipleWorkspacesEnterprise": "Multiple workspaces available with Enterprise plan"
+  "multipleWorkspacesEnterprise": "Multiple workspaces available with Enterprise plan",
+  "organizations": "Organizations",
+  "workspaces": "Workspaces",
+  "admin": "Admin",
+  "orgSwitched": "Organization switched successfully!",
+  "orgSwitchedDescription": "Switched to {{orgName}}"
 }

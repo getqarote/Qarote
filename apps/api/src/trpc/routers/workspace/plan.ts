@@ -3,8 +3,8 @@ import { TRPCError } from "@trpc/server";
 import { getLicensePayload } from "@/core/feature-flags";
 
 import {
+  getOrgPlan,
   getPlanFeatures,
-  getUserPlan,
   getWorkspacePlan,
   PLAN_FEATURES,
 } from "@/services/plan/plan.service";
@@ -80,7 +80,9 @@ export const planRouter = router({
       const currentWorkspace = userWithWorkspace.workspace;
       let workspacePlan: UserPlan = currentWorkspace
         ? await getWorkspacePlan(currentWorkspace.id)
-        : await getUserPlan(user.id);
+        : ctx.organizationId
+          ? await getOrgPlan(ctx.organizationId)
+          : UserPlan.FREE;
 
       // Self-hosted fallback: if no Stripe subscription exists, use the license JWT tier
       if (workspacePlan === UserPlan.FREE && isSelfHostedMode()) {

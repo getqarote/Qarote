@@ -38,5 +38,10 @@
   "upgrade": "Mettre à niveau",
   "upgradeToCreate": "Passez à un plan supérieur pour créer plusieurs espaces de travail",
   "multipleWorkspacesDeveloper": "Plusieurs espaces de travail disponibles avec le plan Développeur",
-  "multipleWorkspacesEnterprise": "Plusieurs espaces de travail disponibles avec le plan Entreprise"
+  "multipleWorkspacesEnterprise": "Plusieurs espaces de travail disponibles avec le plan Entreprise",
+  "organizations": "Organisations",
+  "workspaces": "Espaces de travail",
+  "admin": "Administrateur",
+  "orgSwitched": "Organisation changée avec succès !",
+  "orgSwitchedDescription": "Basculé vers {{orgName}}"
 }

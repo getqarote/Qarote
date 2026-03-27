@@ -62,6 +62,11 @@ export const publicOrgInvitationRouter = router({
           });
         }
 
+        const existingUser = await ctx.prisma.user.findUnique({
+          where: { email: invitation.email },
+          select: { id: true },
+        });
+
         return {
           success: true,
           invitation: {
@@ -74,6 +79,7 @@ export const publicOrgInvitationRouter = router({
               name: invitation.organization.name,
             },
             invitedBy: formatInvitedBy(invitation.invitedBy),
+            userExists: !!existingUser,
           },
         };
       } catch (error) {
