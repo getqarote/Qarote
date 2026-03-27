@@ -104,8 +104,18 @@ export const managementRouter = router({
     const user = ctx.user;
 
     try {
-      // Use pre-resolved organization from context
-      const organizationId = ctx.organizationId;
+      // Use pre-resolved organization from context.
+      // During onboarding (no workspace yet), ctx.organizationId is null,
+      // so fall back to looking up the user's org membership directly.
+      // This is safe because users without a workspace have at most one org.
+      let organizationId = ctx.organizationId;
+      if (!organizationId) {
+        const membership = await ctx.prisma.organizationMember.findFirst({
+          where: { userId: user.id },
+          select: { organizationId: true },
+        });
+        organizationId = membership?.organizationId ?? null;
+      }
 
       let currentPlan: UserPlan = UserPlan.FREE;
       let workspaceCount: number;
@@ -161,9 +171,21 @@ export const managementRouter = router({
       const contactEmail = inputContactEmail || user.email;
 
       try {
-        // Use pre-resolved organization from context
+        // Use pre-resolved organization from context.
+        // During onboarding (no workspace yet), ctx.organizationId is null,
+        // so fall back to looking up the user's org membership directly.
         let organizationId = ctx.organizationId;
         let orgRole = ctx.orgRole;
+        if (!organizationId) {
+          const membership = await ctx.prisma.organizationMember.findFirst({
+            where: { userId: user.id },
+            select: { organizationId: true, role: true },
+          });
+          if (membership) {
+            organizationId = membership.organizationId;
+            orgRole = membership.role;
+          }
+        }
 
         // Existing org members must be OWNER or ADMIN to create workspaces
         if (
