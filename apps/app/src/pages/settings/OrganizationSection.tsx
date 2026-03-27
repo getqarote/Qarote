@@ -7,7 +7,6 @@ import {
   Check,
   Clock,
   Copy,
-  Crown,
   Loader2,
   Mail,
   Pencil,
@@ -87,7 +86,7 @@ const WS_ROLE_OPTIONS: Array<"ADMIN" | "MEMBER"> = ["ADMIN", "MEMBER"];
 const getRoleIcon = (role: string) => {
   switch (role) {
     case "OWNER":
-      return <Crown className="h-3.5 w-3.5 text-orange-500" />;
+      return null;
     case "ADMIN":
       return <Shield className="h-3.5 w-3.5 text-blue-500" />;
     default:
@@ -645,16 +644,16 @@ const OrganizationSection = () => {
             <p className="text-sm text-muted-foreground">{t("org.subtitle")}</p>
           </div>
         </div>
-        <span
-          className="inline-flex items-center gap-1.5 rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-xs font-medium text-orange-700 dark:border-orange-800 dark:bg-orange-950 dark:text-orange-300"
+        <Badge
+          variant="outline"
+          className="border-orange-200 bg-orange-50 px-3 py-1 text-xs font-medium text-orange-700 dark:border-orange-800 dark:bg-orange-950 dark:text-orange-300"
           role="status"
           aria-label={t("org.yourRole", {
             role: roleLabels[callerRole ?? "MEMBER"] ?? callerRole,
           })}
         >
-          {getRoleIcon(callerRole ?? "MEMBER")}
           {roleLabels[callerRole ?? "MEMBER"] ?? callerRole}
-        </span>
+        </Badge>
       </div>
 
       {/* Organization Info Card */}
@@ -883,15 +882,10 @@ const OrganizationSection = () => {
                         </Select>
                       ) : (
                         <Badge
-                          variant={
-                            member.role === "OWNER" ? "default" : "secondary"
-                          }
-                          className="text-xs"
+                          variant="outline"
+                          className="border-orange-200 bg-orange-50 px-3 py-1 text-xs font-medium text-orange-700 dark:border-orange-800 dark:bg-orange-950 dark:text-orange-300"
                         >
-                          <span className="flex items-center gap-1">
-                            {getRoleIcon(member.role)}
-                            {roleLabels[member.role]}
-                          </span>
+                          {roleLabels[member.role]}
                         </Badge>
                       )}
 
