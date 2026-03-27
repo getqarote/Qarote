@@ -742,18 +742,6 @@ function SSOUpgradePrompt() {
               >
                 {t("settings:sso.viewPlans")}
               </Button>
-              <Button
-                variant="outline"
-                onClick={() =>
-                  window.open(
-                    "https://qarote.io/contact",
-                    "_blank",
-                    "noopener,noreferrer"
-                  )
-                }
-              >
-                {t("settings:sso.contactSales")}
-              </Button>
             </>
           ) : (
             <>

@@ -68,26 +68,12 @@ export function UpgradePrompt({
         </CardContent>
         <CardFooter className="flex gap-2">
           {cloud ? (
-            <>
-              <Button
-                className="flex-1 bg-gradient-button hover:bg-gradient-button-hover text-white"
-                onClick={() => navigate("/plans")}
-              >
-                View Plans
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  window.open(
-                    "https://qarote.io/contact",
-                    "_blank",
-                    "noopener,noreferrer"
-                  );
-                }}
-              >
-                Contact Sales
-              </Button>
-            </>
+            <Button
+              className="flex-1 bg-gradient-button hover:bg-gradient-button-hover text-white"
+              onClick={() => navigate("/plans")}
+            >
+              View Plans
+            </Button>
           ) : (
             <>
               <Button

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { Check, Clock, Copy, Mail, Users, X } from "lucide-react";
+import { Check, Copy, Mail, Users, X } from "lucide-react";
 
 import { UserRole } from "@/lib/api";
 import { User } from "@/lib/api/authTypes";
@@ -32,7 +32,7 @@ import {
 import { useUser } from "@/hooks/ui/useUser";
 
 import { InviteUserDialog } from "./InviteUserDialogEnhanced";
-import { formatDate, getRoleColor, InviteFormState } from "./profileUtils";
+import { formatDate, InviteFormState } from "./profileUtils";
 
 interface EnhancedTeamTabProps {
   isAdmin: boolean;
@@ -159,27 +159,30 @@ export const EnhancedTeamTab = ({
             <div className="flex items-center gap-2">
               <Users className="h-5 w-5" />
               <span>{t("team.title")}</span>
-              <Badge variant="outline">
+              <span className="text-sm font-normal text-muted-foreground">
                 {totalUsers}{" "}
                 {totalUsers === 1 ? t("team.user") : t("team.users")}
-              </Badge>
-              {pendingInvitations > 0 && (
-                <Badge variant="secondary">
-                  <Clock className="h-3 w-3 mr-1" />
-                  {pendingInvitations} {t("team.pending")}
-                </Badge>
-              )}
-              {maxUsers && (
-                <Badge
-                  variant={
-                    totalUsers + pendingInvitations >= maxUsers
-                      ? "destructive"
-                      : "outline"
-                  }
-                >
-                  {totalUsers + pendingInvitations}/{maxUsers} {t("team.limit")}
-                </Badge>
-              )}
+                {pendingInvitations > 0 && (
+                  <>
+                    {" "}
+                    · {pendingInvitations} {t("team.pending")}
+                  </>
+                )}
+                {maxUsers && (
+                  <>
+                    {" "}
+                    <span
+                      className={
+                        totalUsers + pendingInvitations >= maxUsers
+                          ? "text-red-500 dark:text-red-400"
+                          : ""
+                      }
+                    >
+                      ({totalUsers + pendingInvitations}/{maxUsers})
+                    </span>
+                  </>
+                )}
+              </span>
             </div>
             {/* Workspace-level invitations disabled — use org invitations instead */}
           </CardTitle>
@@ -226,14 +229,15 @@ export const EnhancedTeamTab = ({
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge className={getRoleColor(workspaceUser.role)}>
-                          {workspaceUser.role}
+                        <Badge variant="soft-orange">
+                          {workspaceUser.role.charAt(0) +
+                            workspaceUser.role.slice(1).toLowerCase()}
                         </Badge>
                       </TableCell>
                       <TableCell>
                         <Badge
                           variant={
-                            workspaceUser.isActive ? "default" : "secondary"
+                            workspaceUser.isActive ? "soft-green" : "soft-gray"
                           }
                         >
                           {workspaceUser.isActive
@@ -332,8 +336,9 @@ export const EnhancedTeamTab = ({
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge className={getRoleColor(invitation.role)}>
-                            {invitation.role}
+                          <Badge variant="soft-orange">
+                            {invitation.role.charAt(0) +
+                              invitation.role.slice(1).toLowerCase()}
                           </Badge>
                         </TableCell>
                         <TableCell>
