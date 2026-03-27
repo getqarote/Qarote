@@ -196,17 +196,6 @@ export function validateUserInvitation(
   }
 }
 
-// Count-based validations
-
-export function canUserAddWorkspaceWithCount(
-  plan: UserPlan,
-  currentWorkspaceCount: number
-): boolean {
-  const features = getPlanFeatures(plan);
-  if (features.maxWorkspaces === null) return true;
-  return currentWorkspaceCount < features.maxWorkspaces;
-}
-
 // Display helpers
 export function getPlanDisplayName(plan: UserPlan): string {
   return getPlanFeatures(plan).displayName;

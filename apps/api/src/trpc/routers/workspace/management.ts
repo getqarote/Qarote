@@ -6,10 +6,8 @@ import {
 } from "@/core/workspace-access";
 
 import {
-  canUserAddWorkspaceWithCount,
   getOrgPlan,
   getOrgResourceCounts,
-  getPlanFeatures,
   validateWorkspaceCreation,
 } from "@/services/plan/plan.service";
 
@@ -28,7 +26,7 @@ import {
   workspaceProcedure,
 } from "@/trpc/trpc";
 
-import { OrgRole, UserPlan, UserRole } from "@/generated/prisma/client";
+import { OrgRole, UserRole } from "@/generated/prisma/client";
 import { te } from "@/i18n";
 
 /**
@@ -93,56 +91,6 @@ export const managementRouter = router({
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
         message: te(ctx.locale, "workspace.failedToFetchWorkspaces"),
-      });
-    }
-  }),
-
-  /**
-   * Get plan limits and quotas for workspace creation (PROTECTED)
-   */
-  getWorkspaceCreationLimits: rateLimitedProcedure.query(async ({ ctx }) => {
-    const user = ctx.user;
-
-    try {
-      const organizationId = ctx.organizationId;
-
-      let currentPlan: UserPlan = UserPlan.FREE;
-      let workspaceCount: number;
-
-      if (organizationId) {
-        // Org-scoped: plan and counts come from the organization
-        currentPlan = await getOrgPlan(organizationId);
-        const orgCounts = await getOrgResourceCounts(organizationId);
-        workspaceCount = orgCounts.workspaces;
-      } else {
-        // No org context — count workspaces owned by the user
-        workspaceCount = await ctx.prisma.workspace.count({
-          where: { ownerId: user.id },
-        });
-      }
-
-      const planFeatures = getPlanFeatures(currentPlan);
-      const canCreateWorkspace = canUserAddWorkspaceWithCount(
-        currentPlan,
-        workspaceCount
-      );
-
-      return {
-        currentPlan: currentPlan,
-        workspaceCount,
-        maxWorkspaces: planFeatures.maxWorkspaces,
-        canCreateWorkspace,
-        planFeatures: {
-          displayName: planFeatures.displayName,
-          description: planFeatures.description,
-          maxWorkspaces: planFeatures.maxWorkspaces,
-        },
-      };
-    } catch (error) {
-      ctx.logger.error({ error }, "Error fetching workspace creation info:");
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: te(ctx.locale, "workspace.failedToFetchCreationInfo"),
       });
     }
   }),
