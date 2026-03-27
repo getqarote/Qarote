@@ -76,21 +76,12 @@ export const planRouter = router({
       }
 
       // Resolve plan via workspace → organization → subscription.
-      // During onboarding (no workspace yet), ctx.organizationId is null,
-      // so fall back to looking up the user's org membership directly.
+      // ctx.organizationId handles both workspace-based and onboarding fallback.
       const currentWorkspace = userWithWorkspace.workspace;
-      let resolvedOrgId = ctx.organizationId;
-      if (!currentWorkspace && !resolvedOrgId) {
-        const membership = await ctx.prisma.organizationMember.findFirst({
-          where: { userId: user.id },
-          select: { organizationId: true },
-        });
-        resolvedOrgId = membership?.organizationId ?? null;
-      }
       let workspacePlan: UserPlan = currentWorkspace
         ? await getWorkspacePlan(currentWorkspace.id)
-        : resolvedOrgId
-          ? await getOrgPlan(resolvedOrgId)
+        : ctx.organizationId
+          ? await getOrgPlan(ctx.organizationId)
           : UserPlan.FREE;
 
       // Self-hosted fallback: if no Stripe subscription exists, use the license JWT tier
