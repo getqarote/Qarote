@@ -66,6 +66,14 @@ export const usersRouter = router({
               user.name,
               result.value.map((p) => p.vhost)
             );
+          } else if (result.status === "rejected") {
+            ctx.logger.warn(
+              {
+                username: user.name,
+                error: result.reason?.message || result.reason,
+              },
+              "Failed to fetch permissions for user"
+            );
           }
         });
 
