@@ -3,7 +3,7 @@
   "pageSubtitle": "Manage RabbitMQ virtual hosts and namespace isolation",
   "noServerTitle": "Virtual Hosts",
   "noServerDescription": "Add a RabbitMQ server connection to manage virtual hosts and namespace isolation.",
-  "noServerSelected": "No Server Selected",
+  "noServerSelected": "No server selected",
   "selectServerPrompt": "Please select a RabbitMQ server to manage virtual hosts.",
   "accessDenied": "Access denied. Virtual host management is only available to administrators.",
   "title": "Virtual Hosts",

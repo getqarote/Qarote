@@ -3,10 +3,10 @@
   "pageSubtitle": "Visual map of exchanges, queues, and bindings",
   "noServerTitle": "Topology",
   "noServerDescription": "Add a RabbitMQ server to view its topology.",
-  "noServerSelected": "No Server Selected",
+  "noServerSelected": "No server selected",
   "selectServerPrompt": "Select a server from the sidebar to view its topology.",
   "loadingTopology": "Loading topology...",
   "failedToLoad": "Failed to load topology",
-  "noTopologyData": "No Topology Data",
+  "noTopologyData": "No topology data",
   "noTopologyDataDesc": "No exchanges or queues found for the selected server and virtual host."
 }

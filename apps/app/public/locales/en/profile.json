@@ -189,7 +189,7 @@
     "invitedBy": "Invited by {{name}}",
     "expires": "Expires {{date}}",
     "invitedByAs": "Invited by {{name}} as {{role}}",
-    "yourInvitations": "Your Invitations",
+    "yourInvitations": "Your invitations",
     "yourInvitationsDesc": "You have been invited to other organizations",
     "yourInvitationsNoOrg": "You have been invited to join the following organizations",
     "accept": "Accept",
