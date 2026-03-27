@@ -2,20 +2,26 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 
-import { ArrowLeft, HelpCircle } from "lucide-react";
+import { AlertCircle, ArrowLeft, HelpCircle, Pencil } from "lucide-react";
 import { toast } from "sonner";
 
 import { UserRole } from "@/lib/api";
-import { formatTagsDisplay } from "@/lib/formatTags";
 
 import { AppSidebar } from "@/components/AppSidebar";
-import { ConnectionStatus } from "@/components/ConnectionStatus";
 import { PageError } from "@/components/PageError";
 import { PageLoader } from "@/components/PageLoader";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import {
   Table,
@@ -32,6 +38,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { DeleteUserModal } from "@/components/users/DeleteUserModal";
+import { EditUserModal } from "@/components/users/EditUserModal";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
 import { useServerContext } from "@/contexts/ServerContext";
@@ -40,7 +47,6 @@ import {
   useDeleteUser,
   useDeleteUserPermissions,
   useSetUserPermissions,
-  useUpdateUser,
   useUser,
 } from "@/hooks/queries/useRabbitMQUsers";
 import { useVHosts } from "@/hooks/queries/useRabbitMQVHosts";
@@ -58,11 +64,7 @@ export default function UserDetailsPage() {
   const navigate = useNavigate();
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-
-  // Form states for updating user
-  const [newPassword, setNewPassword] = useState("");
-  const [newTags, setNewTags] = useState("");
-  const [removePassword, setRemovePassword] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   // Form states for setting permissions
   // null means "use derived default from data", string means "user explicitly chose this"
@@ -94,6 +96,9 @@ export default function UserDetailsPage() {
     refetch,
   } = useUser(currentServerId, decodedUsername, serverExists);
 
+  // Check if this is a protected user (e.g., AWS-managed system accounts)
+  const isProtectedUser = userData?.user?.tags?.includes("protected") ?? false;
+
   // Fetch available virtual hosts for the dropdown
   const { data: vhostsData, isLoading: vhostsLoading } = useVHosts(
     currentServerId,
@@ -120,7 +125,6 @@ export default function UserDetailsPage() {
   const setSelectedVHost = setSelectedVHostOverride;
 
   const deleteUserMutation = useDeleteUser();
-  const updateUserMutation = useUpdateUser();
   const setPermissionsMutation = useSetUserPermissions();
   const clearPermissionsMutation = useDeleteUserPermissions();
   const { workspace } = useWorkspace();
@@ -131,8 +135,8 @@ export default function UserDetailsPage() {
       <SidebarProvider>
         <div className="page-layout">
           <AppSidebar />
-          <main className="main-content">
-            <div className="container mx-auto">
+          <main className="main-content-scrollable">
+            <div className="content-container-large">
               <Alert>
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>{t("accessDenied")}</AlertDescription>
@@ -149,8 +153,8 @@ export default function UserDetailsPage() {
       <SidebarProvider>
         <div className="page-layout">
           <AppSidebar />
-          <main className="main-content">
-            <div className="container mx-auto">
+          <main className="main-content-scrollable">
+            <div className="content-container-large">
               <Alert>
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>{t("selectServer")}</AlertDescription>
@@ -167,7 +171,7 @@ export default function UserDetailsPage() {
       <SidebarProvider>
         <div className="page-layout">
           <AppSidebar />
-          <main className="flex-1">
+          <main className="main-content-scrollable">
             <PageLoader />
           </main>
         </div>
@@ -180,8 +184,8 @@ export default function UserDetailsPage() {
       <SidebarProvider>
         <div className="page-layout">
           <AppSidebar />
-          <main className="main-content">
-            <div className="container mx-auto">
+          <main className="main-content-scrollable">
+            <div className="content-container-large">
               <PageError
                 message={`${t("failedToLoad")}: ${(error as Error).message}`}
                 onRetry={() => refetch()}
@@ -201,8 +205,8 @@ export default function UserDetailsPage() {
       <SidebarProvider>
         <div className="page-layout">
           <AppSidebar />
-          <main className="main-content">
-            <div className="container mx-auto">
+          <main className="main-content-scrollable">
+            <div className="content-container-large">
               <Alert>
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>{t("notFound")}</AlertDescription>
@@ -213,61 +217,6 @@ export default function UserDetailsPage() {
       </SidebarProvider>
     );
   }
-
-  const handleUpdateUser = () => {
-    const updateData: {
-      password?: string;
-      tags?: string;
-      removePassword?: boolean;
-    } = {};
-
-    if (removePassword) {
-      updateData.removePassword = true;
-      // When removing password only, preserve existing tags if no new tags are provided
-      // RabbitMQ requires at least one field besides password_hash to be present
-      if (newTags === "" && userDetails?.tags) {
-        // Normalize tags array to comma-separated string format for RabbitMQ API
-        const normalizedTags = userDetails.tags
-          .map((tag) => tag.trim())
-          .filter((tag) => tag.length > 0)
-          .join(",");
-        if (normalizedTags) {
-          updateData.tags = normalizedTags;
-        }
-      }
-    } else if (newPassword) {
-      updateData.password = newPassword;
-    }
-
-    if (newTags !== "") {
-      updateData.tags = newTags;
-    }
-
-    if (Object.keys(updateData).length > 0) {
-      if (!workspace?.id) {
-        toast.error(t("requiredWorkspace"));
-        return;
-      }
-      updateUserMutation
-        .mutateAsync({
-          serverId: currentServerId!,
-          workspaceId: workspace.id,
-          username: decodedUsername,
-          password: updateData.password,
-          tags: updateData.tags,
-          removePassword: updateData.removePassword,
-        })
-        .then(() => {
-          toast.success(t("updateSuccess"));
-          setNewPassword("");
-          setNewTags("");
-          setRemovePassword(false);
-        })
-        .catch((error: Error) => {
-          toast.error(error.message || t("updateError"));
-        });
-    }
-  };
 
   const handleSetPermissions = async () => {
     if (!workspace?.id) {
@@ -302,89 +251,100 @@ export default function UserDetailsPage() {
       <SidebarProvider>
         <div className="page-layout">
           <AppSidebar />
-          <main className="main-content">
+          <main className="main-content-scrollable">
             <div className="max-w-6xl mx-auto space-y-8">
               {/* Header */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <SidebarTrigger className="mr-2" />
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex items-start gap-2 min-w-0">
+                  <SidebarTrigger className="mr-2 mt-1" />
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => navigate("/users")}
-                    className="mr-2 flex items-center gap-1"
+                    className="mr-2 flex items-center gap-1 shrink-0"
                   >
                     <ArrowLeft className="h-4 w-4" />
                   </Button>
-                  <h1 className="title-page">
-                    {t("userPrefix", { name: decodedUsername })}
-                  </h1>
-                </div>
-                <ConnectionStatus />
-              </div>
-
-              {/* User Details */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">{t("details")}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div>
-                      <div className="text-sm text-muted-foreground mb-1">
-                        {t("tags")}
-                      </div>
-                      <div className="text-lg font-medium">
-                        {formatTagsDisplay(userDetails.tags)}
-                      </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h1 className="title-page">
+                        {t("userPrefix", { name: decodedUsername })}
+                      </h1>
+                      {userDetails.tags &&
+                        userDetails.tags.length > 0 &&
+                        userDetails.tags.map((tag) => (
+                          <Badge key={tag} variant="secondary">
+                            {tag}
+                          </Badge>
+                        ))}
+                      <Badge variant="outline">
+                        {userDetails.password_hash
+                          ? t("passwordSet")
+                          : t("noPassword")}
+                      </Badge>
                     </div>
-                    <div>
-                      <div className="text-sm text-muted-foreground mb-1">
-                        {t("hasPassword")}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div
-                          className={`w-2 h-2 rounded-full ${userDetails.password_hash ? "bg-green-500" : "bg-red-500"}`}
-                        ></div>
-                        <span>
-                          {userDetails.password_hash
-                            ? t("common:yes")
-                            : t("common:no")}
-                        </span>
-                      </div>
-                    </div>
-                    {userDetails.limits && (
-                      <div>
-                        <div className="text-sm text-muted-foreground mb-2">
-                          {t("limitsLabel")}
-                        </div>
-                        <div className="space-y-2">
-                          {userDetails.limits.max_connections !== undefined && (
-                            <div className="flex items-center justify-between">
-                              <span className="text-sm">
-                                {t("maxConnections")}:
-                              </span>
-                              <Badge variant="outline">
-                                {userDetails.limits.max_connections}
-                              </Badge>
-                            </div>
-                          )}
-                          {userDetails.limits.max_channels !== undefined && (
-                            <div className="flex items-center justify-between">
-                              <span className="text-sm">
-                                {t("maxChannels")}:
-                              </span>
-                              <Badge variant="outline">
-                                {userDetails.limits.max_channels}
-                              </Badge>
-                            </div>
-                          )}
-                        </div>
-                      </div>
+                    {(isConnectionUser || isProtectedUser) && (
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {isConnectionUser
+                          ? t("cannotModifyConnectionUser")
+                          : t("cannotModifyProtectedUser")}
+                      </p>
                     )}
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+                <Button
+                  onClick={() => setShowEditModal(true)}
+                  disabled={isConnectionUser || isProtectedUser}
+                  className="btn-primary text-white flex items-center gap-2 shrink-0"
+                  title={
+                    isConnectionUser
+                      ? t("cannotModifyConnectionUser")
+                      : isProtectedUser
+                        ? t("cannotModifyProtectedUser")
+                        : undefined
+                  }
+                >
+                  <Pencil className="h-4 w-4" />
+                  {t("common:edit")}
+                </Button>
+              </div>
+
+              {/* User Limits (if any) */}
+              {userDetails.limits &&
+                (userDetails.limits.max_connections !== undefined ||
+                  userDetails.limits.max_channels !== undefined) && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">
+                        {t("limitsLabel")}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-2 gap-8">
+                        {userDetails.limits.max_connections !== undefined && (
+                          <div>
+                            <div className="text-sm text-muted-foreground mb-1">
+                              {t("maxConnections")}
+                            </div>
+                            <div className="text-lg font-medium">
+                              {userDetails.limits.max_connections}
+                            </div>
+                          </div>
+                        )}
+                        {userDetails.limits.max_channels !== undefined && (
+                          <div>
+                            <div className="text-sm text-muted-foreground mb-1">
+                              {t("maxChannels")}
+                            </div>
+                            <div className="text-lg font-medium">
+                              {userDetails.limits.max_channels}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
 
               {/* Permissions */}
               <Card>
@@ -469,278 +429,104 @@ export default function UserDetailsPage() {
                 </CardContent>
               </Card>
 
-              {/* Set Permission and Update User */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:items-stretch">
-                {/* Set permission */}
-                <Card className="flex flex-col">
-                  <CardHeader>
-                    <CardTitle className="text-lg">
-                      {t("setPermission")}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="flex-1">
-                    <div className="flex flex-col gap-4 h-full">
-                      <div className="flex-1 space-y-4">
-                        <div>
-                          <label className="block text-sm font-medium mb-2">
-                            {t("virtualHost")}
-                          </label>
-                          <select
-                            className="w-full p-2 border rounded-md bg-background"
-                            value={selectedVHost}
-                            onChange={(e) => setSelectedVHost(e.target.value)}
-                            disabled={vhostsLoading}
-                          >
-                            {vhostsLoading ? (
-                              <option value="/">{t("common:loading")}</option>
-                            ) : (
-                              vhostsData?.vhosts?.map((vhost) => (
-                                <option key={vhost.name} value={vhost.name}>
-                                  {vhost.name}
-                                </option>
-                              )) || <option value="/">/</option>
-                            )}
-                          </select>
-                        </div>
-                        <div>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <label className="text-sm font-medium mb-2 cursor-help flex items-center gap-1">
-                                {t("configureRegexp")}
-                                <HelpCircle className="h-3 w-3 text-muted-foreground" />
-                              </label>
-                            </TooltipTrigger>
-                            <TooltipContent side="top" className="max-w-xs">
-                              <p>
-                                Regular expression pattern controlling which
-                                resources the user can configure (create/delete
-                                queues, exchanges, bindings). Use ".*" for full
-                                access or specific patterns like "^myqueue.*"
-                                for resources starting with "myqueue".
-                              </p>
-                            </TooltipContent>
-                          </Tooltip>
-                          <Input
-                            value={configureRegexp}
-                            onChange={(e) => setConfigureRegexp(e.target.value)}
-                            placeholder=".*"
-                          />
-                        </div>
-                        <div>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <label className="text-sm font-medium mb-2 cursor-help flex items-center gap-1">
-                                {t("writeRegexp")}
-                                <HelpCircle className="h-3 w-3 text-muted-foreground" />
-                              </label>
-                            </TooltipTrigger>
-                            <TooltipContent side="top" className="max-w-xs">
-                              <p>
-                                Regular expression pattern controlling which
-                                exchanges and routing keys the user can publish
-                                messages to. Use ".*" for full publish access or
-                                patterns like "^logs.*" for specific routing
-                                keys.
-                              </p>
-                            </TooltipContent>
-                          </Tooltip>
-                          <Input
-                            value={writeRegexp}
-                            onChange={(e) => setWriteRegexp(e.target.value)}
-                            placeholder=".*"
-                          />
-                        </div>
-                        <div>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <label className="text-sm font-medium mb-2 cursor-help flex items-center gap-1">
-                                {t("readRegexp")}
-                                <HelpCircle className="h-3 w-3 text-muted-foreground" />
-                              </label>
-                            </TooltipTrigger>
-                            <TooltipContent side="top" className="max-w-xs">
-                              <p>
-                                Regular expression pattern controlling which
-                                queues the user can consume messages from
-                                (read/get operations). Use ".*" for full read
-                                access or patterns like "^user_.*" for queues
-                                starting with "user_".
-                              </p>
-                            </TooltipContent>
-                          </Tooltip>
-                          <Input
-                            value={readRegexp}
-                            onChange={(e) => setReadRegexp(e.target.value)}
-                            placeholder=".*"
-                          />
-                        </div>
-                      </div>
-                      <div>
-                        <Button
-                          className="btn-primary"
-                          onClick={handleSetPermissions}
-                          disabled={setPermissionsMutation.isPending}
-                        >
-                          {setPermissionsMutation.isPending
-                            ? t("setting")
-                            : t("setPermission")}
-                        </Button>
-                      </div>
+              {/* Set Permission */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">
+                    {t("setPermission")}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 gap-4 max-w-lg">
+                    <div>
+                      <label className="block text-sm font-medium mb-2">
+                        {t("virtualHost")}
+                      </label>
+                      <Select
+                        value={selectedVHost}
+                        onValueChange={(value) => setSelectedVHost(value)}
+                        disabled={vhostsLoading}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {vhostsData?.vhosts?.map((vhost) => (
+                            <SelectItem key={vhost.name} value={vhost.name}>
+                              {vhost.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
-                  </CardContent>
-                </Card>
-
-                {/* Update user */}
-                <Card className="flex flex-col">
-                  <CardHeader>
-                    <CardTitle className="text-lg">{t("updateUser")}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="flex-1">
-                    <div className="flex flex-col gap-4 h-full">
-                      <div className="flex-1 space-y-4">
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="checkbox"
-                              id="remove-password"
-                              checked={removePassword}
-                              onChange={(e) =>
-                                setRemovePassword(e.target.checked)
-                              }
-                            />
-                            <label
-                              htmlFor="remove-password"
-                              className="text-sm font-medium"
-                            >
-                              {t("removePassword")}
-                            </label>
-                          </div>
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium mb-2">
-                            {t("password")}
+                    <div>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <label className="text-sm font-medium mb-2 cursor-help flex items-center gap-1">
+                            {t("configureRegexp")}
+                            <HelpCircle className="h-3 w-3 text-muted-foreground" />
                           </label>
-                          <Input
-                            type="password"
-                            value={newPassword}
-                            onChange={(e) => setNewPassword(e.target.value)}
-                            placeholder={t("passwordUpdatePlaceholder")}
-                            disabled={removePassword}
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium mb-2">
-                            {t("tags")}
-                          </label>
-                          <Input
-                            value={newTags}
-                            onChange={(e) => setNewTags(e.target.value)}
-                            placeholder={t("tagPlaceholder")}
-                          />
-                          <div className="mt-2 text-sm text-muted-foreground">
-                            <span
-                              className="font-medium cursor-pointer hover:text-foreground transition-colors"
-                              onClick={() => {
-                                const tag = "administrator";
-                                if (newTags.trim()) {
-                                  setNewTags(newTags + ", " + tag);
-                                } else {
-                                  setNewTags(tag);
-                                }
-                              }}
-                            >
-                              {t("administrator")}
-                            </span>{" "}
-                            |{" "}
-                            <span
-                              className="font-medium cursor-pointer hover:text-foreground transition-colors"
-                              onClick={() => {
-                                const tag = "policymaker";
-                                if (newTags.trim()) {
-                                  setNewTags(newTags + ", " + tag);
-                                } else {
-                                  setNewTags(tag);
-                                }
-                              }}
-                            >
-                              {t("policymaker")}
-                            </span>{" "}
-                            |{" "}
-                            <span
-                              className="font-medium cursor-pointer hover:text-foreground transition-colors"
-                              onClick={() => {
-                                const tag = "monitoring";
-                                if (newTags.trim()) {
-                                  setNewTags(newTags + ", " + tag);
-                                } else {
-                                  setNewTags(tag);
-                                }
-                              }}
-                            >
-                              {t("monitoring")}
-                            </span>{" "}
-                            |{" "}
-                            <span
-                              className="font-medium cursor-pointer hover:text-foreground transition-colors"
-                              onClick={() => {
-                                const tag = "management";
-                                if (newTags.trim()) {
-                                  setNewTags(newTags + ", " + tag);
-                                } else {
-                                  setNewTags(tag);
-                                }
-                              }}
-                            >
-                              {t("management")}
-                            </span>{" "}
-                            |{" "}
-                            <span
-                              className="font-medium cursor-pointer hover:text-foreground transition-colors"
-                              onClick={() => {
-                                const tag = "impersonator";
-                                if (newTags.trim()) {
-                                  setNewTags(newTags + ", " + tag);
-                                } else {
-                                  setNewTags(tag);
-                                }
-                              }}
-                            >
-                              {t("impersonator")}
-                            </span>{" "}
-                            |{" "}
-                            <span
-                              className="font-medium cursor-pointer hover:text-foreground transition-colors"
-                              onClick={() => {
-                                setNewTags("");
-                              }}
-                            >
-                              {t("none")}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                      <div>
-                        <Button
-                          className="btn-primary"
-                          onClick={handleUpdateUser}
-                          disabled={
-                            updateUserMutation.isPending || isConnectionUser
-                          }
-                          title={
-                            isConnectionUser
-                              ? t("cannotModifyConnectionUser")
-                              : undefined
-                          }
-                        >
-                          {updateUserMutation.isPending
-                            ? t("updating")
-                            : t("updateUser")}
-                        </Button>
-                      </div>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs">
+                          <p>{t("configureRegexpTooltip")}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <Input
+                        value={configureRegexp}
+                        onChange={(e) => setConfigureRegexp(e.target.value)}
+                        placeholder=".*"
+                      />
                     </div>
-                  </CardContent>
-                </Card>
-              </div>
+                    <div>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <label className="text-sm font-medium mb-2 cursor-help flex items-center gap-1">
+                            {t("writeRegexp")}
+                            <HelpCircle className="h-3 w-3 text-muted-foreground" />
+                          </label>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs">
+                          <p>{t("writeRegexpTooltip")}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <Input
+                        value={writeRegexp}
+                        onChange={(e) => setWriteRegexp(e.target.value)}
+                        placeholder=".*"
+                      />
+                    </div>
+                    <div>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <label className="text-sm font-medium mb-2 cursor-help flex items-center gap-1">
+                            {t("readRegexp")}
+                            <HelpCircle className="h-3 w-3 text-muted-foreground" />
+                          </label>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs">
+                          <p>{t("readRegexpTooltip")}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <Input
+                        value={readRegexp}
+                        onChange={(e) => setReadRegexp(e.target.value)}
+                        placeholder=".*"
+                      />
+                    </div>
+                    <div>
+                      <Button
+                        className="btn-primary"
+                        onClick={handleSetPermissions}
+                        disabled={setPermissionsMutation.isPending}
+                      >
+                        {setPermissionsMutation.isPending
+                          ? t("setting")
+                          : t("setPermission")}
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
               {/* Danger zone */}
               <Card>
@@ -753,24 +539,35 @@ export default function UserDetailsPage() {
                   <Button
                     variant="destructive"
                     onClick={() => setShowDeleteModal(true)}
-                    disabled={decodedUsername === "admin" || isConnectionUser}
+                    disabled={
+                      decodedUsername === "admin" ||
+                      isConnectionUser ||
+                      isProtectedUser
+                    }
                     title={
                       isConnectionUser
                         ? t("cannotModifyConnectionUser")
-                        : undefined
+                        : isProtectedUser
+                          ? t("cannotModifyProtectedUser")
+                          : undefined
                     }
                   >
                     {t("deleteUser")}
                   </Button>
-                  {decodedUsername === "admin" && (
-                    <p className="text-sm text-muted-foreground mt-2">
-                      {t("cannotDeleteAdmin")}
-                    </p>
-                  )}
-                  {isConnectionUser && (
+                  {isConnectionUser ? (
                     <p className="text-sm text-muted-foreground mt-2">
                       {t("cannotModifyConnectionUser")}
                     </p>
+                  ) : isProtectedUser ? (
+                    <p className="text-sm text-muted-foreground mt-2">
+                      {t("cannotModifyProtectedUser")}
+                    </p>
+                  ) : (
+                    decodedUsername === "admin" && (
+                      <p className="text-sm text-muted-foreground mt-2">
+                        {t("cannotDeleteAdmin")}
+                      </p>
+                    )
                   )}
                 </CardContent>
               </Card>
@@ -803,6 +600,15 @@ export default function UserDetailsPage() {
                     }
                   }}
                   isLoading={deleteUserMutation.isPending}
+                />
+              )}
+
+              {showEditModal && userDetails && (
+                <EditUserModal
+                  isOpen={showEditModal}
+                  onClose={() => setShowEditModal(false)}
+                  serverId={currentServerId!}
+                  user={userDetails}
                 />
               )}
             </div>

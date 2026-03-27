@@ -1,3 +1,7 @@
+import { Trans, useTranslation } from "react-i18next";
+
+import { AlertTriangle } from "lucide-react";
+
 import { RabbitMQUser } from "@/lib/api/userTypes";
 
 import { Button } from "@/components/ui/button";
@@ -5,6 +9,7 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -24,25 +29,33 @@ export function DeleteUserModal({
   onConfirm,
   isLoading,
 }: DeleteUserModalProps) {
+  const { t } = useTranslation("users");
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Delete User</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <AlertTriangle className="h-5 w-5 text-destructive" />
+            {t("deleteUser")}
+          </DialogTitle>
           <DialogDescription>
-            Are you sure you want to delete user "{user.name}"? This action
-            cannot be undone.
+            <Trans
+              i18nKey="users:deleteUserConfirmation"
+              values={{ name: user.name }}
+              components={{ strong: <strong /> }}
+            />
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex justify-end gap-2 pt-4">
+        <DialogFooter>
           <Button
             type="button"
             variant="outline"
             onClick={onClose}
             disabled={isLoading}
           >
-            Cancel
+            {t("cancel")}
           </Button>
           <Button
             type="button"
@@ -50,9 +63,9 @@ export function DeleteUserModal({
             onClick={onConfirm}
             disabled={isLoading}
           >
-            {isLoading ? "Deleting..." : "Delete User"}
+            {isLoading ? t("deleting") : t("deleteUser")}
           </Button>
-        </div>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

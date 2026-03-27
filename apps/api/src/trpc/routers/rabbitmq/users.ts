@@ -45,8 +45,43 @@ export const usersRouter = router({
         const client = createRabbitMQClientFromServer(verifiedServer);
         const users = await client.getUsers();
 
+        // Fetch permissions with limited concurrency to avoid overwhelming the RabbitMQ API
+        const CONCURRENCY_LIMIT = 10;
+        const permissionsResults: PromiseSettledResult<
+          Awaited<ReturnType<typeof client.getUserPermissions>>
+        >[] = [];
+        for (let i = 0; i < users.length; i += CONCURRENCY_LIMIT) {
+          const batch = users
+            .slice(i, i + CONCURRENCY_LIMIT)
+            .map((user) => client.getUserPermissions(user.name));
+          const batchResults = await Promise.allSettled(batch);
+          permissionsResults.push(...batchResults);
+        }
+
+        const accessibleVhostsMap = new Map<string, string[]>();
+        users.forEach((user, index) => {
+          const result = permissionsResults[index];
+          if (result.status === "fulfilled" && result.value) {
+            accessibleVhostsMap.set(
+              user.name,
+              result.value.map((p) => p.vhost)
+            );
+          } else if (result.status === "rejected") {
+            ctx.logger.warn(
+              {
+                username: user.name,
+                error: result.reason?.message || result.reason,
+              },
+              "Failed to fetch permissions for user"
+            );
+          }
+        });
+
         // Map users to API response format (only include fields used by web)
-        const mappedUsers = UserMapper.toApiResponseArray(users);
+        const mappedUsers = UserMapper.toApiResponseArray(
+          users,
+          accessibleVhostsMap
+        );
 
         return { users: mappedUsers };
       } catch (error) {
@@ -195,9 +230,16 @@ export const usersRouter = router({
         }
         if (password) {
           payload.password = password;
-        }
-        if (removePassword) {
+        } else if (removePassword) {
           payload.password_hash = "";
+        } else {
+          // Preserve existing password by fetching the current hash
+          // RabbitMQ PUT /users/{name} is a full replacement, so omitting
+          // password/password_hash would remove the existing password
+          const existingUser = await client.getUser(username);
+          if (existingUser?.password_hash) {
+            payload.password_hash = existingUser.password_hash;
+          }
         }
 
         ctx.logger.debug(
