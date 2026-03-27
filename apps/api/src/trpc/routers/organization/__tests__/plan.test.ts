@@ -63,7 +63,7 @@ vi.mock("@/middlewares/workspace", () => ({
 }));
 
 // Import after mocks
-const { planRouter } = await import("../plan");
+const { orgPlanRouter } = await import("../plan");
 
 // --- Helpers ---
 
@@ -116,7 +116,7 @@ function mockUserWithWorkspace(overrides?: {
 
 // --- Tests ---
 
-describe("planRouter.getCurrentPlan", () => {
+describe("orgPlanRouter.getCurrentOrgPlan", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockSelfHostedMode = false;
@@ -131,8 +131,8 @@ describe("planRouter.getCurrentPlan", () => {
     mockUserWithWorkspace();
     mockGetWorkspacePlan.mockResolvedValue(UserPlan.FREE);
 
-    const caller = planRouter.createCaller(makeCtx() as never);
-    const result = await caller.getCurrentPlan();
+    const caller = orgPlanRouter.createCaller(makeCtx() as never);
+    const result = await caller.getCurrentOrgPlan();
 
     expect(result.user.plan).toBe(UserPlan.FREE);
     expect(result.planFeatures.displayName).toBe("Free");
@@ -142,8 +142,8 @@ describe("planRouter.getCurrentPlan", () => {
     mockUserWithWorkspace();
     mockGetWorkspacePlan.mockResolvedValue(UserPlan.ENTERPRISE);
 
-    const caller = planRouter.createCaller(makeCtx() as never);
-    const result = await caller.getCurrentPlan();
+    const caller = orgPlanRouter.createCaller(makeCtx() as never);
+    const result = await caller.getCurrentOrgPlan();
 
     expect(result.user.plan).toBe(UserPlan.ENTERPRISE);
     expect(result.planFeatures.displayName).toBe("Enterprise");
@@ -159,8 +159,8 @@ describe("planRouter.getCurrentPlan", () => {
       mockGetWorkspacePlan.mockResolvedValue(UserPlan.FREE);
       mockGetLicensePayload.mockResolvedValue(validPayload);
 
-      const caller = planRouter.createCaller(makeCtx() as never);
-      const result = await caller.getCurrentPlan();
+      const caller = orgPlanRouter.createCaller(makeCtx() as never);
+      const result = await caller.getCurrentOrgPlan();
 
       expect(result.user.plan).toBe(UserPlan.DEVELOPER);
       expect(result.planFeatures.displayName).toBe("Developer");
@@ -176,8 +176,8 @@ describe("planRouter.getCurrentPlan", () => {
         tier: UserPlan.ENTERPRISE,
       });
 
-      const caller = planRouter.createCaller(makeCtx() as never);
-      const result = await caller.getCurrentPlan();
+      const caller = orgPlanRouter.createCaller(makeCtx() as never);
+      const result = await caller.getCurrentOrgPlan();
 
       expect(result.user.plan).toBe(UserPlan.ENTERPRISE);
       expect(result.planFeatures.displayName).toBe("Enterprise");
@@ -190,8 +190,8 @@ describe("planRouter.getCurrentPlan", () => {
       mockGetWorkspacePlan.mockResolvedValue(UserPlan.FREE);
       mockGetLicensePayload.mockResolvedValue(null);
 
-      const caller = planRouter.createCaller(makeCtx() as never);
-      const result = await caller.getCurrentPlan();
+      const caller = orgPlanRouter.createCaller(makeCtx() as never);
+      const result = await caller.getCurrentOrgPlan();
 
       expect(result.user.plan).toBe(UserPlan.FREE);
       expect(result.planFeatures.displayName).toBe("Free");
@@ -203,8 +203,8 @@ describe("planRouter.getCurrentPlan", () => {
       // License says DEVELOPER, but workspace plan says ENTERPRISE
       mockGetLicensePayload.mockResolvedValue(validPayload);
 
-      const caller = planRouter.createCaller(makeCtx() as never);
-      const result = await caller.getCurrentPlan();
+      const caller = orgPlanRouter.createCaller(makeCtx() as never);
+      const result = await caller.getCurrentOrgPlan();
 
       // Should use workspace plan (ENTERPRISE), not license (DEVELOPER)
       expect(result.user.plan).toBe(UserPlan.ENTERPRISE);
@@ -217,8 +217,8 @@ describe("planRouter.getCurrentPlan", () => {
       mockGetWorkspacePlan.mockResolvedValue(UserPlan.FREE);
       mockGetLicensePayload.mockResolvedValue(validPayload);
 
-      const caller = planRouter.createCaller(makeCtx() as never);
-      const result = await caller.getCurrentPlan();
+      const caller = orgPlanRouter.createCaller(makeCtx() as never);
+      const result = await caller.getCurrentOrgPlan();
 
       expect(result.usage.servers.current).toBe(1);
       expect(result.usage.servers.limit).toBe(3);
@@ -232,8 +232,8 @@ describe("planRouter.getCurrentPlan", () => {
       mockGetWorkspacePlan.mockResolvedValue(UserPlan.FREE);
       mockGetLicensePayload.mockResolvedValue(validPayload);
 
-      const caller = planRouter.createCaller(makeCtx() as never);
-      const result = await caller.getCurrentPlan();
+      const caller = orgPlanRouter.createCaller(makeCtx() as never);
+      const result = await caller.getCurrentOrgPlan();
 
       expect(result.user.plan).toBe(UserPlan.FREE);
       expect(mockGetLicensePayload).not.toHaveBeenCalled();

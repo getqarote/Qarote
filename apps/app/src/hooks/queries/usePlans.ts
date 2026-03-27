@@ -11,17 +11,17 @@ import { useAuth } from "@/contexts/AuthContextDefinition";
 export const useAllPlans = () => {
   const { isAuthenticated } = useAuth();
 
-  return trpc.workspace.plan.getAllPlans.useQuery(undefined, {
+  return trpc.organization.plan.getAllPlans.useQuery(undefined, {
     enabled: isAuthenticated,
     staleTime: 5 * 60 * 1000, // 5 minutes - plans don't change often
   });
 };
 
-// Get current plan
+// Get current organization's plan
 export const useCurrentPlan = () => {
   const { isAuthenticated } = useAuth();
 
-  return trpc.workspace.plan.getCurrentPlan.useQuery(undefined, {
+  return trpc.organization.plan.getCurrentOrgPlan.useQuery(undefined, {
     enabled: isAuthenticated,
     staleTime: 30000, // 30 seconds
   });

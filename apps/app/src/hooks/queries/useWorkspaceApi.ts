@@ -124,7 +124,7 @@ export const useCreateWorkspace = () => {
     onSuccess: () => {
       utils.workspace.management.getUserWorkspaces.invalidate();
       utils.workspace.core.getCurrent.invalidate();
-      utils.workspace.plan.getCurrentPlan.invalidate();
+      utils.organization.plan.getCurrentOrgPlan.invalidate();
       utils.auth.session.getSession.invalidate();
     },
   });

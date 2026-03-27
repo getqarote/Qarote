@@ -17,12 +17,12 @@ import { UserPlan } from "@/generated/prisma/client";
 import { te } from "@/i18n";
 
 /**
- * Plan router
- * Handles workspace plan-related operations
+ * Organization plan router
+ * Plan is an org-level concept — all workspaces in an org share the same plan.
  */
-export const planRouter = router({
+export const orgPlanRouter = router({
   /**
-   * Get all available plans with their features (PUBLIC - but using protected for consistency)
+   * Get all available plans with their features
    */
   getAllPlans: rateLimitedProcedure.query(async ({ ctx }) => {
     try {
@@ -44,10 +44,10 @@ export const planRouter = router({
   }),
 
   /**
-   * Get current user's plan features and usage (PROTECTED)
-   * Always uses workspace owner's subscription plan for workspace features
+   * Get current organization's plan features and usage (PROTECTED)
+   * Resolves plan via workspace → organization → subscription.
    */
-  getCurrentPlan: rateLimitedProcedure.query(async ({ ctx }) => {
+  getCurrentOrgPlan: rateLimitedProcedure.query(async ({ ctx }) => {
     const user = ctx.user;
 
     try {
