@@ -10,7 +10,13 @@ import { InvitationWithInviter } from "@/lib/api/authTypes";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -30,6 +36,7 @@ import {
 } from "@/components/ui/table";
 
 import { useUser } from "@/hooks/ui/useUser";
+import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 import { InviteUserDialog } from "./InviteUserDialogEnhanced";
 import { formatDate, InviteFormState } from "./profileUtils";
@@ -95,6 +102,7 @@ export const EnhancedTeamTab = ({
 }: EnhancedTeamTabProps) => {
   const { t } = useTranslation("profile");
   const { planData, user } = useUser();
+  const { workspace } = useWorkspace();
 
   const planFeatures = planData?.planFeatures;
   const totalUsers = usersTotal;
@@ -186,6 +194,9 @@ export const EnhancedTeamTab = ({
             </div>
             {/* Workspace-level invitations disabled — use org invitations instead */}
           </CardTitle>
+          {workspace?.name && (
+            <CardDescription>{workspace.name}</CardDescription>
+          )}
         </CardHeader>
         <CardContent>
           {usersLoading ? (
