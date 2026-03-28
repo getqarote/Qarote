@@ -43,7 +43,7 @@
   "workspaces": "Espacios de trabajo",
   "admin": "Administrador",
   "switchOrganization": "Cambiar de organización",
-  "orgSwitched": "Organización cambiada con éxito!",
+  "orgSwitched": "¡Organización cambiada con éxito!",
   "orgSwitchedDescription": "Cambiado a {{orgName}}",
   "backToWorkspaces": "Volver a espacios de trabajo"
 }
