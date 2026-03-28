@@ -9,6 +9,11 @@ import { prisma } from "@/core/prisma";
 
 import type { OrgRole } from "@/generated/prisma/client";
 
+export interface OrgResolution {
+  organizationId: string;
+  role: OrgRole;
+}
+
 /**
  * tRPC Context
  * Provides user, workspace, and service dependencies to all procedures
@@ -18,6 +23,8 @@ export interface Context extends Record<string, unknown> {
   workspaceId: string | null;
   organizationId: string | null;
   orgRole: OrgRole | null;
+  /** Lazy org resolver — memoized per-request, zero DB cost until first call */
+  resolveOrg: () => Promise<OrgResolution | null>;
   locale: string;
   prisma: typeof prisma;
   logger: typeof logger;
@@ -127,11 +134,18 @@ export async function createContext(opts: {
   // Extract workspace ID
   const workspaceId = extractWorkspaceId(req);
 
-  // Resolve organization from workspace context
+  // Build a memoized lazy org resolver — zero DB queries until first access.
+  // Each request gets its own closure; no cross-request state.
   const effectiveWorkspaceId = workspaceId || user?.workspaceId || null;
-  const orgInfo = user
-    ? await resolveCurrentOrganization(user.id, effectiveWorkspaceId)
-    : null;
+  let cachedOrgInfo: OrgResolution | null | undefined; // undefined = not yet resolved
+
+  async function resolveOrg(): Promise<OrgResolution | null> {
+    if (cachedOrgInfo !== undefined) return cachedOrgInfo;
+    cachedOrgInfo = user
+      ? await resolveCurrentOrganization(user.id, effectiveWorkspaceId)
+      : null;
+    return cachedOrgInfo;
+  }
 
   // Resolve locale: user preference > Accept-Language header > default
   const locale = resolveLocale(req, user);
@@ -139,8 +153,9 @@ export async function createContext(opts: {
   return {
     user,
     workspaceId,
-    organizationId: orgInfo?.organizationId ?? null,
-    orgRole: orgInfo?.role ?? null,
+    organizationId: null,
+    orgRole: null,
+    resolveOrg,
     locale,
     prisma,
     logger,
@@ -181,11 +196,6 @@ function resolveLocale(req: HonoRequest, user: SafeUser | null): string {
 
   // 3. Default
   return DEFAULT_LOCALE;
-}
-
-interface OrgResolution {
-  organizationId: string;
-  role: OrgRole;
 }
 
 /**

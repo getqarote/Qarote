@@ -1,12 +1,13 @@
-import { TRPCError } from "@trpc/server";
-
 import { getOrgPlan } from "@/services/plan/plan.service";
 
 import { UpdateOrganizationSchema } from "@/schemas/organization";
 
-import { rateLimitedProcedure, router } from "@/trpc/trpc";
-
-import { OrgRole } from "@/generated/prisma/client";
+import {
+  rateLimitedOrgAdminProcedure,
+  rateLimitedOrgProcedure,
+  rateLimitedProcedure,
+  router,
+} from "@/trpc/trpc";
 
 /**
  * Organization management router
@@ -17,11 +18,7 @@ export const managementRouter = router({
    * Get current user's organization (PROTECTED)
    * Uses ctx.organizationId resolved from the user's active workspace
    */
-  getCurrent: rateLimitedProcedure.query(async ({ ctx }) => {
-    if (!ctx.organizationId) {
-      return null;
-    }
-
+  getCurrent: rateLimitedOrgProcedure.query(async ({ ctx }) => {
     const org = await ctx.prisma.organization.findUnique({
       where: { id: ctx.organizationId },
       include: {
@@ -88,23 +85,9 @@ export const managementRouter = router({
    * Update organization (PROTECTED - OWNER/ADMIN only)
    * Uses ctx.organizationId and ctx.orgRole for authorization
    */
-  update: rateLimitedProcedure
+  update: rateLimitedOrgAdminProcedure
     .input(UpdateOrganizationSchema)
     .mutation(async ({ input, ctx }) => {
-      if (!ctx.organizationId || !ctx.orgRole) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "Organization OWNER or ADMIN role required",
-        });
-      }
-
-      if (ctx.orgRole !== OrgRole.OWNER && ctx.orgRole !== OrgRole.ADMIN) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "Organization OWNER or ADMIN role required",
-        });
-      }
-
       const updated = await ctx.prisma.organization.update({
         where: { id: ctx.organizationId },
         data: {
@@ -149,15 +132,7 @@ export const managementRouter = router({
    * Get organization billing info (PROTECTED - OWNER/ADMIN only)
    * Uses ctx.organizationId and ctx.orgRole for authorization
    */
-  getBillingInfo: rateLimitedProcedure.query(async ({ ctx }) => {
-    if (!ctx.organizationId || !ctx.orgRole) {
-      return null;
-    }
-
-    if (ctx.orgRole !== OrgRole.OWNER && ctx.orgRole !== OrgRole.ADMIN) {
-      return null;
-    }
-
+  getBillingInfo: rateLimitedOrgAdminProcedure.query(async ({ ctx }) => {
     const org = await ctx.prisma.organization.findUnique({
       where: { id: ctx.organizationId },
       include: {

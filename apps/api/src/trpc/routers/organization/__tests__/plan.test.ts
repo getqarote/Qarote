@@ -92,6 +92,12 @@ function makeCtx() {
       email: "admin@test.com",
     },
     workspaceId: "ws-1",
+    organizationId: "org-1",
+    orgRole: "OWNER",
+    resolveOrg: vi.fn().mockResolvedValue({
+      organizationId: "org-1",
+      role: "OWNER",
+    }),
     locale: "en",
     req: {},
   };

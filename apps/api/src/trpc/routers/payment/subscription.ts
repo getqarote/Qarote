@@ -12,9 +12,8 @@ import {
 
 import { config } from "@/config";
 
-import { router, strictRateLimitedAdminProcedure } from "@/trpc/trpc";
+import { router, strictRateLimitedOrgAdminProcedure } from "@/trpc/trpc";
 
-import { OrgRole } from "@/generated/prisma/client";
 import { te } from "@/i18n";
 
 /**
@@ -25,28 +24,13 @@ export const subscriptionRouter = router({
   /**
    * Cancel subscription (PROTECTED - STRICT RATE LIMITED)
    */
-  cancelSubscription: strictRateLimitedAdminProcedure
+  cancelSubscription: strictRateLimitedOrgAdminProcedure
     .input(cancelSubscriptionSchema)
     .mutation(async ({ input, ctx }) => {
       const { cancelImmediately = false, reason = "", feedback = "" } = input;
       const { user, prisma } = ctx;
 
       try {
-        // Use pre-resolved organization from context
-        if (!ctx.organizationId) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: te(ctx.locale, "billing.noOrganization"),
-          });
-        }
-
-        if (ctx.orgRole !== OrgRole.OWNER && ctx.orgRole !== OrgRole.ADMIN) {
-          throw new TRPCError({
-            code: "FORBIDDEN",
-            message: te(ctx.locale, "auth.orgAdminRequired"),
-          });
-        }
-
         const org = await prisma.organization.findUnique({
           where: { id: ctx.organizationId },
           select: { stripeSubscriptionId: true },
@@ -135,7 +119,7 @@ export const subscriptionRouter = router({
   /**
    * Renew subscription (PROTECTED - STRICT RATE LIMITED)
    */
-  renewSubscription: strictRateLimitedAdminProcedure
+  renewSubscription: strictRateLimitedOrgAdminProcedure
     .input(renewSubscriptionSchema)
     .mutation(async ({ input, ctx }) => {
       const { plan, interval = "monthly" } = input;
@@ -146,21 +130,6 @@ export const subscriptionRouter = router({
           throw new TRPCError({
             code: "BAD_REQUEST",
             message: te(ctx.locale, "billing.planRequired"),
-          });
-        }
-
-        // Require org context (same pattern as cancelSubscription)
-        if (!ctx.organizationId) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: te(ctx.locale, "billing.noOrganization"),
-          });
-        }
-
-        if (ctx.orgRole !== OrgRole.OWNER && ctx.orgRole !== OrgRole.ADMIN) {
-          throw new TRPCError({
-            code: "FORBIDDEN",
-            message: te(ctx.locale, "auth.orgAdminRequired"),
           });
         }
 

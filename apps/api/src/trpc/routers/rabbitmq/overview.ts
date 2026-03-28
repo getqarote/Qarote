@@ -66,8 +66,9 @@ export const overviewRouter = router({
         // Add warning information if server is over the queue limit
         // Note: We still need the original overview for queue_totals calculation
         if (server.isOverQueueLimit && server.workspace && ctx.user) {
-          const userPlan = ctx.organizationId
-            ? await getOrgPlan(ctx.organizationId)
+          const orgInfo = await ctx.resolveOrg();
+          const userPlan = orgInfo?.organizationId
+            ? await getOrgPlan(orgInfo.organizationId)
             : UserPlan.FREE;
           const warningMessage = getOverLimitWarningMessage(
             userPlan,

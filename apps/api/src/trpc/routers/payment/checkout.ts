@@ -8,7 +8,7 @@ import { createCheckoutSessionSchema } from "@/schemas/payment";
 
 import { emailConfig } from "@/config";
 
-import { router, strictRateLimitedAdminProcedure } from "@/trpc/trpc";
+import { router, strictRateLimitedOrgAdminProcedure } from "@/trpc/trpc";
 
 import { UserPlan } from "@/generated/prisma/client";
 import { te } from "@/i18n";
@@ -21,7 +21,7 @@ export const checkoutRouter = router({
   /**
    * Create checkout session for subscription (PROTECTED - STRICT RATE LIMITED)
    */
-  createCheckoutSession: strictRateLimitedAdminProcedure
+  createCheckoutSession: strictRateLimitedOrgAdminProcedure
     .input(createCheckoutSessionSchema)
     .mutation(async ({ input, ctx }) => {
       const { plan, billingInterval } = input;
@@ -43,14 +43,6 @@ export const checkoutRouter = router({
           },
           "Creating checkout session"
         );
-
-        // Use pre-resolved organization from context
-        if (!ctx.organizationId) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: te(ctx.locale, "billing.noOrganization"),
-          });
-        }
 
         const org = await prisma.organization.findUnique({
           where: { id: ctx.organizationId },

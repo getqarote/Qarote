@@ -87,8 +87,9 @@ export const alertsRouter = router({
         }
 
         // Get user plan to determine access level
-        const userPlan = ctx.organizationId
-          ? await getOrgPlan(ctx.organizationId)
+        const orgInfo = await ctx.resolveOrg();
+        const userPlan = orgInfo?.organizationId
+          ? await getOrgPlan(orgInfo.organizationId)
           : UserPlan.FREE;
 
         // Get vhost from validated query (required - filters queue-related alerts)
@@ -459,8 +460,9 @@ export const alertsRouter = router({
 
       while (!sig.aborted) {
         try {
-          const userPlan = ctx.organizationId
-            ? await getOrgPlan(ctx.organizationId)
+          const orgInfo = await ctx.resolveOrg();
+          const userPlan = orgInfo?.organizationId
+            ? await getOrgPlan(orgInfo.organizationId)
             : UserPlan.FREE;
           // Read active alerts from the unified Alert table (written by the cron).
           // This replaces the per-client RabbitMQ poll that caused an N+1 problem.

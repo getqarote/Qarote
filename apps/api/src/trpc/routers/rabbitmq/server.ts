@@ -182,12 +182,14 @@ export const serverRouter = router({
 
       try {
         // Validate plan restrictions for server creation
+        const orgInfo = await ctx.resolveOrg();
+        const resolvedOrgId = orgInfo?.organizationId;
         const [plan, resourceCounts] = await Promise.all([
-          ctx.organizationId
-            ? getOrgPlan(ctx.organizationId)
+          resolvedOrgId
+            ? getOrgPlan(resolvedOrgId)
             : Promise.resolve(UserPlan.FREE),
-          ctx.organizationId
-            ? getOrgResourceCounts(ctx.organizationId)
+          resolvedOrgId
+            ? getOrgResourceCounts(resolvedOrgId)
             : Promise.resolve({ servers: 0, users: 0, workspaces: 0 }),
         ]);
 

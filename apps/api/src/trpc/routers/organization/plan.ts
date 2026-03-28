@@ -11,7 +11,11 @@ import {
 
 import { isSelfHostedMode } from "@/config/deployment";
 
-import { rateLimitedProcedure, router } from "@/trpc/trpc";
+import {
+  rateLimitedOrgProcedure,
+  rateLimitedProcedure,
+  router,
+} from "@/trpc/trpc";
 
 import { UserPlan } from "@/generated/prisma/client";
 import { te } from "@/i18n";
@@ -47,7 +51,7 @@ export const orgPlanRouter = router({
    * Get current organization's plan features and usage (PROTECTED)
    * Resolves plan via workspace → organization → subscription.
    */
-  getCurrentOrgPlan: rateLimitedProcedure.query(async ({ ctx }) => {
+  getCurrentOrgPlan: rateLimitedOrgProcedure.query(async ({ ctx }) => {
     const user = ctx.user;
 
     try {
@@ -80,9 +84,7 @@ export const orgPlanRouter = router({
       const currentWorkspace = userWithWorkspace.workspace;
       let workspacePlan: UserPlan = currentWorkspace
         ? await getWorkspacePlan(currentWorkspace.id)
-        : ctx.organizationId
-          ? await getOrgPlan(ctx.organizationId)
-          : UserPlan.FREE;
+        : await getOrgPlan(ctx.organizationId);
 
       // Self-hosted fallback: if no Stripe subscription exists, use the license JWT tier
       if (workspacePlan === UserPlan.FREE && isSelfHostedMode()) {

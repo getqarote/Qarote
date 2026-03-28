@@ -108,8 +108,9 @@ export const managementRouter = router({
       const contactEmail = inputContactEmail || user.email;
 
       try {
-        let organizationId = ctx.organizationId;
-        let orgRole = ctx.orgRole;
+        const orgResolution = await ctx.resolveOrg();
+        let organizationId = orgResolution?.organizationId ?? null;
+        let orgRole = orgResolution?.role ?? null;
 
         // Existing org members must be OWNER or ADMIN to create workspaces
         if (

@@ -73,6 +73,10 @@ function makeCtx(overrides: Record<string, unknown> = {}) {
     },
     workspaceId: "old-ws",
     locale: "en",
+    resolveOrg: vi.fn().mockResolvedValue({
+      organizationId: "org-1",
+      role: "OWNER",
+    }),
     req: {},
     ...overrides,
   };

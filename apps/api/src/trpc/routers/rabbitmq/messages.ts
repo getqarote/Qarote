@@ -57,8 +57,9 @@ export const messagesRouter = router({
           });
         }
 
-        const plan = ctx.organizationId
-          ? await getOrgPlan(ctx.organizationId)
+        const orgInfo = await ctx.resolveOrg();
+        const plan = orgInfo?.organizationId
+          ? await getOrgPlan(orgInfo.organizationId)
           : UserPlan.FREE;
 
         ctx.logger.info({ plan }, "Message sending validation");

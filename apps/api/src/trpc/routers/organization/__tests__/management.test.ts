@@ -49,6 +49,10 @@ function makeCtx(overrides: Record<string, unknown> = {}) {
     workspaceId: "ws-1",
     organizationId: "org-1",
     orgRole: "ADMIN",
+    resolveOrg: vi.fn().mockResolvedValue({
+      organizationId: "org-1",
+      role: "ADMIN",
+    }),
     locale: "en",
     ...overrides,
   };
@@ -70,13 +74,16 @@ beforeEach(() => {
 
 describe("managementRouter", () => {
   describe("getCurrent", () => {
-    it("returns null when organizationId is null", async () => {
+    it("throws BAD_REQUEST when resolveOrg returns null", async () => {
       const caller = managementRouter.createCaller(
-        makeCtx({ organizationId: null }) as never
+        makeCtx({
+          resolveOrg: vi.fn().mockResolvedValue(null),
+        }) as never
       );
-      const result = await caller.getCurrent();
 
-      expect(result).toBeNull();
+      await expect(caller.getCurrent()).rejects.toMatchObject({
+        code: "BAD_REQUEST",
+      });
       expect(mockOrgFindUnique).not.toHaveBeenCalled();
     });
 
@@ -103,7 +110,14 @@ describe("managementRouter", () => {
       });
 
       const caller = managementRouter.createCaller(
-        makeCtx({ organizationId: "org-B", orgRole: "MEMBER" }) as never
+        makeCtx({
+          organizationId: "org-B",
+          orgRole: "MEMBER",
+          resolveOrg: vi.fn().mockResolvedValue({
+            organizationId: "org-B",
+            role: "MEMBER",
+          }),
+        }) as never
       );
       const result = await caller.getCurrent();
 
@@ -118,19 +132,27 @@ describe("managementRouter", () => {
   });
 
   describe("update", () => {
-    it("throws FORBIDDEN when organizationId is null", async () => {
+    it("throws BAD_REQUEST when resolveOrg returns null", async () => {
       const caller = managementRouter.createCaller(
-        makeCtx({ organizationId: null, orgRole: null }) as never
+        makeCtx({
+          resolveOrg: vi.fn().mockResolvedValue(null),
+        }) as never
       );
 
       await expect(caller.update({ name: "New Name" })).rejects.toMatchObject({
-        code: "FORBIDDEN",
+        code: "BAD_REQUEST",
       });
     });
 
     it("throws FORBIDDEN when orgRole is MEMBER", async () => {
       const caller = managementRouter.createCaller(
-        makeCtx({ orgRole: "MEMBER" }) as never
+        makeCtx({
+          orgRole: "MEMBER",
+          resolveOrg: vi.fn().mockResolvedValue({
+            organizationId: "org-1",
+            role: "MEMBER",
+          }),
+        }) as never
       );
 
       await expect(caller.update({ name: "New Name" })).rejects.toMatchObject({
@@ -156,7 +178,13 @@ describe("managementRouter", () => {
       mockOrgUpdate.mockResolvedValue(mockOrg);
 
       const caller = managementRouter.createCaller(
-        makeCtx({ orgRole: "OWNER" }) as never
+        makeCtx({
+          orgRole: "OWNER",
+          resolveOrg: vi.fn().mockResolvedValue({
+            organizationId: "org-1",
+            role: "OWNER",
+          }),
+        }) as never
       );
       const result = await caller.update({ name: "Owner Update" });
 
@@ -165,22 +193,32 @@ describe("managementRouter", () => {
   });
 
   describe("getBillingInfo", () => {
-    it("returns null when organizationId is null", async () => {
+    it("throws BAD_REQUEST when resolveOrg returns null", async () => {
       const caller = managementRouter.createCaller(
-        makeCtx({ organizationId: null, orgRole: null }) as never
+        makeCtx({
+          resolveOrg: vi.fn().mockResolvedValue(null),
+        }) as never
       );
-      const result = await caller.getBillingInfo();
 
-      expect(result).toBeNull();
+      await expect(caller.getBillingInfo()).rejects.toMatchObject({
+        code: "BAD_REQUEST",
+      });
     });
 
-    it("returns null when orgRole is MEMBER", async () => {
+    it("throws FORBIDDEN when orgRole is MEMBER", async () => {
       const caller = managementRouter.createCaller(
-        makeCtx({ orgRole: "MEMBER" }) as never
+        makeCtx({
+          orgRole: "MEMBER",
+          resolveOrg: vi.fn().mockResolvedValue({
+            organizationId: "org-1",
+            role: "MEMBER",
+          }),
+        }) as never
       );
-      const result = await caller.getBillingInfo();
 
-      expect(result).toBeNull();
+      await expect(caller.getBillingInfo()).rejects.toMatchObject({
+        code: "FORBIDDEN",
+      });
     });
 
     it("queries correct org for billing info", async () => {

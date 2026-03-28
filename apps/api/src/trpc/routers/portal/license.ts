@@ -12,12 +12,13 @@ import { emailConfig, stripeConfig } from "@/config";
 import { LicenseMapper } from "@/mappers/license";
 
 import {
+  rateLimitedOrgAdminProcedure,
   rateLimitedProcedure,
   rateLimitedPublicProcedure,
   router,
 } from "@/trpc/trpc";
 
-import { OrgRole, UserPlan } from "@/generated/prisma/client";
+import { UserPlan } from "@/generated/prisma/client";
 import { te } from "@/i18n";
 
 /**
@@ -97,29 +98,13 @@ export const licenseRouter = router({
    * Purchase a license
    * Protected endpoint - portal only
    */
-  purchaseLicense: rateLimitedProcedure
+  purchaseLicense: rateLimitedOrgAdminProcedure
     .input(purchaseLicenseSchema)
     .mutation(async ({ input, ctx }) => {
       const user = ctx.user;
       const { tier } = input;
 
       try {
-        // Use pre-resolved organization from context
-        if (!ctx.organizationId) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: te(ctx.locale, "billing.noOrganization"),
-          });
-        }
-
-        // Verify caller is OWNER or ADMIN of the organization
-        if (ctx.orgRole !== OrgRole.OWNER && ctx.orgRole !== OrgRole.ADMIN) {
-          throw new TRPCError({
-            code: "FORBIDDEN",
-            message: te(ctx.locale, "auth.orgAdminRequired"),
-          });
-        }
-
         const org = await ctx.prisma.organization.findUnique({
           where: { id: ctx.organizationId },
           select: { id: true, stripeCustomerId: true },

@@ -16,8 +16,7 @@ import {
   strictRateLimiter,
 } from "./middlewares/rateLimiter";
 
-import type { OrgRole } from "@/generated/prisma/client";
-import { UserRole } from "@/generated/prisma/client";
+import { OrgRole, UserRole } from "@/generated/prisma/client";
 import { te } from "@/i18n";
 
 /**
@@ -76,14 +75,14 @@ const adminProcedure = protectedProcedure.use(async (opts) => {
 });
 
 /**
- * Organization-scoped procedure — requires that the request resolved to an organization.
- * Narrows `ctx.organizationId` to `string` and `ctx.orgRole` to `OrgRole`
- * so downstream handlers never need manual null-checks.
+ * Organization-scoped procedure — lazily resolves org and narrows types.
+ * Use for any procedure that needs `ctx.organizationId` / `ctx.orgRole`.
  */
 export const orgScopedProcedure = protectedProcedure.use(async (opts) => {
   const { ctx } = opts;
+  const orgInfo = await ctx.resolveOrg();
 
-  if (!ctx.organizationId || !ctx.orgRole) {
+  if (!orgInfo) {
     throw new TRPCError({
       code: "BAD_REQUEST",
       message: te(ctx.locale, "billing.noOrganization"),
@@ -92,11 +91,27 @@ export const orgScopedProcedure = protectedProcedure.use(async (opts) => {
 
   return opts.next({
     ctx: {
-      ...ctx,
-      organizationId: ctx.organizationId as string,
-      orgRole: ctx.orgRole as OrgRole,
+      organizationId: orgInfo.organizationId,
+      orgRole: orgInfo.role,
     },
   });
+});
+
+/**
+ * Org-scoped + requires org OWNER or ADMIN role.
+ * Use for billing, SSO, member management, etc.
+ */
+export const orgAdminProcedure = orgScopedProcedure.use(async (opts) => {
+  const { ctx } = opts;
+
+  if (ctx.orgRole !== OrgRole.OWNER && ctx.orgRole !== OrgRole.ADMIN) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: te(ctx.locale, "auth.orgAdminRequired"),
+    });
+  }
+
+  return opts.next();
 });
 
 /**
@@ -182,6 +197,29 @@ export const strictRateLimitedAdminProcedure = adminProcedure.use(
  */
 export const billingRateLimitedAdminProcedure = adminProcedure.use(
   billingRateLimiter as Parameters<typeof adminProcedure.use>[0]
+);
+
+/**
+ * Org-scoped rate-limited procedure variants
+ */
+export const rateLimitedOrgProcedure = orgScopedProcedure.use(
+  standardRateLimiter as Parameters<typeof orgScopedProcedure.use>[0]
+);
+
+export const strictRateLimitedOrgProcedure = orgScopedProcedure.use(
+  strictRateLimiter as Parameters<typeof orgScopedProcedure.use>[0]
+);
+
+export const rateLimitedOrgAdminProcedure = orgAdminProcedure.use(
+  standardRateLimiter as Parameters<typeof orgAdminProcedure.use>[0]
+);
+
+export const strictRateLimitedOrgAdminProcedure = orgAdminProcedure.use(
+  strictRateLimiter as Parameters<typeof orgAdminProcedure.use>[0]
+);
+
+export const billingRateLimitedOrgAdminProcedure = orgAdminProcedure.use(
+  billingRateLimiter as Parameters<typeof orgAdminProcedure.use>[0]
 );
 
 /**

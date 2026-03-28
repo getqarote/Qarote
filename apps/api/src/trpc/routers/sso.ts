@@ -27,12 +27,12 @@ import { isCloudMode } from "@/config/deployment";
 import { FEATURES } from "@/config/features";
 
 import {
-  rateLimitedAdminProcedure,
+  rateLimitedOrgAdminProcedure,
   rateLimitedPublicProcedure,
   router,
 } from "@/trpc/trpc";
 
-import { OrgRole, UserPlan } from "@/generated/prisma/client";
+import { UserPlan } from "@/generated/prisma/client";
 
 const REDACTED = "••••••••";
 
@@ -40,39 +40,13 @@ const REDACTED = "••••••••";
 const INSTANCE_PROVIDER_ID = "default";
 
 /**
- * Verify the caller has an organization and OWNER or ADMIN role.
- * Returns the organizationId or throws FORBIDDEN / BAD_REQUEST.
- */
-function resolveOrgAdmin(
-  organizationId: string | null,
-  orgRole: OrgRole | null
-): string {
-  if (!organizationId) {
-    throw new TRPCError({
-      code: "BAD_REQUEST",
-      message: "SSO configuration requires an organization context",
-    });
-  }
-
-  if (orgRole !== OrgRole.OWNER && orgRole !== OrgRole.ADMIN) {
-    throw new TRPCError({
-      code: "FORBIDDEN",
-      message: "SSO configuration requires organization OWNER or ADMIN role",
-    });
-  }
-
-  return organizationId;
-}
-
-/**
  * Admin procedure gated by enterprise entitlement.
  * - Cloud:       user must be org OWNER/ADMIN with ENTERPRISE plan
  * - Self-hosted: license must have "sso" feature or be ENTERPRISE tier
  */
-const ssoAdminProcedure = rateLimitedAdminProcedure.use(async (opts) => {
+const ssoAdminProcedure = rateLimitedOrgAdminProcedure.use(async (opts) => {
   if (isCloudMode()) {
-    const orgId = resolveOrgAdmin(opts.ctx.organizationId, opts.ctx.orgRole);
-    const plan = await getOrgPlan(orgId);
+    const plan = await getOrgPlan(opts.ctx.organizationId);
     if (plan !== UserPlan.ENTERPRISE) {
       throw new TRPCError({
         code: "FORBIDDEN",
@@ -134,14 +108,12 @@ export const ssoRouter = router({
    * Get current provider config for the admin UI (ADMIN).
    * Client secret is always redacted.
    */
-  getProviderConfig: rateLimitedAdminProcedure.query(async ({ ctx }) => {
+  getProviderConfig: rateLimitedOrgAdminProcedure.query(async ({ ctx }) => {
     let orgConfig;
 
     if (isCloudMode()) {
-      const orgId = resolveOrgAdmin(ctx.organizationId, ctx.orgRole);
-
       orgConfig = await ctx.prisma.orgSsoConfig.findFirst({
-        where: { organizationId: orgId },
+        where: { organizationId: ctx.organizationId },
         include: { provider: true },
       });
     } else {
@@ -207,9 +179,8 @@ export const ssoRouter = router({
       const domain = input.domain ?? "";
 
       if (isCloudMode()) {
-        const orgId = resolveOrgAdmin(ctx.organizationId, ctx.orgRole);
-        organizationId = orgId;
-        providerId = `org-${orgId}`;
+        organizationId = ctx.organizationId;
+        providerId = `org-${ctx.organizationId}`;
       } else {
         providerId = INSTANCE_PROVIDER_ID;
       }
@@ -303,7 +274,7 @@ export const ssoRouter = router({
     )
     .mutation(async ({ input, ctx }) => {
       const providerId = isCloudMode()
-        ? `org-${resolveOrgAdmin(ctx.organizationId, ctx.orgRole)}`
+        ? `org-${ctx.organizationId}`
         : INSTANCE_PROVIDER_ID;
 
       const existing = await ctx.prisma.ssoProvider.findUnique({
@@ -382,7 +353,7 @@ export const ssoRouter = router({
    */
   deleteProvider: ssoAdminProcedure.mutation(async ({ ctx }) => {
     const providerId = isCloudMode()
-      ? `org-${resolveOrgAdmin(ctx.organizationId, ctx.orgRole)}`
+      ? `org-${ctx.organizationId}`
       : INSTANCE_PROVIDER_ID;
 
     // OrgSsoConfig is deleted via cascade on SsoProvider

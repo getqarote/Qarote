@@ -176,7 +176,12 @@ export const queuesRouter = router({
 
         await persistQueueData(queues, serverId);
 
-        return await buildQueuesResponse(queues, server, ctx.organizationId);
+        const orgInfo = await ctx.resolveOrg();
+        return await buildQueuesResponse(
+          queues,
+          server,
+          orgInfo?.organizationId ?? null
+        );
       } catch (error) {
         ctx.logger.error(
           { error, serverId },
@@ -376,12 +381,14 @@ export const queuesRouter = router({
           });
         }
 
+        const orgInfo = await ctx.resolveOrg();
+        const resolvedOrgId = orgInfo?.organizationId;
         const [plan, resourceCounts] = await Promise.all([
-          ctx.organizationId
-            ? getOrgPlan(ctx.organizationId)
+          resolvedOrgId
+            ? getOrgPlan(resolvedOrgId)
             : Promise.resolve(UserPlan.FREE),
-          ctx.organizationId
-            ? getOrgResourceCounts(ctx.organizationId)
+          resolvedOrgId
+            ? getOrgResourceCounts(resolvedOrgId)
             : Promise.resolve({ servers: 0, users: 0, workspaces: 0 }),
         ]);
 
@@ -802,10 +809,11 @@ export const queuesRouter = router({
 
           await persistQueueData(queues, serverId);
 
+          const orgInfo = await ctx.resolveOrg();
           lastPayload = await buildQueuesResponse(
             queues,
             freshServer,
-            ctx.organizationId
+            orgInfo?.organizationId ?? null
           );
           yield lastPayload;
         } catch (err) {

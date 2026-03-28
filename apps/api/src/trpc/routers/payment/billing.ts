@@ -9,8 +9,8 @@ import { StripeService } from "@/services/stripe/stripe.service";
 import { config } from "@/config";
 
 import {
-  billingRateLimitedAdminProcedure,
-  rateLimitedAdminProcedure,
+  billingRateLimitedOrgAdminProcedure,
+  rateLimitedOrgAdminProcedure,
   router,
 } from "@/trpc/trpc";
 
@@ -101,19 +101,11 @@ export const billingRouter = router({
   /**
    * Get comprehensive billing overview (PROTECTED - ADMIN ONLY, BILLING RATE LIMITED)
    */
-  getBillingOverview: billingRateLimitedAdminProcedure.query(
+  getBillingOverview: billingRateLimitedOrgAdminProcedure.query(
     async ({ ctx }) => {
       const { user, prisma } = ctx;
 
       try {
-        // Use pre-resolved organization from context
-        if (!ctx.organizationId) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: te(ctx.locale, "billing.noOrganization"),
-          });
-        }
-
         // Phase 1: Parallel DB queries — all scoped to the current organization
         const [
           orgSubscription,
@@ -314,18 +306,11 @@ export const billingRouter = router({
   /**
    * Create billing portal session (PROTECTED - ADMIN ONLY)
    */
-  createBillingPortalSession: rateLimitedAdminProcedure.mutation(
+  createBillingPortalSession: rateLimitedOrgAdminProcedure.mutation(
     async ({ ctx }) => {
       const { prisma } = ctx;
 
       try {
-        if (!ctx.organizationId) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: te(ctx.locale, "billing.noOrganization"),
-          });
-        }
-
         const org = await prisma.organization.findUnique({
           where: { id: ctx.organizationId },
           select: { stripeCustomerId: true },
@@ -361,45 +346,40 @@ export const billingRouter = router({
   /**
    * Create portal session (PROTECTED - ADMIN ONLY) - alias for createBillingPortalSession
    */
-  createPortalSession: rateLimitedAdminProcedure.mutation(async ({ ctx }) => {
-    const { prisma } = ctx;
+  createPortalSession: rateLimitedOrgAdminProcedure.mutation(
+    async ({ ctx }) => {
+      const { prisma } = ctx;
 
-    try {
-      if (!ctx.organizationId) {
+      try {
+        const org = await prisma.organization.findUnique({
+          where: { id: ctx.organizationId },
+          select: { stripeCustomerId: true },
+        });
+        const stripeCustomerId = org?.stripeCustomerId ?? null;
+
+        if (!stripeCustomerId) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: te(ctx.locale, "billing.noStripeCustomerFound"),
+          });
+        }
+
+        const session = await StripeService.createPortalSession(
+          stripeCustomerId,
+          `${config.FRONTEND_URL}/billing`
+        );
+
+        return { url: session.url };
+      } catch (error) {
+        if (error instanceof TRPCError) {
+          throw error;
+        }
+        ctx.logger.error({ error }, "Error creating portal session");
         throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: te(ctx.locale, "billing.noOrganization"),
+          code: "INTERNAL_SERVER_ERROR",
+          message: te(ctx.locale, "billing.failedToCreatePortalSession"),
         });
       }
-
-      const org = await prisma.organization.findUnique({
-        where: { id: ctx.organizationId },
-        select: { stripeCustomerId: true },
-      });
-      const stripeCustomerId = org?.stripeCustomerId ?? null;
-
-      if (!stripeCustomerId) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: te(ctx.locale, "billing.noStripeCustomerFound"),
-        });
-      }
-
-      const session = await StripeService.createPortalSession(
-        stripeCustomerId,
-        `${config.FRONTEND_URL}/billing`
-      );
-
-      return { url: session.url };
-    } catch (error) {
-      if (error instanceof TRPCError) {
-        throw error;
-      }
-      ctx.logger.error({ error }, "Error creating portal session");
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: te(ctx.locale, "billing.failedToCreatePortalSession"),
-      });
     }
-  }),
+  ),
 });
