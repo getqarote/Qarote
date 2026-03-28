@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
@@ -33,6 +33,7 @@ import {
   useSwitchWorkspace,
   useUserWorkspaces,
 } from "@/hooks/queries/useWorkspaceApi";
+import { SESSION_TOAST_KEY, useSessionToast } from "@/hooks/ui/useSessionToast";
 import { useUser } from "@/hooks/ui/useUser";
 import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
@@ -40,35 +41,10 @@ import { UserPlan } from "@/types/plans";
 
 import { CreateWorkspaceForm } from "./CreateWorkspaceForm";
 
-const TOAST_STORAGE_KEY = "toast";
-
 interface Organization {
   id: string;
   name: string;
   slug: string;
-}
-
-/**
- * Read and display any pending toast stored in sessionStorage.
- * Used after page navigation (org/workspace switch) to show feedback.
- */
-function useSessionToast() {
-  useEffect(() => {
-    const raw = sessionStorage.getItem(TOAST_STORAGE_KEY);
-    if (!raw) return;
-    sessionStorage.removeItem(TOAST_STORAGE_KEY);
-    try {
-      const data = JSON.parse(raw) as {
-        title: string;
-        description?: string;
-      };
-      toast.success(data.title, {
-        description: data.description,
-      });
-    } catch {
-      // Malformed toast data -- ignore silently
-    }
-  }, []);
 }
 
 export function WorkspaceSelector() {
@@ -136,7 +112,7 @@ export function WorkspaceSelector() {
       {
         onSuccess: () => {
           sessionStorage.setItem(
-            TOAST_STORAGE_KEY,
+            SESSION_TOAST_KEY,
             JSON.stringify({
               title: t("workspaceSwitched"),
             })
@@ -176,7 +152,7 @@ export function WorkspaceSelector() {
       {
         onSuccess: () => {
           sessionStorage.setItem(
-            TOAST_STORAGE_KEY,
+            SESSION_TOAST_KEY,
             JSON.stringify({
               title: t("orgSwitched"),
               description: t("orgSwitchedDescription", {
