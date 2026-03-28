@@ -41,12 +41,6 @@ import { UserPlan } from "@/types/plans";
 
 import { CreateWorkspaceForm } from "./CreateWorkspaceForm";
 
-interface Organization {
-  id: string;
-  name: string;
-  slug: string;
-}
-
 export function WorkspaceSelector() {
   const { t } = useTranslation("sidebar");
   const { user } = useAuth();
@@ -82,14 +76,11 @@ export function WorkspaceSelector() {
     workspaces.find((w) => w.id === workspace?.id) || workspaces[0];
 
   // Determine the current org from the current workspace
-  const currentOrg = currentWorkspace?.organization as Organization | undefined;
+  const currentOrg = currentWorkspace?.organization ?? undefined;
 
   // Workspaces filtered to the current organization
   const currentOrgWorkspaces = currentOrg
-    ? workspaces.filter(
-        (w) =>
-          (w.organization as Organization | undefined)?.id === currentOrg.id
-      )
+    ? workspaces.filter((w) => w.organization?.id === currentOrg.id)
     : workspaces;
 
   // ---- Handlers ----
@@ -136,7 +127,7 @@ export function WorkspaceSelector() {
 
     // Find the first workspace in the target org
     const targetWorkspace = workspaces.find(
-      (w) => (w.organization as Organization | undefined)?.id === orgId
+      (w) => w.organization?.id === orgId
     );
 
     if (!targetWorkspace) {
