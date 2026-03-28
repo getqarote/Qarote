@@ -31,7 +31,7 @@
   "servers": "{{count}} servers",
   "servers_one": "{{count}} server",
   "servers_other": "{{count}} servers",
-  "createNewWorkspace": "Create New Workspace",
+  "createNewWorkspace": "Create workspace",
   "loadingWorkspaces": "Loading workspaces...",
   "workspaceSwitched": "Workspace switched successfully!",
   "workspaceSwitchFailed": "Failed to switch workspace. Please try again.",

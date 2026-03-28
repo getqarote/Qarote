@@ -31,7 +31,7 @@
   "servers": "{{count}} 个服务器",
   "servers_one": "{{count}} 个服务器",
   "servers_other": "{{count}} 个服务器",
-  "createNewWorkspace": "创建新工作区",
+  "createNewWorkspace": "创建工作区",
   "loadingWorkspaces": "加载工作区中...",
   "workspaceSwitched": "工作区切换成功！",
   "workspaceSwitchFailed": "切换工作区失败，请重试。",

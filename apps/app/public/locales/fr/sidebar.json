@@ -31,7 +31,7 @@
   "servers": "{{count}} serveurs",
   "servers_one": "{{count}} serveur",
   "servers_other": "{{count}} serveurs",
-  "createNewWorkspace": "Créer un nouvel espace de travail",
+  "createNewWorkspace": "Créer un espace de travail",
   "loadingWorkspaces": "Chargement des espaces de travail...",
   "workspaceSwitched": "Espace de travail changé avec succès !",
   "workspaceSwitchFailed": "Échec du changement d'espace de travail. Veuillez réessayer.",
