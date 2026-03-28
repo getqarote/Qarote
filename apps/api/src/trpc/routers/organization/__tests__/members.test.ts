@@ -132,6 +132,8 @@ function makeCtx(overrides: Record<string, unknown> = {}) {
       lastName: "User",
     },
     workspaceId: "ws-1",
+    organizationId: "org-1",
+    orgRole: "OWNER",
     req: {},
     locale: "en",
     ...overrides,

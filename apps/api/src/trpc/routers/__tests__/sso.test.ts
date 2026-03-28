@@ -131,6 +131,8 @@ function makeCtx(overrides: Record<string, unknown> = {}) {
       workspaceId: "ws-1",
     },
     workspaceId: "ws-1",
+    organizationId: "org-1",
+    orgRole: "OWNER",
     req: {},
     locale: "en",
     ...overrides,
@@ -242,28 +244,20 @@ describe("ssoRouter", () => {
       expect(result).toBeNull();
     });
 
-    it("cloud: looks up by org membership", async () => {
+    it("cloud: uses pre-resolved org from context", async () => {
       mockIsCloudMode = true;
-      // resolveOrgAdmin uses organizationMember.findFirst to resolve org + role
-      mockOrganizationMemberFindFirst.mockResolvedValue({
-        organizationId: "org-1",
-        role: "OWNER",
-      });
       mockOrgSsoConfigFindFirst.mockResolvedValue({
         ...mockOrgConfig,
         organizationId: "org-1",
         provider: { ...mockProvider, providerId: "org-org-1" },
       });
 
+      // organizationId is pre-resolved in context (set by makeCtx)
       const caller = ssoRouter.createCaller(makeCtx() as never);
       const result = await caller.getProviderConfig();
 
-      // Assert the membership lookup was invoked
-      expect(mockOrganizationMemberFindFirst).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: { userId: "admin-1" },
-        })
-      );
+      // No membership lookup needed — org is already in context
+      expect(mockOrganizationMemberFindFirst).not.toHaveBeenCalled();
       expect(mockOrgSsoConfigFindFirst).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({ organizationId: "org-1" }),
