@@ -6,10 +6,8 @@ import {
 } from "@/core/workspace-access";
 
 import {
-  canUserAddWorkspaceWithCount,
   getOrgPlan,
   getOrgResourceCounts,
-  getPlanFeatures,
   validateWorkspaceCreation,
 } from "@/services/plan/plan.service";
 
@@ -28,7 +26,7 @@ import {
   workspaceProcedure,
 } from "@/trpc/trpc";
 
-import { OrgRole, UserPlan, UserRole } from "@/generated/prisma/client";
+import { OrgRole, UserRole } from "@/generated/prisma/client";
 import { te } from "@/i18n";
 
 /**
@@ -98,61 +96,6 @@ export const managementRouter = router({
   }),
 
   /**
-   * Get workspace creation info (PROTECTED)
-   */
-  getCreationInfo: rateLimitedProcedure.query(async ({ ctx }) => {
-    const user = ctx.user;
-
-    try {
-      // Resolve organization from the user's org membership
-      const orgMembership = await ctx.prisma.organizationMember.findFirst({
-        where: { userId: user.id },
-        select: { organizationId: true },
-      });
-      const organizationId = orgMembership?.organizationId ?? null;
-
-      let currentPlan: UserPlan = UserPlan.FREE;
-      let workspaceCount: number;
-
-      if (organizationId) {
-        // Org-scoped: plan and counts come from the organization
-        currentPlan = await getOrgPlan(organizationId);
-        const orgCounts = await getOrgResourceCounts(organizationId);
-        workspaceCount = orgCounts.workspaces;
-      } else {
-        // No org context — count workspaces owned by the user
-        workspaceCount = await ctx.prisma.workspace.count({
-          where: { ownerId: user.id },
-        });
-      }
-
-      const planFeatures = getPlanFeatures(currentPlan);
-      const canCreateWorkspace = canUserAddWorkspaceWithCount(
-        currentPlan,
-        workspaceCount
-      );
-
-      return {
-        currentPlan: currentPlan,
-        workspaceCount,
-        maxWorkspaces: planFeatures.maxWorkspaces,
-        canCreateWorkspace,
-        planFeatures: {
-          displayName: planFeatures.displayName,
-          description: planFeatures.description,
-          maxWorkspaces: planFeatures.maxWorkspaces,
-        },
-      };
-    } catch (error) {
-      ctx.logger.error({ error }, "Error fetching workspace creation info:");
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: te(ctx.locale, "workspace.failedToFetchCreationInfo"),
-      });
-    }
-  }),
-
-  /**
    * Create a new workspace (PROTECTED with plan validation)
    * Note: First workspace creation is allowed in community mode for onboarding.
    * Subsequent workspace management operations (update, delete, switch) require premium features.
@@ -165,17 +108,15 @@ export const managementRouter = router({
       const contactEmail = inputContactEmail || user.email;
 
       try {
-        // Resolve organization from the user's org membership
-        let membership = await ctx.prisma.organizationMember.findFirst({
-          where: { userId: user.id },
-          select: { organizationId: true, role: true },
-        });
+        const orgResolution = await ctx.resolveOrg();
+        let organizationId = orgResolution?.organizationId ?? null;
+        let orgRole = orgResolution?.role ?? null;
 
         // Existing org members must be OWNER or ADMIN to create workspaces
         if (
-          membership &&
-          membership.role !== OrgRole.OWNER &&
-          membership.role !== OrgRole.ADMIN
+          organizationId &&
+          orgRole !== OrgRole.OWNER &&
+          orgRole !== OrgRole.ADMIN
         ) {
           throw new TRPCError({
             code: "FORBIDDEN",
@@ -186,7 +127,7 @@ export const managementRouter = router({
         // Auto-create an organization for the user if they don't have one.
         // Use a transaction with a re-check to prevent concurrent requests
         // from creating duplicate organizations for the same user.
-        if (!membership) {
+        if (!organizationId) {
           // Deterministic slug ensures the unique constraint on Organization.slug
           // prevents duplicate orgs from concurrent requests for the same user.
           const orgSlug = `user-${user.id}`;
@@ -208,7 +149,8 @@ export const managementRouter = router({
                 },
               },
             });
-            membership = { organizationId: created.id, role: OrgRole.OWNER };
+            organizationId = created.id;
+            orgRole = OrgRole.OWNER;
           } catch (orgError) {
             // P2002: unique constraint on slug — concurrent request already created the org
             if ((orgError as { code?: string }).code === "P2002") {
@@ -217,7 +159,8 @@ export const managementRouter = router({
                 select: { organizationId: true, role: true },
               });
               if (existing) {
-                membership = existing;
+                organizationId = existing.organizationId;
+                orgRole = existing.role;
               } else {
                 throw new TRPCError({
                   code: "INTERNAL_SERVER_ERROR",
@@ -238,8 +181,8 @@ export const managementRouter = router({
         }
 
         // Org-scoped validation
-        const currentPlan = await getOrgPlan(membership.organizationId);
-        const orgCounts = await getOrgResourceCounts(membership.organizationId);
+        const currentPlan = await getOrgPlan(organizationId);
+        const orgCounts = await getOrgResourceCounts(organizationId);
         const workspaceCount = orgCounts.workspaces;
 
         // Validate workspace creation against plan limits
@@ -249,7 +192,7 @@ export const managementRouter = router({
         // Check if workspace name already exists in this organization
         const existingWorkspace = await ctx.prisma.workspace.findFirst({
           where: {
-            organizationId: membership.organizationId,
+            organizationId: organizationId,
             name: name,
           },
         });
@@ -270,7 +213,7 @@ export const managementRouter = router({
               contactEmail,
               tags: tags ? tags : undefined, // Store tags as JSON array or undefined
               ownerId: user.id,
-              organizationId: membership.organizationId,
+              organizationId: organizationId,
             },
             include: {
               _count: {

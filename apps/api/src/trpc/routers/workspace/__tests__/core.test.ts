@@ -35,7 +35,6 @@ vi.mock("@/middlewares/workspace", () => ({
 }));
 
 vi.mock("@/services/plan/plan.service", () => ({
-  getUserPlan: vi.fn(),
   PlanErrorCode: { PLAN_RESTRICTION: "PLAN_RESTRICTION" },
   PlanLimitExceededError: class extends Error {},
   PlanValidationError: class extends Error {},
@@ -74,6 +73,10 @@ function makeCtx(overrides: Record<string, unknown> = {}) {
     },
     workspaceId: "old-ws",
     locale: "en",
+    resolveOrg: vi.fn().mockResolvedValue({
+      organizationId: "org-1",
+      role: "OWNER",
+    }),
     req: {},
     ...overrides,
   };

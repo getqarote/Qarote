@@ -31,12 +31,19 @@
   "servers": "{{count}} 个服务器",
   "servers_one": "{{count}} 个服务器",
   "servers_other": "{{count}} 个服务器",
-  "createNewWorkspace": "创建新工作区",
+  "createNewWorkspace": "创建工作区",
   "loadingWorkspaces": "加载工作区中...",
   "workspaceSwitched": "工作区切换成功！",
   "workspaceSwitchFailed": "切换工作区失败，请重试。",
   "upgrade": "升级",
   "upgradeToCreate": "升级以创建多个工作区",
   "multipleWorkspacesDeveloper": "开发者计划可使用多个工作区",
-  "multipleWorkspacesEnterprise": "企业计划可使用多个工作区"
+  "multipleWorkspacesEnterprise": "企业计划可使用多个工作区",
+  "organizations": "组织",
+  "workspaces": "工作区",
+  "admin": "管理员",
+  "switchOrganization": "切换组织",
+  "orgSwitched": "组织切换成功！",
+  "orgSwitchedDescription": "已切换到{{orgName}}",
+  "backToWorkspaces": "返回工作区"
 }

@@ -5,11 +5,11 @@ import { RabbitMQAmqpClient } from "@/core/rabbitmq/AmqpClient";
 import { abortableSleep } from "@/core/utils";
 
 import {
+  getOrgPlan,
+  getOrgResourceCounts,
   getOverLimitWarningMessage,
   getPlanDisplayName,
   getUpgradeRecommendationForOverLimit,
-  getUserPlan,
-  getUserResourceCounts,
   validateQueueCreationOnServer,
 } from "@/services/plan/plan.service";
 
@@ -32,7 +32,7 @@ import {
   verifyServerAccess,
 } from "./shared";
 
-import { UserRole } from "@/generated/prisma/client";
+import { UserPlan, UserRole } from "@/generated/prisma/client";
 import { te } from "@/i18n";
 
 type RawQueue = Parameters<typeof QueueMapper.toApiResponseArray>[0][number];
@@ -97,7 +97,7 @@ async function persistQueueData(
 async function buildQueuesResponse(
   queues: RawQueue[],
   server: QueuesServerInfo,
-  userId: string
+  organizationId: string | null
 ): Promise<{
   queues: ReturnType<typeof QueueMapper.toApiResponseArray>;
   stale?: boolean;
@@ -123,7 +123,9 @@ async function buildQueuesResponse(
   };
 
   if (server.isOverQueueLimit && server.workspace) {
-    const userPlan = await getUserPlan(userId);
+    const userPlan = organizationId
+      ? await getOrgPlan(organizationId)
+      : UserPlan.FREE;
     const warningMessage = getOverLimitWarningMessage(userPlan, queues.length);
     const upgradeRecommendation =
       getUpgradeRecommendationForOverLimit(userPlan);
@@ -174,7 +176,12 @@ export const queuesRouter = router({
 
         await persistQueueData(queues, serverId);
 
-        return await buildQueuesResponse(queues, server, ctx.user.id);
+        const orgInfo = await ctx.resolveOrg();
+        return await buildQueuesResponse(
+          queues,
+          server,
+          orgInfo?.organizationId ?? null
+        );
       } catch (error) {
         ctx.logger.error(
           { error, serverId },
@@ -374,9 +381,15 @@ export const queuesRouter = router({
           });
         }
 
+        const orgInfo = await ctx.resolveOrg();
+        const resolvedOrgId = orgInfo?.organizationId;
         const [plan, resourceCounts] = await Promise.all([
-          getUserPlan(ctx.user.id),
-          getUserResourceCounts(ctx.user.id),
+          resolvedOrgId
+            ? getOrgPlan(resolvedOrgId)
+            : Promise.resolve(UserPlan.FREE),
+          resolvedOrgId
+            ? getOrgResourceCounts(resolvedOrgId)
+            : Promise.resolve({ servers: 0, users: 0, workspaces: 0 }),
         ]);
 
         ctx.logger.info(
@@ -796,10 +809,11 @@ export const queuesRouter = router({
 
           await persistQueueData(queues, serverId);
 
+          const orgInfo = await ctx.resolveOrg();
           lastPayload = await buildQueuesResponse(
             queues,
             freshServer,
-            ctx.user.id
+            orgInfo?.organizationId ?? null
           );
           yield lastPayload;
         } catch (err) {

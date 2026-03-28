@@ -1,5 +1,7 @@
 import { TRPCError } from "@trpc/server";
 
+import { getUserDisplayName } from "@/core/utils";
+
 import { CoreStripeService } from "@/services/stripe/core.service";
 import { StripeService } from "@/services/stripe/stripe.service";
 
@@ -10,9 +12,8 @@ import {
 
 import { config } from "@/config";
 
-import { router, strictRateLimitedAdminProcedure } from "@/trpc/trpc";
+import { router, strictRateLimitedOrgAdminProcedure } from "@/trpc/trpc";
 
-import { OrgRole } from "@/generated/prisma/client";
 import { te } from "@/i18n";
 
 /**
@@ -23,42 +24,24 @@ export const subscriptionRouter = router({
   /**
    * Cancel subscription (PROTECTED - STRICT RATE LIMITED)
    */
-  cancelSubscription: strictRateLimitedAdminProcedure
+  cancelSubscription: strictRateLimitedOrgAdminProcedure
     .input(cancelSubscriptionSchema)
     .mutation(async ({ input, ctx }) => {
       const { cancelImmediately = false, reason = "", feedback = "" } = input;
       const { user, prisma } = ctx;
 
       try {
-        // Resolve organization from user's membership
-        const membership = await prisma.organizationMember.findFirst({
-          where: { userId: user.id },
-          select: {
-            role: true,
-            organization: {
-              select: { id: true, stripeSubscriptionId: true },
-            },
-          },
+        const org = await prisma.organization.findUnique({
+          where: { id: ctx.organizationId },
+          select: { stripeSubscriptionId: true },
         });
 
-        const subscriptionId =
-          membership?.organization?.stripeSubscriptionId ?? null;
+        const subscriptionId = org?.stripeSubscriptionId ?? null;
 
         if (!subscriptionId) {
           throw new TRPCError({
             code: "BAD_REQUEST",
             message: te(ctx.locale, "billing.noActiveSubscription"),
-          });
-        }
-
-        if (
-          !membership ||
-          (membership.role !== OrgRole.OWNER &&
-            membership.role !== OrgRole.ADMIN)
-        ) {
-          throw new TRPCError({
-            code: "FORBIDDEN",
-            message: te(ctx.locale, "auth.orgAdminRequired"),
           });
         }
 
@@ -136,17 +119,45 @@ export const subscriptionRouter = router({
   /**
    * Renew subscription (PROTECTED - STRICT RATE LIMITED)
    */
-  renewSubscription: strictRateLimitedAdminProcedure
+  renewSubscription: strictRateLimitedOrgAdminProcedure
     .input(renewSubscriptionSchema)
     .mutation(async ({ input, ctx }) => {
       const { plan, interval = "monthly" } = input;
-      const { user } = ctx;
+      const { user, prisma } = ctx;
 
       try {
         if (!plan) {
           throw new TRPCError({
             code: "BAD_REQUEST",
             message: te(ctx.locale, "billing.planRequired"),
+          });
+        }
+
+        // Resolve (or create) the org's Stripe customer
+        const org = await prisma.organization.findUnique({
+          where: { id: ctx.organizationId },
+          select: { id: true, stripeCustomerId: true },
+        });
+
+        if (!org) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: te(ctx.locale, "billing.noOrganization"),
+          });
+        }
+
+        let customerId = org.stripeCustomerId;
+        if (!customerId) {
+          const customer = await StripeService.createCustomer({
+            email: user.email,
+            name: getUserDisplayName(user),
+            userId: user.id,
+          });
+          customerId = customer.id;
+
+          await prisma.organization.update({
+            where: { id: org.id },
+            data: { stripeCustomerId: customerId },
           });
         }
 

@@ -7,6 +7,13 @@ import { auth } from "@/core/better-auth";
 import { logger } from "@/core/logger";
 import { prisma } from "@/core/prisma";
 
+import type { OrgRole } from "@/generated/prisma/client";
+
+export interface OrgResolution {
+  organizationId: string;
+  role: OrgRole;
+}
+
 /**
  * tRPC Context
  * Provides user, workspace, and service dependencies to all procedures
@@ -14,6 +21,10 @@ import { prisma } from "@/core/prisma";
 export interface Context extends Record<string, unknown> {
   user: SafeUser | null;
   workspaceId: string | null;
+  organizationId: string | null;
+  orgRole: OrgRole | null;
+  /** Lazy org resolver — memoized per-request, zero DB cost until first call */
+  resolveOrg: () => Promise<OrgResolution | null>;
   locale: string;
   prisma: typeof prisma;
   logger: typeof logger;
@@ -123,12 +134,28 @@ export async function createContext(opts: {
   // Extract workspace ID
   const workspaceId = extractWorkspaceId(req);
 
+  // Build a memoized lazy org resolver — zero DB queries until first access.
+  // Each request gets its own closure; no cross-request state.
+  const effectiveWorkspaceId = workspaceId || user?.workspaceId || null;
+  let cachedOrgInfo: OrgResolution | null | undefined; // undefined = not yet resolved
+
+  async function resolveOrg(): Promise<OrgResolution | null> {
+    if (cachedOrgInfo !== undefined) return cachedOrgInfo;
+    cachedOrgInfo = user
+      ? await resolveCurrentOrganization(user.id, effectiveWorkspaceId)
+      : null;
+    return cachedOrgInfo;
+  }
+
   // Resolve locale: user preference > Accept-Language header > default
   const locale = resolveLocale(req, user);
 
   return {
     user,
     workspaceId,
+    organizationId: null,
+    orgRole: null,
+    resolveOrg,
     locale,
     prisma,
     logger,
@@ -169,4 +196,58 @@ function resolveLocale(req: HonoRequest, user: SafeUser | null): string {
 
   // 3. Default
   return DEFAULT_LOCALE;
+}
+
+/**
+ * Resolve the current organization from the user's active workspace.
+ *
+ * Resolution strategy:
+ * 1. If workspaceId is provided, derive the org from workspace.organizationId
+ *    and verify the user is a member of that org (scoped lookup).
+ * 2. If workspaceId is null (onboarding -- user has no workspace yet),
+ *    fall back to the user's first org membership. Logs a warning if the
+ *    user has multiple memberships (should not happen during onboarding).
+ */
+async function resolveCurrentOrganization(
+  userId: string,
+  workspaceId: string | null
+): Promise<OrgResolution | null> {
+  if (workspaceId) {
+    const workspace = await prisma.workspace.findUnique({
+      where: { id: workspaceId },
+      select: { organizationId: true },
+    });
+
+    if (!workspace?.organizationId) {
+      return null;
+    }
+
+    return prisma.organizationMember.findUnique({
+      where: {
+        userId_organizationId: {
+          userId,
+          organizationId: workspace.organizationId,
+        },
+      },
+      select: { organizationId: true, role: true },
+    });
+  }
+
+  // No workspace -- onboarding fallback.
+  // Use findMany + take:2 so we can detect (and warn about) multiple memberships.
+  const memberships = await prisma.organizationMember.findMany({
+    where: { userId },
+    select: { organizationId: true, role: true },
+    take: 2,
+  });
+
+  if (memberships.length > 1) {
+    logger.warn(
+      { userId, count: memberships.length },
+      "User has multiple org memberships but no workspace — user must choose explicitly"
+    );
+    return null;
+  }
+
+  return memberships[0] ?? null;
 }

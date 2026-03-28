@@ -7,8 +7,8 @@ import { seedDefaultAlertRules } from "@/services/alerts/alert.default-rules";
 import { EncryptionService } from "@/services/encryption.service";
 import {
   extractMajorMinorVersion,
-  getUserPlan,
-  getUserResourceCounts,
+  getOrgPlan,
+  getOrgResourceCounts,
   validateRabbitMqVersion,
   validateServerCreation,
 } from "@/services/plan/plan.service";
@@ -29,7 +29,7 @@ import {
   workspaceProcedure,
 } from "@/trpc/trpc";
 
-import { UserRole } from "@/generated/prisma/client";
+import { UserPlan, UserRole } from "@/generated/prisma/client";
 import { te } from "@/i18n";
 
 /**
@@ -182,9 +182,15 @@ export const serverRouter = router({
 
       try {
         // Validate plan restrictions for server creation
+        const orgInfo = await ctx.resolveOrg();
+        const resolvedOrgId = orgInfo?.organizationId;
         const [plan, resourceCounts] = await Promise.all([
-          getUserPlan(ctx.user.id),
-          getUserResourceCounts(ctx.user.id),
+          resolvedOrgId
+            ? getOrgPlan(resolvedOrgId)
+            : Promise.resolve(UserPlan.FREE),
+          resolvedOrgId
+            ? getOrgResourceCounts(resolvedOrgId)
+            : Promise.resolve({ servers: 0, users: 0, workspaces: 0 }),
         ]);
 
         validateServerCreation(plan, resourceCounts.servers);

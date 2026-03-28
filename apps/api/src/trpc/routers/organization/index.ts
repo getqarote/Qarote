@@ -2,6 +2,7 @@ import { router } from "@/trpc/trpc";
 
 import { managementRouter } from "./management";
 import { membersRouter } from "./members";
+import { orgPlanRouter } from "./plan";
 
 /**
  * Organization router
@@ -10,4 +11,5 @@ import { membersRouter } from "./members";
 export const organizationRouter = router({
   management: managementRouter,
   members: membersRouter,
+  plan: orgPlanRouter,
 });

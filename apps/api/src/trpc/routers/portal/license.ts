@@ -12,12 +12,13 @@ import { emailConfig, stripeConfig } from "@/config";
 import { LicenseMapper } from "@/mappers/license";
 
 import {
+  rateLimitedOrgAdminProcedure,
   rateLimitedProcedure,
   rateLimitedPublicProcedure,
   router,
 } from "@/trpc/trpc";
 
-import { OrgRole, UserPlan } from "@/generated/prisma/client";
+import { UserPlan } from "@/generated/prisma/client";
 import { te } from "@/i18n";
 
 /**
@@ -97,50 +98,22 @@ export const licenseRouter = router({
    * Purchase a license
    * Protected endpoint - portal only
    */
-  purchaseLicense: rateLimitedProcedure
+  purchaseLicense: rateLimitedOrgAdminProcedure
     .input(purchaseLicenseSchema)
     .mutation(async ({ input, ctx }) => {
       const user = ctx.user;
       const { tier } = input;
 
       try {
-        // Resolve Organization from the user's org membership
-        const orgMembership = await ctx.prisma.organizationMember.findFirst({
-          where: { userId: user.id },
-          select: {
-            organization: {
-              select: { id: true, stripeCustomerId: true },
-            },
-          },
+        const org = await ctx.prisma.organization.findUnique({
+          where: { id: ctx.organizationId },
+          select: { id: true, stripeCustomerId: true },
         });
-        const org = orgMembership?.organization ?? null;
 
         if (!org) {
           throw new TRPCError({
             code: "BAD_REQUEST",
             message: te(ctx.locale, "billing.noOrganization"),
-          });
-        }
-
-        // Verify caller is OWNER or ADMIN of the organization
-        const membership = await ctx.prisma.organizationMember.findUnique({
-          where: {
-            userId_organizationId: {
-              userId: user.id,
-              organizationId: org.id,
-            },
-          },
-          select: { role: true },
-        });
-
-        if (
-          !membership ||
-          (membership.role !== OrgRole.OWNER &&
-            membership.role !== OrgRole.ADMIN)
-        ) {
-          throw new TRPCError({
-            code: "FORBIDDEN",
-            message: te(ctx.locale, "auth.orgAdminRequired"),
           });
         }
 

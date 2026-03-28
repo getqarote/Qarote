@@ -51,9 +51,7 @@ vi.mock("@/middlewares/workspace", () => ({
 }));
 
 vi.mock("@/services/plan/plan.service", () => ({
-  getUserPlan: vi.fn(),
   getPlanFeatures: vi.fn().mockReturnValue({ maxWorkspaces: 3 }),
-  canUserAddWorkspaceWithCount: vi.fn().mockReturnValue(true),
   validateWorkspaceCreation: vi.fn(),
   PlanErrorCode: { PLAN_RESTRICTION: "PLAN_RESTRICTION" },
   PlanLimitExceededError: class extends Error {},
@@ -108,6 +106,10 @@ function makeCtx(overrides: Record<string, unknown> = {}) {
     },
     workspaceId: "ws-1",
     locale: "en",
+    resolveOrg: vi.fn().mockResolvedValue({
+      organizationId: "org-1",
+      role: "OWNER",
+    }),
     req: {},
     ...overrides,
   };

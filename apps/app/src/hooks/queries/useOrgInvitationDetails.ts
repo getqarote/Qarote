@@ -14,6 +14,7 @@ export interface OrgInvitationDetails {
     email: string;
     displayName: string;
   } | null;
+  userExists: boolean;
 }
 
 export const useOrgInvitationDetails = (token: string | undefined) => {

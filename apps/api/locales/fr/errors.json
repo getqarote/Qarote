@@ -63,6 +63,7 @@
     "invitationNotForYourAccount": "Cette invitation ne correspond pas à votre compte",
     "alreadyOrgMember": "Vous êtes déjà membre de cette organisation",
     "userAlreadyOrgMember": "L'utilisateur est déjà membre de cette organisation",
+    "orgMembershipRequired": "Appartenance à l'organisation requise",
     "orgAdminRequired": "Rôle PROPRIÉTAIRE ou ADMINISTRATEUR de l'organisation requis",
     "orgInvitationNotFound": "Invitation introuvable",
     "orgInvitationAlreadyAccepted": "L'invitation a déjà été acceptée",

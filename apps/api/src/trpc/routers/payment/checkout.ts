@@ -8,7 +8,7 @@ import { createCheckoutSessionSchema } from "@/schemas/payment";
 
 import { emailConfig } from "@/config";
 
-import { router, strictRateLimitedAdminProcedure } from "@/trpc/trpc";
+import { router, strictRateLimitedOrgAdminProcedure } from "@/trpc/trpc";
 
 import { UserPlan } from "@/generated/prisma/client";
 import { te } from "@/i18n";
@@ -21,7 +21,7 @@ export const checkoutRouter = router({
   /**
    * Create checkout session for subscription (PROTECTED - STRICT RATE LIMITED)
    */
-  createCheckoutSession: strictRateLimitedAdminProcedure
+  createCheckoutSession: strictRateLimitedOrgAdminProcedure
     .input(createCheckoutSessionSchema)
     .mutation(async ({ input, ctx }) => {
       const { plan, billingInterval } = input;
@@ -44,17 +44,11 @@ export const checkoutRouter = router({
           "Creating checkout session"
         );
 
-        // Resolve Organization from user's org membership
-        const orgMembership = await prisma.organizationMember.findFirst({
-          where: { userId: user.id },
-          select: {
-            organization: {
-              select: { id: true, stripeCustomerId: true },
-            },
-          },
+        const org = await prisma.organization.findUnique({
+          where: { id: ctx.organizationId },
+          select: { id: true, stripeCustomerId: true },
         });
 
-        const org = orgMembership?.organization ?? null;
         if (!org) {
           throw new TRPCError({
             code: "BAD_REQUEST",

@@ -4,6 +4,9 @@ const config: KnipConfig = {
   workspaces: {
     "apps/app": {
       project: ["src/**/*.{ts,tsx}"],
+      ignoreDependencies: [
+        "@radix-ui/react-dropdown-menu", // Used by shadcn UI component (ignored dir)
+      ],
     },
     "apps/web": {
       project: ["src/**/*.{ts,tsx}"],
@@ -32,6 +35,8 @@ const config: KnipConfig = {
     // Ignore API type exports used by frontend apps
     "apps/api/src/trpc/types.ts",
     "apps/api/src/trpc/router.ts",
+    // Ignore trpc.ts — orgScopedProcedure exported for progressive adoption
+    "apps/api/src/trpc/trpc.ts",
     // Ignore API services used in tRPC type inference
     "apps/api/src/services/plan/features.service.ts",
     // Ignore hooks used in UI components

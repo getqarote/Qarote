@@ -27,12 +27,12 @@ import { isCloudMode } from "@/config/deployment";
 import { FEATURES } from "@/config/features";
 
 import {
-  rateLimitedAdminProcedure,
+  rateLimitedOrgAdminProcedure,
   rateLimitedPublicProcedure,
   router,
 } from "@/trpc/trpc";
 
-import { OrgRole, UserPlan } from "@/generated/prisma/client";
+import { UserPlan } from "@/generated/prisma/client";
 
 const REDACTED = "••••••••";
 
@@ -40,48 +40,13 @@ const REDACTED = "••••••••";
 const INSTANCE_PROVIDER_ID = "default";
 
 /**
- * Resolve the caller's organization from their org membership,
- * then verify they have OWNER or ADMIN role.
- * Returns the organizationId or throws FORBIDDEN.
- */
-async function resolveOrgAdmin(
-  prisma: {
-    organizationMember: {
-      findFirst: (args: {
-        where: { userId: string };
-        select: { organizationId: true; role: true };
-      }) => Promise<{ organizationId: string; role: OrgRole } | null>;
-    };
-  },
-  userId: string
-): Promise<string> {
-  const membership = await prisma.organizationMember.findFirst({
-    where: { userId },
-    select: { organizationId: true, role: true },
-  });
-
-  if (
-    !membership ||
-    (membership.role !== OrgRole.OWNER && membership.role !== OrgRole.ADMIN)
-  ) {
-    throw new TRPCError({
-      code: "FORBIDDEN",
-      message: "SSO configuration requires organization OWNER or ADMIN role",
-    });
-  }
-
-  return membership.organizationId;
-}
-
-/**
  * Admin procedure gated by enterprise entitlement.
  * - Cloud:       user must be org OWNER/ADMIN with ENTERPRISE plan
  * - Self-hosted: license must have "sso" feature or be ENTERPRISE tier
  */
-const ssoAdminProcedure = rateLimitedAdminProcedure.use(async (opts) => {
+const ssoAdminProcedure = rateLimitedOrgAdminProcedure.use(async (opts) => {
   if (isCloudMode()) {
-    const orgId = await resolveOrgAdmin(opts.ctx.prisma, opts.ctx.user.id);
-    const plan = await getOrgPlan(orgId);
+    const plan = await getOrgPlan(opts.ctx.organizationId);
     if (plan !== UserPlan.ENTERPRISE) {
       throw new TRPCError({
         code: "FORBIDDEN",
@@ -143,14 +108,12 @@ export const ssoRouter = router({
    * Get current provider config for the admin UI (ADMIN).
    * Client secret is always redacted.
    */
-  getProviderConfig: rateLimitedAdminProcedure.query(async ({ ctx }) => {
+  getProviderConfig: rateLimitedOrgAdminProcedure.query(async ({ ctx }) => {
     let orgConfig;
 
     if (isCloudMode()) {
-      const orgId = await resolveOrgAdmin(ctx.prisma, ctx.user.id);
-
       orgConfig = await ctx.prisma.orgSsoConfig.findFirst({
-        where: { organizationId: orgId },
+        where: { organizationId: ctx.organizationId },
         include: { provider: true },
       });
     } else {
@@ -216,9 +179,8 @@ export const ssoRouter = router({
       const domain = input.domain ?? "";
 
       if (isCloudMode()) {
-        const orgId = await resolveOrgAdmin(ctx.prisma, ctx.user.id);
-        organizationId = orgId;
-        providerId = `org-${orgId}`;
+        organizationId = ctx.organizationId;
+        providerId = `org-${ctx.organizationId}`;
       } else {
         providerId = INSTANCE_PROVIDER_ID;
       }
@@ -312,9 +274,7 @@ export const ssoRouter = router({
     )
     .mutation(async ({ input, ctx }) => {
       const providerId = isCloudMode()
-        ? await resolveOrgAdmin(ctx.prisma, ctx.user.id).then(
-            (orgId) => `org-${orgId}`
-          )
+        ? `org-${ctx.organizationId}`
         : INSTANCE_PROVIDER_ID;
 
       const existing = await ctx.prisma.ssoProvider.findUnique({
@@ -393,9 +353,7 @@ export const ssoRouter = router({
    */
   deleteProvider: ssoAdminProcedure.mutation(async ({ ctx }) => {
     const providerId = isCloudMode()
-      ? await resolveOrgAdmin(ctx.prisma, ctx.user.id).then(
-          (orgId) => `org-${orgId}`
-        )
+      ? `org-${ctx.organizationId}`
       : INSTANCE_PROVIDER_ID;
 
     // OrgSsoConfig is deleted via cascade on SsoProvider

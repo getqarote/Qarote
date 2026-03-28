@@ -31,12 +31,19 @@
   "servers": "{{count}} servidores",
   "servers_one": "{{count}} servidor",
   "servers_other": "{{count}} servidores",
-  "createNewWorkspace": "Crear nuevo espacio de trabajo",
+  "createNewWorkspace": "Crear espacio de trabajo",
   "loadingWorkspaces": "Cargando espacios de trabajo...",
   "workspaceSwitched": "Espacio de trabajo cambiado con éxito!",
   "workspaceSwitchFailed": "Error al cambiar el espacio de trabajo. Inténtalo de nuevo.",
   "upgrade": "Actualizar",
   "upgradeToCreate": "Actualiza para crear múltiples espacios de trabajo",
   "multipleWorkspacesDeveloper": "Múltiples espacios de trabajo disponibles con el plan Desarrollador",
-  "multipleWorkspacesEnterprise": "Múltiples espacios de trabajo disponibles con el plan Empresa"
+  "multipleWorkspacesEnterprise": "Múltiples espacios de trabajo disponibles con el plan Empresa",
+  "organizations": "Organizaciones",
+  "workspaces": "Espacios de trabajo",
+  "admin": "Administrador",
+  "switchOrganization": "Cambiar de organización",
+  "orgSwitched": "¡Organización cambiada con éxito!",
+  "orgSwitchedDescription": "Cambiado a {{orgName}}",
+  "backToWorkspaces": "Volver a espacios de trabajo"
 }

@@ -5,7 +5,7 @@ import { abortableSleep } from "@/core/utils";
 
 import { loadThresholdsForServer } from "@/services/alerts/alert.rule-adapter";
 import { alertService } from "@/services/alerts/alert.service";
-import { getUserPlan } from "@/services/plan/plan.service";
+import { getOrgPlan } from "@/services/plan/plan.service";
 
 import {
   AlertsQueryWithOptionalVHostSchema,
@@ -87,7 +87,10 @@ export const alertsRouter = router({
         }
 
         // Get user plan to determine access level
-        const userPlan = await getUserPlan(ctx.user.id);
+        const orgInfo = await ctx.resolveOrg();
+        const userPlan = orgInfo?.organizationId
+          ? await getOrgPlan(orgInfo.organizationId)
+          : UserPlan.FREE;
 
         // Get vhost from validated query (required - filters queue-related alerts)
         const vhost = vhostParam ? decodeURIComponent(vhostParam) : "/";
@@ -457,7 +460,10 @@ export const alertsRouter = router({
 
       while (!sig.aborted) {
         try {
-          const userPlan = await getUserPlan(ctx.user.id);
+          const orgInfo = await ctx.resolveOrg();
+          const userPlan = orgInfo?.organizationId
+            ? await getOrgPlan(orgInfo.organizationId)
+            : UserPlan.FREE;
           // Read active alerts from the unified Alert table (written by the cron).
           // This replaces the per-client RabbitMQ poll that caused an N+1 problem.
           const { alerts, summary } = await alertService.getActiveAlertsFromDb(

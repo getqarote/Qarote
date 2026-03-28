@@ -196,17 +196,6 @@ export function validateUserInvitation(
   }
 }
 
-// Count-based validations
-
-export function canUserAddWorkspaceWithCount(
-  plan: UserPlan,
-  currentWorkspaceCount: number
-): boolean {
-  const features = getPlanFeatures(plan);
-  if (features.maxWorkspaces === null) return true;
-  return currentWorkspaceCount < features.maxWorkspaces;
-}
-
 // Display helpers
 export function getPlanDisplayName(plan: UserPlan): string {
   return getPlanFeatures(plan).displayName;
@@ -222,26 +211,6 @@ export async function getOrgPlan(orgId: string): Promise<UserPlan> {
   });
 
   return subscription?.plan ?? UserPlan.FREE;
-}
-
-/**
- * Get a user's plan by looking up their organization membership and
- * delegating to getOrgPlan. Falls back to FREE if no membership is found.
- */
-export async function getUserPlan(userId: string) {
-  // Pick the highest-privilege membership. Prisma sorts enums by declaration
-  // order (OWNER=0, ADMIN=1, MEMBER=2), so "asc" gives OWNER first.
-  const membership = await prisma.organizationMember.findFirst({
-    where: { userId },
-    select: { organizationId: true },
-    orderBy: { role: "asc" },
-  });
-
-  if (membership) {
-    return getOrgPlan(membership.organizationId);
-  }
-
-  return UserPlan.FREE;
 }
 
 /**
@@ -284,28 +253,6 @@ export async function getOrgResourceCounts(orgId: string) {
     servers: serverCount,
     users: memberCount,
     workspaces: workspaceCount,
-  };
-}
-
-/**
- * Get resource counts for a user by looking up their organization membership
- * and delegating to getOrgResourceCounts. Returns zeros if no membership is found.
- */
-export async function getUserResourceCounts(userId: string) {
-  const membership = await prisma.organizationMember.findFirst({
-    where: { userId },
-    select: { organizationId: true },
-    orderBy: { role: "asc" },
-  });
-
-  if (membership) {
-    return getOrgResourceCounts(membership.organizationId);
-  }
-
-  return {
-    servers: 0,
-    users: 0,
-    workspaces: 0,
   };
 }
 

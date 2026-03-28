@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Building2, Loader2, Mail, Shield } from "lucide-react";
+import { Building2, CheckCircle2, Loader2, Mail, Shield } from "lucide-react";
 
 import { authClient } from "@/lib/auth-client";
 import { logger } from "@/lib/logger";
@@ -41,6 +41,7 @@ import {
   type OrgInvitationDetails,
   useOrgInvitationDetails,
 } from "@/hooks/queries/useOrgInvitationDetails";
+import { useSwitchWorkspace } from "@/hooks/queries/useWorkspaceApi";
 import { useToast } from "@/hooks/ui/useToast";
 
 import {
@@ -254,12 +255,19 @@ const AcceptOrgInvitation = () => {
   const acceptAuthOrgInvitationMutation = useAcceptOrgInvitationAuth();
   const utils = trpc.useUtils();
 
+  const switchWorkspaceMutation = useSwitchWorkspace();
+
   const {
     invitation,
     loading,
     error: fetchError,
   } = useOrgInvitationDetails(token);
   const [mutationError, setMutationError] = useState<string | null>(null);
+  const [forceRegistration, setForceRegistration] = useState(false);
+  const [acceptSuccess, setAcceptSuccess] = useState<{
+    orgName: string;
+    firstWorkspaceId: string | null;
+  } | null>(null);
 
   const error =
     mutationError ??
@@ -292,13 +300,10 @@ const AcceptOrgInvitation = () => {
       { token },
       {
         onSuccess: (result) => {
-          toast({
-            title: t("orgWelcome"),
-            description: t("orgSuccessfullyJoined", {
-              org: result.organization.name,
-            }),
+          setAcceptSuccess({
+            orgName: result.organization.name,
+            firstWorkspaceId: result.firstWorkspaceId ?? null,
           });
-          navigate("/", { replace: true });
         },
         onError: (err: unknown) => {
           const errorMessage =
@@ -403,6 +408,57 @@ const AcceptOrgInvitation = () => {
 
   // Authenticated user flow
   if (authUser) {
+    // Post-acceptance success state
+    if (acceptSuccess) {
+      return (
+        <PageWrapper>
+          <CardHeader className="text-center">
+            <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
+              <CheckCircle2 className="h-6 w-6 text-green-600" />
+            </div>
+            <CardTitle>
+              {t("youJoinedOrg", { org: acceptSuccess.orgName })}
+            </CardTitle>
+          </CardHeader>
+
+          <CardContent className="space-y-3">
+            {acceptSuccess.firstWorkspaceId && (
+              <Button
+                className="w-full bg-gradient-button hover:bg-gradient-button-hover"
+                onClick={() => {
+                  switchWorkspaceMutation.mutate(
+                    { workspaceId: acceptSuccess.firstWorkspaceId! },
+                    {
+                      onSuccess: () => {
+                        window.location.href = "/";
+                      },
+                    }
+                  );
+                }}
+                disabled={switchWorkspaceMutation.isPending}
+              >
+                {switchWorkspaceMutation.isPending ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    {t("accepting")}
+                  </>
+                ) : (
+                  t("switchToOrg", { org: acceptSuccess.orgName })
+                )}
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => navigate("/", { replace: true })}
+            >
+              {t("stayInCurrentOrg")}
+            </Button>
+          </CardContent>
+        </PageWrapper>
+      );
+    }
+
     return (
       <PageWrapper>
         <CardHeader className="text-center">
@@ -438,6 +494,46 @@ const AcceptOrgInvitation = () => {
               t("acceptInvitation")
             )}
           </Button>
+        </CardContent>
+      </PageWrapper>
+    );
+  }
+
+  // Existing user — prompt to sign in
+  if (invitation?.userExists && !forceRegistration) {
+    return (
+      <PageWrapper>
+        <CardHeader className="text-center">
+          <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
+            <Building2 className="h-6 w-6 text-blue-600" />
+          </div>
+          <CardTitle>{t("joinOrganization")}</CardTitle>
+          <CardDescription>{t("existingAccountMessage")}</CardDescription>
+        </CardHeader>
+
+        <CardContent className="space-y-6">
+          <OrgInvitationInfo invitation={invitation} />
+
+          <Button
+            className="w-full bg-gradient-button hover:bg-gradient-button-hover"
+            onClick={() =>
+              navigate(
+                `/auth/sign-in?redirect=${encodeURIComponent(`/org-invite/${token}`)}`
+              )
+            }
+          >
+            {t("signIn")}
+          </Button>
+
+          <div className="text-center">
+            <button
+              type="button"
+              onClick={() => setForceRegistration(true)}
+              className="text-sm text-muted-foreground hover:underline"
+            >
+              {t("dontHaveAccountCreate")}
+            </button>
+          </div>
         </CardContent>
       </PageWrapper>
     );

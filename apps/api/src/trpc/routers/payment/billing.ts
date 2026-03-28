@@ -3,14 +3,14 @@ import type Stripe from "stripe";
 
 import type { logger as appLogger } from "@/core/logger";
 
-import { getUserResourceCounts } from "@/services/plan/plan.service";
+import { getOrgResourceCounts } from "@/services/plan/plan.service";
 import { StripeService } from "@/services/stripe/stripe.service";
 
 import { config } from "@/config";
 
 import {
-  billingRateLimitedAdminProcedure,
-  rateLimitedAdminProcedure,
+  billingRateLimitedOrgAdminProcedure,
+  rateLimitedOrgAdminProcedure,
   router,
 } from "@/trpc/trpc";
 
@@ -101,22 +101,21 @@ export const billingRouter = router({
   /**
    * Get comprehensive billing overview (PROTECTED - ADMIN ONLY, BILLING RATE LIMITED)
    */
-  getBillingOverview: billingRateLimitedAdminProcedure.query(
+  getBillingOverview: billingRateLimitedOrgAdminProcedure.query(
     async ({ ctx }) => {
       const { user, prisma } = ctx;
 
       try {
-        // Phase 1: Parallel DB queries
+        // Phase 1: Parallel DB queries — all scoped to the current organization
         const [
-          userWithSubscription,
+          orgSubscription,
           currentWorkspace,
           recentPayments,
           resourceCounts,
-          membership,
+          org,
         ] = await Promise.all([
-          prisma.user.findUnique({
-            where: { id: user.id },
-            include: { subscription: true },
+          prisma.subscription.findUnique({
+            where: { organizationId: ctx.organizationId },
           }),
           user.workspaceId
             ? prisma.workspace.findUnique({ where: { id: user.workspaceId } })
@@ -133,43 +132,30 @@ export const billingRouter = router({
               createdAt: true,
             },
           }),
-          getUserResourceCounts(user.id),
-          // Resolve Stripe IDs from Organization (billing authority)
-          prisma.organizationMember.findFirst({
-            where: { userId: user.id },
+          getOrgResourceCounts(ctx.organizationId),
+          prisma.organization.findUnique({
+            where: { id: ctx.organizationId },
             select: {
-              organization: {
-                select: {
-                  stripeCustomerId: true,
-                  stripeSubscriptionId: true,
-                },
-              },
+              stripeCustomerId: true,
+              stripeSubscriptionId: true,
             },
           }),
         ]);
 
-        if (!userWithSubscription) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: te(ctx.locale, "auth.userNotFound"),
-          });
-        }
-
-        // Data integrity check: If user has a subscription but no workspace, log a warning
-        if (userWithSubscription.subscription && !currentWorkspace) {
+        // Data integrity check: subscription exists but no workspace
+        if (orgSubscription && !currentWorkspace) {
           ctx.logger.warn(
             {
               userId: user.id,
-              subscriptionId: userWithSubscription.subscription.id,
+              organizationId: ctx.organizationId,
+              subscriptionId: orgSubscription.id,
             },
-            "User has subscription but no workspace - data integrity issue"
+            "Organization has subscription but user has no workspace"
           );
         }
 
-        const orgStripeCustomerId =
-          membership?.organization?.stripeCustomerId ?? null;
-        const orgStripeSubscriptionId =
-          membership?.organization?.stripeSubscriptionId ?? null;
+        const orgStripeCustomerId = org?.stripeCustomerId ?? null;
+        const orgStripeSubscriptionId = org?.stripeSubscriptionId ?? null;
 
         let stripeSubscription: Stripe.Subscription | null = null;
         let upcomingInvoice = null;
@@ -229,32 +215,28 @@ export const billingRouter = router({
                 name: currentWorkspace.name,
               }
             : null,
-          subscription: userWithSubscription.subscription
+          subscription: orgSubscription
             ? {
-                id: userWithSubscription.subscription.id,
-                status: userWithSubscription.subscription.status,
+                id: orgSubscription.id,
+                status: orgSubscription.status,
                 stripeCustomerId: orgStripeCustomerId,
                 stripeSubscriptionId: orgStripeSubscriptionId,
-                plan: userWithSubscription.subscription.plan,
-                canceledAt: userWithSubscription.subscription.canceledAt
-                  ? userWithSubscription.subscription.canceledAt.toISOString()
+                plan: orgSubscription.plan,
+                canceledAt: orgSubscription.canceledAt
+                  ? orgSubscription.canceledAt.toISOString()
                   : null,
-                isRenewalAfterCancel:
-                  userWithSubscription.subscription.isRenewalAfterCancel,
-                previousCancelDate: userWithSubscription.subscription
-                  .previousCancelDate
-                  ? userWithSubscription.subscription.previousCancelDate.toISOString()
+                isRenewalAfterCancel: orgSubscription.isRenewalAfterCancel,
+                previousCancelDate: orgSubscription.previousCancelDate
+                  ? orgSubscription.previousCancelDate.toISOString()
                   : null,
-                trialStart: userWithSubscription.subscription.trialStart
-                  ? userWithSubscription.subscription.trialStart.toISOString()
+                trialStart: orgSubscription.trialStart
+                  ? orgSubscription.trialStart.toISOString()
                   : null,
-                trialEnd: userWithSubscription.subscription.trialEnd
-                  ? userWithSubscription.subscription.trialEnd.toISOString()
+                trialEnd: orgSubscription.trialEnd
+                  ? orgSubscription.trialEnd.toISOString()
                   : null,
-                createdAt:
-                  userWithSubscription.subscription.createdAt.toISOString(),
-                updatedAt:
-                  userWithSubscription.subscription.updatedAt.toISOString(),
+                createdAt: orgSubscription.createdAt.toISOString(),
+                updatedAt: orgSubscription.updatedAt.toISOString(),
               }
             : null,
           stripeSubscription: stripeSubscription
@@ -302,8 +284,8 @@ export const billingRouter = router({
             status: payment.status,
             description: StripeService.transformPaymentDescription(
               payment.description,
-              userWithSubscription.subscription?.plan || "UNKNOWN",
-              userWithSubscription.subscription?.billingInterval || "MONTH"
+              orgSubscription?.plan || "UNKNOWN",
+              orgSubscription?.billingInterval || "MONTH"
             ),
             createdAt: payment.createdAt.toISOString(),
           })),
@@ -324,21 +306,16 @@ export const billingRouter = router({
   /**
    * Create billing portal session (PROTECTED - ADMIN ONLY)
    */
-  createBillingPortalSession: rateLimitedAdminProcedure.mutation(
+  createBillingPortalSession: rateLimitedOrgAdminProcedure.mutation(
     async ({ ctx }) => {
-      const { user, prisma } = ctx;
+      const { prisma } = ctx;
 
       try {
-        const membership = await prisma.organizationMember.findFirst({
-          where: { userId: user.id },
-          select: {
-            organization: {
-              select: { stripeCustomerId: true },
-            },
-          },
+        const org = await prisma.organization.findUnique({
+          where: { id: ctx.organizationId },
+          select: { stripeCustomerId: true },
         });
-        const stripeCustomerId =
-          membership?.organization?.stripeCustomerId ?? null;
+        const stripeCustomerId = org?.stripeCustomerId ?? null;
 
         if (!stripeCustomerId) {
           throw new TRPCError({
@@ -369,43 +346,40 @@ export const billingRouter = router({
   /**
    * Create portal session (PROTECTED - ADMIN ONLY) - alias for createBillingPortalSession
    */
-  createPortalSession: rateLimitedAdminProcedure.mutation(async ({ ctx }) => {
-    const { user, prisma } = ctx;
+  createPortalSession: rateLimitedOrgAdminProcedure.mutation(
+    async ({ ctx }) => {
+      const { prisma } = ctx;
 
-    try {
-      const membership = await prisma.organizationMember.findFirst({
-        where: { userId: user.id },
-        select: {
-          organization: {
-            select: { stripeCustomerId: true },
-          },
-        },
-      });
-      const stripeCustomerId =
-        membership?.organization?.stripeCustomerId ?? null;
+      try {
+        const org = await prisma.organization.findUnique({
+          where: { id: ctx.organizationId },
+          select: { stripeCustomerId: true },
+        });
+        const stripeCustomerId = org?.stripeCustomerId ?? null;
 
-      if (!stripeCustomerId) {
+        if (!stripeCustomerId) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: te(ctx.locale, "billing.noStripeCustomerFound"),
+          });
+        }
+
+        const session = await StripeService.createPortalSession(
+          stripeCustomerId,
+          `${config.FRONTEND_URL}/billing`
+        );
+
+        return { url: session.url };
+      } catch (error) {
+        if (error instanceof TRPCError) {
+          throw error;
+        }
+        ctx.logger.error({ error }, "Error creating portal session");
         throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: te(ctx.locale, "billing.noStripeCustomerFound"),
+          code: "INTERNAL_SERVER_ERROR",
+          message: te(ctx.locale, "billing.failedToCreatePortalSession"),
         });
       }
-
-      const session = await StripeService.createPortalSession(
-        stripeCustomerId,
-        `${config.FRONTEND_URL}/billing`
-      );
-
-      return { url: session.url };
-    } catch (error) {
-      if (error instanceof TRPCError) {
-        throw error;
-      }
-      ctx.logger.error({ error }, "Error creating portal session");
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: te(ctx.locale, "billing.failedToCreatePortalSession"),
-      });
     }
-  }),
+  ),
 });

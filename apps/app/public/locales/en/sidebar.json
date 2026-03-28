@@ -31,12 +31,19 @@
   "servers": "{{count}} servers",
   "servers_one": "{{count}} server",
   "servers_other": "{{count}} servers",
-  "createNewWorkspace": "Create New Workspace",
+  "createNewWorkspace": "Create workspace",
   "loadingWorkspaces": "Loading workspaces...",
   "workspaceSwitched": "Workspace switched successfully!",
   "workspaceSwitchFailed": "Failed to switch workspace. Please try again.",
   "upgrade": "Upgrade",
   "upgradeToCreate": "Upgrade to create multiple workspaces",
   "multipleWorkspacesDeveloper": "Multiple workspaces available with Developer plan",
-  "multipleWorkspacesEnterprise": "Multiple workspaces available with Enterprise plan"
+  "multipleWorkspacesEnterprise": "Multiple workspaces available with Enterprise plan",
+  "organizations": "Organizations",
+  "workspaces": "Workspaces",
+  "admin": "Admin",
+  "switchOrganization": "Switch organization",
+  "orgSwitched": "Organization switched successfully!",
+  "orgSwitchedDescription": "Switched to {{orgName}}",
+  "backToWorkspaces": "Back to workspaces"
 }

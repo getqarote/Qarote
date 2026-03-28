@@ -3,26 +3,29 @@ import { TRPCError } from "@trpc/server";
 import { getLicensePayload } from "@/core/feature-flags";
 
 import {
+  getOrgPlan,
   getPlanFeatures,
-  getUserPlan,
-  getWorkspacePlan,
   PLAN_FEATURES,
 } from "@/services/plan/plan.service";
 
 import { isSelfHostedMode } from "@/config/deployment";
 
-import { rateLimitedProcedure, router } from "@/trpc/trpc";
+import {
+  rateLimitedOrgProcedure,
+  rateLimitedProcedure,
+  router,
+} from "@/trpc/trpc";
 
 import { UserPlan } from "@/generated/prisma/client";
 import { te } from "@/i18n";
 
 /**
- * Plan router
- * Handles workspace plan-related operations
+ * Organization plan router
+ * Plan is an org-level concept — all workspaces in an org share the same plan.
  */
-export const planRouter = router({
+export const orgPlanRouter = router({
   /**
-   * Get all available plans with their features (PUBLIC - but using protected for consistency)
+   * Get all available plans with their features
    */
   getAllPlans: rateLimitedProcedure.query(async ({ ctx }) => {
     try {
@@ -44,10 +47,10 @@ export const planRouter = router({
   }),
 
   /**
-   * Get current user's plan features and usage (PROTECTED)
-   * Always uses workspace owner's subscription plan for workspace features
+   * Get current organization's plan features and usage (PROTECTED)
+   * Resolves plan via workspace → organization → subscription.
    */
-  getCurrentPlan: rateLimitedProcedure.query(async ({ ctx }) => {
+  getCurrentOrgPlan: rateLimitedOrgProcedure.query(async ({ ctx }) => {
     const user = ctx.user;
 
     try {
@@ -75,12 +78,9 @@ export const planRouter = router({
         });
       }
 
-      // Resolve plan via workspace → organization → subscription
-      // When no workspace exists yet, fall back to user → org membership → subscription
+      // Resolve plan from the org — ctx.organizationId is guaranteed by orgScopedProcedure.
       const currentWorkspace = userWithWorkspace.workspace;
-      let workspacePlan: UserPlan = currentWorkspace
-        ? await getWorkspacePlan(currentWorkspace.id)
-        : await getUserPlan(user.id);
+      let workspacePlan: UserPlan = await getOrgPlan(ctx.organizationId);
 
       // Self-hosted fallback: if no Stripe subscription exists, use the license JWT tier
       if (workspacePlan === UserPlan.FREE && isSelfHostedMode()) {
@@ -93,14 +93,10 @@ export const planRouter = router({
       // Use workspace plan for all workspace features
       const planFeatures = getPlanFeatures(workspacePlan);
 
-      // Count workspaces via the same org as the current workspace
-      const workspaceCount = currentWorkspace
-        ? await ctx.prisma.workspace.count({
-            where: { organizationId: currentWorkspace.organizationId },
-          })
-        : await ctx.prisma.workspace.count({
-            where: { ownerId: user.id },
-          });
+      // Count workspaces in the current organization
+      const workspaceCount = await ctx.prisma.workspace.count({
+        where: { organizationId: ctx.organizationId },
+      });
 
       // Get current workspace counts
       const workspaceUsers = currentWorkspace?._count.members || 0;

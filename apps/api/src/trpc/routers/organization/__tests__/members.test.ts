@@ -132,10 +132,26 @@ function makeCtx(overrides: Record<string, unknown> = {}) {
       lastName: "User",
     },
     workspaceId: "ws-1",
+    organizationId: null,
+    orgRole: null,
+    resolveOrg: vi.fn().mockResolvedValue(null),
     req: {},
     locale: "en",
     ...overrides,
   };
+}
+
+/** Create context with org OWNER privileges (most admin-route tests need this). */
+function makeAdminCtx(overrides: Record<string, unknown> = {}) {
+  return makeCtx({
+    organizationId: "org-1",
+    orgRole: "OWNER",
+    resolveOrg: vi.fn().mockResolvedValue({
+      organizationId: "org-1",
+      role: "OWNER",
+    }),
+    ...overrides,
+  });
 }
 
 /** Set up requireOrgAdmin to succeed by default (OWNER). */
@@ -300,6 +316,19 @@ describe("membersRouter", () => {
   // ─── invite ───────────────────────────────────────────────────────────────
 
   describe("invite", () => {
+    it("throws BAD_REQUEST when org context is missing", async () => {
+      const ctx = makeCtx(); // no org context (null defaults)
+      const caller = membersRouter.createCaller(ctx as never);
+
+      await expect(
+        caller.invite({
+          email: "new@test.com",
+          role: "MEMBER",
+          workspaceAssignments: [],
+        })
+      ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    });
+
     it("creates invitation with empty workspaceAssignments", async () => {
       setupOrgAdmin();
       mockOrgMemberCount.mockResolvedValue(3);
@@ -312,7 +341,7 @@ describe("membersRouter", () => {
         expiresAt: new Date("2030-01-01"),
       });
 
-      const ctx = makeCtx();
+      const ctx = makeAdminCtx();
       const caller = membersRouter.createCaller(ctx as never);
       const result = await caller.invite({
         email: "new@test.com",
@@ -344,7 +373,7 @@ describe("membersRouter", () => {
         expiresAt: new Date("2030-01-01"),
       });
 
-      const ctx = makeCtx();
+      const ctx = makeAdminCtx();
       const caller = membersRouter.createCaller(ctx as never);
       const result = await caller.invite({
         email: "new@test.com",
@@ -375,7 +404,7 @@ describe("membersRouter", () => {
       // Return empty — no matching workspace in org
       mockWorkspaceFindMany.mockResolvedValue([]);
 
-      const ctx = makeCtx();
+      const ctx = makeAdminCtx();
       const caller = membersRouter.createCaller(ctx as never);
 
       await expect(
@@ -399,7 +428,7 @@ describe("membersRouter", () => {
       // Inviter is only MEMBER, not ADMIN
       mockGetUserWorkspaceRole.mockResolvedValue("MEMBER");
 
-      const ctx = makeCtx();
+      const ctx = makeAdminCtx();
       const caller = membersRouter.createCaller(ctx as never);
 
       await expect(
@@ -442,7 +471,9 @@ describe("membersRouter", () => {
         })
       );
 
-      const ctx = makeCtx({ user: { ...makeCtx().user, workspaceId: null } });
+      const ctx = makeAdminCtx({
+        user: { ...makeAdminCtx().user, workspaceId: null },
+      });
       const caller = membersRouter.createCaller(ctx as never);
       const result = await caller.acceptInvitation({ invitationId: "inv-1" });
 
@@ -487,7 +518,7 @@ describe("membersRouter", () => {
         })
       );
 
-      const ctx = makeCtx();
+      const ctx = makeAdminCtx();
       const caller = membersRouter.createCaller(ctx as never);
       const result = await caller.acceptInvitation({ invitationId: "inv-1" });
 
@@ -526,7 +557,7 @@ describe("membersRouter", () => {
       mockWorkspaceMemberDeleteMany.mockResolvedValue({ count: 1 });
       mockUserUpdateMany.mockResolvedValue({ count: 1 });
 
-      const ctx = makeCtx();
+      const ctx = makeAdminCtx();
       const caller = membersRouter.createCaller(ctx as never);
       const result = await caller.removeFromWorkspace({
         userId: "user-2",
@@ -553,7 +584,7 @@ describe("membersRouter", () => {
         });
       mockWorkspaceFindFirst.mockResolvedValue(null);
 
-      const ctx = makeCtx();
+      const ctx = makeAdminCtx();
       const caller = membersRouter.createCaller(ctx as never);
 
       await expect(
@@ -589,7 +620,7 @@ describe("membersRouter", () => {
         },
       ]);
 
-      const ctx = makeCtx();
+      const ctx = makeAdminCtx();
       const caller = membersRouter.createCaller(ctx as never);
       const result = await caller.listOrgMembersNotInWorkspace({
         workspaceId: "ws-1",

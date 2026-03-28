@@ -2,8 +2,6 @@ import { TRPCError } from "@trpc/server";
 
 import type { MessageProperties } from "@/core/rabbitmq/rabbitmq.interfaces";
 
-import { getUserPlan } from "@/services/plan/plan.service";
-
 import {
   PublishMessageWithQueueSchema,
   VHostRequiredQuerySchema,
@@ -56,10 +54,6 @@ export const messagesRouter = router({
             message: te(ctx.locale, "rabbitmq.serverWorkspaceNotFound"),
           });
         }
-
-        const plan = await getUserPlan(ctx.user.id);
-
-        ctx.logger.info({ plan }, "Message sending validation");
 
         // Get vhost from validated input (required for message operations)
         const vhost = decodeURIComponent(vhostParam);
