@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
@@ -53,6 +53,18 @@ export function WorkspaceSelector() {
   const [view, setView] = useState<"workspaces" | "organizations">(
     "workspaces"
   );
+
+  // Refs for focus management during panel transitions
+  const orgHeaderRef = useRef<HTMLButtonElement>(null);
+  const backButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Move focus to the new panel's entry point after the CSS transition
+  useEffect(() => {
+    const target = view === "organizations" ? backButtonRef : orgHeaderRef;
+    // Wait for the 200ms translateX transition to complete
+    const timer = setTimeout(() => target.current?.focus(), 200);
+    return () => clearTimeout(timer);
+  }, [view]);
 
   // Show any pending toast from a prior org/workspace switch
   useSessionToast();
@@ -280,6 +292,7 @@ export function WorkspaceSelector() {
                     {/* Current organization header (clickable) */}
                     {currentOrg && (
                       <button
+                        ref={orgHeaderRef}
                         type="button"
                         className="w-full px-3 py-2.5 border-b border-border hover:bg-accent transition-colors text-left"
                         onClick={() => setView("organizations")}
@@ -403,6 +416,7 @@ export function WorkspaceSelector() {
                   <div className="max-h-[400px] overflow-y-auto">
                     {/* Back button */}
                     <button
+                      ref={backButtonRef}
                       type="button"
                       className="w-full px-3 py-2.5 border-b border-border hover:bg-accent transition-colors text-left"
                       onClick={() => setView("workspaces")}
