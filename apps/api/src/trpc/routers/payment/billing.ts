@@ -114,17 +114,16 @@ export const billingRouter = router({
           });
         }
 
-        // Phase 1: Parallel DB queries
+        // Phase 1: Parallel DB queries — all scoped to the current organization
         const [
-          userWithSubscription,
+          orgSubscription,
           currentWorkspace,
           recentPayments,
           resourceCounts,
           org,
         ] = await Promise.all([
-          prisma.user.findUnique({
-            where: { id: user.id },
-            include: { subscription: true },
+          prisma.subscription.findUnique({
+            where: { organizationId: ctx.organizationId },
           }),
           user.workspaceId
             ? prisma.workspace.findUnique({ where: { id: user.workspaceId } })
@@ -141,10 +140,7 @@ export const billingRouter = router({
               createdAt: true,
             },
           }),
-          ctx.organizationId
-            ? getOrgResourceCounts(ctx.organizationId)
-            : Promise.resolve({ servers: 0, users: 0, workspaces: 0 }),
-          // Resolve Stripe IDs from Organization (billing authority)
+          getOrgResourceCounts(ctx.organizationId),
           prisma.organization.findUnique({
             where: { id: ctx.organizationId },
             select: {
@@ -154,21 +150,15 @@ export const billingRouter = router({
           }),
         ]);
 
-        if (!userWithSubscription) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: te(ctx.locale, "auth.userNotFound"),
-          });
-        }
-
-        // Data integrity check: If user has a subscription but no workspace, log a warning
-        if (userWithSubscription.subscription && !currentWorkspace) {
+        // Data integrity check: subscription exists but no workspace
+        if (orgSubscription && !currentWorkspace) {
           ctx.logger.warn(
             {
               userId: user.id,
-              subscriptionId: userWithSubscription.subscription.id,
+              organizationId: ctx.organizationId,
+              subscriptionId: orgSubscription.id,
             },
-            "User has subscription but no workspace - data integrity issue"
+            "Organization has subscription but user has no workspace"
           );
         }
 
@@ -233,32 +223,28 @@ export const billingRouter = router({
                 name: currentWorkspace.name,
               }
             : null,
-          subscription: userWithSubscription.subscription
+          subscription: orgSubscription
             ? {
-                id: userWithSubscription.subscription.id,
-                status: userWithSubscription.subscription.status,
+                id: orgSubscription.id,
+                status: orgSubscription.status,
                 stripeCustomerId: orgStripeCustomerId,
                 stripeSubscriptionId: orgStripeSubscriptionId,
-                plan: userWithSubscription.subscription.plan,
-                canceledAt: userWithSubscription.subscription.canceledAt
-                  ? userWithSubscription.subscription.canceledAt.toISOString()
+                plan: orgSubscription.plan,
+                canceledAt: orgSubscription.canceledAt
+                  ? orgSubscription.canceledAt.toISOString()
                   : null,
-                isRenewalAfterCancel:
-                  userWithSubscription.subscription.isRenewalAfterCancel,
-                previousCancelDate: userWithSubscription.subscription
-                  .previousCancelDate
-                  ? userWithSubscription.subscription.previousCancelDate.toISOString()
+                isRenewalAfterCancel: orgSubscription.isRenewalAfterCancel,
+                previousCancelDate: orgSubscription.previousCancelDate
+                  ? orgSubscription.previousCancelDate.toISOString()
                   : null,
-                trialStart: userWithSubscription.subscription.trialStart
-                  ? userWithSubscription.subscription.trialStart.toISOString()
+                trialStart: orgSubscription.trialStart
+                  ? orgSubscription.trialStart.toISOString()
                   : null,
-                trialEnd: userWithSubscription.subscription.trialEnd
-                  ? userWithSubscription.subscription.trialEnd.toISOString()
+                trialEnd: orgSubscription.trialEnd
+                  ? orgSubscription.trialEnd.toISOString()
                   : null,
-                createdAt:
-                  userWithSubscription.subscription.createdAt.toISOString(),
-                updatedAt:
-                  userWithSubscription.subscription.updatedAt.toISOString(),
+                createdAt: orgSubscription.createdAt.toISOString(),
+                updatedAt: orgSubscription.updatedAt.toISOString(),
               }
             : null,
           stripeSubscription: stripeSubscription
@@ -306,8 +292,8 @@ export const billingRouter = router({
             status: payment.status,
             description: StripeService.transformPaymentDescription(
               payment.description,
-              userWithSubscription.subscription?.plan || "UNKNOWN",
-              userWithSubscription.subscription?.billingInterval || "MONTH"
+              orgSubscription?.plan || "UNKNOWN",
+              orgSubscription?.billingInterval || "MONTH"
             ),
             createdAt: payment.createdAt.toISOString(),
           })),

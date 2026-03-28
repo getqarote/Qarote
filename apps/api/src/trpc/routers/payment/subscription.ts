@@ -1,5 +1,7 @@
 import { TRPCError } from "@trpc/server";
 
+import { getUserDisplayName } from "@/core/utils";
+
 import { CoreStripeService } from "@/services/stripe/core.service";
 import { StripeService } from "@/services/stripe/stripe.service";
 
@@ -137,13 +139,56 @@ export const subscriptionRouter = router({
     .input(renewSubscriptionSchema)
     .mutation(async ({ input, ctx }) => {
       const { plan, interval = "monthly" } = input;
-      const { user } = ctx;
+      const { user, prisma } = ctx;
 
       try {
         if (!plan) {
           throw new TRPCError({
             code: "BAD_REQUEST",
             message: te(ctx.locale, "billing.planRequired"),
+          });
+        }
+
+        // Require org context (same pattern as cancelSubscription)
+        if (!ctx.organizationId) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: te(ctx.locale, "billing.noOrganization"),
+          });
+        }
+
+        if (ctx.orgRole !== OrgRole.OWNER && ctx.orgRole !== OrgRole.ADMIN) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: te(ctx.locale, "auth.orgAdminRequired"),
+          });
+        }
+
+        // Resolve (or create) the org's Stripe customer
+        const org = await prisma.organization.findUnique({
+          where: { id: ctx.organizationId },
+          select: { id: true, stripeCustomerId: true },
+        });
+
+        if (!org) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: te(ctx.locale, "billing.noOrganization"),
+          });
+        }
+
+        let customerId = org.stripeCustomerId;
+        if (!customerId) {
+          const customer = await StripeService.createCustomer({
+            email: user.email,
+            name: getUserDisplayName(user),
+            userId: user.id,
+          });
+          customerId = customer.id;
+
+          await prisma.organization.update({
+            where: { id: org.id },
+            data: { stripeCustomerId: customerId },
           });
         }
 

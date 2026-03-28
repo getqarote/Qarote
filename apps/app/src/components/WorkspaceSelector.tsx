@@ -7,6 +7,7 @@ import {
   Carrot,
   Check,
   ChevronDown,
+  ChevronLeft,
   ChevronRight,
   Lock,
   Plus,
@@ -20,13 +21,10 @@ import { logger } from "@/lib/logger";
 
 import { Button } from "@/components/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdownMenu";
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
 
@@ -43,6 +41,12 @@ import { UserPlan } from "@/types/plans";
 import { CreateWorkspaceForm } from "./CreateWorkspaceForm";
 
 const TOAST_STORAGE_KEY = "toast";
+
+interface Organization {
+  id: string;
+  name: string;
+  slug: string;
+}
 
 /**
  * Read and display any pending toast stored in sessionStorage.
@@ -76,6 +80,9 @@ export function WorkspaceSelector() {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [view, setView] = useState<"workspaces" | "organizations">(
+    "workspaces"
+  );
 
   // Show any pending toast from a prior org/workspace switch
   useSessionToast();
@@ -92,13 +99,7 @@ export function WorkspaceSelector() {
 
   const workspaces = workspacesData?.workspaces || [];
   const organizations = orgsData?.organizations || [];
-  const isMultiOrg = organizations.length > 1;
 
-  interface Organization {
-    id: string;
-    name: string;
-    slug: string;
-  }
   type WorkspaceInfo = (typeof workspaces)[number];
 
   const currentWorkspace =
@@ -116,6 +117,13 @@ export function WorkspaceSelector() {
     : workspaces;
 
   // ---- Handlers ----
+
+  const handleOpenChange = (open: boolean) => {
+    setIsOpen(open);
+    if (!open) {
+      setView("workspaces");
+    }
+  };
 
   const handleWorkspaceSwitch = (workspaceId: string) => {
     if (workspaceId === workspace?.id) {
@@ -259,8 +267,8 @@ export function WorkspaceSelector() {
 
   return (
     <>
-      <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-        <DropdownMenuTrigger asChild>
+      <Popover open={isOpen} onOpenChange={handleOpenChange}>
+        <PopoverTrigger asChild>
           <Button
             variant="ghost"
             className="h-10 px-3 justify-between min-w-[200px] max-w-[340px] border border-border bg-background hover:bg-accent"
@@ -270,168 +278,220 @@ export function WorkspaceSelector() {
               <Building2 className="w-4 h-4 text-muted-foreground shrink-0" />
               {currentOrg && (
                 <>
-                  <span className="truncate text-muted-foreground text-sm">
+                  <span className="max-w-[100px] truncate text-muted-foreground text-sm">
                     {currentOrg.name}
                   </span>
                   <ChevronRight className="w-3 h-3 text-muted-foreground/60 shrink-0" />
                 </>
               )}
-              <span className="truncate font-medium text-foreground">
+              <span className="flex-1 truncate font-medium text-foreground">
                 {currentWorkspace?.name || workspace?.name}
               </span>
             </div>
             <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0 ml-2" />
           </Button>
-        </DropdownMenuTrigger>
+        </PopoverTrigger>
 
-        <DropdownMenuContent align="start" className="w-[300px]">
+        <PopoverContent align="start" className="w-[300px] p-0">
           {isLoading ? (
-            <DropdownMenuItem disabled>
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 border-2 border-muted border-t-foreground rounded-full animate-spin" />
-                {t("loadingWorkspaces")}
-              </div>
-            </DropdownMenuItem>
+            <div className="flex items-center gap-2 p-3">
+              <div className="w-4 h-4 border-2 border-muted border-t-foreground rounded-full animate-spin" />
+              {t("loadingWorkspaces")}
+            </div>
           ) : (
-            <>
-              {/* Current organization header */}
-              {currentOrg && (
-                <div className="px-3 py-2.5 border-b border-border">
-                  <div className="flex items-center gap-2.5">
-                    <Building2 className="w-4 h-4 text-muted-foreground shrink-0" />
-                    <div className="min-w-0">
-                      <div className="font-medium text-foreground text-sm truncate">
-                        {currentOrg.name}
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        {getOrgRoleLabel(
-                          organizations.find((o) => o.id === currentOrg.id)
-                            ?.role ?? "MEMBER"
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Workspaces list */}
-              <DropdownMenuLabel className="text-xs text-muted-foreground uppercase tracking-wider">
-                {t("workspaces")}
-              </DropdownMenuLabel>
-
-              {currentOrgWorkspaces.map((ws) => (
-                <DropdownMenuItem
-                  key={ws.id}
-                  onClick={() => handleWorkspaceSwitch(ws.id)}
-                  className={`p-3 cursor-pointer ${
-                    ws.id === workspace?.id
-                      ? "bg-primary/10 border-l-2 border-l-primary"
-                      : ""
-                  }`}
-                >
-                  <div className="flex items-center justify-between w-full">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <Building2 className="w-4 h-4 text-muted-foreground shrink-0" />
-                      <div className="min-w-0">
-                        <div className="font-medium text-foreground truncate">
-                          {ws.name}
-                        </div>
-                        <div className="text-xs text-muted-foreground flex items-center gap-2">
-                          <span className="flex items-center gap-1">
-                            {getRoleIcon(ws)}
-                            {getRoleLabel(ws)}
-                          </span>
-                          <span>-</span>
-                          <span>
-                            {t("servers", { count: ws._count.servers })}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 shrink-0">
-                      {ws.id === workspace?.id && (
-                        <Check className="w-4 h-4 text-primary" />
-                      )}
-                    </div>
-                  </div>
-                </DropdownMenuItem>
-              ))}
-
-              <DropdownMenuSeparator />
-
-              {/* Create workspace button */}
-              {isAdmin && (
-                <DropdownMenuItem
-                  onClick={handleCreateWorkspace}
-                  className={`p-3 ${canCreateWorkspace ? "cursor-pointer" : "cursor-pointer opacity-60"}`}
-                >
-                  <div className="flex items-center justify-between w-full">
-                    <div className="flex items-center gap-3">
-                      {canCreateWorkspace ? (
-                        <Plus className="w-4 h-4 text-muted-foreground" />
-                      ) : (
-                        <Lock className="w-4 h-4 text-muted-foreground/60" />
-                      )}
-                      <span
-                        className={`font-medium ${
-                          canCreateWorkspace
-                            ? "text-foreground"
-                            : "text-muted-foreground/60"
-                        }`}
+            <div className="overflow-hidden">
+              <div
+                className={`flex transition-transform duration-200 ease-in-out ${
+                  view === "organizations"
+                    ? "-translate-x-full"
+                    : "translate-x-0"
+                }`}
+              >
+                {/* Workspace panel */}
+                <div className="w-full shrink-0">
+                  <div className="max-h-[400px] overflow-y-auto">
+                    {/* Current organization header (clickable) */}
+                    {currentOrg && (
+                      <button
+                        type="button"
+                        className="w-full px-3 py-2.5 border-b border-border hover:bg-accent transition-colors text-left"
+                        onClick={() => setView("organizations")}
                       >
-                        {t("createNewWorkspace")}
-                      </span>
-                    </div>
-                    {!canCreateWorkspace &&
-                      (() => {
-                        const buttonConfig = getCreateWorkspaceButtonConfig();
-                        return buttonConfig ? (
-                          <span
-                            className={`px-1.5 py-0.5 ${buttonConfig.badgeColor} text-white text-[10px] rounded-full font-semibold`}
-                          >
-                            {buttonConfig.badge}
-                          </span>
-                        ) : null;
-                      })()}
-                  </div>
-                </DropdownMenuItem>
-              )}
-
-              {/* Switch organization (multi-org only) */}
-              {isMultiOrg && (
-                <>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuLabel className="text-xs text-muted-foreground uppercase tracking-wider">
-                    {t("switchOrganization")}
-                  </DropdownMenuLabel>
-                  {organizations
-                    .filter((org) => org.id !== currentOrg?.id)
-                    .map((org) => (
-                      <DropdownMenuItem
-                        key={org.id}
-                        onClick={() => handleOrgSwitch(org.id)}
-                        className="p-3 cursor-pointer"
-                      >
-                        <div className="flex items-center gap-3 min-w-0">
-                          <Building2 className="w-4 h-4 text-muted-foreground shrink-0" />
-                          <div className="min-w-0">
-                            <div className="font-medium text-foreground truncate">
-                              {org.name}
-                            </div>
-                            <div className="text-xs text-muted-foreground">
-                              {getOrgRoleLabel(org.role)}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <Building2 className="w-4 h-4 text-muted-foreground shrink-0" />
+                            <div className="min-w-0">
+                              <div className="font-medium text-foreground text-sm truncate">
+                                {currentOrg.name}
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                {getOrgRoleLabel(
+                                  organizations.find(
+                                    (o) => o.id === currentOrg.id
+                                  )?.role ?? "MEMBER"
+                                )}
+                              </div>
                             </div>
                           </div>
+                          <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
                         </div>
-                      </DropdownMenuItem>
+                      </button>
+                    )}
+
+                    {/* Workspaces list */}
+                    <div className="px-3 py-2">
+                      <span className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
+                        {t("workspaces")}
+                      </span>
+                    </div>
+
+                    {currentOrgWorkspaces.map((ws) => (
+                      <button
+                        key={ws.id}
+                        type="button"
+                        onClick={() => handleWorkspaceSwitch(ws.id)}
+                        className={`w-full text-left p-3 hover:bg-accent rounded-md cursor-pointer transition-colors ${
+                          ws.id === workspace?.id
+                            ? "bg-primary/10 border-l-2 border-l-primary"
+                            : ""
+                        }`}
+                      >
+                        <div className="flex items-center justify-between w-full">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <Building2 className="w-4 h-4 text-muted-foreground shrink-0" />
+                            <div className="min-w-0">
+                              <div className="font-medium text-foreground truncate">
+                                {ws.name}
+                              </div>
+                              <div className="text-xs text-muted-foreground flex items-center gap-2">
+                                <span className="flex items-center gap-1">
+                                  {getRoleIcon(ws)}
+                                  {getRoleLabel(ws)}
+                                </span>
+                                <span>-</span>
+                                <span>
+                                  {t("servers", { count: ws._count.servers })}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2 shrink-0">
+                            {ws.id === workspace?.id && (
+                              <Check className="w-4 h-4 text-primary" />
+                            )}
+                          </div>
+                        </div>
+                      </button>
                     ))}
-                </>
-              )}
-            </>
+
+                    <div className="border-t border-border my-1" />
+
+                    {/* Create workspace button */}
+                    {isAdmin && (
+                      <button
+                        type="button"
+                        onClick={handleCreateWorkspace}
+                        className={`w-full text-left p-3 hover:bg-accent rounded-md cursor-pointer transition-colors ${
+                          !canCreateWorkspace ? "opacity-60" : ""
+                        }`}
+                      >
+                        <div className="flex items-center justify-between w-full">
+                          <div className="flex items-center gap-3">
+                            {canCreateWorkspace ? (
+                              <Plus className="w-4 h-4 text-muted-foreground" />
+                            ) : (
+                              <Lock className="w-4 h-4 text-muted-foreground/60" />
+                            )}
+                            <span
+                              className={`font-medium ${
+                                canCreateWorkspace
+                                  ? "text-foreground"
+                                  : "text-muted-foreground/60"
+                              }`}
+                            >
+                              {t("createNewWorkspace")}
+                            </span>
+                          </div>
+                          {!canCreateWorkspace &&
+                            (() => {
+                              const buttonConfig =
+                                getCreateWorkspaceButtonConfig();
+                              return buttonConfig ? (
+                                <span
+                                  className={`px-1.5 py-0.5 ${buttonConfig.badgeColor} text-white text-[10px] rounded-full font-semibold`}
+                                >
+                                  {buttonConfig.badge}
+                                </span>
+                              ) : null;
+                            })()}
+                        </div>
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Organization panel */}
+                <div className="w-full shrink-0">
+                  <div className="max-h-[400px] overflow-y-auto">
+                    {/* Back button */}
+                    <button
+                      type="button"
+                      className="w-full px-3 py-2.5 border-b border-border hover:bg-accent transition-colors text-left"
+                      onClick={() => setView("workspaces")}
+                    >
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <ChevronLeft className="w-4 h-4" />
+                        <span>{t("backToWorkspaces")}</span>
+                      </div>
+                    </button>
+
+                    {/* Organizations list */}
+                    <div className="px-3 py-2">
+                      <span className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
+                        {t("organizations")}
+                      </span>
+                    </div>
+
+                    {organizations.map((org) => (
+                      <button
+                        key={org.id}
+                        type="button"
+                        onClick={() => handleOrgSwitch(org.id)}
+                        className={`w-full text-left p-3 hover:bg-accent rounded-md cursor-pointer transition-colors ${
+                          org.id === currentOrg?.id
+                            ? "bg-primary/10 border-l-2 border-l-primary"
+                            : ""
+                        }`}
+                      >
+                        <div className="flex items-center justify-between w-full">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <Building2 className="w-4 h-4 text-muted-foreground shrink-0" />
+                            <div className="min-w-0">
+                              <div className="font-medium text-foreground truncate">
+                                {org.name}
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                {getOrgRoleLabel(org.role)}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2 shrink-0">
+                            {org.id === currentOrg?.id && (
+                              <Check className="w-4 h-4 text-primary" />
+                            )}
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
           )}
-        </DropdownMenuContent>
-      </DropdownMenu>
+        </PopoverContent>
+      </Popover>
 
       {/* Create Workspace Modal */}
       {canCreateWorkspace && (

@@ -35,7 +35,6 @@ vi.mock("@/middlewares/workspace", () => ({
 }));
 
 vi.mock("@/services/plan/plan.service", () => ({
-  getUserPlan: vi.fn(),
   PlanErrorCode: { PLAN_RESTRICTION: "PLAN_RESTRICTION" },
   PlanLimitExceededError: class extends Error {},
   PlanValidationError: class extends Error {},

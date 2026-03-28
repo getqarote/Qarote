@@ -44,5 +44,6 @@
   "admin": "Administrateur",
   "switchOrganization": "Changer d'organisation",
   "orgSwitched": "Organisation changée avec succès !",
-  "orgSwitchedDescription": "Basculé vers {{orgName}}"
+  "orgSwitchedDescription": "Basculé vers {{orgName}}",
+  "backToWorkspaces": "Retour aux espaces de travail"
 }

@@ -16,6 +16,7 @@ import {
   strictRateLimiter,
 } from "./middlewares/rateLimiter";
 
+import type { OrgRole } from "@/generated/prisma/client";
 import { UserRole } from "@/generated/prisma/client";
 import { te } from "@/i18n";
 
@@ -72,6 +73,30 @@ const adminProcedure = protectedProcedure.use(async (opts) => {
   }
 
   return opts.next();
+});
+
+/**
+ * Organization-scoped procedure — requires that the request resolved to an organization.
+ * Narrows `ctx.organizationId` to `string` and `ctx.orgRole` to `OrgRole`
+ * so downstream handlers never need manual null-checks.
+ */
+export const orgScopedProcedure = protectedProcedure.use(async (opts) => {
+  const { ctx } = opts;
+
+  if (!ctx.organizationId || !ctx.orgRole) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: te(ctx.locale, "billing.noOrganization"),
+    });
+  }
+
+  return opts.next({
+    ctx: {
+      ...ctx,
+      organizationId: ctx.organizationId as string,
+      orgRole: ctx.orgRole as OrgRole,
+    },
+  });
 });
 
 /**

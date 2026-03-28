@@ -214,26 +214,6 @@ export async function getOrgPlan(orgId: string): Promise<UserPlan> {
 }
 
 /**
- * Get a user's plan by looking up their organization membership and
- * delegating to getOrgPlan. Falls back to FREE if no membership is found.
- */
-export async function getUserPlan(userId: string) {
-  // Pick the highest-privilege membership. Prisma sorts enums by declaration
-  // order (OWNER=0, ADMIN=1, MEMBER=2), so "asc" gives OWNER first.
-  const membership = await prisma.organizationMember.findFirst({
-    where: { userId },
-    select: { organizationId: true },
-    orderBy: { role: "asc" },
-  });
-
-  if (membership) {
-    return getOrgPlan(membership.organizationId);
-  }
-
-  return UserPlan.FREE;
-}
-
-/**
  * Get the plan for a workspace by resolving its organization.
  */
 export async function getWorkspacePlan(workspaceId: string): Promise<UserPlan> {

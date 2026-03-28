@@ -44,5 +44,6 @@
   "admin": "Admin",
   "switchOrganization": "Switch organization",
   "orgSwitched": "Organization switched successfully!",
-  "orgSwitchedDescription": "Switched to {{orgName}}"
+  "orgSwitchedDescription": "Switched to {{orgName}}",
+  "backToWorkspaces": "Back to workspaces"
 }

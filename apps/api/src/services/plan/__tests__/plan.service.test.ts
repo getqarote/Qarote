@@ -1,11 +1,8 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-
-import { prisma } from "@/core/prisma";
+import { describe, expect, it, vi } from "vitest";
 
 import {
   extractMajorMinorVersion,
   getUpgradeRecommendationForOverLimit,
-  getUserPlan,
   PlanLimitExceededError,
   PlanValidationError,
   validateQueueCreationOnServer,
@@ -21,9 +18,6 @@ vi.mock("@/core/prisma", () => ({
   prisma: {
     user: {
       findUnique: vi.fn(),
-    },
-    organizationMember: {
-      findFirst: vi.fn(),
     },
     subscription: {
       findUnique: vi.fn(),
@@ -342,40 +336,5 @@ describe("validateQueueCreationOnServer", () => {
     expect(() =>
       validateQueueCreationOnServer(UserPlan.ENTERPRISE, 1000)
     ).not.toThrow();
-  });
-});
-
-describe("getUserPlan", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
-  it("returns the subscription plan when user has an org with active subscription", async () => {
-    vi.mocked(prisma.organizationMember.findFirst).mockResolvedValue({
-      organizationId: "org-1",
-    } as never);
-    vi.mocked(prisma.subscription.findUnique).mockResolvedValue({
-      plan: UserPlan.ENTERPRISE,
-    } as never);
-
-    const plan = await getUserPlan("user-1");
-    expect(plan).toBe(UserPlan.ENTERPRISE);
-  });
-
-  it("returns FREE when user has an org but no subscription", async () => {
-    vi.mocked(prisma.organizationMember.findFirst).mockResolvedValue({
-      organizationId: "org-1",
-    } as never);
-    vi.mocked(prisma.subscription.findUnique).mockResolvedValue(null);
-
-    const plan = await getUserPlan("user-1");
-    expect(plan).toBe(UserPlan.FREE);
-  });
-
-  it("returns FREE when user has no org membership", async () => {
-    vi.mocked(prisma.organizationMember.findFirst).mockResolvedValue(null);
-
-    const plan = await getUserPlan("user-1");
-    expect(plan).toBe(UserPlan.FREE);
   });
 });

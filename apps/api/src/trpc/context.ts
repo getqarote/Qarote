@@ -6,7 +6,6 @@ import { extractUserFromToken } from "@/core/auth";
 import { auth } from "@/core/better-auth";
 import { logger } from "@/core/logger";
 import { prisma } from "@/core/prisma";
-import { resolveCurrentOrganization } from "@/core/resolve-org";
 
 import type { OrgRole } from "@/generated/prisma/client";
 
@@ -131,7 +130,7 @@ export async function createContext(opts: {
   // Resolve organization from workspace context
   const effectiveWorkspaceId = workspaceId || user?.workspaceId || null;
   const orgInfo = user
-    ? await resolveCurrentOrganization(prisma, user.id, effectiveWorkspaceId)
+    ? await resolveCurrentOrganization(user.id, effectiveWorkspaceId)
     : null;
 
   // Resolve locale: user preference > Accept-Language header > default
@@ -182,4 +181,62 @@ function resolveLocale(req: HonoRequest, user: SafeUser | null): string {
 
   // 3. Default
   return DEFAULT_LOCALE;
+}
+
+interface OrgResolution {
+  organizationId: string;
+  role: OrgRole;
+}
+
+/**
+ * Resolve the current organization from the user's active workspace.
+ *
+ * Resolution strategy:
+ * 1. If workspaceId is provided, derive the org from workspace.organizationId
+ *    and verify the user is a member of that org (scoped lookup).
+ * 2. If workspaceId is null (onboarding -- user has no workspace yet),
+ *    fall back to the user's first org membership. Logs a warning if the
+ *    user has multiple memberships (should not happen during onboarding).
+ */
+async function resolveCurrentOrganization(
+  userId: string,
+  workspaceId: string | null
+): Promise<OrgResolution | null> {
+  if (workspaceId) {
+    const workspace = await prisma.workspace.findUnique({
+      where: { id: workspaceId },
+      select: { organizationId: true },
+    });
+
+    if (!workspace?.organizationId) {
+      return null;
+    }
+
+    return prisma.organizationMember.findUnique({
+      where: {
+        userId_organizationId: {
+          userId,
+          organizationId: workspace.organizationId,
+        },
+      },
+      select: { organizationId: true, role: true },
+    });
+  }
+
+  // No workspace -- onboarding fallback.
+  // Use findMany + take:2 so we can detect (and warn about) multiple memberships.
+  const memberships = await prisma.organizationMember.findMany({
+    where: { userId },
+    select: { organizationId: true, role: true },
+    take: 2,
+  });
+
+  if (memberships.length > 1) {
+    logger.warn(
+      { userId, count: memberships.length },
+      "User has multiple org memberships but no workspace — picking first"
+    );
+  }
+
+  return memberships[0] ?? null;
 }
