@@ -101,6 +101,9 @@ describe("publicOrgInvitationRouter.getDetails", () => {
     await expect(
       caller.getDetails({ token: "invalid-token" })
     ).rejects.toMatchObject({ code: "NOT_FOUND" });
+
+    // Verify short-circuit: user lookup should not execute when invitation fails
+    expect(mockUserFindUnique).not.toHaveBeenCalled();
   });
 
   it("returns invitation details with org info", async () => {

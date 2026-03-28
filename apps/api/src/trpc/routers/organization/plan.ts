@@ -5,7 +5,6 @@ import { getLicensePayload } from "@/core/feature-flags";
 import {
   getOrgPlan,
   getPlanFeatures,
-  getWorkspacePlan,
   PLAN_FEATURES,
 } from "@/services/plan/plan.service";
 
@@ -79,12 +78,9 @@ export const orgPlanRouter = router({
         });
       }
 
-      // Resolve plan via workspace → organization → subscription.
-      // ctx.organizationId handles both workspace-based and onboarding fallback.
+      // Resolve plan from the org — ctx.organizationId is guaranteed by orgScopedProcedure.
       const currentWorkspace = userWithWorkspace.workspace;
-      let workspacePlan: UserPlan = currentWorkspace
-        ? await getWorkspacePlan(currentWorkspace.id)
-        : await getOrgPlan(ctx.organizationId);
+      let workspacePlan: UserPlan = await getOrgPlan(ctx.organizationId);
 
       // Self-hosted fallback: if no Stripe subscription exists, use the license JWT tier
       if (workspacePlan === UserPlan.FREE && isSelfHostedMode()) {
@@ -97,14 +93,10 @@ export const orgPlanRouter = router({
       // Use workspace plan for all workspace features
       const planFeatures = getPlanFeatures(workspacePlan);
 
-      // Count workspaces via the same org as the current workspace
-      const workspaceCount = currentWorkspace
-        ? await ctx.prisma.workspace.count({
-            where: { organizationId: currentWorkspace.organizationId },
-          })
-        : await ctx.prisma.workspace.count({
-            where: { ownerId: user.id },
-          });
+      // Count workspaces in the current organization
+      const workspaceCount = await ctx.prisma.workspace.count({
+        where: { organizationId: ctx.organizationId },
+      });
 
       // Get current workspace counts
       const workspaceUsers = currentWorkspace?._count.members || 0;

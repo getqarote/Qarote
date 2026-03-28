@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { Context } from "@/trpc/context";
+
 vi.mock("@/trpc/middlewares/rateLimiter", () => ({
   standardRateLimiter: (opts: { next: () => unknown }) => opts.next(),
   strictRateLimiter: (opts: { next: () => unknown }) => opts.next(),
@@ -27,7 +29,7 @@ const mockOrgFindUnique = vi.fn();
 const mockOrgUpdate = vi.fn();
 const mockOrgMemberFindMany = vi.fn();
 
-function makeCtx(overrides: Record<string, unknown> = {}) {
+function makeCtx(overrides: Partial<Context> = {}): Context {
   return {
     prisma: {
       organization: {
@@ -55,7 +57,7 @@ function makeCtx(overrides: Record<string, unknown> = {}) {
     }),
     locale: "en",
     ...overrides,
-  };
+  } as Context;
 }
 
 const mockOrg = {
@@ -78,7 +80,7 @@ describe("managementRouter", () => {
       const caller = managementRouter.createCaller(
         makeCtx({
           resolveOrg: vi.fn().mockResolvedValue(null),
-        }) as never
+        })
       );
 
       await expect(caller.getCurrent()).rejects.toMatchObject({
@@ -90,7 +92,7 @@ describe("managementRouter", () => {
     it("returns org data using ctx.organizationId", async () => {
       mockOrgFindUnique.mockResolvedValue(mockOrg);
 
-      const caller = managementRouter.createCaller(makeCtx() as never);
+      const caller = managementRouter.createCaller(makeCtx());
       const result = await caller.getCurrent();
 
       expect(mockOrgFindUnique).toHaveBeenCalledWith(
@@ -117,7 +119,7 @@ describe("managementRouter", () => {
             organizationId: "org-B",
             role: "MEMBER",
           }),
-        }) as never
+        })
       );
       const result = await caller.getCurrent();
 
@@ -136,7 +138,7 @@ describe("managementRouter", () => {
       const caller = managementRouter.createCaller(
         makeCtx({
           resolveOrg: vi.fn().mockResolvedValue(null),
-        }) as never
+        })
       );
 
       await expect(caller.update({ name: "New Name" })).rejects.toMatchObject({
@@ -152,7 +154,7 @@ describe("managementRouter", () => {
             organizationId: "org-1",
             role: "MEMBER",
           }),
-        }) as never
+        })
       );
 
       await expect(caller.update({ name: "New Name" })).rejects.toMatchObject({
@@ -163,7 +165,7 @@ describe("managementRouter", () => {
     it("updates the correct org using ctx.organizationId", async () => {
       mockOrgUpdate.mockResolvedValue(mockOrg);
 
-      const caller = managementRouter.createCaller(makeCtx() as never);
+      const caller = managementRouter.createCaller(makeCtx());
       await caller.update({ name: "New Acme" });
 
       expect(mockOrgUpdate).toHaveBeenCalledWith(
@@ -184,7 +186,7 @@ describe("managementRouter", () => {
             organizationId: "org-1",
             role: "OWNER",
           }),
-        }) as never
+        })
       );
       const result = await caller.update({ name: "Owner Update" });
 
@@ -197,7 +199,7 @@ describe("managementRouter", () => {
       const caller = managementRouter.createCaller(
         makeCtx({
           resolveOrg: vi.fn().mockResolvedValue(null),
-        }) as never
+        })
       );
 
       await expect(caller.getBillingInfo()).rejects.toMatchObject({
@@ -213,7 +215,7 @@ describe("managementRouter", () => {
             organizationId: "org-1",
             role: "MEMBER",
           }),
-        }) as never
+        })
       );
 
       await expect(caller.getBillingInfo()).rejects.toMatchObject({
@@ -228,7 +230,7 @@ describe("managementRouter", () => {
         subscription: null,
       });
 
-      const caller = managementRouter.createCaller(makeCtx() as never);
+      const caller = managementRouter.createCaller(makeCtx());
       const result = await caller.getBillingInfo();
 
       expect(mockOrgFindUnique).toHaveBeenCalledWith(
@@ -265,8 +267,15 @@ describe("managementRouter", () => {
         },
       ]);
 
-      const caller = managementRouter.createCaller(makeCtx() as never);
+      const caller = managementRouter.createCaller(makeCtx());
       const result = await caller.listMyOrganizations();
+
+      // Verify query is scoped to the authenticated user
+      expect(mockOrgMemberFindMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ userId: "user-1" }),
+        })
+      );
 
       expect(result.organizations).toHaveLength(2);
       expect(result.organizations[0]).toEqual({

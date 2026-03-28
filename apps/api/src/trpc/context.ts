@@ -244,8 +244,9 @@ async function resolveCurrentOrganization(
   if (memberships.length > 1) {
     logger.warn(
       { userId, count: memberships.length },
-      "User has multiple org memberships but no workspace — picking first"
+      "User has multiple org memberships but no workspace — user must choose explicitly"
     );
+    return null;
   }
 
   return memberships[0] ?? null;

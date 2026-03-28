@@ -2,8 +2,6 @@ import { TRPCError } from "@trpc/server";
 
 import type { MessageProperties } from "@/core/rabbitmq/rabbitmq.interfaces";
 
-import { getOrgPlan } from "@/services/plan/plan.service";
-
 import {
   PublishMessageWithQueueSchema,
   VHostRequiredQuerySchema,
@@ -13,7 +11,7 @@ import { authorize, router } from "@/trpc/trpc";
 
 import { createRabbitMQClient, verifyServerAccess } from "./shared";
 
-import { UserPlan, UserRole } from "@/generated/prisma/client";
+import { UserRole } from "@/generated/prisma/client";
 import { te } from "@/i18n";
 
 /**
@@ -56,13 +54,6 @@ export const messagesRouter = router({
             message: te(ctx.locale, "rabbitmq.serverWorkspaceNotFound"),
           });
         }
-
-        const orgInfo = await ctx.resolveOrg();
-        const plan = orgInfo?.organizationId
-          ? await getOrgPlan(orgInfo.organizationId)
-          : UserPlan.FREE;
-
-        ctx.logger.info({ plan }, "Message sending validation");
 
         // Get vhost from validated input (required for message operations)
         const vhost = decodeURIComponent(vhostParam);
