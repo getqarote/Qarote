@@ -10,7 +10,6 @@ interface SEOProps {
   image?: string;
   url?: string;
   type?: string;
-  keywords?: string[];
 }
 
 const SEO = ({
@@ -19,26 +18,6 @@ const SEO = ({
   image = "https://qarote.io/images/social_card.png",
   url = "https://qarote.io",
   type = "website",
-  keywords = [
-    "RabbitMQ",
-    "RabbitMQ monitoring",
-    "RabbitMQ management",
-    "RabbitMQ web interface",
-    "RabbitMQ dashboard",
-    "RabbitMQ admin",
-    "RabbitMQ GUI",
-    "RabbitMQ UI",
-    "RabbitMQ interface",
-    "RabbitMQ monitoring tool",
-    "RabbitMQ management tool",
-    "RabbitMQ queue management",
-    "RabbitMQ management UI",
-    "RabbitMQ monitoring UI",
-    "RabbitMQ admin GUI",
-    "RabbitMQ management interface",
-    "Message Broker",
-    "Queue Management",
-  ],
 }: SEOProps) => {
   const { i18n } = useTranslation();
   const currentLang = i18n.language;
@@ -55,7 +34,6 @@ const SEO = ({
       {/* Basic Meta Tags */}
       <title>{fullTitle}</title>
       <meta name="description" content={description} />
-      <meta name="keywords" content={keywords.join(", ")} />
       <meta name="author" content="Qarote Team" />
       <meta name="robots" content="index, follow" />
       <meta name="googlebot" content="index, follow" />
