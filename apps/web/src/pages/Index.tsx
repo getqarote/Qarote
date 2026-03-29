@@ -85,29 +85,9 @@ const Index = () => {
         </script>
       </Helmet>
       <SEO
-        title="Qarote - Best RabbitMQ Monitoring & Management Interface"
-        description="The best RabbitMQ monitoring and management interface for developers. Monitor queues, track performance, and manage your message broker with a modern dashboard. Cleaner than Management Plugin, simpler than Prometheus."
+        title="Qarote - Modern RabbitMQ Monitoring & Management Dashboard"
+        description="Modern RabbitMQ monitoring and management dashboard for developers. Monitor queues, track performance, and manage your message broker with a clean UI. Cleaner than Management Plugin, simpler than Prometheus."
         url="https://qarote.io"
-        keywords={[
-          "RabbitMQ monitoring",
-          "RabbitMQ management",
-          "RabbitMQ web interface",
-          "RabbitMQ dashboard",
-          "RabbitMQ admin",
-          "RabbitMQ GUI",
-          "RabbitMQ UI",
-          "RabbitMQ interface",
-          "RabbitMQ monitoring tool",
-          "RabbitMQ management tool",
-          "RabbitMQ queue management",
-          "RabbitMQ management UI",
-          "RabbitMQ monitoring UI",
-          "RabbitMQ admin GUI",
-          "RabbitMQ management interface",
-          "How to monitor RabbitMQ queues",
-          "Best RabbitMQ monitoring tools",
-          "Modern RabbitMQ management interface",
-        ]}
       />
       <HeroSection
         isVideoPlaying={isVideoPlaying}
