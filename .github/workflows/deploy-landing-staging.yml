@@ -77,6 +77,10 @@ jobs:
       - name: Install Wrangler CLI globally
         run: npm install -g wrangler@3.90.0
 
+      - name: 🎭 Install Playwright browsers
+        working-directory: apps/web
+        run: pnpm exec playwright install --with-deps chromium
+
       - name: 🏗️ Build landing page
         working-directory: apps/web
         env:

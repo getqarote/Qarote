@@ -41,5 +41,17 @@
   "q7": {
     "question": "我可以免费试用 Qarote 吗？",
     "answer": "当然可以！我们提供免费计划，包含 1 个服务器、1 个工作区和 1 个团队成员。你可以立即开始监控 RabbitMQ 队列，无需信用卡。当你准备好扩展时，可以升级到付费计划。"
+  },
+  "q8": {
+    "question": "我可以自托管 Qarote 吗？",
+    "answer": "可以。Qarote 为需要将监控基础设施保留在自有网络内的团队提供完整的自托管部署选项。你可以使用 Docker、Docker Compose、Dokku 或独立二进制文件进行部署。Community 版本在 GitHub 上以 MIT 许可证免费开源。自托管的 Developer 和 Enterprise 许可证以年度订阅方式提供（分别为 348 美元/年和 1,188 美元/年），采用离线 JWT 许可证密钥验证——激活后无需联网。"
+  },
+  "q9": {
+    "question": "Qarote 支持哪些 RabbitMQ 版本？",
+    "answer": "Qarote 支持 RabbitMQ 3.x 和 4.x 版本，包括最新版本。它通过 RabbitMQ 管理 HTTP API 连接，该 API 在所有启用管理插件的现代 RabbitMQ 安装中都可用。Community（免费）层支持 RabbitMQ LTS 版本，付费计划（Developer 和 Enterprise）支持所有版本。Qarote 已在 Linux、macOS 和 Windows 上的单节点和集群部署中进行了测试，同时兼容 CloudAMQP 和 Amazon MQ 等托管服务。"
+  },
+  "q10": {
+    "question": "Qarote 支持 RabbitMQ 集群吗？",
+    "answer": "支持。Qarote 完全支持 RabbitMQ 集群，并原生提供集群感知监控。当你连接集群部署的 RabbitMQ 时，Qarote 会自动发现集群中的所有节点，并显示节点级别的指标和集群级别的汇总数据。你可以监控各个节点的健康状况（内存、磁盘、文件描述符、Erlang 进程），跟踪队列在节点间的分布，并在特定节点不可用或超过资源阈值时接收告警。"
   }
 }
