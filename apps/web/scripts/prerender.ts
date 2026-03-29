@@ -83,8 +83,18 @@ async function prerender() {
         { timeout: 15000 }
       );
 
-      // Small extra wait for i18n translations to load
-      await page.waitForTimeout(500);
+      // Wait for i18n translations to load (h1 text should not be a key)
+      await page.waitForFunction(
+        () => {
+          const h1 = document.querySelector("h1");
+          return (
+            h1 &&
+            !h1.textContent?.includes(":") &&
+            (h1.textContent?.length ?? 0) > 5
+          );
+        },
+        { timeout: 10000 }
+      );
 
       const html = await page.content();
 
