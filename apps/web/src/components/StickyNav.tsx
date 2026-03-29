@@ -52,17 +52,15 @@ const StickyNav = ({ onVideoClick }: StickyNavProps) => {
     <nav className="sticky top-0 z-50 border-b border-border bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-[1fr_auto] lg:grid-cols-[1fr_auto_1fr] items-center h-16">
-          <div className="flex items-center gap-1">
+          <a href="/" className="flex items-center gap-1">
             <img
               src="/images/new_icon.svg"
               alt=""
               aria-hidden="true"
               className="w-6 h-6 sm:w-8 sm:h-8"
             />
-            <span className="text-foreground font-normal text-[1.2rem]">
-              Qarote
-            </span>
-          </div>
+            <span className="font-normal text-[1.2rem]">Qarote</span>
+          </a>
 
           <div className="hidden lg:flex items-center justify-center gap-1 min-w-0">
             {sections.map((section) => (
