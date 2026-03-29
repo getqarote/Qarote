@@ -11,13 +11,6 @@ interface SEOProps {
   url?: string;
   type?: string;
   keywords?: string[];
-  faq?: FAQItem[];
-  structuredData?: Record<string, unknown>;
-}
-
-interface FAQItem {
-  question: string;
-  answer: string;
 }
 
 const SEO = ({
@@ -46,30 +39,12 @@ const SEO = ({
     "Message Broker",
     "Queue Management",
   ],
-  faq,
-  structuredData,
 }: SEOProps) => {
   const { i18n } = useTranslation();
   const currentLang = i18n.language;
 
   const siteTitle = "Qarote";
   const fullTitle = title === siteTitle ? title : `${title} | ${siteTitle}`;
-
-  // Generate FAQ schema if FAQs are provided
-  const faqSchema = faq
-    ? {
-        "@context": "https://schema.org",
-        "@type": "FAQPage",
-        mainEntity: faq.map((item) => ({
-          "@type": "Question",
-          name: item.question,
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: item.answer,
-          },
-        })),
-      }
-    : null;
 
   const HelmetComponent = Helmet as unknown as ComponentType<{
     children?: React.ReactNode;
@@ -136,18 +111,6 @@ const SEO = ({
         />
       ))}
       <link rel="alternate" hrefLang="x-default" href={url} />
-
-      {/* Structured Data - FAQ */}
-      {faq && (
-        <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
-      )}
-
-      {/* Custom Structured Data */}
-      {structuredData && (
-        <script type="application/ld+json">
-          {JSON.stringify(structuredData)}
-        </script>
-      )}
     </HelmetComponent>
   );
 };
