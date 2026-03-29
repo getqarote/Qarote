@@ -41,5 +41,17 @@
   "q7": {
     "question": "¿Puedo probar Qarote gratis?",
     "answer": "¡Sí! Ofrecemos un plan gratuito que incluye 1 servidor, 1 espacio de trabajo y 1 miembro de equipo. Puedes comenzar a monitorear tus colas de RabbitMQ de inmediato, sin tarjeta de crédito. Cuando estés listo para escalar, puedes actualizar a un plan de pago."
+  },
+  "q8": {
+    "question": "¿Puedo auto-alojar Qarote?",
+    "answer": "Sí. Qarote ofrece opciones de despliegue auto-alojado para equipos que necesitan mantener su infraestructura de monitoreo dentro de su propia red. Puedes desplegar usando Docker, Docker Compose, Dokku o un binario independiente. La edición Community es gratuita y de código abierto bajo licencia MIT en GitHub. Las licencias auto-alojadas Developer y Enterprise están disponibles como suscripciones anuales ($348/año y $1,188/año respectivamente) con validación de clave de licencia JWT sin conexión — no se requiere conexión a internet después de la activación."
+  },
+  "q9": {
+    "question": "¿Qué versiones de RabbitMQ soporta Qarote?",
+    "answer": "Qarote soporta las versiones 3.x y 4.x de RabbitMQ, incluyendo las últimas versiones. Se conecta a través de la API HTTP de gestión de RabbitMQ, disponible en todas las instalaciones modernas con el plugin de gestión habilitado. El tier Community (gratuito) soporta versiones LTS de RabbitMQ, mientras que los planes de pago (Developer y Enterprise) soportan todas las versiones. Qarote está probado con despliegues de un solo nodo y en clúster en Linux, macOS y Windows, así como con servicios gestionados como CloudAMQP y Amazon MQ."
+  },
+  "q10": {
+    "question": "¿Funciona Qarote con clústeres de RabbitMQ?",
+    "answer": "Sí. Qarote soporta completamente los clústeres de RabbitMQ y proporciona monitoreo consciente del clúster de forma nativa. Cuando conectas un despliegue de RabbitMQ en clúster, Qarote descubre automáticamente todos los nodos y muestra métricas a nivel de nodo junto con agregados del clúster. Puedes monitorear la salud de cada nodo (memoria, disco, descriptores de archivos, procesos Erlang), rastrear la distribución de colas entre nodos y recibir alertas cuando nodos específicos no estén disponibles o excedan los umbrales de recursos."
   }
 }
