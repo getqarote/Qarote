@@ -122,6 +122,42 @@ const FaqSection = () => {
                 {tFaq("q7.answer")}
               </AccordionContent>
             </AccordionItem>
+
+            <AccordionItem
+              value="item-8"
+              className="border border-border  px-6 bg-transparent mb-4 last:mb-0"
+            >
+              <AccordionTrigger className="text-left text-foreground hover:no-underline">
+                {tFaq("q8.question")}
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                {tFaq("q8.answer")}
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem
+              value="item-9"
+              className="border border-border  px-6 bg-transparent mb-4 last:mb-0"
+            >
+              <AccordionTrigger className="text-left text-foreground hover:no-underline">
+                {tFaq("q9.question")}
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                {tFaq("q9.answer")}
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem
+              value="item-10"
+              className="border border-border  px-6 bg-transparent mb-4 last:mb-0"
+            >
+              <AccordionTrigger className="text-left text-foreground hover:no-underline">
+                {tFaq("q10.question")}
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground">
+                {tFaq("q10.answer")}
+              </AccordionContent>
+            </AccordionItem>
           </Accordion>
         </div>
 
