@@ -107,37 +107,6 @@ const Index = () => {
             ],
           })}
         </script>
-        <script type="application/ld+json">
-          {JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "HowTo",
-            name: "How to Set Up RabbitMQ Monitoring with Qarote",
-            description:
-              "Get started monitoring your RabbitMQ servers with Qarote in three simple steps. No credit card required.",
-            totalTime: "PT2M",
-            step: [
-              {
-                "@type": "HowToStep",
-                position: 1,
-                name: "Sign Up",
-                text: "Create a free Qarote account in seconds using your email address or Google sign-in. No credit card is required to get started.",
-                url: "https://app.qarote.io/sign-up",
-              },
-              {
-                "@type": "HowToStep",
-                position: 2,
-                name: "Add Your Servers",
-                text: "Connect your RabbitMQ servers by entering the Management API URL and credentials. Qarote supports multiple environments and clusters.",
-              },
-              {
-                "@type": "HowToStep",
-                position: 3,
-                name: "Monitor and Collaborate",
-                text: "Get real-time insights into queues, exchanges, and message flow. Set up alerts, invite your team, and monitor your RabbitMQ infrastructure from one dashboard.",
-              },
-            ],
-          })}
-        </script>
       </Helmet>
       <SEO
         title="Qarote - Modern RabbitMQ Monitoring & Management Dashboard"
