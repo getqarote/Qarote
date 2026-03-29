@@ -52,11 +52,17 @@ const HeroSection = ({ isVideoPlaying, onPlayVideo }: HeroSectionProps) => {
               className="relative w-full aspect-video overflow-hidden group cursor-pointer"
               onClick={onPlayVideo}
             >
-              <img
-                src={"/images/dashboard.png"}
-                alt={"Qarote Dashboard Interface"}
-                className="w-full h-full object-contain bg-card"
-              />
+              <picture>
+                <source srcSet="/images/dashboard.webp" type="image/webp" />
+                <img
+                  src="/images/dashboard.png"
+                  alt="Qarote Dashboard Interface"
+                  className="w-full h-full object-contain bg-card"
+                  width={3024}
+                  height={1706}
+                  fetchPriority="high"
+                />
+              </picture>
               <div className="absolute inset-0 flex items-center justify-center bg-black/15 group-hover:bg-black/20 transition-colors">
                 <div
                   aria-hidden="true"
