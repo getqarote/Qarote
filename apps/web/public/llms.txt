@@ -90,7 +90,7 @@ All connections to RabbitMQ servers are encrypted via TLS. No sensitive data is 
 
 ## Deployment Options
 
-- Cloud hosted: Fully managed at app.qarote.io
+- Cloud-hosted: Fully managed at app.qarote.io
 - Self-hosted: Deploy on your own infrastructure via Docker, Docker Compose, Dokku, or standalone binary
 
 ## Documentation
