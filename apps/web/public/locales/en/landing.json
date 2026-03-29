@@ -39,27 +39,27 @@
     "titleLine2": "Monitored in one place.",
     "liveQueueMonitoring": {
       "title": "Live queue monitoring",
-      "description": "Monitor queue depths, message rates, and consumer counts with live updates. Track message accumulation and processing performance."
+      "description": "See queue depths, message rates, and consumer counts update in real time without refreshing. Qarote streams metrics directly from the RabbitMQ Management HTTP API, so you catch message accumulation and processing slowdowns the moment they happen. Track ready, unacknowledged, and total message counts across every queue in a single view."
     },
     "smartAlertingSystem": {
       "title": "Smart alerting system",
-      "description": "Intelligent alerts for queue backlogs, memory usage, and performance issues. Customizable thresholds with severity-based notifications."
+      "description": "Define custom thresholds for queue backlogs, memory usage, disk space, and message rates. When a threshold is breached, Qarote sends severity-based notifications via email, Slack, browser push, or webhook\u2014so the right person is alerted before users notice. Alerts are evaluated continuously, not on a polling interval, reducing mean time to detection."
     },
     "queueManagement": {
       "title": "Queue management",
-      "description": "Pause, resume, and delete queues with one click. Create exchanges, bind queues, and manage routing keys through an intuitive interface."
+      "description": "Pause, resume, purge, and delete queues with one click instead of running rabbitmqctl commands. Create exchanges, bind queues, and manage routing keys through an intuitive interface that shows bindings visually. Qarote supports direct, topic, fanout, and headers exchange types across RabbitMQ 3.x and 4.x."
     },
     "performanceAnalytics": {
       "title": "Performance analytics",
-      "description": "Detailed metrics on memory usage, disk space, file descriptors, and message throughput. Visualize trends with beautiful charts and graphs."
+      "description": "Track memory usage, disk space, file descriptors, Erlang process counts, and message throughput over time. Qarote renders trends as interactive charts so you can spot capacity issues before they cause outages. Compare metrics across servers and time ranges to identify performance regressions and plan scaling decisions."
     },
     "multiServerSupport": {
       "title": "Multi-server support",
-      "description": "Connect to multiple RabbitMQ clusters and switch between them seamlessly. Support for different environments and configurations."
+      "description": "Connect production, staging, and development RabbitMQ clusters in one dashboard and switch between them instantly. Organize servers into workspaces by team or environment. Each connection is isolated, so a misconfigured staging broker never affects your production view. Supports both single-node and clustered deployments."
     },
     "messagePublishing": {
       "title": "Message publishing",
-      "description": "Test and debug your applications by publishing messages directly to queues and exchanges. Perfect for development and troubleshooting."
+      "description": "Publish test messages directly to queues and exchanges from the dashboard\u2014no code, no CLI. Set routing keys, headers, content type, and delivery mode before sending. Ideal for debugging consumer logic, verifying exchange routing rules, and reproducing production issues in a safe environment without writing throwaway scripts."
     }
   },
   "enterprise": {
