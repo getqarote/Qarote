@@ -1,0 +1,20 @@
+# Security headers (all pages)
+/*
+  X-Frame-Options: SAMEORIGIN
+  X-Content-Type-Options: nosniff
+  X-XSS-Protection: 1; mode=block
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+
+# Immutable cache for hashed assets (1 year)
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Cache locale files (1 hour)
+/locales/*
+  Cache-Control: public, max-age=3600
+
+# Cache images (1 month)
+/images/*
+  Cache-Control: public, max-age=2592000
