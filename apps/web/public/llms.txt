@@ -89,7 +89,7 @@ Prometheus and Grafana are powerful general-purpose monitoring tools, but settin
 
 ## Security
 
-All connections to RabbitMQ servers are encrypted via TLS. Qarote only reads the metrics and management data exposed by the RabbitMQ Management HTTP API -- it does not store message payloads, credentials, or sensitive application data. Only configuration and alert preferences are persisted. SOC 2 compliance is available on Enterprise plans. Self-hosted deployment ensures data never leaves your network.
+Connections to RabbitMQ servers use TLS encryption by default. Qarote is designed to read only the metrics and management data exposed by the RabbitMQ Management HTTP API -- it is not designed to store message payloads, credentials, or sensitive application data. Only configuration and alert preferences are persisted. SOC 2 compliance is available for Enterprise plans. Self-hosted deployment keeps data within your network.
 
 ## Deployment Options
 
@@ -127,7 +127,7 @@ Qarote is a modern RabbitMQ monitoring and management dashboard designed for dev
 Qarote is designed for developers, DevOps engineers, SREs, and platform teams who rely on RabbitMQ for message queuing and want better visibility into their broker infrastructure. Whether you manage a single RabbitMQ instance or operate dozens of clusters across environments, Qarote helps you spot queue backlogs before they cause outages, troubleshoot message routing issues faster, and keep your team aligned with shared dashboards and customizable alerts.
 
 ### Is Qarote secure?
-Yes. All connections between Qarote and your RabbitMQ servers are encrypted using TLS. Qarote only reads the metrics and management data exposed by the RabbitMQ Management HTTP API -- it does not store message payloads, credentials, or sensitive application data. For teams with strict compliance requirements, the Enterprise plan includes SOC 2 compliance, and Qarote can be fully self-hosted to ensure data never leaves your network.
+Yes. Connections between Qarote and your RabbitMQ servers use TLS encryption by default. Qarote is designed to read only the metrics and management data exposed by the RabbitMQ Management HTTP API -- it is not designed to store message payloads, credentials, or sensitive application data. For teams with strict compliance requirements, the Enterprise plan includes SOC 2 compliance, and Qarote can be fully self-hosted to keep data within your network.
 
 ### How is Qarote different from the RabbitMQ Management UI?
 The built-in Management Plugin is slow on large deployments, cluttered, and limited to a single broker. Qarote offers a modern fast interface, multi-server support, smart alerts via email/Slack/webhooks, real-time charts with historical data, and team collaboration with shared workspaces and role-based access.
