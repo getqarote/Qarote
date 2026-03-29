@@ -105,7 +105,7 @@ async function prerender() {
           : join(DIST_DIR, route, "index.html");
 
       mkdirSync(dirname(outputPath), { recursive: true });
-      writeFileSync(outputPath, `<!doctype html>\n${html}`);
+      writeFileSync(outputPath, html);
       console.log(`  Wrote ${outputPath}`);
 
       await page.close();
