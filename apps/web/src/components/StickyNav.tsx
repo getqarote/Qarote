@@ -118,6 +118,9 @@ const StickyNav = ({ onVideoClick }: StickyNavProps) => {
               onClick={() => setOpen(true)}
               className="lg:hidden p-2 text-foreground hover:text-primary transition-colors"
               aria-label={t("openMenu", "Open menu")}
+              aria-expanded={open}
+              aria-haspopup="dialog"
+              aria-controls="mobile-nav"
             >
               <Menu className="h-6 w-6" />
             </button>
@@ -126,7 +129,7 @@ const StickyNav = ({ onVideoClick }: StickyNavProps) => {
       </div>
 
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side="right" className="w-72">
+        <SheetContent side="right" className="w-72" id="mobile-nav">
           <SheetHeader>
             <SheetTitle className="flex items-center gap-1">
               <img
