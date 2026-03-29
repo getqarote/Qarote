@@ -1,8 +1,17 @@
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
+
+import { Menu } from "lucide-react";
 
 import { trackSignUpClick } from "@/lib/gtm";
 
 import { GithubStarBadge } from "@/components/GithubStarBadge";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 
 interface StickyNavProps {
   onVideoClick?: () => void;
@@ -10,6 +19,7 @@ interface StickyNavProps {
 
 const StickyNav = ({ onVideoClick }: StickyNavProps) => {
   const { t } = useTranslation("nav");
+  const [open, setOpen] = useState(false);
 
   const sections = [
     { id: "video", label: t("howItWorks") },
@@ -77,13 +87,7 @@ const StickyNav = ({ onVideoClick }: StickyNavProps) => {
             <GithubStarBadge />
             <a
               href={`${import.meta.env.VITE_APP_BASE_URL}/auth/sign-in`}
-              className="sm:hidden text-foreground hover:text-primary px-2 py-2 text-sm font-medium transition-colors"
-            >
-              {t("login")}
-            </a>
-            <a
-              href={`${import.meta.env.VITE_APP_BASE_URL}/auth/sign-in`}
-              className="hidden sm:block text-foreground hover:text-primary px-2 sm:px-4 py-2 text-base font-medium transition-colors"
+              className="hidden lg:block text-foreground hover:text-primary px-2 sm:px-4 py-2 text-base font-medium transition-colors"
             >
               {t("login")}
             </a>
@@ -97,7 +101,7 @@ const StickyNav = ({ onVideoClick }: StickyNavProps) => {
                 });
                 window.location.href = `${authBaseUrl}/auth/sign-up`;
               }}
-              className="bg-gradient-button hover:bg-gradient-button-hover text-white px-2 sm:px-4 py-2 text-sm sm:text-base transition-colors whitespace-nowrap rounded-full inline-flex items-center justify-center gap-2"
+              className="hidden lg:inline-flex bg-gradient-button hover:bg-gradient-button-hover text-white px-2 sm:px-4 py-2 text-sm sm:text-base transition-colors whitespace-nowrap rounded-full items-center justify-center gap-2"
             >
               <span>{t("tryForFree")}</span>
               <img
@@ -107,9 +111,81 @@ const StickyNav = ({ onVideoClick }: StickyNavProps) => {
                 className="h-[0.8em] w-auto align-middle image-crisp"
               />
             </button>
+            <button
+              type="button"
+              onClick={() => setOpen(true)}
+              className="lg:hidden p-2 text-foreground hover:text-primary transition-colors"
+              aria-label={t("openMenu", "Open menu")}
+            >
+              <Menu className="h-6 w-6" />
+            </button>
           </div>
         </div>
       </div>
+
+      <Sheet open={open} onOpenChange={setOpen}>
+        <SheetContent side="right" className="w-72">
+          <SheetHeader>
+            <SheetTitle className="flex items-center gap-1">
+              <img
+                src="/images/new_icon.svg"
+                alt=""
+                aria-hidden="true"
+                className="w-6 h-6"
+              />
+              Qarote
+            </SheetTitle>
+          </SheetHeader>
+          <nav className="flex flex-col gap-1 mt-4">
+            {sections.map((section) => (
+              <button
+                type="button"
+                key={section.id}
+                onClick={() => {
+                  scrollToSection(section.id);
+                  setOpen(false);
+                }}
+                className="px-4 py-3 text-base font-medium text-foreground hover:text-primary hover:bg-muted rounded-md text-left transition-colors"
+              >
+                {section.label}
+              </button>
+            ))}
+            <a
+              href="/changelog"
+              className="px-4 py-3 text-base font-medium text-foreground hover:text-primary hover:bg-muted rounded-md transition-colors"
+            >
+              {t("whatsNew", "What's New")}
+            </a>
+            <div className="border-t border-border my-2" />
+            <a
+              href={`${import.meta.env.VITE_APP_BASE_URL}/auth/sign-in`}
+              className="px-4 py-3 text-base font-medium text-foreground hover:text-primary hover:bg-muted rounded-md transition-colors"
+            >
+              {t("login")}
+            </a>
+            <button
+              type="button"
+              onClick={() => {
+                const authBaseUrl = import.meta.env.VITE_APP_BASE_URL;
+                trackSignUpClick({
+                  source: "mobile_nav",
+                  location: "landing_page",
+                });
+                window.location.href = `${authBaseUrl}/auth/sign-up`;
+              }}
+              className="mx-4 mt-2 bg-gradient-button hover:bg-gradient-button-hover text-white px-4 py-3 text-base transition-colors whitespace-nowrap rounded-full inline-flex items-center justify-center gap-2"
+            >
+              <span>{t("tryForFree")}</span>
+              <img
+                src="/images/arrow-right.svg"
+                alt=""
+                aria-hidden="true"
+                className="h-[0.8em] w-auto align-middle image-crisp"
+              />
+            </button>
+          </nav>
+        </SheetContent>
+      </Sheet>
     </nav>
   );
 };

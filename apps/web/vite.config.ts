@@ -37,7 +37,9 @@ export default defineConfig({
           // UI components chunk - only include installed packages
           "vendor-ui": [
             "@radix-ui/react-accordion",
+            "@radix-ui/react-dialog",
             "@radix-ui/react-slot",
+            "@radix-ui/react-switch",
             "@radix-ui/react-toast",
             "@radix-ui/react-tooltip",
           ],
