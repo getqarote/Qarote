@@ -51,7 +51,7 @@ const StickyNav = ({ onVideoClick }: StickyNavProps) => {
   return (
     <nav className="sticky top-0 z-50 border-b border-border bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-[1fr_auto_1fr] items-center h-16">
+        <div className="grid grid-cols-[1fr_auto] lg:grid-cols-[1fr_auto_1fr] items-center h-16">
           <div className="flex items-center gap-1">
             <img
               src="/images/new_icon.svg"
@@ -84,7 +84,9 @@ const StickyNav = ({ onVideoClick }: StickyNavProps) => {
           </div>
 
           <div className="flex items-center justify-end gap-1 sm:gap-2">
-            <GithubStarBadge />
+            <div className="hidden sm:block">
+              <GithubStarBadge />
+            </div>
             <a
               href={`${import.meta.env.VITE_APP_BASE_URL}/auth/sign-in`}
               className="hidden lg:block text-foreground hover:text-primary px-2 sm:px-4 py-2 text-base font-medium transition-colors"
