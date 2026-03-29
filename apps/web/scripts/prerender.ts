@@ -96,6 +96,53 @@ async function prerender() {
         { timeout: 10000 }
       );
 
+      // Deduplicate head elements: Helmet injects tags with data-rh attr,
+      // remove the original static duplicates from index.html
+      await page.evaluate(() => {
+        const head = document.head;
+
+        // Deduplicate <title> — keep only the last one (Helmet's)
+        const titles = head.querySelectorAll("title");
+        if (titles.length > 1) {
+          for (let i = 0; i < titles.length - 1; i++) titles[i].remove();
+        }
+
+        // Deduplicate meta tags by name or property
+        const seen = new Map<string, Element>();
+        for (const meta of Array.from(head.querySelectorAll("meta"))) {
+          const key =
+            meta.getAttribute("name") ||
+            meta.getAttribute("property") ||
+            meta.getAttribute("http-equiv");
+          if (!key) continue;
+          if (seen.has(key)) {
+            seen.get(key)!.remove(); // remove the earlier (static) one
+          }
+          seen.set(key, meta);
+        }
+
+        // Deduplicate link[rel="canonical"] — keep only the last one
+        const canonicals = head.querySelectorAll('link[rel="canonical"]');
+        if (canonicals.length > 1) {
+          for (let i = 0; i < canonicals.length - 1; i++)
+            canonicals[i].remove();
+        }
+
+        // Deduplicate Tawk.to scripts
+        const tawkScripts = Array.from(
+          head.querySelectorAll('script[src*="tawk.to"]')
+        );
+        if (tawkScripts.length > 1) {
+          for (let i = 1; i < tawkScripts.length; i++) tawkScripts[i].remove();
+        }
+        const bodyTawk = Array.from(
+          document.body.querySelectorAll('script[src*="tawk.to"]')
+        );
+        if (bodyTawk.length > 1) {
+          for (let i = 1; i < bodyTawk.length; i++) bodyTawk[i].remove();
+        }
+      });
+
       const html = await page.content();
 
       // Write the prerendered HTML
