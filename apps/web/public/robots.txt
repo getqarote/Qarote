@@ -2,7 +2,7 @@
 User-agent: *
 Allow: /
 
-# Allow social media crawlers to access all content
+# Allow social media crawlers
 User-agent: Twitterbot
 Allow: /
 
@@ -17,6 +17,29 @@ Allow: /
 
 User-agent: WhatsApp
 Allow: /
+
+# Allow AI search crawlers
+User-agent: GPTBot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+# Block AI training-only crawlers (no search visibility benefit)
+User-agent: CCBot
+Disallow: /
+
+User-agent: anthropic-ai
+Disallow: /
+
+User-agent: cohere-ai
+Disallow: /
 
 # Sitemap location
 Sitemap: https://qarote.io/sitemap.xml
