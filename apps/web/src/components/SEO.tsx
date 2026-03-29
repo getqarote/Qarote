@@ -77,6 +77,32 @@ const SEO = ({
       {/* Canonical URL */}
       <link rel="canonical" href={url} />
 
+      {/* BreadcrumbList Schema */}
+      <script type="application/ld+json">
+        {JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          itemListElement: [
+            {
+              "@type": "ListItem",
+              position: 1,
+              name: "Home",
+              item: "https://qarote.io/",
+            },
+            ...(url !== "https://qarote.io" && url !== "https://qarote.io/"
+              ? [
+                  {
+                    "@type": "ListItem",
+                    position: 2,
+                    name: title.replace(/ \| Qarote$|- Modern RabbitMQ.*$/, ""),
+                    item: url,
+                  },
+                ]
+              : []),
+          ],
+        })}
+      </script>
+
       {/* Hreflang tags for all supported locales */}
       {SUPPORTED_LOCALES.map((locale) => (
         <link

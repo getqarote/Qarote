@@ -101,7 +101,9 @@
           "offerCount": 3,
           "availability": "https://schema.org/InStock"
         },
-        "screenshot": "https://qarote.io/images/social_card.png"
+        "screenshot": "https://qarote.io/images/social_card.png",
+        "datePublished": "2025-06-05",
+        "dateModified": "2026-03-29"
       }
     </script>
 
@@ -110,6 +112,7 @@
       {
         "@context": "https://schema.org",
         "@type": "Organization",
+        "@id": "https://qarote.io/#organization",
         "name": "Qarote",
         "url": "https://qarote.io",
         "logo": {
@@ -125,6 +128,20 @@
           "https://www.linkedin.com/company/qarote/",
           "https://discord.gg/GwHRbGwyUG"
         ]
+      }
+    </script>
+
+    <!-- WebSite Schema -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "Qarote",
+        "url": "https://qarote.io",
+        "description": "Modern RabbitMQ monitoring and management dashboard",
+        "publisher": {
+          "@id": "https://qarote.io/#organization"
+        }
       }
     </script>
 
