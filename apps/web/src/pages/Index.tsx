@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
+import { Helmet } from "react-helmet-async";
 
 import ComparisonSection from "@/components/landing/ComparisonSection";
 import ConnectionSection from "@/components/landing/ConnectionSection";
@@ -13,12 +13,77 @@ import SEO from "@/components/SEO";
 import StickyNav from "@/components/StickyNav";
 
 const Index = () => {
-  const { t: tFaq } = useTranslation("faq");
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
 
   return (
     <div className="min-h-screen font-sans bg-white">
       <StickyNav onVideoClick={() => setIsVideoPlaying(true)} />
+      <Helmet>
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: [
+              {
+                "@type": "Question",
+                name: "What is Qarote?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "Qarote is a modern, user-friendly dashboard that helps you monitor and manage your RabbitMQ servers effortlessly. Instead of using clunky command-line tools or the default RabbitMQ management plugin, Qarote gives you a clean, visual interface to see your queues, messages, and system health in real time.",
+                },
+              },
+              {
+                "@type": "Question",
+                name: "Who is Qarote for?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "Qarote is designed for developers, DevOps engineers, and teams who use RabbitMQ and want better visibility, easier troubleshooting, and smarter alerts. Whether you manage one broker or dozens, Qarote helps you save time and prevent message bottlenecks.",
+                },
+              },
+              {
+                "@type": "Question",
+                name: "Is Qarote secure?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "Absolutely. All connections to your RabbitMQ servers are encrypted (TLS), and no sensitive data is stored on our servers\u2014only your configuration and alert preferences. Qarote only reads the metrics and management data needed for your dashboard.",
+                },
+              },
+              {
+                "@type": "Question",
+                name: "What can I do with Qarote?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "With Qarote, you can: Monitor queue depths, message rates, and consumer counts. Set up alerts for queue backlogs or server health issues. Visualize memory usage, file descriptors, and more. Pause, resume, or delete queues with one click. Publish messages directly to queues or exchanges. Connect multiple RabbitMQ instances in one place.",
+                },
+              },
+              {
+                "@type": "Question",
+                name: "How is Qarote different from the RabbitMQ Management UI?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "The built-in RabbitMQ Management Plugin works, but it's slow, cluttered, and hard to scale across multiple brokers. Qarote offers: A faster, more intuitive interface. Multi-server support in one dashboard. Smart, customizable alerts. Beautiful, real-time charts and metrics. A clean experience designed for teams.",
+                },
+              },
+              {
+                "@type": "Question",
+                name: "Is Qarote a better monitoring tool than Prometheus and Grafana?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "Qarote offers purpose-built monitoring specifically for RabbitMQ with zero configuration. While Prometheus and Grafana are powerful, they require significant setup and maintenance. Qarote provides comparable insights with much less overhead.",
+                },
+              },
+              {
+                "@type": "Question",
+                name: "Can I try Qarote for free?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "Yes! We offer a free tier that includes 1 server, 1 workspace, and 1 team member. You can start monitoring your RabbitMQ queues right away without a credit card. When you're ready to scale, you can upgrade to a paid plan.",
+                },
+              },
+            ],
+          })}
+        </script>
+      </Helmet>
       <SEO
         title="Qarote - Best RabbitMQ Monitoring & Management Interface"
         description="The best RabbitMQ monitoring and management interface for developers. Monitor queues, track performance, and manage your message broker with a modern dashboard. Cleaner than Management Plugin, simpler than Prometheus."
@@ -43,60 +108,6 @@ const Index = () => {
           "Best RabbitMQ monitoring tools",
           "Modern RabbitMQ management interface",
         ]}
-        faq={[
-          {
-            question: tFaq("q1.question"),
-            answer: tFaq("q1.answer"),
-          },
-          {
-            question: tFaq("q2.question"),
-            answer: tFaq("q2.answer"),
-          },
-          {
-            question: tFaq("q3.question"),
-            answer: tFaq("q3.answer"),
-          },
-          {
-            question: tFaq("q4.question"),
-            answer: tFaq("q4.answer"),
-          },
-          {
-            question: tFaq("q5.question"),
-            answer: tFaq("q5.answer"),
-          },
-          {
-            question: tFaq("q6.question"),
-            answer: tFaq("q6.answer"),
-          },
-          {
-            question: tFaq("q7.question"),
-            answer: tFaq("q7.answer"),
-          },
-        ]}
-        structuredData={{
-          "@context": "https://schema.org",
-          "@type": "SoftwareApplication",
-          name: "Qarote",
-          applicationCategory: "DeveloperApplication",
-          operatingSystem: "Any",
-          offers: {
-            "@type": "Offer",
-            price: "0",
-            priceCurrency: "USD",
-            availability: "https://schema.org/ComingSoon",
-          },
-          description:
-            "The modern RabbitMQ management interface you deserve. Cleaner than Management Plugin. Simpler than Prometheus. Cheaper than Cloud Solutions.",
-          screenshot: "https://qarote.io/images/social_card.png",
-          softwareVersion: "1.0",
-          aggregateRating: {
-            "@type": "AggregateRating",
-            ratingValue: "5",
-            ratingCount: "3",
-            bestRating: "5",
-            worstRating: "1",
-          },
-        }}
       />
       <HeroSection
         isVideoPlaying={isVideoPlaying}

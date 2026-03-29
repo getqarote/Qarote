@@ -5,6 +5,7 @@ import { trackSignUpClick } from "@/lib/gtm";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
 
 const FeatureItem = ({ children }: { children: React.ReactNode }) => (
   <li className="flex items-start gap-3">
@@ -219,32 +220,16 @@ const PricingSection = () => {
           </div>
 
           {/* Billing Toggle — right on desktop, centered on mobile */}
-          <div
-            className={`sm:absolute sm:right-0 flex items-center gap-3 ${hostingMode === "selfhost" ? "opacity-30 pointer-events-none" : ""}`}
-          >
-            <button
-              type="button"
-              onClick={() =>
-                setBillingPeriod(
-                  billingPeriod === "monthly" ? "yearly" : "monthly"
-                )
+          <div className="sm:absolute sm:right-0 flex items-center gap-3">
+            <Switch
+              checked={billingPeriod === "yearly"}
+              onCheckedChange={(checked) =>
+                setBillingPeriod(checked ? "yearly" : "monthly")
               }
-              data-state={billingPeriod === "yearly" ? "checked" : "unchecked"}
-              className="relative inline-flex items-center transition-colors bg-muted data-[state=checked]:bg-gradient-button"
-              style={{ width: "27px", height: "15px" }}
-            >
-              <span
-                className="inline-block bg-white transition-transform"
-                style={{
-                  width: "9px",
-                  height: "9px",
-                  transform:
-                    billingPeriod === "yearly"
-                      ? "translateX(15px)"
-                      : "translateX(3px)",
-                }}
-              />
-            </button>
+              disabled={hostingMode === "selfhost"}
+              aria-label={tPricing("billedYearly")}
+              className="data-[state=checked]:bg-gradient-button"
+            />
             <span
               className={`text-sm font-medium ${billingPeriod === "yearly" ? "text-foreground" : "text-muted-foreground"}`}
             >
