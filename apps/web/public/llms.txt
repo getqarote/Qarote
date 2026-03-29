@@ -4,7 +4,7 @@
 
 ## Product Overview
 
-Qarote is a SaaS product with a freemium model. The core monitoring tier is free and open source (MIT licensed). Premium features including multi-server support, workspaces, alerting, and integrations are available through paid plans. Qarote can be deployed as a cloud-hosted service or self-hosted on your own infrastructure.
+Qarote is a SaaS product with a freemium model. The core monitoring tier is free and open source (MIT licensed). Premium features including multi-server support, workspaces, alerting, and integrations are available through paid plans. Qarote can be deployed as a cloud-hosted service or self-hosted on your own infrastructure. It supports RabbitMQ versions 3.x and 4.x, connects via the Management HTTP API over encrypted TLS connections, and works with both single-node and clustered deployments.
 
 - Website: https://qarote.io
 - Application: https://app.qarote.io
@@ -12,26 +12,27 @@ Qarote is a SaaS product with a freemium model. The core monitoring tier is free
 - Discord: https://discord.gg/GwHRbGwyUG
 - LinkedIn: https://www.linkedin.com/company/qarote/
 - Contact: support@qarote.io
+- Full details: https://qarote.io/llms-full.txt
 
 ## Features
 
 ### Live Queue Monitoring
-Monitor queue depths, message rates, and consumer counts with live updates. Track message accumulation and processing performance in real time.
+Monitor queue depths, message rates, and consumer counts with live-updating charts. Track message accumulation and processing performance in real time across all your RabbitMQ servers.
 
 ### Smart Alerting System
-Intelligent alerts for queue backlogs, memory usage, and performance issues. Customizable thresholds with severity-based notifications via email, Slack, browser, and webhook.
+Intelligent alerts for queue backlogs, memory usage, and performance issues. Customizable thresholds with severity-based notifications via email, Slack, browser notifications, and webhooks.
 
 ### Queue Management
-Pause, resume, and delete queues with one click. Create exchanges, bind queues, and manage routing keys through an intuitive interface. Full support for queue, exchange, virtual host, and RabbitMQ user management.
+Pause, resume, purge, and delete queues with one click. Create exchanges, bind queues, and manage routing keys through an intuitive interface. Full support for queue, exchange, virtual host, and RabbitMQ user management.
 
 ### Performance Analytics
-Detailed metrics on memory usage, disk space, file descriptors, and message throughput. Visualize trends with charts and graphs.
+Detailed metrics on memory usage, disk space, file descriptors, Erlang processes, and message throughput. Visualize trends with real-time charts and historical data.
 
 ### Multi-Server Support
 Connect to multiple RabbitMQ clusters and switch between them seamlessly. Support for different environments (production, staging, development) and configurations.
 
 ### Message Publishing
-Test and debug applications by publishing messages directly to queues and exchanges. Useful for development and troubleshooting.
+Test and debug applications by publishing messages directly to queues and exchanges. Useful for development, integration testing, and troubleshooting.
 
 ### Topology Visualization
 Visual representation of your RabbitMQ topology including queues, exchanges, and bindings.
@@ -80,18 +81,28 @@ Visual representation of your RabbitMQ topology including queues, exchanges, and
 
 ## Comparison with Alternatives
 
-Qarote vs. RabbitMQ Management Plugin: Qarote offers a faster, more intuitive interface with multi-server support, smart customizable alerts, real-time charts, and a team-oriented experience.
+### Qarote vs. RabbitMQ Management Plugin
+The built-in RabbitMQ Management Plugin provides basic monitoring but is slow to load on large deployments, offers a cluttered interface, and only connects to a single broker at a time. Qarote provides a modern, fast interface that loads instantly even with thousands of queues, multi-server support, smart customizable alerts, real-time charts with historical data, and team collaboration with shared workspaces.
 
-Qarote vs. Prometheus and Grafana: Qarote provides purpose-built RabbitMQ monitoring with zero configuration. While Prometheus and Grafana are powerful general-purpose tools, they require significant setup and maintenance. Qarote delivers comparable RabbitMQ insights with much less overhead.
+### Qarote vs. Prometheus and Grafana
+Prometheus and Grafana are powerful general-purpose monitoring tools, but setting them up for RabbitMQ requires installing the Prometheus exporter plugin, configuring scrape targets, building custom Grafana dashboards, and maintaining the entire stack. Qarote provides purpose-built RabbitMQ monitoring with zero configuration -- connect your server and start monitoring immediately with pre-built dashboards, queue management controls, and alerting without writing a single PromQL query.
 
 ## Security
 
-All connections to RabbitMQ servers are encrypted via TLS. No sensitive data is stored on Qarote servers -- only configuration and alert preferences. Qarote reads only the metrics and management data needed for the dashboard. SOC 2 compliance is available on all plans.
+All connections to RabbitMQ servers are encrypted via TLS. Qarote only reads the metrics and management data exposed by the RabbitMQ Management HTTP API -- it does not store message payloads, credentials, or sensitive application data. Only configuration and alert preferences are persisted. SOC 2 compliance is available on Enterprise plans. Self-hosted deployment ensures data never leaves your network.
 
 ## Deployment Options
 
 - Cloud-hosted: Fully managed at app.qarote.io
 - Self-hosted: Deploy on your own infrastructure via Docker, Docker Compose, Dokku, or standalone binary
+- Self-hosted licenses use offline JWT key validation -- no phone-home required
+
+## RabbitMQ Version Compatibility
+
+- RabbitMQ 3.x: Fully supported (Community tier supports LTS versions only)
+- RabbitMQ 4.x: Fully supported on paid plans
+- Tested with single-node and clustered deployments
+- Compatible with managed services: CloudAMQP, Amazon MQ
 
 ## Documentation
 
@@ -110,19 +121,28 @@ All connections to RabbitMQ servers are encrypted via TLS. No sensitive data is 
 ## FAQ
 
 ### What is Qarote?
-Qarote is a modern, user-friendly dashboard that helps you monitor and manage your RabbitMQ servers effortlessly. Instead of using clunky command-line tools or the default RabbitMQ management plugin, Qarote gives you a clean, visual interface to see your queues, messages, and system health in real time.
+Qarote is a modern RabbitMQ monitoring and management dashboard designed for developers and DevOps teams. It replaces the default RabbitMQ Management Plugin with a faster, more intuitive interface that lets you monitor queue depths, message rates, consumer counts, memory usage, and disk space in real time. Qarote supports RabbitMQ versions 3.x and 4.x, connects via the Management HTTP API over encrypted TLS connections, and works with both cloud-hosted and self-hosted RabbitMQ instances.
 
 ### Who is Qarote for?
-Qarote is designed for developers, DevOps engineers, and teams who use RabbitMQ and want better visibility, easier troubleshooting, and smarter alerts. Whether you manage one broker or dozens, Qarote helps you save time and prevent message bottlenecks.
+Qarote is designed for developers, DevOps engineers, SREs, and platform teams who rely on RabbitMQ for message queuing and want better visibility into their broker infrastructure. Whether you manage a single RabbitMQ instance or operate dozens of clusters across environments, Qarote helps you spot queue backlogs before they cause outages, troubleshoot message routing issues faster, and keep your team aligned with shared dashboards and customizable alerts.
 
 ### Is Qarote secure?
-All connections to your RabbitMQ servers are encrypted (TLS), and no sensitive data is stored on Qarote servers -- only your configuration and alert preferences. Qarote only reads the metrics and management data needed for your dashboard.
+Yes. All connections between Qarote and your RabbitMQ servers are encrypted using TLS. Qarote only reads the metrics and management data exposed by the RabbitMQ Management HTTP API -- it does not store message payloads, credentials, or sensitive application data. For teams with strict compliance requirements, the Enterprise plan includes SOC 2 compliance, and Qarote can be fully self-hosted to ensure data never leaves your network.
 
 ### How is Qarote different from the RabbitMQ Management UI?
-The built-in RabbitMQ Management Plugin works, but it is slow, cluttered, and hard to scale across multiple brokers. Qarote offers a faster and more intuitive interface, multi-server support in one dashboard, smart customizable alerts, real-time charts and metrics, and a clean experience designed for teams.
+The built-in Management Plugin is slow on large deployments, cluttered, and limited to a single broker. Qarote offers a modern fast interface, multi-server support, smart alerts via email/Slack/webhooks, real-time charts with historical data, and team collaboration with shared workspaces and role-based access.
 
 ### Is Qarote a better monitoring tool than Prometheus and Grafana?
-Qarote offers purpose-built monitoring specifically for RabbitMQ with zero configuration. While Prometheus and Grafana are powerful, they require significant setup and maintenance. Qarote provides comparable insights with much less overhead.
+Qarote and Prometheus/Grafana serve different purposes. Setting up Prometheus for RabbitMQ requires the exporter plugin, scrape configuration, and custom Grafana dashboards. Qarote provides purpose-built RabbitMQ monitoring with zero configuration. For teams already running Prometheus/Grafana, Qarote complements it with deeper RabbitMQ-specific insights and operational controls.
 
 ### Can I try Qarote for free?
-Yes. The free tier includes 1 server, 1 workspace, and 1 team member. You can start monitoring your RabbitMQ queues right away without a credit card. Paid plans are available when you need to scale.
+Yes. The free Community tier includes 1 server, 1 workspace, and 1 team member with no time limit and no credit card. Upgrade to Developer ($29/month) or Enterprise ($99/month) when you need more. Self-hosted licensing starts at $348/year.
+
+### Can I self-host Qarote?
+Yes. Deploy using Docker, Docker Compose, Dokku, or standalone binary. The Community edition is free and MIT licensed. Self-hosted paid licenses use offline JWT validation -- no internet connection required after activation.
+
+### What RabbitMQ versions does Qarote support?
+RabbitMQ 3.x and 4.x, including latest releases. Connects via the Management HTTP API. Community tier supports LTS versions; paid plans support all versions. Tested with single-node, clustered, and managed services (CloudAMQP, Amazon MQ).
+
+### Does Qarote work with RabbitMQ clusters?
+Yes. Qarote provides cluster-aware monitoring, automatically discovering all nodes and displaying node-level metrics alongside cluster-wide aggregates. Multi-server support on paid plans lets you monitor multiple independent clusters from one dashboard.
