@@ -20,6 +20,7 @@ import { Badge } from "@/components/ui/badge";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
 
+import { useCurrentOrganization } from "@/hooks/queries/useOrganization";
 import { useIsMobile } from "@/hooks/ui/useMobile";
 import { useUser } from "@/hooks/ui/useUser";
 
@@ -146,7 +147,11 @@ export const SettingsSidebar = () => {
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const { userPlan } = useUser();
-  const isAdmin = user?.role === UserRole.ADMIN;
+  const { data: orgData } = useCurrentOrganization();
+  const orgRole = orgData?.role;
+  const isOrgAdmin = orgRole === "OWNER" || orgRole === "ADMIN";
+  const isGlobalAdmin = user?.role === UserRole.ADMIN;
+  const isAdmin = isGlobalAdmin || isOrgAdmin;
   const isEnterprise = userPlan === UserPlan.ENTERPRISE;
   const cloudMode = isCloudMode();
 

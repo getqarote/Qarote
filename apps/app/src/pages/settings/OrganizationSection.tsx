@@ -62,6 +62,7 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 
+import { useMyOrganizations } from "@/hooks/queries/useMyOrganizations";
 import {
   useAcceptOrgInvitation,
   useAssignToWorkspace,
@@ -80,6 +81,11 @@ import {
   useUpdateOrgMemberRole,
   useUpdateWorkspaceRole,
 } from "@/hooks/queries/useOrganization";
+import {
+  useSwitchWorkspace,
+  useUserWorkspaces,
+} from "@/hooks/queries/useWorkspaceApi";
+import { SESSION_TOAST_KEY } from "@/hooks/ui/useSessionToast";
 
 const WS_ROLE_OPTIONS: Array<"ADMIN" | "MEMBER"> = ["ADMIN", "MEMBER"];
 
@@ -325,6 +331,12 @@ const OrganizationSection = () => {
   const [invitationsPageSize, setInvitationsPageSize] = useState(10);
 
   const { data: orgData, isLoading: orgLoading } = useCurrentOrganization();
+  const { data: orgsData } = useMyOrganizations();
+  const { data: allWorkspacesData } = useUserWorkspaces();
+  const switchWorkspaceMutation = useSwitchWorkspace();
+  const organizations = orgsData?.organizations ?? [];
+  const isMultiOrg = organizations.length > 1;
+  const allWorkspaces = allWorkspacesData?.workspaces ?? [];
   const { data: membersData, isLoading: membersLoading } = useOrgMembers({
     page: membersPage,
     limit: membersPageSize,
@@ -654,6 +666,50 @@ const OrganizationSection = () => {
           {roleLabels[callerRole ?? "MEMBER"] ?? callerRole}
         </Badge>
       </div>
+
+      {/* Organization selector (multi-org only) */}
+      {isMultiOrg && org && (
+        <Select
+          value={org.id}
+          onValueChange={(orgId) => {
+            if (orgId === org.id) return;
+            const targetWs = allWorkspaces.find(
+              (w) => w.organization?.id === orgId
+            );
+            if (!targetWs) return;
+            const targetOrg = organizations.find((o) => o.id === orgId);
+            switchWorkspaceMutation.mutate(
+              { workspaceId: targetWs.id },
+              {
+                onSuccess: () => {
+                  sessionStorage.setItem(
+                    SESSION_TOAST_KEY,
+                    JSON.stringify({
+                      title: t("org.orgSwitched", {
+                        defaultValue: "Organization switched",
+                      }),
+                      description: targetOrg?.name ?? "",
+                    })
+                  );
+                  window.location.href = "/settings/organization";
+                },
+              }
+            );
+          }}
+          disabled={switchWorkspaceMutation.isPending}
+        >
+          <SelectTrigger className="w-[300px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {organizations.map((o) => (
+              <SelectItem key={o.id} value={o.id}>
+                {o.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
 
       {/* Organization Info Card */}
       <Card>

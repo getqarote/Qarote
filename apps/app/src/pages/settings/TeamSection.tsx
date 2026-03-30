@@ -32,6 +32,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   useAssignToWorkspace,
   useOrgMembersNotInWorkspace,
+  useOrgWorkspaces,
 } from "@/hooks/queries/useOrganization";
 import { useProfile } from "@/hooks/queries/useProfile";
 import { usePublicConfig } from "@/hooks/queries/usePublicConfig";
@@ -54,14 +55,24 @@ const TeamSection = () => {
   const { workspace } = useWorkspace();
   const { data: profileData } = useProfile();
   const { data: publicConfig } = usePublicConfig();
+  const { data: orgWorkspacesData } = useOrgWorkspaces();
 
+  const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<string>("");
   const [usersPage, setUsersPage] = useState(1);
   const [usersPageSize, setUsersPageSize] = useState(10);
   const [invPage, setInvPage] = useState(1);
   const [invPageSize, setInvPageSize] = useState(10);
 
+  // Default to active workspace once loaded
+  const effectiveWorkspaceId = selectedWorkspaceId || workspace?.id || "";
+  const orgWorkspaces = orgWorkspacesData?.workspaces ?? [];
+
   const { data: workspaceUsersData, isLoading: usersLoading } =
-    useWorkspaceUsers({ page: usersPage, limit: usersPageSize });
+    useWorkspaceUsers({
+      page: usersPage,
+      limit: usersPageSize,
+      workspaceId: effectiveWorkspaceId,
+    });
   const { data: invitationsData, isLoading: invitationsLoading } =
     useInvitations({ page: invPage, limit: invPageSize });
   const sendInvitationMutation = useSendInvitation();
@@ -69,7 +80,7 @@ const TeamSection = () => {
   const removeUserMutation = useRemoveUserFromWorkspace();
   const assignToWorkspaceMutation = useAssignToWorkspace();
   const { data: orgMembersNotInWs, isLoading: orgMembersLoading } =
-    useOrgMembersNotInWorkspace(workspace?.id);
+    useOrgMembersNotInWorkspace(effectiveWorkspaceId);
 
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   const [inviteForm, setInviteForm] = useState<InviteFormState>({
@@ -111,7 +122,7 @@ const TeamSection = () => {
   }
 
   const handleInviteUser = async () => {
-    if (!workspace?.id) {
+    if (!effectiveWorkspaceId) {
       toast.error(t("toast.noWorkspaceFound"));
       return;
     }
@@ -213,7 +224,7 @@ const TeamSection = () => {
     try {
       await assignToWorkspaceMutation.mutateAsync({
         userId,
-        workspaceId: workspace.id,
+        workspaceId: effectiveWorkspaceId,
         role: selectedRole,
       });
       toast.success(
@@ -238,7 +249,7 @@ const TeamSection = () => {
     }
     try {
       await removeUserMutation.mutateAsync({
-        workspaceId: workspace.id,
+        workspaceId: effectiveWorkspaceId,
         userId,
       });
       toast.success(t("toast.userRemoved", { name: userName }));
@@ -249,8 +260,37 @@ const TeamSection = () => {
     }
   };
 
+  const selectedWorkspaceName =
+    orgWorkspaces.find((w) => w.id === effectiveWorkspaceId)?.name ??
+    workspace?.name ??
+    "";
+
   return (
     <div className="space-y-6">
+      {/* Workspace selector */}
+      {orgWorkspaces.length > 1 && (
+        <div className="flex items-center gap-3">
+          <Select
+            value={effectiveWorkspaceId}
+            onValueChange={(id) => {
+              setSelectedWorkspaceId(id);
+              setUsersPage(1);
+            }}
+          >
+            <SelectTrigger className="w-[260px]">
+              <SelectValue placeholder={selectedWorkspaceName} />
+            </SelectTrigger>
+            <SelectContent>
+              {orgWorkspaces.map((ws) => (
+                <SelectItem key={ws.id} value={ws.id}>
+                  {ws.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
       {/* Add from organization button */}
       {isAdmin && availableOrgMembers.length > 0 && (
         <div className="flex justify-end">
