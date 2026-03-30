@@ -166,6 +166,7 @@
     "saveChanges": "Enregistrer les modifications",
     "editOrganization": "Modifier",
     "invite": "Inviter",
+    "orgSwitched": "Organisation changee",
     "roleOwner": "Propriétaire",
     "roleAdmin": "Administrateur",
     "roleMember": "Membre",

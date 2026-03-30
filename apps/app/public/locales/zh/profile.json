@@ -166,6 +166,7 @@
     "saveChanges": "保存更改",
     "editOrganization": "编辑",
     "invite": "邀请",
+    "orgSwitched": "已切换组织",
     "roleOwner": "所有者",
     "roleAdmin": "管理员",
     "roleMember": "成员",

@@ -12,6 +12,7 @@
   "inviteTitle": "邀请团队成员",
   "inviteDescription": "添加团队成员进行协作（可选）",
   "inviteEmailPlaceholder": "输入邮箱地址并按回车",
+  "inviteAdd": "添加",
   "inviteRole": "角色",
   "inviteRoleAdmin": "管理员",
   "inviteRoleMember": "成员",

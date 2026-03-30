@@ -166,6 +166,7 @@
     "saveChanges": "Save Changes",
     "editOrganization": "Edit",
     "invite": "Invite",
+    "orgSwitched": "Organization switched",
     "roleOwner": "Owner",
     "roleAdmin": "Admin",
     "roleMember": "Member",

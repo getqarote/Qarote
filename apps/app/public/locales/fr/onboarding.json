@@ -12,6 +12,7 @@
   "inviteTitle": "Inviter des membres",
   "inviteDescription": "Ajoutez des membres pour collaborer (optionnel)",
   "inviteEmailPlaceholder": "Saisissez un e-mail et appuyez sur Entree",
+  "inviteAdd": "Ajouter",
   "inviteRole": "Role",
   "inviteRoleAdmin": "Administrateur",
   "inviteRoleMember": "Membre",
