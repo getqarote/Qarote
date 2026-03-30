@@ -96,8 +96,11 @@ const TeamSection = () => {
 
   const profile = profileData?.user;
   const isAdmin = profile?.role === UserRole.ADMIN;
+  const isViewingActiveWorkspace = effectiveWorkspaceId === workspace?.id;
   const workspaceUsers = workspaceUsersData?.users || [];
-  const invitations = invitationsData?.invitations || [];
+  const invitations = isViewingActiveWorkspace
+    ? invitationsData?.invitations || []
+    : [];
 
   const planFeatures = planData?.planFeatures;
   const usersTotal =
@@ -290,6 +293,7 @@ const TeamSection = () => {
               onValueChange={(id) => {
                 setSelectedWorkspaceId(id);
                 setUsersPage(1);
+                setInvPage(1);
               }}
             >
               <SelectTrigger className="h-9 w-[220px] text-sm font-medium">
