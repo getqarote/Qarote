@@ -9,6 +9,7 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  FolderOpen,
   Lock,
   Plus,
   User,
@@ -338,7 +339,7 @@ export function WorkspaceSelector() {
                       >
                         <div className="flex items-center justify-between w-full">
                           <div className="flex items-center gap-3 min-w-0">
-                            <Building2 className="w-4 h-4 text-muted-foreground shrink-0" />
+                            <FolderOpen className="w-4 h-4 text-muted-foreground shrink-0" />
                             <div className="min-w-0">
                               <div className="font-medium text-foreground truncate">
                                 {ws.name}
