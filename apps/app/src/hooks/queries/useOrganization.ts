@@ -97,6 +97,7 @@ export const useAssignToWorkspace = () => {
       utils.organization.members.list.invalidate();
       utils.organization.members.listOrgMembersNotInWorkspace.invalidate();
       utils.workspace.management.getUserWorkspaces.invalidate();
+      utils.user.getWorkspaceUsers.invalidate();
     },
   });
 };
@@ -210,6 +211,7 @@ export const useRemoveFromWorkspace = () => {
       utils.organization.members.getMemberWorkspaces.invalidate();
       utils.organization.members.listOrgMembersNotInWorkspace.invalidate();
       utils.workspace.management.getUserWorkspaces.invalidate();
+      utils.user.getWorkspaceUsers.invalidate();
     },
   });
 };

@@ -90,8 +90,8 @@ export const useRemoveUserFromWorkspace = () => {
 
   const mutation = trpc.user.removeFromWorkspace.useMutation({
     onSuccess: () => {
-      // Invalidate workspace users
       utils.user.getWorkspaceUsers.invalidate();
+      utils.organization.members.listOrgMembersNotInWorkspace.invalidate();
     },
   });
 
