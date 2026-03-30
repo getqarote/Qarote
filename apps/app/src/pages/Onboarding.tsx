@@ -5,7 +5,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Building2, Loader2, Rocket, Users } from "lucide-react";
+import { Building2, Loader2, Rocket, Users, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -50,9 +50,11 @@ const Onboarding = () => {
   const queryClient = useQueryClient();
   const isCreatingRef = useRef(false);
 
-  // Invite state (separate from form)
-  const [inviteEmails, setInviteEmails] = useState<string[]>([]);
-  const [inviteRole, setInviteRole] = useState<"ADMIN" | "MEMBER">("MEMBER");
+  // Invite state: each invitee has their own role
+  const [invitees, setInvitees] = useState<
+    { email: string; role: "ADMIN" | "MEMBER" }[]
+  >([]);
+  const [emailInput, setEmailInput] = useState("");
 
   // Check if user already has workspaces
   const { data: workspacesData, isLoading: workspacesLoading } =
@@ -129,12 +131,12 @@ const Onboarding = () => {
       }
 
       // 4. Send invitations (non-blocking)
-      if (inviteEmails.length > 0 && workspace?.id) {
+      if (invitees.length > 0 && workspace?.id) {
         const results = await Promise.allSettled(
-          inviteEmails.map((email) =>
+          invitees.map((invitee) =>
             inviteOrgMemberMutation.mutateAsync({
-              email,
-              role: inviteRole,
+              email: invitee.email,
+              role: invitee.role,
               workspaceAssignments: [
                 { workspaceId: workspace.id, role: "MEMBER" },
               ],
@@ -144,11 +146,11 @@ const Onboarding = () => {
 
         results.forEach((result, i) => {
           if (result.status === "fulfilled") {
-            toast.success(t("inviteSent", { email: inviteEmails[i] }));
+            toast.success(t("inviteSent", { email: invitees[i].email }));
           } else {
             toast.error(
               t("inviteFailed", {
-                email: inviteEmails[i],
+                email: invitees[i].email,
                 error:
                   result.reason instanceof Error
                     ? result.reason.message
@@ -329,39 +331,111 @@ const Onboarding = () => {
                       <p className="text-xs text-muted-foreground">
                         {t("inviteDescription")}
                       </p>
-                      <TagsInput
-                        value={inviteEmails}
-                        onChange={setInviteEmails}
-                        placeholder={t("inviteEmailPlaceholder")}
-                        maxTags={10}
-                        maxTagLength={100}
-                        disabled={isPending}
-                      />
 
-                      {/* Role selector — only visible when emails exist */}
-                      {inviteEmails.length > 0 && (
-                        <div className="flex items-center gap-2 animate-in fade-in slide-in-from-top-1 duration-200">
-                          <span className="text-sm font-medium">
-                            {t("inviteRole")}
-                          </span>
-                          <Select
-                            value={inviteRole}
-                            onValueChange={(v) =>
-                              setInviteRole(v as "ADMIN" | "MEMBER")
+                      {/* Email input */}
+                      <div className="flex gap-2">
+                        <Input
+                          type="email"
+                          value={emailInput}
+                          onChange={(e) => setEmailInput(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              const email = emailInput.trim();
+                              if (
+                                email &&
+                                email.includes("@") &&
+                                !invitees.some((inv) => inv.email === email) &&
+                                invitees.length < 10
+                              ) {
+                                setInvitees([
+                                  ...invitees,
+                                  { email, role: "MEMBER" },
+                                ]);
+                                setEmailInput("");
+                              }
                             }
-                          >
-                            <SelectTrigger className="w-36 h-9">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="MEMBER">
-                                {t("inviteRoleMember")}
-                              </SelectItem>
-                              <SelectItem value="ADMIN">
-                                {t("inviteRoleAdmin")}
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
+                          }}
+                          placeholder={t("inviteEmailPlaceholder")}
+                          disabled={isPending || invitees.length >= 10}
+                          className="flex-1"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="h-10 px-4"
+                          disabled={
+                            isPending ||
+                            !emailInput.trim() ||
+                            !emailInput.includes("@") ||
+                            invitees.some(
+                              (inv) => inv.email === emailInput.trim()
+                            ) ||
+                            invitees.length >= 10
+                          }
+                          onClick={() => {
+                            const email = emailInput.trim();
+                            if (email && email.includes("@")) {
+                              setInvitees([
+                                ...invitees,
+                                { email, role: "MEMBER" },
+                              ]);
+                              setEmailInput("");
+                            }
+                          }}
+                        >
+                          {t("inviteAdd", { defaultValue: "Add" })}
+                        </Button>
+                      </div>
+
+                      {/* Invitee list with per-email role selector */}
+                      {invitees.length > 0 && (
+                        <div className="space-y-2 animate-in fade-in slide-in-from-top-1 duration-200">
+                          {invitees.map((invitee, idx) => (
+                            <div
+                              key={invitee.email}
+                              className="flex items-center gap-2 rounded-md border border-border p-2"
+                            >
+                              <span className="flex-1 text-sm truncate">
+                                {invitee.email}
+                              </span>
+                              <Select
+                                value={invitee.role}
+                                onValueChange={(v) => {
+                                  const updated = [...invitees];
+                                  updated[idx] = {
+                                    ...updated[idx],
+                                    role: v as "ADMIN" | "MEMBER",
+                                  };
+                                  setInvitees(updated);
+                                }}
+                              >
+                                <SelectTrigger className="w-28 h-8 text-xs">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="MEMBER">
+                                    {t("inviteRoleMember")}
+                                  </SelectItem>
+                                  <SelectItem value="ADMIN">
+                                    {t("inviteRoleAdmin")}
+                                  </SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setInvitees(
+                                    invitees.filter((_, i) => i !== idx)
+                                  )
+                                }
+                                className="text-muted-foreground hover:text-destructive transition-colors"
+                              >
+                                <X className="h-4 w-4" />
+                              </button>
+                            </div>
+                          ))}
                         </div>
                       )}
                     </div>
