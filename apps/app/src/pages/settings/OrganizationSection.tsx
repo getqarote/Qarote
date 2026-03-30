@@ -686,6 +686,17 @@ const OrganizationSection = () => {
                       );
                       window.location.href = "/settings/organization";
                     },
+                    onError: (error) => {
+                      toast.error(
+                        t("org.switchFailed", {
+                          defaultValue: "Failed to switch organization",
+                        }),
+                        {
+                          description:
+                            error instanceof Error ? error.message : undefined,
+                        }
+                      );
+                    },
                   }
                 );
               }}
