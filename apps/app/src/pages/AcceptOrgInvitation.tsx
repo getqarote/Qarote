@@ -317,10 +317,14 @@ const AcceptOrgInvitation = () => {
   } | null>(null);
 
   const oauthCallbackURL = token
-    ? `${window.location.origin}/auth/sso/callback?orgInviteToken=${token}`
+    ? `${window.location.origin}/auth/sso/callback?orgInviteToken=${encodeURIComponent(token)}`
     : undefined;
   const storeTokenFallback = () => {
-    if (token) sessionStorage.setItem("pendingOrgInviteToken", token);
+    try {
+      if (token) sessionStorage.setItem("pendingOrgInviteToken", token);
+    } catch {
+      // Best-effort — Safari private browsing may throw
+    }
   };
 
   const error =
