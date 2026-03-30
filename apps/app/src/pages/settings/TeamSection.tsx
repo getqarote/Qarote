@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { Loader2, User, UserPlus } from "lucide-react";
+import { FolderOpen, Loader2, User, UserPlus, Users } from "lucide-react";
 import { toast } from "sonner";
 
 import { UserRole } from "@/lib/api";
@@ -267,43 +267,60 @@ const TeamSection = () => {
 
   return (
     <div className="space-y-6">
-      {/* Workspace selector */}
-      {orgWorkspaces.length > 1 && (
-        <div className="flex items-center gap-3">
-          <Select
-            value={effectiveWorkspaceId}
-            onValueChange={(id) => {
-              setSelectedWorkspaceId(id);
-              setUsersPage(1);
-            }}
-          >
-            <SelectTrigger className="w-[260px]">
-              <SelectValue placeholder={selectedWorkspaceName} />
-            </SelectTrigger>
-            <SelectContent>
-              {orgWorkspaces.map((ws) => (
-                <SelectItem key={ws.id} value={ws.id}>
-                  {ws.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+      {/* Context header bar */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between pb-4 border-b border-border">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-orange-500/10 dark:bg-orange-500/15 shrink-0">
+            <Users className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+          </div>
+          <div className="min-w-0">
+            <h2 className="text-lg font-semibold leading-tight">
+              {t("tabs.team")}
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              {selectedWorkspaceName}
+            </p>
+          </div>
         </div>
-      )}
 
-      {/* Add from organization button */}
-      {isAdmin && availableOrgMembers.length > 0 && (
-        <div className="flex justify-end">
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => setAddFromOrgOpen(true)}
-          >
-            <UserPlus className="h-4 w-4 mr-2" />
-            {t("team.addFromOrg")}
-          </Button>
+        <div className="flex items-center gap-2.5 shrink-0">
+          {orgWorkspaces.length > 0 && (
+            <Select
+              value={effectiveWorkspaceId}
+              onValueChange={(id) => {
+                setSelectedWorkspaceId(id);
+                setUsersPage(1);
+              }}
+            >
+              <SelectTrigger className="h-9 w-[220px] text-sm font-medium">
+                <div className="flex items-center gap-2 truncate">
+                  <FolderOpen className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                  <SelectValue placeholder={selectedWorkspaceName} />
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+                {orgWorkspaces.map((ws) => (
+                  <SelectItem key={ws.id} value={ws.id}>
+                    {ws.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+
+          {isAdmin && availableOrgMembers.length > 0 && (
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-9"
+              onClick={() => setAddFromOrgOpen(true)}
+            >
+              <UserPlus className="h-4 w-4 mr-1.5" />
+              {t("team.addFromOrg")}
+            </Button>
+          )}
         </div>
-      )}
+      </div>
 
       <EnhancedTeamTab
         isAdmin={isAdmin}
