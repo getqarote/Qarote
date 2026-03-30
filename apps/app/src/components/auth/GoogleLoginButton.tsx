@@ -8,12 +8,16 @@ import { Button } from "@/components/ui/button";
 
 interface GoogleLoginButtonProps {
   onError?: (error: string) => void;
+  onBeforeRedirect?: () => void;
+  callbackURL?: string;
   className?: string;
   mode?: "signin" | "signup";
 }
 
 export const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
   onError,
+  onBeforeRedirect,
+  callbackURL,
   className,
   mode = "signin",
 }) => {
@@ -26,9 +30,11 @@ export const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
 
   const handleGoogleLogin = async () => {
     try {
+      onBeforeRedirect?.();
       await authClient.signIn.social({
         provider: "google",
-        callbackURL: `${window.location.origin}/auth/sso/callback`,
+        callbackURL:
+          callbackURL || `${window.location.origin}/auth/sso/callback`,
       });
     } catch (error) {
       logger.error("Google login failed:", error);

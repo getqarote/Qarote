@@ -12,12 +12,16 @@ import { Input } from "@/components/ui/input";
 
 interface SSOLoginButtonProps {
   onError?: (error: string) => void;
+  onBeforeRedirect?: () => void;
+  callbackURL?: string;
   className?: string;
   mode?: "signin" | "signup";
 }
 
 export const SSOLoginButton: React.FC<SSOLoginButtonProps> = ({
   onError,
+  onBeforeRedirect,
+  callbackURL,
   className,
   mode = "signin",
 }) => {
@@ -36,9 +40,11 @@ export const SSOLoginButton: React.FC<SSOLoginButtonProps> = ({
     if (!config?.providerId) return;
     try {
       setIsPending(true);
+      onBeforeRedirect?.();
       await authClient.signIn.sso({
         providerId: config.providerId,
-        callbackURL: `${window.location.origin}/auth/sso/callback`,
+        callbackURL:
+          callbackURL || `${window.location.origin}/auth/sso/callback`,
       });
     } catch (error) {
       logger.error("SSO redirect failed:", error);
@@ -53,9 +59,11 @@ export const SSOLoginButton: React.FC<SSOLoginButtonProps> = ({
     if (!email.trim()) return;
     try {
       setIsPending(true);
+      onBeforeRedirect?.();
       await authClient.signIn.sso({
         email,
-        callbackURL: `${window.location.origin}/auth/sso/callback`,
+        callbackURL:
+          callbackURL || `${window.location.origin}/auth/sso/callback`,
       });
     } catch (error) {
       logger.error("SSO redirect failed:", error);
