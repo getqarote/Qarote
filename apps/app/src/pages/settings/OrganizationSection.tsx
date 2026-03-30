@@ -649,8 +649,8 @@ const OrganizationSection = () => {
       {/* Context header bar */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between pb-4 border-b border-border">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-orange-500/10 dark:bg-orange-500/15 shrink-0">
-            <Building2 className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+          <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-primary/10 shrink-0">
+            <Building2 className="h-5 w-5 text-primary" />
           </div>
           <div className="min-w-0">
             <h2 className="text-lg font-semibold leading-tight">
