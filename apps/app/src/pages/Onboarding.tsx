@@ -107,13 +107,14 @@ const Onboarding = () => {
 
     try {
       // 1. Create workspace (also auto-creates org if needed)
-      const workspace = await createWorkspaceMutation.mutateAsync({
+      const result = await createWorkspaceMutation.mutateAsync({
         name: data.workspaceName.trim(),
         tags:
           data.tags && data.tags.length > 0
             ? data.tags.filter((tag) => tag.trim().length > 0)
             : undefined,
       });
+      const newWorkspaceId = result.workspace.id;
 
       queryClient.invalidateQueries({ queryKey: ["workspaces"] });
 
@@ -131,14 +132,14 @@ const Onboarding = () => {
       }
 
       // 4. Send invitations (non-blocking)
-      if (invitees.length > 0 && workspace?.id) {
+      if (invitees.length > 0 && newWorkspaceId) {
         const results = await Promise.allSettled(
           invitees.map((invitee) =>
             inviteOrgMemberMutation.mutateAsync({
               email: invitee.email,
               role: invitee.role,
               workspaceAssignments: [
-                { workspaceId: workspace.id, role: "MEMBER" },
+                { workspaceId: newWorkspaceId, role: "MEMBER" },
               ],
             })
           )
