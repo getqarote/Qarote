@@ -39,14 +39,30 @@ const SSOCallback: React.FC = () => {
     if (error || isLoading) return;
 
     if (isAuthenticated) {
-      // Authenticated: go to dashboard if user has workspace, otherwise workspace creation
+      // Check for pending org invitation (query param first, sessionStorage fallback)
+      const orgInviteToken =
+        searchParams.get("orgInviteToken") ||
+        sessionStorage.getItem("pendingOrgInviteToken");
+      if (orgInviteToken) {
+        sessionStorage.removeItem("pendingOrgInviteToken");
+        navigate(`/org-invite/${orgInviteToken}`, { replace: true });
+        return;
+      }
+
       const target = user?.workspaceId ? "/" : "/workspace";
       navigate(target, { replace: true });
     } else {
       // Session cookie was expected but auth check found nothing — redirect to sign-in
       navigate("/auth/sign-in", { replace: true });
     }
-  }, [error, isLoading, isAuthenticated, user?.workspaceId, navigate]);
+  }, [
+    error,
+    isLoading,
+    isAuthenticated,
+    user?.workspaceId,
+    navigate,
+    searchParams,
+  ]);
 
   if (error) {
     return (

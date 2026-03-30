@@ -10,6 +10,8 @@ import { authClient } from "@/lib/auth-client";
 import { logger } from "@/lib/logger";
 import { trpc } from "@/lib/trpc/client";
 
+import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton";
+import { SSOLoginButton } from "@/components/auth/SSOLoginButton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -41,6 +43,7 @@ import {
   type OrgInvitationDetails,
   useOrgInvitationDetails,
 } from "@/hooks/queries/useOrgInvitationDetails";
+import { useShowAlternativeAuth } from "@/hooks/queries/useSsoConfig";
 import { useSwitchWorkspace } from "@/hooks/queries/useWorkspaceApi";
 import { useToast } from "@/hooks/ui/useToast";
 
@@ -245,6 +248,50 @@ const OrgInvitationForm = ({
   );
 };
 
+const OAuthSection = ({
+  mode,
+  callbackURL,
+  onBeforeRedirect,
+  onError,
+}: {
+  mode: "signin" | "signup";
+  callbackURL?: string;
+  onBeforeRedirect: () => void;
+  onError: (msg: string) => void;
+}) => {
+  const { t } = useTranslation("auth");
+  const { showAlternativeAuth } = useShowAlternativeAuth();
+
+  if (!showAlternativeAuth) return null;
+
+  return (
+    <div className="space-y-3">
+      <GoogleLoginButton
+        mode={mode}
+        callbackURL={callbackURL}
+        onBeforeRedirect={onBeforeRedirect}
+        onError={onError}
+      />
+      <SSOLoginButton
+        mode={mode}
+        callbackURL={callbackURL}
+        onBeforeRedirect={onBeforeRedirect}
+        onError={onError}
+      />
+      <div className="relative my-4">
+        <div className="absolute inset-0 flex items-center">
+          <span className="w-full border-t" />
+        </div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-card px-2 text-muted-foreground">
+            {t("orContinueWith")}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const AcceptOrgInvitation = () => {
   const { t } = useTranslation("auth");
   const { token } = useParams<{ token: string }>();
@@ -268,6 +315,17 @@ const AcceptOrgInvitation = () => {
     orgName: string;
     firstWorkspaceId: string | null;
   } | null>(null);
+
+  const oauthCallbackURL = token
+    ? `${window.location.origin}/auth/sso/callback?orgInviteToken=${encodeURIComponent(token)}`
+    : undefined;
+  const storeTokenFallback = () => {
+    try {
+      if (token) sessionStorage.setItem("pendingOrgInviteToken", token);
+    } catch {
+      // Best-effort — Safari private browsing may throw
+    }
+  };
 
   const error =
     mutationError ??
@@ -514,6 +572,13 @@ const AcceptOrgInvitation = () => {
         <CardContent className="space-y-6">
           <OrgInvitationInfo invitation={invitation} />
 
+          <OAuthSection
+            mode="signin"
+            callbackURL={oauthCallbackURL}
+            onBeforeRedirect={storeTokenFallback}
+            onError={(msg) => setMutationError(msg)}
+          />
+
           <Button
             className="w-full bg-gradient-button hover:bg-gradient-button-hover"
             onClick={() =>
@@ -558,6 +623,13 @@ const AcceptOrgInvitation = () => {
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
+
+        <OAuthSection
+          mode="signup"
+          callbackURL={oauthCallbackURL}
+          onBeforeRedirect={storeTokenFallback}
+          onError={(msg) => setMutationError(msg)}
+        />
 
         <OrgInvitationForm
           form={form}
