@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -47,7 +46,6 @@ const Onboarding = () => {
   const { t } = useTranslation("onboarding");
   const navigate = useNavigate();
   const { user, refetchUser } = useAuth();
-  const queryClient = useQueryClient();
   const isCreatingRef = useRef(false);
 
   // Invite state: each invitee has their own role
@@ -78,6 +76,7 @@ const Onboarding = () => {
 
   const form = useForm<OnboardingFormData>({
     resolver: zodResolver(onboardingSchema),
+    mode: "onChange",
     defaultValues: {
       orgName: "",
       workspaceName: "",
@@ -115,8 +114,6 @@ const Onboarding = () => {
             : undefined,
       });
       const newWorkspaceId = result.workspace.id;
-
-      queryClient.invalidateQueries({ queryKey: ["workspaces"] });
 
       // 2. Refresh session to get workspaceId + org context
       await refetchUser();

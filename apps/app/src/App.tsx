@@ -200,6 +200,15 @@ const AppCore = () => (
                               </ProtectedRoute>
                             }
                           />
+                          {/* Legacy redirect: /workspace → /onboarding */}
+                          <Route
+                            path="/workspace"
+                            element={
+                              <ProtectedRoute>
+                                <Navigate to="/onboarding" replace />
+                              </ProtectedRoute>
+                            }
+                          />
                           <Route
                             path="/"
                             element={

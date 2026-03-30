@@ -73,8 +73,8 @@ const WorkspaceSection = () => {
       }
     }
     toast.success(t("toast.workspaceDeleted"));
-    // Always navigate to /workspace — its loading state acts as a clean transition:
-    // if user has remaining workspaces, it redirects to /; otherwise shows creation form
+    // Navigate to /onboarding — its loading state acts as a clean transition:
+    // if user has remaining workspaces, it redirects to /; otherwise shows the setup form
     navigate("/onboarding", { replace: true });
   };
 
