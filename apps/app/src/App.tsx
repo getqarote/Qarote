@@ -105,7 +105,7 @@ const VerifyEmail = lazy(() => import("./pages/VerifyEmail"));
 const AcceptInvitation = lazy(() => import("./pages/AcceptInvitation"));
 const AcceptOrgInvitation = lazy(() => import("./pages/AcceptOrgInvitation"));
 const SSOCallback = lazy(() => import("./pages/SSOCallback"));
-const Workspace = lazy(() => import("./pages/Workspace"));
+const Onboarding = lazy(() => import("./pages/Onboarding"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const AppCore = () => (
@@ -193,10 +193,10 @@ const AppCore = () => (
 
                           {/* Protected routes */}
                           <Route
-                            path="/workspace"
+                            path="/onboarding"
                             element={
                               <ProtectedRoute>
-                                <Workspace />
+                                <Onboarding />
                               </ProtectedRoute>
                             }
                           />

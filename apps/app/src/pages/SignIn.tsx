@@ -68,7 +68,7 @@ const SignIn: React.FC = () => {
       },
       {
         onSuccess: () => {
-          navigate(redirectTo || "/workspace", { replace: true });
+          navigate(redirectTo || "/onboarding", { replace: true });
         },
       }
     );

@@ -49,7 +49,7 @@ const SSOCallback: React.FC = () => {
         return;
       }
 
-      const target = user?.workspaceId ? "/" : "/workspace";
+      const target = user?.workspaceId ? "/" : "/onboarding";
       navigate(target, { replace: true });
     } else {
       // Session cookie was expected but auth check found nothing — redirect to sign-in

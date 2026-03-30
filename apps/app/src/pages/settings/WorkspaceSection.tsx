@@ -75,7 +75,7 @@ const WorkspaceSection = () => {
     toast.success(t("toast.workspaceDeleted"));
     // Always navigate to /workspace — its loading state acts as a clean transition:
     // if user has remaining workspaces, it redirects to /; otherwise shows creation form
-    navigate("/workspace", { replace: true });
+    navigate("/onboarding", { replace: true });
   };
 
   const handleUpdateWorkspace = async () => {
