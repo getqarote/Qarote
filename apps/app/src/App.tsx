@@ -105,7 +105,7 @@ const VerifyEmail = lazy(() => import("./pages/VerifyEmail"));
 const AcceptInvitation = lazy(() => import("./pages/AcceptInvitation"));
 const AcceptOrgInvitation = lazy(() => import("./pages/AcceptOrgInvitation"));
 const SSOCallback = lazy(() => import("./pages/SSOCallback"));
-const Workspace = lazy(() => import("./pages/Workspace"));
+const Onboarding = lazy(() => import("./pages/Onboarding"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const AppCore = () => (
@@ -193,10 +193,19 @@ const AppCore = () => (
 
                           {/* Protected routes */}
                           <Route
+                            path="/onboarding"
+                            element={
+                              <ProtectedRoute>
+                                <Onboarding />
+                              </ProtectedRoute>
+                            }
+                          />
+                          {/* Legacy redirect: /workspace → /onboarding */}
+                          <Route
                             path="/workspace"
                             element={
                               <ProtectedRoute>
-                                <Workspace />
+                                <Navigate to="/onboarding" replace />
                               </ProtectedRoute>
                             }
                           />

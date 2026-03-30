@@ -39,7 +39,7 @@ const Index = () => {
   // Check if user needs to create a workspace
   useEffect(() => {
     if (isAuthenticated && !user?.workspaceId) {
-      navigate("/workspace", { replace: true });
+      navigate("/onboarding", { replace: true });
     }
     // Don't navigate to "/" when already on "/" - this prevents redirect loops
   }, [isAuthenticated, user?.workspaceId, navigate]);

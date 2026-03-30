@@ -68,7 +68,6 @@ const menuItems = [
   },
   { titleKey: "sidebar:users", url: "/users", icon: User, adminOnly: true },
   { titleKey: "sidebar:alerts", url: "/alerts", icon: AlertTriangle },
-  { titleKey: "sidebar:settings", url: "/settings", icon: Settings },
 ];
 
 // Helper function to shorten hostnames
@@ -366,10 +365,7 @@ export function AppSidebar() {
                   return true;
                 })
                 .map((item) => {
-                  const isActive =
-                    item.url === "/settings"
-                      ? location.pathname.startsWith("/settings")
-                      : location.pathname === item.url;
+                  const isActive = location.pathname === item.url;
 
                   return (
                     <SidebarMenuItem key={item.titleKey}>
@@ -377,7 +373,7 @@ export function AppSidebar() {
                         asChild
                         className={`w-full justify-start transition-all duration-200 ${
                           isActive
-                            ? "bg-linear-to-r from-orange-600 to-red-600 text-white"
+                            ? "bg-linear-to-r from-orange-600 to-red-600 text-white hover:text-white"
                             : "hover:bg-sidebar-accent text-sidebar-foreground"
                         }`}
                       >
@@ -405,12 +401,25 @@ export function AppSidebar() {
           to="/help"
           className={`flex items-center gap-2 text-sm rounded-md px-2 py-1.5 transition-colors ${
             location.pathname === "/help"
-              ? "bg-linear-to-r from-orange-600 to-red-600 text-white font-medium"
+              ? "bg-linear-to-r from-orange-600 to-red-600 text-white hover:text-white font-medium"
               : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent"
           }`}
         >
           <HelpCircle className="w-4 h-4" />
           {t("helpSupport")}
+        </Link>
+
+        {/* Settings */}
+        <Link
+          to="/settings"
+          className={`flex items-center gap-2 text-sm rounded-md px-2 py-1.5 transition-colors ${
+            location.pathname.startsWith("/settings")
+              ? "bg-linear-to-r from-orange-600 to-red-600 text-white hover:text-white font-medium"
+              : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent"
+          }`}
+        >
+          <Settings className="w-4 h-4" />
+          {t("settings")}
         </Link>
 
         {/* User section */}

@@ -31,17 +31,19 @@ export const useUpdateWorkspace = () => {
 export const useWorkspaceUsers = (options?: {
   page?: number;
   limit?: number;
+  workspaceId?: string;
 }) => {
   const { workspace } = useWorkspace();
+  const effectiveId = options?.workspaceId || workspace?.id || "";
 
   const query = trpc.user.getWorkspaceUsers.useQuery(
     {
-      workspaceId: workspace?.id || "",
+      workspaceId: effectiveId,
       page: options?.page ?? 1,
       limit: options?.limit ?? 20,
     },
     {
-      enabled: !!workspace?.id,
+      enabled: !!effectiveId,
       staleTime: 60000, // 1 minute
     }
   );
@@ -88,8 +90,8 @@ export const useRemoveUserFromWorkspace = () => {
 
   const mutation = trpc.user.removeFromWorkspace.useMutation({
     onSuccess: () => {
-      // Invalidate workspace users
       utils.user.getWorkspaceUsers.invalidate();
+      utils.organization.members.listOrgMembersNotInWorkspace.invalidate();
     },
   });
 

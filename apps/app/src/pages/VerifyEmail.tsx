@@ -83,7 +83,7 @@ export default function VerifyEmail() {
         // Redirect based on authentication status
         setTimeout(() => {
           if (isAuthenticated) {
-            navigate("/workspace", { replace: true });
+            navigate("/onboarding", { replace: true });
           } else {
             navigate("/auth/sign-in", { replace: true });
           }
@@ -151,7 +151,7 @@ export default function VerifyEmail() {
   const handleGoToDashboard = () => {
     // Always go to workspace creation
     // The workspace page will handle redirecting to dashboard if user already has workspaces
-    navigate("/workspace", { replace: true });
+    navigate("/onboarding", { replace: true });
   };
 
   logger.log("Verification State:", verificationState);

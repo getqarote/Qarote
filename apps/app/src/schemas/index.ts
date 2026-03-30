@@ -1,6 +1,7 @@
 export * from "./auth";
 export * from "./feedback";
 export * from "./message";
+export * from "./onboarding";
 export * from "./queue";
 export * from "./server";
 export * from "./user";

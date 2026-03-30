@@ -62,6 +62,7 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 
+import { useMyOrganizations } from "@/hooks/queries/useMyOrganizations";
 import {
   useAcceptOrgInvitation,
   useAssignToWorkspace,
@@ -80,6 +81,11 @@ import {
   useUpdateOrgMemberRole,
   useUpdateWorkspaceRole,
 } from "@/hooks/queries/useOrganization";
+import {
+  useSwitchWorkspace,
+  useUserWorkspaces,
+} from "@/hooks/queries/useWorkspaceApi";
+import { SESSION_TOAST_KEY } from "@/hooks/ui/useSessionToast";
 
 const WS_ROLE_OPTIONS: Array<"ADMIN" | "MEMBER"> = ["ADMIN", "MEMBER"];
 
@@ -325,6 +331,11 @@ const OrganizationSection = () => {
   const [invitationsPageSize, setInvitationsPageSize] = useState(10);
 
   const { data: orgData, isLoading: orgLoading } = useCurrentOrganization();
+  const { data: orgsData } = useMyOrganizations();
+  const { data: allWorkspacesData } = useUserWorkspaces();
+  const switchWorkspaceMutation = useSwitchWorkspace();
+  const organizations = orgsData?.organizations ?? [];
+  const allWorkspaces = allWorkspacesData?.workspaces ?? [];
   const { data: membersData, isLoading: membersLoading } = useOrgMembers({
     page: membersPage,
     limit: membersPageSize,
@@ -635,24 +646,87 @@ const OrganizationSection = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Building2 className="h-6 w-6" />
-          <div>
-            <h2 className="text-xl font-semibold">{t("org.title")}</h2>
+      {/* Context header bar */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between pb-4 border-b border-border">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-primary/10 shrink-0">
+            <Building2 className="h-5 w-5 text-primary" />
+          </div>
+          <div className="min-w-0">
+            <h2 className="text-lg font-semibold leading-tight">
+              {t("org.title")}
+            </h2>
             <p className="text-sm text-muted-foreground">{t("org.subtitle")}</p>
           </div>
         </div>
-        <Badge
-          variant="soft-orange"
-          role="status"
-          aria-label={t("org.yourRole", {
-            role: roleLabels[callerRole ?? "MEMBER"] ?? callerRole,
-          })}
-        >
-          {roleLabels[callerRole ?? "MEMBER"] ?? callerRole}
-        </Badge>
+
+        <div className="flex items-center gap-2.5 shrink-0">
+          {org && (
+            <Select
+              value={org.id}
+              onValueChange={(orgId) => {
+                if (orgId === org.id) return;
+                const targetWs = allWorkspaces.find(
+                  (w) => w.organization?.id === orgId
+                );
+                if (!targetWs) return;
+                const targetOrg = organizations.find((o) => o.id === orgId);
+                switchWorkspaceMutation.mutate(
+                  { workspaceId: targetWs.id },
+                  {
+                    onSuccess: () => {
+                      sessionStorage.setItem(
+                        SESSION_TOAST_KEY,
+                        JSON.stringify({
+                          title: t("org.orgSwitched", {
+                            defaultValue: "Organization switched",
+                          }),
+                          description: targetOrg?.name ?? "",
+                        })
+                      );
+                      window.location.href = "/settings/organization";
+                    },
+                    onError: (error) => {
+                      toast.error(
+                        t("org.switchFailed", {
+                          defaultValue: "Failed to switch organization",
+                        }),
+                        {
+                          description:
+                            error instanceof Error ? error.message : undefined,
+                        }
+                      );
+                    },
+                  }
+                );
+              }}
+              disabled={switchWorkspaceMutation.isPending}
+            >
+              <SelectTrigger className="h-9 w-[240px] text-sm font-medium">
+                <div className="flex items-center gap-2 truncate">
+                  <Building2 className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                  <SelectValue />
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+                {organizations.map((o) => (
+                  <SelectItem key={o.id} value={o.id}>
+                    {o.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+          <Badge
+            variant="soft-orange"
+            role="status"
+            aria-label={t("org.yourRole", {
+              role: roleLabels[callerRole ?? "MEMBER"] ?? callerRole,
+            })}
+          >
+            {roleLabels[callerRole ?? "MEMBER"] ?? callerRole}
+          </Badge>
+        </div>
       </div>
 
       {/* Organization Info Card */}

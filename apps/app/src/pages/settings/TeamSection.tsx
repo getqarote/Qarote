@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { Loader2, User, UserPlus } from "lucide-react";
+import { FolderOpen, Loader2, User, UserPlus, Users } from "lucide-react";
 import { toast } from "sonner";
 
 import { UserRole } from "@/lib/api";
@@ -32,6 +32,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   useAssignToWorkspace,
   useOrgMembersNotInWorkspace,
+  useOrgWorkspaces,
 } from "@/hooks/queries/useOrganization";
 import { useProfile } from "@/hooks/queries/useProfile";
 import { usePublicConfig } from "@/hooks/queries/usePublicConfig";
@@ -54,14 +55,24 @@ const TeamSection = () => {
   const { workspace } = useWorkspace();
   const { data: profileData } = useProfile();
   const { data: publicConfig } = usePublicConfig();
+  const { data: orgWorkspacesData } = useOrgWorkspaces();
 
+  const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<string>("");
   const [usersPage, setUsersPage] = useState(1);
   const [usersPageSize, setUsersPageSize] = useState(10);
   const [invPage, setInvPage] = useState(1);
   const [invPageSize, setInvPageSize] = useState(10);
 
+  // Default to active workspace once loaded
+  const effectiveWorkspaceId = selectedWorkspaceId || workspace?.id || "";
+  const orgWorkspaces = orgWorkspacesData?.workspaces ?? [];
+
   const { data: workspaceUsersData, isLoading: usersLoading } =
-    useWorkspaceUsers({ page: usersPage, limit: usersPageSize });
+    useWorkspaceUsers({
+      page: usersPage,
+      limit: usersPageSize,
+      workspaceId: effectiveWorkspaceId,
+    });
   const { data: invitationsData, isLoading: invitationsLoading } =
     useInvitations({ page: invPage, limit: invPageSize });
   const sendInvitationMutation = useSendInvitation();
@@ -69,7 +80,7 @@ const TeamSection = () => {
   const removeUserMutation = useRemoveUserFromWorkspace();
   const assignToWorkspaceMutation = useAssignToWorkspace();
   const { data: orgMembersNotInWs, isLoading: orgMembersLoading } =
-    useOrgMembersNotInWorkspace(workspace?.id);
+    useOrgMembersNotInWorkspace(effectiveWorkspaceId);
 
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   const [inviteForm, setInviteForm] = useState<InviteFormState>({
@@ -85,8 +96,11 @@ const TeamSection = () => {
 
   const profile = profileData?.user;
   const isAdmin = profile?.role === UserRole.ADMIN;
+  const isViewingActiveWorkspace = effectiveWorkspaceId === workspace?.id;
   const workspaceUsers = workspaceUsersData?.users || [];
-  const invitations = invitationsData?.invitations || [];
+  const invitations = isViewingActiveWorkspace
+    ? invitationsData?.invitations || []
+    : [];
 
   const planFeatures = planData?.planFeatures;
   const usersTotal =
@@ -111,7 +125,7 @@ const TeamSection = () => {
   }
 
   const handleInviteUser = async () => {
-    if (!workspace?.id) {
+    if (!effectiveWorkspaceId) {
       toast.error(t("toast.noWorkspaceFound"));
       return;
     }
@@ -213,7 +227,7 @@ const TeamSection = () => {
     try {
       await assignToWorkspaceMutation.mutateAsync({
         userId,
-        workspaceId: workspace.id,
+        workspaceId: effectiveWorkspaceId,
         role: selectedRole,
       });
       toast.success(
@@ -238,7 +252,7 @@ const TeamSection = () => {
     }
     try {
       await removeUserMutation.mutateAsync({
-        workspaceId: workspace.id,
+        workspaceId: effectiveWorkspaceId,
         userId,
       });
       toast.success(t("toast.userRemoved", { name: userName }));
@@ -249,21 +263,68 @@ const TeamSection = () => {
     }
   };
 
+  const selectedWorkspaceName =
+    orgWorkspaces.find((w) => w.id === effectiveWorkspaceId)?.name ??
+    workspace?.name ??
+    "";
+
   return (
     <div className="space-y-6">
-      {/* Add from organization button */}
-      {isAdmin && availableOrgMembers.length > 0 && (
-        <div className="flex justify-end">
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => setAddFromOrgOpen(true)}
-          >
-            <UserPlus className="h-4 w-4 mr-2" />
-            {t("team.addFromOrg")}
-          </Button>
+      {/* Context header bar */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between pb-4 border-b border-border">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-primary/10 shrink-0">
+            <Users className="h-5 w-5 text-primary" />
+          </div>
+          <div className="min-w-0">
+            <h2 className="text-lg font-semibold leading-tight">
+              {t("tabs.team")}
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              {selectedWorkspaceName}
+            </p>
+          </div>
         </div>
-      )}
+
+        <div className="flex items-center gap-2.5 shrink-0">
+          {orgWorkspaces.length > 0 && (
+            <Select
+              value={effectiveWorkspaceId}
+              onValueChange={(id) => {
+                setSelectedWorkspaceId(id);
+                setUsersPage(1);
+                setInvPage(1);
+              }}
+            >
+              <SelectTrigger className="h-9 w-[220px] text-sm font-medium">
+                <div className="flex items-center gap-2 truncate">
+                  <FolderOpen className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                  <SelectValue placeholder={selectedWorkspaceName} />
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+                {orgWorkspaces.map((ws) => (
+                  <SelectItem key={ws.id} value={ws.id}>
+                    {ws.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+
+          {isAdmin && availableOrgMembers.length > 0 && (
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-9"
+              onClick={() => setAddFromOrgOpen(true)}
+            >
+              <UserPlus className="h-4 w-4 mr-1.5" />
+              {t("team.addFromOrg")}
+            </Button>
+          )}
+        </div>
+      </div>
 
       <EnhancedTeamTab
         isAdmin={isAdmin}

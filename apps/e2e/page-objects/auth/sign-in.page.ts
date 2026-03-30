@@ -44,6 +44,6 @@ export class SignInPage {
   }
 
   async expectRedirectToWorkspaceSetup() {
-    await this.page.waitForURL("**/workspace", { timeout: 15_000 });
+    await this.page.waitForURL("**/onboarding", { timeout: 15_000 });
   }
 }

@@ -6,8 +6,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Building2, Loader2, Plus } from "lucide-react";
 import { toast } from "sonner";
 
-import { InviteLinksDialog } from "@/components/InviteLinksDialog";
-import { InviteMembersSection } from "@/components/InviteMembersSection";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -31,7 +29,6 @@ import { TagsInput } from "@/components/ui/tags-input";
 
 import { useCreateWorkspace } from "@/hooks/queries/useWorkspaceApi";
 import { useWorkspace } from "@/hooks/ui/useWorkspace";
-import { useWorkspaceInvites } from "@/hooks/ui/useWorkspaceInvites";
 
 import { WorkspaceFormData, workspaceSchema } from "@/schemas";
 
@@ -48,19 +45,6 @@ export function CreateWorkspaceForm({
   const { refetch: refreshWorkspace } = useWorkspace();
   const queryClient = useQueryClient();
 
-  const {
-    inviteEmails,
-    setInviteEmails,
-    inviteRole,
-    setInviteRole,
-    inviteLinks,
-    canInviteUsers,
-    maxInvites,
-    storePendingInvites,
-    sendPendingInvites,
-    reset: resetInvites,
-  } = useWorkspaceInvites();
-
   const form = useForm<WorkspaceFormData>({
     resolver: zodResolver(workspaceSchema),
     defaultValues: {
@@ -73,7 +57,6 @@ export function CreateWorkspaceForm({
   const createWorkspaceMutation = useCreateWorkspace();
 
   const onSubmit = (data: WorkspaceFormData) => {
-    storePendingInvites();
     createWorkspaceMutation.mutate(
       {
         name: data.name.trim(),
@@ -82,11 +65,8 @@ export function CreateWorkspaceForm({
       },
       {
         onSuccess: () => {
-          sendPendingInvites();
           queryClient.invalidateQueries({ queryKey: ["workspaces"] });
           refreshWorkspace();
-          setInviteEmails([]);
-          setInviteRole("MEMBER");
           onClose();
           form.reset();
         },
@@ -191,17 +171,6 @@ export function CreateWorkspaceForm({
                   </FormItem>
                 )}
               />
-
-              <InviteMembersSection
-                inviteEmails={inviteEmails}
-                setInviteEmails={setInviteEmails}
-                inviteRole={inviteRole}
-                setInviteRole={setInviteRole}
-                canInviteUsers={canInviteUsers}
-                maxInvites={maxInvites}
-                disabled={createWorkspaceMutation.isPending}
-                i18nPrefix="createForm"
-              />
             </form>
           </Form>
 
@@ -241,8 +210,6 @@ export function CreateWorkspaceForm({
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      <InviteLinksDialog inviteLinks={inviteLinks} onClose={resetInvites} />
     </>
   );
 }

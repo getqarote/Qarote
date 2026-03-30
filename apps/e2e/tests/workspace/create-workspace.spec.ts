@@ -25,8 +25,8 @@ test.describe("Workspace Creation @p0", () => {
     await page.getByPlaceholder("Enter your password").fill(password);
     await page.getByRole("button", { name: /sign in/i }).click();
 
-    // Should redirect to workspace creation
-    await page.waitForURL("**/workspace", { timeout: 15_000 });
+    // Should redirect to onboarding
+    await page.waitForURL("**/onboarding", { timeout: 15_000 });
   });
 
   test("admin user with workspace should go to dashboard", async ({
