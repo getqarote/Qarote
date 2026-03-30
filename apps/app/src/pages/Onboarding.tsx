@@ -334,8 +334,8 @@ const Onboarding = () => {
                         onChange={setInviteEmails}
                         placeholder={t("inviteEmailPlaceholder")}
                         maxTags={10}
+                        maxTagLength={100}
                         disabled={isPending}
-                        type="email"
                       />
 
                       {/* Role selector — only visible when emails exist */}
