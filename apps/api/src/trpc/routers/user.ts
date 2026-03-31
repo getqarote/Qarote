@@ -37,6 +37,33 @@ import { te } from "@/i18n";
  */
 export const userRouter = router({
   /**
+   * Lightweight onboarding info — no org/workspace scope required.
+   * Returns whether the user belongs to an org and its name.
+   */
+  getOnboardingInfo: rateLimitedProcedure.query(async ({ ctx }) => {
+    const [membership, user] = await Promise.all([
+      ctx.prisma.organizationMember.findFirst({
+        where: { userId: ctx.user.id },
+        select: {
+          organization: {
+            select: { id: true, name: true },
+          },
+        },
+      }),
+      ctx.prisma.user.findUnique({
+        where: { id: ctx.user.id },
+        select: { onboardingCompletedAt: true },
+      }),
+    ]);
+
+    return {
+      hasOrganization: !!membership,
+      organizationName: membership?.organization.name ?? null,
+      onboardingCompleted: !!user?.onboardingCompletedAt,
+    };
+  }),
+
+  /**
    * Get users in the same workspace
    */
   getWorkspaceUsers: workspaceProcedure

@@ -240,6 +240,7 @@ export const managementRouter = router({
               data: {
                 workspaceId: workspace.id,
                 role: UserRole.ADMIN, // Owner becomes admin of their workspace
+                onboardingCompletedAt: new Date(),
               },
             });
           }

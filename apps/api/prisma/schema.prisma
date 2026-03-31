@@ -239,6 +239,7 @@ model User {
   locale                  String                   @default("en")
   discordJoined           Boolean                  @default(false)
   discordJoinedAt         DateTime?
+  onboardingCompletedAt   DateTime?
   alerts                  Alert[]
   alertRules              AlertRule[]
   emailVerificationTokens EmailVerificationToken[]

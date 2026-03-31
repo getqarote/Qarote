@@ -4,8 +4,10 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Building2, Loader2, Rocket, Users, X } from "lucide-react";
+import { Building2, Loader2, Plus, Rocket, Users, X } from "lucide-react";
 import { toast } from "sonner";
+
+import { trpc } from "@/lib/trpc/client";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -31,12 +33,12 @@ import { TagsInput } from "@/components/ui/tags-input";
 import { useAuth } from "@/contexts/AuthContextDefinition";
 
 import {
-  useCurrentOrganization,
   useInviteOrgMember,
   useUpdateOrganization,
 } from "@/hooks/queries/useOrganization";
 import {
   useCreateWorkspace,
+  useSwitchWorkspace,
   useUserWorkspaces,
 } from "@/hooks/queries/useWorkspaceApi";
 
@@ -45,7 +47,7 @@ import { type OnboardingFormData, onboardingSchema } from "@/schemas";
 const Onboarding = () => {
   const { t } = useTranslation("onboarding");
   const navigate = useNavigate();
-  const { user, refetchUser } = useAuth();
+  const { user } = useAuth();
   const isCreatingRef = useRef(false);
 
   // Invite state: each invitee has their own role
@@ -58,10 +60,18 @@ const Onboarding = () => {
   const { data: workspacesData, isLoading: workspacesLoading } =
     useUserWorkspaces();
 
-  // Get current org name for pre-filling
-  const { data: currentOrg } = useCurrentOrganization();
+  // Lightweight org check — no org/workspace scope required
+  const { data: onboardingInfo, isLoading: orgLoading } =
+    trpc.user.getOnboardingInfo.useQuery(undefined, {
+      enabled: !!user,
+      staleTime: 60000,
+    });
   const defaultOrgName =
-    currentOrg?.name || `${user?.firstName || "My"}'s Organization`;
+    onboardingInfo?.organizationName ||
+    `${user?.firstName || "My"}'s Organization`;
+
+  // First-time onboarding vs returning user (deleted their workspace)
+  const isFirstOnboarding = !onboardingInfo?.onboardingCompleted;
 
   // Redirect to dashboard if user already has workspaces (skip during creation)
   useEffect(() => {
@@ -93,11 +103,13 @@ const Onboarding = () => {
 
   // Mutations
   const createWorkspaceMutation = useCreateWorkspace();
+  const switchWorkspaceMutation = useSwitchWorkspace();
   const updateOrgMutation = useUpdateOrganization();
   const inviteOrgMemberMutation = useInviteOrgMember();
 
   const isPending =
     createWorkspaceMutation.isPending ||
+    switchWorkspaceMutation.isPending ||
     updateOrgMutation.isPending ||
     inviteOrgMemberMutation.isPending;
 
@@ -115,22 +127,24 @@ const Onboarding = () => {
       });
       const newWorkspaceId = result.workspace.id;
 
-      // 2. Refresh session to get workspaceId + org context
-      await refetchUser();
+      // 2. Switch to the new workspace so resolveOrg() works for subsequent calls
+      await switchWorkspaceMutation.mutateAsync({
+        workspaceId: newWorkspaceId,
+      });
 
       // 3. Rename org if user changed it
-      const trimmedOrgName = data.orgName.trim();
+      const trimmedOrgName = data.orgName?.trim() ?? "";
       if (trimmedOrgName && trimmedOrgName !== defaultOrgName) {
         try {
           await updateOrgMutation.mutateAsync({ name: trimmedOrgName });
         } catch {
-          toast.warning(t("orgRenameFailed"));
+          // Non-blocking — user can rename later in settings
         }
       }
 
-      // 4. Send invitations (non-blocking)
+      // 4. Send invitations (fire-and-forget, non-blocking)
       if (invitees.length > 0 && newWorkspaceId) {
-        const results = await Promise.allSettled(
+        await Promise.allSettled(
           invitees.map((invitee) =>
             inviteOrgMemberMutation.mutateAsync({
               email: invitee.email,
@@ -141,25 +155,10 @@ const Onboarding = () => {
             })
           )
         );
-
-        results.forEach((result, i) => {
-          if (result.status === "fulfilled") {
-            toast.success(t("inviteSent", { email: invitees[i].email }));
-          } else {
-            toast.error(
-              t("inviteFailed", {
-                email: invitees[i].email,
-                error:
-                  result.reason instanceof Error
-                    ? result.reason.message
-                    : "Unknown error",
-              })
-            );
-          }
-        });
       }
 
-      navigate("/", { replace: true });
+      // Full page reload — clean slate, no re-render flicker
+      globalThis.location.assign("/");
     } catch (error) {
       isCreatingRef.current = false;
       toast.error(
@@ -170,7 +169,7 @@ const Onboarding = () => {
     }
   };
 
-  if (workspacesLoading) {
+  if (workspacesLoading || orgLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="flex items-center gap-2">
@@ -181,6 +180,7 @@ const Onboarding = () => {
     );
   }
 
+  // ── Onboarding ──
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -207,23 +207,36 @@ const Onboarding = () => {
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="space-y-8">
           {/* Welcome Section */}
-          <div className="text-center">
-            <h1 className="text-3xl font-bold text-foreground mb-4">
-              {t("title")}
-            </h1>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              {t("description")}
-            </p>
-          </div>
+          {isFirstOnboarding && (
+            <div className="text-center">
+              <h1 className="text-3xl font-bold text-foreground mb-4">
+                {t("title")}
+              </h1>
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                {t("description")}
+              </p>
+            </div>
+          )}
 
           {/* Organization Setup Card */}
           <div className="max-w-lg mx-auto">
             <Card className="border-0 shadow-lg">
               <CardHeader className="text-center">
                 <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-lg bg-orange-100 dark:bg-orange-900/30 mb-4">
-                  <Building2 className="h-6 w-6 text-orange-600" />
+                  {isFirstOnboarding ? (
+                    <Building2 className="h-6 w-6 text-orange-600" />
+                  ) : (
+                    <Plus className="h-6 w-6 text-orange-600" />
+                  )}
                 </div>
-                <CardTitle className="text-xl">{t("cardTitle")}</CardTitle>
+                <CardTitle className="text-xl">
+                  {t(isFirstOnboarding ? "cardTitle" : "cardTitleReturning")}
+                </CardTitle>
+                {!isFirstOnboarding && (
+                  <p className="text-sm text-muted-foreground">
+                    {t("cardDescriptionReturning")}
+                  </p>
+                )}
               </CardHeader>
               <CardContent>
                 <Form {...form}>
@@ -240,27 +253,29 @@ const Onboarding = () => {
                       </Alert>
                     )}
 
-                    {/* Organization Name */}
-                    <FormField
-                      control={form.control}
-                      name="orgName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-sm font-medium">
-                            {t("orgName")}
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              placeholder={t("orgNamePlaceholder")}
-                              className="h-11"
-                              disabled={isPending}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                    {/* Organization Name — only on first onboarding */}
+                    {isFirstOnboarding && (
+                      <FormField
+                        control={form.control}
+                        name="orgName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-sm font-medium">
+                              {t("orgName")}
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                placeholder={t("orgNamePlaceholder")}
+                                className="h-11"
+                                disabled={isPending}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    )}
 
                     {/* Workspace Name */}
                     <FormField
@@ -311,132 +326,139 @@ const Onboarding = () => {
                       )}
                     />
 
-                    {/* Divider */}
-                    <div className="relative py-2">
-                      <div className="absolute inset-0 flex items-center">
-                        <span className="w-full border-t" />
-                      </div>
-                      <div className="relative flex justify-center">
-                        <span className="bg-card px-3 text-sm text-muted-foreground flex items-center gap-1.5">
-                          <Users className="h-3.5 w-3.5" />
-                          {t("inviteTitle")}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Invite Members */}
-                    <div className="space-y-3">
-                      <p className="text-xs text-muted-foreground">
-                        {t("inviteDescription")}
-                      </p>
-
-                      {/* Email input */}
-                      <div className="flex gap-2">
-                        <Input
-                          type="email"
-                          value={emailInput}
-                          onChange={(e) => setEmailInput(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                              e.preventDefault();
-                              const email = emailInput.trim();
-                              if (
-                                email &&
-                                email.includes("@") &&
-                                !invitees.some((inv) => inv.email === email) &&
-                                invitees.length < 10
-                              ) {
-                                setInvitees([
-                                  ...invitees,
-                                  { email, role: "MEMBER" },
-                                ]);
-                                setEmailInput("");
-                              }
-                            }
-                          }}
-                          placeholder={t("inviteEmailPlaceholder")}
-                          disabled={isPending || invitees.length >= 10}
-                          className="flex-1"
-                        />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          className="h-10 px-4"
-                          disabled={
-                            isPending ||
-                            !emailInput.trim() ||
-                            !emailInput.includes("@") ||
-                            invitees.some(
-                              (inv) => inv.email === emailInput.trim()
-                            ) ||
-                            invitees.length >= 10
-                          }
-                          onClick={() => {
-                            const email = emailInput.trim();
-                            if (email && email.includes("@")) {
-                              setInvitees([
-                                ...invitees,
-                                { email, role: "MEMBER" },
-                              ]);
-                              setEmailInput("");
-                            }
-                          }}
-                        >
-                          {t("inviteAdd", { defaultValue: "Add" })}
-                        </Button>
-                      </div>
-
-                      {/* Invitee list with per-email role selector */}
-                      {invitees.length > 0 && (
-                        <div className="space-y-2 animate-in fade-in slide-in-from-top-1 duration-200">
-                          {invitees.map((invitee, idx) => (
-                            <div
-                              key={invitee.email}
-                              className="flex items-center gap-2 rounded-md border border-border p-2"
-                            >
-                              <span className="flex-1 text-sm truncate">
-                                {invitee.email}
-                              </span>
-                              <Select
-                                value={invitee.role}
-                                onValueChange={(v) => {
-                                  const updated = [...invitees];
-                                  updated[idx] = {
-                                    ...updated[idx],
-                                    role: v as "ADMIN" | "MEMBER",
-                                  };
-                                  setInvitees(updated);
-                                }}
-                              >
-                                <SelectTrigger className="w-28 h-8 text-xs">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="MEMBER">
-                                    {t("inviteRoleMember")}
-                                  </SelectItem>
-                                  <SelectItem value="ADMIN">
-                                    {t("inviteRoleAdmin")}
-                                  </SelectItem>
-                                </SelectContent>
-                              </Select>
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  setInvitees(
-                                    invitees.filter((_, i) => i !== idx)
-                                  )
-                                }
-                                className="text-muted-foreground hover:text-destructive transition-colors"
-                              >
-                                <X className="h-4 w-4" />
-                              </button>
-                            </div>
-                          ))}
+                    {/* Invite section — only on first onboarding */}
+                    {isFirstOnboarding && (
+                      <>
+                        {/* Divider */}
+                        <div className="relative py-2">
+                          <div className="absolute inset-0 flex items-center">
+                            <span className="w-full border-t" />
+                          </div>
+                          <div className="relative flex justify-center">
+                            <span className="bg-card px-3 text-sm text-muted-foreground flex items-center gap-1.5">
+                              <Users className="h-3.5 w-3.5" />
+                              {t("inviteTitle")}
+                            </span>
+                          </div>
                         </div>
-                      )}
-                    </div>
+
+                        {/* Invite Members */}
+                        <div className="space-y-3">
+                          <p className="text-xs text-muted-foreground">
+                            {t("inviteDescription")}
+                          </p>
+
+                          {/* Email input */}
+                          <div className="flex gap-2">
+                            <Input
+                              type="email"
+                              value={emailInput}
+                              onChange={(e) => setEmailInput(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                  e.preventDefault();
+                                  const email = emailInput.trim();
+                                  if (
+                                    email &&
+                                    email.includes("@") &&
+                                    !invitees.some(
+                                      (inv) => inv.email === email
+                                    ) &&
+                                    invitees.length < 10
+                                  ) {
+                                    setInvitees([
+                                      ...invitees,
+                                      { email, role: "MEMBER" },
+                                    ]);
+                                    setEmailInput("");
+                                  }
+                                }
+                              }}
+                              placeholder={t("inviteEmailPlaceholder")}
+                              disabled={isPending || invitees.length >= 10}
+                              className="flex-1"
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="h-10 px-4"
+                              disabled={
+                                isPending ||
+                                !emailInput.trim() ||
+                                !emailInput.includes("@") ||
+                                invitees.some(
+                                  (inv) => inv.email === emailInput.trim()
+                                ) ||
+                                invitees.length >= 10
+                              }
+                              onClick={() => {
+                                const email = emailInput.trim();
+                                if (email && email.includes("@")) {
+                                  setInvitees([
+                                    ...invitees,
+                                    { email, role: "MEMBER" },
+                                  ]);
+                                  setEmailInput("");
+                                }
+                              }}
+                            >
+                              {t("inviteAdd", { defaultValue: "Add" })}
+                            </Button>
+                          </div>
+
+                          {/* Invitee list with per-email role selector */}
+                          {invitees.length > 0 && (
+                            <div className="space-y-2 animate-in fade-in slide-in-from-top-1 duration-200">
+                              {invitees.map((invitee, idx) => (
+                                <div
+                                  key={invitee.email}
+                                  className="flex items-center gap-2 rounded-md border border-border p-2"
+                                >
+                                  <span className="flex-1 text-sm truncate">
+                                    {invitee.email}
+                                  </span>
+                                  <Select
+                                    value={invitee.role}
+                                    onValueChange={(v) => {
+                                      const updated = [...invitees];
+                                      updated[idx] = {
+                                        ...updated[idx],
+                                        role: v as "ADMIN" | "MEMBER",
+                                      };
+                                      setInvitees(updated);
+                                    }}
+                                  >
+                                    <SelectTrigger className="w-28 h-8 text-xs">
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="MEMBER">
+                                        {t("inviteRoleMember")}
+                                      </SelectItem>
+                                      <SelectItem value="ADMIN">
+                                        {t("inviteRoleAdmin")}
+                                      </SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setInvitees(
+                                        invitees.filter((_, i) => i !== idx)
+                                      )
+                                    }
+                                    className="text-muted-foreground hover:text-destructive transition-colors"
+                                  >
+                                    <X className="h-4 w-4" />
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </>
+                    )}
 
                     {/* Submit */}
                     <Button
@@ -451,8 +473,12 @@ const Onboarding = () => {
                         </div>
                       ) : (
                         <div className="flex items-center gap-2">
-                          <Rocket className="h-4 w-4" />
-                          {t("submit")}
+                          {isFirstOnboarding ? (
+                            <Rocket className="h-4 w-4" />
+                          ) : (
+                            <Plus className="h-4 w-4" />
+                          )}
+                          {t(isFirstOnboarding ? "submit" : "submitReturning")}
                         </div>
                       )}
                     </Button>

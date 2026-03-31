@@ -1,7 +1,14 @@
 import { z } from "zod";
 
 export const onboardingSchema = z.object({
-  orgName: z.string().trim().min(2, "Organization name is required").max(100),
+  orgName: z
+    .string()
+    .trim()
+    .max(100)
+    .optional()
+    .refine((val) => !val || val.length >= 2, {
+      message: "Organization name is required",
+    }),
   workspaceName: z
     .string()
     .trim()
