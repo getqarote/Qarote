@@ -35,6 +35,7 @@
   "loadingWorkspaces": "Chargement des espaces de travail...",
   "workspaceSwitched": "Espace de travail changé avec succès !",
   "workspaceSwitchFailed": "Échec du changement d'espace de travail. Veuillez réessayer.",
+  "noWorkspaceInOrg": "Aucun espace de travail disponible dans cette organisation. Demandez à un administrateur de vous assigner un espace de travail.",
   "upgrade": "Mettre à niveau",
   "upgradeToCreate": "Passez à un plan supérieur pour créer plusieurs espaces de travail",
   "multipleWorkspacesDeveloper": "Plusieurs espaces de travail disponibles avec le plan Développeur",

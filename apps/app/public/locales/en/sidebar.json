@@ -35,6 +35,7 @@
   "loadingWorkspaces": "Loading workspaces...",
   "workspaceSwitched": "Workspace switched successfully!",
   "workspaceSwitchFailed": "Failed to switch workspace. Please try again.",
+  "noWorkspaceInOrg": "No workspace available in this organization. Ask an admin to assign you to a workspace.",
   "upgrade": "Upgrade",
   "upgradeToCreate": "Upgrade to create multiple workspaces",
   "multipleWorkspacesDeveloper": "Multiple workspaces available with Developer plan",

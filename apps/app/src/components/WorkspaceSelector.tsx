@@ -144,7 +144,7 @@ export function WorkspaceSelector() {
     );
 
     if (!targetWorkspace) {
-      toast.error(t("workspaceSwitchFailed"));
+      toast.error(t("noWorkspaceInOrg"));
       setIsOpen(false);
       return;
     }

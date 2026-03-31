@@ -1305,9 +1305,9 @@ const OrganizationSection = () => {
                   <Label>{t("org.workspaceAccess")}</Label>
                   <Button
                     type="button"
-                    variant={inviteAllWorkspaces ? "default" : "outline"}
+                    variant="outline"
                     size="sm"
-                    className="w-full justify-start"
+                    className={`w-full justify-start ${inviteAllWorkspaces ? "bg-accent border-primary/30" : ""}`}
                     onClick={() => {
                       setInviteAllWorkspaces((prev) => !prev);
                       if (!inviteAllWorkspaces) {

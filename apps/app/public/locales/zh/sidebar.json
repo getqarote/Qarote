@@ -35,6 +35,7 @@
   "loadingWorkspaces": "加载工作区中...",
   "workspaceSwitched": "工作区切换成功！",
   "workspaceSwitchFailed": "切换工作区失败，请重试。",
+  "noWorkspaceInOrg": "此组织中没有可用的工作区。请联系管理员为您分配工作区。",
   "upgrade": "升级",
   "upgradeToCreate": "升级以创建多个工作区",
   "multipleWorkspacesDeveloper": "开发者计划可使用多个工作区",
