@@ -249,7 +249,7 @@ model User {
   passwordResets          PasswordReset[]
   sessions                Session[]
   accounts                Account[]
-  workspace               Workspace?               @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspace               Workspace?               @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
   workspaceMembers        WorkspaceMember[]        @relation("WorkspaceMembers")
   payments                Payment[]
   subscription            Subscription?
