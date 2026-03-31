@@ -6,6 +6,7 @@ import { UserRole } from "@/lib/api";
 
 import { AppSidebar } from "@/components/AppSidebar";
 import { NoServerConfigured } from "@/components/NoServerConfigured";
+import { PageError } from "@/components/PageError";
 import { QueueHeader } from "@/components/Queues/QueueHeader";
 import { QueueTable } from "@/components/Queues/QueueTable";
 import { Input } from "@/components/ui/input";
@@ -32,11 +33,11 @@ const Queues = () => {
   const [pageSize, setPageSize] = useState(25);
   const { selectedServerId, hasServers } = useServerContext();
   const { selectedVHost } = useVHostContext();
-  const { data: queuesData, isLoading } = useQueues(
-    selectedServerId,
-    selectedVHost,
-    hasServers
-  );
+  const {
+    data: queuesData,
+    isLoading,
+    isError,
+  } = useQueues(selectedServerId, selectedVHost, hasServers);
 
   const queues = useMemo(() => queuesData?.queues || [], [queuesData?.queues]);
   const queueCount = queues.length;
@@ -97,6 +98,25 @@ const Queues = () => {
                   </div>
                 </div>
               </div>
+            </div>
+          </main>
+        </div>
+      </SidebarProvider>
+    );
+  }
+
+  if (isError) {
+    return (
+      <SidebarProvider>
+        <div className="page-layout">
+          <AppSidebar />
+          <main className="main-content-scrollable">
+            <div className="content-container-large">
+              <div className="flex items-center gap-4">
+                <SidebarTrigger />
+                <h1 className="title-page">{t("pageTitle")}</h1>
+              </div>
+              <PageError message={t("common:serverConnectionError")} />
             </div>
           </main>
         </div>

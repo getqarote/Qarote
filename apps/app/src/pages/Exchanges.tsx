@@ -9,7 +9,6 @@ import {
   Hash,
   Link2,
   Radio,
-  RefreshCw,
   Server,
   Share2,
   Shuffle,
@@ -23,6 +22,7 @@ import { AddExchangeButton } from "@/components/AddExchangeButton";
 import { AppSidebar } from "@/components/AppSidebar";
 import CreateExchangeDialog from "@/components/ExchangeManagement";
 import { NoServerConfigured } from "@/components/NoServerConfigured";
+import { PageError } from "@/components/PageError";
 import { PlanUpgradeModal } from "@/components/plans/PlanUpgradeModal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -41,6 +41,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
@@ -238,6 +239,28 @@ const Exchanges = () => {
     );
   }
 
+  if (exchangesError) {
+    return (
+      <SidebarProvider>
+        <div className="page-layout">
+          <AppSidebar />
+          <main className="main-content-scrollable">
+            <div className="content-container-large">
+              <div className="flex items-center gap-4">
+                <SidebarTrigger />
+                <div>
+                  <h1 className="title-page">{t("pageTitle")}</h1>
+                  <p className="text-gray-500">{t("pageSubtitle")}</p>
+                </div>
+              </div>
+              <PageError message={t("common:serverConnectionError")} />
+            </div>
+          </main>
+        </div>
+      </SidebarProvider>
+    );
+  }
+
   return (
     <SidebarProvider>
       <div className="page-layout">
@@ -272,11 +295,13 @@ const Exchanges = () => {
                   <Activity className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">
-                    {exchangesLoading
-                      ? "..."
-                      : (exchangesData?.totalExchanges ?? 0)}
-                  </div>
+                  {exchangesLoading ? (
+                    <Skeleton className="h-8 w-16" />
+                  ) : (
+                    <div className="text-2xl font-bold">
+                      {exchangesData?.totalExchanges ?? 0}
+                    </div>
+                  )}
                   <p className="text-xs text-muted-foreground">
                     {t("activeExchanges")}
                   </p>
@@ -291,11 +316,13 @@ const Exchanges = () => {
                   <GitBranch className="h-4 w-4 text-blue-600" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">
-                    {exchangesLoading
-                      ? "..."
-                      : (exchangesData?.exchangeTypes?.direct ?? 0)}
-                  </div>
+                  {exchangesLoading ? (
+                    <Skeleton className="h-8 w-16" />
+                  ) : (
+                    <div className="text-2xl font-bold">
+                      {exchangesData?.exchangeTypes?.direct ?? 0}
+                    </div>
+                  )}
                   <p className="text-xs text-muted-foreground">
                     {t("pointToPointRouting")}
                   </p>
@@ -310,11 +337,13 @@ const Exchanges = () => {
                   <Radio className="h-4 w-4 text-green-600" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">
-                    {exchangesLoading
-                      ? "..."
-                      : (exchangesData?.exchangeTypes?.fanout ?? 0)}
-                  </div>
+                  {exchangesLoading ? (
+                    <Skeleton className="h-8 w-16" />
+                  ) : (
+                    <div className="text-2xl font-bold">
+                      {exchangesData?.exchangeTypes?.fanout ?? 0}
+                    </div>
+                  )}
                   <p className="text-xs text-muted-foreground">
                     {t("broadcastRouting")}
                   </p>
@@ -329,11 +358,13 @@ const Exchanges = () => {
                   <Share2 className="h-4 w-4 text-purple-600" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">
-                    {exchangesLoading
-                      ? "..."
-                      : (exchangesData?.exchangeTypes?.topic ?? 0)}
-                  </div>
+                  {exchangesLoading ? (
+                    <Skeleton className="h-8 w-16" />
+                  ) : (
+                    <div className="text-2xl font-bold">
+                      {exchangesData?.exchangeTypes?.topic ?? 0}
+                    </div>
+                  )}
                   <p className="text-xs text-muted-foreground">
                     {t("patternRouting")}
                   </p>
@@ -348,11 +379,13 @@ const Exchanges = () => {
                   <Link2 className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">
-                    {exchangesLoading
-                      ? "..."
-                      : (exchangesData?.totalBindings ?? 0)}
-                  </div>
+                  {exchangesLoading ? (
+                    <Skeleton className="h-8 w-16" />
+                  ) : (
+                    <div className="text-2xl font-bold">
+                      {exchangesData?.totalBindings ?? 0}
+                    </div>
+                  )}
                   <p className="text-xs text-muted-foreground">
                     {t("exchangeQueueBindings")}
                   </p>
@@ -383,16 +416,11 @@ const Exchanges = () => {
                 </div>
               </CardHeader>
               <CardContent>
-                {exchangesError ? (
-                  <div className="text-center py-8">
-                    <div className="text-red-600 mb-2">
-                      {t("failedToLoad")}: {exchangesError.message}
-                    </div>
-                  </div>
-                ) : exchangesLoading ? (
-                  <div className="text-center py-8">
-                    <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4" />
-                    <p>{t("loadingExchanges")}</p>
+                {exchangesLoading ? (
+                  <div className="space-y-3">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Skeleton key={i} className="h-16 w-full rounded-lg" />
+                    ))}
                   </div>
                 ) : filteredExchanges.length === 0 ? (
                   <div className="text-center py-8">

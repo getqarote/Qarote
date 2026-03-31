@@ -41,6 +41,7 @@ export const useDashboardData = (
     data: overviewData,
     isLoading: overviewLoading,
     isFetching: overviewFetching,
+    error: overviewError,
   } = useOverview(selectedServerId);
   const { data: queuesData, isLoading: queuesLoading } = useQueues(
     selectedServerId,
@@ -203,6 +204,7 @@ export const useDashboardData = (
     nodesFetching,
 
     // Error states
+    overviewError,
     metricsError,
     liveRatesError,
     nodesError,

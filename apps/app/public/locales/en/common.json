@@ -59,6 +59,7 @@
   "learnMore": "Learn more",
   "getStarted": "Get started",
   "tryAgain": "Try again",
+  "serverConnectionError": "Unable to reach the RabbitMQ server. Please check that the server is running and the connection details are correct.",
   "errorContactSupport": "If the problem persists, contact us at",
   "goBack": "Go back",
   "termsOfService": "Terms of Service",

@@ -12,6 +12,7 @@ import { ConnectedNodes } from "@/components/ConnectedNodes";
 import { ConnectionStatus } from "@/components/ConnectionStatus";
 import { MessagesRatesChart } from "@/components/MessagesRatesChart";
 import { NoServerConfigured } from "@/components/NoServerConfigured";
+import { PageError } from "@/components/PageError";
 import { PlanUpgradeModal } from "@/components/plans/PlanUpgradeModal";
 import { PrimaryMetricsCards } from "@/components/PrimaryMetricsCards";
 import { QueueDepthsChart } from "@/components/QueueDepthsChart";
@@ -56,6 +57,7 @@ const Index = () => {
     liveRatesLoading,
     overviewFetching,
     nodesFetching,
+    overviewError,
     metricsError,
     liveRatesError,
     nodesError,
@@ -110,6 +112,26 @@ const Index = () => {
                   </div>
                 </CardContent>
               </Card>
+            </div>
+          </main>
+        </div>
+      </SidebarProvider>
+    );
+  }
+
+  // Show error state when server is unreachable (500 errors)
+  if (overviewError) {
+    return (
+      <SidebarProvider>
+        <div className="page-layout">
+          <AppSidebar />
+          <main className="main-content-scrollable">
+            <div className="content-container-large">
+              <div className="flex items-center gap-4">
+                <SidebarTrigger />
+                <h1 className="title-page">{t("pageTitle")}</h1>
+              </div>
+              <PageError message={t("common:serverConnectionError")} />
             </div>
           </main>
         </div>

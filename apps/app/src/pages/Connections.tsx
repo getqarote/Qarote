@@ -9,7 +9,6 @@ import {
   Link,
   Network,
   Radio,
-  RefreshCw,
   Server,
   Users,
   Wifi,
@@ -18,6 +17,7 @@ import {
 
 import { AppSidebar } from "@/components/AppSidebar";
 import { NoServerConfigured } from "@/components/NoServerConfigured";
+import { PageError } from "@/components/PageError";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -26,6 +26,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { Skeleton } from "@/components/ui/skeleton";
 
 import { useServerContext } from "@/contexts/ServerContext";
 
@@ -171,6 +172,28 @@ const Connections = () => {
     );
   }
 
+  if (connectionsError) {
+    return (
+      <SidebarProvider>
+        <div className="page-layout">
+          <AppSidebar />
+          <main className="main-content-scrollable">
+            <div className="content-container-large">
+              <div className="flex items-center gap-4">
+                <SidebarTrigger />
+                <div>
+                  <h1 className="title-page">{t("pageTitle")}</h1>
+                  <p className="text-muted-foreground">{t("pageSubtitle")}</p>
+                </div>
+              </div>
+              <PageError message={t("common:serverConnectionError")} />
+            </div>
+          </main>
+        </div>
+      </SidebarProvider>
+    );
+  }
+
   return (
     <SidebarProvider>
       <div className="page-layout">
@@ -198,11 +221,13 @@ const Connections = () => {
                   <Network className="h-4 w-4 text-blue-600" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">
-                    {connectionsLoading
-                      ? "..."
-                      : (connectionsData?.totalConnections ?? 0)}
-                  </div>
+                  {connectionsLoading ? (
+                    <Skeleton className="h-8 w-16" />
+                  ) : (
+                    <div className="text-2xl font-bold">
+                      {connectionsData?.totalConnections ?? 0}
+                    </div>
+                  )}
                   <p className="text-xs text-muted-foreground">
                     {t("activeClientConnections")}
                   </p>
@@ -217,11 +242,13 @@ const Connections = () => {
                   <Zap className="h-4 w-4 text-yellow-600" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">
-                    {channelsLoading
-                      ? "..."
-                      : (channelsData?.totalChannels ?? 0)}
-                  </div>
+                  {channelsLoading ? (
+                    <Skeleton className="h-8 w-16" />
+                  ) : (
+                    <div className="text-2xl font-bold">
+                      {channelsData?.totalChannels ?? 0}
+                    </div>
+                  )}
                   <p className="text-xs text-muted-foreground">
                     {t("activeCommunicationChannels")}
                   </p>
@@ -236,18 +263,20 @@ const Connections = () => {
                   <Activity className="h-4 w-4 text-green-600" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">
-                    {connectionsLoading || channelsLoading
-                      ? "..."
-                      : connectionsData?.totalConnections &&
-                          connectionsData.totalConnections > 0
+                  {connectionsLoading || channelsLoading ? (
+                    <Skeleton className="h-8 w-16" />
+                  ) : (
+                    <div className="text-2xl font-bold">
+                      {connectionsData?.totalConnections &&
+                      connectionsData.totalConnections > 0
                         ? Math.round(
                             ((channelsData?.totalChannels ?? 0) /
                               connectionsData.totalConnections) *
                               10
                           ) / 10
                         : 0}
-                  </div>
+                    </div>
+                  )}
                   <p className="text-xs text-muted-foreground">
                     {t("channelsPerConnection")}
                   </p>
@@ -264,16 +293,11 @@ const Connections = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {connectionsError ? (
-                  <div className="text-center py-8">
-                    <div className="text-red-600 mb-2">
-                      {t("failedToLoad")}: {connectionsError.message}
-                    </div>
-                  </div>
-                ) : connectionsLoading ? (
-                  <div className="text-center py-8">
-                    <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4" />
-                    <p>{t("common:loading")}</p>
+                {connectionsLoading ? (
+                  <div className="space-y-3">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Skeleton key={i} className="h-16 w-full rounded-lg" />
+                    ))}
                   </div>
                 ) : connectionsData?.connections?.length === 0 ? (
                   <div className="text-center py-8">
