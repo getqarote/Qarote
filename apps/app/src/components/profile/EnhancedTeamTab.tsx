@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { Check, Copy, Mail, Users, X } from "lucide-react";
+import { Users, X } from "lucide-react";
 
 import { UserRole } from "@/lib/api";
 import { User } from "@/lib/api/authTypes";
-import { InvitationWithInviter } from "@/lib/api/authTypes";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -44,18 +43,14 @@ import { formatDate, InviteFormState } from "./profileUtils";
 interface EnhancedTeamTabProps {
   isAdmin: boolean;
   workspaceUsers: User[];
-  invitations: InvitationWithInviter[];
   usersLoading: boolean;
-  invitationsLoading: boolean;
   inviteDialogOpen: boolean;
   setInviteDialogOpen: (open: boolean) => void;
   inviteForm: InviteFormState;
   setInviteForm: (form: InviteFormState) => void;
   onInviteUser: () => void;
-  onRevokeInvitation: (invitationId: string, email: string) => void;
   onRemoveUser: (userId: string, userName: string) => void;
   isInviting: boolean;
-  isRevoking: boolean;
   isRemoving: boolean;
   canInviteMoreUsers: boolean;
   emailEnabled?: boolean;
@@ -65,27 +60,19 @@ interface EnhancedTeamTabProps {
   onUsersPageChange: (page: number) => void;
   onUsersPageSizeChange: (size: number) => void;
   invTotal: number;
-  invPage: number;
-  invPageSize: number;
-  onInvPageChange: (page: number) => void;
-  onInvPageSizeChange: (size: number) => void;
 }
 
 export const EnhancedTeamTab = ({
   isAdmin,
   workspaceUsers,
-  invitations,
   usersLoading,
-  invitationsLoading,
   inviteDialogOpen,
   setInviteDialogOpen,
   inviteForm,
   setInviteForm,
   onInviteUser,
-  onRevokeInvitation,
   onRemoveUser,
   isInviting,
-  isRevoking,
   isRemoving,
   canInviteMoreUsers,
   emailEnabled,
@@ -95,10 +82,6 @@ export const EnhancedTeamTab = ({
   onUsersPageChange,
   onUsersPageSizeChange,
   invTotal,
-  invPage,
-  invPageSize,
-  onInvPageChange,
-  onInvPageSizeChange,
 }: EnhancedTeamTabProps) => {
   const { t } = useTranslation("profile");
   const { planData, user } = useUser();
@@ -111,9 +94,6 @@ export const EnhancedTeamTab = ({
 
   // Admins can manage all members
   const isWorkspaceOwner = isAdmin;
-
-  // State for copy feedback
-  const [copiedToken, setCopiedToken] = useState<string | null>(null);
 
   // State for confirmation dialog
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
@@ -302,138 +282,6 @@ export const EnhancedTeamTab = ({
           )}
         </CardContent>
       </Card>
-
-      {/* Pending Invitations */}
-      {(invitations.length > 0 || invitationsLoading) && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Mail className="h-5 w-5" />
-              <span>{t("team.pendingInvitations")}</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {invitationsLoading ? (
-              <div className="space-y-2">
-                {[...Array(2)].map((_, i) => (
-                  <div
-                    key={i}
-                    className="h-12 bg-muted rounded animate-pulse"
-                  />
-                ))}
-              </div>
-            ) : invitations.length > 0 ? (
-              <>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>{t("team.tableEmail")}</TableHead>
-                      <TableHead>{t("team.tableRole")}</TableHead>
-                      <TableHead>{t("team.tableInvitedBy")}</TableHead>
-                      <TableHead>{t("team.tableInvited")}</TableHead>
-                      <TableHead>{t("team.tableExpires")}</TableHead>
-                      <TableHead>{t("team.tableActions")}</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {invitations.map((invitation) => (
-                      <TableRow key={invitation.id}>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Mail className="h-4 w-4 text-amber-500" />
-                            <span className="font-medium">
-                              {invitation.email}
-                            </span>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="soft-orange">
-                            {invitation.role.charAt(0) +
-                              invitation.role.slice(1).toLowerCase()}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="text-sm">
-                            <p className="font-medium">
-                              {invitation.invitedBy.displayName}
-                            </p>
-                            <p className="text-muted-foreground">
-                              {invitation.invitedBy.email}
-                            </p>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
-                          {formatDate(invitation.createdAt)}
-                        </TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
-                          {formatDate(invitation.expiresAt)}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-1">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={async () => {
-                                try {
-                                  const inviteUrl = `${window.location.origin}/invite/${invitation.token}`;
-                                  await navigator.clipboard.writeText(
-                                    inviteUrl
-                                  );
-                                  setCopiedToken(invitation.id);
-                                  setTimeout(() => setCopiedToken(null), 2000);
-                                } catch {
-                                  // Clipboard write failed (e.g. permissions denied)
-                                }
-                              }}
-                              className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                              title={t("team.copyInviteLink")}
-                              aria-label={t("team.copyInviteLink")}
-                            >
-                              {copiedToken === invitation.id ? (
-                                <Check className="h-4 w-4" />
-                              ) : (
-                                <Copy className="h-4 w-4" />
-                              )}
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() =>
-                                onRevokeInvitation(
-                                  invitation.id,
-                                  invitation.email
-                                )
-                              }
-                              disabled={isRevoking}
-                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                              title={t("team.revokeInvitation")}
-                              aria-label={t("team.revokeInvitation")}
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-                <PaginationControls
-                  total={invTotal}
-                  page={invPage}
-                  pageSize={invPageSize}
-                  onPageChange={onInvPageChange}
-                  onPageSizeChange={onInvPageSizeChange}
-                  itemLabel="invitations"
-                />
-              </>
-            ) : (
-              <p className="text-muted-foreground text-center py-4">
-                {t("team.noPendingInvitations")}
-              </p>
-            )}
-          </CardContent>
-        </Card>
-      )}
 
       <InviteUserDialog
         open={inviteDialogOpen}

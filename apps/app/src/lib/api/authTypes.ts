@@ -48,24 +48,3 @@ interface Workspace {
 export interface UserProfile extends User {
   workspace?: Workspace;
 }
-
-interface Invitation {
-  id: string;
-  email: string;
-  role: UserRole;
-  status: string;
-  token: string;
-  createdAt: string;
-  expiresAt: string;
-}
-
-// New invitation types for the enhanced system
-export interface InvitationWithInviter extends Invitation {
-  invitedBy: {
-    id: string;
-    firstName: string | null;
-    lastName: string | null;
-    email: string;
-    displayName: string;
-  };
-}

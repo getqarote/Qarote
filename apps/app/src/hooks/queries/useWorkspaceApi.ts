@@ -75,16 +75,6 @@ export const useSendInvitation = () => {
   });
 };
 
-export const useRevokeInvitation = () => {
-  const utils = trpc.useUtils();
-
-  return trpc.workspace.invitation.revokeInvitation.useMutation({
-    onSuccess: () => {
-      utils.workspace.invitation.getInvitations.invalidate();
-    },
-  });
-};
-
 export const useRemoveUserFromWorkspace = () => {
   const utils = trpc.useUtils();
 

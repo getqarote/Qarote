@@ -39,7 +39,6 @@ import { usePublicConfig } from "@/hooks/queries/usePublicConfig";
 import {
   useInvitations,
   useRemoveUserFromWorkspace,
-  useRevokeInvitation,
   useSendInvitation,
   useWorkspaceUsers,
 } from "@/hooks/queries/useWorkspaceApi";
@@ -60,9 +59,6 @@ const TeamSection = () => {
   const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<string>("");
   const [usersPage, setUsersPage] = useState(1);
   const [usersPageSize, setUsersPageSize] = useState(10);
-  const [invPage, setInvPage] = useState(1);
-  const [invPageSize, setInvPageSize] = useState(10);
-
   // Default to active workspace once loaded
   const effectiveWorkspaceId = selectedWorkspaceId || workspace?.id || "";
   const orgWorkspaces = orgWorkspacesData?.workspaces ?? [];
@@ -73,10 +69,8 @@ const TeamSection = () => {
       limit: usersPageSize,
       workspaceId: effectiveWorkspaceId,
     });
-  const { data: invitationsData, isLoading: invitationsLoading } =
-    useInvitations({ page: invPage, limit: invPageSize });
+  const { data: invitationsData } = useInvitations({ page: 1, limit: 1 });
   const sendInvitationMutation = useSendInvitation();
-  const revokeInvitationMutation = useRevokeInvitation();
   const removeUserMutation = useRemoveUserFromWorkspace();
   const assignToWorkspaceMutation = useAssignToWorkspace();
   const { data: orgMembersNotInWs, isLoading: orgMembersLoading } =
@@ -96,16 +90,12 @@ const TeamSection = () => {
 
   const profile = profileData?.user;
   const isAdmin = profile?.role === UserRole.ADMIN;
-  const isViewingActiveWorkspace = effectiveWorkspaceId === workspace?.id;
   const workspaceUsers = workspaceUsersData?.users || [];
-  const invitations = isViewingActiveWorkspace
-    ? invitationsData?.invitations || []
-    : [];
 
   const planFeatures = planData?.planFeatures;
   const usersTotal =
     workspaceUsersData?.pagination?.total ?? workspaceUsers.length;
-  const invTotal = invitationsData?.pagination?.total ?? invitations.length;
+  const invTotal = invitationsData?.pagination?.total ?? 0;
   const currentUserCount = usersTotal;
   const pendingInvitationCount = invTotal;
 
@@ -187,20 +177,6 @@ const TeamSection = () => {
         }
       );
     });
-  };
-
-  const handleRevokeInvitation = async (
-    invitationId: string,
-    email: string
-  ) => {
-    try {
-      await revokeInvitationMutation.mutateAsync({ invitationId });
-      toast.success(t("toast.invitationRevoked", { email }));
-    } catch (error) {
-      logger.error("Revoke invitation error:", error);
-      const errorMessage = extractErrorMessage(error);
-      toast.error(errorMessage);
-    }
   };
 
   const availableOrgMembers = orgMembersNotInWs?.members ?? [];
@@ -293,7 +269,6 @@ const TeamSection = () => {
               onValueChange={(id) => {
                 setSelectedWorkspaceId(id);
                 setUsersPage(1);
-                setInvPage(1);
               }}
             >
               <SelectTrigger className="h-9 w-[220px] text-sm font-medium">
@@ -329,18 +304,14 @@ const TeamSection = () => {
       <EnhancedTeamTab
         isAdmin={isAdmin}
         workspaceUsers={workspaceUsers}
-        invitations={invitations}
         usersLoading={usersLoading}
-        invitationsLoading={invitationsLoading}
         inviteDialogOpen={inviteDialogOpen}
         setInviteDialogOpen={setInviteDialogOpen}
         inviteForm={inviteForm}
         setInviteForm={setInviteForm}
         onInviteUser={handleInviteUser}
-        onRevokeInvitation={handleRevokeInvitation}
         onRemoveUser={handleRemoveUser}
         isInviting={sendInvitationMutation.isPending}
-        isRevoking={revokeInvitationMutation.isPending}
         isRemoving={removeUserMutation.isPending}
         canInviteMoreUsers={canInviteMoreUsers()}
         emailEnabled={publicConfig?.emailEnabled ?? true}
@@ -353,13 +324,6 @@ const TeamSection = () => {
           setUsersPage(1);
         }}
         invTotal={invTotal}
-        invPage={invPage}
-        invPageSize={invPageSize}
-        onInvPageChange={setInvPage}
-        onInvPageSizeChange={(size) => {
-          setInvPageSize(size);
-          setInvPage(1);
-        }}
       />
 
       <InviteLinksDialog
