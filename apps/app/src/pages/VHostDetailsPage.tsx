@@ -78,7 +78,6 @@ export default function VHostDetailsPage() {
     data: vhostData,
     isLoading,
     error,
-    refetch,
   } = useVHost(currentServerId, decodedVHostName, serverExists);
 
   // Fetch users for the permission form
@@ -250,10 +249,7 @@ export default function VHostDetailsPage() {
           <AppSidebar />
           <main className="main-content">
             <div className="container mx-auto">
-              <PageError
-                message={`${t("failedToLoad")}: ${(error as Error).message}`}
-                onRetry={() => refetch()}
-              />
+              <PageError message={t("common:serverConnectionError")} />
             </div>
           </main>
         </div>

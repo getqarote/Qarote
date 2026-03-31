@@ -68,7 +68,6 @@ export default function UsersPage() {
     data: usersData,
     isLoading,
     error,
-    refetch,
   } = useUsers(currentServerId, serverExists);
 
   const deleteUserMutation = useDeleteUser();
@@ -175,10 +174,7 @@ export default function UsersPage() {
               <div className="flex items-center gap-4">
                 <SidebarTrigger />
               </div>
-              <PageError
-                message={`${t("failedToLoad")}: ${(error as Error).message}`}
-                onRetry={() => refetch()}
-              />
+              <PageError message={t("common:serverConnectionError")} />
             </div>
           </main>
         </div>

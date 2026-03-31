@@ -14,13 +14,14 @@ import {
   useEdgesState,
   useNodesState,
 } from "@xyflow/react";
-import { Network, RefreshCw, Server } from "lucide-react";
+import { Network, Server } from "lucide-react";
 
 import { buildTopologyGraph } from "@/lib/topology/layout";
 
 import { AppSidebar } from "@/components/AppSidebar";
 import { FeatureGate } from "@/components/FeatureGate";
 import { NoServerConfigured } from "@/components/NoServerConfigured";
+import { PageError } from "@/components/PageError";
 import { PageLoader } from "@/components/PageLoader";
 import { ExchangeNode } from "@/components/topology/ExchangeNode";
 import { QueueNode } from "@/components/topology/QueueNode";
@@ -155,64 +156,70 @@ const Topology = () => {
                 </div>
               </div>
 
-              <Card className="border-0 shadow-md bg-card">
-                <CardContent className="p-0">
-                  {error ? (
-                    <div className="text-center py-8">
-                      <div className="text-destructive mb-2">
-                        {t("failedToLoad")}
+              {error ? (
+                <PageError message={t("common:serverConnectionError")} />
+              ) : (
+                <Card className="border-0 shadow-md bg-card">
+                  <CardContent className="p-0">
+                    {isLoading ? (
+                      <div className="space-y-3 p-6">
+                        {Array.from({ length: 4 }).map((_, i) => (
+                          <div
+                            key={i}
+                            className="h-16 w-full rounded-lg bg-muted animate-pulse"
+                          />
+                        ))}
                       </div>
-                    </div>
-                  ) : isLoading ? (
-                    <div className="text-center py-16">
-                      <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4" />
-                      <p>{t("loadingTopology")}</p>
-                    </div>
-                  ) : nodes.length === 0 ? (
-                    <div className="text-center py-16">
-                      <Network className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-                      <h3 className="text-lg font-semibold mb-2">
-                        {t("noTopologyData")}
-                      </h3>
-                      <p className="text-muted-foreground">
-                        {t("noTopologyDataDesc")}
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="h-[70vh] w-full">
-                      <ReactFlow
-                        nodes={nodes}
-                        edges={edges}
-                        onNodesChange={onNodesChange}
-                        onEdgesChange={onEdgesChange}
-                        nodeTypes={nodeTypes}
-                        onNodeClick={onNodeClick}
-                        colorMode={colorMode}
-                        nodesConnectable={false}
-                        fitView
-                        fitViewOptions={{ padding: 0.2 }}
-                        minZoom={0.1}
-                        maxZoom={2}
-                        proOptions={{ hideAttribution: true }}
-                      >
-                        <Background />
-                        <Controls />
-                        <MiniMap
-                          zoomable
-                          pannable
-                          nodeColor={(node) =>
-                            node.type === "exchangeNode" ? "#3b82f6" : "#10b981"
-                          }
-                          nodeStrokeColor={(node) =>
-                            node.type === "exchangeNode" ? "#2563eb" : "#059669"
-                          }
-                          nodeStrokeWidth={2}
-                        />
-                      </ReactFlow>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+                    ) : nodes.length === 0 ? (
+                      <div className="text-center py-16">
+                        <Network className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                        <h3 className="text-lg font-semibold mb-2">
+                          {t("noTopologyData")}
+                        </h3>
+                        <p className="text-muted-foreground">
+                          {t("noTopologyDataDesc")}
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="h-[70vh] w-full">
+                        <ReactFlow
+                          nodes={nodes}
+                          edges={edges}
+                          onNodesChange={onNodesChange}
+                          onEdgesChange={onEdgesChange}
+                          nodeTypes={nodeTypes}
+                          onNodeClick={onNodeClick}
+                          colorMode={colorMode}
+                          nodesConnectable={false}
+                          fitView
+                          fitViewOptions={{ padding: 0.2 }}
+                          minZoom={0.1}
+                          maxZoom={2}
+                          proOptions={{ hideAttribution: true }}
+                        >
+                          <Background />
+                          <Controls />
+                          <MiniMap
+                            zoomable
+                            pannable
+                            nodeColor={(node) =>
+                              node.type === "exchangeNode"
+                                ? "#3b82f6"
+                                : "#10b981"
+                            }
+                            nodeStrokeColor={(node) =>
+                              node.type === "exchangeNode"
+                                ? "#2563eb"
+                                : "#059669"
+                            }
+                            nodeStrokeWidth={2}
+                          />
+                        </ReactFlow>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
             </div>
           </main>
         </FeatureGate>

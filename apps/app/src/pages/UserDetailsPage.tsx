@@ -93,7 +93,6 @@ export default function UserDetailsPage() {
     data: userData,
     isLoading,
     error,
-    refetch,
   } = useUser(currentServerId, decodedUsername, serverExists);
 
   // Check if this is a protected user (e.g., AWS-managed system accounts)
@@ -186,10 +185,7 @@ export default function UserDetailsPage() {
           <AppSidebar />
           <main className="main-content-scrollable">
             <div className="content-container-large">
-              <PageError
-                message={`${t("failedToLoad")}: ${(error as Error).message}`}
-                onRetry={() => refetch()}
-              />
+              <PageError message={t("common:serverConnectionError")} />
             </div>
           </main>
         </div>

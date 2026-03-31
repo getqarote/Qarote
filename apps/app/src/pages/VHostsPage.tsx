@@ -68,7 +68,6 @@ export default function VHostsPage() {
     data: vhostsData,
     isLoading,
     error,
-    refetch,
   } = useVHosts(currentServerId, serverExists);
 
   const deleteVHostMutation = useDeleteVHost();
@@ -175,10 +174,7 @@ export default function VHostsPage() {
               <div className="flex items-center gap-4">
                 <SidebarTrigger />
               </div>
-              <PageError
-                message={`${t("failedToLoad")}: ${(error as Error).message}`}
-                onRetry={() => refetch()}
-              />
+              <PageError message={t("common:serverConnectionError")} />
             </div>
           </main>
         </div>
