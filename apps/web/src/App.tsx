@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { HelmetProvider } from "react-helmet-async";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router";
@@ -36,26 +36,28 @@ const App = () => {
         <TooltipProvider>
           <Toaster />
           <Sonner />
-          <BrowserRouter>
-            <Routes>
-              {/* English routes at root (no prefix, backward compatible) */}
-              <Route path="/" element={<Index />} />
-              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-              <Route path="/terms-of-service" element={<TermsOfService />} />
-              <Route path="/changelog" element={<Changelog />} />
+          <Suspense>
+            <BrowserRouter>
+              <Routes>
+                {/* English routes at root (no prefix, backward compatible) */}
+                <Route path="/" element={<Index />} />
+                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                <Route path="/terms-of-service" element={<TermsOfService />} />
+                <Route path="/changelog" element={<Changelog />} />
 
-              {/* Localized routes: /:locale/ prefix (e.g., /fr/, /es/, /zh/) */}
-              <Route path="/:locale" element={<LocaleWrapper />}>
-                <Route index element={<Index />} />
-                <Route path="privacy-policy" element={<PrivacyPolicy />} />
-                <Route path="terms-of-service" element={<TermsOfService />} />
-                <Route path="changelog" element={<Changelog />} />
-              </Route>
+                {/* Localized routes: /:locale/ prefix (e.g., /fr/, /es/, /zh/) */}
+                <Route path="/:locale" element={<LocaleWrapper />}>
+                  <Route index element={<Index />} />
+                  <Route path="privacy-policy" element={<PrivacyPolicy />} />
+                  <Route path="terms-of-service" element={<TermsOfService />} />
+                  <Route path="changelog" element={<Changelog />} />
+                </Route>
 
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-            <TawkTo />
-          </BrowserRouter>
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+              <TawkTo />
+            </BrowserRouter>
+          </Suspense>
         </TooltipProvider>
       </QueryClientProvider>
     </HelmetProvider>
