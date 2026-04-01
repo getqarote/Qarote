@@ -10,7 +10,7 @@ const NotFound = () => {
       <SEO
         title="Page Not Found | Qarote"
         description="The page you are looking for could not be found."
-        url={"https://qarote.io/"}
+        url="https://qarote.io/"
       />
       <div className="text-center">
         <h1 className="text-4xl font-bold mb-4">{t("notFound.code")}</h1>

@@ -104,14 +104,17 @@ const SEO = ({
       </script>
 
       {/* Hreflang tags for all supported locales */}
-      {SUPPORTED_LOCALES.map((locale) => (
-        <link
-          key={locale}
-          rel="alternate"
-          hrefLang={locale}
-          href={locale === "en" ? url : `${url}/${locale}`}
-        />
-      ))}
+      {SUPPORTED_LOCALES.map((locale) => {
+        const baseUrl = url.endsWith("/") ? url : `${url}/`;
+        return (
+          <link
+            key={locale}
+            rel="alternate"
+            hrefLang={locale}
+            href={locale === "en" ? baseUrl : `${baseUrl}${locale}/`}
+          />
+        );
+      })}
       <link rel="alternate" hrefLang="x-default" href={url} />
     </HelmetComponent>
   );
