@@ -114,7 +114,7 @@ const StickyNav = ({ onVideoClick }: StickyNavProps) => {
             <button
               type="button"
               onClick={() => setOpen(true)}
-              className="lg:hidden p-2 text-foreground hover:text-primary transition-colors"
+              className="lg:hidden p-3 -mr-1 text-foreground hover:text-primary transition-colors"
               aria-label={t("openMenu", "Open menu")}
               aria-expanded={open}
               aria-haspopup="dialog"

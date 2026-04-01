@@ -205,7 +205,7 @@ const PricingSection = () => {
           </div>
 
           {/* Billing Toggle — right on desktop, centered on mobile */}
-          <div className="sm:absolute sm:right-0 flex items-center gap-3">
+          <div className="sm:absolute sm:right-0 flex items-center gap-3 min-h-[44px]">
             <Switch
               checked={billingPeriod === "yearly"}
               onCheckedChange={(checked) =>
