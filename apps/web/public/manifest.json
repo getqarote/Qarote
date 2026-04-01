@@ -1,17 +1,22 @@
 {
-  "short_name": "RabbitMQ Next",
+  "short_name": "Qarote",
   "name": "Qarote",
   "description": "Modern RabbitMQ Management Interface",
   "icons": [
     {
       "src": "images/new_icon.svg",
       "type": "image/svg+xml",
-      "sizes": "180x180"
+      "sizes": "any"
     },
     {
-      "src": "images/social_card.svg",
-      "type": "image/svg+xml",
-      "sizes": "1200x630"
+      "src": "favicon-256.png",
+      "type": "image/png",
+      "sizes": "256x256"
+    },
+    {
+      "src": "favicon-48.png",
+      "type": "image/png",
+      "sizes": "48x48"
     }
   ],
   "start_url": ".",
