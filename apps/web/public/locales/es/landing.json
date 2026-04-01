@@ -116,7 +116,7 @@
     "stillHaveQuestionsDesc": "¿No encuentras la respuesta que buscas? Contacta con nuestro amable equipo."
   },
   "seo": {
-    "title": "Qarote - Panel de control moderno de monitoreo y gestión de RabbitMQ",
-    "description": "Panel de control moderno de monitoreo y gestión de RabbitMQ para desarrolladores. Monitorea colas, rastrea el rendimiento y gestiona tu message broker con una interfaz limpia e intuitiva."
+    "title": "Qarote - Panel de monitoreo de RabbitMQ",
+    "description": "Monitorea tus colas de RabbitMQ, rastrea el rendimiento y gestiona tu message broker con Qarote. Monitoreo gratuito con alertas, soporte multi-servidor y espacios de trabajo."
   }
 }

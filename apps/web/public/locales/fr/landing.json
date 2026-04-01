@@ -116,7 +116,7 @@
     "stillHaveQuestionsDesc": "Vous ne trouvez pas la réponse que vous cherchez ? N'hésitez pas à contacter notre équipe."
   },
   "seo": {
-    "title": "Qarote - Tableau de bord moderne de monitoring et gestion RabbitMQ",
-    "description": "Tableau de bord moderne de monitoring et gestion RabbitMQ pour les développeurs. Surveillez vos files d'attente, suivez les performances et gérez votre broker de messages avec une interface claire et intuitive."
+    "title": "Qarote - Tableau de bord de monitoring RabbitMQ",
+    "description": "Surveillez vos files RabbitMQ, suivez les performances et gérez votre broker de messages avec Qarote. Monitoring gratuit avec alertes, support multi-serveurs et espaces de travail."
   }
 }

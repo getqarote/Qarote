@@ -116,7 +116,7 @@
     "stillHaveQuestionsDesc": "Can't find the answer you're looking for? Please chat to our friendly team."
   },
   "seo": {
-    "title": "Qarote - Modern RabbitMQ Monitoring & Management Dashboard",
-    "description": "Modern RabbitMQ monitoring and management dashboard for developers. Monitor queues, track performance, and manage your message broker with a clean UI. Cleaner than Management Plugin, simpler than Prometheus."
+    "title": "Qarote - RabbitMQ Monitoring Dashboard",
+    "description": "Monitor your RabbitMQ queues, track performance, and manage your message broker with Qarote. Free core monitoring with alerting, multi-server support, and team workspaces."
   }
 }
