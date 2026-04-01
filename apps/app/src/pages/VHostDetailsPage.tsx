@@ -9,12 +9,12 @@ import { UserRole } from "@/lib/api";
 
 import { AppSidebar } from "@/components/AppSidebar";
 import { PageError } from "@/components/PageError";
-import { PageLoader } from "@/components/PageLoader";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -234,8 +234,20 @@ export default function VHostDetailsPage() {
       <SidebarProvider>
         <div className="page-layout">
           <AppSidebar />
-          <main className="flex-1">
-            <PageLoader />
+          <main className="main-content-scrollable">
+            <div className="content-container-large">
+              <div className="flex items-center gap-4">
+                <SidebarTrigger />
+                <div>
+                  <Skeleton className="h-8 w-48 mb-2" />
+                  <Skeleton className="h-4 w-32" />
+                </div>
+              </div>
+              <div className="space-y-6">
+                <Skeleton className="h-48 w-full rounded-lg" />
+                <Skeleton className="h-64 w-full rounded-lg" />
+              </div>
+            </div>
           </main>
         </div>
       </SidebarProvider>

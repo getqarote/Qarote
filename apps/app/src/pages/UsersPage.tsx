@@ -18,7 +18,6 @@ import { RabbitMQUser } from "@/lib/api/userTypes";
 import { AppSidebar } from "@/components/AppSidebar";
 import { NoServerConfigured } from "@/components/NoServerConfigured";
 import { PageError } from "@/components/PageError";
-import { PageLoader } from "@/components/PageLoader";
 import { PlanUpgradeModal } from "@/components/plans/PlanUpgradeModal";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -26,6 +25,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -154,10 +154,20 @@ export default function UsersPage() {
         <div className="page-layout">
           <AppSidebar />
           <main className="main-content-scrollable">
-            <div className="flex items-center gap-4">
-              <SidebarTrigger />
+            <div className="content-container-large">
+              <div className="flex items-center gap-4">
+                <SidebarTrigger />
+                <div>
+                  <Skeleton className="h-8 w-32 mb-2" />
+                  <Skeleton className="h-4 w-48" />
+                </div>
+              </div>
+              <div className="space-y-3">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Skeleton key={i} className="h-12 w-full rounded-lg" />
+                ))}
+              </div>
             </div>
-            <PageLoader />
           </main>
         </div>
       </SidebarProvider>
