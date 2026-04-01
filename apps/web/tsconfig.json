@@ -47,7 +47,6 @@
     "src/components/ui/slider.tsx",
     "src/components/ui/tabs.tsx",
     "src/components/ui/toggle.tsx",
-    "src/components/ui/toggle-group.tsx",
-    "src/components/ui/use-toast.ts"
+    "src/components/ui/toggle-group.tsx"
   ]
 }
