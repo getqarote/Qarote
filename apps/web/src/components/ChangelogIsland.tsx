@@ -19,7 +19,7 @@ const categoryColors: Record<string, string> = {
   Deprecated: "bg-gray-100 text-gray-600",
 };
 
-function parseChangelog(raw: string): ChangelogEntry[] {
+function parseChangelog(raw: string, locale = "en"): ChangelogEntry[] {
   const entries: ChangelogEntry[] = [];
   let current: ChangelogEntry | null = null;
   let currentCategory: { name: string; items: string[] } | null = null;
@@ -34,7 +34,7 @@ function parseChangelog(raw: string): ChangelogEntry[] {
       let date = "Upcoming";
       if (dateStr) {
         const d = new Date(dateStr + "T00:00:00");
-        date = d.toLocaleDateString("en-US", {
+        date = d.toLocaleDateString(locale, {
           year: "numeric",
           month: "long",
           day: "numeric",
@@ -62,8 +62,6 @@ function parseChangelog(raw: string): ChangelogEntry[] {
   return entries;
 }
 
-const entries = parseChangelog(changelogRaw);
-
 interface ChangelogIslandProps {
   locale?: string;
   resources?: Record<string, Record<string, unknown>>;
@@ -73,6 +71,8 @@ export default function ChangelogIsland({
   locale = "en",
   resources,
 }: ChangelogIslandProps) {
+  const entries = parseChangelog(changelogRaw, locale);
+
   return (
     <IslandProvider locale={locale} resources={resources}>
       <div className="min-h-screen bg-background">
