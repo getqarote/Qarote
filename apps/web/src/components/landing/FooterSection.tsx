@@ -6,13 +6,13 @@ const FooterLinks = () => {
   return (
     <>
       <a
-        href="/privacy-policy"
+        href="/privacy-policy/"
         className="text-muted-foreground hover:text-foreground transition-colors text-sm"
       >
         {t("footer.privacyPolicy")}
       </a>
       <a
-        href="/terms-of-service"
+        href="/terms-of-service/"
         className="text-muted-foreground hover:text-foreground transition-colors text-sm"
       >
         {t("footer.termsOfService")}

@@ -76,7 +76,7 @@ const StickyNav = ({ onVideoClick }: StickyNavProps) => {
               </button>
             ))}
             <a
-              href="/changelog"
+              href="/changelog/"
               className="px-4 py-2 text-base font-medium text-foreground hover:text-primary transition-colors"
             >
               {t("whatsNew", "What's New")}
@@ -156,7 +156,7 @@ const StickyNav = ({ onVideoClick }: StickyNavProps) => {
               </button>
             ))}
             <a
-              href="/changelog"
+              href="/changelog/"
               className="px-4 py-3 text-base font-medium text-foreground hover:text-primary hover:bg-muted rounded-md transition-colors"
             >
               {t("whatsNew", "What's New")}
