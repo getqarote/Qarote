@@ -19,7 +19,7 @@ export default function PrivacyPolicyIsland() {
             Privacy Policy
           </h1>
           <p className="text-muted-foreground">
-            Last updated: {new Date().toLocaleDateString()}
+            Last updated: January 15, 2026
           </p>
         </div>
 

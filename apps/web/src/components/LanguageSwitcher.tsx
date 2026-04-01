@@ -7,13 +7,13 @@ import {
 import { Globe } from "lucide-react";
 
 interface LanguageSwitcherProps {
-  currentLocale?: string;
+  currentLocale?: SupportedLocale;
 }
 
 export function LanguageSwitcher({
   currentLocale = "en",
 }: LanguageSwitcherProps) {
-  const locale = currentLocale as SupportedLocale;
+  const locale = currentLocale;
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newLocale = e.target.value;

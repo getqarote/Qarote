@@ -74,8 +74,8 @@ const FaqSection = () => {
                   const list = tFaq("q4.list", { returnObjects: true });
                   return Array.isArray(list) ? (
                     <ul className="list-disc list-inside mt-2 space-y-1">
-                      {(list as string[]).map((item) => (
-                        <li key={item}>{item}</li>
+                      {(list as string[]).map((item, index) => (
+                        <li key={index}>{item}</li>
                       ))}
                     </ul>
                   ) : null;
@@ -96,8 +96,8 @@ const FaqSection = () => {
                   const list = tFaq("q5.list", { returnObjects: true });
                   return Array.isArray(list) ? (
                     <ul className="list-disc list-inside mt-2 space-y-1">
-                      {(list as string[]).map((item) => (
-                        <li key={item}>{item}</li>
+                      {(list as string[]).map((item, index) => (
+                        <li key={index}>{item}</li>
                       ))}
                     </ul>
                   ) : null;
