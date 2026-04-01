@@ -4,7 +4,7 @@
     "titleHighlight": "RabbitMQ",
     "titleAfter": " servers",
     "subtitle": "Qarote provides a clean and intuitive interface to monitor, analyze, and manage your RabbitMQ servers effortlessly.",
-    "noCreditCard": "14-day free trial \u2022 No credit card required"
+    "noCreditCard": "14-day free trial • No credit card required"
   },
   "cta": {
     "getStartedForFree": "Get started for free",
@@ -114,5 +114,9 @@
     "subtitle": "Everything you need to know about Qarote",
     "stillHaveQuestions": "Still have questions?",
     "stillHaveQuestionsDesc": "Can't find the answer you're looking for? Please chat to our friendly team."
+  },
+  "seo": {
+    "title": "Qarote - Modern RabbitMQ Monitoring & Management Dashboard",
+    "description": "Modern RabbitMQ monitoring and management dashboard for developers. Monitor queues, track performance, and manage your message broker with a clean UI. Cleaner than Management Plugin, simpler than Prometheus."
   }
 }

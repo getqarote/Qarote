@@ -4,7 +4,7 @@
     "titleHighlight": "RabbitMQ",
     "titleAfter": "",
     "subtitle": "Qarote fournit une interface claire et intuitive pour surveiller, analyser et gérer vos serveurs RabbitMQ sans effort.",
-    "noCreditCard": "Essai gratuit de 14 jours \u2022 Aucune carte de crédit requise"
+    "noCreditCard": "Essai gratuit de 14 jours • Aucune carte de crédit requise"
   },
   "cta": {
     "getStartedForFree": "Commencer gratuitement",
@@ -114,5 +114,9 @@
     "subtitle": "Tout ce que vous devez savoir sur Qarote",
     "stillHaveQuestions": "Vous avez encore des questions ?",
     "stillHaveQuestionsDesc": "Vous ne trouvez pas la réponse que vous cherchez ? N'hésitez pas à contacter notre équipe."
+  },
+  "seo": {
+    "title": "Qarote - Tableau de bord moderne de monitoring et gestion RabbitMQ",
+    "description": "Tableau de bord moderne de monitoring et gestion RabbitMQ pour les développeurs. Surveillez vos files d'attente, suivez les performances et gérez votre broker de messages avec une interface claire et intuitive."
   }
 }

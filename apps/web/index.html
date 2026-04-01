@@ -89,21 +89,52 @@
       {
         "@context": "https://schema.org",
         "@type": "SoftwareApplication",
+        "@id": "https://qarote.io/#software",
         "name": "Qarote",
+        "url": "https://qarote.io/",
         "description": "Modern RabbitMQ monitoring and management dashboard for developers. Monitor queues, track performance, and manage your message broker with a clean UI. Cleaner than Management Plugin, simpler than Prometheus.",
         "applicationCategory": "DeveloperApplication",
         "operatingSystem": "Any",
-        "offers": {
-          "@type": "AggregateOffer",
-          "lowPrice": "0",
-          "highPrice": "99",
-          "priceCurrency": "USD",
-          "offerCount": 3,
-          "availability": "https://schema.org/InStock"
-        },
+        "author": { "@id": "https://qarote.io/#organization" },
+        "offers": [
+          {
+            "@type": "Offer",
+            "name": "Community",
+            "price": "0",
+            "priceCurrency": "USD",
+            "availability": "https://schema.org/InStock",
+            "description": "Free forever. 1 server, 1 workspace, 1 member."
+          },
+          {
+            "@type": "Offer",
+            "name": "Developer",
+            "price": "29",
+            "priceCurrency": "USD",
+            "availability": "https://schema.org/InStock",
+            "priceSpecification": {
+              "@type": "UnitPriceSpecification",
+              "price": "29",
+              "priceCurrency": "USD",
+              "billingDuration": "P1M"
+            }
+          },
+          {
+            "@type": "Offer",
+            "name": "Enterprise",
+            "price": "99",
+            "priceCurrency": "USD",
+            "availability": "https://schema.org/InStock",
+            "priceSpecification": {
+              "@type": "UnitPriceSpecification",
+              "price": "99",
+              "priceCurrency": "USD",
+              "billingDuration": "P1M"
+            }
+          }
+        ],
         "screenshot": "https://qarote.io/images/social_card.png",
         "datePublished": "2025-06-05",
-        "dateModified": "2026-03-29"
+        "dateModified": "2026-04-01"
       }
     </script>
 
@@ -114,7 +145,7 @@
         "@type": "Organization",
         "@id": "https://qarote.io/#organization",
         "name": "Qarote",
-        "url": "https://qarote.io",
+        "url": "https://qarote.io/",
         "logo": {
           "@type": "ImageObject",
           "url": "https://qarote.io/images/new_icon.png",
@@ -136,12 +167,29 @@
       {
         "@context": "https://schema.org",
         "@type": "WebSite",
+        "@id": "https://qarote.io/#website",
         "name": "Qarote",
-        "url": "https://qarote.io",
+        "url": "https://qarote.io/",
         "description": "Modern RabbitMQ monitoring and management dashboard",
         "publisher": {
           "@id": "https://qarote.io/#organization"
         }
+      }
+    </script>
+
+    <!-- WebPage Schema -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "@id": "https://qarote.io/#webpage",
+        "url": "https://qarote.io/",
+        "name": "Qarote - Modern RabbitMQ Monitoring & Management Dashboard",
+        "description": "Modern RabbitMQ monitoring and management dashboard for developers. Monitor queues, track performance, and manage your message broker with a clean UI.",
+        "isPartOf": { "@id": "https://qarote.io/#website" },
+        "about": { "@id": "https://qarote.io/#software" },
+        "publisher": { "@id": "https://qarote.io/#organization" },
+        "inLanguage": "en"
       }
     </script>
 

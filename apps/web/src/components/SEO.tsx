@@ -16,7 +16,7 @@ const SEO = ({
   title = "Qarote - Modern RabbitMQ Monitoring & Management Dashboard",
   description = "Modern RabbitMQ monitoring and management dashboard for developers. Monitor queues, track performance, and manage your message broker with a clean UI. Cleaner than Management Plugin, simpler than Prometheus.",
   image = "https://qarote.io/images/social_card.png",
-  url = "https://qarote.io",
+  url = "https://qarote.io/",
   type = "website",
 }: SEOProps) => {
   const { i18n } = useTranslation();
@@ -24,6 +24,7 @@ const SEO = ({
 
   const siteTitle = "Qarote";
   const fullTitle = title === siteTitle ? title : `${title} | ${siteTitle}`;
+  const baseUrl = url.endsWith("/") ? url : `${url}/`;
 
   const HelmetComponent = Helmet as unknown as ComponentType<{
     children?: React.ReactNode;
@@ -109,10 +110,10 @@ const SEO = ({
           key={locale}
           rel="alternate"
           hrefLang={locale}
-          href={locale === "en" ? url : `${url}/${locale}`}
+          href={locale === "en" ? baseUrl : `${baseUrl}${locale}/`}
         />
       ))}
-      <link rel="alternate" hrefLang="x-default" href={url} />
+      <link rel="alternate" hrefLang="x-default" href={baseUrl} />
     </HelmetComponent>
   );
 };

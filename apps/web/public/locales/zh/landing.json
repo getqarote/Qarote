@@ -4,7 +4,7 @@
     "titleHighlight": "RabbitMQ",
     "titleAfter": " 服务器的最简单方式",
     "subtitle": "Qarote 提供简洁直观的界面，让你轻松监控、分析和管理 RabbitMQ 服务器。",
-    "noCreditCard": "14 天免费试用 \u2022 无需信用卡"
+    "noCreditCard": "14 天免费试用 • 无需信用卡"
   },
   "cta": {
     "getStartedForFree": "免费开始使用",
@@ -114,5 +114,9 @@
     "subtitle": "关于 Qarote 你需要了解的一切",
     "stillHaveQuestions": "还有其他问题？",
     "stillHaveQuestionsDesc": "找不到你想要的答案？请联系我们友好的团队。"
+  },
+  "seo": {
+    "title": "Qarote - 现代化 RabbitMQ 监控与管理仪表盘",
+    "description": "面向开发者的现代化 RabbitMQ 监控与管理仪表盘。监控队列、跟踪性能，通过清晰直观的界面管理你的消息代理。"
   }
 }
