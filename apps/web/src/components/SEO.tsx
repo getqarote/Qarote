@@ -24,6 +24,7 @@ const SEO = ({
 
   const siteTitle = "Qarote";
   const fullTitle = title === siteTitle ? title : `${title} | ${siteTitle}`;
+  const baseUrl = url.endsWith("/") ? url : `${url}/`;
 
   const HelmetComponent = Helmet as unknown as ComponentType<{
     children?: React.ReactNode;
@@ -104,18 +105,15 @@ const SEO = ({
       </script>
 
       {/* Hreflang tags for all supported locales */}
-      {SUPPORTED_LOCALES.map((locale) => {
-        const baseUrl = url.endsWith("/") ? url : `${url}/`;
-        return (
-          <link
-            key={locale}
-            rel="alternate"
-            hrefLang={locale}
-            href={locale === "en" ? baseUrl : `${baseUrl}${locale}/`}
-          />
-        );
-      })}
-      <link rel="alternate" hrefLang="x-default" href={url} />
+      {SUPPORTED_LOCALES.map((locale) => (
+        <link
+          key={locale}
+          rel="alternate"
+          hrefLang={locale}
+          href={locale === "en" ? baseUrl : `${baseUrl}${locale}/`}
+        />
+      ))}
+      <link rel="alternate" hrefLang="x-default" href={baseUrl} />
     </HelmetComponent>
   );
 };
