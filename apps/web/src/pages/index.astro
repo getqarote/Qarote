@@ -2,10 +2,12 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import LandingIsland from "../components/LandingIsland";
 import { loadTranslations, loadAllTranslations, t } from "../lib/i18n-static";
-import { faqSchema } from "../lib/faq-schema";
+import { buildFaqSchema } from "../lib/faq-schema";
 
 const landing = loadTranslations("en", "landing");
+const faq = loadTranslations("en", "faq");
 const resources = loadAllTranslations("en");
+const faqSchema = buildFaqSchema(faq);
 ---
 
 <BaseLayout
