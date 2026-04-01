@@ -6,7 +6,19 @@
     {
       "src": "images/new_icon.svg",
       "type": "image/svg+xml",
-      "sizes": "any"
+      "sizes": "any",
+      "purpose": "any"
+    },
+    {
+      "src": "favicon-48.png",
+      "type": "image/png",
+      "sizes": "48x48"
+    },
+    {
+      "src": "favicon-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any"
     },
     {
       "src": "favicon-256.png",
@@ -14,9 +26,10 @@
       "sizes": "256x256"
     },
     {
-      "src": "favicon-48.png",
+      "src": "favicon-512.png",
       "type": "image/png",
-      "sizes": "48x48"
+      "sizes": "512x512",
+      "purpose": "any"
     }
   ],
   "start_url": ".",
