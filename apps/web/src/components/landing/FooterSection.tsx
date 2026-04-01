@@ -1,5 +1,7 @@
 import { useTranslation } from "react-i18next";
 
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+
 const FooterLinks = () => {
   const { t } = useTranslation("landing");
 
@@ -112,6 +114,7 @@ const FooterSection = () => {
 
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
             <FooterLinks />
+            <LanguageSwitcher />
           </div>
         </div>
 
@@ -131,6 +134,7 @@ const FooterSection = () => {
 
           <div className="flex items-center gap-6">
             <FooterLinks />
+            <LanguageSwitcher />
           </div>
         </div>
       </div>
