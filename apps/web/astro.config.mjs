@@ -5,6 +5,7 @@ import { defineConfig } from "astro/config";
 export default defineConfig({
   site: "https://qarote.io",
   output: "static",
+  server: { port: 8082 },
   integrations: [react(), sitemap()],
   i18n: {
     defaultLocale: "en",
