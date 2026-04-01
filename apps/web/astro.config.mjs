@@ -13,9 +13,4 @@ export default defineConfig({
     routing: { prefixDefaultLocale: false },
   },
   trailingSlash: "always",
-  vite: {
-    ssr: {
-      noExternal: ["@qarote/i18n"],
-    },
-  },
 });
