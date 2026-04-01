@@ -59,6 +59,7 @@
   "learnMore": "En savoir plus",
   "getStarted": "Commencer",
   "tryAgain": "Réessayer",
+  "serverConnectionError": "Impossible de joindre le serveur RabbitMQ. Veuillez vérifier que le serveur est en cours d'exécution et que les informations de connexion sont correctes.",
   "errorContactSupport": "Si le problème persiste, contactez-nous à",
   "goBack": "Retour",
   "termsOfService": "Conditions d'utilisation",

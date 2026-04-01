@@ -59,6 +59,7 @@
   "learnMore": "M\u00e1s informaci\u00f3n",
   "getStarted": "Comenzar",
   "tryAgain": "Intentar de nuevo",
+  "serverConnectionError": "No se puede conectar con el servidor RabbitMQ. Verifique que el servidor esté en ejecución y que los datos de conexión sean correctos.",
   "errorContactSupport": "Si el problema persiste, contáctenos en",
   "goBack": "Volver",
   "termsOfService": "T\u00e9rminos de servicio",

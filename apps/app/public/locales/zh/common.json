@@ -59,6 +59,7 @@
   "learnMore": "了解更多",
   "getStarted": "开始使用",
   "tryAgain": "重试",
+  "serverConnectionError": "无法连接到 RabbitMQ 服务器。请检查服务器是否正在运行以及连接信息是否正确。",
   "errorContactSupport": "如果问题仍然存在，请联系我们",
   "goBack": "返回",
   "termsOfService": "服务条款",
