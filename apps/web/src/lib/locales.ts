@@ -4,7 +4,7 @@ import { DEFAULT_LOCALE, SUPPORTED_LOCALES } from "@qarote/i18n";
  * Non-default locales for Astro's getStaticPaths().
  * Excludes the default locale since Astro serves it at the root (no prefix).
  */
-export const NON_DEFAULT_LOCALES = SUPPORTED_LOCALES.filter(
+const NON_DEFAULT_LOCALES = SUPPORTED_LOCALES.filter(
   (l) => l !== DEFAULT_LOCALE
 );
 
