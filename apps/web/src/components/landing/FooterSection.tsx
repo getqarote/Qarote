@@ -1,9 +1,11 @@
 import { useTranslation } from "react-i18next";
 
+import type { SupportedLocale } from "@qarote/i18n";
+
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 interface FooterSectionProps {
-  currentLocale?: string;
+  currentLocale?: SupportedLocale;
 }
 
 const FooterLinks = () => {

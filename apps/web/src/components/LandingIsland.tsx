@@ -1,3 +1,5 @@
+import type { SupportedLocale } from "@qarote/i18n";
+
 import { IslandProvider } from "@/components/IslandProvider";
 import ComparisonSection from "@/components/landing/ComparisonSection";
 import ConnectionSection from "@/components/landing/ConnectionSection";
@@ -11,7 +13,7 @@ import StickyNav from "@/components/StickyNav";
 import { TawkTo } from "@/components/TawkTo";
 
 interface LandingIslandProps {
-  locale?: string;
+  locale?: SupportedLocale;
   resources?: Record<string, Record<string, unknown>>;
 }
 
