@@ -3,14 +3,9 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import LandingIsland from "../../components/LandingIsland";
 import { loadTranslations, loadAllTranslations, t } from "../../lib/i18n-static";
 import { faqSchema } from "../../lib/faq-schema";
+import { getLocaleStaticPaths } from "../../lib/locales";
 
-export function getStaticPaths() {
-  return [
-    { params: { locale: "fr" } },
-    { params: { locale: "es" } },
-    { params: { locale: "zh" } },
-  ];
-}
+export const getStaticPaths = getLocaleStaticPaths;
 
 const { locale } = Astro.params;
 const landing = loadTranslations(locale, "landing");
