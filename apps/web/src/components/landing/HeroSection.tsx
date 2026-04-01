@@ -71,7 +71,10 @@ const HeroSection = ({ isVideoPlaying, onPlayVideo }: HeroSectionProps) => {
                   <img
                     src="/images/play.svg"
                     alt=""
+                    aria-hidden="true"
                     className="w-10 h-10 md:w-12 md:h-12 object-contain block ml-2 image-crisp"
+                    width={48}
+                    height={48}
                   />
                 </div>
               </div>

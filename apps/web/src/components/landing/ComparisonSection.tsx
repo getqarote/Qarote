@@ -7,6 +7,8 @@ const ComparisonPoint = ({ icon, text }: { icon: string; text: string }) => (
       alt=""
       aria-hidden="true"
       className="h-3 shrink-0 w-auto image-crisp"
+      width={12}
+      height={12}
     />
     <p className="text-foreground">{text}</p>
   </div>
@@ -68,6 +70,8 @@ const ComparisonSection = () => {
                     alt=""
                     aria-hidden="true"
                     className="w-12 h-12 image-crisp"
+                    width={48}
+                    height={48}
                   />
                 </div>
               </div>
@@ -111,6 +115,8 @@ const ComparisonSection = () => {
                       alt=""
                       aria-hidden="true"
                       className="w-6 h-6"
+                      width={24}
+                      height={24}
                     />
                     <span className="font-semibold text-sm">Qarote</span>
                   </div>
@@ -134,6 +140,8 @@ const ComparisonSection = () => {
                       alt=""
                       aria-hidden="true"
                       className="shrink-0 w-auto h-[0.525rem] image-crisp"
+                      width={10}
+                      height={8}
                     />
                     {t("comparison.allSystemsOperational")}
                   </div>

@@ -116,7 +116,7 @@
     "stillHaveQuestionsDesc": "找不到你想要的答案？请联系我们友好的团队。"
   },
   "seo": {
-    "title": "Qarote - 现代化 RabbitMQ 监控与管理仪表盘",
-    "description": "面向开发者的现代化 RabbitMQ 监控与管理仪表盘。监控队列、跟踪性能，通过清晰直观的界面管理你的消息代理。"
+    "title": "Qarote - RabbitMQ 监控仪表盘",
+    "description": "使用 Qarote 监控 RabbitMQ 队列、跟踪性能并管理消息代理。免费核心监控，支持告警、多服务器和团队工作区。"
   }
 }

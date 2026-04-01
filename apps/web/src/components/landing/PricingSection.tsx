@@ -15,6 +15,8 @@ const FeatureItem = ({ children }: { children: React.ReactNode }) => (
         alt=""
         aria-hidden="true"
         className="image-crisp w-auto h-[0.7rem]"
+        width={14}
+        height={11}
       />
     </div>
     <div className="flex-1 flex items-center gap-2">{children}</div>
@@ -178,49 +180,46 @@ const PricingSection = () => {
           <div className="relative flex border border-border p-1">
             {/* Sliding indicator */}
             <div
-              className="absolute top-1 bottom-1 bg-foreground"
+              className="absolute top-1 bottom-1 bg-foreground transition-all duration-200 ease-in-out"
               style={{
                 left: indicatorStyle.left,
                 width: indicatorStyle.width,
-                transition: "left 200ms ease, width 200ms ease",
               }}
             />
             <button
               type="button"
               ref={cloudTabRef}
               onClick={() => setHostingMode("cloud")}
-              className="relative z-10 flex flex-1 justify-center items-center gap-2 py-3 px-6 text-sm font-medium whitespace-nowrap"
-              style={{
-                color:
-                  hostingMode === "cloud"
-                    ? "hsl(var(--background))"
-                    : "hsl(var(--foreground))",
-                transition: "color 200ms ease",
-              }}
+              className={`relative z-10 flex flex-1 justify-center items-center gap-2 py-3 px-6 text-sm font-medium whitespace-nowrap transition-colors duration-200 ${hostingMode === "cloud" ? "text-background" : "text-foreground"}`}
             >
-              <img src="/images/cloud.svg" alt="Cloud" className="w-4 h-4" />
+              <img
+                src="/images/cloud.svg"
+                alt="Cloud"
+                className="w-4 h-4"
+                width={16}
+                height={16}
+              />
               Cloud
             </button>
             <button
               type="button"
               ref={selfhostTabRef}
               onClick={() => setHostingMode("selfhost")}
-              className="relative z-10 flex flex-1 justify-center items-center gap-2 py-3 px-6 text-sm font-medium whitespace-nowrap"
-              style={{
-                color:
-                  hostingMode === "selfhost"
-                    ? "hsl(var(--background))"
-                    : "hsl(var(--foreground))",
-                transition: "color 200ms ease",
-              }}
+              className={`relative z-10 flex flex-1 justify-center items-center gap-2 py-3 px-6 text-sm font-medium whitespace-nowrap transition-colors duration-200 ${hostingMode === "selfhost" ? "text-background" : "text-foreground"}`}
             >
-              <img src="/images/server.svg" alt="Server" className="w-4 h-4" />
+              <img
+                src="/images/server.svg"
+                alt="Server"
+                className="w-4 h-4"
+                width={16}
+                height={16}
+              />
               Self-host
             </button>
           </div>
 
           {/* Billing Toggle — right on desktop, centered on mobile */}
-          <div className="sm:absolute sm:right-0 flex items-center gap-3">
+          <div className="sm:absolute sm:right-0 flex items-center gap-3 min-h-[44px]">
             <Switch
               checked={billingPeriod === "yearly"}
               onCheckedChange={(checked) =>

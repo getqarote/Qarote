@@ -58,6 +58,8 @@ const StickyNav = ({ onVideoClick }: StickyNavProps) => {
               alt=""
               aria-hidden="true"
               className="w-6 h-6 sm:w-8 sm:h-8"
+              width={32}
+              height={32}
             />
             <span className="font-normal text-[1.2rem]">Qarote</span>
           </a>
@@ -74,7 +76,7 @@ const StickyNav = ({ onVideoClick }: StickyNavProps) => {
               </button>
             ))}
             <a
-              href="/changelog"
+              href="/changelog/"
               className="px-4 py-2 text-base font-medium text-foreground hover:text-primary transition-colors"
             >
               {t("whatsNew", "What's New")}
@@ -114,7 +116,7 @@ const StickyNav = ({ onVideoClick }: StickyNavProps) => {
             <button
               type="button"
               onClick={() => setOpen(true)}
-              className="lg:hidden p-2 text-foreground hover:text-primary transition-colors"
+              className="lg:hidden p-3 -mr-1 text-foreground hover:text-primary transition-colors"
               aria-label={t("openMenu", "Open menu")}
               aria-expanded={open}
               aria-haspopup="dialog"
@@ -154,7 +156,7 @@ const StickyNav = ({ onVideoClick }: StickyNavProps) => {
               </button>
             ))}
             <a
-              href="/changelog"
+              href="/changelog/"
               className="px-4 py-3 text-base font-medium text-foreground hover:text-primary hover:bg-muted rounded-md transition-colors"
             >
               {t("whatsNew", "What's New")}

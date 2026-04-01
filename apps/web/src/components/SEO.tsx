@@ -13,8 +13,8 @@ interface SEOProps {
 }
 
 const SEO = ({
-  title = "Qarote - Modern RabbitMQ Monitoring & Management Dashboard",
-  description = "Modern RabbitMQ monitoring and management dashboard for developers. Monitor queues, track performance, and manage your message broker with a clean UI. Cleaner than Management Plugin, simpler than Prometheus.",
+  title = "Qarote - RabbitMQ Monitoring Dashboard",
+  description = "Monitor your RabbitMQ queues, track performance, and manage your message broker with Qarote. Free core monitoring with alerting, multi-server support, and team workspaces.",
   image = "https://qarote.io/images/social_card.png",
   url = "https://qarote.io/",
   type = "website",

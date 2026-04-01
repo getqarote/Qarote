@@ -153,6 +153,18 @@ async function prerender() {
             canonicals[i].remove();
         }
 
+        // Deduplicate hreflang link tags — keep only the last set (Helmet's)
+        const hreflangSeen = new Map<string, Element>();
+        for (const link of Array.from(
+          head.querySelectorAll('link[rel="alternate"][hreflang]')
+        )) {
+          const lang = link.getAttribute("hreflang") || "";
+          if (hreflangSeen.has(lang)) {
+            hreflangSeen.get(lang)!.remove();
+          }
+          hreflangSeen.set(lang, link);
+        }
+
         // Deduplicate Tawk.to scripts
         const tawkScripts = Array.from(
           head.querySelectorAll('script[src*="tawk.to"]')
