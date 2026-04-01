@@ -7,8 +7,8 @@ export function buildFaqSchema(
 ): Record<string, unknown> {
   const questions: { name: string; answer: string }[] = [];
 
-  for (let i = 1; i <= 10; i++) {
-    const q = faqTranslations[`q${i}`] as
+  for (const entry of Object.values(faqTranslations)) {
+    const q = entry as
       | { question?: string; answer?: string; list?: string[] }
       | undefined;
     if (!q?.question || !q?.answer) continue;
