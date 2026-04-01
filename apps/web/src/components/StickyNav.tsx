@@ -58,6 +58,8 @@ const StickyNav = ({ onVideoClick }: StickyNavProps) => {
               alt=""
               aria-hidden="true"
               className="w-6 h-6 sm:w-8 sm:h-8"
+              width={32}
+              height={32}
             />
             <span className="font-normal text-[1.2rem]">Qarote</span>
           </a>

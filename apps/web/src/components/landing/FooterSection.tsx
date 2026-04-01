@@ -101,6 +101,8 @@ const FooterSection = () => {
                 alt=""
                 aria-hidden="true"
                 className="w-6 h-6"
+                width={24}
+                height={24}
               />
               <h3 className="text-foreground font-normal text-[1.2rem]">
                 Qarote

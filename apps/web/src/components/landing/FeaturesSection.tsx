@@ -90,6 +90,8 @@ const FeaturesSection = () => {
               alt=""
               aria-hidden="true"
               className="h-[0.8em] w-auto image-crisp align-middle"
+              width={14}
+              height={14}
             />
           </button>
         </div>

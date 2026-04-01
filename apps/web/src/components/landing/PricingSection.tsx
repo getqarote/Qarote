@@ -15,6 +15,8 @@ const FeatureItem = ({ children }: { children: React.ReactNode }) => (
         alt=""
         aria-hidden="true"
         className="image-crisp w-auto h-[0.7rem]"
+        width={14}
+        height={11}
       />
     </div>
     <div className="flex-1 flex items-center gap-2">{children}</div>
@@ -190,7 +192,13 @@ const PricingSection = () => {
               onClick={() => setHostingMode("cloud")}
               className={`relative z-10 flex flex-1 justify-center items-center gap-2 py-3 px-6 text-sm font-medium whitespace-nowrap transition-colors duration-200 ${hostingMode === "cloud" ? "text-background" : "text-foreground"}`}
             >
-              <img src="/images/cloud.svg" alt="Cloud" className="w-4 h-4" />
+              <img
+                src="/images/cloud.svg"
+                alt="Cloud"
+                className="w-4 h-4"
+                width={16}
+                height={16}
+              />
               Cloud
             </button>
             <button
@@ -199,7 +207,13 @@ const PricingSection = () => {
               onClick={() => setHostingMode("selfhost")}
               className={`relative z-10 flex flex-1 justify-center items-center gap-2 py-3 px-6 text-sm font-medium whitespace-nowrap transition-colors duration-200 ${hostingMode === "selfhost" ? "text-background" : "text-foreground"}`}
             >
-              <img src="/images/server.svg" alt="Server" className="w-4 h-4" />
+              <img
+                src="/images/server.svg"
+                alt="Server"
+                className="w-4 h-4"
+                width={16}
+                height={16}
+              />
               Self-host
             </button>
           </div>
