@@ -178,25 +178,17 @@ const PricingSection = () => {
           <div className="relative flex border border-border p-1">
             {/* Sliding indicator */}
             <div
-              className="absolute top-1 bottom-1 bg-foreground"
+              className="absolute top-1 bottom-1 bg-foreground transition-all duration-200 ease-in-out"
               style={{
                 left: indicatorStyle.left,
                 width: indicatorStyle.width,
-                transition: "left 200ms ease, width 200ms ease",
               }}
             />
             <button
               type="button"
               ref={cloudTabRef}
               onClick={() => setHostingMode("cloud")}
-              className="relative z-10 flex flex-1 justify-center items-center gap-2 py-3 px-6 text-sm font-medium whitespace-nowrap"
-              style={{
-                color:
-                  hostingMode === "cloud"
-                    ? "hsl(var(--background))"
-                    : "hsl(var(--foreground))",
-                transition: "color 200ms ease",
-              }}
+              className={`relative z-10 flex flex-1 justify-center items-center gap-2 py-3 px-6 text-sm font-medium whitespace-nowrap transition-colors duration-200 ${hostingMode === "cloud" ? "text-background" : "text-foreground"}`}
             >
               <img src="/images/cloud.svg" alt="Cloud" className="w-4 h-4" />
               Cloud
@@ -205,14 +197,7 @@ const PricingSection = () => {
               type="button"
               ref={selfhostTabRef}
               onClick={() => setHostingMode("selfhost")}
-              className="relative z-10 flex flex-1 justify-center items-center gap-2 py-3 px-6 text-sm font-medium whitespace-nowrap"
-              style={{
-                color:
-                  hostingMode === "selfhost"
-                    ? "hsl(var(--background))"
-                    : "hsl(var(--foreground))",
-                transition: "color 200ms ease",
-              }}
+              className={`relative z-10 flex flex-1 justify-center items-center gap-2 py-3 px-6 text-sm font-medium whitespace-nowrap transition-colors duration-200 ${hostingMode === "selfhost" ? "text-background" : "text-foreground"}`}
             >
               <img src="/images/server.svg" alt="Server" className="w-4 h-4" />
               Self-host
