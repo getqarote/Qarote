@@ -25,7 +25,13 @@ const canonicalUrl =
     ? `${baseUrl}${canonicalPath}`
     : `${baseUrl}/${locale}${canonicalPath}`;
 const fullTitle = title.includes("Qarote") ? title : `${title} | Qarote`;
-const ogLocale = locale === "en" ? "en_US" : locale;
+const ogLocaleMap: Record<string, string> = {
+  en: "en_US",
+  fr: "fr_FR",
+  es: "es_ES",
+  zh: "zh_CN",
+};
+const ogLocale = ogLocaleMap[locale] ?? "en_US";
 
 // BreadcrumbList schema
 const breadcrumbs = {
@@ -101,7 +107,7 @@ const softwareApp = {
   ],
   screenshot: `${baseUrl}/images/social_card.png`,
   datePublished: "2025-06-05",
-  dateModified: "2026-04-01",
+  dateModified: new Date().toISOString().split("T")[0],
 };
 
 // Organization schema
