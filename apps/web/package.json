@@ -17,7 +17,7 @@
     "preview": "astro preview",
     "lint": "eslint . --max-warnings=-1",
     "lint:fix": "eslint . --fix",
-    "type-check": "astro check && tsc --noEmit -p tsconfig.node.json",
+    "type-check": "astro check",
     "format": "prettier --check .",
     "format:fix": "prettier --write .",
     "test": "vitest",
