@@ -5,5 +5,7 @@
   "themeDescription": "Select your preferred color scheme.",
   "light": "Light",
   "dark": "Dark",
-  "system": "System"
+  "system": "System",
+  "languageTitle": "Language",
+  "languageDescription": "Select your preferred language."
 }

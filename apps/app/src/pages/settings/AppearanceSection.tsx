@@ -1,6 +1,12 @@
 import { useTranslation } from "react-i18next";
 
-import { Monitor, Moon, Sun } from "lucide-react";
+import {
+  LOCALE_FLAGS,
+  LOCALE_LABELS,
+  SUPPORTED_LOCALES,
+  type SupportedLocale,
+} from "@qarote/i18n";
+import { Globe, Monitor, Moon, Sun } from "lucide-react";
 
 import {
   Card,
@@ -9,6 +15,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 import { useTheme } from "@/contexts/ThemeContext";
 
@@ -19,8 +32,9 @@ const themes = [
 ];
 
 const AppearanceSection = () => {
-  const { t } = useTranslation("appearance");
+  const { t, i18n } = useTranslation("appearance");
   const { theme, setTheme } = useTheme();
+  const currentLocale = (i18n.language || "en") as SupportedLocale;
 
   return (
     <div className="space-y-6">
@@ -61,6 +75,40 @@ const AppearanceSection = () => {
               </button>
             ))}
           </div>
+        </CardContent>
+      </Card>
+
+      <Card className="border-0 shadow-md">
+        <CardHeader>
+          <CardTitle>{t("languageTitle")}</CardTitle>
+          <CardDescription>{t("languageDescription")}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Select
+            value={currentLocale}
+            onValueChange={(v) => i18n.changeLanguage(v)}
+          >
+            <SelectTrigger className="w-64">
+              <SelectValue>
+                <div className="flex items-center gap-2">
+                  <Globe className="h-4 w-4 shrink-0" />
+                  <span>
+                    {LOCALE_FLAGS[currentLocale]} {LOCALE_LABELS[currentLocale]}
+                  </span>
+                </div>
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {SUPPORTED_LOCALES.map((locale) => (
+                <SelectItem key={locale} value={locale}>
+                  <div className="flex items-center gap-2">
+                    <span>{LOCALE_FLAGS[locale]}</span>
+                    <span>{LOCALE_LABELS[locale]}</span>
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </CardContent>
       </Card>
     </div>

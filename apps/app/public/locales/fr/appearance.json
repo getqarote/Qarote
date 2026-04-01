@@ -5,5 +5,7 @@
   "themeDescription": "Sélectionnez votre schéma de couleurs préféré.",
   "light": "Clair",
   "dark": "Sombre",
-  "system": "Système"
+  "system": "Système",
+  "languageTitle": "Langue",
+  "languageDescription": "Sélectionnez votre langue préférée."
 }

@@ -5,5 +5,7 @@
   "themeDescription": "选择您偏好的配色方案。",
   "light": "浅色",
   "dark": "深色",
-  "system": "跟随系统"
+  "system": "跟随系统",
+  "languageTitle": "语言",
+  "languageDescription": "选择您偏好的语言。"
 }
