@@ -113,9 +113,9 @@ async function prerender() {
             const h1 = document.querySelector("h1");
             if (!h1) return false;
             const text = h1.textContent || "";
-            return (
-              text.length > 2 && !text.includes(".") && !text.includes(":")
-            );
+            // i18n keys look like "namespace.key" or "key.subkey"
+            const looksLikeI18nKey = /^[a-z]+\.[a-z]+/i.test(text.trim());
+            return text.length > 2 && !looksLikeI18nKey;
           },
           { timeout: 10000 }
         );
