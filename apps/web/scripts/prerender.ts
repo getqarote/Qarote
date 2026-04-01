@@ -18,7 +18,20 @@ import { dirname, join } from "node:path";
 import { chromium } from "playwright";
 
 const DIST_DIR = join(import.meta.dirname, "..", "dist");
-const ROUTES = ["/", "/privacy-policy", "/terms-of-service", "/changelog"];
+const LOCALES = ["fr", "es", "zh"];
+const BASE_ROUTES = ["/", "/privacy-policy", "/terms-of-service", "/changelog"];
+const ROUTES = [
+  // English routes (root)
+  ...BASE_ROUTES,
+  // Localized routes
+  ...LOCALES.flatMap((locale) =>
+    BASE_ROUTES.map((route) =>
+      route === "/" ? `/${locale}` : `/${locale}${route}`
+    )
+  ),
+  // 404 page (use nested path so it falls through /:locale to the * catch-all)
+  "/not-a-real-page/trigger-404",
+];
 const PORT = 4173;
 
 function serveStatic(
@@ -83,18 +96,30 @@ async function prerender() {
         { timeout: 15000 }
       );
 
-      // Wait for i18n translations to load (h1 text should not be a key)
-      await page.waitForFunction(
-        () => {
-          const h1 = document.querySelector("h1");
-          return (
-            h1 &&
-            !h1.textContent?.includes(":") &&
-            (h1.textContent?.length ?? 0) > 5
-          );
-        },
-        { timeout: 10000 }
-      );
+      // Wait for i18n translations to load
+      if (route === "/not-a-real-page/trigger-404") {
+        // 404 page: wait for the NotFound component to render
+        await page.waitForFunction(
+          () => {
+            const h1 = document.querySelector("h1");
+            return h1 && h1.textContent === "404";
+          },
+          { timeout: 10000 }
+        );
+      } else {
+        // Regular pages: h1 text should not be a translation key
+        await page.waitForFunction(
+          () => {
+            const h1 = document.querySelector("h1");
+            if (!h1) return false;
+            const text = h1.textContent || "";
+            // i18n keys look like "namespace.key" or "key.subkey"
+            const looksLikeI18nKey = /^[a-z]+\.[a-z]+/i.test(text.trim());
+            return text.length > 2 && !looksLikeI18nKey;
+          },
+          { timeout: 10000 }
+        );
+      }
 
       // Deduplicate head elements: Helmet injects tags with data-rh attr,
       // remove the original static duplicates from index.html
@@ -146,10 +171,15 @@ async function prerender() {
       const html = await page.content();
 
       // Write the prerendered HTML
-      const outputPath =
-        route === "/"
-          ? join(DIST_DIR, "index.html")
-          : join(DIST_DIR, route, "index.html");
+      let outputPath: string;
+      if (route === "/not-a-real-page/trigger-404") {
+        // Cloudflare Pages auto-serves 404.html with HTTP 404 for unmatched paths
+        outputPath = join(DIST_DIR, "404.html");
+      } else if (route === "/") {
+        outputPath = join(DIST_DIR, "index.html");
+      } else {
+        outputPath = join(DIST_DIR, route, "index.html");
+      }
 
       mkdirSync(dirname(outputPath), { recursive: true });
       writeFileSync(outputPath, html);
