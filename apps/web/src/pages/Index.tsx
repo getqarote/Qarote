@@ -111,7 +111,7 @@ const Index = () => {
       <SEO
         title="Qarote - Modern RabbitMQ Monitoring & Management Dashboard"
         description="Modern RabbitMQ monitoring and management dashboard for developers. Monitor queues, track performance, and manage your message broker with a clean UI. Cleaner than Management Plugin, simpler than Prometheus."
-        url="https://qarote.io"
+        url="https://qarote.io/"
       />
       <HeroSection
         isVideoPlaying={isVideoPlaying}

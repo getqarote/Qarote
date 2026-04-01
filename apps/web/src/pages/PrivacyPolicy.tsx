@@ -9,7 +9,7 @@ const PrivacyPolicy = () => {
       <SEO
         title="Privacy Policy - Qarote"
         description="Privacy Policy for Qarote - Learn how we collect, use, and protect your data."
-        url="https://qarote.io/privacy-policy"
+        url="https://qarote.io/privacy-policy/"
       />
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">

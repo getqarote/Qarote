@@ -9,7 +9,7 @@ const TermsOfService = () => {
       <SEO
         title="Terms of Service - Qarote"
         description="Terms of Service for Qarote - Learn about your rights and responsibilities when using our service."
-        url="https://qarote.io/terms-of-service"
+        url="https://qarote.io/terms-of-service/"
       />
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
