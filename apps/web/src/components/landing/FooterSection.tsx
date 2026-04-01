@@ -2,6 +2,10 @@ import { useTranslation } from "react-i18next";
 
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
+interface FooterSectionProps {
+  currentLocale?: string;
+}
+
 const FooterLinks = () => {
   const { t } = useTranslation("landing");
 
@@ -90,7 +94,7 @@ const FooterLinks = () => {
   );
 };
 
-const FooterSection = () => {
+const FooterSection = ({ currentLocale = "en" }: FooterSectionProps) => {
   return (
     <footer className="text-card-foreground py-12 border-t border-border bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -114,7 +118,7 @@ const FooterSection = () => {
 
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
             <FooterLinks />
-            <LanguageSwitcher />
+            <LanguageSwitcher currentLocale={currentLocale} />
           </div>
         </div>
 
@@ -134,7 +138,7 @@ const FooterSection = () => {
 
           <div className="flex items-center gap-6">
             <FooterLinks />
-            <LanguageSwitcher />
+            <LanguageSwitcher currentLocale={currentLocale} />
           </div>
         </div>
       </div>

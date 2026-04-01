@@ -1,0 +1,19 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import LandingIsland from "../components/LandingIsland";
+import { loadTranslations, t } from "../lib/i18n-static";
+import { faqSchema } from "../lib/faq-schema";
+
+const landing = loadTranslations("en", "landing");
+---
+
+<BaseLayout
+  title={t(landing, "seo.title")}
+  description={t(landing, "seo.description")}
+  canonicalPath="/"
+>
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+  </Fragment>
+  <LandingIsland client:load />
+</BaseLayout>

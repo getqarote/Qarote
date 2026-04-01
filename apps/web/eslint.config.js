@@ -1,12 +1,11 @@
 import js from "@eslint/js";
 import globals from "globals";
 import reactHooks from "eslint-plugin-react-hooks";
-import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
 import simpleImportSort from "eslint-plugin-simple-import-sort";
 
 export default tseslint.config(
-  { ignores: ["dist", "tailwind.config.ts"] },
+  { ignores: ["dist", ".astro", "tailwind.config.ts"] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ["**/*.{ts,tsx}"],
@@ -20,7 +19,6 @@ export default tseslint.config(
     },
     plugins: {
       "react-hooks": reactHooks,
-      "react-refresh": reactRefresh,
       "simple-import-sort": simpleImportSort,
     },
     rules: {
@@ -30,10 +28,6 @@ export default tseslint.config(
       "react-hooks/purity": "warn",
       "react-hooks/refs": "warn",
       "react-hooks/static-components": "warn",
-      "react-refresh/only-export-components": [
-        "warn",
-        { allowConstantExport: true },
-      ],
       // Prevent React namespace access for hooks (can cause production errors)
       // This catches patterns like React.useState, React.useEffect, etc.
       "no-restricted-syntax": [

@@ -4,7 +4,6 @@ import type { LucideProps } from "lucide-react";
 import {
   Activity,
   BarChart3,
-  LucideIcon,
   MessageSquare,
   Rocket,
   Settings,

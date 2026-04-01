@@ -1,0 +1,23 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import ChangelogIsland from "../../components/ChangelogIsland";
+
+export function getStaticPaths() {
+  return [
+    { params: { locale: "fr" } },
+    { params: { locale: "es" } },
+    { params: { locale: "zh" } },
+  ];
+}
+
+const { locale } = Astro.params;
+---
+
+<BaseLayout
+  title="Changelog - Qarote"
+  description="See what's new in Qarote. Browse the latest features, improvements, and bug fixes."
+  locale={locale}
+  canonicalPath="/changelog/"
+>
+  <ChangelogIsland locale={locale} client:load />
+</BaseLayout>

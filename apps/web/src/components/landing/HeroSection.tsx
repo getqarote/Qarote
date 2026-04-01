@@ -1,14 +1,18 @@
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import AuthButtons from "@/components/AuthButtons";
 
-interface HeroSectionProps {
-  isVideoPlaying: boolean;
-  onPlayVideo: () => void;
-}
-
-const HeroSection = ({ isVideoPlaying, onPlayVideo }: HeroSectionProps) => {
+const HeroSection = () => {
   const { t } = useTranslation("landing");
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+
+  // Listen for play-video custom events from StickyNav island
+  useEffect(() => {
+    const handler = () => setIsVideoPlaying(true);
+    document.addEventListener("play-video", handler);
+    return () => document.removeEventListener("play-video", handler);
+  }, []);
 
   return (
     <header
@@ -50,7 +54,7 @@ const HeroSection = ({ isVideoPlaying, onPlayVideo }: HeroSectionProps) => {
             <button
               type="button"
               className="relative w-full aspect-video overflow-hidden group cursor-pointer"
-              onClick={onPlayVideo}
+              onClick={() => setIsVideoPlaying(true)}
             >
               <picture>
                 <source srcSet="/images/dashboard.webp" type="image/webp" />

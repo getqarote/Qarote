@@ -1,0 +1,29 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import LandingIsland from "../../components/LandingIsland";
+import { loadTranslations, t } from "../../lib/i18n-static";
+import { faqSchema } from "../../lib/faq-schema";
+
+export function getStaticPaths() {
+  return [
+    { params: { locale: "fr" } },
+    { params: { locale: "es" } },
+    { params: { locale: "zh" } },
+  ];
+}
+
+const { locale } = Astro.params;
+const landing = loadTranslations(locale, "landing");
+---
+
+<BaseLayout
+  title={t(landing, "seo.title")}
+  description={t(landing, "seo.description")}
+  locale={locale}
+  canonicalPath="/"
+>
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+  </Fragment>
+  <LandingIsland locale={locale} client:load />
+</BaseLayout>

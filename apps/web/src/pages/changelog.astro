@@ -1,0 +1,12 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import ChangelogIsland from "../components/ChangelogIsland";
+---
+
+<BaseLayout
+  title="Changelog - Qarote"
+  description="See what's new in Qarote. Browse the latest features, improvements, and bug fixes."
+  canonicalPath="/changelog/"
+>
+  <ChangelogIsland client:load />
+</BaseLayout>

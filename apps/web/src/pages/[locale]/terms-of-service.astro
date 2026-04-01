@@ -1,0 +1,23 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import TermsOfServiceIsland from "../../components/TermsOfServiceIsland";
+
+export function getStaticPaths() {
+  return [
+    { params: { locale: "fr" } },
+    { params: { locale: "es" } },
+    { params: { locale: "zh" } },
+  ];
+}
+
+const { locale } = Astro.params;
+---
+
+<BaseLayout
+  title="Terms of Service - Qarote"
+  description="Terms of Service for Qarote - Learn about your rights and responsibilities when using our service."
+  locale={locale}
+  canonicalPath="/terms-of-service/"
+>
+  <TermsOfServiceIsland client:load />
+</BaseLayout>

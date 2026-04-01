@@ -1,0 +1,23 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PrivacyPolicyIsland from "../../components/PrivacyPolicyIsland";
+
+export function getStaticPaths() {
+  return [
+    { params: { locale: "fr" } },
+    { params: { locale: "es" } },
+    { params: { locale: "zh" } },
+  ];
+}
+
+const { locale } = Astro.params;
+---
+
+<BaseLayout
+  title="Privacy Policy - Qarote"
+  description="Privacy Policy for Qarote - Learn how we collect, use, and protect your data."
+  locale={locale}
+  canonicalPath="/privacy-policy/"
+>
+  <PrivacyPolicyIsland client:load />
+</BaseLayout>

@@ -1,19 +1,11 @@
 import { ArrowLeft } from "lucide-react";
 
-import SEO from "@/components/SEO";
 import { Button } from "@/components/ui/button";
 
-const PrivacyPolicy = () => {
+export default function PrivacyPolicyIsland() {
   return (
     <div className="min-h-screen bg-background">
-      <SEO
-        title="Privacy Policy - Qarote"
-        description="Privacy Policy for Qarote - Learn how we collect, use, and protect your data."
-        url="https://qarote.io/privacy-policy/"
-      />
-
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Header */}
         <div className="mb-8">
           <Button
             variant="ghost"
@@ -31,7 +23,6 @@ const PrivacyPolicy = () => {
           </p>
         </div>
 
-        {/* Content */}
         <div className="prose prose-gray max-w-none">
           <section className="mb-8">
             <h2 className="text-2xl font-semibold text-foreground mb-4">
@@ -110,7 +101,6 @@ const PrivacyPolicy = () => {
                 third parties. We may share your information only in the
                 following circumstances:
               </p>
-
               <h3 className="text-xl font-medium text-foreground">
                 3.1 Service Providers
               </h3>
@@ -124,7 +114,6 @@ const PrivacyPolicy = () => {
                 <li>Analytics services</li>
                 <li>Cloud hosting providers</li>
               </ul>
-
               <h3 className="text-xl font-medium text-foreground">
                 3.2 Legal Requirements
               </h3>
@@ -277,7 +266,7 @@ const PrivacyPolicy = () => {
 
           <section className="mb-8">
             <h2 className="text-2xl font-semibold text-foreground mb-4">
-              9. Children's Privacy
+              9. Children&apos;s Privacy
             </h2>
             <div className="space-y-4 text-muted-foreground">
               <p>
@@ -324,8 +313,8 @@ const PrivacyPolicy = () => {
                   <strong>Email:</strong> support@qarote.io
                 </li>
                 <li>
-                  <strong>Address:</strong> 229 rue Saint-Honoré, 75001, Paris,
-                  France
+                  <strong>Address:</strong> 229 rue Saint-Honor&eacute;, 75001,
+                  Paris, France
                 </li>
               </ul>
             </div>
@@ -334,6 +323,4 @@ const PrivacyPolicy = () => {
       </div>
     </div>
   );
-};
-
-export default PrivacyPolicy;
+}

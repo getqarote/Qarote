@@ -13,11 +13,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 
-interface StickyNavProps {
-  onVideoClick?: () => void;
-}
-
-const StickyNav = ({ onVideoClick }: StickyNavProps) => {
+const StickyNav = () => {
   const { t } = useTranslation("nav");
   const [open, setOpen] = useState(false);
 
@@ -36,10 +32,10 @@ const StickyNav = ({ onVideoClick }: StickyNavProps) => {
         behavior: "smooth",
       });
 
-      // If it's the video section, launch the video after scrolling
-      if (id === "video" && onVideoClick) {
+      // If it's the video section, dispatch custom event for HeroSection island
+      if (id === "video") {
         setTimeout(() => {
-          onVideoClick();
+          document.dispatchEvent(new CustomEvent("play-video"));
         }, 500);
       }
     } else {
@@ -47,6 +43,13 @@ const StickyNav = ({ onVideoClick }: StickyNavProps) => {
       window.location.assign(`/#${id}`);
     }
   };
+
+  const authBaseUrl =
+    typeof import.meta.env !== "undefined"
+      ? import.meta.env.VITE_APP_BASE_URL ||
+        import.meta.env.PUBLIC_APP_BASE_URL ||
+        ""
+      : "";
 
   return (
     <nav className="sticky top-0 z-50 border-b border-border bg-white">
@@ -88,7 +91,7 @@ const StickyNav = ({ onVideoClick }: StickyNavProps) => {
               <GithubStarBadge />
             </div>
             <a
-              href={`${import.meta.env.VITE_APP_BASE_URL}/auth/sign-in`}
+              href={`${authBaseUrl}/auth/sign-in`}
               className="hidden lg:block text-foreground hover:text-primary px-2 sm:px-4 py-2 text-base font-medium transition-colors"
             >
               {t("login")}
@@ -96,7 +99,6 @@ const StickyNav = ({ onVideoClick }: StickyNavProps) => {
             <button
               type="button"
               onClick={() => {
-                const authBaseUrl = import.meta.env.VITE_APP_BASE_URL;
                 trackSignUpClick({
                   source: "sticky_nav",
                   location: "landing_page",
@@ -163,7 +165,7 @@ const StickyNav = ({ onVideoClick }: StickyNavProps) => {
             </a>
             <div className="border-t border-border my-2" />
             <a
-              href={`${import.meta.env.VITE_APP_BASE_URL}/auth/sign-in`}
+              href={`${authBaseUrl}/auth/sign-in`}
               className="px-4 py-3 text-base font-medium text-foreground hover:text-primary hover:bg-muted rounded-md transition-colors"
             >
               {t("login")}
@@ -171,7 +173,6 @@ const StickyNav = ({ onVideoClick }: StickyNavProps) => {
             <button
               type="button"
               onClick={() => {
-                const authBaseUrl = import.meta.env.VITE_APP_BASE_URL;
                 trackSignUpClick({
                   source: "mobile_nav",
                   location: "landing_page",
