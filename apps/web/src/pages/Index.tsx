@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Helmet } from "react-helmet-async";
+import { useTranslation } from "react-i18next";
 
 import ComparisonSection from "@/components/landing/ComparisonSection";
 import ConnectionSection from "@/components/landing/ConnectionSection";
@@ -13,6 +14,7 @@ import SEO from "@/components/SEO";
 import StickyNav from "@/components/StickyNav";
 
 const Index = () => {
+  const { t } = useTranslation("landing");
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
 
   return (
@@ -109,8 +111,8 @@ const Index = () => {
         </script>
       </Helmet>
       <SEO
-        title="Qarote - Modern RabbitMQ Monitoring & Management Dashboard"
-        description="Modern RabbitMQ monitoring and management dashboard for developers. Monitor queues, track performance, and manage your message broker with a clean UI. Cleaner than Management Plugin, simpler than Prometheus."
+        title={t("seo.title")}
+        description={t("seo.description")}
         url="https://qarote.io/"
       />
       <HeroSection

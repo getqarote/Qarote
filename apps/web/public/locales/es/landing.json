@@ -4,7 +4,7 @@
     "titleHighlight": "RabbitMQ",
     "titleAfter": "",
     "subtitle": "Qarote proporciona una interfaz clara e intuitiva para monitorear, analizar y gestionar tus servidores RabbitMQ sin esfuerzo.",
-    "noCreditCard": "Prueba gratuita de 14 días \u2022 No se requiere tarjeta de crédito"
+    "noCreditCard": "Prueba gratuita de 14 días • No se requiere tarjeta de crédito"
   },
   "cta": {
     "getStartedForFree": "Comenzar gratis",
@@ -114,5 +114,9 @@
     "subtitle": "Todo lo que necesitas saber sobre Qarote",
     "stillHaveQuestions": "¿Aún tienes preguntas?",
     "stillHaveQuestionsDesc": "¿No encuentras la respuesta que buscas? Contacta con nuestro amable equipo."
+  },
+  "seo": {
+    "title": "Qarote - Panel de control moderno de monitoreo y gestión de RabbitMQ",
+    "description": "Panel de control moderno de monitoreo y gestión de RabbitMQ para desarrolladores. Monitorea colas, rastrea el rendimiento y gestiona tu message broker con una interfaz limpia e intuitiva."
   }
 }
