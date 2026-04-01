@@ -1,3 +1,5 @@
+import type { SupportedLocale } from "@qarote/i18n";
+
 import { IslandProvider } from "@/components/IslandProvider";
 import FooterSection from "@/components/landing/FooterSection";
 import StickyNav from "@/components/StickyNav";
@@ -63,7 +65,7 @@ function parseChangelog(raw: string, locale = "en"): ChangelogEntry[] {
 }
 
 interface ChangelogIslandProps {
-  locale?: string;
+  locale?: SupportedLocale;
   resources?: Record<string, Record<string, unknown>>;
 }
 
