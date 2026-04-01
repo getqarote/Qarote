@@ -8,12 +8,7 @@ interface AuthButtonsProps {
 
 const AuthButtons = ({ align = "center" }: AuthButtonsProps) => {
   const { t } = useTranslation("landing");
-  const authBaseUrl =
-    typeof import.meta.env !== "undefined"
-      ? import.meta.env.VITE_APP_BASE_URL ||
-        import.meta.env.PUBLIC_APP_BASE_URL ||
-        ""
-      : "";
+  const authBaseUrl = import.meta.env.VITE_APP_BASE_URL || "";
 
   const handleSignUp = () => {
     trackSignUpClick({

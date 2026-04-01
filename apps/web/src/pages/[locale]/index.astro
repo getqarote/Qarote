@@ -1,7 +1,7 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import LandingIsland from "../../components/LandingIsland";
-import { loadTranslations, t } from "../../lib/i18n-static";
+import { loadTranslations, loadAllTranslations, t } from "../../lib/i18n-static";
 import { faqSchema } from "../../lib/faq-schema";
 
 export function getStaticPaths() {
@@ -14,6 +14,7 @@ export function getStaticPaths() {
 
 const { locale } = Astro.params;
 const landing = loadTranslations(locale, "landing");
+const resources = loadAllTranslations(locale);
 ---
 
 <BaseLayout
@@ -25,5 +26,5 @@ const landing = loadTranslations(locale, "landing");
   <Fragment slot="head">
     <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
   </Fragment>
-  <LandingIsland locale={locale} client:load />
+  <LandingIsland locale={locale} resources={resources} client:load />
 </BaseLayout>

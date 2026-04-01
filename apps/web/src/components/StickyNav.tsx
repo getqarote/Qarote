@@ -44,12 +44,7 @@ const StickyNav = () => {
     }
   };
 
-  const authBaseUrl =
-    typeof import.meta.env !== "undefined"
-      ? import.meta.env.VITE_APP_BASE_URL ||
-        import.meta.env.PUBLIC_APP_BASE_URL ||
-        ""
-      : "";
+  const authBaseUrl = import.meta.env.VITE_APP_BASE_URL || "";
 
   return (
     <nav className="sticky top-0 z-50 border-b border-border bg-white">

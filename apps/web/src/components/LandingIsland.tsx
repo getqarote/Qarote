@@ -12,11 +12,15 @@ import { TawkTo } from "@/components/TawkTo";
 
 interface LandingIslandProps {
   locale?: string;
+  resources?: Record<string, Record<string, unknown>>;
 }
 
-export default function LandingIsland({ locale = "en" }: LandingIslandProps) {
+export default function LandingIsland({
+  locale = "en",
+  resources,
+}: LandingIslandProps) {
   return (
-    <IslandProvider locale={locale}>
+    <IslandProvider locale={locale} resources={resources}>
       <div className="min-h-screen font-sans bg-white">
         <StickyNav />
         <HeroSection />

@@ -1,6 +1,7 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import ChangelogIsland from "../../components/ChangelogIsland";
+import { loadAllTranslations } from "../../lib/i18n-static";
 
 export function getStaticPaths() {
   return [
@@ -11,6 +12,7 @@ export function getStaticPaths() {
 }
 
 const { locale } = Astro.params;
+const resources = loadAllTranslations(locale);
 ---
 
 <BaseLayout
@@ -19,5 +21,5 @@ const { locale } = Astro.params;
   locale={locale}
   canonicalPath="/changelog/"
 >
-  <ChangelogIsland locale={locale} client:load />
+  <ChangelogIsland locale={locale} resources={resources} client:load />
 </BaseLayout>

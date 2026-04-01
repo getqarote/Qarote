@@ -66,13 +66,15 @@ const entries = parseChangelog(changelogRaw);
 
 interface ChangelogIslandProps {
   locale?: string;
+  resources?: Record<string, Record<string, unknown>>;
 }
 
 export default function ChangelogIsland({
   locale = "en",
+  resources,
 }: ChangelogIslandProps) {
   return (
-    <IslandProvider locale={locale}>
+    <IslandProvider locale={locale} resources={resources}>
       <div className="min-h-screen bg-background">
         <StickyNav />
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
