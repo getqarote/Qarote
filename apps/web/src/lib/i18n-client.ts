@@ -3,7 +3,7 @@ import { initReactI18next } from "react-i18next";
 import i18n from "i18next";
 import HttpBackend from "i18next-http-backend";
 
-export const I18N_NAMESPACES = [
+const I18N_NAMESPACES = [
   "common",
   "landing",
   "pricing",
@@ -73,5 +73,3 @@ export function getI18n(
 
   return i18n;
 }
-
-export default i18n;
