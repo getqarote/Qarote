@@ -89,7 +89,7 @@ function ChangelogContent({
   locale = "en",
 }: {
   entries: ChangelogEntry[];
-  locale?: string;
+  locale?: SupportedLocale;
 }) {
   const { t } = useTranslation("common");
 
