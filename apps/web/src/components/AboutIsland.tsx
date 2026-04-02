@@ -96,11 +96,12 @@ function AboutContent() {
                 {t(`team.${member.id}.bio`)}
               </p>
               <ul className="space-y-2">
-                {(
-                  t(`team.${member.id}.highlights`, {
+                {((): string[] => {
+                  const raw = t(`team.${member.id}.highlights`, {
                     returnObjects: true,
-                  }) as string[]
-                ).map((highlight, i) => (
+                  });
+                  return Array.isArray(raw) ? (raw as string[]) : [];
+                })().map((highlight, i) => (
                   <li
                     key={i}
                     className="flex items-start gap-2 text-sm text-muted-foreground"
