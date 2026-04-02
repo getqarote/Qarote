@@ -13,6 +13,8 @@
     "description": "RabbitMQ 为数千家企业提供关键基础设施支撑，但监控它一直比应有的更加困难。Qarote 为每个团队 — 从独立开发者到企业运维 — 提供简洁、现代的监控面板，开箱即用，无需 Prometheus 技术栈。"
   },
   "team": {
+    "photoAlt": "{{name}}，Qarote {{role}}",
+    "linkedinAria": "{{name}} 的 LinkedIn 主页",
     "brice": {
       "name": "Brice Tessier",
       "role": "联合创始人兼CTO",

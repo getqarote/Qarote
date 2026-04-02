@@ -64,7 +64,10 @@ function AboutContent() {
             <div className="shrink-0">
               <img
                 src={member.photo}
-                alt={`${t(`team.${member.id}.name`)}, ${t(`team.${member.id}.role`)} at Qarote`}
+                alt={t("team.photoAlt", {
+                  name: t(`team.${member.id}.name`),
+                  role: t(`team.${member.id}.role`),
+                })}
                 width={180}
                 height={180}
                 className="w-36 h-36 sm:w-44 sm:h-44 rounded-2xl object-cover"
@@ -81,7 +84,9 @@ function AboutContent() {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-muted-foreground hover:text-primary transition-colors"
-                  aria-label={`${t(`team.${member.id}.name`)} on LinkedIn`}
+                  aria-label={t("team.linkedinAria", {
+                    name: t(`team.${member.id}.name`),
+                  })}
                 >
                   <Linkedin className="w-5 h-5" />
                 </a>

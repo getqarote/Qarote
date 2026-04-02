@@ -13,6 +13,8 @@
     "description": "RabbitMQ powers critical infrastructure for thousands of companies, yet monitoring it has always been harder than it should be. Qarote gives every team — from solo developers to enterprise ops — a clean, modern dashboard that just works. No Prometheus stack required."
   },
   "team": {
+    "photoAlt": "{{name}}, {{role}} at Qarote",
+    "linkedinAria": "{{name}} on LinkedIn",
     "brice": {
       "name": "Brice Tessier",
       "role": "Co-founder & CTO",
