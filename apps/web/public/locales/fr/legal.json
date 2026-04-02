@@ -4,7 +4,7 @@
   "addressLabel": "Adresse",
   "privacyPolicy": {
     "title": "Politique de confidentialité",
-    "lastUpdated": "Dernière mise à jour : January 15, 2026",
+    "lastUpdated": "Dernière mise à jour : 15 janvier 2026",
     "description": "Politique de confidentialité de Qarote - Découvrez comment nous collectons, utilisons et protégeons vos données.",
     "sections": {
       "informationWeCollect": {
@@ -104,7 +104,7 @@
   },
   "termsOfService": {
     "title": "Conditions d'utilisation",
-    "lastUpdated": "Dernière mise à jour : January 15, 2026",
+    "lastUpdated": "Dernière mise à jour : 15 janvier 2026",
     "description": "Conditions d'utilisation de Qarote - Découvrez vos droits et responsabilités lors de l'utilisation de notre service.",
     "sections": {
       "acceptance": {

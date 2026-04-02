@@ -4,7 +4,7 @@
   "addressLabel": "Dirección",
   "privacyPolicy": {
     "title": "Política de privacidad",
-    "lastUpdated": "Última actualización: January 15, 2026",
+    "lastUpdated": "Última actualización: 15 de enero de 2026",
     "description": "Política de privacidad de Qarote - Descubra cómo recopilamos, utilizamos y protegemos sus datos.",
     "sections": {
       "informationWeCollect": {
@@ -104,7 +104,7 @@
   },
   "termsOfService": {
     "title": "Condiciones de servicio",
-    "lastUpdated": "Última actualización: January 15, 2026",
+    "lastUpdated": "Última actualización: 15 de enero de 2026",
     "description": "Condiciones de servicio de Qarote - Conozca sus derechos y responsabilidades al utilizar nuestro servicio.",
     "sections": {
       "acceptance": {

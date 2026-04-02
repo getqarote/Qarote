@@ -98,7 +98,7 @@
         "title": "11. Contact Us",
         "description": "If you have any questions about this privacy policy or our data practices, please contact us:",
         "email": "support@qarote.io",
-        "address": "229 rue Saint-Honore, 75001, Paris, France"
+        "address": "229 rue Saint-Honoré, 75001, Paris, France"
       }
     }
   },
@@ -109,7 +109,7 @@
     "sections": {
       "acceptance": {
         "title": "1. Acceptance of Terms",
-        "p1": "By accessing and using Qarote (\"the Service\"), you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to abide by the above, please do not use this service.",
+        "p1": "By accessing and using Qarote (\"the Service\"), you accept and agree to be bound by the terms and provisions of this agreement. If you do not agree to abide by the above, please do not use this service.",
         "p2": "These Terms of Service (\"Terms\") govern your use of our RabbitMQ monitoring and management platform operated by Qarote (\"us\", \"we\", or \"our\")."
       },
       "description": {
@@ -150,7 +150,7 @@
         "title": "8. Contact Information",
         "description": "If you have any questions about these Terms, please contact us:",
         "email": "support@qarote.io",
-        "address": "229 rue Saint-Honore, 75001, Paris, France"
+        "address": "229 rue Saint-Honoré, 75001, Paris, France"
       }
     }
   }

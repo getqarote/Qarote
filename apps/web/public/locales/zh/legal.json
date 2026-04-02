@@ -4,7 +4,7 @@
   "addressLabel": "地址",
   "privacyPolicy": {
     "title": "隐私政策",
-    "lastUpdated": "最后更新：January 15, 2026",
+    "lastUpdated": "最后更新：2026年1月15日",
     "description": "Qarote 隐私政策 - 了解我们如何收集、使用和保护您的数据。",
     "sections": {
       "informationWeCollect": {
@@ -183,13 +183,13 @@
         "title": "11. 联系我们",
         "description": "如果您对本隐私政策或我们的数据实践有任何疑问，请联系我们：",
         "email": "support@qarote.io",
-        "address": "229 rue Saint-Honore, 75001, Paris, France"
+        "address": "229 rue Saint-Honoré, 75001, Paris, France"
       }
     }
   },
   "termsOfService": {
     "title": "服务条款",
-    "lastUpdated": "最后更新：January 15, 2026",
+    "lastUpdated": "最后更新：2026年1月15日",
     "description": "Qarote 服务条款 - 了解您在使用我们服务时的权利和责任。",
     "sections": {
       "acceptance": {
@@ -251,7 +251,7 @@
         "title": "8. 联系信息",
         "description": "如果您对本条款有任何疑问，请联系我们：",
         "email": "support@qarote.io",
-        "address": "229 rue Saint-Honore, 75001, Paris, France"
+        "address": "229 rue Saint-Honoré, 75001, Paris, France"
       }
     }
   }
