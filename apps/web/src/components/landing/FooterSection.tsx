@@ -8,19 +8,20 @@ interface FooterSectionProps {
   currentLocale?: SupportedLocale;
 }
 
-const FooterLinks = () => {
+const FooterLinks = ({ locale = "en" }: { locale?: string }) => {
   const { t } = useTranslation("landing");
+  const prefix = locale === "en" ? "" : `/${locale}`;
 
   return (
     <>
       <a
-        href="/privacy-policy/"
+        href={`${prefix}/privacy-policy/`}
         className="text-muted-foreground hover:text-foreground transition-colors text-sm"
       >
         {t("footer.privacyPolicy")}
       </a>
       <a
-        href="/terms-of-service/"
+        href={`${prefix}/terms-of-service/`}
         className="text-muted-foreground hover:text-foreground transition-colors text-sm"
       >
         {t("footer.termsOfService")}
@@ -119,7 +120,7 @@ const FooterSection = ({ currentLocale = "en" }: FooterSectionProps) => {
           </div>
 
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
-            <FooterLinks />
+            <FooterLinks locale={currentLocale} />
             <LanguageSwitcher currentLocale={currentLocale} />
           </div>
         </div>
@@ -139,7 +140,7 @@ const FooterSection = ({ currentLocale = "en" }: FooterSectionProps) => {
           </div>
 
           <div className="flex items-center gap-6">
-            <FooterLinks />
+            <FooterLinks locale={currentLocale} />
             <LanguageSwitcher currentLocale={currentLocale} />
           </div>
         </div>
