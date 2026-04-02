@@ -69,6 +69,10 @@
   "manageServers": "Manage servers",
   "rabbitMQDashboard": "RabbitMQ Dashboard",
   "noCreditCard": "No credit card required",
+  "changelog": {
+    "title": "What's New",
+    "subtitle": "All notable changes to Qarote, documented release by release."
+  },
   "notFound": {
     "code": "404",
     "message": "Oops! Page not found",

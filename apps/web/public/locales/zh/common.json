@@ -69,6 +69,10 @@
   "manageServers": "管理服务器",
   "rabbitMQDashboard": "RabbitMQ 仪表盘",
   "noCreditCard": "无需信用卡",
+  "changelog": {
+    "title": "最新动态",
+    "subtitle": "Qarote 的所有重要变更，按版本逐一记录。"
+  },
   "notFound": {
     "code": "404",
     "message": "抱歉！页面未找到",
