@@ -1,5 +1,9 @@
+import { useTranslation } from "react-i18next";
+
 import type { SupportedLocale } from "@qarote/i18n";
 import { ArrowLeft, Linkedin } from "lucide-react";
+
+import { teamMembers } from "@/lib/team-data";
 
 import { IslandProvider } from "@/components/IslandProvider";
 import FooterSection from "@/components/landing/FooterSection";
@@ -26,38 +30,9 @@ export default function AboutIsland({
   );
 }
 
-const teamMembers = [
-  {
-    name: "Brice Tessier",
-    role: "Co-founder & CTO",
-    photo: "/images/team/brice.jpg",
-    linkedin: "https://www.linkedin.com/in/bricetessierhuort/",
-    location: "Paris, France",
-    bio: "Full-stack engineer specializing in distributed systems, from design to cloud deployment. Built Qarote from a personal pain point — after years working with RabbitMQ in production at scale, existing monitoring tools never quite cut it.",
-    highlights: [
-      "Previously at Hermes, building microservices for e-commerce with Kafka and PostgreSQL",
-      "Lead Back-End Developer at IFT, architecting distributed systems with RabbitMQ and MariaDB",
-      "Back-end engineer on the Bonjour RATP mobile app serving millions of daily commuters",
-      "Deep expertise in React, Node.js/TypeScript, RabbitMQ, Kafka, Docker, and AWS",
-    ],
-  },
-  {
-    name: "Paul Dufour",
-    role: "Co-founder & CMO",
-    photo: "/images/team/paul.jpg",
-    linkedin: "https://www.linkedin.com/in/paul-dufour/",
-    location: "Marseille, France",
-    bio: "Marketing and growth leader with a track record of scaling brands from zero to millions in revenue. Brings deep e-commerce expertise and a data-driven approach to making Qarote the go-to RabbitMQ dashboard.",
-    highlights: [
-      "Head of Marketing at Baltic Watches — managed 1.5M EUR annual ad budget, built headless Shopify + Storyblok stack",
-      "Founded Toi Toi Mon Toit, a rooftop rental platform running for 11+ years",
-      "Head of Digital & E-commerce at Les Raffineurs — grew CRM to 200k+ contacts",
-      "Certified in Google Ads, Google Analytics, Klaviyo, and Brevo",
-    ],
-  },
-];
-
 function AboutContent() {
+  const { t } = useTranslation("about");
+
   return (
     <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="mb-8">
@@ -67,31 +42,29 @@ function AboutContent() {
           className="mb-6"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Back
+          {t("back")}
         </Button>
       </div>
 
       <section className="mb-16 text-center">
         <h1 className="text-4xl sm:text-5xl font-bold text-foreground mb-6">
-          Built by engineers who lived the problem
+          {t("hero.title")}
         </h1>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          Qarote was born from years of frustration with RabbitMQ monitoring
-          tools that were either too complex to set up or too limited to be
-          useful. We built the dashboard we always wanted.
+          {t("hero.subtitle")}
         </p>
       </section>
 
       <section className="space-y-16">
         {teamMembers.map((member) => (
           <article
-            key={member.name}
+            key={member.id}
             className="flex flex-col sm:flex-row gap-8 items-start"
           >
             <div className="shrink-0">
               <img
                 src={member.photo}
-                alt={`${member.name}, ${member.role} at Qarote`}
+                alt={`${t(`team.${member.id}.name`)}, ${t(`team.${member.id}.role`)} at Qarote`}
                 width={180}
                 height={180}
                 className="w-36 h-36 sm:w-44 sm:h-44 rounded-2xl object-cover"
@@ -101,27 +74,33 @@ function AboutContent() {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-3 mb-1">
                 <h2 className="text-2xl font-bold text-foreground">
-                  {member.name}
+                  {t(`team.${member.id}.name`)}
                 </h2>
                 <a
                   href={member.linkedin}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-muted-foreground hover:text-primary transition-colors"
-                  aria-label={`${member.name} on LinkedIn`}
+                  aria-label={`${t(`team.${member.id}.name`)} on LinkedIn`}
                 >
                   <Linkedin className="w-5 h-5" />
                 </a>
               </div>
               <p className="text-sm font-medium text-primary mb-1">
-                {member.role}
+                {t(`team.${member.id}.role`)}
               </p>
               <p className="text-sm text-muted-foreground mb-4">
-                {member.location}
+                {t(`team.${member.id}.location`)}
               </p>
-              <p className="text-muted-foreground mb-4">{member.bio}</p>
+              <p className="text-muted-foreground mb-4">
+                {t(`team.${member.id}.bio`)}
+              </p>
               <ul className="space-y-2">
-                {member.highlights.map((highlight, i) => (
+                {(
+                  t(`team.${member.id}.highlights`, {
+                    returnObjects: true,
+                  }) as string[]
+                ).map((highlight, i) => (
                   <li
                     key={i}
                     className="flex items-start gap-2 text-sm text-muted-foreground"
@@ -137,12 +116,11 @@ function AboutContent() {
       </section>
 
       <section className="mt-20 text-center border-t border-border pt-12">
-        <h2 className="text-2xl font-bold text-foreground mb-4">Our mission</h2>
+        <h2 className="text-2xl font-bold text-foreground mb-4">
+          {t("mission.title")}
+        </h2>
         <p className="text-muted-foreground max-w-2xl mx-auto">
-          RabbitMQ powers critical infrastructure for thousands of companies,
-          yet monitoring it has always been harder than it should be. Qarote
-          gives every team — from solo developers to enterprise ops — a clean,
-          modern dashboard that just works. No Prometheus stack required.
+          {t("mission.description")}
         </p>
       </section>
     </main>

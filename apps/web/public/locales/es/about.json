@@ -1,0 +1,41 @@
+{
+  "seo": {
+    "title": "Acerca de - El equipo detrás de Qarote",
+    "description": "Conoce a los fundadores de Qarote — ingenieros y especialistas en marketing que construyeron el panel de monitoreo moderno de RabbitMQ a partir de experiencia real con message brokers a escala."
+  },
+  "back": "Volver",
+  "hero": {
+    "title": "Construido por ingenieros que vivieron el problema",
+    "subtitle": "Qarote nació de años de frustración con herramientas de monitoreo de RabbitMQ que eran demasiado complejas de configurar o demasiado limitadas para ser útiles. Construimos el panel que siempre quisimos."
+  },
+  "mission": {
+    "title": "Nuestra misión",
+    "description": "RabbitMQ impulsa la infraestructura crítica de miles de empresas, pero monitorearla siempre ha sido más difícil de lo necesario. Qarote ofrece a cada equipo — desde desarrolladores independientes hasta operaciones enterprise — un panel moderno y limpio que simplemente funciona. Sin necesidad de una stack Prometheus."
+  },
+  "team": {
+    "brice": {
+      "name": "Brice Tessier",
+      "role": "Cofundador y CTO",
+      "location": "París, Francia",
+      "bio": "Ingeniero full-stack especializado en sistemas distribuidos, desde el diseño hasta el despliegue en la nube. Creó Qarote a partir de una necesidad personal — después de años trabajando con RabbitMQ en producción a escala, las herramientas de monitoreo existentes nunca estaban a la altura.",
+      "highlights": [
+        "Anteriormente en Hermès, construyendo microservicios para e-commerce con Kafka y PostgreSQL",
+        "Lead Back-End Developer en IFT, diseñando sistemas distribuidos con RabbitMQ y MariaDB",
+        "Ingeniero back-end en la app Bonjour RATP sirviendo a millones de usuarios diarios",
+        "Experiencia profunda en React, Node.js/TypeScript, RabbitMQ, Kafka, Docker y AWS"
+      ]
+    },
+    "paul": {
+      "name": "Paul Dufour",
+      "role": "Cofundador y CMO",
+      "location": "Marsella, Francia",
+      "bio": "Líder de marketing y crecimiento con un historial de marcas escaladas de cero a millones en ingresos. Aporta una profunda experiencia en e-commerce y un enfoque basado en datos para hacer de Qarote el panel de RabbitMQ de referencia.",
+      "highlights": [
+        "Head of Marketing en Baltic Watches — gestión de un presupuesto publicitario anual de 1,5M EUR, stack headless Shopify + Storyblok",
+        "Fundador de Toi Toi Mon Toit, plataforma de alquiler de azoteas desde hace más de 11 años",
+        "Head of Digital & E-commerce en Les Raffineurs — CRM crecido a más de 200k contactos",
+        "Certificado en Google Ads, Google Analytics, Klaviyo y Brevo"
+      ]
+    }
+  }
+}

@@ -1,7 +1,15 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const NAMESPACES = ["common", "landing", "pricing", "faq", "nav", "legal"];
+const NAMESPACES = [
+  "about",
+  "common",
+  "landing",
+  "pricing",
+  "faq",
+  "nav",
+  "legal",
+];
 
 /**
  * Load translations at build time for Astro pages.

@@ -1,44 +1,20 @@
+import { t } from "@/lib/i18n-static";
+import { teamMembers } from "@/lib/team-data";
+
 const baseUrl = "https://qarote.io";
 
-export function buildAboutSchema() {
-  const brice = {
+export function buildAboutSchema(
+  translations: Record<string, unknown>
+): Record<string, unknown>[] {
+  return teamMembers.map((member) => ({
     "@context": "https://schema.org",
     "@type": "Person",
-    name: "Brice Tessier",
-    jobTitle: "Co-founder & CTO",
+    name: t(translations, `team.${member.id}.name`),
+    jobTitle: t(translations, `team.${member.id}.role`),
     url: `${baseUrl}/about/`,
-    image: `${baseUrl}/images/team/brice.jpg`,
-    sameAs: ["https://www.linkedin.com/in/bricetessierhuort/"],
+    image: `${baseUrl}${member.photo}`,
+    sameAs: [member.linkedin],
     worksFor: { "@id": `${baseUrl}/#organization` },
-    knowsAbout: [
-      "RabbitMQ",
-      "Distributed Systems",
-      "Node.js",
-      "TypeScript",
-      "React",
-      "Kafka",
-      "PostgreSQL",
-      "Docker",
-    ],
-  };
-
-  const paul = {
-    "@context": "https://schema.org",
-    "@type": "Person",
-    name: "Paul Dufour",
-    jobTitle: "Co-founder & CMO",
-    url: `${baseUrl}/about/`,
-    image: `${baseUrl}/images/team/paul.jpg`,
-    sameAs: ["https://www.linkedin.com/in/paul-dufour/"],
-    worksFor: { "@id": `${baseUrl}/#organization` },
-    knowsAbout: [
-      "Digital Marketing",
-      "E-commerce",
-      "Growth Strategy",
-      "Google Ads",
-      "SEO",
-    ],
-  };
-
-  return [brice, paul];
+    knowsAbout: member.knowsAbout,
+  }));
 }
