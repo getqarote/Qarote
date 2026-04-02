@@ -15,6 +15,14 @@ export function LanguageSwitcher({
 }: LanguageSwitcherProps) {
   const locale = currentLocale;
 
+  // Known base paths for language switching (prevents DOM-sourced XSS)
+  const VALID_PATHS = [
+    "/",
+    "/privacy-policy/",
+    "/terms-of-service/",
+    "/changelog/",
+  ];
+
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedValue = e.target.value;
 
@@ -37,9 +45,14 @@ export function LanguageSwitcher({
       }
     }
 
-    // Build new URL from validated locale
-    const newPath = newLocale === "en" ? basePath : `/${newLocale}${basePath}`;
-    window.location.href = newPath;
+    // Validate basePath against known routes (fall back to "/" if unknown)
+    if (!VALID_PATHS.includes(basePath)) {
+      basePath = "/";
+    }
+
+    // Build new URL from validated locale and path
+    const safePath = newLocale === "en" ? basePath : `/${newLocale}${basePath}`;
+    window.location.href = safePath;
   };
 
   return (
