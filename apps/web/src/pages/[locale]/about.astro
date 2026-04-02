@@ -1,0 +1,27 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import AboutIsland from "../../components/AboutIsland";
+import { loadAllTranslations } from "../../lib/i18n-static";
+import { buildAboutSchema } from "../../lib/about-schema";
+import { getLocaleStaticPaths } from "../../lib/locales";
+
+export const getStaticPaths = getLocaleStaticPaths;
+
+const { locale } = Astro.params;
+const resources = loadAllTranslations(locale);
+const personSchemas = buildAboutSchema();
+---
+
+<BaseLayout
+  title="About Us - Meet the Team Behind Qarote"
+  description="Meet the founders of Qarote — engineers and marketers who built the modern RabbitMQ monitoring dashboard from real-world experience with message brokers at scale."
+  locale={locale}
+  canonicalPath="/about/"
+>
+  <Fragment slot="head">
+    {personSchemas.map((schema) => (
+      <script type="application/ld+json" set:html={JSON.stringify(schema)} />
+    ))}
+  </Fragment>
+  <AboutIsland locale={locale} resources={resources} client:load />
+</BaseLayout>
