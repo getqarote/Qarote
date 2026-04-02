@@ -15,12 +15,14 @@ export function LanguageSwitcher({
 }: LanguageSwitcherProps) {
   const locale = currentLocale;
 
-  // Known base paths for language switching (prevents DOM-sourced XSS)
-  const VALID_PATHS = [
-    "/",
-    "/privacy-policy/",
-    "/terms-of-service/",
-    "/changelog/",
+  // Static route map — values are hardcoded literals, never derived from DOM.
+  // Each regex matches a pathname pattern; the corresponding path is used
+  // to build the navigation URL. This ensures no DOM-sourced taint flows
+  // into window.location.href (satisfies CodeQL js/xss-through-dom).
+  const ROUTE_PATTERNS: [RegExp, string][] = [
+    [/^\/(fr|es|zh)?\/privacy-policy\/?$/, "/privacy-policy/"],
+    [/^\/(fr|es|zh)?\/terms-of-service\/?$/, "/terms-of-service/"],
+    [/^\/(fr|es|zh)?\/changelog\/?$/, "/changelog/"],
   ];
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -30,14 +32,18 @@ export function LanguageSwitcher({
     if (!SUPPORTED_LOCALES.includes(selectedValue as SupportedLocale)) return;
     const newLocale = selectedValue as SupportedLocale;
 
-    // Determine current base path by matching against known routes.
-    // Uses the allowlisted literal (not the DOM value) to build the URL,
-    // fully cutting the DOM→href taint chain for CodeQL.
-    const rawPath = window.location.pathname;
-    const stripped = rawPath.replace(/^\/(fr|es|zh)(\/|$)/, "/");
-    const basePath = VALID_PATHS.find((p) => p === stripped) ?? "/";
+    // Match current pathname against known routes to get a safe base path.
+    // The basePath is always a hardcoded string literal from ROUTE_PATTERNS.
+    const pathname = window.location.pathname;
+    let basePath = "/";
+    for (const [pattern, path] of ROUTE_PATTERNS) {
+      if (pattern.test(pathname)) {
+        basePath = path;
+        break;
+      }
+    }
 
-    // Build new URL entirely from validated constants
+    // Build URL entirely from validated constants
     window.location.href =
       newLocale === "en" ? basePath : `/${newLocale}${basePath}`;
   };
