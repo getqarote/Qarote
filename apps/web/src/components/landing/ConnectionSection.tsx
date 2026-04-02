@@ -54,7 +54,10 @@ const ConnectionSection = () => {
                     >
                       <img
                         src="/images/email.svg"
-                        alt="Email"
+                        alt=""
+                        aria-hidden="true"
+                        width="14"
+                        height="14"
                         className="image-crisp w-auto h-3.5"
                       />
                       <span className="text-sm font-medium text-foreground">
@@ -80,7 +83,10 @@ const ConnectionSection = () => {
                     >
                       <img
                         src="/images/google.svg"
-                        alt="Google"
+                        alt=""
+                        aria-hidden="true"
+                        width="14"
+                        height="14"
                         className="image-crisp w-auto h-3.5"
                       />
                       <span className="text-sm font-medium text-foreground">
@@ -116,7 +122,10 @@ const ConnectionSection = () => {
                       <div className="flex-shrink-0">
                         <img
                           src="/images/server.svg"
-                          alt="Server"
+                          alt=""
+                          aria-hidden="true"
+                          width="24"
+                          height="24"
                           className="w-6 h-6 image-crisp"
                         />
                       </div>
@@ -133,7 +142,10 @@ const ConnectionSection = () => {
                       <div className="flex-shrink-0">
                         <img
                           src="/images/server.svg"
-                          alt="Server"
+                          alt=""
+                          aria-hidden="true"
+                          width="24"
+                          height="24"
                           className="w-6 h-6 image-crisp"
                         />
                       </div>
@@ -150,7 +162,10 @@ const ConnectionSection = () => {
                       <div className="flex-shrink-0">
                         <img
                           src="/images/server.svg"
-                          alt="Server"
+                          alt=""
+                          aria-hidden="true"
+                          width="24"
+                          height="24"
                           className="w-6 h-6 image-crisp"
                         />
                       </div>
@@ -234,6 +249,8 @@ const ConnectionSection = () => {
                             src="/images/check.svg"
                             alt=""
                             aria-hidden="true"
+                            width="11"
+                            height="11"
                             className="image-crisp w-auto h-[0.7rem]"
                           />
                           <span className="text-sm text-foreground">

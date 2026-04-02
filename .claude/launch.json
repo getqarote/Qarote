@@ -6,6 +6,12 @@
       "runtimeExecutable": "/bin/zsh",
       "runtimeArgs": ["-c", "source ~/.nvm/nvm.sh && nvm use && pnpm run dev"],
       "port": 8080
+    },
+    {
+      "name": "web",
+      "runtimeExecutable": "/bin/zsh",
+      "runtimeArgs": ["-c", "source ~/.nvm/nvm.sh && nvm use && pnpm --filter @qarote/i18n build && pnpm --filter ./apps/web dev"],
+      "port": 4321
     }
   ]
 }

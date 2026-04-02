@@ -117,6 +117,6 @@
   },
   "seo": {
     "title": "Qarote - RabbitMQ Monitoring Dashboard",
-    "description": "Monitor your RabbitMQ queues, track performance, and manage your message broker with Qarote. Free core monitoring with alerting, multi-server support, and team workspaces."
+    "description": "Monitor your RabbitMQ queues, track performance, and manage your message broker with Qarote. Free monitoring with alerting and multi-server support."
   }
 }
