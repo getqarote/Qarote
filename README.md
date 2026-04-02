@@ -30,83 +30,63 @@
 
 ## 🎭 Editions
 
-Qarote is available in two editions to suit different needs:
+Qarote is available in two editions. Every deployment starts with Community features — activate a license key in **Settings → License** to unlock Enterprise. No restart needed.
 
-### 🆓 Community Edition (Open Source)
+| | Community (Free) | Enterprise (Licensed) |
+|---|---|---|
+| Core monitoring (queues, exchanges, vhosts, users) | ✅ | ✅ |
+| Real-time metrics and charts | ✅ | ✅ |
+| Server management | ✅ | ✅ |
+| Workspace Management | - | ✅ |
+| Advanced Alerting (Slack/webhook) | - | ✅ |
+| Data Export (CSV/JSON) | - | ✅ |
+| Priority Support | - | ✅ |
 
-<div align="center">
-
-**Free • MIT License • Open Source**
-
-</div>
-
-- ✅ Core RabbitMQ monitoring (queues, exchanges, vhosts, users)
-- ✅ Real-time metrics and charts
-- ✅ Server management
-- ✅ User-friendly dashboard
-- ✅ Self-hosted deployment
-- ✅ Active community support
-
-📖 **[View Community Edition Guide](docs/COMMUNITY_EDITION.md)**
-
-### 💼 Enterprise Edition (Licensed)
-
-<div align="center">
-
-**Commercial License • Premium Features • Priority Support**
-
-</div>
-
-- ✅ All Community Edition features
-- ✅ **Workspace Management** - Multi-user workspaces with teams
-- ✅ **Advanced Alerting** - Custom alert rules with Slack/webhook notifications
-- ✅ **Data Export** - CSV/JSON export of metrics and analytics
-- ✅ **Priority Support** - Direct support channel
-- ✅ **Offline Validation** - Air-gapped deployment support
-- ✅ **License Management** - Cryptographically signed licenses
-
-📖 **[View Enterprise Edition Guide](docs/ENTERPRISE_EDITION.md)** • **[Compare Features](docs/FEATURE_COMPARISON.md)**
-
-<div align="center">
-
-**[🎟️ Get Enterprise License](https://portal.qarote.io)** - Purchase and manage your licenses
-
-</div>
+📖 **[Community Guide](docs/COMMUNITY_EDITION.md)** • **[Enterprise Guide](docs/ENTERPRISE_EDITION.md)** • **[Compare Features](docs/FEATURE_COMPARISON.md)** • **[🎟️ Get License](https://portal.qarote.io)**
 
 ## 🚀 Quick Start
 
-### Self-Hosted Deployment
+All deployment methods work for both editions. Pick the one that fits your infrastructure:
 
-#### 🎯 Community Edition - Recommended: Dokku
+### 📦 Binary (simplest — no Docker needed)
 
-**We recommend using Dokku for the simplest deployment experience:**
+Download a single binary, run the setup wizard, and start. Only requires PostgreSQL.
 
 ```bash
-# 1. Install Dokku on your server
-# 2. Create app and database
+# 1. Download (auto-detects OS and architecture)
+PLATFORM="$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/x64/' | sed 's/aarch64/arm64/')"
+curl -L "https://github.com/getqarote/Qarote/releases/latest/download/qarote-${PLATFORM}.tar.gz" | tar xz --strip-components=1
+
+# 2. Interactive setup (generates .env, tests DB connection)
+./qarote setup
+
+# 3. Start (serves API + frontend on port 3000)
+./qarote
+```
+
+### 🐳 Docker Compose
+
+```bash
+# 1. Generate .env with secure secrets
+./setup.sh
+
+# 2. Start services (PostgreSQL included)
+docker compose -f docker-compose.selfhosted.yml up -d
+```
+
+### 🚢 Dokku
+
+```bash
+# 1. Create app and database
 ssh dokku@your-server apps:create qarote
 dokku postgres:create qarote-db && dokku postgres:link qarote-db qarote
 
-# 3. Set environment variables
-dokku config:set qarote DEPLOYMENT_MODE=community JWT_SECRET=... ENCRYPTION_KEY=...
+# 2. Set environment variables
+dokku config:set qarote JWT_SECRET=$(openssl rand -hex 64) ENCRYPTION_KEY=$(openssl rand -hex 64)
 
-# 4. Deploy
+# 3. Deploy
 git remote add dokku dokku@your-server:qarote
 git push dokku main
-```
-
-📖 **[Complete Dokku Guide](docs/COMMUNITY_EDITION.md#recommended-dokku-deployment)**
-
-#### 🐳 Alternative: Docker Compose
-
-Both Community and Enterprise editions can be deployed with Docker Compose:
-
-```bash
-# 1. Run the setup script (generates .env with secure secrets)
-./setup.sh community    # or: ./setup.sh enterprise
-
-# 2. Start services
-docker compose -f docker-compose.selfhosted.yml up -d
 ```
 
 📖 **[Complete Deployment Guide](docs/SELF_HOSTED_DEPLOYMENT.md)**

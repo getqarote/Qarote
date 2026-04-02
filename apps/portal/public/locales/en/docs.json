@@ -61,6 +61,7 @@
       },
       "binary": {
         "description": "Download a single binary — no Docker, Node.js, or Nginx required. Only PostgreSQL is needed. Windows users can run the Linux binary inside WSL2.",
+        "postgresCheckTitle": "Check if PostgreSQL is already installed:",
         "postgresInstallTitle": "Install PostgreSQL if you don't have it:",
         "dbSetupTitle": "1. Create Database",
         "dbSetupDescription": "Create a dedicated PostgreSQL user and database for Qarote:",

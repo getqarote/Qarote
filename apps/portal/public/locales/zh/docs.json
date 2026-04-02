@@ -62,6 +62,7 @@
       },
       "binary": {
         "description": "下载单个二进制文件——无需 Docker、Node.js 或 Nginx。仅需要 PostgreSQL。Windows 用户可以在 WSL2 中运行 Linux 二进制文件。",
+        "postgresCheckTitle": "检查 PostgreSQL 是否已安装：",
         "postgresInstallTitle": "如果尚未安装 PostgreSQL，请先安装：",
         "dbSetupTitle": "1. 创建数据库",
         "dbSetupDescription": "为 Qarote 创建专用的 PostgreSQL 用户和数据库：",

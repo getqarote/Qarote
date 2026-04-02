@@ -455,23 +455,40 @@ dokku letsencrypt:enable qarote`}
                   {t("installGuide.quickStart.binary.description")}
                 </p>
 
-                <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-                  <p
-                    className="text-sm text-blue-900 dark:text-blue-100 font-medium mb-2"
-                    dangerouslySetInnerHTML={{
-                      __html: t(
-                        "installGuide.quickStart.binary.postgresInstallTitle"
-                      ),
-                    }}
-                  />
-                  <CodeBlock
-                    code={`# macOS
+                <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 space-y-4">
+                  <div>
+                    <p
+                      className="text-sm text-blue-900 dark:text-blue-100 font-medium mb-2"
+                      dangerouslySetInnerHTML={{
+                        __html: t(
+                          "installGuide.quickStart.binary.postgresCheckTitle"
+                        ),
+                      }}
+                    />
+                    <CodeBlock
+                      code={`psql --version              # Check if installed
+systemctl status postgresql  # Check if running (Linux)`}
+                      language="bash"
+                    />
+                  </div>
+                  <div>
+                    <p
+                      className="text-sm text-blue-900 dark:text-blue-100 font-medium mb-2"
+                      dangerouslySetInnerHTML={{
+                        __html: t(
+                          "installGuide.quickStart.binary.postgresInstallTitle"
+                        ),
+                      }}
+                    />
+                    <CodeBlock
+                      code={`# macOS
 brew install postgresql@15
 
 # Ubuntu / Debian / WSL2
 sudo apt install postgresql`}
-                    language="bash"
-                  />
+                      language="bash"
+                    />
+                  </div>
                 </div>
 
                 <h5 className="text-sm font-medium">

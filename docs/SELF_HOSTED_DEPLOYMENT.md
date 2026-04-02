@@ -54,6 +54,13 @@ Requirements depend on your deployment method:
 
 Qarote is available as a single binary that embeds both the API and frontend. No Docker, Node.js, or web server required — only PostgreSQL.
 
+> **Check if PostgreSQL is already installed:**
+>
+> ```bash
+> psql --version              # Check if installed
+> systemctl status postgresql  # Check if running (Linux)
+> ```
+>
 > **Install PostgreSQL** if you don't have it:
 > - **macOS:** `brew install postgresql@15`
 > - **Ubuntu/Debian:** `sudo apt install postgresql`
