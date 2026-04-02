@@ -60,6 +60,8 @@ const AccordionTrigger = React.forwardRef<
           src="/images/arrow-down.svg"
           alt=""
           aria-hidden="true"
+          width={16}
+          height={16}
           className="h-[1em] w-[1em] transition-transform duration-200 group-data-[state=open]:rotate-180 image-crisp"
         />
       </div>

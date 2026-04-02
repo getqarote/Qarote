@@ -109,6 +109,8 @@ const StickyNav = () => {
                 src="/images/arrow-right.svg"
                 alt=""
                 aria-hidden="true"
+                width={13}
+                height={13}
                 className="h-[0.8em] w-auto align-middle image-crisp"
               />
             </button>
@@ -135,6 +137,8 @@ const StickyNav = () => {
                 src="/images/new_icon.svg"
                 alt=""
                 aria-hidden="true"
+                width={24}
+                height={24}
                 className="w-6 h-6"
               />
               Qarote
@@ -183,6 +187,8 @@ const StickyNav = () => {
                 src="/images/arrow-right.svg"
                 alt=""
                 aria-hidden="true"
+                width={13}
+                height={13}
                 className="h-[0.8em] w-auto align-middle image-crisp"
               />
             </button>

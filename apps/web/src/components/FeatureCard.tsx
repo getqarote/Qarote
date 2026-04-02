@@ -69,6 +69,8 @@ const FeatureCard = ({ icon: Icon, title, description }: FeatureCardProps) => {
             src={imageSrc.src}
             alt=""
             aria-hidden="true"
+            width={24}
+            height={24}
             className="h-6 w-6 image-crisp"
           />
         ) : (

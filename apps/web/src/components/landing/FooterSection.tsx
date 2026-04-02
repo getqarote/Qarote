@@ -15,6 +15,12 @@ const FooterLinks = ({ locale = "en" }: { locale?: string }) => {
   return (
     <>
       <a
+        href={`${prefix}/about/`}
+        className="text-muted-foreground hover:text-foreground transition-colors text-sm"
+      >
+        {t("footer.about", "About")}
+      </a>
+      <a
         href={`${prefix}/privacy-policy/`}
         className="text-muted-foreground hover:text-foreground transition-colors text-sm"
       >
@@ -132,6 +138,8 @@ const FooterSection = ({ currentLocale = "en" }: FooterSectionProps) => {
               src="/images/new_icon.svg"
               alt=""
               aria-hidden="true"
+              width={32}
+              height={32}
               className="w-8 h-8"
             />
             <h3 className="text-foreground font-normal text-[1.2rem]">

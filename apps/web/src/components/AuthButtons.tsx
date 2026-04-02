@@ -46,6 +46,8 @@ const AuthButtons = ({ align = "center" }: AuthButtonsProps) => {
           src="/images/arrow-right.svg"
           alt=""
           aria-hidden="true"
+          width={13}
+          height={13}
           className="h-[0.8em] w-auto align-middle image-crisp"
         />
       </button>
