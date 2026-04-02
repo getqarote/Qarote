@@ -30,29 +30,16 @@ export function LanguageSwitcher({
     if (!SUPPORTED_LOCALES.includes(selectedValue as SupportedLocale)) return;
     const newLocale = selectedValue as SupportedLocale;
 
-    const currentPath = window.location.pathname;
+    // Determine current base path by matching against known routes.
+    // Uses the allowlisted literal (not the DOM value) to build the URL,
+    // fully cutting the DOM→href taint chain for CodeQL.
+    const rawPath = window.location.pathname;
+    const stripped = rawPath.replace(/^\/(fr|es|zh)(\/|$)/, "/");
+    const basePath = VALID_PATHS.find((p) => p === stripped) ?? "/";
 
-    // Strip current locale prefix to get the base path
-    let basePath = currentPath;
-    for (const l of SUPPORTED_LOCALES) {
-      if (l !== "en" && currentPath.startsWith(`/${l}/`)) {
-        basePath = currentPath.slice(`/${l}`.length);
-        break;
-      }
-      if (l !== "en" && currentPath === `/${l}`) {
-        basePath = "/";
-        break;
-      }
-    }
-
-    // Validate basePath against known routes (fall back to "/" if unknown)
-    if (!VALID_PATHS.includes(basePath)) {
-      basePath = "/";
-    }
-
-    // Build new URL from validated locale and path
-    const safePath = newLocale === "en" ? basePath : `/${newLocale}${basePath}`;
-    window.location.href = safePath;
+    // Build new URL entirely from validated constants
+    window.location.href =
+      newLocale === "en" ? basePath : `/${newLocale}${basePath}`;
   };
 
   return (
