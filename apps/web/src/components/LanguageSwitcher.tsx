@@ -16,7 +16,12 @@ export function LanguageSwitcher({
   const locale = currentLocale;
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newLocale = e.target.value;
+    const selectedValue = e.target.value;
+
+    // Validate the selected locale against the allow-list
+    if (!SUPPORTED_LOCALES.includes(selectedValue as SupportedLocale)) return;
+    const newLocale = selectedValue as SupportedLocale;
+
     const currentPath = window.location.pathname;
 
     // Strip current locale prefix to get the base path
@@ -32,7 +37,7 @@ export function LanguageSwitcher({
       }
     }
 
-    // Build new URL
+    // Build new URL from validated locale
     const newPath = newLocale === "en" ? basePath : `/${newLocale}${basePath}`;
     window.location.href = newPath;
   };
