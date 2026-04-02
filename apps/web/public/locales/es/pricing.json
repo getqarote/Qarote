@@ -54,8 +54,6 @@
     "teamMembers": "{{count}} miembro de equipo",
     "teamMembers_plural": "{{count}} miembros de equipo",
     "teamMembersDesc": "Colabora con tu equipo",
-    "basicStatistics": "Estadísticas básicas",
-    "advancedStatistics": "Estadísticas avanzadas",
     "advancedAnalytics": "Análisis avanzados",
     "advancedAnalyticsDesc": "Informes e información detallada",
     "queueManagement": "Gestión de colas",

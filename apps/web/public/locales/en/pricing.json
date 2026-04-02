@@ -54,8 +54,6 @@
     "teamMembers": "{{count}} Team Member",
     "teamMembers_plural": "{{count}} Team Members",
     "teamMembersDesc": "Collaborate with your team",
-    "basicStatistics": "Basic statistics",
-    "advancedStatistics": "Advanced statistics",
     "advancedAnalytics": "Advanced analytics",
     "advancedAnalyticsDesc": "Detailed insights and reports",
     "queueManagement": "Queue Management",

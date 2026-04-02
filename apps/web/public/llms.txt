@@ -43,7 +43,6 @@ Visual representation of your RabbitMQ topology including queues, exchanges, and
 - 1 RabbitMQ server
 - 1 workspace
 - 1 team member
-- Basic statistics
 - Queue, exchange, virtual host, and user management
 - LTS RabbitMQ version support
 - Community support
@@ -53,7 +52,6 @@ Visual representation of your RabbitMQ topology including queues, exchanges, and
 - 3 RabbitMQ servers
 - 3 workspaces
 - 3 team members
-- Advanced statistics
 - Alerts and webhooks
 - Topology visualization
 - All RabbitMQ versions (3.x and 4.x)

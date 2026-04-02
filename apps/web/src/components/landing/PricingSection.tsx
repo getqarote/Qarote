@@ -374,13 +374,6 @@ const PricingSection = () => {
                               )}
                             </span>
                           </FeatureItem>
-                          <FeatureItem>
-                            <span className="text-sm text-foreground">
-                              {plan.id === "FREE"
-                                ? tPricing("featureNames.basicStatistics")
-                                : tPricing("featureNames.advancedStatistics")}
-                            </span>
-                          </FeatureItem>
                           {plan.features.queueManagement && (
                             <FeatureItem>
                               <span className="text-sm text-foreground">

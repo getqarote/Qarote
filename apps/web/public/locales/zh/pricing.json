@@ -54,8 +54,6 @@
     "teamMembers": "{{count}} 个团队成员",
     "teamMembers_plural": "{{count}} 个团队成员",
     "teamMembersDesc": "与你的团队协作",
-    "basicStatistics": "基础统计",
-    "advancedStatistics": "高级统计",
     "advancedAnalytics": "高级分析",
     "advancedAnalyticsDesc": "详细的洞察和报告",
     "queueManagement": "队列管理",
