@@ -1,0 +1,23 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PrivacyPolicyIsland from "../../components/PrivacyPolicyIsland";
+import { loadTranslations, loadAllTranslations, t } from "../../lib/i18n-static";
+import { getLocaleStaticPaths } from "../../lib/locales";
+
+export const getStaticPaths = getLocaleStaticPaths;
+
+const { locale } = Astro.params;
+const legal = loadTranslations(locale, "legal");
+const resources = loadAllTranslations(locale);
+const title = `${t(legal, "privacyPolicy.title")} - Qarote`;
+const description = t(legal, "privacyPolicy.description");
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  locale={locale}
+  canonicalPath="/privacy-policy/"
+>
+  <PrivacyPolicyIsland locale={locale} resources={resources} client:load />
+</BaseLayout>

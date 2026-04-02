@@ -1,20 +1,27 @@
 import { useTranslation } from "react-i18next";
 
+import type { SupportedLocale } from "@qarote/i18n";
+
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
-const FooterLinks = () => {
+interface FooterSectionProps {
+  currentLocale?: SupportedLocale;
+}
+
+const FooterLinks = ({ locale = "en" }: { locale?: string }) => {
   const { t } = useTranslation("landing");
+  const prefix = locale === "en" ? "" : `/${locale}`;
 
   return (
     <>
       <a
-        href="/privacy-policy/"
+        href={`${prefix}/privacy-policy/`}
         className="text-muted-foreground hover:text-foreground transition-colors text-sm"
       >
         {t("footer.privacyPolicy")}
       </a>
       <a
-        href="/terms-of-service/"
+        href={`${prefix}/terms-of-service/`}
         className="text-muted-foreground hover:text-foreground transition-colors text-sm"
       >
         {t("footer.termsOfService")}
@@ -90,7 +97,7 @@ const FooterLinks = () => {
   );
 };
 
-const FooterSection = () => {
+const FooterSection = ({ currentLocale = "en" }: FooterSectionProps) => {
   return (
     <footer className="text-card-foreground py-12 border-t border-border bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -113,8 +120,8 @@ const FooterSection = () => {
           </div>
 
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
-            <FooterLinks />
-            <LanguageSwitcher />
+            <FooterLinks locale={currentLocale} />
+            <LanguageSwitcher currentLocale={currentLocale} />
           </div>
         </div>
 
@@ -133,8 +140,8 @@ const FooterSection = () => {
           </div>
 
           <div className="flex items-center gap-6">
-            <FooterLinks />
-            <LanguageSwitcher />
+            <FooterLinks locale={currentLocale} />
+            <LanguageSwitcher currentLocale={currentLocale} />
           </div>
         </div>
       </div>

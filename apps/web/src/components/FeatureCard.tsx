@@ -1,10 +1,9 @@
 import * as React from "react";
 
-import type { LucideProps } from "lucide-react";
+import type { LucideIcon, LucideProps } from "lucide-react";
 import {
   Activity,
   BarChart3,
-  LucideIcon,
   MessageSquare,
   Rocket,
   Settings,

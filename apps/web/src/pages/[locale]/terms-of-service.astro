@@ -1,0 +1,23 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import TermsOfServiceIsland from "../../components/TermsOfServiceIsland";
+import { loadTranslations, loadAllTranslations, t } from "../../lib/i18n-static";
+import { getLocaleStaticPaths } from "../../lib/locales";
+
+export const getStaticPaths = getLocaleStaticPaths;
+
+const { locale } = Astro.params;
+const legal = loadTranslations(locale, "legal");
+const resources = loadAllTranslations(locale);
+const title = `${t(legal, "termsOfService.title")} - Qarote`;
+const description = t(legal, "termsOfService.description");
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  locale={locale}
+  canonicalPath="/terms-of-service/"
+>
+  <TermsOfServiceIsland locale={locale} resources={resources} client:load />
+</BaseLayout>

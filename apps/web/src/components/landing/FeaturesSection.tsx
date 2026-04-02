@@ -61,9 +61,9 @@ const FeaturesSection = () => {
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {features.map((feature) => (
+          {features.map((feature, index) => (
             <FeatureCard
-              key={feature.icon.name}
+              key={index}
               icon={feature.icon}
               title={feature.title}
               description={feature.description}

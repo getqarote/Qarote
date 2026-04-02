@@ -1,5 +1,3 @@
-import { useTranslation } from "react-i18next";
-
 import {
   LOCALE_FLAGS,
   LOCALE_LABELS,
@@ -8,9 +6,47 @@ import {
 } from "@qarote/i18n";
 import { Globe } from "lucide-react";
 
-export function LanguageSwitcher() {
-  const { i18n } = useTranslation();
-  const currentLocale = (i18n.language || "en") as SupportedLocale;
+interface LanguageSwitcherProps {
+  currentLocale?: SupportedLocale;
+}
+
+export function LanguageSwitcher({
+  currentLocale = "en",
+}: LanguageSwitcherProps) {
+  const locale = currentLocale;
+
+  // Static route map — values are hardcoded literals, never derived from DOM.
+  // Each regex matches a pathname pattern; the corresponding path is used
+  // to build the navigation URL. This ensures no DOM-sourced taint flows
+  // into window.location.href (satisfies CodeQL js/xss-through-dom).
+  const ROUTE_PATTERNS: [RegExp, string][] = [
+    [/^\/(fr|es|zh)?\/privacy-policy\/?$/, "/privacy-policy/"],
+    [/^\/(fr|es|zh)?\/terms-of-service\/?$/, "/terms-of-service/"],
+    [/^\/(fr|es|zh)?\/changelog\/?$/, "/changelog/"],
+  ];
+
+  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedValue = e.target.value;
+
+    // Validate the selected locale against the allow-list
+    if (!SUPPORTED_LOCALES.includes(selectedValue as SupportedLocale)) return;
+    const newLocale = selectedValue as SupportedLocale;
+
+    // Match current pathname against known routes to get a safe base path.
+    // The basePath is always a hardcoded string literal from ROUTE_PATTERNS.
+    const pathname = window.location.pathname;
+    let basePath = "/";
+    for (const [pattern, path] of ROUTE_PATTERNS) {
+      if (pattern.test(pathname)) {
+        basePath = path;
+        break;
+      }
+    }
+
+    // Build URL entirely from validated constants
+    window.location.href =
+      newLocale === "en" ? basePath : `/${newLocale}${basePath}`;
+  };
 
   return (
     <div className="relative inline-flex items-center gap-1.5">
@@ -19,14 +55,14 @@ export function LanguageSwitcher() {
         aria-hidden="true"
       />
       <select
-        value={currentLocale}
-        onChange={(e) => i18n.changeLanguage(e.target.value)}
+        value={locale}
+        onChange={handleChange}
         className="appearance-none bg-transparent text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer pr-4 focus:outline-none"
         aria-label="Select language"
       >
-        {SUPPORTED_LOCALES.map((locale) => (
-          <option key={locale} value={locale}>
-            {LOCALE_FLAGS[locale]} {LOCALE_LABELS[locale]}
+        {SUPPORTED_LOCALES.map((l) => (
+          <option key={l} value={l}>
+            {LOCALE_FLAGS[l]} {LOCALE_LABELS[l]}
           </option>
         ))}
       </select>

@@ -69,6 +69,10 @@
   "manageServers": "Gestionar servidores",
   "rabbitMQDashboard": "Panel de control RabbitMQ",
   "noCreditCard": "No se requiere tarjeta de crédito",
+  "changelog": {
+    "title": "Novedades",
+    "subtitle": "Todos los cambios notables de Qarote, documentados versión por versión."
+  },
   "notFound": {
     "code": "404",
     "message": "¡Ups! Página no encontrada",
