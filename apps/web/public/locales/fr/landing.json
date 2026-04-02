@@ -117,6 +117,6 @@
   },
   "seo": {
     "title": "Qarote - Tableau de bord de monitoring RabbitMQ",
-    "description": "Surveillez vos files RabbitMQ, suivez les performances et gérez votre broker de messages avec Qarote. Monitoring gratuit avec alertes, support multi-serveurs et espaces de travail."
+    "description": "Surveillez vos files RabbitMQ, suivez les performances et gérez votre broker de messages avec Qarote. Monitoring gratuit avec alertes et support multi-serveurs."
   }
 }
