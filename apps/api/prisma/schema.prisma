@@ -33,7 +33,7 @@ model Alert {
   sourceType     String?
   sourceName     String?
   details        Json?
-  duration       Int?
+  duration       BigInt?
   alertRule      AlertRule?      @relation(fields: [alertRuleId], references: [id])
   user           User?           @relation(fields: [createdById], references: [id])
   server         RabbitMQServer? @relation(fields: [serverId], references: [id], onDelete: Cascade)
@@ -165,9 +165,9 @@ model Queue {
   name          String
   vhost         String
   serverId      String
-  messages      Int
-  messagesReady Int
-  messagesUnack Int
+  messages      BigInt
+  messagesReady BigInt
+  messagesUnack BigInt
   lastFetched   DateTime
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
@@ -181,9 +181,9 @@ model QueueMetric {
   id            String   @id @default(uuid())
   queueId       String
   timestamp     DateTime @default(now())
-  messages      Int
-  messagesReady Int
-  messagesUnack Int
+  messages      BigInt
+  messagesReady BigInt
+  messagesUnack BigInt
   publishRate   Float
   consumeRate   Float
   queue         Queue    @relation(fields: [queueId], references: [id], onDelete: Cascade)
