@@ -105,6 +105,7 @@
     "noCreditCard": "No credit card required"
   },
   "footer": {
+    "about": "About",
     "privacyPolicy": "Privacy Policy",
     "termsOfService": "Terms of Service",
     "contact": "Contact"

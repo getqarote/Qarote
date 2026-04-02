@@ -1,0 +1,43 @@
+{
+  "seo": {
+    "title": "关于我们 - 认识 Qarote 背后的团队",
+    "description": "认识 Qarote 的创始人 — 凭借消息队列大规模实战经验，打造现代化 RabbitMQ 监控面板的工程师和营销专家。"
+  },
+  "back": "返回",
+  "hero": {
+    "title": "由亲历问题的工程师打造",
+    "subtitle": "Qarote 源于多年来对 RabbitMQ 监控工具的不满 — 它们要么太复杂难以部署，要么功能太有限。我们打造了一直以来想要的监控面板。"
+  },
+  "mission": {
+    "title": "我们的使命",
+    "description": "RabbitMQ 为数千家企业提供关键基础设施支撑，但监控它一直比应有的更加困难。Qarote 为每个团队 — 从独立开发者到企业运维 — 提供简洁、现代的监控面板，开箱即用，无需 Prometheus 技术栈。"
+  },
+  "team": {
+    "photoAlt": "{{name}}，Qarote {{role}}",
+    "linkedinAria": "{{name}} 的 LinkedIn 主页",
+    "brice": {
+      "name": "Brice Tessier",
+      "role": "联合创始人兼CTO",
+      "location": "法国巴黎",
+      "bio": "专注于分布式系统的全栈工程师，从设计到云部署全程参与。基于个人需求创建了 Qarote — 多年在生产环境中大规模使用 RabbitMQ 后，发现现有监控工具始终不尽人意。",
+      "highlights": [
+        "曾就职于爱马仕，使用 Kafka 和 PostgreSQL 构建电商微服务",
+        "IFT 首席后端开发，使用 RabbitMQ 和 MariaDB 架构分布式系统",
+        "Bonjour RATP 移动应用后端工程师，服务数百万日活通勤用户",
+        "精通 React、Node.js/TypeScript、RabbitMQ、Kafka、Docker 和 AWS"
+      ]
+    },
+    "paul": {
+      "name": "Paul Dufour",
+      "role": "联合创始人兼CMO",
+      "location": "法国马赛",
+      "bio": "营销和增长领导者，拥有将品牌从零发展到数百万收入的成功经验。凭借深厚的电商专业知识和数据驱动的方法，致力于让 Qarote 成为 RabbitMQ 监控的首选面板。",
+      "highlights": [
+        "Baltic Watches 市场营销负责人 — 管理150万欧元年度广告预算，构建 headless Shopify + Storyblok 技术栈",
+        "Toi Toi Mon Toit 创始人，运营超过11年的屋顶租赁平台",
+        "Les Raffineurs 数字与电商负责人 — 将CRM联系人增长至20万+",
+        "持有 Google Ads、Google Analytics、Klaviyo 和 Brevo 认证"
+      ]
+    }
+  }
+}

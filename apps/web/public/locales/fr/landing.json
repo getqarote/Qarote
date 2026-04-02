@@ -105,6 +105,7 @@
     "noCreditCard": "Aucune carte de crédit requise"
   },
   "footer": {
+    "about": "À propos",
     "privacyPolicy": "Politique de confidentialité",
     "termsOfService": "Conditions d'utilisation",
     "contact": "Contact"
