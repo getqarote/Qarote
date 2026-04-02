@@ -499,7 +499,10 @@ sudo apt install postgresql`}
                 </p>
                 <CodeBlock
                   code={`sudo -u postgres psql -c "CREATE USER qarote WITH PASSWORD 'your-secure-password';"
-sudo -u postgres psql -c "CREATE DATABASE qarote OWNER qarote;"`}
+sudo -u postgres psql -c "CREATE DATABASE qarote OWNER qarote;"
+
+# Allow Qarote to configure idle connection timeouts (prevents zombie connections)
+sudo -u postgres psql -c "ALTER USER qarote SUPERUSER;"`}
                   language="bash"
                 />
                 <p className="text-sm text-muted-foreground">
@@ -509,6 +512,20 @@ sudo -u postgres psql -c "CREATE DATABASE qarote OWNER qarote;"`}
                     components={{ code: <code /> }}
                   />
                 </p>
+                <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+                  <p className="text-sm text-amber-900 dark:text-amber-100 font-medium mb-2">
+                    {t("installGuide.quickStart.binary.idleTimeoutTitle")}
+                  </p>
+                  <p className="text-sm text-amber-800 dark:text-amber-200 mb-2">
+                    {t("installGuide.quickStart.binary.idleTimeoutDescription")}
+                  </p>
+                  <CodeBlock
+                    code={`sudo -u postgres psql -c "ALTER SYSTEM SET idle_session_timeout = '30min';"
+sudo -u postgres psql -c "ALTER SYSTEM SET idle_in_transaction_session_timeout = '5min';"
+sudo -u postgres psql -c "SELECT pg_reload_conf();"`}
+                    language="bash"
+                  />
+                </div>
 
                 <h5 className="text-sm font-medium">
                   {t("installGuide.quickStart.binary.step1Title")}

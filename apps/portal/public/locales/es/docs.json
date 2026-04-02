@@ -67,6 +67,8 @@
         "dbSetupTitle": "1. Crear la base de datos",
         "dbSetupDescription": "Crea un usuario y una base de datos PostgreSQL dedicados para Qarote:",
         "dbSetupNote": "Tu URL de base de datos será: <code>postgresql://qarote:tu-contraseña-segura@localhost:5432/qarote</code>",
+        "idleTimeoutTitle": "¿Por qué SUPERUSER?",
+        "idleTimeoutDescription": "Qarote usa ALTER SYSTEM al iniciar para configurar idle_session_timeout (30min) e idle_in_transaction_session_timeout (5min), lo que previene conexiones zombis. Si prefieres no otorgar superusuario, puedes configurarlos manualmente:",
         "step1Title": "2. Descargar y extraer",
         "step1Note": "Esto descarga automáticamente la última versión. También puedes <releasesLink>ver todas las versiones</releasesLink> en GitHub.",
         "step2Title": "3. Configuración interactiva",

@@ -67,9 +67,15 @@ cp -r apps/app/dist/* apps/api/dist/public/
 # --- Step 4: Compile to standalone binary with Bun ---
 info "Step 4/5: Compiling binary..."
 
+# Bake version from latest git tag (e.g. v1.2.0-beta.9 → 1.2.0-beta.9)
+QAROTE_VERSION="$(git describe --tags --abbrev=0 2>/dev/null | sed 's/^v//' || echo "dev")"
+export QAROTE_VERSION
+info "  Version: $QAROTE_VERSION"
+
 BUN_BUILD_ARGS=(
   "apps/api/dist/index.js"
   "--compile"
+  "--define" "process.env.QAROTE_VERSION=\"$QAROTE_VERSION\""
   "--external" "@sentry/node"
   "--external" "@sentry/profiling-node"
 )
@@ -109,6 +115,7 @@ echo "    tar xzf $TARBALL"
 echo "    cd qarote"
 echo ""
 echo "  Usage:"
+echo "    ./qarote --version                      # Print version"
 echo "    ./qarote setup                          # Interactive setup"
 echo "    ./qarote                                 # Start web server on port 3000"
 echo "    ./qarote worker                         # Start alert worker (separate terminal)"

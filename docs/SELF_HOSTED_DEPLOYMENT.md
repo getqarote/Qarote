@@ -74,7 +74,18 @@ After installing PostgreSQL, create a dedicated user and database:
 # 1. Create a user and database for Qarote
 sudo -u postgres psql -c "CREATE USER qarote WITH PASSWORD 'your-secure-password';"
 sudo -u postgres psql -c "CREATE DATABASE qarote OWNER qarote;"
+
+# 2. Allow Qarote to configure idle connection timeouts (prevents zombie connections)
+sudo -u postgres psql -c "ALTER USER qarote SUPERUSER;"
 ```
+
+> **Note:** Qarote uses `ALTER SYSTEM` at startup to set `idle_session_timeout` (30min) and `idle_in_transaction_session_timeout` (5min), which prevents zombie database connections. This requires superuser privileges. If you prefer not to grant superuser, you can set these manually instead:
+>
+> ```bash
+> sudo -u postgres psql -c "ALTER SYSTEM SET idle_session_timeout = '30min';"
+> sudo -u postgres psql -c "ALTER SYSTEM SET idle_in_transaction_session_timeout = '5min';"
+> sudo -u postgres psql -c "SELECT pg_reload_conf();"
+> ```
 
 Your database URL will be: `postgresql://qarote:your-secure-password@localhost:5432/qarote`
 
@@ -134,6 +145,7 @@ To enable email, add SMTP flags:
 | Flag / Command | Description |
 |----------------|-------------|
 | `./qarote setup` | Interactive setup wizard (generates `.env`) |
+| `-v`, `--version` | Print version and exit |
 | `--database-url <url>` | PostgreSQL connection URL |
 | `--jwt-secret <secret>` | JWT signing secret (min 32 characters) |
 | `--encryption-key <key>` | Encryption key (min 32 characters) |
