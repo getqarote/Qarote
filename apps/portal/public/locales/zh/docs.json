@@ -67,8 +67,6 @@
         "dbSetupTitle": "1. 创建数据库",
         "dbSetupDescription": "为 Qarote 创建专用的 PostgreSQL 用户和数据库：",
         "dbSetupNote": "你的数据库 URL 将是：<code>postgresql://qarote:你的安全密码@localhost:5432/qarote</code>",
-        "idleTimeoutTitle": "为什么需要 SUPERUSER？",
-        "idleTimeoutDescription": "Qarote 在启动时使用 ALTER SYSTEM 设置 idle_session_timeout（30分钟）和 idle_in_transaction_session_timeout（5分钟），以防止僵尸数据库连接。如果你不想授予超级用户权限，可以手动设置：",
         "step1Title": "2. 下载并解压",
         "step1Note": "此命令会自动下载最新版本。你也可以在 GitHub 上<releasesLink>浏览所有版本</releasesLink>。",
         "step2Title": "3. 交互式配置",
