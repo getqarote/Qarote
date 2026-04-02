@@ -1,10 +1,157 @@
 {
+  "back": "Retour",
+  "emailLabel": "E-mail",
+  "addressLabel": "Adresse",
   "privacyPolicy": {
     "title": "Politique de confidentialité",
-    "lastUpdated": "Dernière mise à jour"
+    "lastUpdated": "Dernière mise à jour : January 15, 2026",
+    "description": "Politique de confidentialité de Qarote - Découvrez comment nous collectons, utilisons et protégeons vos données.",
+    "sections": {
+      "informationWeCollect": {
+        "title": "1. Informations que nous collectons",
+        "accountInfo": {
+          "title": "1.1 Informations de compte",
+          "description": "Lorsque vous créez un compte sur Qarote, nous collectons :",
+          "items": ["Adresse e-mail", "Prénom et nom de famille", "Mot de passe (chiffré)", "Informations sur l'entreprise (facultatif)"]
+        },
+        "usageData": {
+          "title": "1.2 Données d'utilisation",
+          "description": "Nous collectons automatiquement des informations sur votre utilisation de notre service :",
+          "items": ["Détails de connexion au serveur RabbitMQ (hôte, port, identifiants)", "Données de surveillance des files d'attente et métriques", "Métriques de performance des applications", "Journaux d'erreurs et informations de débogage", "Habitudes d'utilisation des fonctionnalités"]
+        },
+        "technicalInfo": {
+          "title": "1.3 Informations techniques",
+          "description": "Nous collectons des informations techniques sur votre appareil et votre navigateur :",
+          "items": ["Adresse IP", "Type et version du navigateur", "Système d'exploitation", "Informations sur l'appareil", "Cookies et technologies de suivi similaires"]
+        }
+      },
+      "howWeUse": {
+        "title": "2. Comment nous utilisons vos informations",
+        "description": "Nous utilisons les informations collectées pour :",
+        "items": ["Fournir et maintenir notre service de surveillance RabbitMQ", "Traiter les paiements et gérer votre abonnement", "Vous envoyer des mises à jour et notifications importantes concernant le service", "Fournir un support client", "Améliorer notre service et développer de nouvelles fonctionnalités", "Assurer la sécurité et prévenir la fraude", "Respecter les obligations légales"]
+      },
+      "informationSharing": {
+        "title": "3. Partage et divulgation des informations",
+        "description": "Nous ne vendons, n'échangeons ni ne louons vos informations personnelles à des tiers. Nous pouvons partager vos informations uniquement dans les circonstances suivantes :",
+        "serviceProviders": {
+          "title": "3.1 Prestataires de services",
+          "description": "Nous pouvons partager des informations avec des prestataires de services tiers de confiance qui nous aident à exploiter notre service :",
+          "items": ["Processeurs de paiement (Stripe)", "Fournisseurs de services de messagerie", "Services d'analyse", "Fournisseurs d'hébergement cloud"]
+        },
+        "legalRequirements": {
+          "title": "3.2 Exigences légales",
+          "description": "Nous pouvons divulguer vos informations si la loi l'exige ou pour :",
+          "items": ["Se conformer aux procédures légales", "Protéger nos droits et notre propriété", "Prévenir la fraude ou les problèmes de sécurité", "Protéger la sécurité de nos utilisateurs"]
+        }
+      },
+      "dataSecurity": {
+        "title": "4. Sécurité des données",
+        "description": "Nous mettons en œuvre des mesures de sécurité appropriées pour protéger vos informations personnelles :",
+        "items": ["Chiffrement des données en transit et au repos", "Audits et évaluations de sécurité réguliers", "Contrôles d'accès et authentification", "Centres de données et infrastructure sécurisés", "Formation des employés sur la protection des données"],
+        "disclaimer": "Cependant, aucune méthode de transmission sur Internet ou de stockage électronique n'est sécurisée à 100 %. Bien que nous nous efforcions de protéger vos informations, nous ne pouvons garantir une sécurité absolue."
+      },
+      "dataRetention": {
+        "title": "5. Conservation des données",
+        "description": "Nous conservons vos informations personnelles aussi longtemps que nécessaire pour fournir notre service et remplir les objectifs décrits dans cette politique de confidentialité. Plus précisément :",
+        "items": ["Informations de compte : jusqu'à la suppression de votre compte", "Données d'utilisation : jusqu'à 2 ans à des fins d'analyse", "Informations de paiement : selon les exigences légales et des processeurs de paiement", "Communications de support : jusqu'à 3 ans"]
+      },
+      "yourRights": {
+        "title": "6. Vos droits",
+        "description": "Selon votre localisation, vous pouvez disposer des droits suivants concernant vos informations personnelles :",
+        "items": {
+          "access": {"label": "Accès :", "text": "Demander une copie de vos informations personnelles"},
+          "correction": {"label": "Rectification :", "text": "Demander la correction d'informations inexactes"},
+          "deletion": {"label": "Suppression :", "text": "Demander la suppression de vos informations personnelles"},
+          "portability": {"label": "Portabilité :", "text": "Demander le transfert de vos données vers un autre service"},
+          "objection": {"label": "Opposition :", "text": "S'opposer à certaines activités de traitement"},
+          "restriction": {"label": "Limitation :", "text": "Demander la limitation du traitement"}
+        },
+        "contact": "Pour exercer ces droits, veuillez nous contacter à privacy@qarote.io"
+      },
+      "cookies": {
+        "title": "7. Cookies et suivi",
+        "description": "Nous utilisons des cookies et des technologies similaires pour améliorer votre expérience :",
+        "items": {
+          "essential": {"label": "Cookies essentiels :", "text": "Nécessaires au fonctionnement de base"},
+          "analytics": {"label": "Cookies analytiques :", "text": "Nous aident à comprendre les habitudes d'utilisation"},
+          "preference": {"label": "Cookies de préférence :", "text": "Mémorisent vos paramètres"},
+          "marketing": {"label": "Cookies marketing :", "text": "Utilisés pour la publicité ciblée (avec consentement)"}
+        },
+        "control": "Vous pouvez gérer les paramètres des cookies via les préférences de votre navigateur."
+      },
+      "internationalTransfers": {
+        "title": "8. Transferts internationaux de données",
+        "description": "Vos informations peuvent être transférées et traitées dans des pays autres que le vôtre. Nous veillons à ce que des garanties appropriées soient en place pour ces transferts, notamment :",
+        "items": ["Clauses contractuelles types", "Décisions d'adéquation", "Mécanismes de certification", "Règles d'entreprise contraignantes"]
+      },
+      "childrensPrivacy": {
+        "title": "9. Confidentialité des enfants",
+        "description": "Notre service n'est pas destiné aux enfants de moins de 13 ans. Nous ne collectons pas sciemment d'informations personnelles auprès d'enfants de moins de 13 ans. Si vous apprenez qu'un enfant nous a fourni des informations personnelles, veuillez nous contacter immédiatement."
+      },
+      "changes": {
+        "title": "10. Modifications de cette politique de confidentialité",
+        "description": "Nous pouvons mettre à jour cette politique de confidentialité de temps à autre. Nous vous informerons de tout changement important par :",
+        "items": ["La publication de la politique mise à jour sur notre site web", "L'envoi d'une notification par e-mail", "L'affichage d'un avis dans notre application"],
+        "continued": "Votre utilisation continue de notre service après toute modification constitue une acceptation de la politique mise à jour."
+      },
+      "contactUs": {
+        "title": "11. Nous contacter",
+        "description": "Si vous avez des questions concernant cette politique de confidentialité ou nos pratiques en matière de données, veuillez nous contacter :",
+        "email": "support@qarote.io",
+        "address": "229 rue Saint-Honoré, 75001, Paris, France"
+      }
+    }
   },
   "termsOfService": {
     "title": "Conditions d'utilisation",
-    "lastUpdated": "Dernière mise à jour"
+    "lastUpdated": "Dernière mise à jour : January 15, 2026",
+    "description": "Conditions d'utilisation de Qarote - Découvrez vos droits et responsabilités lors de l'utilisation de notre service.",
+    "sections": {
+      "acceptance": {
+        "title": "1. Acceptation des conditions",
+        "p1": "En accédant et en utilisant Qarote (« le Service »), vous acceptez et vous engagez à respecter les termes et dispositions du présent accord. Si vous n'acceptez pas ces conditions, veuillez ne pas utiliser ce service.",
+        "p2": "Les présentes Conditions d'utilisation (« Conditions ») régissent votre utilisation de notre plateforme de surveillance et de gestion RabbitMQ exploitée par Qarote (« nous », « notre »)."
+      },
+      "description": {
+        "title": "2. Description du service",
+        "description": "Qarote fournit une interface web moderne pour la surveillance et la gestion des courtiers de messages RabbitMQ. Notre service comprend :",
+        "items": ["Surveillance en direct des files d'attente et analytique", "Outils de publication et de consommation de messages", "Gestion des files d'attente et des échanges", "Métriques de performance et alertes", "Prise en charge de clusters multi-serveurs", "Gestion des utilisateurs et contrôles d'accès"]
+      },
+      "accounts": {
+        "title": "3. Comptes utilisateurs et inscription",
+        "creation": {
+          "title": "3.1 Création de compte",
+          "description": "Pour utiliser notre service, vous devez créer un compte en fournissant des informations exactes et complètes. Vous êtes responsable de :",
+          "items": ["Maintenir la confidentialité de vos identifiants de compte", "Toutes les activités effectuées sous votre compte", "Nous notifier immédiatement de toute utilisation non autorisée", "Maintenir vos informations de compte à jour"]
+        },
+        "eligibility": {
+          "title": "3.2 Éligibilité du compte",
+          "description": "Vous devez avoir au moins 18 ans pour créer un compte. En créant un compte, vous déclarez et garantissez que :",
+          "items": ["Vous avez l'âge légal pour conclure un contrat contraignant", "Vous avez l'autorité nécessaire pour conclure cet accord", "Toutes les informations fournies sont exactes et à jour"]
+        }
+      },
+      "billing": {
+        "title": "4. Plans d'abonnement et facturation",
+        "description": "Nous proposons plusieurs plans d'abonnement. Les frais d'abonnement sont facturés à l'avance sur une base mensuelle ou annuelle. Vous pouvez annuler votre abonnement à tout moment."
+      },
+      "acceptableUse": {
+        "title": "5. Politique d'utilisation acceptable",
+        "description": "Vous acceptez d'utiliser notre service uniquement à des fins légales et conformément aux présentes Conditions."
+      },
+      "dataPrivacy": {
+        "title": "6. Données et confidentialité",
+        "description": "Votre vie privée est importante pour nous. La collecte et l'utilisation de vos informations personnelles sont régies par notre Politique de confidentialité."
+      },
+      "liability": {
+        "title": "7. Limitation de responsabilité",
+        "description": "Dans les limites maximales autorisées par la loi, Qarote ne sera pas responsable des dommages indirects, accessoires, spéciaux, consécutifs ou punitifs."
+      },
+      "contactUs": {
+        "title": "8. Coordonnées",
+        "description": "Si vous avez des questions concernant ces Conditions, veuillez nous contacter :",
+        "email": "support@qarote.io",
+        "address": "229 rue Saint-Honoré, 75001, Paris, France"
+      }
+    }
   }
 }

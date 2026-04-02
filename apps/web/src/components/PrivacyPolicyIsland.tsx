@@ -1,8 +1,29 @@
+import { useTranslation } from "react-i18next";
+
 import { ArrowLeft } from "lucide-react";
 
+import { IslandProvider } from "@/components/IslandProvider";
 import { Button } from "@/components/ui/button";
 
-export default function PrivacyPolicyIsland() {
+interface PrivacyPolicyIslandProps {
+  locale?: string;
+  resources?: Record<string, Record<string, unknown>>;
+}
+
+export default function PrivacyPolicyIsland({
+  locale = "en",
+  resources,
+}: PrivacyPolicyIslandProps) {
+  return (
+    <IslandProvider locale={locale} resources={resources}>
+      <PrivacyPolicyContent />
+    </IslandProvider>
+  );
+}
+
+function PrivacyPolicyContent() {
+  const { t } = useTranslation("legal");
+
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -13,308 +34,319 @@ export default function PrivacyPolicyIsland() {
             className="mb-6"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
+            {t("back")}
           </Button>
           <h1 className="text-4xl font-bold text-foreground mb-4">
-            Privacy Policy
+            {t("privacyPolicy.title")}
           </h1>
           <p className="text-muted-foreground">
-            Last updated: January 15, 2026
+            {t("privacyPolicy.lastUpdated")}
           </p>
         </div>
 
         <div className="prose prose-gray max-w-none">
+          {/* Section 1 */}
           <section className="mb-8">
             <h2 className="text-2xl font-semibold text-foreground mb-4">
-              1. Information We Collect
+              {t("privacyPolicy.sections.informationWeCollect.title")}
             </h2>
             <div className="space-y-4 text-muted-foreground">
               <h3 className="text-xl font-medium text-foreground">
-                1.1 Account Information
+                {t(
+                  "privacyPolicy.sections.informationWeCollect.accountInfo.title"
+                )}
               </h3>
-              <p>When you create an account with Qarote, we collect:</p>
+              <p>
+                {t(
+                  "privacyPolicy.sections.informationWeCollect.accountInfo.description"
+                )}
+              </p>
               <ul className="list-disc pl-6 space-y-2">
-                <li>Email address</li>
-                <li>First and last name</li>
-                <li>Password (encrypted)</li>
-                <li>Company information (optional)</li>
+                {(
+                  t(
+                    "privacyPolicy.sections.informationWeCollect.accountInfo.items",
+                    { returnObjects: true }
+                  ) as string[]
+                ).map((item, i) => (
+                  <li key={i}>{item}</li>
+                ))}
               </ul>
 
               <h3 className="text-xl font-medium text-foreground">
-                1.2 Usage Data
+                {t(
+                  "privacyPolicy.sections.informationWeCollect.usageData.title"
+                )}
               </h3>
               <p>
-                We automatically collect information about how you use our
-                service:
+                {t(
+                  "privacyPolicy.sections.informationWeCollect.usageData.description"
+                )}
               </p>
               <ul className="list-disc pl-6 space-y-2">
-                <li>
-                  RabbitMQ server connection details (host, port, credentials)
-                </li>
-                <li>Queue monitoring data and metrics</li>
-                <li>Application performance metrics</li>
-                <li>Error logs and debugging information</li>
-                <li>Feature usage patterns</li>
+                {(
+                  t(
+                    "privacyPolicy.sections.informationWeCollect.usageData.items",
+                    { returnObjects: true }
+                  ) as string[]
+                ).map((item, i) => (
+                  <li key={i}>{item}</li>
+                ))}
               </ul>
 
               <h3 className="text-xl font-medium text-foreground">
-                1.3 Technical Information
+                {t(
+                  "privacyPolicy.sections.informationWeCollect.technicalInfo.title"
+                )}
               </h3>
               <p>
-                We collect technical information about your device and browser:
+                {t(
+                  "privacyPolicy.sections.informationWeCollect.technicalInfo.description"
+                )}
               </p>
               <ul className="list-disc pl-6 space-y-2">
-                <li>IP address</li>
-                <li>Browser type and version</li>
-                <li>Operating system</li>
-                <li>Device information</li>
-                <li>Cookies and similar tracking technologies</li>
+                {(
+                  t(
+                    "privacyPolicy.sections.informationWeCollect.technicalInfo.items",
+                    { returnObjects: true }
+                  ) as string[]
+                ).map((item, i) => (
+                  <li key={i}>{item}</li>
+                ))}
               </ul>
             </div>
           </section>
 
+          {/* Section 2 */}
           <section className="mb-8">
             <h2 className="text-2xl font-semibold text-foreground mb-4">
-              2. How We Use Your Information
+              {t("privacyPolicy.sections.howWeUse.title")}
             </h2>
             <div className="space-y-4 text-muted-foreground">
-              <p>We use the information we collect to:</p>
+              <p>{t("privacyPolicy.sections.howWeUse.description")}</p>
               <ul className="list-disc pl-6 space-y-2">
-                <li>Provide and maintain our RabbitMQ monitoring service</li>
-                <li>Process payments and manage your subscription</li>
-                <li>Send you important service updates and notifications</li>
-                <li>Provide customer support</li>
-                <li>Improve our service and develop new features</li>
-                <li>Ensure security and prevent fraud</li>
-                <li>Comply with legal obligations</li>
+                {(
+                  t("privacyPolicy.sections.howWeUse.items", {
+                    returnObjects: true,
+                  }) as string[]
+                ).map((item, i) => (
+                  <li key={i}>{item}</li>
+                ))}
               </ul>
             </div>
           </section>
 
+          {/* Section 3 */}
           <section className="mb-8">
             <h2 className="text-2xl font-semibold text-foreground mb-4">
-              3. Information Sharing and Disclosure
+              {t("privacyPolicy.sections.informationSharing.title")}
             </h2>
             <div className="space-y-4 text-muted-foreground">
               <p>
-                We do not sell, trade, or rent your personal information to
-                third parties. We may share your information only in the
-                following circumstances:
+                {t("privacyPolicy.sections.informationSharing.description")}
               </p>
               <h3 className="text-xl font-medium text-foreground">
-                3.1 Service Providers
+                {t(
+                  "privacyPolicy.sections.informationSharing.serviceProviders.title"
+                )}
               </h3>
               <p>
-                We may share information with trusted third-party service
-                providers who assist us in operating our service:
+                {t(
+                  "privacyPolicy.sections.informationSharing.serviceProviders.description"
+                )}
               </p>
               <ul className="list-disc pl-6 space-y-2">
-                <li>Payment processors (Stripe)</li>
-                <li>Email service providers</li>
-                <li>Analytics services</li>
-                <li>Cloud hosting providers</li>
+                {(
+                  t(
+                    "privacyPolicy.sections.informationSharing.serviceProviders.items",
+                    { returnObjects: true }
+                  ) as string[]
+                ).map((item, i) => (
+                  <li key={i}>{item}</li>
+                ))}
               </ul>
               <h3 className="text-xl font-medium text-foreground">
-                3.2 Legal Requirements
+                {t(
+                  "privacyPolicy.sections.informationSharing.legalRequirements.title"
+                )}
               </h3>
-              <p>We may disclose your information if required by law or to:</p>
+              <p>
+                {t(
+                  "privacyPolicy.sections.informationSharing.legalRequirements.description"
+                )}
+              </p>
               <ul className="list-disc pl-6 space-y-2">
-                <li>Comply with legal processes</li>
-                <li>Protect our rights and property</li>
-                <li>Prevent fraud or security issues</li>
-                <li>Protect the safety of our users</li>
+                {(
+                  t(
+                    "privacyPolicy.sections.informationSharing.legalRequirements.items",
+                    { returnObjects: true }
+                  ) as string[]
+                ).map((item, i) => (
+                  <li key={i}>{item}</li>
+                ))}
               </ul>
             </div>
           </section>
 
+          {/* Section 4 */}
           <section className="mb-8">
             <h2 className="text-2xl font-semibold text-foreground mb-4">
-              4. Data Security
+              {t("privacyPolicy.sections.dataSecurity.title")}
             </h2>
             <div className="space-y-4 text-muted-foreground">
-              <p>
-                We implement appropriate security measures to protect your
-                personal information:
-              </p>
+              <p>{t("privacyPolicy.sections.dataSecurity.description")}</p>
               <ul className="list-disc pl-6 space-y-2">
-                <li>Encryption of data in transit and at rest</li>
-                <li>Regular security audits and assessments</li>
-                <li>Access controls and authentication</li>
-                <li>Secure data centers and infrastructure</li>
-                <li>Employee training on data protection</li>
+                {(
+                  t("privacyPolicy.sections.dataSecurity.items", {
+                    returnObjects: true,
+                  }) as string[]
+                ).map((item, i) => (
+                  <li key={i}>{item}</li>
+                ))}
               </ul>
-              <p>
-                However, no method of transmission over the internet or
-                electronic storage is 100% secure. While we strive to protect
-                your information, we cannot guarantee absolute security.
-              </p>
+              <p>{t("privacyPolicy.sections.dataSecurity.disclaimer")}</p>
             </div>
           </section>
 
+          {/* Section 5 */}
           <section className="mb-8">
             <h2 className="text-2xl font-semibold text-foreground mb-4">
-              5. Data Retention
+              {t("privacyPolicy.sections.dataRetention.title")}
             </h2>
             <div className="space-y-4 text-muted-foreground">
-              <p>
-                We retain your personal information for as long as necessary to
-                provide our service and fulfill the purposes outlined in this
-                privacy policy. Specifically:
-              </p>
+              <p>{t("privacyPolicy.sections.dataRetention.description")}</p>
               <ul className="list-disc pl-6 space-y-2">
-                <li>Account information: Until you delete your account</li>
-                <li>Usage data: Up to 2 years for analytics purposes</li>
-                <li>
-                  Payment information: As required by law and payment processors
-                </li>
-                <li>Support communications: Up to 3 years</li>
+                {(
+                  t("privacyPolicy.sections.dataRetention.items", {
+                    returnObjects: true,
+                  }) as string[]
+                ).map((item, i) => (
+                  <li key={i}>{item}</li>
+                ))}
               </ul>
             </div>
           </section>
 
+          {/* Section 6 */}
           <section className="mb-8">
             <h2 className="text-2xl font-semibold text-foreground mb-4">
-              6. Your Rights
+              {t("privacyPolicy.sections.yourRights.title")}
             </h2>
             <div className="space-y-4 text-muted-foreground">
-              <p>
-                Depending on your location, you may have the following rights
-                regarding your personal information:
-              </p>
+              <p>{t("privacyPolicy.sections.yourRights.description")}</p>
               <ul className="list-disc pl-6 space-y-2">
-                <li>
-                  <strong>Access:</strong> Request a copy of your personal
-                  information
-                </li>
-                <li>
-                  <strong>Correction:</strong> Request correction of inaccurate
-                  information
-                </li>
-                <li>
-                  <strong>Deletion:</strong> Request deletion of your personal
-                  information
-                </li>
-                <li>
-                  <strong>Portability:</strong> Request transfer of your data to
-                  another service
-                </li>
-                <li>
-                  <strong>Objection:</strong> Object to certain processing
-                  activities
-                </li>
-                <li>
-                  <strong>Restriction:</strong> Request limitation of processing
-                </li>
+                {(
+                  [
+                    "access",
+                    "correction",
+                    "deletion",
+                    "portability",
+                    "objection",
+                    "restriction",
+                  ] as const
+                ).map((key) => (
+                  <li key={key}>
+                    <strong>
+                      {t(
+                        `privacyPolicy.sections.yourRights.items.${key}.label`
+                      )}
+                    </strong>{" "}
+                    {t(`privacyPolicy.sections.yourRights.items.${key}.text`)}
+                  </li>
+                ))}
               </ul>
-              <p>
-                To exercise these rights, please contact us at privacy@qarote.io
-              </p>
+              <p>{t("privacyPolicy.sections.yourRights.contact")}</p>
             </div>
           </section>
 
+          {/* Section 7 */}
           <section className="mb-8">
             <h2 className="text-2xl font-semibold text-foreground mb-4">
-              7. Cookies and Tracking
+              {t("privacyPolicy.sections.cookies.title")}
             </h2>
             <div className="space-y-4 text-muted-foreground">
-              <p>
-                We use cookies and similar technologies to enhance your
-                experience:
-              </p>
+              <p>{t("privacyPolicy.sections.cookies.description")}</p>
               <ul className="list-disc pl-6 space-y-2">
-                <li>
-                  <strong>Essential cookies:</strong> Required for basic
-                  functionality
-                </li>
-                <li>
-                  <strong>Analytics cookies:</strong> Help us understand usage
-                  patterns
-                </li>
-                <li>
-                  <strong>Preference cookies:</strong> Remember your settings
-                </li>
-                <li>
-                  <strong>Marketing cookies:</strong> Used for targeted
-                  advertising (with consent)
-                </li>
+                {(
+                  ["essential", "analytics", "preference", "marketing"] as const
+                ).map((key) => (
+                  <li key={key}>
+                    <strong>
+                      {t(`privacyPolicy.sections.cookies.items.${key}.label`)}
+                    </strong>{" "}
+                    {t(`privacyPolicy.sections.cookies.items.${key}.text`)}
+                  </li>
+                ))}
               </ul>
-              <p>
-                You can control cookie settings through your browser
-                preferences.
-              </p>
+              <p>{t("privacyPolicy.sections.cookies.control")}</p>
             </div>
           </section>
 
+          {/* Section 8 */}
           <section className="mb-8">
             <h2 className="text-2xl font-semibold text-foreground mb-4">
-              8. International Data Transfers
+              {t("privacyPolicy.sections.internationalTransfers.title")}
             </h2>
             <div className="space-y-4 text-muted-foreground">
               <p>
-                Your information may be transferred to and processed in
-                countries other than your own. We ensure appropriate safeguards
-                are in place for such transfers, including:
+                {t("privacyPolicy.sections.internationalTransfers.description")}
               </p>
               <ul className="list-disc pl-6 space-y-2">
-                <li>Standard contractual clauses</li>
-                <li>Adequacy decisions</li>
-                <li>Certification schemes</li>
-                <li>Binding corporate rules</li>
+                {(
+                  t("privacyPolicy.sections.internationalTransfers.items", {
+                    returnObjects: true,
+                  }) as string[]
+                ).map((item, i) => (
+                  <li key={i}>{item}</li>
+                ))}
               </ul>
             </div>
           </section>
 
+          {/* Section 9 */}
           <section className="mb-8">
             <h2 className="text-2xl font-semibold text-foreground mb-4">
-              9. Children&apos;s Privacy
+              {t("privacyPolicy.sections.childrensPrivacy.title")}
             </h2>
             <div className="space-y-4 text-muted-foreground">
-              <p>
-                Our service is not intended for children under 13 years of age.
-                We do not knowingly collect personal information from children
-                under 13. If you become aware that a child has provided us with
-                personal information, please contact us immediately.
-              </p>
+              <p>{t("privacyPolicy.sections.childrensPrivacy.description")}</p>
             </div>
           </section>
 
+          {/* Section 10 */}
           <section className="mb-8">
             <h2 className="text-2xl font-semibold text-foreground mb-4">
-              10. Changes to This Privacy Policy
+              {t("privacyPolicy.sections.changes.title")}
             </h2>
             <div className="space-y-4 text-muted-foreground">
-              <p>
-                We may update this privacy policy from time to time. We will
-                notify you of any material changes by:
-              </p>
+              <p>{t("privacyPolicy.sections.changes.description")}</p>
               <ul className="list-disc pl-6 space-y-2">
-                <li>Posting the updated policy on our website</li>
-                <li>Sending you an email notification</li>
-                <li>Displaying a notice in our application</li>
+                {(
+                  t("privacyPolicy.sections.changes.items", {
+                    returnObjects: true,
+                  }) as string[]
+                ).map((item, i) => (
+                  <li key={i}>{item}</li>
+                ))}
               </ul>
-              <p>
-                Your continued use of our service after any changes constitutes
-                acceptance of the updated policy.
-              </p>
+              <p>{t("privacyPolicy.sections.changes.continued")}</p>
             </div>
           </section>
 
+          {/* Section 11 */}
           <section className="mb-8">
             <h2 className="text-2xl font-semibold text-foreground mb-4">
-              11. Contact Us
+              {t("privacyPolicy.sections.contactUs.title")}
             </h2>
             <div className="space-y-4 text-muted-foreground">
-              <p>
-                If you have any questions about this privacy policy or our data
-                practices, please contact us:
-              </p>
+              <p>{t("privacyPolicy.sections.contactUs.description")}</p>
               <ul className="list-disc pl-6 space-y-2">
                 <li>
-                  <strong>Email:</strong> support@qarote.io
+                  <strong>{t("emailLabel")}:</strong>{" "}
+                  {t("privacyPolicy.sections.contactUs.email")}
                 </li>
                 <li>
-                  <strong>Address:</strong> 229 rue Saint-Honor&eacute;, 75001,
-                  Paris, France
+                  <strong>{t("addressLabel")}:</strong>{" "}
+                  {t("privacyPolicy.sections.contactUs.address")}
                 </li>
               </ul>
             </div>

@@ -1,6 +1,9 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import PrivacyPolicyIsland from "../components/PrivacyPolicyIsland";
+import { loadAllTranslations } from "../lib/i18n-static";
+
+const resources = loadAllTranslations("en");
 ---
 
 <BaseLayout
@@ -8,5 +11,5 @@ import PrivacyPolicyIsland from "../components/PrivacyPolicyIsland";
   description="Privacy Policy for Qarote - Learn how we collect, use, and protect your data."
   canonicalPath="/privacy-policy/"
 >
-  <PrivacyPolicyIsland client:load />
+  <PrivacyPolicyIsland resources={resources} client:load />
 </BaseLayout>

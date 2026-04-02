@@ -1,6 +1,9 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import TermsOfServiceIsland from "../components/TermsOfServiceIsland";
+import { loadAllTranslations } from "../lib/i18n-static";
+
+const resources = loadAllTranslations("en");
 ---
 
 <BaseLayout
@@ -8,5 +11,5 @@ import TermsOfServiceIsland from "../components/TermsOfServiceIsland";
   description="Terms of Service for Qarote - Learn about your rights and responsibilities when using our service."
   canonicalPath="/terms-of-service/"
 >
-  <TermsOfServiceIsland client:load />
+  <TermsOfServiceIsland resources={resources} client:load />
 </BaseLayout>

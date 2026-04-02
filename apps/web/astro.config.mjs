@@ -1,6 +1,5 @@
 import react from "@astrojs/react";
 import sitemap from "@astrojs/sitemap";
-import { DEFAULT_LOCALE, SUPPORTED_LOCALES } from "@qarote/i18n";
 import { defineConfig } from "astro/config";
 
 export default defineConfig({
@@ -9,8 +8,8 @@ export default defineConfig({
   server: { port: 8082 },
   integrations: [react(), sitemap()],
   i18n: {
-    defaultLocale: DEFAULT_LOCALE,
-    locales: [...SUPPORTED_LOCALES],
+    defaultLocale: "en",
+    locales: ["en", "fr", "es", "zh"],
     routing: { prefixDefaultLocale: false },
   },
   trailingSlash: "always",
