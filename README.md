@@ -136,18 +136,9 @@ git push dokku main
 
 <div align="center">
 
-**[📖 Documentation Hub](docs/README.md)** - Your one-stop shop for all Qarote documentation
+**[📖 Documentation Hub](docs/README.md)** • **[🌐 Online Documentation](https://portal.qarote.io/documentation)**
 
 </div>
-
-### 📋 Quick Links
-
-- **[Community Edition Guide](docs/COMMUNITY_EDITION.md)** - Setup and usage for open-source edition
-- **[Enterprise Edition Guide](docs/ENTERPRISE_EDITION.md)** - Setup and licensing for enterprise edition
-- **[Feature Comparison](docs/FEATURE_COMPARISON.md)** - Detailed feature matrix
-- **[Self-Hosted Deployment](docs/SELF_HOSTED_DEPLOYMENT.md)** - Complete deployment guide
-- **[Contributing Guide](CONTRIBUTING.md)** - How to contribute to Qarote
-- **[Security Policy](SECURITY.md)** - Security reporting and policy
 
 ## 🏗️ Architecture
 
