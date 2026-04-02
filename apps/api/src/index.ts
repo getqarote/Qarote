@@ -1,4 +1,14 @@
 // Subcommand routing — must run before any config/dotenv imports
+if (
+  process.argv.includes("--version") ||
+  process.argv.includes("-v") ||
+  process.argv.includes("-V")
+) {
+  const version = process.env.QAROTE_VERSION || "dev";
+  process.stdout.write(`qarote ${version}\n`);
+  process.exit(0);
+}
+
 if (process.argv[2] === "setup") {
   const { runSetup } = await import("./cli/setup.js");
   await runSetup();

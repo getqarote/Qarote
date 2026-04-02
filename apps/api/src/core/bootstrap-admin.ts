@@ -68,11 +68,22 @@ export async function bootstrapAdmin(): Promise<void> {
         passwordHash: hashedPassword,
         firstName: "Admin",
         lastName: "",
+        name: "Admin",
         role: UserRole.ADMIN,
         isActive: true,
         emailVerified: true,
         emailVerifiedAt: new Date(),
         workspaceId: workspace.id,
+      },
+    });
+
+    // Create the better-auth credential account so sign-in works
+    await tx.account.create({
+      data: {
+        userId: user.id,
+        accountId: user.id,
+        providerId: "credential",
+        password: hashedPassword,
       },
     });
 

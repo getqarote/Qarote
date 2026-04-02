@@ -74,6 +74,11 @@ After installing PostgreSQL, create a dedicated user and database:
 # 1. Create a user and database for Qarote
 sudo -u postgres psql -c "CREATE USER qarote WITH PASSWORD 'your-secure-password';"
 sudo -u postgres psql -c "CREATE DATABASE qarote OWNER qarote;"
+
+# 2. Configure idle connection timeouts (prevents zombie connections)
+sudo -u postgres psql -c "ALTER SYSTEM SET idle_session_timeout = '30min';"
+sudo -u postgres psql -c "ALTER SYSTEM SET idle_in_transaction_session_timeout = '5min';"
+sudo -u postgres psql -c "SELECT pg_reload_conf();"
 ```
 
 Your database URL will be: `postgresql://qarote:your-secure-password@localhost:5432/qarote`
@@ -81,15 +86,15 @@ Your database URL will be: `postgresql://qarote:your-secure-password@localhost:5
 <!-- Downloads the latest release automatically. Browse all releases: https://github.com/getqarote/Qarote/releases -->
 
 ```bash
-# 2. Download and extract for your platform (auto-detects OS and architecture)
+# 3. Download and extract for your platform (auto-detects OS and architecture)
 # Windows users: run this inside WSL2
 PLATFORM="$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/x64/' | sed 's/aarch64/arm64/')"
 curl -L "https://github.com/getqarote/Qarote/releases/latest/download/qarote-${PLATFORM}.tar.gz" | tar xz --strip-components=1
 
-# 3. Interactive setup (generates .env, tests database connection)
+# 4. Interactive setup (generates .env, tests database connection)
 ./qarote setup
 
-# 4. Start Qarote (opens on http://localhost:3000)
+# 5. Start Qarote (opens on http://localhost:3000)
 ./qarote
 ```
 
@@ -134,6 +139,7 @@ To enable email, add SMTP flags:
 | Flag / Command | Description |
 |----------------|-------------|
 | `./qarote setup` | Interactive setup wizard (generates `.env`) |
+| `-v`, `--version` | Print version and exit |
 | `--database-url <url>` | PostgreSQL connection URL |
 | `--jwt-secret <secret>` | JWT signing secret (min 32 characters) |
 | `--encryption-key <key>` | Encryption key (min 32 characters) |

@@ -499,7 +499,12 @@ sudo apt install postgresql`}
                 </p>
                 <CodeBlock
                   code={`sudo -u postgres psql -c "CREATE USER qarote WITH PASSWORD 'your-secure-password';"
-sudo -u postgres psql -c "CREATE DATABASE qarote OWNER qarote;"`}
+sudo -u postgres psql -c "CREATE DATABASE qarote OWNER qarote;"
+
+# Configure idle connection timeouts (prevents zombie connections)
+sudo -u postgres psql -c "ALTER SYSTEM SET idle_session_timeout = '30min';"
+sudo -u postgres psql -c "ALTER SYSTEM SET idle_in_transaction_session_timeout = '5min';"
+sudo -u postgres psql -c "SELECT pg_reload_conf();"`}
                   language="bash"
                 />
                 <p className="text-sm text-muted-foreground">
