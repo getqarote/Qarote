@@ -88,7 +88,7 @@ function makeResolvedAlert(
     sourceName: "rabbit@node1",
     firstSeenAt: new Date("2026-01-01T00:00:00Z"),
     resolvedAt: new Date("2026-01-01T01:00:00Z"),
-    duration: 3_600_000,
+    duration: BigInt(3_600_000),
     createdAt: new Date("2026-01-01T00:00:00Z"),
     ...overrides,
   };

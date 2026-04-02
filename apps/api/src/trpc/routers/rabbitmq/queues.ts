@@ -57,9 +57,9 @@ async function persistQueueData(
       const queueData = {
         name: queue.name,
         vhost: queue.vhost,
-        messages: queue.messages || 0,
-        messagesReady: queue.messages_ready || 0,
-        messagesUnack: queue.messages_unacknowledged || 0,
+        messages: BigInt(queue.messages || 0),
+        messagesReady: BigInt(queue.messages_ready || 0),
+        messagesUnack: BigInt(queue.messages_unacknowledged || 0),
         lastFetched: new Date(),
         serverId,
       };
@@ -79,9 +79,9 @@ async function persistQueueData(
       await tx.queueMetric.create({
         data: {
           queueId: upsertedQueue.id,
-          messages: queue.messages || 0,
-          messagesReady: queue.messages_ready || 0,
-          messagesUnack: queue.messages_unacknowledged || 0,
+          messages: BigInt(queue.messages || 0),
+          messagesReady: BigInt(queue.messages_ready || 0),
+          messagesUnack: BigInt(queue.messages_unacknowledged || 0),
           publishRate: queue.message_stats?.publish_details?.rate || 0,
           consumeRate: queue.message_stats?.deliver_details?.rate || 0,
         },
@@ -417,9 +417,9 @@ export const queuesRouter = router({
         const newQueueData = {
           name: name,
           vhost: server.vhost || "/", // Use server vhost or default
-          messages: 0, // New queue starts with 0 messages
-          messagesReady: 0,
-          messagesUnack: 0,
+          messages: 0n, // New queue starts with 0 messages
+          messagesReady: 0n,
+          messagesUnack: 0n,
           lastFetched: new Date(),
           serverId: serverId,
         };
@@ -443,9 +443,9 @@ export const queuesRouter = router({
           await prisma.queueMetric.create({
             data: {
               queueId: queueRecord.id,
-              messages: 0,
-              messagesReady: 0,
-              messagesUnack: 0,
+              messages: 0n,
+              messagesReady: 0n,
+              messagesUnack: 0n,
               publishRate: 0,
               consumeRate: 0,
             },

@@ -254,7 +254,7 @@ class AlertService {
       source: { type: string; name: string };
       firstSeenAt: string;
       resolvedAt: string;
-      duration: number | null;
+      duration: number | null; // BigInt from DB, converted to number for API
     }>;
     total: number;
   }> {
@@ -332,7 +332,7 @@ class AlertService {
           alert.resolvedAt
         ).toISOString(),
         resolvedAt: alert.resolvedAt!.toISOString(),
-        duration: alert.duration,
+        duration: alert.duration != null ? Number(alert.duration) : null,
       })),
       total,
     };

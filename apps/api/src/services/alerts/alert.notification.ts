@@ -361,19 +361,19 @@ class AlertNotificationService {
         alertsToResolve
           .filter((alert) => !activeFingerprints.has(alert.fingerprint!))
           .map(async (alert) => {
-            const duration =
+            const durationMs =
               now.getTime() - (alert.firstSeenAt ?? now).getTime();
             await prisma.alert.updateMany({
               where: { fingerprint: alert.fingerprint, status: "ACTIVE" },
               data: {
                 status: "RESOLVED",
                 resolvedAt: now,
-                duration,
+                duration: BigInt(durationMs),
                 fingerprint: null, // Release partial unique index slot for re-firing
               },
             });
             logger.debug(
-              `Resolved alert: ${alert.fingerprint} (${Math.round(duration / 1000 / 60)} min)`
+              `Resolved alert: ${alert.fingerprint} (${Math.round(durationMs / 1000 / 60)} min)`
             );
           })
       );
