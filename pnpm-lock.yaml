@@ -591,10 +591,10 @@ importers:
   apps/web:
     dependencies:
       '@astrojs/react':
-        specifier: 5.0.2
+        specifier: ^5.0.2
         version: 5.0.2(@types/node@24.11.0)(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(jiti@2.6.1)(lightningcss@1.31.1)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(tsx@4.21.0)(yaml@2.8.2)
       '@astrojs/sitemap':
-        specifier: 3.7.2
+        specifier: ^3.7.2
         version: 3.7.2
       '@qarote/i18n':
         specifier: workspace:*
@@ -621,7 +621,7 @@ importers:
         specifier: ^2.0.2
         version: 2.0.2(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       astro:
-        specifier: 6.1.2
+        specifier: ^6.1.2
         version: 6.1.2(@types/node@24.11.0)(jiti@2.6.1)(lightningcss@1.31.1)(rollup@4.53.5)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
       class-variance-authority:
         specifier: ^0.7.1
@@ -658,7 +658,7 @@ importers:
         version: 1.0.7(tailwindcss@4.2.1)
     devDependencies:
       '@astrojs/check':
-        specifier: 0.9.8
+        specifier: ^0.9.8
         version: 0.9.8(prettier@3.8.1)(typescript@5.9.3)
       '@eslint/js':
         specifier: ^10.0.1
