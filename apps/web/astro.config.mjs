@@ -13,4 +13,10 @@ export default defineConfig({
     routing: { prefixDefaultLocale: false },
   },
   trailingSlash: "always",
+  vite: {
+    // Forward VITE_* env vars to client-side code.
+    // Astro only exposes PUBLIC_* by default; this ensures backward
+    // compatibility with components shared across the monorepo.
+    envPrefix: ["VITE_", "PUBLIC_"],
+  },
 });
