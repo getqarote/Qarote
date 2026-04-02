@@ -1,4 +1,4 @@
-export interface TeamMember {
+interface TeamMember {
   /** Used as i18n key prefix: t(`team.${id}.name`) */
   id: string;
   photo: string;
