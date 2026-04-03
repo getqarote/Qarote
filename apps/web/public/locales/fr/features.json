@@ -1,96 +1,96 @@
 {
   "seo": {
-    "title": "Fonctionnalites de monitoring RabbitMQ : files d'attente, alertes, analytiques",
-    "description": "Decouvrez les fonctionnalites de monitoring RabbitMQ de Qarote : suivi des files d'attente en temps reel, alertes intelligentes, analytiques de performance, support multi-serveurs et gestion des files dans un seul tableau de bord."
+    "title": "Fonctionnalités de monitoring RabbitMQ : files d'attente, alertes, analytiques",
+    "description": "Découvrez les fonctionnalités de monitoring RabbitMQ de Qarote : suivi des files d'attente en temps réel, alertes intelligentes, analytiques de performance, support multi-serveurs et gestion des files dans un seul tableau de bord."
   },
   "hero": {
     "title": "Tout ce dont vous avez besoin pour monitorer RabbitMQ",
     "subtitle": "Un seul tableau de bord pour tous vos serveurs RabbitMQ. Remplace le management plugin, plus simple que Prometheus + Grafana.",
     "pills": {
-      "liveMonitoring": "Temps reel",
+      "liveMonitoring": "Temps réel",
       "alerting": "Alertes",
       "analytics": "Analytiques",
       "queueManagement": "Gestion des files",
       "multiServer": "Multi-serveurs",
-      "devExperience": "Experience dev"
+      "devExperience": "Expérience dev"
     }
   },
-  "coreFeature": "FONCTIONNALITE CLE",
+  "coreFeature": "FONCTIONNALITÉ CLÉ",
   "liveMonitoring": {
-    "title": "Monitoring des files en temps reel",
-    "description": "Profondeur des files, taux de messages et nombre de consommateurs en un coup d'oeil. Des indicateurs visuels signalent les etats sains, d'alerte et critiques.",
+    "title": "Monitoring des files en temps réel",
+    "description": "Profondeur des files, taux de messages et nombre de consommateurs en un coup d'œil. Des indicateurs visuels signalent les états sains, d'alerte et critiques.",
     "metric1Value": "< 1s",
-    "metric1Label": "Rafraichissement",
+    "metric1Label": "Rafraîchissement",
     "metric2Value": "3",
-    "metric2Label": "Etats de sante",
+    "metric2Label": "États de santé",
     "metric3Value": "0",
     "metric3Label": "Config requise",
     "point1": "Taux de messages : publication, livraison, acquittement par seconde",
-    "point2": "Utilisation des consommateurs et suivi de l'age des files",
-    "point3": "Retour visuel instantane sur la sante des files"
+    "point2": "Utilisation des consommateurs et suivi de l'âge des files",
+    "point3": "Retour visuel instantané sur la santé des files"
   },
   "insightsSection": {
-    "title": "Des insights qui previennent les pannes"
+    "title": "Des insights qui préviennent les pannes"
   },
   "alerting": {
-    "title": "Systeme d'alertes intelligent",
+    "title": "Système d'alertes intelligent",
     "badge": "Plan Developer+",
-    "description": "Seuils configurables par file et par serveur. Soyez notifie avant que les problemes ne deviennent des pannes.",
+    "description": "Seuils configurables par file et par serveur. Soyez notifié avant que les problèmes ne deviennent des pannes.",
     "point1": "Canaux de notification : email, Slack, webhooks",
     "point2": "Historique des alertes et workflow d'acquittement",
     "point3": "Configuration de seuils par file et par serveur"
   },
   "analytics": {
     "title": "Analytiques de performance",
-    "description": "Graphiques historiques pour le debit de messages, la profondeur des files et les ressources des noeuds. Detectez les tendances et planifiez la capacite en toute confiance.",
-    "point1": "Plages de temps personnalisables : 1 heure a 30 jours",
-    "point2": "Suivi memoire, disque, descripteurs de fichiers et CPU",
-    "point3": "Detection de tendances pour la planification de capacite"
+    "description": "Graphiques historiques pour le débit de messages, la profondeur des files et les ressources des nœuds. Détectez les tendances et planifiez la capacité en toute confiance.",
+    "point1": "Plages de temps personnalisables : 1 heure à 30 jours",
+    "point2": "Suivi mémoire, disque, descripteurs de fichiers et CPU",
+    "point3": "Détection de tendances pour la planification de capacité"
   },
   "queueManagement": {
     "title": "Gestion des files d'attente",
-    "description": "Purgez, supprimez et creez des files depuis l'interface. Inspectez les bindings, visualisez la topologie et publiez des messages de test sans toucher a la ligne de commande.",
+    "description": "Purgez, supprimez et créez des files depuis l'interface. Inspectez les bindings, visualisez la topologie et publiez des messages de test sans toucher à la ligne de commande.",
     "point1": "Inspection des bindings et vue topologique",
-    "point2": "Publication de messages pour le test et le debogage",
-    "point3": "Gestion des exchanges et des cles de routage"
+    "point2": "Publication de messages pour le test et le débogage",
+    "point3": "Gestion des exchanges et des clés de routage"
   },
   "multiServer": {
     "title": "Support multi-serveurs",
-    "badge": "Dev : 3 | Enterprise : illimite",
-    "description": "Connectez plusieurs instances RabbitMQ de differents environnements. Une vue unifiee pour le staging, la production et le developpement.",
-    "point1": "Connexions chiffrees TLS",
-    "point2": "Tableau de bord unifie pour tous les environnements",
-    "point3": "Basculez entre les serveurs en toute fluidite"
+    "badge": "Dev : 3 | Enterprise : illimité",
+    "description": "Connectez plusieurs instances RabbitMQ de différents environnements. Une vue unifiée pour le staging, la production et le développement.",
+    "point1": "Connexions chiffrées TLS",
+    "point2": "Tableau de bord unifié pour tous les environnements",
+    "point3": "Basculez entre les serveurs en toute fluidité"
   },
   "builtForDevs": {
-    "title": "Concu pour les developpeurs",
-    "description": "Pas de configuration YAML. Pas de Prometheus ni de Grafana a maintenir. Connectez votre serveur RabbitMQ en 60 secondes avec une chaine de connexion.",
-    "point1": "Option auto-hebergee ou cloud",
-    "point2": "Edition Community open source sur GitHub",
-    "point3": "Aucune infrastructure a maintenir"
+    "title": "Conçu pour les développeurs",
+    "description": "Pas de configuration YAML. Pas de Prometheus ni de Grafana à maintenir. Connectez votre serveur RabbitMQ en 60 secondes avec une chaîne de connexion.",
+    "point1": "Option auto-hébergée ou cloud",
+    "point2": "Édition Community open source sur GitHub",
+    "point3": "Aucune infrastructure à maintenir"
   },
   "comparison": {
-    "title": "Gerer vos serveurs RabbitMQ ne devrait pas etre aussi penible",
+    "title": "Gérer vos serveurs RabbitMQ ne devrait pas être aussi pénible",
     "traditional": {
       "title": "Interfaces de gestion traditionnelles",
-      "point1": "Une interface obsolete qui vous ralentit",
-      "point2": "Pas de vue unifiee entre serveurs ou environnements",
+      "point1": "Une interface obsolète qui vous ralentit",
+      "point2": "Pas de vue unifiée entre serveurs ou environnements",
       "point3": "Pas d'alertes fiables et actionnables",
       "point4": "Des dashboards et scripts DIY partout"
     },
     "qarote": {
       "title": "Qarote",
       "point1": "Une interface moderne, rapide et claire",
-      "point2": "Un tableau de bord unifie pour tous vos serveurs et environnements",
-      "point3": "Des alertes intelligentes qui detectent les problemes tot",
-      "point4": "Monitoring zero-config, pas de scripts, pas de maintenance"
+      "point2": "Un tableau de bord unifié pour tous vos serveurs et environnements",
+      "point3": "Des alertes intelligentes qui détectent les problèmes tôt",
+      "point4": "Monitoring zéro-config, pas de scripts, pas de maintenance"
     },
     "messagesPerSec": "Messages/sec",
     "activeQueues": "Files actives",
-    "allSystemsOperational": "Tous les systemes operationnels"
+    "allSystemsOperational": "Tous les systèmes opérationnels"
   },
   "cta": {
-    "title": "Pret a monitorer vos serveurs RabbitMQ ?",
-    "subtitle": "Commencez avec le plan Community gratuit. Aucune carte de credit requise."
+    "title": "Prêt à monitorer vos serveurs RabbitMQ ?",
+    "subtitle": "Commencez avec le plan Community gratuit. Aucune carte de crédit requise."
   }
 }

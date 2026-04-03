@@ -87,7 +87,7 @@
     },
     "messagesPerSec": "Mensajes/seg",
     "activeQueues": "Colas activas",
-    "allSystemsOperational": "Todos los sistemas operativos"
+    "allSystemsOperational": "Todos los sistemas operacionales"
   },
   "cta": {
     "title": "Listo para monitorear tus servidores RabbitMQ?",
