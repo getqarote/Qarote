@@ -1,14 +1,13 @@
 import { useTranslation } from "react-i18next";
 
 import type { SupportedLocale } from "@qarote/i18n";
-import { ArrowLeft, Linkedin } from "lucide-react";
+import { Linkedin } from "lucide-react";
 
 import { teamMembers } from "@/lib/team-data";
 
 import { IslandProvider } from "@/components/IslandProvider";
 import FooterSection from "@/components/landing/FooterSection";
 import StickyNav from "@/components/StickyNav";
-import { Button } from "@/components/ui/button";
 
 interface AboutIslandProps {
   locale?: SupportedLocale;
@@ -35,17 +34,6 @@ function AboutContent() {
 
   return (
     <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="mb-8">
-        <Button
-          variant="ghost"
-          onClick={() => window.history.back()}
-          className="mb-6"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          {t("back")}
-        </Button>
-      </div>
-
       <section className="mb-16 text-center">
         <h1 className="text-4xl sm:text-5xl font-bold text-foreground mb-6">
           {t("hero.title")}
