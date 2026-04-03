@@ -5,6 +5,7 @@ import HttpBackend from "i18next-http-backend";
 
 const I18N_NAMESPACES = [
   "common",
+  "features",
   "landing",
   "pricing",
   "faq",

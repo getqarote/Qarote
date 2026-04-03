@@ -20,6 +20,7 @@ export function LanguageSwitcher({
   // to build the navigation URL. This ensures no DOM-sourced taint flows
   // into window.location.href (satisfies CodeQL js/xss-through-dom).
   const ROUTE_PATTERNS: [RegExp, string][] = [
+    [/^\/(fr|es|zh)?\/features\/?$/, "/features/"],
     [/^\/(fr|es|zh)?\/privacy-policy\/?$/, "/privacy-policy/"],
     [/^\/(fr|es|zh)?\/terms-of-service\/?$/, "/terms-of-service/"],
     [/^\/(fr|es|zh)?\/changelog\/?$/, "/changelog/"],

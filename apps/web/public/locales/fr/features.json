@@ -1,0 +1,71 @@
+{
+  "seo": {
+    "title": "Fonctionnalites de monitoring RabbitMQ : files d'attente, alertes, analytiques",
+    "description": "Decouvrez les fonctionnalites de monitoring RabbitMQ de Qarote : suivi des files d'attente en temps reel, alertes intelligentes, analytiques de performance, support multi-serveurs et gestion des files dans un seul tableau de bord."
+  },
+  "hero": {
+    "title": "Tout ce dont vous avez besoin pour monitorer RabbitMQ",
+    "subtitle": "Un seul tableau de bord pour tous vos serveurs RabbitMQ. Remplace le management plugin, plus simple que Prometheus + Grafana."
+  },
+  "liveMonitoring": {
+    "title": "Monitoring des files en temps reel",
+    "description": "Profondeur des files, taux de messages et nombre de consommateurs en un coup d'oeil. Des indicateurs visuels signalent les etats sains, d'alerte et critiques.",
+    "point1": "Taux de messages : publication, livraison, acquittement par seconde",
+    "point2": "Utilisation des consommateurs et suivi de l'age des files",
+    "point3": "Retour visuel instantane sur la sante des files"
+  },
+  "alerting": {
+    "title": "Systeme d'alertes intelligent",
+    "badge": "Plan Developer et superieur",
+    "description": "Seuils configurables par file et par serveur. Soyez notifie avant que les problemes ne deviennent des pannes.",
+    "point1": "Canaux de notification : email, Slack, webhooks",
+    "point2": "Historique des alertes et workflow d'acquittement",
+    "point3": "Configuration de seuils par file et par serveur"
+  },
+  "analytics": {
+    "title": "Analytiques de performance",
+    "description": "Graphiques historiques pour le debit de messages, la profondeur des files et les ressources des noeuds. Detectez les tendances et planifiez la capacite en toute confiance.",
+    "point1": "Plages de temps personnalisables : 1 heure a 30 jours",
+    "point2": "Suivi memoire, disque, descripteurs de fichiers et CPU",
+    "point3": "Detection de tendances pour la planification de capacite"
+  },
+  "queueManagement": {
+    "title": "Gestion des files d'attente",
+    "description": "Purgez, supprimez et creez des files depuis l'interface. Inspectez les bindings, visualisez la topologie et publiez des messages de test sans toucher a la ligne de commande.",
+    "point1": "Inspection des bindings et vue topologique",
+    "point2": "Publication de messages pour le test et le debogage",
+    "point3": "Gestion des exchanges et des cles de routage"
+  },
+  "multiServer": {
+    "title": "Support multi-serveurs",
+    "badge": "Developer : 3 serveurs | Enterprise : illimite",
+    "description": "Connectez plusieurs instances RabbitMQ de differents environnements. Une vue unifiee pour le staging, la production et le developpement.",
+    "point1": "Connexions chiffrees TLS",
+    "point2": "Tableau de bord unifie pour tous les environnements",
+    "point3": "Basculez entre les serveurs en toute fluidite"
+  },
+  "builtForDevs": {
+    "title": "Concu pour les developpeurs",
+    "description": "Pas de configuration YAML. Pas de Prometheus ni de Grafana a maintenir. Connectez votre serveur RabbitMQ en 60 secondes avec une chaine de connexion.",
+    "point1": "Option auto-hebergee ou cloud",
+    "point2": "Edition Community open source sur GitHub",
+    "point3": "Aucune infrastructure a maintenir"
+  },
+  "compare": {
+    "title": "Comparez Qarote",
+    "managementPlugin": {
+      "title": "vs Management Plugin RabbitMQ",
+      "description": "Interface moderne, alertes et support multi-serveurs que le plugin par defaut ne propose pas."
+    },
+    "prometheus": {
+      "title": "vs Prometheus + Grafana",
+      "description": "Les memes insights sans la charge d'infrastructure. 60 secondes de mise en place vs des heures de configuration."
+    }
+  },
+  "cta": {
+    "title": "Pret a monitorer vos serveurs RabbitMQ ?",
+    "subtitle": "Commencez avec le plan Community gratuit. Aucune carte de credit requise.",
+    "viewPricing": "Voir les tarifs",
+    "tryForFree": "Essayer gratuitement"
+  }
+}

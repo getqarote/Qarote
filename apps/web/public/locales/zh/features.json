@@ -1,0 +1,71 @@
+{
+  "seo": {
+    "title": "RabbitMQ 监控功能：实时队列、告警、分析",
+    "description": "探索 Qarote 的 RabbitMQ 监控功能：实时队列跟踪、智能告警、性能分析、多服务器支持和队列管理，尽在一个仪表板中。"
+  },
+  "hero": {
+    "title": "监控 RabbitMQ 所需的一切",
+    "subtitle": "一个仪表板管理所有 RabbitMQ 服务器。替代管理插件，比 Prometheus + Grafana 更简单。"
+  },
+  "liveMonitoring": {
+    "title": "实时队列监控",
+    "description": "一目了然地查看队列深度、消息速率和消费者数量。可视化指标突出显示健康、警告和严重状态，确保您不会错过任何退化。",
+    "point1": "消息速率：每秒发布、投递、确认",
+    "point2": "消费者利用率和队列年龄跟踪",
+    "point3": "队列健康状态的即时可视化反馈"
+  },
+  "alerting": {
+    "title": "智能告警系统",
+    "badge": "Developer 计划及以上",
+    "description": "可按队列和服务器配置阈值。在问题变成故障之前收到通知。",
+    "point1": "通知渠道：邮件、Slack、Webhooks",
+    "point2": "告警历史和确认工作流",
+    "point3": "按队列和服务器配置阈值"
+  },
+  "analytics": {
+    "title": "性能分析",
+    "description": "消息吞吐量、队列深度和节点资源的历史图表。发现趋势，自信地规划容量。",
+    "point1": "可自定义的时间范围：1小时到30天",
+    "point2": "内存、磁盘、文件描述符和 CPU 跟踪",
+    "point3": "容量规划的趋势检测"
+  },
+  "queueManagement": {
+    "title": "队列管理",
+    "description": "从界面清除、删除和创建队列。检查绑定、查看拓扑并发布测试消息，无需使用命令行。",
+    "point1": "绑定检查和拓扑视图",
+    "point2": "用于测试和调试的消息发布",
+    "point3": "交换器和路由键管理"
+  },
+  "multiServer": {
+    "title": "多服务器支持",
+    "badge": "Developer：3台服务器 | Enterprise：无限",
+    "description": "连接来自不同环境的多个 RabbitMQ 实例。跨预发布、生产和开发环境的统一视图。",
+    "point1": "TLS 加密连接",
+    "point2": "所有环境的统一仪表板",
+    "point3": "在服务器之间无缝切换"
+  },
+  "builtForDevs": {
+    "title": "为开发者打造",
+    "description": "无需 YAML 配置。无需维护 Prometheus 或 Grafana。使用连接字符串在60秒内连接您的 RabbitMQ 服务器。",
+    "point1": "自托管或云端选项",
+    "point2": "GitHub 上的开源社区版",
+    "point3": "无需维护基础设施"
+  },
+  "compare": {
+    "title": "了解 Qarote 的优势",
+    "managementPlugin": {
+      "title": "vs RabbitMQ 管理插件",
+      "description": "默认插件所缺少的现代界面、告警和多服务器支持。"
+    },
+    "prometheus": {
+      "title": "vs Prometheus + Grafana",
+      "description": "无需基础设施开销即可获得相同的洞察。60秒设置 vs 数小时配置。"
+    }
+  },
+  "cta": {
+    "title": "准备好监控您的 RabbitMQ 服务器了吗？",
+    "subtitle": "从免费的 Community 计划开始。无需信用卡。",
+    "viewPricing": "查看定价",
+    "tryForFree": "免费试用"
+  }
+}
