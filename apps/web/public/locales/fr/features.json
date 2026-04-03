@@ -5,18 +5,36 @@
   },
   "hero": {
     "title": "Tout ce dont vous avez besoin pour monitorer RabbitMQ",
-    "subtitle": "Un seul tableau de bord pour tous vos serveurs RabbitMQ. Remplace le management plugin, plus simple que Prometheus + Grafana."
+    "subtitle": "Un seul tableau de bord pour tous vos serveurs RabbitMQ. Remplace le management plugin, plus simple que Prometheus + Grafana.",
+    "pills": {
+      "liveMonitoring": "Temps reel",
+      "alerting": "Alertes",
+      "analytics": "Analytiques",
+      "queueManagement": "Gestion des files",
+      "multiServer": "Multi-serveurs",
+      "devExperience": "Experience dev"
+    }
   },
+  "coreFeature": "FONCTIONNALITE CLE",
   "liveMonitoring": {
     "title": "Monitoring des files en temps reel",
     "description": "Profondeur des files, taux de messages et nombre de consommateurs en un coup d'oeil. Des indicateurs visuels signalent les etats sains, d'alerte et critiques.",
+    "metric1Value": "< 1s",
+    "metric1Label": "Rafraichissement",
+    "metric2Value": "3",
+    "metric2Label": "Etats de sante",
+    "metric3Value": "0",
+    "metric3Label": "Config requise",
     "point1": "Taux de messages : publication, livraison, acquittement par seconde",
     "point2": "Utilisation des consommateurs et suivi de l'age des files",
     "point3": "Retour visuel instantane sur la sante des files"
   },
+  "insightsSection": {
+    "title": "Des insights qui previennent les pannes"
+  },
   "alerting": {
     "title": "Systeme d'alertes intelligent",
-    "badge": "Plan Developer et superieur",
+    "badge": "Plan Developer+",
     "description": "Seuils configurables par file et par serveur. Soyez notifie avant que les problemes ne deviennent des pannes.",
     "point1": "Canaux de notification : email, Slack, webhooks",
     "point2": "Historique des alertes et workflow d'acquittement",
@@ -38,7 +56,7 @@
   },
   "multiServer": {
     "title": "Support multi-serveurs",
-    "badge": "Developer : 3 serveurs | Enterprise : illimite",
+    "badge": "Dev : 3 | Enterprise : illimite",
     "description": "Connectez plusieurs instances RabbitMQ de differents environnements. Une vue unifiee pour le staging, la production et le developpement.",
     "point1": "Connexions chiffrees TLS",
     "point2": "Tableau de bord unifie pour tous les environnements",
@@ -51,21 +69,28 @@
     "point2": "Edition Community open source sur GitHub",
     "point3": "Aucune infrastructure a maintenir"
   },
-  "compare": {
-    "title": "Comparez Qarote",
-    "managementPlugin": {
-      "title": "vs Management Plugin RabbitMQ",
-      "description": "Interface moderne, alertes et support multi-serveurs que le plugin par defaut ne propose pas."
+  "comparison": {
+    "title": "Gerer vos serveurs RabbitMQ ne devrait pas etre aussi penible",
+    "traditional": {
+      "title": "Interfaces de gestion traditionnelles",
+      "point1": "Une interface obsolete qui vous ralentit",
+      "point2": "Pas de vue unifiee entre serveurs ou environnements",
+      "point3": "Pas d'alertes fiables et actionnables",
+      "point4": "Des dashboards et scripts DIY partout"
     },
-    "prometheus": {
-      "title": "vs Prometheus + Grafana",
-      "description": "Les memes insights sans la charge d'infrastructure. 60 secondes de mise en place vs des heures de configuration."
-    }
+    "qarote": {
+      "title": "Qarote",
+      "point1": "Une interface moderne, rapide et claire",
+      "point2": "Un tableau de bord unifie pour tous vos serveurs et environnements",
+      "point3": "Des alertes intelligentes qui detectent les problemes tot",
+      "point4": "Monitoring zero-config, pas de scripts, pas de maintenance"
+    },
+    "messagesPerSec": "Messages/sec",
+    "activeQueues": "Files actives",
+    "allSystemsOperational": "Tous les systemes operationnels"
   },
   "cta": {
     "title": "Pret a monitorer vos serveurs RabbitMQ ?",
-    "subtitle": "Commencez avec le plan Community gratuit. Aucune carte de credit requise.",
-    "viewPricing": "Voir les tarifs",
-    "tryForFree": "Essayer gratuitement"
+    "subtitle": "Commencez avec le plan Community gratuit. Aucune carte de credit requise."
   }
 }

@@ -5,18 +5,36 @@
   },
   "hero": {
     "title": "监控 RabbitMQ 所需的一切",
-    "subtitle": "一个仪表板管理所有 RabbitMQ 服务器。替代管理插件，比 Prometheus + Grafana 更简单。"
+    "subtitle": "一个仪表板管理所有 RabbitMQ 服务器。替代管理插件，比 Prometheus + Grafana 更简单。",
+    "pills": {
+      "liveMonitoring": "实时监控",
+      "alerting": "告警",
+      "analytics": "分析",
+      "queueManagement": "队列管理",
+      "multiServer": "多服务器",
+      "devExperience": "开发体验"
+    }
   },
+  "coreFeature": "核心功能",
   "liveMonitoring": {
     "title": "实时队列监控",
     "description": "一目了然地查看队列深度、消息速率和消费者数量。可视化指标突出显示健康、警告和严重状态，确保您不会错过任何退化。",
+    "metric1Value": "< 1s",
+    "metric1Label": "刷新频率",
+    "metric2Value": "3",
+    "metric2Label": "健康状态",
+    "metric3Value": "0",
+    "metric3Label": "所需配置",
     "point1": "消息速率：每秒发布、投递、确认",
     "point2": "消费者利用率和队列年龄跟踪",
     "point3": "队列健康状态的即时可视化反馈"
   },
+  "insightsSection": {
+    "title": "预防故障的洞察"
+  },
   "alerting": {
     "title": "智能告警系统",
-    "badge": "Developer 计划及以上",
+    "badge": "Developer 计划+",
     "description": "可按队列和服务器配置阈值。在问题变成故障之前收到通知。",
     "point1": "通知渠道：邮件、Slack、Webhooks",
     "point2": "告警历史和确认工作流",
@@ -38,7 +56,7 @@
   },
   "multiServer": {
     "title": "多服务器支持",
-    "badge": "Developer：3台服务器 | Enterprise：无限",
+    "badge": "Dev：3台 | Enterprise：无限",
     "description": "连接来自不同环境的多个 RabbitMQ 实例。跨预发布、生产和开发环境的统一视图。",
     "point1": "TLS 加密连接",
     "point2": "所有环境的统一仪表板",
@@ -51,21 +69,28 @@
     "point2": "GitHub 上的开源社区版",
     "point3": "无需维护基础设施"
   },
-  "compare": {
-    "title": "了解 Qarote 的优势",
-    "managementPlugin": {
-      "title": "vs RabbitMQ 管理插件",
-      "description": "默认插件所缺少的现代界面、告警和多服务器支持。"
+  "comparison": {
+    "title": "管理 RabbitMQ 服务器不必如此痛苦",
+    "traditional": {
+      "title": "传统管理界面",
+      "point1": "过时的界面拖慢你的速度",
+      "point2": "无法跨服务器或环境统一查看",
+      "point3": "没有可靠、可操作的告警",
+      "point4": "到处都是自建的仪表板和脚本"
     },
-    "prometheus": {
-      "title": "vs Prometheus + Grafana",
-      "description": "无需基础设施开销即可获得相同的洞察。60秒设置 vs 数小时配置。"
-    }
+    "qarote": {
+      "title": "Qarote",
+      "point1": "简洁、现代的界面，快速而清晰",
+      "point2": "所有服务器和环境的统一仪表板",
+      "point3": "智能告警，及早发现问题",
+      "point4": "零配置监控，无脚本，无维护"
+    },
+    "messagesPerSec": "消息/秒",
+    "activeQueues": "活跃队列",
+    "allSystemsOperational": "所有系统运行正常"
   },
   "cta": {
     "title": "准备好监控您的 RabbitMQ 服务器了吗？",
-    "subtitle": "从免费的 Community 计划开始。无需信用卡。",
-    "viewPricing": "查看定价",
-    "tryForFree": "免费试用"
+    "subtitle": "从免费的 Community 计划开始。无需信用卡。"
   }
 }

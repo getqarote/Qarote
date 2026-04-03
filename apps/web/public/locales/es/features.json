@@ -5,18 +5,36 @@
   },
   "hero": {
     "title": "Todo lo que necesitas para monitorear RabbitMQ",
-    "subtitle": "Un solo panel para todos tus servidores RabbitMQ. Reemplaza el management plugin, mas simple que Prometheus + Grafana."
+    "subtitle": "Un solo panel para todos tus servidores RabbitMQ. Reemplaza el management plugin, mas simple que Prometheus + Grafana.",
+    "pills": {
+      "liveMonitoring": "Tiempo real",
+      "alerting": "Alertas",
+      "analytics": "Analiticas",
+      "queueManagement": "Gestion de colas",
+      "multiServer": "Multi-servidor",
+      "devExperience": "Experiencia dev"
+    }
   },
+  "coreFeature": "FUNCION PRINCIPAL",
   "liveMonitoring": {
     "title": "Monitoreo de colas en tiempo real",
     "description": "Profundidad de colas, tasas de mensajes y conteo de consumidores de un vistazo. Indicadores visuales destacan estados saludables, de advertencia y criticos.",
+    "metric1Value": "< 1s",
+    "metric1Label": "Actualizacion",
+    "metric2Value": "3",
+    "metric2Label": "Estados de salud",
+    "metric3Value": "0",
+    "metric3Label": "Config necesaria",
     "point1": "Tasas de mensajes: publicacion, entrega, confirmacion por segundo",
     "point2": "Utilizacion de consumidores y seguimiento de edad de colas",
     "point3": "Retroalimentacion visual instantanea sobre la salud de las colas"
   },
+  "insightsSection": {
+    "title": "Insights que previenen caidas"
+  },
   "alerting": {
     "title": "Sistema de alertas inteligente",
-    "badge": "Plan Developer y superior",
+    "badge": "Plan Developer+",
     "description": "Umbrales configurables por cola y por servidor. Recibe notificaciones antes de que los problemas se conviertan en caidas.",
     "point1": "Canales de notificacion: email, Slack, webhooks",
     "point2": "Historial de alertas y flujo de reconocimiento",
@@ -38,7 +56,7 @@
   },
   "multiServer": {
     "title": "Soporte multi-servidor",
-    "badge": "Developer: 3 servidores | Enterprise: ilimitado",
+    "badge": "Dev: 3 | Enterprise: ilimitado",
     "description": "Conecta multiples instancias de RabbitMQ de diferentes entornos. Una vista unificada para staging, produccion y desarrollo.",
     "point1": "Conexiones cifradas TLS",
     "point2": "Panel unificado para todos los entornos",
@@ -51,21 +69,28 @@
     "point2": "Edicion Community de codigo abierto en GitHub",
     "point3": "Sin infraestructura que mantener"
   },
-  "compare": {
-    "title": "Compara Qarote",
-    "managementPlugin": {
-      "title": "vs Management Plugin de RabbitMQ",
-      "description": "Interfaz moderna, alertas y soporte multi-servidor que el plugin por defecto no ofrece."
+  "comparison": {
+    "title": "Gestionar servidores RabbitMQ no tiene que ser doloroso",
+    "traditional": {
+      "title": "Interfaces de gestion tradicionales",
+      "point1": "Una interfaz obsoleta que te ralentiza",
+      "point2": "Sin vista unificada entre servidores o entornos",
+      "point3": "Sin alertas fiables y accionables",
+      "point4": "Dashboards y scripts DIY por todas partes"
     },
-    "prometheus": {
-      "title": "vs Prometheus + Grafana",
-      "description": "Los mismos insights sin la carga de infraestructura. 60 segundos de configuracion vs horas."
-    }
+    "qarote": {
+      "title": "Qarote",
+      "point1": "Una interfaz moderna, rapida y clara",
+      "point2": "Un panel unificado para todos tus servidores y entornos",
+      "point3": "Alertas inteligentes que detectan problemas temprano",
+      "point4": "Monitoreo sin configuracion, sin scripts, sin mantenimiento"
+    },
+    "messagesPerSec": "Mensajes/seg",
+    "activeQueues": "Colas activas",
+    "allSystemsOperational": "Todos los sistemas operativos"
   },
   "cta": {
     "title": "Listo para monitorear tus servidores RabbitMQ?",
-    "subtitle": "Comienza con el plan Community gratuito. Sin tarjeta de credito.",
-    "viewPricing": "Ver precios",
-    "tryForFree": "Prueba gratis"
+    "subtitle": "Comienza con el plan Community gratuito. Sin tarjeta de credito."
   }
 }

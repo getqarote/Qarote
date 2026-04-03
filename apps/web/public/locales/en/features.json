@@ -5,18 +5,36 @@
   },
   "hero": {
     "title": "Everything you need to monitor RabbitMQ",
-    "subtitle": "One dashboard for all your RabbitMQ servers. Replaces the management plugin, simpler than Prometheus + Grafana."
+    "subtitle": "One dashboard for all your RabbitMQ servers. Replaces the management plugin, simpler than Prometheus + Grafana.",
+    "pills": {
+      "liveMonitoring": "Live Monitoring",
+      "alerting": "Alerting",
+      "analytics": "Analytics",
+      "queueManagement": "Queue Management",
+      "multiServer": "Multi-Server",
+      "devExperience": "Developer Experience"
+    }
   },
+  "coreFeature": "CORE FEATURE",
   "liveMonitoring": {
     "title": "Live queue monitoring",
     "description": "Real-time queue depth, message rates, and consumer counts at a glance. Visual indicators highlight healthy, warning, and critical states so you never miss a degradation.",
+    "metric1Value": "< 1s",
+    "metric1Label": "Refresh rate",
+    "metric2Value": "3",
+    "metric2Label": "Health states",
+    "metric3Value": "0",
+    "metric3Label": "Config needed",
     "point1": "Message rates: publish, deliver, acknowledge per second",
     "point2": "Consumer utilization and queue age tracking",
     "point3": "Instant visual feedback for queue health"
   },
+  "insightsSection": {
+    "title": "Insights that prevent outages"
+  },
   "alerting": {
     "title": "Smart alerting system",
-    "badge": "Developer plan and above",
+    "badge": "Developer plan+",
     "description": "Configurable thresholds per queue and per server. Get notified before problems become outages.",
     "point1": "Notification channels: email, Slack, webhooks",
     "point2": "Alert history and acknowledgment workflow",
@@ -38,7 +56,7 @@
   },
   "multiServer": {
     "title": "Multi-server support",
-    "badge": "Developer: 3 servers | Enterprise: unlimited",
+    "badge": "Dev: 3 | Enterprise: unlimited",
     "description": "Connect multiple RabbitMQ instances from different environments. One unified view across staging, production, and development.",
     "point1": "TLS encrypted connections",
     "point2": "Unified dashboard across all environments",
@@ -51,21 +69,28 @@
     "point2": "Open source Community Edition on GitHub",
     "point3": "No infrastructure to maintain"
   },
-  "compare": {
-    "title": "See how Qarote compares",
-    "managementPlugin": {
-      "title": "vs RabbitMQ Management Plugin",
-      "description": "Modern UI, alerting, and multi-server support that the default plugin lacks."
+  "comparison": {
+    "title": "Managing RabbitMQ servers doesn't have to be painful",
+    "traditional": {
+      "title": "Traditional management interfaces",
+      "point1": "An outdated UI that slows you down",
+      "point2": "No unified view across servers or environments",
+      "point3": "No reliable, actionable alerts",
+      "point4": "DIY dashboards and scripts everywhere"
     },
-    "prometheus": {
-      "title": "vs Prometheus + Grafana",
-      "description": "Same insights without the infrastructure overhead. 60-second setup vs hours of configuration."
-    }
+    "qarote": {
+      "title": "Qarote",
+      "point1": "A clean, modern UI built for speed and clarity",
+      "point2": "A unified dashboard for all your servers and environments",
+      "point3": "Smart, actionable alerts that catch issues early",
+      "point4": "Zero-setup monitoring, no scripts, no maintenance"
+    },
+    "messagesPerSec": "Messages/sec",
+    "activeQueues": "Active Queues",
+    "allSystemsOperational": "All systems operational"
   },
   "cta": {
     "title": "Ready to monitor your RabbitMQ servers?",
-    "subtitle": "Start with the free Community plan. No credit card required.",
-    "viewPricing": "View pricing",
-    "tryForFree": "Try for free"
+    "subtitle": "Start with the free Community plan. No credit card required."
   }
 }
