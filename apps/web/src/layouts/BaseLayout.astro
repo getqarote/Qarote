@@ -16,7 +16,7 @@ const {
   description,
   locale = "en",
   canonicalPath = "/",
-  image = "https://qarote.io/images/social_card.png",
+  image = "https://qarote.io/images/qarote_card.jpg",
 } = Astro.props;
 
 const baseUrl = "https://qarote.io";
@@ -105,7 +105,7 @@ const softwareApp = {
       },
     },
   ],
-  screenshot: `${baseUrl}/images/social_card.png`,
+  screenshot: `${baseUrl}/images/qarote_card.jpg`,
   datePublished: "2025-06-05",
   dateModified: new Date().toISOString().split("T")[0],
 };
@@ -200,7 +200,7 @@ const isProd = import.meta.env.PROD;
     <meta property="og:image:secure_url" content={image} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:type" content="image/jpeg" />
     <meta property="og:image:alt" content={title} />
     <meta property="og:site_name" content="Qarote" />
     <meta property="og:locale" content={ogLocale} />
