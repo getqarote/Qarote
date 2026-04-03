@@ -1,0 +1,16 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import FeaturesIsland from "../components/FeaturesIsland";
+import { loadTranslations, loadAllTranslations, t } from "../lib/i18n-static";
+
+const features = loadTranslations("en", "features");
+const resources = loadAllTranslations("en");
+---
+
+<BaseLayout
+  title={t(features, "seo.title")}
+  description={t(features, "seo.description")}
+  canonicalPath="/features/"
+>
+  <FeaturesIsland resources={resources} client:load />
+</BaseLayout>

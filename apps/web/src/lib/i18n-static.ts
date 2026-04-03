@@ -4,6 +4,7 @@ import path from "node:path";
 const NAMESPACES = [
   "about",
   "common",
+  "features",
   "landing",
   "pricing",
   "faq",

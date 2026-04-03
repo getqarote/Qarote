@@ -21,7 +21,6 @@ const StickyNav = () => {
 
   const sections = [
     { id: "video", label: t("howItWorks") },
-    { id: "features", label: t("features") },
     { id: "pricing", label: t("pricing") },
   ];
 
@@ -75,6 +74,12 @@ const StickyNav = () => {
                 {section.label}
               </button>
             ))}
+            <a
+              href={`${localePrefix}/features/`}
+              className="px-4 py-2 text-base font-medium text-foreground hover:text-primary transition-colors"
+            >
+              {t("features")}
+            </a>
             <a
               href={`${localePrefix}/changelog/`}
               className="px-4 py-2 text-base font-medium text-foreground hover:text-primary transition-colors"
@@ -158,6 +163,12 @@ const StickyNav = () => {
                 {section.label}
               </button>
             ))}
+            <a
+              href={`${localePrefix}/features/`}
+              className="px-4 py-3 text-base font-medium text-foreground hover:text-primary hover:bg-muted rounded-md transition-colors"
+            >
+              {t("features")}
+            </a>
             <a
               href={`${localePrefix}/changelog/`}
               className="px-4 py-3 text-base font-medium text-foreground hover:text-primary hover:bg-muted rounded-md transition-colors"
