@@ -50,8 +50,8 @@ const HeroSection = () => {
                 rel="noopener noreferrer"
                 className="text-primary hover:text-primary/80 underline underline-offset-2 transition-colors"
               >
-                {t("cta.tryLiveDemo")}
-                <span className="sr-only">(opens in new tab)</span>
+                {t("cta.tryLiveDemo")}{" "}
+                <span className="sr-only">{t("cta.opensInNewTab")}</span>
               </a>
             </p>
           </div>

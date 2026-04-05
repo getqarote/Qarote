@@ -92,8 +92,8 @@ const StickyNav = () => {
               rel="noopener noreferrer"
               className="px-4 py-2 text-base font-medium text-primary hover:text-primary/80 transition-colors"
             >
-              {t("liveDemo", "Live Demo")}
-              <span className="sr-only">(opens in new tab)</span>
+              {t("liveDemo", "Live Demo")}{" "}
+              <span className="sr-only">{t("opensInNewTab")}</span>
             </a>
           </div>
 
@@ -190,8 +190,8 @@ const StickyNav = () => {
               rel="noopener noreferrer"
               className="px-4 py-3 text-base font-medium text-primary hover:text-primary/80 hover:bg-muted rounded-md transition-colors"
             >
-              {t("liveDemo", "Live Demo")}
-              <span className="sr-only">(opens in new tab)</span>
+              {t("liveDemo", "Live Demo")}{" "}
+              <span className="sr-only">{t("opensInNewTab")}</span>
             </a>
             <div className="border-t border-border my-2" />
             <a
