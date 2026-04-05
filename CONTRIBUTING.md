@@ -68,7 +68,9 @@ Want to contribute to this repository? Follow the development documentation belo
    pnpm run dev:app    # Frontend app (port 8080)
    ```
 
-### Project Structure
+### Architecture
+
+Qarote is built as a modern monorepo:
 
 ```
 qarote/
@@ -81,6 +83,47 @@ qarote/
 ├── docker/           # Docker configurations
 └── scripts/          # Utility scripts
 ```
+
+### Tech Stack
+
+- **Frontend**: React, TypeScript, Vite, Tailwind CSS
+- **Backend**: Node.js, Hono.js, tRPC, Prisma
+- **Database**: PostgreSQL
+- **Message Queue**: RabbitMQ
+- **Package Manager**: pnpm
+- **Monorepo**: Turborepo
+
+### Docker Development
+
+The repository includes Docker Compose configuration for a complete development environment.
+
+```bash
+# Start all services
+docker compose up -d
+
+# View logs
+docker compose logs -f
+
+# Stop services
+docker compose down
+```
+
+#### Services
+
+| Service             | Port  | Access                                    |
+| ------------------- | ----- | ----------------------------------------- |
+| PostgreSQL          | 5432  | `postgres:password@localhost:5432/qarote` |
+| RabbitMQ            | 5672  | `amqp://admin:admin123@localhost:5672`    |
+| RabbitMQ Management | 15672 | http://localhost:15672                    |
+
+#### Pre-configured Data
+
+The development environment includes:
+
+- **Users**: admin, guest, producer, consumer
+- **Virtual Hosts**: `/`, `/production`, `/staging`
+- **Exchanges**: notifications, events, analytics, alerts
+- **Queues**: Email, SMS, user events, order processing, analytics
 
 ### Making Changes
 
