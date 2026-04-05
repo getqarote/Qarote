@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 
 import { AppHeader } from "./AppHeader";
+import { DemoBanner } from "./DemoBanner";
 
 interface LayoutProps {
   children: ReactNode;
@@ -9,6 +10,9 @@ interface LayoutProps {
 export function Layout({ children }: LayoutProps) {
   return (
     <div className="h-dvh flex flex-col overflow-hidden">
+      {/* Demo mode banner */}
+      <DemoBanner />
+
       {/* App Header with workspace selector */}
       <AppHeader />
 

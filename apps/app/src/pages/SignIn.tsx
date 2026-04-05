@@ -94,6 +94,23 @@ const SignIn: React.FC = () => {
           )}
         </div>
 
+        {import.meta.env.VITE_DEMO_MODE === "true" && (
+          <Card className="bg-amber-500/10 border-amber-500/30 backdrop-blur-xs shadow-lg">
+            <CardContent className="pt-4 pb-3">
+              <p className="text-sm text-amber-200 text-center">
+                Demo credentials:{" "}
+                <span className="font-mono font-medium text-white">
+                  demo@qarote.io
+                </span>{" "}
+                /{" "}
+                <span className="font-mono font-medium text-white">
+                  demo-qarote-2026
+                </span>
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
         <Card className="bg-card/95 backdrop-blur-xs border-border/20 shadow-2xl">
           <CardHeader>
             <CardTitle className="text-card-foreground">

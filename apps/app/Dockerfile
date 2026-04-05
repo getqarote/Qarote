@@ -21,6 +21,9 @@ RUN pnpm install --frozen-lockfile --ignore-scripts
 # Copy shared packages (required by app)
 COPY packages/i18n ./packages/i18n
 
+# Build shared packages first
+RUN cd packages/i18n && npx tsc
+
 # Copy app source code
 COPY apps/app ./apps/app
 
