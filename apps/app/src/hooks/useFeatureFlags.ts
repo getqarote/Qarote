@@ -14,19 +14,21 @@ import { trpc } from "@/lib/trpc/client";
  * In community/enterprise mode, checks with server.
  */
 export function useFeatureFlags() {
-  // In cloud mode, all features are enabled
+  // In cloud mode or demo mode, all features are enabled
   const cloudMode = isCloudMode();
+  const demoMode = import.meta.env.VITE_DEMO_MODE === "true";
+  const allFeaturesEnabled = cloudMode || demoMode;
 
   // Query feature availability from server (for enterprise/community)
   const { data: features, isLoading: queryIsLoading } =
     trpc.public.getFeatureFlags.useQuery(undefined, {
-      enabled: !cloudMode,
+      enabled: !allFeaturesEnabled,
       staleTime: 5 * 60 * 1000, // Cache for 5 minutes
     });
 
   const hasFeature = (feature: PremiumFeature): boolean => {
-    // Cloud mode: all features enabled
-    if (cloudMode) {
+    // Cloud/demo mode: all features enabled
+    if (allFeaturesEnabled) {
       return true;
     }
 
@@ -36,7 +38,7 @@ export function useFeatureFlags() {
 
   return {
     hasFeature,
-    isLoading: !cloudMode && queryIsLoading,
+    isLoading: !allFeaturesEnabled && queryIsLoading,
     features: features?.features ?? {},
   };
 }
