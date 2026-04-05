@@ -39,7 +39,7 @@ export function FeatureGate({
   // Feature is disabled - show upgrade prompt or fallback
   if (showUpgradePrompt) {
     return (
-      <div className="relative">
+      <div className="relative flex-1">
         {/* Show the UI but overlay upgrade prompt */}
         <div className="opacity-50 pointer-events-none">{children}</div>
         <UpgradePrompt feature={feature} />

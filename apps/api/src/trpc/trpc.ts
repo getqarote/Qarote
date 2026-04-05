@@ -10,6 +10,7 @@ import {
 import { hasWorkspaceAccess } from "@/middlewares/workspace";
 
 import type { Context } from "./context";
+import { assertNotDemoBlocked } from "./middlewares/demoGuard";
 import {
   billingRateLimiter,
   standardRateLimiter,
@@ -25,10 +26,18 @@ import { te } from "@/i18n";
 const t = initTRPC.context<Context>().create();
 
 /**
+ * Demo mode guard — blocks destructive mutations on demo.qarote.io
+ */
+const demoGuardMiddleware = t.middleware(async (opts) => {
+  assertNotDemoBlocked(opts.path, opts.type);
+  return opts.next();
+});
+
+/**
  * Base router and procedure exports
  */
 export const router = t.router;
-export const publicProcedure = t.procedure;
+export const publicProcedure = t.procedure.use(demoGuardMiddleware);
 
 /**
  * Protected procedure - requires authentication

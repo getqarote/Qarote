@@ -19,10 +19,17 @@ COPY apps/portal/package.json ./apps/portal/
 # Copy Prisma schema (needed for postinstall script)
 COPY apps/api/prisma ./apps/api/prisma/
 
+# Copy shared package manifests
+COPY packages/i18n/package.json ./packages/i18n/
+
 # Install all dependencies (monorepo) - skip scripts to avoid Prisma generate during install
 # Then install dependencies in the API workspace to ensure all are available
 RUN pnpm install --frozen-lockfile --ignore-scripts && \
     cd apps/api && pnpm install --frozen-lockfile --ignore-scripts
+
+# Copy shared packages and build them
+COPY packages/i18n ./packages/i18n
+RUN cd packages/i18n && npx tsc
 
 # Copy API source code
 COPY apps/api ./apps/api

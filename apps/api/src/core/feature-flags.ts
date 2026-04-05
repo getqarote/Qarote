@@ -11,7 +11,7 @@ import { prisma } from "@/core/prisma";
 import type { LicenseJwtPayload } from "@/services/license/license.interfaces";
 import { verifyLicenseJwt } from "@/services/license/license-crypto.service";
 
-import { isCloudMode } from "@/config/deployment";
+import { isCloudMode, isDemoMode } from "@/config/deployment";
 import { FEATURE_DESCRIPTIONS, type PremiumFeature } from "@/config/features";
 
 import { te } from "@/i18n";
@@ -93,6 +93,11 @@ export async function isFeatureEnabled(
   // Cloud mode: all features enabled except SSO (which is per-workspace plan-gated)
   if (isCloudMode()) {
     if (feature === "sso") return false;
+    return true;
+  }
+
+  // Demo mode: all features enabled so visitors see the full product
+  if (isDemoMode()) {
     return true;
   }
 

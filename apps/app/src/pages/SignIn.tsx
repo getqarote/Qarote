@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useSearchParams } from "react-router";
@@ -50,6 +50,8 @@ const SignIn: React.FC = () => {
   const { showAlternativeAuth } = useShowAlternativeAuth();
   const { data: publicConfig } = usePublicConfig();
 
+  const demoAutoLoginAttempted = useRef(false);
+
   // Initialize form with react-hook-form
   const form = useForm<SignInFormData>({
     resolver: zodResolver(signInSchema),
@@ -58,6 +60,24 @@ const SignIn: React.FC = () => {
       password: "",
     },
   });
+
+  // Auto-login in demo mode
+  useEffect(() => {
+    if (
+      import.meta.env.VITE_DEMO_MODE === "true" &&
+      !demoAutoLoginAttempted.current &&
+      !loginMutation.isPending
+    ) {
+      demoAutoLoginAttempted.current = true;
+      loginMutation.mutate(
+        { email: "demo@qarote.io", password: "demo-qarote-2026" },
+        {
+          onSuccess: () =>
+            navigate(redirectTo || "/onboarding", { replace: true }),
+        }
+      );
+    }
+  }, [loginMutation, navigate, redirectTo]);
 
   const onSubmit = (data: SignInFormData) => {
     logger.info("SignIn form submitted", { email: data.email });

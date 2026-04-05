@@ -1,5 +1,7 @@
 import { prisma } from "@/core/prisma";
 
+import { isDemoMode } from "@/config/deployment";
+
 import { getPlanFeatures } from "./features.service";
 
 import { UserPlan } from "@/generated/prisma/client";
@@ -205,6 +207,11 @@ export function getPlanDisplayName(plan: UserPlan): string {
  * Get the plan for an organization by looking up its subscription.
  */
 export async function getOrgPlan(orgId: string): Promise<UserPlan> {
+  // Demo mode: treat as Enterprise so all plan-gated features are visible
+  if (isDemoMode()) {
+    return UserPlan.ENTERPRISE;
+  }
+
   const subscription = await prisma.subscription.findUnique({
     where: { organizationId: orgId },
     select: { plan: true },

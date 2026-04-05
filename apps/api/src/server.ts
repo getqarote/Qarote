@@ -11,6 +11,7 @@ import { secureHeaders } from "hono/secure-headers";
 
 import { auth } from "@/core/better-auth";
 import { bootstrapAdmin } from "@/core/bootstrap-admin";
+import { bootstrapDemo } from "@/core/bootstrap-demo";
 import { bootstrapOrg } from "@/core/bootstrap-org";
 import { bootstrapSso } from "@/core/bootstrap-sso";
 import { logger } from "@/core/logger";
@@ -161,6 +162,9 @@ async function startServer() {
 
     // Bootstrap admin account on first boot (if configured via setup CLI)
     await bootstrapAdmin();
+
+    // Bootstrap demo RabbitMQ connection (when DEMO_MODE=true)
+    await bootstrapDemo();
 
     // Bootstrap default organization for self-hosted instances
     await bootstrapOrg();
