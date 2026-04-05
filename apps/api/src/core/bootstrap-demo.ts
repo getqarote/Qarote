@@ -48,11 +48,17 @@ export async function bootstrapDemo(): Promise<void> {
   });
 
   if (existing) {
-    logger.debug("Demo RabbitMQ server already seeded");
+    // Server exists — still check if alerts need seeding
+    const alertCount = await prisma.alert.count({
+      where: { workspaceId: workspace.id },
+    });
+    if (alertCount === 0) {
+      await seedDemoAlerts(workspace.id, existing.id);
+    }
     return;
   }
 
-  await prisma.rabbitMQServer.create({
+  const server = await prisma.rabbitMQServer.create({
     data: {
       name: "Demo RabbitMQ",
       host,
@@ -69,4 +75,129 @@ export async function bootstrapDemo(): Promise<void> {
     { host, workspaceId: workspace.id },
     "Demo RabbitMQ server connection seeded"
   );
+
+  // Seed demo alerts so the Alerts page has content
+  await seedDemoAlerts(workspace.id, server.id);
+}
+
+async function seedDemoAlerts(
+  workspaceId: string,
+  serverId: string
+): Promise<void> {
+  const now = new Date();
+  const minutesAgo = (m: number) => new Date(now.getTime() - m * 60_000);
+
+  const alerts = [
+    {
+      title: "High queue depth on orders.processing",
+      description:
+        "Queue orders.processing has 12,847 messages ready, exceeding the threshold of 10,000.",
+      severity: "CRITICAL" as const,
+      status: "ACTIVE" as const,
+      category: "queue_depth",
+      sourceType: "queue",
+      sourceName: "orders.processing",
+      serverName: "Demo RabbitMQ",
+      threshold: 10000,
+      value: 12847,
+      firstSeenAt: minutesAgo(45),
+      lastSeenAt: minutesAgo(2),
+      fingerprint: "demo-queue-depth-orders",
+    },
+    {
+      title: "Consumer count dropped on notifications.email",
+      description:
+        "Queue notifications.email has 0 consumers, down from 3. Messages are accumulating.",
+      severity: "HIGH" as const,
+      status: "ACTIVE" as const,
+      category: "consumer_count",
+      sourceType: "queue",
+      sourceName: "notifications.email",
+      serverName: "Demo RabbitMQ",
+      threshold: 1,
+      value: 0,
+      firstSeenAt: minutesAgo(20),
+      lastSeenAt: minutesAgo(1),
+      fingerprint: "demo-consumer-drop-email",
+    },
+    {
+      title: "High message rate on analytics.direct",
+      description:
+        "Exchange analytics.direct is publishing 1,523 msg/s, exceeding the threshold of 1,000 msg/s.",
+      severity: "MEDIUM" as const,
+      status: "ACKNOWLEDGED" as const,
+      category: "message_rate",
+      sourceType: "exchange",
+      sourceName: "analytics.direct",
+      serverName: "Demo RabbitMQ",
+      threshold: 1000,
+      value: 1523,
+      firstSeenAt: minutesAgo(120),
+      lastSeenAt: minutesAgo(15),
+      acknowledgedAt: minutesAgo(90),
+      fingerprint: "demo-rate-analytics",
+    },
+    {
+      title: "Unacknowledged messages on orders.failed",
+      description:
+        "Queue orders.failed has 234 unacknowledged messages. Consumers may be stuck.",
+      severity: "HIGH" as const,
+      status: "ACTIVE" as const,
+      category: "unacked_messages",
+      sourceType: "queue",
+      sourceName: "orders.failed",
+      serverName: "Demo RabbitMQ",
+      threshold: 100,
+      value: 234,
+      firstSeenAt: minutesAgo(60),
+      lastSeenAt: minutesAgo(3),
+      fingerprint: "demo-unacked-orders-failed",
+    },
+    {
+      title: "Memory alarm cleared on node rabbit@demo",
+      description:
+        "Memory usage dropped below the high watermark. Node is operating normally.",
+      severity: "MEDIUM" as const,
+      status: "RESOLVED" as const,
+      category: "memory_alarm",
+      sourceType: "node",
+      sourceName: "rabbit@demo",
+      serverName: "Demo RabbitMQ",
+      threshold: 80,
+      value: 65,
+      firstSeenAt: minutesAgo(180),
+      lastSeenAt: minutesAgo(150),
+      resolvedAt: minutesAgo(140),
+      fingerprint: "demo-memory-alarm",
+    },
+    {
+      title: "Disk space warning on node rabbit@demo",
+      description:
+        "Disk free space is at 2.1 GB, approaching the low watermark of 1 GB.",
+      severity: "LOW" as const,
+      status: "RESOLVED" as const,
+      category: "disk_alarm",
+      sourceType: "node",
+      sourceName: "rabbit@demo",
+      serverName: "Demo RabbitMQ",
+      threshold: 5,
+      value: 2.1,
+      firstSeenAt: minutesAgo(360),
+      lastSeenAt: minutesAgo(300),
+      resolvedAt: minutesAgo(240),
+      fingerprint: "demo-disk-warning",
+    },
+  ];
+
+  await prisma.alert.createMany({
+    data: alerts.map((alert) => ({
+      ...alert,
+      workspaceId,
+      serverId,
+      createdAt: alert.firstSeenAt,
+      updatedAt: alert.lastSeenAt,
+    })),
+  });
+
+  logger.info({ count: alerts.length }, "Demo alerts seeded");
 }
