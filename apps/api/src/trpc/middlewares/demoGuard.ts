@@ -1,7 +1,5 @@
 import { TRPCError } from "@trpc/server";
 
-import { isDemoMode } from "@/config/deployment";
-
 /**
  * tRPC procedure paths that are blocked in demo mode.
  * These are destructive operations that shouldn't be available on demo.qarote.io.
@@ -52,7 +50,7 @@ const BLOCKED_PATHS = new Set([
  * Throw if the current procedure is blocked in demo mode.
  */
 export function assertNotDemoBlocked(path: string, type: string): void {
-  if (!isDemoMode()) return;
+  if (process.env.DEMO_MODE !== "true") return;
   if (type !== "mutation") return;
 
   if (BLOCKED_PATHS.has(path)) {
