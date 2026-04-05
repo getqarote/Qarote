@@ -11,7 +11,11 @@
     "howItWorks": "Comment ça marche",
     "startMonitoringForFree": "Commencer le monitoring gratuitement",
     "selfHostedSolution": "Solution auto-hébergée",
-    "contactUs": "Nous contacter"
+    "contactUs": "Nous contacter",
+    "tryLiveDemo": "Essayer la démo en ligne",
+    "seeItInAction": "Voyez par vous-même —",
+    "tryTheLiveDemo": "essayez la démo en ligne",
+    "opensInNewTab": "(s'ouvre dans un nouvel onglet)"
   },
   "comparison": {
     "title": "Gérer des serveurs RabbitMQ",

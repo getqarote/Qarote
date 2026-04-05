@@ -11,7 +11,11 @@
     "howItWorks": "How it works",
     "startMonitoringForFree": "Start monitoring for free",
     "selfHostedSolution": "Self-Hosted Solution",
-    "contactUs": "Contact us"
+    "contactUs": "Contact us",
+    "tryLiveDemo": "Try the live demo",
+    "seeItInAction": "See it in action —",
+    "tryTheLiveDemo": "try the live demo",
+    "opensInNewTab": "(opens in new tab)"
   },
   "comparison": {
     "title": "Managing RabbitMQ servers",

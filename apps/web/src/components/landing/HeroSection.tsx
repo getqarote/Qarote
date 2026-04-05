@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { ExternalLink } from "lucide-react";
+
 import AuthButtons from "@/components/AuthButtons";
 
 const HeroSection = () => {
@@ -40,6 +42,21 @@ const HeroSection = () => {
 
           <div className="mb-12">
             <AuthButtons />
+            <div className="flex justify-center mt-3 px-4">
+              <a
+                href="https://demo.qarote.io/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="border border-border text-foreground hover:bg-muted px-4 py-3 sm:px-7 sm:py-3 text-base sm:text-lg rounded-full inline-flex items-center justify-center gap-2 transition-colors duration-200"
+              >
+                {t("cta.tryLiveDemo")}
+                <ExternalLink
+                  className="h-4 w-4 opacity-60"
+                  aria-hidden="true"
+                />
+                <span className="sr-only">{t("cta.opensInNewTab")}</span>
+              </a>
+            </div>
             <p className="text-xs sm:text-sm text-muted-foreground mt-3 px-4">
               {t("hero.noCreditCard")}
             </p>
@@ -95,6 +112,19 @@ const HeroSection = () => {
             </div>
           )}
         </div>
+        <p className="text-center text-sm sm:text-base text-muted-foreground mt-6">
+          {t("cta.seeItInAction")}{" "}
+          <a
+            href="https://demo.qarote.io/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary hover:text-primary/80 font-medium underline underline-offset-4 decoration-primary/30 hover:decoration-primary/60 transition-colors inline-flex items-center gap-1"
+          >
+            {t("cta.tryTheLiveDemo")}
+            <ExternalLink className="h-3 w-3" aria-hidden="true" />
+            <span className="sr-only">{t("cta.opensInNewTab")}</span>
+          </a>
+        </p>
       </div>
     </header>
   );
