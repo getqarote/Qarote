@@ -38,9 +38,9 @@ const BLOCKED_PATHS = new Set([
   "payment.createCheckoutSession",
   "payment.cancelSubscription",
   // SSO
-  "sso.create",
-  "sso.update",
-  "sso.delete",
+  "sso.registerProvider",
+  "sso.updateProvider",
+  "sso.deleteProvider",
   // License
   "selfhostedLicense.activate",
   "selfhostedLicense.deactivate",
