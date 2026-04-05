@@ -86,6 +86,14 @@ const StickyNav = () => {
             >
               {t("whatsNew", "What's New")}
             </a>
+            <a
+              href="https://demo.qarote.io/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-4 py-2 text-base font-medium text-primary hover:text-primary/80 transition-colors"
+            >
+              {t("liveDemo", "Live Demo")}
+            </a>
           </div>
 
           <div className="flex items-center justify-end gap-1 sm:gap-2">
@@ -174,6 +182,14 @@ const StickyNav = () => {
               className="px-4 py-3 text-base font-medium text-foreground hover:text-primary hover:bg-muted rounded-md transition-colors"
             >
               {t("whatsNew", "What's New")}
+            </a>
+            <a
+              href="https://demo.qarote.io/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-4 py-3 text-base font-medium text-primary hover:text-primary/80 hover:bg-muted rounded-md transition-colors"
+            >
+              {t("liveDemo", "Live Demo")}
             </a>
             <div className="border-t border-border my-2" />
             <a

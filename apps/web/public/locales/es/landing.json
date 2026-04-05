@@ -11,7 +11,8 @@
     "howItWorks": "Cómo funciona",
     "startMonitoringForFree": "Comienza a monitorear gratis",
     "selfHostedSolution": "Solución autoalojada",
-    "contactUs": "Contáctanos"
+    "contactUs": "Contáctanos",
+    "tryLiveDemo": "o prueba la demo en vivo"
   },
   "comparison": {
     "title": "Gestionar servidores RabbitMQ",

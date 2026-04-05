@@ -11,6 +11,9 @@
 
 [![Animated demo showing Qarote's dashboard monitoring RabbitMQ queues, exchanges, and system metrics](assets/demo.gif)](https://www.youtube.com/watch?v=g9Coi3niYIY)
 
+**[Try the Live Demo →](https://demo.qarote.io/)**
+*Read-only instance — no login required*
+
 </div>
 
 ---
