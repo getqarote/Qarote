@@ -13,9 +13,13 @@ COPY apps/api/package.json ./apps/api/
 COPY apps/app/package.json ./apps/app/
 COPY apps/web/package.json ./apps/web/
 COPY apps/portal/package.json ./apps/portal/
+COPY packages/i18n/package.json ./packages/i18n/
 
 # Install all dependencies (monorepo) - skip scripts to avoid issues
 RUN pnpm install --frozen-lockfile --ignore-scripts
+
+# Copy shared packages (required by app)
+COPY packages/i18n ./packages/i18n
 
 # Copy app source code
 COPY apps/app ./apps/app
@@ -25,8 +29,9 @@ COPY apps/app ./apps/app
 ARG DEPLOYMENT_MODE=selfhosted
 ARG VITE_API_URL
 ARG VITE_PORTAL_URL
+ARG VITE_DEMO_MODE
 WORKDIR /app/apps/app
-RUN VITE_DEPLOYMENT_MODE=${DEPLOYMENT_MODE} VITE_API_URL=${VITE_API_URL} VITE_PORTAL_URL=${VITE_PORTAL_URL} pnpm run build
+RUN VITE_DEPLOYMENT_MODE=${DEPLOYMENT_MODE} VITE_API_URL=${VITE_API_URL} VITE_PORTAL_URL=${VITE_PORTAL_URL} VITE_DEMO_MODE=${VITE_DEMO_MODE} pnpm run build
 
 # Production stage
 FROM nginx:alpine
