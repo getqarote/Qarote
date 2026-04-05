@@ -1,42 +1,50 @@
 import { TRPCError } from "@trpc/server";
 
 /**
- * tRPC procedure paths that are blocked in demo mode.
+ * Fully-qualified tRPC procedure paths blocked in demo mode.
  * These are destructive operations that shouldn't be available on demo.qarote.io.
+ *
+ * Path format matches opts.path in tRPC middleware: "router.subrouter.procedure"
  */
 const BLOCKED_PATHS = new Set([
-  // Server management
-  "rabbitmq.addServer",
-  "rabbitmq.removeServer",
-  "rabbitmq.updateServer",
-  // Queue management
-  "rabbitmq.purgeQueue",
-  "rabbitmq.deleteQueue",
-  // User management
+  // Server management (rabbitmq.server.*)
+  "rabbitmq.server.createServer",
+  "rabbitmq.server.updateServer",
+  "rabbitmq.server.deleteServer",
+  // Queue management (rabbitmq.queues.*)
+  "rabbitmq.queues.createQueue",
+  "rabbitmq.queues.purgeQueue",
+  "rabbitmq.queues.deleteQueue",
+  "rabbitmq.queues.pauseQueue",
+  "rabbitmq.queues.resumeQueue",
+  // User management (user.*)
   "user.updateProfile",
-  "user.changePassword",
-  "user.deleteAccount",
-  // Workspace management
-  "workspace.update",
-  "workspace.delete",
-  "workspace.invite",
-  "workspace.removeMember",
-  // Organization management
-  "organization.update",
-  "organization.delete",
-  "organization.invite",
-  "organization.removeMember",
-  // Auth
-  "auth.register",
-  // Alerts
-  "alerts.createRule",
-  "alerts.updateRule",
-  "alerts.deleteRule",
+  "user.updateUser",
+  "user.removeFromWorkspace",
+  // Auth (auth.*)
+  "auth.registration.register",
+  "auth.password.changePassword",
+  // Workspace management (workspace.*)
+  "workspace.management.create",
+  "workspace.management.update",
+  "workspace.management.delete",
+  "workspace.invitation.sendInvitation",
+  "workspace.invitation.revokeInvitation",
+  // Organization management (organization.*)
+  "organization.management.update",
+  "organization.members.invite",
+  "organization.members.remove",
+  "organization.members.updateRole",
+  // Alert rules (alerts.rules.*)
+  "alerts.rules.createRule",
+  "alerts.rules.updateRule",
+  "alerts.rules.deleteRule",
   // Feedback
-  "feedback.create",
-  // Payment
-  "payment.createCheckoutSession",
-  "payment.cancelSubscription",
+  "feedback.submit",
+  // Payment (payment.*)
+  "payment.checkout.createCheckoutSession",
+  "payment.subscription.cancelSubscription",
+  "payment.subscription.renewSubscription",
   // SSO
   "sso.registerProvider",
   "sso.updateProvider",
