@@ -53,7 +53,7 @@ export async function bootstrapDemo(): Promise<void> {
       where: { workspaceId: workspace.id },
     });
     if (alertCount === 0) {
-      await seedDemoAlerts(workspace.id, existing.id);
+      await seedDemoAlerts(workspace.id, existing.id, vhost || "/");
     }
     return;
   }
@@ -77,12 +77,13 @@ export async function bootstrapDemo(): Promise<void> {
   );
 
   // Seed demo alerts so the Alerts page has content
-  await seedDemoAlerts(workspace.id, server.id);
+  await seedDemoAlerts(workspace.id, server.id, vhost || "/");
 }
 
 async function seedDemoAlerts(
   workspaceId: string,
-  serverId: string
+  serverId: string,
+  vhost: string
 ): Promise<void> {
   const now = new Date();
   const minutesAgo = (m: number) => new Date(now.getTime() - m * 60_000);
@@ -90,7 +91,6 @@ async function seedDemoAlerts(
   // Fingerprint format must match alert.fingerprint.ts:
   //   queue alerts: {serverId}-{category}-queue-{vhost}-{sourceName}
   //   node alerts:  {serverId}-{category}-node-{sourceName}
-  const vhost = process.env.DEMO_RABBITMQ_VHOST || "demo";
   const fp = (category: string, sourceType: string, sourceName: string) =>
     sourceType === "queue"
       ? `${serverId}-${category}-${sourceType}-${vhost}-${sourceName}`
@@ -136,7 +136,7 @@ async function seedDemoAlerts(
       severity: "MEDIUM" as const,
       status: "ACKNOWLEDGED" as const,
       category: "message_rate",
-      sourceType: "exchange",
+      sourceType: "cluster",
       sourceName: "analytics.direct",
       serverName: "Demo RabbitMQ",
       threshold: 1000,
@@ -144,7 +144,7 @@ async function seedDemoAlerts(
       firstSeenAt: minutesAgo(120),
       lastSeenAt: minutesAgo(15),
       acknowledgedAt: minutesAgo(90),
-      fingerprint: fp("message_rate", "exchange", "analytics.direct"),
+      fingerprint: fp("message_rate", "cluster", "analytics.direct"),
     },
     {
       title: "Unacknowledged messages on orders.failed",
