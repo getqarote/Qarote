@@ -41,6 +41,7 @@ FROM nginx:alpine
 
 # Copy nginx configuration
 COPY docker/nginx/nginx.conf /etc/nginx/conf.d/default.conf
+COPY docker/nginx/security-headers.conf /etc/nginx/conf.d/security-headers.conf
 
 # Copy built files
 COPY --from=builder /app/apps/app/dist /usr/share/nginx/html
