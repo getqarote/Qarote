@@ -14,6 +14,17 @@ import { isDemoMode } from "@/config/deployment";
 export async function bootstrapDemo(): Promise<void> {
   if (!isDemoMode()) return;
 
+  try {
+    await seedDemo();
+  } catch (error) {
+    logger.error(
+      { error },
+      "Demo bootstrap failed — demo RabbitMQ may not be available"
+    );
+  }
+}
+
+async function seedDemo(): Promise<void> {
   const host = process.env.DEMO_RABBITMQ_HOST;
   const port = process.env.DEMO_RABBITMQ_PORT;
   const amqpPort = process.env.DEMO_RABBITMQ_AMQP_PORT;
@@ -24,6 +35,17 @@ export async function bootstrapDemo(): Promise<void> {
   if (!host || !username || !password) {
     logger.warn(
       "DEMO_MODE is true but DEMO_RABBITMQ_* env vars are missing — skipping demo seed"
+    );
+    return;
+  }
+
+  const parsedPort = parseInt(port || "15672", 10);
+  const parsedAmqpPort = parseInt(amqpPort || "5672", 10);
+
+  if (Number.isNaN(parsedPort) || Number.isNaN(parsedAmqpPort)) {
+    logger.warn(
+      { port, amqpPort },
+      "Invalid DEMO_RABBITMQ port values — skipping demo seed"
     );
     return;
   }
@@ -62,8 +84,8 @@ export async function bootstrapDemo(): Promise<void> {
     data: {
       name: "Demo RabbitMQ",
       host,
-      port: parseInt(port || "15672", 10),
-      amqpPort: parseInt(amqpPort || "5672", 10),
+      port: parsedPort,
+      amqpPort: parsedAmqpPort,
       username,
       password,
       vhost: vhost || "/",
