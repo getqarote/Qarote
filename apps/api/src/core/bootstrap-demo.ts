@@ -87,6 +87,15 @@ async function seedDemoAlerts(
   const now = new Date();
   const minutesAgo = (m: number) => new Date(now.getTime() - m * 60_000);
 
+  // Fingerprint format must match alert.fingerprint.ts:
+  //   queue alerts: {serverId}-{category}-queue-{vhost}-{sourceName}
+  //   node alerts:  {serverId}-{category}-node-{sourceName}
+  const vhost = process.env.DEMO_RABBITMQ_VHOST || "demo";
+  const fp = (category: string, sourceType: string, sourceName: string) =>
+    sourceType === "queue"
+      ? `${serverId}-${category}-${sourceType}-${vhost}-${sourceName}`
+      : `${serverId}-${category}-${sourceType}-${sourceName}`;
+
   const alerts = [
     {
       title: "High queue depth on orders.processing",
@@ -102,7 +111,7 @@ async function seedDemoAlerts(
       value: 12847,
       firstSeenAt: minutesAgo(45),
       lastSeenAt: minutesAgo(2),
-      fingerprint: "demo-queue-depth-orders",
+      fingerprint: fp("queue_depth", "queue", "orders.processing"),
     },
     {
       title: "Consumer count dropped on notifications.email",
@@ -118,7 +127,7 @@ async function seedDemoAlerts(
       value: 0,
       firstSeenAt: minutesAgo(20),
       lastSeenAt: minutesAgo(1),
-      fingerprint: "demo-consumer-drop-email",
+      fingerprint: fp("consumer_count", "queue", "notifications.email"),
     },
     {
       title: "High message rate on analytics.direct",
@@ -135,7 +144,7 @@ async function seedDemoAlerts(
       firstSeenAt: minutesAgo(120),
       lastSeenAt: minutesAgo(15),
       acknowledgedAt: minutesAgo(90),
-      fingerprint: "demo-rate-analytics",
+      fingerprint: fp("message_rate", "exchange", "analytics.direct"),
     },
     {
       title: "Unacknowledged messages on orders.failed",
@@ -151,7 +160,7 @@ async function seedDemoAlerts(
       value: 234,
       firstSeenAt: minutesAgo(60),
       lastSeenAt: minutesAgo(3),
-      fingerprint: "demo-unacked-orders-failed",
+      fingerprint: fp("unacked_messages", "queue", "orders.failed"),
     },
     {
       title: "Memory alarm cleared on node rabbit@demo",
@@ -168,7 +177,7 @@ async function seedDemoAlerts(
       firstSeenAt: minutesAgo(180),
       lastSeenAt: minutesAgo(150),
       resolvedAt: minutesAgo(140),
-      fingerprint: "demo-memory-alarm",
+      fingerprint: null,
     },
     {
       title: "Disk space warning on node rabbit@demo",
@@ -185,7 +194,7 @@ async function seedDemoAlerts(
       firstSeenAt: minutesAgo(360),
       lastSeenAt: minutesAgo(300),
       resolvedAt: minutesAgo(240),
-      fingerprint: "demo-disk-warning",
+      fingerprint: null,
     },
   ];
 
