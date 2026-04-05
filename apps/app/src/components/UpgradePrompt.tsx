@@ -37,9 +37,12 @@ export function UpgradePrompt({
   const navigate = useNavigate();
   const featureName = getFeatureDescription(feature);
   const cloud = isCloudMode();
-  const defaultMessage = cloud
-    ? `Upgrade your plan to unlock ${featureName}.`
-    : `Activate a license to unlock ${featureName}.`;
+  const demo = import.meta.env.VITE_DEMO_MODE === "true";
+  const defaultMessage = demo
+    ? `Deploy your own Qarote to unlock ${featureName}.`
+    : cloud
+      ? `Upgrade your plan to unlock ${featureName}.`
+      : `Activate a license to unlock ${featureName}.`;
 
   return (
     <div
@@ -59,15 +62,30 @@ export function UpgradePrompt({
             <div className="space-y-1">
               <p className="text-sm font-medium">License Required</p>
               <p className="text-sm text-muted-foreground">
-                {cloud
-                  ? "This feature requires an upgraded plan. View available plans to unlock it."
-                  : "This feature requires an active license. Activate a license on the License page to unlock it."}
+                {demo
+                  ? "This premium feature is not available on the demo. Deploy your own instance to access it."
+                  : cloud
+                    ? "This feature requires an upgraded plan. View available plans to unlock it."
+                    : "This feature requires an active license. Activate a license on the License page to unlock it."}
               </p>
             </div>
           </div>
         </CardContent>
         <CardFooter className="flex gap-2">
-          {cloud ? (
+          {demo ? (
+            <Button
+              className="flex-1 bg-gradient-button hover:bg-gradient-button-hover text-white"
+              onClick={() =>
+                window.open(
+                  "https://qarote.io",
+                  "_blank",
+                  "noopener,noreferrer"
+                )
+              }
+            >
+              Get Qarote
+            </Button>
+          ) : cloud ? (
             <Button
               className="flex-1 bg-gradient-button hover:bg-gradient-button-hover text-white"
               onClick={() => navigate("/plans")}
