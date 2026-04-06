@@ -452,8 +452,6 @@ export const useTopology = (
 
 // --- Spy on Queue ---
 
-export type SpyMessageData = SubData<typeof trpc.rabbitmq.queues.spyOnQueue>;
-
 interface SpyMessage {
   id: string;
   timestamp: string;
