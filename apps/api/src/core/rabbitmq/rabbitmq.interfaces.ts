@@ -231,6 +231,39 @@ export interface RabbitMQExchange {
   user_who_performed_action?: string;
 }
 
+/**
+ * A message observed by the spy feature.
+ * These are copies of messages flowing through a queue,
+ * captured via a temporary mirrored binding.
+ */
+export interface SpyMessage {
+  /** Stable unique ID for React keys (crypto.randomUUID) */
+  id: string;
+  /** ISO timestamp when the spy consumer received the message */
+  timestamp: string;
+  /** Exchange the message was published to */
+  exchange: string;
+  /** Routing key used for delivery */
+  routingKey: string;
+  /** AMQP message headers */
+  headers: Record<string, unknown>;
+  /** Content-Type from message properties */
+  contentType: string | undefined;
+  /** Message payload (UTF-8 decoded, or hex preview if binary). Truncated at 64KB. */
+  payload: string;
+  /** Original payload size in bytes */
+  payloadBytes: number;
+  /** True if the payload was truncated (original > 64KB) */
+  truncated: boolean;
+  /** True if content-type indicates binary data */
+  isBinary: boolean;
+  /** Whether this message was redelivered by the broker */
+  redelivered: boolean;
+  messageId?: string;
+  correlationId?: string;
+  appId?: string;
+}
+
 export interface RabbitMQBinding {
   source: string;
   vhost: string;

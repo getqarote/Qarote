@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useRef, useState } from "react";
 
 import { trpc } from "@/lib/trpc/client";
 import { SubData } from "@/lib/trpc/types";
@@ -448,4 +448,117 @@ export const useTopology = (
   );
 
   return query;
+};
+
+// --- Spy on Queue ---
+
+export type SpyMessageData = SubData<typeof trpc.rabbitmq.queues.spyOnQueue>;
+
+interface SpyMessage {
+  id: string;
+  timestamp: string;
+  exchange: string;
+  routingKey: string;
+  headers: Record<string, unknown>;
+  contentType: string | undefined;
+  payload: string;
+  payloadBytes: number;
+  truncated: boolean;
+  isBinary: boolean;
+  redelivered: boolean;
+  messageId?: string;
+  correlationId?: string;
+  appId?: string;
+}
+
+export type { SpyMessage };
+
+const MAX_SPY_MESSAGES = 200;
+
+export const useSpyOnQueue = (
+  serverId: string,
+  queueName: string,
+  vhost: string,
+  enabled: boolean
+) => {
+  const { workspace } = useWorkspace();
+  const [messages, setMessages] = useState<SpyMessage[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [spyInfo, setSpyInfo] = useState<{
+    spyQueueName: string;
+    bindingCount: number;
+  } | null>(null);
+  const [dropped, setDropped] = useState(0);
+
+  // RAF batching: accumulate messages in a ref, flush on animation frame
+  const pendingRef = useRef<SpyMessage[]>([]);
+  const rafRef = useRef<number | null>(null);
+
+  const flushPending = useCallback(() => {
+    rafRef.current = null;
+    const pending = pendingRef.current;
+    if (pending.length === 0) return;
+    pendingRef.current = [];
+
+    setMessages((prev) => {
+      const combined = [...prev, ...pending];
+      return combined.length > MAX_SPY_MESSAGES
+        ? combined.slice(-MAX_SPY_MESSAGES)
+        : combined;
+    });
+  }, []);
+
+  const isActive = !!serverId && !!queueName && !!workspace?.id && enabled;
+
+  trpc.rabbitmq.queues.spyOnQueue.useSubscription(
+    {
+      serverId,
+      workspaceId: workspace?.id || "",
+      queueName,
+      vhost: encodeURIComponent(vhost),
+    },
+    {
+      enabled: isActive,
+      onData: (data) => {
+        if (data.type === "started") {
+          setSpyInfo({
+            spyQueueName: data.spyQueueName,
+            bindingCount: data.bindingCount,
+          });
+          setError(null);
+        } else if (data.type === "messages") {
+          setDropped(data.dropped);
+          // Buffer messages and flush on RAF
+          pendingRef.current.push(...data.messages);
+          if (rafRef.current === null) {
+            rafRef.current = requestAnimationFrame(flushPending);
+          }
+        } else if (data.type === "error") {
+          setError(data.message);
+        }
+      },
+      onError: (err) => {
+        setError(err.message);
+      },
+    }
+  );
+
+  const clearMessages = useCallback(() => {
+    setMessages([]);
+    setDropped(0);
+    pendingRef.current = [];
+    if (rafRef.current !== null) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
+  }, []);
+
+  return {
+    messages,
+    error,
+    spyInfo,
+    dropped,
+    isLoading: isActive && !spyInfo && !error,
+    clearMessages,
+  };
 };

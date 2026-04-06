@@ -15,6 +15,7 @@ import { QueueBindings } from "@/components/QueueDetail/QueueBindings";
 import { QueueConfiguration } from "@/components/QueueDetail/QueueConfiguration";
 // Queue Detail Components
 import { QueueHeader } from "@/components/QueueDetail/QueueHeader";
+import { QueueSpy } from "@/components/QueueDetail/QueueSpy";
 import { QueueStats } from "@/components/QueueDetail/QueueStats";
 import { QueueTiming } from "@/components/QueueDetail/QueueTiming";
 import { QueuedMessagesChart } from "@/components/QueuedMessagesChart";
@@ -56,6 +57,7 @@ const QueueDetail = () => {
   const { toast } = useToast();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [timeRange, setTimeRange] = useState<TimeRange>("1m");
+  const [spyEnabled, setSpyEnabled] = useState(false);
 
   const {
     data: queueData,
@@ -151,6 +153,8 @@ const QueueDetail = () => {
                 messageCount={queue?.messages || 0}
                 consumerCount={queue?.consumers || 0}
                 isAdmin={isAdmin}
+                isSpying={spyEnabled}
+                onSpyToggle={() => setSpyEnabled((prev) => !prev)}
                 onNavigateBack={handleNavigateBack}
                 onRefetch={refetch}
                 onDeleteQueue={isAdmin ? confirmDeleteQueue : undefined}
@@ -190,6 +194,15 @@ const QueueDetail = () => {
                     timeRange={timeRange}
                     onTimeRangeChange={setTimeRange}
                   />
+
+                  {/* Spy on Queue — conditionally mounted */}
+                  {spyEnabled && (
+                    <QueueSpy
+                      serverId={selectedServerId}
+                      queueName={queueName}
+                      vhost={selectedVHost || "/"}
+                    />
+                  )}
 
                   {/* Consumer Details Section */}
                   <ConsumerDetails

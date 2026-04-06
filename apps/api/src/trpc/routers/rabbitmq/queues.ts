@@ -1,7 +1,11 @@
+import crypto from "node:crypto";
+
 import { TRPCError } from "@trpc/server";
 
 import { prisma } from "@/core/prisma";
 import { RabbitMQAmqpClient } from "@/core/rabbitmq/AmqpClient";
+import { BoundedBuffer } from "@/core/rabbitmq/BoundedBuffer";
+import type { SpyMessage } from "@/core/rabbitmq/rabbitmq.interfaces";
 import { abortableSleep } from "@/core/utils";
 
 import {
@@ -888,6 +892,209 @@ export const queuesRouter = router({
             );
           }
         }
+      }
+    }),
+
+  /**
+   * Spy on a queue — observe messages flowing through in real-time
+   * without consuming them. Creates a temporary exclusive queue with
+   * mirrored bindings and streams intercepted messages via SSE.
+   */
+  spyOnQueue: workspaceProcedure
+    .input(ServerWorkspaceWithQueueNameSchema.merge(VHostRequiredQuerySchema))
+    .subscription(async function* ({ input, ctx, signal }) {
+      const { serverId, workspaceId, queueName, vhost: vhostParam } = input;
+      const vhost = decodeURIComponent(vhostParam);
+
+      // Verify access
+      const server = await verifyServerAccess(serverId, workspaceId, true);
+      if (!server || !server.workspace) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: te(ctx.locale, "rabbitmq.serverNotFoundOrAccessDenied"),
+        });
+      }
+
+      if (!signal) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: te(ctx.locale, "rabbitmq.subscriptionRequiresAbortSignal"),
+        });
+      }
+
+      // Fetch target queue bindings via Management HTTP API
+      const httpClient = createRabbitMQClientFromServer(server);
+      const allBindings = await httpClient.getQueueBindings(queueName, vhost);
+
+      // Filter out default exchange binding (source === "") — cannot be replicated
+      const namedBindings = allBindings.filter((b) => b.source !== "");
+
+      if (namedBindings.length === 0) {
+        yield {
+          type: "error" as const,
+          code: "NO_BINDINGS",
+          message:
+            "This queue receives messages only via the default exchange (direct publish by queue name), which cannot be observed without consuming. Consider publishing through a named exchange instead.",
+        };
+        return;
+      }
+
+      // Get AMQP client (reuses factory-cached connection)
+      const amqpClient = await createAmqpClient(serverId, workspaceId);
+
+      // Create a dedicated channel for this spy session.
+      // This isolates spy failures from the main channel used by pause/resume.
+      const spyChannel = await amqpClient.createDedicatedChannel();
+
+      // Generate a unique spy queue name
+      const shortId = crypto.randomUUID().slice(0, 12);
+      const sanitizedQueueName = queueName.replace(/[^a-zA-Z0-9._-]/g, "_");
+      const spyQueueName = `qarote.spy.v1.${sanitizedQueueName}.${shortId}`;
+
+      const MAX_PAYLOAD_BYTES = 64 * 1024; // 64KB truncation limit
+      const buffer = new BoundedBuffer<SpyMessage>(500);
+      let consumerTag: string | undefined;
+
+      try {
+        // Assert temporary spy queue
+        await spyChannel.assertQueue(spyQueueName, {
+          exclusive: true,
+          autoDelete: true,
+          durable: false,
+          arguments: {
+            "x-expires": 300_000, // 5 min TTL with no consumers
+            "x-max-length": 1000,
+            "x-overflow": "drop-head",
+          },
+        });
+
+        // Replicate target queue bindings onto spy queue
+        for (const binding of namedBindings) {
+          await spyChannel.bindQueue(
+            spyQueueName,
+            binding.source,
+            binding.routing_key,
+            binding.arguments
+          );
+        }
+
+        // Start consuming from spy queue.
+        // noAck: true — spy messages are disposable copies; there is no reason
+        // to acknowledge them, and acking would add unnecessary round-trips.
+        // The exclusive + autoDelete flags mean unacked messages simply vanish.
+        const consumeResult = await spyChannel.consume(
+          spyQueueName,
+          (msg) => {
+            if (!msg) return;
+
+            const payloadBytes = msg.content.length;
+            const contentType = msg.properties.contentType;
+            const isBinary =
+              !!contentType &&
+              !contentType.startsWith("text/") &&
+              contentType !== "application/json";
+
+            let payload: string;
+            let truncated = false;
+
+            if (isBinary) {
+              // Show hex preview of first 256 bytes for binary payloads
+              const previewBytes = msg.content.subarray(0, 256);
+              payload = previewBytes.toString("hex").replace(/(.{2})/g, "$1 ");
+              truncated = payloadBytes > 256;
+            } else if (payloadBytes > MAX_PAYLOAD_BYTES) {
+              payload = msg.content
+                .subarray(0, MAX_PAYLOAD_BYTES)
+                .toString("utf-8");
+              truncated = true;
+            } else {
+              payload = msg.content.toString("utf-8");
+            }
+
+            const spyMessage: SpyMessage = {
+              id: crypto.randomUUID(),
+              timestamp: new Date().toISOString(),
+              exchange: msg.fields.exchange,
+              routingKey: msg.fields.routingKey,
+              headers:
+                (msg.properties.headers as Record<string, unknown>) || {},
+              contentType,
+              payload,
+              payloadBytes,
+              truncated,
+              isBinary,
+              redelivered: msg.fields.redelivered,
+              messageId: msg.properties.messageId,
+              correlationId: msg.properties.correlationId,
+              appId: msg.properties.appId,
+            };
+
+            buffer.push(spyMessage);
+          },
+          { noAck: true }
+        );
+
+        consumerTag = consumeResult.consumerTag;
+
+        // Yield initial started event
+        yield {
+          type: "started" as const,
+          spyQueueName,
+          bindingCount: namedBindings.length,
+        };
+
+        // Adaptive drain loop
+        while (!signal.aborted) {
+          const batch = buffer.drain(50);
+
+          if (batch.length > 0) {
+            yield {
+              type: "messages" as const,
+              messages: batch,
+              dropped: buffer.droppedCount,
+            };
+            // Short yield to avoid starving the event loop
+            await abortableSleep(50, signal);
+          } else {
+            // Nothing to send — back off
+            await abortableSleep(200, signal);
+          }
+        }
+      } finally {
+        // Cleanup: cancel consumer, delete queue, close dedicated channel
+        if (consumerTag) {
+          try {
+            await spyChannel.cancel(consumerTag);
+          } catch (error) {
+            ctx.logger.warn(
+              { error, consumerTag },
+              "Failed to cancel spy consumer during cleanup"
+            );
+          }
+        }
+
+        try {
+          await spyChannel.deleteQueue(spyQueueName);
+        } catch (error) {
+          ctx.logger.warn(
+            { error, spyQueueName },
+            "Failed to delete spy queue during cleanup (may have been auto-deleted)"
+          );
+        }
+
+        try {
+          await spyChannel.close();
+        } catch (error) {
+          ctx.logger.warn(
+            { error },
+            "Failed to close spy channel during cleanup"
+          );
+        }
+
+        ctx.logger.info(
+          { spyQueueName, queueName, serverId },
+          "Spy session ended and cleaned up"
+        );
       }
     }),
 });
