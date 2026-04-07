@@ -1,7 +1,12 @@
+import crypto from "node:crypto";
+
 import { TRPCError } from "@trpc/server";
+import type amqp from "amqplib";
 
 import { prisma } from "@/core/prisma";
 import { RabbitMQAmqpClient } from "@/core/rabbitmq/AmqpClient";
+import { BoundedBuffer } from "@/core/rabbitmq/BoundedBuffer";
+import type { SpyMessage } from "@/core/rabbitmq/rabbitmq.interfaces";
 import { abortableSleep } from "@/core/utils";
 
 import {
@@ -12,6 +17,8 @@ import {
   getUpgradeRecommendationForOverLimit,
   validateQueueCreationOnServer,
 } from "@/services/plan/plan.service";
+
+import { hasWorkspaceAccess } from "@/middlewares/workspace";
 
 import {
   CreateQueueSchema,
@@ -29,6 +36,7 @@ import { authorize, router, workspaceProcedure } from "@/trpc/trpc";
 import {
   createAmqpClient,
   createRabbitMQClientFromServer,
+  createStandaloneAmqpConnection,
   verifyServerAccess,
 } from "./shared";
 
@@ -43,6 +51,47 @@ type QueuesServerInfo = {
   queueCountAtConnect: number | null;
   overLimitWarningShown: boolean;
 };
+
+/**
+ * Decide whether a spy payload should be rendered as text or as a hex preview.
+ *
+ * Strategy:
+ *  1. If the content-type is set, parse the media type (strip parameters such
+ *     as `; charset=utf-8`, lowercase) and accept anything that is structurally
+ *     text: `text/*`, `application/json`, `application/xml`, `application/yaml`,
+ *     and any media type using the RFC 6839 structured-syntax suffixes
+ *     `+json`, `+xml`, `+yaml`.
+ *  2. If the content-type is missing or unrecognized, sniff the payload for
+ *     null bytes in the first 512 bytes — null bytes are a strong binary
+ *     indicator (this is the same heuristic `file(1)` uses for text vs binary).
+ */
+function isTextPayload(
+  contentType: string | undefined,
+  content: Buffer
+): boolean {
+  if (contentType) {
+    const mediaType = contentType.split(";")[0]?.trim().toLowerCase() ?? "";
+    if (mediaType.startsWith("text/")) return true;
+    if (mediaType === "application/json") return true;
+    if (mediaType === "application/xml") return true;
+    if (mediaType === "application/yaml") return true;
+    if (mediaType === "application/x-yaml") return true;
+    if (mediaType === "application/javascript") return true;
+    if (mediaType === "application/ecmascript") return true;
+    // RFC 6839 structured syntax suffixes (e.g. application/vnd.api+json)
+    if (mediaType.endsWith("+json")) return true;
+    if (mediaType.endsWith("+xml")) return true;
+    if (mediaType.endsWith("+yaml")) return true;
+    return false;
+  }
+
+  // Unknown content-type — sniff for null bytes in the first 512 bytes
+  const sample = content.subarray(0, Math.min(content.length, 512));
+  for (const byte of sample) {
+    if (byte === 0x00) return false;
+  }
+  return true;
+}
 
 /**
  * Persist queue data and metrics to the database.
@@ -888,6 +937,349 @@ export const queuesRouter = router({
             );
           }
         }
+      }
+    }),
+
+  /**
+   * Spy on a queue — observe messages flowing through in real-time
+   * without consuming them. Creates a temporary exclusive queue with
+   * mirrored bindings and streams intercepted messages via SSE.
+   */
+  spyOnQueue: workspaceProcedure
+    .input(ServerWorkspaceWithQueueNameSchema.merge(VHostRequiredQuerySchema))
+    .subscription(async function* ({ input, ctx, signal }) {
+      const { serverId, workspaceId, queueName, vhost: vhostParam } = input;
+      const vhost = decodeURIComponent(vhostParam);
+
+      // Verify access
+      const server = await verifyServerAccess(serverId, workspaceId, true);
+      if (!server || !server.workspace) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: te(ctx.locale, "rabbitmq.serverNotFoundOrAccessDenied"),
+        });
+      }
+
+      if (!signal) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: te(ctx.locale, "rabbitmq.subscriptionRequiresAbortSignal"),
+        });
+      }
+
+      // Fetch target queue bindings via Management HTTP API
+      const httpClient = createRabbitMQClientFromServer(server);
+      const allBindings = await httpClient.getQueueBindings(queueName, vhost);
+
+      // Filter out default exchange binding (source === "") — cannot be replicated
+      const namedBindings = allBindings.filter((b) => b.source !== "");
+
+      if (namedBindings.length === 0) {
+        yield {
+          type: "error" as const,
+          code: "NO_BINDINGS",
+          message:
+            "This queue receives messages only via the default exchange (direct publish by queue name), which cannot be observed without consuming. Consider publishing through a named exchange instead.",
+        };
+        return;
+      }
+
+      // Open a standalone AMQP connection for this spy session.
+      // We deliberately bypass the factory cache: the cached client is shared
+      // with pause/resume/getPauseStatus, which call disconnect() in their
+      // finally blocks. That would tear down the underlying connection and
+      // kill any active spy channels on it. Owning a dedicated connection
+      // isolates the spy session from all other AMQP operations.
+      const { connection: spyConnection, cleanup: closeSpyConnection } =
+        await createStandaloneAmqpConnection(serverId, workspaceId);
+
+      // Generate a unique spy queue name
+      const shortId = crypto.randomUUID().slice(0, 12);
+      const sanitizedQueueName = queueName.replace(/[^a-zA-Z0-9._-]/g, "_");
+      const spyQueueName = `qarote.spy.v1.${sanitizedQueueName}.${shortId}`;
+
+      const MAX_PAYLOAD_BYTES = 64 * 1024; // 64KB truncation limit
+      const buffer = new BoundedBuffer<SpyMessage>(500);
+      let consumerTag: string | undefined;
+      // Declared outside the try so it's visible in finally. createChannel()
+      // is performed inside the try so any failure is caught by the
+      // connection cleanup in finally.
+      let spyChannel: amqp.Channel | undefined;
+      // Set by channel/connection error and close listeners. The drain loop
+      // checks this flag and breaks out when the underlying transport dies,
+      // so the generator doesn't poll an empty buffer forever while the
+      // client thinks everything is fine.
+      let transportClosed = false;
+      let transportCloseReason: string | undefined;
+
+      try {
+        spyChannel = await spyConnection.createChannel();
+
+        // Wire up transport failure listeners on both the channel and the
+        // connection. Either can die mid-stream (network partition, broker
+        // restart, RabbitMQ closing our connection), and the consumer
+        // callback would silently stop firing without any other signal.
+        spyChannel.on("error", (err: Error) => {
+          ctx.logger.warn(
+            { err, spyQueueName },
+            "Spy channel error — terminating stream"
+          );
+          transportClosed = true;
+          transportCloseReason = `channel error: ${err.message}`;
+        });
+        spyChannel.on("close", () => {
+          ctx.logger.info(
+            { spyQueueName },
+            "Spy channel closed — terminating stream"
+          );
+          transportClosed = true;
+          transportCloseReason ??= "channel closed";
+        });
+        spyConnection.on("error", (err: Error) => {
+          ctx.logger.warn(
+            { err, spyQueueName },
+            "Spy connection error — terminating stream"
+          );
+          transportClosed = true;
+          transportCloseReason = `connection error: ${err.message}`;
+        });
+        spyConnection.on("close", () => {
+          ctx.logger.info(
+            { spyQueueName },
+            "Spy connection closed — terminating stream"
+          );
+          transportClosed = true;
+          transportCloseReason ??= "connection closed";
+        });
+
+        // Assert temporary spy queue
+        await spyChannel.assertQueue(spyQueueName, {
+          exclusive: true,
+          autoDelete: true,
+          durable: false,
+          arguments: {
+            "x-expires": 300_000, // 5 min TTL with no consumers
+            "x-max-length": 1000,
+            "x-overflow": "drop-head",
+          },
+        });
+
+        // Replicate target queue bindings onto spy queue
+        for (const binding of namedBindings) {
+          await spyChannel.bindQueue(
+            spyQueueName,
+            binding.source,
+            binding.routing_key,
+            binding.arguments
+          );
+        }
+
+        // Start consuming from spy queue.
+        // noAck: true — spy messages are disposable copies; there is no reason
+        // to acknowledge them, and acking would add unnecessary round-trips.
+        // The exclusive + autoDelete flags mean unacked messages simply vanish.
+        const consumeResult = await spyChannel.consume(
+          spyQueueName,
+          (msg) => {
+            if (!msg) return;
+
+            // Wrap the whole callback in try/catch: the spy observes
+            // arbitrary data from untrusted publishers. If any single
+            // message triggers an exception (malformed headers, a Buffer
+            // edge case, etc.), we log it and skip that message instead
+            // of letting the throw propagate up to amqplib and tear down
+            // the channel.
+            try {
+              const payloadBytes = msg.content.length;
+              const contentType = msg.properties.contentType;
+              const isBinary = !isTextPayload(contentType, msg.content);
+
+              let payload: string;
+              let truncated = false;
+
+              if (isBinary) {
+                // Show hex preview of first 256 bytes for binary payloads
+                const previewBytes = msg.content.subarray(0, 256);
+                payload = previewBytes
+                  .toString("hex")
+                  .replace(/(.{2})/g, "$1 ");
+                truncated = payloadBytes > 256;
+              } else if (payloadBytes > MAX_PAYLOAD_BYTES) {
+                payload = msg.content
+                  .subarray(0, MAX_PAYLOAD_BYTES)
+                  .toString("utf-8");
+                truncated = true;
+              } else {
+                payload = msg.content.toString("utf-8");
+              }
+
+              const spyMessage: SpyMessage = {
+                id: crypto.randomUUID(),
+                timestamp: new Date().toISOString(),
+                exchange: msg.fields.exchange,
+                routingKey: msg.fields.routingKey,
+                headers:
+                  (msg.properties.headers as Record<string, unknown>) || {},
+                contentType,
+                payload,
+                payloadBytes,
+                truncated,
+                isBinary,
+                redelivered: msg.fields.redelivered,
+                messageId: msg.properties.messageId,
+                correlationId: msg.properties.correlationId,
+                appId: msg.properties.appId,
+              };
+
+              buffer.push(spyMessage);
+            } catch (error) {
+              ctx.logger.warn(
+                {
+                  error,
+                  exchange: msg.fields?.exchange,
+                  routingKey: msg.fields?.routingKey,
+                  queueName,
+                },
+                "Failed to process spy message — skipping"
+              );
+            }
+          },
+          { noAck: true }
+        );
+
+        consumerTag = consumeResult.consumerTag;
+
+        // Yield initial started event
+        yield {
+          type: "started" as const,
+          spyQueueName,
+          bindingCount: namedBindings.length,
+        };
+
+        // Periodically re-verify access while streaming. Spy exposes raw
+        // message payloads, so we want a tight bound on the window during
+        // which a revoked user can still receive data.
+        const ACCESS_REVALIDATION_INTERVAL_MS = 15_000;
+        let lastAccessCheck = Date.now();
+
+        // Adaptive drain loop
+        while (!signal.aborted && !transportClosed) {
+          // Re-verify both server access AND workspace membership on a
+          // wall-clock interval. verifyServerAccess() only proves the server
+          // still belongs to workspaceId — it does NOT check whether the
+          // current user is still a member of that workspace. Without the
+          // hasWorkspaceAccess() check, a user removed from the workspace
+          // mid-stream would keep receiving raw payloads indefinitely.
+          if (Date.now() - lastAccessCheck > ACCESS_REVALIDATION_INTERVAL_MS) {
+            const stillAuthorized = await verifyServerAccess(
+              serverId,
+              workspaceId,
+              true
+            );
+            if (!stillAuthorized || !stillAuthorized.workspace) {
+              ctx.logger.info(
+                { serverId, queueName, spyQueueName },
+                "Spy session terminated — server removed or access revoked"
+              );
+              break;
+            }
+
+            // Mirror workspaceProcedure: ADMINs bypass the membership check,
+            // everyone else must still be in WorkspaceMember.
+            if (ctx.user.role !== UserRole.ADMIN) {
+              const stillMember = await hasWorkspaceAccess(
+                ctx.user.id,
+                workspaceId
+              );
+              if (!stillMember) {
+                ctx.logger.info(
+                  {
+                    serverId,
+                    queueName,
+                    spyQueueName,
+                    userId: ctx.user.id,
+                    workspaceId,
+                  },
+                  "Spy session terminated — user removed from workspace"
+                );
+                break;
+              }
+            }
+
+            lastAccessCheck = Date.now();
+          }
+
+          const batch = buffer.drain(50);
+
+          if (batch.length > 0) {
+            yield {
+              type: "messages" as const,
+              messages: batch,
+              dropped: buffer.droppedCount,
+            };
+            // Short yield to avoid starving the event loop
+            await abortableSleep(50, signal);
+          } else {
+            // Nothing to send — back off
+            await abortableSleep(200, signal);
+          }
+        }
+
+        // If the loop exited because the transport died, surface that to
+        // the client as an error event so the UI can show a clear message
+        // instead of silently appearing to work.
+        if (transportClosed && !signal.aborted) {
+          yield {
+            type: "error" as const,
+            code: "TRANSPORT_CLOSED",
+            message:
+              transportCloseReason ?? "AMQP transport closed unexpectedly",
+          };
+        }
+      } finally {
+        // Cleanup: cancel consumer, delete queue, close channel + connection.
+        // spyChannel may be undefined if createChannel() threw — guard each
+        // channel operation so we still reach closeSpyConnection() below.
+        if (spyChannel && consumerTag) {
+          try {
+            await spyChannel.cancel(consumerTag);
+          } catch (error) {
+            ctx.logger.warn(
+              { error, consumerTag },
+              "Failed to cancel spy consumer during cleanup"
+            );
+          }
+        }
+
+        if (spyChannel) {
+          try {
+            await spyChannel.deleteQueue(spyQueueName);
+          } catch (error) {
+            ctx.logger.warn(
+              { error, spyQueueName },
+              "Failed to delete spy queue during cleanup (may have been auto-deleted)"
+            );
+          }
+
+          try {
+            await spyChannel.close();
+          } catch (error) {
+            ctx.logger.warn(
+              { error },
+              "Failed to close spy channel during cleanup"
+            );
+          }
+        }
+
+        // Close the standalone connection — only this spy session uses it.
+        // This runs unconditionally so the connection is never leaked, even
+        // if createChannel() threw before spyChannel was assigned.
+        await closeSpyConnection();
+
+        ctx.logger.info(
+          { spyQueueName, queueName, serverId },
+          "Spy session ended and cleaned up"
+        );
       }
     }),
 });

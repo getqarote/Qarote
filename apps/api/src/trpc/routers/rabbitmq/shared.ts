@@ -1,3 +1,5 @@
+import amqp from "amqplib";
+
 import { logger } from "@/core/logger";
 import { prisma } from "@/core/prisma";
 import { QueuePauseState, RabbitMQAmqpClientFactory } from "@/core/rabbitmq";
@@ -197,4 +199,111 @@ export async function createAmqpClient(serverId: string, workspaceId: string) {
   }
 
   return client;
+}
+
+/**
+ * Create a standalone AMQP connection that bypasses the factory cache.
+ *
+ * Used by long-lived operations like the spy stream where the caller needs to
+ * own the entire connection lifecycle. The factory-cached client is shared
+ * across the API process — any unrelated caller invoking `disconnect()` on it
+ * (e.g. pause/resume/getPauseStatus finally blocks) would tear down every
+ * channel on the shared connection, including active spy channels.
+ *
+ * Returns the raw `amqp.ChannelModel` plus a `cleanup()` callback that closes
+ * the connection. The caller is responsible for closing any channels it
+ * created on the connection before invoking `cleanup()`.
+ */
+export async function createStandaloneAmqpConnection(
+  serverId: string,
+  workspaceId: string
+): Promise<{
+  connection: amqp.ChannelModel;
+  cleanup: () => Promise<void>;
+}> {
+  const server = await prisma.rabbitMQServer.findFirst({
+    where: { id: serverId, workspaceId },
+    select: {
+      id: true,
+      name: true,
+      host: true,
+      amqpPort: true,
+      username: true,
+      password: true,
+      vhost: true,
+      useHttps: true,
+    },
+  });
+
+  if (!server) {
+    throw new Error(`Server with ID ${serverId} not found or access denied`);
+  }
+
+  // Decrypt credentials. Wrapped in try/catch so we never leak raw
+  // decryption internals to the caller (matches createAmqpClient).
+  let username: string;
+  let password: string;
+  try {
+    username = EncryptionService.decrypt(server.username);
+    password = EncryptionService.decrypt(server.password);
+  } catch (error) {
+    logger.error(
+      { error, serverId: server.id },
+      `Failed to decrypt credentials for server ${server.name}`
+    );
+    throw new Error(`Failed to decrypt server credentials for ${server.name}`, {
+      cause: error,
+    });
+  }
+
+  const vhost = server.vhost || "/";
+  const protocol =
+    server.useHttps || server.amqpPort === 5671 ? "amqps" : "amqp";
+
+  logger.info(
+    {
+      serverId: server.id,
+      serverName: server.name,
+      hostname: server.host,
+      port: server.amqpPort,
+      vhost,
+      protocol,
+    },
+    "Opening standalone AMQP connection"
+  );
+
+  // Use amqplib's structured connect() form. It handles IPv6 literal
+  // bracketing (RFC 3986), vhost escaping, and credential escaping
+  // internally, so we don't have to deal with any of those edge cases.
+  const connection = await amqp.connect(
+    {
+      protocol,
+      hostname: server.host,
+      port: server.amqpPort,
+      username,
+      password,
+      vhost,
+    },
+    {
+      heartbeat: 60,
+      timeout: 30_000,
+    }
+  );
+
+  const cleanup = async () => {
+    try {
+      await connection.close();
+      logger.info(
+        { serverId: server.id, serverName: server.name },
+        "Closed standalone AMQP connection"
+      );
+    } catch (error) {
+      logger.warn(
+        { error, serverId: server.id },
+        "Error closing standalone AMQP connection"
+      );
+    }
+  };
+
+  return { connection, cleanup };
 }

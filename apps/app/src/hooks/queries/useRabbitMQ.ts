@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useRef, useState } from "react";
 
 import { trpc } from "@/lib/trpc/client";
 import { SubData } from "@/lib/trpc/types";
@@ -448,4 +448,161 @@ export const useTopology = (
   );
 
   return query;
+};
+
+// --- Spy on Queue ---
+
+interface SpyMessage {
+  id: string;
+  timestamp: string;
+  exchange: string;
+  routingKey: string;
+  headers: Record<string, unknown>;
+  contentType: string | undefined;
+  payload: string;
+  payloadBytes: number;
+  truncated: boolean;
+  isBinary: boolean;
+  redelivered: boolean;
+  messageId?: string;
+  correlationId?: string;
+  appId?: string;
+}
+
+export type { SpyMessage };
+
+const MAX_SPY_MESSAGES = 200;
+
+export const useSpyOnQueue = (
+  serverId: string,
+  queueName: string,
+  vhost: string,
+  enabled: boolean
+) => {
+  const { workspace } = useWorkspace();
+  const [messages, setMessages] = useState<SpyMessage[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [spyInfo, setSpyInfo] = useState<{
+    spyQueueName: string;
+    bindingCount: number;
+  } | null>(null);
+  // Backend cumulative dropped count (BoundedBuffer overflow on the server).
+  const [dropped, setDropped] = useState(0);
+  // Cumulative count of messages evicted client-side when the ring buffer
+  // exceeds MAX_SPY_MESSAGES. Without this, the displayed dropped value would
+  // only reflect backend overflow and the user could silently lose rows under
+  // sustained traffic.
+  const [clientDropped, setClientDropped] = useState(0);
+  // Total of (dropped + clientDropped) at the moment the user last clicked
+  // Clear. Subtracted from the live total so the displayed value resets to 0
+  // on clear, even though both backend and client counters keep incrementing.
+  const [droppedBaseline, setDroppedBaseline] = useState(0);
+  // Monotonically increasing count of every message received over the lifetime
+  // of this spy session. Unlike `messages.length` which is capped at
+  // MAX_SPY_MESSAGES, this keeps incrementing — consumers (e.g. the "N new
+  // messages" indicator in QueueSpy) need a counter that doesn't freeze when
+  // the ring buffer is full.
+  const [totalReceived, setTotalReceived] = useState(0);
+
+  // RAF batching: accumulate messages in a ref, flush on animation frame.
+  // Mirrors the messages array in a ref so flushPending can compute evictions
+  // synchronously without depending on React state (which would require
+  // calling setState from inside another updater — not allowed).
+  const pendingRef = useRef<SpyMessage[]>([]);
+  const rafRef = useRef<number | null>(null);
+  const messagesRef = useRef<SpyMessage[]>([]);
+  // Counts messages evicted from pendingRef before a RAF flush ever ran —
+  // e.g. when the browser tab is backgrounded and RAFs are throttled. Without
+  // this cap, pendingRef could grow arbitrarily large and bypass the 200-row
+  // display cap entirely. Folded into clientDropped on the next flush.
+  const pendingEvictedRef = useRef(0);
+
+  const flushPending = useCallback(() => {
+    rafRef.current = null;
+    const pending = pendingRef.current;
+    const pendingEvicted = pendingEvictedRef.current;
+    if (pending.length === 0 && pendingEvicted === 0) return;
+    pendingRef.current = [];
+    pendingEvictedRef.current = 0;
+
+    const combined = [...messagesRef.current, ...pending];
+    const evicted = Math.max(0, combined.length - MAX_SPY_MESSAGES);
+    const next = evicted > 0 ? combined.slice(-MAX_SPY_MESSAGES) : combined;
+
+    messagesRef.current = next;
+    setMessages(next);
+    const totalEvicted = evicted + pendingEvicted;
+    if (totalEvicted > 0) {
+      setClientDropped((prev) => prev + totalEvicted);
+    }
+    // totalReceived tracks every message we observed, including the ones
+    // we had to drop from pendingRef before they ever reached the display.
+    setTotalReceived((prev) => prev + pending.length + pendingEvicted);
+  }, []);
+
+  const isActive = !!serverId && !!queueName && !!workspace?.id && enabled;
+
+  trpc.rabbitmq.queues.spyOnQueue.useSubscription(
+    {
+      serverId,
+      workspaceId: workspace?.id || "",
+      queueName,
+      vhost: encodeURIComponent(vhost),
+    },
+    {
+      enabled: isActive,
+      onData: (data) => {
+        if (data.type === "started") {
+          setSpyInfo({
+            spyQueueName: data.spyQueueName,
+            bindingCount: data.bindingCount,
+          });
+          setError(null);
+        } else if (data.type === "messages") {
+          setDropped(data.dropped);
+          // Buffer messages and flush on RAF. Cap pendingRef at
+          // MAX_SPY_MESSAGES: if the tab is backgrounded the RAF may not
+          // fire for minutes and pendingRef would otherwise grow without
+          // bound. Anything beyond the cap is tracked as a client-side
+          // eviction and folded into clientDropped on the next flush.
+          pendingRef.current.push(...data.messages);
+          if (pendingRef.current.length > MAX_SPY_MESSAGES) {
+            const overflow = pendingRef.current.length - MAX_SPY_MESSAGES;
+            pendingRef.current = pendingRef.current.slice(-MAX_SPY_MESSAGES);
+            pendingEvictedRef.current += overflow;
+          }
+          if (rafRef.current === null) {
+            rafRef.current = requestAnimationFrame(flushPending);
+          }
+        } else if (data.type === "error") {
+          setError(data.message);
+        }
+      },
+      onError: (err) => {
+        setError(err.message);
+      },
+    }
+  );
+
+  const clearMessages = useCallback(() => {
+    setDroppedBaseline(dropped + clientDropped);
+    setMessages([]);
+    messagesRef.current = [];
+    pendingRef.current = [];
+    pendingEvictedRef.current = 0;
+    if (rafRef.current !== null) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
+  }, [dropped, clientDropped]);
+
+  return {
+    messages,
+    error,
+    spyInfo,
+    dropped: Math.max(0, dropped + clientDropped - droppedBaseline),
+    totalReceived,
+    isLoading: isActive && !spyInfo && !error,
+    clearMessages,
+  };
 };
