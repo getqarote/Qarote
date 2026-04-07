@@ -99,7 +99,7 @@ jobs:
         run: git fetch origin ${{ github.base_ref }}:${{ github.base_ref }}
 
       - name: 🩺 React Doctor
-        uses: millionco/react-doctor@720f42192bf50ba24b25368063221ee3e33ac23c # main
+        uses: millionco/react-doctor@66e1318b0ef133d8b7c1139397c7808b40c6cb15 # main
         with:
           directory: apps/${{ matrix.app }}
           diff: ${{ github.base_ref || 'main' }}
