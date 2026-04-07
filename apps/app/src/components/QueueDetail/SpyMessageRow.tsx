@@ -1,4 +1,4 @@
-import { memo, type MouseEvent, useState } from "react";
+import { memo, type MouseEvent, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { Check, ChevronDown, ChevronRight, Copy } from "lucide-react";
@@ -50,13 +50,31 @@ export const SpyMessageRow = memo(function SpyMessageRow({
 }: SpyMessageRowProps) {
   const { t } = useTranslation("queues");
   const [copied, setCopied] = useState(false);
+  // Track the "copied" timeout so we can clear it on unmount. Without this,
+  // a row removed by ring-buffer eviction within 2s of Copy would trigger
+  // a setState-on-unmounted-component warning.
+  const copiedTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (copiedTimeoutRef.current !== null) {
+        clearTimeout(copiedTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleCopy = async (e: MouseEvent) => {
     e.stopPropagation();
     const success = await copyToClipboard(message.payload);
     if (success) {
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      if (copiedTimeoutRef.current !== null) {
+        clearTimeout(copiedTimeoutRef.current);
+      }
+      copiedTimeoutRef.current = setTimeout(() => {
+        setCopied(false);
+        copiedTimeoutRef.current = null;
+      }, 2000);
     }
   };
 
