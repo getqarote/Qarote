@@ -26,25 +26,35 @@ export function MessageStatistics({ queue }: MessageStatisticsProps) {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <p className="text-sm text-muted-foreground">Ready</p>
-            <p className="text-xl font-bold text-info">
+            <p className="text-xl font-semibold text-foreground font-mono tabular-nums">
               {queue.messages_ready.toLocaleString()}
             </p>
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Unacknowledged</p>
-            <p className="text-xl font-bold text-warning">
+            {/* Only color when there ARE unacked messages — same conditional
+                pattern as the Unacked column in the queues table. Avoids the
+                "warning amber on a value of 0" false-alarm bug from the
+                original /critique. */}
+            <p
+              className={`text-xl font-semibold font-mono tabular-nums ${
+                queue.messages_unacknowledged > 0
+                  ? "text-warning"
+                  : "text-foreground"
+              }`}
+            >
               {queue.messages_unacknowledged.toLocaleString()}
             </p>
           </div>
           <div>
             <p className="text-sm text-muted-foreground">In RAM</p>
-            <p className="text-xl font-bold text-success">
+            <p className="text-xl font-semibold text-foreground font-mono tabular-nums">
               {queue.messages_ram?.toLocaleString() || "0"}
             </p>
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Persistent</p>
-            <p className="text-xl font-bold text-muted-foreground">
+            <p className="text-xl font-semibold text-foreground font-mono tabular-nums">
               {queue.messages_persistent?.toLocaleString() || "0"}
             </p>
           </div>
@@ -65,7 +75,7 @@ export function MessageStatistics({ queue }: MessageStatisticsProps) {
                   </TooltipContent>
                 </Tooltip>
               </div>
-              <p className="text-lg font-semibold">
+              <p className="text-lg font-semibold font-mono tabular-nums">
                 {queue.message_stats?.publish_details?.rate?.toFixed(2) ||
                   "0.00"}{" "}
                 msg/s
@@ -87,7 +97,7 @@ export function MessageStatistics({ queue }: MessageStatisticsProps) {
                   </TooltipContent>
                 </Tooltip>
               </div>
-              <p className="text-lg font-semibold">
+              <p className="text-lg font-semibold font-mono tabular-nums">
                 {queue.message_stats?.deliver_get_details?.rate?.toFixed(2) ||
                   "0.00"}{" "}
                 msg/s
@@ -109,7 +119,7 @@ export function MessageStatistics({ queue }: MessageStatisticsProps) {
                   </TooltipContent>
                 </Tooltip>
               </div>
-              <p className="text-lg font-semibold">
+              <p className="text-lg font-semibold font-mono tabular-nums">
                 {queue.message_stats?.redeliver_details?.rate?.toFixed(2) ||
                   "0.00"}{" "}
                 msg/s
@@ -129,7 +139,7 @@ export function MessageStatistics({ queue }: MessageStatisticsProps) {
                   </TooltipContent>
                 </Tooltip>
               </div>
-              <p className="text-lg font-semibold">
+              <p className="text-lg font-semibold font-mono tabular-nums">
                 {queue.message_stats?.ack_details?.rate?.toFixed(2) || "0.00"}{" "}
                 msg/s
               </p>

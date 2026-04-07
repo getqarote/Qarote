@@ -45,9 +45,18 @@ export function QueueConfiguration({ queue }: QueueConfigurationProps) {
         </div>
         <div className="pt-4 border-t">
           <div className="grid grid-cols-2 gap-4">
+            {/* Durable / Exclusive are configuration toggles, not status —
+                "Yes" doesn't deserve the brand-orange `default` badge variant
+                (which renders as bg-primary). Demoted to `secondary` so the
+                "Yes" state has visible weight without using the brand color
+                for a non-status signal.
+
+                Auto Delete keeps `destructive` when true because auto-delete
+                = "queue is destroyed when the last consumer disconnects" =
+                real data-loss risk worth highlighting. */}
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">Durable</span>
-              <Badge variant={queue.durable ? "default" : "outline"}>
+              <Badge variant={queue.durable ? "secondary" : "outline"}>
                 {queue.durable ? "Yes" : "No"}
               </Badge>
             </div>
@@ -59,7 +68,7 @@ export function QueueConfiguration({ queue }: QueueConfigurationProps) {
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">Exclusive</span>
-              <Badge variant={queue.exclusive ? "default" : "outline"}>
+              <Badge variant={queue.exclusive ? "secondary" : "outline"}>
                 {queue.exclusive ? "Yes" : "No"}
               </Badge>
             </div>

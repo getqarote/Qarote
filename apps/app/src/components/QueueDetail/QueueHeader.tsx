@@ -63,10 +63,7 @@ export function QueueHeader({
               serverId={selectedServerId}
               onSuccess={onRefetch}
               trigger={
-                <Button
-                  variant="outline"
-                  className="flex items-center gap-2 text-info hover:text-info"
-                >
+                <Button variant="outline" className="flex items-center gap-2">
                   <Send className="w-4 h-4" />
                   {t("sendMessage")}
                 </Button>
@@ -99,14 +96,7 @@ export function QueueHeader({
                 refetchPauseStatus();
               }}
               trigger={
-                <Button
-                  variant="outline"
-                  className={`flex items-center gap-2 ${
-                    isPaused
-                      ? "text-success hover:text-success"
-                      : "text-warning hover:text-warning"
-                  }`}
-                >
+                <Button variant="outline" className="flex items-center gap-2">
                   {isPaused ? (
                     <Play className="w-4 h-4" />
                   ) : (
