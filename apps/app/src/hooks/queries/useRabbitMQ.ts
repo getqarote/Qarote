@@ -486,10 +486,16 @@ export const useSpyOnQueue = (
     spyQueueName: string;
     bindingCount: number;
   } | null>(null);
+  // Backend cumulative dropped count (BoundedBuffer overflow on the server).
   const [dropped, setDropped] = useState(0);
-  // Cumulative dropped count at the moment the user last clicked Clear.
-  // Subtracted from `dropped` so the displayed value resets to 0 on clear,
-  // even though the backend keeps streaming the cumulative count.
+  // Cumulative count of messages evicted client-side when the ring buffer
+  // exceeds MAX_SPY_MESSAGES. Without this, the displayed dropped value would
+  // only reflect backend overflow and the user could silently lose rows under
+  // sustained traffic.
+  const [clientDropped, setClientDropped] = useState(0);
+  // Total of (dropped + clientDropped) at the moment the user last clicked
+  // Clear. Subtracted from the live total so the displayed value resets to 0
+  // on clear, even though both backend and client counters keep incrementing.
   const [droppedBaseline, setDroppedBaseline] = useState(0);
   // Monotonically increasing count of every message received over the lifetime
   // of this spy session. Unlike `messages.length` which is capped at
@@ -498,9 +504,13 @@ export const useSpyOnQueue = (
   // the ring buffer is full.
   const [totalReceived, setTotalReceived] = useState(0);
 
-  // RAF batching: accumulate messages in a ref, flush on animation frame
+  // RAF batching: accumulate messages in a ref, flush on animation frame.
+  // Mirrors the messages array in a ref so flushPending can compute evictions
+  // synchronously without depending on React state (which would require
+  // calling setState from inside another updater — not allowed).
   const pendingRef = useRef<SpyMessage[]>([]);
   const rafRef = useRef<number | null>(null);
+  const messagesRef = useRef<SpyMessage[]>([]);
 
   const flushPending = useCallback(() => {
     rafRef.current = null;
@@ -508,12 +518,15 @@ export const useSpyOnQueue = (
     if (pending.length === 0) return;
     pendingRef.current = [];
 
-    setMessages((prev) => {
-      const combined = [...prev, ...pending];
-      return combined.length > MAX_SPY_MESSAGES
-        ? combined.slice(-MAX_SPY_MESSAGES)
-        : combined;
-    });
+    const combined = [...messagesRef.current, ...pending];
+    const evicted = Math.max(0, combined.length - MAX_SPY_MESSAGES);
+    const next = evicted > 0 ? combined.slice(-MAX_SPY_MESSAGES) : combined;
+
+    messagesRef.current = next;
+    setMessages(next);
+    if (evicted > 0) {
+      setClientDropped((prev) => prev + evicted);
+    }
     setTotalReceived((prev) => prev + pending.length);
   }, []);
 
@@ -553,20 +566,21 @@ export const useSpyOnQueue = (
   );
 
   const clearMessages = useCallback(() => {
-    setDroppedBaseline(dropped);
+    setDroppedBaseline(dropped + clientDropped);
     setMessages([]);
+    messagesRef.current = [];
     pendingRef.current = [];
     if (rafRef.current !== null) {
       cancelAnimationFrame(rafRef.current);
       rafRef.current = null;
     }
-  }, [dropped]);
+  }, [dropped, clientDropped]);
 
   return {
     messages,
     error,
     spyInfo,
-    dropped: Math.max(0, dropped - droppedBaseline),
+    dropped: Math.max(0, dropped + clientDropped - droppedBaseline),
     totalReceived,
     isLoading: isActive && !spyInfo && !error,
     clearMessages,
