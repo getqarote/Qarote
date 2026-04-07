@@ -245,8 +245,6 @@ export async function createStandaloneAmqpConnection(
   const protocol =
     server.useHttps || server.amqpPort === 5671 ? "amqps" : "amqp";
 
-  const url = `${protocol}://${encodeURIComponent(username)}:${encodeURIComponent(password)}@${server.host}:${server.amqpPort}${vhost === "/" ? "/" : `/${encodeURIComponent(vhost)}`}`;
-
   logger.info(
     {
       serverId: server.id,
@@ -259,10 +257,23 @@ export async function createStandaloneAmqpConnection(
     "Opening standalone AMQP connection"
   );
 
-  const connection = await amqp.connect(url, {
-    heartbeat: 60,
-    timeout: 30_000,
-  });
+  // Use amqplib's structured connect() form. It handles IPv6 literal
+  // bracketing (RFC 3986), vhost escaping, and credential escaping
+  // internally, so we don't have to deal with any of those edge cases.
+  const connection = await amqp.connect(
+    {
+      protocol,
+      hostname: server.host,
+      port: server.amqpPort,
+      username,
+      password,
+      vhost,
+    },
+    {
+      heartbeat: 60,
+      timeout: 30_000,
+    }
+  );
 
   const cleanup = async () => {
     try {
