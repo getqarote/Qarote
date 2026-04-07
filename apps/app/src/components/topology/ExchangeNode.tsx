@@ -5,13 +5,10 @@ import { Activity, GitBranch, Hash, Radio, Share2 } from "lucide-react";
 
 import type { ExchangeNodeData } from "@/lib/topology/layout";
 
-const exchangeTypeColors: Record<string, string> = {
-  direct: "border-blue-500 bg-blue-50 dark:bg-blue-950/30",
-  fanout: "border-green-500 bg-green-50 dark:bg-green-950/30",
-  topic: "border-purple-500 bg-purple-50 dark:bg-purple-950/30",
-  headers: "border-orange-500 bg-orange-50 dark:bg-orange-950/30",
-};
-
+// Type distinction in the topology view comes from the icon (GitBranch /
+// Radio / Share2 / Hash) and the type label below the name. The card chrome
+// itself stays neutral so the topology canvas reads as a single coherent
+// design system surface, not a rainbow of arbitrary type colors.
 const exchangeTypeIcons: Record<string, typeof GitBranch> = {
   direct: GitBranch,
   fanout: Radio,
@@ -21,18 +18,17 @@ const exchangeTypeIcons: Record<string, typeof GitBranch> = {
 
 function ExchangeNodeComponent({ data }: NodeProps) {
   const nodeData = data as unknown as ExchangeNodeData;
-  const colorClass =
-    exchangeTypeColors[nodeData.exchangeType] ||
-    "border-gray-400 bg-gray-50 dark:bg-gray-900/30";
   const Icon = exchangeTypeIcons[nodeData.exchangeType] || Activity;
 
   return (
-    <div
-      className={`rounded-lg border-2 p-3 shadow-sm min-w-[200px] ${colorClass}`}
-    >
-      <Handle type="target" position={Position.Left} className="!bg-gray-400" />
+    <div className="rounded-lg border-2 border-border bg-card p-3 shadow-sm min-w-[200px]">
+      <Handle
+        type="target"
+        position={Position.Left}
+        className="!bg-muted-foreground"
+      />
       <div className="flex items-center gap-2 mb-1">
-        <Icon className="w-4 h-4 shrink-0" />
+        <Icon className="w-4 h-4 shrink-0 text-muted-foreground" />
         <span className="font-semibold text-sm truncate" title={nodeData.label}>
           {nodeData.label}
         </span>
@@ -40,7 +36,7 @@ function ExchangeNodeComponent({ data }: NodeProps) {
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
         <span className="capitalize">{nodeData.exchangeType}</span>
         {nodeData.internal && (
-          <span className="text-orange-600">(internal)</span>
+          <span className="text-muted-foreground">(internal)</span>
         )}
       </div>
       {nodeData.bindingCount > 0 && (
@@ -52,7 +48,7 @@ function ExchangeNodeComponent({ data }: NodeProps) {
       <Handle
         type="source"
         position={Position.Right}
-        className="!bg-gray-400"
+        className="!bg-muted-foreground"
       />
     </div>
   );
