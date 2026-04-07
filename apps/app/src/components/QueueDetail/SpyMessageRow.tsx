@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { memo, type MouseEvent, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { Check, ChevronDown, ChevronRight, Copy } from "lucide-react";
@@ -41,13 +41,13 @@ interface SpyMessageRowProps {
   message: SpyMessage;
 }
 
-export const SpyMessageRow = React.memo(function SpyMessageRow({
+export const SpyMessageRow = memo(function SpyMessageRow({
   message,
 }: SpyMessageRowProps) {
   const { t } = useTranslation("queues");
   const [copied, setCopied] = useState(false);
 
-  const handleCopy = async (e: React.MouseEvent) => {
+  const handleCopy = async (e: MouseEvent) => {
     e.stopPropagation();
     const success = await copyToClipboard(message.payload);
     if (success) {
