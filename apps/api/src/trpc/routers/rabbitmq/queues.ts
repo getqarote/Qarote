@@ -1,6 +1,7 @@
 import crypto from "node:crypto";
 
 import { TRPCError } from "@trpc/server";
+import type amqp from "amqplib";
 
 import { prisma } from "@/core/prisma";
 import { RabbitMQAmqpClient } from "@/core/rabbitmq/AmqpClient";
@@ -989,7 +990,6 @@ export const queuesRouter = router({
       // isolates the spy session from all other AMQP operations.
       const { connection: spyConnection, cleanup: closeSpyConnection } =
         await createStandaloneAmqpConnection(serverId, workspaceId);
-      const spyChannel = await spyConnection.createChannel();
 
       // Generate a unique spy queue name
       const shortId = crypto.randomUUID().slice(0, 12);
@@ -999,8 +999,14 @@ export const queuesRouter = router({
       const MAX_PAYLOAD_BYTES = 64 * 1024; // 64KB truncation limit
       const buffer = new BoundedBuffer<SpyMessage>(500);
       let consumerTag: string | undefined;
+      // Declared outside the try so it's visible in finally. createChannel()
+      // is performed inside the try so any failure is caught by the
+      // connection cleanup in finally.
+      let spyChannel: amqp.Channel | undefined;
 
       try {
+        spyChannel = await spyConnection.createChannel();
+
         // Assert temporary spy queue
         await spyChannel.assertQueue(spyQueueName, {
           exclusive: true,
@@ -1126,8 +1132,10 @@ export const queuesRouter = router({
           }
         }
       } finally {
-        // Cleanup: cancel consumer, delete queue, close channel + connection
-        if (consumerTag) {
+        // Cleanup: cancel consumer, delete queue, close channel + connection.
+        // spyChannel may be undefined if createChannel() threw — guard each
+        // channel operation so we still reach closeSpyConnection() below.
+        if (spyChannel && consumerTag) {
           try {
             await spyChannel.cancel(consumerTag);
           } catch (error) {
@@ -1138,25 +1146,29 @@ export const queuesRouter = router({
           }
         }
 
-        try {
-          await spyChannel.deleteQueue(spyQueueName);
-        } catch (error) {
-          ctx.logger.warn(
-            { error, spyQueueName },
-            "Failed to delete spy queue during cleanup (may have been auto-deleted)"
-          );
+        if (spyChannel) {
+          try {
+            await spyChannel.deleteQueue(spyQueueName);
+          } catch (error) {
+            ctx.logger.warn(
+              { error, spyQueueName },
+              "Failed to delete spy queue during cleanup (may have been auto-deleted)"
+            );
+          }
+
+          try {
+            await spyChannel.close();
+          } catch (error) {
+            ctx.logger.warn(
+              { error },
+              "Failed to close spy channel during cleanup"
+            );
+          }
         }
 
-        try {
-          await spyChannel.close();
-        } catch (error) {
-          ctx.logger.warn(
-            { error },
-            "Failed to close spy channel during cleanup"
-          );
-        }
-
-        // Close the standalone connection — only this spy session uses it
+        // Close the standalone connection — only this spy session uses it.
+        // This runs unconditionally so the connection is never leaked, even
+        // if createChannel() threw before spyChannel was assigned.
         await closeSpyConnection();
 
         ctx.logger.info(
