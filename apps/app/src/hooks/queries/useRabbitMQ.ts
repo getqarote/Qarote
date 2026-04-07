@@ -491,6 +491,12 @@ export const useSpyOnQueue = (
   // Subtracted from `dropped` so the displayed value resets to 0 on clear,
   // even though the backend keeps streaming the cumulative count.
   const [droppedBaseline, setDroppedBaseline] = useState(0);
+  // Monotonically increasing count of every message received over the lifetime
+  // of this spy session. Unlike `messages.length` which is capped at
+  // MAX_SPY_MESSAGES, this keeps incrementing — consumers (e.g. the "N new
+  // messages" indicator in QueueSpy) need a counter that doesn't freeze when
+  // the ring buffer is full.
+  const [totalReceived, setTotalReceived] = useState(0);
 
   // RAF batching: accumulate messages in a ref, flush on animation frame
   const pendingRef = useRef<SpyMessage[]>([]);
@@ -508,6 +514,7 @@ export const useSpyOnQueue = (
         ? combined.slice(-MAX_SPY_MESSAGES)
         : combined;
     });
+    setTotalReceived((prev) => prev + pending.length);
   }, []);
 
   const isActive = !!serverId && !!queueName && !!workspace?.id && enabled;
@@ -560,6 +567,7 @@ export const useSpyOnQueue = (
     error,
     spyInfo,
     dropped: Math.max(0, dropped - droppedBaseline),
+    totalReceived,
     isLoading: isActive && !spyInfo && !error,
     clearMessages,
   };

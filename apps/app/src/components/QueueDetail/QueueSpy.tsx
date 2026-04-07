@@ -20,15 +20,25 @@ interface QueueSpyProps {
 
 export function QueueSpy({ serverId, queueName, vhost }: QueueSpyProps) {
   const { t } = useTranslation("queues");
-  const { messages, error, spyInfo, dropped, isLoading, clearMessages } =
-    useSpyOnQueue(serverId, queueName, vhost, true);
+  const {
+    messages,
+    error,
+    spyInfo,
+    dropped,
+    totalReceived,
+    isLoading,
+    clearMessages,
+  } = useSpyOnQueue(serverId, queueName, vhost, true);
 
   // Auto-scroll via IntersectionObserver
   const sentinelRef = useRef<HTMLDivElement>(null);
   const scrollViewportRef = useRef<HTMLDivElement>(null);
   const [isAtBottom, setIsAtBottom] = useState(true);
   const [newMessageCount, setNewMessageCount] = useState(0);
-  const prevMessageCountRef = useRef(0);
+  // Use the monotonic totalReceived counter (not messages.length, which is
+  // capped at MAX_SPY_MESSAGES — once full, length stops growing and the
+  // diff would always be 0).
+  const prevTotalReceivedRef = useRef(0);
 
   // Track whether user is at the bottom
   useEffect(() => {
@@ -51,20 +61,20 @@ export function QueueSpy({ serverId, queueName, vhost }: QueueSpyProps) {
 
   // Track new messages when not at bottom
   useEffect(() => {
-    if (!isAtBottom && messages.length > prevMessageCountRef.current) {
+    if (!isAtBottom && totalReceived > prevTotalReceivedRef.current) {
       setNewMessageCount(
-        (prev) => prev + (messages.length - prevMessageCountRef.current)
+        (prev) => prev + (totalReceived - prevTotalReceivedRef.current)
       );
     }
-    prevMessageCountRef.current = messages.length;
-  }, [messages.length, isAtBottom]);
+    prevTotalReceivedRef.current = totalReceived;
+  }, [totalReceived, isAtBottom]);
 
   // Auto-scroll when at bottom and new messages arrive
   useEffect(() => {
     if (isAtBottom && sentinelRef.current) {
       sentinelRef.current.scrollIntoView({ behavior: "auto" });
     }
-  }, [messages.length, isAtBottom]);
+  }, [totalReceived, isAtBottom]);
 
   const scrollToBottom = useCallback(() => {
     if (sentinelRef.current) {
