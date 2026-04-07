@@ -157,8 +157,8 @@ export const QueuedMessagesChart = ({
           </div>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-              <span className="text-xs text-gray-500">
+              <div className="w-2 h-2 bg-success rounded-full animate-pulse"></div>
+              <span className="text-xs text-muted-foreground">
                 {t("updatesEvery5s")}
               </span>
             </div>
@@ -175,8 +175,8 @@ export const QueuedMessagesChart = ({
         {isLoading ? (
           <div className="h-96 w-full flex items-center justify-center">
             <div className="flex flex-col items-center gap-2">
-              <RefreshCw className="h-6 w-6 animate-spin text-blue-600" />
-              <p className="text-sm text-gray-500">
+              <RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" />
+              <p className="text-sm text-muted-foreground">
                 {t("loadingQueuedMessages")}
               </p>
             </div>

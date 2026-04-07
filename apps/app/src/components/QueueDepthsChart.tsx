@@ -49,7 +49,7 @@ const CustomXAxisTick = ({
         y={0}
         dy={8}
         textAnchor="end"
-        fill="#6b7280"
+        fill="hsl(var(--muted-foreground))"
         fontSize={11}
         transform="rotate(-40)"
       >
@@ -76,14 +76,16 @@ const CustomTooltip = ({
     const originalQueue = queues.find((q) => q.name === labelStr);
     return (
       <div className="bg-white p-3 border rounded-lg shadow-lg">
-        <p className="font-medium text-gray-900">
+        <p className="font-medium text-foreground">
           {originalQueue?.name || label}
         </p>
-        <p className="text-orange-600">
+        <p className="text-foreground">
           Messages: {payload[0].value.toLocaleString()}
         </p>
         {originalQueue?.vhost && originalQueue.vhost !== "/" && (
-          <p className="text-gray-500 text-sm">VHost: {originalQueue.vhost}</p>
+          <p className="text-muted-foreground text-sm">
+            VHost: {originalQueue.vhost}
+          </p>
         )}
       </div>
     );
@@ -126,7 +128,7 @@ export const QueueDepthsChart = ({
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="flex items-center gap-2 text-xl font-semibold text-foreground">
-              <BarChart3 className="h-5 w-5 text-orange-600" />
+              <BarChart3 className="h-5 w-5 text-muted-foreground" />
               {t("queueDepths")}
             </CardTitle>
             <p className="text-sm text-muted-foreground">
@@ -134,7 +136,7 @@ export const QueueDepthsChart = ({
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+            <div className="w-2 h-2 bg-success rounded-full animate-pulse"></div>
             <span className="text-xs text-muted-foreground">
               {t("updatesEvery5s")}
             </span>
@@ -144,13 +146,13 @@ export const QueueDepthsChart = ({
       <CardContent>
         {isLoading ? (
           <div className="h-80 flex items-center justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>
         ) : queues.length === 0 ? (
           <div className="h-80 flex items-center justify-center">
             <div className="text-center">
-              <BarChart3 className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500">{t("noQueuesFound")}</p>
+              <BarChart3 className="h-12 w-12 text-muted-foreground/40 mx-auto mb-4" />
+              <p className="text-muted-foreground">{t("noQueuesFound")}</p>
             </div>
           </div>
         ) : (
@@ -160,7 +162,10 @@ export const QueueDepthsChart = ({
                 data={chartData}
                 margin={{ top: 20, right: 30, left: 20, bottom: 80 }}
               >
-                <CartesianGrid strokeDasharray="3 3" stroke="#e0e7ff" />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="hsl(var(--border))"
+                />
                 <XAxis
                   dataKey="name"
                   tick={<CustomXAxisTick />}
