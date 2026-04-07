@@ -18,6 +18,8 @@ import {
   validateQueueCreationOnServer,
 } from "@/services/plan/plan.service";
 
+import { hasWorkspaceAccess } from "@/middlewares/workspace";
+
 import {
   CreateQueueSchema,
   DeleteQueueSchema,
@@ -1099,7 +1101,12 @@ export const queuesRouter = router({
 
         // Adaptive drain loop
         while (!signal.aborted) {
-          // Re-verify workspace access on a wall-clock interval
+          // Re-verify both server access AND workspace membership on a
+          // wall-clock interval. verifyServerAccess() only proves the server
+          // still belongs to workspaceId — it does NOT check whether the
+          // current user is still a member of that workspace. Without the
+          // hasWorkspaceAccess() check, a user removed from the workspace
+          // mid-stream would keep receiving raw payloads indefinitely.
           if (Date.now() - lastAccessCheck > ACCESS_REVALIDATION_INTERVAL_MS) {
             const stillAuthorized = await verifyServerAccess(
               serverId,
@@ -1113,6 +1120,29 @@ export const queuesRouter = router({
               );
               break;
             }
+
+            // Mirror workspaceProcedure: ADMINs bypass the membership check,
+            // everyone else must still be in WorkspaceMember.
+            if (ctx.user.role !== UserRole.ADMIN) {
+              const stillMember = await hasWorkspaceAccess(
+                ctx.user.id,
+                workspaceId
+              );
+              if (!stillMember) {
+                ctx.logger.info(
+                  {
+                    serverId,
+                    queueName,
+                    spyQueueName,
+                    userId: ctx.user.id,
+                    workspaceId,
+                  },
+                  "Spy session terminated — user removed from workspace"
+                );
+                break;
+              }
+            }
+
             lastAccessCheck = Date.now();
           }
 
