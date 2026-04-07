@@ -17,12 +17,20 @@
 }
 
 @theme {
+  /* UI font: system-native first (SF Pro on macOS, Segoe UI on Windows,
+     Cantarell/Ubuntu/DejaVu on Linux). No external web font request — respects
+     the self-hosted ethos and ships zero bytes. Arial is kept only as a late
+     fallback for systems without a better option. */
   --font-sans:
-    "Arial", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
-    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+    "Noto Color Emoji";
+  /* Numeric font: Fragment Mono is the aspirational first choice but is not
+     currently loaded — falls through to the system monospace, which is high
+     quality on all platforms. Used for all numeric data. */
   --font-mono:
-    "Fragment Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-    "Liberation Mono", "Courier New", monospace;
+    "Fragment Mono", ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco,
+    Consolas, "Liberation Mono", "Courier New", monospace;
 
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));
@@ -38,6 +46,19 @@
 
   --color-destructive: hsl(var(--destructive));
   --color-destructive-foreground: hsl(var(--destructive-foreground));
+
+  /* Semantic status tokens — reserved for actual health/state, never decoration */
+  --color-success: hsl(var(--success));
+  --color-success-foreground: hsl(var(--success-foreground));
+  --color-success-muted: hsl(var(--success-muted));
+
+  --color-warning: hsl(var(--warning));
+  --color-warning-foreground: hsl(var(--warning-foreground));
+  --color-warning-muted: hsl(var(--warning-muted));
+
+  --color-info: hsl(var(--info));
+  --color-info-foreground: hsl(var(--info-foreground));
+  --color-info-muted: hsl(var(--info-muted));
 
   --color-muted: hsl(var(--muted));
   --color-muted-foreground: hsl(var(--muted-foreground));
@@ -208,21 +229,20 @@
 }
 
 @utility btn-primary {
-  /* Button Components */
-  @apply text-white font-medium px-4 py-2 rounded-md transition-all duration-200;
-  background-image: linear-gradient(to right, rgb(234 88 12), rgb(220 38 38));
+  /* Button Components — solid primary, no gradient. Weight and hover shift
+     carry the "pressability" that the gradient used to carry. */
+  @apply bg-primary text-primary-foreground font-medium px-4 py-2 rounded-md transition-colors duration-150;
 
   &:hover {
-    background-image: linear-gradient(to right, rgb(194 65 12), rgb(185 28 28));
+    background-color: hsl(var(--primary) / 0.92);
   }
 }
 
 @utility btn-primary-large {
-  @apply text-white font-medium px-6 py-3 rounded-lg transition-all duration-200;
-  background-image: linear-gradient(to right, rgb(234 88 12), rgb(220 38 38));
+  @apply bg-primary text-primary-foreground font-medium px-6 py-3 rounded-lg transition-colors duration-150;
 
   &:hover {
-    background-image: linear-gradient(to right, rgb(194 65 12), rgb(185 28 28));
+    background-color: hsl(var(--primary) / 0.92);
   }
 }
 
@@ -233,13 +253,13 @@
 }
 
 @utility title-page {
-  @apply text-3xl font-bold bg-clip-text text-transparent;
-  background-image: linear-gradient(to right, rgb(234 88 12), rgb(220 38 38));
+  /* Quieter: solid foreground, weight carries hierarchy. The brand gradient
+     is reserved for the wordmark only (title-gradient utility). */
+  @apply text-3xl font-semibold text-foreground tracking-tight;
 }
 
 @utility title-section {
-  @apply text-xl font-bold bg-clip-text text-transparent;
-  background-image: linear-gradient(to right, rgb(234 88 12), rgb(220 38 38));
+  @apply text-xl font-semibold text-foreground tracking-tight;
 }
 
 @utility main-content {
@@ -279,8 +299,9 @@
     --popover: 0 0% 100%;
     --popover-foreground: 20 14.3% 4.1%;
 
-    /* Orange primary theme */
-    --primary: 25 95% 53%;
+    /* Orange primary theme — saturation dialed from 95% to 82% for a more
+       sophisticated, less neon tone. Same hue, same brand, quieter voice. */
+    --primary: 24 82% 52%;
     --primary-foreground: 0 0% 98%;
 
     --secondary: 30 25% 94%;
@@ -295,9 +316,24 @@
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
+    /* Status — light mode. Hue spread is intentional: success=green, warning=amber
+       (deliberately distinct from primary orange 25), info=blue. Use ONLY for actual
+       health/state. Never decorative. */
+    --success: 142 71% 38%;
+    --success-foreground: 0 0% 98%;
+    --success-muted: 142 60% 94%;
+
+    --warning: 38 92% 45%;
+    --warning-foreground: 0 0% 98%;
+    --warning-muted: 38 90% 94%;
+
+    --info: 217 91% 50%;
+    --info-foreground: 0 0% 98%;
+    --info-muted: 217 90% 95%;
+
     --border: 30 25% 89%;
     --input: 30 25% 89%;
-    --ring: 25 95% 53%;
+    --ring: 24 82% 52%;
 
     /* Smaller radius */
     --radius: 0.25rem;
@@ -305,12 +341,12 @@
     /* Orange sidebar theme */
     --sidebar-background: 30 54% 98%;
     --sidebar-foreground: 25 25% 20%;
-    --sidebar-primary: 25 95% 53%;
+    --sidebar-primary: 24 82% 52%;
     --sidebar-primary-foreground: 0 0% 98%;
     --sidebar-accent: 30 35% 92%;
     --sidebar-accent-foreground: 25 45% 17%;
     --sidebar-border: 30 25% 89%;
-    --sidebar-ring: 25 95% 53%;
+    --sidebar-ring: 24 82% 52%;
   }
 
   .dark {
@@ -321,8 +357,8 @@
     --popover: 20 14.3% 4.1%;
     --popover-foreground: 0 0% 95%;
 
-    /* Orange primary theme for dark mode */
-    --primary: 25 95% 53%;
+    /* Orange primary theme for dark mode — same saturation dial as light */
+    --primary: 24 82% 56%;
     --primary-foreground: 0 0% 98%;
 
     --secondary: 25 14% 12%;
@@ -337,19 +373,33 @@
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
+    /* Status — dark mode. Slightly lifted lightness so they read on dark surfaces.
+       Same hue policy as light mode. */
+    --success: 142 60% 50%;
+    --success-foreground: 0 0% 98%;
+    --success-muted: 142 40% 14%;
+
+    --warning: 38 90% 56%;
+    --warning-foreground: 20 14% 8%;
+    --warning-muted: 38 50% 14%;
+
+    --info: 217 88% 62%;
+    --info-foreground: 0 0% 98%;
+    --info-muted: 217 50% 14%;
+
     --border: 25 14% 12%;
     --input: 25 14% 12%;
-    --ring: 25 95% 53%;
+    --ring: 24 82% 56%;
 
     /* Orange sidebar theme for dark mode */
     --sidebar-background: 25 20% 8%;
     --sidebar-foreground: 30 25% 85%;
-    --sidebar-primary: 25 95% 53%;
+    --sidebar-primary: 24 82% 56%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 25 15% 15%;
     --sidebar-accent-foreground: 30 25% 85%;
     --sidebar-border: 25 15% 15%;
-    --sidebar-ring: 25 95% 53%;
+    --sidebar-ring: 24 82% 56%;
   }
 }
 

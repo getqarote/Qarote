@@ -11,15 +11,14 @@ import { AppSidebar } from "@/components/AppSidebar";
 import { ConnectedNodes } from "@/components/ConnectedNodes";
 import { ConnectionStatus } from "@/components/ConnectionStatus";
 import { MessagesRatesChart } from "@/components/MessagesRatesChart";
+import { MetricsStatusStrip } from "@/components/MetricsStatusStrip";
 import { NoServerConfigured } from "@/components/NoServerConfigured";
 import { PageError } from "@/components/PageError";
 import { PlanUpgradeModal } from "@/components/plans/PlanUpgradeModal";
-import { PrimaryMetricsCards } from "@/components/PrimaryMetricsCards";
 import { QueueDepthsChart } from "@/components/QueueDepthsChart";
 import { QueuedMessagesChart } from "@/components/QueuedMessagesChart";
 import { RecentAlerts } from "@/components/RecentAlerts";
 import { ResourceUsage } from "@/components/ResourceUsage";
-import { SecondaryMetricsCards } from "@/components/SecondaryMetricsCards";
 import { TimeRange } from "@/components/TimeRangeSelector";
 import { Card, CardContent } from "@/components/ui/card";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
@@ -55,8 +54,6 @@ const Index = () => {
     isLoading,
     queuesLoading,
     liveRatesLoading,
-    overviewFetching,
-    nodesFetching,
     overviewError,
     metricsError,
     liveRatesError,
@@ -159,21 +156,13 @@ const Index = () => {
               <ConnectionStatus />
             </div>
 
-            {/* Primary Metrics Cards */}
-            <PrimaryMetricsCards
-              metrics={metrics}
-              isLoading={isLoading}
-              metricsError={metricsError}
-              overviewFetching={overviewFetching}
-            />
-
-            {/* Secondary Metrics */}
-            <SecondaryMetricsCards
+            {/* Compact status strip — replaces the 7-card hero grid.
+                Calm baseline, threshold-driven color for sharp alerts. */}
+            <MetricsStatusStrip
               metrics={metrics}
               isLoading={isLoading}
               metricsError={metricsError}
               nodesError={nodesError}
-              nodesFetching={nodesFetching}
             />
 
             {/* Charts - Full Width Stacked */}

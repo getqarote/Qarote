@@ -371,9 +371,9 @@ export function AppSidebar() {
                     <SidebarMenuItem key={item.titleKey}>
                       <SidebarMenuButton
                         asChild
-                        className={`w-full justify-start transition-all duration-200 ${
+                        className={`w-full justify-start transition-colors duration-150 ${
                           isActive
-                            ? "bg-linear-to-r from-orange-600 to-red-600 text-white hover:text-white"
+                            ? "bg-sidebar-accent text-primary font-semibold"
                             : "hover:bg-sidebar-accent text-sidebar-foreground"
                         }`}
                       >
@@ -401,7 +401,7 @@ export function AppSidebar() {
           to="/help"
           className={`flex items-center gap-2 text-sm rounded-md px-2 py-1.5 transition-colors ${
             location.pathname === "/help"
-              ? "bg-linear-to-r from-orange-600 to-red-600 text-white hover:text-white font-medium"
+              ? "bg-sidebar-accent text-primary font-semibold"
               : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent"
           }`}
         >
@@ -414,7 +414,7 @@ export function AppSidebar() {
           to="/settings"
           className={`flex items-center gap-2 text-sm rounded-md px-2 py-1.5 transition-colors ${
             location.pathname.startsWith("/settings")
-              ? "bg-linear-to-r from-orange-600 to-red-600 text-white hover:text-white font-medium"
+              ? "bg-sidebar-accent text-primary font-semibold"
               : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent"
           }`}
         >

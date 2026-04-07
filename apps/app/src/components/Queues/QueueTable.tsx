@@ -81,7 +81,7 @@ export function QueueTable({
           </div>
         ) : queues.length > 0 ? (
           <>
-            <Table>
+            <Table className="tabular-nums">
               <TableHeader>
                 <TableRow>
                   <TableHead>{t("queueName")}</TableHead>
@@ -113,7 +113,7 @@ export function QueueTable({
                             onClick={() =>
                               onNavigateToQueue(encodeURIComponent(queue.name))
                             }
-                            className="text-left font-medium text-orange-600 hover:text-orange-700 hover:underline transition-colors cursor-pointer truncate"
+                            className="text-left font-medium text-foreground hover:text-primary hover:underline transition-colors cursor-pointer truncate"
                             title={queue.name}
                           >
                             {queue.name}
@@ -136,10 +136,16 @@ export function QueueTable({
                       <TableCell className="font-mono">
                         {metrics.messages}
                       </TableCell>
-                      <TableCell className="font-mono text-blue-600">
+                      <TableCell className="font-mono">
                         {metrics.messagesReady}
                       </TableCell>
-                      <TableCell className="font-mono text-orange-600">
+                      <TableCell
+                        className={
+                          metrics.messagesUnacked > 0
+                            ? "font-mono text-warning"
+                            : "font-mono"
+                        }
+                      >
                         {metrics.messagesUnacked}
                       </TableCell>
                       <TableCell>

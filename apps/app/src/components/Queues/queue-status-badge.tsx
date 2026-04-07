@@ -5,15 +5,35 @@ export function QueueStatusBadge({ state }: { state: string }) {
 
   switch (normalized) {
     case "running":
-      return <Badge className="bg-green-100 text-green-700">Running</Badge>;
+      return (
+        <Badge className="bg-success-muted text-success hover:bg-success-muted">
+          Running
+        </Badge>
+      );
     case "down":
-      return <Badge className="bg-red-100 text-red-700">Down</Badge>;
+      return (
+        <Badge className="bg-destructive/10 text-destructive hover:bg-destructive/10">
+          Down
+        </Badge>
+      );
     case "crashed":
-      return <Badge className="bg-red-100 text-red-700">Crashed</Badge>;
+      return (
+        <Badge className="bg-destructive/10 text-destructive hover:bg-destructive/10">
+          Crashed
+        </Badge>
+      );
     case "stopped":
-      return <Badge className="bg-gray-100 text-gray-700">Stopped</Badge>;
+      return (
+        <Badge className="bg-muted text-muted-foreground hover:bg-muted">
+          Stopped
+        </Badge>
+      );
     case "minority":
-      return <Badge className="bg-yellow-100 text-yellow-700">Minority</Badge>;
+      return (
+        <Badge className="bg-warning-muted text-warning hover:bg-warning-muted">
+          Minority
+        </Badge>
+      );
     default:
       return <Badge variant="outline">{state}</Badge>;
   }
