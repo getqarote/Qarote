@@ -251,14 +251,14 @@ export function WorkspaceSelector() {
         <PopoverTrigger asChild>
           <Button
             variant="ghost"
-            className="h-10 px-3 justify-between min-w-[200px] max-w-[340px] border border-border bg-background hover:bg-accent"
+            className="h-10 px-3 justify-between min-w-[200px] max-w-[480px] border border-border bg-background hover:bg-accent"
             disabled={switchWorkspaceMutation.isPending}
           >
             <div className="flex items-center gap-1.5 min-w-0">
               <Building2 className="w-4 h-4 text-muted-foreground shrink-0" />
               {currentOrg && (
                 <>
-                  <span className="max-w-[100px] truncate text-muted-foreground text-sm">
+                  <span className="max-w-[180px] truncate text-muted-foreground text-sm">
                     {currentOrg.name}
                   </span>
                   <ChevronRight className="w-3 h-3 text-muted-foreground/60 shrink-0" />

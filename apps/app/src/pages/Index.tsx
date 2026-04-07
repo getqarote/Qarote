@@ -179,9 +179,14 @@ const Index = () => {
             <RecentAlerts />
 
             {/* FLOW — throughput story. Queued volume and message rates side
-                by side at lg+ so operators can visually correlate a spike in
-                one with a plateau in the other. Stacks on narrower viewports. */}
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                by side starting at 1440px. Below that the chart card headers
+                ("Queued messages" + "Updates every 5s" + time-range dropdown)
+                are too wide to sit on one line at half-width, so we stack to
+                preserve header integrity. At 1440px+ each chart gets ~540px
+                which is enough for a clean single-line header. min-w-0 on
+                children prevents Recharts ResponsiveContainer from measuring
+                a negative width during initial layout. */}
+            <div className="grid grid-cols-1 min-[1440px]:grid-cols-2 gap-6 [&>*]:min-w-0">
               <QueuedMessagesChart
                 queueTotals={queueTotals}
                 isLoading={liveRatesLoading}
@@ -204,9 +209,10 @@ const Index = () => {
             <QueueDepthsChart queues={queues} isLoading={queuesLoading} />
 
             {/* INFRA — supporting context. Node health table + resource
-                breakdown side by side. These are reference panels, not the
-                page's main signal. */}
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                breakdown side by side at lg+ (1024px). These panels have
+                simpler headers than the charts, so they pack tighter without
+                wrapping. Reference content, not the page's main signal. */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 [&>*]:min-w-0">
               <ConnectedNodes
                 nodes={nodes}
                 isLoading={isLoading}
