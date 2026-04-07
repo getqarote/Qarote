@@ -1,7 +1,13 @@
 import { useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 
-import { HelpCircle, Info, RefreshCw } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronRight,
+  HelpCircle,
+  Info,
+  RefreshCw,
+} from "lucide-react";
 import {
   CartesianGrid,
   Line,
@@ -79,7 +85,14 @@ export const MessagesRatesChart = ({
 }: MessagesRatesChartProps) => {
   const { t } = useTranslation("dashboard");
 
-  // State for toggling line visibility
+  // State for toggling line visibility.
+  //
+  // The 10 most-common series (publish, deliver, ack, ...) are visible by
+  // default. The 5 "advanced" series (get_empty, return_unroutable,
+  // drop_unroutable, disk_writes, disk_reads) are hidden by default and
+  // revealed via the "Show advanced" toggle below — this prevents the chart
+  // from rendering 15 overlapping lines on first paint, which is unreadable
+  // even with a deliberately curated palette.
   const [visibleLines, setVisibleLines] = useState({
     publish: true,
     deliver: true,
@@ -89,14 +102,35 @@ export const MessagesRatesChart = ({
     confirm: true,
     get: true,
     get_no_ack: true,
-    get_empty: true,
     redeliver: true,
     reject: true,
-    return_unroutable: true,
-    drop_unroutable: true,
-    disk_reads: true,
-    disk_writes: true,
+    // Advanced — start hidden, flipped on by the toggle below
+    get_empty: false,
+    return_unroutable: false,
+    drop_unroutable: false,
+    disk_reads: false,
+    disk_writes: false,
   });
+
+  // Whether the "advanced" legend section and its 5 series are revealed.
+  // Tracks visibleLines for the 5 advanced keys; toggling this flips all of
+  // them together.
+  const [advancedExpanded, setAdvancedExpanded] = useState(false);
+
+  const toggleAdvanced = () => {
+    setAdvancedExpanded((prev) => {
+      const next = !prev;
+      setVisibleLines((current) => ({
+        ...current,
+        get_empty: next,
+        return_unroutable: next,
+        drop_unroutable: next,
+        disk_reads: next,
+        disk_writes: next,
+      }));
+      return next;
+    });
+  };
 
   // Toggle line visibility
   const toggleLine = (metricName: keyof typeof visibleLines) => {
@@ -495,86 +529,90 @@ export const MessagesRatesChart = ({
               </ResponsiveContainer>
             </div>
 
-            {/* Custom Toggleable Legend */}
-            <div className="mt-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 text-xs">
-              {[
-                // Column 1
-                { key: "publish", name: "Publish", color: CHART_PUBLISH }, // Orange
+            {/* Custom Toggleable Legend — split into "common" (always
+                visible) and "advanced" (hidden behind a toggle). The
+                advanced section keeps the 5 rare series and their lines
+                off-screen by default so the chart isn't a wall of 15
+                overlapping lines on first paint. */}
+            {(() => {
+              type Metric = {
+                key: keyof typeof visibleLines;
+                name: string;
+                color: string;
+              };
+              const commonMetrics: Metric[] = [
+                { key: "publish", name: "Publish", color: CHART_PUBLISH },
                 {
                   key: "confirm",
                   name: "Publisher confirm",
                   color: CHART_CONFIRM,
-                }, // Amber
+                },
                 {
                   key: "deliver",
                   name: "Deliver (manual ack)",
-                  color: CHART_DELIVER, // Blue
+                  color: CHART_DELIVER,
                 },
-
-                // Column 2
                 {
                   key: "deliver_get",
                   name: "Deliver / Get",
-                  color: CHART_DELIVER_GET, // Pink
+                  color: CHART_DELIVER_GET,
                 },
                 {
                   key: "deliver_no_ack",
                   name: "Deliver (auto ack)",
-                  color: CHART_DELIVER_NO_ACK, // Pink-400
+                  color: CHART_DELIVER_NO_ACK,
                 },
-                { key: "ack", name: "Consumer ack", color: CHART_ACK }, // Emerald
+                { key: "ack", name: "Consumer ack", color: CHART_ACK },
                 {
                   key: "redeliver",
                   name: "Redelivered",
                   color: CHART_REDELIVER,
-                }, // Violet
-
-                // Column 3
-                { key: "get", name: "Get (manual ack)", color: CHART_GET }, // Cyan
+                },
+                { key: "get", name: "Get (manual ack)", color: CHART_GET },
                 {
                   key: "get_no_ack",
                   name: "Get (auto ack)",
                   color: CHART_GET_NO_ACK,
-                }, // Light purple
+                },
+                { key: "reject", name: "Reject", color: CHART_REJECT },
+              ];
+              const advancedMetrics: Metric[] = [
                 {
                   key: "get_empty",
                   name: "Get (empty)",
                   color: CHART_GET_EMPTY,
-                }, // Brown
-                { key: "reject", name: "Reject", color: CHART_REJECT }, // Indigo
-
-                // Column 4
+                },
                 {
                   key: "return_unroutable",
                   name: "Unroutable (return)",
-                  color: CHART_RETURN_UNROUTABLE, // Indigo
+                  color: CHART_RETURN_UNROUTABLE,
                 },
                 {
                   key: "drop_unroutable",
                   name: "Unroutable (drop)",
-                  color: CHART_DROP_UNROUTABLE, // Yellow
+                  color: CHART_DROP_UNROUTABLE,
                 },
                 {
                   key: "disk_writes",
                   name: "Disk write",
                   color: CHART_DISK_WRITES,
-                }, // Red
+                },
                 {
                   key: "disk_reads",
                   name: "Disk read",
                   color: CHART_DISK_READS,
-                }, // Green
-              ].map((metric) => (
+                },
+              ];
+
+              const renderChip = (metric: Metric) => (
                 <div
                   key={metric.key}
                   className={`flex items-center gap-2 p-2 rounded cursor-pointer transition-colors ${
-                    visibleLines[metric.key as keyof typeof visibleLines]
+                    visibleLines[metric.key]
                       ? "bg-accent hover:bg-accent/80"
                       : "bg-muted hover:bg-muted/80 opacity-60"
                   }`}
-                  onClick={() =>
-                    toggleLine(metric.key as keyof typeof visibleLines)
-                  }
+                  onClick={() => toggleLine(metric.key)}
                 >
                   <div
                     className="w-3 h-3 rounded-sm"
@@ -582,8 +620,39 @@ export const MessagesRatesChart = ({
                   />
                   <span className="text-foreground">{metric.name}</span>
                 </div>
-              ))}
-            </div>
+              );
+
+              return (
+                <>
+                  <div className="mt-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 text-xs">
+                    {commonMetrics.map(renderChip)}
+                  </div>
+                  <div className="mt-3 flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={toggleAdvanced}
+                      className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+                      aria-expanded={advancedExpanded}
+                    >
+                      {advancedExpanded ? (
+                        <ChevronDown className="h-3 w-3" />
+                      ) : (
+                        <ChevronRight className="h-3 w-3" />
+                      )}
+                      {advancedExpanded ? "Hide advanced" : "Show advanced"}
+                      <span className="text-muted-foreground/60">
+                        ({advancedMetrics.length})
+                      </span>
+                    </button>
+                  </div>
+                  {advancedExpanded && (
+                    <div className="mt-2 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 text-xs">
+                      {advancedMetrics.map(renderChip)}
+                    </div>
+                  )}
+                </>
+              );
+            })()}
           </div>
         )}
       </CardContent>
