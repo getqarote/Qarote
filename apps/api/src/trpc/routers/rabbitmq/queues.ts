@@ -1043,8 +1043,31 @@ export const queuesRouter = router({
           bindingCount: namedBindings.length,
         };
 
+        // Periodically re-verify access while streaming. Spy exposes raw
+        // message payloads, so we want a tight bound on the window during
+        // which a revoked user can still receive data.
+        const ACCESS_REVALIDATION_INTERVAL_MS = 15_000;
+        let lastAccessCheck = Date.now();
+
         // Adaptive drain loop
         while (!signal.aborted) {
+          // Re-verify workspace access on a wall-clock interval
+          if (Date.now() - lastAccessCheck > ACCESS_REVALIDATION_INTERVAL_MS) {
+            const stillAuthorized = await verifyServerAccess(
+              serverId,
+              workspaceId,
+              true
+            );
+            if (!stillAuthorized || !stillAuthorized.workspace) {
+              ctx.logger.info(
+                { serverId, queueName, spyQueueName },
+                "Spy session terminated — server removed or access revoked"
+              );
+              break;
+            }
+            lastAccessCheck = Date.now();
+          }
+
           const batch = buffer.drain(50);
 
           if (batch.length > 0) {
