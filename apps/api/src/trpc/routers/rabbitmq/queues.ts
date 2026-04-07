@@ -33,6 +33,7 @@ import { authorize, router, workspaceProcedure } from "@/trpc/trpc";
 import {
   createAmqpClient,
   createRabbitMQClientFromServer,
+  createStandaloneAmqpConnection,
   verifyServerAccess,
 } from "./shared";
 
@@ -939,12 +940,15 @@ export const queuesRouter = router({
         return;
       }
 
-      // Get AMQP client (reuses factory-cached connection)
-      const amqpClient = await createAmqpClient(serverId, workspaceId);
-
-      // Create a dedicated channel for this spy session.
-      // This isolates spy failures from the main channel used by pause/resume.
-      const spyChannel = await amqpClient.createDedicatedChannel();
+      // Open a standalone AMQP connection for this spy session.
+      // We deliberately bypass the factory cache: the cached client is shared
+      // with pause/resume/getPauseStatus, which call disconnect() in their
+      // finally blocks. That would tear down the underlying connection and
+      // kill any active spy channels on it. Owning a dedicated connection
+      // isolates the spy session from all other AMQP operations.
+      const { connection: spyConnection, cleanup: closeSpyConnection } =
+        await createStandaloneAmqpConnection(serverId, workspaceId);
+      const spyChannel = await spyConnection.createChannel();
 
       // Generate a unique spy queue name
       const shortId = crypto.randomUUID().slice(0, 12);
@@ -1084,7 +1088,7 @@ export const queuesRouter = router({
           }
         }
       } finally {
-        // Cleanup: cancel consumer, delete queue, close dedicated channel
+        // Cleanup: cancel consumer, delete queue, close channel + connection
         if (consumerTag) {
           try {
             await spyChannel.cancel(consumerTag);
@@ -1113,6 +1117,9 @@ export const queuesRouter = router({
             "Failed to close spy channel during cleanup"
           );
         }
+
+        // Close the standalone connection — only this spy session uses it
+        await closeSpyConnection();
 
         ctx.logger.info(
           { spyQueueName, queueName, serverId },
