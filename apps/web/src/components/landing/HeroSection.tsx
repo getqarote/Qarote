@@ -42,7 +42,7 @@ const HeroSection = () => {
           </p>
 
           <div className="mb-12">
-            <AuthButtons />
+            <AuthButtons describedById="hero-no-credit-card" />
             <p
               id="hero-no-credit-card"
               className="text-xs sm:text-sm text-muted-foreground mt-3 px-4"

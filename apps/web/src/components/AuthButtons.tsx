@@ -6,9 +6,10 @@ import { Button } from "@/components/ui/button";
 
 interface AuthButtonsProps {
   align?: "left" | "center" | "right";
+  describedById?: string;
 }
 
-const AuthButtons = ({ align = "center" }: AuthButtonsProps) => {
+const AuthButtons = ({ align = "center", describedById }: AuthButtonsProps) => {
   const { t } = useTranslation("landing");
   const authBaseUrl = import.meta.env.VITE_APP_BASE_URL || "";
 
@@ -40,7 +41,7 @@ const AuthButtons = ({ align = "center" }: AuthButtonsProps) => {
         variant="gradient"
         size="pill"
         onClick={handleSignUp}
-        aria-describedby="hero-no-credit-card"
+        aria-describedby={describedById}
         className="w-full sm:w-auto"
       >
         <span className="whitespace-nowrap">{t("cta.getStartedForFree")}</span>
