@@ -331,6 +331,26 @@
     --info-foreground: 0 0% 98%;
     --info-muted: 217 90% 95%;
 
+    /* Chart series palette — light mode. See lib/chartColors.ts for the
+       palette provenance and color-blind safety audit. These are Tableau 10
+       (10 most-common series) plus 5 OKLCH-derived extensions, expressed in
+       HSL components matching the rest of the design tokens. */
+    --chart-publish: 30 88% 56%;
+    --chart-deliver: 211 36% 48%;
+    --chart-ack: 113 34% 47%;
+    --chart-confirm: 47 82% 61%;
+    --chart-deliver-get: 175 31% 59%;
+    --chart-deliver-no-ack: 354 100% 81%;
+    --chart-redeliver: 316 25% 58%;
+    --chart-reject: 359 70% 61%;
+    --chart-get: 22 24% 49%;
+    --chart-get-no-ack: 20 10% 70%;
+    --chart-get-empty: 70 37% 39%;
+    --chart-return-unroutable: 205 62% 32%;
+    --chart-drop-unroutable: 254 31% 49%;
+    --chart-disk-writes: 325 46% 51%;
+    --chart-disk-reads: 162 40% 38%;
+
     --border: 30 25% 89%;
     --input: 30 25% 89%;
     --ring: 24 82% 52%;
@@ -386,6 +406,27 @@
     --info: 217 88% 62%;
     --info-foreground: 0 0% 98%;
     --info-muted: 217 50% 14%;
+
+    /* Chart series palette — dark mode. Same hues as light mode, lifted ~13%
+       in lightness and slightly more saturated so each series pops on the
+       dark card background without losing its identity. The deep navy
+       return-unroutable gets the biggest lift since it was deliberately
+       dark for protanopia contrast in light mode. */
+    --chart-publish: 30 96% 69%;
+    --chart-deliver: 211 44% 61%;
+    --chart-ack: 113 42% 60%;
+    --chart-confirm: 47 90% 74%;
+    --chart-deliver-get: 175 39% 72%;
+    --chart-deliver-no-ack: 354 100% 85%;
+    --chart-redeliver: 316 33% 71%;
+    --chart-reject: 359 78% 74%;
+    --chart-get: 22 32% 62%;
+    --chart-get-no-ack: 20 18% 83%;
+    --chart-get-empty: 70 45% 52%;
+    --chart-return-unroutable: 205 70% 45%;
+    --chart-drop-unroutable: 254 39% 62%;
+    --chart-disk-writes: 325 54% 64%;
+    --chart-disk-reads: 162 48% 51%;
 
     --border: 25 14% 12%;
     --input: 25 14% 12%;

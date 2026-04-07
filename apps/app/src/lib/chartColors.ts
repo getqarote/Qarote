@@ -85,36 +85,52 @@
  */
 
 // ============================================================================
+// IMPLEMENTATION NOTE — CSS variable indirection
+// ============================================================================
+//
+// The actual hex values live in apps/app/src/styles/index.css as HSL
+// components on `--chart-*` CSS variables. This module exports
+// `hsl(var(--chart-*))` strings that Recharts <Line stroke={...}> and the
+// legend `color: ...` mappings consume directly.
+//
+// Why the indirection: the design system already defines color tokens this
+// way (--primary, --success, etc.) with separate light and dark mode values.
+// By following the same pattern for chart colors, dark mode adaptation is
+// automatic — the browser resolves var(--chart-publish) to the light or dark
+// value depending on whether `.dark` is on the html element. No JS, no React
+// state, no theme provider gymnastics.
+//
+// To change a series color, edit index.css. To rename a series, edit this
+// file. To add a new series, do both.
+//
+// ============================================================================
 // MessagesRatesChart — message flow on a RabbitMQ broker (15 series)
 // ============================================================================
 
 // --- Tableau 10 (the 10 most-common series) ---
-export const CHART_PUBLISH = "#f28e2c"; // tableau-orange — primary throughput
-export const CHART_DELIVER = "#4e79a7"; // tableau-blue — secondary throughput
-export const CHART_ACK = "#59a14f"; // tableau-green — success outcome
-export const CHART_CONFIRM = "#edc949"; // tableau-yellow — publisher confirms
-export const CHART_DELIVER_GET = "#76b7b2"; // tableau-teal
-export const CHART_DELIVER_NO_ACK = "#ff9da7"; // tableau-pink — lighter weight
-export const CHART_REDELIVER = "#af7aa1"; // tableau-purple — debugging signal
-export const CHART_REJECT = "#e15759"; // tableau-red — failure signal
-export const CHART_GET = "#9c755f"; // tableau-brown
-export const CHART_GET_NO_ACK = "#bab0ab"; // tableau-gray — de-emphasized
+export const CHART_PUBLISH = "hsl(var(--chart-publish))"; // tableau-orange — primary throughput
+export const CHART_DELIVER = "hsl(var(--chart-deliver))"; // tableau-blue — secondary throughput
+export const CHART_ACK = "hsl(var(--chart-ack))"; // tableau-green — success outcome
+export const CHART_CONFIRM = "hsl(var(--chart-confirm))"; // tableau-yellow — publisher confirms
+export const CHART_DELIVER_GET = "hsl(var(--chart-deliver-get))"; // tableau-teal
+export const CHART_DELIVER_NO_ACK = "hsl(var(--chart-deliver-no-ack))"; // tableau-pink
+export const CHART_REDELIVER = "hsl(var(--chart-redeliver))"; // tableau-purple — debugging signal
+export const CHART_REJECT = "hsl(var(--chart-reject))"; // tableau-red — failure signal
+export const CHART_GET = "hsl(var(--chart-get))"; // tableau-brown
+export const CHART_GET_NO_ACK = "hsl(var(--chart-get-no-ack))"; // tableau-gray — de-emphasized
 
 // --- OKLCH extensions (the 5 rare series, filling Tableau 10's hue gaps) ---
 //
-// RETURN_UNROUTABLE was originally `oklch(0.62 0.11 210)` (#3e8a9f) but that
-// collapsed to within RGB-distance-2 of Tableau purple under protanopia
-// simulation, and both series are "rare failure" routing metrics that may be
-// visible together during incident investigation. Retuned to a deeper, more
-// saturated value with bigger lightness contrast against Tableau purple
-// (#af7aa1, lightness ~0.6). New value: oklch(0.42 0.14 225), lightness 0.42
-// vs purple's 0.6 = ~30% lightness gap, distinguishable across all three
-// color blindness types.
-export const CHART_GET_EMPTY = "#7e8a3f"; // oklch(0.62 0.13 115) olive (yellow-green gap)
-export const CHART_RETURN_UNROUTABLE = "#1f5a85"; // oklch(0.42 0.14 245) deep navy-blue
-export const CHART_DROP_UNROUTABLE = "#6755a3"; // oklch(0.55 0.14 280) blue-violet gap
-export const CHART_DISK_WRITES = "#bb478a"; // oklch(0.58 0.16 340) magenta gap
-export const CHART_DISK_READS = "#3a8770"; // oklch(0.58 0.10 165) dark teal gap
+// RETURN_UNROUTABLE was originally a cyan-blue OKLCH pick that collapsed to
+// within RGB-distance-2 of Tableau purple under protanopia simulation, and
+// both series are "rare failure" routing metrics that may be visible together
+// during incident investigation. Retuned to a deeper navy with ~30% more
+// lightness contrast against Tableau purple. New protanopia distance: 72.
+export const CHART_GET_EMPTY = "hsl(var(--chart-get-empty))"; // olive (yellow-green gap)
+export const CHART_RETURN_UNROUTABLE = "hsl(var(--chart-return-unroutable))"; // deep navy
+export const CHART_DROP_UNROUTABLE = "hsl(var(--chart-drop-unroutable))"; // blue-violet gap
+export const CHART_DISK_WRITES = "hsl(var(--chart-disk-writes))"; // magenta gap
+export const CHART_DISK_READS = "hsl(var(--chart-disk-reads))"; // dark teal gap
 
 // ============================================================================
 // QueuedMessagesChart — message backlog (3 series)
@@ -126,12 +142,10 @@ export const CHART_DISK_READS = "#3a8770"; // oklch(0.58 0.10 165) dark teal gap
 //   - green  = "ready" / healthy
 //   - orange = "unacked" / mild attention without alarm
 //
-// These deliberately reuse Tableau hex values from the MessagesRatesChart
-// section above. They're defined as separate exports because the two charts
-// can evolve independently — if a future palette refactor wants different
-// colors for "queued total" vs "deliver", renaming one shouldn't drag in the
-// other.
+// These reuse the same CSS variables as deliver/ack/publish from the
+// MessagesRatesChart section above. They're defined as separate exports so
+// renaming the variable for one chart doesn't drag in the other.
 
-export const CHART_QUEUED_TOTAL = "#4e79a7"; // tableau-blue
-export const CHART_QUEUED_READY = "#59a14f"; // tableau-green
-export const CHART_QUEUED_UNACKED = "#f28e2c"; // tableau-orange
+export const CHART_QUEUED_TOTAL = "hsl(var(--chart-deliver))"; // tableau-blue
+export const CHART_QUEUED_READY = "hsl(var(--chart-ack))"; // tableau-green
+export const CHART_QUEUED_UNACKED = "hsl(var(--chart-publish))"; // tableau-orange
