@@ -195,9 +195,14 @@ const QueueDetail = () => {
                     onTimeRangeChange={setTimeRange}
                   />
 
-                  {/* Spy on Queue — conditionally mounted */}
+                  {/* Spy on Queue — conditionally mounted.
+                      The `key` forces a full unmount/remount (and therefore
+                      a clean subscription teardown + state reset) whenever
+                      the spy target changes, e.g. when navigating between
+                      /queues/foo and /queues/bar without leaving the page. */}
                   {spyEnabled && (
                     <QueueSpy
+                      key={`${selectedServerId}|${queueName}|${selectedVHost || "/"}`}
                       serverId={selectedServerId}
                       queueName={queueName}
                       vhost={selectedVHost || "/"}
