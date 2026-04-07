@@ -71,7 +71,7 @@ export const RabbitMqVersionInfo = ({
       {/* Management Plugin Requirement Notice */}
       {!isManagementAlertDismissed && (
         <Alert className="mb-4 border-info/30 bg-info-muted relative">
-          <InfoIcon className="h-4 w-4 text-info dark:text-info" />
+          <InfoIcon className="h-4 w-4 text-info" />
           <AlertDescription className="text-info pr-8">
             <div className="font-medium mb-1">
               RabbitMQ Management Plugin Required
@@ -94,7 +94,7 @@ export const RabbitMqVersionInfo = ({
             variant="ghost"
             size="sm"
             onClick={() => setIsManagementAlertDismissed(true)}
-            className="absolute top-2 right-6 h-5 w-5 p-0 hover:bg-info-muted text-info dark:text-info"
+            className="absolute top-2 right-6 h-5 w-5 p-0 hover:bg-info-muted text-info"
           >
             <X
               className="h-3 w-3 cursor-pointer"

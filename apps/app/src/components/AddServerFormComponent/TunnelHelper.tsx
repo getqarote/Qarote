@@ -44,9 +44,9 @@ export const TunnelHelper = ({ form }: TunnelHelperProps) => {
     // User is using a tunnel - show success message
     return (
       <Alert className="border-success/30 bg-success-muted">
-        <Info className="h-4 w-4 text-success dark:text-success" />
+        <Info className="h-4 w-4 text-success" />
         <AlertTitle className="text-success">Tunnel Detected</AlertTitle>
-        <AlertDescription className="text-success dark:text-success">
+        <AlertDescription className="text-success">
           Your tunnel URL has been detected. HTTPS will be automatically
           enabled. Make sure your tunnel is running and accessible.
         </AlertDescription>
@@ -57,21 +57,18 @@ export const TunnelHelper = ({ form }: TunnelHelperProps) => {
   // User is entering localhost - show instructions
   return (
     <Alert className="border-info/30 bg-info-muted">
-      <AlertCircle className="h-4 w-4 text-info dark:text-info" />
+      <AlertCircle className="h-4 w-4 text-info" />
       <AlertTitle className="text-info">
         Monitoring localhost RabbitMQ?
       </AlertTitle>
-      <AlertDescription className="space-y-2 text-info dark:text-info">
+      <AlertDescription className="space-y-2 text-info">
         <p>
           To monitor a RabbitMQ server running on localhost (development only),
           you need to expose it using a tunnel service.
         </p>
         <Collapsible open={isOpen} onOpenChange={setIsOpen}>
           <CollapsibleTrigger asChild>
-            <Button
-              variant="link"
-              className="h-auto p-0 text-info underline dark:text-info"
-            >
+            <Button variant="link" className="h-auto p-0 text-info underline">
               {isOpen ? "Hide" : "Show"} setup instructions
             </Button>
           </CollapsibleTrigger>
@@ -90,7 +87,7 @@ export const TunnelHelper = ({ form }: TunnelHelperProps) => {
                     href="https://ngrok.com/download"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-info underline dark:text-info"
+                    className="text-info underline"
                   >
                     ngrok.com/download
                   </a>

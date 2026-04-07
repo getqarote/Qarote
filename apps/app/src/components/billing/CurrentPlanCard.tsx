@@ -135,7 +135,7 @@ export const CurrentPlanCard: React.FC<CurrentPlanCardProps> = ({
                       variant={isTrialing ? "outline" : "default"}
                       className={
                         isTrialing
-                          ? "border-warning/40 text-warning bg-warning-muted dark:text-warning"
+                          ? "border-warning/40 text-warning bg-warning-muted"
                           : cancelAtPeriodEnd
                             ? "bg-destructive/10 text-destructive border-destructive/20"
                             : ""
@@ -240,7 +240,7 @@ export const CurrentPlanCard: React.FC<CurrentPlanCardProps> = ({
                       )}
                 </p>
                 {isTrialing && daysRemaining > 0 && (
-                  <p className="text-xs text-warning dark:text-warning mt-0.5 font-medium">
+                  <p className="text-xs text-warning mt-0.5 font-medium">
                     {daysRemaining} day{daysRemaining !== 1 ? "s" : ""} left
                   </p>
                 )}

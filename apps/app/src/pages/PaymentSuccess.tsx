@@ -114,8 +114,8 @@ const PaymentSuccess: React.FC = () => {
   }, [sessionId, workspace?.id, utils]);
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-orange-600 via-red-600 to-orange-700 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-lg max-w-md w-full p-8 text-center">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="bg-card border border-border rounded-lg shadow-sm max-w-md w-full p-8 text-center">
         <div className="mb-6">
           <CheckCircle className="w-16 h-16 text-success mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-foreground mb-2">
@@ -146,7 +146,7 @@ const PaymentSuccess: React.FC = () => {
         <div className="space-y-3">
           <button
             onClick={() => navigate("/")}
-            className="w-full bg-gradient-button hover:bg-gradient-button-hover text-white py-2 px-4 rounded-lg font-medium transition-colors flex items-center justify-center"
+            className="btn-primary w-full flex items-center justify-center"
           >
             {t("paymentSuccess.exploreDashboard")}
             <ArrowRight className="w-4 h-4 ml-2" />

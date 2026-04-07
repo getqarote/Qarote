@@ -129,8 +129,8 @@ export const ServerUrlInput = ({ form, mode = "add" }: ServerUrlInputProps) => {
 
       {parseStatus.status === "success" && parseStatus.message && (
         <Alert className="border-success/30 bg-success-muted">
-          <CheckCircle2 className="h-4 w-4 text-success dark:text-success" />
-          <AlertDescription className="text-success dark:text-success">
+          <CheckCircle2 className="h-4 w-4 text-success" />
+          <AlertDescription className="text-success">
             {parseStatus.message}
           </AlertDescription>
         </Alert>

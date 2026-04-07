@@ -162,7 +162,7 @@ export const EnhancedTeamTab = ({
                     <span
                       className={
                         totalUsers + pendingInvitations >= maxUsers
-                          ? "text-destructive dark:text-destructive"
+                          ? "text-destructive"
                           : ""
                       }
                     >

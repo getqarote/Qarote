@@ -94,7 +94,7 @@ const getRoleIcon = (role: string) => {
     case "OWNER":
       return null;
     case "ADMIN":
-      return <Shield className="h-3.5 w-3.5 text-info" />;
+      return <Shield className="h-3.5 w-3.5 text-muted-foreground" />;
     default:
       return <User className="h-3.5 w-3.5 text-muted-foreground" />;
   }

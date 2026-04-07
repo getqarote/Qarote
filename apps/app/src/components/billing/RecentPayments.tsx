@@ -12,21 +12,15 @@ function getStatusStyle(status: string) {
   switch (status) {
     case "SUCCEEDED":
       return {
-        icon: (
-          <CheckCircle className="w-4 h-4 text-success dark:text-success" />
-        ),
+        icon: <CheckCircle className="w-4 h-4 text-success" />,
         iconBg: "bg-success-muted",
-        badge:
-          "text-success border-success/30 bg-success-muted dark:text-success",
+        badge: "text-success border-success/30 bg-success-muted",
       };
     case "FAILED":
       return {
-        icon: (
-          <AlertCircle className="w-4 h-4 text-destructive dark:text-destructive" />
-        ),
+        icon: <AlertCircle className="w-4 h-4 text-destructive" />,
         iconBg: "bg-destructive/10",
-        badge:
-          "text-destructive border-destructive/30 bg-destructive/10 dark:text-destructive",
+        badge: "text-destructive border-destructive/30 bg-destructive/10",
       };
     case "CANCELED":
       return {
@@ -37,10 +31,9 @@ function getStatusStyle(status: string) {
     case "PENDING":
     case "REQUIRES_ACTION":
       return {
-        icon: <Clock className="w-4 h-4 text-warning dark:text-warning" />,
+        icon: <Clock className="w-4 h-4 text-warning" />,
         iconBg: "bg-warning-muted",
-        badge:
-          "text-warning border-warning/30 bg-warning-muted dark:text-warning",
+        badge: "text-warning border-warning/30 bg-warning-muted",
       };
     default:
       return {
