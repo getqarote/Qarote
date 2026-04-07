@@ -129,5 +129,8 @@
   "spyNewMessages": "{{count}} new messages",
   "spyTruncated": "Truncated",
   "spyStarted": "{{count}} bindings mirrored",
-  "spyBinaryPayload": "Binary payload"
+  "spyBinaryPayload": "Binary payload",
+  "spyEmpty": "(empty)",
+  "spyRedelivered": "redelivered",
+  "spyDefaultExchange": "(default)"
 }

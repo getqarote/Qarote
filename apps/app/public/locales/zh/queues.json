@@ -129,5 +129,8 @@
   "spyNewMessages": "{{count}} 条新消息",
   "spyTruncated": "已截断",
   "spyStarted": "已镜像 {{count}} 个绑定",
-  "spyBinaryPayload": "二进制消息体"
+  "spyBinaryPayload": "二进制消息体",
+  "spyEmpty": "(空)",
+  "spyRedelivered": "重新投递",
+  "spyDefaultExchange": "(默认)"
 }

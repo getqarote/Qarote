@@ -129,5 +129,8 @@
   "spyNewMessages": "{{count}} nuevos mensajes",
   "spyTruncated": "Truncado",
   "spyStarted": "{{count}} enlaces duplicados",
-  "spyBinaryPayload": "Contenido binario"
+  "spyBinaryPayload": "Contenido binario",
+  "spyEmpty": "(vacío)",
+  "spyRedelivered": "reentregado",
+  "spyDefaultExchange": "(predeterminado)"
 }

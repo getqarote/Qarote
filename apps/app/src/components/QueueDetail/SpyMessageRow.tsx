@@ -104,12 +104,12 @@ export const SpyMessageRow = memo(function SpyMessageRow({
           )}
 
           <Badge variant="secondary" className="text-xs shrink-0">
-            {message.routingKey || "(empty)"}
+            {message.routingKey || t("spyEmpty")}
           </Badge>
 
           {message.redelivered && (
             <Badge variant="destructive" className="text-xs shrink-0">
-              redelivered
+              {t("spyRedelivered")}
             </Badge>
           )}
 
@@ -225,11 +225,11 @@ export const SpyMessageRow = memo(function SpyMessageRow({
               )}
               <span className="text-muted-foreground">exchange:</span>
               <span className="text-foreground">
-                {message.exchange || "(default)"}
+                {message.exchange || t("spyDefaultExchange")}
               </span>
               <span className="text-muted-foreground">routing-key:</span>
               <span className="text-foreground">
-                {message.routingKey || "(empty)"}
+                {message.routingKey || t("spyEmpty")}
               </span>
             </div>
           </div>
