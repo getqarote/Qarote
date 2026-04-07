@@ -172,10 +172,9 @@ export function PauseQueueDialog({
             Cancel
           </Button>
           <Button
-            variant={isPaused ? "default" : "secondary"}
             onClick={isPaused ? handleResumeQueue : handlePauseQueue}
             disabled={isLoading}
-            className={"btn-primary text-white"}
+            className="btn-primary"
           >
             {isLoading
               ? `${isPaused ? "Resuming" : "Pausing"}...`

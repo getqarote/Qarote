@@ -520,8 +520,8 @@ const AcceptOrgInvitation = () => {
     return (
       <PageWrapper>
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-info-muted flex items-center justify-center">
-            <Building2 className="h-6 w-6 text-info" />
+          <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+            <Building2 className="h-6 w-6 text-primary" />
           </div>
           <CardTitle>{t("joinOrganization")}</CardTitle>
           <CardDescription>
@@ -562,8 +562,8 @@ const AcceptOrgInvitation = () => {
     return (
       <PageWrapper>
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-info-muted flex items-center justify-center">
-            <Building2 className="h-6 w-6 text-info" />
+          <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+            <Building2 className="h-6 w-6 text-primary" />
           </div>
           <CardTitle>{t("joinOrganization")}</CardTitle>
           <CardDescription>{t("existingAccountMessage")}</CardDescription>
@@ -608,8 +608,8 @@ const AcceptOrgInvitation = () => {
   return (
     <PageWrapper>
       <CardHeader className="text-center">
-        <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-info-muted flex items-center justify-center">
-          <Mail className="h-6 w-6 text-info" />
+        <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+          <Mail className="h-6 w-6 text-primary" />
         </div>
         <CardTitle>{t("joinOrganization")}</CardTitle>
         <CardDescription>{t("orgSetUpAccount")}</CardDescription>

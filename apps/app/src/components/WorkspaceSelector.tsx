@@ -223,7 +223,8 @@ export function WorkspaceSelector() {
 
   const getRoleIcon = (ws: WorkspaceInfo) => {
     if (ws.isOwner) {
-      return <Carrot className="w-3 h-3 text-warning" />;
+      // Carrot is the brand mascot — owner role uses brand color, not warning.
+      return <Carrot className="w-3 h-3 text-primary" />;
     }
     return <User className="w-3 h-3 text-muted-foreground" />;
   };

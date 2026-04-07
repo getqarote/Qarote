@@ -299,15 +299,13 @@ export const CurrentPlanCard: React.FC<CurrentPlanCardProps> = ({
                 <div className="flex items-start gap-3">
                   <div
                     className={`mt-0.5 shrink-0 rounded-full p-1.5 ${
-                      cancelAtPeriodEnd
-                        ? "bg-destructive/10"
-                        : "bg-warning-muted"
+                      cancelAtPeriodEnd ? "bg-destructive/10" : "bg-muted"
                     }`}
                   >
                     {cancelAtPeriodEnd ? (
                       <X className="w-4 h-4 text-destructive" />
                     ) : (
-                      <Sparkles className="w-4 h-4 text-warning dark:text-warning" />
+                      <Sparkles className="w-4 h-4 text-muted-foreground" />
                     )}
                   </div>
                   <div>

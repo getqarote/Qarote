@@ -136,7 +136,7 @@ export const RabbitMqVersionInfo = ({
                     return (
                       <Badge
                         key={version}
-                        variant={isSupported ? "default" : "secondary"}
+                        variant="outline"
                         className={`flex items-center gap-1 ${
                           isSupported
                             ? "bg-success-muted text-success border-success/30"

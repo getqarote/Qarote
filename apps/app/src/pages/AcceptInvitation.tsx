@@ -428,8 +428,8 @@ const AcceptInvitation = () => {
   return (
     <PageWrapper>
       <CardHeader className="text-center">
-        <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-info-muted flex items-center justify-center">
-          <Mail className="h-6 w-6 text-info" />
+        <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+          <Mail className="h-6 w-6 text-primary" />
         </div>
         <CardTitle>{t("joinQaroteTitle")}</CardTitle>
         <CardDescription>{t("setUpAccount")}</CardDescription>

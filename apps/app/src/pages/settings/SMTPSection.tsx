@@ -134,7 +134,7 @@ function SMTPForm({
           <div className="flex items-center justify-between">
             <CardTitle>{t("status")}</CardTitle>
             {initialData.source === "database" ? (
-              <Badge variant="default">{t("sourceDatabase")}</Badge>
+              <Badge variant="secondary">{t("sourceDatabase")}</Badge>
             ) : (
               <Badge variant="secondary">{t("sourceEnv")}</Badge>
             )}
