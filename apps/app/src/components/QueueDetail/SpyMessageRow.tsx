@@ -15,12 +15,16 @@ import {
 
 import type { SpyMessage } from "@/hooks/queries/useRabbitMQ";
 
-function formatRelativeTime(isoTimestamp: string): string {
-  const diff = Date.now() - new Date(isoTimestamp).getTime();
-  if (diff < 1000) return "now";
-  if (diff < 60_000) return `${Math.floor(diff / 1000)}s ago`;
-  if (diff < 3_600_000) return `${Math.floor(diff / 60_000)}m ago`;
-  return `${Math.floor(diff / 3_600_000)}h ago`;
+function formatTimestamp(isoTimestamp: string): string {
+  // Absolute time in HH:MM:SS.mmm form. Rows are memoized, so a relative
+  // time label (e.g. "5s ago") would never update after the first render —
+  // absolute timestamps are also more useful for correlating with logs.
+  const d = new Date(isoTimestamp);
+  const hh = String(d.getHours()).padStart(2, "0");
+  const mm = String(d.getMinutes()).padStart(2, "0");
+  const ss = String(d.getSeconds()).padStart(2, "0");
+  const ms = String(d.getMilliseconds()).padStart(3, "0");
+  return `${hh}:${mm}:${ss}.${ms}`;
 }
 
 function formatPayload(payload: string): string {
@@ -72,7 +76,7 @@ export const SpyMessageRow = memo(function SpyMessageRow({
           <ChevronDown className="w-3 h-3 text-muted-foreground shrink-0 hidden group-data-[state=open]:block" />
 
           <span className="text-xs text-muted-foreground whitespace-nowrap shrink-0">
-            {formatRelativeTime(message.timestamp)}
+            {formatTimestamp(message.timestamp)}
           </span>
 
           {message.exchange && (
