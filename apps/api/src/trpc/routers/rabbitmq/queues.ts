@@ -50,6 +50,47 @@ type QueuesServerInfo = {
 };
 
 /**
+ * Decide whether a spy payload should be rendered as text or as a hex preview.
+ *
+ * Strategy:
+ *  1. If the content-type is set, parse the media type (strip parameters such
+ *     as `; charset=utf-8`, lowercase) and accept anything that is structurally
+ *     text: `text/*`, `application/json`, `application/xml`, `application/yaml`,
+ *     and any media type using the RFC 6839 structured-syntax suffixes
+ *     `+json`, `+xml`, `+yaml`.
+ *  2. If the content-type is missing or unrecognized, sniff the payload for
+ *     null bytes in the first 512 bytes — null bytes are a strong binary
+ *     indicator (this is the same heuristic `file(1)` uses for text vs binary).
+ */
+function isTextPayload(
+  contentType: string | undefined,
+  content: Buffer
+): boolean {
+  if (contentType) {
+    const mediaType = contentType.split(";")[0]?.trim().toLowerCase() ?? "";
+    if (mediaType.startsWith("text/")) return true;
+    if (mediaType === "application/json") return true;
+    if (mediaType === "application/xml") return true;
+    if (mediaType === "application/yaml") return true;
+    if (mediaType === "application/x-yaml") return true;
+    if (mediaType === "application/javascript") return true;
+    if (mediaType === "application/ecmascript") return true;
+    // RFC 6839 structured syntax suffixes (e.g. application/vnd.api+json)
+    if (mediaType.endsWith("+json")) return true;
+    if (mediaType.endsWith("+xml")) return true;
+    if (mediaType.endsWith("+yaml")) return true;
+    return false;
+  }
+
+  // Unknown content-type — sniff for null bytes in the first 512 bytes
+  const sample = content.subarray(0, Math.min(content.length, 512));
+  for (const byte of sample) {
+    if (byte === 0x00) return false;
+  }
+  return true;
+}
+
+/**
  * Persist queue data and metrics to the database.
  * Shared by getQueues (query) and watchQueues (subscription).
  */
@@ -993,10 +1034,7 @@ export const queuesRouter = router({
 
             const payloadBytes = msg.content.length;
             const contentType = msg.properties.contentType;
-            const isBinary =
-              !!contentType &&
-              !contentType.startsWith("text/") &&
-              contentType !== "application/json";
+            const isBinary = !isTextPayload(contentType, msg.content);
 
             let payload: string;
             let truncated = false;
