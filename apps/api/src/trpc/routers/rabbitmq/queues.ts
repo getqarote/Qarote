@@ -1005,9 +1005,52 @@ export const queuesRouter = router({
       // is performed inside the try so any failure is caught by the
       // connection cleanup in finally.
       let spyChannel: amqp.Channel | undefined;
+      // Set by channel/connection error and close listeners. The drain loop
+      // checks this flag and breaks out when the underlying transport dies,
+      // so the generator doesn't poll an empty buffer forever while the
+      // client thinks everything is fine.
+      let transportClosed = false;
+      let transportCloseReason: string | undefined;
 
       try {
         spyChannel = await spyConnection.createChannel();
+
+        // Wire up transport failure listeners on both the channel and the
+        // connection. Either can die mid-stream (network partition, broker
+        // restart, RabbitMQ closing our connection), and the consumer
+        // callback would silently stop firing without any other signal.
+        spyChannel.on("error", (err: Error) => {
+          ctx.logger.warn(
+            { err, spyQueueName },
+            "Spy channel error — terminating stream"
+          );
+          transportClosed = true;
+          transportCloseReason = `channel error: ${err.message}`;
+        });
+        spyChannel.on("close", () => {
+          ctx.logger.info(
+            { spyQueueName },
+            "Spy channel closed — terminating stream"
+          );
+          transportClosed = true;
+          transportCloseReason ??= "channel closed";
+        });
+        spyConnection.on("error", (err: Error) => {
+          ctx.logger.warn(
+            { err, spyQueueName },
+            "Spy connection error — terminating stream"
+          );
+          transportClosed = true;
+          transportCloseReason = `connection error: ${err.message}`;
+        });
+        spyConnection.on("close", () => {
+          ctx.logger.info(
+            { spyQueueName },
+            "Spy connection closed — terminating stream"
+          );
+          transportClosed = true;
+          transportCloseReason ??= "connection closed";
+        });
 
         // Assert temporary spy queue
         await spyChannel.assertQueue(spyQueueName, {
@@ -1120,7 +1163,7 @@ export const queuesRouter = router({
         let lastAccessCheck = Date.now();
 
         // Adaptive drain loop
-        while (!signal.aborted) {
+        while (!signal.aborted && !transportClosed) {
           // Re-verify both server access AND workspace membership on a
           // wall-clock interval. verifyServerAccess() only proves the server
           // still belongs to workspaceId — it does NOT check whether the
@@ -1180,6 +1223,18 @@ export const queuesRouter = router({
             // Nothing to send — back off
             await abortableSleep(200, signal);
           }
+        }
+
+        // If the loop exited because the transport died, surface that to
+        // the client as an error event so the UI can show a clear message
+        // instead of silently appearing to work.
+        if (transportClosed && !signal.aborted) {
+          yield {
+            type: "error" as const,
+            code: "TRANSPORT_CLOSED",
+            message:
+              transportCloseReason ?? "AMQP transport closed unexpectedly",
+          };
         }
       } finally {
         // Cleanup: cancel consumer, delete queue, close channel + connection.
