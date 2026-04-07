@@ -239,8 +239,23 @@ export async function createStandaloneAmqpConnection(
     throw new Error(`Server with ID ${serverId} not found or access denied`);
   }
 
-  const username = EncryptionService.decrypt(server.username);
-  const password = EncryptionService.decrypt(server.password);
+  // Decrypt credentials. Wrapped in try/catch so we never leak raw
+  // decryption internals to the caller (matches createAmqpClient).
+  let username: string;
+  let password: string;
+  try {
+    username = EncryptionService.decrypt(server.username);
+    password = EncryptionService.decrypt(server.password);
+  } catch (error) {
+    logger.error(
+      { error, serverId: server.id },
+      `Failed to decrypt credentials for server ${server.name}`
+    );
+    throw new Error(`Failed to decrypt server credentials for ${server.name}`, {
+      cause: error,
+    });
+  }
+
   const vhost = server.vhost || "/";
   const protocol =
     server.useHttps || server.amqpPort === 5671 ? "amqps" : "amqp";
