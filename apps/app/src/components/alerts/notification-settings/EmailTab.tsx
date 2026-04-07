@@ -44,7 +44,7 @@ export function EmailTab({
           <div className="flex items-center justify-between">
             <Label htmlFor="contact-email">
               {t("modal.notificationEmailAddress")}
-              <span className="text-red-500 ml-1">*</span>
+              <span className="text-destructive ml-1">*</span>
             </Label>
             <Button
               type="button"

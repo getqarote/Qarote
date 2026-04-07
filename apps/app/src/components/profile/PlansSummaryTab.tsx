@@ -70,13 +70,13 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
     },
     [UserPlan.DEVELOPER]: {
       icon: <Zap className="w-5 h-5" />,
-      color: "text-blue-600",
-      bgColor: "bg-blue-50 dark:bg-blue-900/20",
+      color: "text-info",
+      bgColor: "bg-info-muted",
     },
     [UserPlan.ENTERPRISE]: {
       icon: <Crown className="w-5 h-5" />,
-      color: "text-purple-600",
-      bgColor: "bg-purple-50 dark:bg-purple-900/20",
+      color: "text-muted-foreground",
+      bgColor: "bg-muted dark:bg-muted/20",
     },
   };
 
@@ -125,7 +125,7 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
                   {isTrialing && (
                     <Badge
                       variant="outline"
-                      className="text-xs border-purple-300 text-purple-600"
+                      className="text-xs border-border text-muted-foreground"
                     >
                       {t("trial.badge")}
                     </Badge>
@@ -152,7 +152,7 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
                     key={index}
                     className="flex items-center gap-2 text-sm text-muted-foreground"
                   >
-                    <div className="w-1.5 h-1.5 bg-blue-50 dark:bg-blue-900/200 rounded-full"></div>
+                    <div className="w-1.5 h-1.5 bg-info-muted rounded-full"></div>
                     {benefit}
                   </li>
                 ))}
@@ -164,13 +164,13 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
 
       {/* Upgrade Suggestion */}
       {selfHosted && currentPlan === UserPlan.FREE ? (
-        <Card className="border border-purple-200 bg-linear-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20">
+        <Card className="border border-border bg-linear-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20">
           <CardContent className="p-6">
             <div className="flex items-start justify-between">
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="p-2 rounded-lg bg-purple-50 dark:bg-purple-900/20">
-                    <Key className="w-5 h-5 text-purple-600" />
+                  <div className="p-2 rounded-lg bg-muted dark:bg-muted/20">
+                    <Key className="w-5 h-5 text-muted-foreground" />
                   </div>
                   <div>
                     <h3 className="font-semibold text-foreground">
@@ -206,7 +206,7 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
           </CardContent>
         </Card>
       ) : !selfHosted && nextPlan && nextPlanStyle ? (
-        <Card className="border border-purple-200 bg-linear-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20">
+        <Card className="border border-border bg-linear-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20">
           <CardContent className="p-6">
             <div className="flex items-start justify-between">
               <div className="flex-1">
@@ -238,7 +238,7 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
                         key={index}
                         className="flex items-center gap-2 text-sm text-muted-foreground"
                       >
-                        <div className="w-1.5 h-1.5 bg-purple-50 dark:bg-purple-900/200 rounded-full"></div>
+                        <div className="w-1.5 h-1.5 bg-muted dark:bg-muted/200 rounded-full"></div>
                         {benefit}
                       </li>
                     ))}

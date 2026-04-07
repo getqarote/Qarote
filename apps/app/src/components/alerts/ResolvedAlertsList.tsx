@@ -73,7 +73,7 @@ export const ResolvedAlertsList = ({
   if (alerts.length === 0) {
     return (
       <div className="text-center py-8">
-        <CheckCircle className="h-12 w-12 mx-auto text-green-500 mb-4" />
+        <CheckCircle className="h-12 w-12 mx-auto text-success mb-4" />
         <h3 className="text-lg font-medium mb-2">{t("noResolvedAlerts")}</h3>
         <p className="text-muted-foreground">{t("noAlertsResolvedYet")}</p>
       </div>

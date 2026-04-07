@@ -458,12 +458,15 @@ export function AlertRulesModal({ isOpen, onClose }: AlertRulesModalProps) {
                         <h4 className="font-medium">{rule.name}</h4>
                         {getSeverityBadge(rule.severity)}
                         {rule.enabled ? (
-                          <Badge variant="outline" className="text-green-600">
+                          <Badge variant="outline" className="text-success">
                             <CheckCircle className="h-3 w-3 mr-1" />
                             {t("rules.badge.enabled")}
                           </Badge>
                         ) : (
-                          <Badge variant="outline" className="text-gray-500">
+                          <Badge
+                            variant="outline"
+                            className="text-muted-foreground"
+                          >
                             <XCircle className="h-3 w-3 mr-1" />
                             {t("rules.badge.disabled")}
                           </Badge>
@@ -524,7 +527,7 @@ export function AlertRulesModal({ isOpen, onClose }: AlertRulesModalProps) {
                           onClick={() => handleDeleteClick(rule)}
                           disabled={deleteMutation.isPending}
                         >
-                          <Trash2 className="h-4 w-4 text-red-500" />
+                          <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
                       )}
                     </div>
@@ -590,7 +593,7 @@ export function AlertRulesModal({ isOpen, onClose }: AlertRulesModalProps) {
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteConfirm}
-              className="bg-red-600 hover:bg-red-700"
+              className="bg-destructive hover:bg-destructive/90"
               disabled={deleteMutation.isPending}
             >
               {deleteMutation.isPending ? (

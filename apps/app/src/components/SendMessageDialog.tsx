@@ -634,9 +634,9 @@ export function SendMessageDialog({
                             (cause, index) => (
                               <div
                                 key={index}
-                                className="flex items-start gap-2 text-sm text-gray-600"
+                                className="flex items-start gap-2 text-sm text-muted-foreground"
                               >
-                                <div className="w-1 h-1 bg-gray-400 rounded-full mt-2 shrink-0" />
+                                <div className="w-1 h-1 bg-muted-foreground/40 rounded-full mt-2 shrink-0" />
                                 <div className="flex-1">{cause}</div>
                               </div>
                             )
@@ -698,14 +698,14 @@ export function SendMessageDialog({
                                   <div
                                     className={`w-2 h-2 rounded-full ${
                                       ex.type === "direct"
-                                        ? "bg-green-500"
+                                        ? "bg-success-muted0"
                                         : ex.type === "fanout"
-                                          ? "bg-blue-500"
+                                          ? "bg-info-muted0"
                                           : ex.type === "topic"
-                                            ? "bg-orange-500"
+                                            ? "bg-warning-muted"
                                             : ex.type === "headers"
-                                              ? "bg-purple-500"
-                                              : "bg-gray-500"
+                                              ? "bg-muted"
+                                              : "bg-muted0"
                                     }`}
                                   />
                                   <span className="font-medium">
@@ -848,7 +848,7 @@ export function SendMessageDialog({
                 const info = getExchangeInfo(selectedExchange.type);
 
                 return (
-                  <Alert className="border-blue-200 bg-blue-50">
+                  <Alert className="border-info/30 bg-info-muted">
                     <MessageSquare className="h-4 w-4" />
                     <AlertDescription className="space-y-2">
                       <div>
@@ -861,13 +861,13 @@ export function SendMessageDialog({
                         </strong>{" "}
                         {info.description}
                       </div>
-                      <div className="text-sm text-blue-700">
+                      <div className="text-sm text-info">
                         <strong>{t("sendMessage.routingKeyInfoLabel")}</strong>{" "}
                         {info.routingKeyHelp}
                       </div>
                       {selectedExchange.bindings &&
                         selectedExchange.bindings.length > 0 && (
-                          <div className="text-sm text-blue-700">
+                          <div className="text-sm text-info">
                             <strong>{t("sendMessage.boundTo")}</strong>{" "}
                             {t("sendMessage.queues", {
                               count: selectedExchange.bindings.length,
@@ -1280,7 +1280,7 @@ export function SendMessageDialog({
               )}
 
               {publishMutation.isSuccess && (
-                <Alert className="border-green-200 bg-green-50 text-green-800">
+                <Alert className="border-success/30 bg-success-muted text-success">
                   <CheckCircle className="h-4 w-4" />
                   <AlertDescription>
                     {t("sendMessage.successAlertMessage", {

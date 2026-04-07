@@ -47,7 +47,7 @@ export function WebhookTab({
         <div className="space-y-2">
           <Label htmlFor="webhook-url">
             {t("modal.webhookUrl")}
-            <span className="text-red-500 ml-1">*</span>
+            <span className="text-destructive ml-1">*</span>
           </Label>
           <Input
             id="webhook-url"
@@ -111,7 +111,7 @@ export function WebhookTab({
                 onClick={onDeleteWebhook}
                 disabled={isDeleting}
               >
-                <Trash2 className="h-4 w-4 text-red-600" />
+                <Trash2 className="h-4 w-4 text-destructive" />
               </Button>
             )}
             <Button

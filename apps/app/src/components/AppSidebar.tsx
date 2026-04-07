@@ -449,7 +449,7 @@ export function AppSidebar() {
             size="sm"
             onClick={() => logoutMutation.mutate()}
             disabled={logoutMutation.isPending}
-            className="text-sidebar-foreground/70 hover:text-red-400 p-1"
+            className="text-sidebar-foreground/70 hover:text-destructive p-1"
           >
             <LogOut className="w-4 h-4" />
           </Button>

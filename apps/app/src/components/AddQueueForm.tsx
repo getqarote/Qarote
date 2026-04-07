@@ -280,7 +280,7 @@ export function AddQueueForm({
                         <FormLabel className="text-sm font-normal">
                           {t("durable")}
                         </FormLabel>
-                        <span className="text-xs text-gray-500">
+                        <span className="text-xs text-muted-foreground">
                           {" "}
                           {t("durableDesc")}
                         </span>
@@ -304,7 +304,7 @@ export function AddQueueForm({
                         <FormLabel className="text-sm font-normal">
                           {t("autoDelete")}
                         </FormLabel>
-                        <span className="text-xs text-gray-500">
+                        <span className="text-xs text-muted-foreground">
                           {" "}
                           {t("autoDeleteDesc")}
                         </span>
@@ -328,7 +328,7 @@ export function AddQueueForm({
                         <FormLabel className="text-sm font-normal">
                           {t("exclusive")}
                         </FormLabel>
-                        <span className="text-xs text-gray-500">
+                        <span className="text-xs text-muted-foreground">
                           {" "}
                           {t("exclusiveDesc")}
                         </span>
@@ -362,7 +362,7 @@ export function AddQueueForm({
                         </FormControl>
                         <SelectContent>
                           <SelectItem value="none">
-                            <span className="text-gray-500">
+                            <span className="text-muted-foreground">
                               {t("noBinding")}
                             </span>
                           </SelectItem>
@@ -376,14 +376,14 @@ export function AddQueueForm({
                                   <div
                                     className={`w-2 h-2 rounded-full ${
                                       ex.type === "direct"
-                                        ? "bg-green-500"
+                                        ? "bg-success-muted0"
                                         : ex.type === "fanout"
-                                          ? "bg-blue-500"
+                                          ? "bg-info-muted0"
                                           : ex.type === "topic"
-                                            ? "bg-orange-500"
+                                            ? "bg-warning-muted"
                                             : ex.type === "headers"
-                                              ? "bg-purple-500"
-                                              : "bg-gray-500"
+                                              ? "bg-muted"
+                                              : "bg-muted0"
                                     }`}
                                   />
                                   <span className="font-medium">
@@ -431,7 +431,7 @@ export function AddQueueForm({
 
               {form.watch("bindToExchange") &&
                 form.watch("bindToExchange") !== "none" && (
-                  <Alert className="border-blue-200 bg-blue-50">
+                  <Alert className="border-info/30 bg-info-muted">
                     <AlertCircle className="h-4 w-4" />
                     <AlertDescription>
                       {t("bindingAlert", {
@@ -462,10 +462,10 @@ export function AddQueueForm({
                 onChange={(e) => setArguments(e.target.value)}
                 placeholder='{ "key": value }'
                 disabled={createQueueMutation.isPending}
-                className="min-h-[120px] font-mono text-sm focus:ring-2 focus:ring-orange-200 focus:border-orange-400 focus:ring-offset-0"
+                className="min-h-[120px] font-mono text-sm focus:ring-2 focus:ring-orange-200 focus:border-warning/50 focus:ring-offset-0"
               />
               <div className="space-y-2">
-                <p className="text-sm font-medium text-gray-700">
+                <p className="text-sm font-medium text-muted-foreground">
                   {t("availableOptions")}
                 </p>
                 <div className="flex flex-wrap gap-2">
@@ -492,7 +492,7 @@ export function AddQueueForm({
                               );
                             }
                           }}
-                          className="px-3 py-1.5 text-xs bg-gray-100 hover:bg-orange-100 text-gray-700 hover:text-orange-800 rounded-md border hover:border-orange-300 transition-colors"
+                          className="px-3 py-1.5 text-xs bg-muted hover:bg-warning-muted text-muted-foreground hover:text-warning rounded-md border hover:border-warning/40 transition-colors"
                         >
                           x-max-length
                         </button>
@@ -523,7 +523,7 @@ export function AddQueueForm({
                               );
                             }
                           }}
-                          className="px-3 py-1.5 text-xs bg-gray-100 hover:bg-orange-100 text-gray-700 hover:text-orange-800 rounded-md border hover:border-orange-300 transition-colors"
+                          className="px-3 py-1.5 text-xs bg-muted hover:bg-warning-muted text-muted-foreground hover:text-warning rounded-md border hover:border-warning/40 transition-colors"
                         >
                           x-message-ttl
                         </button>
@@ -554,7 +554,7 @@ export function AddQueueForm({
                               );
                             }
                           }}
-                          className="px-3 py-1.5 text-xs bg-gray-100 hover:bg-orange-100 text-gray-700 hover:text-orange-800 rounded-md border hover:border-orange-300 transition-colors"
+                          className="px-3 py-1.5 text-xs bg-muted hover:bg-warning-muted text-muted-foreground hover:text-warning rounded-md border hover:border-warning/40 transition-colors"
                         >
                           x-expires
                         </button>
@@ -585,7 +585,7 @@ export function AddQueueForm({
                               );
                             }
                           }}
-                          className="px-3 py-1.5 text-xs bg-gray-100 hover:bg-orange-100 text-gray-700 hover:text-orange-800 rounded-md border hover:border-orange-300 transition-colors"
+                          className="px-3 py-1.5 text-xs bg-muted hover:bg-warning-muted text-muted-foreground hover:text-warning rounded-md border hover:border-warning/40 transition-colors"
                         >
                           x-max-priority
                         </button>
@@ -616,7 +616,7 @@ export function AddQueueForm({
                               );
                             }
                           }}
-                          className="px-3 py-1.5 text-xs bg-gray-100 hover:bg-orange-100 text-gray-700 hover:text-orange-800 rounded-md border hover:border-orange-300 transition-colors"
+                          className="px-3 py-1.5 text-xs bg-muted hover:bg-warning-muted text-muted-foreground hover:text-warning rounded-md border hover:border-warning/40 transition-colors"
                         >
                           x-overflow
                         </button>
@@ -648,7 +648,7 @@ export function AddQueueForm({
                               );
                             }
                           }}
-                          className="px-3 py-1.5 text-xs bg-gray-100 hover:bg-orange-100 text-gray-700 hover:text-orange-800 rounded-md border hover:border-orange-300 transition-colors"
+                          className="px-3 py-1.5 text-xs bg-muted hover:bg-warning-muted text-muted-foreground hover:text-warning rounded-md border hover:border-warning/40 transition-colors"
                         >
                           x-dead-letter-exchange
                         </button>
@@ -682,7 +682,7 @@ export function AddQueueForm({
                               );
                             }
                           }}
-                          className="px-3 py-1.5 text-xs bg-gray-100 hover:bg-orange-100 text-gray-700 hover:text-orange-800 rounded-md border hover:border-orange-300 transition-colors"
+                          className="px-3 py-1.5 text-xs bg-muted hover:bg-warning-muted text-muted-foreground hover:text-warning rounded-md border hover:border-warning/40 transition-colors"
                         >
                           x-dead-letter-routing-key
                         </button>
@@ -715,7 +715,7 @@ export function AddQueueForm({
                               );
                             }
                           }}
-                          className="px-3 py-1.5 text-xs bg-gray-100 hover:bg-orange-100 text-gray-700 hover:text-orange-800 rounded-md border hover:border-orange-300 transition-colors"
+                          className="px-3 py-1.5 text-xs bg-muted hover:bg-warning-muted text-muted-foreground hover:text-warning rounded-md border hover:border-warning/40 transition-colors"
                         >
                           x-single-active-consumer
                         </button>
@@ -766,7 +766,7 @@ export function AddQueueForm({
                             {...field}
                           />
                         </FormControl>
-                        <span className="text-xs text-gray-500">
+                        <span className="text-xs text-muted-foreground">
                           {t("maxLengthDesc")}
                         </span>
                         <FormMessage />
@@ -788,7 +788,7 @@ export function AddQueueForm({
                             {...field}
                           />
                         </FormControl>
-                        <span className="text-xs text-gray-500">
+                        <span className="text-xs text-muted-foreground">
                           {t("messageTtlDesc")}
                         </span>
                         <FormMessage />

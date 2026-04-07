@@ -13,20 +13,20 @@ function getStatusStyle(status: string) {
     case "SUCCEEDED":
       return {
         icon: (
-          <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+          <CheckCircle className="w-4 h-4 text-success dark:text-success" />
         ),
-        iconBg: "bg-emerald-50 dark:bg-emerald-950/30",
+        iconBg: "bg-success-muted",
         badge:
-          "text-emerald-600 border-emerald-200 bg-emerald-50 dark:text-emerald-400 dark:border-emerald-800 dark:bg-emerald-950/30",
+          "text-success border-success/30 bg-success-muted dark:text-success",
       };
     case "FAILED":
       return {
         icon: (
-          <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
+          <AlertCircle className="w-4 h-4 text-destructive dark:text-destructive" />
         ),
-        iconBg: "bg-red-50 dark:bg-red-950/30",
+        iconBg: "bg-destructive/10",
         badge:
-          "text-red-600 border-red-200 bg-red-50 dark:text-red-400 dark:border-red-800 dark:bg-red-950/30",
+          "text-destructive border-destructive/30 bg-destructive/10 dark:text-destructive",
       };
     case "CANCELED":
       return {
@@ -37,10 +37,10 @@ function getStatusStyle(status: string) {
     case "PENDING":
     case "REQUIRES_ACTION":
       return {
-        icon: <Clock className="w-4 h-4 text-amber-600 dark:text-amber-400" />,
-        iconBg: "bg-amber-50 dark:bg-amber-950/30",
+        icon: <Clock className="w-4 h-4 text-warning dark:text-warning" />,
+        iconBg: "bg-warning-muted",
         badge:
-          "text-amber-600 border-amber-200 bg-amber-50 dark:text-amber-400 dark:border-amber-800 dark:bg-amber-950/30",
+          "text-warning border-warning/30 bg-warning-muted dark:text-warning",
       };
     default:
       return {

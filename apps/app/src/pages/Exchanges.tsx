@@ -162,15 +162,15 @@ const Exchanges = () => {
   const getExchangeTypeColor = (type: string) => {
     switch (type.toLowerCase()) {
       case "direct":
-        return "bg-blue-100 text-blue-800";
+        return "bg-info-muted text-info";
       case "fanout":
-        return "bg-green-100 text-green-800";
+        return "bg-success-muted text-success";
       case "topic":
-        return "bg-purple-100 text-purple-800";
+        return "bg-muted text-muted-foreground";
       case "headers":
-        return "bg-orange-100 text-orange-800";
+        return "bg-warning-muted text-warning";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "bg-muted text-foreground";
     }
   };
 
@@ -225,11 +225,13 @@ const Exchanges = () => {
               <Card className="border-0 shadow-md bg-card">
                 <CardContent className="p-12">
                   <div className="text-center">
-                    <Server className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                    <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+                    <Server className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                    <h2 className="text-2xl font-semibold text-foreground mb-2">
                       {t("noServerSelected")}
                     </h2>
-                    <p className="text-gray-600">{t("selectServerPrompt")}</p>
+                    <p className="text-muted-foreground">
+                      {t("selectServerPrompt")}
+                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -316,7 +318,7 @@ const Exchanges = () => {
                   <CardTitle className="text-sm font-medium">
                     {t("direct")}
                   </CardTitle>
-                  <GitBranch className="h-4 w-4 text-blue-600" />
+                  <GitBranch className="h-4 w-4 text-info" />
                 </CardHeader>
                 <CardContent>
                   {exchangesLoading ? (
@@ -337,7 +339,7 @@ const Exchanges = () => {
                   <CardTitle className="text-sm font-medium">
                     {t("fanout")}
                   </CardTitle>
-                  <Radio className="h-4 w-4 text-green-600" />
+                  <Radio className="h-4 w-4 text-success" />
                 </CardHeader>
                 <CardContent>
                   {exchangesLoading ? (
@@ -358,7 +360,7 @@ const Exchanges = () => {
                   <CardTitle className="text-sm font-medium">
                     {t("topic")}
                   </CardTitle>
-                  <Share2 className="h-4 w-4 text-purple-600" />
+                  <Share2 className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
                   {exchangesLoading ? (
@@ -427,15 +429,15 @@ const Exchanges = () => {
                   </div>
                 ) : filteredExchanges.length === 0 ? (
                   <div className="text-center py-8">
-                    <Activity className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    <Activity className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-foreground mb-2">
                       {selectedExchangeType === "all"
                         ? t("noExchangesFound")
                         : t("noExchangesOfType", {
                             type: selectedExchangeType,
                           })}
                     </h3>
-                    <p className="text-gray-600">
+                    <p className="text-muted-foreground">
                       {selectedExchangeType === "all"
                         ? t("noExchangesDesc")
                         : t("noExchangesOfTypeDesc", {
@@ -537,7 +539,7 @@ const Exchanges = () => {
                                     </div>
                                   </div>
                                 )}
-                                <ArrowUpDown className="h-4 w-4 text-gray-400" />
+                                <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
                               </div>
                             </div>
                           </CollapsibleTrigger>
@@ -615,7 +617,7 @@ const Exchanges = () => {
                                           <span className="text-muted-foreground">
                                             {t("arguments")}:
                                           </span>
-                                          <div className="mt-1 p-2 bg-gray-50 rounded text-xs font-mono">
+                                          <div className="mt-1 p-2 bg-muted rounded text-xs font-mono">
                                             {JSON.stringify(
                                               exchange.arguments,
                                               null,
@@ -679,7 +681,7 @@ const Exchanges = () => {
                                     {exchange.bindings.map((binding, index) => (
                                       <div
                                         key={`${binding.destination}-${index}`}
-                                        className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                                        className="flex items-center justify-between p-3 bg-muted rounded-lg"
                                       >
                                         <div className="flex items-center gap-3">
                                           {getDestinationTypeIcon(
@@ -695,9 +697,9 @@ const Exchanges = () => {
                                             {binding.destination_type}
                                           </Badge>
                                           {binding.routing_key && (
-                                            <div className="text-sm text-gray-600">
+                                            <div className="text-sm text-muted-foreground">
                                               Key:{" "}
-                                              <code className="bg-gray-200 px-1 rounded text-xs">
+                                              <code className="bg-border px-1 rounded text-xs">
                                                 {binding.routing_key}
                                               </code>
                                             </div>

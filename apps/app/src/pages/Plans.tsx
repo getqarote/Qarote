@@ -47,7 +47,7 @@ const FeatureItem: React.FC<{
 }> = ({ label, detail, soonLabel }) => (
   <li className="flex items-start gap-3">
     <div className="mt-1.5 w-3.5 shrink-0 flex items-start">
-      <Check className="text-green-500 w-[0.7rem] h-[0.7rem]" />
+      <Check className="text-success w-[0.7rem] h-[0.7rem]" />
     </div>
     <div className="flex-1">
       <span className="text-sm text-foreground flex items-center gap-2">
@@ -393,7 +393,7 @@ export const PlansPage: React.FC<PlansPageProps> = ({
                   {t("plans.billingToggle.yearly")}
                 </span>
                 {billingPeriod === "yearly" && (
-                  <Badge className="bg-green-100 text-green-800 text-xs">
+                  <Badge className="bg-success-muted text-success text-xs">
                     {t("plans.save20")}
                   </Badge>
                 )}

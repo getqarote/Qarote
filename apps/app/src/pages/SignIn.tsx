@@ -148,7 +148,7 @@ const SignIn: React.FC = () => {
                                   variant="outline"
                                   size="sm"
                                   onClick={() => navigate("/verify-email")}
-                                  className="bg-white text-red-700 border-red-300 hover:bg-red-50"
+                                  className="bg-white text-destructive border-destructive/30 hover:bg-destructive/10"
                                 >
                                   {t("goToVerification")}
                                 </Button>

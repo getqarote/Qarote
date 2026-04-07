@@ -65,7 +65,7 @@ export function QueueHeader({
               trigger={
                 <Button
                   variant="outline"
-                  className="flex items-center gap-2 text-blue-600 hover:text-blue-700"
+                  className="flex items-center gap-2 text-info hover:text-info"
                 >
                   <Send className="w-4 h-4" />
                   {t("sendMessage")}
@@ -81,7 +81,7 @@ export function QueueHeader({
               trigger={
                 <Button
                   variant="outline"
-                  className="flex items-center gap-2 text-red-600 hover:text-red-700"
+                  className="flex items-center gap-2 text-destructive hover:text-destructive"
                 >
                   <Trash2 className="w-4 h-4" />
                   {t("purgeQueue")}
@@ -103,8 +103,8 @@ export function QueueHeader({
                   variant="outline"
                   className={`flex items-center gap-2 ${
                     isPaused
-                      ? "text-green-600 hover:text-green-700"
-                      : "text-yellow-600 hover:text-yellow-700"
+                      ? "text-success hover:text-success"
+                      : "text-warning hover:text-warning"
                   }`}
                 >
                   {isPaused ? (
@@ -122,7 +122,7 @@ export function QueueHeader({
               <Button
                 onClick={onDeleteQueue}
                 variant="outline"
-                className="flex items-center gap-2 text-red-600 hover:text-red-700"
+                className="flex items-center gap-2 text-destructive hover:text-destructive"
               >
                 <Trash2 className="w-4 h-4" />
                 {t("deleteQueue")}

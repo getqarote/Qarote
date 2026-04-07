@@ -181,7 +181,7 @@ const CreateExchangeDialog = ({
                   onChange={(e) => setExchangeName(e.target.value)}
                   placeholder="Enter exchange name"
                   disabled={createExchangeMutation.isPending}
-                  className="h-11 focus:ring-2 focus:ring-orange-200 focus:border-orange-400 focus:ring-offset-0"
+                  className="h-11 focus:ring-2 focus:ring-orange-200 focus:border-warning/50 focus:ring-offset-0"
                 />
               </div>
               <div className="space-y-2">
@@ -192,7 +192,7 @@ const CreateExchangeDialog = ({
                   Exchange Type
                 </Label>
                 <Select value={exchangeType} onValueChange={setExchangeType}>
-                  <SelectTrigger className="h-11 focus:ring-2 focus:ring-orange-200 focus:border-orange-400 focus:ring-offset-0">
+                  <SelectTrigger className="h-11 focus:ring-2 focus:ring-orange-200 focus:border-warning/50 focus:ring-offset-0">
                     <SelectValue placeholder="Select exchange type" />
                   </SelectTrigger>
                   <SelectContent>
@@ -221,7 +221,7 @@ const CreateExchangeDialog = ({
                   </Label>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <HelpCircle className="h-4 w-4 text-gray-400 hover:text-gray-600 cursor-help" />
+                      <HelpCircle className="h-4 w-4 text-muted-foreground hover:text-muted-foreground cursor-help" />
                     </TooltipTrigger>
                     <TooltipContent side="top" align="center" className="z-50">
                       <p className="max-w-xs">
@@ -246,7 +246,7 @@ const CreateExchangeDialog = ({
                   </Label>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <HelpCircle className="h-4 w-4 text-gray-400 hover:text-gray-600 cursor-help" />
+                      <HelpCircle className="h-4 w-4 text-muted-foreground hover:text-muted-foreground cursor-help" />
                     </TooltipTrigger>
                     <TooltipContent side="top" align="center" className="z-50">
                       <p className="max-w-xs">
@@ -269,7 +269,7 @@ const CreateExchangeDialog = ({
                   </Label>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <HelpCircle className="h-4 w-4 text-gray-400 hover:text-gray-600 cursor-help" />
+                      <HelpCircle className="h-4 w-4 text-muted-foreground hover:text-muted-foreground cursor-help" />
                     </TooltipTrigger>
                     <TooltipContent side="top" align="center" className="z-50">
                       <p className="max-w-xs">
@@ -292,10 +292,10 @@ const CreateExchangeDialog = ({
                 onChange={(e) => setArguments(e.target.value)}
                 placeholder='{ "key": value }'
                 disabled={createExchangeMutation.isPending}
-                className="min-h-[120px] font-mono text-sm focus:ring-2 focus:ring-orange-200 focus:border-orange-400 focus:ring-offset-0"
+                className="min-h-[120px] font-mono text-sm focus:ring-2 focus:ring-orange-200 focus:border-warning/50 focus:ring-offset-0"
               />
               <div className="space-y-2">
-                <p className="text-sm font-medium text-gray-700">
+                <p className="text-sm font-medium text-muted-foreground">
                   Available options:
                 </p>
                 <div className="flex flex-wrap gap-2">
@@ -322,7 +322,7 @@ const CreateExchangeDialog = ({
                             );
                           }
                         }}
-                        className="px-3 py-1.5 text-xs bg-gray-100 hover:bg-orange-100 text-gray-700 hover:text-orange-800 rounded-md border hover:border-orange-300 transition-colors"
+                        className="px-3 py-1.5 text-xs bg-muted hover:bg-warning-muted text-muted-foreground hover:text-warning rounded-md border hover:border-warning/40 transition-colors"
                       >
                         alternate-exchange
                       </button>
@@ -356,7 +356,7 @@ const CreateExchangeDialog = ({
                             );
                           }
                         }}
-                        className="px-3 py-1.5 text-xs bg-gray-100 hover:bg-orange-100 text-gray-700 hover:text-orange-800 rounded-md border hover:border-orange-300 transition-colors"
+                        className="px-3 py-1.5 text-xs bg-muted hover:bg-warning-muted text-muted-foreground hover:text-warning rounded-md border hover:border-warning/40 transition-colors"
                       >
                         x-message-deduplication
                       </button>
@@ -389,7 +389,7 @@ const CreateExchangeDialog = ({
                             );
                           }
                         }}
-                        className="px-3 py-1.5 text-xs bg-gray-100 hover:bg-orange-100 text-gray-700 hover:text-orange-800 rounded-md border hover:border-orange-300 transition-colors"
+                        className="px-3 py-1.5 text-xs bg-muted hover:bg-warning-muted text-muted-foreground hover:text-warning rounded-md border hover:border-warning/40 transition-colors"
                       >
                         x-cache-size
                       </button>
@@ -423,7 +423,7 @@ const CreateExchangeDialog = ({
                             );
                           }
                         }}
-                        className="px-3 py-1.5 text-xs bg-gray-100 hover:bg-orange-100 text-gray-700 hover:text-orange-800 rounded-md border hover:border-orange-300 transition-colors"
+                        className="px-3 py-1.5 text-xs bg-muted hover:bg-warning-muted text-muted-foreground hover:text-warning rounded-md border hover:border-warning/40 transition-colors"
                       >
                         x-cache-ttl
                       </button>
@@ -457,7 +457,7 @@ const CreateExchangeDialog = ({
                             );
                           }
                         }}
-                        className="px-3 py-1.5 text-xs bg-gray-100 hover:bg-orange-100 text-gray-700 hover:text-orange-800 rounded-md border hover:border-orange-300 transition-colors"
+                        className="px-3 py-1.5 text-xs bg-muted hover:bg-warning-muted text-muted-foreground hover:text-warning rounded-md border hover:border-warning/40 transition-colors"
                       >
                         x-cache-persistence
                       </button>

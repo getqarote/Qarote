@@ -103,7 +103,7 @@ const LicenseSection = () => {
               <CardTitle>License Status</CardTitle>
             </div>
             {hasLicense ? (
-              <Badge variant="default" className="bg-green-600">
+              <Badge variant="default" className="bg-success">
                 <CheckCircle className="h-3 w-3 mr-1" />
                 Active
               </Badge>

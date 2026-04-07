@@ -245,7 +245,7 @@ export function EditUserModal({
                         />
                         <Label
                           htmlFor="pw-remove"
-                          className="font-normal cursor-pointer text-red-600"
+                          className="font-normal cursor-pointer text-destructive"
                         >
                           {t("removePassword")}
                         </Label>

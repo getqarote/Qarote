@@ -24,7 +24,7 @@ export const ServerDetails = ({ form, mode = "add" }: ServerDetailsProps) => {
     <div className="space-y-4">
       <ServerUrlInput form={form} mode={mode} />
       {mode === "add" && (
-        <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+        <div className="border-t border-border pt-4">
           <p className="text-sm font-medium text-muted-foreground mb-4">
             Or fill the fields below manually
           </p>

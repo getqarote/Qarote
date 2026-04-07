@@ -128,17 +128,19 @@ export default function UsersPage() {
                 <SidebarTrigger />
                 <div>
                   <h1 className="title-page">{t("pageTitle")}</h1>
-                  <p className="text-gray-500">{t("pageSubtitle")}</p>
+                  <p className="text-muted-foreground">{t("pageSubtitle")}</p>
                 </div>
               </div>
               <Card className="border-0 shadow-md bg-card">
                 <CardContent className="p-12">
                   <div className="text-center">
-                    <Server className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                    <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+                    <Server className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                    <h2 className="text-2xl font-semibold text-foreground mb-2">
                       {t("noServerSelected")}
                     </h2>
-                    <p className="text-gray-600">{t("selectServerPrompt")}</p>
+                    <p className="text-muted-foreground">
+                      {t("selectServerPrompt")}
+                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -320,7 +322,7 @@ export default function UsersPage() {
                             </TableCell>
                             <TableCell>
                               <div
-                                className={`w-2 h-2 rounded-full ${user.password_hash && user.password_hash.trim() ? "bg-green-500" : "bg-red-500"}`}
+                                className={`w-2 h-2 rounded-full ${user.password_hash && user.password_hash.trim() ? "bg-success-muted0" : "bg-destructive/100"}`}
                               ></div>
                             </TableCell>
                             <TableCell>
@@ -347,7 +349,7 @@ export default function UsersPage() {
                                         e.stopPropagation();
                                         setDeleteUser(user);
                                       }}
-                                      className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+                                      className="h-8 w-8 p-0 text-destructive hover:text-destructive"
                                     >
                                       <Trash2 className="h-3 w-3" />
                                     </Button>

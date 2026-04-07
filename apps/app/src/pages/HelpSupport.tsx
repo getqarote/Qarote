@@ -147,7 +147,7 @@ function HelpSupport() {
                       <div className="flex items-center gap-2">
                         <a
                           href="mailto:support@qarote.io?subject=Qarote Support Request"
-                          className="text-sm text-blue-600 hover:text-blue-700"
+                          className="text-sm text-info hover:text-info"
                         >
                           support@qarote.io
                         </a>

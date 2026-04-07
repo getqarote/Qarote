@@ -56,7 +56,7 @@ export function BrowserTab({
             {notificationPermission === "granted" && (
               <Badge
                 variant="secondary"
-                className="text-xs font-normal text-green-600"
+                className="text-xs font-normal text-success"
               >
                 {t("modal.permissionGranted")}
               </Badge>
@@ -116,7 +116,7 @@ export function BrowserTab({
             t={t}
           />
           {browserNotificationSeverities.length === 0 && (
-            <p className="text-xs text-red-500 mt-2">
+            <p className="text-xs text-destructive mt-2">
               {t("modal.selectAtLeastOneBrowserSeverity")}
             </p>
           )}

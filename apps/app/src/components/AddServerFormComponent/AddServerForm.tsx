@@ -291,7 +291,7 @@ export const AddServerForm = ({
           </Form>
         </div>
 
-        <DialogFooter className="flex gap-2 shrink-0 pt-6 border-t border-gray-200">
+        <DialogFooter className="flex gap-2 shrink-0 pt-6 border-t border-border">
           <TestConnectionButton
             onTestConnection={testConnection}
             isTestingConnection={isTestingConnection}

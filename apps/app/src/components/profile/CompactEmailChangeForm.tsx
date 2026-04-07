@@ -127,17 +127,17 @@ export const CompactEmailChangeForm: React.FC<CompactEmailChangeFormProps> = ({
 
       {/* Security Notice / Email Disabled Notice */}
       {emailEnabled ? (
-        <Alert className="border-blue-200 bg-blue-50">
-          <CheckCircle className="h-4 w-4 text-blue-600" />
-          <AlertDescription className="text-xs text-blue-700">
+        <Alert className="border-info/30 bg-info-muted">
+          <CheckCircle className="h-4 w-4 text-info" />
+          <AlertDescription className="text-xs text-info">
             <strong>Security:</strong> We'll send a verification link to your
             new email. Your current email remains active until verified.
           </AlertDescription>
         </Alert>
       ) : (
-        <Alert className="border-amber-200 bg-amber-50">
-          <Info className="h-4 w-4 text-amber-600" />
-          <AlertDescription className="text-xs text-amber-700">
+        <Alert className="border-warning/30 bg-warning-muted">
+          <Info className="h-4 w-4 text-warning" />
+          <AlertDescription className="text-xs text-warning">
             {t("emailChange.smtpDisabledMessage")}
           </AlertDescription>
         </Alert>
@@ -145,15 +145,15 @@ export const CompactEmailChangeForm: React.FC<CompactEmailChangeFormProps> = ({
 
       {/* Pending Email Change Status */}
       {hasPendingEmailChange && pendingEmail && (
-        <Alert className="border-orange-200 bg-orange-50">
-          <AlertCircle className="h-4 w-4 text-orange-600" />
+        <Alert className="border-warning/30 bg-warning-muted">
+          <AlertCircle className="h-4 w-4 text-warning" />
           <AlertDescription className="flex items-center justify-between">
             <div className="flex-1">
-              <div className="font-medium text-orange-800">
+              <div className="font-medium text-warning">
                 Email change pending
               </div>
-              <div className="text-sm text-orange-700 mt-1">{pendingEmail}</div>
-              <div className="text-xs text-orange-600 mt-1">
+              <div className="text-sm text-warning mt-1">{pendingEmail}</div>
+              <div className="text-xs text-warning mt-1">
                 Check your new email inbox and verify to complete the change
               </div>
             </div>

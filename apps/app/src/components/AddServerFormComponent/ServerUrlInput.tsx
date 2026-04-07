@@ -101,12 +101,12 @@ export const ServerUrlInput = ({ form, mode = "add" }: ServerUrlInputProps) => {
           )}
           {!isParsing && parseStatus.status === "success" && (
             <div className="absolute right-3 top-1/2 -translate-y-1/2">
-              <CheckCircle2 className="h-4 w-4 text-green-600" />
+              <CheckCircle2 className="h-4 w-4 text-success" />
             </div>
           )}
           {!isParsing && parseStatus.status === "error" && (
             <div className="absolute right-3 top-1/2 -translate-y-1/2">
-              <AlertCircle className="h-4 w-4 text-red-600" />
+              <AlertCircle className="h-4 w-4 text-destructive" />
             </div>
           )}
           {url && !isParsing && (
@@ -128,18 +128,21 @@ export const ServerUrlInput = ({ form, mode = "add" }: ServerUrlInputProps) => {
       </div>
 
       {parseStatus.status === "success" && parseStatus.message && (
-        <Alert className="border-green-200 bg-green-50 dark:bg-green-950/20">
-          <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
-          <AlertDescription className="text-green-700 dark:text-green-400">
+        <Alert className="border-success/30 bg-success-muted">
+          <CheckCircle2 className="h-4 w-4 text-success dark:text-success" />
+          <AlertDescription className="text-success dark:text-success">
             {parseStatus.message}
           </AlertDescription>
         </Alert>
       )}
 
       {parseStatus.status === "error" && parseStatus.message && (
-        <Alert variant="destructive" className="border-red-200 bg-red-50">
-          <AlertCircle className="h-4 w-4 text-red-600" />
-          <AlertDescription className="text-red-700">
+        <Alert
+          variant="destructive"
+          className="border-destructive/30 bg-destructive/10"
+        >
+          <AlertCircle className="h-4 w-4 text-destructive" />
+          <AlertDescription className="text-destructive">
             {parseStatus.message} You can still fill the fields manually below.
           </AlertDescription>
         </Alert>

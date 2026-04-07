@@ -24,23 +24,25 @@ export const EnhancedErrorDisplay = ({
     <Alert
       className={`${className} ${
         variant === "warning"
-          ? "border-amber-200 bg-amber-50"
-          : "border-red-200 bg-red-50"
+          ? "border-warning/30 bg-warning-muted"
+          : "border-destructive/30 bg-destructive/10"
       }`}
     >
       <Icon
         className={`h-4 w-4 ${
-          variant === "warning" ? "text-amber-600" : "text-red-600"
+          variant === "warning" ? "text-warning" : "text-destructive"
         }`}
       />
       <AlertTitle
-        className={variant === "warning" ? "text-amber-800" : "text-red-800"}
+        className={variant === "warning" ? "text-warning" : "text-destructive"}
       >
         {title}
       </AlertTitle>
       <AlertDescription className="space-y-3">
         <div
-          className={variant === "warning" ? "text-amber-700" : "text-red-700"}
+          className={
+            variant === "warning" ? "text-warning" : "text-destructive"
+          }
         >
           {message}
         </div>
@@ -48,7 +50,7 @@ export const EnhancedErrorDisplay = ({
         <div className="flex items-center gap-2">
           <span
             className={`text-sm ${
-              variant === "warning" ? "text-amber-600" : "text-red-600"
+              variant === "warning" ? "text-warning" : "text-destructive"
             }`}
           >
             {action}
@@ -59,7 +61,7 @@ export const EnhancedErrorDisplay = ({
               variant="outline"
               size="sm"
               onClick={onUpgrade}
-              className="border-amber-300 text-amber-700 hover:bg-amber-100"
+              className="border-warning/40 text-warning hover:bg-warning-muted"
             >
               <ArrowUpCircle className="h-3 w-3 mr-1" />
               Upgrade Plan

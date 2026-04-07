@@ -162,7 +162,7 @@ export const EnhancedTeamTab = ({
                     <span
                       className={
                         totalUsers + pendingInvitations >= maxUsers
-                          ? "text-red-500 dark:text-red-400"
+                          ? "text-destructive dark:text-destructive"
                           : ""
                       }
                     >
@@ -257,7 +257,7 @@ export const EnhancedTeamTab = ({
                                 handleRemoveUserClick(workspaceUser)
                               }
                               disabled={isRemoving}
-                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                              className="text-destructive hover:text-destructive hover:bg-destructive/10"
                               title={t("team.removeUser")}
                             >
                               <X className="h-4 w-4" />
@@ -324,7 +324,7 @@ export const EnhancedTeamTab = ({
             </Button>
             <Button
               onClick={handleConfirmRemove}
-              className="bg-red-600 hover:bg-red-700"
+              className="bg-destructive hover:bg-destructive/90"
               disabled={isRemoving}
             >
               {isRemoving ? t("team.removing") : t("team.removeUserButton")}

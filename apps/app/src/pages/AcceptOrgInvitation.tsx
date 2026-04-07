@@ -73,14 +73,14 @@ const OrgInvitationInfo = ({
 }) => {
   const { t } = useTranslation("auth");
   return (
-    <div className="bg-gray-50 rounded-lg p-4 space-y-3">
-      <div className="flex items-center gap-2 text-sm text-gray-600">
+    <div className="bg-muted rounded-lg p-4 space-y-3">
+      <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <Building2 className="h-4 w-4" />
         <span>
           {t("orgLabel")} <strong>{invitation.organization.name}</strong>
         </span>
       </div>
-      <div className="flex items-center gap-2 text-sm text-gray-600">
+      <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <Shield className="h-4 w-4" />
         <span>
           {t("role", "Role")}:{" "}
@@ -90,7 +90,7 @@ const OrgInvitationInfo = ({
         </span>
       </div>
       {invitation.invitedBy && (
-        <div className="text-sm text-gray-600">
+        <div className="text-sm text-muted-foreground">
           {t("invitedBy")}: <strong>{invitation.invitedBy.displayName}</strong>
         </div>
       )}
@@ -162,7 +162,7 @@ const OrgInvitationForm = ({
               type="email"
               value={email}
               disabled
-              className="bg-gray-50"
+              className="bg-muted"
               autoComplete="username"
             />
           </div>
@@ -233,12 +233,12 @@ const OrgInvitationForm = ({
       </Form>
 
       <div className="text-center">
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-muted-foreground">
           {t("alreadyHaveAccount")}{" "}
           <button
             type="button"
             onClick={onNavigateSignIn}
-            className="text-blue-600 hover:underline"
+            className="text-info hover:underline"
           >
             {t("signInInstead")}
           </button>
@@ -447,7 +447,7 @@ const AcceptOrgInvitation = () => {
     return (
       <PageWrapper>
         <CardHeader className="text-center">
-          <CardTitle className="text-red-600">
+          <CardTitle className="text-destructive">
             {t("invalidInvitation")}
           </CardTitle>
           <CardDescription>{error}</CardDescription>
@@ -471,8 +471,8 @@ const AcceptOrgInvitation = () => {
       return (
         <PageWrapper>
           <CardHeader className="text-center">
-            <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
-              <CheckCircle2 className="h-6 w-6 text-green-600" />
+            <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-success-muted flex items-center justify-center">
+              <CheckCircle2 className="h-6 w-6 text-success" />
             </div>
             <CardTitle>
               {t("youJoinedOrg", { org: acceptSuccess.orgName })}
@@ -520,8 +520,8 @@ const AcceptOrgInvitation = () => {
     return (
       <PageWrapper>
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
-            <Building2 className="h-6 w-6 text-blue-600" />
+          <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-info-muted flex items-center justify-center">
+            <Building2 className="h-6 w-6 text-info" />
           </div>
           <CardTitle>{t("joinOrganization")}</CardTitle>
           <CardDescription>
@@ -562,8 +562,8 @@ const AcceptOrgInvitation = () => {
     return (
       <PageWrapper>
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
-            <Building2 className="h-6 w-6 text-blue-600" />
+          <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-info-muted flex items-center justify-center">
+            <Building2 className="h-6 w-6 text-info" />
           </div>
           <CardTitle>{t("joinOrganization")}</CardTitle>
           <CardDescription>{t("existingAccountMessage")}</CardDescription>
@@ -608,8 +608,8 @@ const AcceptOrgInvitation = () => {
   return (
     <PageWrapper>
       <CardHeader className="text-center">
-        <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
-          <Mail className="h-6 w-6 text-blue-600" />
+        <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-info-muted flex items-center justify-center">
+          <Mail className="h-6 w-6 text-info" />
         </div>
         <CardTitle>{t("joinOrganization")}</CardTitle>
         <CardDescription>{t("orgSetUpAccount")}</CardDescription>

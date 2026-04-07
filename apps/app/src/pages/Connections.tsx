@@ -70,15 +70,15 @@ const Connections = () => {
   const getStateColor = (state?: string) => {
     switch (state?.toLowerCase()) {
       case "running":
-        return "bg-green-100 text-green-800";
+        return "bg-success-muted text-success";
       case "blocked":
-        return "bg-yellow-100 text-yellow-800";
+        return "bg-warning-muted text-warning";
       case "flow":
-        return "bg-blue-100 text-blue-800";
+        return "bg-info-muted text-info";
       case "closing":
-        return "bg-red-100 text-red-800";
+        return "bg-destructive/10 text-destructive";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "bg-muted text-foreground";
     }
   };
 
@@ -107,13 +107,13 @@ const Connections = () => {
   const getConnectionIconColor = (state?: string) => {
     switch (state?.toLowerCase()) {
       case "running":
-        return "text-green-600";
+        return "text-success";
       case "blocked":
-        return "text-yellow-600";
+        return "text-warning";
       case "flow":
-        return "text-blue-600";
+        return "text-info";
       case "closing":
-        return "text-red-600";
+        return "text-destructive";
       default:
         return "text-muted-foreground";
     }
@@ -221,7 +221,7 @@ const Connections = () => {
                   <CardTitle className="text-sm font-medium">
                     {t("totalConnections")}
                   </CardTitle>
-                  <Network className="h-4 w-4 text-blue-600" />
+                  <Network className="h-4 w-4 text-info" />
                 </CardHeader>
                 <CardContent>
                   {connectionsLoading ? (
@@ -242,7 +242,7 @@ const Connections = () => {
                   <CardTitle className="text-sm font-medium">
                     {t("totalChannels")}
                   </CardTitle>
-                  <Zap className="h-4 w-4 text-yellow-600" />
+                  <Zap className="h-4 w-4 text-warning" />
                 </CardHeader>
                 <CardContent>
                   {channelsLoading ? (
@@ -263,7 +263,7 @@ const Connections = () => {
                   <CardTitle className="text-sm font-medium">
                     {t("avgChannelsPerConnection")}
                   </CardTitle>
-                  <Activity className="h-4 w-4 text-green-600" />
+                  <Activity className="h-4 w-4 text-success" />
                 </CardHeader>
                 <CardContent>
                   {connectionsLoading || channelsLoading ? (
@@ -319,7 +319,7 @@ const Connections = () => {
                         <div className="border rounded-lg">
                           <CollapsibleTrigger asChild>
                             <div
-                              className="flex items-center justify-between p-4 hover:bg-gray-50 cursor-pointer"
+                              className="flex items-center justify-between p-4 hover:bg-muted cursor-pointer"
                               onClick={() => toggleConnection(connection.name)}
                             >
                               <div className="flex items-center gap-4">

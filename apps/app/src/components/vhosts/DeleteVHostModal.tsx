@@ -31,7 +31,7 @@ export function DeleteVHostModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-red-600">
+          <DialogTitle className="flex items-center gap-2 text-destructive">
             <AlertTriangle className="h-5 w-5" />
             Delete Virtual Host
           </DialogTitle>
@@ -40,7 +40,7 @@ export function DeleteVHostModal({
               Are you sure you want to delete the virtual host{" "}
               <strong>{vhost.name === "/" ? "Default" : vhost.name}</strong>?
             </p>
-            <p className="text-red-600 font-medium">
+            <p className="text-destructive font-medium">
               This action cannot be undone. All queues, exchanges, and data in
               this virtual host will be permanently deleted.
             </p>

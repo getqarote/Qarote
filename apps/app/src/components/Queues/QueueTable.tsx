@@ -200,8 +200,8 @@ export function QueueTable({
           </>
         ) : (
           <div className="text-center py-8">
-            <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-500">
+            <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <p className="text-muted-foreground">
               {searchTerm
                 ? t("noQueuesMatchingSearch", { term: searchTerm })
                 : t("noQueuesOnServer")}

@@ -115,7 +115,7 @@ export const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({
                       )}
                       <Badge
                         variant="outline"
-                        className="border-orange-300 text-orange-600 bg-orange-50 dark:border-orange-700 dark:text-orange-400 dark:bg-orange-950/50 py-1.5 px-3"
+                        className="border-warning/40 text-warning bg-warning-muted dark:text-warning py-1.5 px-3"
                       >
                         <Clock className="w-3 h-3 mr-1.5" />
                         {periodEnd
@@ -149,10 +149,10 @@ export const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({
           {currentPlan === UserPlan.FREE &&
             subscriptionCanceled &&
             lastPlan && (
-              <div className="mt-4 rounded-lg border border-orange-200 bg-orange-50/50 dark:border-orange-900/50 dark:bg-orange-950/20 p-4">
+              <div className="mt-4 rounded-lg border border-warning/30 bg-warning-muted/50 p-4">
                 <div className="flex items-start gap-3">
-                  <div className="shrink-0 rounded-full p-1.5 bg-orange-100 dark:bg-orange-900/30 mt-0.5">
-                    <RefreshCw className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                  <div className="shrink-0 rounded-full p-1.5 bg-warning-muted mt-0.5">
+                    <RefreshCw className="w-4 h-4 text-warning dark:text-warning" />
                   </div>
                   <div>
                     <h4 className="font-semibold text-sm">

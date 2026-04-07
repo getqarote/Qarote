@@ -58,7 +58,7 @@ function StatusDot({ enabled }: { enabled: boolean }) {
     <span
       aria-hidden="true"
       className={`h-2 w-2 rounded-full shrink-0 ${
-        enabled ? "bg-green-500" : "bg-muted-foreground/30"
+        enabled ? "bg-success-muted0" : "bg-muted-foreground/30"
       }`}
     />
   );

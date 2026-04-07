@@ -31,7 +31,7 @@ export function QueueStats({ queue }: QueueStatsProps) {
               <p className="text-sm text-muted-foreground">{t("status")}</p>
               <QueueStatusBadge state={queue.state} />
             </div>
-            <Activity className="w-8 h-8 text-blue-600" />
+            <Activity className="w-8 h-8 text-info" />
           </div>
         </CardContent>
       </Card>
@@ -47,7 +47,7 @@ export function QueueStats({ queue }: QueueStatsProps) {
                 {queue.messages.toLocaleString()}
               </p>
             </div>
-            <MessageSquare className="w-8 h-8 text-green-600" />
+            <MessageSquare className="w-8 h-8 text-success" />
           </div>
         </CardContent>
       </Card>
@@ -61,7 +61,7 @@ export function QueueStats({ queue }: QueueStatsProps) {
                 {queue.consumers}
               </p>
             </div>
-            <Users className="w-8 h-8 text-purple-600" />
+            <Users className="w-8 h-8 text-muted-foreground" />
           </div>
         </CardContent>
       </Card>
@@ -77,7 +77,7 @@ export function QueueStats({ queue }: QueueStatsProps) {
                 {formatBytes(queue.memory)}
               </p>
             </div>
-            <HardDrive className="w-8 h-8 text-orange-600" />
+            <HardDrive className="w-8 h-8 text-warning" />
           </div>
         </CardContent>
       </Card>

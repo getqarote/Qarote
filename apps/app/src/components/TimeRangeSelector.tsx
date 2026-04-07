@@ -37,7 +37,7 @@ export const TimeRangeSelector = ({
 }: TimeRangeSelectorProps) => {
   return (
     <div className={`flex items-center gap-1 ${className}`}>
-      <Clock className="w-3 h-3 text-gray-500" />
+      <Clock className="w-3 h-3 text-muted-foreground" />
       <Select value={value} onValueChange={onValueChange}>
         <SelectTrigger className="w-28 h-7 text-xs">
           <SelectValue placeholder="Select time range" />

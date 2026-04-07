@@ -94,7 +94,7 @@ const getRoleIcon = (role: string) => {
     case "OWNER":
       return null;
     case "ADMIN":
-      return <Shield className="h-3.5 w-3.5 text-blue-500" />;
+      return <Shield className="h-3.5 w-3.5 text-info" />;
     default:
       return <User className="h-3.5 w-3.5 text-muted-foreground" />;
   }
@@ -1197,8 +1197,8 @@ const OrganizationSection = () => {
 
           {lastInviteUrl && !lastEmailSent ? (
             <div className="space-y-4 py-4">
-              <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
-                <p className="text-sm font-medium text-amber-800 mb-2">
+              <div className="rounded-lg border border-warning/30 bg-warning-muted p-4">
+                <p className="text-sm font-medium text-warning mb-2">
                   {t("org.emailNotConfigured")}
                 </p>
                 <div className="flex items-center gap-2">

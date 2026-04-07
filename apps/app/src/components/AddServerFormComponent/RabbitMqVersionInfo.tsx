@@ -70,9 +70,9 @@ export const RabbitMqVersionInfo = ({
     <div className={className}>
       {/* Management Plugin Requirement Notice */}
       {!isManagementAlertDismissed && (
-        <Alert className="mb-4 border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950 relative">
-          <InfoIcon className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-          <AlertDescription className="text-blue-800 dark:text-blue-200 pr-8">
+        <Alert className="mb-4 border-info/30 bg-info-muted relative">
+          <InfoIcon className="h-4 w-4 text-info dark:text-info" />
+          <AlertDescription className="text-info pr-8">
             <div className="font-medium mb-1">
               RabbitMQ Management Plugin Required
             </div>
@@ -85,7 +85,7 @@ export const RabbitMqVersionInfo = ({
             </p>
             <p className="text-xs mt-2 opacity-90">
               To enable:{" "}
-              <span className="bg-blue-100 dark:bg-blue-900 px-1 py-0.5 rounded text-xs font-mono">
+              <span className="bg-info-muted px-1 py-0.5 rounded text-xs font-mono">
                 rabbitmq-plugins enable rabbitmq_management
               </span>
             </p>
@@ -94,7 +94,7 @@ export const RabbitMqVersionInfo = ({
             variant="ghost"
             size="sm"
             onClick={() => setIsManagementAlertDismissed(true)}
-            className="absolute top-2 right-6 h-5 w-5 p-0 hover:bg-blue-200 dark:hover:bg-blue-800 text-blue-600 dark:text-blue-400"
+            className="absolute top-2 right-6 h-5 w-5 p-0 hover:bg-info-muted text-info dark:text-info"
           >
             <X
               className="h-3 w-3 cursor-pointer"
@@ -116,7 +116,7 @@ export const RabbitMqVersionInfo = ({
               variant="ghost"
               size="sm"
               onClick={() => setIsExpanded(!isExpanded)}
-              className="h-6 w-6 p-0 hover:bg-gray-100 dark:hover:bg-gray-800"
+              className="h-6 w-6 p-0 hover:bg-muted"
             >
               {isExpanded ? (
                 <ChevronUp className="h-4 w-4" />
@@ -139,8 +139,8 @@ export const RabbitMqVersionInfo = ({
                         variant={isSupported ? "default" : "secondary"}
                         className={`flex items-center gap-1 ${
                           isSupported
-                            ? "bg-green-100 text-green-800 border-green-200"
-                            : "bg-gray-100 text-gray-500 border-gray-200"
+                            ? "bg-success-muted text-success border-success/30"
+                            : "bg-muted text-muted-foreground border-border"
                         }`}
                       >
                         {isSupported ? (
@@ -157,7 +157,7 @@ export const RabbitMqVersionInfo = ({
               </div>
 
               {isFreePlan && (
-                <div className="text-sm text-amber-700 bg-amber-50 p-3 rounded-md border border-amber-200">
+                <div className="text-sm text-warning bg-warning-muted p-3 rounded-md border border-warning/30">
                   <div className="flex items-center gap-2 mb-1">
                     <ArrowUpCircle className="h-4 w-4" />
                     <span className="font-medium">
@@ -172,7 +172,7 @@ export const RabbitMqVersionInfo = ({
                 </div>
               )}
 
-              <div className="text-xs text-gray-600">
+              <div className="text-xs text-muted-foreground">
                 If you try to connect to an unsupported version, the connection
                 will be rejected.
               </div>

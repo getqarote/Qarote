@@ -539,7 +539,7 @@ export default function UserDetailsPage() {
               {/* Danger zone */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg text-red-600">
+                  <CardTitle className="text-lg text-destructive">
                     {t("dangerZone")}
                   </CardTitle>
                 </CardHeader>

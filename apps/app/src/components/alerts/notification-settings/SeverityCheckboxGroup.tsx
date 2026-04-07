@@ -6,31 +6,31 @@ import type { SeverityCheckboxGroupProps } from "./types";
 const SEVERITY_LEVELS = [
   {
     key: "CRITICAL",
-    color: "text-red-600",
+    color: "text-destructive",
     labelKey: "modal.severityCritical",
     descKey: "modal.severityCriticalDesc",
   },
   {
     key: "HIGH",
-    color: "text-orange-600",
+    color: "text-warning",
     labelKey: "modal.severityHigh",
     descKey: "modal.severityHighDesc",
   },
   {
     key: "MEDIUM",
-    color: "text-yellow-600",
+    color: "text-warning",
     labelKey: "modal.severityMedium",
     descKey: "modal.severityMediumDesc",
   },
   {
     key: "LOW",
-    color: "text-blue-600",
+    color: "text-info",
     labelKey: "modal.severityLow",
     descKey: "modal.severityLowDesc",
   },
   {
     key: "INFO",
-    color: "text-gray-600",
+    color: "text-muted-foreground",
     labelKey: "modal.severityInfo",
     descKey: "modal.severityInfoDesc",
   },

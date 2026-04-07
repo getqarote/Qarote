@@ -83,8 +83,8 @@ export function ServerManagement({ trigger }: ServerManagementProps) {
 
           {/* Server List */}
           {servers.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              <ServerIcon className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+            <div className="text-center py-8 text-muted-foreground">
+              <ServerIcon className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
               <p className="text-lg font-medium mb-2">No servers configured</p>
               <p className="text-sm">
                 Add your first RabbitMQ server to get started.
@@ -171,13 +171,13 @@ function ServerCard({ server, onServerUpdated }: ServerCardProps) {
     <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent">
       <div className="flex items-center gap-3">
         <div className="p-2 bg-white-100 rounded-lg">
-          <ServerIcon className="h-4 w-4 text-orange-600" />
+          <ServerIcon className="h-4 w-4 text-warning" />
         </div>
         <div>
           <div className="flex items-center gap-2">
             <h4 className="font-medium">{server.name}</h4>
           </div>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-muted-foreground">
             {server.username}@{server.host}:{server.port} ({server.vhost})
           </p>
         </div>
@@ -221,7 +221,7 @@ function ServerCard({ server, onServerUpdated }: ServerCardProps) {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
-              <Trash2 className="h-5 w-5 text-red-500" />
+              <Trash2 className="h-5 w-5 text-destructive" />
               Delete Server
             </AlertDialogTitle>
             <AlertDialogDescription>
@@ -229,15 +229,15 @@ function ServerCard({ server, onServerUpdated }: ServerCardProps) {
               <strong>"{server.name}"</strong>?
             </AlertDialogDescription>
             <div className="space-y-2 mt-4">
-              <div className="bg-gray-50 p-3 rounded-lg text-sm">
-                <div className="flex items-center gap-2 text-gray-600">
+              <div className="bg-muted p-3 rounded-lg text-sm">
+                <div className="flex items-center gap-2 text-muted-foreground">
                   <ServerIcon className="h-4 w-4" />
                   <span>
                     {server.host}:{server.port} ({server.vhost})
                   </span>
                 </div>
               </div>
-              <p className="text-red-600 font-medium text-sm">
+              <p className="text-destructive font-medium text-sm">
                 This action cannot be undone. All associated data and
                 configurations will be permanently removed.
               </p>
@@ -248,7 +248,7 @@ function ServerCard({ server, onServerUpdated }: ServerCardProps) {
             <AlertDialogAction
               onClick={handleDeleteServer}
               disabled={deleteServerMutation.isPending}
-              className="bg-red-500 hover:bg-red-600 focus:ring-red-500"
+              className="bg-destructive/100 hover:bg-destructive focus:ring-red-500"
             >
               {deleteServerMutation.isPending ? (
                 <>

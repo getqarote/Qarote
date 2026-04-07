@@ -222,11 +222,11 @@ const Onboarding = () => {
           <div className="max-w-lg mx-auto">
             <Card className="border-0 shadow-lg">
               <CardHeader className="text-center">
-                <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-lg bg-orange-100 dark:bg-orange-900/30 mb-4">
+                <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-lg bg-warning-muted mb-4">
                   {isFirstOnboarding ? (
-                    <Building2 className="h-6 w-6 text-orange-600" />
+                    <Building2 className="h-6 w-6 text-warning" />
                   ) : (
-                    <Plus className="h-6 w-6 text-orange-600" />
+                    <Plus className="h-6 w-6 text-warning" />
                   )}
                 </div>
                 <CardTitle className="text-xl">

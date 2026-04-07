@@ -68,7 +68,9 @@ const Nodes = () => {
                 <SidebarTrigger />
                 <div>
                   <h1 className="title-page">{t("pageTitle")}</h1>
-                  <p className="text-gray-500">{t("selectServerPrompt")}</p>
+                  <p className="text-muted-foreground">
+                    {t("selectServerPrompt")}
+                  </p>
                 </div>
               </div>
             </div>
@@ -89,7 +91,7 @@ const Nodes = () => {
                 <SidebarTrigger />
                 <div>
                   <h1 className="title-page">{t("pageTitle")}</h1>
-                  <p className="text-gray-500">{t("pageSubtitle")}</p>
+                  <p className="text-muted-foreground">{t("pageSubtitle")}</p>
                 </div>
               </div>
               <PageError message={t("common:serverConnectionError")} />

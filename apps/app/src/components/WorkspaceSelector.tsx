@@ -194,28 +194,28 @@ export function WorkspaceSelector() {
         return {
           text: t("createNewWorkspace"),
           badge: t("upgrade"),
-          badgeColor: "bg-orange-500",
+          badgeColor: "bg-warning-muted",
           title: t("upgradeToCreate"),
         };
       case UserPlan.DEVELOPER:
         return {
           text: t("createNewWorkspace"),
           badge: t("upgrade"),
-          badgeColor: "bg-blue-500",
+          badgeColor: "bg-info-muted0",
           title: t("multipleWorkspacesDeveloper"),
         };
       case UserPlan.ENTERPRISE:
         return {
           text: t("createNewWorkspace"),
           badge: t("upgrade"),
-          badgeColor: "bg-purple-500",
+          badgeColor: "bg-muted",
           title: t("multipleWorkspacesEnterprise"),
         };
       default:
         return {
           text: t("createNewWorkspace"),
           badge: t("upgrade"),
-          badgeColor: "bg-orange-500",
+          badgeColor: "bg-warning-muted",
           title: t("upgradeToCreate"),
         };
     }
@@ -223,7 +223,7 @@ export function WorkspaceSelector() {
 
   const getRoleIcon = (ws: WorkspaceInfo) => {
     if (ws.isOwner) {
-      return <Carrot className="w-3 h-3 text-orange-500" />;
+      return <Carrot className="w-3 h-3 text-warning" />;
     }
     return <User className="w-3 h-3 text-muted-foreground" />;
   };

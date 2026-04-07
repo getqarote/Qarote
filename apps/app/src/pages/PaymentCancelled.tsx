@@ -42,11 +42,13 @@ const PaymentCancelled: React.FC = () => {
     <div className="min-h-screen bg-gradient-page flex items-center justify-center p-4">
       <div className="bg-white rounded-lg shadow-lg max-w-md w-full p-8 text-center">
         <div className="mb-6">
-          <XCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+          <XCircle className="w-16 h-16 text-destructive mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-foreground mb-2">
             {t("paymentCancelled.title")}
           </h1>
-          <p className="text-gray-600">{t("paymentCancelled.description")}</p>
+          <p className="text-muted-foreground">
+            {t("paymentCancelled.description")}
+          </p>
         </div>
 
         <div className="space-y-3">
@@ -70,7 +72,7 @@ const PaymentCancelled: React.FC = () => {
 
           <button
             onClick={() => navigate("/")}
-            className="w-full bg-gray-100 hover:bg-gray-200 text-gray-900 py-2 px-4 rounded-lg font-medium transition-colors flex items-center justify-center"
+            className="w-full bg-muted hover:bg-border text-foreground py-2 px-4 rounded-lg font-medium transition-colors flex items-center justify-center"
           >
             <ArrowLeft className="w-4 h-4" />
             {t("paymentCancelled.backToDashboard")}

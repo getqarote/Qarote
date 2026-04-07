@@ -135,7 +135,7 @@ export const CurrentPlanCard: React.FC<CurrentPlanCardProps> = ({
                       variant={isTrialing ? "outline" : "default"}
                       className={
                         isTrialing
-                          ? "border-orange-300 text-orange-600 bg-orange-50 dark:border-orange-700 dark:text-orange-400 dark:bg-orange-950/50"
+                          ? "border-warning/40 text-warning bg-warning-muted dark:text-warning"
                           : cancelAtPeriodEnd
                             ? "bg-destructive/10 text-destructive border-destructive/20"
                             : ""
@@ -240,7 +240,7 @@ export const CurrentPlanCard: React.FC<CurrentPlanCardProps> = ({
                       )}
                 </p>
                 {isTrialing && daysRemaining > 0 && (
-                  <p className="text-xs text-orange-600 dark:text-orange-400 mt-0.5 font-medium">
+                  <p className="text-xs text-warning dark:text-warning mt-0.5 font-medium">
                     {daysRemaining} day{daysRemaining !== 1 ? "s" : ""} left
                   </p>
                 )}
@@ -291,7 +291,7 @@ export const CurrentPlanCard: React.FC<CurrentPlanCardProps> = ({
             className={
               cancelAtPeriodEnd
                 ? "border-destructive/30 bg-destructive/5"
-                : "border-orange-200 bg-orange-50/50 dark:border-orange-900/50 dark:bg-orange-950/20"
+                : "border-warning/30 bg-warning-muted/50"
             }
           >
             <CardContent className="py-5 px-6">
@@ -301,13 +301,13 @@ export const CurrentPlanCard: React.FC<CurrentPlanCardProps> = ({
                     className={`mt-0.5 shrink-0 rounded-full p-1.5 ${
                       cancelAtPeriodEnd
                         ? "bg-destructive/10"
-                        : "bg-orange-100 dark:bg-orange-900/30"
+                        : "bg-warning-muted"
                     }`}
                   >
                     {cancelAtPeriodEnd ? (
                       <X className="w-4 h-4 text-destructive" />
                     ) : (
-                      <Sparkles className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                      <Sparkles className="w-4 h-4 text-warning dark:text-warning" />
                     )}
                   </div>
                   <div>

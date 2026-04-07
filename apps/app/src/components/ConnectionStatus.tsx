@@ -16,8 +16,8 @@ export const ConnectionStatus = () => {
   if (!selectedServerId) {
     return (
       <div className="flex items-center gap-2 mt-1">
-        <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
-        <Badge variant="secondary" className="bg-gray-100 text-gray-700">
+        <div className="w-2 h-2 bg-muted-foreground/40 rounded-full"></div>
+        <Badge variant="secondary" className="bg-muted text-muted-foreground">
           No server selected
         </Badge>
       </div>
@@ -27,7 +27,7 @@ export const ConnectionStatus = () => {
   if (serverLoading || overviewLoading) {
     return (
       <div className="flex items-center gap-2 mt-1">
-        <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
+        <div className="w-2 h-2 bg-warning rounded-full animate-pulse"></div>
         <Skeleton className="h-5 w-32" />
       </div>
     );
@@ -39,8 +39,11 @@ export const ConnectionStatus = () => {
   if (!server || !overview) {
     return (
       <div className="flex items-center gap-2 mt-1">
-        <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-        <Badge variant="secondary" className="bg-red-100 text-red-700">
+        <div className="w-2 h-2 bg-destructive/100 rounded-full"></div>
+        <Badge
+          variant="secondary"
+          className="bg-destructive/10 text-destructive"
+        >
           Connection failed
         </Badge>
       </div>
@@ -49,10 +52,10 @@ export const ConnectionStatus = () => {
 
   return (
     <div className="flex items-center gap-2 mt-1 flex-wrap">
-      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+      <div className="w-2 h-2 bg-success-muted0 rounded-full animate-pulse"></div>
       <Badge
         variant="secondary"
-        className="bg-green-100 text-green-700 max-w-xs truncate"
+        className="bg-success-muted text-success max-w-xs truncate"
       >
         Connected to {server.name || overview.cluster_name}
       </Badge>

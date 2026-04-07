@@ -59,8 +59,8 @@ const ForgotPassword: React.FC = () => {
       <div className="h-full flex items-center justify-center page-layout p-4">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
-            <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
-              <Mail className="h-6 w-6 text-green-600" />
+            <div className="mx-auto w-12 h-12 bg-success-muted rounded-full flex items-center justify-center mb-4">
+              <Mail className="h-6 w-6 text-success" />
             </div>
             <CardTitle className="text-2xl">{t("checkYourEmail")}</CardTitle>
             <CardDescription>

@@ -325,12 +325,12 @@ function SMTPForm({
               {testMutation.data && (
                 <div className="pt-2">
                   {testMutation.data.success ? (
-                    <div className="flex items-center gap-2 text-green-600">
+                    <div className="flex items-center gap-2 text-success">
                       <CheckCircle className="h-5 w-5" />
                       <span>{t("testSuccess")}</span>
                     </div>
                   ) : (
-                    <div className="flex items-center gap-2 text-red-600">
+                    <div className="flex items-center gap-2 text-destructive">
                       <AlertCircle className="h-5 w-5" />
                       <span>{testMutation.data.error}</span>
                     </div>

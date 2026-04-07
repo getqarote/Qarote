@@ -123,8 +123,8 @@ const SignUp: React.FC = () => {
           </CardHeader>
           <CardContent>
             {publicConfig?.registrationEnabled === false ? (
-              <Alert className="border-amber-200 bg-amber-50">
-                <AlertDescription className="text-amber-800">
+              <Alert className="border-warning/30 bg-warning-muted">
+                <AlertDescription className="text-warning">
                   <div className="font-medium mb-2">
                     {t("registrationDisabled")}
                   </div>
@@ -135,15 +135,15 @@ const SignUp: React.FC = () => {
                     variant="outline"
                     size="sm"
                     onClick={() => navigate("/auth/sign-in")}
-                    className="bg-white border-amber-300 text-amber-700 hover:bg-amber-100"
+                    className="bg-white border-warning/40 text-warning hover:bg-warning-muted"
                   >
                     {t("goToSignIn")}
                   </Button>
                 </AlertDescription>
               </Alert>
             ) : registerMutation.isSuccess ? (
-              <Alert className="border-green-200 bg-green-50">
-                <AlertDescription className="text-green-800">
+              <Alert className="border-success/30 bg-success-muted">
+                <AlertDescription className="text-success">
                   <div className="font-medium mb-2">
                     {t("accountCreatedSuccess")}
                   </div>
@@ -157,7 +157,7 @@ const SignUp: React.FC = () => {
                       variant="outline"
                       size="sm"
                       onClick={() => navigate("/auth/sign-in")}
-                      className="bg-white border-green-300 text-green-700 hover:bg-green-100"
+                      className="bg-white border-success/40 text-success hover:bg-success-muted"
                     >
                       {t("goToSignIn")}
                     </Button>
@@ -304,7 +304,7 @@ const SignUp: React.FC = () => {
                             {t("agreeToTerms")}{" "}
                             <Link
                               to="/terms-of-service"
-                              className="font-medium text-orange-600 hover:text-orange-500 underline"
+                              className="font-medium text-warning hover:text-warning underline"
                               target="_blank"
                               rel="noopener noreferrer"
                             >
@@ -313,7 +313,7 @@ const SignUp: React.FC = () => {
                             {t("andThe")}{" "}
                             <Link
                               to="/privacy-policy"
-                              className="font-medium text-orange-600 hover:text-orange-500 underline"
+                              className="font-medium text-warning hover:text-warning underline"
                               target="_blank"
                               rel="noopener noreferrer"
                             >

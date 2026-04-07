@@ -26,12 +26,12 @@ export const ConnectionStatusDisplay = ({
 
   // Success status
   return (
-    <Alert className="border-green-500">
-      <CheckCircle className="h-4 w-4 text-green-600" />
+    <Alert className="border-success">
+      <CheckCircle className="h-4 w-4 text-success" />
       <AlertDescription>
         {connectionStatus.message}
         {connectionStatus.details && (
-          <div className="mt-2 text-sm text-gray-600">
+          <div className="mt-2 text-sm text-muted-foreground">
             <p>RabbitMQ Version: {connectionStatus.details.version}</p>
             <p>Cluster: {connectionStatus.details.cluster_name}</p>
           </div>

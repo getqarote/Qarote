@@ -252,7 +252,7 @@ function SSOForm({
                     {testMutation.data && (
                       <div className="mt-1">
                         {testMutation.data.success ? (
-                          <div className="flex items-center gap-2 text-green-600 text-sm">
+                          <div className="flex items-center gap-2 text-success text-sm">
                             <CheckCircle className="h-4 w-4" />
                             <span>
                               {t("testSuccess", {
@@ -261,7 +261,7 @@ function SSOForm({
                             </span>
                           </div>
                         ) : (
-                          <div className="flex items-center gap-2 text-red-600 text-sm">
+                          <div className="flex items-center gap-2 text-destructive text-sm">
                             <AlertCircle className="h-4 w-4" />
                             <span>{testMutation.data.error}</span>
                           </div>
@@ -576,7 +576,7 @@ function SetupForm({ onRefetch }: { onRefetch: () => void }) {
                 {testMutation.data && (
                   <div className="mt-1">
                     {testMutation.data.success ? (
-                      <div className="flex items-center gap-2 text-green-600 text-sm">
+                      <div className="flex items-center gap-2 text-success text-sm">
                         <CheckCircle className="h-4 w-4" />
                         <span>
                           {t("testSuccess", {
@@ -585,7 +585,7 @@ function SetupForm({ onRefetch }: { onRefetch: () => void }) {
                         </span>
                       </div>
                     ) : (
-                      <div className="flex items-center gap-2 text-red-600 text-sm">
+                      <div className="flex items-center gap-2 text-destructive text-sm">
                         <AlertCircle className="h-4 w-4" />
                         <span>{testMutation.data.error}</span>
                       </div>

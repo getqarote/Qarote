@@ -184,7 +184,7 @@ export const SettingsSidebar = () => {
               to={item.path}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
                 isActive
-                  ? "bg-linear-to-r from-orange-600 to-red-600 text-white"
+                  ? "bg-sidebar-accent text-primary font-semibold"
                   : "text-muted-foreground hover:bg-muted"
               }`}
             >
@@ -196,7 +196,7 @@ export const SettingsSidebar = () => {
                   className={`text-[10px] px-1.5 py-0 font-medium ${
                     isActive
                       ? "border-white/40 text-white/90"
-                      : "border-purple-300 text-purple-600 dark:border-purple-500 dark:text-purple-400"
+                      : "border-border text-muted-foreground dark:border-border dark:text-muted-foreground"
                   }`}
                 >
                   {t("settings:nav.enterprise")}
@@ -231,7 +231,7 @@ export const SettingsSidebar = () => {
                       to={item.path}
                       className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                         isActive
-                          ? "bg-linear-to-r from-orange-600 to-red-600 text-white"
+                          ? "bg-sidebar-accent text-primary font-semibold"
                           : "text-muted-foreground hover:bg-muted hover:text-foreground"
                       }`}
                     >
@@ -243,7 +243,7 @@ export const SettingsSidebar = () => {
                           className={`text-[10px] px-1.5 py-0 font-medium ${
                             isActive
                               ? "border-white/40 text-white/90"
-                              : "border-purple-300 text-purple-600 dark:border-purple-500 dark:text-purple-400"
+                              : "border-border text-muted-foreground dark:border-border dark:text-muted-foreground"
                           }`}
                         >
                           {t("settings:nav.enterprise")}

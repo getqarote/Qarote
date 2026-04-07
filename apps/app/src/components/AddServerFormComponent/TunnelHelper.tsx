@@ -43,12 +43,10 @@ export const TunnelHelper = ({ form }: TunnelHelperProps) => {
   if (isTunnelUrl) {
     // User is using a tunnel - show success message
     return (
-      <Alert className="border-green-200 bg-green-50 dark:bg-green-950/20">
-        <Info className="h-4 w-4 text-green-600 dark:text-green-400" />
-        <AlertTitle className="text-green-800 dark:text-green-300">
-          Tunnel Detected
-        </AlertTitle>
-        <AlertDescription className="text-green-700 dark:text-green-400">
+      <Alert className="border-success/30 bg-success-muted">
+        <Info className="h-4 w-4 text-success dark:text-success" />
+        <AlertTitle className="text-success">Tunnel Detected</AlertTitle>
+        <AlertDescription className="text-success dark:text-success">
           Your tunnel URL has been detected. HTTPS will be automatically
           enabled. Make sure your tunnel is running and accessible.
         </AlertDescription>
@@ -58,12 +56,12 @@ export const TunnelHelper = ({ form }: TunnelHelperProps) => {
 
   // User is entering localhost - show instructions
   return (
-    <Alert className="border-blue-200 bg-blue-50 dark:bg-blue-950/20">
-      <AlertCircle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-      <AlertTitle className="text-blue-800 dark:text-blue-300">
+    <Alert className="border-info/30 bg-info-muted">
+      <AlertCircle className="h-4 w-4 text-info dark:text-info" />
+      <AlertTitle className="text-info">
         Monitoring localhost RabbitMQ?
       </AlertTitle>
-      <AlertDescription className="space-y-2 text-blue-700 dark:text-blue-400">
+      <AlertDescription className="space-y-2 text-info dark:text-info">
         <p>
           To monitor a RabbitMQ server running on localhost (development only),
           you need to expose it using a tunnel service.
@@ -72,17 +70,17 @@ export const TunnelHelper = ({ form }: TunnelHelperProps) => {
           <CollapsibleTrigger asChild>
             <Button
               variant="link"
-              className="h-auto p-0 text-blue-700 underline dark:text-blue-400"
+              className="h-auto p-0 text-info underline dark:text-info"
             >
               {isOpen ? "Hide" : "Show"} setup instructions
             </Button>
           </CollapsibleTrigger>
           <CollapsibleContent className="mt-2 space-y-3">
-            <div className="rounded-md bg-white p-3 dark:bg-gray-900">
+            <div className="rounded-md bg-white p-3">
               <h4 className="mb-2 font-semibold">Option 1: ngrok</h4>
               <div className="space-y-2 font-mono text-sm">
                 <div>
-                  <code className="rounded bg-gray-100 px-2 py-1 dark:bg-gray-800">
+                  <code className="rounded bg-muted px-2 py-1">
                     ngrok http 15672
                   </code>
                 </div>
@@ -92,7 +90,7 @@ export const TunnelHelper = ({ form }: TunnelHelperProps) => {
                     href="https://ngrok.com/download"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-600 underline dark:text-blue-400"
+                    className="text-info underline dark:text-info"
                   >
                     ngrok.com/download
                   </a>
@@ -102,11 +100,11 @@ export const TunnelHelper = ({ form }: TunnelHelperProps) => {
               </div>
             </div>
 
-            <div className="rounded-md bg-white p-3 dark:bg-gray-900">
+            <div className="rounded-md bg-white p-3">
               <h4 className="mb-2 font-semibold">Option 2: localtunnel</h4>
               <div className="space-y-2 font-mono text-sm">
                 <div>
-                  <code className="rounded bg-gray-100 px-2 py-1 dark:bg-gray-800">
+                  <code className="rounded bg-muted px-2 py-1">
                     npx localtunnel --port 15672
                   </code>
                 </div>

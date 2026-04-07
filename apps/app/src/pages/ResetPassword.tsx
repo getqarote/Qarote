@@ -132,8 +132,8 @@ const ResetPassword: React.FC = () => {
       <div className="h-full flex items-center justify-center page-layout p-4">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
-            <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
-              <Check className="h-6 w-6 text-green-600" />
+            <div className="mx-auto w-12 h-12 bg-success-muted rounded-full flex items-center justify-center mb-4">
+              <Check className="h-6 w-6 text-success" />
             </div>
             <CardTitle className="text-2xl">
               {t("resetPasswordSuccessTitle")}
@@ -185,7 +185,7 @@ const ResetPassword: React.FC = () => {
                   onChange={(e) =>
                     handleInputChange("password", e.target.value)
                   }
-                  className={errors.password ? "border-red-500" : ""}
+                  className={errors.password ? "border-destructive" : ""}
                   disabled={resetPasswordMutation.isPending}
                   autoComplete="new-password"
                 />
@@ -205,7 +205,7 @@ const ResetPassword: React.FC = () => {
                 </Button>
               </div>
               {errors.password && (
-                <p className="text-sm text-red-500">{errors.password}</p>
+                <p className="text-sm text-destructive">{errors.password}</p>
               )}
             </div>
 
@@ -222,15 +222,13 @@ const ResetPassword: React.FC = () => {
                       className="flex items-center gap-2 text-sm"
                     >
                       {check.test ? (
-                        <Check className="h-3 w-3 text-green-500" />
+                        <Check className="h-3 w-3 text-success" />
                       ) : (
-                        <X className="h-3 w-3 text-red-500" />
+                        <X className="h-3 w-3 text-destructive" />
                       )}
                       <span
                         className={
-                          check.test
-                            ? "text-green-700"
-                            : "text-muted-foreground"
+                          check.test ? "text-success" : "text-muted-foreground"
                         }
                       >
                         {check.label}
@@ -253,7 +251,7 @@ const ResetPassword: React.FC = () => {
                   onChange={(e) =>
                     handleInputChange("confirmPassword", e.target.value)
                   }
-                  className={errors.confirmPassword ? "border-red-500" : ""}
+                  className={errors.confirmPassword ? "border-destructive" : ""}
                   disabled={resetPasswordMutation.isPending}
                   autoComplete="new-password"
                 />
@@ -273,7 +271,9 @@ const ResetPassword: React.FC = () => {
                 </Button>
               </div>
               {errors.confirmPassword && (
-                <p className="text-sm text-red-500">{errors.confirmPassword}</p>
+                <p className="text-sm text-destructive">
+                  {errors.confirmPassword}
+                </p>
               )}
             </div>
 

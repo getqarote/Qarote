@@ -32,7 +32,7 @@ export function SlackTab({
         <div className="space-y-2">
           <Label htmlFor="slack-webhook-url">
             {t("modal.slackWebhookUrl")}
-            <span className="text-red-500 ml-1">*</span>
+            <span className="text-destructive ml-1">*</span>
           </Label>
           <Input
             id="slack-webhook-url"
@@ -77,7 +77,7 @@ export function SlackTab({
                 disabled={isDeleting}
                 aria-label="Delete Slack integration"
               >
-                <Trash2 className="h-4 w-4 text-red-600" />
+                <Trash2 className="h-4 w-4 text-destructive" />
               </Button>
             )}
             <Button

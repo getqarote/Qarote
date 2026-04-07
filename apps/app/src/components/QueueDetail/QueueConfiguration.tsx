@@ -38,7 +38,9 @@ export function QueueConfiguration({ queue }: QueueConfigurationProps) {
           </div>
           <div>
             <p className="text-sm text-muted-foreground">State</p>
-            <Badge className="bg-green-100 text-green-700">{queue.state}</Badge>
+            <Badge className="bg-success-muted text-success">
+              {queue.state}
+            </Badge>
           </div>
         </div>
         <div className="pt-4 border-t">
