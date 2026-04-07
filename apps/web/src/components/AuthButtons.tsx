@@ -2,6 +2,8 @@ import { useTranslation } from "react-i18next";
 
 import { trackSignUpClick } from "@/lib/gtm";
 
+import { Button } from "@/components/ui/button";
+
 interface AuthButtonsProps {
   align?: "left" | "center" | "right";
 }
@@ -18,9 +20,6 @@ const AuthButtons = ({ align = "center" }: AuthButtonsProps) => {
     window.location.href = `${authBaseUrl}/auth/sign-up`;
   };
 
-  const primaryButtonStyles =
-    "bg-gradient-button hover:bg-gradient-button-hover text-white";
-
   const alignClass =
     align === "left"
       ? "justify-start"
@@ -36,10 +35,13 @@ const AuthButtons = ({ align = "center" }: AuthButtonsProps) => {
     <div
       className={`flex ${alignClass} items-center gap-6 ${widthClass} ${marginClass} ${paddingClass}`}
     >
-      <button
+      <Button
         type="button"
+        variant="gradient"
+        size="pill"
         onClick={handleSignUp}
-        className={`${primaryButtonStyles} px-4 py-3 sm:px-7 sm:py-3 transition-colors duration-200 flex items-center justify-center gap-3 text-base sm:text-lg w-full sm:w-auto rounded-full`}
+        aria-describedby="hero-no-credit-card"
+        className="w-full sm:w-auto"
       >
         <span className="whitespace-nowrap">{t("cta.getStartedForFree")}</span>
         <img
@@ -50,7 +52,7 @@ const AuthButtons = ({ align = "center" }: AuthButtonsProps) => {
           height={13}
           className="h-[0.8em] w-auto align-middle image-crisp"
         />
-      </button>
+      </Button>
     </div>
   );
 };

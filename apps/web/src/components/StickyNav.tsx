@@ -6,6 +6,7 @@ import { Menu } from "lucide-react";
 import { trackSignUpClick } from "@/lib/gtm";
 
 import { GithubStarBadge } from "@/components/GithubStarBadge";
+import { Button } from "@/components/ui/button";
 import {
   Sheet,
   SheetContent,
@@ -86,15 +87,6 @@ const StickyNav = () => {
             >
               {t("whatsNew", "What's New")}
             </a>
-            <a
-              href="https://demo.qarote.io/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-4 py-2 text-base font-medium text-primary hover:text-primary/80 transition-colors"
-            >
-              {t("liveDemo", "Live Demo")}{" "}
-              <span className="sr-only">{t("opensInNewTab")}</span>
-            </a>
           </div>
 
           <div className="flex items-center justify-end gap-1 sm:gap-2">
@@ -107,8 +99,10 @@ const StickyNav = () => {
             >
               {t("login")}
             </a>
-            <button
+            <Button
               type="button"
+              variant="gradient"
+              size="pillSm"
               onClick={() => {
                 trackSignUpClick({
                   source: "sticky_nav",
@@ -116,7 +110,7 @@ const StickyNav = () => {
                 });
                 window.location.href = `${authBaseUrl}/auth/sign-up`;
               }}
-              className="hidden lg:inline-flex bg-gradient-button hover:bg-gradient-button-hover text-white px-2 sm:px-4 py-2 text-sm sm:text-base transition-colors whitespace-nowrap rounded-full items-center justify-center gap-2"
+              className="hidden lg:inline-flex"
             >
               <span>{t("tryForFree")}</span>
               <img
@@ -127,7 +121,7 @@ const StickyNav = () => {
                 height={13}
                 className="h-[0.8em] w-auto align-middle image-crisp"
               />
-            </button>
+            </Button>
             <button
               type="button"
               onClick={() => setOpen(true)}
@@ -184,15 +178,6 @@ const StickyNav = () => {
             >
               {t("whatsNew", "What's New")}
             </a>
-            <a
-              href="https://demo.qarote.io/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-4 py-3 text-base font-medium text-primary hover:text-primary/80 hover:bg-muted rounded-md transition-colors"
-            >
-              {t("liveDemo", "Live Demo")}{" "}
-              <span className="sr-only">{t("opensInNewTab")}</span>
-            </a>
             <div className="border-t border-border my-2" />
             <a
               href={`${authBaseUrl}/auth/sign-in`}
@@ -200,8 +185,10 @@ const StickyNav = () => {
             >
               {t("login")}
             </a>
-            <button
+            <Button
               type="button"
+              variant="gradient"
+              size="pillMd"
               onClick={() => {
                 trackSignUpClick({
                   source: "mobile_nav",
@@ -209,7 +196,7 @@ const StickyNav = () => {
                 });
                 window.location.href = `${authBaseUrl}/auth/sign-up`;
               }}
-              className="mx-4 mt-2 bg-gradient-button hover:bg-gradient-button-hover text-white px-4 py-3 text-base transition-colors whitespace-nowrap rounded-full inline-flex items-center justify-center gap-2"
+              className="mx-4 mt-2"
             >
               <span>{t("tryForFree")}</span>
               <img
@@ -220,7 +207,7 @@ const StickyNav = () => {
                 height={13}
                 className="h-[0.8em] w-auto align-middle image-crisp"
               />
-            </button>
+            </Button>
           </nav>
         </SheetContent>
       </Sheet>
