@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 
 import { RabbitMQNode } from "@/lib/api";
+import { getUsageTone } from "@/lib/health-tones";
 
 import { RabbitMQPermissionError } from "@/components/RabbitMQPermissionError";
 import { Badge } from "@/components/ui/badge";
@@ -34,8 +35,8 @@ export const EnhancedNodesOverview = ({
       <Card className="border-0 shadow-md bg-card backdrop-blur-xs">
         <CardHeader>
           <CardTitle className="text-lg font-semibold text-foreground flex items-center gap-2">
-            <Server className="h-5 w-5 text-emerald-600" />
-            <span className="text-emerald-600">Cluster Overview</span>
+            <Server className="h-5 w-5 text-muted-foreground" />
+            <span className="text-muted-foreground">Cluster Overview</span>
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -82,18 +83,18 @@ export const EnhancedNodesOverview = ({
     if (clusterHealth === 100)
       return {
         status: "All Healthy",
-        color: "bg-green-100 text-green-700",
+        color: "bg-success-muted text-success",
         icon: CheckCircle,
       };
     if (clusterHealth >= 80)
       return {
         status: "Degraded",
-        color: "bg-yellow-100 text-yellow-700",
+        color: "bg-warning-muted text-warning",
         icon: AlertTriangle,
       };
     return {
       status: "Critical",
-      color: "bg-red-100 text-red-700",
+      color: "bg-destructive/10 text-destructive",
       icon: XCircle,
     };
   };
@@ -108,7 +109,7 @@ export const EnhancedNodesOverview = ({
       unit: "",
       description: `${healthyNodes} healthy`,
       icon: Server,
-      color: "text-blue-600",
+      color: "text-muted-foreground",
     },
     {
       name: "Memory Usage",
@@ -121,12 +122,8 @@ export const EnhancedNodesOverview = ({
       icon: HardDrive,
       color:
         runningNodes.length > 0
-          ? avgMemoryUsage > 80
-            ? "text-red-600"
-            : avgMemoryUsage > 60
-              ? "text-yellow-600"
-              : "text-green-600"
-          : "text-gray-600",
+          ? getUsageTone(avgMemoryUsage)
+          : "text-muted-foreground",
     },
     {
       name: "Total Disk Free",
@@ -135,7 +132,7 @@ export const EnhancedNodesOverview = ({
       description:
         runningNodes.length > 0 ? "Available storage" : "No running nodes",
       icon: Activity,
-      color: "text-purple-600",
+      color: "text-muted-foreground",
     },
     {
       name: "Active Connections",
@@ -144,7 +141,7 @@ export const EnhancedNodesOverview = ({
       description:
         runningNodes.length > 0 ? "Total sockets in use" : "No running nodes",
       icon: Network,
-      color: "text-orange-600",
+      color: "text-muted-foreground",
     },
   ];
 
@@ -154,8 +151,8 @@ export const EnhancedNodesOverview = ({
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="text-lg font-semibold text-foreground flex items-center gap-2">
-              <Server className="h-5 w-5 text-emerald-600" />
-              <span className="text-emerald-600">Cluster Overview</span>
+              <Server className="h-5 w-5 text-muted-foreground" />
+              <span className="text-muted-foreground">Cluster Overview</span>
             </CardTitle>
             <p className="text-sm text-muted-foreground mt-1">
               RabbitMQ cluster health and aggregate metrics

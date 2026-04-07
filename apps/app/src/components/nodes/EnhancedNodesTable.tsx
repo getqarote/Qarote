@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 
 import { RabbitMQNode } from "@/lib/api";
+import { getUsageTone } from "@/lib/health-tones";
 
 import { RabbitMQPermissionError } from "@/components/RabbitMQPermissionError";
 import { Badge } from "@/components/ui/badge";
@@ -141,7 +142,7 @@ export const EnhancedNodesTable = ({
     if (!node.running) {
       return {
         status: "Error",
-        color: "bg-red-100 text-red-700",
+        color: "bg-destructive/10 text-destructive",
         icon: XCircle,
       };
     }
@@ -158,14 +159,14 @@ export const EnhancedNodesTable = ({
     if (memoryUsage > 80 || diskUsage > 80) {
       return {
         status: "Warning",
-        color: "bg-yellow-100 text-yellow-700",
+        color: "bg-warning-muted text-warning",
         icon: AlertTriangle,
       };
     }
 
     return {
       status: "Healthy",
-      color: "bg-green-100 text-green-700",
+      color: "bg-success-muted text-success",
       icon: CheckCircle,
     };
   };
@@ -236,7 +237,7 @@ export const EnhancedNodesTable = ({
     return (
       <Card className="border-0 shadow-md bg-card backdrop-blur-xs">
         <CardHeader>
-          <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+          <CardTitle className="text-lg font-semibold text-foreground flex items-center gap-2">
             <Server className="h-5 w-5" />
             Cluster Nodes
           </CardTitle>
@@ -256,8 +257,10 @@ export const EnhancedNodesTable = ({
     <Card className="border-0 shadow-md bg-card backdrop-blur-xs">
       <CardHeader>
         <CardTitle className="text-lg font-semibold text-foreground flex items-center gap-2">
-          <Server className="h-5 w-5 text-blue-600" />
-          <span className="text-blue-600">Cluster Nodes ({nodes.length})</span>
+          <Server className="h-5 w-5 text-muted-foreground" />
+          <span className="text-muted-foreground">
+            Cluster Nodes ({nodes.length})
+          </span>
         </CardTitle>
         <p className="text-sm text-muted-foreground mt-1">
           Detailed node metrics and health status. Click on any row to expand
@@ -343,7 +346,7 @@ export const EnhancedNodesTable = ({
                       </TableCell>
                       <TableCell className="font-medium max-w-[300px]">
                         <div className="flex items-center gap-2 min-w-0">
-                          <Server className="h-4 w-4 text-blue-600 shrink-0" />
+                          <Server className="h-4 w-4 text-muted-foreground shrink-0" />
                           <span
                             className="text-foreground truncate"
                             title={node.name}
@@ -366,7 +369,7 @@ export const EnhancedNodesTable = ({
                                 ? formatBytes(node.mem_used)
                                 : "N/A"}
                             </span>
-                            <span className="text-gray-500">
+                            <span className="text-muted-foreground">
                               /{" "}
                               {node.mem_limit
                                 ? formatBytes(node.mem_limit)
@@ -376,10 +379,16 @@ export const EnhancedNodesTable = ({
                           {node.mem_used && node.mem_limit ? (
                             <Progress
                               value={memoryUsage}
-                              className={`h-2 w-20 ${memoryUsage > 80 ? "[&>div]:bg-red-500" : memoryUsage > 60 ? "[&>div]:bg-yellow-500" : "[&>div]:bg-green-500"}`}
+                              className={`h-2 w-20 ${
+                                memoryUsage > 80
+                                  ? "[&>div]:bg-destructive"
+                                  : memoryUsage > 60
+                                    ? "[&>div]:bg-warning"
+                                    : "[&>div]:bg-success"
+                              }`}
                             />
                           ) : (
-                            <div className="h-2 w-20 bg-gray-200 rounded"></div>
+                            <div className="h-2 w-20 bg-border rounded"></div>
                           )}
                         </div>
                       </TableCell>
@@ -388,8 +397,8 @@ export const EnhancedNodesTable = ({
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1">
-                          <Clock className="w-3 h-3 text-purple-500" />
-                          <span className="text-gray-700">
+                          <Clock className="w-3 h-3 text-muted-foreground" />
+                          <span className="text-muted-foreground">
                             {node.uptime ? formatUptime(node.uptime) : "N/A"}
                           </span>
                         </div>
@@ -397,28 +406,28 @@ export const EnhancedNodesTable = ({
                       <TableCell>
                         <div className="space-y-1">
                           <div className="flex items-center gap-2 text-sm">
-                            <HardDrive className="w-3 h-3 text-blue-500" />
-                            <span className="text-xs font-medium text-blue-700">
+                            <HardDrive className="w-3 h-3 text-muted-foreground" />
+                            <span className="text-xs font-medium text-foreground">
                               R:{" "}
                               {node.io_read_count
                                 ? formatNumber(node.io_read_count)
                                 : "N/A"}
                             </span>
-                            <span className="text-xs font-medium text-indigo-700">
+                            <span className="text-xs font-medium text-foreground">
                               W:{" "}
                               {node.io_write_count
                                 ? formatNumber(node.io_write_count)
                                 : "N/A"}
                             </span>
                           </div>
-                          <div className="text-xs text-gray-500">
-                            <span className="text-blue-600">
+                          <div className="text-xs text-muted-foreground">
+                            <span className="text-muted-foreground">
                               {node.io_read_count_details?.rate
                                 ? formatRate(node.io_read_count_details.rate)
                                 : "0/s"}
                             </span>{" "}
                             /{" "}
-                            <span className="text-indigo-600">
+                            <span className="text-muted-foreground">
                               {node.io_write_count_details?.rate
                                 ? formatRate(node.io_write_count_details.rate)
                                 : "0/s"}
@@ -429,16 +438,16 @@ export const EnhancedNodesTable = ({
                       <TableCell>
                         <div className="space-y-1">
                           <div className="flex items-center gap-2 text-sm">
-                            <Users className="w-3 h-3 text-green-500" />
-                            <span className="font-medium text-green-700">
+                            <Users className="w-3 h-3 text-muted-foreground" />
+                            <span className="font-medium text-foreground">
                               {node.connection_created
                                 ? formatNumber(node.connection_created)
                                 : "N/A"}
                             </span>
                           </div>
-                          <div className="text-xs text-gray-500">
+                          <div className="text-xs text-muted-foreground">
                             Active:{" "}
-                            <span className="text-green-600 font-medium">
+                            <span className="text-muted-foreground font-medium">
                               {node.sockets_used
                                 ? formatNumber(node.sockets_used)
                                 : "N/A"}
@@ -450,17 +459,23 @@ export const EnhancedNodesTable = ({
                         <div className="space-y-1">
                           <div className="flex items-center justify-between text-sm">
                             <span>{node.fd_used ? node.fd_used : "N/A"}</span>
-                            <span className="text-gray-500">
+                            <span className="text-muted-foreground">
                               / {node.fd_total ? node.fd_total : "N/A"}
                             </span>
                           </div>
                           {node.fd_used && node.fd_total ? (
                             <Progress
                               value={fdUsage}
-                              className={`h-2 w-16 ${fdUsage > 80 ? "[&>div]:bg-red-500" : fdUsage > 60 ? "[&>div]:bg-yellow-500" : "[&>div]:bg-green-500"}`}
+                              className={`h-2 w-16 ${
+                                fdUsage > 80
+                                  ? "[&>div]:bg-destructive"
+                                  : fdUsage > 60
+                                    ? "[&>div]:bg-warning"
+                                    : "[&>div]:bg-success"
+                              }`}
                             />
                           ) : (
-                            <div className="h-2 w-16 bg-gray-200 rounded"></div>
+                            <div className="h-2 w-16 bg-border rounded"></div>
                           )}
                         </div>
                       </TableCell>
@@ -475,15 +490,15 @@ export const EnhancedNodesTable = ({
                               {/* Memory Details */}
                               <div className="space-y-3 bg-card rounded-lg p-4 border border-border">
                                 <div className="flex items-center gap-2">
-                                  <h4 className="font-medium text-gray-900 flex items-center gap-2">
-                                    <MemoryStick className="h-4 w-4 text-blue-600" />
-                                    <span className="text-blue-900">
+                                  <h4 className="font-medium text-foreground flex items-center gap-2">
+                                    <MemoryStick className="h-4 w-4 text-muted-foreground" />
+                                    <span className="text-foreground">
                                       Memory Details
                                     </span>
                                   </h4>
                                   <Tooltip>
                                     <TooltipTrigger asChild>
-                                      <Info className="h-4 w-4 text-gray-400 hover:text-blue-600 cursor-help" />
+                                      <Info className="h-4 w-4 text-muted-foreground hover:text-muted-foreground cursor-help" />
                                     </TooltipTrigger>
                                     <TooltipContent className="max-w-sm">
                                       <div className="space-y-2">
@@ -513,15 +528,17 @@ export const EnhancedNodesTable = ({
                                 </div>
                                 <div className="space-y-2 text-sm">
                                   <div className="flex justify-between">
-                                    <span className="text-gray-600">Used:</span>
-                                    <span className="font-medium text-blue-700">
+                                    <span className="text-muted-foreground">
+                                      Used:
+                                    </span>
+                                    <span className="font-medium text-foreground">
                                       {node.mem_used
                                         ? formatBytes(node.mem_used)
                                         : "N/A"}
                                     </span>
                                   </div>
                                   <div className="flex justify-between">
-                                    <span className="text-gray-600">
+                                    <span className="text-muted-foreground">
                                       Limit:
                                     </span>
                                     <span className="font-medium">
@@ -531,11 +548,11 @@ export const EnhancedNodesTable = ({
                                     </span>
                                   </div>
                                   <div className="flex justify-between">
-                                    <span className="text-gray-600">
+                                    <span className="text-muted-foreground">
                                       Usage:
                                     </span>
                                     <span
-                                      className={`font-medium ${memoryUsage > 80 ? "text-red-600" : memoryUsage > 60 ? "text-yellow-600" : "text-green-600"}`}
+                                      className={`font-medium ${getUsageTone(memoryUsage)}`}
                                     >
                                       {node.mem_used && node.mem_limit
                                         ? `${memoryUsage.toFixed(1)}%`
@@ -543,7 +560,7 @@ export const EnhancedNodesTable = ({
                                     </span>
                                   </div>
                                   <div className="flex justify-between">
-                                    <span className="text-gray-600">
+                                    <span className="text-muted-foreground">
                                       Alarm:
                                     </span>
                                     <Badge
@@ -562,15 +579,15 @@ export const EnhancedNodesTable = ({
                               {/* I/O Performance */}
                               <div className="space-y-3 bg-card rounded-lg p-4 border border-border">
                                 <div className="flex items-center gap-2">
-                                  <h4 className="font-medium text-gray-900 flex items-center gap-2">
-                                    <Activity className="h-4 w-4 text-purple-600" />
-                                    <span className="text-purple-900">
+                                  <h4 className="font-medium text-foreground flex items-center gap-2">
+                                    <Activity className="h-4 w-4 text-muted-foreground" />
+                                    <span className="text-foreground">
                                       I/O Performance
                                     </span>
                                   </h4>
                                   <Tooltip>
                                     <TooltipTrigger asChild>
-                                      <HelpCircle className="h-4 w-4 text-gray-400 hover:text-purple-600 cursor-help" />
+                                      <HelpCircle className="h-4 w-4 text-muted-foreground hover:text-muted-foreground cursor-help" />
                                     </TooltipTrigger>
                                     <TooltipContent className="max-w-sm">
                                       <div className="space-y-2">
@@ -600,30 +617,30 @@ export const EnhancedNodesTable = ({
                                 </div>
                                 <div className="space-y-2 text-sm">
                                   <div className="flex justify-between">
-                                    <span className="text-gray-600">
+                                    <span className="text-muted-foreground">
                                       Read Ops:
                                     </span>
-                                    <span className="font-medium text-blue-700">
+                                    <span className="font-medium text-foreground">
                                       {node.io_read_count
                                         ? formatNumber(node.io_read_count)
                                         : "N/A"}
                                     </span>
                                   </div>
                                   <div className="flex justify-between">
-                                    <span className="text-gray-600">
+                                    <span className="text-muted-foreground">
                                       Write Ops:
                                     </span>
-                                    <span className="font-medium text-indigo-700">
+                                    <span className="font-medium text-foreground">
                                       {node.io_write_count
                                         ? formatNumber(node.io_write_count)
                                         : "N/A"}
                                     </span>
                                   </div>
                                   <div className="flex justify-between">
-                                    <span className="text-gray-600">
+                                    <span className="text-muted-foreground">
                                       Read Rate:
                                     </span>
-                                    <span className="font-medium text-blue-600">
+                                    <span className="font-medium text-muted-foreground">
                                       {node.io_read_count_details?.rate
                                         ? formatRate(
                                             node.io_read_count_details.rate
@@ -632,10 +649,10 @@ export const EnhancedNodesTable = ({
                                     </span>
                                   </div>
                                   <div className="flex justify-between">
-                                    <span className="text-gray-600">
+                                    <span className="text-muted-foreground">
                                       Write Rate:
                                     </span>
-                                    <span className="font-medium text-indigo-600">
+                                    <span className="font-medium text-muted-foreground">
                                       {node.io_write_count_details?.rate
                                         ? formatRate(
                                             node.io_write_count_details.rate
@@ -644,20 +661,20 @@ export const EnhancedNodesTable = ({
                                     </span>
                                   </div>
                                   <div className="flex justify-between">
-                                    <span className="text-gray-600">
+                                    <span className="text-muted-foreground">
                                       Avg Read Time:
                                     </span>
-                                    <span className="font-medium text-purple-700">
+                                    <span className="font-medium text-foreground">
                                       {node.io_read_avg_time
                                         ? `${node.io_read_avg_time.toFixed(2)}ms`
                                         : "N/A"}
                                     </span>
                                   </div>
                                   <div className="flex justify-between">
-                                    <span className="text-gray-600">
+                                    <span className="text-muted-foreground">
                                       Avg Write Time:
                                     </span>
-                                    <span className="font-medium text-purple-700">
+                                    <span className="font-medium text-foreground">
                                       {node.io_write_avg_time
                                         ? `${node.io_write_avg_time.toFixed(2)}ms`
                                         : "N/A"}
@@ -669,15 +686,15 @@ export const EnhancedNodesTable = ({
                               {/* Network & Connections */}
                               <div className="space-y-3 bg-card rounded-lg p-4 border border-border">
                                 <div className="flex items-center gap-2">
-                                  <h4 className="font-medium text-gray-900 flex items-center gap-2">
-                                    <Network className="h-4 w-4 text-green-600" />
-                                    <span className="text-green-900">
+                                  <h4 className="font-medium text-foreground flex items-center gap-2">
+                                    <Network className="h-4 w-4 text-muted-foreground" />
+                                    <span className="text-foreground">
                                       Network Activity
                                     </span>
                                   </h4>
                                   <Tooltip>
                                     <TooltipTrigger asChild>
-                                      <Info className="h-4 w-4 text-gray-400 hover:text-green-600 cursor-help" />
+                                      <Info className="h-4 w-4 text-muted-foreground hover:text-muted-foreground cursor-help" />
                                     </TooltipTrigger>
                                     <TooltipContent className="max-w-sm">
                                       <div className="space-y-2">
@@ -708,57 +725,57 @@ export const EnhancedNodesTable = ({
                                 </div>
                                 <div className="space-y-2 text-sm">
                                   <div className="flex justify-between">
-                                    <span className="text-gray-600">
+                                    <span className="text-muted-foreground">
                                       Connections Created:
                                     </span>
-                                    <span className="font-medium text-green-700">
+                                    <span className="font-medium text-foreground">
                                       {node.connection_created
                                         ? formatNumber(node.connection_created)
                                         : "N/A"}
                                     </span>
                                   </div>
                                   <div className="flex justify-between">
-                                    <span className="text-gray-600">
+                                    <span className="text-muted-foreground">
                                       Connections Closed:
                                     </span>
-                                    <span className="font-medium text-orange-700">
+                                    <span className="font-medium text-foreground">
                                       {node.connection_closed
                                         ? formatNumber(node.connection_closed)
                                         : "N/A"}
                                     </span>
                                   </div>
                                   <div className="flex justify-between">
-                                    <span className="text-gray-600">
+                                    <span className="text-muted-foreground">
                                       Channels Created:
                                     </span>
-                                    <span className="font-medium text-green-600">
+                                    <span className="font-medium text-muted-foreground">
                                       {node.channel_created
                                         ? formatNumber(node.channel_created)
                                         : "N/A"}
                                     </span>
                                   </div>
                                   <div className="flex justify-between">
-                                    <span className="text-gray-600">
+                                    <span className="text-muted-foreground">
                                       Channels Closed:
                                     </span>
-                                    <span className="font-medium text-orange-600">
+                                    <span className="font-medium text-muted-foreground">
                                       {node.channel_closed
                                         ? formatNumber(node.channel_closed)
                                         : "N/A"}
                                     </span>
                                   </div>
                                   <div className="flex justify-between">
-                                    <span className="text-gray-600">
+                                    <span className="text-muted-foreground">
                                       Active Sockets:
                                     </span>
-                                    <span className="font-medium text-emerald-700">
+                                    <span className="font-medium text-foreground">
                                       {node.sockets_used !== undefined
                                         ? `${node.sockets_used} / ${node.sockets_total || 0}`
                                         : "N/A"}
                                     </span>
                                   </div>
                                   <div className="flex justify-between">
-                                    <span className="text-gray-600">
+                                    <span className="text-muted-foreground">
                                       Net Ticktime:
                                     </span>
                                     <span className="font-medium">
@@ -773,15 +790,15 @@ export const EnhancedNodesTable = ({
                               {/* Database & Queue Activity */}
                               <div className="space-y-3 bg-card rounded-lg p-4 border border-border">
                                 <div className="flex items-center gap-2">
-                                  <h4 className="font-medium text-gray-900 flex items-center gap-2">
-                                    <Database className="h-4 w-4 text-amber-600" />
-                                    <span className="text-amber-900">
+                                  <h4 className="font-medium text-foreground flex items-center gap-2">
+                                    <Database className="h-4 w-4 text-muted-foreground" />
+                                    <span className="text-foreground">
                                       Database Activity
                                     </span>
                                   </h4>
                                   <Tooltip>
                                     <TooltipTrigger asChild>
-                                      <HelpCircle className="h-4 w-4 text-gray-400 hover:text-amber-600 cursor-help" />
+                                      <HelpCircle className="h-4 w-4 text-muted-foreground hover:text-muted-foreground cursor-help" />
                                     </TooltipTrigger>
                                     <TooltipContent className="max-w-sm">
                                       <div className="space-y-2">
@@ -816,20 +833,20 @@ export const EnhancedNodesTable = ({
                                 </div>
                                 <div className="space-y-2 text-sm">
                                   <div className="flex justify-between">
-                                    <span className="text-gray-600">
+                                    <span className="text-muted-foreground">
                                       Mnesia RAM Tx:
                                     </span>
-                                    <span className="font-medium text-amber-700">
+                                    <span className="font-medium text-foreground">
                                       {node.mnesia_ram_tx_count
                                         ? formatNumber(node.mnesia_ram_tx_count)
                                         : "N/A"}
                                     </span>
                                   </div>
                                   <div className="flex justify-between">
-                                    <span className="text-gray-600">
+                                    <span className="text-muted-foreground">
                                       Mnesia Disk Tx:
                                     </span>
-                                    <span className="font-medium text-orange-700">
+                                    <span className="font-medium text-foreground">
                                       {node.mnesia_disk_tx_count
                                         ? formatNumber(
                                             node.mnesia_disk_tx_count
@@ -838,10 +855,10 @@ export const EnhancedNodesTable = ({
                                     </span>
                                   </div>
                                   <div className="flex justify-between">
-                                    <span className="text-gray-600">
+                                    <span className="text-muted-foreground">
                                       Msg Store Reads:
                                     </span>
-                                    <span className="font-medium text-blue-700">
+                                    <span className="font-medium text-foreground">
                                       {node.msg_store_read_count
                                         ? formatNumber(
                                             node.msg_store_read_count
@@ -850,10 +867,10 @@ export const EnhancedNodesTable = ({
                                     </span>
                                   </div>
                                   <div className="flex justify-between">
-                                    <span className="text-gray-600">
+                                    <span className="text-muted-foreground">
                                       Msg Store Writes:
                                     </span>
-                                    <span className="font-medium text-indigo-700">
+                                    <span className="font-medium text-foreground">
                                       {node.msg_store_write_count
                                         ? formatNumber(
                                             node.msg_store_write_count
@@ -862,10 +879,10 @@ export const EnhancedNodesTable = ({
                                     </span>
                                   </div>
                                   <div className="flex justify-between">
-                                    <span className="text-gray-600">
+                                    <span className="text-muted-foreground">
                                       Queue Index Reads:
                                     </span>
-                                    <span className="font-medium text-cyan-700">
+                                    <span className="font-medium text-foreground">
                                       {node.queue_index_read_count
                                         ? formatNumber(
                                             node.queue_index_read_count
@@ -874,10 +891,10 @@ export const EnhancedNodesTable = ({
                                     </span>
                                   </div>
                                   <div className="flex justify-between">
-                                    <span className="text-gray-600">
+                                    <span className="text-muted-foreground">
                                       Queue Index Writes:
                                     </span>
-                                    <span className="font-medium text-teal-700">
+                                    <span className="font-medium text-foreground">
                                       {node.queue_index_write_count
                                         ? formatNumber(
                                             node.queue_index_write_count
@@ -890,20 +907,20 @@ export const EnhancedNodesTable = ({
                             </div>
 
                             {/* Additional System Information */}
-                            <div className="mt-6 pt-6 border-t border-gray-200">
+                            <div className="mt-6 pt-6 border-t border-border">
                               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 {/* System Details */}
                                 <div className="space-y-3 bg-card rounded-lg p-4 border border-border">
                                   <div className="flex items-center gap-2">
-                                    <h4 className="font-medium text-gray-900 flex items-center gap-2">
-                                      <Cpu className="h-4 w-4 text-slate-600" />
-                                      <span className="text-slate-900">
+                                    <h4 className="font-medium text-foreground flex items-center gap-2">
+                                      <Cpu className="h-4 w-4 text-muted-foreground" />
+                                      <span className="text-foreground">
                                         System Details
                                       </span>
                                     </h4>
                                     <Tooltip>
                                       <TooltipTrigger asChild>
-                                        <Info className="h-4 w-4 text-gray-400 hover:text-slate-600 cursor-help" />
+                                        <Info className="h-4 w-4 text-muted-foreground hover:text-muted-foreground cursor-help" />
                                       </TooltipTrigger>
                                       <TooltipContent className="max-w-sm">
                                         <div className="space-y-2">
@@ -936,47 +953,47 @@ export const EnhancedNodesTable = ({
                                   </div>
                                   <div className="space-y-2 text-sm">
                                     <div className="flex justify-between">
-                                      <span className="text-gray-600">
+                                      <span className="text-muted-foreground">
                                         Type:
                                       </span>
                                       <Badge
                                         variant="outline"
-                                        className="border-slate-300 text-slate-700"
+                                        className="border-border text-foreground"
                                       >
                                         {node.type}
                                       </Badge>
                                     </div>
                                     <div className="flex justify-between">
-                                      <span className="text-gray-600">
+                                      <span className="text-muted-foreground">
                                         Processors:
                                       </span>
-                                      <span className="font-medium text-slate-700">
+                                      <span className="font-medium text-foreground">
                                         {node.processors || "N/A"}
                                       </span>
                                     </div>
                                     <div className="flex justify-between">
-                                      <span className="text-gray-600">
+                                      <span className="text-muted-foreground">
                                         OS PID:
                                       </span>
-                                      <span className="font-mono text-xs text-slate-700">
+                                      <span className="font-mono text-xs text-foreground">
                                         {node.os_pid || "N/A"}
                                       </span>
                                     </div>
                                     <div className="flex justify-between">
-                                      <span className="text-gray-600">
+                                      <span className="text-muted-foreground">
                                         Run Queue:
                                       </span>
-                                      <span className="font-medium text-slate-700">
+                                      <span className="font-medium text-foreground">
                                         {node.run_queue !== undefined
                                           ? node.run_queue
                                           : "N/A"}
                                       </span>
                                     </div>
                                     <div className="flex justify-between">
-                                      <span className="text-gray-600">
+                                      <span className="text-muted-foreground">
                                         Processes:
                                       </span>
-                                      <span className="font-medium text-slate-700">
+                                      <span className="font-medium text-foreground">
                                         {node.proc_used !== undefined &&
                                         node.proc_total !== undefined
                                           ? `${node.proc_used} / ${node.proc_total}`
@@ -989,15 +1006,15 @@ export const EnhancedNodesTable = ({
                                 {/* Runtime Information */}
                                 <div className="space-y-3 bg-card rounded-lg p-4 border border-border">
                                   <div className="flex items-center gap-2">
-                                    <h4 className="font-medium text-gray-900 flex items-center gap-2">
-                                      <Settings className="h-4 w-4 text-rose-600" />
-                                      <span className="text-rose-900">
+                                    <h4 className="font-medium text-foreground flex items-center gap-2">
+                                      <Settings className="h-4 w-4 text-muted-foreground" />
+                                      <span className="text-foreground">
                                         Runtime Info
                                       </span>
                                     </h4>
                                     <Tooltip>
                                       <TooltipTrigger asChild>
-                                        <HelpCircle className="h-4 w-4 text-gray-400 hover:text-rose-600 cursor-help" />
+                                        <HelpCircle className="h-4 w-4 text-muted-foreground hover:text-muted-foreground cursor-help" />
                                       </TooltipTrigger>
                                       <TooltipContent className="max-w-sm">
                                         <div className="space-y-2">
@@ -1031,42 +1048,42 @@ export const EnhancedNodesTable = ({
                                   </div>
                                   <div className="space-y-2 text-sm">
                                     <div className="flex justify-between">
-                                      <span className="text-gray-600">
+                                      <span className="text-muted-foreground">
                                         Enabled Plugins:
                                       </span>
-                                      <span className="font-medium text-rose-700">
+                                      <span className="font-medium text-foreground">
                                         {node.enabled_plugins?.length || 0}
                                       </span>
                                     </div>
                                     <div className="flex justify-between">
-                                      <span className="text-gray-600">
+                                      <span className="text-muted-foreground">
                                         Auth Mechanisms:
                                       </span>
-                                      <span className="font-medium text-pink-700">
+                                      <span className="font-medium text-foreground">
                                         {node.auth_mechanisms?.length || 0}
                                       </span>
                                     </div>
                                     <div className="flex justify-between">
-                                      <span className="text-gray-600">
+                                      <span className="text-muted-foreground">
                                         Exchange Types:
                                       </span>
-                                      <span className="font-medium text-rose-600">
+                                      <span className="font-medium text-muted-foreground">
                                         {node.exchange_types?.length || 0}
                                       </span>
                                     </div>
                                     <div className="flex justify-between">
-                                      <span className="text-gray-600">
+                                      <span className="text-muted-foreground">
                                         Config Files:
                                       </span>
-                                      <span className="font-medium text-pink-600">
+                                      <span className="font-medium text-muted-foreground">
                                         {node.config_files?.length || 0}
                                       </span>
                                     </div>
                                     <div className="flex justify-between">
-                                      <span className="text-gray-600">
+                                      <span className="text-muted-foreground">
                                         Log Files:
                                       </span>
-                                      <span className="font-medium text-rose-600">
+                                      <span className="font-medium text-muted-foreground">
                                         {node.log_files?.length || 0}
                                       </span>
                                     </div>
@@ -1076,15 +1093,15 @@ export const EnhancedNodesTable = ({
                                 {/* Health Status */}
                                 <div className="space-y-3 bg-card rounded-lg p-4 border border-border">
                                   <div className="flex items-center gap-2">
-                                    <h4 className="font-medium text-gray-900 flex items-center gap-2">
-                                      <Wifi className="h-4 w-4 text-emerald-600" />
-                                      <span className="text-emerald-900">
+                                    <h4 className="font-medium text-foreground flex items-center gap-2">
+                                      <Wifi className="h-4 w-4 text-muted-foreground" />
+                                      <span className="text-foreground">
                                         Health Status
                                       </span>
                                     </h4>
                                     <Tooltip>
                                       <TooltipTrigger asChild>
-                                        <Info className="h-4 w-4 text-gray-400 hover:text-emerald-600 cursor-help" />
+                                        <Info className="h-4 w-4 text-muted-foreground hover:text-muted-foreground cursor-help" />
                                       </TooltipTrigger>
                                       <TooltipContent className="max-w-sm">
                                         <div className="space-y-2">
@@ -1118,7 +1135,7 @@ export const EnhancedNodesTable = ({
                                   </div>
                                   <div className="space-y-2 text-sm">
                                     <div className="flex justify-between">
-                                      <span className="text-gray-600">
+                                      <span className="text-muted-foreground">
                                         Running:
                                       </span>
                                       <Badge
@@ -1129,7 +1146,7 @@ export const EnhancedNodesTable = ({
                                         }
                                         className={
                                           node.running
-                                            ? "bg-green-100 text-green-800 border-green-200"
+                                            ? "bg-success-muted text-success border-success/30"
                                             : ""
                                         }
                                       >
@@ -1137,7 +1154,7 @@ export const EnhancedNodesTable = ({
                                       </Badge>
                                     </div>
                                     <div className="flex justify-between">
-                                      <span className="text-gray-600">
+                                      <span className="text-muted-foreground">
                                         Being Drained:
                                       </span>
                                       <Badge
@@ -1148,7 +1165,7 @@ export const EnhancedNodesTable = ({
                                         }
                                         className={
                                           !node.being_drained
-                                            ? "bg-green-100 text-green-800 border-green-200"
+                                            ? "bg-success-muted text-success border-success/30"
                                             : ""
                                         }
                                       >
@@ -1156,7 +1173,7 @@ export const EnhancedNodesTable = ({
                                       </Badge>
                                     </div>
                                     <div className="flex justify-between">
-                                      <span className="text-gray-600">
+                                      <span className="text-muted-foreground">
                                         Memory Alarm:
                                       </span>
                                       <Badge
@@ -1167,7 +1184,7 @@ export const EnhancedNodesTable = ({
                                         }
                                         className={
                                           !node.mem_alarm
-                                            ? "bg-green-100 text-green-800 border-green-200"
+                                            ? "bg-success-muted text-success border-success/30"
                                             : ""
                                         }
                                       >
@@ -1175,7 +1192,7 @@ export const EnhancedNodesTable = ({
                                       </Badge>
                                     </div>
                                     <div className="flex justify-between">
-                                      <span className="text-gray-600">
+                                      <span className="text-muted-foreground">
                                         Disk Alarm:
                                       </span>
                                       <Badge
@@ -1186,7 +1203,7 @@ export const EnhancedNodesTable = ({
                                         }
                                         className={
                                           !node.disk_free_alarm
-                                            ? "bg-green-100 text-green-800 border-green-200"
+                                            ? "bg-success-muted text-success border-success/30"
                                             : ""
                                         }
                                       >
@@ -1196,7 +1213,7 @@ export const EnhancedNodesTable = ({
                                       </Badge>
                                     </div>
                                     <div className="flex justify-between">
-                                      <span className="text-gray-600">
+                                      <span className="text-muted-foreground">
                                         Partitions:
                                       </span>
                                       <Badge
@@ -1207,7 +1224,7 @@ export const EnhancedNodesTable = ({
                                         }
                                         className={
                                           (node.partitions?.length || 0) === 0
-                                            ? "bg-green-100 text-green-800 border-green-200"
+                                            ? "bg-success-muted text-success border-success/30"
                                             : ""
                                         }
                                       >
@@ -1229,8 +1246,8 @@ export const EnhancedNodesTable = ({
           </Table>
         ) : (
           <div className="text-center py-8">
-            <Server className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-500">No nodes found</p>
+            <Server className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <p className="text-muted-foreground">No nodes found</p>
           </div>
         )}
       </CardContent>
