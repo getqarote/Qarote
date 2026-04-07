@@ -48,10 +48,4 @@ export class BoundedBuffer<T> {
   get size(): number {
     return this.count;
   }
-
-  clear(): void {
-    this.buf = new Array<T | undefined>(this.capacity);
-    this.head = 0;
-    this.count = 0;
-  }
 }

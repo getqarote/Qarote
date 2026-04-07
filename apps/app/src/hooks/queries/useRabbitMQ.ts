@@ -487,6 +487,10 @@ export const useSpyOnQueue = (
     bindingCount: number;
   } | null>(null);
   const [dropped, setDropped] = useState(0);
+  // Cumulative dropped count at the moment the user last clicked Clear.
+  // Subtracted from `dropped` so the displayed value resets to 0 on clear,
+  // even though the backend keeps streaming the cumulative count.
+  const [droppedBaseline, setDroppedBaseline] = useState(0);
 
   // RAF batching: accumulate messages in a ref, flush on animation frame
   const pendingRef = useRef<SpyMessage[]>([]);
@@ -542,20 +546,20 @@ export const useSpyOnQueue = (
   );
 
   const clearMessages = useCallback(() => {
+    setDroppedBaseline(dropped);
     setMessages([]);
-    setDropped(0);
     pendingRef.current = [];
     if (rafRef.current !== null) {
       cancelAnimationFrame(rafRef.current);
       rafRef.current = null;
     }
-  }, []);
+  }, [dropped]);
 
   return {
     messages,
     error,
     spyInfo,
-    dropped,
+    dropped: Math.max(0, dropped - droppedBaseline),
     isLoading: isActive && !spyInfo && !error,
     clearMessages,
   };
