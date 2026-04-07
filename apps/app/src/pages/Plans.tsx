@@ -249,7 +249,7 @@ const PlanCard: React.FC<{
           className={`w-full mt-6 px-4 py-3 sm:px-7 sm:py-3 transition-colors duration-200 text-base sm:text-lg h-auto rounded-full ${
             isCurrentPlan
               ? "bg-transparent border border-border text-muted-foreground cursor-not-allowed"
-              : "bg-gradient-button hover:bg-gradient-button-hover text-white"
+              : "bg-primary text-primary-foreground hover:bg-primary/90"
           }`}
           disabled={isCurrentPlan || isUpgrading}
         >

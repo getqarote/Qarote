@@ -63,7 +63,7 @@ export function SlackTab({
               checked={slackEnabled}
               onCheckedChange={onToggleSlack}
               disabled={isSaving}
-              className="data-[state=checked]:bg-gradient-button"
+              className="data-[state=checked]:bg-primary"
             />
             <Label htmlFor="slack-enabled">{t("modal.enabled")}</Label>
           </div>
@@ -84,7 +84,7 @@ export function SlackTab({
               type="button"
               onClick={onSaveSlack}
               disabled={isSaving || !slackWebhookUrl.trim()}
-              className="bg-gradient-button hover:bg-gradient-button-hover text-white hover:text-white"
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
             >
               {isSaving ? (
                 <>

@@ -147,7 +147,7 @@ function SMTPForm({
               id="smtp-enabled"
               checked={enabled}
               onCheckedChange={setEnabled}
-              className="data-[state=checked]:bg-gradient-button"
+              className="data-[state=checked]:bg-primary"
             />
             <Label htmlFor="smtp-enabled">
               {enabled ? t("enabled") : t("disabled")}
@@ -346,7 +346,7 @@ function SMTPForm({
       <Card>
         <CardFooter className="pt-6 flex justify-between">
           <Button
-            className="bg-gradient-button hover:bg-gradient-button-hover text-white"
+            className="bg-primary text-primary-foreground hover:bg-primary/90"
             onClick={handleSave}
             disabled={updateMutation.isPending}
           >

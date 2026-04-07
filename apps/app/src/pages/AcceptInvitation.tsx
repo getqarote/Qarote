@@ -95,7 +95,7 @@ const PLAN_DISPLAY_NAMES: Record<string, string> = {
 };
 
 const PageWrapper = ({ children }: { children: ReactNode }) => (
-  <div className="min-h-screen flex items-center justify-center bg-gradient-auth py-12 px-4 sm:px-6 lg:px-8">
+  <div className="min-h-screen flex items-center justify-center bg-background py-12 px-4 sm:px-6 lg:px-8">
     <Card className="w-full max-w-md bg-card/95 backdrop-blur-xs border-border/20 shadow-2xl">
       {children}
     </Card>
@@ -250,7 +250,7 @@ const InvitationForm = ({
 
           <Button
             type="submit"
-            className="w-full bg-gradient-button hover:bg-gradient-button-hover"
+            className="w-full bg-primary hover:bg-primary/90"
             disabled={isPending || !form.formState.isValid}
           >
             {isPending ? (
@@ -411,7 +411,7 @@ const AcceptInvitation = () => {
         <CardContent>
           <Button
             onClick={() => navigate("/auth/sign-in")}
-            className="w-full bg-gradient-button hover:bg-gradient-button-hover"
+            className="w-full bg-primary hover:bg-primary/90"
           >
             {t("goToSignIn")}
           </Button>

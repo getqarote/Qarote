@@ -463,7 +463,7 @@ const Onboarding = () => {
                     {/* Submit */}
                     <Button
                       type="submit"
-                      className="w-full h-11 bg-gradient-button hover:bg-gradient-button-hover text-white font-medium"
+                      className="w-full h-11 bg-primary text-primary-foreground hover:bg-primary/90 font-medium"
                       disabled={isPending || !form.formState.isValid}
                     >
                       {isPending ? (

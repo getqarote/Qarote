@@ -397,7 +397,7 @@ function SSOForm({
         <CardFooter className="pt-6 flex justify-between">
           <Button
             type="button"
-            className="bg-gradient-button hover:bg-gradient-button-hover text-white"
+            className="bg-primary text-primary-foreground hover:bg-primary/90"
             onClick={handleSave}
             disabled={updateMutation.isPending}
           >
@@ -680,7 +680,7 @@ function SetupForm({ onRefetch }: { onRefetch: () => void }) {
         <CardFooter className="pt-6">
           <Button
             type="button"
-            className="bg-gradient-button hover:bg-gradient-button-hover text-white"
+            className="bg-primary text-primary-foreground hover:bg-primary/90"
             onClick={handleRegister}
             disabled={registerMutation.isPending}
           >
@@ -737,7 +737,7 @@ function SSOUpgradePrompt() {
           {cloud ? (
             <>
               <Button
-                className="flex-1 bg-gradient-button hover:bg-gradient-button-hover text-white"
+                className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
                 onClick={() => navigate("/plans")}
               >
                 {t("settings:sso.viewPlans")}
@@ -746,7 +746,7 @@ function SSOUpgradePrompt() {
           ) : (
             <>
               <Button
-                className="flex-1 bg-gradient-button hover:bg-gradient-button-hover text-white"
+                className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
                 onClick={() => navigate("/settings/license")}
               >
                 {t("settings:sso.activateLicense")}

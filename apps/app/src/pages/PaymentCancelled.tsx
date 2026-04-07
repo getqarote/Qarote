@@ -39,7 +39,7 @@ const PaymentCancelled: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-page flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="bg-white rounded-lg shadow-lg max-w-md w-full p-8 text-center">
         <div className="mb-6">
           <XCircle className="w-16 h-16 text-destructive mx-auto mb-4" />
@@ -54,7 +54,7 @@ const PaymentCancelled: React.FC = () => {
         <div className="space-y-3">
           <button
             onClick={handleTryAgain}
-            className="w-full bg-gradient-button hover:bg-gradient-button-hover text-white py-2 px-4 rounded-lg font-medium transition-colors flex items-center justify-center"
+            className="w-full bg-primary text-primary-foreground hover:bg-primary/90 py-2 px-4 rounded-lg font-medium transition-colors flex items-center justify-center"
             disabled={isUpgrading}
           >
             {isUpgrading ? (

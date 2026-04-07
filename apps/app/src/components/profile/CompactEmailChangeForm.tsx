@@ -241,25 +241,6 @@ export const CompactEmailChangeForm: React.FC<CompactEmailChangeFormProps> = ({
               disabled={isLoading}
               size="sm"
               className="w-full"
-              style={{
-                background: isLoading
-                  ? "#9ca3af"
-                  : "linear-gradient(135deg, #f97316 0%, #dc2626 100%)",
-                color: "white",
-                border: "none",
-              }}
-              onMouseEnter={(e) => {
-                if (!isLoading) {
-                  e.currentTarget.style.background =
-                    "linear-gradient(135deg, #ea580c 0%, #b91c1c 100%)";
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!isLoading) {
-                  e.currentTarget.style.background =
-                    "linear-gradient(135deg, #f97316 0%, #dc2626 100%)";
-                }
-              }}
             >
               {isLoading ? (
                 <>

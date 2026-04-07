@@ -227,32 +227,10 @@ export const CompactPasswordChangeForm: React.FC<
           </Alert>
         </div>
 
-        {/* Submit Button */}
-        <Button
-          type="submit"
-          disabled={isLoading}
-          className="w-full"
-          size="sm"
-          style={{
-            background: isLoading
-              ? "#9ca3af"
-              : "linear-gradient(135deg, #f97316 0%, #dc2626 100%)",
-            color: "white",
-            border: "none",
-          }}
-          onMouseEnter={(e) => {
-            if (!isLoading) {
-              e.currentTarget.style.background =
-                "linear-gradient(135deg, #ea580c 0%, #b91c1c 100%)";
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (!isLoading) {
-              e.currentTarget.style.background =
-                "linear-gradient(135deg, #f97316 0%, #dc2626 100%)";
-            }
-          }}
-        >
+        {/* Submit Button — uses Button's default variant (bg-primary
+            text-primary-foreground hover:bg-primary/90) so it matches the
+            rest of the app's solid primary buttons. */}
+        <Button type="submit" disabled={isLoading} className="w-full" size="sm">
           {isLoading ? (
             <>
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />

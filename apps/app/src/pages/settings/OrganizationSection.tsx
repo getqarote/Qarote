@@ -603,7 +603,7 @@ const OrganizationSection = () => {
                     <div className="flex items-center gap-2 shrink-0">
                       <Button
                         size="sm"
-                        className="bg-gradient-button hover:bg-gradient-button-hover text-white"
+                        className="bg-primary text-primary-foreground hover:bg-primary/90"
                         onClick={() => handleAcceptInvitation(inv.id)}
                         disabled={pendingInvitationAction !== null}
                       >
@@ -864,7 +864,7 @@ const OrganizationSection = () => {
             {isOrgAdmin && (
               <Button
                 size="sm"
-                className="bg-gradient-button hover:bg-gradient-button-hover text-white"
+                className="bg-primary text-primary-foreground hover:bg-primary/90"
                 onClick={() => setInviteOpen(true)}
               >
                 <UserPlus className="h-4 w-4 mr-2" />
@@ -1135,7 +1135,7 @@ const OrganizationSection = () => {
                   <div className="flex items-center gap-2 shrink-0">
                     <Button
                       size="sm"
-                      className="bg-gradient-button hover:bg-gradient-button-hover text-white"
+                      className="bg-primary text-primary-foreground hover:bg-primary/90"
                       onClick={() => handleAcceptInvitation(inv.id)}
                       disabled={pendingInvitationAction !== null}
                     >
@@ -1357,7 +1357,7 @@ const OrganizationSection = () => {
                   {t("org.cancel")}
                 </Button>
                 <Button
-                  className="bg-gradient-button hover:bg-gradient-button-hover text-white"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90"
                   onClick={handleInvite}
                   disabled={inviteMemberMutation.isPending || !inviteEmail}
                 >

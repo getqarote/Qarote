@@ -98,7 +98,7 @@ export function WebhookTab({
               checked={webhookEnabled}
               onCheckedChange={onToggleWebhook}
               disabled={isSaving}
-              className="data-[state=checked]:bg-gradient-button"
+              className="data-[state=checked]:bg-primary"
             />
             <Label htmlFor="webhook-enabled">{t("modal.enabled")}</Label>
           </div>
@@ -119,7 +119,7 @@ export function WebhookTab({
               size="sm"
               onClick={onSaveWebhook}
               disabled={isSaving || !webhookUrl.trim()}
-              className="bg-gradient-button hover:bg-gradient-button-hover text-white hover:text-white"
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
             >
               {isSaving ? (
                 <>

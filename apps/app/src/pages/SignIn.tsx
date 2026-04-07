@@ -95,7 +95,7 @@ const SignIn: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-auth py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-background py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <h2 className="mt-6 text-3xl font-extrabold text-white">
@@ -208,7 +208,7 @@ const SignIn: React.FC = () => {
 
                 <Button
                   type="submit"
-                  className="w-full bg-gradient-button hover:bg-gradient-button-hover"
+                  className="w-full bg-primary hover:bg-primary/90"
                   disabled={loginMutation.isPending || !form.formState.isValid}
                 >
                   {loginMutation.isPending ? t("signingIn") : t("signIn")}

@@ -74,7 +74,7 @@ export function UpgradePrompt({
         <CardFooter className="flex gap-2">
           {demo ? (
             <Button
-              className="flex-1 bg-gradient-button hover:bg-gradient-button-hover text-white"
+              className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
               onClick={() =>
                 window.open(
                   "https://qarote.io",
@@ -87,7 +87,7 @@ export function UpgradePrompt({
             </Button>
           ) : cloud ? (
             <Button
-              className="flex-1 bg-gradient-button hover:bg-gradient-button-hover text-white"
+              className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
               onClick={() => navigate("/plans")}
             >
               View Plans
@@ -95,7 +95,7 @@ export function UpgradePrompt({
           ) : (
             <>
               <Button
-                className="flex-1 bg-gradient-button hover:bg-gradient-button-hover text-white"
+                className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
                 onClick={() => navigate("/settings/license")}
               >
                 Activate License

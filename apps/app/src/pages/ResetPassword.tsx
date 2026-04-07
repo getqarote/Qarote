@@ -145,7 +145,7 @@ const ResetPassword: React.FC = () => {
           <CardContent>
             <Button
               onClick={() => navigate("/auth/sign-in")}
-              className="w-full bg-gradient-button hover:bg-gradient-button-hover"
+              className="w-full bg-primary hover:bg-primary/90"
             >
               {t("continueToSignIn")}
             </Button>
@@ -286,7 +286,7 @@ const ResetPassword: React.FC = () => {
             {/* Submit Button */}
             <Button
               type="submit"
-              className="w-full bg-gradient-button hover:bg-gradient-button-hover"
+              className="w-full bg-primary hover:bg-primary/90"
               disabled={resetPasswordMutation.isPending}
             >
               {resetPasswordMutation.isPending ? (

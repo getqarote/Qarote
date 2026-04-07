@@ -66,7 +66,7 @@ const SSOCallback: React.FC = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-auth py-12 px-4">
+      <div className="min-h-screen flex items-center justify-center bg-background py-12 px-4">
         <Card className="max-w-md w-full bg-card/95 backdrop-blur-xs border-border/20 shadow-2xl">
           <CardHeader>
             <CardTitle className="text-card-foreground">
@@ -78,7 +78,7 @@ const SSOCallback: React.FC = () => {
               <AlertDescription>{error}</AlertDescription>
             </Alert>
             <Button
-              className="w-full mt-4 bg-gradient-button hover:bg-gradient-button-hover"
+              className="w-full mt-4 bg-primary hover:bg-primary/90"
               onClick={() => navigate("/auth/sign-in", { replace: true })}
             >
               Return to Sign In

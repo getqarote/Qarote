@@ -414,7 +414,7 @@ const TeamSection = () => {
                       </div>
                       <Button
                         size="sm"
-                        className="shrink-0 bg-gradient-button hover:bg-gradient-button-hover text-white"
+                        className="shrink-0 bg-primary text-primary-foreground hover:bg-primary/90"
                         onClick={() =>
                           handleAddFromOrg(member.userId, displayName)
                         }

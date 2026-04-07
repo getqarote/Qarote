@@ -191,7 +191,7 @@ function HelpSupport() {
                             });
                           }
                         }}
-                        className="w-full bg-gradient-button hover:bg-gradient-button-hover text-white"
+                        className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
                       >
                         <MessageCircle className="w-4 h-4 mr-2" />
                         {t("chat.startChat")}

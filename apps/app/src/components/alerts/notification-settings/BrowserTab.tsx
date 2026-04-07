@@ -76,7 +76,7 @@ export function BrowserTab({
           checked={browserNotificationsEnabled}
           onCheckedChange={handleToggle}
           disabled={isPending}
-          className="data-[state=checked]:bg-gradient-button"
+          className="data-[state=checked]:bg-primary"
         />
       </div>
 

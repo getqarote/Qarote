@@ -34,7 +34,7 @@ export function EmailTab({
           checked={emailNotificationsEnabled}
           onCheckedChange={setEmailNotificationsEnabled}
           disabled={isPending}
-          className="data-[state=checked]:bg-gradient-button"
+          className="data-[state=checked]:bg-primary"
         />
       </div>
 
@@ -52,7 +52,7 @@ export function EmailTab({
               size="sm"
               onClick={onSaveEmail}
               disabled={isPending || !contactEmail.trim()}
-              className="bg-gradient-button hover:bg-gradient-button-hover text-white hover:text-white"
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
             >
               <Plus className="h-4 w-4 mr-2" />
               {t("modal.update")}

@@ -88,34 +88,12 @@
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
 
-  --background-image-gradient-page: linear-gradient(
-    to bottom right,
-    rgb(254 215 170),
-    rgb(254 202 202)
-  );
-  --background-image-gradient-button: linear-gradient(
-    to right,
-    rgb(234 88 12),
-    rgb(220 38 38)
-  );
-  --background-image-gradient-button-hover: linear-gradient(
-    to right,
-    rgb(194 65 12),
-    rgb(185 28 28)
-  );
-  --background-image-gradient-title: linear-gradient(
-    to right,
-    rgb(234 88 12),
-    rgb(220 38 38)
-  );
-  --background-image-gradient-auth: linear-gradient(
-    135deg,
-    rgb(234 88 12) 0%,
-    rgb(249 115 22) 25%,
-    rgb(220 38 38) 50%,
-    rgb(234 88 12) 75%,
-    rgb(249 115 22) 100%
-  );
+  /* No bg-gradient-* theme tokens. The brand orange→red gradient survives
+     only inside the title-gradient utility (wordmark). All bg-gradient-page
+     / bg-gradient-button / bg-gradient-button-hover / bg-gradient-auth
+     utilities have been retired in favor of solid bg-primary buttons and
+     bg-background page surfaces — see /quieter and the gradient-leftover
+     sweep. */
 
   --backdrop-blur-dialog: 2px;
 

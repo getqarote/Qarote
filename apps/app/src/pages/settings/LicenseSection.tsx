@@ -202,7 +202,7 @@ const LicenseSection = () => {
         </CardContent>
         <CardFooter className="flex justify-between">
           <Button
-            className="bg-gradient-button hover:bg-gradient-button-hover text-white"
+            className="bg-primary text-primary-foreground hover:bg-primary/90"
             onClick={handleActivate}
             disabled={!licenseKey.trim() || activateMutation.isPending}
           >

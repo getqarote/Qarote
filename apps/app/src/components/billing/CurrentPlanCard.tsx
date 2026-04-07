@@ -119,7 +119,7 @@ export const CurrentPlanCard: React.FC<CurrentPlanCardProps> = ({
         <Card className="overflow-hidden">
           <div className="relative">
             {/* Subtle gradient accent bar */}
-            <div className="absolute inset-x-0 top-0 h-1 bg-linear-to-r from-orange-500 to-red-500" />
+            <div className="absolute inset-x-0 top-0 h-1 bg-primary" />
 
             <CardContent className="pt-8 pb-6 px-6">
               {/* Plan header row */}
@@ -185,7 +185,7 @@ export const CurrentPlanCard: React.FC<CurrentPlanCardProps> = ({
                   </div>
                   <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
                     <div
-                      className="h-full rounded-full bg-linear-to-r from-orange-500 to-red-500 transition-all duration-500"
+                      className="h-full rounded-full bg-primary transition-all duration-500"
                       style={{ width: `${trialProgress}%` }}
                     />
                   </div>

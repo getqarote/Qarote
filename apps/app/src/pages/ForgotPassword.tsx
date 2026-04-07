@@ -119,7 +119,7 @@ const ForgotPassword: React.FC = () => {
 
             <Button
               type="submit"
-              className="w-full bg-gradient-button hover:bg-gradient-button-hover"
+              className="w-full bg-primary hover:bg-primary/90"
               disabled={resetPasswordMutation.isPending}
             >
               {resetPasswordMutation.isPending ? (

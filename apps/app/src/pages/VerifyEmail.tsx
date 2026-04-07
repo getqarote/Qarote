@@ -221,7 +221,7 @@ export default function VerifyEmail() {
                   onClick={
                     isAuthenticated ? handleGoToDashboard : handleGoToSignIn
                   }
-                  className="w-full bg-gradient-button hover:bg-gradient-button-hover"
+                  className="w-full bg-primary hover:bg-primary/90"
                 >
                   {isAuthenticated ? t("goToDashboard") : t("signInToContinue")}
                 </Button>

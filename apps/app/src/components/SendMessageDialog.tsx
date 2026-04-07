@@ -1310,7 +1310,7 @@ export function SendMessageDialog({
                     !form.watch("exchange") ||
                     !form.watch("payload")
                   }
-                  className="gap-2 bg-linear-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white"
+                  className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
                 >
                   {publishMutation.isPending ? (
                     <>

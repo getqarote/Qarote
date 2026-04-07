@@ -497,7 +497,7 @@ const App = withSentryProfiling(
           <button
             type="button"
             onClick={resetError}
-            className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-all duration-200 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 h-10 px-6 py-2 bg-gradient-button hover:bg-gradient-button-hover text-white"
+            className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-all duration-200 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 h-10 px-6 py-2 bg-primary text-primary-foreground hover:bg-primary/90"
           >
             {t("common:tryAgain", "Try again")}
           </button>

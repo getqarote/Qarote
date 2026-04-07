@@ -57,7 +57,7 @@ export function SeverityCheckboxGroup({
               onChange(newSeverities);
             }}
             disabled={disabled}
-            className="data-[state=checked]:bg-gradient-button data-[state=checked]:border-gradient-button"
+            className="data-[state=checked]:bg-primary"
           />
           <Label
             htmlFor={`${idPrefix}-${key.toLowerCase()}`}
