@@ -1040,46 +1040,66 @@ export const queuesRouter = router({
           (msg) => {
             if (!msg) return;
 
-            const payloadBytes = msg.content.length;
-            const contentType = msg.properties.contentType;
-            const isBinary = !isTextPayload(contentType, msg.content);
+            // Wrap the whole callback in try/catch: the spy observes
+            // arbitrary data from untrusted publishers. If any single
+            // message triggers an exception (malformed headers, a Buffer
+            // edge case, etc.), we log it and skip that message instead
+            // of letting the throw propagate up to amqplib and tear down
+            // the channel.
+            try {
+              const payloadBytes = msg.content.length;
+              const contentType = msg.properties.contentType;
+              const isBinary = !isTextPayload(contentType, msg.content);
 
-            let payload: string;
-            let truncated = false;
+              let payload: string;
+              let truncated = false;
 
-            if (isBinary) {
-              // Show hex preview of first 256 bytes for binary payloads
-              const previewBytes = msg.content.subarray(0, 256);
-              payload = previewBytes.toString("hex").replace(/(.{2})/g, "$1 ");
-              truncated = payloadBytes > 256;
-            } else if (payloadBytes > MAX_PAYLOAD_BYTES) {
-              payload = msg.content
-                .subarray(0, MAX_PAYLOAD_BYTES)
-                .toString("utf-8");
-              truncated = true;
-            } else {
-              payload = msg.content.toString("utf-8");
+              if (isBinary) {
+                // Show hex preview of first 256 bytes for binary payloads
+                const previewBytes = msg.content.subarray(0, 256);
+                payload = previewBytes
+                  .toString("hex")
+                  .replace(/(.{2})/g, "$1 ");
+                truncated = payloadBytes > 256;
+              } else if (payloadBytes > MAX_PAYLOAD_BYTES) {
+                payload = msg.content
+                  .subarray(0, MAX_PAYLOAD_BYTES)
+                  .toString("utf-8");
+                truncated = true;
+              } else {
+                payload = msg.content.toString("utf-8");
+              }
+
+              const spyMessage: SpyMessage = {
+                id: crypto.randomUUID(),
+                timestamp: new Date().toISOString(),
+                exchange: msg.fields.exchange,
+                routingKey: msg.fields.routingKey,
+                headers:
+                  (msg.properties.headers as Record<string, unknown>) || {},
+                contentType,
+                payload,
+                payloadBytes,
+                truncated,
+                isBinary,
+                redelivered: msg.fields.redelivered,
+                messageId: msg.properties.messageId,
+                correlationId: msg.properties.correlationId,
+                appId: msg.properties.appId,
+              };
+
+              buffer.push(spyMessage);
+            } catch (error) {
+              ctx.logger.warn(
+                {
+                  error,
+                  exchange: msg.fields?.exchange,
+                  routingKey: msg.fields?.routingKey,
+                  queueName,
+                },
+                "Failed to process spy message — skipping"
+              );
             }
-
-            const spyMessage: SpyMessage = {
-              id: crypto.randomUUID(),
-              timestamp: new Date().toISOString(),
-              exchange: msg.fields.exchange,
-              routingKey: msg.fields.routingKey,
-              headers:
-                (msg.properties.headers as Record<string, unknown>) || {},
-              contentType,
-              payload,
-              payloadBytes,
-              truncated,
-              isBinary,
-              redelivered: msg.fields.redelivered,
-              messageId: msg.properties.messageId,
-              correlationId: msg.properties.correlationId,
-              appId: msg.properties.appId,
-            };
-
-            buffer.push(spyMessage);
           },
           { noAck: true }
         );
