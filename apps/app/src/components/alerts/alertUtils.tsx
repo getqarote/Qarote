@@ -58,23 +58,27 @@ export const getSeverityIcon = (
   switch (severity) {
     case RabbitMQAlertSeverity.CRITICAL:
       return (
-        <XCircle className={`${size} ${showColors ? "text-red-500" : ""}`} />
+        <XCircle
+          className={`${size} ${showColors ? "text-destructive" : ""}`}
+        />
       );
     case RabbitMQAlertSeverity.HIGH:
       return (
         <AlertTriangle
-          className={`${size} ${showColors ? "text-orange-500" : ""}`}
+          className={`${size} ${showColors ? "text-warning" : ""}`}
         />
       );
     case RabbitMQAlertSeverity.MEDIUM:
       return (
         <AlertTriangle
-          className={`${size} ${showColors ? "text-yellow-500" : ""}`}
+          className={`${size} ${showColors ? "text-warning/70" : ""}`}
         />
       );
     case RabbitMQAlertSeverity.LOW:
       return (
-        <Info className={`${size} ${showColors ? "text-blue-500" : ""}`} />
+        <Info
+          className={`${size} ${showColors ? "text-muted-foreground" : ""}`}
+        />
       );
     case RabbitMQAlertSeverity.INFO:
       return (

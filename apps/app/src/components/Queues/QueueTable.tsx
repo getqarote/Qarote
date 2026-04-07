@@ -93,7 +93,7 @@ export function QueueTable({
                   <TableHead>{t("incoming")}</TableHead>
                   <TableHead>{t("deliverGet")}</TableHead>
                   <TableHead>{t("ack")}</TableHead>
-                  <TableHead>{t("memoryMB")}</TableHead>
+                  <TableHead>{t("memory")}</TableHead>
                   <TableHead>{t("vhost")}</TableHead>
                   {isAdmin && <TableHead>{t("actions")}</TableHead>}
                 </TableRow>
@@ -150,7 +150,7 @@ export function QueueTable({
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1">
-                          <Users className="w-3 h-3 text-gray-400" />
+                          <Users className="w-3 h-3 text-muted-foreground" />
                           {metrics.consumers}
                         </div>
                       </TableCell>
@@ -165,6 +165,9 @@ export function QueueTable({
                       </TableCell>
                       <TableCell className="font-mono">
                         {metrics.memory.toFixed(1)}
+                        <span className="text-xs text-muted-foreground ml-1">
+                          MB
+                        </span>
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline" className="font-mono text-xs">

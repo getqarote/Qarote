@@ -718,7 +718,7 @@ const OrganizationSection = () => {
             </Select>
           )}
           <Badge
-            variant="soft-orange"
+            variant="soft-muted"
             role="status"
             aria-label={t("org.yourRole", {
               role: roleLabels[callerRole ?? "MEMBER"] ?? callerRole,
@@ -954,7 +954,7 @@ const OrganizationSection = () => {
                           </SelectContent>
                         </Select>
                       ) : (
-                        <Badge variant="soft-orange">
+                        <Badge variant="soft-muted">
                           {roleLabels[member.role]}
                         </Badge>
                       )}

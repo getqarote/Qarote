@@ -46,7 +46,7 @@ export const ActiveAlertsList = ({
   if (userPlan === UserPlan.FREE) {
     return (
       <div className="text-center py-8">
-        <AlertTriangle className="h-12 w-12 mx-auto text-yellow-500 mb-4" />
+        <AlertTriangle className="h-12 w-12 mx-auto text-warning mb-4" />
         <h3 className="text-lg font-medium mb-2">
           {summary.total > 0
             ? `You have ${summary.total} active alert${summary.total > 1 ? "s" : ""}`
@@ -76,7 +76,7 @@ export const ActiveAlertsList = ({
   if (alerts.length === 0) {
     return (
       <div className="text-center py-8">
-        <CheckCircle className="h-12 w-12 mx-auto text-green-500 mb-4" />
+        <CheckCircle className="h-12 w-12 mx-auto text-success mb-4" />
         <h3 className="text-lg font-medium mb-2">No Active Alerts</h3>
         <p className="text-muted-foreground">
           Your RabbitMQ cluster is running smoothly with no alerts.

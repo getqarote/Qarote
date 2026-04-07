@@ -36,6 +36,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { TitleWithCount } from "@/components/ui/TitleWithCount";
 import { DeleteVHostModal } from "@/components/vhosts/DeleteVHostModal";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
@@ -216,12 +217,11 @@ export default function VHostsPage() {
               <div className="flex items-center gap-4">
                 <SidebarTrigger />
                 <div>
-                  <h1 className="title-page">{t("pageTitle")}</h1>
-                  <p className="text-gray-500">{t("pageSubtitle")}</p>
+                  <TitleWithCount count={vhosts.length}>
+                    {t("pageTitle")}
+                  </TitleWithCount>
+                  <p className="text-muted-foreground">{t("pageSubtitle")}</p>
                 </div>
-                <Badge variant="secondary" className="ml-2">
-                  {vhosts.length}
-                </Badge>
               </div>
               <AddVirtualHostButton serverId={currentServerId} />
             </div>

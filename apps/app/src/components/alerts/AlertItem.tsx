@@ -55,7 +55,7 @@ export const AlertItem = ({ alert, isResolved = false }: AlertItemProps) => {
     >
       <div className="shrink-0 mt-1">
         {isResolved ? (
-          <CheckCircle className="h-5 w-5 text-green-500" />
+          <CheckCircle className="h-5 w-5 text-success" />
         ) : (
           getSeverityIcon(severity)
         )}

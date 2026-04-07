@@ -141,8 +141,15 @@ const Index = () => {
       <div className="page-layout">
         <AppSidebar />
         <main className="main-content-scrollable">
-          <div className="content-container-large">
-            {/* Header */}
+          {/*
+            Dashboard rhythm (arrange pass):
+            header → SUMMARY → ISSUES → FLOW → BREAKDOWN → INFRA
+            Tight spacing within groups, generous space-y-10 between
+            sections. Incident-mode hierarchy: problems jump, healthy
+            state is calm.
+          */}
+          <div className="content-container-large !space-y-10">
+            {/* Header — tight grouping, title + connection + CTA */}
             <div className="space-y-3">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-4">
@@ -156,7 +163,7 @@ const Index = () => {
               <ConnectionStatus />
             </div>
 
-            {/* Compact status strip — replaces the 7-card hero grid.
+            {/* SUMMARY — compact status strip replaces the 7-card hero grid.
                 Calm baseline, threshold-driven color for sharp alerts. */}
             <MetricsStatusStrip
               metrics={metrics}
@@ -165,45 +172,47 @@ const Index = () => {
               nodesError={nodesError}
             />
 
-            {/* Charts - Full Width Stacked */}
-            {/* Queued Messages Chart - Full Width */}
-            <QueuedMessagesChart
-              queueTotals={queueTotals}
-              isLoading={liveRatesLoading}
-              error={liveRatesError}
-              timeRange={liveRatesTimeRange}
-              onTimeRangeChange={setLiveRatesTimeRange}
-            />
+            {/* ISSUES — promoted from the bottom of the page. When there are
+                active alerts this is the most important thing on screen. When
+                empty, the component collapses to a quiet "all systems normal"
+                state, so it costs almost no space in the healthy case. */}
+            <RecentAlerts />
 
-            {/* Messages Rates Chart - Full Width */}
-            <MessagesRatesChart
-              messagesRates={liveRatesData?.messagesRates}
-              ratesMode={liveRatesData?.ratesMode}
-              isLoading={liveRatesLoading}
-              error={liveRatesError}
-              timeRange={liveRatesTimeRange}
-              onTimeRangeChange={setLiveRatesTimeRange}
-            />
+            {/* FLOW — throughput story. Queued volume and message rates side
+                by side at lg+ so operators can visually correlate a spike in
+                one with a plateau in the other. Stacks on narrower viewports. */}
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+              <QueuedMessagesChart
+                queueTotals={queueTotals}
+                isLoading={liveRatesLoading}
+                error={liveRatesError}
+                timeRange={liveRatesTimeRange}
+                onTimeRangeChange={setLiveRatesTimeRange}
+              />
+              <MessagesRatesChart
+                messagesRates={liveRatesData?.messagesRates}
+                ratesMode={liveRatesData?.ratesMode}
+                isLoading={liveRatesLoading}
+                error={liveRatesError}
+                timeRange={liveRatesTimeRange}
+                onTimeRangeChange={setLiveRatesTimeRange}
+              />
+            </div>
 
-            {/* Queue Depths Chart - Full Width */}
+            {/* BREAKDOWN — per-queue depths. Full width because the chart
+                benefits from horizontal space when many queues are present. */}
             <QueueDepthsChart queues={queues} isLoading={queuesLoading} />
 
-            {/* Connected Nodes - Full Width */}
-            <ConnectedNodes
-              nodes={nodes}
-              isLoading={isLoading}
-              nodesError={nodesError}
-            />
-
-            {/* Bottom Row */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <RecentAlerts />
-              <ResourceUsage
-                metrics={metrics}
-                overview={overview}
-                metricsError={metricsError}
-                overviewError={null}
+            {/* INFRA — supporting context. Node health table + resource
+                breakdown side by side. These are reference panels, not the
+                page's main signal. */}
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+              <ConnectedNodes
+                nodes={nodes}
+                isLoading={isLoading}
+                nodesError={nodesError}
               />
+              <ResourceUsage overview={overview} overviewError={null} />
             </div>
           </div>
         </main>

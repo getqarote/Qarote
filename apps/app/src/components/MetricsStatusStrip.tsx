@@ -137,11 +137,14 @@ export const MetricsStatusStrip = ({
       {cells.map((cell, i) => (
         <div
           key={cell.label}
-          className={`flex-1 min-w-[140px] px-5 py-3 ${
+          className={`flex flex-col justify-between flex-1 min-w-[160px] min-h-[88px] px-5 py-3 ${
             i < cells.length - 1 ? "border-r border-border last:border-r-0" : ""
           }`}
         >
-          <div className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground whitespace-nowrap">
+          {/* Label — wraps up to 2 lines for long translations (French
+              "Profondeur des files d'attente" etc.). leading-tight keeps
+              wrapped labels compact. */}
+          <div className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground leading-tight line-clamp-2">
             {cell.label}
           </div>
           <div className="mt-1 flex items-baseline gap-1">

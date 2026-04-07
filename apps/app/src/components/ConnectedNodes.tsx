@@ -28,7 +28,7 @@ export const ConnectedNodes = ({
   const getStatusBadge = (node: RabbitMQNode) => {
     if (!node.running) {
       return (
-        <Badge variant="destructive" className="bg-red-100 text-red-700">
+        <Badge className="bg-destructive/10 text-destructive hover:bg-destructive/10">
           <Wifi className="w-3 h-3 mr-1" />
           Error
         </Badge>
@@ -41,7 +41,7 @@ export const ConnectedNodes = ({
 
     if (memoryUsage > 80 || diskUsage > 80) {
       return (
-        <Badge variant="secondary" className="bg-yellow-100 text-yellow-700">
+        <Badge className="bg-warning-muted text-warning hover:bg-warning-muted">
           <Wifi className="w-3 h-3 mr-1" />
           Warning
         </Badge>
@@ -49,7 +49,7 @@ export const ConnectedNodes = ({
     }
 
     return (
-      <Badge variant="secondary" className="bg-green-100 text-green-700">
+      <Badge className="bg-success-muted text-success hover:bg-success-muted">
         <Wifi className="w-3 h-3 mr-1" />
         {t("running")}
       </Badge>
@@ -85,7 +85,7 @@ export const ConnectedNodes = ({
           </div>
           <Link
             to="/nodes"
-            className="flex items-center gap-1 text-sm text-orange-600 hover:text-orange-700 transition-colors font-medium"
+            className="flex items-center gap-1 text-sm text-primary hover:text-primary/80 transition-colors font-medium"
           >
             {t("seeMore")}
             <ArrowRight className="h-4 w-4" />
@@ -102,7 +102,7 @@ export const ConnectedNodes = ({
         ) : isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="p-4 bg-gray-50 rounded-lg border">
+              <div key={i} className="p-4 bg-muted rounded-lg border">
                 <Skeleton className="h-5 w-32 mb-3" />
                 <Skeleton className="h-4 w-20 mb-2" />
                 <div className="space-y-2">
@@ -146,7 +146,7 @@ export const ConnectedNodes = ({
 
                   <div className="grid grid-cols-3 gap-2 mt-3">
                     <div className="text-center p-2 bg-card rounded">
-                      <HardDrive className="h-4 w-4 text-blue-600 mx-auto mb-1" />
+                      <HardDrive className="h-4 w-4 text-muted-foreground mx-auto mb-1" />
                       <div className="text-xs font-medium">
                         {formatBytes(node.mem_used)}
                       </div>
@@ -156,7 +156,7 @@ export const ConnectedNodes = ({
                     </div>
 
                     <div className="text-center p-2 bg-card rounded">
-                      <Cpu className="h-4 w-4 text-green-600 mx-auto mb-1" />
+                      <Cpu className="h-4 w-4 text-muted-foreground mx-auto mb-1" />
                       <div className="text-xs font-medium">
                         {node.processors}
                       </div>
@@ -166,7 +166,7 @@ export const ConnectedNodes = ({
                     </div>
 
                     <div className="text-center p-2 bg-card rounded">
-                      <Server className="h-4 w-4 text-purple-600 mx-auto mb-1" />
+                      <Server className="h-4 w-4 text-muted-foreground mx-auto mb-1" />
                       <div className="text-xs font-medium">
                         {formatBytes(node.disk_free)}
                       </div>
@@ -181,8 +181,8 @@ export const ConnectedNodes = ({
           </div>
         ) : (
           <div className="text-center py-8">
-            <Server className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-500">{t("noNodesFound")}</p>
+            <Server className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <p className="text-muted-foreground">{t("noNodesFound")}</p>
           </div>
         )}
       </CardContent>

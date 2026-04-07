@@ -34,6 +34,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { TitleWithCount } from "@/components/ui/TitleWithCount";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AddUserButton } from "@/components/users/AddUserButton";
 import { DeleteUserModal } from "@/components/users/DeleteUserModal";
@@ -217,12 +218,11 @@ export default function UsersPage() {
                 <div className="flex items-center gap-4">
                   <SidebarTrigger />
                   <div>
-                    <h1 className="title-page">{t("pageTitle")}</h1>
-                    <p className="text-gray-500">{t("pageSubtitle")}</p>
+                    <TitleWithCount count={users.length}>
+                      {t("pageTitle")}
+                    </TitleWithCount>
+                    <p className="text-muted-foreground">{t("pageSubtitle")}</p>
                   </div>
-                  <Badge variant="secondary" className="ml-2">
-                    {users.length}
-                  </Badge>
                 </div>
                 <AddUserButton serverId={currentServerId} />
               </div>

@@ -220,7 +220,7 @@ export const EnhancedTeamTab = ({
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="soft-orange">
+                        <Badge variant="soft-muted">
                           {workspaceUser.role.charAt(0) +
                             workspaceUser.role.slice(1).toLowerCase()}
                         </Badge>
@@ -228,7 +228,9 @@ export const EnhancedTeamTab = ({
                       <TableCell>
                         <Badge
                           variant={
-                            workspaceUser.isActive ? "soft-green" : "soft-gray"
+                            workspaceUser.isActive
+                              ? "soft-success"
+                              : "soft-muted"
                           }
                         >
                           {workspaceUser.isActive

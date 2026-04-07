@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/collapsible";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
+import { TitleWithCount } from "@/components/ui/TitleWithCount";
 
 import { useServerContext } from "@/contexts/ServerContext";
 
@@ -205,7 +206,9 @@ const Connections = () => {
               <div className="flex items-center gap-4">
                 <SidebarTrigger />
                 <div>
-                  <h1 className="title-page">{t("pageTitle")}</h1>
+                  <TitleWithCount count={connectionsData?.connections?.length}>
+                    {t("pageTitle")}
+                  </TitleWithCount>
                   <p className="text-muted-foreground">{t("pageSubtitle")}</p>
                 </div>
               </div>

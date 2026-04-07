@@ -31,6 +31,7 @@
   "incoming": "Incoming",
   "deliverGet": "Deliver / Get",
   "ack": "Ack",
+  "memory": "Memory",
   "memoryMB": "Memory (MB)",
   "vhost": "VHost",
   "actions": "Actions",

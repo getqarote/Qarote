@@ -6,6 +6,7 @@ import { EnhancedNodesTable } from "@/components/nodes/EnhancedNodesTable";
 import { NoServerConfigured } from "@/components/NoServerConfigured";
 import { PageError } from "@/components/PageError";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { TitleWithCount } from "@/components/ui/TitleWithCount";
 
 import { useServerContext } from "@/contexts/ServerContext";
 
@@ -110,8 +111,10 @@ const Nodes = () => {
               <div className="flex items-center gap-4">
                 <SidebarTrigger />
                 <div>
-                  <h1 className="title-page">{t("pageTitle")}</h1>
-                  <p className="text-gray-500">{t("pageSubtitle")}</p>
+                  <TitleWithCount count={nodes.length}>
+                    {t("pageTitle")}
+                  </TitleWithCount>
+                  <p className="text-muted-foreground">{t("pageSubtitle")}</p>
                 </div>
               </div>
             </div>

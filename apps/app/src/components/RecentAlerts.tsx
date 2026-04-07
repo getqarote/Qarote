@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router";
 
-import { AlertTriangle, ArrowRight } from "lucide-react";
+import { AlertTriangle, ArrowRight, CheckCircle2 } from "lucide-react";
 
 import { getUpgradePath } from "@/lib/featureFlags";
 
@@ -52,13 +52,41 @@ export const RecentAlerts = () => {
     (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
   );
 
+  // Compact healthy state — when there are no active alerts, collapse the
+  // entire component to a single thin bar. The dashboard shouldn't spend
+  // ~300px of vertical real estate telling the user "nothing is wrong".
+  // This is the "quiet baseline" from the design context: big when it
+  // matters, small when it doesn't.
+  if (!isLoading && !error && summary.total === 0) {
+    return (
+      <div className="flex items-center justify-between rounded-md border border-border bg-card px-4 py-3">
+        <div className="flex items-center gap-2 text-sm min-w-0">
+          <CheckCircle2 className="h-4 w-4 text-success shrink-0" />
+          <span className="font-medium text-foreground">
+            {t("allSystemsNormal")}
+          </span>
+          <span className="text-muted-foreground truncate">
+            — {t("noRecentAlerts")}
+          </span>
+        </div>
+        <Link
+          to="/alerts"
+          className="flex items-center gap-1 text-sm text-muted-foreground hover:text-primary transition-colors shrink-0"
+        >
+          {t("viewAll")}
+          <ArrowRight className="h-3.5 w-3.5" />
+        </Link>
+      </div>
+    );
+  }
+
   if (error) {
     return (
       <Card className="border-0 shadow-md bg-card backdrop-blur-xs">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-orange-500" />
+              <AlertTriangle className="h-5 w-5 text-warning" />
               {t("recentAlerts")}
               <Badge variant="outline">{t("error")}</Badge>
             </CardTitle>
@@ -66,7 +94,7 @@ export const RecentAlerts = () => {
         </CardHeader>
         <CardContent>
           <div className="text-center py-4">
-            <AlertTriangle className="h-8 w-8 mx-auto text-orange-500 mb-2" />
+            <AlertTriangle className="h-8 w-8 mx-auto text-warning mb-2" />
             <p className="text-sm text-muted-foreground">
               {t("failedToLoadAlerts")}
             </p>
@@ -82,7 +110,7 @@ export const RecentAlerts = () => {
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="text-lg font-semibold text-foreground flex items-center gap-2">
-              <AlertTriangle className="w-5 h-5 text-yellow-600" />
+              <AlertTriangle className="w-5 h-5 text-warning" />
               {t("recentAlerts")}
               {isLoading ? (
                 <Badge variant="outline">{t("loadingAlerts")}</Badge>
@@ -100,7 +128,7 @@ export const RecentAlerts = () => {
           </div>
           <Link
             to="/alerts"
-            className="flex items-center gap-1 text-sm text-orange-600 hover:text-orange-700 transition-colors font-medium"
+            className="flex items-center gap-1 text-sm text-primary hover:text-primary/80 transition-colors font-medium"
           >
             {t("viewAll")}
             <ArrowRight className="h-4 w-4" />
@@ -124,19 +152,9 @@ export const RecentAlerts = () => {
               </div>
             ))}
           </div>
-        ) : summary.total === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 px-4">
-            <AlertTriangle className="h-12 w-12 text-gray-300 mb-3" />
-            <p className="text-sm text-gray-500 font-medium">
-              {t("noRecentAlerts")}
-            </p>
-            <p className="text-xs text-gray-400 mt-1">
-              {t("allSystemsNormal")}
-            </p>
-          </div>
         ) : userPlan === UserPlan.FREE ? (
           <div className="text-center py-8">
-            <AlertTriangle className="h-12 w-12 mx-auto text-yellow-500 mb-4" />
+            <AlertTriangle className="h-12 w-12 mx-auto text-warning mb-4" />
             <p className="text-sm text-muted-foreground mb-4">
               {t("upgradeRequired")}
             </p>

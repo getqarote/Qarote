@@ -31,6 +31,7 @@
   "incoming": "Entrantes",
   "deliverGet": "Entrega / Get",
   "ack": "Confirmados",
+  "memory": "Memoria",
   "memoryMB": "Memoria (MB)",
   "vhost": "VHost",
   "actions": "Acciones",

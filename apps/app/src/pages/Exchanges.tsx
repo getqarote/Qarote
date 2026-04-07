@@ -43,6 +43,7 @@ import {
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TitleWithCount } from "@/components/ui/TitleWithCount";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
 import { useServerContext } from "@/contexts/ServerContext";
@@ -218,7 +219,7 @@ const Exchanges = () => {
                 <SidebarTrigger />
                 <div>
                   <h1 className="title-page">{t("pageTitle")}</h1>
-                  <p className="text-gray-500">{t("pageSubtitle")}</p>
+                  <p className="text-muted-foreground">{t("pageSubtitle")}</p>
                 </div>
               </div>
               <Card className="border-0 shadow-md bg-card">
@@ -250,7 +251,7 @@ const Exchanges = () => {
                 <SidebarTrigger />
                 <div>
                   <h1 className="title-page">{t("pageTitle")}</h1>
-                  <p className="text-gray-500">{t("pageSubtitle")}</p>
+                  <p className="text-muted-foreground">{t("pageSubtitle")}</p>
                 </div>
               </div>
               <PageError message={t("common:serverConnectionError")} />
@@ -272,8 +273,10 @@ const Exchanges = () => {
               <div className="flex items-center gap-4">
                 <SidebarTrigger />
                 <div>
-                  <h1 className="title-page">{t("pageTitle")}</h1>
-                  <p className="text-gray-500">{t("pageSubtitle")}</p>
+                  <TitleWithCount count={filteredExchanges.length}>
+                    {t("pageTitle")}
+                  </TitleWithCount>
+                  <p className="text-muted-foreground">{t("pageSubtitle")}</p>
                 </div>
               </div>
               <div className="flex items-center gap-4">
@@ -508,7 +511,7 @@ const Exchanges = () => {
                                   <div className="font-medium">
                                     {exchange.bindingCount}
                                   </div>
-                                  <div className="text-xs text-gray-500">
+                                  <div className="text-xs text-muted-foreground">
                                     {t("bindings")}
                                   </div>
                                 </div>
@@ -518,7 +521,7 @@ const Exchanges = () => {
                                     <div className="font-medium">
                                       {exchange.message_stats.publish_in}
                                     </div>
-                                    <div className="text-xs text-gray-500">
+                                    <div className="text-xs text-muted-foreground">
                                       {t("messagesIn")}
                                     </div>
                                   </div>
@@ -529,7 +532,7 @@ const Exchanges = () => {
                                     <div className="font-medium">
                                       {exchange.message_stats.publish_out}
                                     </div>
-                                    <div className="text-xs text-gray-500">
+                                    <div className="text-xs text-muted-foreground">
                                       {t("messagesOut")}
                                     </div>
                                   </div>
@@ -547,19 +550,19 @@ const Exchanges = () => {
                                   </h4>
                                   <div className="space-y-1 text-sm">
                                     <div>
-                                      <span className="text-gray-500">
+                                      <span className="text-muted-foreground">
                                         {t("type")}:
                                       </span>{" "}
                                       {exchange.type}
                                     </div>
                                     <div>
-                                      <span className="text-gray-500">
+                                      <span className="text-muted-foreground">
                                         {t("vhost")}:
                                       </span>{" "}
                                       {exchange.vhost}
                                     </div>
                                     <div>
-                                      <span className="text-gray-500">
+                                      <span className="text-muted-foreground">
                                         {t("durable")}:
                                       </span>{" "}
                                       {exchange.durable
@@ -567,7 +570,7 @@ const Exchanges = () => {
                                         : t("common:no")}
                                     </div>
                                     <div>
-                                      <span className="text-gray-500">
+                                      <span className="text-muted-foreground">
                                         {t("autoDelete")}:
                                       </span>{" "}
                                       {exchange.auto_delete
@@ -575,7 +578,7 @@ const Exchanges = () => {
                                         : t("common:no")}
                                     </div>
                                     <div>
-                                      <span className="text-gray-500">
+                                      <span className="text-muted-foreground">
                                         {t("internal")}:
                                       </span>{" "}
                                       {exchange.internal
@@ -584,7 +587,7 @@ const Exchanges = () => {
                                     </div>
                                     {exchange.policy && (
                                       <div>
-                                        <span className="text-gray-500">
+                                        <span className="text-muted-foreground">
                                           {t("policy")}:
                                         </span>{" "}
                                         <Badge
@@ -597,7 +600,7 @@ const Exchanges = () => {
                                     )}
                                     {exchange.user_who_performed_action && (
                                       <div>
-                                        <span className="text-gray-500">
+                                        <span className="text-muted-foreground">
                                           Last Action By:
                                         </span>{" "}
                                         <span className="font-mono text-xs">
@@ -609,7 +612,7 @@ const Exchanges = () => {
                                       Object.keys(exchange.arguments).length >
                                         0 && (
                                         <div>
-                                          <span className="text-gray-500">
+                                          <span className="text-muted-foreground">
                                             {t("arguments")}:
                                           </span>
                                           <div className="mt-1 p-2 bg-gray-50 rounded text-xs font-mono">
@@ -629,21 +632,21 @@ const Exchanges = () => {
                                   </h4>
                                   <div className="space-y-1 text-sm">
                                     <div>
-                                      <span className="text-gray-500">
+                                      <span className="text-muted-foreground">
                                         {t("messagesPublishedIn")}:
                                       </span>{" "}
                                       {exchange.message_stats?.publish_in ??
                                         "N/A"}
                                     </div>
                                     <div>
-                                      <span className="text-gray-500">
+                                      <span className="text-muted-foreground">
                                         {t("messagesPublishedOut")}:
                                       </span>{" "}
                                       {exchange.message_stats?.publish_out ??
                                         "N/A"}
                                     </div>
                                     <div>
-                                      <span className="text-gray-500">
+                                      <span className="text-muted-foreground">
                                         {t("totalBindings")}:
                                       </span>{" "}
                                       {exchange.bindingCount}
@@ -702,7 +705,7 @@ const Exchanges = () => {
                                         </div>
                                         {Object.keys(binding.arguments).length >
                                           0 && (
-                                          <div className="text-xs text-gray-500">
+                                          <div className="text-xs text-muted-foreground">
                                             {
                                               Object.keys(binding.arguments)
                                                 .length
