@@ -511,12 +511,19 @@ export const useSpyOnQueue = (
   const pendingRef = useRef<SpyMessage[]>([]);
   const rafRef = useRef<number | null>(null);
   const messagesRef = useRef<SpyMessage[]>([]);
+  // Counts messages evicted from pendingRef before a RAF flush ever ran —
+  // e.g. when the browser tab is backgrounded and RAFs are throttled. Without
+  // this cap, pendingRef could grow arbitrarily large and bypass the 200-row
+  // display cap entirely. Folded into clientDropped on the next flush.
+  const pendingEvictedRef = useRef(0);
 
   const flushPending = useCallback(() => {
     rafRef.current = null;
     const pending = pendingRef.current;
-    if (pending.length === 0) return;
+    const pendingEvicted = pendingEvictedRef.current;
+    if (pending.length === 0 && pendingEvicted === 0) return;
     pendingRef.current = [];
+    pendingEvictedRef.current = 0;
 
     const combined = [...messagesRef.current, ...pending];
     const evicted = Math.max(0, combined.length - MAX_SPY_MESSAGES);
@@ -524,10 +531,13 @@ export const useSpyOnQueue = (
 
     messagesRef.current = next;
     setMessages(next);
-    if (evicted > 0) {
-      setClientDropped((prev) => prev + evicted);
+    const totalEvicted = evicted + pendingEvicted;
+    if (totalEvicted > 0) {
+      setClientDropped((prev) => prev + totalEvicted);
     }
-    setTotalReceived((prev) => prev + pending.length);
+    // totalReceived tracks every message we observed, including the ones
+    // we had to drop from pendingRef before they ever reached the display.
+    setTotalReceived((prev) => prev + pending.length + pendingEvicted);
   }, []);
 
   const isActive = !!serverId && !!queueName && !!workspace?.id && enabled;
@@ -550,8 +560,17 @@ export const useSpyOnQueue = (
           setError(null);
         } else if (data.type === "messages") {
           setDropped(data.dropped);
-          // Buffer messages and flush on RAF
+          // Buffer messages and flush on RAF. Cap pendingRef at
+          // MAX_SPY_MESSAGES: if the tab is backgrounded the RAF may not
+          // fire for minutes and pendingRef would otherwise grow without
+          // bound. Anything beyond the cap is tracked as a client-side
+          // eviction and folded into clientDropped on the next flush.
           pendingRef.current.push(...data.messages);
+          if (pendingRef.current.length > MAX_SPY_MESSAGES) {
+            const overflow = pendingRef.current.length - MAX_SPY_MESSAGES;
+            pendingRef.current = pendingRef.current.slice(-MAX_SPY_MESSAGES);
+            pendingEvictedRef.current += overflow;
+          }
           if (rafRef.current === null) {
             rafRef.current = requestAnimationFrame(flushPending);
           }
@@ -570,6 +589,7 @@ export const useSpyOnQueue = (
     setMessages([]);
     messagesRef.current = [];
     pendingRef.current = [];
+    pendingEvictedRef.current = 0;
     if (rafRef.current !== null) {
       cancelAnimationFrame(rafRef.current);
       rafRef.current = null;
