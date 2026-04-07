@@ -12,6 +12,12 @@ import {
   YAxis,
 } from "recharts";
 
+import {
+  CHART_QUEUED_READY,
+  CHART_QUEUED_TOTAL,
+  CHART_QUEUED_UNACKED,
+} from "@/lib/chartColors";
+
 import { RabbitMQPermissionError } from "@/components/RabbitMQPermissionError";
 import { TimeRange, TimeRangeSelector } from "@/components/TimeRangeSelector";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -233,7 +239,7 @@ export const QueuedMessagesChart = ({
                     <Line
                       type="monotone"
                       dataKey="total"
-                      stroke="#DC2626"
+                      stroke={CHART_QUEUED_TOTAL}
                       strokeWidth={2}
                       dot={false}
                       name={t("total")}
@@ -243,7 +249,7 @@ export const QueuedMessagesChart = ({
                     <Line
                       type="monotone"
                       dataKey="ready"
-                      stroke="#F59E0B"
+                      stroke={CHART_QUEUED_READY}
                       strokeWidth={2}
                       dot={false}
                       name={t("ready")}
@@ -253,7 +259,7 @@ export const QueuedMessagesChart = ({
                     <Line
                       type="monotone"
                       dataKey="unacked"
-                      stroke="#06B6D4"
+                      stroke={CHART_QUEUED_UNACKED}
                       strokeWidth={2}
                       dot={false}
                       name={t("unacked")}
@@ -266,9 +272,13 @@ export const QueuedMessagesChart = ({
             {/* Custom Toggleable Legend */}
             <div className="mt-4 flex gap-4 text-xs">
               {[
-                { key: "total", name: t("total"), color: "#DC2626" },
-                { key: "ready", name: t("ready"), color: "#F59E0B" },
-                { key: "unacked", name: t("unacked"), color: "#06B6D4" },
+                { key: "total", name: t("total"), color: CHART_QUEUED_TOTAL },
+                { key: "ready", name: t("ready"), color: CHART_QUEUED_READY },
+                {
+                  key: "unacked",
+                  name: t("unacked"),
+                  color: CHART_QUEUED_UNACKED,
+                },
               ].map((metric) => (
                 <div
                   key={metric.key}

@@ -173,7 +173,7 @@ export const QueueDepthsChart = ({
                   interval={0}
                 />
                 <YAxis
-                  tick={{ fontSize: 12, fill: "#6b7280" }}
+                  tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }}
                   tickFormatter={(value) => value.toLocaleString()}
                   domain={[yAxisMin, yAxisMax]}
                   allowDataOverflow={false}
@@ -181,15 +181,9 @@ export const QueueDepthsChart = ({
                 <Tooltip content={tooltipContent} />
                 <Bar
                   dataKey="messages"
-                  fill="url(#barGradient)"
+                  fill="hsl(var(--primary))"
                   radius={[4, 4, 0, 0]}
                 />
-                <defs>
-                  <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="rgb(234 88 12)" />
-                    <stop offset="100%" stopColor="rgb(220 38 38)" />
-                  </linearGradient>
-                </defs>
               </BarChart>
             </ResponsiveContainer>
           </div>

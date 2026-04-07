@@ -12,6 +12,24 @@ import {
   YAxis,
 } from "recharts";
 
+import {
+  CHART_ACK,
+  CHART_CONFIRM,
+  CHART_DELIVER,
+  CHART_DELIVER_GET,
+  CHART_DELIVER_NO_ACK,
+  CHART_DISK_READS,
+  CHART_DISK_WRITES,
+  CHART_DROP_UNROUTABLE,
+  CHART_GET,
+  CHART_GET_EMPTY,
+  CHART_GET_NO_ACK,
+  CHART_PUBLISH,
+  CHART_REDELIVER,
+  CHART_REJECT,
+  CHART_RETURN_UNROUTABLE,
+} from "@/lib/chartColors";
+
 import { RabbitMQPermissionError } from "@/components/RabbitMQPermissionError";
 import { TimeRange, TimeRangeSelector } from "@/components/TimeRangeSelector";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -327,7 +345,7 @@ export const MessagesRatesChart = ({
                     <Line
                       type="monotone"
                       dataKey="publish"
-                      stroke="#F97316"
+                      stroke={CHART_PUBLISH}
                       strokeWidth={2}
                       dot={ratesMode === "basic"}
                       name="Publish"
@@ -337,7 +355,7 @@ export const MessagesRatesChart = ({
                     <Line
                       type="monotone"
                       dataKey="deliver"
-                      stroke="#3B82F6"
+                      stroke={CHART_DELIVER}
                       strokeWidth={2}
                       dot={ratesMode === "basic"}
                       name="Deliver"
@@ -347,7 +365,7 @@ export const MessagesRatesChart = ({
                     <Line
                       type="monotone"
                       dataKey="ack"
-                      stroke="#10B981"
+                      stroke={CHART_ACK}
                       strokeWidth={2}
                       dot={ratesMode === "basic"}
                       name="Ack"
@@ -357,7 +375,7 @@ export const MessagesRatesChart = ({
                     <Line
                       type="monotone"
                       dataKey="deliver_get"
-                      stroke="#EC4899"
+                      stroke={CHART_DELIVER_GET}
                       strokeWidth={2}
                       dot={ratesMode === "basic"}
                       name="Deliver / Get"
@@ -367,7 +385,7 @@ export const MessagesRatesChart = ({
                     <Line
                       type="monotone"
                       dataKey="deliver_no_ack"
-                      stroke="#F472B6"
+                      stroke={CHART_DELIVER_NO_ACK}
                       strokeWidth={2}
                       dot={ratesMode === "basic"}
                       name="Deliver (auto ack)"
@@ -377,7 +395,7 @@ export const MessagesRatesChart = ({
                     <Line
                       type="monotone"
                       dataKey="confirm"
-                      stroke="#F59E0B"
+                      stroke={CHART_CONFIRM}
                       strokeWidth={2}
                       dot={ratesMode === "basic"}
                       name="Confirm"
@@ -387,7 +405,7 @@ export const MessagesRatesChart = ({
                     <Line
                       type="monotone"
                       dataKey="get"
-                      stroke="#06B6D4"
+                      stroke={CHART_GET}
                       strokeWidth={2}
                       dot={ratesMode === "basic"}
                       name="Get"
@@ -397,7 +415,7 @@ export const MessagesRatesChart = ({
                     <Line
                       type="monotone"
                       dataKey="get_no_ack"
-                      stroke="#C4B5FD"
+                      stroke={CHART_GET_NO_ACK}
                       strokeWidth={2}
                       dot={ratesMode === "basic"}
                       name="Get No Ack"
@@ -407,7 +425,7 @@ export const MessagesRatesChart = ({
                     <Line
                       type="monotone"
                       dataKey="redeliver"
-                      stroke="#8B5CF6"
+                      stroke={CHART_REDELIVER}
                       strokeWidth={2}
                       dot={ratesMode === "basic"}
                       name="Redeliver"
@@ -417,7 +435,7 @@ export const MessagesRatesChart = ({
                     <Line
                       type="monotone"
                       dataKey="reject"
-                      stroke="#6366F1"
+                      stroke={CHART_REJECT}
                       strokeWidth={2}
                       dot={ratesMode === "basic"}
                       name="Reject"
@@ -427,7 +445,7 @@ export const MessagesRatesChart = ({
                     <Line
                       type="monotone"
                       dataKey="get_empty"
-                      stroke="#92400E"
+                      stroke={CHART_GET_EMPTY}
                       strokeWidth={2}
                       dot={ratesMode === "basic"}
                       name="Get (empty)"
@@ -437,7 +455,7 @@ export const MessagesRatesChart = ({
                     <Line
                       type="monotone"
                       dataKey="return_unroutable"
-                      stroke="#1E40AF"
+                      stroke={CHART_RETURN_UNROUTABLE}
                       strokeWidth={2}
                       dot={ratesMode === "basic"}
                       name="Return Unroutable"
@@ -447,7 +465,7 @@ export const MessagesRatesChart = ({
                     <Line
                       type="monotone"
                       dataKey="drop_unroutable"
-                      stroke="#FDE047"
+                      stroke={CHART_DROP_UNROUTABLE}
                       strokeWidth={2}
                       dot={ratesMode === "basic"}
                       name="Drop Unroutable"
@@ -457,7 +475,7 @@ export const MessagesRatesChart = ({
                     <Line
                       type="monotone"
                       dataKey="disk_writes"
-                      stroke="#DC2626"
+                      stroke={CHART_DISK_WRITES}
                       strokeWidth={2}
                       dot={ratesMode === "basic"}
                       name="Disk Writes"
@@ -467,7 +485,7 @@ export const MessagesRatesChart = ({
                     <Line
                       type="monotone"
                       dataKey="disk_reads"
-                      stroke="#059669"
+                      stroke={CHART_DISK_READS}
                       strokeWidth={2}
                       dot={ratesMode === "basic"}
                       name="Disk Reads"
@@ -481,47 +499,71 @@ export const MessagesRatesChart = ({
             <div className="mt-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 text-xs">
               {[
                 // Column 1
-                { key: "publish", name: "Publish", color: "#F97316" }, // Orange
-                { key: "confirm", name: "Publisher confirm", color: "#F59E0B" }, // Amber
+                { key: "publish", name: "Publish", color: CHART_PUBLISH }, // Orange
+                {
+                  key: "confirm",
+                  name: "Publisher confirm",
+                  color: CHART_CONFIRM,
+                }, // Amber
                 {
                   key: "deliver",
                   name: "Deliver (manual ack)",
-                  color: "#3B82F6", // Blue
+                  color: CHART_DELIVER, // Blue
                 },
 
                 // Column 2
                 {
                   key: "deliver_get",
                   name: "Deliver / Get",
-                  color: "#EC4899", // Pink
+                  color: CHART_DELIVER_GET, // Pink
                 },
                 {
                   key: "deliver_no_ack",
                   name: "Deliver (auto ack)",
-                  color: "#F472B6", // Pink-400
+                  color: CHART_DELIVER_NO_ACK, // Pink-400
                 },
-                { key: "ack", name: "Consumer ack", color: "#10B981" }, // Emerald
-                { key: "redeliver", name: "Redelivered", color: "#8B5CF6" }, // Violet
+                { key: "ack", name: "Consumer ack", color: CHART_ACK }, // Emerald
+                {
+                  key: "redeliver",
+                  name: "Redelivered",
+                  color: CHART_REDELIVER,
+                }, // Violet
 
                 // Column 3
-                { key: "get", name: "Get (manual ack)", color: "#06B6D4" }, // Cyan
-                { key: "get_no_ack", name: "Get (auto ack)", color: "#C4B5FD" }, // Light purple
-                { key: "get_empty", name: "Get (empty)", color: "#92400E" }, // Brown
-                { key: "reject", name: "Reject", color: "#6366F1" }, // Indigo
+                { key: "get", name: "Get (manual ack)", color: CHART_GET }, // Cyan
+                {
+                  key: "get_no_ack",
+                  name: "Get (auto ack)",
+                  color: CHART_GET_NO_ACK,
+                }, // Light purple
+                {
+                  key: "get_empty",
+                  name: "Get (empty)",
+                  color: CHART_GET_EMPTY,
+                }, // Brown
+                { key: "reject", name: "Reject", color: CHART_REJECT }, // Indigo
 
                 // Column 4
                 {
                   key: "return_unroutable",
                   name: "Unroutable (return)",
-                  color: "#1E40AF", // Indigo
+                  color: CHART_RETURN_UNROUTABLE, // Indigo
                 },
                 {
                   key: "drop_unroutable",
                   name: "Unroutable (drop)",
-                  color: "#FDE047", // Yellow
+                  color: CHART_DROP_UNROUTABLE, // Yellow
                 },
-                { key: "disk_writes", name: "Disk write", color: "#DC2626" }, // Red
-                { key: "disk_reads", name: "Disk read", color: "#059669" }, // Green
+                {
+                  key: "disk_writes",
+                  name: "Disk write",
+                  color: CHART_DISK_WRITES,
+                }, // Red
+                {
+                  key: "disk_reads",
+                  name: "Disk read",
+                  color: CHART_DISK_READS,
+                }, // Green
               ].map((metric) => (
                 <div
                   key={metric.key}
