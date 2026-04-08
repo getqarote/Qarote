@@ -160,6 +160,19 @@ const QueueDetail = () => {
                 onDeleteQueue={isAdmin ? confirmDeleteQueue : undefined}
               />
 
+              {/* Spy on Queue — sits directly below the header so it appears
+                  in the viewport the moment the user enables it. The `key`
+                  forces a clean unmount/remount (teardown + state reset)
+                  whenever the spy target changes. */}
+              {spyEnabled && (
+                <QueueSpy
+                  key={`${selectedServerId}|${queueName}|${selectedVHost || "/"}`}
+                  serverId={selectedServerId}
+                  queueName={queueName}
+                  vhost={selectedVHost || "/"}
+                />
+              )}
+
               {isLoading ? (
                 <LoadingSkeleton />
               ) : queue ? (
@@ -194,20 +207,6 @@ const QueueDetail = () => {
                     timeRange={timeRange}
                     onTimeRangeChange={setTimeRange}
                   />
-
-                  {/* Spy on Queue — conditionally mounted.
-                      The `key` forces a full unmount/remount (and therefore
-                      a clean subscription teardown + state reset) whenever
-                      the spy target changes, e.g. when navigating between
-                      /queues/foo and /queues/bar without leaving the page. */}
-                  {spyEnabled && (
-                    <QueueSpy
-                      key={`${selectedServerId}|${queueName}|${selectedVHost || "/"}`}
-                      serverId={selectedServerId}
-                      queueName={queueName}
-                      vhost={selectedVHost || "/"}
-                    />
-                  )}
 
                   {/* Consumer Details Section */}
                   <ConsumerDetails

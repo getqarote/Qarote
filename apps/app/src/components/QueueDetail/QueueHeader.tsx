@@ -52,7 +52,7 @@ export function QueueHeader({
   const isPaused = pauseStatus?.pauseState?.isPaused ?? false;
 
   return (
-    <div className="border-b bg-background px-6 py-4">
+    <div className="border-b bg-background px-6 py-4 sticky top-0 z-10">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <SidebarTrigger />

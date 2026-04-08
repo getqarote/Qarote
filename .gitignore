@@ -60,6 +60,14 @@ infrastructure/
 # Claude worktrees
 .claude/worktrees/
 
+# Local agent / skills tooling (impeccable, etc.)
+.claude/skills/
+.impeccable.md
+skills-lock.json
+
+# Local-only docs
+docs/SEO_STRATEGY.md
+
 # License files
 qarote-license-*.json
 license.json
