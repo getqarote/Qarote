@@ -30,9 +30,22 @@ export function QueueSpy({ serverId, queueName, vhost }: QueueSpyProps) {
     clearMessages,
   } = useSpyOnQueue(serverId, queueName, vhost, true);
 
-  // Auto-scroll via IntersectionObserver
+  // Auto-scroll via IntersectionObserver.
+  //
+  // The Radix ScrollArea uses overflow:hidden on its Root and Viewport and
+  // manages scrolling internally — there is NO native scrollable ancestor
+  // between the sentinel and the document. So calling
+  // sentinelRef.current.scrollIntoView() would scroll the entire PAGE
+  // (jumping past the spy card to whatever is below it), and an
+  // IntersectionObserver with default root would track visibility against
+  // the page viewport instead of the spy log viewport.
+  //
+  // Both issues are fixed by resolving the actual Radix viewport element
+  // ([data-radix-scroll-area-viewport]) on mount and using it as the
+  // observer root + the manual scroll target.
   const sentinelRef = useRef<HTMLDivElement>(null);
-  const scrollViewportRef = useRef<HTMLDivElement>(null);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const viewportRef = useRef<HTMLElement | null>(null);
   const [isAtBottom, setIsAtBottom] = useState(true);
   const [newMessageCount, setNewMessageCount] = useState(0);
   // Use the monotonic totalReceived counter (not messages.length, which is
@@ -40,10 +53,17 @@ export function QueueSpy({ serverId, queueName, vhost }: QueueSpyProps) {
   // diff would always be 0).
   const prevTotalReceivedRef = useRef(0);
 
-  // Track whether user is at the bottom
+  // Resolve the Radix viewport once on mount and observe the sentinel
+  // against it. Using the viewport as the root scopes "isAtBottom" to the
+  // spy log's own scroll position rather than the page's.
   useEffect(() => {
     const sentinel = sentinelRef.current;
-    if (!sentinel) return;
+    const root = scrollAreaRef.current?.querySelector<HTMLElement>(
+      "[data-radix-scroll-area-viewport]"
+    );
+    if (!sentinel || !root) return;
+
+    viewportRef.current = root;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -52,7 +72,7 @@ export function QueueSpy({ serverId, queueName, vhost }: QueueSpyProps) {
           setNewMessageCount(0);
         }
       },
-      { threshold: 0.1 }
+      { root, threshold: 0.1 }
     );
 
     observer.observe(sentinel);
@@ -69,18 +89,24 @@ export function QueueSpy({ serverId, queueName, vhost }: QueueSpyProps) {
     prevTotalReceivedRef.current = totalReceived;
   }, [totalReceived, isAtBottom]);
 
-  // Auto-scroll when at bottom and new messages arrive
+  // Auto-scroll when at bottom and new messages arrive.
+  // Skip entirely on empty mount (totalReceived === 0) so clicking
+  // "Spy on Queue" doesn't jump the whole page. Manipulate scrollTop on
+  // the viewport directly instead of scrollIntoView, which would walk up
+  // and scroll the document because the ScrollArea has overflow:hidden.
   useEffect(() => {
-    if (isAtBottom && sentinelRef.current) {
-      sentinelRef.current.scrollIntoView({ behavior: "auto" });
-    }
+    if (totalReceived === 0) return;
+    if (!isAtBottom) return;
+    const viewport = viewportRef.current;
+    if (!viewport) return;
+    viewport.scrollTop = viewport.scrollHeight;
   }, [totalReceived, isAtBottom]);
 
   const scrollToBottom = useCallback(() => {
-    if (sentinelRef.current) {
-      sentinelRef.current.scrollIntoView({ behavior: "smooth" });
-      setNewMessageCount(0);
-    }
+    const viewport = viewportRef.current;
+    if (!viewport) return;
+    viewport.scrollTo({ top: viewport.scrollHeight, behavior: "smooth" });
+    setNewMessageCount(0);
   }, []);
 
   // Accessibility: throttled aria-live announcement
@@ -106,7 +132,7 @@ export function QueueSpy({ serverId, queueName, vhost }: QueueSpyProps) {
         </CardHeader>
         <CardContent>
           <div className="flex items-start gap-3 p-4 bg-muted/50 rounded-md">
-            <AlertTriangle className="w-5 h-5 text-yellow-500 shrink-0 mt-0.5" />
+            <AlertTriangle className="w-5 h-5 text-warning shrink-0 mt-0.5" />
             <div className="text-sm text-muted-foreground">{error}</div>
           </div>
         </CardContent>
@@ -120,8 +146,8 @@ export function QueueSpy({ serverId, queueName, vhost }: QueueSpyProps) {
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-base">
             <span className="relative flex h-2.5 w-2.5">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
-              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-green-500" />
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-75" />
+              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-success" />
             </span>
             {t("spyTitle")}
 
@@ -132,7 +158,7 @@ export function QueueSpy({ serverId, queueName, vhost }: QueueSpyProps) {
             )}
 
             {dropped > 0 && (
-              <Badge variant="outline" className="text-xs text-yellow-600">
+              <Badge variant="outline" className="text-xs text-warning">
                 {t("spyDropped", { count: dropped })}
               </Badge>
             )}
@@ -167,7 +193,7 @@ export function QueueSpy({ serverId, queueName, vhost }: QueueSpyProps) {
         <div className="relative">
           <ScrollArea
             className="h-[400px] border-t"
-            ref={scrollViewportRef}
+            ref={scrollAreaRef}
             role="log"
             aria-label={t("spyTitle")}
           >
