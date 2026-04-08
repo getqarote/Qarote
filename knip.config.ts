@@ -43,6 +43,10 @@ const config: KnipConfig = {
     "apps/web/src/hooks/use-mobile.tsx",
     // Workspace invites hook — function temporarily unused after removing invite from creation forms
     "apps/app/src/hooks/ui/useWorkspaceInvites.ts",
+    // Threshold tone helpers — small library API of related helpers; some
+    // exports (getUsageBgTone, getClusterHealthTone, getClusterHealthBgClasses)
+    // are reserved for upcoming work and not yet referenced
+    "apps/app/src/lib/health-tones.ts",
     // Ignore email style exports (used in email templates but knip doesn't detect)
     "apps/api/src/services/email/shared/styles.ts",
     // Ignore organization migration scripts (run manually via npx tsx, not imported)
