@@ -14,7 +14,6 @@ import { MessagesRatesChart } from "@/components/MessagesRatesChart";
 import { MetricsStatusStrip } from "@/components/MetricsStatusStrip";
 import { NoServerConfigured } from "@/components/NoServerConfigured";
 import { PageError } from "@/components/PageError";
-import { PlanUpgradeModal } from "@/components/plans/PlanUpgradeModal";
 import { QueueDepthsChart } from "@/components/QueueDepthsChart";
 import { QueuedMessagesChart } from "@/components/QueuedMessagesChart";
 import { RecentAlerts } from "@/components/RecentAlerts";
@@ -33,7 +32,6 @@ const Index = () => {
   const { selectedServerId, hasServers } = useServerContext();
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [liveRatesTimeRange, setLiveRatesTimeRange] = useState<TimeRange>("1d");
 
   // Check if user needs to create a workspace
@@ -98,7 +96,7 @@ const Index = () => {
                   </div>
                 </div>
               </div>
-              <Card className="border-0 shadow-md bg-card">
+              <Card>
                 <CardContent className="p-6">
                   <div className="text-center">
                     <Server className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
@@ -225,13 +223,6 @@ const Index = () => {
           </div>
         </main>
       </div>
-      {showUpgradeModal && (
-        <PlanUpgradeModal
-          isOpen={showUpgradeModal}
-          onClose={() => setShowUpgradeModal(false)}
-          feature="server management"
-        />
-      )}
     </SidebarProvider>
   );
 };

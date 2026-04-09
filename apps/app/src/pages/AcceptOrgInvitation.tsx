@@ -1,5 +1,5 @@
-import { type ReactNode, useState } from "react";
-import { useForm, type UseFormReturn } from "react-hook-form";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 
@@ -10,28 +10,18 @@ import { authClient } from "@/lib/auth-client";
 import { logger } from "@/lib/logger";
 import { trpc } from "@/lib/trpc/client";
 
+import { AuthPageHeader } from "@/components/auth/AuthPageHeader";
+import { AuthPageWrapper } from "@/components/auth/AuthPageWrapper";
 import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton";
+import { InviteAcceptanceForm } from "@/components/auth/InviteAcceptanceForm";
+import {
+  type InviteInfoField,
+  InviteInfoPanel,
+} from "@/components/auth/InviteInfoPanel";
 import { SSOLoginButton } from "@/components/auth/SSOLoginButton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { PasswordInput } from "@/components/ui/password-input";
-import { PasswordRequirements } from "@/components/ui/password-requirements";
+import { CardContent } from "@/components/ui/card";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
 
@@ -58,197 +48,46 @@ const ROLE_DISPLAY_NAMES: Record<string, string> = {
   MEMBER: "Member",
 };
 
-const PageWrapper = ({ children }: { children: ReactNode }) => (
-  <div className="min-h-screen flex items-center justify-center bg-background py-12 px-4 sm:px-6 lg:px-8">
-    <Card className="w-full max-w-md bg-card/95 backdrop-blur-xs border-border/20 shadow-2xl">
-      {children}
-    </Card>
-  </div>
-);
+/**
+ * Builds the role/org info fields shown in the `InviteInfoPanel`.
+ * Derived from the invitation rather than passed as props so all
+ * three render branches (authed / existing-user / new-user) render
+ * the exact same fields without repeated JSX.
+ */
+function buildInviteInfoFields(
+  invitation: OrgInvitationDetails,
+  t: (key: string, fallback?: string) => string
+): InviteInfoField[] {
+  const fields: InviteInfoField[] = [
+    {
+      Icon: Building2,
+      label: t("orgLabel"),
+      value: invitation.organization.name,
+    },
+    {
+      Icon: Shield,
+      label: `${t("role", "Role")}:`,
+      value: ROLE_DISPLAY_NAMES[invitation.role] || invitation.role,
+    },
+  ];
 
-const OrgInvitationInfo = ({
-  invitation,
-}: {
-  invitation: OrgInvitationDetails;
-}) => {
-  const { t } = useTranslation("auth");
-  return (
-    <div className="bg-muted rounded-lg p-4 space-y-3">
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Building2 className="h-4 w-4" />
-        <span>
-          {t("orgLabel")} <strong>{invitation.organization.name}</strong>
-        </span>
-      </div>
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Shield className="h-4 w-4" />
-        <span>
-          {t("role", "Role")}:{" "}
-          <strong>
-            {ROLE_DISPLAY_NAMES[invitation.role] || invitation.role}
-          </strong>
-        </span>
-      </div>
-      {invitation.invitedBy && (
-        <div className="text-sm text-muted-foreground">
-          {t("invitedBy")}: <strong>{invitation.invitedBy.displayName}</strong>
-        </div>
-      )}
-    </div>
-  );
-};
+  if (invitation.invitedBy) {
+    fields.push({
+      label: `${t("invitedBy")}:`,
+      value: invitation.invitedBy.displayName,
+    });
+  }
 
-const OrgInvitationForm = ({
-  form,
-  email,
-  isPending,
-  onSubmit,
-  onNavigateSignIn,
-}: {
-  form: UseFormReturn<AcceptInvitationFormData>;
-  email: string;
-  isPending: boolean;
-  onSubmit: (data: AcceptInvitationFormData) => void;
-  onNavigateSignIn: () => void;
-}) => {
-  const { t } = useTranslation("auth");
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  return fields;
+}
 
-  return (
-    <>
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="firstName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("firstName")}</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder={t("firstNamePlaceholder")}
-                      disabled={isPending}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="lastName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("lastName")}</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder={t("lastNamePlaceholder")}
-                      disabled={isPending}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <FormLabel>{t("email")}</FormLabel>
-            <Input
-              type="email"
-              value={email}
-              disabled
-              className="bg-muted"
-              autoComplete="username"
-            />
-          </div>
-
-          <FormField
-            control={form.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>{t("password")}</FormLabel>
-                <FormControl>
-                  <PasswordInput
-                    placeholder={t("enterYourPassword")}
-                    disabled={isPending}
-                    showPassword={showPassword}
-                    onToggleVisibility={() => setShowPassword(!showPassword)}
-                    autoComplete="new-password"
-                    {...field}
-                  />
-                </FormControl>
-                <PasswordRequirements
-                  password={field.value || ""}
-                  className="mt-2"
-                />
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="confirmPassword"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>{t("confirmPassword")}</FormLabel>
-                <FormControl>
-                  <PasswordInput
-                    placeholder={t("confirmYourPassword")}
-                    disabled={isPending}
-                    showPassword={showConfirmPassword}
-                    onToggleVisibility={() =>
-                      setShowConfirmPassword(!showConfirmPassword)
-                    }
-                    autoComplete="new-password"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <Button
-            type="submit"
-            className="w-full bg-primary hover:bg-primary/90"
-            disabled={isPending || !form.formState.isValid}
-          >
-            {isPending ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                {t("creatingAccount")}
-              </>
-            ) : (
-              t("acceptInvitationAndCreate")
-            )}
-          </Button>
-        </form>
-      </Form>
-
-      <div className="text-center">
-        <p className="text-sm text-muted-foreground">
-          {t("alreadyHaveAccount")}{" "}
-          <button
-            type="button"
-            onClick={onNavigateSignIn}
-            className="text-info hover:underline"
-          >
-            {t("signInInstead")}
-          </button>
-        </p>
-      </div>
-    </>
-  );
-};
-
-const OAuthSection = ({
+/**
+ * OAuth section rendered on the new-user registration and
+ * existing-user sign-in branches. Only renders when the server
+ * reports that alternative auth (Google/SSO) is enabled — otherwise
+ * returns null so there's no dead divider hanging around.
+ */
+function OAuthSection({
   mode,
   callbackURL,
   onBeforeRedirect,
@@ -258,7 +97,7 @@ const OAuthSection = ({
   callbackURL?: string;
   onBeforeRedirect: () => void;
   onError: (msg: string) => void;
-}) => {
+}) {
   const { t } = useTranslation("auth");
   const { showAlternativeAuth } = useShowAlternativeAuth();
 
@@ -279,7 +118,7 @@ const OAuthSection = ({
         onError={onError}
       />
       <div className="relative my-4">
-        <div className="absolute inset-0 flex items-center">
+        <div className="absolute inset-0 flex items-center" aria-hidden="true">
           <span className="w-full border-t" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
@@ -290,8 +129,28 @@ const OAuthSection = ({
       </div>
     </div>
   );
-};
+}
 
+/**
+ * Organization-level invitation acceptance page. Reached via
+ * `/org-invite/:token`. More complex than `AcceptInvitation` because
+ * it has FOUR distinct render branches depending on the caller's
+ * current auth state:
+ *
+ *   1. **Loading** — still fetching invitation details
+ *   2. **Error** — invalid/expired token, no invitation to show
+ *   3. **Authed** — user is already signed in, just needs to
+ *      confirm acceptance (shows a success pane afterwards with a
+ *      "switch workspaces" button)
+ *   4. **Existing user** — server says this email already has an
+ *      account, offer sign-in with a fallback to register instead
+ *   5. **New user** — registration form (via the shared
+ *      `InviteAcceptanceForm`)
+ *
+ * The shared `AuthPageWrapper`, `AuthPageHeader`, `InviteInfoPanel`,
+ * and `InviteAcceptanceForm` components eliminate ~200 lines of
+ * duplication with the cousin `AcceptInvitation` page.
+ */
 const AcceptOrgInvitation = () => {
   const { t } = useTranslation("auth");
   const { token } = useParams<{ token: string }>();
@@ -301,7 +160,6 @@ const AcceptOrgInvitation = () => {
   const acceptOrgInvitationMutation = useAcceptOrgInvitationPublic();
   const acceptAuthOrgInvitationMutation = useAcceptOrgInvitationAuth();
   const utils = trpc.useUtils();
-
   const switchWorkspaceMutation = useSwitchWorkspace();
 
   const {
@@ -319,6 +177,7 @@ const AcceptOrgInvitation = () => {
   const oauthCallbackURL = token
     ? `${window.location.origin}/auth/sso/callback?orgInviteToken=${encodeURIComponent(token)}`
     : undefined;
+
   const storeTokenFallback = () => {
     try {
       if (token) sessionStorage.setItem("pendingOrgInviteToken", token);
@@ -349,7 +208,7 @@ const AcceptOrgInvitation = () => {
     },
   });
 
-  // Handle acceptance for authenticated users
+  // ── Authed user acceptance ─────────────────────────────────────
   const handleAuthAccept = () => {
     if (!token) return;
     setMutationError(null);
@@ -372,7 +231,7 @@ const AcceptOrgInvitation = () => {
     );
   };
 
-  // Handle acceptance for new users (registration flow)
+  // ── New user registration submission ───────────────────────────
   const onSubmit = (data: AcceptInvitationFormData) => {
     if (!token) return;
     setMutationError(null);
@@ -433,56 +292,52 @@ const AcceptOrgInvitation = () => {
     );
   };
 
+  // ── Render branches ────────────────────────────────────────────
+
   if (loading) {
     return (
-      <PageWrapper>
+      <AuthPageWrapper>
         <CardContent className="flex items-center justify-center py-8">
-          <Loader2 className="h-8 w-8 animate-spin" />
+          <Loader2 className="h-8 w-8 animate-spin" aria-hidden="true" />
         </CardContent>
-      </PageWrapper>
+      </AuthPageWrapper>
     );
   }
 
   if (error && !invitation) {
     return (
-      <PageWrapper>
-        <CardHeader className="text-center">
-          <CardTitle className="text-destructive">
-            {t("invalidInvitation")}
-          </CardTitle>
-          <CardDescription>{error}</CardDescription>
-        </CardHeader>
+      <AuthPageWrapper>
+        <AuthPageHeader
+          Icon={Mail}
+          title={t("invalidInvitation")}
+          description={error}
+          variant="destructive"
+        />
         <CardContent>
-          <Button
-            onClick={() => navigate("/auth/sign-in")}
-            className="w-full bg-primary hover:bg-primary/90"
-          >
+          <Button onClick={() => navigate("/auth/sign-in")} className="w-full">
             {t("goToSignIn")}
           </Button>
         </CardContent>
-      </PageWrapper>
+      </AuthPageWrapper>
     );
   }
 
-  // Authenticated user flow
+  const infoFields = invitation ? buildInviteInfoFields(invitation, t) : [];
+
+  // Authed user flow — already signed in, just confirm acceptance
   if (authUser) {
-    // Post-acceptance success state
     if (acceptSuccess) {
       return (
-        <PageWrapper>
-          <CardHeader className="text-center">
-            <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-success-muted flex items-center justify-center">
-              <CheckCircle2 className="h-6 w-6 text-success" />
-            </div>
-            <CardTitle>
-              {t("youJoinedOrg", { org: acceptSuccess.orgName })}
-            </CardTitle>
-          </CardHeader>
-
+        <AuthPageWrapper>
+          <AuthPageHeader
+            Icon={CheckCircle2}
+            title={t("youJoinedOrg", { org: acceptSuccess.orgName })}
+            variant="success"
+          />
           <CardContent className="space-y-3">
             {acceptSuccess.firstWorkspaceId && (
               <Button
-                className="w-full bg-primary hover:bg-primary/90"
+                className="w-full"
                 onClick={() => {
                   switchWorkspaceMutation.mutate(
                     { workspaceId: acceptSuccess.firstWorkspaceId! },
@@ -497,7 +352,10 @@ const AcceptOrgInvitation = () => {
               >
                 {switchWorkspaceMutation.isPending ? (
                   <>
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    <Loader2
+                      className="h-4 w-4 animate-spin mr-2"
+                      aria-hidden="true"
+                    />
                     {t("accepting")}
                   </>
                 ) : (
@@ -513,39 +371,35 @@ const AcceptOrgInvitation = () => {
               {t("stayInCurrentOrg")}
             </Button>
           </CardContent>
-        </PageWrapper>
+        </AuthPageWrapper>
       );
     }
 
     return (
-      <PageWrapper>
-        <CardHeader className="text-center">
-          <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-            <Building2 className="h-6 w-6 text-primary" />
-          </div>
-          <CardTitle>{t("joinOrganization")}</CardTitle>
-          <CardDescription>
-            {t("acceptOrgInvitationDescription")}
-          </CardDescription>
-        </CardHeader>
-
+      <AuthPageWrapper>
+        <AuthPageHeader
+          Icon={Building2}
+          title={t("joinOrganization")}
+          description={t("acceptOrgInvitationDescription")}
+        />
         <CardContent className="space-y-6">
-          {invitation && <OrgInvitationInfo invitation={invitation} />}
-
+          {invitation && <InviteInfoPanel fields={infoFields} />}
           {error && (
             <Alert variant="destructive">
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
-
           <Button
-            className="w-full bg-primary hover:bg-primary/90"
+            className="w-full"
             onClick={handleAuthAccept}
             disabled={acceptAuthOrgInvitationMutation.isPending}
           >
             {acceptAuthOrgInvitationMutation.isPending ? (
               <>
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                <Loader2
+                  className="h-4 w-4 animate-spin mr-2"
+                  aria-hidden="true"
+                />
                 {t("accepting")}
               </>
             ) : (
@@ -553,24 +407,21 @@ const AcceptOrgInvitation = () => {
             )}
           </Button>
         </CardContent>
-      </PageWrapper>
+      </AuthPageWrapper>
     );
   }
 
-  // Existing user — prompt to sign in
+  // Existing user — prompt to sign in rather than register again
   if (invitation?.userExists && !forceRegistration) {
     return (
-      <PageWrapper>
-        <CardHeader className="text-center">
-          <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-            <Building2 className="h-6 w-6 text-primary" />
-          </div>
-          <CardTitle>{t("joinOrganization")}</CardTitle>
-          <CardDescription>{t("existingAccountMessage")}</CardDescription>
-        </CardHeader>
-
+      <AuthPageWrapper>
+        <AuthPageHeader
+          Icon={Building2}
+          title={t("joinOrganization")}
+          description={t("existingAccountMessage")}
+        />
         <CardContent className="space-y-6">
-          <OrgInvitationInfo invitation={invitation} />
+          <InviteInfoPanel fields={infoFields} />
 
           <OAuthSection
             mode="signin"
@@ -580,7 +431,7 @@ const AcceptOrgInvitation = () => {
           />
 
           <Button
-            className="w-full bg-primary hover:bg-primary/90"
+            className="w-full"
             onClick={() =>
               navigate(
                 `/auth/sign-in?redirect=${encodeURIComponent(`/org-invite/${token}`)}`
@@ -594,29 +445,26 @@ const AcceptOrgInvitation = () => {
             <button
               type="button"
               onClick={() => setForceRegistration(true)}
-              className="text-sm text-muted-foreground hover:underline"
+              className="text-sm text-muted-foreground hover:underline underline-offset-2"
             >
               {t("dontHaveAccountCreate")}
             </button>
           </div>
         </CardContent>
-      </PageWrapper>
+      </AuthPageWrapper>
     );
   }
 
   // New user registration flow
   return (
-    <PageWrapper>
-      <CardHeader className="text-center">
-        <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-          <Mail className="h-6 w-6 text-primary" />
-        </div>
-        <CardTitle>{t("joinOrganization")}</CardTitle>
-        <CardDescription>{t("orgSetUpAccount")}</CardDescription>
-      </CardHeader>
-
+    <AuthPageWrapper>
+      <AuthPageHeader
+        Icon={Mail}
+        title={t("joinOrganization")}
+        description={t("orgSetUpAccount")}
+      />
       <CardContent className="space-y-6">
-        {invitation && <OrgInvitationInfo invitation={invitation} />}
+        {invitation && <InviteInfoPanel fields={infoFields} />}
 
         {error && (
           <Alert variant="destructive">
@@ -631,7 +479,7 @@ const AcceptOrgInvitation = () => {
           onError={(msg) => setMutationError(msg)}
         />
 
-        <OrgInvitationForm
+        <InviteAcceptanceForm
           form={form}
           email={invitation?.email || ""}
           isPending={acceptOrgInvitationMutation.isPending}
@@ -643,7 +491,7 @@ const AcceptOrgInvitation = () => {
           }
         />
       </CardContent>
-    </PageWrapper>
+    </AuthPageWrapper>
   );
 };
 

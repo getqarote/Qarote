@@ -129,7 +129,7 @@ function HelpSupport() {
               {/* Support Options */}
               <div className="lg:col-span-2 space-y-6">
                 {/* Contact */}
-                <Card className="border-0 shadow-md bg-card">
+                <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Mail className="w-5 h-5" />
@@ -171,7 +171,7 @@ function HelpSupport() {
 
                 {/* Live Chat - only shown in cloud mode where Tawk.to widget is mounted */}
                 {isCloudMode() && (
-                  <Card className="border-0 shadow-md bg-card">
+                  <Card>
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <MessageCircle className="w-5 h-5" />
@@ -201,7 +201,7 @@ function HelpSupport() {
                 )}
 
                 {/* Community Support */}
-                <Card className="border-0 shadow-md bg-card">
+                <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <MessageSquare className="w-5 h-5" />
@@ -225,7 +225,7 @@ function HelpSupport() {
                   </h2>
                   <div className="space-y-3">
                     {faqs.map((faq, index) => (
-                      <Card key={index} className="border-0 shadow-md bg-card">
+                      <Card key={index}>
                         <Collapsible
                           open={openFaq === index}
                           onOpenChange={(isOpen) =>

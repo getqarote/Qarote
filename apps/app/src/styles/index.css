@@ -181,6 +181,37 @@
       height: 0;
     }
   }
+
+  @keyframes gentle-pulse {
+    0%,
+    100% {
+      opacity: 0.4;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+}
+
+/*
+  Respect the user's OS-level "reduce motion" preference for loading
+  spinners. Continuous linear rotation (`animate-spin`) is a known
+  trigger for vestibular disorders, motion sickness, and migraines —
+  WCAG 2.3.3. Instead of stopping the animation entirely (which would
+  leave the user wondering whether anything is happening), swap the
+  rotation for a gentle opacity pulse that communicates "still
+  working" without any on-screen motion.
+
+  Applied globally to `.animate-spin` so every loading indicator in
+  the app — including ones in third-party components, Radix
+  internals, and code we haven't written yet — gets the right
+  behavior automatically. Lives outside `@theme` because a top-level
+  `@media` rule is not valid inside Tailwind v4's theme block.
+*/
+@media (prefers-reduced-motion: reduce) {
+  .animate-spin {
+    animation: gentle-pulse 2s ease-in-out infinite;
+  }
 }
 
 /*

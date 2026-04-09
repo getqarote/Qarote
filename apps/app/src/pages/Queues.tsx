@@ -159,9 +159,6 @@ const Queues = () => {
                 }}
                 className="max-w-xs"
               />
-              <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                <span>+/-</span>
-              </div>
             </div>
 
             {/* Queues Table */}

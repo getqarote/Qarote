@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { HelpCircle, RefreshCw } from "lucide-react";
@@ -67,17 +67,6 @@ export const QueuedMessagesChart = ({
     }));
   };
 
-  // Handle permission errors
-  if (error && isRabbitMQAuthError(error)) {
-    return (
-      <RabbitMQPermissionError
-        requiredPermission={error.requiredPermission}
-        message={error.message}
-        title={t("cannotViewQueuedMessages")}
-      />
-    );
-  }
-
   const emptyPoint = {
     total: 0,
     ready: 0,
@@ -103,29 +92,43 @@ export const QueuedMessagesChart = ({
     unacked: point.messages_unacknowledged || 0,
   }));
 
-  // Only generate placeholder data when queueTotals is a defined empty array
-  // (no queues exist). When undefined, data is unavailable — don't fake zeros.
-  const now = Date.now();
-  const chartData =
-    mappedData === undefined
-      ? undefined
-      : mappedData.length > 0
-        ? mappedData
-        : Array.from({ length: 7 }, (_, i) => {
-            const ts = now - (6 - i) * 10000;
-            return {
-              ...emptyPoint,
-              timestamp: ts,
-              time: new Date(ts).toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              }),
-              dateTime: "",
-            };
-          });
+  // Only generate placeholder data when queueTotals is a defined
+  // empty array (no queues exist). When undefined, data is
+  // unavailable — don't fake zeros. Memoized so `Date.now()` is
+  // only called when the data shape changes, not on every render.
+  const chartData = useMemo(() => {
+    if (mappedData === undefined) return undefined;
+    if (mappedData.length > 0) return mappedData;
+    const now = Date.now();
+    return Array.from({ length: 7 }, (_, i) => {
+      const ts = now - (6 - i) * 10000;
+      return {
+        ...emptyPoint,
+        timestamp: ts,
+        time: new Date(ts).toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+        dateTime: "",
+      };
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mappedData?.length]);
+
+  // Handle permission errors — rendered AFTER all hooks to satisfy
+  // the rules-of-hooks invariant.
+  if (error && isRabbitMQAuthError(error)) {
+    return (
+      <RabbitMQPermissionError
+        requiredPermission={error.requiredPermission}
+        message={error.message}
+        title={t("cannotViewQueuedMessages")}
+      />
+    );
+  }
 
   return (
-    <Card className="border-0 shadow-md bg-card backdrop-blur-xs">
+    <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">

@@ -91,7 +91,6 @@ const Nodes = () => {
                 <SidebarTrigger />
                 <div>
                   <h1 className="title-page">{t("pageTitle")}</h1>
-                  <p className="text-muted-foreground">{t("pageSubtitle")}</p>
                 </div>
               </div>
               <PageError message={t("common:serverConnectionError")} />
@@ -116,7 +115,6 @@ const Nodes = () => {
                   <TitleWithCount count={nodes.length}>
                     {t("pageTitle")}
                   </TitleWithCount>
-                  <p className="text-muted-foreground">{t("pageSubtitle")}</p>
                 </div>
               </div>
             </div>

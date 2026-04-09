@@ -462,7 +462,7 @@ export function AddQueueForm({
                 onChange={(e) => setArguments(e.target.value)}
                 placeholder='{ "key": value }'
                 disabled={createQueueMutation.isPending}
-                className="min-h-[120px] font-mono text-sm focus:ring-2 focus:ring-orange-200 focus:border-warning/50 focus:ring-offset-0"
+                className="min-h-[120px] font-mono text-sm"
               />
               <div className="space-y-2">
                 <p className="text-sm font-medium text-muted-foreground">

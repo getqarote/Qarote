@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 
 import {
@@ -140,17 +140,6 @@ export const MessagesRatesChart = ({
     }));
   };
 
-  // Handle permission errors
-  if (error && isRabbitMQAuthError(error)) {
-    return (
-      <RabbitMQPermissionError
-        requiredPermission={error.requiredPermission}
-        message={error.message}
-        title={t("cannotViewLiveRates")}
-      />
-    );
-  }
-
   const emptyPoint = {
     publish: 0,
     deliver: 0,
@@ -201,26 +190,48 @@ export const MessagesRatesChart = ({
     disk_writes: point.disk_writes || 0,
   }));
 
-  // Generate placeholder data when no rates exist so the chart renders axes/grid
-  const chartData =
-    mappedData && mappedData.length > 0
-      ? mappedData
-      : Array.from({ length: 7 }, (_, i) => {
-          const ts = Date.now() - (6 - i) * 10000;
-          return {
-            ...emptyPoint,
-            timestamp: ts,
-            time: new Date(ts).toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-              second: "2-digit",
-            }),
-            dateTime: "",
-          };
-        });
+  // Generate placeholder data when no rates exist so the chart
+  // renders axes/grid. Memoized on `mappedData.length` so the 7
+  // placeholder timestamps are stable across renders when they
+  // do appear — `Date.now()` during render is an impure call and
+  // the React 19 compiler rejects it in the render body.
+  const chartData = useMemo(() => {
+    if (mappedData && mappedData.length > 0) return mappedData;
+    const now = Date.now();
+    return Array.from({ length: 7 }, (_, i) => {
+      const ts = now - (6 - i) * 10000;
+      return {
+        ...emptyPoint,
+        timestamp: ts,
+        time: new Date(ts).toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+        }),
+        dateTime: "",
+      };
+    });
+    // `mappedData` is a derived local, not stable across renders.
+    // Compare on its length so we only regenerate when the array
+    // goes from populated back to empty (or vice versa).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mappedData?.length]);
+
+  // Handle permission errors — rendered AFTER all hooks to satisfy
+  // the rules-of-hooks invariant that every render calls the same
+  // hooks in the same order.
+  if (error && isRabbitMQAuthError(error)) {
+    return (
+      <RabbitMQPermissionError
+        requiredPermission={error.requiredPermission}
+        message={error.message}
+        title={t("cannotViewLiveRates")}
+      />
+    );
+  }
 
   return (
-    <Card className="border-0 shadow-md bg-card backdrop-blur-xs">
+    <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">

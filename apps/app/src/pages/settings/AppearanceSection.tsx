@@ -54,7 +54,7 @@ const AppearanceSection = () => {
               <button
                 key={value}
                 onClick={() => setTheme(value)}
-                className={`flex flex-col items-center gap-3 p-4 rounded-lg border-2 transition-all cursor-pointer ${
+                className={`flex flex-col items-center gap-3 p-4 rounded-lg border-2 motion-safe:transition-all cursor-pointer ${
                   theme === value
                     ? "border-primary bg-primary/5"
                     : "border-border hover:border-muted-foreground/30 hover:bg-muted/50"

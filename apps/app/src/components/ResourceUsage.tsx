@@ -76,7 +76,7 @@ export const ResourceUsage = ({
   ];
 
   return (
-    <Card className="border-0 shadow-md bg-card backdrop-blur-xs">
+    <Card>
       <CardHeader>
         <CardTitle className="text-lg font-semibold text-foreground">
           {t("resourceUsage")}

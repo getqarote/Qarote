@@ -2,27 +2,20 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 
-import { ArrowLeft, Lock, Pencil, Radio } from "lucide-react";
 import { toast } from "sonner";
 
 import { UserRole } from "@/lib/api";
 
-import { AppSidebar } from "@/components/AppSidebar";
 import { PageError } from "@/components/PageError";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { FullPageAlert, PageShell } from "@/components/PageShell";
+import { LoadingSkeleton } from "@/components/VHostDetail/LoadingSkeleton";
+import { SetVHostLimitsForm } from "@/components/VHostDetail/SetVHostLimitsForm";
+import { SetVHostPermissionsForm } from "@/components/VHostDetail/SetVHostPermissionsForm";
+import { VHostDangerZone } from "@/components/VHostDetail/VHostDangerZone";
+import { VHostDetailHeader } from "@/components/VHostDetail/VHostDetailHeader";
+import { VHostLimits } from "@/components/VHostDetail/VHostLimits";
+import { VHostPermissionsTable } from "@/components/VHostDetail/VHostPermissionsTable";
+import { VHostStats } from "@/components/VHostDetail/VHostStats";
 import { DeleteVHostModal } from "@/components/vhosts/DeleteVHostModal";
 import { EditVHostModal } from "@/components/vhosts/EditVHostModal";
 
@@ -53,7 +46,11 @@ export default function VHostDetailsPage() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
 
-  // Form states
+  // The user whose "Clear" button is currently in flight. Lets us show
+  // the loading state on ONLY that row instead of disabling every clear
+  // button in the table at once.
+  const [pendingClearUser, setPendingClearUser] = useState<string | null>(null);
+
   // null means "use derived default from data", string means "user explicitly chose this"
   const [selectedUserOverride, setSelectedUserOverride] = useState<
     string | null
@@ -69,7 +66,6 @@ export default function VHostDetailsPage() {
 
   const currentServerId = serverId || selectedServerId;
   const decodedVHostName = decodeURIComponent(vhostName || "");
-  // Validate that the server actually exists
   const serverExists = currentServerId
     ? servers.some((s) => s.id === currentServerId)
     : false;
@@ -80,7 +76,6 @@ export default function VHostDetailsPage() {
     error,
   } = useVHost(currentServerId, decodedVHostName, serverExists);
 
-  // Fetch users for the permission form
   const { data: usersData } = useUsers(currentServerId, serverExists);
 
   const deleteVHostMutation = useDeleteVHost();
@@ -89,7 +84,6 @@ export default function VHostDetailsPage() {
   const clearPermissionsMutation = useDeleteVHostPermissions();
   const { workspace } = useWorkspace();
 
-  // Derive the default user from loaded data
   const derivedDefaultUser = useMemo(() => {
     if (usersData?.users?.length) {
       return usersData.users[0].name;
@@ -98,9 +92,7 @@ export default function VHostDetailsPage() {
   }, [usersData]);
 
   const selectedUser = selectedUserOverride ?? derivedDefaultUser;
-  const setSelectedUser = setSelectedUserOverride;
 
-  // Handle form submissions
   const handleSetPermissions = async () => {
     if (!selectedUser || !configureRegexp || !writeRegexp || !readRegexp) {
       toast.error(t("requiredFields"));
@@ -121,9 +113,9 @@ export default function VHostDetailsPage() {
         read: readRegexp,
       });
       toast.success(t("permissionsSet"));
-    } catch (error) {
+    } catch (err) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to set permissions"
+        err instanceof Error ? err.message : "Failed to set permissions"
       );
     }
   };
@@ -165,10 +157,8 @@ export default function VHostDetailsPage() {
       toast.success(t("limitsSet"));
       setMaxConnections("");
       setMaxQueues("");
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Failed to set limits"
-      );
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to set limits");
     }
   };
 
@@ -177,6 +167,7 @@ export default function VHostDetailsPage() {
       toast.error("Workspace ID is required");
       return;
     }
+    setPendingClearUser(username);
     try {
       await clearPermissionsMutation.mutateAsync({
         serverId: currentServerId!,
@@ -185,87 +176,65 @@ export default function VHostDetailsPage() {
         username,
       });
       toast.success(t("permissionsCleared"));
-    } catch (error) {
+    } catch (err) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to clear permissions"
+        err instanceof Error ? err.message : "Failed to clear permissions"
+      );
+    } finally {
+      setPendingClearUser(null);
+    }
+  };
+
+  const handleDeleteVHost = async () => {
+    if (!workspace?.id) {
+      toast.error("Workspace ID is required");
+      return;
+    }
+    try {
+      await deleteVHostMutation.mutateAsync({
+        serverId: currentServerId!,
+        workspaceId: workspace.id,
+        vhostName: decodedVHostName,
+      });
+      toast.success(t("deleteSuccess"));
+      navigate("/vhosts");
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Failed to delete virtual host"
       );
     }
   };
 
-  // Redirect non-admin users
+  // Guard: non-admins cannot reach this page at all
   if (user?.role !== UserRole.ADMIN) {
     return (
-      <SidebarProvider>
-        <div className="page-layout">
-          <AppSidebar />
-          <main className="main-content">
-            <div className="container mx-auto">
-              <Alert>
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{t("accessDenied")}</AlertDescription>
-              </Alert>
-            </div>
-          </main>
-        </div>
-      </SidebarProvider>
+      <PageShell>
+        <FullPageAlert message={t("accessDenied")} />
+      </PageShell>
     );
   }
 
   if (!currentServerId) {
     return (
-      <SidebarProvider>
-        <div className="page-layout">
-          <AppSidebar />
-          <main className="main-content">
-            <div className="container mx-auto">
-              <Alert>
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{t("selectServer")}</AlertDescription>
-              </Alert>
-            </div>
-          </main>
-        </div>
-      </SidebarProvider>
+      <PageShell>
+        <FullPageAlert message={t("selectServer")} />
+      </PageShell>
     );
   }
 
   if (isLoading) {
     return (
-      <SidebarProvider>
-        <div className="page-layout">
-          <AppSidebar />
-          <main className="main-content-scrollable">
-            <div className="content-container-large">
-              <div className="flex items-center gap-4">
-                <SidebarTrigger />
-                <div>
-                  <Skeleton className="h-8 w-48 mb-2" />
-                  <Skeleton className="h-4 w-32" />
-                </div>
-              </div>
-              <div className="space-y-6">
-                <Skeleton className="h-48 w-full rounded-lg" />
-                <Skeleton className="h-64 w-full rounded-lg" />
-              </div>
-            </div>
-          </main>
-        </div>
-      </SidebarProvider>
+      <PageShell>
+        <LoadingSkeleton />
+      </PageShell>
     );
   }
 
   if (error) {
     return (
-      <SidebarProvider>
-        <div className="page-layout">
-          <AppSidebar />
-          <main className="main-content">
-            <div className="container mx-auto">
-              <PageError message={t("common:serverConnectionError")} />
-            </div>
-          </main>
-        </div>
-      </SidebarProvider>
+      <PageShell>
+        <PageError message={t("common:serverConnectionError")} />
+      </PageShell>
     );
   }
 
@@ -273,460 +242,79 @@ export default function VHostDetailsPage() {
 
   if (!vhost) {
     return (
-      <SidebarProvider>
-        <div className="page-layout">
-          <AppSidebar />
-          <main className="main-content">
-            <div className="container mx-auto">
-              <Alert>
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{t("notFound")}</AlertDescription>
-              </Alert>
-            </div>
-          </main>
-        </div>
-      </SidebarProvider>
+      <PageShell>
+        <FullPageAlert message={t("notFound")} />
+      </PageShell>
     );
   }
 
   return (
-    <SidebarProvider>
-      <div className="page-layout">
-        <AppSidebar />
-        <main className="main-content">
-          <div className="max-w-6xl mx-auto space-y-8">
-            {/* Header */}
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex items-start gap-2 min-w-0">
-                <SidebarTrigger className="mr-2 mt-1" />
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => navigate("/vhosts")}
-                  className="mr-2 flex items-center gap-1 shrink-0"
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                </Button>
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h1 className="title-page">
-                      {t("virtualHostPrefix", { name: decodedVHostName })}
-                    </h1>
-                    {vhost.protected_from_deletion && (
-                      <Badge
-                        variant="secondary"
-                        className="flex items-center gap-1"
-                        title={t("protectedTooltip")}
-                      >
-                        <Lock className="w-3 h-3" />
-                        {t("protected")}
-                      </Badge>
-                    )}
-                    {vhost.tracing && (
-                      <Badge
-                        variant="outline"
-                        className="flex items-center gap-1"
-                      >
-                        <Radio className="w-3 h-3" />
-                        {t("tracing")}
-                      </Badge>
-                    )}
-                    <Badge variant="outline">
-                      {vhost.default_queue_type &&
-                      vhost.default_queue_type !== "undefined"
-                        ? vhost.default_queue_type
-                        : t("serverDefault")}
-                    </Badge>
-                  </div>
-                  {vhost.description && (
-                    <p className="text-sm text-muted-foreground mt-1 line-clamp-2 break-all">
-                      {vhost.description}
-                    </p>
-                  )}
-                </div>
-              </div>
-              <Button
-                onClick={() => setShowEditModal(true)}
-                className="btn-primary text-white flex items-center gap-2 shrink-0"
-              >
-                <Pencil className="h-4 w-4" />
-                {t("common:edit")}
-              </Button>
-            </div>
+    <PageShell>
+      <VHostDetailHeader
+        vhostName={decodedVHostName}
+        vhost={vhost}
+        onNavigateBack={() => navigate("/vhosts")}
+        onEdit={() => setShowEditModal(true)}
+      />
 
-            {/* Message stats */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">{t("stats")}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-3 gap-8">
-                  <div>
-                    <div className="text-sm text-muted-foreground mb-1">
-                      {t("vhostQueues")}
-                    </div>
-                    <div className="text-lg font-medium">
-                      {vhost.stats?.queueCount || 0}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-sm text-muted-foreground mb-1">
-                      {t("vhostExchanges")}
-                    </div>
-                    <div className="text-lg font-medium">
-                      {vhost.stats?.exchangeCount || 0}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-sm text-muted-foreground mb-1">
-                      {t("totalMessages")}
-                    </div>
-                    <div className="text-lg font-medium">
-                      {vhost.stats?.totalMessages || 0}
-                    </div>
-                  </div>
-                </div>
-                {vhost.message_stats && (
-                  <div className="mt-6 pt-6 border-t">
-                    <h4 className="text-sm font-medium mb-4">
-                      {t("messageStatistics")}
-                    </h4>
-                    <div className="grid grid-cols-3 gap-8">
-                      {vhost.message_stats.publish !== undefined && (
-                        <div>
-                          <div className="text-sm text-muted-foreground mb-1">
-                            {t("published")}
-                          </div>
-                          <div className="text-lg font-medium">
-                            {vhost.message_stats.publish.toLocaleString()}
-                          </div>
-                          {vhost.message_stats.publish_details && (
-                            <div className="text-xs text-muted-foreground">
-                              {vhost.message_stats.publish_details.rate.toFixed(
-                                2
-                              )}
-                              /s
-                            </div>
-                          )}
-                        </div>
-                      )}
-                      {vhost.message_stats.deliver !== undefined && (
-                        <div>
-                          <div className="text-sm text-muted-foreground mb-1">
-                            {t("delivered")}
-                          </div>
-                          <div className="text-lg font-medium">
-                            {vhost.message_stats.deliver.toLocaleString()}
-                          </div>
-                          {vhost.message_stats.deliver_details && (
-                            <div className="text-xs text-muted-foreground">
-                              {vhost.message_stats.deliver_details.rate.toFixed(
-                                2
-                              )}
-                              /s
-                            </div>
-                          )}
-                        </div>
-                      )}
-                      {vhost.message_stats.ack !== undefined && (
-                        <div>
-                          <div className="text-sm text-muted-foreground mb-1">
-                            {t("acknowledged")}
-                          </div>
-                          <div className="text-lg font-medium">
-                            {vhost.message_stats.ack.toLocaleString()}
-                          </div>
-                          {vhost.message_stats.ack_details && (
-                            <div className="text-xs text-muted-foreground">
-                              {vhost.message_stats.ack_details.rate.toFixed(2)}
-                              /s
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+      <VHostStats vhost={vhost} />
 
-            {/* Limits */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">{t("limits")}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 gap-8">
-                  <div>
-                    <div className="text-sm text-muted-foreground mb-1">
-                      {t("maxConnections")}
-                    </div>
-                    <div className="text-lg font-medium">
-                      {vhost.limits?.[0]?.value?.["max-connections"] || "-"}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-sm text-muted-foreground mb-1">
-                      {t("maxQueues")}
-                    </div>
-                    <div className="text-lg font-medium">
-                      {vhost.limits?.[0]?.value?.["max-queues"] || "-"}
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+      <VHostLimits vhost={vhost} />
 
-            {/* Permissions */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">
-                  {t("permissions")}{" "}
-                  <Badge variant="secondary" className="ml-2">
-                    {vhostData?.vhost?.permissions?.length || 0}
-                  </Badge>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="border rounded-lg">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>{t("user")}</TableHead>
-                        <TableHead>{t("configureRegexp")}</TableHead>
-                        <TableHead>{t("writeRegexp")}</TableHead>
-                        <TableHead>{t("readRegexp")}</TableHead>
-                        <TableHead className="w-[100px]">
-                          {t("common:actions")}
-                        </TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {vhostData?.vhost?.permissions?.length ? (
-                        vhostData.vhost.permissions.map((permission, index) => (
-                          <TableRow key={index}>
-                            <TableCell className="font-medium">
-                              {permission.user}
-                            </TableCell>
-                            <TableCell>{permission.configure}</TableCell>
-                            <TableCell>{permission.write}</TableCell>
-                            <TableCell>{permission.read}</TableCell>
-                            <TableCell>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() =>
-                                  handleClearPermissions(permission.user)
-                                }
-                                disabled={clearPermissionsMutation.isPending}
-                              >
-                                {clearPermissionsMutation.isPending
-                                  ? t("clearing")
-                                  : t("clear")}
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        ))
-                      ) : (
-                        <TableRow>
-                          <TableCell
-                            colSpan={5}
-                            className="text-center text-muted-foreground"
-                          >
-                            {t("noPermissions")}
-                          </TableCell>
-                        </TableRow>
-                      )}
-                    </TableBody>
-                  </Table>
-                </div>
-              </CardContent>
-            </Card>
+      <VHostPermissionsTable
+        permissions={vhost.permissions ?? []}
+        pendingUser={pendingClearUser}
+        onClear={handleClearPermissions}
+      />
 
-            {/* Set permission and Set limits */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Set permission */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">
-                    {t("setPermission")}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium mb-2">
-                        {t("user")}
-                      </label>
-                      <select
-                        className="w-full p-2 border rounded-md bg-background"
-                        value={selectedUser}
-                        onChange={(e) => setSelectedUser(e.target.value)}
-                      >
-                        {usersData?.users?.map((user) => (
-                          <option key={user.name} value={user.name}>
-                            {user.name}
-                          </option>
-                        )) || <option value="admin">admin</option>}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-2">
-                        {t("configureRegexp")}
-                      </label>
-                      <Input
-                        value={configureRegexp}
-                        onChange={(e) => setConfigureRegexp(e.target.value)}
-                        placeholder=".*"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-2">
-                        {t("writeRegexp")}
-                      </label>
-                      <Input
-                        value={writeRegexp}
-                        onChange={(e) => setWriteRegexp(e.target.value)}
-                        placeholder=".*"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-2">
-                        {t("readRegexp")}
-                      </label>
-                      <Input
-                        value={readRegexp}
-                        onChange={(e) => setReadRegexp(e.target.value)}
-                        placeholder=".*"
-                      />
-                    </div>
-                    <div>
-                      <Button
-                        className="btn-primary"
-                        onClick={handleSetPermissions}
-                        disabled={setPermissionsMutation.isPending}
-                      >
-                        {setPermissionsMutation.isPending
-                          ? t("setting")
-                          : t("setPermission")}
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <SetVHostPermissionsForm
+          users={usersData?.users ?? []}
+          selectedUser={selectedUser}
+          onSelectedUserChange={setSelectedUserOverride}
+          configureRegexp={configureRegexp}
+          onConfigureRegexpChange={setConfigureRegexp}
+          writeRegexp={writeRegexp}
+          onWriteRegexpChange={setWriteRegexp}
+          readRegexp={readRegexp}
+          onReadRegexpChange={setReadRegexp}
+          onSubmit={handleSetPermissions}
+          isPending={setPermissionsMutation.isPending}
+        />
 
-              {/* Set limits */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">{t("setLimits")}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium mb-2">
-                        {t("maxConnections")}
-                      </label>
-                      <Input
-                        type="number"
-                        min="0"
-                        value={maxConnections}
-                        onChange={(e) => setMaxConnections(e.target.value)}
-                        placeholder={t("leaveEmptyForNoLimit")}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-2">
-                        {t("maxQueues")}
-                      </label>
-                      <Input
-                        type="number"
-                        min="0"
-                        value={maxQueues}
-                        onChange={(e) => setMaxQueues(e.target.value)}
-                        placeholder={t("leaveEmptyForNoLimit")}
-                      />
-                    </div>
-                    <div>
-                      <Button
-                        className="btn-primary"
-                        onClick={handleSetLimits}
-                        disabled={setLimitsMutation.isPending}
-                      >
-                        {setLimitsMutation.isPending
-                          ? t("setting")
-                          : t("setLimits")}
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Danger zone */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg text-destructive">
-                  {t("dangerZone")}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Button
-                  variant="destructive"
-                  onClick={() => setShowDeleteModal(true)}
-                  disabled={vhost.name === "/"}
-                >
-                  {t("deleteVhost")}
-                </Button>
-                {vhost.name === "/" && (
-                  <p className="text-sm text-muted-foreground mt-2">
-                    {t("cannotDeleteDefault")}
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Modals */}
-            {showEditModal && (
-              <EditVHostModal
-                isOpen={showEditModal}
-                onClose={() => setShowEditModal(false)}
-                serverId={currentServerId}
-                vhost={vhost}
-              />
-            )}
-
-            {showDeleteModal && (
-              <DeleteVHostModal
-                isOpen={showDeleteModal}
-                onClose={() => setShowDeleteModal(false)}
-                vhost={vhost}
-                onConfirm={async () => {
-                  try {
-                    if (!workspace?.id) {
-                      toast.error("Workspace ID is required");
-                      return;
-                    }
-                    await deleteVHostMutation.mutateAsync({
-                      serverId: currentServerId!,
-                      workspaceId: workspace.id,
-                      vhostName: decodedVHostName,
-                    });
-                    toast.success(t("deleteSuccess"));
-                    navigate("/vhosts");
-                  } catch (error) {
-                    toast.error(
-                      error instanceof Error
-                        ? error.message
-                        : "Failed to delete virtual host"
-                    );
-                  }
-                }}
-                isLoading={deleteVHostMutation.isPending}
-              />
-            )}
-          </div>
-        </main>
+        <SetVHostLimitsForm
+          maxConnections={maxConnections}
+          onMaxConnectionsChange={setMaxConnections}
+          maxQueues={maxQueues}
+          onMaxQueuesChange={setMaxQueues}
+          onSubmit={handleSetLimits}
+          isPending={setLimitsMutation.isPending}
+        />
       </div>
-    </SidebarProvider>
+
+      <VHostDangerZone
+        vhostName={decodedVHostName}
+        onDeleteClick={() => setShowDeleteModal(true)}
+      />
+
+      {showEditModal && (
+        <EditVHostModal
+          isOpen={showEditModal}
+          onClose={() => setShowEditModal(false)}
+          serverId={currentServerId}
+          vhost={vhost}
+        />
+      )}
+
+      {showDeleteModal && (
+        <DeleteVHostModal
+          isOpen={showDeleteModal}
+          onClose={() => setShowDeleteModal(false)}
+          vhost={vhost}
+          onConfirm={handleDeleteVHost}
+          isLoading={deleteVHostMutation.isPending}
+        />
+      )}
+    </PageShell>
   );
 }

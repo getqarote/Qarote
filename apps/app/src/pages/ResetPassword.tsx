@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useSearchParams } from "react-router";
 
-import { Check, Eye, EyeOff, Lock, Shield, X } from "lucide-react";
+import { Check, Eye, EyeOff, Loader2, Lock, Shield, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { logger } from "@/lib/logger";
@@ -286,12 +286,15 @@ const ResetPassword: React.FC = () => {
             {/* Submit Button */}
             <Button
               type="submit"
-              className="w-full bg-primary hover:bg-primary/90"
+              className="w-full"
               disabled={resetPasswordMutation.isPending}
             >
               {resetPasswordMutation.isPending ? (
                 <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                  <Loader2
+                    className="h-4 w-4 mr-2 animate-spin"
+                    aria-hidden="true"
+                  />
                   {t("resettingPassword")}
                 </>
               ) : (

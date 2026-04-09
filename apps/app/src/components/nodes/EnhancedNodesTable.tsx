@@ -235,7 +235,7 @@ export const EnhancedNodesTable = ({
 
   if (nodesError && isRabbitMQAuthError(nodesError)) {
     return (
-      <Card className="border-0 shadow-md bg-card backdrop-blur-xs">
+      <Card>
         <CardHeader>
           <CardTitle className="text-lg font-semibold text-foreground flex items-center gap-2">
             <Server className="h-5 w-5" />
@@ -254,7 +254,7 @@ export const EnhancedNodesTable = ({
   }
 
   return (
-    <Card className="border-0 shadow-md bg-card backdrop-blur-xs">
+    <Card>
       <CardHeader>
         <CardTitle className="text-lg font-semibold text-foreground flex items-center gap-2">
           <Server className="h-5 w-5 text-muted-foreground" />

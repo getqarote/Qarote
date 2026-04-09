@@ -82,7 +82,7 @@ export const RecentAlerts = () => {
 
   if (error) {
     return (
-      <Card className="border-0 shadow-md bg-card backdrop-blur-xs">
+      <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
@@ -105,7 +105,7 @@ export const RecentAlerts = () => {
   }
 
   return (
-    <Card className="border-0 shadow-md bg-card backdrop-blur-xs">
+    <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>

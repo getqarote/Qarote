@@ -27,7 +27,7 @@ export function NoServerConfigured({
           <p className="text-muted-foreground">{subtitle}</p>
         </div>
       </div>
-      <Card className="border-0 shadow-md bg-card backdrop-blur-xs">
+      <Card>
         <CardContent className="p-6">
           <div className="text-center">
             <Server className="h-12 w-12 text-muted-foreground mx-auto mb-4" />

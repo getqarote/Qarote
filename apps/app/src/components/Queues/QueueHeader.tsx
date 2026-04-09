@@ -48,7 +48,6 @@ export function QueueHeader({
   return (
     <PageHeader
       title={titleNode}
-      subtitle={t("pageSubtitle")}
       actions={actions}
       showSidebarTrigger={false}
     />

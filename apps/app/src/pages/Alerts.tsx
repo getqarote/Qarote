@@ -191,7 +191,6 @@ const Alerts = () => {
                   <SidebarTrigger />
                   <div>
                     <h1 className="title-page">{t("pageTitle")}</h1>
-                    <p className="text-muted-foreground">{t("pageSubtitle")}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">

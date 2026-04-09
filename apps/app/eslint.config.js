@@ -101,5 +101,15 @@ export default tseslint.config(
       ],
       "simple-import-sort/exports": "error",
     },
+  },
+  // shadcn UI primitives and contexts legitimately export both
+  // components and named utility constants (variant objects,
+  // context references, provider+hook pairs). The react-refresh
+  // rule only affects HMR and is safe to disable for these.
+  {
+    files: ["src/components/ui/**/*.{ts,tsx}", "src/contexts/**/*.{ts,tsx}"],
+    rules: {
+      "react-refresh/only-export-components": "off",
+    },
   }
 );

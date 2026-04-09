@@ -116,10 +116,9 @@ const Topology = () => {
                 <SidebarTrigger />
                 <div>
                   <h1 className="title-page">{t("pageTitle")}</h1>
-                  <p className="text-muted-foreground">{t("pageSubtitle")}</p>
                 </div>
               </div>
-              <Card className="border-0 shadow-md bg-card">
+              <Card>
                 <CardContent className="p-12">
                   <div className="text-center">
                     <Server className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
@@ -151,7 +150,6 @@ const Topology = () => {
                   <SidebarTrigger />
                   <div>
                     <h1 className="title-page">{t("pageTitle")}</h1>
-                    <p className="text-muted-foreground">{t("pageSubtitle")}</p>
                   </div>
                 </div>
               </div>
@@ -159,7 +157,7 @@ const Topology = () => {
               {error ? (
                 <PageError message={t("common:serverConnectionError")} />
               ) : (
-                <Card className="border-0 shadow-md bg-card">
+                <Card>
                   <CardContent className="p-0">
                     {isLoading ? (
                       <div className="space-y-3 p-6">

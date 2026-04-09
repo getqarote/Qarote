@@ -429,11 +429,15 @@ export function AppSidebar() {
               <img
                 src={user.image}
                 alt=""
+                aria-hidden="true"
                 className="w-6 h-6 rounded-full object-cover shrink-0"
                 referrerPolicy="no-referrer"
               />
             ) : (
-              <User className="w-4 h-4 text-sidebar-foreground/70 shrink-0" />
+              <User
+                className="w-4 h-4 text-sidebar-foreground/70 shrink-0"
+                aria-hidden="true"
+              />
             )}
             <div className="flex flex-col min-w-0">
               <span className="font-medium text-sidebar-foreground">

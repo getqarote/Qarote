@@ -123,7 +123,7 @@ export const QueueDepthsChart = ({
   const yAxisMin = minMessages < 0 ? Math.floor(minMessages * 1.1) : 0;
 
   return (
-    <Card className="border-0 shadow-md bg-card backdrop-blur-xs">
+    <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
