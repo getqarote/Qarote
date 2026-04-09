@@ -121,7 +121,6 @@ const ProfileSection = () => {
         editingProfile={editingProfile}
         profileForm={profileForm}
         setProfileForm={setProfileForm}
-        setEditingProfile={setEditingProfile}
         onStartEdit={() => {
           resetFormFromProfile();
           setEditingProfile(true);

@@ -110,7 +110,6 @@ const WorkspaceSection = () => {
         editingWorkspace={editingWorkspace}
         workspaceForm={workspaceForm}
         setWorkspaceForm={setWorkspaceForm}
-        setEditingWorkspace={setEditingWorkspace}
         onStartEdit={() => {
           resetFormFromWorkspace();
           setEditingWorkspace(true);

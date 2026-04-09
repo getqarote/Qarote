@@ -27,7 +27,6 @@ interface PersonalInfoTabProps {
   editingProfile: boolean;
   profileForm: ProfileFormState;
   setProfileForm: (form: ProfileFormState) => void;
-  setEditingProfile: (editing: boolean) => void;
   onStartEdit: () => void;
   onCancelEdit: () => void;
   onUpdateProfile: () => void;
@@ -56,7 +55,6 @@ export const PersonalInfoTab = ({
   editingProfile,
   profileForm,
   setProfileForm,
-  setEditingProfile: _setEditingProfile,
   onStartEdit,
   onCancelEdit,
   onUpdateProfile,

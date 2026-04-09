@@ -49,7 +49,6 @@ interface WorkspaceInfoTabProps {
   editingWorkspace: boolean;
   workspaceForm: WorkspaceFormState;
   setWorkspaceForm: (form: WorkspaceFormState) => void;
-  setEditingWorkspace: (editing: boolean) => void;
   onStartEdit: () => void;
   onCancelEdit: () => void;
   onUpdateWorkspace: () => void;
@@ -64,7 +63,6 @@ export const WorkspaceInfoTab = ({
   editingWorkspace,
   workspaceForm,
   setWorkspaceForm,
-  setEditingWorkspace: _setEditingWorkspace,
   onStartEdit,
   onCancelEdit,
   onUpdateWorkspace,
